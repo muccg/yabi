@@ -23,9 +23,9 @@
 
     <!-- init needed when doing a user deploy -->
     <target name="userbuildinit">
-      <property name="cbbc.site" value="${basedir}"/>
+      <property name="cbbc.site" value="${basedir}/site"/>
       <property name="cbbc.buildname" value="${user.name}"/>
-      <property name="cbbc.webroot" value="/usr/local/php5/htdocs/scholarship2006/${cbbc.buildname}"/>
+      <property name="cbbc.webroot" value="/usr/local/php5/htdocs/yabi-fe/${cbbc.buildname}"/>
       <property name="cbbc.smartyDebug" value="true"/>
       <property name="cbbc.porthttp" value="81"/>   
       <property name="cbbc.porthttps" value="444"/>      	
@@ -61,7 +61,6 @@
        	  <available file="${cbbc.webroot}/javascript/" type="dir"/>
        	  <available file="${cbbc.webroot}/lib/" type="dir"/>
           <available file="${cbbc.webroot}/files/" type="dir"/>
-          <available file="${cbbc.webroot}/data/" type="dir"/>
         </and>
       </condition>
     </target>
@@ -75,17 +74,11 @@
       <mkdir dir="${cbbc.webroot}/logs/"/>
       <mkdir dir="${cbbc.webroot}/files/"/>
       
-      <!-- Needed to allow data files to be uploaded by the user -->
-      <mkdir dir="${cbbc.webroot}/data/"/>
-
       <chmod perm="o+rw" type="both">
         <fileset dir="${cbbc.webroot}/cache/"/>
         <fileset dir="${cbbc.webroot}/compile/"/>
         <fileset dir="${cbbc.webroot}/logs/"/>
         <fileset dir="${cbbc.webroot}/files/"/>
-
-        <!-- Needed to allow data files to be uploaded by the user -->
-      	<fileset dir="${cbbc.webroot}/data/"/>
       </chmod>
 
       <mkdir dir="${cbbc.webroot}/doc/"/>
@@ -170,7 +163,6 @@
       <delete dir="${cbbc.webroot}/templates/" verbose="true"/>
       <delete dir="${cbbc.webroot}/resources/" verbose="true"/>
       <delete dir="${cbbc.webroot}/javascript/" verbose="true"/>
-      <delete dir="${cbbc.webroot}/data/" verbose="true"/>
     </target>
 
     <target name="doc" depends="init">
@@ -253,14 +245,6 @@
       </copy>
     </target>
 
-	<target name="deployDatafiles" depends="init">
-      <copy todir="${cbbc.webroot}/data/" >
-        <fileset dir="${cbbc.site}/data/" >
-          <include name="**/*.aln"/>
-        </fileset>
-      </copy>
-	</target>
-
     <target name="deployModules" depends="init">
       <copy todir="${cbbc.webroot}/modules/" >
         <fileset dir="${cbbc.site}/modules/" >
@@ -332,7 +316,7 @@
 	
     <target name="deployPhp" depends="deployProperties, deployWebrootPhp, deployModels, deployViews, deployControllers, deploySmarty, deployTemplates, deployModules, deployLib" />
 
-    <target name="deployResources" depends="deployCss, deployImages, deployJavascript, deployDatafiles" />
+    <target name="deployResources" depends="deployCss, deployImages, deployJavascript" />
 
     <target name="munge" depends="mungeConfig, mungeTemplate"/>
 
