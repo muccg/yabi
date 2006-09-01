@@ -1,0 +1,343 @@
+<project name="yabi-fe" default="all" basedir=".">
+
+
+    <target name="init">
+      <!-- Create the time stamp -->
+      <tstamp/>
+    </target>
+
+    <!-- init needed when making a snapshot release -->
+    <target name="snapshotinit" depends="init, createTmp">
+      <property name="cbbc.site" value="${basedir}/tmp/crc-mpb/markerbinner/site_mojavi"/>
+      <property name="cbbc.buildname" value="snapshot"/>
+      <property name="cbbc.webroot" value="/usr/local/php5/htdocs/scholarship2006/${cbbc.buildname}"/>
+      <property name="cbbc.porthttp" value="81"/>   
+      <property name="cbbc.porthttps" value="444"/>      	
+      <property name="cbbc.dbhost" value="localhost.localdomain"/>
+      <property name="cbbc.dbuser" value=""/>
+      <property name="cbbc.dbpass" value=""/>
+      <property name="cbbc.dbname" value=""/>    	
+    	
+      <property name="cbbc.smartyDebug" value="false"/>
+    </target>
+
+    <!-- init needed when doing a user deploy -->
+    <target name="userbuildinit">
+      <property name="cbbc.site" value="${basedir}"/>
+      <property name="cbbc.buildname" value="${user.name}"/>
+      <property name="cbbc.webroot" value="/usr/local/php5/htdocs/scholarship2006/${cbbc.buildname}"/>
+      <property name="cbbc.smartyDebug" value="true"/>
+      <property name="cbbc.porthttp" value="81"/>   
+      <property name="cbbc.porthttps" value="444"/>      	
+      <property name="cbbc.dbhost" value="localhost.localdomain"/>
+      <property name="cbbc.dbuser" value=""/>
+      <property name="cbbc.dbpass" value=""/>
+      <property name="cbbc.dbname" value=""/>     
+    	
+    </target>
+
+    <!-- remove tmp and recreate it -->
+    <target name="createTmp">
+      <delete dir="tmp" verbose="true"/>
+      <mkdir dir="tmp"/>
+    </target>
+    <target name="createTmpAgain">
+      <delete dir="tmp"/>
+      <mkdir dir="tmp"/>
+    </target>
+
+    <!-- check if webroot already exists -->
+    <target name="checkWebrootDirs" depends="init">
+      <condition property="cbbc.webroot.exists">
+        <and>
+          <available file="${cbbc.webroot}/doc/" type="dir"/>
+          <available file="${cbbc.webroot}/models/" type="dir"/>
+          <available file="${cbbc.webroot}/views/" type="dir"/>
+          <available file="${cbbc.webroot}/controllers/" type="dir"/>
+          <available file="${cbbc.webroot}/modules/" type="dir"/>
+          <available file="${cbbc.webroot}/smarty/" type="dir"/>
+          <available file="${cbbc.webroot}/templates/" type="dir"/>
+          <available file="${cbbc.webroot}/resources/" type="dir"/>
+       	  <available file="${cbbc.webroot}/javascript/" type="dir"/>
+       	  <available file="${cbbc.webroot}/lib/" type="dir"/>
+          <available file="${cbbc.webroot}/files/" type="dir"/>
+          <available file="${cbbc.webroot}/data/" type="dir"/>
+        </and>
+      </condition>
+    </target>
+
+    <!-- create webroot as needed -->
+    <target name="webrootDirs" depends="checkWebrootDirs" unless="cbbc.webroot.exists">
+
+      <!-- Smarty needs these directories to function -->
+      <mkdir dir="${cbbc.webroot}/cache/"/>
+      <mkdir dir="${cbbc.webroot}/compile/"/>
+      <mkdir dir="${cbbc.webroot}/logs/"/>
+      <mkdir dir="${cbbc.webroot}/files/"/>
+      
+      <!-- Needed to allow data files to be uploaded by the user -->
+      <mkdir dir="${cbbc.webroot}/data/"/>
+
+      <chmod perm="o+rw" type="both">
+        <fileset dir="${cbbc.webroot}/cache/"/>
+        <fileset dir="${cbbc.webroot}/compile/"/>
+        <fileset dir="${cbbc.webroot}/logs/"/>
+        <fileset dir="${cbbc.webroot}/files/"/>
+
+        <!-- Needed to allow data files to be uploaded by the user -->
+      	<fileset dir="${cbbc.webroot}/data/"/>
+      </chmod>
+
+      <mkdir dir="${cbbc.webroot}/doc/"/>
+      <mkdir dir="${cbbc.webroot}/models/"/>
+      <mkdir dir="${cbbc.webroot}/views/"/>
+      <mkdir dir="${cbbc.webroot}/controllers/"/>
+      <mkdir dir="${cbbc.webroot}/modules/"/>
+      <mkdir dir="${cbbc.webroot}/smarty/"/>
+      <mkdir dir="${cbbc.webroot}/templates/"/>
+      <mkdir dir="${cbbc.webroot}/resources/"/>
+   	  <mkdir dir="${cbbc.webroot}/javascript/"/>
+   	  <mkdir dir="${cbbc.webroot}/lib/"/>
+    </target>
+
+    <!-- token substitution from pbgenesis.properties into config.php -->
+    <target name="mungeConfig">
+      <echo message="Munging ${cbbc.site}/config.php to ${cbbc.webroot}/"/>
+      <translate toDir="${cbbc.webroot}/" starttoken="#" endtoken="#" bundlelanguage="" bundle="binner" forceoverwrite="yes">
+        <fileset dir="${cbbc.site}/">
+            <include name="**/config.php"/>
+            <include name="**/index.php"/>        	        	
+        </fileset>
+      </translate>    
+    </target>
+
+    <!-- token substitution from ceres.properties into templates -->
+    <target name="mungeTemplate">
+      <echo message="Munging ${cbbc.site}/templates/menu.tpl to ${cbbc.webroot}/templates/"/>
+      <translate toDir="${cbbc.webroot}/templates/" starttoken="#" endtoken="#" bundlelanguage="" bundle="binner" forceoverwrite="yes">
+        <fileset dir="${cbbc.site}/templates/">
+            <include name="**/header.tpl"/>
+        </fileset>
+      </translate>
+    </target>    
+
+    <!-- echo all properties -->
+    <target name="echoproperties">
+      <echoproperties/>
+    </target>
+
+    <!-- Create properties file describing this deployment -->
+    <target name="deployProperties" depends="init">
+      <propertyfile file="${cbbc.webroot}/deploy.properties" comment="Deploy properties">
+        <entry  key="user" value="${user.name}"/>
+        <entry  key="buildname" value="${cbbc.buildname}"/>
+        <entry  key="project" value="${ant.project.name}"/>
+        <entry  key="projectDir" value="${basedir}"/>
+        <entry  key="build.xml" value="${ant.file}"/>
+        <entry  key="webroot" value="${cbbc.webroot}"/>
+        <entry  key="buildDate" type="date" value="now" pattern="dd-MM-yyyy HH.mm.ss"/>
+        <entry  key="buildNumber" type="int" operation="+" default="0000" pattern="0000"/>
+      </propertyfile>
+      <chmod perm="g+rw" file="${cbbc.webroot}/deploy.properties"/>
+    </target>
+
+    <!-- Create properties file containing attributes for munging -->
+    <target name="appProperties" depends="init">
+      <propertyfile file="binner.properties" comment="App properties">
+        <entry  key="buildname" value="${cbbc.buildname}"/>
+        <entry  key="project" value="${ant.project.name}"/>
+        <entry  key="webroot" value="${cbbc.webroot}"/>
+        <entry  key="cbbcpkg" value="${cbbc.cbbcpkg}"/>
+        <entry  key="dbhost" value="${cbbc.dbhost}"/>
+        <entry  key="dbuser" value="${cbbc.dbuser}"/>
+        <entry  key="dbpass" value="${cbbc.dbpass}"/>
+        <entry  key="dbname" value="${cbbc.dbname}"/>
+        <entry  key="porthttp" value="${cbbc.porthttp}"/>   
+        <entry  key="porthttps" value="${cbbc.porthttps}"/>      	
+        <entry  key="smartyDebug" value="${cbbc.smartyDebug}"/>
+      </propertyfile>
+    </target>
+
+    <!-- Delete webroot. Delete individual subdirs becuase we may have problems with 'cache' -->
+    <!-- and 'compile' directories. -->
+    <target name="deleteWebroot">
+      <delete dir="${cbbc.webroot}/doc/" verbose="true"/>
+      <delete dir="${cbbc.webroot}/models/" verbose="true"/>
+      <delete dir="${cbbc.webroot}/views/" verbose="true"/>
+      <delete dir="${cbbc.webroot}/controllers/" verbose="true"/>
+      <delete dir="${cbbc.webroot}/modules/" verbose="true"/>
+      <delete dir="${cbbc.webroot}/smarty/" verbose="true"/>
+      <delete dir="${cbbc.webroot}/templates/" verbose="true"/>
+      <delete dir="${cbbc.webroot}/resources/" verbose="true"/>
+      <delete dir="${cbbc.webroot}/javascript/" verbose="true"/>
+      <delete dir="${cbbc.webroot}/data/" verbose="true"/>
+    </target>
+
+    <target name="doc" depends="init">
+      <exec executable="phpdoc">
+        <arg line="-d ${cbbc.site} -t ${cbbc.webroot}/doc/ -pp on -ti markerbinner -s on -p on -dn markerbinner"/>
+      </exec>
+    </target>
+
+    <target name="docPermissions">
+      <chmod perm="g+w" type="both">
+        <fileset dir="${cbbc.webroot}/doc/"/>
+      </chmod>
+    </target>
+
+    <target name="cvsUpdate">
+      <cvs command="update -d"/>
+    </target>
+
+    <target name="tmpCvsCheckoutTag">
+      <cvs package="crc-mpb/markerbinner" tag="${cbbc.tag}" dest="tmp" failonerror="true"/>
+    </target>
+
+    <target name="tmpCvsCheckout">
+      <cvs package="crc-mpb/markerbinner" dest="tmp" failonerror="true"/>
+    </target>
+
+    <target name="syntaxCheck" depends="userbuildinit">
+      <apply executable="/usr/local/php5/bin/php">
+        <arg value="-l"/>
+        <fileset dir="${cbbc.site}/models">
+          <include name="**/*.php"/>
+        </fileset>
+        <fileset dir="${cbbc.site}/views">
+          <include name="**/*.php"/>
+        </fileset>
+        <fileset dir="${cbbc.site}/controllers">
+          <include name="**/*.php"/>
+        </fileset>
+        <fileset dir="${cbbc.site}/lib">
+          <include name="**/*.php"/>
+        </fileset>
+        <fileset dir="${cbbc.site}/html">
+          <include name="**/*.php"/>
+        </fileset>
+        <fileset dir="${cbbc.site}/modules">
+          <include name="**/*.php"/>
+        </fileset>
+      </apply>
+    </target>
+
+    <target name="permissions">
+      <chmod perm="g+w" type="both">
+        <fileset dir="${cbbc.site}"/>
+      </chmod>
+    </target>
+
+    <target name="deployImages" depends="init">
+      <copy todir="${cbbc.webroot}/resources/" >
+        <fileset dir="${cbbc.site}/html/images/" >
+          <include name="**/*.jpg"/>
+          <include name="**/*.gif"/>
+          <include name="**/*.png"/>
+        </fileset>
+      </copy>
+    </target>
+
+    <target name="deployCss" depends="init">
+      <copy todir="${cbbc.webroot}/resources/" >
+        <fileset dir="${cbbc.site}/html/css/" >
+          <include name="**/*.css"/>
+        </fileset>
+      </copy>
+    </target>
+
+	<target name="deployJavascript" depends="init">
+      <copy todir="${cbbc.webroot}/javascript/" >
+        <fileset dir="${cbbc.site}/html/javascript/" >
+          <include name="**/*.js"/>
+        </fileset>
+      </copy>
+    </target>
+
+	<target name="deployDatafiles" depends="init">
+      <copy todir="${cbbc.webroot}/data/" >
+        <fileset dir="${cbbc.site}/data/" >
+          <include name="**/*.aln"/>
+        </fileset>
+      </copy>
+	</target>
+
+    <target name="deployModules" depends="init">
+      <copy todir="${cbbc.webroot}/modules/" >
+        <fileset dir="${cbbc.site}/modules/" >
+          <include name="**/*.php"/>
+        </fileset>
+      </copy>
+    </target>
+
+    <target name="deployModels" depends="init">
+      <copy todir="${cbbc.webroot}/models/" >
+        <fileset dir="${cbbc.site}/models/" >
+          <include name="**/*.php"/>
+        </fileset>
+      </copy>
+    </target>
+
+    <target name="deployViews" depends="init">
+      <copy todir="${cbbc.webroot}/views/" >
+        <fileset dir="${cbbc.site}/views/" >
+          <include name="**/*.php"/>
+        </fileset>
+      </copy>
+    </target>
+
+    <target name="deployControllers" depends="init">
+      <copy todir="${cbbc.webroot}/controllers/" >
+        <fileset dir="${cbbc.site}/controllers/" >
+          <include name="**/*.php"/>
+        </fileset>
+      </copy>
+    </target>
+
+    <target name="deployTemplates" depends="init">
+      <copy todir="${cbbc.webroot}/templates/" >
+        <fileset dir="${cbbc.site}/templates/" >
+          <include name="**/*.tpl"/>
+          <include name="**/*.php"/>
+        </fileset>
+      </copy>
+    </target>
+
+    <target name="deploySmarty" depends="init">
+      <copy todir="${cbbc.webroot}/smarty/" >
+        <fileset dir="${cbbc.site}/smarty/" >
+          <include name="**/*.php"/>
+        </fileset>
+      </copy>
+    </target>
+
+    <target name="deployWebrootPhp" depends="init">
+      <copy todir="${cbbc.webroot}/" >
+        <fileset dir="${cbbc.site}/" >
+          <include name="**/*.php"/>
+        </fileset>
+      </copy>
+    </target>
+
+    <target name="deployLib" depends="init">
+      <copy todir="${cbbc.webroot}/lib/" >
+        <fileset dir="${cbbc.site}/lib/" >
+          <include name="**/*.php"/>
+        </fileset>
+      </copy>
+    </target>
+    
+
+
+	
+	
+    <target name="deployPhp" depends="deployProperties, deployWebrootPhp, deployModels, deployViews, deployControllers, deploySmarty, deployTemplates, deployModules, deployLib" />
+
+    <target name="deployResources" depends="deployCss, deployImages, deployJavascript, deployDatafiles" />
+
+    <target name="munge" depends="mungeConfig, mungeTemplate"/>
+
+    <target name="snapshot" depends="init, snapshotinit, deleteWebroot, webrootDirs, appProperties, tmpCvsCheckout, deployPhp, deployResources, munge, createTmpAgain" />
+
+    <target name="all" depends="init, userbuildinit, webrootDirs, appProperties, deployPhp, deployResources, munge" />
+
+</project>
