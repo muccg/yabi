@@ -167,7 +167,7 @@
 
     <target name="doc" depends="init">
       <exec executable="phpdoc">
-        <arg line="-d ${cbbc.site} -t ${cbbc.webroot}/doc/ -pp on -ti yabi -s on -p on -dn markerbinner"/>
+        <arg line="-d ${cbbc.site} -t ${cbbc.webroot}/doc/ -pp on -ti yabi -s on -p on -dn yabi"/>
       </exec>
     </target>
 
