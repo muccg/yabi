@@ -96,7 +96,7 @@
     <!-- token substitution from pbgenesis.properties into config.php -->
     <target name="mungeConfig">
       <echo message="Munging ${cbbc.site}/config.php to ${cbbc.webroot}/"/>
-      <translate toDir="${cbbc.webroot}/" starttoken="#" endtoken="#" bundlelanguage="" bundle="binner" forceoverwrite="yes">
+      <translate toDir="${cbbc.webroot}/" starttoken="#" endtoken="#" bundlelanguage="" bundle="yabi" forceoverwrite="yes">
         <fileset dir="${cbbc.site}/">
             <include name="**/config.php"/>
             <include name="**/index.php"/>        	        	
@@ -107,7 +107,7 @@
     <!-- token substitution from ceres.properties into templates -->
     <target name="mungeTemplate">
       <echo message="Munging ${cbbc.site}/templates/menu.tpl to ${cbbc.webroot}/templates/"/>
-      <translate toDir="${cbbc.webroot}/templates/" starttoken="#" endtoken="#" bundlelanguage="" bundle="binner" forceoverwrite="yes">
+      <translate toDir="${cbbc.webroot}/templates/" starttoken="#" endtoken="#" bundlelanguage="" bundle="yabi" forceoverwrite="yes">
         <fileset dir="${cbbc.site}/templates/">
             <include name="**/header.tpl"/>
         </fileset>
@@ -136,7 +136,7 @@
 
     <!-- Create properties file containing attributes for munging -->
     <target name="appProperties" depends="init">
-      <propertyfile file="binner.properties" comment="App properties">
+      <propertyfile file="yabi.properties" comment="App properties">
         <entry  key="buildname" value="${cbbc.buildname}"/>
         <entry  key="project" value="${ant.project.name}"/>
         <entry  key="webroot" value="${cbbc.webroot}"/>
