@@ -1,6 +1,5 @@
 <project name="yabi-fe" default="all" basedir=".">
 
-
     <target name="init">
       <!-- Create the time stamp -->
       <tstamp/>
@@ -17,7 +16,6 @@
       <property name="cbbc.dbuser" value=""/>
       <property name="cbbc.dbpass" value=""/>
       <property name="cbbc.dbname" value=""/>    	
-    	
       <property name="cbbc.smartyDebug" value="false"/>
     </target>
 
@@ -33,7 +31,6 @@
       <property name="cbbc.dbuser" value=""/>
       <property name="cbbc.dbpass" value=""/>
       <property name="cbbc.dbname" value=""/>     
-    	
     </target>
 
     <!-- remove tmp and recreate it -->
@@ -41,6 +38,7 @@
       <delete dir="tmp" verbose="true"/>
       <mkdir dir="tmp"/>
     </target>
+
     <target name="createTmpAgain">
       <delete dir="tmp"/>
       <mkdir dir="tmp"/>
@@ -59,7 +57,6 @@
           <available file="${cbbc.webroot}/templates/" type="dir"/>
           <available file="${cbbc.webroot}/resources/" type="dir"/>
        	  <available file="${cbbc.webroot}/javascript/" type="dir"/>
-       	  <available file="${cbbc.webroot}/lib/" type="dir"/>
           <available file="${cbbc.webroot}/files/" type="dir"/>
         </and>
       </condition>
@@ -90,7 +87,6 @@
       <mkdir dir="${cbbc.webroot}/templates/"/>
       <mkdir dir="${cbbc.webroot}/resources/"/>
    	  <mkdir dir="${cbbc.webroot}/javascript/"/>
-   	  <mkdir dir="${cbbc.webroot}/lib/"/>
     </target>
 
     <!-- token substitution from pbgenesis.properties into config.php -->
@@ -201,9 +197,6 @@
         <fileset dir="${cbbc.site}/controllers">
           <include name="**/*.php"/>
         </fileset>
-        <fileset dir="${cbbc.site}/lib">
-          <include name="**/*.php"/>
-        </fileset>
         <fileset dir="${cbbc.site}/html">
           <include name="**/*.php"/>
         </fileset>
@@ -302,19 +295,8 @@
       </copy>
     </target>
 
-    <target name="deployLib" depends="init">
-      <copy todir="${cbbc.webroot}/lib/" >
-        <fileset dir="${cbbc.site}/lib/" >
-          <include name="**/*.php"/>
-        </fileset>
-      </copy>
-    </target>
-    
 
-
-	
-	
-    <target name="deployPhp" depends="deployProperties, deployWebrootPhp, deployModels, deployViews, deployControllers, deploySmarty, deployTemplates, deployModules, deployLib" />
+    <target name="deployPhp" depends="deployProperties, deployWebrootPhp, deployModels, deployViews, deployControllers, deploySmarty, deployTemplates, deployModules" />
 
     <target name="deployResources" depends="deployCss, deployImages, deployJavascript" />
 
