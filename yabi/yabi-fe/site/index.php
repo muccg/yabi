@@ -15,7 +15,7 @@ require_once 'Zend/Log/Adapter/File.php';   // File log adapter
 
 
 // Register the file logger
-Zend_Log::registerLogger(new Zend_Log_Adapter_File('logs/log.txt'));
+Zend_Log::registerLogger(new Zend_Log_Adapter_File('#approot#/logs/log.txt'));
 Zend_Log::log('============================================================');
 
 
@@ -24,7 +24,7 @@ $_SERVER['REQUEST_URI'] = preg_replace('/^' . preg_quote(dirname($_SERVER['PHP_S
 
 // get controller
 $controller = Zend_Controller_Front::getInstance();
-$controller->setControllerDirectory('controllers/');
+$controller->setControllerDirectory('#approot#/controllers/');
 $controller->dispatch();
 
 ?>

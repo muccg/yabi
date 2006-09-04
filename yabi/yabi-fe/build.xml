@@ -126,7 +126,6 @@
 	      <translate toDir="${cbbc.webroot}/" starttoken="#" endtoken="#" bundlelanguage="" bundle="yabi" forceoverwrite="yes">
 	        <fileset dir="${cbbc.site}/">
 	            <include name="**/index.php"/>
-	            <include name="**/jpspanjs.php"/>
 	        </fileset>
 	      </translate>
 	    </target>
@@ -372,7 +371,7 @@
 
     <target name="deployResources" depends="deployCss, deployImages, deployJavascript" />
 
-    <target name="munge" depends="mungeConfig, mungeTemplate"/>
+    <target name="munge" depends="mungeIndex, mungeConfig, mungeCss, mungeSmarty, mungeTemplate"/>
 
     <target name="snapshot" depends="init, snapshotinit, deleteWebroot, webrootDirs, appProperties, tmpCvsCheckout, deployPhp, deployResources, munge, createTmpAgain" />
 
