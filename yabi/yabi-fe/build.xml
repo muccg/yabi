@@ -8,9 +8,9 @@
 
     <!-- init needed when making a snapshot release -->
     <target name="snapshotinit" depends="init, createTmp">
-      <property name="cbbc.site" value="${basedir}/tmp/crc-mpb/markerbinner/site_mojavi"/>
+      <property name="cbbc.site" value="${basedir}/tmp/ccg/yabi/yabi-fe/site"/>
       <property name="cbbc.buildname" value="snapshot"/>
-      <property name="cbbc.webroot" value="/usr/local/php5/htdocs/scholarship2006/${cbbc.buildname}"/>
+      <property name="cbbc.webroot" value="/usr/local/php5/htdocs/yabi/${cbbc.buildname}"/>
       <property name="cbbc.porthttp" value="81"/>   
       <property name="cbbc.porthttps" value="444"/>      	
       <property name="cbbc.dbhost" value="localhost.localdomain"/>
@@ -25,7 +25,7 @@
     <target name="userbuildinit">
       <property name="cbbc.site" value="${basedir}/site"/>
       <property name="cbbc.buildname" value="${user.name}"/>
-      <property name="cbbc.webroot" value="/usr/local/php5/htdocs/yabi-fe/${cbbc.buildname}"/>
+      <property name="cbbc.webroot" value="/usr/local/php5/htdocs/yabi/${cbbc.buildname}"/>
       <property name="cbbc.smartyDebug" value="true"/>
       <property name="cbbc.porthttp" value="81"/>   
       <property name="cbbc.porthttps" value="444"/>      	
@@ -167,7 +167,7 @@
 
     <target name="doc" depends="init">
       <exec executable="phpdoc">
-        <arg line="-d ${cbbc.site} -t ${cbbc.webroot}/doc/ -pp on -ti markerbinner -s on -p on -dn markerbinner"/>
+        <arg line="-d ${cbbc.site} -t ${cbbc.webroot}/doc/ -pp on -ti yabi -s on -p on -dn markerbinner"/>
       </exec>
     </target>
 
@@ -182,11 +182,11 @@
     </target>
 
     <target name="tmpCvsCheckoutTag">
-      <cvs package="crc-mpb/markerbinner" tag="${cbbc.tag}" dest="tmp" failonerror="true"/>
+      <cvs package="ccg/yabi/yabi-fe" tag="${cbbc.tag}" dest="tmp" failonerror="true"/>
     </target>
 
     <target name="tmpCvsCheckout">
-      <cvs package="crc-mpb/markerbinner" dest="tmp" failonerror="true"/>
+      <cvs package="ccg/yabi/yabi-fe" dest="tmp" failonerror="true"/>
     </target>
 
     <target name="syntaxCheck" depends="userbuildinit">
