@@ -17,7 +17,7 @@ class IndexController extends Zend_Controller_Action {
      * noRouteAction
      */
     public function noRouteAction() {
-        echo "Unknown controller and action.";
+        $this->_redirect('/');
     }
 }
 ?>
