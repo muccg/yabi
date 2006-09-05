@@ -38,6 +38,7 @@
       <property name="cbbc.buildname" value="snapshot"/>
       <property name="cbbc.approot" value="/usr/local/php5/ccgapps/yabi/yabi_${cbbc.buildname}"/>
       <property name="cbbc.webroot" value="/usr/local/php5/htdocs/yabi/${cbbc.buildname}"/>
+      <property name="cbbc.cbbcpkg" value="CBBC_snapshot"/>
       <property name="cbbc.porthttp" value="81"/>   
       <property name="cbbc.porthttps" value="444"/>      	
       <property name="cbbc.dbhost" value="localhost.localdomain"/>
@@ -54,6 +55,7 @@
       <property name="cbbc.buildname" value="${user.name}"/>
       <property name="cbbc.approot" value="/usr/local/php5/ccgapps/yabi/yabi_${cbbc.buildname}"/>
       <property name="cbbc.webroot" value="/usr/local/php5/htdocs/yabi/${cbbc.buildname}"/>
+      <property name="cbbc.cbbcpkg" value="CBBC_${user.name}"/>
       <property name="cbbc.smartyDebug" value="true"/>
       <property name="cbbc.porthttp" value="81"/>   
       <property name="cbbc.porthttps" value="444"/>      	
