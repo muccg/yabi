@@ -33,7 +33,8 @@ class IndexController extends Zend_Controller_Action {
             $view->assign($vars);
         }
         
-        $view->output($temp_file);*/        
+        $view->output($temp_file);
+        */
     }
 
 
