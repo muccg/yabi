@@ -128,6 +128,7 @@
 	      <translate toDir="${cbbc.webroot}/" starttoken="#" endtoken="#" bundlelanguage="" bundle="yabi" forceoverwrite="yes">
 	        <fileset dir="${cbbc.site}/">
 	            <include name="**/index.php"/>
+	            <include name="**/.htaccess"/>
 	        </fileset>
 	      </translate>
 	    </target>
@@ -357,6 +358,7 @@
       <copy todir="${cbbc.webroot}/" >
         <fileset dir="${cbbc.site}/" >
         <include name="index.php"/>
+        <include name=".htaccess"/>
         </fileset>
       </copy>
     </target>
