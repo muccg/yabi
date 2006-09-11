@@ -13,9 +13,9 @@
       <property name="ccg.buildname" value="release"/>
       <property name="ccg.approot" value="/usr/local/java/jakarta-tomcat-5.5.9/webapps/"/>
       <property name="ccg.dbhost" value="gromit4.localdomain"/>
-      <property name="ccg.dbuser" value="yabimw"/> 
-      <property name="ccg.dbpass" value="yabimw"/>
-      <property name="ccg.dbname" value="yabimw"/>
+      <property name="ccg.dbuser" value="yabimwapp"/> 
+      <property name="ccg.dbpass" value="yabimwapp"/>
+      <property name="ccg.dbname" value="yabimwdev"/>
       <property name="ccg.warfilename" value="${basedir}/yabi-${ccg.buildname}.war"/>
     </target>
 
@@ -29,9 +29,9 @@
       <property name="ccg.buildname" value="snapshot"/>
       <property name="ccg.approot" value="/usr/local/java/jakarta-tomcat-5.5.9/webapps/"/>
       <property name="ccg.dbhost" value="localhost.localdomain"/>
-      <property name="ccg.dbuser" value="yabimw"/> 
-      <property name="ccg.dbpass" value="yabimw"/>
-      <property name="ccg.dbname" value="yabimw"/>
+      <property name="ccg.dbuser" value="yabimwapp"/> 
+      <property name="ccg.dbpass" value="yabimwapp"/>
+      <property name="ccg.dbname" value="yabimwdev"/>
       <property name="ccg.warfilename" value="${basedir}/yabi-${ccg.buildname}.war"/>
     </target>
 
@@ -41,9 +41,9 @@
       <property name="ccg.buildname" value="${user.name}"/>
       <property name="ccg.approot" value="/usr/local/java/jakarta-tomcat-5.5.9/webapps/"/>
       <property name="ccg.dbhost" value="localhost.localdomain"/>
-      <property name="ccg.dbuser" value="yabimw"/> 
-      <property name="ccg.dbpass" value="yabimw"/>
-      <property name="ccg.dbname" value="yabimw"/>
+      <property name="ccg.dbuser" value="yabimwapp"/> 
+      <property name="ccg.dbpass" value="yabimwapp"/>
+      <property name="ccg.dbname" value="yabimwdev"/>
       <property name="ccg.warfilename" value="${basedir}/yabi-${ccg.buildname}.war"/>
     </target>
 
@@ -122,7 +122,7 @@
 	  <copy file="${basedir}/cfg/log4j.properties" todir="${ccg.site}/classes"/>
 	</target>
 	
-	<target name="createWar">
+	<target name="createWar" depends="init, userbuildinit, compile, appProperties, mungeHibernate, configCopy">
 	  <war destfile="${ccg.warfilename}" webxml="${basedir}/cfg/web.xml">
 	  	<fileset dir="${basedir}/jsp"/>
 	  	<lib dir="${basedir}/lib"/>
@@ -140,6 +140,6 @@
     <target name="release" depends="init, tags, releaseinit, tmpCvsCheckoutTag, createTmpAgain, appProperties, mungeHibernate " />
 	-->
 	
-    <target name="all" depends="init, userbuildinit, compile, appProperties, mungeHibernate, configCopy, createWar, deployWar " />
+    <target name="all" depends="createWar, deployWar " />
 
 </project>
