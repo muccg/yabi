@@ -1,0 +1,145 @@
+<project name="yabi" default="all" basedir=".">
+
+    <import file="changelog.xml"/>
+
+    <target name="init">
+      <!-- Create the time stamp -->
+      <tstamp/>
+    </target>
+
+    <!-- init needed when making a release -->
+    <target name="releaseinit" depends="init, tagFail, createTmp">
+      <property name="ccg.site" value="${basedir}/tmp/build"/>
+      <property name="ccg.buildname" value="release"/>
+      <property name="ccg.approot" value="/usr/local/java/jakarta-tomcat-5.5.9/webapps/"/>
+      <property name="ccg.dbhost" value="gromit4.localdomain"/>
+      <property name="ccg.dbuser" value="yabimw"/> 
+      <property name="ccg.dbpass" value="yabimw"/>
+      <property name="ccg.dbname" value="yabimw"/>
+      <property name="ccg.warfilename" value="${basedir}/yabi-${ccg.buildname}.war"/>
+    </target>
+
+    <target name="tagFail" unless="ccg.tag">
+      <fail>ccg.tag must be set</fail>
+    </target>
+
+    <!-- init needed when making a snapshot release -->
+    <target name="snapshotinit" depends="init, createTmp">
+      <property name="ccg.site" value="${basedir}/tmp"/>
+      <property name="ccg.buildname" value="snapshot"/>
+      <property name="ccg.approot" value="/usr/local/java/jakarta-tomcat-5.5.9/webapps/"/>
+      <property name="ccg.dbhost" value="localhost.localdomain"/>
+      <property name="ccg.dbuser" value="yabimw"/> 
+      <property name="ccg.dbpass" value="yabimw"/>
+      <property name="ccg.dbname" value="yabimw"/>
+      <property name="ccg.warfilename" value="${basedir}/yabi-${ccg.buildname}.war"/>
+    </target>
+
+    <!-- init needed when doing a user deploy -->
+    <target name="userbuildinit" depends="createTmp">
+      <property name="ccg.site" value="${basedir}/tmp"/>
+      <property name="ccg.buildname" value="${user.name}"/>
+      <property name="ccg.approot" value="/usr/local/java/jakarta-tomcat-5.5.9/webapps/"/>
+      <property name="ccg.dbhost" value="localhost.localdomain"/>
+      <property name="ccg.dbuser" value="yabimw"/> 
+      <property name="ccg.dbpass" value="yabimw"/>
+      <property name="ccg.dbname" value="yabimw"/>
+      <property name="ccg.warfilename" value="${basedir}/yabi-${ccg.buildname}.war"/>
+    </target>
+
+    <!-- remove tmp and recreate it -->
+    <target name="createTmp">
+      <delete dir="tmp" verbose="true"/>
+      <mkdir dir="tmp/classes"/>
+    </target>
+    <target name="createTmpAgain">
+      <delete dir="tmp"/>
+      <mkdir dir="tmp/classes"/>
+    </target>
+
+    <!-- echo all properties -->
+    <target name="echoproperties">
+      <echoproperties/>
+    </target>
+
+    <!-- Create properties file describing this deployment -->
+    <target name="deployProperties" depends="init">
+      <propertyfile file="${ccg.site}/deploy.properties" comment="Deploy properties">
+        <entry  key="user" value="${user.name}"/>
+        <entry  key="buildname" value="${ccg.buildname}"/>
+        <entry  key="project" value="${ant.project.name}"/>
+        <entry  key="projectDir" value="${basedir}"/>
+        <entry  key="build.xml" value="${ant.file}"/>
+        <entry  key="approot" value="${ccg.approot}"/>
+        <entry  key="buildDate" type="date" value="now" pattern="dd-MM-yyyy HH.mm.ss"/>
+        <entry  key="buildNumber" type="int" operation="+" default="0000" pattern="0000"/>
+      </propertyfile>
+      <chmod perm="g+rw" file="${ccg.site}/deploy.properties"/>
+    </target>
+
+    <target name="cvsUpdate">
+      <cvs command="update -d"/>
+    </target>
+
+    <target name="tmpCvsCheckoutTag">
+      <cvs package="dagwa/pbgenesis/site" tag="${ccg.tag}" dest="tmp" failonerror="true"/>
+    </target>
+
+    <target name="tmpCvsCheckout">
+      <cvs package="dagwa/pbgenesis/site" dest="tmp" failonerror="true"/>
+    </target>
+    
+    <target name="compile">
+      <javac srcdir="${basedir}/src" classpath="${basedir}/lib/jbpm-3.1.2.jar" destdir="${ccg.site}/classes"/>
+    </target>
+    
+    <!-- Create properties file containing attributes for munging -->
+    <target name="appProperties" depends="init">
+      <propertyfile file="${ccg.site}/yabi_en.properties" comment="App properties">
+        <entry  key="buildname" value="${ccg.buildname}"/>
+        <entry  key="project" value="${ant.project.name}"/>
+        <entry  key="approot" value="${ccg.approot}"/>
+        <entry  key="dbhost" value="${ccg.dbhost}"/>
+        <entry  key="dbuser" value="${ccg.dbuser}"/>
+        <entry  key="dbpass" value="${ccg.dbpass}"/>
+        <entry  key="dbname" value="${ccg.dbname}"/>
+      </propertyfile>
+    </target>
+
+	<!-- token substitution from yabi_en.properties into hibernate.cfg.xml -->
+	<target name="mungeHibernate">
+	  <echo message="Munging ${basedir}/cfg/hibernate.cfg.xml to ${ccg.site}/WEB-INF/classes/hibernate.cfg.xml"/>
+	  <translate toDir="${ccg.site}/classes" starttoken="#" endtoken="#" bundlelanguage="en" bundle="${ccg.site}/yabi" forceoverwrite="yes">
+	     <fileset dir="${basedir}/cfg">
+	        <include name="hibernate.cfg.xml"/>
+	     </fileset>
+	   </translate>
+	</target>
+	
+	<target name="configCopy">
+	  <echo message="Copying config files to classes folder"/>
+	  <copy file="${basedir}/cfg/jbpm.cfg.xml" todir="${ccg.site}/classes"/>
+	  <copy file="${basedir}/cfg/log4j.properties" todir="${ccg.site}/classes"/>
+	</target>
+	
+	<target name="createWar">
+	  <war destfile="${ccg.warfilename}" webxml="${basedir}/cfg/web.xml">
+	  	<fileset dir="${basedir}/jsp"/>
+	  	<lib dir="${basedir}/lib"/>
+	  	<classes dir="${ccg.site}/classes"/>
+	  </war>
+	</target>
+	
+	<target name="deployWar">
+	  <copy file="${ccg.warfilename}" todir="${ccg.approot}"/>
+	</target>
+	
+	<!--  these dont work atm until we sort out the SVN actions
+	<target name="snapshot" depends="init, snapshotinit, tmpCvsCheckout, createTmpAgain, appProperties, mungeHibernate " />
+
+    <target name="release" depends="init, tags, releaseinit, tmpCvsCheckoutTag, createTmpAgain, appProperties, mungeHibernate " />
+	-->
+	
+    <target name="all" depends="init, userbuildinit, compile, appProperties, mungeHibernate, configCopy, createWar, deployWar " />
+
+</project>
