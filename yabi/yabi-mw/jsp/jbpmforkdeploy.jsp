@@ -16,17 +16,27 @@
       "    <transition name='left' to='delay1' />" +
       "    <transition name='right' to='delay2' />" +
       "  </fork>" +
-      "  <node name='delay1'>" +
-      "    <action class='au.edu.murdoch.ccg.yabi.actions.JBPMDelay' />" +
+      "  <state name='delay1'>" +
+      "    <timer duedate='15 seconds'>" +
+      "      <action class='au.edu.murdoch.ccg.yabi.actions.JBPMDelay' />" +
+      "    </timer>" +
+      "    <transition name='next' to='join'/>" +
+      "  </state>" +
+      "  <state name='delay2'>" +
+      "    <timer duedate='2 minutes'>" +
+      "      <action class='au.edu.murdoch.ccg.yabi.actions.JBPMDelay' />" +
+      "    </timer>" +
       "    <transition to='join' name='next' />" +
-      "  </node>" +
-      "  <node name='delay2'>" +
-      "    <action class='au.edu.murdoch.ccg.yabi.actions.JBPMDelay' />" +
-      "    <transition to='join' name='next' />" +
-      "  </node>" +
+      "  </state>" +
       "  <join name='join'>" +
-      "    <transition to='end' />" +
+      "    <transition to='delay3' />" +
       "  </join>" +
+      "  <state name='delay3'>" +
+      "    <timer duedate='2 minutes'>" +
+      "      <action class='au.edu.murdoch.ccg.yabi.actions.JBPMDelay' />" +
+      "    </timer>" +
+      "    <transition to='end' name='next' />" +
+      "  </state>" +
       "  <end-state name='end' />" +
       "</process-definition>"
     ); 

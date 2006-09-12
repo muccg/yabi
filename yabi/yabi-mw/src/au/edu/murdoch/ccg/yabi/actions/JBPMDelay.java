@@ -9,7 +9,7 @@ public class JBPMDelay implements ActionHandler {
   	ctx.setVariable(ctx.getNode().getFullyQualifiedName() + ".processingVar", "true");
   
   	ctx.setVariable(ctx.getNode().getFullyQualifiedName() + ".inputParam", ctx.getVariable("input param 1"));
-  
+
 	//sleep 20 seconds
 	Thread.sleep(20000); 
     

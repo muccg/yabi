@@ -11,6 +11,17 @@
       JBPM Example JSPs
     </description>
 
+  <!-- JbpmThreadsServlet -->
+  <servlet>
+    <servlet-name>JbpmThreadsServlet</servlet-name>
+    <servlet-class>org.jbpm.web.JbpmThreadsServlet</servlet-class>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>JbpmThreadsServlet</servlet-name>
+    <url-pattern>/threads</url-pattern>
+  </servlet-mapping> 
+
     <resource-ref>
       <res-ref-name>mail/Session</res-ref-name>
       <res-type>javax.mail.Session</res-type>
