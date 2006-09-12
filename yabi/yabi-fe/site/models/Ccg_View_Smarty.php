@@ -3,7 +3,8 @@
 class Ccg_View_Smarty extends Zend_View_Abstract
 {
 	private $_smarty = false;
-	
+	private $_render = true; // if true will display else fetch
+	private $output;
 		
 	/**
 	 * Default Constructor
@@ -27,10 +28,32 @@ class Ccg_View_Smarty extends Zend_View_Abstract
 	/**
 	 * run
 	 */
-	protected function _run($template) {
-		$this->_smarty->display($template);
+	protected function _run($template) {		
+		if($this->_render == true) {
+			$this->_smarty->display($template);
+		}
+		else {
+			$this->output = $this->_smarty->fetch($template);
+			// this will return nothing >>  return $this->output;		
+		}
 	}
 	
+	/**
+	 * setRender
+	 */
+	public function setRender($value) {
+		if(($value == true || $value == false))	{
+			$this->_render = $value;
+		}
+	}
+	
+	/**
+	 * getOutput
+	 */
+	public function getOutput()
+	{
+		return $this->output;	
+	} 
 	
 	/**
 	 * assign

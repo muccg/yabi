@@ -20,16 +20,25 @@ class IndexController extends Zend_Controller_Action {
 			$vars['title']='Hello!!!';
 			$vars['text']='A text is a text & a text is a text.';
 			//not in index.tpl yet.
-			$vars['numbers'][0]=12.9;
+		/*	$vars['numbers'][0]=12.9;
 			$vars['numbers'][1]=29;
-			$vars['numbers'][2]=78;
+			$vars['numbers'][2]=78;*/
 			
 			$vars=$view->escape($vars);
 			
+			
+			
 			$view->assign($vars);
+			
+			$view->setRender(0);
 		}
 		
 		$view->output($temp_file);
+		
+		$output = $view->getOutput(); // i can't get the protected function output
+		// to return the template as output
+		
+		echo "test". $output; // just to verify that it works 
 		
 	}
 	
