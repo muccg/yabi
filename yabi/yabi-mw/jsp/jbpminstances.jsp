@@ -19,7 +19,14 @@
   		ProcessInstance pi = (ProcessInstance) iter.next();
 %>
 <div style="background-color:<%= (pi.hasEnded())?"#eee":"#cec" %>;"><%= pi.getId() %> : start=<%= pi.getStart() %>  end=<%= pi.getEnd() %></div>
-<div style="background-color:#eee;">current node: <%= pi.getRootToken().getNode().getFullyQualifiedName() %></div>
+<b>Tokens</b> : <%  Iterator titer = pi.findAllTokens().iterator();
+    while (titer.hasNext()) {
+        Token currentToken = (Token) titer.next();
+%>
+    <%= currentToken.getName() %> (@node= <%= currentToken.getNode().getFullyQualifiedName() %>)<br/>
+<%
+    }
+%>
 <div style="margin-left:80px;font-size:0.9em;">
 <%
 		Iterator viter = pi.getContextInstance().getVariables().keySet().iterator();
