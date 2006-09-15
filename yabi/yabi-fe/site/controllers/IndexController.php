@@ -29,43 +29,47 @@ class IndexController extends CCGController {
 
         $actionChain = Zend::registry('actionChain');
         $forward = $actionChain->getLink();
-        $this->_forward($forward['controller'], $forward['action']);
+        $this->_forward($forward['controller'], $forward['action'], array('isComponent' => true));
 
 
 
 
 
-// 		$template='index.tpl';
-		
-// 		$view=Zend::registry('view');
-		
-// 		if(false === $view->isCached($template)){
-// 			$vars = array();
-// 			$vars['title'] = 'Hello!!!';
-// 			$vars['text'] = 'A text is a text & a text is a text.';
 
-
-// 			$vars = $view->escape($vars);
-// 			$view->assign($vars);
-			
-// 			$view->setRender($this->render);
-// 		}
-		
-// 		$view->output($template);
-		
-// 		$output = $view->getOutput();
-
-//         echo $output;
 		
 	}
 	
 
-
+    /**
+     * displayOutputAction
+     */
     public function displayOutputAction() {
 
         $actionChain = Zend::registry('actionChain');
         echo 'You are at displayOutputAction!';
 
+
+ 		$template='index.tpl';
+		
+ 		$view=Zend::registry('view');
+		
+ 		if(false === $view->isCached($template)){
+ 			$vars = array();
+ 			$vars['title'] = 'Hello!!!';
+ 			$vars['text'] = 'A text is a text & a text is a text.';
+
+
+ 			$vars = $view->escape($vars);
+ 			$view->assign($vars);
+			
+ 			$view->setRender($this->render);
+ 		}
+		
+ 		$view->output($template);
+		
+ 		$output = $view->getOutput();
+
+        echo $output;
 
     }
 

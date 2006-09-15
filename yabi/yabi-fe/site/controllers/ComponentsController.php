@@ -28,6 +28,12 @@ class ComponentsController extends CCGController {
 	public function componentAAction(){
         Zend_Log::log(__CLASS__ .':'. __FUNCTION__ .':' . __LINE__);
 
+        $isComponent = false;
+        if($this->_getParam('isComponent') === true) {
+            $isComponent = true;
+        }
+
+
 		$template='A.tpl';
 		
 		$view=Zend::registry('view');
@@ -38,13 +44,20 @@ class ComponentsController extends CCGController {
 
 			$vars = $view->escape($vars);
 			$view->assign($vars);
-			
 		}
-		
-		$view->output($template);
-		
-		$view->getOutput();
 
+
+
+        if($isComponent) {
+            $view->setRender(false);
+            $view->output($template);
+            $output = $view->getOutput();
+
+        } else {
+            $view->output($template);
+        }
+		
+		
         if(Zend::isRegistered('actionChain')) {
             $actionChain = Zend::registry('actionChain');
             if($actionChain->hasLinks()) {
