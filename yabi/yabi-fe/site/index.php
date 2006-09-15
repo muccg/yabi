@@ -16,6 +16,7 @@ require_once('Zend/Config/Array.php');
 require_once('smarty/Smarty.class.php');
 require_once(APP_ROOT . '/models/CCGViewSmarty.php');
 require_once(APP_ROOT . '/models/CCGController.php');
+require_once(APP_ROOT . '/models/ActionChain.php');
 
 /**
  * __autoload
@@ -42,7 +43,7 @@ try {
                               'template_dir' => APP_ROOT.'/templates',
                               'compile_dir' => APP_ROOT.'/compile',
                               'cache_dir' => APP_ROOT.'/cache',
-                              'caching' => true
+                              'caching' => false
                               //		'cache_lifetime' => APP_ROOT.'/cache_lifetime',
                               //		'config_dir' => APP_ROOT.'/config_dir'
                               );
