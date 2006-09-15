@@ -1,5 +1,5 @@
 <?php
-// $Id: index.php,v 1.1 2006/07/11 05:20:24 andrew Exp $
+// $Id$
 
 // set include path
 $include_path = ini_get('include_path');
@@ -7,73 +7,69 @@ ini_set('include_path', $include_path . ':/usr/local/php5/lib/php/ZendFramework'
 define("APP_ROOT", "#approot#");
 
 require_once('Zend.php');
+require_once('Zend/Log.php');// Zend_Log base class
+require_once('Zend/Log/Adapter/File.php');   // File log adapter
+require_once('Zend/Log.php');                // Zend_Log base class
+require_once('Zend/Log/Adapter/File.php');   // File log adapter
+require_once('Zend/Config.php');
+require_once('Zend/Config/Array.php');
+require_once('smarty/Smarty.class.php');
+require_once(APP_ROOT . '/models/Ccg_View_Smarty.php');
+
+
+/**
+ * __autoload
+ */
+function __autoload($class) {
+    Zend::loadClass($class);
+}
 
 
 try {
 
-require_once('Zend/Log.php');// Zend_Log base class
-require_once('Zend/Log/Adapter/File.php');   // File log adapter
-
-    // require file
-    require_once('Zend.php');
-    
-    function __autoload($class)
-    {
-        Zend::loadClass($class);
-    }
-    
-    require_once('Zend/Log.php');                // Zend_Log base class
-    require_once('Zend/Log/Adapter/File.php');   // File log adapter
-    
-    
     // Register the file logger
     Zend_Log::registerLogger(new Zend_Log_Adapter_File(APP_ROOT.'/logs/log.txt'));
     Zend_Log::log('============================================================');
     
     
-// munge incoming URI to remove subdirectories
-$_SERVER['REQUEST_URI'] = preg_replace('/^' . preg_quote(dirname($_SERVER['PHP_SELF']), '/') . '/', '', $_SERVER['REQUEST_URI']);
+    // munge incoming URI to remove subdirectories
+    $_SERVER['REQUEST_URI'] = preg_replace('/^' . preg_quote(dirname($_SERVER['PHP_SELF']), '/') . '/', '', $_SERVER['REQUEST_URI']);
 
 
-// config data
-$config['ZF_S'] = array(
-//	'webhost' => 'www.example.com',
-	'smarty' => array(
-		'template_dir' => APP_ROOT.'/templates',
-		'compile_dir' => APP_ROOT.'/compile',
-		'cache_dir' => APP_ROOT.'/cache',
-		'caching' => true
-//		'cache_lifetime' => APP_ROOT.'/cache_lifetime',
-//		'config_dir' => APP_ROOT.'/config_dir'
-	)
-);
+    // config data
+    $config['ZF_S'] = array(
+                            //	'webhost' => 'www.example.com',
+                            'smarty' => array(
+                                              'template_dir' => APP_ROOT.'/templates',
+                                              'compile_dir' => APP_ROOT.'/compile',
+                                              'cache_dir' => APP_ROOT.'/cache',
+                                              'caching' => true
+                                              //		'cache_lifetime' => APP_ROOT.'/cache_lifetime',
+                                              //		'config_dir' => APP_ROOT.'/config_dir'
+                                              )
+                            );
 
-// config file
-require_once 'Zend/Config.php';
-require_once 'Zend/Config/Array.php';
-
-$config = new Zend_Config($config);
-Zend::register('config', $config);
+    // config file
+    $config = new Zend_Config($config);
+    Zend::register('config', $config);
 
 
-// Zend view & Smarty
-include 'smarty/Smarty.class.php';
-include (APP_ROOT.'/models/Ccg_View_Smarty.php');
-$viewConfig = array();
-$viewConfig['scriptPath'] = APP_ROOT.'/templates';
+    // Zend view & Smarty
+    $viewConfig = array();
+    $viewConfig['scriptPath'] = APP_ROOT.'/templates';
 
-$view = new Ccg_View_Smarty($viewConfig);
-Zend::register('view', $view);
+    $view = new Ccg_View_Smarty($viewConfig);
+    Zend::register('view', $view);
 
-// get controller
-$controller = Zend_Controller_Front::getInstance();
-$controller->setControllerDirectory(APP_ROOT.'/controllers/');
-$controller->dispatch();
+
+    // get controller
+    $controller = Zend_Controller_Front::getInstance();
+    $controller->setControllerDirectory(APP_ROOT.'/controllers/');
+    $controller->dispatch();
+
 
 } catch (Exception $e) {
     
-    
-
 // Print out message to client
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
