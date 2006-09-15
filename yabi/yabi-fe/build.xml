@@ -83,7 +83,6 @@
         <and>
           <available file="${cbbc.webroot}/doc/" type="dir"/>
           <available file="${cbbc.approot}/models/" type="dir"/>
-          <available file="${cbbc.approot}/views/" type="dir"/>
           <available file="${cbbc.approot}/controllers/" type="dir"/>
           <available file="${cbbc.approot}/modules/" type="dir"/>
           <available file="${cbbc.approot}/smarty/" type="dir"/>
@@ -113,7 +112,6 @@
 
       <mkdir dir="${cbbc.webroot}/doc/"/>
       <mkdir dir="${cbbc.approot}/models/"/>
-      <mkdir dir="${cbbc.approot}/views/"/>
       <mkdir dir="${cbbc.approot}/controllers/"/>
       <mkdir dir="${cbbc.approot}/modules/"/>
       <mkdir dir="${cbbc.approot}/smarty/"/>
@@ -218,7 +216,6 @@
     <target name="deleteWebroot">
       <delete dir="${cbbc.webroot}/doc/" verbose="true"/>
       <delete dir="${cbbc.approot}/models/" verbose="true"/>
-      <delete dir="${cbbc.approot}/views/" verbose="true"/>
       <delete dir="${cbbc.approot}/controllers/" verbose="true"/>
       <delete dir="${cbbc.approot}/modules/" verbose="true"/>
       <delete dir="${cbbc.approot}/smarty/" verbose="true"/>
@@ -255,9 +252,6 @@
       <apply executable="/usr/local/php5/bin/php">
         <arg value="-l"/>
         <fileset dir="${cbbc.site}/models">
-          <include name="**/*.php"/>
-        </fileset>
-        <fileset dir="${cbbc.site}/views">
           <include name="**/*.php"/>
         </fileset>
         <fileset dir="${cbbc.site}/controllers">
@@ -320,14 +314,6 @@
       </copy>
     </target>
 
-    <target name="deployViews" depends="init">
-      <copy todir="${cbbc.approot}/views/" >
-        <fileset dir="${cbbc.site}/views/" >
-          <include name="**/*.php"/>
-        </fileset>
-      </copy>
-    </target>
-
     <target name="deployControllers" depends="init">
       <copy todir="${cbbc.approot}/controllers/" >
         <fileset dir="${cbbc.site}/controllers/" >
@@ -371,7 +357,7 @@
 	      </copy>
 	    </target>
 
-    <target name="deployPhp" depends="deployProperties, deployWebrootPhp, deployModels, deployViews, deployControllers, deploySmarty, deployTemplates, deployModules" />
+    <target name="deployPhp" depends="deployProperties, deployWebrootPhp, deployModels, deployControllers, deploySmarty, deployTemplates, deployModules" />
 
     <target name="deployResources" depends="deployCss, deployImages, deployJavascript" />
 
