@@ -1,6 +1,6 @@
 <?php
 
-class Ccg_View_Smarty extends Zend_View_Abstract
+class CCG_View_Smarty extends Zend_View_Abstract
 {
 	private $_smarty = false;
 	private $_render = true; // if true will display else fetch

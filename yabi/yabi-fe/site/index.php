@@ -14,7 +14,7 @@ require_once('Zend/Log/Adapter/File.php');   // File log adapter
 require_once('Zend/Config.php');
 require_once('Zend/Config/Array.php');
 require_once('smarty/Smarty.class.php');
-require_once(APP_ROOT . '/models/Ccg_View_Smarty.php');
+require_once(APP_ROOT . '/models/CCG_View_Smarty.php');
 
 
 /**
@@ -58,7 +58,7 @@ try {
     $viewConfig = array();
     $viewConfig['scriptPath'] = APP_ROOT.'/templates';
 
-    $view = new Ccg_View_Smarty($viewConfig);
+    $view = new CCG_View_Smarty($viewConfig);
     Zend::register('view', $view);
 
 
