@@ -28,7 +28,8 @@ function __autoload($class) {
 try {
 
     // Register the file logger
-    Zend_Log::registerLogger(new Zend_Log_Adapter_File(APP_ROOT.'/logs/log.txt'));
+    $logfile = 'zend_' . date("j_n_Y") . '.log';
+    Zend_Log::registerLogger(new Zend_Log_Adapter_File(APP_ROOT. '/logs/' . $logfile));
     Zend_Log::log('============================================================');
     
     
@@ -36,29 +37,23 @@ try {
     $_SERVER['REQUEST_URI'] = preg_replace('/^' . preg_quote(dirname($_SERVER['PHP_SELF']), '/') . '/', '', $_SERVER['REQUEST_URI']);
 
 
-    // config data
-    $config['ZF_S'] = array(
-                            //	'webhost' => 'www.example.com',
-                            'smarty' => array(
-                                              'template_dir' => APP_ROOT.'/templates',
-                                              'compile_dir' => APP_ROOT.'/compile',
-                                              'cache_dir' => APP_ROOT.'/cache',
-                                              'caching' => true
-                                              //		'cache_lifetime' => APP_ROOT.'/cache_lifetime',
-                                              //		'config_dir' => APP_ROOT.'/config_dir'
-                                              )
-                            );
+    // smarty config
+    $config['smarty'] = array(
+                              'template_dir' => APP_ROOT.'/templates',
+                              'compile_dir' => APP_ROOT.'/compile',
+                              'cache_dir' => APP_ROOT.'/cache',
+                              'caching' => true
+                              //		'cache_lifetime' => APP_ROOT.'/cache_lifetime',
+                              //		'config_dir' => APP_ROOT.'/config_dir'
+                              );
 
     // config file
     $config = new Zend_Config($config);
     Zend::register('config', $config);
 
 
-    // Zend view & Smarty
-    $viewConfig = array();
-    $viewConfig['scriptPath'] = APP_ROOT.'/templates';
-
-    $view = new CCG_View_Smarty($viewConfig);
+    // zend view
+    $view = new CCG_View_Smarty();
     Zend::register('view', $view);
 
 

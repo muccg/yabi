@@ -24,19 +24,24 @@ class CCG_View_Smarty extends Zend_View_Abstract {
     /**
      * __construct
      */
-	public function __construct($data = array()) {
+	public function __construct($viewConfig = array()) {
+        Zend_Log::log(__CLASS__ .':'. __FUNCTION__ .':' . __LINE__);
 		
+        // get config
 		$config = Zend::registry('config');
-		parent::__construct($data);
+
+        // set up scriptpath
+        $viewConfig['scriptPath'] = $config->smarty->template_dir;
+		parent::__construct($viewConfig);
 		
+        // set up smarty
 		$this->smarty = new Smarty();
-		
-		//$this->smarty->caching =  $config->ZF_S->smarty->caching;
-		//$this->smarty->cache_lifetime =  $config->ZF_S->smarty->cache_lifetime;
-		$this->smarty->template_dir = $config->ZF_S->smarty->template_dir;
-		$this->smarty->compile_dir = $config->ZF_S->smarty->compile_dir;
-		//$this->smarty->config_dir =  $config->ZF_S->smarty->config_dir;
-		$this->smarty->cache_dir = $config->ZF_S->smarty->cache_dir;
+		$this->smarty->caching =  $config->smarty->caching;
+		$this->smarty->cache_lifetime =  $config->smarty->cache_lifetime;
+		$this->smarty->template_dir = $config->smarty->template_dir;
+		$this->smarty->compile_dir = $config->smarty->compile_dir;
+		$this->smarty->config_dir =  $config->smarty->config_dir;
+		$this->smarty->cache_dir = $config->smarty->cache_dir;
 	}
 	
 	
@@ -44,11 +49,12 @@ class CCG_View_Smarty extends Zend_View_Abstract {
 	 * run
 	 */
 	protected function _run($template) {		
+        Zend_Log::log(__CLASS__ .':'. __FUNCTION__ .':' . __LINE__);
+
 		if($this->render == true) {
 			$this->smarty->display($template);
 		} else {
 			$this->output = $this->smarty->fetch($template);
-			// this will return nothing >>  return $this->output;		
 		}
 	}
 
@@ -57,9 +63,8 @@ class CCG_View_Smarty extends Zend_View_Abstract {
 	 * setRender
 	 */
 	public function setRender($value) {
-		if(($value == true || $value == false))	{
-			$this->render = $value;
-		}
+        Zend_Log::log(__CLASS__ .':'. __FUNCTION__ .':' . __LINE__);
+        $this->render = $value;
 	}
 
 	
@@ -67,6 +72,7 @@ class CCG_View_Smarty extends Zend_View_Abstract {
 	 * getOutput
 	 */
 	public function getOutput() {
+        Zend_Log::log(__CLASS__ .':'. __FUNCTION__ .':' . __LINE__);
 		return $this->output;	
 	} 
 
@@ -75,6 +81,8 @@ class CCG_View_Smarty extends Zend_View_Abstract {
 	 * assign
 	 */
 	public function assign($var) {
+        Zend_Log::log(__CLASS__ .':'. __FUNCTION__ .':' . __LINE__);
+
 		if(is_string($var)) {
 			$value = @func_get_arg(1);
             $this->smarty->assign($var, $value);
@@ -92,6 +100,8 @@ class CCG_View_Smarty extends Zend_View_Abstract {
 	 * escape
 	 */	
 	public function escape($var) {
+        Zend_Log::log(__CLASS__ .':'. __FUNCTION__ .':' . __LINE__);
+
 		if(is_string($var)) {
 			return parent::escape($var);
 		} elseif(is_array($var)) {
@@ -109,10 +119,12 @@ class CCG_View_Smarty extends Zend_View_Abstract {
 	 * output
 	 */
 	public function output($name) {
-		header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
-		header("Cache-Control: no-cache");
-		header("Pragma: no-cache");
-		header("Cache-Control: post-check=0, pre-check=0", FALSE);
+        Zend_Log::log(__CLASS__ .':'. __FUNCTION__ .':' . __LINE__);
+
+		//header("Expires: Mon, 26 Jul 1997 05:00:00 GMT");
+		//header("Cache-Control: no-cache");
+		//header("Pragma: no-cache");
+		//header("Cache-Control: post-check=0, pre-check=0", FALSE);
 
 		print parent::render($name);
 	}
@@ -122,6 +134,8 @@ class CCG_View_Smarty extends Zend_View_Abstract {
 	 * isCached
 	 */
 	public function isCached($template) {
+        Zend_Log::log(__CLASS__ .':'. __FUNCTION__ .':' . __LINE__);
+
 		if ($this->smarty->is_cached($template)) {
 			return true;
 		}
@@ -133,6 +147,7 @@ class CCG_View_Smarty extends Zend_View_Abstract {
      * setCaching
      */
 	public function setCaching($caching) {
+        Zend_Log::log(__CLASS__ .':'. __FUNCTION__ .':' . __LINE__);
 		$this->smarty->caching = $caching;
 	}
 

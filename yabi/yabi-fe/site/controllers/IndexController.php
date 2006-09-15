@@ -15,7 +15,8 @@ class IndexController extends Zend_Controller_Action {
      *indexAction
      */
 	public function indexAction(){
-	
+        Zend_Log::log(__CLASS__ .':'. __FUNCTION__ .':' . __LINE__);
+
 		$template='index.tpl';
 		
 		$view=Zend::registry('view');
@@ -34,10 +35,9 @@ class IndexController extends Zend_Controller_Action {
 		
 		$view->output($template);
 		
-		$output = $view->getOutput(); // i can't get the protected function output
-		// to return the template as output
-		
-		echo "test". $output; // just to verify that it works 
+		$output = $view->getOutput();
+
+        echo $output;
 		
 	}
 	
@@ -46,6 +46,7 @@ class IndexController extends Zend_Controller_Action {
      *noRouteAction
      */
 	public function noRouteAction(){
+        Zend_Log::log(__CLASS__ .':'. __FUNCTION__ .':' . __LINE__);
 		$this->_redirect('./');
 	}
 }
