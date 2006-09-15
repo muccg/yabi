@@ -101,7 +101,7 @@
     </target>
 
     <target name="jar">
-      <jar jarfile="${ccg.jarfilename}" basedir="${basedir}" compress="false" includes="${ccg.site}/classes"/>
+      <jar jarfile="${ccg.jarfilename}" basedir="${ccg.site}/classes/" compress="false" />
     </target>
     
     <!-- Create properties file containing attributes for munging -->
@@ -114,8 +114,8 @@
         <entry  key="dbuser" value="${ccg.dbuser}"/>
         <entry  key="dbpass" value="${ccg.dbpass}"/>
         <entry  key="dbname" value="${ccg.dbname}"/>
-        <entry  key="hibernate.configfile" value="yabi-hibernate-${user.name}.cfg.xml"/>
-        <entry  key="jbpmconfigfile" value="yabi-jbpm-${user.name}.cfg.xml"/>
+        <entry  key="hibernate.configfile" value="yabi-hibernate.cfg.xml"/>
+        <entry  key="jbpmconfigfile" value="yabi-jbpm.cfg.xml"/>
       </propertyfile>
     </target>
 
@@ -123,9 +123,9 @@
 	<target name="configCopy">
 	  <echo message="Copying config files to classes folder"/>
       <filter filtersfile="${ccg.site}/yabi.properties"/>
-	  <copy file="${basedir}/cfg/jbpm.cfg.xml" tofile="${ccg.site}/classes/yabi-jbpm-${user.name}.cfg.xml" filtering="true" overwrite="true"/>
+	  <copy file="${basedir}/cfg/jbpm.cfg.xml" tofile="${ccg.site}/classes/yabi-jbpm.cfg.xml" filtering="true" overwrite="true"/>
 	  <copy file="${basedir}/cfg/log4j.properties" tofile="${ccg.site}/classes/yabi-log4j.properties" overwrite="true"/>
-      <copy file="${basedir}/cfg/hibernate.cfg.xml" tofile="${ccg.site}/classes/yabi-hibernate-${user.name}.cfg.xml" filtering="true" overwrite="true"/>
+      <copy file="${basedir}/cfg/hibernate.cfg.xml" tofile="${ccg.site}/classes/yabi-hibernate.cfg.xml" filtering="true" overwrite="true"/>
       <copy file="${basedir}/cfg/web.xml" tofile="${ccg.site}/web.xml" filtering="true" overwrite="true"/>
 	</target>
 
