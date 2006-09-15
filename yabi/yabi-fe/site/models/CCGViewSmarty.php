@@ -9,7 +9,7 @@
    * CCG_View_Smarty
    * @package yabi
    */
-class CCG_View_Smarty extends Zend_View_Abstract {
+class CCGViewSmarty extends Zend_View_Abstract {
 
     /** @var $smarty */
 	private $smarty = false;

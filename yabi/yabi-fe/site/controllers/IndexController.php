@@ -9,7 +9,7 @@
    * IndexController
    * @package yabi
    */
-class IndexController extends Zend_Controller_Action {
+class IndexController extends CCGController {
 
 	/**
      *indexAction
@@ -30,7 +30,7 @@ class IndexController extends Zend_Controller_Action {
 			$vars = $view->escape($vars);
 			$view->assign($vars);
 			
-			$view->setRender(false);
+			$view->setRender($this->render);
 		}
 		
 		$view->output($template);
@@ -41,13 +41,5 @@ class IndexController extends Zend_Controller_Action {
 		
 	}
 	
-	
-	/**
-     *noRouteAction
-     */
-	public function noRouteAction(){
-        Zend_Log::log(__CLASS__ .':'. __FUNCTION__ .':' . __LINE__);
-		$this->_redirect('./');
-	}
 }
 ?>

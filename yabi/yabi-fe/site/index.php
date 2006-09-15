@@ -14,8 +14,8 @@ require_once('Zend/Log/Adapter/File.php');   // File log adapter
 require_once('Zend/Config.php');
 require_once('Zend/Config/Array.php');
 require_once('smarty/Smarty.class.php');
-require_once(APP_ROOT . '/models/CCG_View_Smarty.php');
-
+require_once(APP_ROOT . '/models/CCGViewSmarty.php');
+require_once(APP_ROOT . '/models/CCGController.php');
 
 /**
  * __autoload
@@ -53,7 +53,7 @@ try {
 
 
     // zend view
-    $view = new CCG_View_Smarty();
+    $view = new CCGViewSmarty();
     Zend::register('view', $view);
 
 
