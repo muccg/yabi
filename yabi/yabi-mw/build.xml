@@ -1,4 +1,4 @@
-<project name="yabi" default="webservice" basedir=".">
+<project name="yabi" default="war" basedir=".">
 
     <import file="changelog.xml"/>
 
@@ -138,7 +138,7 @@
       </copy>
     </target>
 	
-	<target name="createWar" depends="init, userbuildinit, compile, appProperties, configCopy, jspCopy">
+	<target name="createWar" depends="init, userbuildinit, appProperties, configCopy, jspCopy, compile">
 	  <war destfile="${ccg.warfilename}" webxml="${ccg.site}/web.xml">
 	  	<fileset dir="${ccg.site}/jsp"/>
 	  	<lib dir="${basedir}/lib"/>
@@ -157,7 +157,5 @@
 	-->
 	
     <target name="war" depends="createWar, deployWar " />
-
-    <target name="webservice" depends="init, userbuildinit, appProperties, configCopy, compile, jar" />
 
 </project>
