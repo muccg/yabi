@@ -6,7 +6,7 @@
    */
 
   /**
-   * CCG_View_Smarty
+   * CCGViewSmarty
    * @package yabi
    */
 class CCGViewSmarty extends Zend_View_Abstract {
