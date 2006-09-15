@@ -1,39 +1,38 @@
 <?php
-//$Id$
+  /**
+   * @version $Id$
+   * @package yabi
+   * @copyright CCG, Murdoch University, 2006.
+   */
 
-//Zend::loadClass('Zend_Controller_Action');
-
+  /**
+   * IndexController
+   * @package yabi
+   */
 class IndexController extends Zend_Controller_Action {
-	
-	
+
 	/**
-	*indexAction
-	*/
+     *indexAction
+     */
 	public function indexAction(){
 	
-		$temp_file='index.tpl';
+		$template='index.tpl';
 		
 		$view=Zend::registry('view');
 		
-		if(false===$view->isCached($temp_file)){
-			$vars=array();
-			$vars['title']='Hello!!!';
-			$vars['text']='A text is a text & a text is a text.';
-			//not in index.tpl yet.
-		/*	$vars['numbers'][0]=12.9;
-			$vars['numbers'][1]=29;
-			$vars['numbers'][2]=78;*/
-			
-			$vars=$view->escape($vars);
-			
-			
-			
+		if(false === $view->isCached($template)){
+			$vars = array();
+			$vars['title'] = 'Hello!!!';
+			$vars['text'] = 'A text is a text & a text is a text.';
+
+
+			$vars = $view->escape($vars);
 			$view->assign($vars);
 			
-			$view->setRender(0);
+			$view->setRender(false);
 		}
 		
-		$view->output($temp_file);
+		$view->output($template);
 		
 		$output = $view->getOutput(); // i can't get the protected function output
 		// to return the template as output
@@ -44,8 +43,8 @@ class IndexController extends Zend_Controller_Action {
 	
 	
 	/**
-	*noRouteAction
-	*/
+     *noRouteAction
+     */
 	public function noRouteAction(){
 		$this->_redirect('./');
 	}
