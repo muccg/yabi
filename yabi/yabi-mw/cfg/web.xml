@@ -15,6 +15,10 @@
   <servlet>
     <servlet-name>JbpmThreadsServlet</servlet-name>
     <servlet-class>org.jbpm.web.JbpmThreadsServlet</servlet-class>
+    <init-param>
+      <param-name>jbpm.configuration.resource</param-name>
+      <param-value>@jbpmconfigfile@</param-value>
+    </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>

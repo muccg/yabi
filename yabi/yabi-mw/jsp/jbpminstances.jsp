@@ -1,7 +1,7 @@
 <%@ page import="org.jbpm.graph.def.*, org.jbpm.graph.exe.*, org.jbpm.*, java.util.*" %>
 <h3>Process instances</h3>
 <%
-  JbpmConfiguration jbpmConfiguration = JbpmConfiguration.getInstance();
+  JbpmConfiguration jbpmConfiguration = JbpmConfiguration.getInstance("@jbpmconfigfile@");
   
 
   JbpmContext jbpm = jbpmConfiguration.createJbpmContext();

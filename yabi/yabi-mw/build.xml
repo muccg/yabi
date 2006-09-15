@@ -1,4 +1,4 @@
-<project name="yabi" default="all" basedir=".">
+<project name="yabi" default="webservice" basedir=".">
 
     <import file="changelog.xml"/>
 
@@ -45,6 +45,7 @@
       <property name="ccg.dbpass" value="yabimwapp"/>
       <property name="ccg.dbname" value="yabimwdev"/>
       <property name="ccg.warfilename" value="${basedir}/yabi-${ccg.buildname}.war"/>
+      <property name="ccg.jarfilename" value="${basedir}/yabi-${ccg.buildname}.jar"/>
     </target>
 
     <!-- remove tmp and recreate it -->
@@ -90,12 +91,22 @@
     </target>
     
     <target name="compile">
-      <javac srcdir="${basedir}/src" classpath="${basedir}/lib/jbpm-3.1.2.jar" destdir="${ccg.site}/classes"/>
+      <javac srcdir="${basedir}/src" destdir="${ccg.site}/classes">
+        <classpath>
+          <fileset dir="lib">
+            <include name="**/*.jar"/>
+          </fileset>
+        </classpath>
+      </javac>
+    </target>
+
+    <target name="jar">
+      <jar jarfile="${ccg.jarfilename}" basedir="${basedir}" compress="false" includes="${ccg.site}/classes"/>
     </target>
     
     <!-- Create properties file containing attributes for munging -->
     <target name="appProperties" depends="init">
-      <propertyfile file="${ccg.site}/yabi_en.properties" comment="App properties">
+      <propertyfile file="${ccg.site}/yabi.properties" comment="App properties">
         <entry  key="buildname" value="${ccg.buildname}"/>
         <entry  key="project" value="${ant.project.name}"/>
         <entry  key="approot" value="${ccg.approot}"/>
@@ -103,28 +114,33 @@
         <entry  key="dbuser" value="${ccg.dbuser}"/>
         <entry  key="dbpass" value="${ccg.dbpass}"/>
         <entry  key="dbname" value="${ccg.dbname}"/>
+        <entry  key="hibernate.configfile" value="yabi-hibernate-${user.name}.cfg.xml"/>
+        <entry  key="jbpmconfigfile" value="yabi-jbpm-${user.name}.cfg.xml"/>
       </propertyfile>
     </target>
 
-	<!-- token substitution from yabi_en.properties into hibernate.cfg.xml -->
-	<target name="mungeHibernate">
-	  <echo message="Munging ${basedir}/cfg/hibernate.cfg.xml to ${ccg.site}/WEB-INF/classes/hibernate.cfg.xml"/>
-	  <translate toDir="${ccg.site}/classes" starttoken="#" endtoken="#" bundlelanguage="en" bundle="${ccg.site}/yabi" forceoverwrite="yes">
-	     <fileset dir="${basedir}/cfg">
-	        <include name="hibernate.cfg.xml"/>
-	     </fileset>
-	   </translate>
-	</target>
-	
+    <!-- config file copy and munge/rename -->
 	<target name="configCopy">
 	  <echo message="Copying config files to classes folder"/>
-	  <copy file="${basedir}/cfg/jbpm.cfg.xml" todir="${ccg.site}/classes"/>
-	  <copy file="${basedir}/cfg/log4j.properties" todir="${ccg.site}/classes"/>
+      <filter filtersfile="${ccg.site}/yabi.properties"/>
+	  <copy file="${basedir}/cfg/jbpm.cfg.xml" tofile="${ccg.site}/classes/yabi-jbpm-${user.name}.cfg.xml" filtering="true" overwrite="true"/>
+	  <copy file="${basedir}/cfg/log4j.properties" tofile="${ccg.site}/classes/yabi-log4j.properties" overwrite="true"/>
+      <copy file="${basedir}/cfg/hibernate.cfg.xml" tofile="${ccg.site}/classes/yabi-hibernate-${user.name}.cfg.xml" filtering="true" overwrite="true"/>
+      <copy file="${basedir}/cfg/web.xml" tofile="${ccg.site}/web.xml" filtering="true" overwrite="true"/>
 	</target>
+
+    <target name="jspCopy">
+      <filter filtersfile="${ccg.site}/yabi.properties"/>
+      <copy todir="${ccg.site}/jsp" filtering="true" overwrite="true">
+        <fileset dir="${basedir}/jsp">
+          <include name="*.jsp"/>
+        </fileset>
+      </copy>
+    </target>
 	
-	<target name="createWar" depends="init, userbuildinit, compile, appProperties, mungeHibernate, configCopy">
-	  <war destfile="${ccg.warfilename}" webxml="${basedir}/cfg/web.xml">
-	  	<fileset dir="${basedir}/jsp"/>
+	<target name="createWar" depends="init, userbuildinit, compile, appProperties, configCopy, jspCopy">
+	  <war destfile="${ccg.warfilename}" webxml="${ccg.site}/web.xml">
+	  	<fileset dir="${ccg.site}/jsp"/>
 	  	<lib dir="${basedir}/lib"/>
 	  	<classes dir="${ccg.site}/classes"/>
 	  </war>
@@ -135,11 +151,13 @@
 	</target>
 	
 	<!--  these dont work atm until we sort out the SVN actions
-	<target name="snapshot" depends="init, snapshotinit, tmpCvsCheckout, createTmpAgain, appProperties, mungeHibernate " />
+	<target name="snapshot" depends="init, snapshotinit, tmpCvsCheckout, createTmpAgain, appProperties, configCopy" />
 
-    <target name="release" depends="init, tags, releaseinit, tmpCvsCheckoutTag, createTmpAgain, appProperties, mungeHibernate " />
+    <target name="release" depends="init, tags, releaseinit, tmpCvsCheckoutTag, createTmpAgain, appProperties, configCopy " />
 	-->
 	
-    <target name="all" depends="createWar, deployWar " />
+    <target name="war" depends="createWar, deployWar " />
+
+    <target name="webservice" depends="init, userbuildinit, appProperties, configCopy, compile, jar" />
 
 </project>
