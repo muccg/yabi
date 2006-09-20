@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xml-response type="data">
+#foreach ($count in [1..2])
+  <process-definition>
+    <name> pd.getName() </name>
+    <version> pd.getVersion() </version>
+    <id> pd.getId() </id>
+  </process-definition>
+#end
+</xml-response>

@@ -127,23 +127,27 @@
 	  <copy file="${basedir}/cfg/log4j.properties" tofile="${ccg.site}/classes/yabi-log4j.properties" overwrite="true"/>
       <copy file="${basedir}/cfg/hibernate.cfg.xml" tofile="${ccg.site}/classes/yabi-hibernate.cfg.xml" filtering="true" overwrite="true"/>
       <copy file="${basedir}/cfg/web.xml" tofile="${ccg.site}/web.xml" filtering="true" overwrite="true"/>
-      <copy file="${basedir}/cfg/velocityxml.cfg" tofile="${ccg.site}/classes/velocityxml.cfg" overwrite="true"/>
+      <copy file="${basedir}/cfg/velocityxml.cfg" tofile="${ccg.site}/cfg/velocityxml.cfg" overwrite="true"/>
+      <copy file="${basedir}/cfg/struts-config.xml" tofile="${ccg.site}/cfg/struts-config.xml" overwrite="true"/>
 	</target>
 
-    <target name="jspCopy">
+    <target name="templateCopy">
       <filter filtersfile="${ccg.site}/yabi.properties"/>
-      <copy todir="${ccg.site}/jsp" filtering="true" overwrite="true">
-        <fileset dir="${basedir}/jsp">
+      <copy todir="${ccg.site}/templates" filtering="true" overwrite="true">
+        <fileset dir="${basedir}/templates">
           <include name="*"/>
         </fileset>
       </copy>
     </target>
 	
-	<target name="createWar" depends="init, userbuildinit, appProperties, configCopy, jspCopy, compile">
+	<target name="createWar" depends="init, userbuildinit, appProperties, configCopy, templateCopy, compile">
 	  <war destfile="${ccg.warfilename}" webxml="${ccg.site}/web.xml">
-	  	<fileset dir="${ccg.site}/jsp"/>
+	  	<fileset dir="${ccg.site}/templates"/>
 	  	<lib dir="${basedir}/lib"/>
 	  	<classes dir="${ccg.site}/classes"/>
+        <webinf dir="${ccg.site}/cfg">
+            <include name="*"/>
+        </webinf>
 	  </war>
 	</target>
 	
