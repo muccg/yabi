@@ -127,13 +127,14 @@
 	  <copy file="${basedir}/cfg/log4j.properties" tofile="${ccg.site}/classes/yabi-log4j.properties" overwrite="true"/>
       <copy file="${basedir}/cfg/hibernate.cfg.xml" tofile="${ccg.site}/classes/yabi-hibernate.cfg.xml" filtering="true" overwrite="true"/>
       <copy file="${basedir}/cfg/web.xml" tofile="${ccg.site}/web.xml" filtering="true" overwrite="true"/>
+      <copy file="${basedir}/cfg/velocityxml.cfg" tofile="${ccg.site}/classes/velocityxml.cfg" overwrite="true"/>
 	</target>
 
     <target name="jspCopy">
       <filter filtersfile="${ccg.site}/yabi.properties"/>
       <copy todir="${ccg.site}/jsp" filtering="true" overwrite="true">
         <fileset dir="${basedir}/jsp">
-          <include name="*.jsp"/>
+          <include name="*"/>
         </fileset>
       </copy>
     </target>

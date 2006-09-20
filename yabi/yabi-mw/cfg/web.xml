@@ -21,15 +21,31 @@
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>
+
+  <servlet>
+    <servlet-name>VelocityServlet</servlet-name>
+    <servlet-class>org.apache.velocity.tools.view.servlet.VelocityViewServlet</servlet-class>
+    <init-param>
+      <param-name>org.apache.velocity.properties</param-name>
+      <param-value>/WEB-INF/classes/velocityxml.cfg</param-value>
+    </init-param>
+    <load-on-startup>10</load-on-startup>
+  </servlet>
+
   <servlet-mapping>
     <servlet-name>JbpmThreadsServlet</servlet-name>
     <url-pattern>/threads</url-pattern>
   </servlet-mapping> 
 
-    <resource-ref>
-      <res-ref-name>mail/Session</res-ref-name>
-      <res-type>javax.mail.Session</res-type>
-      <res-auth>Container</res-auth>
-    </resource-ref>
+  <servlet-mapping>
+    <servlet-name>VelocityServlet</servlet-name>
+    <url-pattern>*.xml</url-pattern>
+  </servlet-mapping>
+
+  <resource-ref>
+    <res-ref-name>mail/Session</res-ref-name>
+    <res-type>javax.mail.Session</res-type>
+    <res-auth>Container</res-auth>
+  </resource-ref>
 
 </web-app>
