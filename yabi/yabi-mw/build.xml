@@ -96,6 +96,7 @@
           <fileset dir="lib">
             <include name="**/*.jar"/>
           </fileset>
+          <fileset file="/usr/local/java/jakarta-tomcat-5.5.9/common/lib/servlet-api.jar"/>
         </classpath>
       </javac>
     </target>
