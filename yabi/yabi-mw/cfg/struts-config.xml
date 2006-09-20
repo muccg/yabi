@@ -25,6 +25,12 @@
             <forward name="success" path="/definitions.xml"/>
         </action>
 
+        <action
+            path="/instances"
+            type="au.edu.murdoch.ccg.yabi.webservice.actions.InstancesList">
+            <forward name="success" path="/instances.xml"/>
+        </action>
+
     </action-mappings>
 
     <message-resources parameter="MessageResources" />

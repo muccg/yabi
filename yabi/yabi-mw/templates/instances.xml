@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<xml-response type="data">
+    <process-definition name="$!processDefinition.name" version="$!processDefinition.version">
+#foreach ($pi in $processInstances)
+    <instance>
+        <hasEnded>$!pi.hasEnded()</hasEnded>
+        <id>$!pi.id</id>
+        <start>$!pi.start</start>
+        <end>$!pi.end</end>
+        <tokens>
+    #foreach ($token in $tokens.get($pi.id))
+            <token name="$!token.name" node="$!token.node.fullyQualifiedName"/>
+    #end
+        </tokens>
+        <contextVariables>
+    #foreach ($contextVariable in $contextVariables.get($pi.id).keySet())
+            <variable key="$contextVariable" value="$contextVariables.get($pi.id).get($contextVariable)"/>
+    #end
+        </contextVariables>
+    </instance>
+#end
+    </process-definition>
+</xml-response>
