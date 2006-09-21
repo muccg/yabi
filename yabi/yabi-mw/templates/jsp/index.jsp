@@ -15,8 +15,8 @@
 <h4>XML web services</h4>
 
 <ul>
-    <li><a href="definitions.ws">list all deployed definitions</a>
-    <li>show details for instances of a definition... <form action="instances.ws">definition id: <input name="id"><input type="submit"></form>
+    <li><a href="../definitions.ws">list all deployed definitions</a>
+    <li>show details for instances of a definition... <form action="../instances.ws">definition id: <input name="id"><input type="submit"></form>
 </ul>
 
 </body>

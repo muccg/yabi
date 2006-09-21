@@ -1,5 +1,0 @@
-# !/bin/sh
-#
-# MUST BE RUN FROM LOCALHOST
-#
-java -cp ./lib/axis.jar:./lib/saaj.jar:./lib/jaxrpc.jar:./lib/commons-logging.jar:./lib/commons-discovery.jar org.apache.axis.client.AdminClient -lhttp://localhost.localdomain:8080/axis/services/AdminService AxisUndeploymentDescriptor.xml
