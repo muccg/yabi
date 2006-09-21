@@ -1,7 +1,3 @@
-ant defaults to just generating a jarfile
-this jarfile can be placed in a deploy of Axis
-then the deploy scripts must be modified to look for the path of the chosen Axis deploy
-then the deploy scripts can be run
-
-or instead of using deploy scripts, the axis server config file can be modified and the axis webapp 
-redeployed.
+Designed to deploy as a separate webapp.
+Sample JSPs currently in /jsp (in the deployed webapp)
+Other main interface is via /*.ws items which are mapped to Struts actions, which forward to Velocity templates that render XML
