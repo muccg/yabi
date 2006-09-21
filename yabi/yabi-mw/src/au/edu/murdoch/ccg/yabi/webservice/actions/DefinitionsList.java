@@ -36,6 +36,10 @@ public class DefinitionsList extends Action {
             processDefs = jbpm.getGraphSession().findLatestProcessDefinitions();
     
         } catch (Exception e) {
+
+            request.setAttribute("message", "An error occurred while attempting to fetch the process definition list");
+            return mapping.findForward("error");
+
         } finally {
             jbpm.close();
         }

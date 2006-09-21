@@ -34,36 +34,49 @@ public class InstancesList extends Action {
 
             ProcessDefinition pd = jbpm.getGraphSession().getProcessDefinition( procDefId );
 
-            request.setAttribute("processDefinition", pd);
+            if (pd != null) {
 
-            List instances = jbpm.getGraphSession().findProcessInstances( procDefId );
-            HashMap tokens = new HashMap();
-            HashMap contextVariables = new HashMap();
+                request.setAttribute("processDefinition", pd);
 
-            Iterator iter = instances.iterator();
-            while (iter.hasNext()) {
-                ProcessInstance pi = (ProcessInstance) iter.next();
+                List instances = jbpm.getGraphSession().findProcessInstances( procDefId );
+                HashMap tokens = new HashMap();
+                HashMap contextVariables = new HashMap();
 
-                List pitokens = pi.findAllTokens();
+                Iterator iter = instances.iterator();
+                while (iter.hasNext()) {
+                    ProcessInstance pi = (ProcessInstance) iter.next();
 
-                //force load of node info
-                Iterator tokenIter = pitokens.iterator();
-                while (tokenIter.hasNext()) {
-                    Token thisToken = (Token) tokenIter.next();
-                    String throwAway = thisToken.getNode().getFullyQualifiedName();
+                    List pitokens = pi.findAllTokens();
+
+                    //force load of node info
+                    Iterator tokenIter = pitokens.iterator();
+                    while (tokenIter.hasNext()) {
+                        Token thisToken = (Token) tokenIter.next();
+                        String throwAway = thisToken.getNode().getFullyQualifiedName();
+                    }
+
+                    tokens.put( new Long(pi.getId()), pitokens );
+
+                    Map pivars = pi.getContextInstance().getVariables();
+                    contextVariables.put( new Long(pi.getId()), pivars );
                 }
 
-                tokens.put( new Long(pi.getId()), pitokens );
+                request.setAttribute("processInstances", instances);
+                request.setAttribute("tokens", tokens);
+                request.setAttribute("contextVariables", contextVariables);
 
-                Map pivars = pi.getContextInstance().getVariables();
-                contextVariables.put( new Long(pi.getId()), pivars );
+            } else { //if no process definition for that id
+
+                request.setAttribute("message", "The requested process definition does not exist");
+                return mapping.findForward("error");
+
             }
 
-            request.setAttribute("processInstances", instances);
-            request.setAttribute("tokens", tokens);
-            request.setAttribute("contextVariables", contextVariables);
-
         } catch (Exception e) {
+
+            request.setAttribute("message", "An error occurred while attempting to fetch list of instances for this workflow definition");
+            return mapping.findForward("error");
+
         } finally {
             jbpm.close();
         }

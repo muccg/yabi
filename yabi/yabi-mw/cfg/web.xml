@@ -11,10 +11,20 @@
       JBPM Example JSPs
     </description>
 
-  <!-- JbpmThreadsServlet -->
+  <error-page>
+    <error-code>404</error-code>
+    <location>/missing.xml</location>
+  </error-page>
+
+  <error-page>
+    <error-code>500</error-code>
+    <location>/fatal.xml</location>
+  </error-page>
+
+  <!-- JbpmSchedulerServlet -->
   <servlet>
-    <servlet-name>JbpmThreadsServlet</servlet-name>
-    <servlet-class>org.jbpm.web.JbpmThreadsServlet</servlet-class>
+    <servlet-name>JbpmSchedulerServlet</servlet-name>
+    <servlet-class>au.edu.murdoch.ccg.yabi.webservice.JbpmSchedulerServlet</servlet-class>
     <init-param>
       <param-name>jbpm.configuration.resource</param-name>
       <param-value>@jbpmconfigfile@</param-value>
@@ -46,11 +56,6 @@
     <servlet-name>action</servlet-name>
     <url-pattern>*.ws</url-pattern>
   </servlet-mapping>
-
-  <servlet-mapping>
-    <servlet-name>JbpmThreadsServlet</servlet-name>
-    <url-pattern>/threads</url-pattern>
-  </servlet-mapping> 
 
   <servlet-mapping>
     <servlet-name>VelocityServlet</servlet-name>

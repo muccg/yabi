@@ -11,5 +11,13 @@
 	<li>
 	<li><a href="jbpmdefs.jsp">view all deployed process definitions (and completed instances)</a>
 </ul>
+
+<h4>XML web services</h4>
+
+<ul>
+    <li><a href="definitions.ws">list all deployed definitions</a>
+    <li>show details for instances of a definition... <form action="instances.ws">definition id: <input name="id"><input type="submit"></form>
+</ul>
+
 </body>
 </html>

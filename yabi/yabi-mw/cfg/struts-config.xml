@@ -13,6 +13,7 @@
     </global-exceptions>
 
     <global-forwards>
+        <forward name="error" path="/error.xml"/>
     </global-forwards>
 
     <action-mappings>
