@@ -136,7 +136,7 @@
       <filter filtersfile="${ccg.site}/yabi.properties"/>
       <copy todir="${ccg.site}/templates" filtering="true" overwrite="true">
         <fileset dir="${basedir}/templates">
-          <include name="*"/>
+          <include name="**"/>
         </fileset>
       </copy>
     </target>
