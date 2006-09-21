@@ -65,6 +65,8 @@ public class JbpmSchedulerServlet extends HttpServlet {
       log.debug("stopping the scheduler");
       schedulerThread.setKeepRunning(false);
       schedulerThread.interrupt();
+      //worst case scenario, stop the thread brutally
+      schedulerThread.stop();
       schedulerThread = null;
     } else {
       log.debug("scheduler can't be stopped cause it was not running");

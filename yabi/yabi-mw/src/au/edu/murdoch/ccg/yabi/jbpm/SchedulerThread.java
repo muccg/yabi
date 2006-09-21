@@ -16,6 +16,11 @@ public class SchedulerThread extends org.jbpm.scheduler.impl.SchedulerThread {
         super(JbpmConfiguration.getInstance(), jbpmContextName);
     }
 
+    //reimplement to attempt to bypass variable scoping issues
+    public void run() {
+        super.run();
+    }
+
     public void setKeepRunning(boolean input) {
         this.keepRunning = input;
     }

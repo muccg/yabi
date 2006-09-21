@@ -32,6 +32,12 @@
             <forward name="success" path="/instances.xml"/>
         </action>
 
+        <action
+            path="/instance"
+            type="au.edu.murdoch.ccg.yabi.webservice.actions.ViewInstance">
+            <forward name="success" path="/instance.xml"/>
+        </action>
+
     </action-mappings>
 
     <message-resources parameter="MessageResources" />

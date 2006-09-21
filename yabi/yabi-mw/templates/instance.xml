@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <xml-response type="data">
     <process-definition name="$!processDefinition.name" version="$!processDefinition.version">
-#foreach ($pi in $processInstances)
     <instance>
-        <hasEnded>$!pi.hasEnded()</hasEnded>
-        <id>$!pi.id</id>
-        <start>$!pi.start</start>
-        <end>$!pi.end</end>
+        <hasEnded>$!processInstance.hasEnded()</hasEnded>
+        <id>$!processInstance.id</id>
+        <start>$!processInstance.start</start>
+        <end>$!processInstance.end</end>
         <tokens>
-    #foreach ($token in $tokens.get($pi.id))
+    #foreach ($token in $tokens)
         #if (!$token.name)
             <roottoken node="$!token.node.fullyQualifiedName"/>
         #else
@@ -17,11 +16,10 @@
     #end
         </tokens>
         <contextVariables>
-    #foreach ($contextVariable in $contextVariables.get($pi.id).keySet())
-            <variable key="$contextVariable" value="$contextVariables.get($pi.id).get($contextVariable)"/>
+    #foreach ($contextVariable in $contextVariables.keySet())
+            <variable key="$contextVariable" value="$contextVariables.get($contextVariable)"/>
     #end
         </contextVariables>
     </instance>
-#end
     </process-definition>
 </xml-response>
