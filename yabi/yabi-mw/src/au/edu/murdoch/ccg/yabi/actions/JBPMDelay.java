@@ -3,24 +3,26 @@ package au.edu.murdoch.ccg.yabi.actions;
 import org.jbpm.graph.def.ActionHandler;
 import org.jbpm.graph.exe.ExecutionContext;
 
+import java.util.*;
 
-public class JBPMDelay implements ActionHandler {
+public class JBPMDelay extends BaseAction {
+
   public void execute(ExecutionContext ctx) throws Exception {
-  	ctx.setVariable(ctx.getNode().getFullyQualifiedName() + ".processingVar", "true");
+    Map myVars = varTranslator.getVariableMap(ctx);
+    Map inputVars = (Map) myVars.get("input");
+    Map outputVars = (Map) myVars.get("output");
+
+  	varTranslator.saveVariable(ctx, "processingVar", "true");
   
-  	ctx.setVariable(ctx.getNode().getFullyQualifiedName() + ".inputParam", ctx.getVariable("input param 1"));
+  	varTranslator.saveVariable(ctx, "param", inputVars.get("param 1"));
 
 	//sleep 20 seconds
 	Thread.sleep(20000); 
     
-    ctx.setVariable(ctx.getNode().getFullyQualifiedName() + ".processingVar", "false");
-    try {
-		ctx.setVariable(ctx.getNode().getFullyQualifiedName() + ".transitionSource", ctx.getTransitionSource().getFullyQualifiedName());
-	} catch (Exception e) {
-		ctx.setVariable(ctx.getNode().getFullyQualifiedName() + ".transitionSource", "threw exception");
-    }
+    varTranslator.saveVariable(ctx, "processingVar", "false");
     
     // graph execution propagation
     ctx.leaveNode("next");
   }
+
 }

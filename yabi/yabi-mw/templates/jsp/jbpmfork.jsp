@@ -14,7 +14,7 @@
     ProcessInstance processInstance = 
       new ProcessInstance(processDefinition);
       
-    processInstance.getContextInstance().setVariable("input param 1", "recognize");
+    processInstance.getContextInstance().setVariable("delay1.input.param 1", "recognize");
 %>
 <%= processInstance.getId() %>
 <%  

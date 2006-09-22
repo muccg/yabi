@@ -143,7 +143,9 @@
 	
 	<target name="createWar" depends="init, userbuildinit, appProperties, configCopy, templateCopy, compile">
 	  <war destfile="${ccg.warfilename}" webxml="${ccg.site}/web.xml">
-	  	<fileset dir="${ccg.site}/templates"/>
+	  	<fileset dir="${ccg.site}">
+            <include name="templates/**"/>
+        </fileset>
 	  	<lib dir="${basedir}/lib"/>
 	  	<classes dir="${ccg.site}/classes"/>
         <webinf dir="${ccg.site}/cfg">

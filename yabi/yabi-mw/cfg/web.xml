@@ -13,12 +13,12 @@
 
   <error-page>
     <error-code>404</error-code>
-    <location>/missing.xml</location>
+    <location>/templates/missing.xml</location>
   </error-page>
 
   <error-page>
     <error-code>500</error-code>
-    <location>/fatal.xml</location>
+    <location>/templates/fatal.xml</location>
   </error-page>
 
   <!-- JbpmSchedulerServlet -->

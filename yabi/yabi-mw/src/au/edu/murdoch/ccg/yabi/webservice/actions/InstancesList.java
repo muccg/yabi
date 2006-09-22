@@ -13,7 +13,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
-public class InstancesList extends Action {
+public class InstancesList extends BaseAction {
 
     public InstancesList () {
         super();
@@ -24,8 +24,6 @@ public class InstancesList extends Action {
         ActionForm form,
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
-
-        JbpmConfiguration jbpmConfiguration = JbpmConfiguration.getInstance("yabi-jbpm.cfg.xml");
 
         JbpmContext jbpm = jbpmConfiguration.createJbpmContext();
 

@@ -23,7 +23,7 @@
       "    <transition name='next' to='join'/>" +
       "  </state>" +
       "  <state name='delay2'>" +
-      "    <timer duedate='2 minutes'>" +
+      "    <timer duedate='2 seconds'>" +
       "      <action class='au.edu.murdoch.ccg.yabi.actions.JBPMDelay' />" +
       "    </timer>" +
       "    <transition to='join' name='next' />" +
@@ -32,7 +32,7 @@
       "    <transition to='delay3' />" +
       "  </join>" +
       "  <state name='delay3'>" +
-      "    <timer duedate='2 minutes'>" +
+      "    <timer duedate='2 seconds'>" +
       "      <action class='au.edu.murdoch.ccg.yabi.actions.JBPMDelay' />" +
       "    </timer>" +
       "    <transition to='end' name='next' />" +

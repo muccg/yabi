@@ -18,7 +18,7 @@
         </tokens>
         <contextVariables>
     #foreach ($contextVariable in $contextVariables.get($pi.id).keySet())
-            <variable key="$contextVariable" value="$contextVariables.get($pi.id).get($contextVariable)"/>
+            <variable key="$contextVariable" value="$!contextVariables.get($pi.id).get($contextVariable)"/>
     #end
         </contextVariables>
     </instance>

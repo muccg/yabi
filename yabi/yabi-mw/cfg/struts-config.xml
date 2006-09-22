@@ -13,29 +13,29 @@
     </global-exceptions>
 
     <global-forwards>
-        <forward name="error" path="/error.xml"/>
+        <forward name="error" path="/templates/error.xml"/>
     </global-forwards>
 
     <action-mappings>
 
-        <action path="/welcome" forward="/definitions.xml"/>
+        <action path="/welcome" forward="/templates/definitions.xml"/>
 
         <action 
             path="/definitions"
             type="au.edu.murdoch.ccg.yabi.webservice.actions.DefinitionsList">
-            <forward name="success" path="/definitions.xml"/>
+            <forward name="success" path="/templates/definitions.xml"/>
         </action>
 
         <action
             path="/instances"
             type="au.edu.murdoch.ccg.yabi.webservice.actions.InstancesList">
-            <forward name="success" path="/instances.xml"/>
+            <forward name="success" path="/templates/instances.xml"/>
         </action>
 
         <action
             path="/instance"
             type="au.edu.murdoch.ccg.yabi.webservice.actions.ViewInstance">
-            <forward name="success" path="/instance.xml"/>
+            <forward name="success" path="/templates/instance.xml"/>
         </action>
 
     </action-mappings>

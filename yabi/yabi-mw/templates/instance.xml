@@ -17,7 +17,7 @@
         </tokens>
         <contextVariables>
     #foreach ($contextVariable in $contextVariables.keySet())
-            <variable key="$contextVariable" value="$contextVariables.get($contextVariable)"/>
+            <variable key="$contextVariable" value="$!contextVariables.get($contextVariable)"/>
     #end
         </contextVariables>
     </instance>
