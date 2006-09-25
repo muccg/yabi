@@ -13,7 +13,7 @@
     <property name="hibernate.connection.url">jdbc:postgresql://@dbhost@/@dbname@</property>
     <property name="hibernate.connection.username">@dbuser@</property>
     <property name="hibernate.connection.password">@dbpass@</property>
-    <property name="hibernate.hbm2ddl.auto">update</property>
+    <property name="hibernate.hbm2ddl.auto">create-drop</property>
     <!-- using auto 'create-drop' would drop the DB at every start and then recreate -->
         
     <!-- other hibernate properties 

@@ -44,6 +44,12 @@
             <forward name="success" path="/templates/deployed.xml"/>
         </action>
 
+        <action
+            path="/instantiate"
+            type="au.edu.murdoch.ccg.yabi.webservice.actions.Instantiate">
+            <forward name="success" path="/templates/instantiated.xml"/>
+        </action>
+
     </action-mappings>
 
     <message-resources parameter="MessageResources" />

@@ -16,8 +16,12 @@ public class JBPMDelay extends BaseAction {
   
   	varTranslator.saveVariable(ctx, "param", inputVars.get("param 1"));
 
-	//sleep 20 seconds
-	Thread.sleep(20000); 
+	//sleep 'delay' seconds or default to 20
+    int delay = 20000;
+    try {
+         delay = Integer.parseInt( (String) inputVars.get("delay") );
+    } catch (Exception e) {}
+	Thread.sleep(delay); 
     
     varTranslator.saveVariable(ctx, "processingVar", "false");
     

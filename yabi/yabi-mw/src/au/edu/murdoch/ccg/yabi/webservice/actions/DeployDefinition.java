@@ -13,11 +13,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
-import org.dom4j.Document;
-import org.dom4j.DocumentHelper;
-import org.dom4j.XPath;
-import org.dom4j.Element;
-
 public class DeployDefinition extends BaseAction {
 
     public DeployDefinition () {
@@ -38,7 +33,6 @@ public class DeployDefinition extends BaseAction {
             if (request.getMethod().compareTo("POST") == 0) {
 
                 String processDefinitionXML = request.getParameter("definition");
-                Document document = DocumentHelper.parseText(processDefinitionXML);
                 String definitionName = "";
 
                 ProcessDefinition processDefinition = ProcessDefinition.parseXmlString(processDefinitionXML);

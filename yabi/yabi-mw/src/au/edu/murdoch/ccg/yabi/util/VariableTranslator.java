@@ -26,7 +26,7 @@ public class VariableTranslator {
             try {
                 String[] splitName = key.split( separatorRegex );
 
-                if ( (splitName.length > 1) && (splitName[0].compareTo(getNodeName(ctx)) == 0) ) {
+                if ( (splitName.length > 2) && (splitName[0].compareTo(getNodeName(ctx)) == 0) ) {
                     //if the variable starts with the current node name then it is one of our variables
                     if ( splitName[1].compareTo("input") == 0 ) {
                         inputVars.put(splitName[2], vars.get(key));
@@ -62,23 +62,26 @@ public class VariableTranslator {
                 HashMap inputVars = new HashMap();
                 HashMap outputVars = new HashMap();
 
-                //fetch node variable map for this node, or create it if it doesn't exist
-                Map nodeVars = (Map) nodes.get(splitName[0]);
-                if (nodeVars == null) {
-                    nodeVars = new HashMap();
-                    nodeVars.put("input", inputVars);
-                    nodeVars.put("output", outputVars);
-                    nodes.put(splitName[0], nodeVars);
-                } else { //otherwise set convenience maps for inpu/output vars
-                    inputVars = (HashMap) nodeVars.get("input");
-                    outputVars = (HashMap) nodeVars.get("output");
-                }
+                if (splitName.length > 2) {
 
-                if ( splitName[1].compareTo("input") == 0 ) {
-                    inputVars.put(splitName[2], pivars.get(key));
-                }
-                if ( splitName[1].compareTo("output") == 0 ) {
-                    outputVars.put(splitName[2], pivars.get(key));
+                    //fetch node variable map for this node, or create it if it doesn't exist
+                    Map nodeVars = (Map) nodes.get(splitName[0]);
+                    if (nodeVars == null) {
+                        nodeVars = new HashMap();
+                        nodeVars.put("input", inputVars);
+                        nodeVars.put("output", outputVars);
+                        nodes.put(splitName[0], nodeVars);
+                    } else { //otherwise set convenience maps for inpu/output vars
+                        inputVars = (HashMap) nodeVars.get("input");
+                        outputVars = (HashMap) nodeVars.get("output");
+                    }
+
+                    if ( splitName[1].compareTo("input") == 0 ) {
+                        inputVars.put(splitName[2], pivars.get(key));
+                    }
+                    if ( splitName[1].compareTo("output") == 0 ) {
+                        outputVars.put(splitName[2], pivars.get(key));
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();

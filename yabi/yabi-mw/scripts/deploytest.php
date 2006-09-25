@@ -20,7 +20,7 @@
           <transition name="right" to="delay2" />
         </fork>
         <state name="delay1">
-          <timer duedate="15 seconds">
+          <timer duedate="2 seconds">
             <action class="au.edu.murdoch.ccg.yabi.actions.JBPMDelay" />
           </timer>
           <transition name="next" to="join"/>
@@ -46,8 +46,7 @@
     $definition = $forkdelaydefinition;
 
     // check service for xml, add to db
-    $params = http_build_query(array('definition'  => $definition,
-                                     'command' => 'getresults'
+    $params = http_build_query(array('definition'  => $definition
                                      )
                                );
 
