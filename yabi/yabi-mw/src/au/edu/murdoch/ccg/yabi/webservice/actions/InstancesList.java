@@ -13,6 +13,8 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
+import au.edu.murdoch.ccg.yabi.util.*;
+
 public class InstancesList extends BaseAction {
 
     public InstancesList () {
@@ -55,13 +57,13 @@ public class InstancesList extends BaseAction {
 
                     tokens.put( new Long(pi.getId()), pitokens );
 
-                    Map pivars = pi.getContextInstance().getVariables();
-                    contextVariables.put( new Long(pi.getId()), pivars );
+                    VariableTranslator vt = new VariableTranslator();
+                    contextVariables.put( new Long(pi.getId()),  vt.getVariablesByNode(pi) );
                 }
 
                 request.setAttribute("processInstances", instances);
                 request.setAttribute("tokens", tokens);
-                request.setAttribute("contextVariables", contextVariables);
+                request.setAttribute("variables", contextVariables);
 
             } else { //if no process definition for that id
 

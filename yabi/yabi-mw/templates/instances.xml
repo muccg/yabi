@@ -2,11 +2,7 @@
 <xml-response type="data">
     <process-definition name="$!processDefinition.name" version="$!processDefinition.version">
 #foreach ($pi in $processInstances)
-    <instance>
-        <hasEnded>$!pi.hasEnded()</hasEnded>
-        <id>$!pi.id</id>
-        <start>$!pi.start</start>
-        <end>$!pi.end</end>
+    <instance hasEnded="$!pi.hasEnded()" id="$!pi.id" start="$!pi.start" end="$!pi.end">
         <tokens>
     #foreach ($token in $tokens.get($pi.id))
         #if (!$token.name)
@@ -16,11 +12,22 @@
         #end
     #end
         </tokens>
-        <contextVariables>
-    #foreach ($contextVariable in $contextVariables.get($pi.id).keySet())
-            <variable key="$contextVariable" value="$!contextVariables.get($pi.id).get($contextVariable)"/>
+        <variables>
+    #foreach ($node in $variables.get($pi.id).keySet())
+            <node name="$!node">
+                <inputs>
+        #foreach ($variable in $variables.get($pi.id).get($node).get("input").keySet())
+                    <variable key="$variable" value="$!variables.get($pi.id).get($node).get("input").get($variable)"/>
+        #end
+                </inputs>
+                <outputs>
+        #foreach ($variable in $variables.get($pi.id).get($node).get("output").keySet())
+                    <variable key="$variable" value="$!variables.get($pi.id).get($node).get("output").get($variable)"/>
+        #end
+                </outputs>
+            </node>
     #end
-        </contextVariables>
+        </variables>
     </instance>
 #end
     </process-definition>

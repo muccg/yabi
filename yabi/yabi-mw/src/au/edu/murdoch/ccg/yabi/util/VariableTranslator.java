@@ -47,6 +47,49 @@ public class VariableTranslator {
         return relevantVars;
     }
 
+    //reformat context variables for a process instance into a map of node names, each containing a Map of variables
+    public Map getVariablesByNode(ProcessInstance pi) {
+        Map pivars = pi.getContextInstance().getVariables();
+        Map nodes = new HashMap();
+        
+        Iterator iter = pivars.keySet().iterator();
+        while (iter.hasNext()) {
+            //each item is a variable. we need to reparse the node, whether it is an input or output variable, and the varname
+            String key = (String) iter.next();
+            try {
+                String[] splitName = key.split( separatorRegex );
+
+                HashMap inputVars = new HashMap();
+                HashMap outputVars = new HashMap();
+
+                //fetch node variable map for this node, or create it if it doesn't exist
+                Map nodeVars = (Map) nodes.get(splitName[0]);
+                if (nodeVars == null) {
+                    nodeVars = new HashMap();
+                    nodeVars.put("input", inputVars);
+                    nodeVars.put("output", outputVars);
+                    nodes.put(splitName[0], nodeVars);
+                } else { //otherwise set convenience maps for inpu/output vars
+                    inputVars = (HashMap) nodeVars.get("input");
+                    outputVars = (HashMap) nodeVars.get("output");
+                }
+
+                if ( splitName[1].compareTo("input") == 0 ) {
+                    inputVars.put(splitName[2], pivars.get(key));
+                }
+                if ( splitName[1].compareTo("output") == 0 ) {
+                    outputVars.put(splitName[2], pivars.get(key));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+ 
+        }
+
+        return nodes;
+        
+    }
+
     //saves the variable 'variableName' as 'nodeName.output.variableName' and searches for substitutions of this
     //variable in the whole namespace
     //this is done by looking for variables that follow the naming schema

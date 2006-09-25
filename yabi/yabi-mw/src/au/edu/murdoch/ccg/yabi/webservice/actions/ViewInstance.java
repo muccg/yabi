@@ -13,6 +13,8 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
+import au.edu.murdoch.ccg.yabi.util.*;
+
 public class ViewInstance extends BaseAction {
 
     public ViewInstance () {
@@ -34,7 +36,7 @@ public class ViewInstance extends BaseAction {
 
             if (pi != null) {
 
-                request.setAttribute("processInstance", pi);
+                request.setAttribute("pi", pi);
 
                 //force load of process definition
                 ProcessDefinition processDefinition = pi.getProcessDefinition();
@@ -48,8 +50,10 @@ public class ViewInstance extends BaseAction {
                     String nodeForce = tempForce.getNode().getName();
                 }
                 request.setAttribute("tokens", tokens);
-                Map contextVariables = pi.getContextInstance().getVariables();
-                request.setAttribute("contextVariables", contextVariables);
+
+                VariableTranslator vt = new VariableTranslator();
+                Map contextVariables = vt.getVariablesByNode(pi);
+                request.setAttribute("variables", contextVariables);
 
             } else { //if no process instance for that id
 
