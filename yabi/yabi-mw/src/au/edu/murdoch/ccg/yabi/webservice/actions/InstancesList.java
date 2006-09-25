@@ -30,7 +30,10 @@ public class InstancesList extends BaseAction {
         JbpmContext jbpm = jbpmConfiguration.createJbpmContext();
 
         try {
-            long procDefId = Long.parseLong(request.getParameter("id"));
+            long procDefId = 0L;
+            try {
+                procDefId = Long.parseLong(request.getParameter("id"));
+            } catch (Exception e) {}
 
             ProcessDefinition pd = jbpm.getGraphSession().getProcessDefinition( procDefId );
 

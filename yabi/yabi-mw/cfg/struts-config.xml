@@ -38,6 +38,12 @@
             <forward name="success" path="/templates/instance.xml"/>
         </action>
 
+        <action
+            path="/deploy"
+            type="au.edu.murdoch.ccg.yabi.webservice.actions.DeployDefinition">
+            <forward name="success" path="/templates/deployed.xml"/>
+        </action>
+
     </action-mappings>
 
     <message-resources parameter="MessageResources" />

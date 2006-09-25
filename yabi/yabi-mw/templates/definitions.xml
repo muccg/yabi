@@ -2,9 +2,9 @@
 <xml-response type="data">
 #foreach ($pd in $processDefinitions)
   <process-definition>
-    <name> $pd.name </name>
-    <version> $pd.version </version>
-    <id> $pd.id </id>
+    <name>$pd.name</name>
+    <version>$pd.version</version>
+    <id>$pd.id</id>
   </process-definition>
 #end
 </xml-response>
