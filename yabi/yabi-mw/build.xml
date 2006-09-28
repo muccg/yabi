@@ -90,8 +90,8 @@
       <cvs package="dagwa/pbgenesis/site" dest="tmp" failonerror="true"/>
     </target>
     
-    <target name="compile">
-      <javac srcdir="${basedir}/src" destdir="${ccg.site}/classes">
+    <target name="compile" depends="init, userbuildinit, appProperties">
+      <javac srcdir="${basedir}/src" destdir="${ccg.site}/classes" target="1.4" source="1.4">
         <classpath>
           <fileset dir="lib">
             <include name="**/*.jar"/>
@@ -130,6 +130,7 @@
       <copy file="${basedir}/cfg/web.xml" tofile="${ccg.site}/web.xml" filtering="true" overwrite="true"/>
       <copy file="${basedir}/cfg/velocityxml.cfg" tofile="${ccg.site}/cfg/velocityxml.cfg" overwrite="true"/>
       <copy file="${basedir}/cfg/struts-config.xml" tofile="${ccg.site}/cfg/struts-config.xml" overwrite="true"/>
+      <copy file="${basedir}/cfg/toolbox.xml" tofile="${ccg.site}/cfg/toolbox.xml" overwrite="true"/>
 	</target>
 
     <target name="templateCopy">

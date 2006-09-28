@@ -43,7 +43,33 @@
         <end-state name="end" />
       </process-definition>';
 
-    $definition = $forkdelaydefinition;
+    $timerlessforkdef = '<process-definition name="forkdelay">
+        <start-state name="start">
+          <transition to="fork" />
+        </start-state>
+        <fork name="fork">
+          <transition name="left" to="delay1" />
+          <transition name="right" to="delay2" />
+        </fork>
+        <node name="delay1">
+          <action class="au.edu.murdoch.ccg.yabi.actions.JBPMDelay" />
+          <transition name="next" to="join"/>
+        </node>
+        <node name="delay2">
+          <action class="au.edu.murdoch.ccg.yabi.actions.JBPMDelay" />
+          <transition to="join" name="next" />
+        </node>
+        <join name="join">
+          <transition to="delay3" />
+        </join>
+        <node name="delay3">
+          <action class="au.edu.murdoch.ccg.yabi.actions.JBPMDelay" />
+          <transition to="end" name="next" />
+        </node>
+        <end-state name="end" />
+      </process-definition>';
+
+    $definition = $timerlessforkdef;
 
     // check service for xml, add to db
     $params = http_build_query(array('definition'  => $definition

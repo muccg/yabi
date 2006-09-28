@@ -41,7 +41,7 @@ public class DeployDefinition extends BaseAction {
                 jbpm.getGraphSession().deployProcessDefinition(processDefinition);
                 ProcessDefinition pd = jbpm.getGraphSession().findLatestProcessDefinition(definitionName);
 
-                request.setAttribute("id", pd.getId());
+                request.setAttribute("id", new Long(pd.getId()));
 
             } else {
                 request.setAttribute("message", "Process deployment must be performed via a POST operation");

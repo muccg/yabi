@@ -8,15 +8,22 @@
   try {
   	
     ProcessDefinition processDefinition = ProcessDefinition.parseXmlString(
-      "<process-definition name='delay'>" +
+      "<process-definition name='submitGrendel'>" +
       "  <start-state name='start'>" +
-      "    <transition to='delay' />" +
+      "    <transition to='submitGrendel' />" +
       "  </start-state>" +
-      "  <node name='delay'>" +
-      "    <action class='au.edu.murdoch.ccg.yabi.actions.JBPMDelay' />" +
-      "    <transition to='end' name='next' />" +
+      "  <node name='submitGrendel'>" +
+      "    <action class='au.edu.murdoch.ccg.yabi.actions.SubmitGrendelXMLJobAction' />" +
+      "    <transition to='checkGrendel' name='next' />" +
+      "    <transition to='error' name='error' />" +
+      "  </node>" +
+      "  <node name='checkGrendel'>" +
+      "    <action class='au.edu.murdoch.ccg.yabi.actions.GrendelJobStatusAction' />" +
+      "    <transition to='end' name='next'/>" +
+      "    <transition to='error' name='error'/>" +
       "  </node>" +
       "  <end-state name='end' />" +
+      "  <end-state name='error' />" +
       "</process-definition>"
     ); 
   

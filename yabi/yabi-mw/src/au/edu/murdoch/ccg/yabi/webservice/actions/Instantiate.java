@@ -47,10 +47,20 @@ public class Instantiate extends BaseAction {
 
                 //TODO validate that all required inputs exist
 
+                //transactional save and signal
+                //do a transactional close and reopen to save the start 
+                jbpm.save(processInstance);
+                long procId = processInstance.getId();
+                jbpm.close();
+                jbpm = jbpmConfiguration.createJbpmContext();
+
+                //resume processing now that we've saved
+                processInstance = jbpm.loadProcessInstanceForUpdate(procId);
+
                 //signal the process to start
                 processInstance.signal();
 
-                request.setAttribute("id", processInstance.getId());
+                request.setAttribute("id", new Long(procId));
 
             } else {
                 request.setAttribute("message", "Process deployment must be performed via a PUT operation");

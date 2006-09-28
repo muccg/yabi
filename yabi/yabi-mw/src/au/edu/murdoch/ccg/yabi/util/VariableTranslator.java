@@ -20,23 +20,25 @@ public class VariableTranslator {
 
         //as there is no easy way to get all variables from an ExecutionContext, we use the following convoluted method
         Map vars = ctx.getProcessInstance().getContextInstance().getVariables();
-        Iterator iter = vars.keySet().iterator();
-        while (iter.hasNext()) {
-            String key = (String) iter.next();
-            try {
-                String[] splitName = key.split( separatorRegex );
+        if (vars != null) {
+            Iterator iter = vars.keySet().iterator();
+            while (iter.hasNext()) {
+                String key = (String) iter.next();
+                try {
+                    String[] splitName = key.split( separatorRegex );
 
-                if ( (splitName.length > 2) && (splitName[0].compareTo(getNodeName(ctx)) == 0) ) {
-                    //if the variable starts with the current node name then it is one of our variables
-                    if ( splitName[1].compareTo("input") == 0 ) {
-                        inputVars.put(splitName[2], vars.get(key));
+                    if ( (splitName.length > 2) && (splitName[0].compareTo(getNodeName(ctx)) == 0) ) {
+                        //if the variable starts with the current node name then it is one of our variables
+                        if ( splitName[1].compareTo("input") == 0 ) {
+                            inputVars.put(splitName[2], vars.get(key));
+                        }
+                        if ( splitName[1].compareTo("output") == 0 ) {
+                            outputVars.put(splitName[2], vars.get(key));
+                        }
                     }
-                    if ( splitName[1].compareTo("output") == 0 ) {
-                        outputVars.put(splitName[2], vars.get(key));
-                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } catch (Exception e) {
-                e.printStackTrace();
             }
         }
 
@@ -105,7 +107,25 @@ public class VariableTranslator {
         //first, save the variable as an output variable
         ctx.setVariable( fullVarName, variableValue );
 
-        //TODO search for substitutions of this variable in the full context variable map
+        //define a string that is what the 'derived' string would look like
+        String derivedString = "derived("+fullVarName+")";
+
+        List substitutionKeys = new ArrayList();
+        //search for substitutions of this variable in the full context variable map
+        Iterator iter = ctx.getContextInstance().getVariables().entrySet().iterator();
+        while (iter.hasNext()) {
+            Map.Entry entry = (Map.Entry) iter.next();
+
+            if ( ((String) entry.getValue()).compareTo( derivedString ) == 0 ) {
+                substitutionKeys.add((String)entry.getKey());
+            }
+        }
+
+        iter = substitutionKeys.iterator();
+        while (iter.hasNext()) {
+            String key = (String) iter.next();
+            ctx.getContextInstance().setVariable( key , variableValue );
+        }
     }
 
     //convenience function for getting the current node name

@@ -77,6 +77,7 @@ public class InstancesList extends BaseAction {
 
         } catch (Exception e) {
 
+            e.printStackTrace();
             request.setAttribute("message", "An error occurred while attempting to fetch list of instances for this workflow definition");
             return mapping.findForward("error");
 
