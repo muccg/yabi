@@ -38,21 +38,20 @@ public class GrendelClient {
             for (int i = 0; i < attachments.length; i++ ) {
                 try {
                     URL url = new URL(attachments[i]);
-                    DataHandler dataHandler = new DataHandler(url);
-                    AttachmentPart attachment = message.createAttachmentPart(dataHandler);
-                    attachment.setContentId("attached_file");
+                    //test if the file exists
+                    URI uri = new URI(attachments[i]);
+                    if (new File(uri).exists()) {
+                        DataHandler dataHandler = new DataHandler(url);
+                        AttachmentPart attachment = message.createAttachmentPart(dataHandler);
+                        attachment.setContentId("attached_file");
 
-                    message.addAttachmentPart(attachment);
+                        message.addAttachmentPart(attachment);
+                    } //TODO add an else condition to throw an error for a missing input file
                 } catch (Exception e) {
                     //ignore faulty files
                 }
             }
         }
-
-            //debug
-            System.out.println("SENDING");
-            message.writeTo(System.out);
-            System.out.println("--------");
 
         //make the SOAP call
         SOAPMessage response = connection.call(message, endpoint);

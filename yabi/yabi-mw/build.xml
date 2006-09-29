@@ -131,6 +131,9 @@
       <copy file="${basedir}/cfg/velocityxml.cfg" tofile="${ccg.site}/cfg/velocityxml.cfg" overwrite="true"/>
       <copy file="${basedir}/cfg/struts-config.xml" tofile="${ccg.site}/cfg/struts-config.xml" overwrite="true"/>
       <copy file="${basedir}/cfg/toolbox.xml" tofile="${ccg.site}/cfg/toolbox.xml" overwrite="true"/>
+      <copy file="${basedir}/cfg/hibernate/StringInstance.hbm.xml" tofile="${ccg.site}/classes/StringInstance.hbm.xml" overwrite="true"/>
+      <copy file="${basedir}/cfg/hibernate/StringUpdateLog.hbm.xml" tofile="${ccg.site}/classes/StringUpdateLog.hbm.xml" overwrite="true"/>
+      <copy file="${basedir}/cfg/hibernate/HibernateStringInstance.hbm.xml" tofile="${ccg.site}/classes/HibernateStringInstance.hbm.xml" overwrite="true"/>
 	</target>
 
     <target name="templateCopy">

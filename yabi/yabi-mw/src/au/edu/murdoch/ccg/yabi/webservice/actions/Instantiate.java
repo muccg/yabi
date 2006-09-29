@@ -5,6 +5,8 @@ import org.jbpm.graph.exe.*;
 import org.jbpm.*;
 import java.util.*;
 
+import au.edu.murdoch.ccg.yabi.webservice.util.ProcessRunnerThread;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -54,22 +56,23 @@ public class Instantiate extends BaseAction {
                 jbpm.close();
                 jbpm = jbpmConfiguration.createJbpmContext();
 
-                //resume processing now that we've saved
-                processInstance = jbpm.loadProcessInstanceForUpdate(procId);
+                //launch a separate thread so we can push the process along without requiring this thread to wait
+                ProcessRunnerThread prt = new ProcessRunnerThread();
+                prt.setProcessId( procId );
+                prt.setJbpmConfiguration( jbpmConfiguration );
+                prt.start();
 
-                //signal the process to start
-                processInstance.signal();
-
+                //return the process ID
                 request.setAttribute("id", new Long(procId));
 
             } else {
-                request.setAttribute("message", "Process deployment must be performed via a PUT operation");
+                request.setAttribute("message", "Process definition could not be found");
                 return mapping.findForward("error");    
             }
 
         } catch (Exception e) {
 
-            request.setAttribute("message", "An error occurred while attempting to deploy the definition");
+            request.setAttribute("message", "An error occurred while attempting to start the process instance");
             return mapping.findForward("error");
 
         } finally {

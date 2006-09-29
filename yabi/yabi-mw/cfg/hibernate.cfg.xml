@@ -110,10 +110,12 @@
     <mapping resource="org/jbpm/context/exe/variableinstance/DateInstance.hbm.xml"/>
     <mapping resource="org/jbpm/context/exe/variableinstance/DoubleInstance.hbm.xml"/>
     <mapping resource="org/jbpm/context/exe/variableinstance/HibernateLongInstance.hbm.xml"/>
-    <mapping resource="org/jbpm/context/exe/variableinstance/HibernateStringInstance.hbm.xml"/>
+    <!-- modified for longer data storage -->
+    <mapping resource="HibernateStringInstance.hbm.xml"/>
     <mapping resource="org/jbpm/context/exe/variableinstance/LongInstance.hbm.xml"/>
     <mapping resource="org/jbpm/context/exe/variableinstance/NullInstance.hbm.xml"/>
-    <mapping resource="org/jbpm/context/exe/variableinstance/StringInstance.hbm.xml"/>
+    <!-- modified for longer data storage -->
+    <mapping resource="StringInstance.hbm.xml"/>
 
     <!-- msg.db mapping files -->
     <mapping resource="org/jbpm/msg/Message.hbm.xml"/>
@@ -155,7 +157,8 @@
     <mapping resource="org/jbpm/context/log/variableinstance/HibernateLongUpdateLog.hbm.xml"/>
     <mapping resource="org/jbpm/context/log/variableinstance/HibernateStringUpdateLog.hbm.xml"/>
     <mapping resource="org/jbpm/context/log/variableinstance/LongUpdateLog.hbm.xml"/>
-    <mapping resource="org/jbpm/context/log/variableinstance/StringUpdateLog.hbm.xml"/>
+    <!-- modified for longer string values -->
+    <mapping resource="StringUpdateLog.hbm.xml"/>
     <mapping resource="org/jbpm/taskmgmt/log/TaskLog.hbm.xml"/>
     <mapping resource="org/jbpm/taskmgmt/log/TaskCreateLog.hbm.xml"/>
     <mapping resource="org/jbpm/taskmgmt/log/TaskAssignLog.hbm.xml"/>
