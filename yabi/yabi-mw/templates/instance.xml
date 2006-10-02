@@ -16,12 +16,12 @@
             <node name="$!node">
                 <inputs>
         #foreach ($variable in $variables.get($node).get("input").keySet())
-                    <variable key="$variable" value="$!variables.get($node).get("input").get($variable)"/>
+                    <variable key="$variable" value="$esc.xml($!variables.get($node).get("input").get($variable))"/>
         #end
                 </inputs>
                 <outputs>
         #foreach ($variable in $variables.get($node).get("output").keySet())
-                    <variable key="$variable" value="$!variables.get($node).get("output").get($variable)"/>
+                    <variable key="$variable" value="$esc.xml($!variables.get($node).get("output").get($variable))"/>
         #end
                 </outputs>
             </node>

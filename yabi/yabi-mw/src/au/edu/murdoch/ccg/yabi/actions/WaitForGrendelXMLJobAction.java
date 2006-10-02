@@ -28,9 +28,17 @@ public class WaitForGrendelXMLJobAction extends BaseAction {
                 String status = GrendelClient.getJobStatus( (String) inputVars.get("jobId") );
                 varTranslator.saveVariable(ctx, "jobStatus", status );
 
+                //completed
                 if (status.compareTo("C") == 0) {
                     isCompleted = true;
                     varTranslator.saveVariable(ctx, "resultsFile", generateResultLocation( (String) inputVars.get("jobId") ) );
+                }
+
+                //error
+                if (status.compareTo("E") == 0) {
+                    isCompleted = true;
+                    varTranslator.saveVariable(ctx, "errorMessage", e.getMessage());
+                    ctx.leaveNode("error");
                 }
 
                 try {
