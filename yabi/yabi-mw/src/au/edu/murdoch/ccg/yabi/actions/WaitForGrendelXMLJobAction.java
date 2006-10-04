@@ -37,7 +37,7 @@ public class WaitForGrendelXMLJobAction extends BaseAction {
                 //error
                 if (status.compareTo("E") == 0) {
                     isCompleted = true;
-                    varTranslator.saveVariable(ctx, "errorMessage", e.getMessage());
+                    varTranslator.saveVariable(ctx, "errorMessage", "grendel error");
                     ctx.leaveNode("error");
                 }
 
