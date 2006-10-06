@@ -15,6 +15,7 @@ public class BaatInstance {
     private ArrayList inputFiles;
     private ArrayList outputFiles;
     private Document baatFile;
+    private String attachedFile;
 
     public BaatInstance(String toolName) throws Exception {
         //init vars
@@ -38,6 +39,14 @@ public class BaatInstance {
 
     public ArrayList getInputFiles() {
         return this.inputFiles;
+    }
+
+    public String getAttachedFile() {
+        return this.attachedFile;
+    }
+
+    public void setAttachedFile(String fileLoc) {
+        this.attachedFile = fileLoc;
     }
 
     public String exportXML() {
@@ -87,6 +96,26 @@ public class BaatInstance {
             Element elem = (Element) iter.next();
             elem.detach();
         }
+
+        if (attachedFile.length() > 0) {
+            Element inputFileNode = (Element) baatFile.selectSingleNode("//inputFile");
+
+            String attach = attachedFile;
+            //remove all file path info, we just want the filename itself
+            int lastLoc = attach.lastIndexOf( System.getProperty("file.separator") );
+            if (lastLoc > -1) {
+                attach = attach.substring(lastLoc + 1);
+            }
+
+            inputFileNode.setText( attach );        
+        }
+
+        //TODO use a real user name
+        Element submitUserNode = (Element) baatFile.selectSingleNode("//submitUser");
+        submitUserNode.setText( "some user" );
+
+        Element submitLabel = (Element) baatFile.selectSingleNode("//submitLabel");
+        submitLabel.setText( "some_random_label" );
 
     }
 

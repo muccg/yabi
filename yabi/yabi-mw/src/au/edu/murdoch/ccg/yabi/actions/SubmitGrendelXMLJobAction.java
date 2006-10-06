@@ -4,7 +4,10 @@ import org.jbpm.graph.def.ActionHandler;
 import org.jbpm.graph.exe.ExecutionContext;
 
 import au.edu.murdoch.ccg.yabi.util.GrendelClient;
+import au.edu.murdoch.ccg.yabi.objects.BaatInstance;
+import au.edu.murdoch.ccg.yabi.util.Zipper;
 import java.util.*;
+
 
 public class SubmitGrendelXMLJobAction extends BaseAction {
 
@@ -14,25 +17,53 @@ public class SubmitGrendelXMLJobAction extends BaseAction {
     Map outputVars = (Map) myVars.get("output");
 
     //check for presence of required inputs
-    if ( inputVars.get("jobXML") != null ) {
+    if ( inputVars.get("toolName") != null ) {
+
+        //we get the toolname
+        //all the rest are parameters, but we package them into a BaatInstance object so that
+        //we can easily get the list of inputfiles and output files based on the baat xml info
 
         try {
-            String[] attachment = null;
-            if ( inputVars.get("attachment") != null ) {
-                attachment = new String[1];
-                attachment[0] = (String) inputVars.get("attachment");
+            BaatInstance bi = new BaatInstance( (String) inputVars.get("toolName") ); //this will throw an exception if toolName not found
+        
+            //now we process each input parameter and insert it as a parameter to the BaatInstance
+            //this gives us a chance to filter the vars based on name, and inserting them into BaatInstance fetches inputFiles and outputFiles
+            Iterator iter = inputVars.keySet().iterator(); 
+            while (iter.hasNext()) {
+                String keyName = (String) iter.next();
+                String value = (String) inputVars.get(keyName);
+
+                bi.setParameter(keyName, value);
             }
-            long jobId = GrendelClient.submitXMLJob( (String) inputVars.get("jobXML") , attachment);
+
+            //grab out arrayLists of inputFiles and outputFiles from the BaatInstance
+            ArrayList inputFiles = bi.getInputFiles();
+            ArrayList outputFiles = bi.getOutputFiles();
+
+            //zip up all the input files and add the zipfile to the Baat
+            String zipFileName = new Date().getTime() + ".zip";
+            Zipper.createZipFile( zipFileName , "/tmp/", inputFiles );
+
+            bi.setAttachedFile("file:///tmp/" + zipFileName);
+
+            varTranslator.saveVariable(ctx, "expectedOutputFiles", ""+outputFiles);
+
+            long jobId = GrendelClient.submitXMLJob( bi.exportXML()  , bi.getAttachedFile() );
+            varTranslator.saveVariable(ctx, "jobXML", bi.exportXML());
+            //ctx.leaveNode("error");
             varTranslator.saveVariable(ctx, "jobId", ""+jobId);
+
         } catch (Exception e) {
-            varTranslator.saveVariable(ctx, "errorMessage", e.getMessage());
+            varTranslator.saveVariable(ctx, "errorMessage", e.getClass().getName() + " : " + e.getMessage());
+
+            e.printStackTrace();
 
             //propagate execution to error state
             ctx.leaveNode("error");
         }
 
     } else {
-        varTranslator.saveVariable(ctx, "errorMessage", "Missing input : jobXML");
+        varTranslator.saveVariable(ctx, "errorMessage", "Missing input : toolName");
         ctx.leaveNode("error");
     }
 

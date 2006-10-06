@@ -17,6 +17,7 @@ public class ProcessRunnerThread extends Thread {
     public void setJbpmConfiguration (JbpmConfiguration input) { this.jbpmConfig = input; }
 
     public void run() {
+        System.out.println("[ProcessRunnerThread]["+this.processId+"] starting...");
         if (this.processId != 0L && this.jbpmConfig != null) {
      
             //we hound this process down until it is Ended or we hit an exception

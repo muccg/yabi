@@ -11,6 +11,27 @@ public class GrendelClient {
 
     public static String grendelUrl = "http://grendel.localdomain:8080/axis-1_2_1/services/grendel";
 
+    public static long submitXMLJob (String xmlString, ArrayList attachments) throws Exception {
+        String[] attachArray = new String[attachments.size()];
+
+        Iterator iter = attachments.iterator();
+        int count = 0;
+        while (iter.hasNext()) {
+            String attach = (String) iter.next();
+            attachArray[count] = attach;
+            count++;
+        }
+
+        return submitXMLJob(xmlString, attachArray);
+    }
+
+    public static long submitXMLJob (String xmlString, String attachment) throws Exception {
+        String[] attachArray = new String[1];
+        attachArray[0] = attachment;
+
+        return submitXMLJob(xmlString, attachArray);
+    }
+
     public static long submitXMLJob (String xmlString, String[] attachments) throws Exception {
         //create SOAP message
         MessageFactory factory = MessageFactory.newInstance();
