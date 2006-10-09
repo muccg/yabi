@@ -32,6 +32,10 @@ public class WaitForGrendelXMLJobAction extends BaseAction {
                 if (status.compareTo("C") == 0) {
                     isCompleted = true;
                     varTranslator.saveVariable(ctx, "resultsFile", generateResultLocation( (String) inputVars.get("jobId") ) );
+
+                    // ----- STAGE OUT FILES -----
+                    //TODO
+                    //TODO grab results file and unzip to a predictable location
                 }
 
                 //error

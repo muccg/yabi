@@ -36,6 +36,7 @@ public class SubmitGrendelXMLJobAction extends BaseAction {
                 bi.setParameter(keyName, value);
             }
 
+            // ----- STAGE IN FILES ----- 
             //grab out arrayLists of inputFiles and outputFiles from the BaatInstance
             ArrayList inputFiles = bi.getInputFiles();
             ArrayList outputFiles = bi.getOutputFiles();
@@ -48,6 +49,8 @@ public class SubmitGrendelXMLJobAction extends BaseAction {
 
             varTranslator.saveVariable(ctx, "expectedOutputFiles", ""+outputFiles);
 
+
+            // ----- SUBMIT JOB -----
             long jobId = GrendelClient.submitXMLJob( bi.exportXML()  , bi.getAttachedFile() );
             varTranslator.saveVariable(ctx, "jobXML", bi.exportXML());
             //ctx.leaveNode("error");
