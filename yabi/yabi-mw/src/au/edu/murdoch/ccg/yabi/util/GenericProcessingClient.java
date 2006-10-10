@@ -11,5 +11,7 @@ public abstract class GenericProcessingClient {
     public abstract void fileStageIn ( ArrayList files ) throws Exception;
     public abstract void fileStageOut ( ArrayList files ) throws Exception;
     public abstract boolean authenticate ( User user ) throws Exception;
+    public abstract boolean isCompleted () throws Exception;
+    public abstract boolean hasError () throws Exception;
 
 }

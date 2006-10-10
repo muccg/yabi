@@ -8,27 +8,40 @@ import java.io.*;
 import javax.activation.DataHandler;
 import au.edu.murdoch.ccg.yabi.objects.BaatInstance;
 import au.edu.murdoch.ccg.yabi.objects.User;
+import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
+import org.apache.commons.configuration.*;
 
 public class GrendelClient extends GenericProcessingClient {
 
-    public static String grendelUrl = "http://grendel.localdomain:8080/axis-1_2_1/services/grendel";
+    public static String grendelUrl;
+    public static String tmpDir;
 
     //instance variables
     private ArrayList inFiles;
     private ArrayList outFiles;
     private BaatInstance bi;
+    private String jobStatus;
 
     //constructors
-    public GrendelClient( BaatInstance bi ) {
+    public GrendelClient( BaatInstance bi ) throws ConfigurationException {
         inFiles = new ArrayList();
         outFiles = new ArrayList();
         //we need to store the BaatInstance in this object so that we can modify it based on stagein of data
         this.bi = bi;
+
+        loadConfig();
     }
 
     public GrendelClient() {
         inFiles = new ArrayList();
         outFiles = new ArrayList();
+    }
+
+    private void loadConfig() throws ConfigurationException {
+        //load config details
+        Configuration conf = YabiConfiguration.getConfig();
+        grendelUrl = conf.getString("grendel.url");
+        tmpDir = conf.getString("tmpdir");
     }
 
     //instance methods
@@ -158,7 +171,9 @@ public class GrendelClient extends GenericProcessingClient {
 
             connection.close();
 
-            return wantedElement.getValue();
+            this.jobStatus = wantedElement.getValue();
+
+            return this.jobStatus;
 
         }
     }
@@ -169,9 +184,9 @@ public class GrendelClient extends GenericProcessingClient {
 
         //zip up all the input files and add the zipfile to the Baat
         String zipFileName = new Date().getTime() + ".zip";
-        Zipper.createZipFile( zipFileName , "/tmp/", inFiles );
+        Zipper.createZipFile( zipFileName , tmpDir, inFiles );
 
-        bi.setAttachedFile("file:///tmp/" + zipFileName);
+        bi.setAttachedFile("file://" + tmpDir + zipFileName);
     }
 
     public void fileStageOut ( ArrayList files ) throws Exception {
@@ -182,5 +197,13 @@ public class GrendelClient extends GenericProcessingClient {
         //grendel has no authentication yet
         return true;
     }
+
+    public boolean isCompleted () throws Exception {
+        return (this.jobStatus.compareTo("C") == 0);
+    }
+
+    public boolean hasError () throws Exception {
+        return (this.jobStatus.compareTo("E") == 0);
+    }   
 
 }

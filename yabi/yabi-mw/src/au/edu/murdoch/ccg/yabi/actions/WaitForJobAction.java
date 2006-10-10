@@ -3,10 +3,11 @@ package au.edu.murdoch.ccg.yabi.actions;
 import org.jbpm.graph.def.ActionHandler;
 import org.jbpm.graph.exe.ExecutionContext;
 
-import au.edu.murdoch.ccg.yabi.util.GrendelClient;
+import au.edu.murdoch.ccg.yabi.util.GenericProcessingClient;
+import au.edu.murdoch.ccg.yabi.util.ProcessingClientFactory;
 import java.util.*;
 
-public class WaitForGrendelXMLJobAction extends BaseAction {
+public class WaitForJobAction extends BaseAction {
 
   private int waitTime = 30000; // 30 seconds
   private String grendelHost = "http://carah.localdomain:8080";
@@ -24,27 +25,27 @@ public class WaitForGrendelXMLJobAction extends BaseAction {
 
         try {
 
-            GrendelClient gc = new GrendelClient();
+            GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( (String) inputVars.get("jobType") , null );
 
             while ( ! isCompleted ) {
-   
-                String status = gc.getJobStatus( (String) inputVars.get("jobId") );
+  
+                //write the actual status string to the output 
+                String status = pclient.getJobStatus( (String) inputVars.get("jobId") );
                 varTranslator.saveVariable(ctx, "jobStatus", status );
 
                 //completed
-                if (status.compareTo("C") == 0) {
+                if (pclient.isCompleted()) {
                     isCompleted = true;
                     varTranslator.saveVariable(ctx, "resultsFile", generateResultLocation( (String) inputVars.get("jobId") ) );
 
                     // ----- STAGE OUT FILES -----
-                    //TODO
-                    //TODO grab results file and unzip to a predictable location
+                    pclient.fileStageOut( null );
                 }
 
                 //error
-                if (status.compareTo("E") == 0) {
+                if (pclient.hasError()) {
                     isCompleted = true;
-                    varTranslator.saveVariable(ctx, "errorMessage", "grendel error");
+                    varTranslator.saveVariable(ctx, "errorMessage", "processing server error");
                     ctx.leaveNode("error");
                 }
 

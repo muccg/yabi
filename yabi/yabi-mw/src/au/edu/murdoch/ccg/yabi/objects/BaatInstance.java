@@ -5,10 +5,12 @@ import java.util.*;
 import java.io.*;
 import org.dom4j.io.*;
 import java.net.*;
+import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
+import org.apache.commons.configuration.*;
 
 public class BaatInstance {
 
-    private static final String toolDefinitionDirectory = "http://ccg.murdoch.edu.au/jobs/xml/tools/";
+    private static String toolDefinitionDirectory;
 
     private String toolName;
     private ArrayList parameters;
@@ -20,6 +22,10 @@ public class BaatInstance {
     public BaatInstance(String toolName) throws Exception {
         //init vars
         this.toolName = toolName.replaceAll(System.getProperty("file.separator"), ""); //remove directory separators to prevent hacks
+
+        //load config
+        Configuration config = YabiConfiguration.getConfig();
+        toolDefinitionDirectory = config.getString("baat.tools.definitionDirectory");
 
         parameters = new ArrayList();
         inputFiles = new ArrayList();
