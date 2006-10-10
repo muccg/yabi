@@ -6,12 +6,13 @@ import org.jbpm.graph.exe.ExecutionContext;
 import au.edu.murdoch.ccg.yabi.util.GenericProcessingClient;
 import au.edu.murdoch.ccg.yabi.util.ProcessingClientFactory;
 import java.util.*;
+import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
+import org.apache.commons.configuration.*;
 
 public class WaitForJobAction extends BaseAction {
 
   private int waitTime = 30000; // 30 seconds
-  private String grendelHost = "http://carah.localdomain:8080";
-  private String jobsDir = "/jobs";
+  private String grendelHost;
 
   public void execute(ExecutionContext ctx) throws Exception {
     Map myVars = varTranslator.getVariableMap(ctx);
@@ -24,6 +25,10 @@ public class WaitForJobAction extends BaseAction {
         boolean isCompleted = false;
 
         try {
+
+            //load config data
+            Configuration config = YabiConfiguration.getConfig();
+            grendelHost = config.getString("grendel.resultsLocation");
 
             GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( (String) inputVars.get("jobType") , null );
 
@@ -75,7 +80,7 @@ public class WaitForJobAction extends BaseAction {
 
   public String generateResultLocation(String jobId) {
     String dirName = jobId.substring(0,9);
-    String result = grendelHost + jobsDir + "/" + dirName + "/" + jobId + ".zip";
+    String result = grendelHost + "/" + dirName + "/" + jobId + ".zip";
 
     return result;
   }
