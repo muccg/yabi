@@ -3,13 +3,13 @@ package au.edu.murdoch.ccg.yabi.actions;
 import org.jbpm.graph.def.ActionHandler;
 import org.jbpm.graph.exe.ExecutionContext;
 
-import au.edu.murdoch.ccg.yabi.util.GrendelClient;
+import au.edu.murdoch.ccg.yabi.util.ProcessingClientFactory;
+import au.edu.murdoch.ccg.yabi.util.GenericProcessingClient;
 import au.edu.murdoch.ccg.yabi.objects.BaatInstance;
-import au.edu.murdoch.ccg.yabi.util.Zipper;
 import java.util.*;
 
 
-public class SubmitGrendelXMLJobAction extends BaseAction {
+public class SubmitJobAction extends BaseAction {
 
   public void execute(ExecutionContext ctx) throws Exception {
     Map myVars = varTranslator.getVariableMap(ctx);
@@ -37,18 +37,18 @@ public class SubmitGrendelXMLJobAction extends BaseAction {
             }
 
             // ----- CREATE CLIENT -----
-            GrendelClient gc = new GrendelClient(bi);
+            GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( (String) inputVars.get("jobType")  , bi);
 
             // ----- AUTHENTICATE -----
-            gc.authenticate( null );
+            pclient.authenticate( null );
 
             // ----- STAGE IN FILES ----- 
-            gc.fileStageIn( bi.getInputFiles() );
+            pclient.fileStageIn( bi.getInputFiles() );
             ArrayList outputFiles = bi.getOutputFiles();
             varTranslator.saveVariable(ctx, "expectedOutputFiles", ""+outputFiles);
 
             // ----- SUBMIT JOB -----
-            long jobId = gc.submitJob();
+            long jobId = pclient.submitJob();
             varTranslator.saveVariable(ctx, "jobId", ""+jobId);
 
             // ----- STAGE OUT FILES -----

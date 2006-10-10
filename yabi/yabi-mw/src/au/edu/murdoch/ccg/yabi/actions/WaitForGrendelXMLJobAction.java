@@ -23,9 +23,12 @@ public class WaitForGrendelXMLJobAction extends BaseAction {
         boolean isCompleted = false;
 
         try {
+
+            GrendelClient gc = new GrendelClient();
+
             while ( ! isCompleted ) {
-    
-                String status = GrendelClient.getJobStatus( (String) inputVars.get("jobId") );
+   
+                String status = gc.getJobStatus( (String) inputVars.get("jobId") );
                 varTranslator.saveVariable(ctx, "jobStatus", status );
 
                 //completed

@@ -18,7 +18,9 @@ public class GrendelJobStatusAction extends BaseAction {
 
         try {
 
-            String status = GrendelClient.getJobStatus( (String) inputVars.get("jobId") );
+            GrendelClient gc = new GrendelClient();
+
+            String status = gc.getJobStatus( (String) inputVars.get("jobId") );
             varTranslator.saveVariable(ctx, "jobStatus", status );
 
         } catch (Exception e) {

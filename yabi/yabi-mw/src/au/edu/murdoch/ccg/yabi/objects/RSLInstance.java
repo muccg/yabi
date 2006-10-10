@@ -10,6 +10,7 @@ public class RSLInstance extends BaatInstance {
     public String exportXML() {
         //TODO either use JAXP to do an XSLT transform of the Baat
         //TODO or simply grab the relevant values and insert into a template RSL Document
+        return "";
     }
 
 }
