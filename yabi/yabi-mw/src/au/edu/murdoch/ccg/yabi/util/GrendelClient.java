@@ -15,12 +15,14 @@ public class GrendelClient extends GenericProcessingClient {
 
     public static String grendelUrl;
     public static String tmpDir;
+    public static String grendelHost;
 
     //instance variables
     private ArrayList inFiles;
     private ArrayList outFiles;
     private BaatInstance bi;
     private String jobStatus;
+    private String jobId;
 
     //constructors
     public GrendelClient( BaatInstance bi ) throws ConfigurationException {
@@ -42,6 +44,7 @@ public class GrendelClient extends GenericProcessingClient {
         Configuration conf = YabiConfiguration.getConfig();
         grendelUrl = conf.getString("grendel.url");
         tmpDir = conf.getString("tmpdir");
+        grendelHost = conf.getString("grendel.resultsLocation");
     }
 
     //instance methods
@@ -129,6 +132,8 @@ public class GrendelClient extends GenericProcessingClient {
     }
 
     public String getJobStatus (String jobId) throws Exception {
+        this.jobId = jobId;  //store this for if we intend to stageout
+
         MessageFactory factory = MessageFactory.newInstance();
         SOAPMessage message = factory.createMessage();
 
@@ -191,6 +196,8 @@ public class GrendelClient extends GenericProcessingClient {
 
     public void fileStageOut ( ArrayList files ) throws Exception {
         //file stageout for grendel is downloading and unzipping the results file
+        URL zipFile = new URL(generateResultLocation(this.jobId));
+        Zipper.unzip(zipFile, tmpDir);
     }
 
     public boolean authenticate ( User user ) throws Exception {
@@ -205,5 +212,13 @@ public class GrendelClient extends GenericProcessingClient {
     public boolean hasError () throws Exception {
         return (this.jobStatus.compareTo("E") == 0);
     }   
+
+    //this is particular to grendel
+    private String generateResultLocation(String jobId) {
+        String dirName = jobId.substring(0,9);
+        String result = grendelHost + "/" + dirName + "/" + jobId + ".zip";
+
+        return result;
+    }
 
 }

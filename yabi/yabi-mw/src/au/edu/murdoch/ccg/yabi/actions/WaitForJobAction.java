@@ -6,8 +6,6 @@ import org.jbpm.graph.exe.ExecutionContext;
 import au.edu.murdoch.ccg.yabi.util.GenericProcessingClient;
 import au.edu.murdoch.ccg.yabi.util.ProcessingClientFactory;
 import java.util.*;
-import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
-import org.apache.commons.configuration.*;
 
 public class WaitForJobAction extends BaseAction {
 
@@ -26,10 +24,6 @@ public class WaitForJobAction extends BaseAction {
 
         try {
 
-            //load config data
-            Configuration config = YabiConfiguration.getConfig();
-            grendelHost = config.getString("grendel.resultsLocation");
-
             GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( (String) inputVars.get("jobType") , null );
 
             while ( ! isCompleted ) {
@@ -41,7 +35,6 @@ public class WaitForJobAction extends BaseAction {
                 //completed
                 if (pclient.isCompleted()) {
                     isCompleted = true;
-                    varTranslator.saveVariable(ctx, "resultsFile", generateResultLocation( (String) inputVars.get("jobId") ) );
 
                     // ----- STAGE OUT FILES -----
                     pclient.fileStageOut( null );
@@ -61,7 +54,7 @@ public class WaitForJobAction extends BaseAction {
             }
         } catch (Exception e) {
 
-            varTranslator.saveVariable(ctx, "errorMessage", e.getMessage());
+            varTranslator.saveVariable(ctx, "errorMessage", e.getClass() + " : " + e.getMessage());
             //propagate execution to error state
             ctx.leaveNode("error");
 
@@ -76,13 +69,6 @@ public class WaitForJobAction extends BaseAction {
 
     //do not propagate execution. wait for grendel return
     
-  }
-
-  public String generateResultLocation(String jobId) {
-    String dirName = jobId.substring(0,9);
-    String result = grendelHost + "/" + dirName + "/" + jobId + ".zip";
-
-    return result;
   }
 
 }
