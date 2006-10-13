@@ -18,9 +18,7 @@ public class YabiGridProxyInit {
         return new YabiGridProxyModel();
     }
 
-    public void doStuff (String password) {
-        String certFile = "/export/home/tech/ntakayama/.globus/usercert.pem";
-        String userKey = "/export/home/tech/ntakayama/.globus/userkey.pem";
+    public void doStuff (String certFile, String userKey, String password, String proxyFile) {
         model = getModel();
 
         try {
@@ -31,7 +29,6 @@ public class YabiGridProxyInit {
         }
 
         OutputStream out = null;
-        String proxyFile = "/export/home/tech/ntakayama/proxyThis.hahaha";;
         try {
             out = new FileOutputStream(proxyFile);
             Util.setFilePermissions(proxyFile, 600);
@@ -46,10 +43,13 @@ public class YabiGridProxyInit {
 
     }
 
-
+    //static method for testing
     public static void main(String[] args) {
+        String certFile = "/export/home/tech/ntakayama/.globus/usercert.pem";
+        String userKey = "/export/home/tech/ntakayama/.globus/userkey.pem";
+        String proxyFile = "/export/home/tech/ntakayama/proxyThis.hahaha";
         YabiGridProxyInit ygpi = new YabiGridProxyInit();
-        ygpi.doStuff(args[0]);
+        ygpi.doStuff(certFile, userKey, args[0], proxyFile);
     }
 
 }

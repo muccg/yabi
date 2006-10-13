@@ -36,17 +36,17 @@ public class YabiGridProxyModel extends GridProxyModel {
 
         PrivateKey userKey = key.getPrivateKey();
 
-System.out.println("Arrgh 1");
         BouncyCastleCertProcessingFactory factory =
             BouncyCastleCertProcessingFactory.getDefault();
 
         int proxyType = (getLimited()) ?
             GSIConstants.DELEGATION_LIMITED :
             GSIConstants.DELEGATION_FULL;
-System.out.println("Arrgh 2");
+
+        //TODO: un-hardcode the bit size and expiry on the proxy
         return factory.createCredential(new X509Certificate[] {userCert},
                 userKey,
-                128,
+                1024,
                 1 * 3600,
                 proxyType,
                 (org.globus.gsi.X509ExtensionSet) null);
