@@ -4,6 +4,7 @@ import org.globus.ftp.*;
 import org.globus.gsi.*;
 import org.ietf.jgss.GSSCredential;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
+import java.io.*;
 
 public class GridFTPTest {
 
@@ -19,7 +20,18 @@ public class GridFTPTest {
 
             ((GridFTPClient)client).authenticate(credential);
 
-            System.out.println("connected, listing shows: " + client.list());
+            System.out.println("connected");
+
+            client.setDataChannelProtection(GridFTPSession.PROTECTION_PRIVATE);
+            System.out.println("dcp = " + client.getDataChannelProtection());
+
+            System.out.println("listing shows: " + client.list());
+
+            //put a file
+            client.put(new File("/export/home/tech/ntakayama/outgoing/payload"), "/export/home/tech/ntakayama/payload", false);
+
+            //fetch the same file
+            client.get("/export/home/tech/ntakayama/payload", new File("/export/home/tech/ntakayama/incoming/payload"));
 
         } catch (Exception e) {
             e.printStackTrace();

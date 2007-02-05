@@ -14,6 +14,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
 import au.edu.murdoch.ccg.yabi.util.*;
+import au.edu.murdoch.ccg.yabi.objects.*;
 
 public class InstancesList extends BaseAction {
 
@@ -26,6 +27,12 @@ public class InstancesList extends BaseAction {
         ActionForm form,
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
+
+        //test
+        String fname = "ntakayama/jobs/somewhere.jobxml";
+        YabiJobFileInstance yjfi = new YabiJobFileInstance(fname);
+        yjfi.saveFile();
+
 
         JbpmContext jbpm = jbpmConfiguration.createJbpmContext();
 
