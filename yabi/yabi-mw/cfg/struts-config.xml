@@ -20,6 +20,12 @@
 
         <action path="/welcome" forward="/templates/definitions.xml"/>
 
+        <action
+            path="/dispatchXML"
+            type="au.edu.murdoch.ccg.yabi.webservice.actions.DispatchXML">
+            <forward name="success" path="/templates/dispatch.xml"/>
+        </action>
+
         <action 
             path="/definitions"
             type="au.edu.murdoch.ccg.yabi.webservice.actions.DefinitionsList">
