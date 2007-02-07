@@ -13,6 +13,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 
+import au.edu.murdoch.ccg.yabi.webservice.util.ProcessRunnerThread;
 import au.edu.murdoch.ccg.yabi.objects.YabiJobFileInstance;
 
 public class DispatchXML extends BaseAction {
@@ -52,7 +53,7 @@ public class DispatchXML extends BaseAction {
                 ProcessDefinition pd = jbpm.getGraphSession().findLatestProcessDefinition(definitionName);
 
                 //create a new instance
-                //ProcessInstance procInstance = new ProcessInstance(pd);
+                ProcessInstance procInstance = new ProcessInstance(pd);
 
                 //fetch the process variables for use when we instantiate a copy of the definition
                 Map vars = yjfi.getVariables();
@@ -61,11 +62,24 @@ public class DispatchXML extends BaseAction {
                     String value = (String) vars.get(key);
 
                     System.out.println(key + " : " + value);
-                    //procInstance.getContextInstance().setVariable(key, value);
+                    procInstance.getContextInstance().setVariable(key, value);
                 }
 
-                //return back the id (although it will probably get ignored)
-                request.setAttribute("id", new Long(pd.getId()));
+                //transactional save and signal
+                //do a transactional close and reopen to save the start 
+                jbpm.save(procInstance);
+                long procId = procInstance.getId();
+                jbpm.close();
+                jbpm = jbpmConfiguration.createJbpmContext();
+
+                //launch a separate thread so we can push the process along without requiring this thread to wait
+                ProcessRunnerThread prt = new ProcessRunnerThread();
+                prt.setProcessId( procId );
+                prt.setJbpmConfiguration( jbpmConfiguration );
+                prt.start();
+
+                //return the process ID
+                request.setAttribute("id", new Long(procId));
 
             } else {
                 request.setAttribute("message", "Process deployment must be performed via a POST operation");

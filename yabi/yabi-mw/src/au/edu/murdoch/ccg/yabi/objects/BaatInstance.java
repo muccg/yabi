@@ -103,7 +103,7 @@ public class BaatInstance {
             elem.detach();
         }
 
-        if (attachedFile.length() > 0) {
+        if (attachedFile != null && attachedFile.length() > 0) {
             Element inputFileNode = (Element) baatFile.selectSingleNode("//inputFile");
 
             String attach = attachedFile;

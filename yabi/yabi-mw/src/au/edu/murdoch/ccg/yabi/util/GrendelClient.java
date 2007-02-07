@@ -187,11 +187,13 @@ public class GrendelClient extends GenericProcessingClient {
         //file stagein for grendel is zip and submit as an attachment to the job
         inFiles = files;
 
-        //zip up all the input files and add the zipfile to the Baat
-        String zipFileName = new Date().getTime() + ".zip";
-        Zipper.createZipFile( zipFileName , tmpDir, inFiles );
+        if (files != null && files.size() > 0) {
+            //zip up all the input files and add the zipfile to the Baat
+            String zipFileName = new Date().getTime() + ".zip";
+            Zipper.createZipFile( zipFileName , tmpDir, inFiles );
 
-        bi.setAttachedFile("file://" + tmpDir + zipFileName);
+            bi.setAttachedFile("file://" + tmpDir + zipFileName);
+        }
     }
 
     public void fileStageOut ( ArrayList files ) throws Exception {
