@@ -5,6 +5,9 @@ import org.jbpm.graph.exe.ExecutionContext;
 
 import au.edu.murdoch.ccg.yabi.util.GenericProcessingClient;
 import au.edu.murdoch.ccg.yabi.util.ProcessingClientFactory;
+import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
+import org.apache.commons.configuration.*;
+
 import java.util.*;
 
 public class WaitForJobAction extends BaseAction {
@@ -31,6 +34,14 @@ public class WaitForJobAction extends BaseAction {
                 //write the actual status string to the output 
                 String status = pclient.getJobStatus( (String) inputVars.get("jobId") );
                 varTranslator.saveVariable(ctx, "jobStatus", status );
+
+                //locate the jobxml file
+                String jobFile = varTranslator.getProcessVariable(ctx, "jobXMLFile");
+                Configuration conf = YabiConfiguration.getConfig();
+                String rootDir = conf.getString("yabi.rootDirectory");
+                System.out.println("jobfile might be at: "+ rootDir + jobFile);
+
+                //TODO dump the variables for this node into the jobXML file
 
                 //completed
                 if (pclient.isCompleted()) {

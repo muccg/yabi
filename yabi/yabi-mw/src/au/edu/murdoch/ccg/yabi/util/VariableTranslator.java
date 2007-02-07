@@ -128,6 +128,10 @@ public class VariableTranslator {
         }
     }
 
+    public String getProcessVariable(ExecutionContext ctx, String key) {
+        return (String) ctx.getContextInstance().getVariable(key);
+    }
+
     //convenience function for getting the current node name
     protected String getNodeName(ExecutionContext ctx) {
         return ctx.getNode().getFullyQualifiedName();

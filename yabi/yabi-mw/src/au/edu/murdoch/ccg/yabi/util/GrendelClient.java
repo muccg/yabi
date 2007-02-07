@@ -43,7 +43,8 @@ public class GrendelClient extends GenericProcessingClient {
         //load config details
         Configuration conf = YabiConfiguration.getConfig();
         grendelUrl = conf.getString("grendel.url");
-        tmpDir = conf.getString("tmpdir");
+        //tmpDir = conf.getString("tmpdir");
+        tmpDir = conf.getString("yabi.testdata");
         grendelHost = conf.getString("grendel.resultsLocation");
     }
 

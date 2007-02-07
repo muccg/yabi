@@ -65,6 +65,14 @@ public class DispatchXML extends BaseAction {
                     procInstance.getContextInstance().setVariable(key, value);
                 }
 
+                //set some higher level variables that will allow our workflow to update the data file
+                String userName = yjfi.getUserName();
+                String year = yjfi.getYear();
+                String month = yjfi.getMonth();
+                String jobName = yjfi.getJobName();
+                
+                procInstance.getContextInstance().setVariable("jobXMLFile", userName + "/jobs/" + year + "-" + month + "/" + jobName + "/workflow.jobxml");
+
                 //transactional save and signal
                 //do a transactional close and reopen to save the start 
                 jbpm.save(procInstance);
