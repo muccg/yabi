@@ -6,6 +6,7 @@ import org.jbpm.graph.exe.ExecutionContext;
 import au.edu.murdoch.ccg.yabi.util.GenericProcessingClient;
 import au.edu.murdoch.ccg.yabi.util.ProcessingClientFactory;
 import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
+import au.edu.murdoch.ccg.yabi.objects.YabiJobFileInstance;
 import org.apache.commons.configuration.*;
 
 import java.util.*;
@@ -38,10 +39,12 @@ public class WaitForJobAction extends BaseAction {
                 //locate the jobxml file
                 String jobFile = varTranslator.getProcessVariable(ctx, "jobXMLFile");
                 Configuration conf = YabiConfiguration.getConfig();
-                String rootDir = conf.getString("yabi.rootDirectory");
-                System.out.println("jobfile might be at: "+ rootDir + jobFile);
 
-                //TODO dump the variables for this node into the jobXML file
+                //dump the variables for this node into the jobXML file
+                YabiJobFileInstance yjfi = new YabiJobFileInstance(jobFile);
+                Map vars = ctx.getProcessInstance().getContextInstance().getVariables();
+                yjfi.insertVariableMap(vars);
+                yjfi.saveFile();
 
                 //completed
                 if (pclient.isCompleted()) {

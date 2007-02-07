@@ -138,6 +138,17 @@ public class YabiJobFileInstance {
         }
     }
 
+    public void insertVariableMap(Map vars) {
+        if (vars != null) {
+            Iterator iter = vars.keySet().iterator();
+            while (iter.hasNext()) {
+                String key = (String) iter.next();
+                this.setVariableForKey(key, (String)vars.get(key));
+                //System.out.println("setting ["+key+"] = ["+vars.get(key)+"]");
+            }
+        }
+    }
+
     // ---- FILE LOAD/SAVE METHODS ----
 
     private void loadFile() throws Exception {
