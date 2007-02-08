@@ -28,18 +28,6 @@ public class InstancesList extends BaseAction {
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
 
-        //test
-        String fname = "ntakayama/jobs/somewhere.jobxml";
-        YabiJobFileInstance yjfi = new YabiJobFileInstance(fname);
-        yjfi.setJobName("[this is the modified job name]");
-        yjfi.setVariableForKey("processStarted", "true");
-        System.out.println("username is "+yjfi.getUserName());
-        System.out.println("jobName is "+ yjfi.getJobName());
-        System.out.println("year is "+ yjfi.getYear());
-        System.out.println("month is "+ yjfi.getMonth());
-        yjfi.saveFile();
-
-
         JbpmContext jbpm = jbpmConfiguration.createJbpmContext();
 
         try {

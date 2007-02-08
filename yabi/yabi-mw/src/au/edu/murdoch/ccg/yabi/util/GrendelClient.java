@@ -23,6 +23,8 @@ public class GrendelClient extends GenericProcessingClient {
     private BaatInstance bi;
     private String jobStatus;
     private String jobId;
+    private String outputDir;
+    private String rootDir;
 
     //constructors
     public GrendelClient( BaatInstance bi ) throws ConfigurationException {
@@ -34,9 +36,11 @@ public class GrendelClient extends GenericProcessingClient {
         loadConfig();
     }
 
-    public GrendelClient() {
+    public GrendelClient() throws ConfigurationException {
         inFiles = new ArrayList();
         outFiles = new ArrayList();
+
+        loadConfig();
     }
 
     private void loadConfig() throws ConfigurationException {
@@ -45,7 +49,14 @@ public class GrendelClient extends GenericProcessingClient {
         grendelUrl = conf.getString("grendel.url");
         //tmpDir = conf.getString("tmpdir");
         tmpDir = conf.getString("yabi.testdata");
+        outputDir = tmpDir;
+        rootDir = conf.getString("yabi.rootDirectory");
         grendelHost = conf.getString("grendel.resultsLocation");
+    }
+
+    //setter
+    public void setOutputDir(String location) {
+        this.outputDir = location;
     }
 
     //instance methods
@@ -200,7 +211,7 @@ public class GrendelClient extends GenericProcessingClient {
     public void fileStageOut ( ArrayList files ) throws Exception {
         //file stageout for grendel is downloading and unzipping the results file
         URL zipFile = new URL(generateResultLocation(this.jobId));
-        Zipper.unzip(zipFile, tmpDir);
+        Zipper.unzip(zipFile, rootDir + outputDir);
     }
 
     public boolean authenticate ( User user ) throws Exception {

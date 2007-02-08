@@ -38,6 +38,8 @@ public class SubmitJobAction extends BaseAction {
 
             // ----- CREATE CLIENT -----
             GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( (String) inputVars.get("jobType")  , bi);
+            String outputDir = varTranslator.getProcessVariable(ctx, "jobDataDir");
+            pclient.setOutputDir(outputDir);
 
             // ----- AUTHENTICATE -----
             pclient.authenticate( null );

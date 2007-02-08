@@ -72,6 +72,7 @@ public class DispatchXML extends BaseAction {
                 String jobName = yjfi.getJobName();
                 
                 procInstance.getContextInstance().setVariable("jobXMLFile", userName + "/jobs/" + year + "-" + month + "/" + jobName + "/workflow.jobxml");
+                procInstance.getContextInstance().setVariable("jobDataDir", userName + "/jobs/" + year + "-" + month + "/" + jobName + "/data/");
 
                 //transactional save and signal
                 //do a transactional close and reopen to save the start 

@@ -51,6 +51,9 @@ public class WaitForJobAction extends BaseAction {
                     isCompleted = true;
 
                     // ----- STAGE OUT FILES -----
+                    //get the outputdir
+                    String outputDir = varTranslator.getProcessVariable(ctx, "jobDataDir");
+                    pclient.setOutputDir(outputDir);
                     pclient.fileStageOut( null );
                 }
 
