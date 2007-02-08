@@ -38,7 +38,7 @@ public abstract class Zipper {
         out.close();
     }
 
-    public static void unzip (String inFilename, String destination) throws Exception {
+    public static void unzip (String inFilename, String destination, String prefix) throws Exception {
         ZipFile zipFile;
         Enumeration entries;
         //destination should be a directory name with trailing slash
@@ -58,16 +58,19 @@ public abstract class Zipper {
             while(entries.hasMoreElements()) {
                 ZipEntry entry = (ZipEntry)entries.nextElement();
             
-                if(entry.isDirectory()) {
-                    // Assume directories are stored parents first then children.
-                    System.err.println("Extracting directory: " + entry.getName());
-                    // This is not robust, just for demonstration purposes.
-                    (new File(entry.getName())).mkdir();
-                    continue;
-                }   
+                if (! entry.getName().startsWith(".") ) {
+
+                    if(entry.isDirectory()) {
+                        // Assume directories are stored parents first then children.
+                        System.err.println("Extracting directory: " + entry.getName());
+                        // This is not robust, just for demonstration purposes.
+                        (new File(entry.getName())).mkdir();
+                        continue;
+                    }   
             
-                System.err.println("Extracting file: " + entry.getName());
-                copyInputStream(zipFile.getInputStream(entry), new BufferedOutputStream(new FileOutputStream(destination + entry.getName())));
+                    System.err.println("Extracting file: " + entry.getName());
+                    copyInputStream(zipFile.getInputStream(entry), new BufferedOutputStream(new FileOutputStream(destination + prefix + entry.getName())));
+                }
             } 
     
             zipFile.close();
@@ -80,6 +83,10 @@ public abstract class Zipper {
     }
 
     public static void unzip (URL source, String destination) throws Exception {
+        unzip(source, destination, "");
+    }
+
+    public static void unzip (URL source, String destination, String prefix) throws Exception {
         String fname = source.getFile(); //unfortunately this includes the directories
         fname = fname.substring( fname.lastIndexOf( System.getProperty("file.separator") ) + 1 );
         String localSource = destination + fname;
@@ -90,7 +97,7 @@ public abstract class Zipper {
         copyInputStream(is, fos);
 
         //unzip!
-        unzip(localSource, destination);
+        unzip(localSource, destination, prefix);
     }
 
     private static final void copyInputStream(InputStream in, OutputStream out) throws IOException {

@@ -74,6 +74,22 @@ public class YabiJobFileInstance {
         return null;
     }
 
+    public String getStartTime() {
+        if (this.jobFile != null) {
+            Element startTime = (Element) this.jobFile.selectSingleNode("//startTime");
+            if (startTime != null) return startTime.getText();
+        }
+        return null;
+    }
+
+    public String getEndTime() {
+        if (this.jobFile != null) {
+            Element endTime = (Element) this.jobFile.selectSingleNode("//endTime");
+            if (endTime != null) return endTime.getText();
+        }
+        return null;
+    }
+
     public String getVariableByKey(String key) {
         if (this.jobFile != null) {
             Element varElem = (Element) this.jobFile.selectSingleNode("//variable[@key='" + key + "']");
@@ -117,6 +133,20 @@ public class YabiJobFileInstance {
         if (this.jobFile != null) {
             Element jobName = (Element) this.jobFile.selectSingleNode("//jobName");
             jobName.setText(input);
+        }
+    }
+
+    public void setStartTime(String input) {
+        if (this.jobFile != null) {
+            Element startTime = (Element) this.jobFile.selectSingleNode("//startTime");
+            startTime.setText(input);
+        }
+    }
+
+    public void setEndTime(String input) {
+        if (this.jobFile != null) {
+            Element endTime = (Element) this.jobFile.selectSingleNode("//endTime");
+            endTime.setText(input);
         }
     }
 

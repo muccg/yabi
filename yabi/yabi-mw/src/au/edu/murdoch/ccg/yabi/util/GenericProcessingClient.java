@@ -10,6 +10,7 @@ public abstract class GenericProcessingClient {
     public abstract void setOutputDir(String dir);
     public abstract String getJobStatus (String jobId) throws Exception;
     public abstract void fileStageIn ( ArrayList files ) throws Exception;
+    public abstract void setStageOutPrefix (String in);
     public abstract void fileStageOut ( ArrayList files ) throws Exception;
     public abstract boolean authenticate ( User user ) throws Exception;
     public abstract boolean isCompleted () throws Exception;

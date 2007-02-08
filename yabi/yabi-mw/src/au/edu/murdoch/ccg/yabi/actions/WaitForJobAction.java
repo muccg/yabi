@@ -27,6 +27,7 @@ public class WaitForJobAction extends BaseAction {
         boolean isCompleted = false;
 
         try {
+            String nodeName = ctx.getNode().getFullyQualifiedName();
 
             GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( (String) inputVars.get("jobType") , null );
 
@@ -54,6 +55,8 @@ public class WaitForJobAction extends BaseAction {
                     //get the outputdir
                     String outputDir = varTranslator.getProcessVariable(ctx, "jobDataDir");
                     pclient.setOutputDir(outputDir);
+                    String tmpName = nodeName.replaceAll("-check","");
+                    pclient.setStageOutPrefix(tmpName + "_");
                     pclient.fileStageOut( null );
                 }
 

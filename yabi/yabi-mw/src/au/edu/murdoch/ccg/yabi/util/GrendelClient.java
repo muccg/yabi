@@ -25,6 +25,7 @@ public class GrendelClient extends GenericProcessingClient {
     private String jobId;
     private String outputDir;
     private String rootDir;
+    private String outFilePrefix = "";
 
     //constructors
     public GrendelClient( BaatInstance bi ) throws ConfigurationException {
@@ -208,10 +209,15 @@ public class GrendelClient extends GenericProcessingClient {
         }
     }
 
+    //define a prefix to prepend to all staged out filenames to allow different tasks to not conflict
+    public void setStageOutPrefix ( String prefix ) {
+        this.outFilePrefix = prefix;
+    }
+
     public void fileStageOut ( ArrayList files ) throws Exception {
         //file stageout for grendel is downloading and unzipping the results file
         URL zipFile = new URL(generateResultLocation(this.jobId));
-        Zipper.unzip(zipFile, rootDir + outputDir);
+        Zipper.unzip(zipFile, rootDir + outputDir, this.outFilePrefix);
     }
 
     public boolean authenticate ( User user ) throws Exception {
