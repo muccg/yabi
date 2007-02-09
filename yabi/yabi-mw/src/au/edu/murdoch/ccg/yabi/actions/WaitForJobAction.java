@@ -11,67 +11,22 @@ import org.apache.commons.configuration.*;
 
 import java.util.*;
 
-public class WaitForJobAction extends BaseAction {
+public class CleanupAction extends BaseAction {
 
-  private int waitTime = 30000; // 30 seconds
-  private String grendelHost;
-
-  public void execute(ExecutionContext ctx) throws Exception {
-    Map myVars = varTranslator.getVariableMap(ctx);
-    Map inputVars = (Map) myVars.get("input");
-    Map outputVars = (Map) myVars.get("output");
-
-    //validate that we have the jobId that we require
-    if (inputVars.get("jobId") != null) {
-
-        boolean isCompleted = false;
-
+    public void execute(ExecutionContext ctx) throws Exception {
         try {
-            String nodeName = ctx.getNode().getFullyQualifiedName();
+            Map myVars = varTranslator.getVariableMap(ctx);
+            Map inputVars = (Map) myVars.get("input");
+            Map outputVars = (Map) myVars.get("output");
 
-            GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( (String) inputVars.get("jobType") , null );
+            //move the symlink from running to completed directory
+            String jobFile = varTranslator.getProcessVariable(ctx, "jobXMLFile");
+            Configuration conf = YabiConfiguration.getConfig();
 
-            while ( ! isCompleted ) {
-  
-                //write the actual status string to the output 
-                String status = pclient.getJobStatus( (String) inputVars.get("jobId") );
-                varTranslator.saveVariable(ctx, "jobStatus", status );
+            //dump the variables for this node into the jobXML file
+            YabiJobFileInstance yjfi = new YabiJobFileInstance(jobFile);
+            //yjfi.saveFile();
 
-                //locate the jobxml file
-                String jobFile = varTranslator.getProcessVariable(ctx, "jobXMLFile");
-                Configuration conf = YabiConfiguration.getConfig();
-
-                //dump the variables for this node into the jobXML file
-                YabiJobFileInstance yjfi = new YabiJobFileInstance(jobFile);
-                Map vars = ctx.getProcessInstance().getContextInstance().getVariables();
-                yjfi.insertVariableMap(vars);
-                yjfi.saveFile();
-
-                //completed
-                if (pclient.isCompleted()) {
-                    isCompleted = true;
-
-                    // ----- STAGE OUT FILES -----
-                    //get the outputdir
-                    String outputDir = varTranslator.getProcessVariable(ctx, "jobDataDir");
-                    pclient.setOutputDir(outputDir);
-                    String tmpName = nodeName.replaceAll("-check","");
-                    pclient.setStageOutPrefix(tmpName + "_");
-                    pclient.fileStageOut( null );
-                }
-
-                //error
-                if (pclient.hasError()) {
-                    isCompleted = true;
-                    varTranslator.saveVariable(ctx, "errorMessage", "processing server error");
-                    ctx.leaveNode("error");
-                }
-
-                try {
-                    Thread.sleep(waitTime);
-                } catch (InterruptedException e) {}
-
-            }
         } catch (Exception e) {
 
             varTranslator.saveVariable(ctx, "errorMessage", e.getClass() + " : " + e.getMessage());
@@ -80,15 +35,8 @@ public class WaitForJobAction extends BaseAction {
 
         }
 
-    } else {
-
-        varTranslator.saveVariable(ctx, "errorMessage", "Missing input variable: jobId");
-        ctx.leaveNode("error");
- 
-    }
-
-    //do not propagate execution. wait for grendel return
+        //do not propagate execution. wait for grendel return
     
-  }
+    }
 
 }

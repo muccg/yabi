@@ -54,6 +54,14 @@ public abstract class Zipper {
             zipFile = new ZipFile(inFilename);
             
             entries = zipFile.entries();
+
+            //create directory using 'prefix' as the name
+            //TODO TODO
+            String dataDirLoc = destination + prefix;
+            File dataDir = new File(dataDirLoc);
+            if (!dataDir.exists()) {
+                dataDir.mkdir();
+            }
             
             while(entries.hasMoreElements()) {
                 ZipEntry entry = (ZipEntry)entries.nextElement();
@@ -69,7 +77,7 @@ public abstract class Zipper {
                     }   
             
                     System.err.println("Extracting file: " + entry.getName());
-                    copyInputStream(zipFile.getInputStream(entry), new BufferedOutputStream(new FileOutputStream(destination + prefix + entry.getName())));
+                    copyInputStream(zipFile.getInputStream(entry), new BufferedOutputStream(new FileOutputStream(destination + prefix + "/" + entry.getName())));
                 }
             } 
     

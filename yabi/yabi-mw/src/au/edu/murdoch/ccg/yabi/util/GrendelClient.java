@@ -14,7 +14,7 @@ import org.apache.commons.configuration.*;
 public class GrendelClient extends GenericProcessingClient {
 
     public static String grendelUrl;
-    public static String tmpDir;
+    public static String inputDir;
     public static String grendelHost;
 
     //instance variables
@@ -48,9 +48,8 @@ public class GrendelClient extends GenericProcessingClient {
         //load config details
         Configuration conf = YabiConfiguration.getConfig();
         grendelUrl = conf.getString("grendel.url");
-        //tmpDir = conf.getString("tmpdir");
-        tmpDir = conf.getString("yabi.testdata");
-        outputDir = tmpDir;
+        inputDir = conf.getString("yabi.rootDirectory");
+        outputDir = inputDir;
         rootDir = conf.getString("yabi.rootDirectory");
         grendelHost = conf.getString("grendel.resultsLocation");
     }
@@ -58,6 +57,10 @@ public class GrendelClient extends GenericProcessingClient {
     //setter
     public void setOutputDir(String location) {
         this.outputDir = location;
+    }
+
+    public void setInputDirByUsername(String userName) {
+        this.inputDir = rootDir + userName + "/data/";
     }
 
     //instance methods
@@ -203,9 +206,9 @@ public class GrendelClient extends GenericProcessingClient {
         if (files != null && files.size() > 0) {
             //zip up all the input files and add the zipfile to the Baat
             String zipFileName = new Date().getTime() + ".zip";
-            Zipper.createZipFile( zipFileName , tmpDir, inFiles );
+            Zipper.createZipFile( zipFileName , inputDir, inFiles );
 
-            bi.setAttachedFile("file://" + tmpDir + zipFileName);
+            bi.setAttachedFile("file://" + inputDir + zipFileName);
         }
     }
 

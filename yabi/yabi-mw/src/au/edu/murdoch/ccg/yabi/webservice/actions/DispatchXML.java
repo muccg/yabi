@@ -4,6 +4,7 @@ import org.jbpm.graph.def.*;
 import org.jbpm.graph.exe.*;
 import org.jbpm.*;
 import java.util.*;
+import java.io.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -15,6 +16,11 @@ import org.apache.struts.action.ActionMapping;
 
 import au.edu.murdoch.ccg.yabi.webservice.util.ProcessRunnerThread;
 import au.edu.murdoch.ccg.yabi.objects.YabiJobFileInstance;
+import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
+import au.edu.murdoch.ccg.yabi.util.SymLink;
+
+import org.apache.commons.configuration.*;
+
 
 public class DispatchXML extends BaseAction {
 
@@ -73,6 +79,10 @@ public class DispatchXML extends BaseAction {
                 
                 procInstance.getContextInstance().setVariable("jobXMLFile", userName + "/jobs/" + year + "-" + month + "/" + jobName + "/workflow.jobxml");
                 procInstance.getContextInstance().setVariable("jobDataDir", userName + "/jobs/" + year + "-" + month + "/" + jobName + "/data/");
+                procInstance.getContextInstance().setVariable("username", userName);
+
+                //now that we now the username we can create our initial symlink
+                this.createRunningLink(userName, year, month, jobName);
 
                 //transactional save and signal
                 //do a transactional close and reopen to save the start 
@@ -106,6 +116,28 @@ public class DispatchXML extends BaseAction {
 
         return mapping.findForward("success");
 
+    }
+
+    private void createRunningLink(String username, String year, String month, String jobName) throws Exception {
+        Configuration conf = YabiConfiguration.getConfig();
+        String rootDir = conf.getString("yabi.rootDirectory");
+        this.checkSymDirs(rootDir, username);
+
+        String from = rootDir + username + "/jobs/" + year + "-" + month + "/" + jobName;
+        String to = rootDir + username + "/running";
+
+        SymLink.createSymLink(from, to);
+    }
+
+    private void checkSymDirs(String rootDir, String username) throws Exception { 
+        File runningDir = new File(rootDir + username + "/running");
+        if (!runningDir.exists()) {
+            runningDir.mkdir();
+        }
+        File completedDir = new File(rootDir + username + "/completed");
+        if (!completedDir.exists()) {
+            completedDir.mkdir();
+        }
     }
 
 }

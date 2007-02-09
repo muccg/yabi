@@ -28,7 +28,7 @@
       <property name="ccg.site" value="${basedir}/tmp"/>
       <property name="ccg.buildname" value="snapshot"/>
       <property name="ccg.approot" value="/usr/local/java/jakarta-tomcat-5.5.9/webapps/"/>
-      <property name="ccg.dbhost" value="localhost.localdomain"/>
+      <property name="ccg.dbhost" value="boromirdb.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
       <property name="ccg.dbname" value="yabimwdev"/>
@@ -40,7 +40,7 @@
       <property name="ccg.site" value="${basedir}/tmp"/>
       <property name="ccg.buildname" value="${user.name}"/>
       <property name="ccg.approot" value="/usr/local/java/jakarta-tomcat-5.5.9/webapps/"/>
-      <property name="ccg.dbhost" value="localhost.localdomain"/>
+      <property name="ccg.dbhost" value="boromirdb.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
       <property name="ccg.dbname" value="yabimwdev"/>
