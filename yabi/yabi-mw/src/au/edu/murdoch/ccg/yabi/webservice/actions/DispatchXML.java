@@ -80,6 +80,9 @@ public class DispatchXML extends BaseAction {
                 procInstance.getContextInstance().setVariable("jobXMLFile", userName + "/jobs/" + year + "-" + month + "/" + jobName + "/workflow.jobxml");
                 procInstance.getContextInstance().setVariable("jobDataDir", userName + "/jobs/" + year + "-" + month + "/" + jobName + "/data/");
                 procInstance.getContextInstance().setVariable("username", userName);
+                procInstance.getContextInstance().setVariable("year", year);
+                procInstance.getContextInstance().setVariable("month", month);
+                procInstance.getContextInstance().setVariable("jobName", jobName);
 
                 //now that we now the username we can create our initial symlink
                 this.createRunningLink(userName, year, month, jobName);

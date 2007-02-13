@@ -10,85 +10,49 @@ import au.edu.murdoch.ccg.yabi.objects.YabiJobFileInstance;
 import org.apache.commons.configuration.*;
 
 import java.util.*;
+import java.io.File;
+import au.edu.murdoch.ccg.yabi.util.SymLink;
 
-public class WaitForJobAction extends BaseAction {
-
-  private int waitTime = 30000; // 30 seconds
-  private String grendelHost;
+public class CleanupAction extends BaseAction {
 
   public void execute(ExecutionContext ctx) throws Exception {
     Map myVars = varTranslator.getVariableMap(ctx);
     Map inputVars = (Map) myVars.get("input");
     Map outputVars = (Map) myVars.get("output");
 
-    //validate that we have the jobId that we require
-    if (inputVars.get("jobId") != null) {
+    String jobName = varTranslator.getProcessVariable(ctx, "jobName");
+    String year = varTranslator.getProcessVariable(ctx, "year");
+    String month = varTranslator.getProcessVariable(ctx, "month");
+    String userName = varTranslator.getProcessVariable(ctx, "username");
 
-        boolean isCompleted = false;
+    boolean result = this.moveSymLink(userName, year, month, jobName);
 
-        try {
-            String nodeName = ctx.getNode().getFullyQualifiedName();
-
-            GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( (String) inputVars.get("jobType") , null );
-
-            while ( ! isCompleted ) {
-  
-                //write the actual status string to the output 
-                String status = pclient.getJobStatus( (String) inputVars.get("jobId") );
-                varTranslator.saveVariable(ctx, "jobStatus", status );
-
-                //locate the jobxml file
-                String jobFile = varTranslator.getProcessVariable(ctx, "jobXMLFile");
-                Configuration conf = YabiConfiguration.getConfig();
-
-                //dump the variables for this node into the jobXML file
-                YabiJobFileInstance yjfi = new YabiJobFileInstance(jobFile);
-                Map vars = ctx.getProcessInstance().getContextInstance().getVariables();
-                yjfi.insertVariableMap(vars);
-                yjfi.saveFile();
-
-                //completed
-                if (pclient.isCompleted()) {
-                    isCompleted = true;
-
-                    // ----- STAGE OUT FILES -----
-                    //get the outputdir
-                    String outputDir = varTranslator.getProcessVariable(ctx, "jobDataDir");
-                    pclient.setOutputDir(outputDir);
-                    String tmpName = nodeName.replaceAll("-check","");
-                    pclient.setStageOutPrefix(tmpName);
-                    pclient.fileStageOut( null );
-                }
-
-                //error
-                if (pclient.hasError()) {
-                    isCompleted = true;
-                    varTranslator.saveVariable(ctx, "errorMessage", "processing server error");
-                    ctx.leaveNode("error");
-                }
-
-                try {
-                    Thread.sleep(waitTime);
-                } catch (InterruptedException e) {}
-
-            }
-        } catch (Exception e) {
-
-            varTranslator.saveVariable(ctx, "errorMessage", e.getClass() + " : " + e.getMessage());
-            //propagate execution to error state
-            ctx.leaveNode("error");
-
-        }
-
+    if (result) {
+        varTranslator.saveVariable(ctx, "jobStatus", "C");
     } else {
-
-        varTranslator.saveVariable(ctx, "errorMessage", "Missing input variable: jobId");
-        ctx.leaveNode("error");
- 
+        varTranslator.saveVariable(ctx, "jobStatus", "E");
     }
 
-    //do not propagate execution. wait for grendel return
-    
+    ctx.getContextInstance().setVariable("jobStatus", "completed");
+    ctx.leaveNode("next");
   }
+
+    private boolean moveSymLink(String username, String year, String month, String jobName) throws Exception {
+        Configuration conf = YabiConfiguration.getConfig();
+        String rootDir = conf.getString("yabi.rootDirectory");
+                
+        String from = rootDir + username + "/running/" + jobName;
+        String to = rootDir + username + "/completed";
+        String linkTo = rootDir + username + "/jobs/" + year + "-" + month + "/" + jobName;
+
+        File old = new File(from);
+        boolean res = old.delete();
+        System.out.println("deleted file ["+from+"]");
+        if (!res) return false;
+
+        SymLink.createSymLink(linkTo, to);
+
+        return true;
+    }       
 
 }
