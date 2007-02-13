@@ -56,7 +56,7 @@ public class WaitForJobAction extends BaseAction {
                     String outputDir = varTranslator.getProcessVariable(ctx, "jobDataDir");
                     pclient.setOutputDir(outputDir);
                     String tmpName = nodeName.replaceAll("-check","");
-                    pclient.setStageOutPrefix(tmpName + "_");
+                    pclient.setStageOutPrefix(tmpName);
                     pclient.fileStageOut( null );
                 }
 
