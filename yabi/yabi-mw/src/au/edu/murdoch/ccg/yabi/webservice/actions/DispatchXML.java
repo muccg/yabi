@@ -126,6 +126,8 @@ public class DispatchXML extends BaseAction {
         String rootDir = conf.getString("yabi.rootDirectory");
         this.checkSymDirs(rootDir, username);
 
+        jobName = jobName.replaceAll(" ", "_");
+
         String from = rootDir + username + "/jobs/" + year + "-" + month + "/" + jobName;
         String to = rootDir + username + "/running";
 

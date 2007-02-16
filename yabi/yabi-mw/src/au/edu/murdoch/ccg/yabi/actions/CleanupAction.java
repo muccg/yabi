@@ -40,7 +40,9 @@ public class CleanupAction extends BaseAction {
     private boolean moveSymLink(String username, String year, String month, String jobName) throws Exception {
         Configuration conf = YabiConfiguration.getConfig();
         String rootDir = conf.getString("yabi.rootDirectory");
-                
+         
+        jobName = jobName.replaceAll(" ", "_");
+       
         String from = rootDir + username + "/running/" + jobName;
         String to = rootDir + username + "/completed";
         String linkTo = rootDir + username + "/jobs/" + year + "-" + month + "/" + jobName;
