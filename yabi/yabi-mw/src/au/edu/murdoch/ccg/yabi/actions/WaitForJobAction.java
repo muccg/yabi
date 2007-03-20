@@ -13,7 +13,7 @@ import java.util.*;
 
 public class WaitForJobAction extends BaseAction {
 
-  private int waitTime = 30000; // 30 seconds
+  private int waitTime = 1000; // start at 1 second
   private String grendelHost;
 
   public void execute(ExecutionContext ctx) throws Exception {
@@ -67,9 +67,13 @@ public class WaitForJobAction extends BaseAction {
                     ctx.leaveNode("error");
                 }
 
-                try {
-                    Thread.sleep(waitTime);
-                } catch (InterruptedException e) {}
+                if (! pclient.isCompleted()) {
+                    try {
+                        System.out.println("[WaitForJobAction] backing off for "+waitTime+" ms");
+                        Thread.sleep(waitTime);
+                        waitTime += waitTime;  //exponential backoff
+                    } catch (InterruptedException e) {}
+                }
 
             }
         } catch (Exception e) {

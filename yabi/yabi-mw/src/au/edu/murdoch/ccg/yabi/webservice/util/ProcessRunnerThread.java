@@ -10,7 +10,7 @@ public class ProcessRunnerThread extends Thread {
     private long processId = 0L;
     private JbpmConfiguration jbpmConfig;
     private boolean isDone = false;
-    private int waitTime = 5000; //5 seconds before resignalling process
+    private int waitTime = 500; //0.5 seconds before resignalling process
 
     public void setProcessId (long input) { this.processId = input; }
     public long getProcessId () { return this.processId; }

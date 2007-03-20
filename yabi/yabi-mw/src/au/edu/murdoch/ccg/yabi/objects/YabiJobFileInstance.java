@@ -19,7 +19,7 @@ public class YabiJobFileInstance {
     public YabiJobFileInstance(String fileName) throws Exception {
         //init vars
         //this.fileName = fileName.replaceAll(System.getProperty("file.separator"), ""); //remove directory separators to prevent hacks
-        this.fileName = fileName;
+        this.fileName = fileName.replaceAll(" ","_"); //remove spaces and replace with underscores
 
         //load config
         Configuration config = YabiConfiguration.getConfig();
