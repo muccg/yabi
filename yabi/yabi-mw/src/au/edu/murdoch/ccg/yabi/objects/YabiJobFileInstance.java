@@ -139,14 +139,29 @@ public class YabiJobFileInstance {
     public void setStartTime(String input) {
         if (this.jobFile != null) {
             Element startTime = (Element) this.jobFile.selectSingleNode("//startTime");
-            startTime.setText(input);
+            if (startTime == null) {
+                startTime = new DefaultElement("startTime");
+                Element yabiJobNode = (Element) this.jobFile.selectSingleNode("//yabi-job");
+                startTime.setText(input);
+                yabiJobNode.add(startTime);
+            } else {
+                startTime.setText(input);
+            }
         }
     }
 
     public void setEndTime(String input) {
         if (this.jobFile != null) {
             Element endTime = (Element) this.jobFile.selectSingleNode("//endTime");
-            endTime.setText(input);
+            if (endTime == null) {
+                endTime = new DefaultElement("endTime");
+                Element yabiJobNode = (Element) this.jobFile.selectSingleNode("//yabi-job");
+                endTime.setText(input);
+                yabiJobNode.add(endTime);
+            } else {
+                endTime.setText(input);
+            }
+
         }
     }
 

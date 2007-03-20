@@ -10,6 +10,7 @@ import au.edu.murdoch.ccg.yabi.objects.YabiJobFileInstance;
 import org.apache.commons.configuration.*;
 
 import java.util.*;
+import java.text.DateFormat;
 import java.io.File;
 import au.edu.murdoch.ccg.yabi.util.SymLink;
 
@@ -32,6 +33,15 @@ public class CleanupAction extends BaseAction {
     } else {
         varTranslator.saveVariable(ctx, "jobStatus", "E");
     }
+
+    //locate the jobxml file
+    String jobFile = varTranslator.getProcessVariable(ctx, "jobXMLFile");
+
+    //output the endtime into the jobXML file
+    YabiJobFileInstance yjfi = new YabiJobFileInstance(jobFile);
+    yjfi.setEndTime( DateFormat.getDateInstance().format( new java.util.Date() ) );
+    yjfi.saveFile();
+
 
     ctx.getContextInstance().setVariable("jobStatus", "completed");
     ctx.leaveNode("next");
