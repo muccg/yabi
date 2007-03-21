@@ -15,7 +15,6 @@ public class WaitForJobAction extends BaseAction {
 
   private int waitTime = 1000; // start at 1 second
   private int maxWaitTime = 30000; //max wait time of 30 sec
-  private String grendelHost;
 
   public void execute(ExecutionContext ctx) throws Exception {
     Map myVars = varTranslator.getVariableMap(ctx);
@@ -95,7 +94,7 @@ public class WaitForJobAction extends BaseAction {
  
     }
 
-    //do not propagate execution. wait for grendel return
+    //do not propagate execution. wait for return
     
   }
 

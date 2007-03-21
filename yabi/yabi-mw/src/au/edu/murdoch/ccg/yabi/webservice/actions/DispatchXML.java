@@ -132,17 +132,17 @@ public class DispatchXML extends BaseAction {
         jobName = jobName.replaceAll(" ", "_");
 
         String from = rootDir + username + "/jobs/" + year + "-" + month + "/" + jobName;
-        String to = rootDir + username + "/running";
+        String to = rootDir + username + "/.running";
 
         SymLink.createSymLink(from, to);
     }
 
     private void checkSymDirs(String rootDir, String username) throws Exception { 
-        File runningDir = new File(rootDir + username + "/running");
+        File runningDir = new File(rootDir + username + "/.running");
         if (!runningDir.exists()) {
             runningDir.mkdir();
         }
-        File completedDir = new File(rootDir + username + "/completed");
+        File completedDir = new File(rootDir + username + "/.completed");
         if (!completedDir.exists()) {
             completedDir.mkdir();
         }

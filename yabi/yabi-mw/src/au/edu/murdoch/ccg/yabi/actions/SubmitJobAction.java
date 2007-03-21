@@ -55,8 +55,6 @@ public class SubmitJobAction extends BaseAction {
             long jobId = pclient.submitJob();
             varTranslator.saveVariable(ctx, "jobId", ""+jobId);
 
-            // ----- STAGE OUT FILES -----
-
         } catch (Exception e) {
             varTranslator.saveVariable(ctx, "errorMessage", e.getClass().getName() + " : " + e.getMessage());
 
