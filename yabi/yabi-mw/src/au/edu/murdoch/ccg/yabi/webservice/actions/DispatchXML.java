@@ -5,6 +5,7 @@ import org.jbpm.graph.exe.*;
 import org.jbpm.*;
 import java.util.*;
 import java.io.*;
+import java.text.SimpleDateFormat;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -83,6 +84,8 @@ public class DispatchXML extends BaseAction {
                 procInstance.getContextInstance().setVariable("year", year);
                 procInstance.getContextInstance().setVariable("month", month);
                 procInstance.getContextInstance().setVariable("jobName", jobName);
+                String curTime = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss").format( new java.util.Date() ) ;
+                procInstance.getContextInstance().setVariable("startTime", curTime );
 
                 //now that we now the username we can create our initial symlink
                 this.createRunningLink(userName, year, month, jobName);

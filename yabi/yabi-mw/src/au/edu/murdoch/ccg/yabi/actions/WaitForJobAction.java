@@ -14,6 +14,7 @@ import java.util.*;
 public class WaitForJobAction extends BaseAction {
 
   private int waitTime = 1000; // start at 1 second
+  private int maxWaitTime = 30000; //max wait time of 30 sec
   private String grendelHost;
 
   public void execute(ExecutionContext ctx) throws Exception {
@@ -72,6 +73,9 @@ public class WaitForJobAction extends BaseAction {
                         System.out.println("[WaitForJobAction] backing off for "+waitTime+" ms");
                         Thread.sleep(waitTime);
                         waitTime += waitTime;  //exponential backoff
+                        if (waitTime > maxWaitTime) {
+                            waitTime = maxWaitTime;
+                        }
                     } catch (InterruptedException e) {}
                 }
 

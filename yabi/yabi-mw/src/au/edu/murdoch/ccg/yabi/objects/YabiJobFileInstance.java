@@ -218,6 +218,11 @@ public class YabiJobFileInstance {
         }
 
         if (fileName != null) {
+            //if a process variable for startTime exists, and no node for startTime is yet defined, set it
+            if (this.getStartTime() == null && this.getVariableByKey("startTime") != null) {
+                this.setStartTime( this.getVariableByKey("startTime") );
+            }
+
             String fileLoc = yabiRootDirectory + fileName;
             FileWriter fw = new FileWriter( fileLoc );
             OutputFormat of = new OutputFormat("  ");

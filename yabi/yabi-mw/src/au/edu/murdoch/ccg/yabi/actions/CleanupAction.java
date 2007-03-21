@@ -10,7 +10,7 @@ import au.edu.murdoch.ccg.yabi.objects.YabiJobFileInstance;
 import org.apache.commons.configuration.*;
 
 import java.util.*;
-import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.io.File;
 import au.edu.murdoch.ccg.yabi.util.SymLink;
 
@@ -39,7 +39,10 @@ public class CleanupAction extends BaseAction {
 
     //output the endtime into the jobXML file
     YabiJobFileInstance yjfi = new YabiJobFileInstance(jobFile);
-    yjfi.setEndTime( DateFormat.getDateInstance().format( new java.util.Date() ) );
+    yjfi.setEndTime( new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss").format( new java.util.Date() ) );
+    //also make sure all process variables are dumped, such as errors etc
+    Map vars = ctx.getProcessInstance().getContextInstance().getVariables();
+    yjfi.insertVariableMap(vars);
     yjfi.saveFile();
 
 
