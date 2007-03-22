@@ -42,6 +42,8 @@ public class SubmitJobAction extends BaseAction {
             pclient.setOutputDir(outputDir);
             String username = varTranslator.getProcessVariable(ctx, "username");
             pclient.setInputDirByUsername(username);
+            String nodeName = ctx.getNode().getFullyQualifiedName();
+            pclient.setStageOutPrefix(nodeName);
 
             // ----- AUTHENTICATE -----
             pclient.authenticate( null );

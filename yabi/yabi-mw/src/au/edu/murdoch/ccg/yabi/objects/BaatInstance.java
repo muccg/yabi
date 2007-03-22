@@ -18,6 +18,7 @@ public class BaatInstance {
     private ArrayList outputFiles;
     private Document baatFile;
     private String attachedFile;
+    private String toolPath;
 
     public BaatInstance(String toolName) throws Exception {
         //init vars
@@ -132,6 +133,13 @@ public class BaatInstance {
             SAXReader xmlReader = new SAXReader();
             baatFile = xmlReader.read(toolFile); //throws DocumentException on a parse error
 
+            //load the toolpath
+            Element jobNode = (Element) baatFile.selectSingleNode("//job");
+            if (jobNode != null) {
+                this.toolPath = jobNode.attributeValue("toolPath");
+            }
+
+            //load the parameters as per the baat file
             XPath xpathSelector = DocumentHelper.createXPath("//parameter");
             List results = xpathSelector.selectNodes(baatFile);
             for ( Iterator iter = results.iterator(); iter.hasNext(); ) {
@@ -202,6 +210,24 @@ public class BaatInstance {
                 }
             }
         }
+    }
+
+    public String getToolPath () {
+        return this.toolPath;
+    }
+
+    public String getCommandLine() {
+        String command = this.toolPath + " ";
+
+        //append all parameters to the end
+        //TODO do this in a particular order
+        Iterator iter = this.parameters.iterator();
+        while (iter.hasNext()) {
+            BaatParameter bp = (BaatParameter) iter.next();
+            command += bp.switchName + " " + bp.value + " ";
+        }
+    
+        return command;
     }
 
     public static void main(String[] args) {

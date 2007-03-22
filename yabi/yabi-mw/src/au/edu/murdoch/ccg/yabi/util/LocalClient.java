@@ -7,6 +7,7 @@ import au.edu.murdoch.ccg.yabi.objects.BaatInstance;
 import au.edu.murdoch.ccg.yabi.objects.User;
 import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
 import org.apache.commons.configuration.*;
+import au.edu.murdoch.cbbc.util.*;
 
 public class LocalClient extends GenericProcessingClient {
 
@@ -43,6 +44,7 @@ public class LocalClient extends GenericProcessingClient {
         //load config details
         Configuration conf = YabiConfiguration.getConfig();
         //grendelUrl = conf.getString("grendel.url");
+        rootDir = conf.getString("yabi.rootDirectory");
     }
 
     //setter
@@ -58,6 +60,46 @@ public class LocalClient extends GenericProcessingClient {
     public long submitJob () throws Exception {
         //fake
         long jobId = 0L;
+
+        //test only
+        try {
+            //create data directories
+            String dataDirLoc = rootDir + this.outputDir ;
+            File dataDir = new File(dataDirLoc);
+            if (!dataDir.exists()) {
+                dataDir.mkdir();
+            }
+            String unitDirLoc = dataDirLoc + this.outFilePrefix;
+            File unitDir = new File(unitDirLoc);
+            if (!unitDir.exists()) {
+                unitDir.mkdir();
+            }
+
+            String command = this.bi.getCommandLine();
+            if ( command.indexOf(";") == -1 ) {
+                System.out.println("[command] "+this.bi.getCommandLine());
+                Process proc = Runtime.getRuntime().exec(this.bi.getCommandLine());
+
+                StreamWriter stdOutWriter = new StreamWriter();
+                StreamWriter stdErrWriter = new StreamWriter();
+
+                String stdOutPath = unitDirLoc + "/out.txt";
+                String stdErrPath = unitDirLoc + "/err.txt";
+
+                System.out.println("[out] "+stdOutPath);
+                System.out.println("[err] "+stdErrPath);
+
+                stdOutWriter.record(proc.getInputStream(), stdOutPath);
+                stdErrWriter.record(proc.getErrorStream(), stdErrPath);
+
+                //this is unnecessary, but let's stick around anyway
+                proc.waitFor();
+            }
+        } catch (Exception e) {
+            System.out.println("[command FAIL] "+e.getClass().getName()+" : "+e.getMessage());
+        } catch (CBBCException e) {
+            System.out.println("[command FAIL] "+e.getClass().getName()+" : "+e.getMessage());
+        }
 
         return jobId;
     }

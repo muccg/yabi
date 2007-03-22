@@ -63,10 +63,10 @@ public class CleanupAction extends BaseAction {
         File old = new File(from);
         boolean res = old.delete();
         System.out.println("deleted file ["+from+"]");
-        if (!res) return false;
 
         SymLink.createSymLink(linkTo, to);
 
+        if (!res) return false; //return false if we failed to delete the .running link, just so there is an error code to be seen
         return true;
     }       
 
