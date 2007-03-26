@@ -236,6 +236,10 @@ public class BaatInstance {
 
             String tempValue = bp.value;
 
+            if (bp.filter != null && bp.filter.equalsIgnoreCase("prependRootDir")) {
+                tempValue = rootDir + bp.value;
+            }
+
             if (bp.switchUse.equalsIgnoreCase("both")) {
                 command += bp.switchName + " " + tempValue + " ";
             } else if (bp.switchUse.equalsIgnoreCase("valueOnly")) {

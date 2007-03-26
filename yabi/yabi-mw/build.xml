@@ -107,7 +107,7 @@
     
     <!-- Create properties file containing attributes for munging -->
     <target name="appProperties" depends="init">
-      <propertyfile file="${ccg.site}/yabi.properties" comment="App properties">
+      <propertyfile file="${ccg.site}/yabi-mw.properties" comment="App properties">
         <entry  key="buildname" value="${ccg.buildname}"/>
         <entry  key="project" value="${ant.project.name}"/>
         <entry  key="approot" value="${ccg.approot}"/>
@@ -123,7 +123,7 @@
     <!-- config file copy and munge/rename -->
 	<target name="configCopy">
 	  <echo message="Copying config files to classes folder"/>
-      <filter filtersfile="${ccg.site}/yabi.properties"/>
+      <filter filtersfile="${ccg.site}/yabi-mw.properties"/>
 	  <copy file="${basedir}/cfg/jbpm.cfg.xml" tofile="${ccg.site}/classes/yabi-jbpm.cfg.xml" filtering="true" overwrite="true"/>
 	  <copy file="${basedir}/cfg/log4j.properties" tofile="${ccg.site}/classes/log4j.properties" overwrite="true"/>
       <copy file="${basedir}/cfg/hibernate.cfg.xml" tofile="${ccg.site}/classes/yabi-hibernate.cfg.xml" filtering="true" overwrite="true"/>
@@ -134,11 +134,11 @@
       <copy file="${basedir}/cfg/hibernate/StringInstance.hbm.xml" tofile="${ccg.site}/classes/StringInstance.hbm.xml" overwrite="true"/>
       <copy file="${basedir}/cfg/hibernate/StringUpdateLog.hbm.xml" tofile="${ccg.site}/classes/StringUpdateLog.hbm.xml" overwrite="true"/>
       <copy file="${basedir}/cfg/hibernate/HibernateStringInstance.hbm.xml" tofile="${ccg.site}/classes/HibernateStringInstance.hbm.xml" overwrite="true"/>
-      <copy file="${basedir}/cfg/yabi.properties" tofile="${ccg.site}/classes/yabi.properties" overwrite="true"/>
+      <copy file="${basedir}/cfg/yabi-mw.properties" tofile="${ccg.site}/classes/yabi-mw.properties" overwrite="true"/>
 	</target>
 
     <target name="templateCopy">
-      <filter filtersfile="${ccg.site}/yabi.properties"/>
+      <filter filtersfile="${ccg.site}/yabi-mw.properties"/>
       <copy todir="${ccg.site}/templates" filtering="true" overwrite="true">
         <fileset dir="${basedir}/templates">
           <include name="**"/>

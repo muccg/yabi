@@ -9,7 +9,7 @@ public class YabiConfiguration {
     //could synchronize this but not really fussed if we load the config twice
     public static Configuration getConfig() throws ConfigurationException {
         if (yconf == null) {
-            yconf = new PropertiesConfiguration("yabi.properties");
+            yconf = new PropertiesConfiguration("yabi-mw.properties");
         }
         return yconf;
     }
