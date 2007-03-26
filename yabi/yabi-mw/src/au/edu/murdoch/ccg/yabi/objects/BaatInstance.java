@@ -238,6 +238,8 @@ public class BaatInstance {
 
             if (bp.filter != null && bp.filter.equalsIgnoreCase("prependRootDir")) {
                 tempValue = rootDir + bp.value;
+            } else if (bp.filter != null && bp.filter.equalsIgnoreCase("../../")) {
+                tempValue = "../../" + bp.value;
             }
 
             if (bp.switchUse.equalsIgnoreCase("both")) {
