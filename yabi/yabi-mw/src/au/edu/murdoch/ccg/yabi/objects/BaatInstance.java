@@ -7,10 +7,11 @@ import org.dom4j.io.*;
 import java.net.*;
 import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
 import org.apache.commons.configuration.*;
+import au.edu.murdoch.cbbc.util.CBBCException;
 
 public class BaatInstance {
 
-    private static String toolDefinitionDirectory;
+    private String toolDefinitionDirectory;
 
     private String toolName;
     private ArrayList parameters;
@@ -19,6 +20,7 @@ public class BaatInstance {
     private Document baatFile;
     private String attachedFile;
     private String toolPath;
+    private String rootDir;
 
     public BaatInstance(String toolName) throws Exception {
         //init vars
@@ -27,6 +29,7 @@ public class BaatInstance {
         //load config
         Configuration config = YabiConfiguration.getConfig();
         toolDefinitionDirectory = config.getString("baat.tools.definitionDirectory");
+        rootDir = config.getString("yabi.rootDirectory");
 
         parameters = new ArrayList();
         inputFiles = new ArrayList();
@@ -150,6 +153,10 @@ public class BaatInstance {
                 bp.rank = element.attributeValue("rank");
                 bp.switchUse = element.attributeValue("switchUse");
                 bp.mandatory = element.attributeValue("mandatory"); 
+                bp.filter = element.attributeValue("filter");
+                if (bp.filter == null) {
+                    bp.filter = "";
+                }
                 bp.inputFile = element.attributeValue("inputFile");
                 bp.value = element.attributeValue("value");
                 if (element.attributeValue("outputFile") != null) {
@@ -216,18 +223,71 @@ public class BaatInstance {
         return this.toolPath;
     }
 
-    public String getCommandLine() {
+    public String getCommandLine() throws CBBCException {
         String command = this.toolPath + " ";
+
+        this.validateParameters(); //throws CBBCException
 
         //append all parameters to the end
         //TODO do this in a particular order
         Iterator iter = this.parameters.iterator();
         while (iter.hasNext()) {
             BaatParameter bp = (BaatParameter) iter.next();
-            command += bp.switchName + " " + bp.value + " ";
+
+            String tempValue = bp.value;
+
+            if (bp.switchUse.equalsIgnoreCase("both")) {
+                command += bp.switchName + " " + tempValue + " ";
+            } else if (bp.switchUse.equalsIgnoreCase("valueOnly")) {
+                command += tempValue + " ";
+            } else if (bp.switchUse.equalsIgnoreCase("switchOnly")) {
+                command += bp.switchName + " ";
+            }
         }
     
         return command;
+    }
+
+    public void validateParameters() throws CBBCException {
+        Iterator iter = this.parameters.iterator();
+        while (iter.hasNext()) {
+            BaatParameter bp = (BaatParameter) iter.next();
+            String switchUse = bp.switchUse;
+            String switchValue = bp.value;
+            String switchString = bp.switchName;
+
+            // determine switch use
+            if (switchUse.equalsIgnoreCase("both")) {
+                // dont really need to do anything, perhaps make sure both are set
+                if (switchValue == null || switchValue.length() == 0) {
+                    throw new CBBCException("Switch use 'both' is set but no value provided");
+                }
+                if (switchString == null || switchString.length() == 0) {
+                    throw new CBBCException("Switch use 'both' is set but no switch provided");
+                }
+            } else if (switchUse.equalsIgnoreCase("valueOnly")) {
+                if (switchValue == null || switchValue.length() == 0) {
+                    throw new CBBCException("Value only is set but no value provided");
+                }
+                switchString = null;
+            } else if (switchUse.equalsIgnoreCase("switchOnly")) {
+                if (switchString == null || switchString.length() == 0) {
+                    throw new CBBCException("Switch only is set but no switch provided");
+                }
+                switchValue = null;
+            } else if (switchUse.equalsIgnoreCase("combined")) {
+                if (switchValue == null || switchValue.length() == 0) {
+                    throw new CBBCException("Switch use 'both' is set but no value provided");
+                }
+                if (switchString == null || switchString.length() == 0) {
+                    throw new CBBCException("Switch use 'both' is set but no switch provided");
+                }
+                switchString += switchValue;
+                switchValue = null;
+            } else {
+                throw new CBBCException("Expected attribute 'switchUse' invalid, value [" + switchUse + "]");
+            }
+        }
     }
 
     public static void main(String[] args) {
@@ -260,6 +320,7 @@ class BaatParameter {
     public String switchUse = "";
     public String switchName = "";
     public String mandatory = "";
+    public String filter = "";
     public String inputFile = "";
     public String outputFile = "";
     public String value = "";

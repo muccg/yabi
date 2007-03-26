@@ -107,20 +107,25 @@ public class VariableTranslator {
         //first, save the variable as an output variable
         ctx.setVariable( fullVarName, variableValue );
 
-        //define a string that is what the 'derived' string would look like
-        String derivedString = "derived("+fullVarName+")";
+        this.propagateVariable(ctx, fullVarName, variableValue);
+    }
 
+    //to be reused for globals and node variables
+    public void propagateVariable(ExecutionContext ctx, String fullVariableName, Object variableValue) {
+        //define a string that is what the 'derived' string would look like
+        String derivedString = "derived("+fullVariableName+")";
+                    
         List substitutionKeys = new ArrayList();
         //search for substitutions of this variable in the full context variable map
         Iterator iter = ctx.getContextInstance().getVariables().entrySet().iterator();
         while (iter.hasNext()) {
             Map.Entry entry = (Map.Entry) iter.next();
-
+                        
             if ( ((String) entry.getValue()).compareTo( derivedString ) == 0 ) {
                 substitutionKeys.add((String)entry.getKey());
             }
-        }
-
+        }           
+                        
         iter = substitutionKeys.iterator();
         while (iter.hasNext()) {
             String key = (String) iter.next();

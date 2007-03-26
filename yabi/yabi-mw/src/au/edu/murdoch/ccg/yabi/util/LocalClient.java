@@ -78,7 +78,7 @@ public class LocalClient extends GenericProcessingClient {
             String command = this.bi.getCommandLine();
             if ( command.indexOf(";") == -1 ) {
                 System.out.println("[command] "+this.bi.getCommandLine());
-                Process proc = Runtime.getRuntime().exec(this.bi.getCommandLine());
+                Process proc = Runtime.getRuntime().exec(this.bi.getCommandLine(), null, unitDir);
 
                 StreamWriter stdOutWriter = new StreamWriter();
                 StreamWriter stdErrWriter = new StreamWriter();
