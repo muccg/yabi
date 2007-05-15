@@ -14,6 +14,9 @@ public class ProcessingClientFactory {
             if (type.compareTo("local") == 0) {
                 return new LocalClient(bi);
             }
+            if (type.compareTo("none") == 0) {
+                return new NullClient(bi);
+            }
         }
         //if we fall through to here we have a problem
         throw new Exception("No such processing client type found: "+type);

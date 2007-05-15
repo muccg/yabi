@@ -65,6 +65,15 @@ public class GrendelClient extends GenericProcessingClient {
 
     //instance methods
     public long submitJob () throws Exception {
+        //create data directories
+        String dataDirLoc = rootDir + this.outputDir ;
+        File dataDir = new File(dataDirLoc);
+        System.out.println("dataDir is: "+dataDirLoc);
+        if (!dataDir.exists()) {
+            dataDir.mkdir();
+            System.out.println("had to create data dir");
+        }
+
         //convert Baat into its XML
         String xmlString = bi.exportXML();
 

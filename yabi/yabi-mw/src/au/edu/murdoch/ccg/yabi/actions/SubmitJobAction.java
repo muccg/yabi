@@ -5,6 +5,7 @@ import org.jbpm.graph.exe.ExecutionContext;
 
 import au.edu.murdoch.ccg.yabi.util.ProcessingClientFactory;
 import au.edu.murdoch.ccg.yabi.util.GenericProcessingClient;
+import au.edu.murdoch.ccg.yabi.util.FileParamExpander;
 import au.edu.murdoch.ccg.yabi.objects.BaatInstance;
 import java.util.*;
 
@@ -15,6 +16,7 @@ public class SubmitJobAction extends BaseAction {
     Map myVars = varTranslator.getVariableMap(ctx);
     Map inputVars = (Map) myVars.get("input");
     Map outputVars = (Map) myVars.get("output");
+    String username = varTranslator.getProcessVariable(ctx, "username");
 
     //check for presence of required inputs
     if ( inputVars.get("toolName") != null ) {
@@ -24,41 +26,73 @@ public class SubmitJobAction extends BaseAction {
         //we can easily get the list of inputfiles and output files based on the baat xml info
 
         try {
-            BaatInstance bi = new BaatInstance( (String) inputVars.get("toolName") ); //this will throw an exception if toolName not found
-        
-            //now we process each input parameter and insert it as a parameter to the BaatInstance
-            //this gives us a chance to filter the vars based on name, and inserting them into BaatInstance fetches inputFiles and outputFiles
-            Iterator iter = inputVars.keySet().iterator(); 
-            while (iter.hasNext()) {
-                String keyName = (String) iter.next();
-                String value = (String) inputVars.get(keyName);
+            ArrayList totalOutputFiles = new ArrayList();
+            String allJobIds = "";       
+            String batchParam = null;
+            String[] batchIterations = "".split(",");
+            
+            // --- for batch jobs, create an arraylist with the substitutions ---
+            if ( inputVars.get("batchOnParameter") != null && inputVars.get("batchOnParameter") instanceof String ) {
+                batchParam = (String) inputVars.get("batchOnParameter");
 
-                bi.setParameter(keyName, value);
+                FileParamExpander fpe = new FileParamExpander();
+                fpe.setUsername(username);
+
+                batchIterations = fpe.expandString( (String) inputVars.get(batchParam) );
+                inputVars.remove("batchOnParameter");
             }
 
-            // ----- CREATE CLIENT -----
-            GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( (String) inputVars.get("jobType")  , bi);
-            String outputDir = varTranslator.getProcessVariable(ctx, "jobDataDir");
-            pclient.setOutputDir(outputDir);
-            String username = varTranslator.getProcessVariable(ctx, "username");
-            pclient.setInputDirByUsername(username);
-            String nodeName = ctx.getNode().getFullyQualifiedName();
-            pclient.setStageOutPrefix(nodeName);
+            for (int i = 0; i < batchIterations.length; i++) {
+                BaatInstance bi = new BaatInstance( (String) inputVars.get("toolName") ); //this will throw an exception if toolName not found
+                //now we process each input parameter and insert it as a parameter to the BaatInstance
+                //this gives us a chance to filter the vars based on name, and inserting them into BaatInstance fetches inputFiles and outputFiles
+                Iterator iter = inputVars.keySet().iterator(); 
+                while (iter.hasNext()) {
+                    String keyName = (String) iter.next();
+                    String value = (String) inputVars.get(keyName);
 
-            // ----- AUTHENTICATE -----
-            pclient.authenticate( null );
+                    //perform substitution if we are doing a batch version
+                    if (batchParam != null && batchParam.compareTo(keyName) == 0) {
+                        value = batchIterations[i];
+                    }
 
-            // ----- STAGE IN FILES ----- 
-            pclient.fileStageIn( bi.getInputFiles() );
-            ArrayList outputFiles = bi.getOutputFiles();
-            varTranslator.saveVariable(ctx, "expectedOutputFiles", ""+outputFiles);
+                    bi.setParameter(keyName, value);
+                }
 
-            // ----- SUBMIT JOB -----
-            long jobId = pclient.submitJob();
-            varTranslator.saveVariable(ctx, "jobId", ""+jobId);
+                // ----- CREATE CLIENT -----
+                GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( (String) inputVars.get("jobType")  , bi);
+                String outputDir = varTranslator.getProcessVariable(ctx, "jobDataDir");
+                pclient.setOutputDir(outputDir);
+                pclient.setInputDirByUsername(username);
+                String nodeName = ctx.getNode().getFullyQualifiedName();
+                pclient.setStageOutPrefix(nodeName);
+
+                // ----- AUTHENTICATE -----
+                pclient.authenticate( null );
+
+                // ----- STAGE IN FILES ----- 
+                pclient.fileStageIn( bi.getInputFiles() );
+                ArrayList outputFiles = bi.getOutputFiles();
+                totalOutputFiles.addAll(outputFiles);
+
+                // ----- SUBMIT JOB -----
+                long jobId = pclient.submitJob();
+                //batch append jobId
+                if (allJobIds.length() > 0) {
+                    allJobIds += ","+jobId;
+                } else {
+                    allJobIds = ""+jobId;
+                }
+            }
+
+            // --- for batch jobs, rejoin here ---
+
+            varTranslator.saveVariable(ctx, "expectedOutputFiles", ""+totalOutputFiles);
+            varTranslator.saveVariable(ctx, "jobId", allJobIds);
 
         } catch (Exception e) {
             varTranslator.saveVariable(ctx, "errorMessage", e.getClass().getName() + " : " + e.getMessage());
+            varTranslator.saveVariable(ctx, "jobStatus", "E" );
 
             e.printStackTrace();
 

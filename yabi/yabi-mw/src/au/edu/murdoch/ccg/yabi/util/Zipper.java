@@ -38,9 +38,11 @@ public abstract class Zipper {
         out.close();
     }
 
-    public static void unzip (String inFilename, String destination, String prefix) throws Exception {
+    public static ArrayList unzip (String inFilename, String destination, String prefix) throws Exception {
         ZipFile zipFile;
         Enumeration entries;
+        ArrayList fileList = new ArrayList();
+
         //destination should be a directory name with trailing slash
         File destCheck = new File(destination);
         if (! destCheck.exists()) {
@@ -56,7 +58,6 @@ public abstract class Zipper {
             entries = zipFile.entries();
 
             //create directory using 'prefix' as the name
-            //TODO TODO
             String dataDirLoc = destination + prefix;
             File dataDir = new File(dataDirLoc);
             if (!dataDir.exists()) {
@@ -66,18 +67,19 @@ public abstract class Zipper {
             while(entries.hasMoreElements()) {
                 ZipEntry entry = (ZipEntry)entries.nextElement();
             
-                if (! entry.getName().startsWith(".") ) {
+                if (! entry.getName().startsWith(".") && !entry.getName().startsWith("__MACOSX")) {
 
                     if(entry.isDirectory()) {
                         // Assume directories are stored parents first then children.
                         System.err.println("Extracting directory: " + entry.getName());
                         // This is not robust, just for demonstration purposes.
-                        (new File(entry.getName())).mkdir();
+                        (new File(dataDir, entry.getName())).mkdir();
                         continue;
                     }   
             
                     System.err.println("Extracting file: " + entry.getName());
                     copyInputStream(zipFile.getInputStream(entry), new BufferedOutputStream(new FileOutputStream(destination + prefix + "/" + entry.getName())));
+                    fileList.add(entry.getName());
                 }
             } 
     
@@ -86,8 +88,9 @@ public abstract class Zipper {
             System.err.println("Unhandled exception:");
             ioe.printStackTrace();
             System.err.println(inFilename);
-            return;
         }
+
+        return fileList;
     }
 
     public static void unzip (URL source, String destination) throws Exception {

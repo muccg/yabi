@@ -11,7 +11,7 @@
     <target name="releaseinit" depends="init, tagFail, createTmp">
       <property name="ccg.site" value="${basedir}/tmp/build"/>
       <property name="ccg.buildname" value="release"/>
-      <property name="ccg.approot" value="/usr/local/java/jakarta-tomcat-5.5.9/webapps/"/>
+      <property name="ccg.approot" value="/usr/local/java/tomcat/webapps/"/>
       <property name="ccg.dbhost" value="gromit4.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
@@ -27,7 +27,7 @@
     <target name="snapshotinit" depends="init, createTmp">
       <property name="ccg.site" value="${basedir}/tmp"/>
       <property name="ccg.buildname" value="snapshot"/>
-      <property name="ccg.approot" value="/usr/local/java/jakarta-tomcat-5.5.9/webapps/"/>
+      <property name="ccg.approot" value="/usr/local/java/tomcat/webapps/"/>
       <property name="ccg.dbhost" value="boromirdb.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
@@ -39,7 +39,7 @@
     <target name="userbuildinit" depends="createTmp">
       <property name="ccg.site" value="${basedir}/tmp"/>
       <property name="ccg.buildname" value="${user.name}"/>
-      <property name="ccg.approot" value="/usr/local/java/jakarta-tomcat-5.5.9/webapps/"/>
+      <property name="ccg.approot" value="/usr/local/java/tomcat/webapps/"/>
       <property name="ccg.dbhost" value="boromirdb.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
@@ -96,7 +96,7 @@
           <fileset dir="lib">
             <include name="**/*.jar"/>
           </fileset>
-          <fileset file="/usr/local/java/jakarta-tomcat-5.5.9/common/lib/servlet-api.jar"/>
+          <fileset file="/usr/local/java/tomcat/common/lib/servlet-api.jar"/>
         </classpath>
       </javac>
     </target>

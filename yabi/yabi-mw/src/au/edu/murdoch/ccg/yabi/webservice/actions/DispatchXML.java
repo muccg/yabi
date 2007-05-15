@@ -46,7 +46,7 @@ public class DispatchXML extends BaseAction {
                 YabiJobFileInstance yjfi = new YabiJobFileInstance();
                 yjfi.initFromString(jobXML);
 
-                //System.out.println("pd is " + yjfi.getProcessDefinition());
+                System.out.println("receiving incoming workflow");
 
                 //fetch the process definition and parse it into a JBPM ProcessDefinition object
                 String processDefinitionXML = yjfi.getProcessDefinition();

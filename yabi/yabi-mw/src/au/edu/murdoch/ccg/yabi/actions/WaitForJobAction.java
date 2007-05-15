@@ -24,52 +24,73 @@ public class WaitForJobAction extends BaseAction {
     //validate that we have the jobId that we require
     if (inputVars.get("jobId") != null) {
 
-        boolean isCompleted = false;
+        //check if we are batched or not, depending on if jobId has commas
+        String jobIdVar = (String)inputVars.get("jobId");
+        boolean isBatched = false;
+        String jobId[] = null;
+
+        jobId = jobIdVar.split(",");
+
+        boolean[] isCompleted = new boolean[jobId.length]; //used to track individual batch items
+        int incompleteCount = jobId.length; //used to keep track of how many remain to be completed
+
+        for (int i = 0; i < jobId.length; i++) {
+            isCompleted[i] = false;
+        }
 
         try {
             String nodeName = ctx.getNode().getFullyQualifiedName();
 
             GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( (String) inputVars.get("jobType") , null );
 
-            while ( ! isCompleted ) {
-  
-                //write the actual status string to the output 
-                String status = pclient.getJobStatus( (String) inputVars.get("jobId") );
-                varTranslator.saveVariable(ctx, "jobStatus", status );
+            while ( incompleteCount > 0 ) {
+      
+                for (int i = 0; i < jobId.length; i++) {
+                    //skip if already completed this iteration
+                    if (isCompleted[i]) continue;
 
-                //locate the jobxml file
-                String jobFile = varTranslator.getProcessVariable(ctx, "jobXMLFile");
-                Configuration conf = YabiConfiguration.getConfig();
+                    //write the actual status string to the output 
+                    String status = pclient.getJobStatus( jobId[i] );
+                    varTranslator.saveVariable(ctx, "jobStatus", status );
 
-                //dump the variables for this node into the jobXML file
-                YabiJobFileInstance yjfi = new YabiJobFileInstance(jobFile);
-                Map vars = ctx.getProcessInstance().getContextInstance().getVariables();
-                yjfi.insertVariableMap(vars);
-                yjfi.saveFile();
+                    //locate the jobxml file
+                    String jobFile = varTranslator.getProcessVariable(ctx, "jobXMLFile");
+                    Configuration conf = YabiConfiguration.getConfig();
 
-                //completed
-                if (pclient.isCompleted()) {
-                    isCompleted = true;
+                    //dump the variables for this node into the jobXML file
+                    YabiJobFileInstance yjfi = new YabiJobFileInstance(jobFile);
+                    Map vars = ctx.getProcessInstance().getContextInstance().getVariables();
+                    yjfi.insertVariableMap(vars);
+                    yjfi.saveFile();
 
-                    // ----- STAGE OUT FILES -----
-                    //get the outputdir
-                    String outputDir = varTranslator.getProcessVariable(ctx, "jobDataDir");
-                    pclient.setOutputDir(outputDir);
-                    String tmpName = nodeName.replaceAll("-check","");
-                    pclient.setStageOutPrefix(tmpName);
-                    pclient.fileStageOut( null );
+                    //completed
+                    if (pclient.isCompleted()) {
+                        isCompleted[i] = true;
+                        incompleteCount--;
+
+                        // ----- STAGE OUT FILES -----
+                        //get the outputdir
+                        String outputDir = varTranslator.getProcessVariable(ctx, "jobDataDir");
+                        pclient.setOutputDir(outputDir);
+                        String tmpName = nodeName.replaceAll("-check","");
+                        pclient.setStageOutPrefix(tmpName);
+                        pclient.fileStageOut( null );
+                    }
+
+                    //error
+                    if (pclient.hasError()) {
+                        isCompleted[i] = true;
+                        incompleteCount--;
+
+                        varTranslator.saveVariable(ctx, "errorMessage", "processing server error");
+                        ctx.leaveNode("error"); //TODO change this so it doesn't drop out here, just cancels checking this node
+                    }
+
                 }
 
-                //error
-                if (pclient.hasError()) {
-                    isCompleted = true;
-                    varTranslator.saveVariable(ctx, "errorMessage", "processing server error");
-                    ctx.leaveNode("error");
-                }
-
-                if (! pclient.isCompleted()) {
+                if (incompleteCount > 0) {
                     try {
-                        System.out.println("[WaitForJobAction] backing off for "+waitTime+" ms");
+                        System.out.println("[WaitForJobAction] backing off for "+waitTime+" ms, incomplete batch items: "+incompleteCount);
                         Thread.sleep(waitTime);
                         waitTime += waitTime;  //exponential backoff
                         if (waitTime > maxWaitTime) {
@@ -78,14 +99,15 @@ public class WaitForJobAction extends BaseAction {
                     } catch (InterruptedException e) {}
                 }
 
-            }
+            } //endfor
         } catch (Exception e) {
 
             varTranslator.saveVariable(ctx, "errorMessage", e.getClass() + " : " + e.getMessage());
             //propagate execution to error state
-            ctx.leaveNode("error");
+            ctx.leaveNode("error"); //TODO change this so it just cancels checking this node
 
         }
+
 
     } else {
 
