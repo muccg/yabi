@@ -60,7 +60,7 @@ public class GrendelClient extends GenericProcessingClient {
     }
 
     public void setInputDirByUsername(String userName) {
-        this.inputDir = rootDir + userName + "/data/";
+        this.inputDir = rootDir + userName + "/";
     }
 
     //instance methods
@@ -128,6 +128,17 @@ public class GrendelClient extends GenericProcessingClient {
 
             connection.close();
 
+            //clean up staged in file
+            if (bi.getAttachedFile() != null) {
+                try {
+                    URI uri = new URI(bi.getAttachedFile());
+                    File doomed = new File(uri);
+                    doomed.delete();
+                } catch (Exception e) {
+                    //ignore faulty files
+                }
+            }
+
             throw new Exception("SOAP Fault: " + string);
 
         } else {
@@ -149,7 +160,18 @@ public class GrendelClient extends GenericProcessingClient {
             //close SOAP connection
             connection.close();
 
-            //return grendel ID
+            //clean up staged in file
+            if (bi.getAttachedFile() != null) {
+                try {
+                    URI uri = new URI(bi.getAttachedFile());
+                    File doomed = new File(uri);
+                    doomed.delete();
+                } catch (Exception e) {
+                    //ignore faulty files
+                }
+            } 
+
+           //return grendel ID
             return jobId;
 
         }

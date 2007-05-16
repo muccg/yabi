@@ -39,6 +39,10 @@ public abstract class Zipper {
     }
 
     public static ArrayList unzip (String inFilename, String destination, String prefix) throws Exception {
+        return unzip(inFilename, destination, prefix, false);
+    }
+
+    public static ArrayList unzip (String inFilename, String destination, String prefix, boolean withDirs) throws Exception {
         ZipFile zipFile;
         Enumeration entries;
         ArrayList fileList = new ArrayList();
@@ -70,16 +74,26 @@ public abstract class Zipper {
                 if (! entry.getName().startsWith(".") && !entry.getName().startsWith("__MACOSX")) {
 
                     if(entry.isDirectory()) {
-                        // Assume directories are stored parents first then children.
-                        System.err.println("Extracting directory: " + entry.getName());
-                        // This is not robust, just for demonstration purposes.
-                        (new File(dataDir, entry.getName())).mkdir();
+                        if (withDirs) {
+                            // Assume directories are stored parents first then children.
+                            System.err.println("Extracting directory: " + entry.getName());
+                            // This is not robust, just for demonstration purposes.
+                            (new File(dataDir, entry.getName())).mkdir();
+                        }
                         continue;
                     }   
             
-                    System.err.println("Extracting file: " + entry.getName());
-                    copyInputStream(zipFile.getInputStream(entry), new BufferedOutputStream(new FileOutputStream(destination + prefix + "/" + entry.getName())));
-                    fileList.add(entry.getName());
+                    String entryName = entry.getName();
+                    if (!withDirs) {
+                        int prunePoint = entryName.lastIndexOf("/") + 1;
+                        if (prunePoint <= 0 || prunePoint >= entryName.length() - 1) {
+                            prunePoint = 0;
+                        } 
+                        entryName = entryName.substring(prunePoint);
+                    } 
+                    System.err.println("Extracting file: " + entryName);
+                    copyInputStream(zipFile.getInputStream(entry), new BufferedOutputStream(new FileOutputStream(destination + prefix + "/" + entryName)));
+                    fileList.add(entryName);
                 }
             } 
     
@@ -109,6 +123,10 @@ public abstract class Zipper {
 
         //unzip!
         unzip(localSource, destination, prefix);
+
+        //del zip file
+        File doomed = new File(localSource);
+        doomed.delete();
     }
 
     private static final void copyInputStream(InputStream in, OutputStream out) throws IOException {

@@ -42,12 +42,12 @@ public class FileParamExpander {
             if (tokenized[i].endsWith(".zip")) {
                 System.out.println("fileParamExpander: zip file: "+tokenized[i]);
                 try {
-                    expanded.addAll(Zipper.unzip(this.yabiRootDir + this.username + "/data/" + tokenized[i], this.yabiRootDir + this.username, "data"));
+                    expanded.addAll(Zipper.unzip(this.yabiRootDir + this.username + "/" + tokenized[i], this.yabiRootDir + this.username, "data", true));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             } else {
-                File possibleFile =  new File(this.yabiRootDir + this.username + "/data", tokenized[i]);
+                File possibleFile =  new File(this.yabiRootDir + this.username + "/", tokenized[i]);
                 if (!possibleFile.exists()) {
                     //maybe this isn't a file reference?
                     //add to final array just in case

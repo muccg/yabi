@@ -53,7 +53,7 @@ public class LocalClient extends GenericProcessingClient {
     }
 
     public void setInputDirByUsername(String userName) {
-        this.inputDir = rootDir + userName + "/data/";
+        this.inputDir = rootDir + userName + "/";
     }
 
     //instance methods
