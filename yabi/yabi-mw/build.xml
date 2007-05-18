@@ -15,7 +15,7 @@
       <property name="ccg.dbhost" value="gromit4.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
-      <property name="ccg.dbname" value="yabimwdev"/>
+      <property name="ccg.dbname" value="yabimw"/>
       <property name="ccg.warfilename" value="${basedir}/yabi-${ccg.buildname}.war"/>
     </target>
 
