@@ -1,4 +1,4 @@
-<project name="yabi" default="war" basedir=".">
+<project name="yabi" default="userwar" basedir=".">
 
     <import file="changelog.xml"/>
 
@@ -8,19 +8,15 @@
     </target>
 
     <!-- init needed when making a release -->
-    <target name="releaseinit" depends="init, tagFail, createTmp">
-      <property name="ccg.site" value="${basedir}/tmp/build"/>
-      <property name="ccg.buildname" value="release"/>
+    <target name="releaseinit" depends="init, createTmp">
+      <property name="ccg.site" value="${basedir}/tmp"/>
+      <property name="ccg.buildname" value="mw"/>
       <property name="ccg.approot" value="/usr/local/java/tomcat/webapps/"/>
       <property name="ccg.dbhost" value="gromit4.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
       <property name="ccg.dbname" value="yabimwdev"/>
       <property name="ccg.warfilename" value="${basedir}/yabi-${ccg.buildname}.war"/>
-    </target>
-
-    <target name="tagFail" unless="ccg.tag">
-      <fail>ccg.tag must be set</fail>
     </target>
 
     <!-- init needed when making a snapshot release -->
@@ -78,19 +74,7 @@
       <chmod perm="g+rw" file="${ccg.site}/deploy.properties"/>
     </target>
 
-    <target name="cvsUpdate">
-      <cvs command="update -d"/>
-    </target>
-
-    <target name="tmpCvsCheckoutTag">
-      <cvs package="dagwa/pbgenesis/site" tag="${ccg.tag}" dest="tmp" failonerror="true"/>
-    </target>
-
-    <target name="tmpCvsCheckout">
-      <cvs package="dagwa/pbgenesis/site" dest="tmp" failonerror="true"/>
-    </target>
-    
-    <target name="compile" depends="init, userbuildinit, appProperties">
+    <target name="compile" depends="appProperties">
       <javac srcdir="${basedir}/src" destdir="${ccg.site}/classes" target="1.4" source="1.4">
         <classpath>
           <fileset dir="lib">
@@ -146,7 +130,7 @@
       </copy>
     </target>
 	
-	<target name="createWar" depends="init, userbuildinit, appProperties, configCopy, templateCopy, compile">
+	<target name="createWar" depends="appProperties, configCopy, templateCopy, compile">
 	  <war destfile="${ccg.warfilename}" webxml="${ccg.site}/web.xml">
 	  	<fileset dir="${ccg.site}">
             <include name="templates/**"/>
@@ -163,12 +147,9 @@
 	  <copy file="${ccg.warfilename}" todir="${ccg.approot}"/>
 	</target>
 	
-	<!--  these dont work atm until we sort out the SVN actions
-	<target name="snapshot" depends="init, snapshotinit, tmpCvsCheckout, createTmpAgain, appProperties, configCopy" />
-
-    <target name="release" depends="init, tags, releaseinit, tmpCvsCheckoutTag, createTmpAgain, appProperties, configCopy " />
-	-->
+    <target name="release" depends="releaseinit, createWar, deployWar " />
 	
-    <target name="war" depends="createWar, deployWar " />
+    <target name="usercompile" depends="userbuildinit, compile" />
+    <target name="userwar" depends="userbuildinit, createWar, deployWar" />
 
 </project>

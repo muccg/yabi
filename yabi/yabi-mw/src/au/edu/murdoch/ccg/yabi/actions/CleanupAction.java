@@ -31,6 +31,7 @@ public class CleanupAction extends BaseAction {
     if (result) {
         varTranslator.saveVariable(ctx, "jobStatus", "C");
     } else {
+        varTranslator.saveVariable(ctx, "errorMessage", "error moving process from running to completed status");
         varTranslator.saveVariable(ctx, "jobStatus", "E");
     }
 

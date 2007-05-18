@@ -83,8 +83,8 @@ public class LocalClient extends GenericProcessingClient {
                 StreamWriter stdOutWriter = new StreamWriter();
                 StreamWriter stdErrWriter = new StreamWriter();
 
-                String stdOutPath = unitDirLoc + "/out.txt";
-                String stdErrPath = unitDirLoc + "/err.txt";
+                String stdOutPath = unitDirLoc + "/standardOutput.txt";
+                String stdErrPath = unitDirLoc + "/standardError.txt";
 
                 System.out.println("[out] "+stdOutPath);
                 System.out.println("[err] "+stdErrPath);
