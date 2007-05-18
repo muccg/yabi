@@ -198,7 +198,7 @@ public class BaatInstance {
                 bp.value = value;
                 bp.isSet = true;
                 
-                if (bp.inputFile.compareTo("yes") == 0) {
+                if (bp.inputFile.compareTo("yes") == 0 && value.length() > 0) {
                     //add this value to the inputFiles list
                     inputFiles.add(value);
 

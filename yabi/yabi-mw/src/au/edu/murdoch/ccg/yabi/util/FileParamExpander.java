@@ -37,6 +37,11 @@ public class FileParamExpander {
         String[] tokenized = param.split(",");
         ArrayList expanded = new ArrayList();
 
+        //if the string was empty, then return an empty array rather than expanding out the user's directory in its entirety
+        if (param.length() < 1) {
+            return tokenized;
+        }
+
         for (int i=0;i < tokenized.length;i++) {
             //first, check for zippiness
             if (tokenized[i].endsWith(".zip")) {
