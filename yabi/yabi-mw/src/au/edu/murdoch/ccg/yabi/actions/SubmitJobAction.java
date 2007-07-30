@@ -30,13 +30,20 @@ public class SubmitJobAction extends BaseAction {
             String allJobIds = "";       
             String batchParam = null;
             String[] batchIterations = "".split(",");
-            
+            String inputFileTypes = null;
+
             // --- for batch jobs, create an arraylist with the substitutions ---
             if ( inputVars.get("batchOnParameter") != null && inputVars.get("batchOnParameter") instanceof String ) {
                 batchParam = (String) inputVars.get("batchOnParameter");
 
                 FileParamExpander fpe = new FileParamExpander();
                 fpe.setUsername(username);
+
+                //filtering based on 'inputFileTypes' param if it exists
+                if ( inputVars.get("inputFiletypes") != null && inputVars.get("inputFiletypes") instanceof String ) {
+                    inputFileTypes = (String) inputVars.get("inputFiletypes");
+                    fpe.setFilter(inputFileTypes);
+                }
 
                 batchIterations = fpe.expandString( (String) inputVars.get(batchParam) );
                 inputVars.remove("batchOnParameter");

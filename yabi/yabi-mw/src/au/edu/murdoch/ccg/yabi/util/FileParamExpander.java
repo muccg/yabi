@@ -9,6 +9,8 @@ public class FileParamExpander {
 
     private String yabiRootDir;
     private String username;
+    private HashMap filters;
+    private boolean filtered = false;
 
     public FileParamExpander() {
         try {
@@ -18,10 +20,28 @@ public class FileParamExpander {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        this.filters = new HashMap();
+        this.filtered = false;
     }
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public void setFilter(String fileTypes) {
+        //a comma separated list of file extensions supported
+        if (fileTypes.compareTo("*") == 0) {
+            filtered = false;
+            return;
+        }
+
+        filtered = true;
+        String extensions[] = fileTypes.split(",");
+
+        for (int i = 0; i < extensions.length; i++) {
+            this.filters.put(extensions[i], "true");
+        }
     }
 
     /**
@@ -77,8 +97,29 @@ public class FileParamExpander {
             
         }
 
-        //now repackage as final String[] and return
+        //filter
         Iterator iter = expanded.iterator();
+        if (filtered) {
+            while(iter.hasNext()) {
+                String file = (String) iter.next();
+                if ( file.lastIndexOf(".") == -1 || file.lastIndexOf(".") == file.length() - 1 ) {
+                    iter.remove(); //if filtered, then don't allow files without an extension
+                    System.out.println("REMOVING NONMATCHING FILE ["+file+"]");
+                } else {
+                    String extension = file.substring( file.lastIndexOf(".") + 1 );
+                    if ( filters.containsKey(extension) ) {
+                        //ok, keep this file
+                    } else {
+                        //doesn't match our permitted files, skip
+                        iter.remove();
+                        System.out.println("REMOVING NONMATCHING FILE ["+file+"]");
+                    }
+                }
+            }
+        }
+
+        //now repackage as final String[] and return
+        iter = expanded.iterator();
         String[] repackaged = new String[expanded.size()];
         int i = 0;
         while(iter.hasNext()) {
