@@ -121,15 +121,20 @@ public class VariableTranslator {
         while (iter.hasNext()) {
             Map.Entry entry = (Map.Entry) iter.next();
                         
-            if ( ((String) entry.getValue()).compareTo( derivedString ) == 0 ) {
+            if ( ((String) entry.getValue()).indexOf( derivedString ) != -1 ) {
                 substitutionKeys.add((String)entry.getKey());
             }
         }           
                         
         iter = substitutionKeys.iterator();
+        derivedString = "derived\\("+fullVariableName+"\\)";
         while (iter.hasNext()) {
             String key = (String) iter.next();
-            ctx.getContextInstance().setVariable( key , variableValue );
+            String currentValue = (String) ctx.getContextInstance().getVariable(key);
+            String replacedValue = currentValue.replaceAll( derivedString, (String)variableValue );
+
+            ctx.getContextInstance().setVariable( key , replacedValue );
+            System.out.println("set ["+key+"] = ["+replacedValue+"]");
         }
     }
 

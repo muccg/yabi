@@ -113,6 +113,7 @@ public class DispatchXML extends BaseAction {
 
         } catch (Exception e) {
 
+            System.out.println("An error occurred while attempting to deploy the definition: ["+e.getClass().getName() +"] "+ e.getMessage());
             request.setAttribute("message", "An error occurred while attempting to deploy the definition: ["+e.getClass().getName() +"] "+ e.getMessage());
             return mapping.findForward("error");
 

@@ -89,6 +89,10 @@ public class SubmitJobAction extends BaseAction {
 
             varTranslator.saveVariable(ctx, "expectedOutputFiles", ""+totalOutputFiles);
             varTranslator.saveVariable(ctx, "jobId", allJobIds);
+            //output dir variable
+            String outputDir = varTranslator.getProcessVariable(ctx, "jobDataDir") + "/" + ctx.getNode().getFullyQualifiedName();
+            outputDir = outputDir.substring( username.length() + 1 ); //strip username/ from the beginning
+            varTranslator.saveVariable(ctx, "dir", outputDir);
 
         } catch (Exception e) {
             varTranslator.saveVariable(ctx, "errorMessage", e.getClass().getName() + " : " + e.getMessage());
