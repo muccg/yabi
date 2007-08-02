@@ -21,6 +21,7 @@ public class BaatInstance {
     private String attachedFile;
     private String toolPath;
     private String rootDir;
+    private String username; //optional, used for prependUserDir option
 
     public BaatInstance(String toolName) throws Exception {
         //init vars
@@ -34,6 +35,8 @@ public class BaatInstance {
         parameters = new ArrayList();
         inputFiles = new ArrayList();
         outputFiles = new ArrayList();
+
+        username = "";
 
         //load Baat XML for use in validating and identifying input and output files
         loadBaat();
@@ -57,6 +60,10 @@ public class BaatInstance {
 
     public void setAttachedFile(String fileLoc) {
         this.attachedFile = fileLoc;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String exportXML() {
@@ -238,6 +245,8 @@ public class BaatInstance {
 
             if (bp.filter != null && bp.filter.equalsIgnoreCase("prependRootDir")) {
                 tempValue = rootDir + bp.value;
+            } else if (bp.filter != null && bp.filter.equalsIgnoreCase("prependUserDir")) {
+                tempValue = rootDir + username + "/" + bp.value;
             } else if (bp.filter != null && bp.filter.equalsIgnoreCase("../../")) {
                 tempValue = "../../" + bp.value;
             }

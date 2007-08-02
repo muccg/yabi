@@ -66,6 +66,8 @@ public class SubmitJobAction extends BaseAction {
                     bi.setParameter(keyName, value);
                 }
 
+                bi.setUsername(username);
+
                 // ----- CREATE CLIENT -----
                 GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( (String) inputVars.get("jobType")  , bi);
                 String outputDir = varTranslator.getProcessVariable(ctx, "jobDataDir");
