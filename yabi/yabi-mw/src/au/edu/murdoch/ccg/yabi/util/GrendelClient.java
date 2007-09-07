@@ -77,6 +77,9 @@ public class GrendelClient extends GenericProcessingClient {
         //convert Baat into its XML
         String xmlString = bi.exportXML();
 
+        //DEBUG
+        //System.out.println("\n\n" + xmlString + "\n\n");
+
         //create SOAP message
         MessageFactory factory = MessageFactory.newInstance();
         SOAPMessage message = factory.createMessage();

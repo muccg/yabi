@@ -58,6 +58,12 @@ public class SubmitJobAction extends BaseAction {
                     String keyName = (String) iter.next();
                     String value = (String) inputVars.get(keyName);
 
+                    //special parameters
+                    if (keyName.compareTo("blastAddToSOE") == 0) {
+                        bi.setGrendelOption("eric", value);
+                        continue; //proceed to next variable
+                    }
+
                     //perform substitution if we are doing a batch version
                     if (batchParam != null && batchParam.compareTo(keyName) == 0) {
                         value = batchIterations[i];

@@ -129,11 +129,32 @@ public class BaatInstance {
 
         //TODO use a real user name
         Element submitUserNode = (Element) baatFile.selectSingleNode("//submitUser");
-        submitUserNode.setText( "some user" );
+        submitUserNode.setText( this.username );
 
-        Element submitLabel = (Element) baatFile.selectSingleNode("//submitLabel");
-        submitLabel.setText( "some_random_label" );
+        //set priority
+        Element priorityNode = (Element)baatFile.selectSingleNode("//priority");
+        priorityNode.setText("-10");
+    }
 
+    public void setGrendelOption(String key, String value) {
+        //get grendel based xml elements
+        Element grendelNode = (Element)baatFile.selectSingleNode("//grendel");
+        Element submitLabel = (Element)baatFile.selectSingleNode("//submitLabel");
+
+        //check for specific options
+        if (key.compareTo("eric") == 0 && value.length() > 0) {
+            Element dummyOptionEl = grendelNode.addElement("option");
+            Element dummyNameEl = dummyOptionEl.addElement("name");
+            dummyNameEl.setText("dummy");
+
+            Element optionEl = grendelNode.addElement("option");
+            Element nameEl = optionEl.addElement("name");
+            nameEl.setText("eric");
+
+            submitLabel.setText(value);
+        } else {
+            System.out.println("[BaatInstance] failed to set grendelOption ["+key+"] = ["+value+"]");
+        }
     }
 
     private void loadBaat() throws Exception {
