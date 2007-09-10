@@ -93,12 +93,17 @@ public class LocalClient extends GenericProcessingClient {
                 stdErrWriter.record(proc.getErrorStream(), stdErrPath);
 
                 //this is unnecessary, but let's stick around anyway
-                proc.waitFor();
+                int retval = proc.waitFor();
+                if (retval != 0) {
+                    throw new Exception("Command returned with a failure status");
+                }
             }
         } catch (Exception e) {
             System.out.println("[command FAIL] "+e.getClass().getName()+" : "+e.getMessage());
+            throw e;
         } catch (CBBCException e) {
             System.out.println("[command FAIL] "+e.getClass().getName()+" : "+e.getMessage());
+            throw new Exception("command failure", e);
         }
 
         return jobId;
