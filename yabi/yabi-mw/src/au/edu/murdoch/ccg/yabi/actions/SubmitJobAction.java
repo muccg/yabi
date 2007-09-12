@@ -7,6 +7,8 @@ import au.edu.murdoch.ccg.yabi.util.ProcessingClientFactory;
 import au.edu.murdoch.ccg.yabi.util.GenericProcessingClient;
 import au.edu.murdoch.ccg.yabi.util.FileParamExpander;
 import au.edu.murdoch.ccg.yabi.objects.BaatInstance;
+import au.edu.murdoch.ccg.yabi.objects.YabiJobFileInstance;
+
 import java.util.*;
 
 
@@ -17,9 +19,21 @@ public class SubmitJobAction extends BaseAction {
     Map inputVars = (Map) myVars.get("input");
     Map outputVars = (Map) myVars.get("output");
     String username = varTranslator.getProcessVariable(ctx, "username");
+    String checkStatus = (String) myVars.get("checkStatus");
+    //if the node has already been run (in an earlier invocation, for example) then skip this node
+    if (checkStatus.compareTo("C") == 0) {
+        //an early return prompts a move to the next node, which is the 'check' node, which we will also skip
+        return;
+    }
 
     //check for presence of required inputs
     if ( inputVars.get("toolName") != null ) {
+
+        //explicitly clear out the output variables for this node in case we are re-running and want to clear out
+        //any old error messages and jobIds
+        myVars = varTranslator.clearNodeOutputMap(ctx);
+        inputVars = (Map) myVars.get("input");
+        outputVars = (Map) myVars.get("output");
 
         //we get the toolname
         //all the rest are parameters, but we package them into a BaatInstance object so that
@@ -124,7 +138,16 @@ public class SubmitJobAction extends BaseAction {
         ctx.leaveNode("error");
     }
 
-    //do not propagate execution. wait for grendel return
+    //locate the jobxml file
+    String jobFile = varTranslator.getProcessVariable(ctx, "jobXMLFile");
+
+    //dump the variables for this node into the jobXML file
+    YabiJobFileInstance yjfi = new YabiJobFileInstance(jobFile);
+    Map vars = ctx.getProcessInstance().getContextInstance().getVariables();
+    yjfi.insertVariableMap(vars);
+    yjfi.saveFile();
+
+    //proceed to next node
     
   }
 

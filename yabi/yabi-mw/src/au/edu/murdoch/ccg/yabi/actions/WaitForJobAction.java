@@ -21,6 +21,12 @@ public class WaitForJobAction extends BaseAction {
     Map inputVars = (Map) myVars.get("input");
     Map outputVars = (Map) myVars.get("output");
 
+    //if this node was already run and completed, then skip execution and fall through to next node
+    String checkStatus = (String) outputVars.get("jobStatus");
+    if (checkStatus != null && checkStatus.compareTo("C") == 0) {
+        return;
+    }
+
     //validate that we have the jobId that we require
     if (inputVars.get("jobId") != null) {
 

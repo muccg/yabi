@@ -18,6 +18,8 @@ public class VariableTranslator {
         HashMap inputVars = new HashMap();
         HashMap outputVars = new HashMap();
 
+        String checkNodeStatus = "";
+
         //as there is no easy way to get all variables from an ExecutionContext, we use the following convoluted method
         Map vars = ctx.getProcessInstance().getContextInstance().getVariables();
         if (vars != null) {
@@ -36,6 +38,11 @@ public class VariableTranslator {
                             outputVars.put(splitName[2], vars.get(key));
                         }
                     }
+
+                    //special case for check node completion status (to detect if we are re-running a node for some reason)
+                    if (key.compareTo(getCheckNodeName(ctx) + ".output.jobStatus") == 0) {
+                        checkNodeStatus = (String)vars.get(key);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -45,8 +52,73 @@ public class VariableTranslator {
         //merge vars into a two layer hashmap
         relevantVars.put("input", inputVars);
         relevantVars.put("output", outputVars);
+        relevantVars.put("checkStatus", checkNodeStatus);
 
         return relevantVars;
+    }
+
+    //clears all the output variables that fall within the current node's namespace
+    //useful when re-running a node that failed at the Submit stage. If it fails at the far end of the Check stage then we may have issues
+    //returns the same data structures as getNodeVariableMap so its outputs can be used instead. This is because jbpm doesn't save the
+    //variable changes until the end of the context. so these changes are considered transient until then and any 'gets' ignore these changes
+    public Map clearNodeOutputMap(ExecutionContext ctx) {
+        HashMap relevantVars = new HashMap();
+        HashMap inputVars = new HashMap();
+        HashMap outputVars = new HashMap();
+
+        String checkNodeStatus = "";
+
+        //as there is no easy way to get all variables from an ExecutionContext, we use the following convoluted method
+        Map vars = ctx.getProcessInstance().getContextInstance().getVariables();
+        List deleteKeys = new ArrayList();
+        if (vars != null) {
+            Iterator iter = vars.keySet().iterator();
+            while (iter.hasNext()) {
+                String key = (String) iter.next();
+                try {
+                    String[] splitName = key.split( separatorRegex );
+                        
+                    if ( (splitName.length > 2) && 
+                         (splitName[0].compareTo(getNodeName(ctx)) == 0) 
+                        ) {
+                        //if the variable starts with the current node name then it is one of our variables
+                        if ( splitName[1].compareTo("input") == 0 ) {
+                            inputVars.put(splitName[2], vars.get(key));
+                        }
+                        if ( splitName[1].compareTo("output") == 0 ) {
+                            deleteKeys.add(key);
+                            //System.out.println("[VarTranslator] marked for deletion = "+key);
+                        }
+                    }
+
+                    //reset the input.jobId for the check-node
+                    if ( (splitName.length > 2) &&
+                         (key.compareTo(getCheckNodeName(ctx) + ".input.jobId") == 0)
+                        ) {
+                        ctx.setVariable(key, "derived("+getNodeName(ctx)+".output.jobId)");
+                    }
+                        
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        Iterator deleterator = deleteKeys.iterator();
+        while (deleterator.hasNext()) {
+            String key = (String) deleterator.next();
+            //System.out.println("[VarTranslator] delete = "+key);
+            ctx.setVariable(key, "");
+            ctx.getProcessInstance().getContextInstance().deleteVariable(key);
+        }
+ 
+        //merge vars into a two layer hashmap
+        relevantVars.put("input", inputVars);
+        relevantVars.put("output", outputVars);
+        relevantVars.put("checkStatus", checkNodeStatus);
+
+        return relevantVars;
+       
     }
 
     //reformat context variables for a process instance into a map of node names, each containing a Map of variables
@@ -134,7 +206,7 @@ public class VariableTranslator {
             String replacedValue = currentValue.replaceAll( derivedString, (String)variableValue );
 
             ctx.getContextInstance().setVariable( key , replacedValue );
-            System.out.println("set ["+key+"] = ["+replacedValue+"]");
+            //System.out.println("set ["+key+"] = ["+replacedValue+"]");
         }
     }
 
@@ -145,6 +217,10 @@ public class VariableTranslator {
     //convenience function for getting the current node name
     protected String getNodeName(ExecutionContext ctx) {
         return ctx.getNode().getFullyQualifiedName();
+    }
+
+    protected String getCheckNodeName(ExecutionContext ctx) {
+        return getNodeName(ctx) + "-check";
     }
 
 }

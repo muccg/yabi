@@ -68,6 +68,17 @@ public class DispatchXML extends BaseAction {
                     String key = (String) iter.next();
                     String value = (String) vars.get(key);
 
+                    //skip the cleanup.output.jobStatus and reassign the jobStatus variables
+                    if (key.compareTo("cleanup.output.jobStatus") == 0) {
+                        yjfi.setVariableForKey("cleanup.output.jobStatus", "");
+                        continue;
+                    }
+                    if (key.compareTo("jobStatus") == 0 &&
+                        value.compareTo("completed") == 0) {
+                        yjfi.setVariableForKey("jobStatus", "resubmitted");
+                        value = "resubmitted";
+                    }
+
                     System.out.println(key + " : " + value);
                     procInstance.getContextInstance().setVariable(key, value);
                 }
@@ -86,6 +97,9 @@ public class DispatchXML extends BaseAction {
                 procInstance.getContextInstance().setVariable("jobName", jobName);
                 String curTime = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss").format( new java.util.Date() ) ;
                 procInstance.getContextInstance().setVariable("startTime", curTime );
+
+                //save out slightly modified jobfile
+                yjfi.saveFile(userName + "/jobs/" + year + "-" + month + "/" + jobName + "/workflow.jobxml");
 
                 //now that we now the username we can create our initial symlink
                 this.createRunningLink(userName, year, month, jobName);

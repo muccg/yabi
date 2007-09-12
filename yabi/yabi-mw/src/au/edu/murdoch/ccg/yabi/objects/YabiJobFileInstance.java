@@ -184,6 +184,16 @@ public class YabiJobFileInstance {
     }
 
     public void insertVariableMap(Map vars) {
+        //first, purge all output variables
+        Element variablesElem = (Element) this.jobFile.selectSingleNode("//variables");
+        Iterator elems = variablesElem.elementIterator();
+        while (elems.hasNext()) {
+            Element elem = (Element) elems.next();
+            if ( elem.attributeValue("key").indexOf(".output.") > 0) {
+                variablesElem.remove(elem);
+            }
+        }
+
         if (vars != null) {
             Iterator iter = vars.keySet().iterator();
             while (iter.hasNext()) {
