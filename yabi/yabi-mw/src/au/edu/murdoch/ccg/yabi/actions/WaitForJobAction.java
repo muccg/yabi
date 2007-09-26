@@ -89,6 +89,7 @@ public class WaitForJobAction extends BaseAction {
                         incompleteCount--;
 
                         varTranslator.saveVariable(ctx, "errorMessage", "processing server error");
+                        varTranslator.updateLastNodeMarker(ctx);
                         ctx.leaveNode("error"); //TODO change this so it doesn't drop out here, just cancels checking this node
                     }
 
@@ -110,6 +111,7 @@ public class WaitForJobAction extends BaseAction {
 
             varTranslator.saveVariable(ctx, "errorMessage", e.getClass() + " : " + e.getMessage());
             //propagate execution to error state
+            varTranslator.updateLastNodeMarker(ctx);
             ctx.leaveNode("error"); //TODO change this so it just cancels checking this node
 
         }
@@ -118,12 +120,13 @@ public class WaitForJobAction extends BaseAction {
     } else {
 
         varTranslator.saveVariable(ctx, "errorMessage", "Missing input variable: jobId");
+        varTranslator.updateLastNodeMarker(ctx);
         ctx.leaveNode("error");
  
     }
 
     //do not propagate execution. wait for return
-    
+    varTranslator.updateLastNodeMarker(ctx);
   }
 
 }

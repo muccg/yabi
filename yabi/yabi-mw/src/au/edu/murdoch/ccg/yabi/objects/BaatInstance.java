@@ -22,6 +22,7 @@ public class BaatInstance {
     private String toolPath;
     private String rootDir;
     private String username; //optional, used for prependUserDir option
+    private boolean symlinkOutputDir;
 
     public BaatInstance(String toolName) throws Exception {
         //init vars
@@ -64,6 +65,10 @@ public class BaatInstance {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public boolean getSymlinkOutputDir() {
+        return this.symlinkOutputDir;
     }
 
     public String exportXML() {
@@ -168,6 +173,17 @@ public class BaatInstance {
             Element jobNode = (Element) baatFile.selectSingleNode("//job");
             if (jobNode != null) {
                 this.toolPath = jobNode.attributeValue("toolPath");
+            }
+
+            //load the outputFiletypes tag
+            Element outputFiletypesNode = (Element) baatFile.selectSingleNode("//outputFiletypes");
+            if (outputFiletypesNode != null) {
+                String sod = outputFiletypesNode.attributeValue("symlinkOutputDir");
+                if (sod == null) {
+                    this.symlinkOutputDir = false;
+                } else if (sod.compareTo("true") == 0){
+                    this.symlinkOutputDir = true;
+                }
             }
 
             //load the parameters as per the baat file
@@ -296,32 +312,32 @@ public class BaatInstance {
             if (switchUse.equalsIgnoreCase("both")) {
                 // dont really need to do anything, perhaps make sure both are set
                 if (switchValue == null || switchValue.length() == 0) {
-                    throw new CBBCException("Switch use 'both' is set but no value provided");
+                    throw new CBBCException("Switch use 'both' is set but no value provided: "+switchString);
                 }
                 if (switchString == null || switchString.length() == 0) {
-                    throw new CBBCException("Switch use 'both' is set but no switch provided");
+                    throw new CBBCException("Switch use 'both' is set but no switch provided: "+switchString);
                 }
             } else if (switchUse.equalsIgnoreCase("valueOnly")) {
                 if (switchValue == null || switchValue.length() == 0) {
-                    throw new CBBCException("Value only is set but no value provided");
+                    throw new CBBCException("Value only is set but no value provided: "+switchString);
                 }
                 switchString = null;
             } else if (switchUse.equalsIgnoreCase("switchOnly")) {
                 if (switchString == null || switchString.length() == 0) {
-                    throw new CBBCException("Switch only is set but no switch provided");
+                    throw new CBBCException("Switch only is set but no switch provided: "+switchString);
                 }
                 switchValue = null;
             } else if (switchUse.equalsIgnoreCase("combined")) {
                 if (switchValue == null || switchValue.length() == 0) {
-                    throw new CBBCException("Switch use 'both' is set but no value provided");
+                    throw new CBBCException("Switch use 'both' is set but no value provided: "+switchString);
                 }
                 if (switchString == null || switchString.length() == 0) {
-                    throw new CBBCException("Switch use 'both' is set but no switch provided");
+                    throw new CBBCException("Switch use 'both' is set but no switch provided: "+switchString);
                 }
                 switchString += switchValue;
                 switchValue = null;
             } else {
-                throw new CBBCException("Expected attribute 'switchUse' invalid, value [" + switchUse + "]");
+                throw new CBBCException("Expected attribute 'switchUse' invalid, value [" + switchUse + "]: "+switchString);
             }
         }
     }

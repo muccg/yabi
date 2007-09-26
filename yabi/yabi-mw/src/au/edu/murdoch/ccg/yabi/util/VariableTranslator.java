@@ -182,6 +182,18 @@ public class VariableTranslator {
         this.propagateVariable(ctx, fullVarName, variableValue);
     }
 
+    public void updateLastNodeMarker(ExecutionContext ctx) {
+        ctx.setVariable( "lastNode", getNodeName(ctx).replaceAll("-check", "") );
+    }
+
+    public String getLastNodeMarker(ExecutionContext ctx) {
+        if ( ctx.getVariable( "lastNode" ) != null ) {
+            return (String) ctx.getVariable( "lastNode" );
+        } else {
+            return "";
+        }
+    }
+
     //to be reused for globals and node variables
     public void propagateVariable(ExecutionContext ctx, String fullVariableName, Object variableValue) {
         //define a string that is what the 'derived' string would look like

@@ -7,14 +7,26 @@ import java.net.*;
 
 public abstract class Zipper {
 
-    public static void createZipFile (String outFilename, String tempDir, ArrayList files) throws Exception {
+    public static void createZipFile (String outFilename, String tempDir, String username, ArrayList files) throws Exception {
         // Create a buffer for reading the files
         byte[] buf = new byte[1024];
     
         // Create the ZIP file
         ZipOutputStream out = new ZipOutputStream(new FileOutputStream(tempDir + outFilename));
 
+        //first, expand out the indicidual components to ensure we don't have any directories etc
+        FileParamExpander fpe = new FileParamExpander();
+        fpe.setUsername(username);
         Iterator iter = files.iterator();
+        ArrayList expandedFiles = new ArrayList();
+        while (iter.hasNext()) {
+            String[] filesArray = fpe.expandString( (String) iter.next() );
+            for (int i=0; i< filesArray.length;i++) {
+                expandedFiles.add(filesArray[i]);
+            }
+        }
+
+        iter = expandedFiles.iterator();
         while (iter.hasNext()) {
             String filename = (String) iter.next();
     

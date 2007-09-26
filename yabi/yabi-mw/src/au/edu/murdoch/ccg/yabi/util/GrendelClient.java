@@ -26,6 +26,7 @@ public class GrendelClient extends GenericProcessingClient {
     private String outputDir;
     private String rootDir;
     private String outFilePrefix = "";
+    private String username = "";
 
     //constructors
     public GrendelClient( BaatInstance bi ) throws ConfigurationException {
@@ -61,6 +62,7 @@ public class GrendelClient extends GenericProcessingClient {
 
     public void setInputDirByUsername(String userName) {
         this.inputDir = rootDir + userName + "/";
+        this.username = userName;
     }
 
     //instance methods
@@ -240,7 +242,7 @@ public class GrendelClient extends GenericProcessingClient {
         if (files != null && files.size() > 0) {
             //zip up all the input files and add the zipfile to the Baat
             String zipFileName = new Date().getTime() + ".zip";
-            Zipper.createZipFile( zipFileName , inputDir, inFiles );
+            Zipper.createZipFile( zipFileName , inputDir, this.username, inFiles );
 
             bi.setAttachedFile("file://" + inputDir + zipFileName);
         }

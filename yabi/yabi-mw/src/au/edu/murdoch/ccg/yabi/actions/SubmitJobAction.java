@@ -6,6 +6,7 @@ import org.jbpm.graph.exe.ExecutionContext;
 import au.edu.murdoch.ccg.yabi.util.ProcessingClientFactory;
 import au.edu.murdoch.ccg.yabi.util.GenericProcessingClient;
 import au.edu.murdoch.ccg.yabi.util.FileParamExpander;
+import au.edu.murdoch.ccg.yabi.util.SymLink;
 import au.edu.murdoch.ccg.yabi.objects.BaatInstance;
 import au.edu.murdoch.ccg.yabi.objects.YabiJobFileInstance;
 
@@ -95,6 +96,12 @@ public class SubmitJobAction extends BaseAction {
                 pclient.setInputDirByUsername(username);
                 String nodeName = ctx.getNode().getFullyQualifiedName();
                 pclient.setStageOutPrefix(nodeName);
+                //if required, symlink output dir to whatever the last executed node's directory is
+                //provided that there is a last node
+                if (bi.getSymlinkOutputDir() && varTranslator.getLastNodeMarker(ctx).length() > 0) {
+                    pclient.setStageOutPrefix(varTranslator.getLastNodeMarker(ctx));
+                    SymLink.createSymLink( varTranslator.getProcessVariable(ctx, "jobDataDir") + "/" + varTranslator.getLastNodeMarker(ctx), varTranslator.getProcessVariable(ctx, "jobDataDir") + "/" + ctx.getNode().getFullyQualifiedName() );
+                }
 
                 // ----- AUTHENTICATE -----
                 pclient.authenticate( null );
