@@ -96,7 +96,7 @@ public class GrendelClient extends GenericProcessingClient {
         Name name = soapFactory.createName("task");
         SOAPElement xmlStringElem = bodyElement.addChildElement(name);
         xmlStringElem.addTextNode(xmlString); 
-
+System.out.println(xmlString);
         //prepare to make connection to grendel
         SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
         SOAPConnection connection = soapConnectionFactory.createConnection();

@@ -207,17 +207,26 @@ public class BaatInstance {
                     bp.outputFile = element.attributeValue("outputFile");
                 }
    
-                //if inputFile = 'yes' then search for outputExtension subelements
+                //if inputFile = 'yes' then search for out/inputExtension subelements
                 if (bp.inputFile.compareTo("yes") == 0) {
                     ArrayList outputExtensions = new ArrayList();
+                    ArrayList inputExtensions = new ArrayList();
                     List extResults = element.elements();
                     for ( Iterator xiter = extResults.iterator(); xiter.hasNext(); ) {
                         Element xelem = (Element) xiter.next();
                         String extension = xelem.getText();
-                        outputExtensions.add(extension);
+                        if (xelem.getName().compareTo("outputExtension") == 0) {
+                            outputExtensions.add(extension);
+                        }
+                        else if (xelem.getName().compareTo("inputExtension") == 0) {
+                            inputExtensions.add(extension);
+                        }
                     }
                     if (outputExtensions.size() > 0) {
                         bp.outputExtensions = outputExtensions;
+                    }
+                    if (inputExtensions.size() > 0) {
+                        bp.inputExtensions = inputExtensions;
                     }
                 }
 
@@ -253,6 +262,15 @@ public class BaatInstance {
                             //TODO strip everything except the actual filename if there is anything else (?)
                             String newFileName = value + "." + extension;
                             outputFiles.add(newFileName);
+                        }
+                    }
+                    if ( bp.inputExtensions.size() > 0) {
+                        //add input filenames to the arraylist
+                        for (Iterator initer = bp.inputExtensions.iterator(); initer.hasNext(); ) {
+                            String extension = (String) initer.next();
+                            //TODO strip everything except the actual filename if there is anything else (?)
+                            String newFileName = value + "." + extension;
+                            inputFiles.add(newFileName);
                         }
                     }
                 }
@@ -301,6 +319,8 @@ public class BaatInstance {
     }
 
     public void validateParameters() throws CBBCException {
+        reconcileParams();
+
         Iterator iter = this.parameters.iterator();
         while (iter.hasNext()) {
             BaatParameter bp = (BaatParameter) iter.next();
@@ -377,9 +397,11 @@ class BaatParameter {
     public String outputFile = "";
     public String value = "";
     public ArrayList outputExtensions;
+    public ArrayList inputExtensions;
     public boolean isSet = false; //manually mark this when setting a value
 
     public BaatParameter() {
         outputExtensions = new ArrayList();
+        inputExtensions = new ArrayList();
     }
 }
