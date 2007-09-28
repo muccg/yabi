@@ -71,6 +71,8 @@ public class SubmitJobAction extends BaseAction {
                     }
                     bundledFiles = fpe.expandString( (String) inputVars.get(batchParam) );
 
+                    fpe = new FileParamExpander();
+                    fpe.setUsername(username);
                     if (paramFilter != null) {
                         inputFileTypes = paramFilter;
                     }

@@ -47,7 +47,9 @@ public class FileParamExpander {
     }
 
     public void removeFilter(String fileType) {
+        System.out.println("[remove filter '"+fileType+"'] currsize: "+this.filters.size());    
         this.filters.remove(fileType);
+        System.out.println("[remove filter '"+fileType+"'] finalsize: "+this.filters.size());
     }
 
     /**
