@@ -206,6 +206,7 @@ public class BaatInstance {
                 if (element.attributeValue("outputFile") != null) {
                     bp.outputFile = element.attributeValue("outputFile");
                 }
+                bp.primaryExtension = element.attributeValue("primaryExtension");
    
                 //if inputFile = 'yes' then search for out/inputExtension subelements
                 if (bp.inputFile.compareTo("yes") == 0) {
@@ -239,6 +240,19 @@ public class BaatInstance {
 
     public void setParameter(String switchName, String value) {
         setParameter(null, switchName, value);
+    }
+
+    public void addInputFile(String filename) {
+        if (filename.length() > 1 &&
+            ! this.inputFiles.contains(filename) ) {
+            this.inputFiles.add(filename);
+        }
+    }
+
+    public void addInputFiles(String[] filenames) {
+        for (int i=0; i<filenames.length;i++) {
+            this.addInputFile(filenames[i]);
+        }
     }
 
     public void setParameter(String rank, String switchName, String value) {
@@ -279,6 +293,18 @@ public class BaatInstance {
                 }
             }
         }
+    }
+
+    public String getPrimaryExtension(String switchName) {
+        //iterate over parameters until we find the switchName 
+        Iterator iter = parameters.iterator();
+        while (iter.hasNext()) {
+            BaatParameter bp = (BaatParameter) iter.next();
+            if (  bp.switchName.compareTo(switchName) == 0  ) { 
+                return bp.primaryExtension; //could be null, usually is
+            }   
+        }   
+        return null;
     }
 
     public String getToolPath () {
@@ -398,6 +424,7 @@ class BaatParameter {
     public String value = "";
     public ArrayList outputExtensions;
     public ArrayList inputExtensions;
+    public String primaryExtension = "";
     public boolean isSet = false; //manually mark this when setting a value
 
     public BaatParameter() {

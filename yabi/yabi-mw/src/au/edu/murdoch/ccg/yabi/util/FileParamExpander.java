@@ -40,8 +40,14 @@ public class FileParamExpander {
         String extensions[] = fileTypes.split(",");
 
         for (int i = 0; i < extensions.length; i++) {
-            this.filters.put(extensions[i], "true");
+            if (extensions[i].length() > 0) {
+                this.filters.put(extensions[i], "true");
+            }
         }
+    }
+
+    public void removeFilter(String fileType) {
+        this.filters.remove(fileType);
     }
 
     /**

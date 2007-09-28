@@ -49,6 +49,7 @@ public class SubmitJobAction extends BaseAction {
             String batchParam = null;
             String[] batchIterations = "".split(",");
             String inputFileTypes = null;
+            String[] bundledFiles = "".split(","); //any files that we will send along just in case but aren't a parameter
 
             // --- for batch jobs, create an arraylist with the substitutions ---
             if ( inputVars.get("batchOnParameter") != null && inputVars.get("batchOnParameter") instanceof String ) {
@@ -60,6 +61,20 @@ public class SubmitJobAction extends BaseAction {
                 //filtering based on 'inputFileTypes' param if it exists
                 if ( inputVars.get("inputFiletypes") != null && inputVars.get("inputFiletypes") instanceof String ) {
                     inputFileTypes = (String) inputVars.get("inputFiletypes");
+                    fpe.setFilter(inputFileTypes);
+                    //now load up the baat and see if we are overriding the generic tool inputFiletypes for
+                    //a more specific filter on the parameter we are using to batch on
+                    BaatInstance bi = new BaatInstance( (String) inputVars.get("toolName") ); //this will throw an exception if toolName not found
+                    String paramFilter = bi.getPrimaryExtension(batchParam);
+                    if (paramFilter != null) {
+                        fpe.removeFilter(paramFilter);
+                    }
+                    bundledFiles = fpe.expandString( (String) inputVars.get(batchParam) );
+
+                    if (paramFilter != null) {
+                        inputFileTypes = paramFilter;
+                    }
+
                     fpe.setFilter(inputFileTypes);
                 }
 
@@ -117,6 +132,8 @@ public class SubmitJobAction extends BaseAction {
                 pclient.authenticate( null );
 
                 // ----- STAGE IN FILES ----- 
+                bi.addInputFiles(bundledFiles);
+                System.out.println("batch item ["+batchIterations[i]+"] bundling ["+bi.getInputFiles()+"]");
                 pclient.fileStageIn( bi.getInputFiles() );
                 ArrayList outputFiles = bi.getOutputFiles();
                 totalOutputFiles.addAll(outputFiles);
