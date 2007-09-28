@@ -10,6 +10,9 @@ import au.edu.murdoch.ccg.yabi.util.SymLink;
 import au.edu.murdoch.ccg.yabi.objects.BaatInstance;
 import au.edu.murdoch.ccg.yabi.objects.YabiJobFileInstance;
 
+import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
+import org.apache.commons.configuration.*;
+
 import java.util.*;
 
 
@@ -99,8 +102,15 @@ public class SubmitJobAction extends BaseAction {
                 //if required, symlink output dir to whatever the last executed node's directory is
                 //provided that there is a last node
                 if (bi.getSymlinkOutputDir() && varTranslator.getLastNodeMarker(ctx).length() > 0) {
-                    pclient.setStageOutPrefix(varTranslator.getLastNodeMarker(ctx));
-                    SymLink.createSymLink( varTranslator.getProcessVariable(ctx, "jobDataDir") + "/" + varTranslator.getLastNodeMarker(ctx), varTranslator.getProcessVariable(ctx, "jobDataDir") + "/" + ctx.getNode().getFullyQualifiedName() );
+                    try {
+                        Configuration conf = YabiConfiguration.getConfig();
+                        String rootDir = conf.getString("yabi.rootDirectory");
+
+                        pclient.setStageOutPrefix(varTranslator.getLastNodeMarker(ctx));
+                        SymLink.createSymLink( rootDir + outputDir + "/" + varTranslator.getLastNodeMarker(ctx), rootDir + outputDir + "/" + ctx.getNode().getFullyQualifiedName() );
+                    } catch (Exception e) {
+                        System.out.println("error creating symlink: "+e.getMessage());
+                    }
                 }
 
                 // ----- AUTHENTICATE -----
