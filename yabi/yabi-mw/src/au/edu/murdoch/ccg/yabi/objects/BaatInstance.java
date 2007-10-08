@@ -139,6 +139,12 @@ public class BaatInstance {
         //set priority
         Element priorityNode = (Element)baatFile.selectSingleNode("//priority");
         priorityNode.setText("-10");
+
+        //get grendel based xml elements
+        Element grendelNode = (Element)baatFile.selectSingleNode("//grendel");
+        Element optionEl = grendelNode.addElement("option");
+        Element nameEl = optionEl.addElement("name");
+        nameEl.setText("yabi");
     }
 
     public void setGrendelOption(String key, String value) {
