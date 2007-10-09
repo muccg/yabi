@@ -275,6 +275,16 @@ public class BaatInstance {
                     //add this value to the inputFiles list
                     inputFiles.add(value);
 
+                    //if there is a 'removePath' filter, remove anything that looks like a path from the value
+                    if (bp.filter != null && bp.filter.equalsIgnoreCase("removePath")) {
+                        int lastPath = bp.value.lastIndexOf("/");
+                        int filenameIndex = lastPath + 1;
+                        if (filenameIndex < 0 || lastPath >= bp.value.length()) {
+                            filenameIndex = 0;
+                        }
+                        bp.value = bp.value.substring(filenameIndex);
+                    }
+
                     if ( bp.outputExtensions.size() > 0) {
                         //add output filenames to the arraylist
                         for (Iterator outiter = bp.outputExtensions.iterator(); outiter.hasNext(); ) {
