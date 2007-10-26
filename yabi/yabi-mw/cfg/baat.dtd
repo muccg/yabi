@@ -1,5 +1,5 @@
 <!ELEMENT baat (job+)>
-<!ELEMENT job (inpuFile+, outputFile, parameterList, parameterAliasList, grendel, priority, executionHost, batchNumber, status, startTime, stopTime, submittedTime, submitUser, submitLabel)>
+<!ELEMENT job (inputFile, outputFile, parameterList, parameterAliasList, grendel, priority, executionHost, batchNumber, status, startTime, stopTime, submittedTime, submitUser, submitLabel)>
 <!ELEMENT inputFile (#PCDATA)>
 <!ELEMENT outputFile (#PCDATA)>
 <!ELEMENT parameterList (parameter+)>

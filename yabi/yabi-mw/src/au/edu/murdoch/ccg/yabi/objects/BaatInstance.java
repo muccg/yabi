@@ -176,17 +176,18 @@ public class BaatInstance {
             URL toolFile = new URL(toolFileName);
 
             //implement manual entity resolver to prevent network requests for baat dtd
-            //EntityResolver resolver = new EntityResolver() {
-            //    public InputSource resolveEntity(String publicId, String systemId) {
-            //        InputStream in = getClass().getResourceAsStream(
-            //            "au/edu/murdoch/ccg/baat.dtd"
-            //        );
-            //        return new InputSource( in );
-            //    }
-            //};
+            EntityResolver resolver = new EntityResolver() {
+                public InputSource resolveEntity(String publicId, String systemId) {
+                    InputStream in = getClass().getResourceAsStream(
+                        "/au/edu/murdoch/ccg/baat.dtd"
+                    );
+                    System.out.println("using local baat.dtd");
+                    return new InputSource( in );
+                }
+            };
 
-            SAXReader xmlReader = new SAXReader(false);
-            //xmlReader.setEntityResolver(resolver);
+            SAXReader xmlReader = new SAXReader();
+            xmlReader.setEntityResolver(resolver);
             baatFile = xmlReader.read(toolFile); //throws DocumentException on a parse error
 
             //load the toolpath
