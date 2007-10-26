@@ -11,16 +11,6 @@
       JBPM Example JSPs
     </description>
 
-  <error-page>
-    <error-code>404</error-code>
-    <location>/templates/missing.xml</location>
-  </error-page>
-
-  <error-page>
-    <error-code>500</error-code>
-    <location>/templates/fatal.xml</location>
-  </error-page>
-
   <!-- JbpmSchedulerServlet -->
   <servlet>
     <servlet-name>JbpmSchedulerServlet</servlet-name>

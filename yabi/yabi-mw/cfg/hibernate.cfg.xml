@@ -7,6 +7,9 @@
 <hibernate-configuration>
   <session-factory>
 
+    <!-- explicitly set a memory cache to prevent disk cache from being used -->
+    <property name="hibernate.cache.provider_class">org.hibernate.cache.HashtableCacheProvider</property>
+
     <!-- jdbc connection properties -->
     <property name="hibernate.dialect">org.hibernate.dialect.PostgreSQLDialect</property>
     <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>

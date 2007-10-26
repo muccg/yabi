@@ -1,6 +1,11 @@
 package au.edu.murdoch.ccg.yabi.util;
 
 import org.apache.axis.soap.*;
+import org.apache.axis.client.*;
+import org.apache.axis.message.SOAPEnvelope;
+import org.apache.axis.message.SOAPHeaderElement;
+import org.apache.axis.Message;
+import javax.xml.namespace.QName;
 import javax.xml.soap.*;
 import java.util.*;
 import java.net.*;
@@ -83,12 +88,18 @@ public class GrendelClient extends GenericProcessingClient {
         //System.out.println("\n\n" + xmlString + "\n\n");
 
         //create SOAP message
-        MessageFactory factory = MessageFactory.newInstance();
-        SOAPMessage message = factory.createMessage();
+        //MessageFactory factory = MessageFactory.newInstance();
+        SOAPEnvelope emptyEnvelope = new SOAPEnvelope();
+        Message message = new Message(emptyEnvelope);
+        SOAPFactory soapFactory = SOAPFactory.newInstance();
+
+        //add header elements as required by glassfish
+        //SOAPHeader sendHeader = message.getSOAPHeader();
+        //SOAPHeaderElement soapAct = sendHeader.addHeaderElement( new QName("urn:Grendel", "SOAPAction") );
+        //soapAct.setValue( "submitXMLJob" );
 
         //defined our body as a submitXMLJob call
         SOAPBody body = message.getSOAPBody();
-        SOAPFactory soapFactory = SOAPFactory.newInstance();
         Name bodyName = soapFactory.createName("submitXMLJob", "", "urn:Grendel");
         SOAPBodyElement bodyElement = body.addBodyElement(bodyName); 
     
@@ -97,11 +108,15 @@ public class GrendelClient extends GenericProcessingClient {
         SOAPElement xmlStringElem = bodyElement.addChildElement(name);
         xmlStringElem.addTextNode(xmlString); 
 System.out.println(xmlString);
+
         //prepare to make connection to grendel
-        SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
-        SOAPConnection connection = soapConnectionFactory.createConnection();
-      
         java.net.URL endpoint = new URL(grendelUrl);
+        Service  service = new Service();
+        Call call = (Call) service.createCall();
+        call.setTargetEndpointAddress( endpoint );
+        call.setOperationName( new QName("urn:Grendel", "submitXMLJob") );
+        call.setProperty(Call.SOAPACTION_USE_PROPERTY,
+                   new Boolean(true));
 
         //add attachment zip file
         if (bi.getAttachedFile() != null) {
@@ -111,18 +126,18 @@ System.out.println(xmlString);
                 AttachmentPart attachment = message.createAttachmentPart(dataHandler);
                 attachment.setContentId("attached_file");
 
-                message.addAttachmentPart(attachment);
+                call.addAttachmentPart(attachment);
             } catch (Exception e) {
                 //ignore faulty files
             }
         }
 
         //make the SOAP call
-        SOAPMessage response = connection.call(message, endpoint);
+        SOAPEnvelope response = call.invoke( message );
 
         //examine response
-        SOAPHeader header = response.getSOAPHeader();
-        SOAPBody rbody = response.getSOAPBody();
+        SOAPHeader header = response.getHeader();
+        SOAPBody rbody = response.getBody();
 
         //check for a fault
         if ( rbody.hasFault() ) {
@@ -130,8 +145,6 @@ System.out.println(xmlString);
             SOAPFault newFault = rbody.getFault();
             Name code = newFault.getFaultCodeAsName();
             String string = newFault.getFaultString();
-
-            connection.close();
 
             //clean up staged in file
             if (bi.getAttachedFile() != null) {
@@ -162,9 +175,6 @@ System.out.println(xmlString);
                 System.out.println("jobReturn : " + jobReturn + " :::: " + jobReturn.getValue());
             }
 
-            //close SOAP connection
-            connection.close();
-
             //clean up staged in file
             if (bi.getAttachedFile() != null) {
                 try {
@@ -186,27 +196,42 @@ System.out.println(xmlString);
     public String getJobStatus (String jobId) throws Exception {
         this.jobId = jobId;  //store this for if we intend to stageout
 
-        MessageFactory factory = MessageFactory.newInstance();
-        SOAPMessage message = factory.createMessage();
-
-        SOAPBody body = message.getSOAPBody();
+        //create SOAP message
+        //MessageFactory factory = MessageFactory.newInstance();
+        SOAPEnvelope emptyEnvelope = new SOAPEnvelope();
+        Message message = new Message(emptyEnvelope);
         SOAPFactory soapFactory = SOAPFactory.newInstance();
+
+        //add header elements as required by glassfish
+        //SOAPHeader sendHeader = message.getSOAPHeader();
+        //SOAPHeaderElement soapAct = sendHeader.addHeaderElement( new QName("urn:Grendel", "SOAPAction") );
+        //soapAct.setValue( "submitXMLJob" );
+
+        //defined our body as a submitXMLJob call
+        SOAPBody body = message.getSOAPBody();
         Name bodyName = soapFactory.createName("getJobStatus", "", "urn:Grendel");
-        SOAPBodyElement bodyElement = body.addBodyElement(bodyName); 
-    
+        SOAPBodyElement bodyElement = body.addBodyElement(bodyName);
+
+        //add our xmlString as an argument
         Name name = soapFactory.createName("id");
         SOAPElement xmlStringElem = bodyElement.addChildElement(name);
         xmlStringElem.addTextNode(jobId);
 
-        SOAPConnectionFactory soapConnectionFactory = SOAPConnectionFactory.newInstance();
-        SOAPConnection connection = soapConnectionFactory.createConnection();
-        
+        //prepare to make connection to grendel
         java.net.URL endpoint = new URL(grendelUrl);
+        Service  service = new Service();
+        Call call = (Call) service.createCall();
+        call.setTargetEndpointAddress( endpoint );
+        call.setOperationName( new QName("urn:Grendel", "getJobStatus") );
+        call.setProperty(Call.SOAPACTION_USE_PROPERTY,
+                   new Boolean(true));
 
-        SOAPMessage response = connection.call(message, endpoint);
+        //make the SOAP call
+        SOAPEnvelope response = call.invoke( message );
 
-        SOAPHeader header = response.getSOAPHeader();
-        SOAPBody rbody = response.getSOAPBody();
+
+        SOAPHeader header = response.getHeader();
+        SOAPBody rbody = response.getBody();
 
         //check for a fault
         if ( rbody.hasFault() ) {
@@ -214,8 +239,6 @@ System.out.println(xmlString);
             SOAPFault newFault = rbody.getFault();
             Name code = newFault.getFaultCodeAsName();
             String string = newFault.getFaultString();
-
-            connection.close();
 
             throw new Exception(string);
 
@@ -225,8 +248,6 @@ System.out.println(xmlString);
             SOAPElement element = (SOAPElement)iterator.next(); //getJobStatusResponse
             iterator = element.getChildElements();
             SOAPElement wantedElement = (SOAPElement)iterator.next(); //getJobStatusReturn
-
-            connection.close();
 
             this.jobStatus = wantedElement.getValue();
 

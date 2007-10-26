@@ -35,7 +35,7 @@
     <target name="userbuildinit" depends="createTmp">
       <property name="ccg.site" value="${basedir}/tmp"/>
       <property name="ccg.buildname" value="${user.name}"/>
-      <property name="ccg.approot" value="/usr/local/java/tomcat/webapps/"/>
+      <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain2/autodeploy/"/>
       <property name="ccg.dbhost" value="boromirdb.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
