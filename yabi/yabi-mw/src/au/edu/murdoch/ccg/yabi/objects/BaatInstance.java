@@ -8,6 +8,8 @@ import java.net.*;
 import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
 import org.apache.commons.configuration.*;
 import au.edu.murdoch.cbbc.util.CBBCException;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
 
 public class BaatInstance {
 
@@ -172,7 +174,19 @@ public class BaatInstance {
         if (toolName != null) {
             String toolFileName = toolDefinitionDirectory + toolName + ".xml";
             URL toolFile = new URL(toolFileName);
-            SAXReader xmlReader = new SAXReader();
+
+            //implement manual entity resolver to prevent network requests for baat dtd
+            //EntityResolver resolver = new EntityResolver() {
+            //    public InputSource resolveEntity(String publicId, String systemId) {
+            //        InputStream in = getClass().getResourceAsStream(
+            //            "au/edu/murdoch/ccg/baat.dtd"
+            //        );
+            //        return new InputSource( in );
+            //    }
+            //};
+
+            SAXReader xmlReader = new SAXReader(false);
+            //xmlReader.setEntityResolver(resolver);
             baatFile = xmlReader.read(toolFile); //throws DocumentException on a parse error
 
             //load the toolpath

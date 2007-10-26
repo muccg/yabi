@@ -119,6 +119,7 @@
       <copy file="${basedir}/cfg/hibernate/StringUpdateLog.hbm.xml" tofile="${ccg.site}/classes/StringUpdateLog.hbm.xml" overwrite="true"/>
       <copy file="${basedir}/cfg/hibernate/HibernateStringInstance.hbm.xml" tofile="${ccg.site}/classes/HibernateStringInstance.hbm.xml" overwrite="true"/>
       <copy file="${basedir}/cfg/yabi-mw.properties" tofile="${ccg.site}/classes/yabi-mw.properties" overwrite="true"/>
+      <copy file="${basedir}/cfg/baat.dtd" tofile="${ccg.site}/classes/au/edu/murdoch/ccg/baat.dtd" overwrite="true"/>
 	</target>
 
     <target name="templateCopy">
