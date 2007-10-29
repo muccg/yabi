@@ -228,6 +228,10 @@ public class BaatInstance {
                 }
                 bp.inputFile = element.attributeValue("inputFile");
                 bp.value = element.attributeValue("value");
+                if (element.attributeValue("value") != null &&
+                    element.attributeValue("value").length() > 0) {
+                    bp.isSet = true; //pretend values are set when a default is specified in the baat
+                }
                 if (element.attributeValue("outputFile") != null) {
                     bp.outputFile = element.attributeValue("outputFile");
                 }
@@ -356,6 +360,11 @@ public class BaatInstance {
         Iterator iter = this.parameters.iterator();
         while (iter.hasNext()) {
             BaatParameter bp = (BaatParameter) iter.next();
+
+            //skip unset params
+            if (!bp.isSet) {
+                continue;
+            }
 
             String tempValue = bp.value;
 

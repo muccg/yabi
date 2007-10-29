@@ -107,7 +107,7 @@ public class LocalClient extends GenericProcessingClient {
             throw e;
         } catch (CBBCException e) {
             logger.severe("[command FAIL] "+e.getClass().getName()+" : "+e.getMessage());
-            throw new Exception("command failure", e);
+            throw new Exception(e.getMessage(), e);
         }
 
         return jobId;
