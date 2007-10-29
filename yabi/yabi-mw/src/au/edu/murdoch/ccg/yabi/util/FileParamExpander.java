@@ -5,12 +5,15 @@ import org.apache.commons.configuration.*;
 import java.io.*;
 import java.util.*;
 
+import java.util.logging.Logger;
+
 public class FileParamExpander {
 
     private String yabiRootDir;
     private String username;
     private HashMap filters;
     private boolean filtered = false;
+    private static Logger logger = Logger.getLogger(FileParamExpander.class.getName());
 
     public FileParamExpander() {
         try {
@@ -47,9 +50,9 @@ public class FileParamExpander {
     }
 
     public void removeFilter(String fileType) {
-        System.out.println("[remove filter '"+fileType+"'] currsize: "+this.filters.size());    
+        logger.finest("[remove filter '"+fileType+"'] currsize: "+this.filters.size());    
         this.filters.remove(fileType);
-        System.out.println("[remove filter '"+fileType+"'] finalsize: "+this.filters.size());
+        logger.finest("[remove filter '"+fileType+"'] finalsize: "+this.filters.size());
     }
 
     /**
@@ -73,7 +76,7 @@ public class FileParamExpander {
         for (int i=0;i < tokenized.length;i++) {
             //first, check for zippiness
             if (tokenized[i].endsWith(".zip")) {
-                System.out.println("fileParamExpander: zip file: "+tokenized[i]);
+                logger.finer("fileParamExpander: zip file: "+tokenized[i]);
                 try {
                     expanded.addAll(Zipper.unzip(this.yabiRootDir + this.username + "/" + tokenized[i], this.yabiRootDir + this.username, "data", true));
                 } catch (Exception e) {
@@ -85,21 +88,21 @@ public class FileParamExpander {
                     //maybe this isn't a file reference?
                     //add to final array just in case
                     expanded.add(tokenized[i]);
-                    System.out.println("fileParamExpander: file not found: "+tokenized[i]);
+                    logger.finer("fileParamExpander: file not found: "+tokenized[i]);
                     continue;
                 }
                 if (possibleFile.isDirectory()) {
-                    System.out.println("fileParamExpander: directory: "+tokenized[i]);
+                    logger.finer("fileParamExpander: directory: "+tokenized[i]);
                     String[] dirExpansion = possibleFile.list();
                     for (int j=0;j < dirExpansion.length; j++) {
                         //expand directories out one level only
-                        System.out.println("fileParamExpander: dirExpanded: "+tokenized[i]+"/"+dirExpansion[j]);
+                        logger.finer("fileParamExpander: dirExpanded: "+tokenized[i]+"/"+dirExpansion[j]);
                         expanded.add(tokenized[i]+"/"+dirExpansion[j]);
                     }
                     continue;
                 }
                 //if we fall through here, it is probably a straight file reference
-                System.out.println("fileParamExpander: file: "+tokenized[i]);
+                logger.finer("fileParamExpander: file: "+tokenized[i]);
                 expanded.add(tokenized[i]);
             }
             
@@ -112,7 +115,7 @@ public class FileParamExpander {
                 String file = (String) iter.next();
                 if ( file.lastIndexOf(".") == -1 || file.lastIndexOf(".") == file.length() - 1 ) {
                     iter.remove(); //if filtered, then don't allow files without an extension
-                    System.out.println("REMOVING NONMATCHING FILE ["+file+"]");
+                    logger.fine("REMOVING NONMATCHING FILE ["+file+"]");
                 } else {
                     String extension = file.substring( file.lastIndexOf(".") + 1 );
                     if ( filters.containsKey(extension) ) {
@@ -120,7 +123,7 @@ public class FileParamExpander {
                     } else {
                         //doesn't match our permitted files, skip
                         iter.remove();
-                        System.out.println("REMOVING NONMATCHING FILE ["+file+"]");
+                        logger.fine("REMOVING NONMATCHING FILE ["+file+"]");
                     }
                 }
             }

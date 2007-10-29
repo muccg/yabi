@@ -5,11 +5,14 @@ import java.util.*;
 import javax.xml.parsers.*;
 import org.w3c.dom.*;
 
+import java.util.logging.Logger;
+
 public class ToolMan {
 
     private static List tools;
     private static final String toolFileLocation = "/usr/local/share/grendel/xml/tools/tools.xml";
     private static Document sourceDOM;
+    private static Logger logger = Logger.getLogger(ToolMan.class.getName());
 
     public ToolMan () {}
 
@@ -38,7 +41,7 @@ public class ToolMan {
         ToolMan tm = new ToolMan();
         List tools = tm.loadTools();
 
-        System.out.println(tools);
+        logger.info(tools.toString());
     }
 
 }

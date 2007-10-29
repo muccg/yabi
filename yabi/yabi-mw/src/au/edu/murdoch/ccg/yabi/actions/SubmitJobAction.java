@@ -15,8 +15,11 @@ import org.apache.commons.configuration.*;
 
 import java.util.*;
 
+import java.util.logging.Logger;
 
 public class SubmitJobAction extends BaseAction {
+
+  private static Logger logger = Logger.getLogger(SubmitJobAction.class.getName());
 
   public void execute(ExecutionContext ctx) throws Exception {
     Map myVars = varTranslator.getVariableMap(ctx);
@@ -126,7 +129,7 @@ public class SubmitJobAction extends BaseAction {
                         pclient.setStageOutPrefix(varTranslator.getLastNodeMarker(ctx));
                         SymLink.createSymLink( rootDir + outputDir + "/" + varTranslator.getLastNodeMarker(ctx), rootDir + outputDir + "/" + ctx.getNode().getFullyQualifiedName() );
                     } catch (Exception e) {
-                        System.out.println("error creating symlink: "+e.getMessage());
+                        logger.severe("error creating symlink: "+e.getMessage());
                     }
                 }
 
@@ -135,7 +138,7 @@ public class SubmitJobAction extends BaseAction {
 
                 // ----- STAGE IN FILES ----- 
                 bi.addInputFiles(bundledFiles);
-                System.out.println("batch item ["+batchIterations[i]+"] bundling ["+bi.getInputFiles()+"]");
+                logger.fine("batch item ["+batchIterations[i]+"] bundling ["+bi.getInputFiles()+"]");
                 pclient.fileStageIn( bi.getInputFiles() );
                 ArrayList outputFiles = bi.getOutputFiles();
                 totalOutputFiles.addAll(outputFiles);

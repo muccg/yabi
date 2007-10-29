@@ -16,6 +16,8 @@ import au.edu.murdoch.ccg.yabi.objects.User;
 import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
 import org.apache.commons.configuration.*;
 
+import java.util.logging.Logger;
+
 public class GrendelClient extends GenericProcessingClient {
 
     public static String grendelUrl;
@@ -32,6 +34,8 @@ public class GrendelClient extends GenericProcessingClient {
     private String rootDir;
     private String outFilePrefix = "";
     private String username = "";
+
+    private static Logger logger = Logger.getLogger(GrendelClient.class.getName());
 
     //constructors
     public GrendelClient( BaatInstance bi ) throws ConfigurationException {
@@ -75,10 +79,10 @@ public class GrendelClient extends GenericProcessingClient {
         //create data directories
         String dataDirLoc = rootDir + this.outputDir ;
         File dataDir = new File(dataDirLoc);
-        System.out.println("dataDir is: "+dataDirLoc);
+        logger.fine("dataDir is: "+dataDirLoc);
         if (!dataDir.exists()) {
             dataDir.mkdir();
-            System.out.println("had to create data dir");
+            logger.fine("had to create data dir");
         }
 
         //convert Baat into its XML
@@ -107,7 +111,8 @@ public class GrendelClient extends GenericProcessingClient {
         Name name = soapFactory.createName("task");
         SOAPElement xmlStringElem = bodyElement.addChildElement(name);
         xmlStringElem.addTextNode(xmlString); 
-System.out.println(xmlString);
+
+        logger.finer(xmlString);
 
         //prepare to make connection to grendel
         java.net.URL endpoint = new URL(grendelUrl);
@@ -171,8 +176,8 @@ System.out.println(xmlString);
             try {
                 jobId = Long.parseLong( jobReturn.getValue() );
             } catch (NumberFormatException e) {
-                System.out.println("ERROR PARSING NUMBER ------");
-                System.out.println("jobReturn : " + jobReturn + " :::: " + jobReturn.getValue());
+                logger.severe("ERROR PARSING NUMBER ------");
+                logger.severe("jobReturn : " + jobReturn + " :::: " + jobReturn.getValue());
             }
 
             //clean up staged in file

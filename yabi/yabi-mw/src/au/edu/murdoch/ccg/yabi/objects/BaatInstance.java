@@ -11,6 +11,8 @@ import au.edu.murdoch.cbbc.util.CBBCException;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.InputSource;
 
+import java.util.logging.Logger;
+
 public class BaatInstance {
 
     private String toolDefinitionDirectory;
@@ -25,6 +27,8 @@ public class BaatInstance {
     private String rootDir;
     private String username; //optional, used for prependUserDir option
     private boolean symlinkOutputDir;
+
+    private static Logger logger = Logger.getLogger(BaatInstance.class.getName());
 
     public BaatInstance(String toolName) throws Exception {
         //init vars
@@ -166,7 +170,7 @@ public class BaatInstance {
 
             submitLabel.setText(value);
         } else {
-            System.out.println("[BaatInstance] failed to set grendelOption ["+key+"] = ["+value+"]");
+            logger.fine("[BaatInstance] failed to set grendelOption ["+key+"] = ["+value+"]");
         }
     }
 
@@ -181,12 +185,12 @@ public class BaatInstance {
                     InputStream in = getClass().getResourceAsStream(
                         "/au/edu/murdoch/ccg/baat.dtd"
                     );
-                    System.out.println("using local baat.dtd");
+                    logger.info("using local baat.dtd");
                     return new InputSource( in );
                 }
             };
 
-            SAXReader xmlReader = new SAXReader();
+            SAXReader xmlReader = new SAXReader(false);
             xmlReader.setEntityResolver(resolver);
             baatFile = xmlReader.read(toolFile); //throws DocumentException on a parse error
 

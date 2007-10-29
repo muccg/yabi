@@ -22,8 +22,11 @@ import au.edu.murdoch.ccg.yabi.util.SymLink;
 
 import org.apache.commons.configuration.*;
 
+import java.util.logging.Logger;
 
 public class DispatchXML extends BaseAction {
+
+    private static Logger logger = Logger.getLogger(DispatchXML.class.getName());
 
     public DispatchXML () {
         super();
@@ -46,7 +49,7 @@ public class DispatchXML extends BaseAction {
                 YabiJobFileInstance yjfi = new YabiJobFileInstance();
                 yjfi.initFromString(jobXML);
 
-                System.out.println("receiving incoming workflow");
+                logger.info(request.getContextPath() + ": receiving incoming workflow");
 
                 //fetch the process definition and parse it into a JBPM ProcessDefinition object
                 String processDefinitionXML = yjfi.getProcessDefinition();
@@ -79,7 +82,7 @@ public class DispatchXML extends BaseAction {
                         value = "resubmitted";
                     }
 
-                    System.out.println(key + " : " + value);
+                    logger.fine(key + " : " + value);
                     procInstance.getContextInstance().setVariable(key, value);
                 }
 
@@ -127,7 +130,7 @@ public class DispatchXML extends BaseAction {
 
         } catch (Exception e) {
 
-            System.out.println("An error occurred while attempting to deploy the definition: ["+e.getClass().getName() +"] "+ e.getMessage());
+            logger.severe("An error occurred while attempting to deploy the definition: ["+e.getClass().getName() +"] "+ e.getMessage());
             request.setAttribute("message", "An error occurred while attempting to deploy the definition: ["+e.getClass().getName() +"] "+ e.getMessage());
             return mapping.findForward("error");
 

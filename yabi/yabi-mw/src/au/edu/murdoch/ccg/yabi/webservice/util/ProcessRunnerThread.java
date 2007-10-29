@@ -5,6 +5,8 @@ import org.jbpm.graph.def.*;
 import org.jbpm.graph.exe.*;
 import org.jbpm.*;
 
+import java.util.logging.Logger;
+
 public class ProcessRunnerThread extends Thread {
 
     private long processId = 0L;
@@ -16,8 +18,10 @@ public class ProcessRunnerThread extends Thread {
     public long getProcessId () { return this.processId; }
     public void setJbpmConfiguration (JbpmConfiguration input) { this.jbpmConfig = input; }
 
+    private static Logger logger = Logger.getLogger(ProcessRunnerThread.class.getName());
+
     public void run() {
-        System.out.println("[ProcessRunnerThread]["+this.processId+"] starting...");
+        logger.info("[ProcessRunnerThread]["+this.processId+"] starting...");
         if (this.processId != 0L && this.jbpmConfig != null) {
      
             //we hound this process down until it is Ended or we hit an exception
@@ -49,7 +53,7 @@ public class ProcessRunnerThread extends Thread {
 
                 //sleep for a while
                 try {
-                    System.out.println("[ProcessRunnerThread]["+this.processId+"] done loop, sleeping now...");
+                    logger.info("[ProcessRunnerThread]["+this.processId+"] done loop, sleeping now...");
                     Thread.sleep(waitTime);
                 } catch (InterruptedException e) {
                     isDone = true;
@@ -58,7 +62,7 @@ public class ProcessRunnerThread extends Thread {
 
         }
 
-        System.out.println("[ProcessRunnerThread]["+this.processId+"] completed");
+        logger.info("[ProcessRunnerThread]["+this.processId+"] completed");
     }
 
 }

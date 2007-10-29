@@ -11,10 +11,13 @@ import org.apache.commons.configuration.*;
 
 import java.util.*;
 
+import java.util.logging.Logger;
+
 public class WaitForJobAction extends BaseAction {
 
   private int waitTime = 1000; // start at 1 second
   private int maxWaitTime = 30000; //max wait time of 30 sec
+  private static Logger logger = Logger.getLogger(WaitForJobAction.class.getName());
 
   public void execute(ExecutionContext ctx) throws Exception {
     Map myVars = varTranslator.getVariableMap(ctx);
@@ -97,7 +100,7 @@ public class WaitForJobAction extends BaseAction {
 
                 if (incompleteCount > 0) {
                     try {
-                        System.out.println("[WaitForJobAction] backing off for "+waitTime+" ms, incomplete batch items: "+incompleteCount);
+                        logger.fine("[WaitForJobAction] backing off for "+waitTime+" ms, incomplete batch items: "+incompleteCount);
                         Thread.sleep(waitTime);
                         waitTime += waitTime;  //exponential backoff
                         if (waitTime > maxWaitTime) {

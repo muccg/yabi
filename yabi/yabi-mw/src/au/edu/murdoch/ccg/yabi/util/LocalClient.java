@@ -9,6 +9,8 @@ import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
 import org.apache.commons.configuration.*;
 import au.edu.murdoch.cbbc.util.*;
 
+import java.util.logging.Logger;
+
 public class LocalClient extends GenericProcessingClient {
 
     public static String inputDir;
@@ -22,6 +24,8 @@ public class LocalClient extends GenericProcessingClient {
     private String outputDir;
     private String rootDir;
     private String outFilePrefix = "";
+
+    private Logger logger = Logger.getLogger(LocalClient.class.getName());
 
     //constructors
     public LocalClient( BaatInstance bi ) throws ConfigurationException {
@@ -77,7 +81,7 @@ public class LocalClient extends GenericProcessingClient {
 
             String command = this.bi.getCommandLine();
             if ( command.indexOf(";") == -1 ) {
-                System.out.println("[command] "+this.bi.getCommandLine());
+                logger.info("[command] "+this.bi.getCommandLine());
                 Process proc = Runtime.getRuntime().exec(this.bi.getCommandLine(), null, unitDir);
 
                 StreamWriter stdOutWriter = new StreamWriter();
@@ -86,8 +90,8 @@ public class LocalClient extends GenericProcessingClient {
                 String stdOutPath = unitDirLoc + "/standardOutput.txt";
                 String stdErrPath = unitDirLoc + "/standardError.txt";
 
-                System.out.println("[out] "+stdOutPath);
-                System.out.println("[err] "+stdErrPath);
+                logger.fine("[out] "+stdOutPath);
+                logger.fine("[err] "+stdErrPath);
 
                 stdOutWriter.record(proc.getInputStream(), stdOutPath);
                 stdErrWriter.record(proc.getErrorStream(), stdErrPath);
@@ -99,10 +103,10 @@ public class LocalClient extends GenericProcessingClient {
                 }
             }
         } catch (Exception e) {
-            System.out.println("[command FAIL] "+e.getClass().getName()+" : "+e.getMessage());
+            logger.severe("[command FAIL] "+e.getClass().getName()+" : "+e.getMessage());
             throw e;
         } catch (CBBCException e) {
-            System.out.println("[command FAIL] "+e.getClass().getName()+" : "+e.getMessage());
+            logger.severe("[command FAIL] "+e.getClass().getName()+" : "+e.getMessage());
             throw new Exception("command failure", e);
         }
 

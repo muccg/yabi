@@ -6,10 +6,14 @@ import org.jbpm.*;
 
 import java.util.*;
 
+import java.util.logging.Logger;
+
 public class VariableTranslator {
 
     private String separatorRegex = "\\.";
     private String separator = ".";
+    
+    private static Logger logger = Logger.getLogger(VariableTranslator.class.getName());
 
     //TODO extend so it can be used without an ExecutionContext, but a variable map and a node name
     //retrieves only the variables that fall within the current node's namespace, split into 'input' and 'output' branches of a hashmap

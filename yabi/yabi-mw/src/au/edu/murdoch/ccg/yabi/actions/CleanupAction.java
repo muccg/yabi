@@ -14,7 +14,11 @@ import java.text.SimpleDateFormat;
 import java.io.File;
 import au.edu.murdoch.ccg.yabi.util.SymLink;
 
+import java.util.logging.Logger;
+
 public class CleanupAction extends BaseAction {
+
+  private static Logger logger = Logger.getLogger(CleanupAction.class.getName());
 
   public void execute(ExecutionContext ctx) throws Exception {
     Map myVars = varTranslator.getVariableMap(ctx);
@@ -63,7 +67,7 @@ public class CleanupAction extends BaseAction {
 
         File old = new File(from);
         boolean res = old.delete();
-        System.out.println("deleted file ["+from+"]");
+        logger.fine("deleted file ["+from+"]");
 
         SymLink.createSymLink(linkTo, to);
 
