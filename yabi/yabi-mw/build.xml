@@ -16,7 +16,7 @@
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
       <property name="ccg.dbname" value="yabimw"/>
-      <property name="ccg.warfilename" value="${basedir}/yabi-mw-${ccg.buildname}.war"/>
+      <property name="ccg.warfilename" value="${basedir}/yabi-${ccg.buildname}.war"/>
       <property name="ccg.srcdir" value="${basedir}/tmp/ccg/yabi-mw/src"/>
       <property name="ccg.cfgdir" value="${basedir}/tmp/ccg/yabi-mw/cfg"/>
       <property name="ccg.libdir" value="${basedir}/tmp/ccg/yabi-mw/lib"/>
