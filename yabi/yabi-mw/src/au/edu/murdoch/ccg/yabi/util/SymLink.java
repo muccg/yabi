@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 public class SymLink {
 
-    private static Logger logger = Logger.getLogger(SymLink.class.getName());
+    private static Logger logger = Logger.getLogger( AppDetails.getAppString() + "." + SymLink.class.getName());
 
     public static void createSymLink( String from, String to ) throws Exception {
         //TODO make this safe from hacking. Filenames should not have illegal characters

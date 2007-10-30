@@ -6,6 +6,7 @@ import java.io.*;
 import org.dom4j.io.*;
 import java.net.*;
 import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
+import au.edu.murdoch.ccg.yabi.util.AppDetails;
 import org.apache.commons.configuration.*;
 import au.edu.murdoch.cbbc.util.CBBCException;
 import org.xml.sax.EntityResolver;
@@ -28,7 +29,7 @@ public class BaatInstance {
     private String username; //optional, used for prependUserDir option
     private boolean symlinkOutputDir;
 
-    private static Logger logger = Logger.getLogger(BaatInstance.class.getName());
+    private static Logger logger = Logger.getLogger( AppDetails.getAppString() + "." + BaatInstance.class.getName());
 
     public BaatInstance(String toolName) throws Exception {
         //init vars

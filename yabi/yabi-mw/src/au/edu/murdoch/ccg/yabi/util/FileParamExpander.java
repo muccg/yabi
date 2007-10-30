@@ -13,7 +13,7 @@ public class FileParamExpander {
     private String username;
     private HashMap filters;
     private boolean filtered = false;
-    private static Logger logger = Logger.getLogger(FileParamExpander.class.getName());
+    private static Logger logger = Logger.getLogger( AppDetails.getAppString() + "." + FileParamExpander.class.getName());
 
     public FileParamExpander() {
         try {

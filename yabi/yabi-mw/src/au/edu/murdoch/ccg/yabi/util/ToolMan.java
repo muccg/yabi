@@ -12,7 +12,7 @@ public class ToolMan {
     private static List tools;
     private static final String toolFileLocation = "/usr/local/share/grendel/xml/tools/tools.xml";
     private static Document sourceDOM;
-    private static Logger logger = Logger.getLogger(ToolMan.class.getName());
+    private static Logger logger = Logger.getLogger( AppDetails.getAppString() + "." + ToolMan.class.getName());
 
     public ToolMan () {}
 

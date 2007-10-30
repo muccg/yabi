@@ -9,6 +9,7 @@ import au.edu.murdoch.ccg.yabi.util.FileParamExpander;
 import au.edu.murdoch.ccg.yabi.util.SymLink;
 import au.edu.murdoch.ccg.yabi.objects.BaatInstance;
 import au.edu.murdoch.ccg.yabi.objects.YabiJobFileInstance;
+import au.edu.murdoch.ccg.yabi.util.AppDetails;
 
 import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
 import org.apache.commons.configuration.*;
@@ -19,7 +20,7 @@ import java.util.logging.Logger;
 
 public class SubmitJobAction extends BaseAction {
 
-  private static Logger logger = Logger.getLogger(SubmitJobAction.class.getName());
+  private static Logger logger = Logger.getLogger(AppDetails.getAppString() + "." + SubmitJobAction.class.getName());
 
   public void execute(ExecutionContext ctx) throws Exception {
     Map myVars = varTranslator.getVariableMap(ctx);

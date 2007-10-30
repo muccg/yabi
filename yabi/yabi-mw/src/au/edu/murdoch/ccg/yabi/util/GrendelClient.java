@@ -35,7 +35,7 @@ public class GrendelClient extends GenericProcessingClient {
     private String outFilePrefix = "";
     private String username = "";
 
-    private static Logger logger = Logger.getLogger(GrendelClient.class.getName());
+    private static Logger logger = Logger.getLogger( AppDetails.getAppString() + "." + GrendelClient.class.getName());
 
     //constructors
     public GrendelClient( BaatInstance bi ) throws ConfigurationException {

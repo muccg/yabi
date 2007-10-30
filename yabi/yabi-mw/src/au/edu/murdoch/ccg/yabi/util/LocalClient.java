@@ -25,7 +25,7 @@ public class LocalClient extends GenericProcessingClient {
     private String rootDir;
     private String outFilePrefix = "";
 
-    private Logger logger = Logger.getLogger(LocalClient.class.getName());
+    private Logger logger = Logger.getLogger( AppDetails.getAppString() + "." + LocalClient.class.getName());
 
     //constructors
     public LocalClient( BaatInstance bi ) throws ConfigurationException {

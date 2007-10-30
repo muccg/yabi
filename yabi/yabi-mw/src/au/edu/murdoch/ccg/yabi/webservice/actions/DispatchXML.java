@@ -19,6 +19,7 @@ import au.edu.murdoch.ccg.yabi.webservice.util.ProcessRunnerThread;
 import au.edu.murdoch.ccg.yabi.objects.YabiJobFileInstance;
 import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
 import au.edu.murdoch.ccg.yabi.util.SymLink;
+import au.edu.murdoch.ccg.yabi.util.AppDetails;
 
 import org.apache.commons.configuration.*;
 
@@ -26,7 +27,7 @@ import java.util.logging.Logger;
 
 public class DispatchXML extends BaseAction {
 
-    private static Logger logger = Logger.getLogger(DispatchXML.class.getName());
+    private static Logger logger;
 
     public DispatchXML () {
         super();
@@ -38,6 +39,8 @@ public class DispatchXML extends BaseAction {
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
 
+        logger = Logger.getLogger( AppDetails.getAppString( request.getContextPath() ) + "." + DispatchXML.class.getName() );
+            
         JbpmContext jbpm = jbpmConfiguration.createJbpmContext();
 
         try {
@@ -49,7 +52,7 @@ public class DispatchXML extends BaseAction {
                 YabiJobFileInstance yjfi = new YabiJobFileInstance();
                 yjfi.initFromString(jobXML);
 
-                logger.info(request.getContextPath() + ": receiving incoming workflow");
+                logger.info("receiving incoming workflow");
 
                 //fetch the process definition and parse it into a JBPM ProcessDefinition object
                 String processDefinitionXML = yjfi.getProcessDefinition();

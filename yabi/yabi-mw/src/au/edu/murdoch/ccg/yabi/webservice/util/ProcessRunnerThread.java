@@ -6,6 +6,7 @@ import org.jbpm.graph.exe.*;
 import org.jbpm.*;
 
 import java.util.logging.Logger;
+import au.edu.murdoch.ccg.yabi.util.AppDetails;
 
 public class ProcessRunnerThread extends Thread {
 
@@ -18,7 +19,7 @@ public class ProcessRunnerThread extends Thread {
     public long getProcessId () { return this.processId; }
     public void setJbpmConfiguration (JbpmConfiguration input) { this.jbpmConfig = input; }
 
-    private static Logger logger = Logger.getLogger(ProcessRunnerThread.class.getName());
+    private static Logger logger = Logger.getLogger( AppDetails.getAppString() + "." + ProcessRunnerThread.class.getName());
 
     public void run() {
         logger.info("[ProcessRunnerThread]["+this.processId+"] starting...");

@@ -6,6 +6,7 @@ import org.jbpm.graph.exe.ExecutionContext;
 import au.edu.murdoch.ccg.yabi.util.GenericProcessingClient;
 import au.edu.murdoch.ccg.yabi.util.ProcessingClientFactory;
 import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
+import au.edu.murdoch.ccg.yabi.util.AppDetails;
 import au.edu.murdoch.ccg.yabi.objects.YabiJobFileInstance;
 import org.apache.commons.configuration.*;
 
@@ -18,7 +19,7 @@ import java.util.logging.Logger;
 
 public class CleanupAction extends BaseAction {
 
-  private static Logger logger = Logger.getLogger(CleanupAction.class.getName());
+  private static Logger logger = Logger.getLogger( AppDetails.getAppString() + "." + CleanupAction.class.getName());
 
   public void execute(ExecutionContext ctx) throws Exception {
     Map myVars = varTranslator.getVariableMap(ctx);

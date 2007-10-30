@@ -6,6 +6,7 @@ import org.jbpm.graph.exe.ExecutionContext;
 import au.edu.murdoch.ccg.yabi.util.GenericProcessingClient;
 import au.edu.murdoch.ccg.yabi.util.ProcessingClientFactory;
 import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
+import au.edu.murdoch.ccg.yabi.util.AppDetails;
 import au.edu.murdoch.ccg.yabi.objects.YabiJobFileInstance;
 import org.apache.commons.configuration.*;
 
@@ -17,7 +18,7 @@ public class WaitForJobAction extends BaseAction {
 
   private int waitTime = 1000; // start at 1 second
   private int maxWaitTime = 30000; //max wait time of 30 sec
-  private static Logger logger = Logger.getLogger(WaitForJobAction.class.getName());
+  private static Logger logger = Logger.getLogger( AppDetails.getAppString() + "." + WaitForJobAction.class.getName());
 
   public void execute(ExecutionContext ctx) throws Exception {
     Map myVars = varTranslator.getVariableMap(ctx);
