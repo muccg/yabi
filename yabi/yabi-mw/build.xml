@@ -8,7 +8,7 @@
     </target>
 
     <!-- init needed when making a release -->
-    <target name="releaseinit" depends="init, createTmp">
+    <target name="releaseinit" depends="init, tagFail, createTmp">
       <property name="ccg.site" value="${basedir}/tmp"/>
       <property name="ccg.buildname" value="mw"/>
       <property name="ccg.approot" value="/usr/local/java/tomcat/webapps/"/>
@@ -17,6 +17,10 @@
       <property name="ccg.dbpass" value="yabimwapp"/>
       <property name="ccg.dbname" value="yabimw"/>
       <property name="ccg.warfilename" value="${basedir}/yabi-${ccg.buildname}.war"/>
+      <property name="ccg.srcdir" value="${basedir}/tmp/ccg/yabi-mw/src"/>
+      <property name="ccg.cfgdir" value="${basedir}/tmp/ccg/yabi-mw/cfg"/>
+      <property name="ccg.libdir" value="${basedir}/tmp/ccg/yabi-mw/lib"/>
+      <property name="ccg.tpldir" value="${basedir}/tmp/ccg/yabi-mw/templates"/>
     </target>
 
     <!-- init needed when making a snapshot release -->
@@ -29,6 +33,10 @@
       <property name="ccg.dbpass" value="yabimwapp"/>
       <property name="ccg.dbname" value="yabimwdev"/>
       <property name="ccg.warfilename" value="${basedir}/yabi-${ccg.buildname}.war"/>
+      <property name="ccg.srcdir" value="${basedir}/tmp/ccg/yabi-mw/src"/>
+      <property name="ccg.cfgdir" value="${basedir}/tmp/ccg/yabi-mw/cfg"/>
+      <property name="ccg.libdir" value="${basedir}/tmp/ccg/yabi-mw/lib"/>
+      <property name="ccg.tpldir" value="${basedir}/tmp/ccg/yabi-mw/templates"/>
     </target>
 
     <!-- init needed when doing a user deploy -->
@@ -42,6 +50,10 @@
       <property name="ccg.dbname" value="yabimwdev"/>
       <property name="ccg.warfilename" value="${basedir}/yabi-${ccg.buildname}.war"/>
       <property name="ccg.jarfilename" value="${basedir}/yabi-${ccg.buildname}.jar"/>
+      <property name="ccg.srcdir" value="${basedir}/src"/>
+      <property name="ccg.cfgdir" value="${basedir}/cfg"/>
+      <property name="ccg.libdir" value="${basedir}/lib"/>
+      <property name="ccg.tpldir" value="${basedir}/templates"/>
     </target>
 
     <!-- remove tmp and recreate it -->
@@ -75,9 +87,9 @@
     </target>
 
     <target name="compile" depends="appProperties">
-      <javac srcdir="${basedir}/src" destdir="${ccg.site}/classes" target="1.4" source="1.4">
+      <javac srcdir="${ccg.srcdir}" destdir="${ccg.site}/classes" target="1.4" source="1.4">
         <classpath>
-          <fileset dir="lib">
+          <fileset dir="${ccg.libdir}">
             <include name="**/*.jar"/>
           </fileset>
           <fileset file="/usr/local/java/tomcat/common/lib/servlet-api.jar"/>
@@ -108,27 +120,43 @@
 	<target name="configCopy">
 	  <echo message="Copying config files to classes folder"/>
       <filter filtersfile="${ccg.site}/yabi-mw.properties"/>
-	  <copy file="${basedir}/cfg/jbpm.cfg.xml" tofile="${ccg.site}/classes/yabi-jbpm.cfg.xml" filtering="true" overwrite="true"/>
-	  <copy file="${basedir}/cfg/log4j.properties" tofile="${ccg.site}/classes/log4j.properties" overwrite="true"/>
-      <copy file="${basedir}/cfg/hibernate.cfg.xml" tofile="${ccg.site}/classes/yabi-hibernate.cfg.xml" filtering="true" overwrite="true"/>
-      <copy file="${basedir}/cfg/web.xml" tofile="${ccg.site}/web.xml" filtering="true" overwrite="true"/>
-      <copy file="${basedir}/cfg/velocityxml.cfg" tofile="${ccg.site}/cfg/velocityxml.cfg" overwrite="true"/>
-      <copy file="${basedir}/cfg/struts-config.xml" tofile="${ccg.site}/cfg/struts-config.xml" overwrite="true"/>
-      <copy file="${basedir}/cfg/toolbox.xml" tofile="${ccg.site}/cfg/toolbox.xml" overwrite="true"/>
-      <copy file="${basedir}/cfg/hibernate/StringInstance.hbm.xml" tofile="${ccg.site}/classes/StringInstance.hbm.xml" overwrite="true"/>
-      <copy file="${basedir}/cfg/hibernate/StringUpdateLog.hbm.xml" tofile="${ccg.site}/classes/StringUpdateLog.hbm.xml" overwrite="true"/>
-      <copy file="${basedir}/cfg/hibernate/HibernateStringInstance.hbm.xml" tofile="${ccg.site}/classes/HibernateStringInstance.hbm.xml" overwrite="true"/>
-      <copy file="${basedir}/cfg/yabi-mw.properties" tofile="${ccg.site}/classes/yabi-mw.properties" overwrite="true"/>
-      <copy file="${basedir}/cfg/baat.dtd" tofile="${ccg.site}/classes/au/edu/murdoch/ccg/baat.dtd" overwrite="true"/>
+	  <copy file="${ccg.cfgdir}/jbpm.cfg.xml" tofile="${ccg.site}/classes/yabi-jbpm.cfg.xml" filtering="true" overwrite="true"/>
+	  <copy file="${ccg.cfgdir}/log4j.properties" tofile="${ccg.site}/classes/log4j.properties" overwrite="true"/>
+      <copy file="${ccg.cfgdir}/hibernate.cfg.xml" tofile="${ccg.site}/classes/yabi-hibernate.cfg.xml" filtering="true" overwrite="true"/>
+      <copy file="${ccg.cfgdir}/web.xml" tofile="${ccg.site}/web.xml" filtering="true" overwrite="true"/>
+      <copy file="${ccg.cfgdir}/velocityxml.cfg" tofile="${ccg.site}/cfg/velocityxml.cfg" overwrite="true"/>
+      <copy file="${ccg.cfgdir}/struts-config.xml" tofile="${ccg.site}/cfg/struts-config.xml" overwrite="true"/>
+      <copy file="${ccg.cfgdir}/toolbox.xml" tofile="${ccg.site}/cfg/toolbox.xml" overwrite="true"/>
+      <copy file="${ccg.cfgdir}/hibernate/StringInstance.hbm.xml" tofile="${ccg.site}/classes/StringInstance.hbm.xml" overwrite="true"/>
+      <copy file="${ccg.cfgdir}/hibernate/StringUpdateLog.hbm.xml" tofile="${ccg.site}/classes/StringUpdateLog.hbm.xml" overwrite="true"/>
+      <copy file="${ccg.cfgdir}/hibernate/HibernateStringInstance.hbm.xml" tofile="${ccg.site}/classes/HibernateStringInstance.hbm.xml" overwrite="true"/>
+      <copy file="${ccg.cfgdir}/yabi-mw.properties" tofile="${ccg.site}/classes/yabi-mw.properties" overwrite="true"/>
+      <copy file="${ccg.cfgdir}/baat.dtd" tofile="${ccg.site}/classes/au/edu/murdoch/ccg/baat.dtd" overwrite="true"/>
 	</target>
 
     <target name="templateCopy">
       <filter filtersfile="${ccg.site}/yabi-mw.properties"/>
       <copy todir="${ccg.site}/templates" filtering="true" overwrite="true">
-        <fileset dir="${basedir}/templates">
+        <fileset dir="${ccg.tpldir}">
           <include name="**"/>
         </fileset>
       </copy>
+    </target>
+
+    <target name="tagFail" unless="cbbc.tag">
+      <fail>cbbc.tag must be set</fail>
+    </target>
+
+    <target name="tmpSvnCheckoutTag">
+      <exec executable="svn" failonerror="true">
+      <arg line="co svn+ssh://minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-mw-tags/${cbbc.tag} tmp/ccg/yabi/yabi-mw"/>
+      </exec>
+    </target>
+
+    <target name="tmpSvnCheckout">
+      <exec executable="svn" failonerror="true">
+      <arg line="co svn+ssh://${user.name}@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-mw/ tmp/ccg/yabi-mw/"/>
+      </exec>
     </target>
 	
 	<target name="createWar" depends="appProperties, configCopy, templateCopy, compile">
@@ -136,7 +164,7 @@
 	  	<fileset dir="${ccg.site}">
             <include name="templates/**"/>
         </fileset>
-	  	<lib dir="${basedir}/lib"/>
+	  	<lib dir="${ccg.libdir}"/>
 	  	<classes dir="${ccg.site}/classes"/>
         <webinf dir="${ccg.site}/cfg">
             <include name="*"/>
@@ -148,7 +176,8 @@
 	  <copy file="${ccg.warfilename}" todir="${ccg.approot}"/>
 	</target>
 	
-    <target name="release" depends="releaseinit, createWar, deployWar " />
+    <target name="release" depends="releaseinit, tmpSvnCheckoutTag, createWar, deployWar " />
+    <target name="snapshot" depends="snapshotinit, tmpSvnCheckout, createWar, deployWar" />
 	
     <target name="usercompile" depends="userbuildinit, compile" />
     <target name="userwar" depends="userbuildinit, createWar, deployWar" />

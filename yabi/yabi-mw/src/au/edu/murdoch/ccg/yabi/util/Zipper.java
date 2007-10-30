@@ -88,7 +88,7 @@ public abstract class Zipper {
                     if(entry.isDirectory()) {
                         if (withDirs) {
                             // Assume directories are stored parents first then children.
-                            System.err.println("Extracting directory: " + entry.getName());
+                            //System.err.println("Extracting directory: " + entry.getName());
                             // This is not robust, just for demonstration purposes.
                             (new File(dataDir, entry.getName())).mkdir();
                         }
@@ -103,7 +103,7 @@ public abstract class Zipper {
                         } 
                         entryName = entryName.substring(prunePoint);
                     } 
-                    System.err.println("Extracting file: " + entryName);
+                    //System.err.println("Extracting file: " + entryName);
                     copyInputStream(zipFile.getInputStream(entry), new BufferedOutputStream(new FileOutputStream(destination + prefix + "/" + entryName)));
                     fileList.add(entryName);
                 }
