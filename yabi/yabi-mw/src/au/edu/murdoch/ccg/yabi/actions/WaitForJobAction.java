@@ -8,7 +8,9 @@ import au.edu.murdoch.ccg.yabi.util.ProcessingClientFactory;
 import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
 import au.edu.murdoch.ccg.yabi.util.AppDetails;
 import au.edu.murdoch.ccg.yabi.objects.YabiJobFileInstance;
+import au.edu.murdoch.ccg.yabi.util.MailTool;
 import org.apache.commons.configuration.*;
+import au.edu.murdoch.cbbc.util.*;
 
 import java.util.*;
 
@@ -113,6 +115,11 @@ public class WaitForJobAction extends BaseAction {
             } //endfor
         } catch (Exception e) {
 
+            try {
+                MailTool mt = new MailTool();
+                mt.sendYabiError(e.getClass().getName() + " : " + e.getMessage());
+            } catch (Exception cbbce) {}
+            
             varTranslator.saveVariable(ctx, "errorMessage", e.getClass() + " : " + e.getMessage());
             //propagate execution to error state
             varTranslator.updateLastNodeMarker(ctx);
@@ -123,6 +130,11 @@ public class WaitForJobAction extends BaseAction {
 
     } else {
 
+        try {
+            MailTool mt = new MailTool();
+            mt.sendYabiError("Missing input variable: jobId");
+        } catch (Exception cbbce) {}
+        
         varTranslator.saveVariable(ctx, "errorMessage", "Missing input variable: jobId");
         varTranslator.updateLastNodeMarker(ctx);
         ctx.leaveNode("error");

@@ -52,7 +52,7 @@ public class DispatchXML extends BaseAction {
                 YabiJobFileInstance yjfi = new YabiJobFileInstance();
                 yjfi.initFromString(jobXML);
 
-                logger.info("receiving incoming workflow");
+                logger.info("receiving incoming workflow... expect a log message indicating success");
 
                 //fetch the process definition and parse it into a JBPM ProcessDefinition object
                 String processDefinitionXML = yjfi.getProcessDefinition();
@@ -125,6 +125,8 @@ public class DispatchXML extends BaseAction {
 
                 //return the process ID
                 request.setAttribute("id", new Long(procId));
+                
+                logger.info("successfully received and initiated workflow");
 
             } else {
                 request.setAttribute("message", "Process deployment must be performed via a POST operation");

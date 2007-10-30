@@ -12,7 +12,9 @@ import au.edu.murdoch.ccg.yabi.objects.YabiJobFileInstance;
 import au.edu.murdoch.ccg.yabi.util.AppDetails;
 
 import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
+import au.edu.murdoch.ccg.yabi.util.MailTool;
 import org.apache.commons.configuration.*;
+import au.edu.murdoch.cbbc.util.*;
 
 import java.util.*;
 
@@ -169,6 +171,11 @@ public class SubmitJobAction extends BaseAction {
 
             e.printStackTrace();
 
+            try {
+                MailTool mt = new MailTool();
+                mt.sendYabiError(username+" encountered:\n\n"+e.getClass().getName() + " : " + e.getMessage());
+            } catch (Exception cbbce) {}
+            
             //propagate execution to error state
             ctx.leaveNode("error");
         }
