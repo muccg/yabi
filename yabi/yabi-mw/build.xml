@@ -10,13 +10,13 @@
     <!-- init needed when making a release -->
     <target name="releaseinit" depends="init, tagFail, createTmp">
       <property name="ccg.site" value="${basedir}/tmp"/>
-      <property name="ccg.buildname" value="mw"/>
+      <property name="ccg.buildname" value="${cbbc.tag}"/>
       <property name="ccg.approot" value="/usr/local/java/tomcat/webapps/"/>
       <property name="ccg.dbhost" value="gromit4.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
       <property name="ccg.dbname" value="yabimw"/>
-      <property name="ccg.warfilename" value="${basedir}/yabi-${ccg.buildname}.war"/>
+      <property name="ccg.warfilename" value="${basedir}/yabi-mw-${ccg.buildname}.war"/>
       <property name="ccg.srcdir" value="${basedir}/tmp/ccg/yabi-mw/src"/>
       <property name="ccg.cfgdir" value="${basedir}/tmp/ccg/yabi-mw/cfg"/>
       <property name="ccg.libdir" value="${basedir}/tmp/ccg/yabi-mw/lib"/>
@@ -149,7 +149,7 @@
 
     <target name="tmpSvnCheckoutTag">
       <exec executable="svn" failonerror="true">
-      <arg line="co svn+ssh://minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-mw-tags/${cbbc.tag} tmp/ccg/yabi/yabi-mw"/>
+      <arg line="co svn+ssh://minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-mw-tags/${cbbc.tag} tmp/ccg/yabi-mw"/>
       </exec>
     </target>
 
