@@ -291,6 +291,12 @@ public class BaatInstance {
             BaatParameter bp = (BaatParameter) iter.next();
             if (    ( rank != null && rank.compareTo(bp.rank) == 0 ) ||
                     ( bp.switchName.compareTo(switchName) == 0 ) ) { //allow matching by rank, but fallback to name
+
+                //skip empty
+                if (value == null || value.length() == 0) {
+                    continue;
+                }
+
                 bp.value = value;
                 bp.isSet = true;
                 
@@ -361,11 +367,6 @@ public class BaatInstance {
         while (iter.hasNext()) {
             BaatParameter bp = (BaatParameter) iter.next();
 
-            //skip unset params
-            if (!bp.isSet) {
-                continue;
-            }
-
             String tempValue = bp.value;
 
             if (bp.filter != null && bp.filter.equalsIgnoreCase("prependRootDir")) {
@@ -397,6 +398,11 @@ public class BaatInstance {
             String switchUse = bp.switchUse;
             String switchValue = bp.value;
             String switchString = bp.switchName;
+
+            //skip unset params
+            if (!bp.isSet) {
+                continue;
+            }
 
             // determine switch use
             if (switchUse.equalsIgnoreCase("both")) {
