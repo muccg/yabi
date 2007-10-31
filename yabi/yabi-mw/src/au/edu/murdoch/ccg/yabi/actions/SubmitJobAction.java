@@ -173,7 +173,7 @@ public class SubmitJobAction extends BaseAction {
 
             try {
                 MailTool mt = new MailTool();
-                mt.sendYabiError(username+" encountered:\n\n"+e.getClass().getName() + " : " + e.getMessage());
+                mt.sendYabiError(username+" encountered:\n\n"+e.getClass().getName() + " : " + e.getMessage() + "\n\n" + MailTool.trapStackTrace(e));
             } catch (Exception cbbce) {}
             
             //propagate execution to error state

@@ -117,7 +117,7 @@ public class WaitForJobAction extends BaseAction {
 
             try {
                 MailTool mt = new MailTool();
-                mt.sendYabiError(e.getClass().getName() + " : " + e.getMessage());
+                mt.sendYabiError(e.getClass().getName() + " : " + e.getMessage() + "\n\n" + MailTool.trapStackTrace(e));
             } catch (Exception cbbce) {}
             
             varTranslator.saveVariable(ctx, "errorMessage", e.getClass() + " : " + e.getMessage());

@@ -14,6 +14,9 @@ import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
 import au.edu.murdoch.ccg.yabi.util.AppDetails;
 import java.util.logging.Logger;
 import org.apache.commons.configuration.*;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
 
 /**
 * A simple email sender class.
@@ -85,5 +88,10 @@ public class MailTool {
         logger.info("Email error message dispatched to "+to);
     }
 
-
+    public static String trapStackTrace(Exception e) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        PrintStream ps = new PrintStream(baos);
+        e.printStackTrace(ps);
+        return baos.toString();
+    }
 }
