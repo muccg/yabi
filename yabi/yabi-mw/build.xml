@@ -11,7 +11,7 @@
     <target name="releaseinit" depends="init, tagFail, createTmp">
       <property name="ccg.site" value="${basedir}/tmp"/>
       <property name="ccg.buildname" value="${cbbc.tag}"/>
-      <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain2/autodeploy/"/>
+      <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain1/autodeploy/"/>
       <property name="ccg.dbhost" value="gromit4.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
