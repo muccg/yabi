@@ -153,7 +153,7 @@
 
     <target name="tmpSvnCheckoutTag">
       <exec executable="svn" failonerror="true">
-      <arg line="co svn+ssh://minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-mw-tags/${cbbc.tag} tmp/ccg/yabi-mw"/>
+      <arg line="co svn+ssh://grendel@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-mw-tags/${cbbc.tag} tmp/ccg/yabi-mw"/>
       </exec>
     </target>
 
