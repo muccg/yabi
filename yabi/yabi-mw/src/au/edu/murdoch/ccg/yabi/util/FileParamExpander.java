@@ -64,7 +64,11 @@ public class FileParamExpander {
      * if a subdir, expands the subdir out to individual files
      * @returns String[] separatedFiles
      */
-    public String[] expandString(String param) {
+    public String[] expandString(String param) throws Exception {
+        if (param == null) {
+            throw new Exception("No input files specified");
+        }
+
         String[] tokenized = param.split(",");
         ArrayList expanded = new ArrayList();
 
