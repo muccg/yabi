@@ -8,6 +8,7 @@ import org.globus.gsi.CertUtil;
 import org.globus.util.Util;
 import org.globus.tools.ui.util.UITools;
 import org.globus.tools.proxy.GridProxyModel;
+import org.globus.gsi.GlobusCredentialException;
 
 public class YabiGridProxyInit {
 
@@ -17,16 +18,18 @@ public class YabiGridProxyInit {
     private YabiGridProxyModel getModel() {
         return new YabiGridProxyModel();
     }
-
-    public void doStuff (String certFile, String userKey, String password, String proxyFile) {
+    
+    public void verifyProxy (String proxyFile) throws Exception {
+        GlobusCredential globusCredential;
+        globusCredential = new GlobusCredential( proxyFile );
+        
+        globusCredential.verify();
+    }
+        
+    public void initProxy (String certFile, String userKey, String password, String proxyFile) throws Exception {
         model = getModel();
 
-        try {
         proxy = model.createProxy(certFile, userKey, password);
-        } catch(Exception e) {
-            e.printStackTrace();
-            return;
-        }
 
         OutputStream out = null;
         try {
@@ -34,7 +37,7 @@ public class YabiGridProxyInit {
             Util.setFilePermissions(proxyFile, 600);
             proxy.save(out);
         } catch(Exception e) {
-            return;
+            throw e; //propagate the exception
         } finally {
             if (out != null) {
             try { out.close(); } catch(Exception e) {}
@@ -44,12 +47,12 @@ public class YabiGridProxyInit {
     }
 
     //static method for testing
-    public static void main(String[] args) {
+    /* public static void main(String[] args) {
         String certFile = "/export/home/tech/ntakayama/.globus/usercert.pem";
         String userKey = "/export/home/tech/ntakayama/.globus/userkey.pem";
         String proxyFile = "/export/home/tech/ntakayama/proxyThis.hahaha";
         YabiGridProxyInit ygpi = new YabiGridProxyInit();
-        ygpi.doStuff(certFile, userKey, args[0], proxyFile);
+        ygpi.initProxy(certFile, userKey, args[0], proxyFile);
     }
-
+     */
 }

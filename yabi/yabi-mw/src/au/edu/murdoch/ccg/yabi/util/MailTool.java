@@ -3,7 +3,7 @@
 //  yabi-mw
 //
 //  Created by ntt on 30/10/07.
-//  Copyright 2007 __MyCompanyName__. All rights reserved.
+//  Copyright 2007 CCG, Murdoch University. All rights reserved.
 //
 package au.edu.murdoch.ccg.yabi.util;
 

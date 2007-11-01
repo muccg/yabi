@@ -10,6 +10,7 @@ import au.edu.murdoch.ccg.yabi.util.SymLink;
 import au.edu.murdoch.ccg.yabi.objects.BaatInstance;
 import au.edu.murdoch.ccg.yabi.objects.YabiJobFileInstance;
 import au.edu.murdoch.ccg.yabi.util.AppDetails;
+import au.edu.murdoch.ccg.yabi.objects.User;
 
 import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
 import au.edu.murdoch.ccg.yabi.util.MailTool;
@@ -137,7 +138,7 @@ public class SubmitJobAction extends BaseAction {
                 }
 
                 // ----- AUTHENTICATE -----
-                pclient.authenticate( null );
+                pclient.authenticate( new User(username) );
 
                 // ----- STAGE IN FILES ----- 
                 bi.addInputFiles(bundledFiles);

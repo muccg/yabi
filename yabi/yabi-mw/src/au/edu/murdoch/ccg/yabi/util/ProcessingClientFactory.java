@@ -10,6 +10,7 @@ public class ProcessingClientFactory {
                 return new GrendelClient(bi);
             }
             if (type.compareTo("gt4") == 0) {
+                return new GridClient(bi);
             }
             if (type.compareTo("local") == 0) {
                 return new LocalClient(bi);

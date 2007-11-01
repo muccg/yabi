@@ -106,7 +106,7 @@ public class BaatInstance {
                         element.addAttribute("value", bp.value);
                     } else {
                         element.detach();
-                        //remove from in-memory if not set
+                        //remove from in-memory array if not set
                         parmIter.remove();
                     }
                 }
