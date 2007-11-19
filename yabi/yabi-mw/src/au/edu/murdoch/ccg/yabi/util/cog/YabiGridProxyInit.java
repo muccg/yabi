@@ -14,6 +14,7 @@ public class YabiGridProxyInit {
 
     private YabiGridProxyModel model = null;
     private GlobusCredential proxy = null;
+    private String proxyPath = "";
 
     private YabiGridProxyModel getModel() {
         return new YabiGridProxyModel();
@@ -24,6 +25,8 @@ public class YabiGridProxyInit {
         globusCredential = new GlobusCredential( proxyFile );
         
         globusCredential.verify();
+        
+        this.proxy = globusCredential;
     }
         
     public void initProxy (String certFile, String userKey, String password, String proxyFile) throws Exception {
@@ -31,6 +34,8 @@ public class YabiGridProxyInit {
 
         proxy = model.createProxy(certFile, userKey, password);
 
+        this.proxyPath = proxyFile;
+        
         OutputStream out = null;
         try {
             out = new FileOutputStream(proxyFile);
@@ -44,6 +49,10 @@ public class YabiGridProxyInit {
             }
         }
 
+    }
+    
+    public String getProxyPath() {
+        return this.proxyPath;
     }
 
     //static method for testing

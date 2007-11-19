@@ -75,7 +75,7 @@ public class GrendelClient extends GenericProcessingClient {
     }
 
     //instance methods
-    public long submitJob () throws Exception {
+    public String submitJob () throws Exception {
         //create data directories
         String dataDirLoc = rootDir + this.outputDir ;
         File dataDir = new File(dataDirLoc);
@@ -96,11 +96,6 @@ public class GrendelClient extends GenericProcessingClient {
         SOAPEnvelope emptyEnvelope = new SOAPEnvelope();
         Message message = new Message(emptyEnvelope);
         SOAPFactory soapFactory = SOAPFactory.newInstance();
-
-        //add header elements as required by glassfish
-        //SOAPHeader sendHeader = message.getSOAPHeader();
-        //SOAPHeaderElement soapAct = sendHeader.addHeaderElement( new QName("urn:Grendel", "SOAPAction") );
-        //soapAct.setValue( "submitXMLJob" );
 
         //defined our body as a submitXMLJob call
         SOAPBody body = message.getSOAPBody();
@@ -171,14 +166,9 @@ public class GrendelClient extends GenericProcessingClient {
             //<Body><submitXMLJobResponse><submitXMLJobReturn>0000001</></></>
             SOAPElement jobResponse = (SOAPElement) rbody.getChildElements().next();
             SOAPElement jobReturn = (SOAPElement) jobResponse.getChildElements().next();
-            long jobId = 0L;
+            String jobId = "0";
 
-            try {
-                jobId = Long.parseLong( jobReturn.getValue() );
-            } catch (NumberFormatException e) {
-                logger.severe("ERROR PARSING NUMBER ------");
-                logger.severe("jobReturn : " + jobReturn + " :::: " + jobReturn.getValue());
-            }
+            jobId = jobReturn.getValue();
 
             //clean up staged in file
             if (bi.getAttachedFile() != null) {
@@ -206,11 +196,6 @@ public class GrendelClient extends GenericProcessingClient {
         SOAPEnvelope emptyEnvelope = new SOAPEnvelope();
         Message message = new Message(emptyEnvelope);
         SOAPFactory soapFactory = SOAPFactory.newInstance();
-
-        //add header elements as required by glassfish
-        //SOAPHeader sendHeader = message.getSOAPHeader();
-        //SOAPHeaderElement soapAct = sendHeader.addHeaderElement( new QName("urn:Grendel", "SOAPAction") );
-        //soapAct.setValue( "submitXMLJob" );
 
         //defined our body as a submitXMLJob call
         SOAPBody body = message.getSOAPBody();

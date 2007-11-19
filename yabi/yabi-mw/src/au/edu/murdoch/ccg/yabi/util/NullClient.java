@@ -21,8 +21,8 @@ public class NullClient extends GenericProcessingClient {
     }
 
     //instance methods
-    public long submitJob () throws Exception {
-        return 0L;
+    public String submitJob () throws Exception {
+        return "0";
     }
 
     public String getJobStatus (String jobId) throws Exception {

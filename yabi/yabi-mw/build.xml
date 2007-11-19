@@ -136,6 +136,10 @@
       <copy file="${ccg.cfgdir}/hibernate/HibernateStringInstance.hbm.xml" tofile="${ccg.site}/classes/HibernateStringInstance.hbm.xml" overwrite="true"/>
       <copy file="${ccg.cfgdir}/yabi-mw.properties" tofile="${ccg.site}/classes/yabi-mw.properties" filtering="true" overwrite="true"/>
       <copy file="${ccg.cfgdir}/baat.dtd" tofile="${ccg.site}/classes/au/edu/murdoch/ccg/baat.dtd" overwrite="true"/>
+      <copy file="${ccg.cfgdir}/client-config.wsdd" tofile="${ccg.site}/classes/client-config.wsdd"/>
+      <copy file="${ccg.cfgdir}/client-jndi-config.xml" tofile="${ccg.site}/classes/client-jndi-config.xml"/>
+      <copy file="${ccg.cfgdir}/client-server-config.wsdd" tofile="${ccg.site}/classes/client-server-config.wsdd"/>
+      <copy file="${ccg.cfgdir}/global_security_descriptor.xml" tofile="${ccg.site}/classes/global_security_descriptor.xml"/>
 	</target>
 
     <target name="templateCopy">

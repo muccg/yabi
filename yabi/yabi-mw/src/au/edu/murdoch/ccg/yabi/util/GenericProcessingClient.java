@@ -6,7 +6,7 @@ import au.edu.murdoch.ccg.yabi.objects.User;
 public abstract class GenericProcessingClient {
 
     //instance methods
-    public abstract long submitJob () throws Exception;
+    public abstract String submitJob () throws Exception;
     public abstract void setInputDirByUsername(String userName);
     public abstract void setOutputDir(String dir);
     public abstract String getJobStatus (String jobId) throws Exception;

@@ -61,9 +61,9 @@ public class LocalClient extends GenericProcessingClient {
     }
 
     //instance methods
-    public long submitJob () throws Exception {
+    public String submitJob () throws Exception {
         //fake
-        long jobId = 0L;
+        String jobId = "0";
 
         //test only
         try {

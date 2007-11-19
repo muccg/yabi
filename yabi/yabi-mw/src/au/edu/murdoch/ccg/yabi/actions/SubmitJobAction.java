@@ -148,7 +148,7 @@ public class SubmitJobAction extends BaseAction {
                 totalOutputFiles.addAll(outputFiles);
 
                 // ----- SUBMIT JOB -----
-                long jobId = pclient.submitJob();
+                String jobId = pclient.submitJob();
                 //batch append jobId
                 if (allJobIds.length() > 0) {
                     allJobIds += ","+jobId;

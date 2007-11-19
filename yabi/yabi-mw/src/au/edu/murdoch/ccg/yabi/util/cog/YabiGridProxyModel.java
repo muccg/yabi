@@ -15,8 +15,8 @@ import org.globus.gsi.GlobusCredentialException;
 
 public class YabiGridProxyModel extends GridProxyModel {
     
-    private int bitLength = 1024;
-    private int expirySeconds = 5184000; // 2 months expiry (roughly)
+    private int bitLength = 512;
+    private int expirySeconds = 43200; // 2 months expiry (roughly)
     
     public YabiGridProxyModel(int bitLength, int expirySeconds) {
         super();
@@ -36,6 +36,8 @@ public class YabiGridProxyModel extends GridProxyModel {
     public GlobusCredential createProxy(String certFile, String inuserKey, String pwd)  throws Exception {
 
         userCert = CertUtil.loadCertificate(certFile);
+        
+        userCert.checkValidity();
 
         OpenSSLKey key =
             new BouncyCastleOpenSSLKey(inuserKey);
@@ -57,11 +59,11 @@ public class YabiGridProxyModel extends GridProxyModel {
             GSIConstants.DELEGATION_LIMITED :
             GSIConstants.DELEGATION_FULL;
 
-        //TODO: un-hardcode the bit size and expiry on the proxy
+
         return factory.createCredential(new X509Certificate[] {userCert},
                 userKey,
                 bitLength,
-                1 * expirySeconds,
+                12 * 3600,
                 proxyType,
                 (org.globus.gsi.X509ExtensionSet) null);
     }

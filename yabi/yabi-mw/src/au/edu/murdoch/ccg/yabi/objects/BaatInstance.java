@@ -53,6 +53,49 @@ public class BaatInstance {
     public ArrayList getParameters() {
         return this.parameters;
     }  
+    
+    /**
+     * force parameters into a format usable by RSLInstance
+     */
+    public ArrayList getReconciledParameters() {
+        this.reconcileParams();
+        ArrayList simpleParams = new ArrayList();
+        
+        //append all parameters to the end
+        //TODO do this in a particular order
+        Iterator iter = this.parameters.iterator();
+        while (iter.hasNext()) {
+            BaatParameter bp = (BaatParameter) iter.next();
+            
+            String tempValue = bp.value;
+            
+            //remove path elements from filenames, as once it is staged in via GridFTP there is no path
+            if (bp.inputFile.compareTo("yes") == 0) {
+                if (tempValue.lastIndexOf(System.getProperty("file.separator")) > -1) {
+                    tempValue = tempValue.substring(tempValue.lastIndexOf(System.getProperty("file.separator")) + 1);    
+                }
+            }
+            
+            if (bp.filter != null && bp.filter.equalsIgnoreCase("prependRootDir")) {
+                tempValue = rootDir + bp.value;
+            } else if (bp.filter != null && bp.filter.equalsIgnoreCase("prependUserDir")) {
+                tempValue = rootDir + username + "/" + bp.value;
+            } else if (bp.filter != null && bp.filter.equalsIgnoreCase("../../")) {
+                tempValue = "../../" + bp.value;
+            }
+            
+            if (bp.switchUse.equalsIgnoreCase("both")) {
+                simpleParams.add( bp.switchName );
+                simpleParams.add( tempValue );
+            } else if (bp.switchUse.equalsIgnoreCase("valueOnly")) {
+                simpleParams.add( tempValue );
+            } else if (bp.switchUse.equalsIgnoreCase("switchOnly")) {
+                simpleParams.add( bp.switchName );
+            }
+        }
+        
+        return simpleParams;
+    }
 
     public ArrayList getOutputFiles() {
         return this.outputFiles;
@@ -66,6 +109,10 @@ public class BaatInstance {
         return this.attachedFile;
     }
 
+    public String getToolName() {
+        return this.toolName;
+    }
+    
     public void setAttachedFile(String fileLoc) {
         this.attachedFile = fileLoc;
     }

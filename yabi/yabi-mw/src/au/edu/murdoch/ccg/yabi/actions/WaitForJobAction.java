@@ -11,6 +11,8 @@ import au.edu.murdoch.ccg.yabi.objects.YabiJobFileInstance;
 import au.edu.murdoch.ccg.yabi.util.MailTool;
 import org.apache.commons.configuration.*;
 import au.edu.murdoch.cbbc.util.*;
+import au.edu.murdoch.ccg.yabi.objects.User;
+
 
 import java.util.*;
 
@@ -26,6 +28,8 @@ public class WaitForJobAction extends BaseAction {
     Map myVars = varTranslator.getVariableMap(ctx);
     Map inputVars = (Map) myVars.get("input");
     Map outputVars = (Map) myVars.get("output");
+    String username = varTranslator.getProcessVariable(ctx, "username");
+
 
     //if this node was already run and completed, then skip execution and fall through to next node
     String checkStatus = (String) outputVars.get("jobStatus");
@@ -54,6 +58,8 @@ public class WaitForJobAction extends BaseAction {
             String nodeName = ctx.getNode().getFullyQualifiedName();
 
             GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( (String) inputVars.get("jobType") , null );
+            // ----- AUTHENTICATE -----
+            pclient.authenticate( new User(username) );
 
             while ( incompleteCount > 0 ) {
       
@@ -79,7 +85,7 @@ public class WaitForJobAction extends BaseAction {
                     if (pclient.isCompleted()) {
                         isCompleted[i] = true;
                         incompleteCount--;
-
+                        
                         // ----- STAGE OUT FILES -----
                         //get the outputdir
                         String outputDir = varTranslator.getProcessVariable(ctx, "jobDataDir");
