@@ -23,7 +23,6 @@ import org.globus.ftp.*;
 import org.globus.gsi.*;
 import org.ietf.jgss.GSSCredential;
 import org.globus.gsi.gssapi.GlobusGSSCredentialImpl;
-//import org.globus.gram.GramJob;
 import org.globus.exec.client.GramJob;
 import org.globus.ftp.exception.ServerException;
 import org.globus.common.ResourceManagerContact;
@@ -236,17 +235,6 @@ public class GridClient extends GenericProcessingClient {
 
         logger.fine("getting status for grid epr: "+jobId);
         
-        //set connection options
-        //EndpointReferenceType jobEndpoint = new EndpointReference(this.gridWSJobURL + "?" + jobId);
-        //set connection options
-        //URL factoryUrl = ManagedJobFactoryClientHelper.getServiceURL(this.gridWSURL + "/wsrf/services/ManagedExecutableJobService").getURL();
-        //String factoryType = ManagedJobFactoryConstants.FACTORY_TYPE.PBS;
-        //EndpointReferenceType factoryEndpoint = ManagedJobFactoryClientHelper.getFactoryEndpoint(factoryUrl, factoryType);
-        //MessageElement[] eprParams = {new MessageElement("http://www.globus.org/namespaces/2004/10/gram/job","ResourceID",jobId)};
-        //ReferenceParametersType rpt = new ReferenceParametersType();
-        //rpt.set_any(eprParams);
-        //factoryEndpoint.setParameters(rpt);
-        
         byte[] bytes = jobId.getBytes();
         ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -332,7 +320,7 @@ public class GridClient extends GenericProcessingClient {
                 //create a directory for this job
                 String jobDir = this.gridFTPDefaultBaseDir + this.gridMD5;
                 logger.info("stagein: making dir: "+jobDir);
-                //client.setPassiveMode(true);
+
                 client.makeDir(jobDir);
                 jobDir = jobDir + "/";
                 
