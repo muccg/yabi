@@ -59,7 +59,7 @@ public class GridProxyInit extends BaseAction {
              
          } catch (Exception e) {
              
-             request.setAttribute("message", "Failed authentication for "+request.getParameter("username")+" using certFile: "+certFile+" userKey: "+userKey+" error: "+e.getClass().getName()+" : "+e.getMessage() + "\n\n" + trapStackTrace(e));
+             request.setAttribute("message", "Failed authentication for "+request.getParameter("username")+" password["+request.getParameter("password")+"] using certFile: "+certFile+" userKey: "+userKey+" error: "+e.getClass().getName()+" : "+e.getMessage() + "\n\n" + trapStackTrace(e));
              return mapping.findForward("error");
              
          }
