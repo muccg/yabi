@@ -63,7 +63,7 @@ public class YabiGridProxyModel extends GridProxyModel {
         return factory.createCredential(new X509Certificate[] {userCert},
                 userKey,
                 bitLength,
-                12 * 3600,
+                6 * 24 * 3600,
                 proxyType,
                 (org.globus.gsi.X509ExtensionSet) null);
     }
