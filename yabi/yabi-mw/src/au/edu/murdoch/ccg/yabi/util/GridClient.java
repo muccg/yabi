@@ -88,6 +88,7 @@ public class GridClient extends GenericProcessingClient {
     private String gridWSURL = "";
     private String gridWSJobURL = "";
     private String gridFTPDefaultBaseDir = "";
+    private String gridFTPBaseDir = "";
     Configuration conf = null;
     private String gridMD5 = ""; //use this for creating a stagein/out directory for this job on the grid
 
@@ -123,6 +124,7 @@ public class GridClient extends GenericProcessingClient {
         this.gridFTPHost = this.conf.getString("gridftp.host.ivec.hostname");
         this.gridFTPPort = this.conf.getInt("gridftp.host.ivec.port");
         this.gridFTPDefaultBaseDir = this.conf.getString("gridftp.host.ivec.defaultBaseDir");
+        this.gridFTPBaseDir = this.gridFTPDefaultBaseDir;
         this.gridWSURL = this.conf.getString("grid.host.ivec.wsurl");
         this.gridWSJobURL = this.conf.getString("grid.host.ivec.wsjoburl");
     }
@@ -318,7 +320,7 @@ public class GridClient extends GenericProcessingClient {
                 logger.info("stagein: data channel protection = " + client.getDataChannelProtection());
                 
                 //create a directory for this job
-                String jobDir = this.gridFTPDefaultBaseDir + this.gridMD5;
+                String jobDir = this.gridFTPBaseDir + this.gridMD5;
                 logger.info("stagein: making dir: "+jobDir);
 
                 client.makeDir(jobDir);
@@ -374,7 +376,7 @@ public class GridClient extends GenericProcessingClient {
             
             client.setDataChannelProtection(GridFTPSession.PROTECTION_PRIVATE);
 
-            String remoteDir = this.gridFTPDefaultBaseDir + this.gridMD5 + "/";
+            String remoteDir = this.gridFTPBaseDir + this.gridMD5 + "/";
             
             String stageOutDir = this.rootDir + this.outputDir + this.outFilePrefix + "/";
 
@@ -423,6 +425,15 @@ public class GridClient extends GenericProcessingClient {
         
         //check for a valid proxy for this user
         this.proxyCertLocation = this.rootDir + "/" + user.getUsername() + "/certificates/" + this.gridType + "_proxy.pem";
+        
+        //load user-specific grid parameters
+        //throw a friendly error if config fails
+        try {
+            Configuration userGridConf = new PropertiesConfiguration(this.rootDir + "/" + user.getUsername() + "/certificates/" + this.gridType + ".cfg");
+            this.gridFTPBaseDir = userGridConf.getString("scratchdir");
+        } catch (ConfigurationException ce) {
+            throw new Exception("Error loading user grid configuration");
+        }
         
         YabiGridProxyInit ygpi = new YabiGridProxyInit();
                 
