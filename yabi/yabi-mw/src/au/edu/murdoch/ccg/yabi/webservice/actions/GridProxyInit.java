@@ -44,12 +44,15 @@ public class GridProxyInit extends BaseAction {
     }
     
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-                                     
+             
+         String certFile = "";
+         String userKey = "";
+        
          try {
              
              //create proxy file
-             String certFile = this.rootDir + request.getParameter("username")+"/certificates/usercert.pem";
-             String userKey = this.rootDir +request.getParameter("username")+"/certificates/userkey.pem";
+             certFile = this.rootDir + request.getParameter("username")+"/certificates/usercert.pem";
+             userKey = this.rootDir +request.getParameter("username")+"/certificates/userkey.pem";
              String proxyFile = this.rootDir +request.getParameter("username")+"/certificates/ivec_proxy.pem";
              YabiGridProxyInit ygpi = new YabiGridProxyInit();
              ygpi.initProxy(certFile, userKey, request.getParameter("password"), proxyFile);
