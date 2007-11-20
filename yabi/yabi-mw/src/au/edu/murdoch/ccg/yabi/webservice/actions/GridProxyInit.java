@@ -56,7 +56,7 @@ public class GridProxyInit extends BaseAction {
              
          } catch (Exception e) {
              
-             request.setAttribute("message", "Failed authentication: "+e.getClass().getName()+" : "+e.getMessage() + "\n\n" + trapStackTrace(e));
+             request.setAttribute("message", "Failed authentication for "+request.getParameter("username")+": "+e.getClass().getName()+" : "+e.getMessage() + "\n\n" + trapStackTrace(e));
              return mapping.findForward("error");
              
          }
