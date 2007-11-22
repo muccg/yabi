@@ -337,7 +337,7 @@ public class GridClient extends GenericProcessingClient {
                     logger.fine("stagein: putting file: "+fileIn);
                     client.setPassiveMode(true);
                     client.put(new File(inputDir + fileIn), jobDir + subFileIn, false);
-                    logger.info("stagein: sent: "+fileIn);
+                    logger.info("stagein: sent: "+fileIn+" to "+jobDir);
                 }
                 
             }
