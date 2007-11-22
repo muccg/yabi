@@ -431,6 +431,9 @@ public class GridClient extends GenericProcessingClient {
         try {
             Configuration userGridConf = new PropertiesConfiguration(this.rootDir + "/" + user.getUsername() + "/certificates/" + this.gridType + ".cfg");
             this.gridFTPBaseDir = userGridConf.getString("scratchdir");
+            if (!this.gridFTPBaseDir.endsWith("/")) {
+                this.gridFTPBaseDir += "/";
+            }
         } catch (ConfigurationException ce) {
             throw new Exception("Error loading user grid configuration");
         }
