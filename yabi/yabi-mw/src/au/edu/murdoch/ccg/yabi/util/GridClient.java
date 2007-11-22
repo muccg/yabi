@@ -336,6 +336,11 @@ public class GridClient extends GenericProcessingClient {
                     //put a file
                     logger.fine("stagein: putting file: "+fileIn);
                     client.setPassiveMode(true);
+                    if (fileIn.endsWith(".tar")) {
+                        client.setType(GridFTPSession.TYPE_IMAGE);
+                    } else {
+                        client.setType(GridFTPSession.TYPE_ASCII);
+                    }
                     client.put(new File(inputDir + fileIn), jobDir + subFileIn, false);
                     logger.info("stagein: sent: "+fileIn+" to "+jobDir);
                 }
@@ -394,6 +399,11 @@ public class GridClient extends GenericProcessingClient {
                     logger.info("stageout: trying to GET : "+remoteDir + fileOut+ " output to: "+ stageOutDir + fileOut);
                     try {
                         client.setPassiveMode(true);
+                        if (fileOut.endsWith(".tar")) {
+                            client.setType(GridFTPSession.TYPE_IMAGE);
+                        } else {
+                            client.setType(GridFTPSession.TYPE_ASCII);
+                        }
                         client.get(remoteDir + fileOut, new File(stageOutDir + fileOut)); 
                         client.deleteFile(remoteDir + fileOut);
                         logger.info("stageout: fetched and deleted: "+remoteDir + fileOut);
