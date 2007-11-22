@@ -54,6 +54,7 @@ public class RSLInstance {
     
     //prepend a <argument> node before the placeholder
     public void addParam(String param) {
+        param = param.replaceAll("\\$","\\\\$");
         this.rslContent = this.rslContent.replaceAll("<argumentPlaceholder/>", "<argument>"+param+"</argument><argumentPlaceholder/>");
     }
     
