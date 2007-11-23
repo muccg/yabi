@@ -22,6 +22,7 @@
       <property name="ccg.libdir" value="${basedir}/tmp/ccg/yabi-mw/lib"/>
       <property name="ccg.tpldir" value="${basedir}/tmp/ccg/yabi-mw/templates"/>
       <property name="ccg.mailTo" value="alerts@ccg.murdoch.edu.au"/>
+      <property name="ccg.yabiCertDir" value="/yabi/certificates/"/>
     </target>
 
     <!-- init needed when making a snapshot release -->
@@ -39,6 +40,7 @@
       <property name="ccg.libdir" value="${basedir}/tmp/ccg/yabi-mw/lib"/>
       <property name="ccg.tpldir" value="${basedir}/tmp/ccg/yabi-mw/templates"/>
       <property name="ccg.mailTo" value="alerts@ccg.murdoch.edu.au"/>
+      <property name="ccg.yabiCertDir" value="/yabi/certificates/"/>
     </target>
 
     <!-- init needed when doing a user deploy -->
@@ -183,9 +185,18 @@
 	<target name="deployWar">
 	  <copy file="${ccg.warfilename}" todir="${ccg.approot}"/>
 	</target>
+    
+    <target name="deployCerts">
+      <mkdir dir="${ccg.yabiCertDir}"/>
+      <copy todir="${ccg.yabiCertDir}" >
+        <fileset dir="${basedir}/tmp/ccg/yabi-mw/certificates/" >
+          <include name="**/*"/>
+        </fileset>
+      </copy>
+    </target>
 	
-    <target name="release" depends="releaseinit, tmpSvnCheckoutTag, createWar, deployWar " />
-    <target name="snapshot" depends="snapshotinit, tmpSvnCheckout, createWar, deployWar" />
+    <target name="release" depends="releaseinit, tmpSvnCheckoutTag, createWar, deployWar, deployCerts " />
+    <target name="snapshot" depends="snapshotinit, tmpSvnCheckout, createWar, deployWar, deployCerts" />
 	
     <target name="usercompile" depends="userbuildinit, compile" />
     <target name="userwar" depends="userbuildinit, createWar, deployWar" />
