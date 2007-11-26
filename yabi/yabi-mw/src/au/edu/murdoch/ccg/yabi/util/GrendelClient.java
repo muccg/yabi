@@ -14,6 +14,7 @@ import javax.activation.DataHandler;
 import au.edu.murdoch.ccg.yabi.objects.BaatInstance;
 import au.edu.murdoch.ccg.yabi.objects.User;
 import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
+import au.edu.murdoch.ccg.yabi.util.MailTool;
 import org.apache.commons.configuration.*;
 
 import java.util.logging.Logger;
@@ -231,6 +232,11 @@ public class GrendelClient extends GenericProcessingClient {
             String string = newFault.getFaultString();
 
             //throw new Exception(string);
+            try {
+                MailTool mt = new MailTool();
+                mt.sendYabiError("grendel jobId "+ jobId +" encountered non-fatal error:\n\n"+e.getClass().getName() + " : " + e.getMessage() + "\n\n" + MailTool.trapStackTrace(e));
+            } catch (Exception cbbce) {}
+            
             return "P";  //in event of error in fetching status, pretend we are 'pending' and hopefully we will keep looping until grendel returns
 
         } else {
