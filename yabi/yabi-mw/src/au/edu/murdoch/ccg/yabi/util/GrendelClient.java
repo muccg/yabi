@@ -234,7 +234,7 @@ public class GrendelClient extends GenericProcessingClient {
             //throw new Exception(string);
             try {
                 MailTool mt = new MailTool();
-                mt.sendYabiError("grendel jobId "+ jobId +" encountered non-fatal error:\n\n"+e.getClass().getName() + " : " + e.getMessage() + "\n\n" + MailTool.trapStackTrace(e));
+                mt.sendYabiError("grendel jobId "+ jobId +" encountered non-fatal error:\n\nSOAP Fault : " + code + "\n\n" + string);
             } catch (Exception cbbce) {}
             
             return "P";  //in event of error in fetching status, pretend we are 'pending' and hopefully we will keep looping until grendel returns
