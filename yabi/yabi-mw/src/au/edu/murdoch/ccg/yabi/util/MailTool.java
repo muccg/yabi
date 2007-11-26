@@ -27,6 +27,7 @@ public class MailTool {
     private String smtpHost;
     private String defaultRcpt;
     private String webappName;
+    private String defaultFrom;
     
     public MailTool () {
         try {
@@ -41,7 +42,7 @@ public class MailTool {
      */
     public boolean sendYabiError(String message) {
         try {
-            send(smtpHost, defaultRcpt, webappName+"@ccg.murdoch.edu.au", webappName+" error", message);
+            send(smtpHost, defaultRcpt, defaultFrom, webappName+" error", message);
             
             return true;
         } catch (Exception ex) {
@@ -55,6 +56,7 @@ public class MailTool {
         Configuration conf = YabiConfiguration.getConfig();
         smtpHost = conf.getString("smtp.host");
         defaultRcpt = conf.getString("error.mailTo");
+        defaultFrom = conf.getString("error.mailFrom");
         webappName = "yabi-"+conf.getString("buildname");
     }
     
