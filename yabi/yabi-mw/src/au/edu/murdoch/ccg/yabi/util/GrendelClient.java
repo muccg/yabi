@@ -230,7 +230,8 @@ public class GrendelClient extends GenericProcessingClient {
             Name code = newFault.getFaultCodeAsName();
             String string = newFault.getFaultString();
 
-            throw new Exception(string);
+            //throw new Exception(string);
+            return "P";  //in event of error in fetching status, pretend we are 'pending' and hopefully we will keep looping until grendel returns
 
         } else {
 
