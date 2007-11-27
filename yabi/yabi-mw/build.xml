@@ -171,13 +171,13 @@
     
     <target name="toolsSvnExportTag">
       <exec executable="svn" failonerror="true">
-      <arg line="export svn+ssh://grendel@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-mw-tags/${cbbc.tag}/yabi-tools /yabi/yabi-tools"/>
+      <arg line="export svn+ssh://grendel@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-fe-symfony-tags/${cbbc.tag}/yabi-tools /yabi/yabi-tools"/>
       </exec>
     </target>
     
     <target name="toolsSvnExport">
       <exec executable="svn" failonerror="true">
-      <arg line="export svn+ssh://${user.name}@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-mw/yabi-tools /yabi/yabi-tools"/>
+      <arg line="export svn+ssh://${user.name}@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-fe-symfony/yabi-tools /yabi/yabi-tools"/>
       </exec>
     </target>
 	
