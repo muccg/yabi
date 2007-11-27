@@ -170,12 +170,14 @@
     </target>
     
     <target name="toolsSvnExportTag">
+      <delete dir="/yabi/yabi-tools" verbose="true"/>
       <exec executable="svn" failonerror="true">
       <arg line="export svn+ssh://grendel@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-fe-symfony-tags/${cbbc.tag}/yabi-tools /yabi/yabi-tools"/>
       </exec>
     </target>
     
     <target name="toolsSvnExport">
+      <delete dir="/yabi/yabi-tools" verbose="true"/>
       <exec executable="svn" failonerror="true">
       <arg line="export svn+ssh://${user.name}@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-fe-symfony/yabi-tools /yabi/yabi-tools"/>
       </exec>
