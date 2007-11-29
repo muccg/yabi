@@ -163,7 +163,7 @@
 
     <target name="tmpSvnCheckoutTag">
       <exec executable="svn" failonerror="true">
-      <arg line="co svn+ssh://minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-mw-tags/${cbbc.tag} tmp/ccg/yabi-mw"/>
+      <arg line="co svn+ssh://grendel@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-mw-tags/${cbbc.tag} tmp/ccg/yabi-mw"/>
       </exec>
     </target>
 
@@ -177,7 +177,7 @@
       <delete dir="/yabi/yabi-tools" verbose="true"/>
 	  <echo message="Checking out tools with this tag ${ccg.toolstag}"/>
       <exec executable="svn" failonerror="true">
-      <arg line="export svn+ssh://${user.name}@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-fe-symfony-tags/${ccg.toolstag}/yabi-tools /yabi/yabi-tools"/>
+      <arg line="export svn+ssh://grendel@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-fe-symfony-tags/${ccg.toolstag}/yabi-tools /yabi/yabi-tools"/>
       </exec>
     </target>
     
