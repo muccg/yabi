@@ -2,6 +2,7 @@
 
     <target name="tags" >
       <property name="cbbc.tag" value="RELEASE_6"/>
+      <property name="cbbc.toolstag" value="RELEASE_32"/>
     </target>
                                                                                                                                                              
 </project>

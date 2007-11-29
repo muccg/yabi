@@ -11,6 +11,7 @@
     <target name="releaseinit" depends="init, tagFail, createTmp">
       <property name="ccg.site" value="${basedir}/tmp"/>
       <property name="ccg.buildname" value="${cbbc.tag}"/>
+      <property name="ccg.toolstag" value="${cbbc.toolstag}"/>
       <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain1/autodeploy/"/>
       <property name="ccg.dbhost" value="gromit4.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
@@ -29,6 +30,7 @@
     <target name="snapshotinit" depends="init, createTmp">
       <property name="ccg.site" value="${basedir}/tmp"/>
       <property name="ccg.buildname" value="snapshot"/>
+      <property name="ccg.toolstag" value="${cbbc.toolstag}"/>
       <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain2/autodeploy/"/>
       <property name="ccg.dbhost" value="boromirdb.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
@@ -81,6 +83,7 @@
       <propertyfile file="${ccg.site}/deploy.properties" comment="Deploy properties">
         <entry  key="user" value="${user.name}"/>
         <entry  key="buildname" value="${ccg.buildname}"/>
+        <entry  key="toolstag" value="${ccg.toolstag}"/>
         <entry  key="project" value="${ant.project.name}"/>
         <entry  key="projectDir" value="${basedir}"/>
         <entry  key="build.xml" value="${ant.file}"/>
@@ -112,6 +115,7 @@
         <entry  key="buildname" value="${ccg.buildname}"/>
         <entry  key="project" value="${ant.project.name}"/>
         <entry  key="approot" value="${ccg.approot}"/>
+        <entry  key="toolstag" value="${ccg.toolstag}"/>
         <entry  key="dbhost" value="${ccg.dbhost}"/>
         <entry  key="dbuser" value="${ccg.dbuser}"/>
         <entry  key="dbpass" value="${ccg.dbpass}"/>
@@ -159,7 +163,7 @@
 
     <target name="tmpSvnCheckoutTag">
       <exec executable="svn" failonerror="true">
-      <arg line="co svn+ssh://grendel@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-mw-tags/${cbbc.tag} tmp/ccg/yabi-mw"/>
+      <arg line="co svn+ssh://minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-mw-tags/${cbbc.tag} tmp/ccg/yabi-mw"/>
       </exec>
     </target>
 
@@ -171,8 +175,9 @@
     
     <target name="toolsSvnExportTag">
       <delete dir="/yabi/yabi-tools" verbose="true"/>
+	  <echo message="Checking out tools with this tag ${ccg.toolstag}"/>
       <exec executable="svn" failonerror="true">
-      <arg line="export svn+ssh://grendel@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-fe-symfony-tags/${cbbc.tag}/yabi-tools /yabi/yabi-tools"/>
+      <arg line="export svn+ssh://${user.name}@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-fe-symfony-tags/${ccg.toolstag}/yabi-tools /yabi/yabi-tools"/>
       </exec>
     </target>
     
@@ -210,8 +215,7 @@
     </target>
 	
     <target name="release" depends="tags, releaseinit, tmpSvnCheckoutTag, createWar, deployWar, toolsSvnExportTag, deployCerts " />
-    <target name="snapshot" depends="snapshotinit, tmpSvnCheckout, createWar, deployWar, toolsSvnExport, deployCerts" />
-	
+    <target name="snapshot" depends="snapshotinit, tmpSvnCheckout, createWar, deployWar, toolsSvnExport, deployCerts" />	
     <target name="usercompile" depends="userbuildinit, compile" />
     <target name="userwar" depends="userbuildinit, createWar, deployWar, toolsSvnExport" />
 </project>
