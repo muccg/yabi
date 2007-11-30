@@ -49,7 +49,7 @@ public class GridProxyExpiration extends BaseAction {
             }
             
             YabiGridProxyModel ygpm = new YabiGridProxyModel();
-            secondsLeft = ygpm.getTimeLeft(this.rootDir + username +"/certificates/"+ gridname +"_proxy.pem")
+            secondsLeft = ygpm.getTimeLeft(this.rootDir + username +"/certificates/"+ gridname +"_proxy.pem");
             
         } catch (Exception e) {
             
