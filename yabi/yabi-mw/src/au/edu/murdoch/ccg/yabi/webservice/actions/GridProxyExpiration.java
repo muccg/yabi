@@ -64,11 +64,4 @@ public class GridProxyExpiration extends BaseAction {
         
     }
     
-    public static String trapStackTrace(Exception e) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        PrintStream ps = new PrintStream(baos);
-        e.printStackTrace(ps);
-        return baos.toString();
-    }
-    
 }
