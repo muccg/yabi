@@ -26,7 +26,7 @@ public class GridProxyExpiration extends BaseAction {
     private Configuration conf;
     private String rootDir;
     
-    public GridProxyExpiration () {
+    public GridProxyExpiration () throws ConfigurationException {
         super();
         loadConfig();
     }
