@@ -31,6 +31,12 @@
             type="au.edu.murdoch.ccg.yabi.webservice.actions.GridProxyInit">
             <forward name="success" path="/templates/gridproxyinit.xml"/>
         </action>
+        
+        <action
+            path="/gridProxyExpiration"
+            type="au.edu.murdoch.ccg.yabi.webservice.actions.GridProxyExpiration">
+            <forward name="success" path="/templates/gridproxyinit.xml"/>
+        </action>
 
         <action 
             path="/definitions"

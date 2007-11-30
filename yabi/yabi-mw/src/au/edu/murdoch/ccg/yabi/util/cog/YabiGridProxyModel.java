@@ -68,5 +68,10 @@ public class YabiGridProxyModel extends GridProxyModel {
                 (org.globus.gsi.X509ExtensionSet) null);
     }
 
-
+    public long getTimeLeft (String location) throws Exception {
+        //returns the time left before proxy expiration (in seconds)
+        GlobusCredential globusCredential;
+        globusCredential = new GlobusCredential( location );
+        return globusCredential.getTimeLeft();
+    }
 }
