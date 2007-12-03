@@ -135,6 +135,8 @@ public class BaatInstance {
     }
 
     private void reconcileParams() {
+        setSourceParams(); //chance to propagate input parameters, ie input files being used to create outputfilenames
+        
         Element paramList = (Element) baatFile.selectSingleNode("//parameterList");
 
         List results = paramList.elements();
@@ -276,6 +278,14 @@ public class BaatInstance {
                 if (bp.filter == null) {
                     bp.filter = "";
                 }
+                bp.sourceParam = element.attributeValue("sourceParam");
+                if (bp.sourceParam == null) {
+                    bp.sourceParam = "";
+                }
+                bp.appendString = element.attributeValue("appendString");
+                if (bp.appendString == null) {
+                    bp.appendString = "";
+                }
                 bp.inputFile = element.attributeValue("inputFile");
                 bp.value = element.attributeValue("value");
                 if (element.attributeValue("value") != null &&
@@ -386,7 +396,7 @@ public class BaatInstance {
                 if (bp.outputFile.compareTo("yes") == 0) {
                     outputFiles.add(value);
                 }
-            }
+            } 
         }
     }
 
@@ -439,6 +449,31 @@ public class BaatInstance {
         return command;
     }
 
+    //use this method to pre-fill parameters that derive their value from another input parameter
+    //called before validation
+    public void setSourceParams() {
+        Iterator iter = this.parameters.iterator();
+        while (iter.hasNext()) {
+            BaatParameter bpDest = (BaatParameter) iter.next();
+            
+            if (bpDest.sourceParam != null && bpDest.sourceParam.compareTo(bpDest.switchName) != 0) {
+                Iterator reiter = this.parameters.iterator(); //yep, we're looping twice over the same variables
+                while (reiter.hasNext()) {
+                    BaatParameter bpSrc = (BaatParameter) reiter.next();
+                    if (bpSrc.switchName.compareTo(bpDest.sourceParam) == 0) {
+                        //we've found the source from which we hope to derive our value
+                        bpDest.value = bpSrc.value;
+                        bpDest.isSet = true;
+                        if (bpDest.appendString != null && bpDest.appendString.compareTo("") != 0) {
+                            bpDest.value += bpDest.appendString;
+                        }
+                        logger.info("derived input param from source param: ["+bpSrc.switchName+":"+bpSrc.value+"] => ["+bpDest.switchName+":"+bpDest.value+"]");
+                    }
+                }
+            }
+        }
+    }
+    
     public void validateParameters() throws CBBCException {
         reconcileParams();
 
@@ -525,6 +560,8 @@ class BaatParameter {
     public ArrayList outputExtensions;
     public ArrayList inputExtensions;
     public String primaryExtension = "";
+    public String sourceParam = ""; //used where a parameter value is derived from another parameter's setting
+    public String appendString = ""; //used as an appender when a sourceParam is used 
     public boolean isSet = false; //manually mark this when setting a value
 
     public BaatParameter() {
