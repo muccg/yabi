@@ -475,7 +475,7 @@ public class BaatInstance {
                 
                 if (sourceValue != null) {
                     //we've found the source from which we hope to derive our value
-                    bpDest.value = bpSrc.value;
+                    bpDest.value = sourceValue;
                     bpDest.isSet = true;
                     if (bpDest.appendString != null && bpDest.appendString.compareTo("") != 0) {
                         bpDest.value += bpDest.appendString;
