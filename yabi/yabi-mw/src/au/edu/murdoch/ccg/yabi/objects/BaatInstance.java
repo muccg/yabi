@@ -453,23 +453,39 @@ public class BaatInstance {
     //called before validation
     public void setSourceParams() {
         Iterator iter = this.parameters.iterator();
+        
         while (iter.hasNext()) {
             BaatParameter bpDest = (BaatParameter) iter.next();
+            String sourceValue = null; //the source param value
+            String extensionParameterValue = null;//the source for our extension, if the option is set
             
             if (bpDest.sourceParam != null && bpDest.sourceParam.compareTo(bpDest.switchName) != 0) {
                 Iterator reiter = this.parameters.iterator(); //yep, we're looping twice over the same variables
                 while (reiter.hasNext()) {
                     BaatParameter bpSrc = (BaatParameter) reiter.next();
                     if (bpSrc.switchName.compareTo(bpDest.sourceParam) == 0) {
-                        //we've found the source from which we hope to derive our value
-                        bpDest.value = bpSrc.value;
-                        bpDest.isSet = true;
-                        if (bpDest.appendString != null && bpDest.appendString.compareTo("") != 0) {
-                            bpDest.value += bpDest.appendString;
-                        }
-                        logger.info("derived input param from source param: ["+bpSrc.switchName+":"+bpSrc.value+"] => ["+bpDest.switchName+":"+bpDest.value+"]");
+                        //located the root source param
+                        sourceValue = bpSrc.value;
+                    }
+                    if (bpDest.extensionParameter != null && bpDest.extensionParameter.compareTo(bpSrc.switchName)) {
+                        //located the source of the extension
+                        extensionParameterValue = bpSrc.value;
                     }
                 }
+                
+                if (sourceValue != null) {
+                    //we've found the source from which we hope to derive our value
+                    bpDest.value = bpSrc.value;
+                    bpDest.isSet = true;
+                    if (bpDest.appendString != null && bpDest.appendString.compareTo("") != 0) {
+                        bpDest.value += bpDest.appendString;
+                    }
+                    if (extensionParameterValue != null) {
+                        bpDest.value += "." + extensionParameterValue;
+                    }
+                    logger.info("derived input param from source param: ["+bpSrc.switchName+":"+bpSrc.value+"] => ["+bpDest.switchName+":"+bpDest.value+"]");
+                }
+                
             }
         }
     }
@@ -562,6 +578,7 @@ class BaatParameter {
     public String primaryExtension = "";
     public String sourceParam = ""; //used where a parameter value is derived from another parameter's setting
     public String appendString = ""; //used as an appender when a sourceParam is used 
+    public String extensionParameter = ""; //used with sourceParam allows another parameter to be used as the extension for this parameter
     public boolean isSet = false; //manually mark this when setting a value
 
     public BaatParameter() {
