@@ -286,6 +286,10 @@ public class BaatInstance {
                 if (bp.appendString == null) {
                     bp.appendString = "";
                 }
+                bp.extensionParameter = element.attributeValue("extensionParam");
+                if (bp.extensionParameter == null) {
+                    bp.extensionParameter = "";
+                }
                 bp.inputFile = element.attributeValue("inputFile");
                 bp.value = element.attributeValue("value");
                 if (element.attributeValue("value") != null &&
