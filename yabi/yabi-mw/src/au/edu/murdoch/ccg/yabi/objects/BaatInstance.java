@@ -467,7 +467,7 @@ public class BaatInstance {
                         //located the root source param
                         sourceValue = bpSrc.value;
                     }
-                    if (bpDest.extensionParameter != null && bpDest.extensionParameter.compareTo(bpSrc.switchName)) {
+                    if (bpDest.extensionParameter != null && bpDest.extensionParameter.compareTo(bpSrc.switchName) == 0) {
                         //located the source of the extension
                         extensionParameterValue = bpSrc.value;
                     }
@@ -483,7 +483,7 @@ public class BaatInstance {
                     if (extensionParameterValue != null) {
                         bpDest.value += "." + extensionParameterValue;
                     }
-                    logger.info("derived input param from source param: ["+bpSrc.switchName+":"+bpSrc.value+"] => ["+bpDest.switchName+":"+bpDest.value+"]");
+                    logger.info("derived input param from source param: ["+bpDest.switchName+":"+bpDest.value+"]");
                 }
                 
             }
