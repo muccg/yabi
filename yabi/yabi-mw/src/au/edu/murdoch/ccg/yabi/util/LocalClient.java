@@ -18,10 +18,8 @@ public class LocalClient extends GenericProcessingClient {
     //instance variables
     private ArrayList inFiles;
     private ArrayList outFiles;
-    private BaatInstance bi;
     private String jobStatus;
     private String jobId;
-    private String outputDir;
     private String rootDir;
     private String outFilePrefix = "";
 
@@ -52,10 +50,6 @@ public class LocalClient extends GenericProcessingClient {
     }
 
     //setter
-    public void setOutputDir(String location) {
-        this.outputDir = location;
-    }
-
     public void setInputDirByUsername(String userName) {
         this.inputDir = rootDir + userName + "/";
     }

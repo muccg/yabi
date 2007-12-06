@@ -28,10 +28,8 @@ public class GrendelClient extends GenericProcessingClient {
     //instance variables
     private ArrayList inFiles;
     private ArrayList outFiles;
-    private BaatInstance bi;
     private String jobStatus;
     private String jobId;
-    private String outputDir;
     private String rootDir;
     private String outFilePrefix = "";
     private String username = "";
@@ -66,10 +64,6 @@ public class GrendelClient extends GenericProcessingClient {
     }
 
     //setter
-    public void setOutputDir(String location) {
-        this.outputDir = location;
-    }
-
     public void setInputDirByUsername(String userName) {
         this.inputDir = rootDir + userName + "/";
         this.username = userName;

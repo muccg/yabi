@@ -93,6 +93,10 @@ public class WaitForJobAction extends BaseAction {
                         String tmpName = nodeName.replaceAll("-check","");
                         pclient.setStageOutPrefix(tmpName);
                         pclient.fileStageOut( null );
+                        
+                        // ----- RUN ASSERTIONS -----
+                        //throws an Exception if any assertions fail
+                        pclient.runAssertions();
                     }
 
                     //error

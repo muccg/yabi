@@ -73,11 +73,9 @@ public class GridClient extends GenericProcessingClient {
     //instance variables
     private ArrayList inFiles;
     private ArrayList outFiles;
-    private BaatInstance bi;
     private String jobStatus;
     private String jobId;
     private String inputDir;
-    private String outputDir;
     private String rootDir;
     private String outFilePrefix = "";
     private String username = "";
@@ -130,6 +128,7 @@ public class GridClient extends GenericProcessingClient {
     }
 
     //setter
+    //setOutputDir (overrides superclass)
     public void setOutputDir(String location) {
         this.outputDir = location;
         
