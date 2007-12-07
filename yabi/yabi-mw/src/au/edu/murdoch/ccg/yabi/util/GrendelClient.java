@@ -26,13 +26,13 @@ public class GrendelClient extends GenericProcessingClient {
     public static String grendelHost;
 
     //instance variables
-    private ArrayList inFiles;
-    private ArrayList outFiles;
-    private String jobStatus;
-    private String jobId;
-    private String rootDir;
-    private String outFilePrefix = "";
-    private String username = "";
+    protected ArrayList inFiles;
+    protected ArrayList outFiles;
+    protected String jobStatus;
+    protected String jobId;
+    protected String rootDir;
+    protected String outFilePrefix = "";
+    protected String username = "";
 
     private static Logger logger = Logger.getLogger( AppDetails.getAppString() + "." + GrendelClient.class.getName());
 
@@ -285,7 +285,7 @@ public class GrendelClient extends GenericProcessingClient {
     }   
 
     //this is particular to grendel
-    private String generateResultLocation(String jobId) {
+    protected String generateResultLocation(String jobId) {
         String dirName = jobId.substring(0,9);
         String result = grendelHost + "/" + dirName + "/" + jobId + ".zip";
 

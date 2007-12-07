@@ -104,6 +104,17 @@
         </classpath>
       </javac>
     </target>
+    
+    <target name="nttcompile" depends="appProperties">
+      <javac srcdir="${ccg.srcdir}" destdir="${ccg.site}/classes" target="1.4" source="1.4">
+        <classpath>
+          <fileset dir="${ccg.libdir}">
+            <include name="**/*.jar"/>
+          </fileset>
+          <fileset file="/Users/ntt/Projects/yabi-fe-symfony/httpunit/jars/servlet.jar"/>
+        </classpath>
+      </javac>
+    </target>
 
     <target name="jar">
       <jar jarfile="${ccg.jarfilename}" basedir="${ccg.site}/classes/" compress="false" />
@@ -217,5 +228,6 @@
     <target name="release" depends="tags, releaseinit, tmpSvnCheckoutTag, createWar, deployWar, toolsSvnExportTag, deployCerts " />
     <target name="snapshot" depends="snapshotinit, tmpSvnCheckout, createWar, deployWar, toolsSvnExport, deployCerts" />	
     <target name="usercompile" depends="userbuildinit, compile" />
+    <target name="devcompile" depends="userbuildinit, nttcompile" />
     <target name="userwar" depends="userbuildinit, createWar, deployWar, toolsSvnExport" />
 </project>
