@@ -9,6 +9,9 @@ public class ProcessingClientFactory {
             if (type.compareTo("grendel") == 0) {
                 return new GrendelClient(bi);
             }
+            if (type.compareTo("proint") == 0) {
+                return new ProintClient(bi);
+            }
             if (type.compareTo("gt4") == 0) {
                 return new GridClient(bi);
             }
