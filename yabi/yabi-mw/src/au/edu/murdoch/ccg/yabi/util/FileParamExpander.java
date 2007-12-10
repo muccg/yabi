@@ -96,11 +96,11 @@ public class FileParamExpander {
                     continue;
                 }
                 if (possibleFile.isDirectory()) {
-                    logger.finer("fileParamExpander: directory: "+tokenized[i]);
+                    logger.info("fileParamExpander: directory: "+tokenized[i]);
                     String[] dirExpansion = possibleFile.list();
                     for (int j=0;j < dirExpansion.length; j++) {
                         //expand directories out one level only
-                        logger.finer("fileParamExpander: dirExpanded: "+tokenized[i]+"/"+dirExpansion[j]);
+                        logger.info("fileParamExpander: dirExpanded: "+tokenized[i]+"/"+dirExpansion[j]);
                         expanded.add(tokenized[i]+"/"+dirExpansion[j]);
                     }
                     continue;
