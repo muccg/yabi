@@ -15,9 +15,18 @@ public class YabiGridProxyInit {
     private YabiGridProxyModel model = null;
     private GlobusCredential proxy = null;
     private String proxyPath = "";
+    private int expirySeconds = 30 * 24 * 3600;
+    private int bits = 512;
+    
+    public YabiGridProxyInit () {
+    }
+    
+    public YabiGridProxyInit (int expiry) {
+        this.expirySeconds = expiry;
+    }
 
     private YabiGridProxyModel getModel() {
-        return new YabiGridProxyModel();
+        return new YabiGridProxyModel(this.bits, this.expirySeconds);
     }
     
     public void verifyProxy (String proxyFile) throws Exception {

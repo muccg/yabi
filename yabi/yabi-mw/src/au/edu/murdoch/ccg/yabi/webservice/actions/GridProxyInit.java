@@ -31,7 +31,7 @@ public class GridProxyInit extends BaseAction {
     
     private String rootDir = "";
     Configuration conf = null;
-        
+    
     public GridProxyInit () throws ConfigurationException {
         super();
         loadConfig();
@@ -44,36 +44,44 @@ public class GridProxyInit extends BaseAction {
     }
     
     public ActionForward execute(ActionMapping mapping, ActionForm form, HttpServletRequest request, HttpServletResponse response) throws Exception {
-             
-         String certFile = "";
-         String userKey = "";
-         String username = request.getParameter("username");
-         String password = request.getParameter("password");
         
-         try {
-             if (password == null) {
-                 throw new Exception("Password missing");
-             }
-             
-             //create proxy file
-             certFile = this.rootDir + username +"/certificates/usercert.pem";
-             userKey = this.rootDir + username +"/certificates/userkey.pem";
-             String proxyFile = this.rootDir + username +"/certificates/ivec_proxy.pem";
-             YabiGridProxyInit ygpi = new YabiGridProxyInit();
-             ygpi.initProxy(certFile, userKey, password, proxyFile);
-             
-         } catch (Exception e) {
-             
-             request.setAttribute("message", "Failed authentication for "+request.getParameter("username")+" using certFile: "+certFile+" userKey: "+userKey+" error: "+e.getClass().getName()+" : "+e.getMessage() + "\n\n" + trapStackTrace(e));
-             return mapping.findForward("error");
-             
-         }
-         
-         request.setAttribute("message", "success");
-         
-         return mapping.findForward("success");
-         
-     }
+        String certFile = "";
+        String userKey = "";
+        String username = request.getParameter("username");
+        String password = request.getParameter("password");
+        String expirySeconds = request.getParameter("expiry");
+        int expiry = 0;
+        YabiGridProxyInit ygpi;
+        
+        try {
+            if (password == null) {
+                throw new Exception("Password missing");
+            }
+            
+            //create proxy file
+            certFile = this.rootDir + username +"/certificates/usercert.pem";
+            userKey = this.rootDir + username +"/certificates/userkey.pem";
+            String proxyFile = this.rootDir + username +"/certificates/ivec_proxy.pem";
+            if (expirySeconds == null || expirySeconds.length() < 1) {
+                ygpi = new YabiGridProxyInit();
+            } else {
+                expiry = Integer.parseInt(expirySeconds);
+                ygpi = new YabiGridProxyInit(expiry);
+            }
+            ygpi.initProxy(certFile, userKey, password, proxyFile);
+            
+        } catch (Exception e) {
+            
+            request.setAttribute("message", "Failed authentication for "+request.getParameter("username")+" using certFile: "+certFile+" userKey: "+userKey+" error: "+e.getClass().getName()+" : "+e.getMessage() + "\n\n" + trapStackTrace(e));
+            return mapping.findForward("error");
+            
+        }
+        
+        request.setAttribute("message", "success");
+        
+        return mapping.findForward("success");
+        
+    }
     
     public static String trapStackTrace(Exception e) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -81,5 +89,5 @@ public class GridProxyInit extends BaseAction {
         e.printStackTrace(ps);
         return baos.toString();
     }
-     
+    
 }
