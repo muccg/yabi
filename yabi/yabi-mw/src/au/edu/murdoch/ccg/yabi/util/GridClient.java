@@ -54,6 +54,7 @@ import org.globus.exec.generated.StateEnumeration;
 import org.apache.axis.message.MessageElement;
 import org.globus.wsrf.encoding.ObjectDeserializer;
 import org.globus.wsrf.encoding.ObjectSerializer;
+import org.globus.exec.utils.service.ManagedJobHelper;
 import org.w3c.dom.*;
 import javax.xml.parsers.*;
 
@@ -309,7 +310,16 @@ public class GridClient extends GenericProcessingClient {
         this.jobId = jobId;
         logger.info("killing grid job: "+jobId);
         
-        String condition = null;
+        //unpackage the EPR
+        byte[] bytes = jobId.getBytes();
+        ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document eprDoc = db.parse(bais);
+        
+        EndpointReferenceType factoryEndpoint = (EndpointReferenceType) ObjectDeserializer.toObject(eprDoc.getDocumentElement(), EndpointReferenceType.class);
+
+        String jobHandle = ManagedJobHelper.getHandle(factoryEndpoint);
 
         //credentials
         GSSCredential credential;
