@@ -305,51 +305,37 @@ public class GridClient extends GenericProcessingClient {
      * 
      * @return A String indicating the state of the killed job
      */
-    public String killJob(String jobId) {
+    public void killJob(String jobId) throws Exception {
         this.jobId = jobId;
         
         String condition = null;
 
-        try {
-            //credentials
-            GSSCredential credential;
-            GlobusCredential globusCredential;
-            
-            globusCredential = new GlobusCredential( this.proxyCertLocation );
-            logger.fine("using grid proxy file: "+this.proxyCertLocation);
-            
-            credential = new GlobusGSSCredentialImpl( globusCredential, GSSCredential.INITIATE_AND_ACCEPT );    
-            //set default credential to prevent accidental loading of default globus proxy files
-            GlobusCredential.setDefaultCredential(globusCredential);
-            
-            //(nick: wringing through the extendedgssmanager is a vague attempt to voodoo magic it to work)
-            // security setup - sorry can't really explain this but it is
-            //             crucial to get job submission working correctly
-            ExtendedGSSManager manager = (ExtendedGSSManager)ExtendedGSSManager.getInstance();
-            credential = manager.createCredential(GSSCredential.INITIATE_AND_ACCEPT);
-            globusCredential = ((GlobusGSSCredentialImpl)credential).getGlobusCredential();
-            
-            // Find the job, and make sure are authorized to kill it.
-            GramJob job = new GramJob();
-            job.setHandle(this.jobId);
-            job.setCredentials(credential);
-            
-            // Kill it.
-            job.destroy();
-            
-            try {
-                // Figure out the status...
-                StateEnumeration jobState = job.getState();
-                condition = jobState.getValue();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            logger.info(e.getMessage());
-        }
+        //credentials
+        GSSCredential credential;
+        GlobusCredential globusCredential;
         
-        return condition;
+        globusCredential = new GlobusCredential( this.proxyCertLocation );
+        logger.fine("using grid proxy file: "+this.proxyCertLocation);
+        
+        credential = new GlobusGSSCredentialImpl( globusCredential, GSSCredential.INITIATE_AND_ACCEPT );    
+        //set default credential to prevent accidental loading of default globus proxy files
+        GlobusCredential.setDefaultCredential(globusCredential);
+        
+        //(nick: wringing through the extendedgssmanager is a vague attempt to voodoo magic it to work)
+        // security setup - sorry can't really explain this but it is
+        //             crucial to get job submission working correctly
+        ExtendedGSSManager manager = (ExtendedGSSManager)ExtendedGSSManager.getInstance();
+        credential = manager.createCredential(GSSCredential.INITIATE_AND_ACCEPT);
+        globusCredential = ((GlobusGSSCredentialImpl)credential).getGlobusCredential();
+        
+        // Find the job, and make sure are authorized to kill it.
+        GramJob job = new GramJob();
+        job.setHandle(this.jobId);
+        job.setCredentials(credential);
+        
+        // Kill it.
+        job.destroy();
+        
     }
 
     public void fileStageIn ( ArrayList files ) throws Exception {
