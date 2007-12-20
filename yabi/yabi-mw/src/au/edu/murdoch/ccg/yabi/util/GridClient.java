@@ -236,60 +236,120 @@ public class GridClient extends GenericProcessingClient {
 
         logger.fine("getting status for grid epr: "+jobId);
         
-        byte[] bytes = jobId.getBytes();
-        ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        Document eprDoc = db.parse(bais);
-        
-        EndpointReferenceType factoryEndpoint = (EndpointReferenceType) ObjectDeserializer.toObject(eprDoc.getDocumentElement(), EndpointReferenceType.class);
-        logger.info("epr: "+factoryEndpoint);
-        ManagedJobFactoryPortType factoryPort = ManagedJobFactoryClientHelper.getPort(factoryEndpoint);
-        
-        //credentials
-        GSSCredential credential;
-        GlobusCredential globusCredential;
-        
-        globusCredential = new GlobusCredential( this.proxyCertLocation );
-        logger.fine("using grid proxy file: "+this.proxyCertLocation);
-        
-        credential = new GlobusGSSCredentialImpl( globusCredential, GSSCredential.INITIATE_AND_ACCEPT );    
-        //set default credential to prevent accidental loading of default globus proxy files
-        GlobusCredential.setDefaultCredential(globusCredential);
-        
-        //(nick: wringing through the extendedgssmanager is a vague attempt to voodoo magic it to work)
-        // security setup - sorry can't really explain this but it is
-        //             crucial to get job submission working correctly
-        ExtendedGSSManager manager = (ExtendedGSSManager)ExtendedGSSManager.getInstance();
-        credential = manager.createCredential(GSSCredential.INITIATE_AND_ACCEPT);
-        globusCredential = ((GlobusGSSCredentialImpl)credential).getGlobusCredential();
-        
-        //set security
-        HostAuthorization iA = new HostAuthorization();
-        ClientSecurityDescriptor secDesc = new ClientSecurityDescriptor();
-        secDesc.setGSITransport(GSIConstants.ENCRYPTION);
-        secDesc.setAuthz(iA);
-        secDesc.setGSSCredential(credential);
-        secDesc.setProxyFilename(this.proxyCertLocation);
-        ((Stub) factoryPort)._setProperty(Constants.CLIENT_DESCRIPTOR, secDesc);
-        
-        GetResourcePropertyResponse response = factoryPort.getResourceProperty(ManagedJobConstants.RP_STATE);
-        MessageElement [] any = response.get_any();
-        StateEnumeration state = (StateEnumeration) ObjectDeserializer.toObject(any[0], StateEnumeration.class);
-        
-        logger.info("Grid job state: "+state);
-        
-        //translate to generic values
-        this.jobStatus = "R";
-        if (state.equals(StateEnumeration.Unsubmitted) || state.equals(StateEnumeration.Pending)) {
-            this.jobStatus = "Q";
-        } else if (state.equals(StateEnumeration.Failed)) {
+        try {
+            
+            byte[] bytes = jobId.getBytes();
+            ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document eprDoc = db.parse(bais);
+            
+            EndpointReferenceType factoryEndpoint = (EndpointReferenceType) ObjectDeserializer.toObject(eprDoc.getDocumentElement(), EndpointReferenceType.class);
+            logger.info("epr: "+factoryEndpoint);
+            ManagedJobFactoryPortType factoryPort = ManagedJobFactoryClientHelper.getPort(factoryEndpoint);
+            
+            //credentials
+            GSSCredential credential;
+            GlobusCredential globusCredential;
+            
+            globusCredential = new GlobusCredential( this.proxyCertLocation );
+            logger.fine("using grid proxy file: "+this.proxyCertLocation);
+            
+            credential = new GlobusGSSCredentialImpl( globusCredential, GSSCredential.INITIATE_AND_ACCEPT );    
+            //set default credential to prevent accidental loading of default globus proxy files
+            GlobusCredential.setDefaultCredential(globusCredential);
+            
+            //(nick: wringing through the extendedgssmanager is a vague attempt to voodoo magic it to work)
+            // security setup - sorry can't really explain this but it is
+            //             crucial to get job submission working correctly
+            ExtendedGSSManager manager = (ExtendedGSSManager)ExtendedGSSManager.getInstance();
+            credential = manager.createCredential(GSSCredential.INITIATE_AND_ACCEPT);
+            globusCredential = ((GlobusGSSCredentialImpl)credential).getGlobusCredential();
+            
+            //set security
+            HostAuthorization iA = new HostAuthorization();
+            ClientSecurityDescriptor secDesc = new ClientSecurityDescriptor();
+            secDesc.setGSITransport(GSIConstants.ENCRYPTION);
+            secDesc.setAuthz(iA);
+            secDesc.setGSSCredential(credential);
+            secDesc.setProxyFilename(this.proxyCertLocation);
+            ((Stub) factoryPort)._setProperty(Constants.CLIENT_DESCRIPTOR, secDesc);
+            
+            GetResourcePropertyResponse response = factoryPort.getResourceProperty(ManagedJobConstants.RP_STATE);
+            MessageElement [] any = response.get_any();
+            StateEnumeration state = (StateEnumeration) ObjectDeserializer.toObject(any[0], StateEnumeration.class);
+            
+            logger.info("Grid job state: "+state);
+            
+            //translate to generic values
+            this.jobStatus = "R";
+            if (state.equals(StateEnumeration.Unsubmitted) || state.equals(StateEnumeration.Pending)) {
+                this.jobStatus = "Q";
+            } else if (state.equals(StateEnumeration.Failed)) {
+                this.jobStatus = "E";
+            } else if (state.equals(StateEnumeration.Done)) {
+                this.jobStatus = "C";
+            }
+        } catch (Exception e) {
             this.jobStatus = "E";
-        } else if (state.equals(StateEnumeration.Done)) {
-            this.jobStatus = "C";
+        }
+            
+        return this.jobStatus;
+    }
+    
+    /**
+     * Kills the job given it's EPR. Returns a String indicating the status of
+     * the job after being killed.
+     * 
+     * @param eprFile The EPR file which contains the reference to this job
+     * 
+     * @return A String indicating the state of the killed job
+     */
+    public String killJob(String jobId) {
+        this.jobId = jobId;
+        
+        String condition = null;
+
+        try {
+            //credentials
+            GSSCredential credential;
+            GlobusCredential globusCredential;
+            
+            globusCredential = new GlobusCredential( this.proxyCertLocation );
+            logger.fine("using grid proxy file: "+this.proxyCertLocation);
+            
+            credential = new GlobusGSSCredentialImpl( globusCredential, GSSCredential.INITIATE_AND_ACCEPT );    
+            //set default credential to prevent accidental loading of default globus proxy files
+            GlobusCredential.setDefaultCredential(globusCredential);
+            
+            //(nick: wringing through the extendedgssmanager is a vague attempt to voodoo magic it to work)
+            // security setup - sorry can't really explain this but it is
+            //             crucial to get job submission working correctly
+            ExtendedGSSManager manager = (ExtendedGSSManager)ExtendedGSSManager.getInstance();
+            credential = manager.createCredential(GSSCredential.INITIATE_AND_ACCEPT);
+            globusCredential = ((GlobusGSSCredentialImpl)credential).getGlobusCredential();
+            
+            // Find the job, and make sure are authorized to kill it.
+            GramJob job = new GramJob();
+            job.setHandle(this.jobId);
+            job.setCredentials(credential);
+            
+            // Kill it.
+            job.destroy();
+            
+            try {
+                // Figure out the status...
+                StateEnumeration jobState = job.getState();
+                condition = jobState.getValue();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            logger.info(e.getMessage());
         }
         
-        return this.jobStatus;
+        return condition;
     }
 
     public void fileStageIn ( ArrayList files ) throws Exception {
@@ -475,7 +535,8 @@ public class GridClient extends GenericProcessingClient {
     }
 
     public boolean isCompleted () throws Exception {
-        return (this.jobStatus.compareTo("C") == 0);
+        return (this.jobStatus.compareTo("C") == 0 ||
+                this.jobStatus.compareTo("E") == 0);
     }
 
     public boolean hasError () throws Exception {
