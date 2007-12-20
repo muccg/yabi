@@ -341,7 +341,7 @@ public class GridClient extends GenericProcessingClient {
         
         // Find the job, and make sure are authorized to kill it.
         GramJob job = new GramJob();
-        job.setHandle(this.jobId);
+        job.setHandle(jobHandle);
         job.setCredentials(credential);
         
         // Kill it.
