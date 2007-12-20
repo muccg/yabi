@@ -307,6 +307,7 @@ public class GridClient extends GenericProcessingClient {
      */
     public void killJob(String jobId) throws Exception {
         this.jobId = jobId;
+        logger.info("killing grid job: "+jobId);
         
         String condition = null;
 
