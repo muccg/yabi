@@ -54,7 +54,7 @@ public class GridKillJob extends BaseAction {
             gc.killJob(gridepr);
             
         } catch (Exception e) {
-            
+            e.printStackTrace();
             request.setAttribute("message", "Error killing grid job: "+e.getMessage());
             return mapping.findForward("error");
             
