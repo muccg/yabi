@@ -463,7 +463,7 @@ public class BaatInstance {
             String sourceValue = null; //the source param value
             String extensionParameterValue = null;//the source for our extension, if the option is set
             
-            if (bpDest.sourceParam != null && bpDest.sourceParam.compareTo(bpDest.switchName) != 0) {
+            if (bpDest.sourceParam != null && bpDest.sourceParam.compareTo("") != 0 && bpDest.sourceParam.compareTo(bpDest.switchName) != 0) {
                 Iterator reiter = this.parameters.iterator(); //yep, we're looping twice over the same variables
                 while (reiter.hasNext()) {
                     BaatParameter bpSrc = (BaatParameter) reiter.next();
