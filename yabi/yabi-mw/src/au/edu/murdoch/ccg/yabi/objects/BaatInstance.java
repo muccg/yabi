@@ -22,6 +22,7 @@ public class BaatInstance {
     private ArrayList parameters;
     private ArrayList inputFiles;
     private ArrayList outputFiles;
+    private ArrayList outputAssertions;
     private Document baatFile;
     private String attachedFile;
     private String toolPath;
@@ -43,6 +44,7 @@ public class BaatInstance {
         parameters = new ArrayList();
         inputFiles = new ArrayList();
         outputFiles = new ArrayList();
+        outputAssertions = new ArrayList();
 
         username = "";
 
@@ -53,6 +55,10 @@ public class BaatInstance {
     public ArrayList getParameters() {
         return this.parameters;
     }  
+    
+    public ArrayList getOutputAssertions() {
+        return this.outputAssertions;
+    }
     
     /**
      * force parameters into a format usable by RSLInstance
@@ -260,6 +266,23 @@ public class BaatInstance {
                     this.symlinkOutputDir = false;
                 } else if (sod.compareTo("true") == 0){
                     this.symlinkOutputDir = true;
+                }
+                
+                //check for assertions
+                XPath extensionSelector = DocumentHelper.createXPath("//extension");
+                List results = extensionSelector.selectNodes(outputFiletypesNode);
+                for ( Iterator iter = results.iterator(); iter.hasNext(); ) {
+                    Element element = (Element) iter.next();
+                    
+                    OutputFileAssertion ofa = new OutputFileAssertion();
+                    ofa.mustExist = (element.attributeValue("mustExist").compareTo("true") == 0);
+                    ofa.extension = element.getTextTrim();
+                    
+                    if (ofa.mustExist) {
+                        logger.info("assertion: mustExist: " + ofa.extension);
+                    }
+                    
+                    this.outputAssertions.add(ofa);
                 }
             }
 

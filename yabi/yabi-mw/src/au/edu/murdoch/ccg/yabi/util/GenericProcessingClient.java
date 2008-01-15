@@ -2,6 +2,7 @@ package au.edu.murdoch.ccg.yabi.util;
 
 import java.util.*;
 import au.edu.murdoch.ccg.yabi.objects.BaatInstance;
+import au.edu.murdoch.ccg.yabi.objects.OutputFileAssertion;
 import au.edu.murdoch.ccg.yabi.objects.User;
 import org.apache.commons.configuration.*;
 
@@ -29,5 +30,18 @@ public abstract class GenericProcessingClient {
     
     public void runAssertions() throws Exception {
         //runs assertions associated with baat file, throws exception if it fails one
+        ArrayList outputAssertions = this.bi.getOutputAssertions();
+        Iterator iter = outputAssertions.iterator();
+        while (iter.hasNext()) {
+            OutputFileAssertion ofa = (OutputFileAssertion) iter.next();
+            
+            if (ofa.extension == null) {
+                continue;
+            }
+            
+            if (ofa.mustExist) {
+                //check output dir for the existence of a file with the given extension
+            }
+        }
     }
 }
