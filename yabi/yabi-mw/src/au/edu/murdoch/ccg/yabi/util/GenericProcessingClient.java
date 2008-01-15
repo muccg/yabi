@@ -2,9 +2,11 @@ package au.edu.murdoch.ccg.yabi.util;
 
 import java.util.*;
 import au.edu.murdoch.ccg.yabi.objects.BaatInstance;
+import au.edu.murdoch.ccg.yabi.util.AppDetails;
 import au.edu.murdoch.ccg.yabi.objects.OutputFileAssertion;
 import au.edu.murdoch.ccg.yabi.objects.User;
 import org.apache.commons.configuration.*;
+import java.util.logging.Logger;
 
 public abstract class GenericProcessingClient {
 
@@ -22,6 +24,8 @@ public abstract class GenericProcessingClient {
     public abstract boolean authenticate ( User user ) throws Exception;
     public abstract boolean isCompleted () throws Exception;
     public abstract boolean hasError () throws Exception;
+    
+    private static Logger logger = Logger.getLogger( AppDetails.getAppString() + "." + GenericProcessingClient.class.getName());
 
     //concrete methods
     public void setOutputDir(String location) {
@@ -41,6 +45,7 @@ public abstract class GenericProcessingClient {
             
             if (ofa.mustExist) {
                 //check output dir for the existence of a file with the given extension
+                logger.info("runAssertions. checking for mustExist: "+ofa.extension+" in dir: "+this.outputDir);
             }
         }
     }
