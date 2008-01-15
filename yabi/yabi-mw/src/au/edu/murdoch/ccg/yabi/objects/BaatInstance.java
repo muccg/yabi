@@ -34,7 +34,7 @@ public class BaatInstance {
 
     public BaatInstance(String toolName) throws Exception {
         if (this.toolName == null) {
-            throw new CBBCException("Error instantiating null toolName");
+            throw new Exception("Error instantiating null toolName");
         }
         
         //init vars
