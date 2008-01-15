@@ -33,6 +33,10 @@ public class BaatInstance {
     private static Logger logger = Logger.getLogger( AppDetails.getAppString() + "." + BaatInstance.class.getName());
 
     public BaatInstance(String toolName) throws Exception {
+        if (this.toolName == null) {
+            throw new CBBCException("Error instantiating null toolName");
+        }
+        
         //init vars
         this.toolName = toolName.replaceAll(System.getProperty("file.separator"), ""); //remove directory separators to prevent hacks
 
