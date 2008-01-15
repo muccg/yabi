@@ -133,6 +133,7 @@ public class WaitForJobAction extends BaseAction {
             } catch (Exception cbbce) {}
             
             varTranslator.saveVariable(ctx, "errorMessage", e.getClass() + " : " + e.getMessage());
+            varTranslator.saveVariable(ctx, "jobStatus", "E" );
             //propagate execution to error state
             varTranslator.updateLastNodeMarker(ctx);
             ctx.leaveNode("error"); //TODO change this so it just cancels checking this node
