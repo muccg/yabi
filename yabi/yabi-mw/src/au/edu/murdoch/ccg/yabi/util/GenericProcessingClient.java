@@ -7,6 +7,7 @@ import au.edu.murdoch.ccg.yabi.objects.OutputFileAssertion;
 import au.edu.murdoch.ccg.yabi.objects.User;
 import org.apache.commons.configuration.*;
 import java.util.logging.Logger;
+import java.io.File;
 
 public abstract class GenericProcessingClient {
 
@@ -48,6 +49,22 @@ public abstract class GenericProcessingClient {
             if (ofa.mustExist) {
                 //check output dir for the existence of a file with the given extension
                 logger.info("runAssertions. checking for mustExist: "+ofa.extension+" in dir: "+this.rootDir + this.outputDir + this.outFilePrefix);
+                File outDir = new File(this.rootDir + this.outputDir + this.outFilePrefix);
+                boolean found = false;
+                
+                if (outDir.exists() && outDir.isDirectory()) {
+                    String[] dirExpansion = outDir.list();
+                    for (int j=0;j < dirExpansion.length; j++) {
+                        //expand directories out one level only
+                        if (dirExpansion[j].endsWith(ofa.extension)) {
+                            found = true;
+                        }
+                    }
+                }
+                
+                if (!found) {
+                    throw new Exception("Expected output file of type ["+ofa.extension+"] not found");
+                }
             }
         }
     }
