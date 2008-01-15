@@ -57,7 +57,8 @@ public class WaitForJobAction extends BaseAction {
         try {
             String nodeName = ctx.getNode().getFullyQualifiedName();
 
-            GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( (String) inputVars.get("jobType") , null );
+            BaatInstance bi = new BaatInstance( (String) inputVars.get("toolName") );
+            GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( (String) inputVars.get("jobType") , bi );
             // ----- AUTHENTICATE -----
             pclient.authenticate( new User(username) );
 
