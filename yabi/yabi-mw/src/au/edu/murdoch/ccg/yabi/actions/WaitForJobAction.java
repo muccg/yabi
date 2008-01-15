@@ -8,6 +8,7 @@ import au.edu.murdoch.ccg.yabi.util.ProcessingClientFactory;
 import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
 import au.edu.murdoch.ccg.yabi.util.AppDetails;
 import au.edu.murdoch.ccg.yabi.objects.YabiJobFileInstance;
+import au.edu.murdoch.ccg.yabi.objects.BaatInstance;
 import au.edu.murdoch.ccg.yabi.util.MailTool;
 import org.apache.commons.configuration.*;
 import au.edu.murdoch.cbbc.util.*;
