@@ -33,7 +33,7 @@ public class BaatInstance {
     private static Logger logger = Logger.getLogger( AppDetails.getAppString() + "." + BaatInstance.class.getName());
 
     public BaatInstance(String toolName) throws Exception {
-        if (this.toolName == null) {
+        if (toolName == null) {
             throw new Exception("Error instantiating null toolName");
         }
         
