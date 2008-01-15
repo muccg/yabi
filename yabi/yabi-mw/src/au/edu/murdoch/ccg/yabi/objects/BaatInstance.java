@@ -279,14 +279,15 @@ public class BaatInstance {
                     Element element = (Element) iter.next();
                     
                     OutputFileAssertion ofa = new OutputFileAssertion();
-                    ofa.mustExist = (element.attributeValue("mustExist").compareTo("true") == 0);
-                    ofa.extension = element.getTextTrim();
+                    if (element.attributeValue("mustExist") != null) {
+                        ofa.mustExist = (element.attributeValue("mustExist").compareTo("true") == 0);
+                        ofa.extension = element.getTextTrim();
+                    }
                     
                     if (ofa.mustExist) {
                         logger.info("assertion: mustExist: " + ofa.extension);
+                        this.outputAssertions.add(ofa);
                     }
-                    
-                    this.outputAssertions.add(ofa);
                 }
             }
 
