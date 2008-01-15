@@ -12,6 +12,8 @@ public abstract class GenericProcessingClient {
 
     //variables for concrete methods
     protected String outputDir;
+    protected String rootDir;
+    protected String outFilePrefix = "";
     protected BaatInstance bi;
     
     //instance methods
@@ -45,7 +47,7 @@ public abstract class GenericProcessingClient {
             
             if (ofa.mustExist) {
                 //check output dir for the existence of a file with the given extension
-                logger.info("runAssertions. checking for mustExist: "+ofa.extension+" in dir: "+this.outputDir);
+                logger.info("runAssertions. checking for mustExist: "+ofa.extension+" in dir: "+this.rootDir + this.outputDir + this.outFilePrefix);
             }
         }
     }

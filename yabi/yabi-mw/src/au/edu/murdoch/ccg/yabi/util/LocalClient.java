@@ -20,8 +20,6 @@ public class LocalClient extends GenericProcessingClient {
     private ArrayList outFiles;
     private String jobStatus;
     private String jobId;
-    private String rootDir;
-    private String outFilePrefix = "";
 
     private Logger logger = Logger.getLogger( AppDetails.getAppString() + "." + LocalClient.class.getName());
 

@@ -30,8 +30,6 @@ public class GrendelClient extends GenericProcessingClient {
     protected ArrayList outFiles;
     protected String jobStatus;
     protected String jobId;
-    protected String rootDir;
-    protected String outFilePrefix = "";
     protected String username = "";
 
     private static Logger logger = Logger.getLogger( AppDetails.getAppString() + "." + GrendelClient.class.getName());

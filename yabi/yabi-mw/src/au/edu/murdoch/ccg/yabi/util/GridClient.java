@@ -77,8 +77,6 @@ public class GridClient extends GenericProcessingClient {
     private String jobStatus;
     private String jobId;
     private String inputDir;
-    private String rootDir;
-    private String outFilePrefix = "";
     private String username = "";
     private String proxyCertLocation = "";
     private String gridType = "ivec"; // use this to specify which grid client is being executed.
