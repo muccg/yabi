@@ -9,14 +9,19 @@ import java.net.*;
 import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
 import org.apache.commons.configuration.*;
 
+import java.util.logging.Logger;
+
 public class YabiJobFileInstance {
 
     private static String yabiRootDirectory;
+    private static Logger logger;
 
     private Document jobFile;
     private String fileName;
 
     public YabiJobFileInstance(String fileName) throws Exception {
+        logger = Logger.getLogger( YabiJobFileInstance.class.getName() );
+
         //init vars
         //this.fileName = fileName.replaceAll(System.getProperty("file.separator"), ""); //remove directory separators to prevent hacks
         this.fileName = fileName.replaceAll(" ","_"); //remove spaces and replace with underscores
@@ -29,6 +34,8 @@ public class YabiJobFileInstance {
     }
 
     public YabiJobFileInstance() throws Exception {
+        logger = Logger.getLogger( YabiJobFileInstance.class.getName() );
+
         //load config
         Configuration config = YabiConfiguration.getConfig();
         yabiRootDirectory = config.getString("yabi.rootDirectory");
@@ -234,6 +241,14 @@ public class YabiJobFileInstance {
             }
 
             String fileLoc = yabiRootDirectory + fileName;
+            String parentLoc = fileLoc.substring(0, fileLoc.lastIndexOf("/"));
+            //ensure directories exist
+            File parentDir = new File(parentLoc);
+            if (!parentDir.exists()) {
+                logger.info("jobfile dirs not found, creating them: "+parentLoc);
+                parentDir.mkdirs();
+            }
+
             FileWriter fw = new FileWriter( fileLoc );
             OutputFormat of = new OutputFormat("  ");
             of.setNewlines(true);
