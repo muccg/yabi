@@ -80,6 +80,10 @@
             <forward name="success" path="/templates/gridproxyinit.xml"/>
         </action>
 
+        <action
+            path="/status"
+            type="au.edu.murdoch.ccg.yabi.webservice.actions.Status"/>
+
     </action-mappings>
 
     <message-resources parameter="MessageResources" />
