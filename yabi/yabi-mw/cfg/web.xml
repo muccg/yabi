@@ -6,10 +6,11 @@
 
 <web-app>
 
-    <display-name>JBPM Examples</display-name>
-    <description>
-      JBPM Example JSPs
-    </description>
+  <display-name>JBPM Examples</display-name>
+  <description>
+    JBPM Example JSPs
+  </description>
+
 
   <!-- JbpmSchedulerServlet -->
   <servlet>

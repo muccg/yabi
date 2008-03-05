@@ -74,6 +74,12 @@
             <forward name="success" path="/templates/instantiated.xml"/>
         </action>
 
+        <action
+            path="/uploadFile"
+            type="au.edu.murdoch.ccg.yabi.webservice.actions.UploadFile">
+            <forward name="success" path="/templates/gridproxyinit.xml"/>
+        </action>
+
     </action-mappings>
 
     <message-resources parameter="MessageResources" />
