@@ -81,13 +81,18 @@
         </action>
 
         <action
-            path="/status"
+            path="/jobStatus"
             type="au.edu.murdoch.ccg.yabi.webservice.actions.Status"/>
 
         <action
-            path="/downloadFile"
+            path="/downloadNodeFile"
             type="au.edu.murdoch.ccg.yabi.webservice.actions.DownloadFile"/>
 
+        <action
+            path="/listNodeFiles"
+            type="au.edu.murdoch.ccg.yabi.webservice.actions.ListNodeFiles">
+            <forward name="success" path="/templates/listfiles.xml"/>
+        </action>
 
     </action-mappings>
 

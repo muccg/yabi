@@ -87,7 +87,7 @@ public class DownloadFile extends BaseAction {
 
             } else {
 
-                request.setAttribute("message", "download must be performed via a GET operation");
+                request.setAttribute("message", "download must be performed via a GET operation, and required params must be specified");
                 return mapping.findForward("error");    
 
             }
