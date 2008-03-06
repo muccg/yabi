@@ -84,6 +84,11 @@
             path="/status"
             type="au.edu.murdoch.ccg.yabi.webservice.actions.Status"/>
 
+        <action
+            path="/downloadFile"
+            type="au.edu.murdoch.ccg.yabi.webservice.actions.DownloadFile"/>
+
+
     </action-mappings>
 
     <message-resources parameter="MessageResources" />
