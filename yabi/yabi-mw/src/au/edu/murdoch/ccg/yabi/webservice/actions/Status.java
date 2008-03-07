@@ -63,6 +63,10 @@ public class Status extends BaseAction {
             if (outputFormat != null) {
                 outputFormat.replaceAll("\\.\\.","");
             }
+            String nodeName= request.getParameter("nodename");
+            if (nodeName!= null) {
+                nodeName.replaceAll("\\.\\.","");
+            }
 
             String filePath = user + "/jobs/" + year + "-" + month + "/" + jobName + "/workflow.jobxml";
             File jobFile = new File(rootDirLoc + filePath);
@@ -90,7 +94,12 @@ public class Status extends BaseAction {
                 return null;
             } else {
                 YabiJobFileInstance yFile = new YabiJobFileInstance(filePath);
-                String jobStatusStr = yFile.getVariableByKey("cleanup.output.jobStatus");
+                String jobStatusStr = null;
+                if (nodeName != null) {
+                    jobStatusStr = yFile.getVariableByKey(nodeName + "-check.output.jobStatus");
+                } else {
+                    jobStatusStr = yFile.getVariableByKey("cleanup.output.jobStatus");
+                }
 
                 if (jobStatusStr == null || jobStatusStr.length() == 0) {
                     request.setAttribute("message", "Unknown job status");
