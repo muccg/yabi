@@ -27,6 +27,10 @@ public class Status extends BaseAction {
 
     private static Logger logger;
 
+    private static final String TYPE_XML = "xml";
+
+    private static final String TYPE_TXT = "text";
+
     public Status () {
         super();
     }
@@ -45,45 +49,62 @@ public class Status extends BaseAction {
             String rootDirLoc = conf.getString("yabi.rootDirectory");
     
             //method should be a GET
-            if (request.getMethod().compareTo("GET") == 0) {
+            if (request.getMethod().compareTo("GET") != 0) {
+                request.setAttribute("message", "status check must be performed via a GET operation");
+                return mapping.findForward("error");    
+            }
 
-                //look for workflow file based on user, year, month and jobname
-                String user = request.getParameter("user").replaceAll("\\.\\.","");
-                String year = request.getParameter("year").replaceAll("[\\D]","");
-                String month = request.getParameter("month").replaceAll("[\\D]","");
-                String jobName = request.getParameter("jobname").replaceAll("\\.\\.","");
+            //look for workflow file based on user, year, month and jobname
+            String user = request.getParameter("user").replaceAll("\\.\\.","");
+            String year = request.getParameter("year").replaceAll("[\\D]","");
+            String month = request.getParameter("month").replaceAll("[\\D]","");
+            String jobName = request.getParameter("jobname").replaceAll("\\.\\.","");
+            String outputFormat = request.getParameter("outputformat");
+            if (outputFormat != null) {
+                outputFormat.replaceAll("\\.\\.","");
+            }
 
-                String filePath = rootDirLoc + user + "/jobs/" + year + "-" + month + "/" + jobName + "/workflow.jobxml";
-                File jobFile = new File(filePath);
-                
-                if (jobFile.exists()) {
+            String filePath = user + "/jobs/" + year + "-" + month + "/" + jobName + "/workflow.jobxml";
+            File jobFile = new File(rootDirLoc + filePath);
+            
+            // no workflow file, bomb out
+            if (!jobFile.exists()) {
+                request.setAttribute("message", "requested job does not exist");
+                return mapping.findForward("error");
+            }
 
-                    FileInputStream fileToDownload = new FileInputStream(filePath);
-                    ServletOutputStream out = response.getOutputStream();
+            // if not output format set, or if its not set to TYPE_TXT, we spew out xml
+            if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
+                FileInputStream fileToDownload = new FileInputStream(rootDirLoc + filePath);
+                ServletOutputStream out = response.getOutputStream();
 
-                    response.setContentType("text/xml");
+                response.setContentType("text/xml");
 
-                    int c;
-                    while((c=fileToDownload.read()) != -1){
+                int c;
+                while((c=fileToDownload.read()) != -1){
                     out.write(c);
-                    }
-                    out.flush();
-                    out.close();
-                    fileToDownload.close();
-                    return null;
+                }
+                out.flush();
+                out.close();
+                fileToDownload.close();
+                return null;
+            } else {
+                YabiJobFileInstance yFile = new YabiJobFileInstance(filePath);
+                String jobStatusStr = yFile.getVariableByKey("cleanup.output.jobStatus");
 
-                } else {
-                    
-                    request.setAttribute("message", "requested job does not exist");
+                if (jobStatusStr == null || jobStatusStr.length() == 0) {
+                    request.setAttribute("message", "Unknown job status");
                     return mapping.findForward("error");
                 }
 
-            } else {
-
-                request.setAttribute("message", "status check must be performed via a GET operation");
-                return mapping.findForward("error");    
-
+                response.setContentType("text/plain");
+                ServletOutputStream out = response.getOutputStream();
+                out.print(jobStatusStr);
+                out.flush();
+                out.close();
+                return null;
             }
+
 
         } catch (Exception e) {
 
