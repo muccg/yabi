@@ -93,10 +93,17 @@ public class Status extends BaseAction {
             } else {
                 YabiJobFileInstance yFile = new YabiJobFileInstance(filePath);
                 String jobStatusStr = null;
+                String errorMessage = null;
                 if (nodeName != null) {
                     jobStatusStr = yFile.getVariableByKey(nodeName + "-check.output.jobStatus");
+                    errorMessage = yFile.getVariableByKey(nodeName + "-check.output.errorMessage");
+                    if (jobStatusStr == null || jobStatusStr.compareTo("") == 0) {
+                        jobStatusStr = yFile.getVariableByKey(nodeName + ".output.jobStatus");
+                        errorMessage = yFile.getVariableByKey(nodeName + ".output.errorMessage");
+                    }
                 } else {
                     jobStatusStr = yFile.getVariableByKey("cleanup.output.jobStatus");
+                    errorMessage = yFile.getVariableByKey("cleanup.output.errorMessage");
                 }
 
                 if (jobStatusStr == null || jobStatusStr.length() == 0) {
@@ -104,10 +111,14 @@ public class Status extends BaseAction {
                     response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                     return mapping.findForward("error");
                 }
+            
+                if (errorMessage == null) {
+                    errorMessage = "";
+                }
 
                 response.setContentType("text/plain");
                 ServletOutputStream out = response.getOutputStream();
-                out.print(jobStatusStr);
+                out.print(jobStatusStr + "\n" + errorMessage);
                 out.flush();
                 out.close();
                 return null;

@@ -75,6 +75,7 @@ public class UploadFile extends BaseAction {
 
                     List files = new ArrayList();
                     String username = "";
+                    String path = "";
 
                     // Process the uploaded items
                     Iterator iter = items.iterator();
@@ -85,16 +86,21 @@ public class UploadFile extends BaseAction {
                             if (item.getFieldName().compareTo("user") == 0) {
                                 username = item.getString();
                             }
+                            if (item.getFieldName().compareTo("path") == 0) {
+                                path = item.getString().replaceAll("\\.\\.","");
+                            }
                         } else {
                             files.add(item);
                         }
                     }
 
                     if (username.length() > 1 && username.indexOf("..") < 0) {
-                        String outputPath = rootDirLoc + username + "/workspace/";
+                        String outputPath = rootDirLoc + username + "/" + path + "/";
+                        String userPath = rootDirLoc + username;
+                        File userDir = new File(userPath);
                         File outputDir = new File(outputPath);
-                        if (!outputDir.exists()) {
-                            //outputDir.mkdirs();
+
+                        if (!userDir.exists()) {
                             request.setAttribute("message", "User workspace does not exist, please login to YABI front-end to create it");
                             response.setStatus(HttpServletResponse.SC_CONFLICT);
 
@@ -104,6 +110,10 @@ public class UploadFile extends BaseAction {
                                 return mapping.findForward("error-txt");
                             }
 
+                        }
+
+                        if (!outputDir.exists()) {
+                            outputDir.mkdirs();
                         }
 
                         Iterator fileIter = files.iterator();
