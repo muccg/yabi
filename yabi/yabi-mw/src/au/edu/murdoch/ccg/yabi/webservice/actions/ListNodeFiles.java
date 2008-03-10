@@ -78,6 +78,7 @@ public class ListNodeFiles extends BaseAction {
                 } else {
                     
                     request.setAttribute("message", "requested file does not exist or is a directory");
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                     if (outputFormat.compareTo(TYPE_TXT) != 0) {
                         return mapping.findForward("error");
                     } else {
@@ -88,6 +89,7 @@ public class ListNodeFiles extends BaseAction {
             } else {
 
                 request.setAttribute("message", "download must be performed via a GET operation, and required params must be specified");
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 if (outputFormat.compareTo(TYPE_TXT) != 0) {
                     return mapping.findForward("error");
                 } else {
@@ -100,6 +102,7 @@ public class ListNodeFiles extends BaseAction {
 
             logger.severe("An error occurred while attempting to download file: ["+e.getClass().getName() +"] "+ e.getMessage());
             request.setAttribute("message", "An error occurred while attempting to download file: ["+e.getClass().getName() +"] "+ e.getMessage());
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             if (outputFormat.compareTo(TYPE_TXT) != 0) {
                 return mapping.findForward("error");
             } else {
