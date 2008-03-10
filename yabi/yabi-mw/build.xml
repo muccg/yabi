@@ -146,6 +146,7 @@
       <copy file="${ccg.cfgdir}/hibernate.cfg.xml" tofile="${ccg.site}/classes/yabi-hibernate.cfg.xml" filtering="true" overwrite="true"/>
       <copy file="${ccg.cfgdir}/web.xml" tofile="${ccg.site}/web.xml" filtering="true" overwrite="true"/>
       <copy file="${ccg.cfgdir}/velocityxml.cfg" tofile="${ccg.site}/cfg/velocityxml.cfg" overwrite="true"/>
+      <copy file="${ccg.cfgdir}/velocitytxt.cfg" tofile="${ccg.site}/cfg/velocitytxt.cfg" overwrite="true"/>
       <copy file="${ccg.cfgdir}/struts-config.xml" tofile="${ccg.site}/cfg/struts-config.xml" overwrite="true"/>
       <copy file="${ccg.cfgdir}/toolbox.xml" tofile="${ccg.site}/cfg/toolbox.xml" overwrite="true"/>
       <copy file="${ccg.cfgdir}/hibernate/StringInstance.hbm.xml" tofile="${ccg.site}/classes/StringInstance.hbm.xml" overwrite="true"/>

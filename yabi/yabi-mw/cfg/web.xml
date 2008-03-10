@@ -24,11 +24,25 @@
   </servlet>
 
   <servlet>
-    <servlet-name>VelocityServlet</servlet-name>
+    <servlet-name>VelocityXMLServlet</servlet-name>
     <servlet-class>org.apache.velocity.tools.view.servlet.VelocityViewServlet</servlet-class>
     <init-param>
       <param-name>org.apache.velocity.properties</param-name>
       <param-value>/WEB-INF/velocityxml.cfg</param-value>
+    </init-param>
+    <init-param>
+      <param-name>org.apache.velocity.toolbox</param-name>
+      <param-value>/WEB-INF/toolbox.xml</param-value>
+    </init-param>
+    <load-on-startup>10</load-on-startup>
+  </servlet>
+
+  <servlet>
+    <servlet-name>VelocityTextServlet</servlet-name>
+    <servlet-class>org.apache.velocity.tools.view.servlet.VelocityViewServlet</servlet-class>
+    <init-param>
+      <param-name>org.apache.velocity.properties</param-name>
+      <param-value>/WEB-INF/velocitytxt.cfg</param-value>
     </init-param>
     <init-param>
       <param-name>org.apache.velocity.toolbox</param-name>
@@ -53,8 +67,13 @@
   </servlet-mapping>
 
   <servlet-mapping>
-    <servlet-name>VelocityServlet</servlet-name>
+    <servlet-name>VelocityXMLServlet</servlet-name>
     <url-pattern>*.xml</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>VelocityTextServlet</servlet-name>
+    <url-pattern>*.txt</url-pattern>
   </servlet-mapping>
 
   <resource-ref>

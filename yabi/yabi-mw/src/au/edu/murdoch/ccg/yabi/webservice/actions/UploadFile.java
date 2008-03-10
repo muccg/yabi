@@ -101,7 +101,6 @@ public class UploadFile extends BaseAction {
                             if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
                                 return mapping.findForward("error");
                             } else {
-                                response.setContentType("text/plain");
                                 return mapping.findForward("error-txt");
                             }
 
@@ -123,7 +122,6 @@ public class UploadFile extends BaseAction {
                         if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
                             return mapping.findForward("error");
                         } else {
-                            response.setContentType("text/plain");
                             return mapping.findForward("error-txt");
                         }
 
@@ -135,7 +133,6 @@ public class UploadFile extends BaseAction {
                     if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
                         return mapping.findForward("error");
                     } else {
-                        response.setContentType("text/plain");
                         return mapping.findForward("error-txt");
                     }
 
@@ -151,7 +148,6 @@ public class UploadFile extends BaseAction {
                 if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
                     return mapping.findForward("error");
                 } else {
-                    response.setContentType("text/plain");
                     return mapping.findForward("error-txt");
                 }
 
@@ -167,7 +163,6 @@ public class UploadFile extends BaseAction {
             if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
                 return mapping.findForward("error");
             } else {
-                response.setContentType("text/plain");
                 return mapping.findForward("error-txt");
             }
 

@@ -14,7 +14,7 @@
 
     <global-forwards>
         <forward name="error" path="/templates/error.xml"/>
-        <forward name="error-txt" path="/templates/error-txt.xml"/>
+        <forward name="error-txt" path="/templates/error.txt"/>
     </global-forwards>
 
     <action-mappings>
