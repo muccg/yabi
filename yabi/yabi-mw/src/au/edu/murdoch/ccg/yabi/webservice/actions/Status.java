@@ -27,10 +27,6 @@ public class Status extends BaseAction {
 
     private static Logger logger;
 
-    private static final String TYPE_XML = "xml";
-
-    private static final String TYPE_TXT = "text";
-
     public Status () {
         super();
     }
@@ -51,6 +47,7 @@ public class Status extends BaseAction {
             //method should be a GET
             if (request.getMethod().compareTo("GET") != 0) {
                 request.setAttribute("message", "status check must be performed via a GET operation");
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 return mapping.findForward("error");    
             }
 
@@ -74,6 +71,7 @@ public class Status extends BaseAction {
             // no workflow file, bomb out
             if (!jobFile.exists()) {
                 request.setAttribute("message", "requested job does not exist");
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 return mapping.findForward("error");
             }
 
@@ -103,6 +101,7 @@ public class Status extends BaseAction {
 
                 if (jobStatusStr == null || jobStatusStr.length() == 0) {
                     request.setAttribute("message", "Unknown job status");
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                     return mapping.findForward("error");
                 }
 
@@ -119,6 +118,7 @@ public class Status extends BaseAction {
 
             logger.severe("An error occurred while attempting to download file: ["+e.getClass().getName() +"] "+ e.getMessage());
             request.setAttribute("message", "An error occurred while attempting to download file: ["+e.getClass().getName() +"] "+ e.getMessage());
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             return mapping.findForward("error");
 
         }

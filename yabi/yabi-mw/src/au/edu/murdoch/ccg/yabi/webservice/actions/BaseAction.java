@@ -17,6 +17,8 @@ public abstract class BaseAction extends Action {
 
     //shared variables amongst all actions
     protected JbpmConfiguration jbpmConfiguration = JbpmConfiguration.getInstance("yabi-jbpm.cfg.xml");
+    protected static final String TYPE_XML = "xml";
+    protected static final String TYPE_TXT = "text";
 
     //convenience methods for all actions
 

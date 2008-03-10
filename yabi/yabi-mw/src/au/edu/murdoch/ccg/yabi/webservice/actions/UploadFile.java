@@ -39,7 +39,8 @@ public class UploadFile extends BaseAction {
         HttpServletResponse response) throws Exception {
 
         logger = Logger.getLogger( AppDetails.getAppString( request.getContextPath() ) + "." + UploadFile.class.getName() );
-            
+        String outputFormat = request.getParameter("outputformat");
+
         try {
 
             Configuration conf = YabiConfiguration.getConfig();
@@ -95,7 +96,15 @@ public class UploadFile extends BaseAction {
                         if (!outputDir.exists()) {
                             //outputDir.mkdirs();
                             request.setAttribute("message", "User workspace does not exist, please login to YABI front-end to create it");
-                            return mapping.findForward("error");
+                            response.setStatus(HttpServletResponse.SC_CONFLICT);
+
+                            if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
+                                return mapping.findForward("error");
+                            } else {
+                                response.setContentType("text/plain");
+                                return mapping.findForward("error-txt");
+                            }
+
                         }
 
                         Iterator fileIter = files.iterator();
@@ -109,25 +118,59 @@ public class UploadFile extends BaseAction {
                         }
                     } else {
                         request.setAttribute("message", "File upload must be identified by a username");
-                        return mapping.findForward("error");
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
+                        if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
+                            return mapping.findForward("error");
+                        } else {
+                            response.setContentType("text/plain");
+                            return mapping.findForward("error-txt");
+                        }
+
                     }
                 } else {
                     request.setAttribute("message", "File upload must be performed via a multipart POST operation");
-                    return mapping.findForward("error");
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
+                    if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
+                        return mapping.findForward("error");
+                    } else {
+                        response.setContentType("text/plain");
+                        return mapping.findForward("error-txt");
+                    }
+
                 }
 
                 logger.info("file upload ismultipart: "+isMultipart);
 
             } else {
                 request.setAttribute("message", "File upload must be performed via a POST operation");
-                return mapping.findForward("error");    
+
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
+                if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
+                    return mapping.findForward("error");
+                } else {
+                    response.setContentType("text/plain");
+                    return mapping.findForward("error-txt");
+                }
+
             }
 
         } catch (Exception e) {
 
             logger.severe("An error occurred while attempting to upload file: ["+e.getClass().getName() +"] "+ e.getMessage());
             request.setAttribute("message", "An error occurred while attempting to upload file: ["+e.getClass().getName() +"] "+ e.getMessage());
-            return mapping.findForward("error");
+
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
+            if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
+                return mapping.findForward("error");
+            } else {
+                response.setContentType("text/plain");
+                return mapping.findForward("error-txt");
+            }
+
 
         }
 

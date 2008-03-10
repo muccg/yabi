@@ -38,19 +38,21 @@ public class DownloadFile extends BaseAction {
         HttpServletResponse response) throws Exception {
 
         logger = Logger.getLogger( AppDetails.getAppString( request.getContextPath() ) + "." + DownloadFile.class.getName() );
-            
+        String outputFormat = request.getParameter("outputformat");
+
         try {
 
             Configuration conf = YabiConfiguration.getConfig();
             String rootDirLoc = conf.getString("yabi.rootDirectory");
-    
+
             //method should be a GET
             if (request.getMethod().compareTo("GET") == 0 &&
                 request.getParameter("user") != null &&
                 request.getParameter("year") != null &&
                 request.getParameter("month") != null &&
                 request.getParameter("jobname") != null &&
-                request.getParameter("file") != null) {
+                request.getParameter("file") != null &&
+                request.getParameter("node") != null) {
 
                 //look for workflow file based on user, year, month and jobname
                 String user = request.getParameter("user").replaceAll("\\.\\.","");
@@ -58,8 +60,9 @@ public class DownloadFile extends BaseAction {
                 String month = request.getParameter("month").replaceAll("[\\D]","");
                 String jobName = request.getParameter("jobname").replaceAll("\\.\\.","");
                 String relPath = request.getParameter("file").replaceAll("\\.\\.","");
+                String node = request.getParameter("node").replaceAll("\\.\\.","");
 
-                String filePath = rootDirLoc + user + "/jobs/" + year + "-" + month + "/" + jobName + "/" + relPath;
+                String filePath = rootDirLoc + user + "/jobs/" + year + "-" + month + "/" + jobName + "/" + "/data/" + node + "/" + relPath;
                 File requestedFile = new File(filePath);
                 
                 if (requestedFile.exists() && !requestedFile.isDirectory()) {
@@ -82,13 +85,25 @@ public class DownloadFile extends BaseAction {
                 } else {
                     
                     request.setAttribute("message", "requested file does not exist or is a directory");
-                    return mapping.findForward("error");
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
+                        return mapping.findForward("error");
+                    } else {
+                        response.setContentType("text/plain");
+                        return mapping.findForward("error-txt");
+                    }
                 }
 
             } else {
 
                 request.setAttribute("message", "download must be performed via a GET operation, and required params must be specified");
-                return mapping.findForward("error");    
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
+                    return mapping.findForward("error");
+                } else {
+                    response.setContentType("text/plain");
+                    return mapping.findForward("error-txt");
+                }
 
             }
 
@@ -96,7 +111,15 @@ public class DownloadFile extends BaseAction {
 
             logger.severe("An error occurred while attempting to download file: ["+e.getClass().getName() +"] "+ e.getMessage());
             request.setAttribute("message", "An error occurred while attempting to download file: ["+e.getClass().getName() +"] "+ e.getMessage());
-            return mapping.findForward("error");
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
+            if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
+                return mapping.findForward("error");
+            } else {
+                response.setContentType("text/plain");
+                return mapping.findForward("error-txt");
+            }
+
 
         }
 
