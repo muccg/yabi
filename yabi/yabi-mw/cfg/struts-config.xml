@@ -93,6 +93,7 @@
             path="/listNodeFiles"
             type="au.edu.murdoch.ccg.yabi.webservice.actions.ListNodeFiles">
             <forward name="success" path="/templates/listfiles.xml"/>
+            <forward name="success-txt" path="/templates/listfiles.txt"/>
         </action>
 
     </action-mappings>

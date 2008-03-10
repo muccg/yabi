@@ -38,7 +38,11 @@ public class ListNodeFiles extends BaseAction {
         HttpServletResponse response) throws Exception {
 
         logger = Logger.getLogger( AppDetails.getAppString( request.getContextPath() ) + "." + ListNodeFiles.class.getName() );
-            
+        String outputFormat = request.getParameter("outputformat"); 
+        if (outputFormat == null) {
+            outputFormat = TYPE_XML;
+        }
+           
         try {
 
             Configuration conf = YabiConfiguration.getConfig();
@@ -65,18 +69,30 @@ public class ListNodeFiles extends BaseAction {
                 if (requestedFile.exists() && requestedFile.isDirectory()) {
 
                     request.setAttribute("files", requestedFile.listFiles(new SafeFileFilter()));
-                    return mapping.findForward("success");
+                    if (outputFormat.compareTo(TYPE_TXT) != 0) {
+                        return mapping.findForward("success");
+                    } else {
+                        return mapping.findForward("success-txt");
+                    }
 
                 } else {
                     
                     request.setAttribute("message", "requested file does not exist or is a directory");
-                    return mapping.findForward("error");
+                    if (outputFormat.compareTo(TYPE_TXT) != 0) {
+                        return mapping.findForward("error");
+                    } else {
+                        return mapping.findForward("error-txt");
+                    }
                 }
 
             } else {
 
                 request.setAttribute("message", "download must be performed via a GET operation, and required params must be specified");
-                return mapping.findForward("error");    
+                if (outputFormat.compareTo(TYPE_TXT) != 0) {
+                    return mapping.findForward("error");
+                } else {
+                    return mapping.findForward("error-txt");
+                }
 
             }
 
@@ -84,7 +100,11 @@ public class ListNodeFiles extends BaseAction {
 
             logger.severe("An error occurred while attempting to download file: ["+e.getClass().getName() +"] "+ e.getMessage());
             request.setAttribute("message", "An error occurred while attempting to download file: ["+e.getClass().getName() +"] "+ e.getMessage());
-            return mapping.findForward("error");
+            if (outputFormat.compareTo(TYPE_TXT) != 0) {
+                return mapping.findForward("error");
+            } else {
+                return mapping.findForward("error-txt");
+            }
 
         }
 
