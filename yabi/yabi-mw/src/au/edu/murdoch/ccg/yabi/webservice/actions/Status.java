@@ -107,9 +107,7 @@ public class Status extends BaseAction {
                 }
 
                 if (jobStatusStr == null || jobStatusStr.length() == 0) {
-                    request.setAttribute("message", "Unknown job status");
-                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                    return mapping.findForward("error");
+                    jobStatusStr = "P";
                 }
             
                 if (errorMessage == null) {
