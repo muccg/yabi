@@ -96,6 +96,14 @@
             <forward name="success-txt" path="/templates/listfiles.txt"/>
         </action>
 
+        <action
+            path="/listUserspaceFiles"
+            type="au.edu.murdoch.ccg.yabi.webservice.actions.ListUserspaceFiles">
+            <forward name="success" path="/templates/listfiles.xml"/>
+            <forward name="success-txt" path="/templates/listfiles.txt"/>
+        </action>
+
+
     </action-mappings>
 
     <message-resources parameter="MessageResources" />
