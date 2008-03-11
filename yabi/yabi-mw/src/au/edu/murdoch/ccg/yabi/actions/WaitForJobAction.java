@@ -88,6 +88,9 @@ public class WaitForJobAction extends BaseAction {
                         isCompleted[i] = true;
                         incompleteCount--;
                         
+                        //display progress in the subJobsCompleted field
+                        varTranslator.saveVariable(ctx, "subJobsCompleted", ""+(jobId.length - incompleteCount));
+
                         // ----- STAGE OUT FILES -----
                         //get the outputdir
                         String outputDir = varTranslator.getProcessVariable(ctx, "jobDataDir");

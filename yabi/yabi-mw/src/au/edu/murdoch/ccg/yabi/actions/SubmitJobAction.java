@@ -159,6 +159,9 @@ public class SubmitJobAction extends BaseAction {
 
             // --- for batch jobs, rejoin here ---
 
+            varTranslator.saveVariable(ctx, "subJobCount", ""+batchIterations.length);
+            varTranslator.saveVariable(ctx, "sobJobsCompleted", "0");
+
             varTranslator.saveVariable(ctx, "expectedOutputFiles", ""+totalOutputFiles);
             varTranslator.saveVariable(ctx, "jobId", allJobIds);
             //output dir variable
