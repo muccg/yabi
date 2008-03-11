@@ -29,6 +29,7 @@ public class BaatInstance {
     private String rootDir;
     private String username; //optional, used for prependUserDir option
     private boolean symlinkOutputDir;
+    private String batchOnParameter = null; //if not null, is used to signal the batch parameter
 
     private static Logger logger = Logger.getLogger( AppDetails.getAppString() + "." + BaatInstance.class.getName());
 
@@ -133,6 +134,10 @@ public class BaatInstance {
 
     public boolean getSymlinkOutputDir() {
         return this.symlinkOutputDir;
+    }
+
+    public String getBatchOnParameter() {
+        return this.batchOnParameter;
     }
 
     public String exportXML() {
@@ -260,6 +265,15 @@ public class BaatInstance {
             Element jobNode = (Element) baatFile.selectSingleNode("//job");
             if (jobNode != null) {
                 this.toolPath = jobNode.attributeValue("toolPath");
+            }
+
+            //load the batchOnParameter tag
+            Element batchOnParameterNode = (Element) baatFile.selectSingleNode("//batchOnParameter");
+            if (batchOnParameterNode != null) {
+                String value = batchOnParameterNode.attributeValue("name");
+                if (value != null && value.length() > 0) {
+                    this.batchOnParameter = value;
+                }
             }
 
             //load the outputFiletypes tag

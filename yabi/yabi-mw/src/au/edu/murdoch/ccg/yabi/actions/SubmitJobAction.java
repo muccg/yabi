@@ -58,6 +58,12 @@ public class SubmitJobAction extends BaseAction {
             String inputFileTypes = null;
             String[] bundledFiles = "".split(","); //any files that we will send along just in case but aren't a parameter
 
+            //load the baatFile to determine batching, other tool-specific details
+            BaatInstance baat = new BaatInstance( (String) inputVars.get("toolName") ); //this will throw an exception if toolName not found
+            if (baat.getBatchOnParameter() != null) {
+                inputVars.put("batchOnParameter", baat.getBatchOnParameter());
+            }
+
             // --- for batch jobs, create an arraylist with the substitutions ---
             if ( inputVars.get("batchOnParameter") != null && inputVars.get("batchOnParameter") instanceof String ) {
                 batchParam = (String) inputVars.get("batchOnParameter");
@@ -116,6 +122,11 @@ public class SubmitJobAction extends BaseAction {
 
                 bi.setUsername(username);
 
+                //if jobType doesn't exist, then it will default to 'grendel'. we are going to write this into variables so the fact is revealed to any clients
+                if (inputVars.get("jobType") == null || ((String) inputVars.get("jobType")).compareTo("") == 0) {
+                    ctx.getContextInstance().setVariable( ctx.getNode().getFullyQualifiedName() + ".input.jobType" , "grendel" );
+                }
+
                 // ----- CREATE CLIENT -----
                 GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( (String) inputVars.get("jobType")  , bi);
                 String outputDir = varTranslator.getProcessVariable(ctx, "jobDataDir");
@@ -160,7 +171,7 @@ public class SubmitJobAction extends BaseAction {
             // --- for batch jobs, rejoin here ---
 
             varTranslator.saveVariable(ctx, "subJobCount", ""+batchIterations.length);
-            varTranslator.saveVariable(ctx, "sobJobsCompleted", "0");
+            varTranslator.saveVariable(ctx, "subJobsCompleted", "0");
 
             varTranslator.saveVariable(ctx, "expectedOutputFiles", ""+totalOutputFiles);
             varTranslator.saveVariable(ctx, "jobId", allJobIds);
