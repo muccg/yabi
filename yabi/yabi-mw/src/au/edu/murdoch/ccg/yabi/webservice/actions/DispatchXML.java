@@ -124,7 +124,7 @@ public class DispatchXML extends BaseAction {
                 prt.start();
 
                 //return the process ID
-                request.setAttribute("id", new Long(procId));
+                request.setAttribute("id", userName + "/jobs/" + year + "-" + month + "/" + jobName + "/workflow.jobxml");
                 
                 logger.info("successfully received and initiated workflow");
 
