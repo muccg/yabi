@@ -155,7 +155,7 @@ public class DispatchXML extends BaseAction {
         jobName = jobName.replaceAll(" ", "_");
 
         String from = rootDir + username + "/jobs/" + year + "-" + month + "/" + jobName;
-        String to = rootDir + username + "/.running";
+        String to = rootDir + username + "/.running/"+year+"_"+month+"_"+jobName;
 
         SymLink.createSymLink(from, to);
     }

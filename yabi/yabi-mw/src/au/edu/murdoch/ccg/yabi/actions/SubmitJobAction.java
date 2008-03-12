@@ -30,12 +30,17 @@ public class SubmitJobAction extends BaseAction {
     Map inputVars = (Map) myVars.get("input");
     Map outputVars = (Map) myVars.get("output");
     String username = varTranslator.getProcessVariable(ctx, "username");
+    String rootDir = "";
     String checkStatus = (String) myVars.get("checkStatus");
     //if the node has already been run (in an earlier invocation, for example) then skip this node
     if (checkStatus.compareTo("C") == 0) {
         //an early return prompts a move to the next node, which is the 'check' node, which we will also skip
         return;
     }
+    try {
+        Configuration conf = YabiConfiguration.getConfig();
+        rootDir = conf.getString("yabi.rootDirectory");
+    } catch (Exception e) {}
 
     //check for presence of required inputs
     if ( inputVars.get("toolName") != null ) {
@@ -138,9 +143,6 @@ public class SubmitJobAction extends BaseAction {
                 //provided that there is a last node
                 if (bi.getSymlinkOutputDir() && varTranslator.getLastNodeMarker(ctx).length() > 0) {
                     try {
-                        Configuration conf = YabiConfiguration.getConfig();
-                        String rootDir = conf.getString("yabi.rootDirectory");
-
                         pclient.setStageOutPrefix(varTranslator.getLastNodeMarker(ctx));
                         SymLink.createSymLink( rootDir + outputDir + "/" + varTranslator.getLastNodeMarker(ctx), rootDir + outputDir + "/" + ctx.getNode().getFullyQualifiedName() );
                     } catch (Exception e) {
@@ -181,7 +183,7 @@ public class SubmitJobAction extends BaseAction {
             varTranslator.saveVariable(ctx, "dir", outputDir);
 
         } catch (Exception e) {
-            varTranslator.saveVariable(ctx, "errorMessage", e.getClass().getName() + " : " + e.getMessage());
+            varTranslator.saveVariable(ctx, "errorMessage", e.getClass().getName() + " : " + (""+e.getMessage()).replaceAll(rootDir, ""));
             varTranslator.saveVariable(ctx, "jobStatus", "E" );
 
             e.printStackTrace();

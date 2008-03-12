@@ -107,6 +107,21 @@
             <forward name="success-txt" path="/templates/listfiles.txt"/>
         </action>
 
+        <action
+            path="/listRunningJobs"
+            type="au.edu.murdoch.ccg.yabi.webservice.actions.ListRunningJobs">
+            <forward name="success" path="/templates/listjobs.xml"/>
+            <forward name="success-txt" path="/templates/listjobs.txt"/>
+        </action>
+
+        <action
+            path="/listCompletedJobs"
+            type="au.edu.murdoch.ccg.yabi.webservice.actions.ListCompletedJobs">
+            <forward name="success" path="/templates/listjobs.xml"/>
+            <forward name="success-txt" path="/templates/listjobs.txt"/>
+        </action>
+
+
 
     </action-mappings>
 

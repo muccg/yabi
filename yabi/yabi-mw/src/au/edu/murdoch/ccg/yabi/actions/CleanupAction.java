@@ -62,8 +62,8 @@ public class CleanupAction extends BaseAction {
          
         jobName = jobName.replaceAll(" ", "_");
        
-        String from = rootDir + username + "/.running/" + jobName;
-        String to = rootDir + username + "/.completed";
+        String from = rootDir + username + "/.running/" + year + "_" + month + "_" + jobName;
+        String to = rootDir + username + "/.completed/" + year + "_" + month + "_" + jobName;
         String linkTo = rootDir + username + "/jobs/" + year + "-" + month + "/" + jobName;
 
         File old = new File(from);
