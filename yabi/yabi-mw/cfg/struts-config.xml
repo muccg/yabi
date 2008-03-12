@@ -90,6 +90,10 @@
             type="au.edu.murdoch.ccg.yabi.webservice.actions.DownloadFile"/>
 
         <action
+            path="/downloadUserspaceFile"
+            type="au.edu.murdoch.ccg.yabi.webservice.actions.DownloadUserspaceFile"/>
+
+        <action
             path="/listNodeFiles"
             type="au.edu.murdoch.ccg.yabi.webservice.actions.ListNodeFiles">
             <forward name="success" path="/templates/listfiles.xml"/>
