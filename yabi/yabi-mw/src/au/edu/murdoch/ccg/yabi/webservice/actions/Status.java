@@ -45,11 +45,11 @@ public class Status extends BaseAction {
             String rootDirLoc = conf.getString("yabi.rootDirectory");
     
             //method should be a GET
-            if (request.getMethod().compareTo("GET") == 0 &&
+            if (!(request.getMethod().compareTo("GET") == 0 &&
                 request.getParameter("user") != null &&
                 request.getParameter("year") != null &&
                 request.getParameter("month") != null &&
-                request.getParameter("jobname") != null ) {
+                request.getParameter("jobname") != null )) {
 
                 request.setAttribute("message", "status check must be performed via a GET operation and user, year, month and jobname must be specified");
                 logger.info(request.getQueryString());
