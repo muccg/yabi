@@ -2,7 +2,7 @@
 <xml-response type="success">
     <jobs>
     #foreach ($job in $jobs)
-        <job year="$!{job.get("year")}" month="$!{job.get("month")}" name="$!{job.get("name")}"/>
+        <job year="$!{job.get("year")}" month="$!{job.get("month")}" name="$!{job.get("name")}" modificationTime="$!{job.get("modificationTime")}"/>
     #end
     </jobs>
 </xml-response>

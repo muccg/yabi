@@ -2,7 +2,7 @@
 <xml-response type="success">
     <files>
     #foreach ($file in $files)
-        <file name="$!{file.name}" bytes="$!{file.length()}" isDir="$!{file.isDirectory()}"/>
+        <file name="$!{file.name}" bytes="$!{file.length()}" isDir="$!{file.isDirectory()}" modificationTime="$!{file.lastModified()}"/>
     #end
     </files>
 </xml-response>

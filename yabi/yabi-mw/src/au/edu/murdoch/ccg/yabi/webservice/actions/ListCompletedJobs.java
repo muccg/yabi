@@ -77,6 +77,7 @@ public class ListCompletedJobs extends BaseAction {
                         map.put("year", parts[0]);
                         map.put("month", parts[1]);
                         map.put("name", parts[2]);
+                        map.put("modificationTime", ""+files[i].lastModified());
                         jobs.add(map);
                     }
                     request.setAttribute("jobs", jobs);
