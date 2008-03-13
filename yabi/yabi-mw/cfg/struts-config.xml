@@ -121,6 +121,11 @@
             <forward name="success-txt" path="/templates/listjobs.txt"/>
         </action>
 
+        <action
+            path="/previewUserspaceFile"
+            type="au.edu.murdoch.ccg.yabi.webservice.actions.PreviewUserspaceFile">
+            <forward name="success" path="/templates/preview.xml"/>
+        </action>
 
 
     </action-mappings>
