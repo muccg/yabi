@@ -184,7 +184,8 @@
       <arg line="co svn+ssh://${user.name}@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-mw/ tmp/ccg/yabi-mw/"/>
       </exec>
     </target>
-    
+	
+	<!--   
     <target name="toolsSvnExportTag">
       <delete dir="/yabi/yabi-tools" verbose="true"/>
 	  <echo message="Checking out tools with this tag ${ccg.toolstag}"/>
@@ -193,13 +194,14 @@
       </exec>
     </target>
     
+
     <target name="toolsSvnExport">
       <delete dir="/yabi/yabi-tools" verbose="true"/>
       <exec executable="svn" failonerror="true">
       <arg line="export svn+ssh://${user.name}@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-fe-symfony/yabi-tools /yabi/yabi-tools"/>
       </exec>
     </target>
-	
+	-->
 	<target name="createWar" depends="appProperties, configCopy, templateCopy, compile">
 	  <war destfile="${ccg.warfilename}" webxml="${ccg.site}/web.xml">
 	  	<fileset dir="${ccg.site}">
@@ -226,9 +228,9 @@
       </copy>
     </target>
 	
-    <target name="release" depends="tags, releaseinit, tmpSvnCheckoutTag, createWar, deployWar, toolsSvnExportTag, deployCerts " />
-    <target name="snapshot" depends="snapshotinit, tmpSvnCheckout, createWar, deployWar, toolsSvnExport, deployCerts" />	
+    <target name="release" depends="tags, releaseinit, tmpSvnCheckoutTag, createWar, deployWar, deployCerts " />
+    <target name="snapshot" depends="snapshotinit, tmpSvnCheckout, createWar, deployWar, deployCerts" />	
     <target name="usercompile" depends="userbuildinit, compile" />
     <target name="devcompile" depends="userbuildinit, nttcompile" />
-    <target name="userwar" depends="userbuildinit, createWar, deployWar, toolsSvnExport" />
+    <target name="userwar" depends="userbuildinit, createWar, deployWar" />
 </project>
