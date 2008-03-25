@@ -82,6 +82,12 @@
         </action>
 
         <action
+            path="/moveUserspaceFile"
+            type="au.edu.murdoch.ccg.yabi.webservice.actions.MoveUserspaceFile">
+            <forward name="success" path="/templates/gridproxyinit.xml"/>
+        </action>
+
+        <action
             path="/jobStatus"
             type="au.edu.murdoch.ccg.yabi.webservice.actions.Status"/>
 
