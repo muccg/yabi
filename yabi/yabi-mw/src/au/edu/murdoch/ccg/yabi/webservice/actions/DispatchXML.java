@@ -54,6 +54,20 @@ public class DispatchXML extends BaseAction {
 
                 logger.info("receiving incoming workflow... expect a log message indicating success");
 
+                String userName = yjfi.getUserName();
+                String year = yjfi.getYear();
+                String month = yjfi.getMonth();
+                String jobName = yjfi.getJobName();
+
+                //error out immediately if the workflow already exists
+                if (yjfi.alreadyExists(userName + "/jobs/" + year + "-" + month + "/" + jobName + "/workflow.jobxml")) {
+                    response.setStatus(HttpServletResponse.SC_CONFLICT);
+
+                    logger.severe("A workflow of that name already exists");
+                    request.setAttribute("message", "A workflow of that name already exists");
+                    return mapping.findForward("error");
+                }
+
                 //fetch the process definition and parse it into a JBPM ProcessDefinition object
                 String processDefinitionXML = yjfi.getProcessDefinition();
                 String definitionName = "";
@@ -90,11 +104,6 @@ public class DispatchXML extends BaseAction {
                 }
 
                 //set some higher level variables that will allow our workflow to update the data file
-                String userName = yjfi.getUserName();
-                String year = yjfi.getYear();
-                String month = yjfi.getMonth();
-                String jobName = yjfi.getJobName();
-                
                 procInstance.getContextInstance().setVariable("jobXMLFile", userName + "/jobs/" + year + "-" + month + "/" + jobName + "/workflow.jobxml");
                 procInstance.getContextInstance().setVariable("jobDataDir", userName + "/jobs/" + year + "-" + month + "/" + jobName + "/data/");
                 procInstance.getContextInstance().setVariable("username", userName);

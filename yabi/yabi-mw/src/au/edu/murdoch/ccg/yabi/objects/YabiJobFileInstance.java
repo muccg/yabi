@@ -264,4 +264,9 @@ public class YabiJobFileInstance {
         }
     }
 
+    public boolean alreadyExists(String location) throws Exception {
+        File testLocation = new File(this.yabiRootDirectory + location);
+        return testLocation.exists();
+    }
+
 }
