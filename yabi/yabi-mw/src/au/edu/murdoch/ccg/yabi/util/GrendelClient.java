@@ -284,7 +284,12 @@ public class GrendelClient extends GenericProcessingClient {
 
     //this is particular to grendel
     protected String generateResultLocation(String jobId) {
-        String dirName = jobId.substring(0,9);
+        String dirName = jobId.substring(0,2) + "/" +
+                         jobId.substring(2,4) + "/" +
+                         jobId.substring(4,6) + "/" +
+                         jobId.substring(6,8) + "/" +
+                         jobId.substring(8,10) + "/" +
+                         jobId.substring(10,12);
         String result = grendelHost + "/" + dirName + "/" + jobId + ".zip";
 
         return result;
