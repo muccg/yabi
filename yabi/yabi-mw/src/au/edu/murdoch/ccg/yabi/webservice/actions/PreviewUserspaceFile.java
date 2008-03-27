@@ -69,11 +69,12 @@ public class PreviewUserspaceFile extends BaseAction {
                 if (requestedFile.exists() && !requestedFile.isDirectory()) {
 
                     if (extension.compareTo("txt") == 0) {
+                        String output = "";
                         FileReader fr = new FileReader(filePath);
                         char[] buf = new char[500];
-                        fr.read(buf, 0, 500);
+                        int charCount = fr.read(buf, 0, 500);
                         fr.close();
-                        String output = new String(buf);
+                        if (charCount > 0) output = String.valueOf(buf, 0, charCount);
 
                         request.setAttribute("preview", output);
                     } else {
