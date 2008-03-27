@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/grendel/bin/phredWrapper" toolName="ivec-phred" displayName="ivec-phred" description="Assembles ab1 files.">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>tar</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>fa</extension>
+    </outputFiletypes>
+
+    <parameterList>
+      <parameter rank=""  switchUse="both"       switch="-if"              mandatory="no"  inputFile="yes" inputType="listoffiles" outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-id"              mandatory="no"  inputFile="yes" inputType="directory"   outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-zd"              mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-zt"              mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-st"              mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-s"               mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-sa"              mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-sd"              mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-qt"              mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-q"               mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-qa"              mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-qd"              mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-qr"              mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-p"               mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-pd"              mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-cv"              mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-cp"              mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-cs"              mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-c"               mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-cd"              mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-d"               mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-dd"              mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-raw"             mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-log"             mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-nocall"          mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-trim"            mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-trim_alt"        mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-trim_cutoff"     mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-trim_fasta"      mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-trim_scf"        mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-trim_phd"        mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-trim_out"        mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-nonorm"          mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-nosplit"         mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-nocmpqv"         mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-ceilqv"          mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-beg_pred"        mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-exit_nomatch"    mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-process_nomatch" mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-v"               mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-tags"            mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-V"               mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-help"            mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-h"               mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-doc"             mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>

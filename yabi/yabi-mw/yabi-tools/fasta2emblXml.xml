@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/bin/ccg-formatconvertor" toolName="fasta2emblXml" displayName="fasta to embl xml" description="Convert FASTA format to EMBL xml format.">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>fa</extension>
+        <extension>fna</extension>
+        <extension>faa</extension>
+        <extension>fasta</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>xml</extension>
+    </outputFiletypes>
+
+    <parameterList>
+      <parameter rank="1" switchUse="valueOnly" switch="inputFiles" mandatory="yes" filter="prependUserDir" inputFile="yes" outputFile="no" value=""/>
+      <parameter rank="2" switchUse="valueOnly" switch="" mandatory="yes" inputFile="no" outputFile="no" value="fasta"/>
+      <parameter rank="3" switchUse="valueOnly" switch="" mandatory="yes" inputFile="no" outputFile="no" value="emblXml"/>
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>

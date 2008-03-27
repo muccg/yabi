@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<job>
+  <factoryEndpoint xmlns:gram="http://www.globus.org/namespaces/2004/10/gram/job" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/03/addressing">
+    <wsa:Address>https://ng2.ivec.org:8443/wsrf/services/ManagedJobFactoryService</wsa:Address>
+    <wsa:ReferenceProperties>
+      <gram:ResourceID>PBS</gram:ResourceID>
+    </wsa:ReferenceProperties>
+  </factoryEndpoint>
+  <executable>phred</executable>
+  <directory>/${GLOBUS_SCRATCH_DIR}/#JOB_DIR#</directory>
+  <argumentPlaceholder/>
+  <stdout>stdout.log</stdout>
+  <stderr>stderr.log</stderr>
+  <count>1</count>
+  <queue>normal</queue>
+  <maxWallTime>240</maxWallTime>
+  <maxMemory>2048</maxMemory>
+  <jobType>single</jobType>
+  <extensions>
+   <module>use.own</module>
+   <module>phred</module>
+  </extensions>
+ </job>

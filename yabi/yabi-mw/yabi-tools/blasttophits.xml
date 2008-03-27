@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/bin/ccg-blastparser" toolName="blasttophits" displayName="blast top hits" description="Parse a blast report and convert to yabi xml format for use by other tools.">
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>bls</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>xml</extension>
+    </outputFiletypes>
+
+
+    <inputFile/>
+    <outputFile/>
+
+    <parameterList>
+        <parameter rank="1" switchUse="valueOnly" switch="inputFiles" mandatory="yes" inputFile="yes" filter="prependUserDir" outputFile="no"  value=""/>
+        <parameter rank="2" switchUse="valueOnly" switch="hitCount" mandatory="yes" inputFile="no" outputFile="no" value=""/>
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>

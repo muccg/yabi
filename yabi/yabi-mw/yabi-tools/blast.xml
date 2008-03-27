@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/grendel/bin/blastWrapper" toolName="blast" displayName="blast" description="BLAST the input files based on the options selected.">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>fa</extension>
+        <extension>fna</extension>
+        <extension>faa</extension>
+        <extension>gb</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension mustExist="true">bls</extension>
+    </outputFiletypes>
+
+    <parameterList>
+      <parameter rank="1" switchUse="both" switch="-p" mandatory="yes" inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank="2" switchUse="both" switch="-d" mandatory="yes" inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank="3" switchUse="both" switch="-i" mandatory="yes" inputFile="yes"   outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-o" mandatory="no"  inputFile="no"    outputFile="yes" value="" sourceParam="-i" appendString=".bls"/>
+      <parameter rank=""  switchUse="both" switch="-O" mandatory="no"  inputFile="no"    outputFile="yes" value=""/>
+      <parameter rank=""  switchUse="both" switch="-F" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-e" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-m" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-M" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-g" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-Q" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-G" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-E" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-X" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-I" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-q" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-r" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-v" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-b" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-f" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-D" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-J" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-W" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-z" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-K" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-P" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-Y" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-S" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-T" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-l" mandatory="no"  inputFile="maybe" outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-U" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-y" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-Z" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-R" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-n" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-L" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-A" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-w" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-t" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-B" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-V" mandatory="no"  inputFile="no"    outputFile="no"  value="T"/>
+      <parameter rank=""  switchUse="both" switch="-C" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="-s" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both" switch="blastAddToSOE" mandatory="no"  inputFile="no" outputFile="no" value=""/>
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>

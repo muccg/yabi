@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/grendel/bin/genscanWrapper" toolName="genscan" displayName="genscan" description="GENSCAN is a general-purpose gene identification program which analyzes genomic DNA sequences from a variety of organisms including human, other vertebrates, invertebrates and plants">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>fa</extension>
+        <extension>fna</extension>
+        <extension>faa</extension>
+        <extension>seq</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>genscan</extension>
+    </outputFiletypes>
+
+    <parameterList>
+      <parameter rank="1" switchUse="valueOnly" switch="modelName"  mandatory="yes" inputFile="no"  value=""/>
+      <parameter rank="2" switchUse="valueOnly" switch="inputFile"  mandatory="yes" inputFile="yes" value=""/>
+      <parameter rank=""  switchUse="switchOnly" switch="-cds"    mandatory="no"  inputFile="no"  value=""/>
+      <parameter rank=""  switchUse="switchOnly" switch="-subopt" mandatory="no"  inputFile="no"  value=""/>
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>

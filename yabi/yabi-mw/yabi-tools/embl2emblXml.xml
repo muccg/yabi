@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/bin/ccg-formatconvertor" toolName="embl2emblXml" displayName="embl to embl xml" description="Convert EMBL format to EMBL xml format.">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>embl</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>xml</extension>
+    </outputFiletypes>
+
+    <parameterList>
+      <parameter rank="1" switchUse="valueOnly" switch="inputFiles" mandatory="yes" filter="prependUserDir" inputFile="yes" outputFile="no" value=""/>
+      <parameter rank="2" switchUse="valueOnly" switch="" mandatory="yes" inputFile="no" outputFile="no" value="embl"/>
+      <parameter rank="3" switchUse="valueOnly" switch="" mandatory="yes" inputFile="no" outputFile="no" value="emblXml"/>
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>

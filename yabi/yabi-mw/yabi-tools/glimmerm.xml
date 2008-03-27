@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/grendel/bin/glimmermWrapper" toolName="glimmerm" displayName="glimmerm" description="GlimmerM is a gene finder developed specifically for small eukaryotes with a gene density of around 20% ">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>fa</extension>
+        <extension>fna</extension>
+        <extension>faa</extension>
+        <extension>seq</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>out</extension>
+    </outputFiletypes>
+
+    <parameterList>
+      <parameter rank="1" switchUse="valueOnly"  switch="inputFile" mandatory="yes" inputFile="yes" outputFile="no"  value="" />
+      <parameter rank="2" switchUse="valueOnly"  switch="modelName" mandatory="yes" inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-g"      mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-t"      mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-r"      mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="+r"      mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-f"      mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="+f"      mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-s"      mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="+s"      mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-5"      mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-3"      mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>

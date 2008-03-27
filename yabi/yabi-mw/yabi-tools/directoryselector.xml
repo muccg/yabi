@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="" toolName="directoryselector" displayName="select directory" description="Select a directory from your workspace directory.">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="false" acceptsInput="false">
+        <extension>*</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>*</extension>
+    </outputFiletypes>
+
+    <parameterList/>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>
+

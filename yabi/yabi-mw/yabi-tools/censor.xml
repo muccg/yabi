@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/grendel/bin/censorWrapper" toolName="censor" displayName="censor" description="CENSOR is a software tool which screens query sequences against a reference collection of repeats and 'censors' (masks) homologous portions with masking symbols, as well as generating a report classifying all found repeats">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>fa</extension>
+        <extension>fna</extension>
+        <extension>faa</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>aln</extension>
+        <extension>found</extension>
+        <extension>idx</extension>
+        <extension>map</extension>
+        <extension>masked</extension>
+    </outputFiletypes>
+
+
+    <parameterList>
+      <parameter rank="1" switchUse="valueOnly"  switch="notUsed"       mandatory="yes" inputFile="yes"   value="">
+        <outputExtension>aln</outputExtension>
+        <outputExtension>found</outputExtension>
+        <outputExtension>idx</outputExtension>
+        <outputExtension>map</outputExtension>
+        <outputExtension>masked</outputExtension>
+      </parameter>
+      <parameter rank=""  switchUse="switchOnly" switch="-hum"          mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-nofilter"     mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-q"            mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-s"            mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-tr"           mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="both"       switch="-aln"          mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="both"       switch="-bprg"         mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="both"       switch="-bprm"         mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="both"       switch="-classify"     mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="both"       switch="-classifyonly" mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="both"       switch="-found"        mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="both"       switch="-lib"          mandatory="no"  inputFile="maybe" value="" />
+      <parameter rank=""  switchUse="both"       switch="-map"          mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="both"       switch="-masked"       mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="both"       switch="-mode"         mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="both"       switch="-tab"          mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-debug"        mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-nofound"      mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-noisy"        mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-nomasked"     mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-noself"       mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-nosimple"     mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-rmmap"        mandatory="no"  inputFile="no"    value="" />
+    </parameterList>
+
+    <parameterAliasList />
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>

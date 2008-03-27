@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/bin/ccg-fastasplitter" toolName="fastasplitter" displayName="split fasta" description="Split a file containing fasta records into multiple files.">
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>fa</extension>
+        <extension>fna</extension>
+        <extension>faa</extension>
+        <extension>fasta</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>fa</extension>
+    </outputFiletypes>
+
+
+    <inputFile/>
+    <outputFile/>
+
+    <parameterList>
+        <parameter rank="" switchUse="both" switch="-i" mandatory="yes" inputFile="yes" filter="prependUserDir" outputFile="no"  value=""/>
+        <parameter rank="" switchUse="both" switch="-n" mandatory="no" inputFile="no" outputFile="no" value=""/>
+        <parameter rank="" switchUse="switchOnly" switch="-l" mandatory="no" inputFile="no" outputFile="no" value=""/>
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>

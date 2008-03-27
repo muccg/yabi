@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/bin/curl" toolName="curl">
+
+    <inputFile/>
+    <outputFile/>
+
+    <parameterList>
+        <parameter rank="1" switchUse="both" switch="-o" mandatory="no" inputFile="no" outputFile="no"  value="output.html"/>
+        <parameter rank="" switchUse="valueOnly" switch="url" mandatory="yes" inputFile="no" outputFile="no" value=""/>
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>

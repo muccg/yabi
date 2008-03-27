@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/grendel/bin/t_coffeeWrapper" toolName="t_coffee" displayName="t_coffee" description="T-Coffee is a multiple sequence alignment program">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>fa</extension>
+        <extension>seq</extension>
+        <extension>fna</extension>
+        <extension>faa</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>aln</extension>
+    </outputFiletypes>
+
+    <parameterList>
+      <parameter rank=""  switchUse="combined"   switch="-run_name="                mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-mem_mode="                mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-extend="                  mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-extend_mode="             mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-seq_name_for_quadruplet=" mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-compact="                 mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-clean"                    mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-do_self="                 mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-do_normalise="            mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-in="                      mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-out_lib="                 mandatory="no" inputFile="no"    outputFile="yes"   value="" />
+      <parameter rank=""  switchUse="combined"   switch="-outseqweight="            mandatory="no" inputFile="no"    outputFile="yes"   value="" />
+      <parameter rank=""  switchUse="combined"   switch="-seq_to_align="            mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-cosmetic_penalty="        mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-gapopen="                 mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-gapext="                  mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-fgapopen="                mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-fgapext="                 mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-nomatch="                 mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-newtree="                 mandatory="no" inputFile="no"    outputFile="yes"   value="" />
+      <parameter rank=""  switchUse="combined"   switch="-usetree="                 mandatory="no" inputFile="yes"   outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-tree_mode="               mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-quicktree="               mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-outfile="                 mandatory="no" inputFile="no"    outputFile="yes"   value="" />
+      <parameter rank=""  switchUse="combined"   switch="-maximise="                mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-output="                  mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-infile="                  mandatory="yes" inputFile="yes"  outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-matrix="                  mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-tg_mode="                 mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-dp_mode="                 mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-ktuple="                  mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-ndiag="                   mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-diag_mode="               mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-sim_matrix="              mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-type="                    mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-outorder="                mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-seqnos="                  mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-case="                    mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-maxnseq="                 mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-maxlen="                  mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-weight="                  mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-seq_weight="              mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-align"                    mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-mocca="                   mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-start="                   mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-len="                     mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-scale="                   mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-mocca_interactive="       mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-evaluate_mode="           mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-get_type="                mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-clean_aln"                mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-clean_threshold="         mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-clean_iteration="         mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-clean_evaluate_mode="     mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-profile="                 mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-profile1="                mandatory="no" inputFile="no"    outputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-profile2="                mandatory="no" inputFile="no"    outputFile="no"    value="" />
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>

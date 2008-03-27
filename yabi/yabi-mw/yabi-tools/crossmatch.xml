@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/grendel/bin/cross_matchWrapper" toolName="cross_match" displayName="cross match" description="Screens fasta file for vector sequences.">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>fa</extension>
+        <extension>fna</extension>
+        <extension>faa</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false" symlinkOutputDir="true">
+        <extension>fa</extension>
+    </outputFiletypes>
+
+    <parameterList>
+      <parameter rank="1" switchUse="valueOnly"  switch="inputFiles" mandatory="yes" inputFile="yes" inputType="file" outputFile="no" value="">
+        <inputExtension>qual</inputExtension>
+      </parameter>
+      <parameter rank="2" switchUse="valueOnly"  switch="vector" mandatory="yes" inputFile="maybe" inputType="file" outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="both"       switch="-penalty"         mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-gap_init"        mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-gap_ext"         mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-ins_gap_ext"     mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-del_gap_ext"     mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-matrix"          mandatory="no"  inputFile="maybe" inputType="file"        outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-raw"             mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-minmatch"        mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-maxmatch"        mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-max_group_size"  mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-word_raw"        mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-bandwidth"       mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-minscore"        mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-vector_bound"    mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-masklevel"       mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-default_qual"    mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-tags"            mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-screen"          mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="">
+        <outputExtension>screen</outputExtension>
+      </parameter>
+      <parameter rank=""  switchUse="switchOnly" switch="-alignments"      mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-discrep_lists"   mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-discrep_tables"  mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-indexwordsize"   mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>

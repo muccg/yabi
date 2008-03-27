@@ -1,0 +1,101 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/grendel/bin/clustalwWrapper" toolName="clustalw" displayName="clustalw" description="ClustalW is a general purpose multiple sequence alignment program for DNA or proteins. It produces biologically meaningful multiple sequence alignments of divergent sequences. It calculates the best match for the selected sequences, and lines them up so that the identities, similarities and differences can be seen. Evolutionary relationships can be seen via viewing Cladograms or Phylograms">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>fa</extension>
+        <extension>fna</extension>
+        <extension>faa</extension>
+        <extension>seq</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>aln</extension>
+        <extension>dnd</extension>
+    </outputFiletypes>
+
+
+    <parameterList>
+      <parameter rank=""  switchUse="combined"   switch="-infile="       mandatory="yes" inputFile="yes"   value=""/>
+      <parameter rank=""  switchUse="switchOnly" switch="-align"         mandatory="no"  inputFile="no"    value=""/>
+      <parameter rank=""  switchUse="switchOnly" switch="-tree"          mandatory="no"  inputFile="no"    value=""/>
+      <parameter rank=""  switchUse="switchOnly" switch="-quicktree"     mandatory="no"  inputFile="no"    value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-output="       mandatory="no"  inputFile="no"    value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-bootstrap="    mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-convert"       mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-type="         mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-negative"      mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-outorder="     mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-case"          mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-seqnos="       mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-ktuple="       mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-topdiags="     mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-window="       mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-pairgap="      mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-score"         mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-pwmatrix="     mandatory="no"  inputFile="maybe" value="" />
+      <parameter rank=""  switchUse="combined"   switch="-pwdnamatrix="  mandatory="no"  inputFile="maybe" value="" />
+      <parameter rank=""  switchUse="combined"   switch="-pwgapopen="    mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-pwgapext="     mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-newtree="      mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-usetree="      mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-matrix="       mandatory="no"  inputFile="maybe" value="" />
+      <parameter rank=""  switchUse="combined"   switch="-dnamatrix="    mandatory="no"  inputFile="maybe" value="" />
+      <parameter rank=""  switchUse="combined"   switch="-gapopen="      mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-gapext="       mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-endgaps"       mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-gapdist="      mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-nopgap"        mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-nohgap"        mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-hgapresidues=" mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-maxdiv="       mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-type="         mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-transweight="  mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-profile"       mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-newtree1="     mandatory="no"  inputFile="yes"   value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-newtree2="     mandatory="no"  inputFile="yes"   value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-usetree1="     mandatory="no"  inputFile="yes"   value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-usetree2="     mandatory="no"  inputFile="yes"   value=""/>
+      <parameter rank=""  switchUse="switchOnly" switch="-sequences"     mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-newtree="      mandatory="no"  inputFile="yes"   value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-usetree="      mandatory="no"  inputFile="yes"   value=""/>
+      <parameter rank=""  switchUse="switchOnly" switch="-nosecstr1"     mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-nosecstr2"     mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-secstrout="    mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-helixgap=n"    mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-strandgap=n"   mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-loopgap="      mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-terminalgap="  mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-helixendin="   mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-helixendout="  mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-strandendin="  mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-strandendout=" mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-outputtree="   mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-seed="         mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-kimura"        mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-tossgaps"      mandatory="no"  inputFile="no"    value="" />
+      <parameter rank=""  switchUse="combined"   switch="-bootlabels="   mandatory="no"  inputFile="no"    value="" />
+    </parameterList>
+
+    <parameterAliasList>
+      <parameterAlias switchAlias="-BOOTSTRAP" switch="-bootstrap=" switchValue="1000" />
+    </parameterAliasList>
+
+
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>

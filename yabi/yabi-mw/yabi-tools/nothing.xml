@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/bin/sleep" toolName="nothing">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="false" acceptsInput="true">
+        <extension>*</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>*</extension>
+    </outputFiletypes>
+
+    <parameterList>
+        <parameter rank="1" switchUse="valueOnly" switch="timer" mandatory="no" inputFile="no" outputFile="no"  value="60"/>
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>

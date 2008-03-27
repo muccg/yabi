@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/bin/ccg-renderyabisimple" toolName="renderyabisimple" displayName="yabi to html" description="Render simple HTML version of yabi format file.">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>xml</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>html</extension>
+    </outputFiletypes>
+
+    <parameterList>
+      <parameter rank="1" switchUse="valueOnly" switch="inputFiles" mandatory="yes" filter="prependUserDir" inputFile="yes" outputFile="no" value=""/>
+      <parameter rank="2" switchUse="valueOnly" switch="" mandatory="yes" inputFile="no" outputFile="no" value="output.html"/>
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>

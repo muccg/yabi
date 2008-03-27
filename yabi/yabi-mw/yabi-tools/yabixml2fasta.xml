@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/bin/ccg-formatconvertor" toolName="2fasta" displayName="extract fasta" description="Converts yabi xml format to FASTA format.">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>xml</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>fa</extension>
+    </outputFiletypes>
+
+    <parameterList>
+      <parameter rank="1" switchUse="valueOnly" switch="inputFiles" mandatory="yes" filter="prependUserDir" inputFile="yes" outputFile="no" value=""/>
+      <parameter rank="2" switchUse="valueOnly" switch="" mandatory="yes" inputFile="no" outputFile="no" value="yabixml"/>
+      <parameter rank="3" switchUse="valueOnly" switch="" mandatory="yes" inputFile="no" outputFile="no" value="fasta"/>
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>

@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/grendel/bin/iprscanWrapper" toolName="iprscan" displayName="iprscan" description="iprscan">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>fa</extension>
+        <extension>fna</extension>
+        <extension>faa</extension>
+        <extension>seq</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>ebixml</extension>
+        <extension>gff</extension>
+        <extension>html</extension>
+        <extension>raw</extension>
+        <extension>txt</extension>
+        <extension>xml</extension>
+    </outputFiletypes>
+    
+
+    <parameterList>
+      <parameter rank=""  switchUse="both"       switch="-i"         mandatory="yes" inputFile="yes"   outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-o"         mandatory="no"  inputFile="no"    outputFile="yes" value="" sourceParam="-i" extensionParam="-format"/>
+      <parameter rank=""  switchUse="both"       switch="-appl"      mandatory="no"  inputFile="no"    outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-nocrc"     mandatory="no"  inputFile="no"    outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-altjobs"   mandatory="no"  inputFile="no"    outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-seqtype"   mandatory="no"  inputFile="no"    outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-trlen"     mandatory="no"  inputFile="no"    outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-trtable"   mandatory="no"  inputFile="no"    outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-goterms"   mandatory="no"  inputFile="no"    outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-iprlookup" mandatory="no"  inputFile="no"    outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-taxo"      mandatory="no"  inputFile="no"    outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-txrule"    mandatory="no"  inputFile="no"    outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-format"    mandatory="no"  inputFile="no"    outputFile="no"  value="" />
+
+    </parameterList>
+
+    <parameterAliasList/>
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>
+

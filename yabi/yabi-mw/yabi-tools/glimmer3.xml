@@ -1,0 +1,81 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/grendel/bin/glimmer3Wrapper" toolName="glimmer3" displayName="glimmer3" description="Glimmer is a system for finding genes in microbial DNA, especially the genomes of bacteria, archaea, and viruses">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>fa</extension>
+        <extension>fna</extension>
+        <extension>faa</extension>
+        <extension>seq</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>longorfs</extension>
+        <extension>train</extension>
+        <extension>icm</extension>
+        <extension>detail</extension>
+        <extension>predict</extension>
+    </outputFiletypes>
+
+
+    <parameterList>
+      <parameter rank="1" switchUse="valueOnly"  switch="inputFile" mandatory="yes" inputFile="yes" value="" />
+      <parameter rank="2" switchUse="valueOnly"  switch="outputFile" mandatory="yes" inputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-A"      mandatory="no"  inputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-b"      mandatory="no"  inputFile="yes" value="" />
+      <parameter rank=""  switchUse="both"       switch="-C"      mandatory="no"  inputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-E"      mandatory="no"  inputFile="yes" value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-f"      mandatory="no"  inputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-g"      mandatory="no"  inputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-h"      mandatory="no"  inputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-i"      mandatory="no"  inputFile="yes" value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-l"      mandatory="no"  inputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-L"      mandatory="no"  inputFile="yes" value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-M"      mandatory="no"  inputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-o"      mandatory="no"  inputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-P"      mandatory="no"  inputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-q"      mandatory="no"  inputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-r"      mandatory="no"  inputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-t"      mandatory="no"  inputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-X"      mandatory="no"  inputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-z"      mandatory="no"  inputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-Z"      mandatory="no"  inputFile="no"  value="" />
+    </parameterList>
+
+    <parameterAliasList>
+      <parameterAlias switchAlias="--start_codons"   switch="-A"   switchValue="useSwitchAliasValue" />
+      <parameterAlias switchAlias="--rbs_pwm"        switch="-b"   switchValue="useSwitchAliasValue" />
+      <parameterAlias switchAlias="--gc_percent"     switch="-C"   switchValue="useSwitchAliasValue" />
+      <parameterAlias switchAlias="--entropy"        switch="-E"   switchValue="useSwitchAliasValue" />
+      <parameterAlias switchAlias="--first_codon"    switch="-f"   switchValue="useSwitchAliasValue" />
+      <parameterAlias switchAlias="--gene_len"       switch="-g"   switchValue="useSwitchAliasValue" />
+      <parameterAlias switchAlias="--help"           switch="-h"   switchValue="useSwitchAliasValue" />
+      <parameterAlias switchAlias="--ignore"         switch="-i"   switchValue="useSwitchAliasValue" />
+      <parameterAlias switchAlias="--linear"         switch="-l"   switchValue="useSwitchAliasValue" />
+      <parameterAlias switchAlias="--orfs_coords"    switch="-L"   switchValue="useSwitchAliasValue" />
+      <parameterAlias switchAlias="--separate_genes" switch="-M"   switchValue="useSwitchAliasValue" />
+      <parameterAlias switchAlias="--max_olaps"      switch="-o"   switchValue="useSwitchAliasValue" />
+      <parameterAlias switchAlias="--start_probs"    switch="-P"   switchValue="useSwitchAliasValue" />
+      <parameterAlias switchAlias="--no_indep"       switch="-r"   switchValue="useSwitchAliasValue" />
+      <parameterAlias switchAlias="--threshold"      switch="-t"   switchValue="useSwitchAliasValue" />
+      <parameterAlias switchAlias="--extend"         switch="-X"   switchValue="useSwitchAliasValue" />
+      <parameterAlias switchAlias="--trans_table"    switch="-z"   switchValue="useSwitchAliasValue" />
+      <parameterAlias switchAlias="--stop_codons"    switch="-Z"   switchValue="useSwitchAliasValue" />
+    </parameterAliasList>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>
