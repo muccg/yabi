@@ -1,0 +1,8 @@
+kegg: {
+  'kegg_genes.genome': {
+    displayname: 'KEGG Genes Genome'
+  },
+  'kegg_genes.nt': {
+    displayname: 'KEGG Genes (nucleotide)'
+  }
+}

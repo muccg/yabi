@@ -1,0 +1,11 @@
+kegg: {
+  'kegg_genes.aa': {
+    displayname: 'KEGG Genes (protein)'
+  },
+  ncbi_cog: {
+    displayname: 'NCBI COG'
+  },
+  string_cog_protein_sequences: {
+    displayname: 'String COG protein sequences'
+  }
+}

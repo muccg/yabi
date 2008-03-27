@@ -1,0 +1,67 @@
+NCBI: {
+  globalnt: {
+    displayname: 'globalnt (use with caution)',
+    subset: {
+      bos_taurus: 'Bos taurus',
+      canis_lupus_familiaris: 'Canis lupus familiaris',
+      homo_sapiens: 'Homo sapiens',
+      mus_musculus: 'Mus musculus',
+      oryza_sativa: 'Oryza sativa',
+      rattus_norvegicus: 'Rattus norvegicus',
+      sus_scrofa: 'Sus scrofa',
+      triticum_aestivum: 'Triticum aestivum'
+    }
+  },
+  nt: {
+    displayname: 'nucleotide (nt)',
+    subset: {
+      bos_taurus: 'Bos taurus',
+      canis_lupus_familiaris: 'Canis lupus familiaris',
+      homo_sapiens: 'Homo sapiens',
+      mus_musculus: 'Mus musculus',
+      oryza_sativa: 'Oryza sativa',
+      rattus_norvegicus: 'Rattus norvegicus',
+      sus_scrofa: 'Sus scrofa',
+      triticum_aestivum: 'Triticum aestivum'
+    }
+  },
+  est: { 
+    displayname: 'est',
+    subset: {
+      bos_taurus: 'Bos taurus',
+      canis_lupus_familiaris: 'Canis lupus familiaris',
+      homo_sapiens: 'Homo sapiens',
+      mus_musculus: 'Mus musculus',
+      oryza_sativa: 'Oryza sativa',
+      rattus_norvegicus: 'Rattus norvegicus',
+      sus_scrofa: 'Sus scrofa',
+      triticum_aestivum: 'Triticum aestivum'
+    }
+  },
+  refseq_genomic: { 
+    displayname: 'RefSeq Genomic',
+    subset: {
+      bos_taurus: 'Bos taurus',
+      canis_lupus_familiaris: 'Canis lupus familiaris',
+      homo_sapiens: 'Homo sapiens',
+      mus_musculus: 'Mus musculus',
+      oryza_sativa: 'Oryza sativa',
+      rattus_norvegicus: 'Rattus norvegicus',
+      sus_scrofa: 'Sus scrofa',
+      triticum_aestivum: 'Triticum aestivum'
+    }
+  },
+  refseq_rna: { 
+    displayname: 'RefSeq RNA',
+    subset: {
+      bos_taurus: 'Bos taurus',
+      canis_lupus_familiaris: 'Canis lupus familiaris',
+      homo_sapiens: 'Homo sapiens',
+      mus_musculus: 'Mus musculus',
+      oryza_sativa: 'Oryza sativa',
+      rattus_norvegicus: 'Rattus norvegicus',
+      sus_scrofa: 'Sus scrofa',
+      triticum_aestivum: 'Triticum aestivum'
+    }
+  }
+}
