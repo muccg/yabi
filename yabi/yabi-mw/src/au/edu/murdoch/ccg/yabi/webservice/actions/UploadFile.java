@@ -119,8 +119,11 @@ public class UploadFile extends BaseAction {
                         Iterator fileIter = files.iterator();
                         while (fileIter.hasNext()) {
                             FileItem item = (FileItem) fileIter.next();
-
-                            String outputFileLoc = outputPath + item.getName();
+                            String itemName = item.getName();
+                            if (itemName.lastIndexOf("/") >= 0) {
+                                itemName = itemName.substring(itemName.lastIndexOf("/"), itemName.length());
+                            }
+                            String outputFileLoc = outputPath + itemName;
                             File outputFile = new File(outputFileLoc);
                             item.write(outputFile);
                             request.setAttribute("message", "Uploaded file: "+outputFileLoc);
