@@ -1,8 +1,7 @@
 <project name="yabi-changelog" default="all" basedir=".">
 
     <target name="tags" >
-      <property name="cbbc.tag" value="RELEASE_8"/>
-      <property name="cbbc.toolstag" value="RELEASE_34"/>
+      <property name="cbbc.tag" value="RELEASE_9"/>
     </target>
                                                                                                                                                              
 </project>
