@@ -68,9 +68,14 @@ public class MoveUserspaceFile extends BaseAction {
                     return mapping.findForward("success");
 
                 } else {
-                    
-                    request.setAttribute("message", "requested file does not exist or file with destination name already exists");
-                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    if (!requestedFile.exists()) {
+                        request.setAttribute("message", "requested file does not exist");
+                        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    } else {
+                        request.setAttribute("message", "requested destination name is already in use");
+                        response.setStatus(HttpServletResponse.SC_CONFLICT);
+                    }
+
                     if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
                         return mapping.findForward("error");
                     } else {
