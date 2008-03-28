@@ -11,17 +11,19 @@
     <target name="releaseinit" depends="init, tagFail, createTmp">
       <property name="ccg.site" value="${basedir}/tmp"/>
       <property name="ccg.buildname" value="${cbbc.tag}"/>
-      <property name="ccg.toolstag" value="${cbbc.toolstag}"/>
+      <property name="ccg.toolsroot" value="/yabi/yabi-tools/"/>
+      <property name="ccg.jsonroot" value="/yabi/yabi-json/"/>
+      <property name="ccg.resourcesDir" value="${basedir}/tmp/ccg/yabi-mw/"/>
       <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain1/autodeploy/"/>
       <property name="ccg.dbhost" value="gromit4.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
       <property name="ccg.dbname" value="yabimw"/>
       <property name="ccg.warfilename" value="${basedir}/yabi-${ccg.buildname}.war"/>
-      <property name="ccg.srcdir" value="${basedir}/tmp/ccg/yabi-mw/src"/>
-      <property name="ccg.cfgdir" value="${basedir}/tmp/ccg/yabi-mw/cfg"/>
-      <property name="ccg.libdir" value="${basedir}/tmp/ccg/yabi-mw/lib"/>
-      <property name="ccg.tpldir" value="${basedir}/tmp/ccg/yabi-mw/templates"/>
+      <property name="ccg.srcdir" value="${ccg.resourcesDir}src"/>
+      <property name="ccg.cfgdir" value="${ccg.resourcesDir}cfg"/>
+      <property name="ccg.libdir" value="${ccg.resourcesDir}lib"/>
+      <property name="ccg.tpldir" value="${ccg.resourcesDir}templates"/>
       <property name="ccg.mailTo" value="alerts@ccg.murdoch.edu.au"/>
       <property name="ccg.yabiCertDir" value="/yabi/certificates/"/>
     </target>
@@ -30,17 +32,19 @@
     <target name="snapshotinit" depends="init, createTmp">
       <property name="ccg.site" value="${basedir}/tmp"/>
       <property name="ccg.buildname" value="snapshot"/>
-      <property name="ccg.toolstag" value="${cbbc.toolstag}"/>
+      <property name="ccg.toolsroot" value="/yabi/yabi-tools/"/>
+      <property name="ccg.jsonroot" value="/yabi/yabi-json/"/>
+      <property name="ccg.resourcesDir" value="${basedir}/tmp/ccg/yabi-mw/"/>
       <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain2/autodeploy/"/>
       <property name="ccg.dbhost" value="boromirdb.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
       <property name="ccg.dbname" value="yabimwdev"/>
       <property name="ccg.warfilename" value="${basedir}/yabi-${ccg.buildname}.war"/>
-      <property name="ccg.srcdir" value="${basedir}/tmp/ccg/yabi-mw/src"/>
-      <property name="ccg.cfgdir" value="${basedir}/tmp/ccg/yabi-mw/cfg"/>
-      <property name="ccg.libdir" value="${basedir}/tmp/ccg/yabi-mw/lib"/>
-      <property name="ccg.tpldir" value="${basedir}/tmp/ccg/yabi-mw/templates"/>
+      <property name="ccg.srcdir" value="${ccg.resourcesDir}src"/>
+      <property name="ccg.cfgdir" value="${ccg.resourcesDir}cfg"/>
+      <property name="ccg.libdir" value="${ccg.resourcesDir}lib"/>
+      <property name="ccg.tpldir" value="${ccg.resourcesDir}templates"/>
       <property name="ccg.mailTo" value="alerts@ccg.murdoch.edu.au"/>
       <property name="ccg.yabiCertDir" value="/yabi/certificates/"/>
     </target>
@@ -49,6 +53,9 @@
     <target name="userbuildinit" depends="createTmp">
       <property name="ccg.site" value="${basedir}/tmp"/>
       <property name="ccg.buildname" value="${user.name}"/>
+      <property name="ccg.toolsroot" value="/yabi/yabi-tools/"/>
+      <property name="ccg.jsonroot" value="/yabi/yabi-json/"/>
+      <property name="ccg.resourcesDir" value="${basedir}"/>
       <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain2/autodeploy/"/>
       <property name="ccg.dbhost" value="boromirdb.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
@@ -83,7 +90,7 @@
       <propertyfile file="${ccg.site}/deploy.properties" comment="Deploy properties">
         <entry  key="user" value="${user.name}"/>
         <entry  key="buildname" value="${ccg.buildname}"/>
-        <entry  key="toolstag" value="${ccg.toolstag}"/>
+        <entry  key="toolsroot" value="${ccg.toolsroot}"/>
         <entry  key="project" value="${ant.project.name}"/>
         <entry  key="projectDir" value="${basedir}"/>
         <entry  key="build.xml" value="${ant.file}"/>
@@ -126,7 +133,7 @@
         <entry  key="buildname" value="${ccg.buildname}"/>
         <entry  key="project" value="${ant.project.name}"/>
         <entry  key="approot" value="${ccg.approot}"/>
-        <entry  key="toolstag" value="${ccg.toolstag}"/>
+        <entry  key="toolsroot" value="${ccg.toolsroot}"/>
         <entry  key="dbhost" value="${ccg.dbhost}"/>
         <entry  key="dbuser" value="${ccg.dbuser}"/>
         <entry  key="dbpass" value="${ccg.dbpass}"/>
@@ -185,23 +192,154 @@
       </exec>
     </target>
 	
-	<!--   
-    <target name="toolsSvnExportTag">
-      <delete dir="/yabi/yabi-tools" verbose="true"/>
-	  <echo message="Checking out tools with this tag ${ccg.toolstag}"/>
-      <exec executable="svn" failonerror="true">
-      <arg line="export svn+ssh://grendel@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-fe-symfony-tags/${ccg.toolstag}/yabi-tools /yabi/yabi-tools"/>
-      </exec>
+    <!-- json in the middleware. curious -->
+    <target name="deployJson" depends="init">
+      <delete dir="${ccg.jsonroot}" verbose="true"/>
+      <mkdir dir="${ccg.jsonroot}"/>
+      <copy todir="${ccg.jsonroot}" >
+        <fileset dir="${ccg.resourcesDir}/yabi-json/" >
+          <include name="**/*"/>
+        </fileset>
+      </copy>
     </target>
-    
 
-    <target name="toolsSvnExport">
-      <delete dir="/yabi/yabi-tools" verbose="true"/>
-      <exec executable="svn" failonerror="true">
-      <arg line="export svn+ssh://${user.name}@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-fe-symfony/yabi-tools /yabi/yabi-tools"/>
-      </exec>
+
+    <target name="deployTools" depends="init">
+      <delete dir="${ccg.toolsroot}" verbose="true"/>
+      <mkdir dir="${ccg.toolsroot}"/>
+      <copy todir="${ccg.toolsroot}" >
+        <fileset dir="${ccg.resourcesDir}/yabi-tools/" >
+          <include name="**/*"/>
+        </fileset>
+      </copy>
     </target>
-	-->
+
+    <!-- add items here when you wish to add tools to yabi's tool menu -->
+    <target name="deployToolsDirs" depends="deployTools">
+
+        <!-- DEFAULT TOOLS -->
+        <mkdir dir="${ccg.toolsroot}/default/" />
+        <mkdir dir="${ccg.toolsroot}/default/select data/" />
+        <mkdir dir="${ccg.toolsroot}/default/blast search/" />
+        <mkdir dir="${ccg.toolsroot}/default/file tools/" />
+        <mkdir dir="${ccg.toolsroot}/default/convertors/" />
+        <mkdir dir="${ccg.toolsroot}/default/sequence tools/" />
+        <mkdir dir="${ccg.toolsroot}/default/assembly/" />
+        <mkdir dir="${ccg.toolsroot}/default/repeat search/" />
+        <mkdir dir="${ccg.toolsroot}/default/multiple sequence alignment/" />
+        <mkdir dir="${ccg.toolsroot}/default/sequence alignment/" />
+        <mkdir dir="${ccg.toolsroot}/default/open reading frames/" />
+        <mkdir dir="${ccg.toolsroot}/default/protein tools/" />
+        <mkdir dir="${ccg.toolsroot}/default/EMBOSS/" />
+        <mkdir dir="${ccg.toolsroot}/default/text tools/" />
+        <mkdir dir="${ccg.toolsroot}/default/cognac.ivec.org/" />
+
+        <!-- select data -->
+        <symlink link="${ccg.toolsroot}/default/select data/fileselector.xml" resource="${ccg.toolsroot}/fileselector.xml" />
+        <symlink link="${ccg.toolsroot}/default/select data/fileuploader.xml" resource="${ccg.toolsroot}/fileuploader.xml" />
+        <symlink link="${ccg.toolsroot}/default/select data/fetchgenbankrecord.xml" resource="${ccg.toolsroot}/fetchgenbankrecord.xml" />
+        <symlink link="${ccg.toolsroot}/default/select data/fetchfastarecord.xml" resource="${ccg.toolsroot}/fetchfastarecord.xml" />
+
+        <!-- alignment -->
+        <symlink link="${ccg.toolsroot}/default/blast search/blast.xml" resource="${ccg.toolsroot}/blast.xml" />
+        <symlink link="${ccg.toolsroot}/default/blast search/blast2html.xml" resource="${ccg.toolsroot}/blast2html.xml" />
+        <symlink link="${ccg.toolsroot}/default/blast search/blasttophits.xml" resource="${ccg.toolsroot}/blasttophits.xml" />
+        <symlink link="${ccg.toolsroot}/default/blast search/blastpgp.xml" resource="${ccg.toolsroot}/blastpgp.xml" />
+        <symlink link="${ccg.toolsroot}/default/blast search/mview.xml" resource="${ccg.toolsroot}/mview.xml" />
+        <symlink link="${ccg.toolsroot}/default/blast search/ccg-importeric.xml" resource="${ccg.toolsroot}/ccg-importeric.xml" />
+        <symlink link="${ccg.toolsroot}/default/blast search/ivec-blastall.xml" resource="${ccg.toolsroot}/ivec-blastall.xml" />
+
+        <!-- cognac.ivec.org -->
+        <symlink link="${ccg.toolsroot}/default/cognac.ivec.org/ivec-blastall.xml" resource="${ccg.toolsroot}/ivec-blastall.xml" />
+        <symlink link="${ccg.toolsroot}/default/cognac.ivec.org/ivec-phred.xml" resource="${ccg.toolsroot}/ivec-phred.xml" />
+        <symlink link="${ccg.toolsroot}/default/cognac.ivec.org/ivec-crossmatch.xml" resource="${ccg.toolsroot}/ivec-crossmatch.xml" />
+        <symlink link="${ccg.toolsroot}/default/cognac.ivec.org/ivec-autopcap.xml" resource="${ccg.toolsroot}/ivec-autopcap.xml" />
+
+        <!-- file tools -->
+        <symlink link="${ccg.toolsroot}/default/file tools/fileselector.xml" resource="${ccg.toolsroot}/fileselector.xml" />
+        <symlink link="${ccg.toolsroot}/default/file tools/fileuploader.xml" resource="${ccg.toolsroot}/fileuploader.xml" />
+        <symlink link="${ccg.toolsroot}/default/file tools/zipjob.xml" resource="${ccg.toolsroot}/zipjob.xml" />
+
+        <!-- convertors -->
+        <symlink link="${ccg.toolsroot}/default/convertors/fasta2embl.xml" resource="${ccg.toolsroot}/fasta2embl.xml" />
+        <symlink link="${ccg.toolsroot}/default/convertors/fasta2emblXml.xml" resource="${ccg.toolsroot}/fasta2emblXml.xml" />
+        <symlink link="${ccg.toolsroot}/default/convertors/fasta2genbank.xml" resource="${ccg.toolsroot}/fasta2genbank.xml" />
+        <symlink link="${ccg.toolsroot}/default/convertors/fasta2INSDseq.xml" resource="${ccg.toolsroot}/fasta2INSDseq.xml" />
+        <symlink link="${ccg.toolsroot}/default/convertors/genbank2fasta.xml" resource="${ccg.toolsroot}/genbank2fasta.xml" />
+        <symlink link="${ccg.toolsroot}/default/convertors/embl2emblXml.xml" resource="${ccg.toolsroot}/embl2emblXml.xml" />
+        <symlink link="${ccg.toolsroot}/default/convertors/renderyabisimple.xml" resource="${ccg.toolsroot}/renderyabisimple.xml" />
+
+        <!-- seq tools -->
+        <symlink link="${ccg.toolsroot}/default/sequence tools/fetchgenbankrecord.xml" resource="${ccg.toolsroot}/fetchgenbankrecord.xml" />
+        <symlink link="${ccg.toolsroot}/default/sequence tools/fetchfastarecord.xml" resource="${ccg.toolsroot}/fetchfastarecordcache.xml" />
+        <symlink link="${ccg.toolsroot}/default/sequence tools/downloadfasta.xml" resource="${ccg.toolsroot}/downloadfasta.xml" />
+        <symlink link="${ccg.toolsroot}/default/sequence tools/fastasplitter.xml" resource="${ccg.toolsroot}/fastasplitter.xml" />
+        <symlink link="${ccg.toolsroot}/default/sequence tools/yabixml2fasta.xml" resource="${ccg.toolsroot}/yabixml2fasta.xml" />
+        <symlink link="${ccg.toolsroot}/default/sequence tools/genbankfetch.xml" resource="${ccg.toolsroot}/genbankfetch.xml" />
+        <symlink link="${ccg.toolsroot}/default/sequence tools/blasttophits.xml" resource="${ccg.toolsroot}/blasttophits.xml" />
+        <symlink link="${ccg.toolsroot}/default/sequence tools/getkeggid.xml" resource="${ccg.toolsroot}/getkeggid.xml" />
+
+        <!-- assembly -->
+        <symlink link="${ccg.toolsroot}/default/assembly/crossmatch.xml" resource="${ccg.toolsroot}/crossmatch.xml" />
+        <symlink link="${ccg.toolsroot}/default/assembly/phred.xml" resource="${ccg.toolsroot}/phred.xml" />
+        <symlink link="${ccg.toolsroot}/default/assembly/autopcap.xml" resource="${ccg.toolsroot}/autopcap.xml" />
+        <symlink link="${ccg.toolsroot}/default/assembly/prepautopcap.xml" resource="${ccg.toolsroot}/prepautopcap.xml" />
+
+        <!-- repeat search -->
+        <symlink link="${ccg.toolsroot}/default/repeat search/repeatmasker.xml" resource="${ccg.toolsroot}/repeatmasker.xml" />
+        <symlink link="${ccg.toolsroot}/default/repeat search/censor.xml" resource="${ccg.toolsroot}/censor.xml" />
+
+        <!-- multiple sequence alignment -->
+        <symlink link="${ccg.toolsroot}/default/multiple sequence alignment/clustalw.xml" resource="${ccg.toolsroot}/clustalw.xml" />
+        <symlink link="${ccg.toolsroot}/default/multiple sequence alignment/t_coffee.xml" resource="${ccg.toolsroot}/t_coffee.xml" />
+
+        <!-- sequence alignment -->
+        <symlink link="${ccg.toolsroot}/default/sequence alignment/bl2seq.xml" resource="${ccg.toolsroot}/bl2seq.xml" />
+        <symlink link="${ccg.toolsroot}/default/sequence alignment/blat.xml" resource="${ccg.toolsroot}/blat.xml" />
+        <symlink link="${ccg.toolsroot}/default/sequence alignment/fasta.xml" resource="${ccg.toolsroot}/fasta.xml" />
+
+        <!-- open reading frames-->
+        <symlink link="${ccg.toolsroot}/default/open reading frames/glimmer3.xml" resource="${ccg.toolsroot}/glimmer3.xml" />
+        <symlink link="${ccg.toolsroot}/default/open reading frames/glimmerm.xml" resource="${ccg.toolsroot}/glimmerm.xml" />
+        <symlink link="${ccg.toolsroot}/default/open reading frames/glimmerhmm.xml" resource="${ccg.toolsroot}/glimmerhmm.xml" />
+        <symlink link="${ccg.toolsroot}/default/open reading frames/genscan.xml" resource="${ccg.toolsroot}/genscan.xml" />
+
+
+        <!-- protein tools -->
+        <symlink link="${ccg.toolsroot}/default/protein tools/iprscan.xml" resource="${ccg.toolsroot}/iprscan.xml" />
+        <symlink link="${ccg.toolsroot}/default/protein tools/signalp.xml" resource="${ccg.toolsroot}/signalp.xml" />
+        <symlink link="${ccg.toolsroot}/default/protein tools/hmmpfam.xml" resource="${ccg.toolsroot}/hmmpfam.xml" />
+        <symlink link="${ccg.toolsroot}/default/protein tools/psort.xml" resource="${ccg.toolsroot}/psort.xml" />
+        <symlink link="${ccg.toolsroot}/default/protein tools/ps_scan.xml" resource="${ccg.toolsroot}/ps_scan.xml" />
+
+        <!-- EMBOSS -->
+        <symlink link="${ccg.toolsroot}/default/EMBOSS/chips.xml" resource="${ccg.toolsroot}/chips.xml" />
+        <symlink link="${ccg.toolsroot}/default/EMBOSS/getorf.xml" resource="${ccg.toolsroot}/getorf.xml" />
+        <symlink link="${ccg.toolsroot}/default/EMBOSS/extractseq.xml" resource="${ccg.toolsroot}/extractseq.xml" />
+        <symlink link="${ccg.toolsroot}/default/EMBOSS/prettyplot.xml" resource="${ccg.toolsroot}/prettyplot.xml" />
+
+        <!-- text tools -->
+        <symlink link="${ccg.toolsroot}/default/text tools/sort.xml" resource="${ccg.toolsroot}/sort.xml" />
+
+
+
+        <!-- PI TOOLS -->
+        <mkdir dir="${ccg.toolsroot}/pi/" />
+        <mkdir dir="${ccg.toolsroot}/pi/select data/" />
+        <mkdir dir="${ccg.toolsroot}/pi/blast search/" />
+
+        <!-- select data -->
+        <symlink link="${ccg.toolsroot}/pi/select data/fileselector.xml" resource="${ccg.toolsroot}/fileselector.xml" />
+        <symlink link="${ccg.toolsroot}/pi/select data/fileuploader.xml" resource="${ccg.toolsroot}/fileuploader.xml" />
+        <symlink link="${ccg.toolsroot}/pi/select data/fetchgenbankrecord.xml" resource="${ccg.toolsroot}/fetchgenbankrecord.xml" />
+        <symlink link="${ccg.toolsroot}/pi/select data/fetchfastarecord.xml" resource="${ccg.toolsroot}/fetchfastarecord.xml" />
+
+        <!-- blast -->
+        <symlink link="${ccg.toolsroot}/pi/blast search/proint-blast.xml" resource="${ccg.toolsroot}/proint-blast.xml" />
+
+    </target>
+
+
 	<target name="createWar" depends="appProperties, configCopy, templateCopy, compile">
 	  <war destfile="${ccg.warfilename}" webxml="${ccg.site}/web.xml">
 	  	<fileset dir="${ccg.site}">
@@ -232,5 +370,5 @@
     <target name="snapshot" depends="snapshotinit, tmpSvnCheckout, createWar, deployWar, deployCerts" />	
     <target name="usercompile" depends="userbuildinit, compile" />
     <target name="devcompile" depends="userbuildinit, nttcompile" />
-    <target name="userwar" depends="userbuildinit, createWar, deployWar" />
+    <target name="userwar" depends="userbuildinit, createWar, deployWar, deployTools, deployJson, deployToolsDirs" />
 </project>
