@@ -69,7 +69,7 @@ public class MoveUserspaceFile extends BaseAction {
 
                 } else {
                     
-                    request.setAttribute("message", "requested file does not exist");
+                    request.setAttribute("message", "requested file does not exist or file with destination name already exists");
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                     if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
                         return mapping.findForward("error");
