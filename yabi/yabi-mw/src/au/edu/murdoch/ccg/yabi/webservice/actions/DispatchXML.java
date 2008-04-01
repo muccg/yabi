@@ -28,6 +28,7 @@ import java.util.logging.Logger;
 public class DispatchXML extends BaseAction {
 
     private static Logger logger;
+    private final Object lock = new Object();
 
     public DispatchXML () {
         super();
@@ -60,13 +61,26 @@ public class DispatchXML extends BaseAction {
                 String jobName = yjfi.getJobName();
 
                 //error out immediately if the workflow already exists
-                if (yjfi.alreadyExists(userName + "/jobs/" + year + "-" + month + "/" + jobName + "/workflow.jobxml")) {
+                boolean exists = false;
+
+                synchronized (lock) {
+                    if (yjfi.alreadyExists(userName + "/jobs/" + year + "-" + month + "/" + jobName + "/workflow.jobxml")) {
+                        exists = true;
+                    }
+
+                    //save out unmodified jobfile
+                    yjfi.saveFile(userName + "/jobs/" + year + "-" + month + "/" + jobName + "/workflow.jobxml");
+                }
+
+                //exit on already exists error
+                if (exists) {
                     response.setStatus(HttpServletResponse.SC_CONFLICT);
 
                     logger.severe("A workflow of that name already exists");
                     request.setAttribute("message", "A workflow of that name already exists");
                     return mapping.findForward("error");
                 }
+
 
                 //fetch the process definition and parse it into a JBPM ProcessDefinition object
                 String processDefinitionXML = yjfi.getProcessDefinition();
