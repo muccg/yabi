@@ -59,14 +59,26 @@ public class MoveUserspaceFile extends BaseAction {
                 String fileDestPath = rootDirLoc + user + "/" + relDestPath;
                 File requestedFile = new File(filePath);
                 File destFile = new File(fileDestPath);
+                File userDir = new File(rootDirLoc + user);
                 
                 if (requestedFile.exists() && !destFile.exists()) {
 
-                    //perform the move
-                    requestedFile.renameTo(destFile);
+                    if ( destFile.getParentFile().equals(userDir) || requestedFile.getParentFile().equals(userDir) ) {
+                        //do not permit moving files from or to the user's top level
+                        request.setAttribute("message", "cannot move files to or from your home directory");
+                        response.setStatus(HttpServletResponse.SC_CONFLICT);
+                        if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
+                            return mapping.findForward("error");
+                        } else {
+                            return mapping.findForward("error-txt");
+                        }
+                    } else {
 
-                    return mapping.findForward("success");
+                        //perform the move
+                        requestedFile.renameTo(destFile);
 
+                        return mapping.findForward("success");
+                    }
                 } else {
                     if (!requestedFile.exists()) {
                         request.setAttribute("message", "requested file does not exist");
