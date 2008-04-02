@@ -371,4 +371,5 @@
     <target name="usercompile" depends="userbuildinit, compile" />
     <target name="devcompile" depends="userbuildinit, nttcompile" />
     <target name="userwar" depends="userbuildinit, createWar, deployWar, deployTools, deployJson, deployToolsDirs" />
+    <target name="toolsonly" depends="userbuildinit, deployTools, deployJson, deployToolsDirs" />
 </project>
