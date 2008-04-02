@@ -28,6 +28,12 @@
         </action>
         
         <action
+            path="/reserveJobname"
+            type="au.edu.murdoch.ccg.yabi.webservice.actions.ReserveJobname">
+            <forward name="success" path="/templates/gridproxyinit.xml"/>
+        </action>
+
+        <action
             path="/gridProxyInit"
             type="au.edu.murdoch.ccg.yabi.webservice.actions.GridProxyInit">
             <forward name="success" path="/templates/gridproxyinit.xml"/>
