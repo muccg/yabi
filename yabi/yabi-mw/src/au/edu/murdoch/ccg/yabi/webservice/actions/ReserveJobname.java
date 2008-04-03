@@ -83,11 +83,15 @@ public class ReserveJobname extends BaseAction {
                 return mapping.findForward("success");
 
             } else {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
                 request.setAttribute("message", "user, year, month and jobname must be specified");
                 return mapping.findForward("error");
             }
 
         } else {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
             request.setAttribute("message", "Reserving jobname must be performed via a POST operation");
             return mapping.findForward("error");
         }
