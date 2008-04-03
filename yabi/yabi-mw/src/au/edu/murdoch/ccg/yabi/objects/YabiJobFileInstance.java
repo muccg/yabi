@@ -241,6 +241,7 @@ public class YabiJobFileInstance {
             }
 
             String fileLoc = yabiRootDirectory + fileName;
+            String tempFileLoc = fileLoc + "." + System.currentTimeMillis(); //tempfile used to prevent partial write/read race condition
             String parentLoc = fileLoc.substring(0, fileLoc.lastIndexOf("/"));
             //ensure directories exist
             File parentDir = new File(parentLoc);
@@ -258,6 +259,11 @@ public class YabiJobFileInstance {
             xmlw.write(jobFile);
 
             xmlw.close();
+
+            //move tempFile over the top of the real file location to prevent read/write race condition
+            File tempFile = new File(tempFileLoc);
+            File destFile = new File(fileLoc);
+            tempFile.renameTo(destFile);
 
         } else {
             throw new Exception("File not specified");
