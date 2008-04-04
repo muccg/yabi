@@ -209,39 +209,48 @@ public class GrendelClient extends GenericProcessingClient {
         call.setProperty(Call.SOAPACTION_USE_PROPERTY,
                    new Boolean(true));
 
-        //make the SOAP call
-        SOAPEnvelope response = call.invoke( message );
+        try {
+            //make the SOAP call
+            SOAPEnvelope response = call.invoke( message );
 
 
-        SOAPHeader header = response.getHeader();
-        SOAPBody rbody = response.getBody();
+            SOAPHeader header = response.getHeader();
+            SOAPBody rbody = response.getBody();
 
-        //check for a fault
-        if ( rbody.hasFault() ) {
+            //check for a fault
+            if ( rbody.hasFault() ) {
 
-            SOAPFault newFault = rbody.getFault();
-            Name code = newFault.getFaultCodeAsName();
-            String string = newFault.getFaultString();
+                SOAPFault newFault = rbody.getFault();
+                Name code = newFault.getFaultCodeAsName();
+                String string = newFault.getFaultString();
 
-            //throw new Exception(string);
-            try {
-                MailTool mt = new MailTool();
-                mt.sendYabiError("grendel jobId "+ jobId +" encountered non-fatal error:\n\nSOAP Fault : " + code + "\n\n" + string);
-            } catch (Exception cbbce) {}
+                //throw new Exception(string);
+                try {
+                    MailTool mt = new MailTool();
+                    mt.sendYabiError("grendel jobId "+ jobId +" encountered non-fatal error:\n\nSOAP Fault : " + code + "\n\n" + string);
+                } catch (Exception cbbce) {}
+                
+                return "P";  //in event of error in fetching status, pretend we are 'pending' and hopefully we will keep looping until grendel returns
+
+            } else {
+
+                java.util.Iterator iterator = rbody.getChildElements();
+                SOAPElement element = (SOAPElement)iterator.next(); //getJobStatusResponse
+                iterator = element.getChildElements();
+                SOAPElement wantedElement = (SOAPElement)iterator.next(); //getJobStatusReturn
+
+                this.jobStatus = wantedElement.getValue();
+
+                return this.jobStatus;
+
+            }
+        } catch (Exception e) {
+                try {
+                    MailTool mt = new MailTool();
+                    mt.sendYabiError("grendel jobId "+ jobId +" encountered non-fatal error when fetching job status from grendel: " + e.getClass().getName() + "\n" + e.getMessage());
+                } catch (Exception cbbce) {}
             
-            return "P";  //in event of error in fetching status, pretend we are 'pending' and hopefully we will keep looping until grendel returns
-
-        } else {
-
-            java.util.Iterator iterator = rbody.getChildElements();
-            SOAPElement element = (SOAPElement)iterator.next(); //getJobStatusResponse
-            iterator = element.getChildElements();
-            SOAPElement wantedElement = (SOAPElement)iterator.next(); //getJobStatusReturn
-
-            this.jobStatus = wantedElement.getValue();
-
-            return this.jobStatus;
-
+                return "P";  //in event of error in fetching status, pretend we are 'pending' and hopefully we will keep looping until grendel returns
         }
     }
 
