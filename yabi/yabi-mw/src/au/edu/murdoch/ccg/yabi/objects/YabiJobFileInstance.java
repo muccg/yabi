@@ -250,7 +250,7 @@ public class YabiJobFileInstance {
                 parentDir.mkdirs();
             }
 
-            FileWriter fw = new FileWriter( fileLoc );
+            FileWriter fw = new FileWriter( tempFileLoc );
             OutputFormat of = new OutputFormat("  ");
             of.setNewlines(true);
             of.setTrimText(true);
