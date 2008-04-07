@@ -75,9 +75,21 @@ public class MoveUserspaceFile extends BaseAction {
                     } else {
 
                         //perform the move
-                        requestedFile.renameTo(destFile);
+                        boolean success = requestedFile.renameTo(destFile);
 
-                        return mapping.findForward("success");
+                        if (success) {
+                            return mapping.findForward("success");
+                        } else {
+                            request.setAttribute("message", "cannot move that file to that location");
+                            response.setStatus(HttpServletResponse.SC_CONFLICT);
+
+                            if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
+                                return mapping.findForward("error");
+                            } else {
+                                return mapping.findForward("error-txt");
+                            }
+
+                        }
                     }
                 } else {
                     if (!requestedFile.exists()) {
@@ -109,8 +121,8 @@ public class MoveUserspaceFile extends BaseAction {
 
         } catch (Exception e) {
 
-            logger.severe("An error occurred while attempting to download file: ["+e.getClass().getName() +"] "+ e.getMessage());
-            request.setAttribute("message", "An error occurred while attempting to download file: ["+e.getClass().getName() +"] "+ e.getMessage());
+            logger.severe("An error occurred while attempting to move file: ["+e.getClass().getName() +"] "+ e.getMessage());
+            request.setAttribute("message", "An error occurred while attempting to move file: ["+e.getClass().getName() +"] "+ e.getMessage());
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 
             if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
