@@ -66,7 +66,9 @@ public class PreviewUserspaceFile extends BaseAction {
                 }
 
 
-                if (requestedFile.exists() && !requestedFile.isDirectory()) {
+                if (requestedFile.exists()) {
+
+                    request.setAttribute("file", requestedFile);
 
                     if (extension.compareTo("txt") == 0) {
                         String output = "";
@@ -85,7 +87,7 @@ public class PreviewUserspaceFile extends BaseAction {
 
                 } else {
                     
-                    request.setAttribute("message", "requested file does not exist or is a directory");
+                    request.setAttribute("message", "requested file does not exist");
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                     if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
                         return mapping.findForward("error");
