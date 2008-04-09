@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/grendel/bin/lucyWrapper" toolName="lucy" displayName="lucy" description="Less Useful Chunks Yank">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>seq</extension>
+        <extension>qual</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension mustExist="true">seq</extension>
+        <extension mustExist="true">qual</extension>
+    </outputFiletypes>
+
+    <parameterList>
+      <parameter rank="1" switchUse="valueOnly"  switch="fastaFile"   mandatory="yes" inputFile="yes" outputFile="no"  value="" />
+      <parameter rank="2" switchUse="valueOnly"  switch="qualFile"    mandatory="yes" inputFile="yes" outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-pass_along" mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-range"      mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-alignment"  mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-vector"     mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-cdna"       mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-keep"       mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-size"       mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-threshold"  mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-minimum"    mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-debug"      mandatory="no"  inputFile="no"  outputFile="yes" value="" />
+      <parameter rank=""  switchUse="both"       switch="-output"     mandatory="no"  inputFile="no"  outputFile="yes" value="" />
+      <parameter rank=""  switchUse="both"       switch="-error"      mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-window"     mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-bracket"    mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-quiet"      mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-inform_me"  mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>
