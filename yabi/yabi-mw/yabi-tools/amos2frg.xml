@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/grendel/bin/amos2frgWrapper" toolName="amos2frg" displayName="amos2frg" description="convert from an AMOS message file to a frg file">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>afg</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension mustExist="true">frg</extension>
+    </outputFiletypes>
+
+    <parameterList>
+      <parameter rank=""  switchUse="both"       switch="-i"       mandatory="yes" inputFile="yes" outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-o"       mandatory="no" inputFile="no"  outputFile="yes" value="" />
+      <parameter rank=""  switchUse="both"       switch="-a"       mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>
