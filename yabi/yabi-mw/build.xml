@@ -233,6 +233,11 @@
         <mkdir dir="${ccg.toolsroot}/default/EMBOSS/" />
         <mkdir dir="${ccg.toolsroot}/default/text tools/" />
         <mkdir dir="${ccg.toolsroot}/default/cognac.ivec.org/" />
+        <mkdir dir="${ccg.toolsroot}/default/celera/" />
+
+        <!-- celera workflow tools -->
+        <symlink link="${ccg.toolsroot}/default/celera/figaro.xml" resource="${ccg.toolsroot}/figaro.xml" />
+        <symlink link="${ccg.toolsroot}/default/celera/amos2frg.xml" resource="${ccg.toolsroot}/amos2frg.xml" />
 
         <!-- select data -->
         <symlink link="${ccg.toolsroot}/default/select data/fileselector.xml" resource="${ccg.toolsroot}/fileselector.xml" />
