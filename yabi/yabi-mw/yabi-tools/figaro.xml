@@ -8,7 +8,6 @@
 
     <inputFiletypes requiresInput="true" acceptsInput="true">
         <extension>seq</extension>
-        <extension>qual</extension>
     </inputFiletypes>
 
     <outputFiletypes filePassThru="false">
