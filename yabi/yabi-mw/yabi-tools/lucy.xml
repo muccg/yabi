@@ -6,9 +6,10 @@
     <inputFile/>
     <outputFile/>
 
+    <batchOnParameter name="fastaFile"/>
+
     <inputFiletypes requiresInput="true" acceptsInput="true">
         <extension>seq</extension>
-        <extension>qual</extension>
     </inputFiletypes>
 
     <outputFiletypes filePassThru="false">
@@ -17,7 +18,7 @@
     </outputFiletypes>
 
     <parameterList>
-      <parameter rank="1" switchUse="valueOnly"  switch="fastaFile"   mandatory="yes" inputFile="yes" outputFile="no"  value="" />
+      <parameter rank="1" switchUse="valueOnly"  switch="fastaFile"   mandatory="yes" inputFile="yes" outputFile="no"  value="" primaryExtension="seq"/>
       <parameter rank="2" switchUse="valueOnly"  switch="qualFile"    mandatory="yes" inputFile="yes" outputFile="no"  value="" sourceParam="fastaFile" extensionParam="qual"/>
       <parameter rank=""  switchUse="both"       switch="-pass_along" mandatory="no"  inputFile="no"  outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-range"      mandatory="no"  inputFile="no"  outputFile="no"  value="" />
