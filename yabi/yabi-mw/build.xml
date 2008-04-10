@@ -238,6 +238,7 @@
         <!-- celera workflow tools -->
         <symlink link="${ccg.toolsroot}/default/celera/figaro.xml" resource="${ccg.toolsroot}/figaro.xml" />
         <symlink link="${ccg.toolsroot}/default/celera/amos2frg.xml" resource="${ccg.toolsroot}/amos2frg.xml" />
+        <symlink link="${ccg.toolsroot}/default/celera/runCA.xml" resource="${ccg.toolsroot}/runCA.xml" />
 
         <!-- select data -->
         <symlink link="${ccg.toolsroot}/default/select data/fileselector.xml" resource="${ccg.toolsroot}/fileselector.xml" />

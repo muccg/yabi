@@ -66,7 +66,7 @@ public class MoveUserspaceFile extends BaseAction {
                     if ( destFile.getParentFile().equals(userDir) || requestedFile.getParentFile().equals(userDir) ) {
                         //do not permit moving files from or to the user's top level
                         request.setAttribute("message", "cannot move files to or from your home directory");
-                        response.setStatus(HttpServletResponse.SC_CONFLICT);
+                        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                         if (outputFormat == null || outputFormat.compareTo(TYPE_TXT) != 0) {
                             return mapping.findForward("error");
                         } else {
