@@ -1,0 +1,182 @@
+baat
+
+	child nodes
+		job
+
+	attributes
+		none
+
+job
+	child nodes
+		inputFile
+		outputFile
+		inputFiletypes
+		outputFiletypes
+		parameterList
+		parameterAliasList
+		grendel
+    	priority
+    	executionHost
+    	batchNumber
+	    status
+	    startTime
+	    stopTime
+	    submittedTime
+	    submitUser
+	    submitLabel
+
+	attributes
+		toolPath - the path on the executing machine to the tool i.e. /usr/local/grendel/bin/cross_matchWrapper
+		toolName - name for use with in JS (?)
+		displayName - name that will appear in front end
+		description - description shown in front end
+		
+
+inputFile
+	child nodes
+	attributes
+
+
+outputFile
+	child nodes
+	attributes
+
+
+inputFiletypes
+	child nodes
+		extension
+
+	attributes
+		requiresInput - (true/false) must this tool have some input, used by js
+		acceptsInput - (true/false) can this tool accept input, used by js
+
+
+extension - a filetype extension accepted by a tool - fa
+	child nodes
+	attributes
+		mustExist (true/false) -??
+
+outputFiletypes
+	child nodes
+		extension - a filetype extension for the output of this tool i.e. fa	
+
+	attributes
+		filePassThru - (true/false) will this tool pass its input files on as output files
+		symlinkOutputDir - (true/false) should the output directory of this tool be a symlink to that of the previous tool
+
+
+parameterList
+	child nodes
+		parameter
+
+	attributes
+
+parameter
+	child nodes
+		inputExtension
+		outputExtension
+
+	attributes
+		rank
+		switchUse
+			both
+			valueOnly
+			switchOnly
+			combined -?
+
+		switch
+		mandatory
+		filter - ?
+			(remove anything that looks like a path from the value?)
+			prependUserDir -?
+			prependRootDir -?
+			../../ -?
+
+		sourceParam - ?
+		appendString - ?
+		extensionParam - ?
+		inputFile
+		inputType
+		outputFile
+		value
+		primaryExtension - ?
+
+inputExtension -??
+	child nodes
+	attributes
+
+outputExtension -??
+	child nodes
+	attributes
+
+
+
+parameterAliasList -??
+	child nodes
+	attributes
+
+
+grendel -??
+	child nodes
+	attributes
+
+
+priority -??
+	child nodes
+	attributes
+
+
+executionHost -??
+	child nodes
+	attributes
+
+
+batchNumber -??
+	child nodes
+	attributes
+
+
+status -??
+	child nodes
+	attributes
+
+
+startTime -??
+	child nodes
+	attributes
+
+
+stopTime -??
+	child nodes
+	attributes
+
+
+submittedTime -??
+	child nodes
+	attributes
+
+
+submitUser -??
+	child nodes
+	attributes
+
+
+submitLabel -??
+	child nodes
+	attributes
+
+
+
+
+
+Varibles set via template?
+--------------------------------------------------
+batchOnParameter
+blastAddToSOE
+jobType
+
+
+
+
+
+
