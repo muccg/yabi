@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
 <baat>
-  <job toolPath="/usr/local/grendel/bin/cross_matchWrapper" toolName="cross_match" displayName="cross match" description="Screens fasta file for vector sequences. Your vector file should have a suffix of .vector and be selected at the start of the workflow.">
+  <job toolPath="/usr/local/grendel/bin/cross_matchWrapper" toolName="cross_match" displayName="cross match" description="Screens fasta file for vector sequences. Your vector file should have a suffix of .vector and be selected by adding a file select task above this task. You should then select appropriate inputs in the options below.">
 
     <inputFile/>
     <outputFile/>
@@ -10,6 +10,7 @@
         <extension>fa</extension>
         <extension>fna</extension>
         <extension>faa</extension>
+        <extension>vector</extension>
     </inputFiletypes>
 
     <outputFiletypes filePassThru="false" symlinkOutputDir="true">
@@ -20,9 +21,7 @@
       <parameter rank="1" switchUse="valueOnly"  switch="inputFiles" mandatory="yes" inputFile="yes" inputType="file" outputFile="no" value="">
         <inputExtension>qual</inputExtension>
       </parameter>
-      <parameter rank="2" switchUse="valueOnly"  switch="vector" mandatory="yes" inputFile="maybe" inputType="file" outputFile="no"  value="">
-        <inputExtension>vector</inputExtension>
-      </parameter>    
+      <parameter rank="2" switchUse="valueOnly"  switch="vector" mandatory="yes" inputFile="yes" inputType="file" outputFile="no"  value=""/>
       <parameter rank=""  switchUse="both"       switch="-penalty"         mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-gap_init"        mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-gap_ext"         mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />

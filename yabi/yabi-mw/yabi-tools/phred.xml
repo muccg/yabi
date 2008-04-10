@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
 <baat>
-  <job toolPath="/usr/local/grendel/bin/phredWrapper" toolName="phred" displayName="phred" description="Assembles ab1 files. Requires a tar file as input. You should also supply a .vector file if you plan to run cross match on the output of phred.">
+  <job toolPath="/usr/local/grendel/bin/phredWrapper" toolName="phred" displayName="phred" description="Assembles ab1 files. Requires a tar file as input.">
 
     <inputFile/>
     <outputFile/>
@@ -10,7 +10,7 @@
         <extension>tar</extension>
     </inputFiletypes>
 
-    <outputFiletypes filePassThru="false" symlinkOutputDir="true">
+    <outputFiletypes filePassThru="true" symlinkOutputDir="true">
         <extension>fa</extension>
     </outputFiletypes>
 

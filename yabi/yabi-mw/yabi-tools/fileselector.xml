@@ -6,11 +6,11 @@
     <inputFile/>
     <outputFile/>
 
-    <inputFiletypes requiresInput="false" acceptsInput="false">
+    <inputFiletypes requiresInput="false" acceptsInput="true">
         <extension>*</extension>
     </inputFiletypes>
 
-    <outputFiletypes filePassThru="true" symlinkOutputDir="true">
+    <outputFiletypes filePassThru="true">
         <extension>*</extension>
     </outputFiletypes>
 
