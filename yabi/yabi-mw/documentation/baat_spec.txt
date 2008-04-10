@@ -10,6 +10,7 @@ job
 	child nodes
 		inputFile
 		outputFile
+        batchOnParameter
 		inputFiletypes
 		outputFiletypes
 		parameterList
@@ -32,15 +33,19 @@ job
 		description - description shown in front end
 		
 
-inputFile
+inputFile - used by grendel
 	child nodes
 	attributes
 
 
-outputFile
+outputFile - used by grendel
 	child nodes
 	attributes
 
+batchOnParameter - allow batching on a key parameter
+    child nodes
+    attributes
+        name - the name of the variable to use for batching
 
 inputFiletypes
 	child nodes
@@ -54,7 +59,7 @@ inputFiletypes
 extension - a filetype extension accepted by a tool - fa
 	child nodes
 	attributes
-		mustExist (true/false) -??
+		mustExist (true/false) - this is for assertions that run after a job is staged out. if mustexist=true then the job will fail if that file type is missing.
 
 outputFiletypes
 	child nodes
@@ -82,86 +87,87 @@ parameter
 			both
 			valueOnly
 			switchOnly
-			combined -?
+			combined - similar to both except there is no space between the switch and its value (currently only supported by grendel)
 
 		switch
 		mandatory
-		filter - ?
+		filter - any text manipulation that should be applied to the value of this parameter
 			(remove anything that looks like a path from the value?)
-			prependUserDir -?
-			prependRootDir -?
-			../../ -?
+			prependUserDir - for the current user, prepend their user directory to the value
+			prependRootDir - prepend the root yabi directory
+			../../ - prepend a ../../, which basically means the file is found in the workflow's path
 
-		sourceParam - ?
-		appendString - ?
-		extensionParam - ?
+		sourceParam - you can specify another parameter from which this one derives its value (ie if you specify -i then the value of this param is the same as the value for -i)
+		appendString - if sourceParam is specified, this is added to the end of the value
+		extensionParam - if sourceParam is specified, the extension of the value is replaced with this extension
 		inputFile
 		inputType
 		outputFile
 		value
-		primaryExtension - ?
+		primaryExtension - used in conjunction with batchOnParameter, this tells this parameter to only accept files of a certain extension type
 
-inputExtension -??
+inputExtension - used to allow common naming schemes for input files. if the parameter is specified as 'input' then this will be expanded out to 'input.ext' if there is an inputExtension of 'ext' specified. brought over from grendel
 	child nodes
 	attributes
 
-outputExtension -??
-	child nodes
-	attributes
-
-
-
-parameterAliasList -??
+outputExtension - used to specify the expected outputs based on the input
+name. more of a grendel legacy
 	child nodes
 	attributes
 
 
-grendel -??
+
+parameterAliasList - grendel option. used to specify 'aliases' that are used for commonly used options... eg '-mouse' becomes '-genus mus_musculus'. not used by middleware
 	child nodes
 	attributes
 
 
-priority -??
+grendel - the grendel node stores options that are specific to grendel. eg.  'eric', which implies that the results should be imported into son of eric
 	child nodes
 	attributes
 
 
-executionHost -??
+priority - grendel priority, always left at default (-10)
 	child nodes
 	attributes
 
 
-batchNumber -??
+executionHost - unused
 	child nodes
 	attributes
 
 
-status -??
+batchNumber - unused
 	child nodes
 	attributes
 
 
-startTime -??
+status - unused by middleware, used by grendel for overall job status
 	child nodes
 	attributes
 
 
-stopTime -??
+startTime - unused by middleware, used by grendel for accounting
 	child nodes
 	attributes
 
 
-submittedTime -??
+stopTime - unused by middleware, used by grendel for accounting
 	child nodes
 	attributes
 
 
-submitUser -??
+submittedTime - unused by middleware, used by grendel for accounting
 	child nodes
 	attributes
 
 
-submitLabel -??
+submitUser - set to the username of the current user
+	child nodes
+	attributes
+
+
+submitLabel - used to specify the soe eric import group
 	child nodes
 	attributes
 
@@ -171,9 +177,9 @@ submitLabel -??
 
 Varibles set via template?
 --------------------------------------------------
-batchOnParameter
-blastAddToSOE
-jobType
+batchOnParameter - can be deprecated, as there is now a batchOnParameter XML node in the BAAT file
+blastAddToSOE - this needs to be handled separately because of the way grendel deals with the 'eric' parameters as opposed to normal params
+jobType - the default if this is not specified is 'grendel', we may change the default when new cluster comes online
 
 
 
