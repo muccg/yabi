@@ -64,9 +64,14 @@ public class DownloadUserspaceFile extends BaseAction {
                     response.setContentType("application/download");
                     response.setHeader("Content-Disposition", "attachment; filename=" + requestedFile.getName());
 
+                    int counter = 0;
                     int c;
                     while((c=fileToDownload.read()) != -1){
-                    out.write(c);
+                        out.write(c);
+                        if (counter++ > 40) {
+                            out.flush();
+                            counter = 0;
+                        }
                     }
                     out.flush();
                     out.close();

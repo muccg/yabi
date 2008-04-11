@@ -341,14 +341,14 @@
 
         <!-- celera tools -->
         <mkdir dir="${ccg.toolsroot}/celera/" />
-        <mkdir dir="${ccg.toolsroot}/celera/assembly/" />
+        <mkdir dir="${ccg.toolsroot}/celera/celera assembly/" />
 
         <!-- celera workflow tools -->
-        <symlink link="${ccg.toolsroot}/celera/assembly/lucy.xml" resource="${ccg.toolsroot}/lucy.xml" />
-        <symlink link="${ccg.toolsroot}/celera/assembly/figaro.xml" resource="${ccg.toolsroot}/figaro.xml" />
-        <symlink link="${ccg.toolsroot}/celera/assembly/amos2frg.xml" resource="${ccg.toolsroot}/amos2frg.xml" />
-        <symlink link="${ccg.toolsroot}/celera/assembly/toAmos.xml" resource="${ccg.toolsroot}/toAmos.xml" />
-        <symlink link="${ccg.toolsroot}/celera/assembly/runCA.xml" resource="${ccg.toolsroot}/runCA.xml" />
+        <symlink link="${ccg.toolsroot}/celera/celera assembly/lucy.xml" resource="${ccg.toolsroot}/lucy.xml" />
+        <symlink link="${ccg.toolsroot}/celera/celera assembly/figaro.xml" resource="${ccg.toolsroot}/figaro.xml" />
+        <symlink link="${ccg.toolsroot}/celera/celera assembly/amos2frg.xml" resource="${ccg.toolsroot}/amos2frg.xml" />
+        <symlink link="${ccg.toolsroot}/celera/celera assembly/toAmos.xml" resource="${ccg.toolsroot}/toAmos.xml" />
+        <symlink link="${ccg.toolsroot}/celera/celera assembly/runCA.xml" resource="${ccg.toolsroot}/runCA.xml" />
 
 
     </target>
