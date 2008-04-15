@@ -57,6 +57,8 @@ import org.globus.wsrf.encoding.ObjectSerializer;
 import org.globus.exec.utils.service.ManagedJobHelper;
 import org.w3c.dom.*;
 import javax.xml.parsers.*;
+import au.edu.murdoch.cbbc.util.CBBCException;
+
 
 import javax.xml.namespace.QName;
 
@@ -164,7 +166,12 @@ public class GridClient extends GenericProcessingClient {
         }
         
         //convert Baat into its XML
-        String xmlString = bi.exportXML();
+        String xmlString = "";
+        try {
+            xmlString = bi.exportXML();
+        } catch (CBBCException e) {
+            throw new Exception(e.getMessage());
+        }
 
         //submit job
 

@@ -54,7 +54,7 @@ public class ProcessRunnerThread extends Thread {
 
                 //sleep for a while
                 try {
-                    logger.info("[ProcessRunnerThread]["+this.processId+"] done loop, sleeping now...");
+                    logger.info("[ProcessRunnerThread]["+this.processId+"] one node completed, sleeping for "+waitTime+" ms before continuing this workflow...");
                     Thread.sleep(waitTime);
                 } catch (InterruptedException e) {
                     isDone = true;

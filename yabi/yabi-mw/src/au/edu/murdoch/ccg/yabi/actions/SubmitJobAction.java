@@ -62,6 +62,9 @@ public class SubmitJobAction extends BaseAction {
             String[] batchIterations = "".split(",");
             String inputFileTypes = null;
             String[] bundledFiles = "".split(","); //any files that we will send along just in case but aren't a parameter
+            FileParamExpander fpe = new FileParamExpander();
+            fpe.setUsername(username);
+
 
             //load the baatFile to determine batching, other tool-specific details
             BaatInstance baat = new BaatInstance( (String) inputVars.get("toolName") ); //this will throw an exception if toolName not found
@@ -73,9 +76,6 @@ public class SubmitJobAction extends BaseAction {
             if ( inputVars.get("batchOnParameter") != null && inputVars.get("batchOnParameter") instanceof String ) {
                 batchParam = (String) inputVars.get("batchOnParameter");
 
-                FileParamExpander fpe = new FileParamExpander();
-                fpe.setUsername(username);
-
                 //filtering based on 'inputFileTypes' param if it exists
                 if ( inputVars.get("inputFiletypes") != null && inputVars.get("inputFiletypes") instanceof String ) {
                     inputFileTypes = (String) inputVars.get("inputFiletypes");
@@ -83,19 +83,21 @@ public class SubmitJobAction extends BaseAction {
                     //now load up the baat and see if we are overriding the generic tool inputFiletypes for
                     //a more specific filter on the parameter we are using to batch on
                     BaatInstance bi = new BaatInstance( (String) inputVars.get("toolName") ); //this will throw an exception if toolName not found
-                    String paramFilter = bi.getPrimaryExtension(batchParam);
-                    if (paramFilter != null) {
-                        fpe.removeFilter(paramFilter);
+                    ArrayList paramFilters = bi.getAcceptedExtensions(batchParam);
+                    if (paramFilters != null && paramFilters.size() > 0) {
+                        fpe.removeFilters(paramFilters);
                     }
                     bundledFiles = fpe.expandString( (String) inputVars.get(batchParam) );
 
                     fpe = new FileParamExpander();
                     fpe.setUsername(username);
-                    if (paramFilter != null) {
-                        inputFileTypes = paramFilter;
-                    }
 
-                    fpe.setFilter(inputFileTypes);
+                    //support both string and arraylist method of setting filters
+                    if (paramFilters != null && paramFilters.size() > 0) {
+                        fpe.setFilters(paramFilters);
+                    } else {
+                        fpe.setFilter(inputFileTypes);
+                    }
                 }
 
                 batchIterations = fpe.expandString( (String) inputVars.get(batchParam) );
@@ -104,6 +106,7 @@ public class SubmitJobAction extends BaseAction {
 
             for (int i = 0; i < batchIterations.length; i++) {
                 BaatInstance bi = new BaatInstance( (String) inputVars.get("toolName") ); //this will throw an exception if toolName not found
+                bi.setFileParamExpander(fpe);
                 //now we process each input parameter and insert it as a parameter to the BaatInstance
                 //this gives us a chance to filter the vars based on name, and inserting them into BaatInstance fetches inputFiles and outputFiles
                 Iterator iter = inputVars.keySet().iterator(); 

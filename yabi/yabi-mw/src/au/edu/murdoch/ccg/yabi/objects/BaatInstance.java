@@ -7,6 +7,7 @@ import org.dom4j.io.*;
 import java.net.*;
 import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
 import au.edu.murdoch.ccg.yabi.util.AppDetails;
+import au.edu.murdoch.ccg.yabi.util.FileParamExpander;
 import org.apache.commons.configuration.*;
 import au.edu.murdoch.cbbc.util.CBBCException;
 import org.xml.sax.EntityResolver;
@@ -21,6 +22,7 @@ public class BaatInstance {
     private String toolName;
     private ArrayList parameters;
     private ArrayList inputFiles;
+    private HashMap inputFileNames; //used for dupchecking
     private ArrayList outputFiles;
     private ArrayList outputAssertions;
     private Document baatFile;
@@ -30,6 +32,7 @@ public class BaatInstance {
     private String username; //optional, used for prependUserDir option
     private boolean symlinkOutputDir;
     private String batchOnParameter = null; //if not null, is used to signal the batch parameter
+    private FileParamExpander fpe = null; //used for expanding file parameters
 
     private static Logger logger = Logger.getLogger( AppDetails.getAppString() + "." + BaatInstance.class.getName());
 
@@ -48,6 +51,7 @@ public class BaatInstance {
 
         parameters = new ArrayList();
         inputFiles = new ArrayList();
+        inputFileNames = new HashMap();
         outputFiles = new ArrayList();
         outputAssertions = new ArrayList();
 
@@ -60,6 +64,10 @@ public class BaatInstance {
     public ArrayList getParameters() {
         return this.parameters;
     }  
+
+    public void setFileParamExpander(FileParamExpander fpe) {
+        this.fpe = fpe;
+    }
     
     public ArrayList getOutputAssertions() {
         return this.outputAssertions;
@@ -140,11 +148,13 @@ public class BaatInstance {
         return this.batchOnParameter;
     }
 
-    public String exportXML() {
+    public String exportXML() throws CBBCException {
         //process the contents of this Baat and convert to the simplest XML output that can be used by Grendel, for instance
         
         //call to strip out unused params
         reconcileParams();
+
+        this.validateParameters(); //throws CBBCException
 
         return baatFile.asXML();
     }
@@ -252,7 +262,7 @@ public class BaatInstance {
                     InputStream in = getClass().getResourceAsStream(
                         "/au/edu/murdoch/ccg/baat.dtd"
                     );
-                    logger.info("using local baat.dtd");
+                    logger.fine("using local baat.dtd");
                     return new InputSource( in );
                 }
             };
@@ -260,6 +270,8 @@ public class BaatInstance {
             SAXReader xmlReader = new SAXReader(false);
             xmlReader.setEntityResolver(resolver);
             baatFile = xmlReader.read(toolFile); //throws DocumentException on a parse error
+
+            logger.info("loaded baat for tool: "+toolName);
 
             //load the toolpath
             Element jobNode = (Element) baatFile.selectSingleNode("//job");
@@ -299,7 +311,7 @@ public class BaatInstance {
                     }
                     
                     if (ofa.mustExist) {
-                        logger.info("assertion: mustExist: " + ofa.extension);
+                        logger.fine("adding assertion: mustExist: " + ofa.extension);
                         this.outputAssertions.add(ofa);
                     }
                 }
@@ -341,12 +353,12 @@ public class BaatInstance {
                 if (element.attributeValue("outputFile") != null) {
                     bp.outputFile = element.attributeValue("outputFile");
                 }
-                bp.primaryExtension = element.attributeValue("primaryExtension");
    
-                //if inputFile = 'yes' then search for out/inputExtension subelements
+                //if inputFile = 'yes' then search for out/input/acceptedExtension subelements
                 if (bp.inputFile.compareTo("yes") == 0) {
                     ArrayList outputExtensions = new ArrayList();
                     ArrayList inputExtensions = new ArrayList();
+                    ArrayList acceptedExtensions = new ArrayList();
                     List extResults = element.elements();
                     for ( Iterator xiter = extResults.iterator(); xiter.hasNext(); ) {
                         Element xelem = (Element) xiter.next();
@@ -356,6 +368,14 @@ public class BaatInstance {
                         }
                         else if (xelem.getName().compareTo("inputExtension") == 0) {
                             inputExtensions.add(extension);
+                        } else if (xelem.getName().compareTo("acceptedExtensionList") == 0) {
+                            //iterate over acceptedExtension subelements
+                            List acceptedList = xelem.elements();
+                            for ( Iterator acceptIter = acceptedList.iterator(); acceptIter.hasNext(); ) {
+                                Element acceptElem = (Element) acceptIter.next();
+                                String acceptExt = acceptElem.getText();
+                                acceptedExtensions.add(acceptExt);
+                            }
                         }
                     }
                     if (outputExtensions.size() > 0) {
@@ -363,6 +383,9 @@ public class BaatInstance {
                     }
                     if (inputExtensions.size() > 0) {
                         bp.inputExtensions = inputExtensions;
+                    }
+                    if (acceptedExtensions.size() > 0) {
+                        bp.acceptedExtensions = acceptedExtensions;
                     }
                 }
 
@@ -379,8 +402,12 @@ public class BaatInstance {
 
     public void addInputFile(String filename) {
         if (filename.length() > 1 &&
-            ! this.inputFiles.contains(filename) ) {
+            ! this.inputFileNames.containsKey(filename) ) {
             this.inputFiles.add(filename);
+            this.inputFileNames.put(filename, "true");
+            logger.info("baat: addInputFile succeeded, "+filename);
+        } else {
+            logger.info("baat: addInputFile failed due to dupe, "+filename);
         }
     }
 
@@ -407,8 +434,21 @@ public class BaatInstance {
                 bp.isSet = true;
                 
                 if (bp.inputFile.compareTo("yes") == 0 && value.length() > 0) {
+                    //if there are acceptedExtensions then we must expand and filter for a single valid file
+                    if (bp.acceptedExtensions != null && bp.acceptedExtensions.size() > 0 && this.fpe != null) {
+                        this.fpe.clearFilters();
+                        this.fpe.setFilters(bp.acceptedExtensions);
+                        logger.info("preparing to expand setParameter ["+bp.switchName+"]=["+bp.value+"]");                    
+                        try {
+                            bp.value = (this.fpe.expandString(bp.value))[0]; //accept only the first element!
+                        } catch (Exception e) {
+                            bp.value = "";
+                        }
+                        logger.info("expanded setParameter ["+bp.switchName+"]=>["+bp.value+"]");
+                    }
+
                     //add this value to the inputFiles list
-                    inputFiles.add(value);
+                    this.addInputFile(bp.value);
 
                     //if there is a 'removePath' filter, remove anything that looks like a path from the value
                     if (bp.filter != null && bp.filter.equalsIgnoreCase("removePath")) {
@@ -435,7 +475,7 @@ public class BaatInstance {
                             String extension = (String) initer.next();
                             //TODO strip everything except the actual filename if there is anything else (?)
                             String newFileName = value + "." + extension;
-                            inputFiles.add(newFileName);
+                            this.addInputFile(newFileName);
                         }
                     }
                 }
@@ -446,13 +486,13 @@ public class BaatInstance {
         }
     }
 
-    public String getPrimaryExtension(String switchName) {
+    public ArrayList getAcceptedExtensions(String switchName) {
         //iterate over parameters until we find the switchName 
         Iterator iter = parameters.iterator();
         while (iter.hasNext()) {
             BaatParameter bp = (BaatParameter) iter.next();
             if (  bp.switchName.compareTo(switchName) == 0  ) { 
-                return bp.primaryExtension; //could be null, usually is
+                return bp.acceptedExtensions; //could be empty, usually is
             }   
         }   
         return null;
@@ -521,15 +561,17 @@ public class BaatInstance {
                 
                 if (sourceValue != null) {
                     //we've found the source from which we hope to derive our value
-                    bpDest.value = sourceValue;
-                    bpDest.isSet = true;
+                    //call to setParam to take advantage of code that triggers on that
+                    String destvalue = sourceValue;
+                    
                     if (bpDest.appendString != null && bpDest.appendString.compareTo("") != 0) {
-                        bpDest.value += bpDest.appendString;
+                        destvalue += bpDest.appendString;
                     }
                     if (extensionParameterValue != null) {
-                        bpDest.value += "." + extensionParameterValue;
+                        destvalue += "." + extensionParameterValue;
                     }
-                    logger.info("derived input param from source param: ["+bpDest.switchName+":"+bpDest.value+"]");
+                    logger.info("derived input param from source param: ["+bpDest.switchName+":"+destvalue+"]");
+                    this.setParameter(bpDest.switchName, destvalue);
                 }
                 
             }
@@ -587,7 +629,7 @@ public class BaatInstance {
 
     public static void main(String[] args) {
         try {
-
+/*
             System.out.println("TEST 1:repeatmasker");
             BaatInstance bi = new BaatInstance("repeatmasker");
             bi.setParameter("1","","datafile.txt");
@@ -602,7 +644,7 @@ public class BaatInstance {
             System.out.println("baat has inputfiles: " + bi.getInputFiles());
             System.out.println("baat has outputfiles: " + bi.getOutputFiles());
             System.out.println("XML:\n"+bi.exportXML());
-
+*/
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -621,7 +663,7 @@ class BaatParameter {
     public String value = "";
     public ArrayList outputExtensions;
     public ArrayList inputExtensions;
-    public String primaryExtension = "";
+    public ArrayList acceptedExtensions;
     public String sourceParam = ""; //used where a parameter value is derived from another parameter's setting
     public String appendString = ""; //used as an appender when a sourceParam is used 
     public String extensionParameter = ""; //used with sourceParam allows another parameter to be used as the extension for this parameter
@@ -630,5 +672,6 @@ class BaatParameter {
     public BaatParameter() {
         outputExtensions = new ArrayList();
         inputExtensions = new ArrayList();
+        acceptedExtensions = new ArrayList();
     }
 }

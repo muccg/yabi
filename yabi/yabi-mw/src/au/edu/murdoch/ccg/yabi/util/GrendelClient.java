@@ -16,6 +16,7 @@ import au.edu.murdoch.ccg.yabi.objects.User;
 import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
 import au.edu.murdoch.ccg.yabi.util.MailTool;
 import org.apache.commons.configuration.*;
+import au.edu.murdoch.cbbc.util.CBBCException;
 
 import java.util.logging.Logger;
 
@@ -79,7 +80,13 @@ public class GrendelClient extends GenericProcessingClient {
         }
 
         //convert Baat into its XML
-        String xmlString = bi.exportXML();
+        String xmlString = "";
+
+        try {
+            xmlString = bi.exportXML();
+        } catch (CBBCException e) {
+            throw new Exception(e.getMessage());
+        }
 
         //DEBUG
         //System.out.println("\n\n" + xmlString + "\n\n");
@@ -100,7 +107,7 @@ public class GrendelClient extends GenericProcessingClient {
         SOAPElement xmlStringElem = bodyElement.addChildElement(name);
         xmlStringElem.addTextNode(xmlString); 
 
-        logger.finer(xmlString);
+        logger.fine(xmlString);
 
         //prepare to make connection to grendel
         java.net.URL endpoint = new URL(grendelUrl);
@@ -257,6 +264,8 @@ public class GrendelClient extends GenericProcessingClient {
     public void fileStageIn ( ArrayList files ) throws Exception {
         //file stagein for grendel is zip and submit as an attachment to the job
         inFiles = files;
+
+        logger.fine("staging in: "+inFiles);
 
         if (files != null && files.size() > 0) {
             //zip up all the input files and add the zipfile to the Baat

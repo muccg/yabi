@@ -49,10 +49,35 @@ public class FileParamExpander {
         }
     }
 
+    public void setFilters(ArrayList filters) {
+        if (filters != null) {
+            Iterator iter = filters.iterator();
+            while (iter.hasNext()) {
+                String ext = (String) iter.next();
+                this.filters.put(ext, "true");
+            }
+            filtered = true;
+        }
+    }
+
     public void removeFilter(String fileType) {
         logger.finest("[remove filter '"+fileType+"'] currsize: "+this.filters.size());    
         this.filters.remove(fileType);
         logger.finest("[remove filter '"+fileType+"'] finalsize: "+this.filters.size());
+    }
+
+    public void removeFilters(ArrayList filters) {
+        if (filters != null) {
+            Iterator iter = filters.iterator();
+            while (iter.hasNext()) {
+                String ext = (String) iter.next();
+                this.filters.remove(ext);
+            }
+        }
+    }
+
+    public void clearFilters() {
+        this.filters.clear();
     }
 
     /**
@@ -68,6 +93,8 @@ public class FileParamExpander {
         if (param == null) {
             throw new Exception("No input files specified");
         }
+
+        logger.info("fpe: filters included = "+filters);
 
         String[] tokenized = param.split(",");
         ArrayList expanded = new ArrayList();
@@ -96,11 +123,11 @@ public class FileParamExpander {
                     continue;
                 }
                 if (possibleFile.isDirectory()) {
-                    logger.info("fileParamExpander: directory: "+tokenized[i]);
+                    logger.fine("fileParamExpander: directory: "+tokenized[i]);
                     String[] dirExpansion = possibleFile.list();
                     for (int j=0;j < dirExpansion.length; j++) {
                         //expand directories out one level only
-                        logger.info("fileParamExpander: dirExpanded: "+tokenized[i]+"/"+dirExpansion[j]);
+                        logger.finer("fileParamExpander: dirExpanded: "+tokenized[i]+"/"+dirExpansion[j]);
                         expanded.add(tokenized[i]+"/"+dirExpansion[j]);
                     }
                     continue;
@@ -137,8 +164,15 @@ public class FileParamExpander {
         iter = expanded.iterator();
         String[] repackaged = new String[expanded.size()];
         int i = 0;
+        HashMap dupCheck = new HashMap();
         while(iter.hasNext()) {
-            repackaged[i++] = (String) iter.next();
+            String fname = (String) iter.next();
+            if (dupCheck.containsKey(fname)) {
+                logger.info("avoiding duplicate bundled file: "+fname);
+            } else {
+                repackaged[i++] = fname;
+                dupCheck.put(fname, "true");
+            }
         }
 
         return repackaged;
