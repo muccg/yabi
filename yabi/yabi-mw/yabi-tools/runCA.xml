@@ -21,7 +21,11 @@
       <parameter rank=""  switchUse="switchOnly" switch="-help"    mandatory="no"  inputFile="no"  outputFile="no"  value="" />
       <parameter rank=""  switchUse="switchOnly" switch="-version" mandatory="no"  inputFile="no"  outputFile="no"  value="" />
       <parameter rank=""  switchUse="switchOnly" switch="-fields"  mandatory="no"  inputFile="no"  outputFile="no"  value="" />
-      <parameter rank=""  switchUse="valueOnly"  switch="fragFile" mandatory="yes" inputFile="yes" outputFile="no"  value="" />
+      <parameter rank=""  switchUse="valueOnly"  switch="fragFile" mandatory="yes" inputFile="yes" outputFile="no"  value="" >
+        <acceptedExtensionList>
+            <acceptedExtension>frg</acceptedExtension>
+        </acceptedExtensionList>
+      </parameter>
     </parameterList>
 
     <parameterAliasList/>
