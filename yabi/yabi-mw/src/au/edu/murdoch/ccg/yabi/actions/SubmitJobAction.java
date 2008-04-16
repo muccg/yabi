@@ -133,6 +133,7 @@ public class SubmitJobAction extends BaseAction {
                 //if jobType doesn't exist, then it will default to 'grendel'. we are going to write this into variables so the fact is revealed to any clients
                 if (inputVars.get("jobType") == null || ((String) inputVars.get("jobType")).compareTo("") == 0) {
                     ctx.getContextInstance().setVariable( ctx.getNode().getFullyQualifiedName() + ".input.jobType" , "grendel" );
+                    inputVars.put("jobType", "grendel");
                 }
 
                 // ----- CREATE CLIENT -----
@@ -163,7 +164,10 @@ public class SubmitJobAction extends BaseAction {
                 ArrayList outputFiles = bi.getOutputFiles();
                 totalOutputFiles.addAll(outputFiles);
 
+                logger.info("set to stage in files: "+ bi.getInputFiles() );
+
                 // ----- SUBMIT JOB -----
+                logger.info("submitting job using class: "+pclient.getClass().getName());
                 String jobId = pclient.submitJob();
                 //batch append jobId
                 if (allJobIds.length() > 0) {
