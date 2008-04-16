@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/grendel/bin/toAmosWrapper" toolName="toAmos" displayName="toAmos" description="convert the output of an assembly program into the AMOS format">
+
+    <inputFile/>
+    <outputFile/>
+
+    <batchOnParameter name="-s"/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>seq</extension>
+        <extension>qul</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension mustExist="true">afg</extension>
+    </outputFiletypes>
+
+    <parameterList>
+      <parameter rank=""  switchUse="both"       switch="-m"       mandatory="no"  inputFile="yes" outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-x"       mandatory="no"  inputFile="yes" outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-f"       mandatory="no"  inputFile="yes" outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-acc"     mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-c"       mandatory="no"  inputFile="yes" outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-a"       mandatory="no"  inputFile="yes" outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-S"       mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-ta"      mandatory="no"  inputFile="yes" outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-ace"     mandatory="no"  inputFile="yes" outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-s"       mandatory="no"  inputFile="yes" outputFile="no"  value="" primaryExtension="seq"/>
+      <parameter rank=""  switchUse="both"       switch="-q"       mandatory="no"  inputFile="yes" outputFile="no"  value="" sourceParam="-s" extensionParam="qul"/>
+      <parameter rank=""  switchUse="both"       switch="-arachne" mandatory="no"  inputFile="yes" outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-scaff"   mandatory="no"  inputFile="yes" outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-o"       mandatory="no"  inputFile="yes" outputFile="no"  value="" sourceParam="-s" extensionParam="afg"/>
+      <parameter rank=""  switchUse="both"       switch="-i"       mandatory="no"  inputFile="yes" outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-map"     mandatory="no"  inputFile="yes" outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-gq"      mandatory="no"  inputFile="yes" outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-bq"      mandatory="no"  inputFile="yes" outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-pos"     mandatory="no"  inputFile="yes" outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-phd"     mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-utg"     mandatory="no"  inputFile="no"  outputFile="no"  value="" />
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>
