@@ -16,7 +16,6 @@
 
 
     <parameterList>
-      <parameter rank=""  switchUse="both"       switch="-d"       mandatory="yes" inputFile="no"    outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-p"       mandatory="yes" inputFile="no"    outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-s"       mandatory="yes" inputFile="maybe" outputFile="no"  value="" />
       <parameter rank=""  switchUse="switchOnly" switch="-help"    mandatory="no"  inputFile="no"  outputFile="no"  value="" />
