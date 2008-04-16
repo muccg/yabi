@@ -89,6 +89,8 @@ public class GrendelClient extends GenericProcessingClient {
             throw new Exception(e.getMessage());
         }
 
+        logger.info("grendel submit: \n"+xmlString);
+
         //DEBUG
         //System.out.println("\n\n" + xmlString + "\n\n");
 
