@@ -10,6 +10,9 @@
 
     <inputFiletypes requiresInput="true" acceptsInput="true">
         <extension>seq</extension>
+        <extension>fa</extension>
+        <extension>fasta</extension>
+        <extension>qual</extension>
         <extension>qul</extension>
     </inputFiletypes>
 
@@ -27,11 +30,22 @@
       <parameter rank=""  switchUse="switchOnly" switch="-S"       mandatory="no"  inputFile="no"  outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-ta"      mandatory="no"  inputFile="yes" outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-ace"     mandatory="no"  inputFile="yes" outputFile="no"  value="" />
-      <parameter rank=""  switchUse="both"       switch="-s"       mandatory="no"  inputFile="yes" outputFile="no"  value="" primaryExtension="seq"/>
-      <parameter rank=""  switchUse="both"       switch="-q"       mandatory="no"  inputFile="yes" outputFile="no"  value="" sourceParam="-s" extensionParam="qul"/>
+      <parameter rank=""  switchUse="both"       switch="-s"       mandatory="no"  inputFile="yes" outputFile="no"  value="" >
+        <acceptedExtensionList>
+            <acceptedExtension>seq</acceptedExtension>
+            <acceptedExtension>fa</acceptedExtension>
+            <acceptedExtension>fasta</acceptedExtension>
+        </acceptedExtensionList>
+      </parameter>
+      <parameter rank=""  switchUse="both"       switch="-q"       mandatory="no"  inputFile="yes" outputFile="no"  value="" >
+        <acceptedExtensionList>
+            <acceptedExtension>qual</acceptedExtension>
+            <acceptedExtension>qul</acceptedExtension>
+        </acceptedExtensionList>
+      </parameter>
       <parameter rank=""  switchUse="both"       switch="-arachne" mandatory="no"  inputFile="yes" outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-scaff"   mandatory="no"  inputFile="yes" outputFile="no"  value="" />
-      <parameter rank=""  switchUse="both"       switch="-o"       mandatory="no"  inputFile="yes" outputFile="no"  value="" sourceParam="-s" extensionParam="afg"/>
+      <parameter rank=""  switchUse="both"       switch="-o"       mandatory="no"  inputFile="no" outputFile="no"  value=""/>
       <parameter rank=""  switchUse="both"       switch="-i"       mandatory="no"  inputFile="yes" outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-map"     mandatory="no"  inputFile="yes" outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-gq"      mandatory="no"  inputFile="yes" outputFile="no"  value="" />

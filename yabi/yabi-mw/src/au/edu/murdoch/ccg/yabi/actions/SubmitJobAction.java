@@ -104,6 +104,15 @@ public class SubmitJobAction extends BaseAction {
                 inputVars.remove("batchOnParameter");
             }
 
+            //if batchIterations is zero length then we have a problem
+            if (batchIterations.length == 0) {
+                varTranslator.saveVariable(ctx, "errorMessage", "No suitable input files found on which to operate");
+                varTranslator.saveVariable(ctx, "jobStatus", "E" );
+                    
+                //propagate execution to error state
+                ctx.leaveNode("error");
+            }
+
             for (int i = 0; i < batchIterations.length; i++) {
                 BaatInstance bi = new BaatInstance( (String) inputVars.get("toolName") ); //this will throw an exception if toolName not found
                 bi.setFileParamExpander(fpe);

@@ -26,10 +26,17 @@ public abstract class Zipper {
             }
         }
 
+        HashMap dupCheck = new HashMap();
+
         iter = expandedFiles.iterator();
         while (iter.hasNext()) {
             String filename = (String) iter.next();
-    
+            if (dupCheck.containsKey(filename)) {
+                continue;
+            }
+
+            dupCheck.put(filename, "true");    
+
             FileInputStream in = new FileInputStream(tempDir + filename);
    
             // Add ZIP entry to output stream.

@@ -6,8 +6,6 @@
     <inputFile/>
     <outputFile/>
 
-    <batchOnParameter name="fastaFile"/>
-
     <inputFiletypes requiresInput="true" acceptsInput="true">
         <extension>seq</extension>
         <extension>fa</extension>
@@ -15,7 +13,7 @@
         <extension>qul</extension>
     </inputFiletypes>
 
-    <outputFiletypes filePassThru="false">
+    <outputFiletypes filePassThru="true">
         <extension mustExist="true">seq</extension>
         <extension mustExist="true">qul</extension>
     </outputFiletypes>

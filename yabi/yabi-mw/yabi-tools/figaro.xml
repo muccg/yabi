@@ -10,13 +10,19 @@
         <extension>seq</extension>
     </inputFiletypes>
 
-    <outputFiletypes filePassThru="false">
+    <outputFiletypes filePassThru="true">
         <extension mustExist="true">summary</extension>
         <extension mustExist="true">vectorcuts</extension>
     </outputFiletypes>
 
     <parameterList>
-      <parameter rank=""  switchUse="both" switch="-F" mandatory="yes" inputFile="yes" outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both" switch="-F" mandatory="yes" inputFile="yes" outputFile="no"  value="" >
+        <acceptedExtensionList>
+            <acceptedExtension>seq</acceptedExtension>
+            <acceptedExtension>fasta</acceptedExtension>
+            <acceptedExtension>fa</acceptedExtension>
+        </acceptedExtensionList>
+      </parameter>
       <parameter rank=""  switchUse="both" switch="-P" mandatory="yes" inputFile="no"  outputFile="no"  value="" />
       <parameter rank=""  switchUse="both" switch="-T" mandatory="no"  inputFile="no"  outputFile="no"  value="" />
       <parameter rank=""  switchUse="both" switch="-M" mandatory="no"  inputFile="no"  outputFile="no"  value="" />
