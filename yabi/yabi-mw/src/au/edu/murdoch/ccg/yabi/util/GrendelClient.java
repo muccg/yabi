@@ -85,6 +85,7 @@ public class GrendelClient extends GenericProcessingClient {
         try {
             xmlString = bi.exportXML();
         } catch (CBBCException e) {
+            e.printStackTrace();
             throw new Exception(e.getMessage());
         }
 
@@ -190,6 +191,10 @@ public class GrendelClient extends GenericProcessingClient {
 
     public String getJobStatus (String jobId) throws Exception {
         this.jobId = jobId;  //store this for if we intend to stageout
+
+        if (jobId == null || jobId.length() < 1) {
+            throw new Exception("Failed to obtain valid job ID from grendel");
+        }
 
         //create SOAP message
         //MessageFactory factory = MessageFactory.newInstance();
