@@ -19,7 +19,7 @@
 
 
     <parameterList>
-        <parameter rank="1" switchUse="valueOnly" switch="inputFiles" mandatory="yes" inputFile="no" outputFile="no" value=""/>
+        <parameter rank="1" switchUse="valueOnly" switch="inputFiles" mandatory="yes" inputFile="no" outputFile="no" value="" filter="prependUserDir"/>
         <parameter rank="2" switchUse="valueOnly" switch="outFile" mandatory="yes" filter="" inputFile="no" outputFile="yes" value="output.list"/>
     </parameterList>
 

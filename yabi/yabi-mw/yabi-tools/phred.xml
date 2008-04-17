@@ -16,7 +16,11 @@
 
     <parameterList>
       <parameter rank=""  switchUse="both"       switch="-if"              mandatory="no"  inputFile="yes" inputType="listoffiles" outputFile="no"  value="" />
-      <parameter rank=""  switchUse="both"       switch="-id"              mandatory="no"  inputFile="yes" inputType="directory"   outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-id"              mandatory="no"  inputFile="yes" inputType="directory"   outputFile="no"  value="" >
+        <acceptedExtensionList>
+            <acceptedExtension>tar</acceptedExtension>
+        </acceptedExtensionList>
+      </parameter>
       <parameter rank=""  switchUse="both"       switch="-zd"              mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-zt"              mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-st"              mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
