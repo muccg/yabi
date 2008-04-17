@@ -115,10 +115,39 @@ public class LocalClient extends GenericProcessingClient {
     }
 
     public void fileStageIn ( ArrayList files ) throws Exception {
-        //file stagein for local is nothing
+        //file stagein for local is copying the input files to this node's directory so we can assume a flat infile dir
         inFiles = files;
 
+        //create data directories
+        String dataDirLoc = rootDir + this.outputDir ;
+        File dataDir = new File(dataDirLoc);
+        if (!dataDir.exists()) {
+            dataDir.mkdir();
+        }
+        String unitDirLoc = dataDirLoc + this.outFilePrefix;
+        File unitDir = new File(unitDirLoc);
+        if (!unitDir.exists()) {
+            unitDir.mkdir();
+        }
+
+        //iterate over files, copying them to our unitdir
         if (files != null && files.size() > 0) {
+            Iterator iter = files.iterator();
+            while (iter.hasNext()) {
+                String fileIn = (String) iter.next();
+                String subFileIn = fileIn;
+                if (subFileIn.lastIndexOf("/") > 0) { //prune off path
+                    subFileIn = subFileIn.substring(subFileIn.lastIndexOf("/")+1);
+                }
+                //put a file
+                logger.fine("stagein: putting file: "+fileIn);
+
+                File oldLoc = new File(this.inputDir + fileIn);
+                File destLoc = new File(unitDir, subFileIn);
+
+                copyFile(oldLoc, destLoc);
+            }
+
         }
     }
 
@@ -143,5 +172,23 @@ public class LocalClient extends GenericProcessingClient {
     public boolean hasError () throws Exception {
         return false;
     }   
+
+
+    //------ HELPER FUNCTIONS ------ potentially spawn to helper class
+    // Copies src file to dst file.
+    // If the dst file does not exist, it is created
+    public static void copyFile(File src, File dst) throws IOException {
+        InputStream in = new FileInputStream(src);
+        OutputStream out = new FileOutputStream(dst);
+    
+        // Transfer bytes from in to out
+        byte[] buf = new byte[1024];
+        int len;
+        while ((len = in.read(buf)) > 0) {
+            out.write(buf, 0, len);
+        }
+        in.close();
+        out.close();
+    }
 
 }

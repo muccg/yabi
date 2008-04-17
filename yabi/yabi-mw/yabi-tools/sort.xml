@@ -19,7 +19,7 @@
     </outputFiletypes>
 
     <parameterList>
-      <parameter rank="1" switchUse="valueOnly" switch="notUsed" mandatory="yes" filter="prependUserDir" inputFile="yes" outputFile="no" value=""/>
+      <parameter rank="1" switchUse="valueOnly" switch="notUsed" mandatory="yes" inputFile="yes" outputFile="no" value=""/>
       <parameter rank="" switchUse="both" switch="-o" mandatory="no" inputFile="no" outputFile="no" value="sort.fa"/>
       <parameter rank="" switchUse="switchOnly" switch="-b" mandatory="no" inputFile="no" outputFile="no" value=""/>
       <parameter rank="" switchUse="switchOnly" switch="-d" mandatory="no" inputFile="no" outputFile="no" value=""/>
