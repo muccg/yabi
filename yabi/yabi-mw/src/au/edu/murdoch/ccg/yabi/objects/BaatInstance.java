@@ -478,6 +478,15 @@ public class BaatInstance {
                             this.addInputFile(newFileName);
                         }
                     }
+
+                    //2008-04-17 removing path from all input values that specify an inputFile, as we are staging in flat structure now
+                    int lastPath = bp.value.lastIndexOf("/");
+                    int filenameIndex = lastPath + 1;
+                    if (filenameIndex < 0 || lastPath >= bp.value.length()) {
+                        filenameIndex = 0;
+                    }
+                    bp.value = bp.value.substring(filenameIndex);
+
                 }
                 if (bp.outputFile.compareTo("yes") == 0) {
                     outputFiles.add(value);

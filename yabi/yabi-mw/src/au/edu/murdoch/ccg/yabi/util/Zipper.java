@@ -39,6 +39,15 @@ public abstract class Zipper {
 
             FileInputStream in = new FileInputStream(tempDir + filename);
    
+            //2008-04-17 remove path from filename as we are now staging in a flat structure
+            int lastPath = filename.lastIndexOf("/");
+            int filenameIndex = lastPath + 1;
+            if (filenameIndex < 0 || lastPath >= filename.length()) {
+                filenameIndex = 0;
+            }
+            filename = filename.substring(filenameIndex);
+
+
             // Add ZIP entry to output stream.
             out.putNextEntry(new ZipEntry(filename));
     
@@ -58,7 +67,7 @@ public abstract class Zipper {
     }
 
     public static ArrayList unzip (String inFilename, String destination, String prefix) throws Exception {
-        return unzip(inFilename, destination, prefix, false);
+        return unzip(inFilename, destination, prefix, true);
     }
 
     public static ArrayList unzip (String inFilename, String destination, String prefix, boolean withDirs) throws Exception {
