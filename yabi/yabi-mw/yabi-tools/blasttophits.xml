@@ -16,7 +16,11 @@
     <outputFile/>
 
     <parameterList>
-        <parameter rank="1" switchUse="valueOnly" switch="inputFiles" mandatory="yes" inputFile="yes" filter="prependUserDir" outputFile="no"  value=""/>
+        <parameter rank="1" switchUse="valueOnly" switch="inputFiles" mandatory="yes" inputFile="yes" outputFile="no"  value="">
+            <acceptedExtensionList>
+                <acceptedExtension>bls</acceptedExtension>
+            </acceptedExtensionList>
+        </parameter>
         <parameter rank="2" switchUse="valueOnly" switch="hitCount" mandatory="yes" inputFile="no" outputFile="no" value=""/>
     </parameterList>
 
