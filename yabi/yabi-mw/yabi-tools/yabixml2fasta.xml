@@ -15,7 +15,7 @@
     </outputFiletypes>
 
     <parameterList>
-      <parameter rank="1" switchUse="valueOnly" switch="inputFiles" mandatory="yes" filter="prependUserDir" inputFile="yes" outputFile="no" value=""/>
+      <parameter rank="1" switchUse="valueOnly" switch="inputFiles" mandatory="yes" inputFile="yes" outputFile="no" value=""/>
       <parameter rank="2" switchUse="valueOnly" switch="" mandatory="yes" inputFile="no" outputFile="no" value="yabixml"/>
       <parameter rank="3" switchUse="valueOnly" switch="" mandatory="yes" inputFile="no" outputFile="no" value="fasta"/>
     </parameterList>

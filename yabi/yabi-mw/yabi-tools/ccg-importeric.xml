@@ -20,7 +20,7 @@
     </outputFiletypes>
 
     <parameterList>
-      <parameter rank="1" switchUse="both" switch="-i" mandatory="yes" filter="prependUserDir" inputFile="yes" outputFile="no" value=""/>
+      <parameter rank="1" switchUse="both" switch="-i" mandatory="yes" inputFile="yes" outputFile="no" value=""/>
       <parameter rank="" switchUse="both" switch="-t" mandatory="no" inputFile="no" outputFile="no" value=""/>
       <parameter rank="" switchUse="both" switch="-s" mandatory="no" inputFile="no" outputFile="no" value=""/>
       <parameter rank="" switchUse="both" switch="-l" mandatory="no" inputFile="no" outputFile="no" value=""/>
