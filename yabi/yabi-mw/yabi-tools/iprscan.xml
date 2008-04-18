@@ -24,7 +24,14 @@
     
 
     <parameterList>
-      <parameter rank=""  switchUse="both"       switch="-i"         mandatory="yes" inputFile="yes"   outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-i"         mandatory="yes" inputFile="yes"   outputFile="no"  value="" >
+        <acceptedExtensionList>
+            <acceptedExtension>fa</acceptedExtension>
+            <acceptedExtension>fna</acceptedExtension>
+            <acceptedExtension>faa</acceptedExtension>
+            <acceptedExtension>seq</acceptedExtension>
+        </acceptedExtensionList>
+      </parameter>
       <parameter rank=""  switchUse="both"       switch="-o"         mandatory="no"  inputFile="no"    outputFile="yes" value="" sourceParam="-i" extensionParam="-format"/>
       <parameter rank=""  switchUse="both"       switch="-appl"      mandatory="no"  inputFile="no"    outputFile="no"  value="" />
       <parameter rank=""  switchUse="switchOnly" switch="-nocrc"     mandatory="no"  inputFile="no"    outputFile="no"  value="" />
