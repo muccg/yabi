@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
 <baat>
-  <job toolPath="cp" toolName="fileuploader" displayName="upload file" description="Upload a file from your computer to your workspace directory.">
+  <job toolPath="echo" toolName="fileuploader" displayName="upload file" description="Upload a file from your computer to your workspace directory.">
 
     <inputFile/>
     <outputFile/>
@@ -15,8 +15,7 @@
     </outputFiletypes>
 
     <parameterList>
-        <parameter rank="1" switchUse="valueOnly" switch="files" mandatory="yes" inputFile="no" outputFile="no"  value=""/>
-        <parameter rank="2" switchUse="valueOnly" switch="destination" mandatory="no" inputFile="no" outputFile="no" value="."/>
+        <parameter rank="1" switchUse="valueOnly" switch="files" mandatory="yes" inputFile="no" outputFile="no"  value="file uploaded"/>
     </parameterList>
 
     <parameterAliasList/>
