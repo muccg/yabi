@@ -16,7 +16,11 @@
     <outputFile/>
 
     <parameterList>
-        <parameter rank="1" switchUse="valueOnly" switch="inputFiles" mandatory="yes" inputFile="yes" outputFile="no"  value=""/>
+        <parameter rank="1" switchUse="valueOnly" switch="inputFiles" mandatory="yes" inputFile="yes" outputFile="no"  value="">
+            <acceptedExtensionList>
+                <acceptedExtension>xml</acceptedExtension>
+            </acceptedExtensionList>
+        </parameter>
     </parameterList>
 
     <parameterAliasList/>
