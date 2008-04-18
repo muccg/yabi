@@ -100,7 +100,7 @@ parameter
 		sourceParam - you can specify another parameter from which this one derives its value (ie if you specify -i then the value of this param is the same as the value for -i)
 		appendString - if sourceParam is specified, this is added to the end of the value
 		extensionParam - if sourceParam is specified, the extension of the value is replaced with this extension
-		inputFile
+		inputFile (yes) indicates that it is an input file rather than a string
 		inputType
 		outputFile
 		value
