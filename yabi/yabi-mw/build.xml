@@ -294,7 +294,6 @@
         <symlink link="${ccg.toolsroot}/default/multiple sequence alignment/t_coffee.xml" resource="${ccg.toolsroot}/t_coffee.xml" />
 
         <!-- sequence alignment -->
-        <symlink link="${ccg.toolsroot}/default/sequence alignment/bl2seq.xml" resource="${ccg.toolsroot}/bl2seq.xml" />
         <symlink link="${ccg.toolsroot}/default/sequence alignment/blat.xml" resource="${ccg.toolsroot}/blat.xml" />
         <symlink link="${ccg.toolsroot}/default/sequence alignment/fasta.xml" resource="${ccg.toolsroot}/fasta.xml" />
 
