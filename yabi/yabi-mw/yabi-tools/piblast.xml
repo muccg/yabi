@@ -18,7 +18,7 @@
     </outputFiletypes>
 
     <parameterList>
-      <parameter rank="1" switchUse="valueOnly" switch="shortsequence" mandatory="yes" inputFile="no" outputFile="no" value=""/>
+      <parameter rank="1" switchUse="valueOnly" switch="shortsequence" mandatory="yes" inputFile="no" outputFile="no" value="T"/>
       <parameter rank="" switchUse="both" switch="-p" mandatory="yes" inputFile="no"    outputFile="no"  value=""/>
       <parameter rank="" switchUse="both" switch="-d" mandatory="yes" inputFile="no"    outputFile="no"  value=""/>
       <parameter rank="" switchUse="both" switch="-i" mandatory="yes" inputFile="yes"   outputFile="no"  value=""/>
