@@ -127,7 +127,7 @@ public class FileParamExpander {
                     String[] dirExpansion = possibleFile.list();
                     for (int j=0;j < dirExpansion.length; j++) {
                         //expand directories out one level only
-                        logger.finer("fileParamExpander: dirExpanded: "+tokenized[i]+"/"+dirExpansion[j]);
+                        logger.info("fileParamExpander: dirExpanded: "+tokenized[i]+"/"+dirExpansion[j]);
                         expanded.add(tokenized[i]+"/"+dirExpansion[j]);
                     }
                     continue;
@@ -146,7 +146,7 @@ public class FileParamExpander {
                 String file = (String) iter.next();
                 if ( file.lastIndexOf(".") == -1 || file.lastIndexOf(".") == file.length() - 1 ) {
                     iter.remove(); //if filtered, then don't allow files without an extension
-                    logger.fine("REMOVING NONMATCHING FILE ["+file+"]");
+                    logger.info("REMOVING NONMATCHING FILE ["+file+"]");
                 } else {
                     String extension = file.substring( file.lastIndexOf(".") + 1 );
                     if ( filters.containsKey(extension) ) {
@@ -154,7 +154,7 @@ public class FileParamExpander {
                     } else {
                         //doesn't match our permitted files, skip
                         iter.remove();
-                        logger.fine("REMOVING NONMATCHING FILE ["+file+"]");
+                        logger.info("REMOVING NONMATCHING FILE ["+file+"]");
                     }
                 }
             }

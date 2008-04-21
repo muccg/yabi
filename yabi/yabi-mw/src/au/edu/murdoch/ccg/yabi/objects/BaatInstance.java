@@ -482,7 +482,8 @@ public class BaatInstance {
                     //2008-04-17 removing path from all input values that specify an inputFile, as we are staging in flat structure now
                     int lastPath = bp.value.lastIndexOf("/");
                     int filenameIndex = lastPath + 1;
-                    if (filenameIndex < 0 || lastPath >= bp.value.length()) {
+                    //note special case if we are stripping the whole value off we abort and send the path as we would get validation errors on an empty param
+                    if (filenameIndex < 0 || lastPath >= (bp.value.length() - 1)) {
                         filenameIndex = 0;
                     }
                     bp.value = bp.value.substring(filenameIndex);
