@@ -335,6 +335,7 @@
 
         <!-- blast -->
         <symlink link="${ccg.toolsroot}/pi/blast search/proint-blast.xml" resource="${ccg.toolsroot}/proint-blast.xml" />
+        <symlink link="${ccg.toolsroot}/pi/blast search/prointblast2html.xml" resource="${ccg.toolsroot}/prointblast2html.xml" />
         <symlink link="${ccg.toolsroot}/pi/blast search/msblast.xml" resource="${ccg.toolsroot}/msblast.xml" />
 
     

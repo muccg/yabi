@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
 <baat>
-  <job toolPath="/usr/local/grendel/bin/blastWrapper" toolName="blast" displayName="pi-blast" description="BLAST the input files based on the options selected.">
+  <job toolPath="/usr/local/grendel/bin/piblastWrapper" toolName="piblast" displayName="pi-blast" description="BLAST the input files based on the options selected.">
 
     <inputFile/>
     <outputFile/>
@@ -18,9 +18,10 @@
     </outputFiletypes>
 
     <parameterList>
-      <parameter rank="1" switchUse="both" switch="-p" mandatory="yes" inputFile="no"    outputFile="no"  value=""/>
-      <parameter rank="2" switchUse="both" switch="-d" mandatory="yes" inputFile="no"    outputFile="no"  value=""/>
-      <parameter rank="3" switchUse="both" switch="-i" mandatory="yes" inputFile="yes"   outputFile="no"  value=""/>
+      <parameter rank="1" switchUse="valueOnly" switch="shortsequence" mandatory="yes" inputFile="no" outputFile="no" value=""/>
+      <parameter rank="" switchUse="both" switch="-p" mandatory="yes" inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank="" switchUse="both" switch="-d" mandatory="yes" inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank="" switchUse="both" switch="-i" mandatory="yes" inputFile="yes"   outputFile="no"  value=""/>
       <parameter rank=""  switchUse="both" switch="-o" mandatory="no"  inputFile="no"    outputFile="yes" value="" sourceParam="-i" appendString=".bls"/>
       <parameter rank=""  switchUse="both" switch="-O" mandatory="no"  inputFile="no"    outputFile="yes" value=""/>
       <parameter rank=""  switchUse="both" switch="-F" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
