@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/grendel/bin/msblastWrapper" toolName="msblast" displayName="msblast" description="Mass Spectrometry driven BLAST">
+
+    <inputFile/>
+    <outputFile/>
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>fa</extension>
+        <extension>fna</extension>
+        <extension>faa</extension>
+        <extension>gb</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension mustExist="true">html</extension>
+    </outputFiletypes>
+
+    <parameterList>
+      <parameter rank=""  switchUse="both"       switch="-db"              mandatory="yes" inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-query"           mandatory="yes" inputFile="yes" inputType=""            outputFile="no"  value="" >
+        <acceptedExtensionList>
+            <acceptedExtension>fa</acceptedExtension>
+            <acceptedExtension>fna</acceptedExtension>
+            <acceptedExtension>faa</acceptedExtension>
+        </acceptedExtensionList>
+      </parameter>
+      <parameter rank=""  switchUse="both"       switch="-score_table"     mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-uniq_pep"        mandatory="no"  inputFile="no"  inputType=""            outputFile="no"  value="" />
+      <parameter rank=""  switchUse="both"       switch="-output"          mandatory="no"  inputFile="no"  inputType=""            outputFile="yes" value="" />
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>
