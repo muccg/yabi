@@ -1,54 +1,69 @@
 NCBI: {
-  globalaa: {
-    displayname: 'globalaa',
-    subset: {
-      bos_taurus: 'Bos taurus',
-      canis_lupus_familiaris: 'Canis lupus familiaris',
-      homo_sapiens: 'Homo sapiens',
-      mus_musculus: 'Mus musculus',
-      oryza_sativa: 'Oryza sativa',
-      rattus_norvegicus: 'Rattus norvegicus',
-      sus_scrofa: 'Sus scrofa',
-      triticum_aestivum: 'Triticum aestivum'
-    }
-  },
   nr: {
     displayname: 'protein (nr)',
     subset: {
-      bos_taurus: 'Bos taurus',
-      canis_lupus_familiaris: 'Canis lupus familiaris',
-      homo_sapiens: 'Homo sapiens',
-      mus_musculus: 'Mus musculus',
-      oryza_sativa: 'Oryza sativa',
-      rattus_norvegicus: 'Rattus norvegicus',
-      sus_scrofa: 'Sus scrofa',
-      triticum_aestivum: 'Triticum aestivum'
+	aprocrita: 'Apocrita',
+	arachnida: 'Arachnida',
+	arthropoda: 'Arthropoda',
+	formicidae: 'Formicidae',
+	scorpions: 'Scorpions',
+	toxin: 'Toxin',
+	toxin_venom: 'Toxin & Venom',
+	venom: 'Venom'
     }
   },
   swissprot: {
-    displayname: 'swissprot',
+    displayname: 'Swissprot',
     subset: {
-      bos_taurus: 'Bos taurus',
-      canis_lupus_familiaris: 'Canis lupus familiaris',
-      homo_sapiens: 'Homo sapiens',
-      mus_musculus: 'Mus musculus',
-      oryza_sativa: 'Oryza sativa',
-      rattus_norvegicus: 'Rattus norvegicus',
-      sus_scrofa: 'Sus scrofa',
-      triticum_aestivum: 'Triticum aestivum'
+	aprocrita: 'Apocrita',
+	arachnida: 'Arachnida',
+	arthropoda: 'Arthropoda',
+	formicidae: 'Formicidae',
+	scorpions: 'Scorpions',
+	toxin: 'Toxin',
+	toxin_venom: 'Toxin & Venom',
+	venom: 'Venom'
+    }
+  },
+  pataa: {
+    displayname: 'patented amino acids',
+    subset: {
+	aprocrita: 'Apocrita',
+	arachnida: 'Arachnida',
+	arthropoda: 'Arthropoda',
+	formicidae: 'Formicidae',
+	scorpions: 'Scorpions',
+	toxin: 'Toxin',
+	toxin_venom: 'Toxin & Venom',
+	venom: 'Venom'
     }
   },
   refseq_protein: {
-    displayname: 'RefSeq Protein',
+    displayname: 'RefSeq protein',
     subset: {
-      bos_taurus: 'Bos taurus',
-      canis_lupus_familiaris: 'Canis lupus familiaris',
-      homo_sapiens: 'Homo sapiens',
-      mus_musculus: 'Mus musculus',
-      oryza_sativa: 'Oryza sativa',
-      rattus_norvegicus: 'Rattus norvegicus',
-      sus_scrofa: 'Sus scrofa',
-      triticum_aestivum: 'Triticum aestivum'
+	aprocrita: 'Apocrita',
+	arachnida: 'Arachnida',
+	arthropoda: 'Arthropoda',
+	formicidae: 'Formicidae',
+	scorpions: 'Scorpions',
+	toxin: 'Toxin',
+	toxin_venom: 'Toxin & Venom',
+	venom: 'Venom'
+    }
+  },
+  cono_aa: {
+    displayname: 'conotoxin proteins',
+    subset: {
+    }
+  },
+  scorpion_aa: {
+    displayname: 'scorpion neurotoxin',
+    subset: {
+    }
+  },
+  uniprot_trembl: {
+    displayname: 'Uniprot TREMBL',
+    subset: {
     }
   }
 }
