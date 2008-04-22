@@ -1,0 +1,54 @@
+NCBI: {
+  globalaa: {
+    displayname: 'globalaa',
+    subset: {
+      bos_taurus: 'Bos taurus',
+      canis_lupus_familiaris: 'Canis lupus familiaris',
+      homo_sapiens: 'Homo sapiens',
+      mus_musculus: 'Mus musculus',
+      oryza_sativa: 'Oryza sativa',
+      rattus_norvegicus: 'Rattus norvegicus',
+      sus_scrofa: 'Sus scrofa',
+      triticum_aestivum: 'Triticum aestivum'
+    }
+  },
+  nr: {
+    displayname: 'protein (nr)',
+    subset: {
+      bos_taurus: 'Bos taurus',
+      canis_lupus_familiaris: 'Canis lupus familiaris',
+      homo_sapiens: 'Homo sapiens',
+      mus_musculus: 'Mus musculus',
+      oryza_sativa: 'Oryza sativa',
+      rattus_norvegicus: 'Rattus norvegicus',
+      sus_scrofa: 'Sus scrofa',
+      triticum_aestivum: 'Triticum aestivum'
+    }
+  },
+  swissprot: {
+    displayname: 'swissprot',
+    subset: {
+      bos_taurus: 'Bos taurus',
+      canis_lupus_familiaris: 'Canis lupus familiaris',
+      homo_sapiens: 'Homo sapiens',
+      mus_musculus: 'Mus musculus',
+      oryza_sativa: 'Oryza sativa',
+      rattus_norvegicus: 'Rattus norvegicus',
+      sus_scrofa: 'Sus scrofa',
+      triticum_aestivum: 'Triticum aestivum'
+    }
+  },
+  refseq_protein: {
+    displayname: 'RefSeq Protein',
+    subset: {
+      bos_taurus: 'Bos taurus',
+      canis_lupus_familiaris: 'Canis lupus familiaris',
+      homo_sapiens: 'Homo sapiens',
+      mus_musculus: 'Mus musculus',
+      oryza_sativa: 'Oryza sativa',
+      rattus_norvegicus: 'Rattus norvegicus',
+      sus_scrofa: 'Sus scrofa',
+      triticum_aestivum: 'Triticum aestivum'
+    }
+  }
+}
