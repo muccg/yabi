@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
 <baat>
-  <job toolPath="/usr/local/grendel/bin/prss34Wrapper" toolName="prss34" displayName="prss" description="evaluate the significance of a pro- tein:protein, DNA:DNA ( prss34 ), or translated-DNA:protein ( prfx34  ) sequence  similarity  score">
+  <job toolPath="/usr/local/grendel/bin/prss34Wrapper" toolName="prss34" displayName="prss" description="evaluate the significance of a protein:protein, DNA:DNA ( prss34 ), or translated-DNA:protein ( prfx34  ) sequence  similarity  score">
 
     <inputFile/>
     <outputFile/>
@@ -21,13 +21,13 @@
     <parameterList>
       <parameter rank="0" switchUse="valueOnly"  switch="program"   mandatory="yes" inputFile="no"    outputFile="no"  value="" />
       <parameter rank="1" switchUse="valueOnly"  switch="inputFile" mandatory="yes" inputFile="yes"   outputFile="no"  value="" />
-      <parameter rank="2" switchUse="valueOnly"  switch="dataSet"   mandatory="yes" inputFile="maybe" outputFile="no"  value="" />
+      <parameter rank="2" switchUse="valueOnly"  switch="dataSet"   mandatory="yes" inputFile="yes" outputFile="no"  value="" />
       <parameter rank=""  switchUse="switchOnly" switch="-A"        mandatory="no"  inputFile="no"    outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-f"        mandatory="no"  inputFile="no"    outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-g"        mandatory="no"  inputFile="no"    outputFile="no"  value="" />
       <parameter rank=""  switchUse="switchOnly" switch="-H"        mandatory="no"  inputFile="no"    outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-k"        mandatory="no"  inputFile="no"    outputFile="no"  value="" />
-      <parameter rank=""  switchUse="both"       switch="-q"        mandatory="no"  inputFile="no"    outputFile="no"  value="" />
+      <parameter rank=""  switchUse="switchOnly" switch="-q"        mandatory="no"  inputFile="no"    outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-O"        mandatory="no"  inputFile="no"    outputFile="yes" value="" />
       <parameter rank=""  switchUse="both"       switch="-s"        mandatory="no"  inputFile="no"    outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-v"        mandatory="no"  inputFile="no"    outputFile="no"  value="" />
