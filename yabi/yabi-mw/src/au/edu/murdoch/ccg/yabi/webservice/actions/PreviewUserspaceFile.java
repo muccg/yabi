@@ -70,13 +70,23 @@ public class PreviewUserspaceFile extends BaseAction {
 
                     request.setAttribute("file", requestedFile);
 
-                    if (extension.compareTo("txt") == 0) {
+                    //default preview for any non-binary file
+                    if (extension.compareTo("zip") != 0 &&
+                        extension.compareTo("ab1") != 0 &&
+                        extension.compareTo("jpg") != 0 &&
+                        extension.compareTo("gif") != 0 &&
+                        extension.compareTo("tar") != 0 &&
+                        extension.compareTo("gz") != 0) {
                         String output = "";
                         FileReader fr = new FileReader(filePath);
-                        char[] buf = new char[500];
-                        int charCount = fr.read(buf, 0, 500);
+                        char[] buf = new char[2500];
+                        int charCount = fr.read(buf, 0, 2500);
                         fr.close();
                         if (charCount > 0) output = String.valueOf(buf, 0, charCount);
+
+                        if (output.length() == 2500) {
+                            output += " ...[file truncated for preview]";
+                        }
 
                         request.setAttribute("preview", output);
                     } else {
