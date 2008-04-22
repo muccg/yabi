@@ -10,7 +10,7 @@
         <extension>*</extension>
     </inputFiletypes>
 
-    <outputFiletypes filePassThru="false">
+    <outputFiletypes filePassThru="true">
         <extension>*</extension>
     </outputFiletypes>
 

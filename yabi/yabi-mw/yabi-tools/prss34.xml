@@ -20,8 +20,22 @@
 
     <parameterList>
       <parameter rank="0" switchUse="valueOnly"  switch="program"   mandatory="yes" inputFile="no"    outputFile="no"  value="" />
-      <parameter rank="1" switchUse="valueOnly"  switch="inputFile" mandatory="yes" inputFile="yes"   outputFile="no"  value="" />
-      <parameter rank="2" switchUse="valueOnly"  switch="dataSet"   mandatory="yes" inputFile="yes" outputFile="no"  value="" />
+      <parameter rank="1" switchUse="valueOnly"  switch="inputFile" mandatory="yes" inputFile="yes"   outputFile="no"  value="" >
+        <acceptedExtensionList>
+            <acceptedExtension>fa</acceptedExtension>
+            <acceptedExtension>fna</acceptedExtension>
+            <acceptedExtension>faa</acceptedExtension>
+            <acceptedExtension>seq</acceptedExtension>
+        </acceptedExtensionList>
+      </parameter>
+      <parameter rank="2" switchUse="valueOnly"  switch="dataSet"   mandatory="yes" inputFile="yes" outputFile="no"  value="" >
+        <acceptedExtensionList>
+            <acceptedExtension>fa</acceptedExtension>
+            <acceptedExtension>fna</acceptedExtension>
+            <acceptedExtension>faa</acceptedExtension>
+            <acceptedExtension>seq</acceptedExtension>
+        </acceptedExtensionList>
+      </parameter>
       <parameter rank=""  switchUse="switchOnly" switch="-A"        mandatory="no"  inputFile="no"    outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-f"        mandatory="no"  inputFile="no"    outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-g"        mandatory="no"  inputFile="no"    outputFile="no"  value="" />
