@@ -2,7 +2,7 @@ NCBI: {
   nr: {
     displayname: 'protein (nr)',
     subset: {
-	aprocrita: 'Apocrita',
+	apocrita: 'Apocrita',
 	arachnida: 'Arachnida',
 	arthropoda: 'Arthropoda',
 	formicidae: 'Formicidae',
@@ -15,7 +15,7 @@ NCBI: {
   swissprot: {
     displayname: 'Swissprot',
     subset: {
-	aprocrita: 'Apocrita',
+	apocrita: 'Apocrita',
 	arachnida: 'Arachnida',
 	arthropoda: 'Arthropoda',
 	formicidae: 'Formicidae',
@@ -28,7 +28,7 @@ NCBI: {
   pataa: {
     displayname: 'patented amino acids',
     subset: {
-	aprocrita: 'Apocrita',
+	apocrita: 'Apocrita',
 	arachnida: 'Arachnida',
 	arthropoda: 'Arthropoda',
 	formicidae: 'Formicidae',
@@ -41,7 +41,7 @@ NCBI: {
   refseq_protein: {
     displayname: 'RefSeq protein',
     subset: {
-	aprocrita: 'Apocrita',
+	apocrita: 'Apocrita',
 	arachnida: 'Arachnida',
 	arthropoda: 'Arthropoda',
 	formicidae: 'Formicidae',
