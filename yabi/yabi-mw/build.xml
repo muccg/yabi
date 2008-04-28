@@ -332,6 +332,7 @@
         <mkdir dir="${ccg.toolsroot}/pi/" />
         <mkdir dir="${ccg.toolsroot}/pi/select data/" />
         <mkdir dir="${ccg.toolsroot}/pi/blast search/" />
+        <mkdir dir="${ccg.toolsroot}/pi/sequence tools/" />
         <mkdir dir="${ccg.toolsroot}/pi/statistics/" />
 
         <!-- select data -->
@@ -345,6 +346,10 @@
         <symlink link="${ccg.toolsroot}/pi/blast search/prointblast2html.xml" resource="${ccg.toolsroot}/prointblast2html.xml" />
         <symlink link="${ccg.toolsroot}/pi/blast search/msblast.xml" resource="${ccg.toolsroot}/msblast.xml" />
 
+        <!-- sequence tools -->
+        <symlink link="${ccg.toolsroot}/pi/sequence tools/fastasplitter.xml" resource="${ccg.toolsroot}/fastasplitter.xml" />
+
+        <!-- statistics -->
         <symlink link="${ccg.toolsroot}/pi/statistics/prss34.xml" resource="${ccg.toolsroot}/prss34.xml" />
     
 
