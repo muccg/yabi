@@ -29,9 +29,9 @@
     </target>
 
     <!-- init needed when making a snapshot release -->
-    <target name="snapshotinit" depends="init, createTmp">
+    <target name="snapshotinit" depends="init, tagFail, createTmp">
       <property name="ccg.site" value="${basedir}/tmp"/>
-      <property name="ccg.buildname" value="snapshot"/>
+      <property name="ccg.buildname" value="${cbbc.tag}"/>
       <property name="ccg.toolsroot" value="/yabi/yabi-tools/"/>
       <property name="ccg.jsonroot" value="/yabi/yabi-json/"/>
       <property name="ccg.resourcesDir" value="${basedir}/tmp/ccg/yabi-mw/"/>
@@ -183,6 +183,12 @@
     <target name="tmpSvnCheckoutTag">
       <exec executable="svn" failonerror="true">
       <arg line="co svn+ssh://grendel@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-mw-tags/${cbbc.tag} tmp/ccg/yabi-mw"/>
+      </exec>
+    </target>
+
+    <target name="tmpSvnCheckoutTagSnapshot">
+      <exec executable="svn" failonerror="true">
+      <arg line="co svn+ssh://${user.name}@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-mw-tags/${cbbc.tag} tmp/ccg/yabi-mw"/>
       </exec>
     </target>
 
@@ -386,7 +392,7 @@
     </target>
 	
     <target name="release" depends="tags, releaseinit, tmpSvnCheckoutTag, createWar, deployWar, deployCerts, deployTools, deployJson, deployToolsDirs" />
-    <target name="snapshot" depends="snapshotinit, tmpSvnCheckout, createWar, deployWar, deployCerts" />	
+    <target name="snapshot" depends="tags, snapshotinit, tmpSvnCheckoutTagSnapshot, createWar, deployWar, deployCerts, deployTools, deployJson, deployToolsDirs" />
     <target name="usercompile" depends="userbuildinit, compile" />
     <target name="devcompile" depends="userbuildinit, nttcompile" />
     <target name="userwar" depends="userbuildinit, createWar, deployWar, deployTools, deployJson, deployToolsDirs" />

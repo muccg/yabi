@@ -12,6 +12,8 @@
         <extension>gb</extension>
     </inputFiletypes>
 
+    <batchOnParameter name="-query"/>
+
     <outputFiletypes filePassThru="false">
         <extension mustExist="true">html</extension>
     </outputFiletypes>
