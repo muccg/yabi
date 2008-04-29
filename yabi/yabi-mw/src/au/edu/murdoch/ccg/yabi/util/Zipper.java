@@ -7,7 +7,7 @@ import java.net.*;
 
 public abstract class Zipper {
 
-    public static void createZipFile (String outFilename, String tempDir, String username, ArrayList files) throws Exception {
+    public static void createZipFile (String outFilename, String tempDir, String baseDir, String username, ArrayList files) throws Exception {
         // Create a buffer for reading the files
         byte[] buf = new byte[1024];
     
@@ -37,7 +37,7 @@ public abstract class Zipper {
 
             dupCheck.put(filename, "true");    
 
-            FileInputStream in = new FileInputStream(tempDir + filename);
+            FileInputStream in = new FileInputStream(baseDir + filename);
    
             //2008-04-17 remove path from filename as we are now staging in a flat structure
             int lastPath = filename.lastIndexOf("/");

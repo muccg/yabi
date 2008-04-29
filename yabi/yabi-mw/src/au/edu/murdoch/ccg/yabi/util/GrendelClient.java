@@ -275,11 +275,23 @@ public class GrendelClient extends GenericProcessingClient {
         logger.fine("staging in: "+inFiles);
 
         if (files != null && files.size() > 0) {
+            //make sure stagein dir exists
+            String stageInDir = inputDir + ".grendel/";
+            File stageInFile = new File(stageInDir);
+            stageInFile.mkdir();
+
             //zip up all the input files and add the zipfile to the Baat
             String zipFileName = new Date().getTime() + ".zip";
-            Zipper.createZipFile( zipFileName , inputDir, this.username, inFiles );
+            try {
+                Zipper.createZipFile( zipFileName , stageInDir, inputDir, this.username, inFiles );
+            } catch (Exception e) {
+                File zipfile = new File(stageInDir, zipFileName);
+                zipfile.delete();
 
-            bi.setAttachedFile("file://" + inputDir + zipFileName);
+                throw e;
+            }
+
+            bi.setAttachedFile("file://" + stageInDir + zipFileName);
         }
     }
 
