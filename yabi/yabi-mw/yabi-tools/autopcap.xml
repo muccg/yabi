@@ -17,7 +17,11 @@
 
 
     <parameterList>
-      <parameter rank=""  switchUse="valueOnly"  switch="inputFiles"          mandatory="yes" inputFile="yes" inputType="listoffiles" outputFile="no"  value="" primaryExtension="list" filter="removePath"/>
+      <parameter rank=""  switchUse="valueOnly"  switch="inputFiles"          mandatory="yes" inputFile="yes" inputType="listoffiles" outputFile="no"  value="" filter="removePath">
+        <acceptedExtensionList>
+            <acceptedExtension>list</acceptedExtension>
+        </acceptedExtensionList>
+      </parameter>
       <parameter rank=""  switchUse="both"       switch="-d"               mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-l"               mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-m"               mandatory="no"  inputFile="no"    inputType=""            outputFile="no"  value="" />
