@@ -403,5 +403,4 @@
     <target name="userwar" depends="userbuildinit, createWar, deployWar, deployTools, deployJson, deployToolsDirs" />
     <target name="releasetools" depends="tags, releaseinit, tmpSvnCheckoutTag, deployTools, deployJson, deployToolsDirs" />
     <target name="toolsonly" depends="userbuildinit, deployTools, deployJson, deployToolsDirs" />
-
 </project>
