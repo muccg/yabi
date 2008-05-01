@@ -239,6 +239,7 @@
         <mkdir dir="${ccg.toolsroot}/default/EMBOSS/" />
         <mkdir dir="${ccg.toolsroot}/default/text tools/" />
         <mkdir dir="${ccg.toolsroot}/default/cognac.ivec.org/" />
+        <mkdir dir="${ccg.toolsroot}/default/statistics/" />
 
         <!-- select data -->
         <symlink link="${ccg.toolsroot}/default/select data/fileselector.xml" resource="${ccg.toolsroot}/fileselector.xml" />
@@ -326,6 +327,9 @@
         <!-- text tools -->
         <symlink link="${ccg.toolsroot}/default/text tools/sort.xml" resource="${ccg.toolsroot}/sort.xml" />
 
+        <!-- statistics -->
+        <symlink link="${ccg.toolsroot}/pi/statistics/prss34.xml" resource="${ccg.toolsroot}/prss34.xml" />
+
 
 
         <!-- PI TOOLS -->
@@ -368,7 +372,7 @@
         <symlink link="${ccg.toolsroot}/demo/sequence tools/getkeggid.xml" resource="${ccg.toolsroot}/getkeggid.xml" />
         <symlink link="${ccg.toolsroot}/demo/select data/fetchfastarecord.xml" resource="${ccg.toolsroot}/fetchfastarecord.xml" />
         <symlink link="${ccg.toolsroot}/demo/select data/fileselector.xml" resource="${ccg.toolsroot}/fileselector.xml" />
-    
+
 
 
         <!-- celera tools -->
