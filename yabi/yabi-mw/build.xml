@@ -351,7 +351,25 @@
 
         <!-- statistics -->
         <symlink link="${ccg.toolsroot}/pi/statistics/prss34.xml" resource="${ccg.toolsroot}/prss34.xml" />
+
+
+
+        <!-- DEMO TOOLS -->
+        <mkdir dir="${ccg.toolsroot}/demo/" />
+        <mkdir dir="${ccg.toolsroot}/demo/convertors/" />
+        <mkdir dir="${ccg.toolsroot}/demo/blast search/" />
+        <mkdir dir="${ccg.toolsroot}/demo/sequence tools/" />
+        <mkdir dir="${ccg.toolsroot}/demo/select data/" />
+
+        <symlink link="${ccg.toolsroot}/demo/convertors/renderyabisimple.xml" resource="${ccg.toolsroot}/renderyabisimple.xml" />
+        <symlink link="${ccg.toolsroot}/demo/blast search/blasttophits.xml" resource="${ccg.toolsroot}/blasttophits.xml" />
+        <symlink link="${ccg.toolsroot}/demo/blast search/blast.xml" resource="${ccg.toolsroot}/blast.xml" />
+        <symlink link="${ccg.toolsroot}/demo/sequence tools/genbankfetch.xml" resource="${ccg.toolsroot}/genbankfetch.xml" />
+        <symlink link="${ccg.toolsroot}/demo/sequence tools/getkeggid.xml" resource="${ccg.toolsroot}/getkeggid.xml" />
+        <symlink link="${ccg.toolsroot}/demo/select data/fetchfastarecord.xml" resource="${ccg.toolsroot}/fetchfastarecord.xml" />
+        <symlink link="${ccg.toolsroot}/demo/select data/fileselector.xml" resource="${ccg.toolsroot}/fileselector.xml" />
     
+
 
         <!-- celera tools -->
         <mkdir dir="${ccg.toolsroot}/celera/" />
