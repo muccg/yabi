@@ -328,7 +328,7 @@
         <symlink link="${ccg.toolsroot}/default/text tools/sort.xml" resource="${ccg.toolsroot}/sort.xml" />
 
         <!-- statistics -->
-        <symlink link="${ccg.toolsroot}/pi/statistics/prss34.xml" resource="${ccg.toolsroot}/prss34.xml" />
+        <symlink link="${ccg.toolsroot}/default/statistics/prss34.xml" resource="${ccg.toolsroot}/prss34.xml" />
 
 
 
