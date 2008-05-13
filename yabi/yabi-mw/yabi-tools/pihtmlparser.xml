@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/grendel/bin/ccg-pihtmlparserWrapper" toolName="ccg-pihtmlparser" displayName="pi-html to fasta" description="Converts from HTML to fasta format.">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>html</extension>
+        <extension>htm</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>fa</extension>
+    </outputFiletypes>
+
+    <parameterList>
+      <parameter rank="1" switchUse="valueOnly" switch="inputFiles" mandatory="yes" inputFile="yes" outputFile="no" value=""/>
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>

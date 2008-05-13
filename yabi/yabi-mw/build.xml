@@ -349,7 +349,7 @@
         <symlink link="${ccg.toolsroot}/pi/blast search/piblast.xml" resource="${ccg.toolsroot}/piblast.xml" />
         <symlink link="${ccg.toolsroot}/pi/blast search/prointblast2html.xml" resource="${ccg.toolsroot}/prointblast2html.xml" />
         <symlink link="${ccg.toolsroot}/pi/blast search/msblast.xml" resource="${ccg.toolsroot}/msblast.xml" />
-
+        <symlink link="${ccg.toolsroot}/pi/blast search/pihtmlparser.xml" resource="${ccg.toolsroot}/pihtmlparser.xml" />
         <!-- sequence tools -->
         <symlink link="${ccg.toolsroot}/pi/sequence tools/fastasplitter.xml" resource="${ccg.toolsroot}/fastasplitter.xml" />
 
