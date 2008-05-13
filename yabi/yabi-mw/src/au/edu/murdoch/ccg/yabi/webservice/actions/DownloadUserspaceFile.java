@@ -19,6 +19,8 @@ import au.edu.murdoch.ccg.yabi.util.YabiConfiguration;
 import au.edu.murdoch.ccg.yabi.util.SymLink;
 import au.edu.murdoch.ccg.yabi.util.AppDetails;
 
+import org.json.*;
+
 import org.apache.commons.configuration.*;
 
 import java.util.logging.Logger;
@@ -58,25 +60,54 @@ public class DownloadUserspaceFile extends BaseAction {
                 
                 if (requestedFile.exists() && !requestedFile.isDirectory()) {
 
-                    FileInputStream fileToDownload = new FileInputStream(filePath);
-                    ServletOutputStream out = response.getOutputStream();
+                    if (outputFormat != null && outputFormat.compareTo(TYPE_JSON) == 0) {
+                        logger.info("json request");
+                        response.setContentType("text/javascript");
 
-                    response.setContentType("application/download");
-                    response.setHeader("Content-Disposition", "attachment; filename=" + requestedFile.getName());
-
-                    int counter = 0;
-                    int c;
-                    while((c=fileToDownload.read()) != -1){
-                        out.write(c);
-                        if (counter++ > 40) {
-                            out.flush();
-                            counter = 0;
+                        FileReader fr = new FileReader(filePath);
+                        BufferedReader br = new BufferedReader(fr);
+ 
+                        //assuming for now we are doing an xml to json conversion
+                        String xml = "";
+                        String line = "";
+                        while ((line = br.readLine()) != null) {
+                            xml += line + "\n";
                         }
+
+                        String json = "";
+                        json = org.json.XML.toJSONObject(xml).toString();
+
+                        PrintWriter out = response.getWriter();
+                        out.print(json);
+                        out.flush();
+                        out.close();
+
+                        return null;
+
+                    } else {
+                        logger.info("download request");
+
+                        FileInputStream fileToDownload = new FileInputStream(filePath);
+                        ServletOutputStream out = response.getOutputStream();
+
+                        response.setContentType("application/download");
+                        response.setHeader("Content-Disposition", "attachment; filename=" + requestedFile.getName());
+
+                        int counter = 0;
+                        int c;
+                        while((c=fileToDownload.read()) != -1){
+                            out.write(c);
+                            if (counter++ > 40) {
+                                out.flush();
+                                counter = 0;
+                            }
+                        }
+                        out.flush();
+                        out.close();
+                        fileToDownload.close();
+                        return null;
+
                     }
-                    out.flush();
-                    out.close();
-                    fileToDownload.close();
-                    return null;
 
                 } else {
                     

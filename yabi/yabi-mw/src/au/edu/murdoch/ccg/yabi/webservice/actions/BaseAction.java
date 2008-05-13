@@ -19,6 +19,7 @@ public abstract class BaseAction extends Action {
     protected JbpmConfiguration jbpmConfiguration = JbpmConfiguration.getInstance("yabi-jbpm.cfg.xml");
     protected static final String TYPE_XML = "xml";
     protected static final String TYPE_TXT = "text";
+    protected static final String TYPE_JSON = "json";
 
     //convenience methods for all actions
 
