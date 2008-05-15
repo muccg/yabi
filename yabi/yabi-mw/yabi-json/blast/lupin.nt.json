@@ -1,4 +1,4 @@
-kegg: {
+lupin: {
   'Mt2.0_pseudomolecule': {
     displayname: 'Mt2.0 pseudomolecule'
   },
