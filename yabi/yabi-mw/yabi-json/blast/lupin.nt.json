@@ -1,0 +1,14 @@
+kegg: {
+  'Mt2.0_pseudomolecule': {
+    displayname: 'Mt2.0 pseudomolecule'
+  },
+  'Mt2.0_cds_mapped_no_overlap': {
+    displayname: 'Mt2.0 cds mapped no overlap'
+  },
+  'jgi_assembly_glycine_max0': {
+    displayname: 'jgi assembly glycine max0'
+  },
+  'pm_lotus_japonicus_pseudomolecule': {
+    displayname: 'Lotus japonicus pseudomolecule'
+  }
+}
