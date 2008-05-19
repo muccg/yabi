@@ -389,6 +389,51 @@
         <symlink link="${ccg.toolsroot}/celera/celera assembly/runCA.xml" resource="${ccg.toolsroot}/runCA.xml" />
 
 
+
+        <!-- MEG TOOLS -->
+        <mkdir dir="${ccg.toolsroot}/meg/" />
+        <mkdir dir="${ccg.toolsroot}/meg/select data/" />
+        <mkdir dir="${ccg.toolsroot}/meg/blast search/" />
+        <mkdir dir="${ccg.toolsroot}/meg/sequence tools/" />
+        <mkdir dir="${ccg.toolsroot}/meg/convertors/" />
+        <mkdir dir="${ccg.toolsroot}/meg/file tools/" />
+
+        <!-- select data -->
+        <symlink link="${ccg.toolsroot}/meg/select data/fileselector.xml" resource="${ccg.toolsroot}/fileselector.xml" />
+        <symlink link="${ccg.toolsroot}/meg/select data/fileuploader.xml" resource="${ccg.toolsroot}/fileuploader.xml" />
+        <symlink link="${ccg.toolsroot}/meg/select data/fetchgenbankrecord.xml" resource="${ccg.toolsroot}/fetchgenbankrecord.xml" />
+        <symlink link="${ccg.toolsroot}/meg/select data/fetchfastarecord.xml" resource="${ccg.toolsroot}/fetchfastarecord.xml" />
+
+        <!-- blast -->
+        <symlink link="${ccg.toolsroot}/meg/blast search/blast.xml" resource="${ccg.toolsroot}/blast.xml" />
+        <symlink link="${ccg.toolsroot}/meg/blast search/blast2html.xml" resource="${ccg.toolsroot}/blast2html.xml" />
+        <symlink link="${ccg.toolsroot}/meg/blast search/blasttophits.xml" resource="${ccg.toolsroot}/blasttophits.xml" />
+
+        <!-- sequence tools -->
+        <symlink link="${ccg.toolsroot}/meg/sequence tools/fetchgenbankrecord.xml" resource="${ccg.toolsroot}/fetchgenbankrecord.xml" />
+        <symlink link="${ccg.toolsroot}/meg/sequence tools/fetchfastarecord.xml" resource="${ccg.toolsroot}/fetchfastarecordcache.xml" />
+        <symlink link="${ccg.toolsroot}/meg/sequence tools/downloadfasta.xml" resource="${ccg.toolsroot}/downloadfasta.xml" />
+        <symlink link="${ccg.toolsroot}/meg/sequence tools/fastasplitter.xml" resource="${ccg.toolsroot}/fastasplitter.xml" />
+        <symlink link="${ccg.toolsroot}/meg/sequence tools/yabixml2fasta.xml" resource="${ccg.toolsroot}/yabixml2fasta.xml" />
+        <symlink link="${ccg.toolsroot}/meg/sequence tools/genbankfetch.xml" resource="${ccg.toolsroot}/genbankfetch.xml" />
+        <symlink link="${ccg.toolsroot}/meg/sequence tools/blasttophits.xml" resource="${ccg.toolsroot}/blasttophits.xml" />
+        <symlink link="${ccg.toolsroot}/meg/sequence tools/getkeggid.xml" resource="${ccg.toolsroot}/getkeggid.xml" />
+
+        <!-- convertors -->
+        <symlink link="${ccg.toolsroot}/meg/convertors/fasta2embl.xml" resource="${ccg.toolsroot}/fasta2embl.xml" />
+        <symlink link="${ccg.toolsroot}/meg/convertors/fasta2emblXml.xml" resource="${ccg.toolsroot}/fasta2emblXml.xml" />
+        <symlink link="${ccg.toolsroot}/meg/convertors/fasta2genbank.xml" resource="${ccg.toolsroot}/fasta2genbank.xml" />
+        <symlink link="${ccg.toolsroot}/meg/convertors/fasta2INSDseq.xml" resource="${ccg.toolsroot}/fasta2INSDseq.xml" />
+        <symlink link="${ccg.toolsroot}/meg/convertors/genbank2fasta.xml" resource="${ccg.toolsroot}/genbank2fasta.xml" />
+        <symlink link="${ccg.toolsroot}/meg/convertors/embl2emblXml.xml" resource="${ccg.toolsroot}/embl2emblXml.xml" />
+        <symlink link="${ccg.toolsroot}/meg/convertors/renderyabisimple.xml" resource="${ccg.toolsroot}/renderyabisimple.xml" />
+
+        <!-- file tools -->
+        <symlink link="${ccg.toolsroot}/meg/file tools/fileselector.xml" resource="${ccg.toolsroot}/fileselector.xml" />
+        <symlink link="${ccg.toolsroot}/meg/file tools/fileuploader.xml" resource="${ccg.toolsroot}/fileuploader.xml" />
+        <symlink link="${ccg.toolsroot}/meg/file tools/zipjob.xml" resource="${ccg.toolsroot}/zipjob.xml" />
+
+
     </target>
 
 
