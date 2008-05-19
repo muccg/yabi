@@ -78,7 +78,7 @@ public class CopyUserspaceFile extends BaseAction {
                         boolean success = true;
                         try {
                             copyFile(requestedFile, destFile);
-                        } catch (IOException ioe) {
+                        } catch (Exception ioe) {
                             logger.severe("An error occurred while attempting to copy file: ["+ioe.getClass().getName() +"] "+ ioe.getMessage());
                             success = false;
                         }
@@ -145,18 +145,15 @@ public class CopyUserspaceFile extends BaseAction {
     // Copies src file to dst file.
     // If the dst file does not exist, it is created
     // can I just ask why java doesn't have an actual method for doing this natively?
-    public static void copyFile(File src, File dst) throws IOException {
-        InputStream in = new FileInputStream(src);
-        OutputStream out = new FileOutputStream(dst);
+    public static void copyFile(File src, File dst) throws Exception {
+        String from, to;
+        from = src.getAbsolutePath();
+        to = dst.getAbsolutePath();
 
-        // Transfer bytes from in to out
-        byte[] buf = new byte[1024];
-        int len;
-        while ((len = in.read(buf)) > 0) {
-            out.write(buf, 0, len);
-        }
-        in.close();
-        out.close();
+        String[] command = {"cp","-R",from,to};
+
+        Runtime.getRuntime().exec(command);
+        logger.info("cp -R '"+from+"' '"+to+"'");
     }
 
 
