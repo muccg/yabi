@@ -94,6 +94,12 @@
         </action>
 
         <action
+            path="/copyUserspaceFile"
+            type="au.edu.murdoch.ccg.yabi.webservice.actions.CopyUserspaceFile">
+            <forward name="success" path="/templates/gridproxyinit.xml"/>
+        </action>
+
+        <action
             path="/jobStatus"
             type="au.edu.murdoch.ccg.yabi.webservice.actions.Status"/>
 
