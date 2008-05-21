@@ -10,7 +10,8 @@ NCBI: {
       papilionoideae: 'Papilionoideae',
       rattus_norvegicus: 'Rattus norvegicus',
       sus_scrofa: 'Sus scrofa',
-      triticum_aestivum: 'Triticum aestivum'
+      triticum_aestivum: 'Triticum aestivum',
+      viridiplantae: 'Viridiplantae (Green Plants)'
     }
   },
   nr: {
@@ -24,7 +25,8 @@ NCBI: {
       papilionoideae: 'Papilionoideae',
       rattus_norvegicus: 'Rattus norvegicus',
       sus_scrofa: 'Sus scrofa',
-      triticum_aestivum: 'Triticum aestivum'
+      triticum_aestivum: 'Triticum aestivum',
+      viridiplantae: 'Viridiplantae (Green Plants)'
     }
   },
   swissprot: {
@@ -38,7 +40,8 @@ NCBI: {
       papilionoideae: 'Papilionoideae',
       rattus_norvegicus: 'Rattus norvegicus',
       sus_scrofa: 'Sus scrofa',
-      triticum_aestivum: 'Triticum aestivum'
+      triticum_aestivum: 'Triticum aestivum',
+      viridiplantae: 'Viridiplantae (Green Plants)'
     }
   },
   refseq_protein: {
@@ -52,7 +55,8 @@ NCBI: {
       papilionoideae: 'Papilionoideae',
       rattus_norvegicus: 'Rattus norvegicus',
       sus_scrofa: 'Sus scrofa',
-      triticum_aestivum: 'Triticum aestivum'
+      triticum_aestivum: 'Triticum aestivum',
+      viridiplantae: 'Viridiplantae (Green Plants)'
     }
   }
 }
