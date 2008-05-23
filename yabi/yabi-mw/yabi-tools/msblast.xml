@@ -16,6 +16,7 @@
 
     <outputFiletypes filePassThru="false">
         <extension mustExist="true">html</extension>
+        <extension mustExist="true">new</extension>
     </outputFiletypes>
 
     <parameterList>
