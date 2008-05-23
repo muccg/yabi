@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/grendel/bin/ccg-pimsblastscorerWrapper" toolName="ccg-pimsblastscorer.py" displayName="pi-msblast scorer" description="Scores msblast hits.">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>new</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>html</extension>
+    </outputFiletypes>
+
+    <parameterList>
+      <parameter rank="1" switchUse="valueOnly" switch="inputFiles" mandatory="yes" inputFile="yes" outputFile="no" value=""/>
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>
