@@ -107,7 +107,7 @@
           <fileset dir="${ccg.libdir}">
             <include name="**/*.jar"/>
           </fileset>
-          <fileset file="/usr/local/java/common/lib/servlet-api.jar"/>
+          <fileset file="/usr/local/java/lib/servlet-api.jar"/>
         </classpath>
       </javac>
     </target>
