@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
 <baat>
-  <job toolPath="/usr/local/bin/ccg-blastparser" toolName="blasttophits" displayName="blast top hits" description="Parse a blast report and convert to yabi xml format for use by other tools.">
+  <job toolPath="/usr/local/bin/ccg-blastparser" toolName="blasttophits" displayName="blast top hits" description="Parse a blast report and convert to yabixml format for use by other tools. This file outputs yabixml format for use with tools that require yabixml such as 'get KEGG Id'.">
 
     <inputFiletypes requiresInput="true" acceptsInput="true">
         <extension>bls</extension>

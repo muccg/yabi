@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
 <baat>
-  <job toolPath="/tmp/ccg-getkeggpathway" toolName="getkeggpathway" displayName="get KEGG pathway" description="Retrieves KEGG pathway image from GeneID or GI">
+  <job toolPath="/tmp/ccg-getkeggpathway" toolName="getkeggpathway" displayName="get KEGG pathway" description="Retrieves KEGG pathway image from GeneID or GI. This tool only accepts and produces yabixml for use with other Yabi tools.">
 
     <inputFile/>
     <outputFile/>

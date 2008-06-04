@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
 <baat>
-  <job toolPath="/usr/local/bin/ccg-fetchkeggid" toolName="getkeggid" displayName="get KEGG id" description="Retrieves KEGG ids from GeneID or GI">
+  <job toolPath="/usr/local/bin/ccg-fetchkeggid" toolName="getkeggid" displayName="get KEGG id" description="Retrieves KEGG ids from GeneID or GI. This tool only accepts and produces yabixml for use with other Yabi tools.">
 
     <inputFile/>
     <outputFile/>

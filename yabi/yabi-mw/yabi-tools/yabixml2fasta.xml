@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
 <baat>
-  <job toolPath="/usr/local/bin/ccg-formatconvertor" toolName="2fasta" displayName="extract fasta" description="Converts yabi xml format to FASTA format.">
+  <job toolPath="/usr/local/bin/ccg-formatconvertor" toolName="2fasta" displayName="extract fasta" description="Converts yabixml format to FASTA format. This tool acceps yabixml from other Yabi tools which produce it, such as 'get KEGG id'.">
 
     <inputFile/>
     <outputFile/>
