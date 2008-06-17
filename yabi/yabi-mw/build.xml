@@ -298,6 +298,7 @@
 
         <!-- multiple sequence alignment -->
         <symlink link="${ccg.toolsroot}/default/multiple sequence alignment/clustalw.xml" resource="${ccg.toolsroot}/clustalw.xml" />
+        <symlink link="${ccg.toolsroot}/default/multiple sequence alignment/clustalwtranslate.xml" resource="${ccg.toolsroot}/clustalwtranslate.xml" />
         <symlink link="${ccg.toolsroot}/default/multiple sequence alignment/t_coffee.xml" resource="${ccg.toolsroot}/t_coffee.xml" />
 
         <!-- sequence alignment -->
