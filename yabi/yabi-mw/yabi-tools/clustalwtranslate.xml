@@ -16,7 +16,7 @@
 
     <parameterList>
       <parameter rank="1" switchUse="both" switch="--input-file" mandatory="yes" inputFile="yes" outputFile="no" value=""/>
-      <parameter rank="2" switchUse="both" switch="--output-file" mandatory="yes" inputFile="yes" outputFile="no" value="output.aln"/>
+      <parameter rank="2" switchUse="both" switch="--output-file" mandatory="yes" inputFile="yes" outputFile="no" value="" sourceParam="--input-file" appendString=".aln"/>
       <parameter rank="3" switchUse="both" switch="--codon-table" mandatory="yes" inputFile="no" outputFile="no" value=""/>
     </parameterList>
 
