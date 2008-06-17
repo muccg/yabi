@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job toolPath="/usr/local/bin/ccg-clustalwtranslate" toolName="clustalwtranslate" displayName="clustalw translate" description="Takes the first sequence in a clustalw alignment and translates it from nuclotide to protein or vice versa and adds it back into the aln file.">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>aln</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>aln</extension>
+    </outputFiletypes>
+
+    <parameterList>
+      <parameter rank="1" switchUse="valueOnly" switch="inputFiles" mandatory="yes" inputFile="yes" outputFile="no" value=""/>
+      <parameter rank="2" switchUse="switchOnly" switch="" mandatory="yes" inputFile="no" outputFile="no" value=""/>
+    </parameterList>
+
+    <parameterAliasList/>
+
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>
