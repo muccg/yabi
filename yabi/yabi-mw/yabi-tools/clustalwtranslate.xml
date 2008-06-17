@@ -16,7 +16,7 @@
 
     <parameterList>
       <parameter rank="1" switchUse="valueOnly" switch="inputFiles" mandatory="yes" inputFile="yes" outputFile="no" value=""/>
-      <parameter rank="2" switchUse="switchOnly" switch="" mandatory="yes" inputFile="no" outputFile="no" value=""/>
+      <parameter rank="2" switchUse="switchOnly" switch="--codon-table" mandatory="yes" inputFile="no" outputFile="no" value=""/>
     </parameterList>
 
     <parameterAliasList/>
