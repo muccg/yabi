@@ -471,7 +471,7 @@
       </copy>
     </target>
 	
-    <target name="release" depends="tags, releaseinit, tmpSvnCheckoutTag, createWar, deployWar, deployCerts, deployTools, deployJson, deployToolsDirs" />
+    <target name="release" depends="tags, releaseinit, tmpSvnCheckoutTag, createWar, deployWar, deployCerts" />
     <target name="snapshot" depends="tags, snapshotinit, tmpSvnCheckoutTagSnapshot, createWar, deployWar, deployCerts, deployTools, deployJson, deployToolsDirs" />
     <target name="usercompile" depends="userbuildinit, compile" />
     <target name="devcompile" depends="userbuildinit, nttcompile" />
