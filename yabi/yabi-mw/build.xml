@@ -186,6 +186,12 @@
       </exec>
     </target>
 
+    <target name="tmpSvnCheckoutToolsTag">
+      <exec executable="svn" failonerror="true">
+      <arg line="co svn+ssh://${user.name}@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-mw-tags/${cbbc.toolstag} tmp/ccg/yabi-mw"/>
+      </exec>
+    </target>
+
     <target name="tmpSvnCheckoutTagSnapshot">
       <exec executable="svn" failonerror="true">
       <arg line="co svn+ssh://${user.name}@minerva.localdomain/usr/local/svnroot/ccg/yabi/yabi-mw-tags/${cbbc.tag} tmp/ccg/yabi-mw"/>
@@ -470,6 +476,6 @@
     <target name="usercompile" depends="userbuildinit, compile" />
     <target name="devcompile" depends="userbuildinit, nttcompile" />
     <target name="userwar" depends="userbuildinit, createWar, deployWar, deployTools, deployJson, deployToolsDirs" />
-    <target name="releasetools" depends="tags, releaseinit, tmpSvnCheckoutTag, deployTools, deployJson, deployToolsDirs" />
+    <target name="releasetools" depends="tags, releaseinit, tmpSvnCheckoutToolsTag, deployTools, deployJson, deployToolsDirs" />
     <target name="toolsonly" depends="userbuildinit, deployTools, deployJson, deployToolsDirs" />
 </project>
