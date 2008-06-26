@@ -18,7 +18,7 @@
       <property name="ccg.dbhost" value="iridium.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
-      <property name="ccg.dbname" value="yabimw"/>
+      <property name="ccg.dbname" value="live_yabimw"/>
       <property name="ccg.warfilename" value="${basedir}/yabi-${ccg.buildname}.war"/>
       <property name="ccg.srcdir" value="${ccg.resourcesDir}src"/>
       <property name="ccg.cfgdir" value="${ccg.resourcesDir}cfg"/>
@@ -36,10 +36,10 @@
       <property name="ccg.jsonroot" value="/yabi/yabi-json/"/>
       <property name="ccg.resourcesDir" value="${basedir}/tmp/ccg/yabi-mw/"/>
       <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain2/autodeploy/"/>
-      <property name="ccg.dbhost" value="boromirdb.localdomain"/>
+      <property name="ccg.dbhost" value="iridium.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
-      <property name="ccg.dbname" value="yabimwdev"/>
+      <property name="ccg.dbname" value="dev_yabimw"/>
       <property name="ccg.warfilename" value="${basedir}/yabi-${ccg.buildname}.war"/>
       <property name="ccg.srcdir" value="${ccg.resourcesDir}src"/>
       <property name="ccg.cfgdir" value="${ccg.resourcesDir}cfg"/>
@@ -57,10 +57,10 @@
       <property name="ccg.jsonroot" value="/yabi/yabi-json/"/>
       <property name="ccg.resourcesDir" value="${basedir}"/>
       <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain2/autodeploy/"/>
-      <property name="ccg.dbhost" value="boromirdb.localdomain"/>
+      <property name="ccg.dbhost" value="iridium.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
-      <property name="ccg.dbname" value="yabimwdev"/>
+      <property name="ccg.dbname" value="dev_yabimw"/>
       <property name="ccg.warfilename" value="${basedir}/yabi-${ccg.buildname}.war"/>
       <property name="ccg.jarfilename" value="${basedir}/yabi-${ccg.buildname}.jar"/>
       <property name="ccg.srcdir" value="${basedir}/src"/>
