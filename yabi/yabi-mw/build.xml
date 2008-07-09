@@ -35,7 +35,7 @@
       <property name="ccg.toolsroot" value="/yabi/yabi-tools/"/>
       <property name="ccg.jsonroot" value="/yabi/yabi-json/"/>
       <property name="ccg.resourcesDir" value="${basedir}/tmp/ccg/yabi-mw/"/>
-      <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain2/autodeploy/"/>
+      <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain1/autodeploy/"/>
       <property name="ccg.dbhost" value="iridium.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
@@ -56,7 +56,7 @@
       <property name="ccg.toolsroot" value="/yabi/yabi-tools/"/>
       <property name="ccg.jsonroot" value="/yabi/yabi-json/"/>
       <property name="ccg.resourcesDir" value="${basedir}"/>
-      <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain2/autodeploy/"/>
+      <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain1/autodeploy/"/>
       <property name="ccg.dbhost" value="iridium.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
