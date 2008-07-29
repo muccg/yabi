@@ -245,6 +245,7 @@
         <mkdir dir="${ccg.toolsroot}/default/EMBOSS/" />
         <mkdir dir="${ccg.toolsroot}/default/text tools/" />
         <mkdir dir="${ccg.toolsroot}/default/cognac.ivec.org/" />
+        <mkdir dir="${ccg.toolsroot}/default/ccg cluster/" />
         <mkdir dir="${ccg.toolsroot}/default/statistics/" />
 
         <!-- select data -->
@@ -261,6 +262,9 @@
         <symlink link="${ccg.toolsroot}/default/blast search/mview.xml" resource="${ccg.toolsroot}/mview.xml" />
         <symlink link="${ccg.toolsroot}/default/blast search/ccg-importeric.xml" resource="${ccg.toolsroot}/ccg-importeric.xml" />
         <symlink link="${ccg.toolsroot}/default/blast search/ivec-blastall.xml" resource="${ccg.toolsroot}/ivec-blastall.xml" />
+
+        <!-- ccg cluster -->
+        <symlink link="${ccg.toolsroot}/default/ccg cluster/ccg-blastall.xml" resource="${ccg.toolsroot}/ccg-blastall.xml" />
 
         <!-- cognac.ivec.org -->
         <symlink link="${ccg.toolsroot}/default/cognac.ivec.org/ivec-blastall.xml" resource="${ccg.toolsroot}/ivec-blastall.xml" />

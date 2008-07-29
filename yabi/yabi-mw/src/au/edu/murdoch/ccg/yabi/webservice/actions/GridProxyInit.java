@@ -50,6 +50,11 @@ public class GridProxyInit extends BaseAction {
         String username = request.getParameter("username");
         String password = request.getParameter("password");
         String expirySeconds = request.getParameter("expiry");
+        String gridName = request.getParameter("grid");
+
+        if (gridName == null || gridName.length() == 0) {
+            gridName = "ivec";
+        }
         int expiry = 0;
         YabiGridProxyInit ygpi;
         
@@ -59,9 +64,9 @@ public class GridProxyInit extends BaseAction {
             }
             
             //create proxy file
-            certFile = this.rootDir + username +"/certificates/usercert.pem";
-            userKey = this.rootDir + username +"/certificates/userkey.pem";
-            String proxyFile = this.rootDir + username +"/certificates/ivec_proxy.pem";
+            certFile = this.rootDir + username +"/.certificates/usercert.pem";
+            userKey = this.rootDir + username +"/.certificates/userkey.pem";
+            String proxyFile = this.rootDir + username +"/.certificates/"+gridName+"_proxy.pem";
             if (expirySeconds == null || expirySeconds.length() < 1) {
                 ygpi = new YabiGridProxyInit();
             } else {

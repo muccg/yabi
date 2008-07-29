@@ -74,24 +74,23 @@ public class GridClient extends GenericProcessingClient {
     
     
     //instance variables
-    private ArrayList inFiles;
-    private ArrayList outFiles;
-    private String jobStatus;
-    private String jobId;
-    private String inputDir;
-    private String username = "";
-    private String proxyCertLocation = "";
-    private String gridType = "ivec"; // use this to specify which grid client is being executed.
-    private String gridFTPHost = "";
-    private int gridFTPPort = 0;
-    private String gridWSURL = "";
-    private String gridWSJobURL = "";
-    private String gridFTPDefaultBaseDir = "";
-    private String gridFTPBaseDir = "";
+    protected ArrayList inFiles;
+    protected ArrayList outFiles;
+    protected String jobStatus;
+    protected String jobId;
+    protected String inputDir;
+    protected String username = "";
+    protected String proxyCertLocation = "";
+    protected String gridFTPHost = "";
+    protected int gridFTPPort = 0;
+    protected String gridWSURL = "";
+    protected String gridWSJobURL = "";
+    protected String gridFTPDefaultBaseDir = "";
+    protected String gridFTPBaseDir = "";
     Configuration conf = null;
-    private String gridMD5 = ""; //use this for creating a stagein/out directory for this job on the grid
+    protected String gridMD5 = ""; //use this for creating a stagein/out directory for this job on the grid
 
-    private static Logger logger = Logger.getLogger( AppDetails.getAppString() + "." + GridClient.class.getName());
+    protected static Logger logger = Logger.getLogger( AppDetails.getAppString() + "." + GridClient.class.getName());
 
     //constructors
     public GridClient( BaatInstance bi ) throws ConfigurationException {
@@ -487,12 +486,12 @@ public class GridClient extends GenericProcessingClient {
         this.initializeTrustedCerts();
         
         //check for a valid proxy for this user
-        this.proxyCertLocation = this.rootDir + "/" + user.getUsername() + "/certificates/" + this.gridType + "_proxy.pem";
+        this.proxyCertLocation = this.rootDir + "/" + user.getUsername() + "/.certificates/" + this.getGridType() + "_proxy.pem";
         
         //load user-specific grid parameters
         //throw a friendly error if config fails
         try {
-            Configuration userGridConf = new PropertiesConfiguration(this.rootDir + "/" + user.getUsername() + "/certificates/" + this.gridType + ".cfg");
+            Configuration userGridConf = new PropertiesConfiguration(this.rootDir + "/" + user.getUsername() + "/.certificates/" + this.getGridType() + ".cfg");
             this.gridFTPBaseDir = userGridConf.getString("scratchdir");
             if (!this.gridFTPBaseDir.endsWith("/")) {
                 this.gridFTPBaseDir += "/";
@@ -509,12 +508,16 @@ public class GridClient extends GenericProcessingClient {
         
         return true; //only reaches here if proxy verified. if failed, exception is thrown
     }
+
+    protected String getGridType() {
+        return "ivec";
+    }
     
-    public void initializeTrustedCerts() {
+    protected void initializeTrustedCerts() {
         try {
             //APAC GRID CERT
-            InputStream ainStream = new FileInputStream("/yabi/certificates/apac.crt");
-            InputStream binStream = new FileInputStream("/yabi/certificates/apac0.crt");
+            InputStream ainStream = new FileInputStream("/yabi/.certificates/apac.crt");
+            InputStream binStream = new FileInputStream("/yabi/.certificates/apac0.crt");
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             X509Certificate certs[] = {(X509Certificate)cf.generateCertificate(ainStream), (X509Certificate)cf.generateCertificate(binStream)};
             ainStream.close();
@@ -523,7 +526,7 @@ public class GridClient extends GenericProcessingClient {
             TrustedCertificates.setDefaultTrustedCertificates(new TrustedCertificates(certs));
             
             //REVOCATION LISTS
-            CertificateRevocationLists crl = CertificateRevocationLists.getCertificateRevocationLists("/yabi/certificates/1e12d831.r0,/yabi/certificates/21bf4d92.r0");
+            CertificateRevocationLists crl = CertificateRevocationLists.getCertificateRevocationLists("/yabi/.certificates/1e12d831.r0,/yabi/.certificates/21bf4d92.r0");
             CertificateRevocationLists.setDefaultCertificateRevocationList(crl);
             X509CRL[] revLists = crl.getCrls();
             logger.info("list of revocation lists");

@@ -15,6 +15,9 @@ public class ProcessingClientFactory {
             if (type.compareTo("gt4") == 0) {
                 return new GridClient(bi);
             }
+            if (type.compareTo("ccg") == 0) {
+                return new CCGGridClient(bi);
+            }
             if (type.compareTo("local") == 0) {
                 return new LocalClient(bi);
             }
