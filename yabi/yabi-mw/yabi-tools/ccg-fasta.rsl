@@ -14,10 +14,9 @@
   <count>8</count>
   <queue>normal</queue>
   <maxWallTime>240</maxWallTime>
-  <maxMemory>2048</maxMemory>
+  <maxMemory>16384</maxMemory>
   <jobType>single</jobType>
   <extensions>
-    <module>use.own</module>
     <module>intel-cc</module>
     <module>fasta</module>
   </extensions>

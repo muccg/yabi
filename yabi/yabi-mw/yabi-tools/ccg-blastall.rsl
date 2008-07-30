@@ -19,7 +19,6 @@
   <maxMemory>16384</maxMemory>
   <jobType>single</jobType>
   <extensions>
-    <module>use.own</module>
     <module>blast</module>
   </extensions>
 </job>
