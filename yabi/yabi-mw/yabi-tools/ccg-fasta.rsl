@@ -19,6 +19,6 @@
   <extensions>
     <module>use.own</module>
     <module>intel-cc</module>
-    <module>fasta35_t</module>
+    <module>fasta</module>
   </extensions>
 </job>
