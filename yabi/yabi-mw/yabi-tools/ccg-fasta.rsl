@@ -6,7 +6,7 @@
       <gram:ResourceID>PBS</gram:ResourceID>
     </wsa:ReferenceProperties>
   </factoryEndpoint>
-  <executable>fasta35</executable>
+  <executable>fastaYABIWrapper</executable>
   <directory>/${GLOBUS_SCRATCH_DIR}/#JOB_DIR#</directory>
   <argumentPlaceholder/>
   <stdout>stdout.log</stdout>
