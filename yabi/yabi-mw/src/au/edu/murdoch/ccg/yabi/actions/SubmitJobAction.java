@@ -129,6 +129,12 @@ public class SubmitJobAction extends BaseAction {
                         continue; //proceed to next variable
                     }
 
+                    //force jobType to be a certain type (soon to be deprecated)
+                    if (keyName.compareTo("jobType") == 0) {
+                        bi.setJobType(value);
+                        continue;
+                    }
+
                     //perform substitution if we are doing a batch version
                     if (batchParam != null && batchParam.compareTo(keyName) == 0) {
                         value = batchIterations[i];
@@ -139,14 +145,12 @@ public class SubmitJobAction extends BaseAction {
 
                 bi.setUsername(username);
 
-                //if jobType doesn't exist, then it will default to 'grendel'. we are going to write this into variables so the fact is revealed to any clients
-                if (inputVars.get("jobType") == null || ((String) inputVars.get("jobType")).compareTo("") == 0) {
-                    ctx.getContextInstance().setVariable( ctx.getNode().getFullyQualifiedName() + ".input.jobType" , "grendel" );
-                    inputVars.put("jobType", "grendel");
-                }
+                //write jobType into context
+                ctx.getContextInstance().setVariable( ctx.getNode().getFullyQualifiedName() + ".input.jobType" , bi.getJobType() );
+                inputVars.put("jobType", bi.getJobType() );
 
                 // ----- CREATE CLIENT -----
-                GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( (String) inputVars.get("jobType")  , bi);
+                GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( bi.getJobType() , bi);
                 String outputDir = varTranslator.getProcessVariable(ctx, "jobDataDir");
                 pclient.setOutputDir(outputDir);
                 pclient.setInputDirByUsername(username);

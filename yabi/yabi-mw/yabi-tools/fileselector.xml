@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
 <baat>
-  <job toolPath="echo" toolName="fileselector" displayName="select file" description="Select a file from your workspace directory.">
+  <job jobType="local" toolPath="echo" toolName="fileselector" displayName="select file" description="Select a file from your workspace directory.">
 
     <inputFile/>
     <outputFile/>

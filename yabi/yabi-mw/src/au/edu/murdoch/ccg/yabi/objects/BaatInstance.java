@@ -28,6 +28,7 @@ public class BaatInstance {
     private Document baatFile;
     private String attachedFile;
     private String toolPath;
+    private String jobType;
     private String rootDir;
     private String username; //optional, used for prependUserDir option
     private boolean symlinkOutputDir;
@@ -130,6 +131,14 @@ public class BaatInstance {
 
     public String getToolName() {
         return this.toolName;
+    }
+
+    public String getJobType() {
+        return this.jobType;
+    }
+
+    public void setJobType(String input) {
+        this.jobType = input;
     }
     
     public void setAttachedFile(String fileLoc) {
@@ -277,6 +286,10 @@ public class BaatInstance {
             Element jobNode = (Element) baatFile.selectSingleNode("//job");
             if (jobNode != null) {
                 this.toolPath = jobNode.attributeValue("toolPath");
+                this.jobType = jobNode.attributeValue("jobType");
+                if (this.jobType == null) {
+                    this.jobType = "grendel";
+                }
             }
 
             //load the batchOnParameter tag
@@ -415,6 +428,18 @@ public class BaatInstance {
         for (int i=0; i<filenames.length;i++) {
             this.addInputFile(filenames[i]);
         }
+    }
+
+    public String getParameter(String switchName) {
+        Iterator iter = parameters.iterator();
+        while (iter.hasNext()) {
+            BaatParameter bp = (BaatParameter) iter.next();
+            if ( bp.switchName.compareTo(switchName) == 0 ) {
+                return bp.value;
+            }
+        }
+
+        return "";
     }
 
     public void setParameter(String rank, String switchName, String value) {

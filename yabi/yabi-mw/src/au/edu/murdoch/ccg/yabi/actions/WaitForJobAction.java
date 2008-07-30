@@ -58,13 +58,14 @@ public class WaitForJobAction extends BaseAction {
         try {
             String nodeName = ctx.getNode().getFullyQualifiedName();
 
-            //if jobType doesn't exist, then it will default to 'grendel'. we are going to write this into variables so the fact is revealed to any clients
+            BaatInstance bi = new BaatInstance( (String) inputVars.get("toolName") );
+
+            //if jobType doesn't exist, then it will load the baat default. we are going to write this into variables so the fact is revealed to any clients
             if (inputVars.get("jobType") == null || ((String) inputVars.get("jobType")).compareTo("") == 0) {
-                ctx.getContextInstance().setVariable( ctx.getNode().getFullyQualifiedName() + ".input.jobType" , "grendel" );
-                inputVars.put("jobType", "grendel");
+                ctx.getContextInstance().setVariable( ctx.getNode().getFullyQualifiedName() + ".input.jobType" , bi.getJobType());
+                inputVars.put("jobType", bi.getJobType());
             } 
 
-            BaatInstance bi = new BaatInstance( (String) inputVars.get("toolName") );
             GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( (String) inputVars.get("jobType") , bi );
             // ----- AUTHENTICATE -----
             pclient.authenticate( new User(username) );
