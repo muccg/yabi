@@ -11,7 +11,7 @@
   <argumentPlaceholder/>
   <stdout>stdout.log</stdout>
   <stderr>stderr.log</stderr>
-  <count>1</count>
+  <count>8</count>
   <queue>normal</queue>
   <maxWallTime>240</maxWallTime>
   <maxMemory>2048</maxMemory>
