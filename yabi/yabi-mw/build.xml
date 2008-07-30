@@ -266,6 +266,8 @@
         <!-- ccg cluster -->
         <symlink link="${ccg.toolsroot}/default/ccg cluster/ccg-blastall.xml" resource="${ccg.toolsroot}/ccg-blastall.xml" />
         <symlink link="${ccg.toolsroot}/default/ccg cluster/ccg-fasta.xml" resource="${ccg.toolsroot}/ccg-fasta.xml" />
+        <symlink link="${ccg.toolsroot}/default/ccg cluster/ccg-iprscan.xml" resource="${ccg.toolsroot}/ccg-iprscan.xml" />
+        <symlink link="${ccg.toolsroot}/default/ccg cluster/ccg-repeatmasker.xml" resource="${ccg.toolsroot}/ccg-repeatmasker.xml" />
 
         <!-- cognac.ivec.org -->
         <symlink link="${ccg.toolsroot}/default/cognac.ivec.org/ivec-blastall.xml" resource="${ccg.toolsroot}/ivec-blastall.xml" />
