@@ -22,7 +22,6 @@
     
 
     <parameterList>
-      <parameter rank="2" switchUse="both"       switch="-speed"    mandatory="yes" inputFile="no"  value="default"/>
       <parameter rank=""  switchUse="both"       switch="-species"  mandatory="no"  inputFile="no"  value="" />
       <parameter rank=""  switchUse="both"       switch="-lib"      mandatory="no"  inputFile="yes" value="" />
       <parameter rank=""  switchUse="both"       switch="-div"      mandatory="no"  inputFile="no"  value="" />
