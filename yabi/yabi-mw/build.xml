@@ -245,7 +245,6 @@
         <mkdir dir="${ccg.toolsroot}/default/EMBOSS/" />
         <mkdir dir="${ccg.toolsroot}/default/text tools/" />
         <mkdir dir="${ccg.toolsroot}/default/cognac.ivec.org/" />
-        <mkdir dir="${ccg.toolsroot}/default/ccg cluster/" />
         <mkdir dir="${ccg.toolsroot}/default/statistics/" />
 
         <!-- select data -->
@@ -262,12 +261,6 @@
         <symlink link="${ccg.toolsroot}/default/blast search/mview.xml" resource="${ccg.toolsroot}/mview.xml" />
         <symlink link="${ccg.toolsroot}/default/blast search/ccg-importeric.xml" resource="${ccg.toolsroot}/ccg-importeric.xml" />
         <symlink link="${ccg.toolsroot}/default/blast search/ivec-blastall.xml" resource="${ccg.toolsroot}/ivec-blastall.xml" />
-
-        <!-- ccg cluster -->
-        <symlink link="${ccg.toolsroot}/default/ccg cluster/ccg-blastall.xml" resource="${ccg.toolsroot}/ccg-blastall.xml" />
-        <symlink link="${ccg.toolsroot}/default/ccg cluster/ccg-fasta.xml" resource="${ccg.toolsroot}/ccg-fasta.xml" />
-        <symlink link="${ccg.toolsroot}/default/ccg cluster/ccg-iprscan.xml" resource="${ccg.toolsroot}/ccg-iprscan.xml" />
-        <symlink link="${ccg.toolsroot}/default/ccg cluster/ccg-repeatmasker.xml" resource="${ccg.toolsroot}/ccg-repeatmasker.xml" />
 
         <!-- cognac.ivec.org -->
         <symlink link="${ccg.toolsroot}/default/cognac.ivec.org/ivec-blastall.xml" resource="${ccg.toolsroot}/ivec-blastall.xml" />
@@ -317,7 +310,6 @@
         <!-- sequence alignment -->
         <symlink link="${ccg.toolsroot}/default/sequence alignment/blat.xml" resource="${ccg.toolsroot}/blat.xml" />
         <symlink link="${ccg.toolsroot}/default/sequence alignment/fasta.xml" resource="${ccg.toolsroot}/fasta.xml" />
-        <symlink link="${ccg.toolsroot}/default/sequence alignment/ccg-fasta.xml" resource="${ccg.toolsroot}/ccg-fasta.xml" />
 
         <!-- open reading frames-->
         <symlink link="${ccg.toolsroot}/default/open reading frames/glimmer3.xml" resource="${ccg.toolsroot}/glimmer3.xml" />
@@ -345,6 +337,17 @@
         <!-- statistics -->
         <symlink link="${ccg.toolsroot}/default/statistics/prss34.xml" resource="${ccg.toolsroot}/prss34.xml" />
 
+
+
+        <!-- CCG CLUSTER TOOLS -->
+        <mkdir dir="${ccg.toolsroot}/ccgcluster/" />
+        <mkdir dir="${ccg.toolsroot}/ccgcluster/ccg cluster/" />
+
+        <!-- ccg cluster -->
+        <symlink link="${ccg.toolsroot}/ccgcluster/ccg cluster/ccg-blastall.xml" resource="${ccg.toolsroot}/ccg-blastall.xml" />
+        <symlink link="${ccg.toolsroot}/ccgcluster/ccg cluster/ccg-fasta.xml" resource="${ccg.toolsroot}/ccg-fasta.xml" />
+        <symlink link="${ccg.toolsroot}/ccgcluster/ccg cluster/ccg-iprscan.xml" resource="${ccg.toolsroot}/ccg-iprscan.xml" />
+        <symlink link="${ccg.toolsroot}/ccgcluster/ccg cluster/ccg-repeatmasker.xml" resource="${ccg.toolsroot}/ccg-repeatmasker.xml" />
 
 
         <!-- PI TOOLS -->
