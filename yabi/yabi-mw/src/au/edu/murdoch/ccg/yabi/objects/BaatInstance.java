@@ -111,6 +111,8 @@ public class BaatInstance {
                 simpleParams.add( tempValue );
             } else if (bp.switchUse.equalsIgnoreCase("switchOnly")) {
                 simpleParams.add( bp.switchName );
+            } else if (bp.switchUse.equalsIgnoreCase("combined")) {
+                simpleParams.add( bp.switchName + tempValue );
             }
         }
         
