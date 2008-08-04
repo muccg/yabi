@@ -348,7 +348,9 @@
         <symlink link="${ccg.toolsroot}/ccgcluster/ccg cluster/ccg-fasta.xml" resource="${ccg.toolsroot}/ccg-fasta.xml" />
         <symlink link="${ccg.toolsroot}/ccgcluster/ccg cluster/ccg-iprscan.xml" resource="${ccg.toolsroot}/ccg-iprscan.xml" />
         <symlink link="${ccg.toolsroot}/ccgcluster/ccg cluster/ccg-repeatmasker.xml" resource="${ccg.toolsroot}/ccg-repeatmasker.xml" />
-
+        <symlink link="${ccg.toolsroot}/ccgcluster/ccg cluster/ccg-t_coffee.xml" resource="${ccg.toolsroot}/ccg-t_coffee.xml" />
+        <symlink link="${ccg.toolsroot}/ccgcluster/ccg cluster/ccg-clustalw.xml" resource="${ccg.toolsroot}/ccg-clustalw.xml" />
+        <symlink link="${ccg.toolsroot}/ccgcluster/ccg cluster/ccg-blat.xml" resource="${ccg.toolsroot}/ccg-blat.xml" />
 
         <!-- PI TOOLS -->
         <mkdir dir="${ccg.toolsroot}/pi/" />

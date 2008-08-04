@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
+<baat>
+  <job jobType="ccg" toolPath="/usr/local/grendel/bin/blatWrapper" toolName="ccg-blat" displayName="ccg blat" description="BLAT (BLAST-Like Alignment Tool) is a very fast sequence alignment tool similar to BLAST">
+
+    <inputFile/>
+    <outputFile/>
+
+    <inputFiletypes requiresInput="true" acceptsInput="true">
+        <extension>fa</extension>
+        <extension>fna</extension>
+        <extension>faa</extension>
+        <extension>seq</extension>
+    </inputFiletypes>
+
+    <outputFiletypes filePassThru="false">
+        <extension>psl</extension>
+    </outputFiletypes>
+
+
+    <parameterList>
+      <parameter rank="1" switchUse="valueOnly"  switch="database"            mandatory="yes" inputFile="maybe" outputFile="no"  value=""/>
+      <parameter rank="2" switchUse="valueOnly"  switch="queryFile"            mandatory="yes" inputFile="maybe" outputFile="no"  value=""/>
+      <parameter rank="3" switchUse="valueOnly"  switch="outputFile"            mandatory="yes" inputFile="no"    outputFile="yes" value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-t="                mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-q="                mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="switchOnly" switch="-prot"              mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-ooc="              mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-tileSize="         mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-stepSize="         mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-oneOff="           mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-minMatch="         mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-minScore="         mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-minIdentity="      mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-maxGap="           mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="switchOnly" switch="-noHead"            mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-makeOoc="          mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-repMatch="         mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-mask="             mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-qMask="            mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-minRepDivergence=" mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-dots="             mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="switchOnly" switch="-trimT"             mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="switchOnly" switch="-noTrimA"           mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="switchOnly" switch="-trimHardA"         mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="switchOnly" switch="-fastMap"           mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-out="              mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="switchOnly" switch="-fine"              mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-maxIntron="        mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+      <parameter rank=""  switchUse="combined"   switch="-extendThroughN"    mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
+    </parameterList>
+
+    <parameterAliasList/>
+    <grendel/>
+    <priority/>
+    <executionHost/>
+    <batchNumber/>
+    <status/>
+    <startTime/>
+    <stopTime/>
+    <submittedTime/>
+    <submitUser/>
+    <submitLabel/>
+  </job>
+</baat>
+

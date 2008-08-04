@@ -16,7 +16,6 @@
   <maxWallTime>240</maxWallTime>
   <maxMemory>2048</maxMemory>
   <jobType>single</jobType>
-  </fileCleanUp>
   <extensions>
     <module>clustalw</module>
   </extensions>
