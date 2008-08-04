@@ -18,5 +18,6 @@
   <jobType>single</jobType>
   <extensions>
     <module>t_coffee</module>
+    <module>intel-cc</module>
   </extensions>
 </job>
