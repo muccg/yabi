@@ -15,6 +15,7 @@
       <property name="ccg.jsonroot" value="/yabi/yabi-json/"/>
       <property name="ccg.resourcesDir" value="${basedir}/tmp/ccg/yabi-mw/"/>
       <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain1/autodeploy/"/>
+      <property name="ccg.javaserverlibs" value="/usr/local/java/glassfish/lib/"/>
       <property name="ccg.dbhost" value="iridium.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
@@ -36,6 +37,7 @@
       <property name="ccg.jsonroot" value="/yabi/yabi-json/"/>
       <property name="ccg.resourcesDir" value="${basedir}/tmp/ccg/yabi-mw/"/>
       <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain1/autodeploy/"/>
+      <property name="ccg.javaserverlibs" value="/usr/local/java/glassfish/lib/"/>
       <property name="ccg.dbhost" value="eowyn.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
@@ -57,6 +59,7 @@
       <property name="ccg.jsonroot" value="/yabi/yabi-json/"/>
       <property name="ccg.resourcesDir" value="${basedir}"/>
       <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain1/autodeploy/"/>
+      <property name="ccg.javaserverlibs" value="/usr/local/java/glassfish/lib/"/>
       <property name="ccg.dbhost" value="eowyn.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
@@ -457,13 +460,19 @@
 
     </target>
 
+    <target name="copyLibs">
+        <copy todir="${ccg.javaserverlibs}" overwrite="false">
+            <fileset dir="${ccg.libdir}">
+                <include name="*.jar"/>
+            </fileset>
+        </copy>
+    </target>
 
 	<target name="createWar" depends="appProperties, configCopy, templateCopy, compile">
 	  <war destfile="${ccg.warfilename}" webxml="${ccg.site}/web.xml">
 	  	<fileset dir="${ccg.site}">
             <include name="templates/**"/>
         </fileset>
-	  	<lib dir="${ccg.libdir}"/>
 	  	<classes dir="${ccg.site}/classes"/>
         <webinf dir="${ccg.site}/cfg">
             <include name="*"/>
@@ -471,7 +480,7 @@
 	  </war>
 	</target>
 	
-	<target name="deployWar">
+	<target name="deployWar" depends="copyLibs">
 	  <copy file="${ccg.warfilename}" todir="${ccg.approot}"/>
 	</target>
     
