@@ -15,7 +15,7 @@
       <property name="ccg.jsonroot" value="/yabi/yabi-json/"/>
       <property name="ccg.resourcesDir" value="${basedir}/tmp/ccg/yabi-mw/"/>
       <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain1/autodeploy/"/>
-      <property name="ccg.javaserverlibs" value="/usr/local/java/glassfish/domains/domain1/lib/applibs/"/>
+      <property name="ccg.javaserverlibs" value="/usr/local/java/glassfish/domains/domain1/lib/ext/"/>
       <property name="ccg.dbhost" value="iridium.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
@@ -37,7 +37,7 @@
       <property name="ccg.jsonroot" value="/yabi/yabi-json/"/>
       <property name="ccg.resourcesDir" value="${basedir}/tmp/ccg/yabi-mw/"/>
       <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain1/autodeploy/"/>
-      <property name="ccg.javaserverlibs" value="/usr/local/java/glassfish/domains/domain1/lib/applibs/"/>
+      <property name="ccg.javaserverlibs" value="/usr/local/java/glassfish/domains/domain1/lib/ext/"/>
       <property name="ccg.dbhost" value="eowyn.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
@@ -59,7 +59,7 @@
       <property name="ccg.jsonroot" value="/yabi/yabi-json/"/>
       <property name="ccg.resourcesDir" value="${basedir}"/>
       <property name="ccg.approot" value="/usr/local/java/glassfish/domains/domain1/autodeploy/"/>
-      <property name="ccg.javaserverlibs" value="/usr/local/java/glassfish/domains/domain1/lib/applibs/"/>
+      <property name="ccg.javaserverlibs" value="/usr/local/java/glassfish/domains/domain1/lib/ext/"/>
       <property name="ccg.dbhost" value="eowyn.localdomain"/>
       <property name="ccg.dbuser" value="yabimwapp"/> 
       <property name="ccg.dbpass" value="yabimwapp"/>
@@ -461,11 +461,12 @@
     </target>
 
     <target name="copyLibs">
-        <copy todir="${ccg.javaserverlibs}" overwrite="false">
+    
+         <copy todir="${ccg.javaserverlibs}" overwrite="false">
             <fileset dir="${ccg.libdir}">
                 <include name="cryptix*.jar"/>
             </fileset>
-        </copy>
+        </copy>  
     </target>
 
 	<target name="createWar" depends="appProperties, configCopy, templateCopy, compile">
