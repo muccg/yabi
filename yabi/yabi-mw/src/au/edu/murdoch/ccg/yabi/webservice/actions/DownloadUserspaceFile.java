@@ -74,6 +74,9 @@ public class DownloadUserspaceFile extends BaseAction {
                             xml += line + "\n";
                         }
 
+                        br.close();
+                        fr.close();
+
                         String json = "";
                         json = org.json.XML.toJSONObject(xml).toString();
 
