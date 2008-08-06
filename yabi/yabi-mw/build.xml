@@ -465,6 +465,7 @@
          <copy todir="${ccg.javaserverlibs}" overwrite="false">
             <fileset dir="${ccg.libdir}">
                 <include name="cryptix*.jar"/>
+                <include name="jce-jdk*.jar"/>
             </fileset>
         </copy>  
     </target>
@@ -476,6 +477,7 @@
         </fileset>
         <lib dir="${ccg.libdir}">
             <exclude name="cryptix*.jar"/>
+            <exclude name="jce-jdk*.jar"/>
         </lib>
 	  	<classes dir="${ccg.site}/classes"/>
         <webinf dir="${ccg.site}/cfg">
