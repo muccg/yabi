@@ -466,6 +466,7 @@
             <fileset dir="${ccg.libdir}">
                 <include name="cryptix*.jar"/>
                 <include name="jce-jdk*.jar"/>
+                <include name="puretls.jar"/>
             </fileset>
         </copy>  
     </target>
@@ -478,6 +479,7 @@
         <lib dir="${ccg.libdir}">
             <exclude name="cryptix*.jar"/>
             <exclude name="jce-jdk*.jar"/>
+            <exclude name="puretls.jar"/>
         </lib>
 	  	<classes dir="${ccg.site}/classes"/>
         <webinf dir="${ccg.site}/cfg">
