@@ -14,7 +14,7 @@
   <count>8</count>
   <queue>normal</queue>
   <maxWallTime>240</maxWallTime>
-  <maxMemory>16384</maxMemory>
+  <maxMemory>15500</maxMemory>
   <jobType>single</jobType>
   <extensions>
     <module>intel-cc</module>
