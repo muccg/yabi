@@ -101,6 +101,7 @@ public class WaitForJobAction extends BaseAction {
                         // ----- STAGE OUT FILES -----
                         //get the outputdir
                         String outputDir = varTranslator.getProcessVariable(ctx, "jobDataDir");
+                        pclient.setBatchId( i + 1, jobId.length); //inform the client which iteration out of how many 
                         pclient.setOutputDir(outputDir);
                         String tmpName = nodeName.replaceAll("-check","");
                         pclient.setStageOutPrefix(tmpName);

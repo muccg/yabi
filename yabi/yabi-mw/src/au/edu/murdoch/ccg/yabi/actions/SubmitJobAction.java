@@ -152,6 +152,7 @@ public class SubmitJobAction extends BaseAction {
                 // ----- CREATE CLIENT -----
                 GenericProcessingClient pclient = ProcessingClientFactory.createProcessingClient( bi.getJobType() , bi);
                 String outputDir = varTranslator.getProcessVariable(ctx, "jobDataDir");
+                pclient.setBatchId( i + 1, batchIterations.length); //inform the client which iteration out of how many 
                 pclient.setOutputDir(outputDir);
                 pclient.setInputDirByUsername(username);
                 String nodeName = ctx.getNode().getFullyQualifiedName();

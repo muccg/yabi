@@ -134,8 +134,9 @@ public class GridClient extends GenericProcessingClient {
         
         //use the outputDir as a unique identifier for this job, used to create a unique stagein/out dir on the grid
         try {
+            String gridLoc = location + '-' + this.batchCounter; //use the current batch iteration number to uniquely identify batch jobs on the grid
             MD5 hasher = MD5.getInstance();
-            this.gridMD5 = hasher.hashData(location.getBytes());
+            this.gridMD5 = hasher.hashData(gridLoc.getBytes());
         } catch (Exception e) {
             logger.info("MD5 failure: "+e.getMessage());
         }

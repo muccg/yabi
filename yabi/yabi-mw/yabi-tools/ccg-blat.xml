@@ -21,7 +21,7 @@
     <parameterList>
       <parameter rank="1" switchUse="valueOnly"  switch="database"            mandatory="yes" inputFile="maybe" outputFile="no"  value=""/>
       <parameter rank="2" switchUse="valueOnly"  switch="queryFile"            mandatory="yes" inputFile="yes" outputFile="no"  value=""/>
-      <parameter rank="3" switchUse="valueOnly"  switch="outputFile"            mandatory="yes" inputFile="no"    outputFile="yes" value=""/>
+      <parameter rank="3" switchUse="valueOnly"  switch="outputFile"            mandatory="no" inputFile="no"    outputFile="yes" value="" sourceParam="queryFile" appendString=".psl"/>
       <parameter rank=""  switchUse="combined"   switch="-t="                mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
       <parameter rank=""  switchUse="combined"   switch="-q="                mandatory="no"  inputFile="no"    outputFile="no"  value=""/>
       <parameter rank=""  switchUse="switchOnly" switch="-prot"              mandatory="no"  inputFile="no"    outputFile="no"  value=""/>

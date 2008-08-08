@@ -16,6 +16,8 @@ public abstract class GenericProcessingClient {
     protected String rootDir;
     protected String outFilePrefix = "";
     protected BaatInstance bi;
+    protected int batchCounter = 0;
+    protected int batchTotal = 0;
     
     //instance methods
     public abstract String submitJob () throws Exception;
@@ -33,6 +35,11 @@ public abstract class GenericProcessingClient {
     //concrete methods
     public void setOutputDir(String location) {
         this.outputDir = location;
+    }
+
+    public void setBatchId(int current, int total) {
+        this.batchCounter = current;
+        this.batchTotal = total;
     }
     
     public void runAssertions() throws Exception {

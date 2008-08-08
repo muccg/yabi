@@ -22,6 +22,7 @@
       <parameter rank="2" switchUse="both" switch="-d" mandatory="yes" inputFile="no"    outputFile="no"  value=""/>
       <parameter rank="3" switchUse="both" switch="-i" mandatory="yes" inputFile="yes"   outputFile="no"  value=""/>
       <parameter rank=""  switchUse="both" switch="-V" mandatory="no"  inputFile="no"    outputFile="no"  value="T"/>
+      <parameter rank=""  switchUse="both" switch="-o" mandatory="no"  inputFile="no"    outputFile="yes" value="" sourceParam="-i" appendString=".bls"/>
     </parameterList>
 
     <parameterAliasList/>
