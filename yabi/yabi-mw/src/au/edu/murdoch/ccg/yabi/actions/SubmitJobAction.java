@@ -204,7 +204,8 @@ public class SubmitJobAction extends BaseAction {
             varTranslator.saveVariable(ctx, "dir", outputDir);
 
         } catch (Exception e) {
-            varTranslator.saveVariable(ctx, "errorMessage", e.getClass().getName() + " : " + (""+e.getMessage()).replaceAll(rootDir, ""));
+            varTranslator.saveVariable(ctx, "errorStackTrace", e.getClass().getName() + " : " + (""+e.getMessage()).replaceAll(rootDir, ""));
+            varTranslator.saveVariable(ctx, "errorMessage", "An error occurred while submitting the job. The system administrators have been notified and will rectify the problem as soon as possible");
             varTranslator.saveVariable(ctx, "jobStatus", "E" );
 
             e.printStackTrace();
@@ -219,7 +220,12 @@ public class SubmitJobAction extends BaseAction {
         }
 
     } else {
-        varTranslator.saveVariable(ctx, "errorMessage", "Missing input : toolName");
+        try {
+            MailTool mt = new MailTool();
+            mt.sendYabiError(username+" encountered:\n\nunknown tool in job : " + varTranslator.getProcessVariable(ctx, "jobDataDir"));
+        } catch (Exception cbbce) {}
+
+        varTranslator.saveVariable(ctx, "errorMessage", "An error occurred identifying the tool to execute. The system administrators have been notified and will rectify the problem as soon as possible");
         ctx.leaveNode("error");
     }
 

@@ -112,4 +112,8 @@ public class CCGGridClient extends GridClient {
         this.gridWSJobURL = this.conf.getString("grid.host.ccg.wsjoburl");
     }
 
+    public String getErrorMessage() {
+        //error message to return when the grid returns job status 'E'
+        return "Could not run grid job on the CCG cluster. Please check with your system administrator that you have adequate resource allocations to run this job.";
+    }
 }

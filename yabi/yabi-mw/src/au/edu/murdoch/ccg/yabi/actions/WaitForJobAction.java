@@ -117,7 +117,12 @@ public class WaitForJobAction extends BaseAction {
                         isCompleted[i] = true;
                         incompleteCount--;
 
-                        varTranslator.saveVariable(ctx, "errorMessage", "processing server error");
+                        try {
+                            MailTool mt = new MailTool();
+                            mt.sendYabiError("Processing client returned an error : " + pclient.getErrorMessage() + "\n\nJob: " + varTranslator.getProcessVariable(ctx, "jobDataDir"));
+                        } catch (Exception cbbce) {}
+
+                        varTranslator.saveVariable(ctx, "errorMessage", pclient.getErrorMessage());
                         varTranslator.updateLastNodeMarker(ctx);
                         ctx.leaveNode("error"); //TODO change this so it doesn't drop out here, just cancels checking this node
                     }
@@ -143,7 +148,8 @@ public class WaitForJobAction extends BaseAction {
                 mt.sendYabiError(e.getClass().getName() + " : " + e.getMessage() + "\n\n" + MailTool.trapStackTrace(e));
             } catch (Exception cbbce) {}
             
-            varTranslator.saveVariable(ctx, "errorMessage", e.getClass() + " : " + e.getMessage());
+            varTranslator.saveVariable(ctx, "errorStackTrace", e.getClass() + " : " + e.getMessage());
+            varTranslator.saveVariable(ctx, "errorMessage", "A YABI error occurred. The system administrators have been notified and will rectify the problem as soon as possible");
             varTranslator.saveVariable(ctx, "jobStatus", "E" );
             //propagate execution to error state
             varTranslator.updateLastNodeMarker(ctx);

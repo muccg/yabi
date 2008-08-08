@@ -41,6 +41,11 @@ public abstract class GenericProcessingClient {
         this.batchCounter = current;
         this.batchTotal = total;
     }
+
+    public String getErrorMessage() {
+        //generic error message
+        return "Unknown error running job";
+    }
     
     public void runAssertions() throws Exception {
         //runs assertions associated with baat file, throws exception if it fails one

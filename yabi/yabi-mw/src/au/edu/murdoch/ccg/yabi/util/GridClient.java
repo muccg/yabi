@@ -549,5 +549,10 @@ public class GridClient extends GenericProcessingClient {
         return (this.jobStatus.compareTo("E") == 0);
     }   
 
+    public String getErrorMessage() {
+        //return the message that occurs when the grid reports 'E' as the status
+        return "Could not run grid job. Please check with your system administrator that you have adequate resource allocations to run this job.";
+    }
+
 
 }
