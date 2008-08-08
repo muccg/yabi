@@ -6,6 +6,8 @@
     <inputFile/>
     <outputFile/>
 
+    <batchOnParameter name="-i"/>
+
     <inputFiletypes requiresInput="true" acceptsInput="true">
         <extension>fa</extension>
         <extension>fna</extension>
