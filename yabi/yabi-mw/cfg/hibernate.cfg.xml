@@ -17,10 +17,6 @@
     <property name="hibernate.connection.username">@dbuser@</property>
     <property name="hibernate.connection.password">@dbpass@</property>
     <property name="hibernate.hbm2ddl.auto">update</property>
-    <property name="hibernate.c3p0.min_size">5</property>
-    <property name="hibernate.c3p0.max_size">20</property>
-    <property name="hibernate.c3p0.timeout">1800</property>
-    <property name="hibernate.c3p0.max_statements">50</property>
     <!-- using auto 'create-drop' would drop the DB at every start and then recreate -->
         
     <!-- other hibernate properties 
