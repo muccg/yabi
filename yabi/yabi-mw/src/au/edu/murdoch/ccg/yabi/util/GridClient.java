@@ -149,6 +149,11 @@ public class GridClient extends GenericProcessingClient {
 
     //instance methods
     public String submitJob () throws Exception {
+        GridLocker gl = GridLocker.getInstance(); //get the singleton for managing the grid queue size
+
+        //a blocking request that will throttle the number of transfers we can do to this grid
+        gl.waitForSubmissionSlot(this);
+
         //create data directories
         String dataDirLoc = rootDir + this.outputDir ;
         File dataDir = new File(dataDirLoc);
@@ -233,11 +238,20 @@ public class GridClient extends GenericProcessingClient {
         logger.info("submitted, jobEndpoint : "+jobEndpoint);
         
         logger.finest("EPRXML: "+ObjectSerializer.toString(jobEndpoint, new QName("http://schemas.xmlsoap.org/ws/2004/03/addressing", "EndpointReferenceType")));
-        
+     
+        gl.releaseSubmissionSlot(this);
+
+        logger.info("gridlocker submission queue size estimate: "+gl.getTransientRemainingSubmissionCount());
+   
         return ObjectSerializer.toString(jobEndpoint, new QName("http://schemas.xmlsoap.org/ws/2004/03/addressing", "EndpointReferenceType"));
     }
 
     public String getJobStatus (String jobId) throws Exception {
+        GridLocker gl = GridLocker.getInstance(); //get the singleton for managing the grid queue size
+
+        //a blocking request that will throttle the number of transfers we can do to this grid
+        gl.waitForStatusSlot(this);
+
         this.jobId = jobId;  //store this for if we intend to stageout
 
         logger.fine("getting status for grid epr: "+jobId);
@@ -299,6 +313,9 @@ public class GridClient extends GenericProcessingClient {
         } catch (Exception e) {
             this.jobStatus = "E";
         }
+
+        gl.releaseStatusSlot(this);
+        logger.info("gridlocker estimated status check count: "+gl.getTransientRemainingStatusCount());
             
         return this.jobStatus;
     }
