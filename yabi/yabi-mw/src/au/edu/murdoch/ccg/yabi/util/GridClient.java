@@ -355,6 +355,11 @@ public class GridClient extends GenericProcessingClient {
     }
 
     public void fileStageIn ( ArrayList files ) throws Exception {
+        GridLocker gl = GridLocker.getInstance(); //get the singleton for managing the grid queue size
+
+        //a blocking request that will throttle the number of transfers we can do to this grid
+        gl.waitForTransferSlot(this);    
+
         //connect, fetch a list of files and download them all
         GridFTPClient client = new GridFTPClient(this.gridFTPHost, this.gridFTPPort);
         
@@ -410,6 +415,11 @@ public class GridClient extends GenericProcessingClient {
                 client.close();
             } catch (Exception ce) {}
             logger.info("stagein: closing ftp connection");
+            
+            //IMPORTANT. release our hold on a grid transfer slot
+            gl.releaseTransferSlot(this);
+
+            logger.info("gridlocker transient remaining transfer count: "+gl.getTransientRemainingTransferCount());
         }
     }
 
@@ -419,6 +429,12 @@ public class GridClient extends GenericProcessingClient {
     }
 
     public void fileStageOut ( ArrayList files ) throws Exception {
+        GridLocker gl = GridLocker.getInstance(); //get the singleton for managing the grid queue size
+
+        //a blocking request that will throttle the number of transfers we can do to this grid
+        gl.waitForTransferSlot(this);
+
+
         //connect, fetch a list of files and download them all
         GridFTPClient client = new GridFTPClient(this.gridFTPHost, this.gridFTPPort);
         
@@ -479,6 +495,11 @@ public class GridClient extends GenericProcessingClient {
                 client.close();
             } catch (Exception ce) {}
             logger.info("stage out: closing ftp connection");
+
+            //IMPORTANT. release transfer slot
+            gl.releaseTransferSlot(this);
+
+            logger.info("gridlocker transient remaining transfer count: "+gl.getTransientRemainingTransferCount());
         }
     }
 
