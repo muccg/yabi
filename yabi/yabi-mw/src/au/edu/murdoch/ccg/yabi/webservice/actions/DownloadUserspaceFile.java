@@ -61,7 +61,7 @@ public class DownloadUserspaceFile extends BaseAction {
                 if (requestedFile.exists() && !requestedFile.isDirectory()) {
 
                     if (outputFormat != null && outputFormat.compareTo(TYPE_JSON) == 0) {
-                        logger.info("json request");
+                        logger.finest("json request");
                         response.setContentType("text/javascript");
 
                         FileReader fr = new FileReader(filePath);
@@ -88,7 +88,7 @@ public class DownloadUserspaceFile extends BaseAction {
                         return null;
 
                     } else {
-                        logger.info("download request");
+                        logger.finest("download request");
 
                         FileInputStream fileToDownload = new FileInputStream(filePath);
                         ServletOutputStream out = response.getOutputStream();
