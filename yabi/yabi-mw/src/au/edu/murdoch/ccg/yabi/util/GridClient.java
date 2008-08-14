@@ -372,6 +372,8 @@ public class GridClient extends GenericProcessingClient {
     }
 
     public void fileStageIn ( ArrayList files ) throws Exception {
+        Exception storedException = null;
+
         GridLocker gl = GridLocker.getInstance(); //get the singleton for managing the grid queue size
 
         //a blocking request that will throttle the number of transfers we can do to this grid
@@ -426,7 +428,7 @@ public class GridClient extends GenericProcessingClient {
                 
             }
         } catch (Exception e) {
-            throw e;
+            e.printStackTrace();
         } finally {
             try {
                 client.close();
@@ -437,6 +439,10 @@ public class GridClient extends GenericProcessingClient {
             gl.releaseTransferSlot(this);
 
             logger.info("gridlocker transient remaining transfer count: "+gl.getTransientRemainingTransferCount());
+        }
+
+        if (storedException != null) {
+            throw storedException;
         }
     }
 
