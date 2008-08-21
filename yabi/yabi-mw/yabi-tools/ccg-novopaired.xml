@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
 <baat>
-  <job toolPath="/usr/local/grendel/bin/novopairedWrapper" toolName="novopaired" moduleName="novocraft">
+  <job toolName="novopaired" moduleName="novocraft">
 
     <inputFile/>
     <outputFile/>

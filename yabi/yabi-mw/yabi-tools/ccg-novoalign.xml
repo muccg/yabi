@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE baat SYSTEM "http://ccg.murdoch.edu.au/dtd/baat.dtd">
 <baat>
-  <job toolPath="/usr/local/grendel/bin/novoalignWrapper" toolName="novoalign" moduleName="novocraft">
+  <job toolName="novoalign" moduleName="novocraft">
 
     <inputFile/>
     <outputFile/>
