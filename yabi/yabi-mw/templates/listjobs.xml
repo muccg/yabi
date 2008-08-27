@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<xml-response type="success">
-    <jobs>
-    #foreach ($job in $jobs)
-        <job year="$!{job.get("year")}" month="$!{job.get("month")}" name="$!{job.get("name")}" modificationTime="$!{job.get("modificationTime")}"/>
-    #end
-    </jobs>
-</xml-response>

@@ -1,2 +1,0 @@
-#foreach ($file in $files) $!{file.name} 
-#end
