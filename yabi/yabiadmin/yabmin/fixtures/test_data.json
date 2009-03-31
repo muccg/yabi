@@ -1,0 +1,361 @@
+[
+    {
+        "pk": 1, 
+        "model": "yabmin.fileextension", 
+        "fields": {
+            "created_on": "2009-03-30 02:22:11", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-30 02:22:11", 
+            "last_modified_by": "", 
+            "name": "fa"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "yabmin.fileextension", 
+        "fields": {
+            "created_on": "2009-03-30 02:22:21", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-30 02:22:21", 
+            "last_modified_by": "", 
+            "name": "fna"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "yabmin.fileextension", 
+        "fields": {
+            "created_on": "2009-03-30 02:22:26", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-30 02:22:26", 
+            "last_modified_by": "", 
+            "name": "faa"
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "yabmin.fileextension", 
+        "fields": {
+            "created_on": "2009-03-30 02:22:30", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-30 02:22:30", 
+            "last_modified_by": "", 
+            "name": "gif"
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "yabmin.fileextension", 
+        "fields": {
+            "created_on": "2009-03-30 02:22:38", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-30 02:22:38", 
+            "last_modified_by": "", 
+            "name": "png"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "yabmin.filetype", 
+        "fields": {
+            "description": "Fasta file.", 
+            "created_by": "", 
+            "created_on": "2009-03-30 02:23:05", 
+            "extensions": [
+                1, 
+                2, 
+                3
+            ], 
+            "last_modified_by": "", 
+            "last_modified_on": "2009-03-30 02:23:05", 
+            "name": "Fasta"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "yabmin.filetype", 
+        "fields": {
+            "description": "Image file.", 
+            "created_by": "", 
+            "created_on": "2009-03-30 02:23:17", 
+            "extensions": [
+                4, 
+                5
+            ], 
+            "last_modified_by": "", 
+            "last_modified_on": "2009-03-30 02:23:17", 
+            "name": "Image"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "yabmin.tool", 
+        "fields": {
+            "display_name": "blast", 
+            "name": "blast", 
+            "output_must_exist": false, 
+            "output_filetypes": [], 
+            "enabled": true, 
+            "created_by": "", 
+            "created_on": "2009-03-30 00:42:20", 
+            "last_modified_by": "", 
+            "path": "/usr/local/grendel/bin/blastWrapper", 
+            "type": 1, 
+            "last_modified_on": "2009-03-30 00:42:20", 
+            "description": "BLAST the input files based on the options selected."
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "yabmin.tool", 
+        "fields": {
+            "display_name": "blast prettyprint", 
+            "name": "blast2html", 
+            "output_must_exist": false, 
+            "output_filetypes": [], 
+            "enabled": true, 
+            "created_by": "", 
+            "created_on": "2009-03-30 00:45:18", 
+            "last_modified_by": "", 
+            "path": "/usr/local/grendel/bin/ccg-blast2htmlWrapper", 
+            "type": 1, 
+            "last_modified_on": "2009-03-30 00:45:18", 
+            "description": "HTML format the output files from BLAST."
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "yabmin.tool", 
+        "fields": {
+            "display_name": "pi-blast", 
+            "name": "piblast", 
+            "output_must_exist": false, 
+            "output_filetypes": [], 
+            "enabled": true, 
+            "created_by": "", 
+            "created_on": "2009-03-30 00:47:06", 
+            "last_modified_by": "", 
+            "path": "/usr/local/grendel/bin/piblastWrapper", 
+            "type": 1, 
+            "last_modified_on": "2009-03-30 00:47:06", 
+            "description": "BLAST the input files based on the options selected."
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "yabmin.tool", 
+        "fields": {
+            "display_name": "pi-html to fasta", 
+            "name": "ccg-pihtmlparser", 
+            "output_must_exist": false, 
+            "output_filetypes": [], 
+            "enabled": true, 
+            "created_by": "", 
+            "created_on": "2009-03-30 00:49:03", 
+            "last_modified_by": "", 
+            "path": "/usr/local/grendel/bin/ccg-pihtmlparserWrapper", 
+            "type": 1, 
+            "last_modified_on": "2009-03-30 00:49:03", 
+            "description": "Converts from Peaks HTML output to fasta format."
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "yabmin.tool", 
+        "fields": {
+            "display_name": "select file", 
+            "name": "fileselector", 
+            "output_must_exist": false, 
+            "output_filetypes": [], 
+            "enabled": true, 
+            "created_by": "", 
+            "created_on": "2009-03-30 00:51:26", 
+            "last_modified_by": "", 
+            "path": "", 
+            "type": 2, 
+            "last_modified_on": "2009-03-30 00:51:26", 
+            "description": "Select a file from your workspace directory."
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "yabmin.tool", 
+        "fields": {
+            "display_name": "upload file", 
+            "name": "fileuploader", 
+            "output_must_exist": false, 
+            "output_filetypes": [], 
+            "enabled": true, 
+            "created_by": "", 
+            "created_on": "2009-03-30 00:52:29", 
+            "last_modified_by": "", 
+            "path": "", 
+            "type": 2, 
+            "last_modified_on": "2009-03-30 01:01:41", 
+            "description": "Upload a file from your computer to your workspace directory."
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "yabmin.toolgroup", 
+        "fields": {
+            "created_on": "2009-03-30 00:42:10", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-30 00:42:10", 
+            "last_modified_by": "", 
+            "name": "blast search"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "yabmin.toolgroup", 
+        "fields": {
+            "created_on": "2009-03-30 00:51:05", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-30 00:51:05", 
+            "last_modified_by": "", 
+            "name": "file tools"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "yabmin.toolgrouping", 
+        "fields": {
+            "tool": 1, 
+            "created_by": "", 
+            "created_on": "2009-03-30 00:42:20", 
+            "last_modified_by": "", 
+            "tool_group": 1, 
+            "last_modified_on": "2009-03-30 00:42:20", 
+            "tool_set": 1
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "yabmin.toolgrouping", 
+        "fields": {
+            "tool": 2, 
+            "created_by": "", 
+            "created_on": "2009-03-30 00:45:18", 
+            "last_modified_by": "", 
+            "tool_group": 1, 
+            "last_modified_on": "2009-03-30 00:45:18", 
+            "tool_set": 1
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "yabmin.toolgrouping", 
+        "fields": {
+            "tool": 3, 
+            "created_by": "", 
+            "created_on": "2009-03-30 00:47:06", 
+            "last_modified_by": "", 
+            "tool_group": 1, 
+            "last_modified_on": "2009-03-30 00:47:06", 
+            "tool_set": 2
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "yabmin.toolgrouping", 
+        "fields": {
+            "tool": 4, 
+            "created_by": "", 
+            "created_on": "2009-03-30 00:49:03", 
+            "last_modified_by": "", 
+            "tool_group": 1, 
+            "last_modified_on": "2009-03-30 00:49:03", 
+            "tool_set": 2
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "yabmin.toolgrouping", 
+        "fields": {
+            "tool": 5, 
+            "created_by": "", 
+            "created_on": "2009-03-30 00:51:26", 
+            "last_modified_by": "", 
+            "tool_group": 2, 
+            "last_modified_on": "2009-03-30 00:51:26", 
+            "tool_set": 1
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "yabmin.toolgrouping", 
+        "fields": {
+            "tool": 6, 
+            "created_by": "", 
+            "created_on": "2009-03-30 00:52:29", 
+            "last_modified_by": "", 
+            "tool_group": 2, 
+            "last_modified_on": "2009-03-30 00:52:29", 
+            "tool_set": 1
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "yabmin.toolset", 
+        "fields": {
+            "created_on": "2009-03-30 00:41:37", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-30 00:41:37", 
+            "last_modified_by": "", 
+            "name": "default"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "yabmin.toolset", 
+        "fields": {
+            "created_on": "2009-03-30 00:41:50", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-30 00:41:50", 
+            "last_modified_by": "", 
+            "name": "pi"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "yabmin.toolset", 
+        "fields": {
+            "created_on": "2009-03-30 00:41:58", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-30 00:41:58", 
+            "last_modified_by": "", 
+            "name": "icg"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "yabmin.user", 
+        "fields": {
+            "toolsets": [
+                1
+            ], 
+            "name": "tony", 
+            "created_by": "", 
+            "created_on": "2009-03-30 01:13:31", 
+            "last_modified_by": "", 
+            "last_modified_on": "2009-03-30 01:13:31"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "yabmin.user", 
+        "fields": {
+            "toolsets": [
+                1, 
+                2, 
+                3
+            ], 
+            "name": "alistair", 
+            "created_by": "", 
+            "created_on": "2009-03-30 01:13:44", 
+            "last_modified_by": "", 
+            "last_modified_on": "2009-03-30 01:13:44"
+        }
+    }
+]
