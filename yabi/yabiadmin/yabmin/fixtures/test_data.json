@@ -7,7 +7,7 @@
             "created_by": "", 
             "last_modified_on": "2009-03-30 02:22:11", 
             "last_modified_by": "", 
-            "name": "fa"
+            "extension": "fa"
         }
     }, 
     {
@@ -18,7 +18,7 @@
             "created_by": "", 
             "last_modified_on": "2009-03-30 02:22:21", 
             "last_modified_by": "", 
-            "name": "fna"
+            "extension": "fna"
         }
     }, 
     {
@@ -29,7 +29,7 @@
             "created_by": "", 
             "last_modified_on": "2009-03-30 02:22:26", 
             "last_modified_by": "", 
-            "name": "faa"
+            "extension": "faa"
         }
     }, 
     {
@@ -40,7 +40,7 @@
             "created_by": "", 
             "last_modified_on": "2009-03-30 02:22:30", 
             "last_modified_by": "", 
-            "name": "gif"
+            "extension": "gif"
         }
     }, 
     {
@@ -51,7 +51,7 @@
             "created_by": "", 
             "last_modified_on": "2009-03-30 02:22:38", 
             "last_modified_by": "", 
-            "name": "png"
+            "extension": "png"
         }
     }, 
     {
@@ -93,8 +93,6 @@
         "fields": {
             "display_name": "blast", 
             "name": "blast", 
-            "output_must_exist": false, 
-            "output_filetypes": [], 
             "enabled": true, 
             "created_by": "", 
             "created_on": "2009-03-30 00:42:20", 
@@ -111,8 +109,6 @@
         "fields": {
             "display_name": "blast prettyprint", 
             "name": "blast2html", 
-            "output_must_exist": false, 
-            "output_filetypes": [], 
             "enabled": true, 
             "created_by": "", 
             "created_on": "2009-03-30 00:45:18", 
@@ -129,8 +125,6 @@
         "fields": {
             "display_name": "pi-blast", 
             "name": "piblast", 
-            "output_must_exist": false, 
-            "output_filetypes": [], 
             "enabled": true, 
             "created_by": "", 
             "created_on": "2009-03-30 00:47:06", 
@@ -147,8 +141,6 @@
         "fields": {
             "display_name": "pi-html to fasta", 
             "name": "ccg-pihtmlparser", 
-            "output_must_exist": false, 
-            "output_filetypes": [], 
             "enabled": true, 
             "created_by": "", 
             "created_on": "2009-03-30 00:49:03", 
@@ -165,8 +157,6 @@
         "fields": {
             "display_name": "select file", 
             "name": "fileselector", 
-            "output_must_exist": false, 
-            "output_filetypes": [], 
             "enabled": true, 
             "created_by": "", 
             "created_on": "2009-03-30 00:51:26", 
@@ -183,8 +173,6 @@
         "fields": {
             "display_name": "upload file", 
             "name": "fileuploader", 
-            "output_must_exist": false, 
-            "output_filetypes": [], 
             "enabled": true, 
             "created_by": "", 
             "created_on": "2009-03-30 00:52:29", 

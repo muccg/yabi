@@ -22,5 +22,121 @@
             "last_modified_on": "2009-03-30 00:37:53", 
             "name": "local"
         }
-    }
-]
+    },
+    {
+        "pk": 3, 
+        "model": "yabmin.tooltype", 
+        "fields": {
+            "description": "Tools that are executed on the new cluster.", 
+            "created_by": "", 
+            "created_on": "2009-03-30 00:37:53", 
+            "last_modified_by": "", 
+            "last_modified_on": "2009-03-30 00:37:53", 
+            "name": "ccg"
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "yabmin.parameterswitchuse", 
+        "fields": {
+            "display_text": "switch only", 
+            "last_modified_by": null, 
+            "description": "Only the switch will be passed in the argument list.", 
+            "value": "switchOnly", 
+            "created_on": "2009-03-31 16:40:26", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-31 16:40:26"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "yabmin.parameterswitchuse", 
+        "fields": {
+            "display_text": "value only", 
+            "last_modified_by": null, 
+            "description": "Only the value will be passed in the argument list (ie. the switch won't be used)", 
+            "value": "valueOnly", 
+            "created_on": "2009-03-31 16:41:11", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-31 16:41:11"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "yabmin.parameterswitchuse", 
+        "fields": {
+            "display_text": "both", 
+            "last_modified_by": null, 
+            "description": "Both the switch and the value will be passed in the argument list. They will be separated by a space.", 
+            "value": "both", 
+            "created_on": "2009-03-31 16:42:10", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-31 16:42:10"
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "yabmin.parameterswitchuse", 
+        "fields": {
+            "display_text": "combined", 
+            "last_modified_by": null, 
+            "description": "Both the switch and the value will be passed in the argument list. They will be joined together with no space between them.", 
+            "value": "combined", 
+            "created_on": "2009-03-31 16:43:22", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-31 16:43:22"
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "yabmin.parameterswitchuse", 
+        "fields": {
+            "display_text": "none", 
+            "last_modified_by": null, 
+            "description": "The switch and the value won't be passed in the argument list.", 
+            "value": "none", 
+            "created_on": "2009-03-31 16:44:23", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-31 16:44:23"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "yabmin.parameterfilter", 
+        "fields": {
+            "display_text": "prepend string", 
+            "last_modified_by": null, 
+            "description": "Prepends the string in filterValue to the parameter value.", 
+            "value": "prependString", 
+            "created_on": "2009-03-31 16:43:22", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-31 16:43:22"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "yabmin.parameterfilter", 
+        "fields": {
+            "display_text": "append string", 
+            "last_modified_by": null, 
+            "description": "Appends the string in filterValue to the parameter value.", 
+            "value": "appendString", 
+            "created_on": "2009-03-31 16:43:22", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-31 16:43:22"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "yabmin.parameterfilter", 
+        "fields": {
+            "display_text": "prepend root directory", 
+            "last_modified_by": null, 
+            "description": "Prepends the root directory to the parameter value.", 
+            "value": "prependRootDir", 
+            "created_on": "2009-03-31 16:43:22", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-31 16:43:22"
+        }
+    } 
+  ]
