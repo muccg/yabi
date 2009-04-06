@@ -110,12 +110,13 @@ class ToolRslExtensionModule(Base):
 class ToolRslArgumentOrder(Base):
     tool_rsl = models.ForeignKey(ToolRslInfo)
     name = models.CharField(max_length=50)
-    rank = models.PositiveIntegerField()
+    rank = models.PositiveIntegerField(null=True, blank=True)
 
 class ToolOutputExtension(Base):
     tool = models.ForeignKey(Tool)
     file_extension = models.ForeignKey(FileExtension)
     must_exist = models.BooleanField(default=False)
+    must_be_greater_than = models.PositiveIntegerField(null=True, blank=True)
 
 class ToolGroup(Base):
     name = models.CharField(max_length=100, unique=True)
