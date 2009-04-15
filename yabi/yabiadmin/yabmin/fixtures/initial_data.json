@@ -101,6 +101,19 @@
         }
     }, 
     {
+        "pk": 6, 
+        "model": "yabmin.parameterswitchuse", 
+        "fields": {
+            "display_text": "pair", 
+            "last_modified_by": null, 
+            "description": "The switch and the value passed in to the argument list as a pair.", 
+            "value": "pair", 
+            "created_on": "2009-03-31 16:44:23", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-31 16:44:23"
+        }
+    }, 
+     {
         "pk": 1, 
         "model": "yabmin.parameterfilter", 
         "fields": {
@@ -138,5 +151,18 @@
             "created_by": "", 
             "last_modified_on": "2009-03-31 16:43:22"
         }
+    }, 
+    {
+        "pk": 4, 
+        "model": "yabmin.parameterfilter", 
+        "fields": {
+            "display_text": "remove path", 
+            "last_modified_by": null, 
+            "description": "Removes the path component from the parameter value.", 
+            "value": "removePath", 
+            "created_on": "2009-03-31 16:43:22", 
+            "created_by": "", 
+            "last_modified_on": "2009-03-31 16:43:22"
+        }
     } 
-  ]
+]

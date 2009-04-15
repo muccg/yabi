@@ -37,6 +37,9 @@ class ToolType(Base):
         return self.name
 
 class Tool(Base):
+    class Meta:
+        ordering = ("name",)
+
     name = models.CharField(max_length=255, unique=True)
     display_name = models.CharField(max_length=255)
     path = models.CharField(max_length=512, null=True, blank=True)
@@ -82,17 +85,17 @@ class ToolParameter(Base):
     mandatory = models.BooleanField(blank=True, default=False)
     input_file = models.BooleanField(blank=True, default=False)
     output_file = models.BooleanField(blank=True, default=False)
-    switch = models.CharField(max_length=5, null=True, blank=True, unique=True)
+    switch = models.CharField(max_length=25, null=True, blank=True)
     switch_use = models.ForeignKey(ParameterSwitchUse, null=True, blank=True)
     accepted_filetypes = models.ManyToManyField(FileType, blank=True)
     input_extensions = models.ManyToManyField(FileExtension, blank=True, related_name='input_params')
     filter = models.ForeignKey(ParameterFilter, null=True, blank=True)
-    filterValue = models.CharField(max_length=50, null=True, blank=True)
+    filter_value = models.CharField(max_length=50, null=True, blank=True)
     source_param = models.ForeignKey('self', related_name='source_parent', null=True, blank=True)
     extension_param = models.ForeignKey('self', related_name='extension_parent', null=True, blank=True)
 
     def __unicode__(self):
-        return self.switch
+        return self.switch or ''
 
 class ToolRslInfo(Base):
     executable = models.CharField(max_length=50)
@@ -102,6 +105,9 @@ class ToolRslInfo(Base):
     max_memory = models.PositiveIntegerField()
     job_type = models.CharField(max_length=40, default='single')
     tool = models.OneToOneField(Tool)
+
+    def tool_name(self):
+        return self.tool.name
 
 class ToolRslExtensionModule(Base):
     tool_rsl = models.ForeignKey(ToolRslInfo)
@@ -115,8 +121,8 @@ class ToolRslArgumentOrder(Base):
 class ToolOutputExtension(Base):
     tool = models.ForeignKey(Tool)
     file_extension = models.ForeignKey(FileExtension)
-    must_exist = models.BooleanField(default=False)
-    must_be_greater_than = models.PositiveIntegerField(null=True, blank=True)
+    must_exist = models.BooleanField(null=True, default=False)
+    must_be_larger_than = models.PositiveIntegerField(null=True, blank=True)
 
 class ToolGroup(Base):
     name = models.CharField(max_length=100, unique=True)

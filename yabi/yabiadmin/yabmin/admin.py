@@ -1,5 +1,6 @@
 from yabiadmin.yabmin.models import ToolType, Tool, ToolParameter, ToolGroup, ToolGrouping, ToolSet, User, FileExtension, FileType, ParameterFilter, ParameterSwitchUse, ToolRslInfo, ToolRslExtensionModule, ToolRslArgumentOrder, ToolOutputExtension
 from django.contrib import admin
+from django.forms.models import BaseInlineFormSet
 
 class ToolGroupingInline(admin.TabularInline):
     model = ToolGrouping
@@ -9,20 +10,30 @@ class ToolOutputExtensionInline(admin.TabularInline):
     model = ToolOutputExtension
     extra = 3
 
+class ToolParameterFormset(BaseInlineFormSet):
+    def get_queryset(self):
+        return super(ToolParameterFormset, self).get_queryset().order_by('id')
+
 class ToolParameterInline(admin.TabularInline):
     model = ToolParameter
+    formset = ToolParameterFormset
     extra = 7
 
 class ToolRslExtensionModuleInline(admin.TabularInline):
     model = ToolRslExtensionModule
     extra = 3
 
+class ToolRslArgumentOrderFormset(BaseInlineFormSet):
+    def get_queryset(self):
+        return super(ToolRslArgumentOrderFormset, self).get_queryset().order_by('rank')
+
 class ToolRslArgumentOrderInline(admin.TabularInline):
     model = ToolRslArgumentOrder
+    formset = ToolRslArgumentOrderFormset
     extra = 7
 
 class ToolRslInfoAdmin(admin.ModelAdmin):
-    list_display = ['executable']
+    list_display = ['tool_name', 'executable']
     inlines = [ToolRslArgumentOrderInline, ToolRslExtensionModuleInline]
 
 class ToolAdmin(admin.ModelAdmin):
