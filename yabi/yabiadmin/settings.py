@@ -62,6 +62,11 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
 )
+#MIDDLEWARE_CLASSES += ('yabmin.middleware.Logging',)
+
+AUTHENTICATION_BACKENDS = (
+    'yabiadmin.ldapbackend.LDAPBackend',
+)
 
 ROOT_URLCONF = 'yabiadmin.urls'
 
@@ -82,3 +87,16 @@ INSTALLED_APPS = (
     'django_evolution',
     'yabiadmin.yabmin',
 )
+
+##
+## Auth settings
+##
+AUTH_LDAP_SERVERS = (
+    'ldaps://fds1.localdomain', 
+    'ldaps://fds2.localdomain', 
+    'ldaps://fds3.localdomain',
+)
+AUTH_LDAP_BASE = 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
+AUTH_LDAP_GROUP_BASE = 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
+AUTH_LDAP_ADMIN_GROUP = 'admin'
+

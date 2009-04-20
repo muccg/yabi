@@ -60,6 +60,16 @@ class Tool(Base):
         )
     tool_groups_str.short_description = 'Belongs to Tool Groups'
 
+    @models.permalink
+    def view_url(self):
+        return ('tool_view', (), {'tool_id': self.id})
+
+    def tool_link(self):
+        return '<a href="%s">View</a>' % self.view_url()
+    tool_link.short_description = 'View'
+    tool_link.allow_tags = True
+
+
     def __unicode__(self):
         return self.name
 
@@ -121,7 +131,7 @@ class ToolRslArgumentOrder(Base):
 class ToolOutputExtension(Base):
     tool = models.ForeignKey(Tool)
     file_extension = models.ForeignKey(FileExtension)
-    must_exist = models.BooleanField(null=True, default=False)
+    must_exist = models.NullBooleanField(default=False)
     must_be_larger_than = models.PositiveIntegerField(null=True, blank=True)
 
 class ToolGroup(Base):

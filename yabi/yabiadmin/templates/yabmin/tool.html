@@ -1,0 +1,88 @@
+{% extends "admin/base_site.html" %}
+{% load adminmedia admin_list i18n %}
+
+{% if not is_popup %}{% block breadcrumbs %}<div class="breadcrumbs"><a href="/admin/">{% trans "Home" %}</a> &rsaquo; Tool {{ tool.display_name }}</div>{% endblock %}{% endif %}
+
+{% block content %}
+<div id="content-main">
+
+<h1>{{tool.display_name}}{% if not tool.enabled %} (DISABLED){% endif %} - Tool Definition</h1>
+
+<br/>
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Display Name</th>
+        <th>Job Type</th>
+        <th>Path</th>
+    </tr>
+    <tr>
+        <td>{{ tool.name }}</td>
+        <td>{{ tool.display_name }}</td>
+        <td>{{ tool.type }}</td>
+        <td>{{ tool.path }}</td>
+    </tr>
+</table>
+
+<br/>
+
+<table>
+    <tr>
+        <th>File pass thru</th>
+        <td>{% if tool.file_pass_thru %}Yes{% else %}No{% endif %}</td>
+    </tr>
+{% if tool.batch_on_param %}
+    <tr>
+        <th>Batch on parameter{% if tool.batch_on_param_bundle_files %} (BUNDLE FILES){% endif %}</th>
+        <td>{{ tool.batch_on_param }}</td>
+    </tr>
+{% endif %}
+</table>
+
+<br/>
+
+<h2>Description</h2>
+<p>{{ tool.description }}</p>
+
+<br/>
+
+{% if tool.tooloutputextension_set.all %}
+<h2>Tool output extensions</h2>
+<ul>
+{% for outext in tool.tooloutputextension_set.all %}
+    <li>{{ outext.file_extension.extension }}{% if outext.must_exist or outext.must_be_larger_than %} - {% endif %}
+{% if outext.must_exist %}must exist{% endif %}
+{% if outext.must_exist and outext.must_be_larger_than %} and {% endif %}
+{% if outext.must_be_larger_than %}must be larger than {{ outext.must_be_larger_than }}{% endif %}
+    </li>
+{% endfor %}
+</ul>
+{% endif %}
+
+<br/>
+
+<h2>Tool parameters</h2>
+<table>
+    <tr>
+        <th>Rank</th>
+        <th>Switch</th>
+        <th>Switch use</th>
+        <th>Properties</th>
+    </tr>
+{% for param in tool_params %}
+    <tr>
+        <td>{{ param.rank}}</td>
+        <td>{{ param.switch }}</td>
+        <td>{{ param.switch_use }}</td>
+        <td><ul>
+{% for prop in param.properties %}
+        <li>{{ prop }}</li>
+{% endfor %}
+        </ul></td>
+    </tr>
+{% endfor %}
+</table>
+
+</div>
+{% endblock %}
