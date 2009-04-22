@@ -1,5 +1,6 @@
 from django.db import models
 from django import forms
+from django.contrib.auth.models import User as DjangoUser
 
 class ManyToManyField_NoSyncdb(models.ManyToManyField):
     def __init__(self, *args, **kwargs):
@@ -10,9 +11,9 @@ class Base(models.Model):
     class Meta:
         abstract = True
 
-    last_modified_by = models.CharField(null=True, max_length=50, editable=False)
+    last_modified_by = models.ForeignKey(DjangoUser, editable=False, related_name="%(class)s_modifiers", null=True)
     last_modified_on = models.DateTimeField(null=True, auto_now=True, editable=False)
-    created_by = models.CharField(max_length=50, editable=False)
+    created_by = models.ForeignKey(DjangoUser, editable=False, related_name="%(class)s_creators",null=True)
     created_on = models.DateTimeField(auto_now_add=True, editable=False)
 
 class FileExtension(Base):
@@ -187,3 +188,69 @@ class User(Base):
     def __unicode__(self):
         return self.name
 
+class Status(models.Model):
+    class Meta:
+        db_table = 'status'
+
+    name = models.CharField(max_length=50, unique=True)
+    description = models.TextField(null=True)
+
+class Workflow(models.Model):
+    class Meta:
+        db_table = 'workflow'
+
+    name = models.CharField(max_length=255)
+    user = models.ForeignKey(User)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True)
+    status = models.ForeignKey(Status)
+    log_file_path = models.CharField(max_length=1000)
+    last_modified_on = models.DateTimeField(null=True, auto_now=True, editable=False)
+    created_on = models.DateTimeField(auto_now_add=True, editable=False)
+
+class Job(models.Model):
+    class Meta:
+        db_table = 'job'
+
+    workflow = models.ForeignKey(Workflow)
+    first = models.BooleanField(default=False)
+    next = models.ForeignKey('self', null=True)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True)
+    status = models.ForeignKey(Status)
+    work_dir = models.CharField(max_length=1000)
+
+class Subjob(models.Model):
+    class Meta:
+        db_table = 'subjob'
+
+    job = models.ForeignKey(Job)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField(null=True)
+    status = models.ForeignKey(Status)
+    job_identifier = models.TextField()
+    error_msg = models.CharField(max_length=1000, null=True)
+
+class SubjobParameter(models.Model):
+    class Meta:
+        db_table = 'subjob_parameter'
+
+    subjob = models.ForeignKey(Subjob)
+    key = models.CharField(max_length=255)
+    value = models.CharField(max_length=512)
+
+class JobParameter(models.Model):
+    class Meta:
+        db_table = 'job_parameter'
+
+    job = models.ForeignKey(Job, related_name='parameters')
+    key = models.CharField(max_length=255)
+    value = models.CharField(max_length=512, null=True)
+    source_job = models.ForeignKey(Job, related_name='ref_params', null=True) 
+
+class Queue(models.Model):
+    class Meta:
+        db_table = 'queue'
+
+    workflow = models.ForeignKey(Workflow) 
+    created_on = models.DateTimeField(auto_now_add=True, editable=False)

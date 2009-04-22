@@ -1,1 +1,1 @@
-sqlite3-dev-settings.py
+postgresql-dev-settings.py
