@@ -1,8 +1,36 @@
-from yabiadmin.yabmin.models import ToolType, Tool, ToolParameter, ToolGroup, ToolGrouping, ToolSet, User, FileExtension, FileType, ParameterFilter, ParameterSwitchUse, ToolRslInfo, ToolRslExtensionModule, ToolRslArgumentOrder, ToolOutputExtension
+from yabiadmin.yabmin.models import Base, ToolType, Tool, ToolParameter, ToolGroup, ToolGrouping, ToolSet, User, FileExtension, FileType, ParameterFilter, ParameterSwitchUse, ToolRslInfo, ToolRslExtensionModule, ToolRslArgumentOrder, ToolOutputExtension, QueuedWorkflow, InProgressWorkflow
 from django.contrib import admin
 from django.forms.models import BaseInlineFormSet
 from django.forms import ModelForm
 from django import forms
+
+class AdminBase(admin.ModelAdmin):
+    def save_model(self, request, obj, form, change):
+        if not isinstance(obj, Base): 
+            return form.save()
+
+        instance = form.save(commit=False)
+        if not change:
+            instance.created_by = request.user
+        instance.last_modified_by = request.user
+        instance.save()
+        form.save_m2m()
+        return instance
+
+    def save_formset(self, request, form, formset, change):
+        if not issubclass(formset.model, Base):
+            return formset.save()
+
+        def set_user(instance):
+            if instance.pk is None:
+                instance.created_by = request.user
+            instance.last_modified_by = request.user
+            instance.save()
+
+        instances = formset.save(commit=False)
+        map(set_user, instances)
+        formset.save_m2m()
+        return instances
 
 class ToolGroupingInline(admin.TabularInline):
     model = ToolGrouping
@@ -40,7 +68,7 @@ class ToolRslArgumentOrderInline(admin.TabularInline):
     formset = ToolRslArgumentOrderFormset
     extra = 7
 
-class ToolRslInfoAdmin(admin.ModelAdmin):
+class ToolRslInfoAdmin(AdminBase):
     list_display = ['tool_name', 'executable']
     inlines = [ToolRslArgumentOrderInline, ToolRslExtensionModuleInline]
 
@@ -53,30 +81,35 @@ class ToolForm(ModelForm):
         super(ToolForm, self).__init__(*args, **kwargs)
         self.fields["batch_on_param"].queryset = ToolParameter.objects.filter(tool=self.instance)
 
-class ToolAdmin(admin.ModelAdmin):
+class ToolAdmin(AdminBase):
     list_display = ['name', 'enabled', 'type', 'tool_groups_str', 'tool_link', 'created_by', 'created_on']
     inlines = [ToolOutputExtensionInline, ToolParameterInline, ToolGroupingInline]
 
     def get_form(self, request, obj=None, **kwargs):
         return ToolForm
 
-class ToolGroupAdmin(admin.ModelAdmin):
+class ToolGroupAdmin(AdminBase):
     list_display = ['name', 'tools_str']
     inlines = [ToolGroupingInline]
 
-class ToolSetAdmin(admin.ModelAdmin):
+class ToolSetAdmin(AdminBase):
     list_display = ['name', 'users_str']
 
-class UserAdmin(admin.ModelAdmin):
+class UserAdmin(AdminBase):
     list_display = ['name', 'toolsets_str', 'tools_link']
 
-class FileTypeAdmin(admin.ModelAdmin):
+class FileTypeAdmin(AdminBase):
     list_display = ['name']
 
-admin.site.register(FileExtension)
-admin.site.register(ParameterFilter)
-admin.site.register(ParameterSwitchUse)
-admin.site.register(ToolType)
+class QueueAdmin(admin.ModelAdmin):
+    list_display = ['name', 'user_name', 'created_on']
+
+admin.site.register(FileExtension, AdminBase)
+admin.site.register(ParameterFilter, AdminBase)
+admin.site.register(ParameterSwitchUse, AdminBase)
+admin.site.register(ToolType, AdminBase)
+admin.site.register(QueuedWorkflow, QueueAdmin)
+admin.site.register(InProgressWorkflow, QueueAdmin)
 admin.site.register(FileType, FileTypeAdmin)
 admin.site.register(Tool, ToolAdmin)
 admin.site.register(ToolGroup, ToolGroupAdmin)

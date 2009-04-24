@@ -201,20 +201,22 @@ class Workflow(models.Model):
 
     name = models.CharField(max_length=255)
     user = models.ForeignKey(User)
-    start_time = models.DateTimeField()
+    start_time = models.DateTimeField(null=True)
     end_time = models.DateTimeField(null=True)
     status = models.ForeignKey(Status)
-    log_file_path = models.CharField(max_length=1000)
+    log_file_path = models.CharField(max_length=1000,null=True)
     last_modified_on = models.DateTimeField(null=True, auto_now=True, editable=False)
     created_on = models.DateTimeField(auto_now_add=True, editable=False)
+
+    def __unicode__(self):
+        return self.name
 
 class Job(models.Model):
     class Meta:
         db_table = 'job'
 
     workflow = models.ForeignKey(Workflow)
-    first = models.BooleanField(default=False)
-    next = models.ForeignKey('self', null=True)
+    order = models.PositiveIntegerField()
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(null=True)
     status = models.ForeignKey(Status)
@@ -248,9 +250,24 @@ class JobParameter(models.Model):
     value = models.CharField(max_length=512, null=True)
     source_job = models.ForeignKey(Job, related_name='ref_params', null=True) 
 
-class Queue(models.Model):
+class QueueBase(models.Model):
+    class Meta:
+        abstract = True
+
+    workflow = models.ForeignKey(Workflow) 
+    created_on = models.DateTimeField(auto_now_add=True)
+
+    def name(self):
+        return self.workflow.name
+
+    def user_name(self):
+        return self.workflow.user.name
+
+class QueuedWorkflow(QueueBase):
     class Meta:
         db_table = 'queue'
 
-    workflow = models.ForeignKey(Workflow) 
-    created_on = models.DateTimeField(auto_now_add=True, editable=False)
+class InProgressWorkflow(QueueBase):
+    class Meta:
+        db_table = 'in_progress'
+
