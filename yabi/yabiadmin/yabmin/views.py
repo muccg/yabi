@@ -1,7 +1,8 @@
-from yabiadmin.yabmin.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.db import connection
+from yabiadmin.yabmin.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter
+from yabiadmin import ldaputils
 
 class ToolGroupView:
     def __init__(self, name):
@@ -71,4 +72,39 @@ def user_tools(request, user_id):
     return render_to_response("yabmin/user_tools.html", {
         'user': user,
         'tool_groups': sorted(unique_tool_groups.values(), key = lambda tgv: tgv.name)})
+
+class LdapUser:
+    def __init__(self, uid, dn, full_name):
+        self.uid = uid
+        self.dn = dn
+        self.full_name = full_name
+
+def format(dn, ldap_user):
+    return LdapUser(ldap_user['uid'][0], dn, ldap_user['cn'][0])
+
+def register_users(uids):
+    for uid in uids:
+        user = User(name=uid)
+        user.save()
+
+def ldap_users(request):
+    if request.method == 'POST':
+        register_users(request.POST.keys())
+
+    all_ldap_users = ldaputils.get_all_users()
+    yabi_userids = ldaputils.get_yabi_userids()
+
+    ldap_yabi_users = [format(entry[0],entry[1]) for entry in 
+            all_ldap_users.items() if entry[0] in yabi_userids ]
+    
+    db_user_names = [user.name for user in User.objects.all()]
+    user_in_db = lambda u: u.uid in db_user_names
+
+    existing_ldap_users = [user for user in ldap_yabi_users if user_in_db(user) ]
+    unexisting_ldap_users = [user for user in ldap_yabi_users if not user_in_db(user) ]
+ 
+    return render_to_response("yabmin/ldap_users.html", {
+                'unexisting_ldap_users': unexisting_ldap_users,
+                'existing_ldap_users': existing_ldap_users
+            })
 

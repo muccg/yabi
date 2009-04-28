@@ -99,4 +99,5 @@ AUTH_LDAP_SERVERS = (
 AUTH_LDAP_BASE = 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
 AUTH_LDAP_GROUP_BASE = 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
 AUTH_LDAP_ADMIN_GROUP = 'admin'
+AUTH_LDAP_USER_GROUP = 'yabi'
 
