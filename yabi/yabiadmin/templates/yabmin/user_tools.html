@@ -6,6 +6,8 @@
 {% block content %}
 <div id="content-main">
 
+{% if tool_groups %}
+
 User {{ user.name }} has the following tools:
 
 <ul>
@@ -18,6 +20,12 @@ User {{ user.name }} has the following tools:
 {% endfor %}
 {% endfor %}
 </ul>
+
+{% else %}
+
+User {{ user.name }} has <em>no tools</em> configured.
+
+{% endif %}
 
 </div>
 {% endblock %}

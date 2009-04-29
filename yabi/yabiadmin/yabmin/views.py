@@ -1,6 +1,7 @@
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404
 from django.db import connection
+from django.contrib.admin.views.decorators import staff_member_required
 from yabiadmin.yabmin.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter
 from yabiadmin import ldaputils
 
@@ -51,6 +52,7 @@ def format_params(tool_parameters):
     for param in tool_parameters:        
         yield ToolParamView(param)
 
+@staff_member_required
 def tool(request, tool_id):
     tool = get_object_or_404(Tool, pk=tool_id)
     
@@ -59,6 +61,7 @@ def tool(request, tool_id):
                 'tool_params': format_params(tool.toolparameter_set.order_by('id')),
            })
 
+@staff_member_required
 def user_tools(request, user_id):
     user = get_object_or_404(User, pk=user_id)
     tool_groupings = ToolGrouping.objects.filter(tool_set__users=user)
@@ -87,6 +90,7 @@ def register_users(uids):
         user = User(name=uid)
         user.save()
 
+@staff_member_required
 def ldap_users(request):
     if request.method == 'POST':
         register_users(request.POST.keys())

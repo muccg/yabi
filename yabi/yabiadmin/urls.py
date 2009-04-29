@@ -5,6 +5,6 @@ from yabiadmin.yabmin import admin as yabmin
 #admin.autodiscover()
 
 urlpatterns = patterns('',
-    (r'^yabmin/', include('yabiadmin.yabmin.urls')),
+    (r'^admin/', include('yabiadmin.yabmin.urls')),
     (r'^admin/(.*)', admin.site.root),
 )
