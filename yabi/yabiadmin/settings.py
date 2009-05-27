@@ -1,8 +1,5 @@
 # Django settings for yabi project.
-
 import os
-
-
 
 if not os.environ.has_key('PROJECT_DIRECTORY'):
 	os.environ['PROJECT_DIRECTORY']=os.path.dirname(__file__)
