@@ -1,1 +1,0 @@
-postgresql-dev-settings.py
