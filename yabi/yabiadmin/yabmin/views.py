@@ -4,6 +4,7 @@ from django.db import connection
 from django.contrib.admin.views.decorators import staff_member_required
 from yabiadmin.yabmin.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter
 from yabiadmin import ldaputils
+from django.utils import webhelpers
 
 class ToolGroupView:
     def __init__(self, name):
@@ -57,14 +58,17 @@ def tool(request, tool_id):
     tool = get_object_or_404(Tool, pk=tool_id)
     
     return render_to_response('yabmin/tool.html', {
-                'tool': tool, 
+                'tool': tool,
+                'user':request.user,
+                'title': 'Tool Details',
+                'root_path':webhelpers.url("/admin"),
                 'tool_params': format_params(tool.toolparameter_set.order_by('id')),
            })
 
 @staff_member_required
 def user_tools(request, user_id):
-    user = get_object_or_404(User, pk=user_id)
-    tool_groupings = ToolGrouping.objects.filter(tool_set__users=user)
+    tooluser = get_object_or_404(User, pk=user_id)
+    tool_groupings = ToolGrouping.objects.filter(tool_set__users=tooluser)
     unique_tool_groups = {}
     for grouping in tool_groupings:
         tool_group_name = grouping.tool_group.name 
@@ -73,7 +77,10 @@ def user_tools(request, user_id):
         tgv.tools.add(tool_name)
 
     return render_to_response("yabmin/user_tools.html", {
-        'user': user,
+        'user': request.user,
+        'tooluser': tooluser,
+        'title': 'Tool Listing',
+        'root_path':webhelpers.url("/admin"),
         'tool_groups': sorted(unique_tool_groups.values(), key = lambda tgv: tgv.name)})
 
 class LdapUser:

@@ -1,20 +1,66 @@
 # Django settings for yabi project.
 
 import os
-# DB specific stuff moved out
-from db_settings import *
 
-PROJECT_DIRECTORY = os.environ.setdefault(
-    'PROJECT_DIRECTORY', os.path.dirname(__file__))
+
+
+if not os.environ.has_key('PROJECT_DIRECTORY'):
+	os.environ['PROJECT_DIRECTORY']=os.path.dirname(__file__)
+if not os.environ.has_key('SCRIPT_NAME'):								# this will be missing if we are running on the internal server
+	os.environ['SCRIPT_NAME']=''
+PROJECT_DIRECTORY = os.environ['PROJECT_DIRECTORY']
+SCRIPT_NAME = os.environ['SCRIPT_NAME']
+
+from django.utils.webhelpers import url
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+
+# development deployment
+if "DJANGODEV" in os.environ:
+    DEBUG = True if os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug")) else ("DJANGODEBUG" in os.environ)
+    TEMPLATE_DEBUG = DEBUG
+    DATABASE_ENGINE = 'postgresql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+    DATABASE_NAME = 'dev_yabmin'            # Or path to database file if using sqlite3.
+    DATABASE_USER = 'yabminapp'             # Not used with sqlite3.
+    DATABASE_PASSWORD = 'yabminapp'         # Not used with sqlite3.
+    DATABASE_HOST = 'eowyn'             # Set to empty string for localhost. Not used with sqlite3.
+    DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
+    SSL_ENABLED = False
+    DEV_SERVER = True
+
+    # debug site table
+    SITE_ID = 1
+
+# production deployment (probably using wsgi)
+else:
+    DEBUG = os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug"))
+    TEMPLATE_DEBUG = DEBUG
+    DATABASE_ENGINE = 'postgresql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+    DATABASE_NAME = 'dev_yabmin'            # Or path to database file if using sqlite3.
+    DATABASE_USER = 'yabminapp'             # Not used with sqlite3.
+    DATABASE_PASSWORD = 'yabminapp'         # Not used with sqlite3.
+    DATABASE_HOST = 'eowyn'             # Set to empty string for localhost. Not used with sqlite3.
+    DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
+    SSL_ENABLED = True
+    DEV_SERVER = False
+
+    # development site id
+    SITE_ID = 1
+
+
 ADMINS = (
-    # ('Your Name', 'your_email@domain.com'),
+    ('Tech Alerts', 'alerts@ccg.murdoch.edu.au')
 )
 
 MANAGERS = ADMINS
+
+# email server
+EMAIL_HOST = 'ccg.murdoch.edu.au'
+EMAIL_APP_NAME = "Yabi Admin"
+SERVER_EMAIL = "apache@ccg.murdoch.edu.au"
+EMAIL_SUBJECT_PREFIX = "Yabi Admin %s %s:"%("DEBUG" if DEBUG else "","DEV_SERVER" if DEV_SERVER else "")
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -26,8 +72,6 @@ TIME_ZONE = 'Australia/Perth'
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = 'en-us'
-
-SITE_ID = 1
 
 # If you set this to False, Django will make some optimizations so as not
 # to load the internationalization machinery.
@@ -58,15 +102,13 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
+    'django.middleware.email.EmailExceptionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.ssl.SSLRedirect'
 )
 #MIDDLEWARE_CLASSES += ('yabmin.middleware.Logging',)
-
-AUTHENTICATION_BACKENDS = (
-    'yabiadmin.ldapbackend.LDAPBackend',
-)
 
 ROOT_URLCONF = 'yabiadmin.urls'
 
@@ -74,7 +116,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    os.path.join(PROJECT_DIRECTORY, "templates"),
+    os.path.join(PROJECT_DIRECTORY,"templates"),
 )
 
 INSTALLED_APPS = (
@@ -83,7 +125,6 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
-    'django_extensions',
     'django_evolution',
     'yabiadmin.yabmin',
 )
@@ -91,6 +132,7 @@ INSTALLED_APPS = (
 ##
 ## Auth settings
 ##
+AUTH_LDAP_SERVER = 'ldaps://fds2.localdomain'
 AUTH_LDAP_SERVERS = (
     'ldaps://fds1.localdomain', 
     'ldaps://fds2.localdomain', 
@@ -99,5 +141,50 @@ AUTH_LDAP_SERVERS = (
 AUTH_LDAP_BASE = 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
 AUTH_LDAP_GROUP_BASE = 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
 AUTH_LDAP_ADMIN_GROUP = 'admin'
+AUTH_LDAP_GROUP = 'admin' # only admin users should be able to log in
 AUTH_LDAP_USER_GROUP = 'yabi'
 
+DEFAULT_GROUP = "baseuser"
+
+
+# a directory that will be writable by the webserver, for storing various files...
+WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
+
+# Captcha image directory
+CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
+
+##
+## Mako settings stuff
+##
+
+# extra mako temlate directories
+MAKO_TEMPLATE_DIRS = ( os.path.join(PROJECT_DIRECTORY,"templates"), )
+
+# mako compiled templates directory
+MAKO_MODULE_DIR = os.path.join(WRITABLE_DIRECTORY, "templates")
+
+# mako module name
+MAKO_MODULENAME_CALLABLE = ''
+
+##
+## memcache server list
+##
+MEMCACHE_SERVERS = ['memcache1.localdomain:11211','memcache2.localdomain:11211']
+MEMCACHE_KEYSPACE = ""
+
+##
+## CAPTCHA settings
+##
+# the filesystem space to write the captchas into
+CAPTCHA_ROOT = os.path.join(MEDIA_ROOT, 'captchas')
+
+# the URL base that points to that directory served out
+CAPTCHA_URL = os.path.join(MEDIA_URL, 'captchas')
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.LDAPBackend',
+#    'django.contrib.auth.backends.ModelBackend',
+)
+
+# for local development, this is set to the static serving directory. For deployment use Apache Alias
+STATIC_SERVER_PATH = os.path.join(PROJECT_DIRECTORY,"static")
