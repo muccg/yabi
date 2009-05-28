@@ -67,7 +67,7 @@ tag = getpwuid(os.getuid())[0]          # tag is our username
 directory = os.path.join( install_dir, tag, project_name )
 apache_directory = apache_conf_prefix
 source_directory = "."
-    
+
 # all the files
 ins = scons_utils.RecursiveInstallFiles( env, dest_dir = directory,
                     src_dir = source_directory,
