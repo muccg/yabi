@@ -210,5 +210,4 @@ else:
     # We are in a tag directory. Add the target for this tag we are in. named by name.
     #
     tag_name = scons_utils.SvnTagName(svn_info['url'])
-    
     TargetPresent(tag_name)

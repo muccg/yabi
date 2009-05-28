@@ -27,8 +27,12 @@ sys.path.append(PROJECT_PARENT_DIR)
 os.environ['PROJECT_DIRECTORY']=PROJECT_DIR
 
 # set up the egg cache
-PYTHON_EGG_CACHE = os.path.join(PROJECT_DIR,"egg-cache")
-os.environ['PYTHON_EGG_CACHE']=PYTHON_EGG_CACHE
+eggdir = os.path.join(PROJECT_DIR,"scratch","egg-cache")
+try:
+    os.makedirs(eggdir)
+except OSError, ose:
+    pass
+os.environ['PYTHON_EGG_CACHE']=eggdir
 
 # setup the settings module for the WSGI app
 os.environ['DJANGO_SETTINGS_MODULE'] = '%s.settings'%(os.path.basename(PROJECT_DIR))
