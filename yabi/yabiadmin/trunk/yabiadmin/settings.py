@@ -18,7 +18,7 @@ TEMPLATE_DEBUG = DEBUG
 if "DJANGODEV" in os.environ:
     DEBUG = True if os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug")) else ("DJANGODEBUG" in os.environ)
     TEMPLATE_DEBUG = DEBUG
-    DATABASE_ENGINE = 'postgresql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+    DATABASE_ENGINE = 'postgresql_psycopg2'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
     DATABASE_NAME = 'dev_yabmin'            # Or path to database file if using sqlite3.
     DATABASE_USER = 'yabminapp'             # Not used with sqlite3.
     DATABASE_PASSWORD = 'yabminapp'         # Not used with sqlite3.
@@ -34,7 +34,7 @@ if "DJANGODEV" in os.environ:
 else:
     DEBUG = os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug"))
     TEMPLATE_DEBUG = DEBUG
-    DATABASE_ENGINE = 'postgresql'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+    DATABASE_ENGINE = 'postgresql_psycopg2'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
     DATABASE_NAME = 'dev_yabmin'            # Or path to database file if using sqlite3.
     DATABASE_USER = 'yabminapp'             # Not used with sqlite3.
     DATABASE_PASSWORD = 'yabminapp'         # Not used with sqlite3.
@@ -76,17 +76,16 @@ USE_I18N = True
 
 # Absolute path to the directory that holds media.
 # Example: "/home/media/media.lawrence.com/"
-MEDIA_ROOT = ''
+MEDIA_ROOT = os.path.join(PROJECT_DIRECTORY,"static","media")
 
-# URL that handles the media served from MEDIA_ROOT. Make sure to use a
-# trailing slash if there is a path component (optional in other cases).
-# Examples: "http://media.lawrence.com", "http://example.com/media/"
-MEDIA_URL = ''
+# URL that handles the media served from MEDIA_ROOT.
+# Example: "http://media.lawrence.com"
+MEDIA_URL = '/static/media/'
 
 # URL prefix for admin media -- CSS, JavaScript and images. Make sure to use a
 # trailing slash.
 # Examples: "http://foo.com/media/", "/media/".
-ADMIN_MEDIA_PREFIX = '/media/'
+ADMIN_MEDIA_PREFIX = url('/static/admin-media/')
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = 'is(8wp-_s)lzw-xu=ogh3^+d&b+$fe73&3@8l5n-6-*d(_l-6z'

@@ -14,7 +14,7 @@ env = scons_utils.EnvironmentFactory( Environment, Builder, os.environ )
 ##
 ## Put here your directories to install. These are recursively copied. 'pyc', 'pyo' and '.svn' files are ommited in the copy
 ##
-directories = ['templates', 'yabmin']
+directories = ['templates', 'yabmin', 'static']
 
 ##
 ## Put here any destination directories you want created and made writable by the webserver
@@ -24,8 +24,7 @@ scratch_dirs = ['scratch']
 ##
 ## Any files under these directories, with these extensions will be copied to the deploy area
 ##
-directory_content_globs = ['*.py', '*.html', '*.mako', '*.txt', '*.png', '*.jpg', '*.gif', '*.pdf', '*.xml', '*.wsgi', '*.ttf' ]
-
+directory_content_globs = ['*.py', '*.html', '*.mako', '*.txt', '*.png', '*.js', '*.css', '*.jpg', '*.gif', '*.pdf', '*.xml', '*.wsgi', '*.ttf' ]
 ##
 ## But as we recurse, ignore these:
 ##
