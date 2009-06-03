@@ -90,12 +90,12 @@ TEMPLATE_LOADERS = (
 )
 
 MIDDLEWARE_CLASSES = (
-    'project.EmailExceptionMiddleware.EmailExceptionMiddleware',
+    'django.middleware.email.EmailExceptionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     #'django.middleware.doc.XViewMiddleware',
-    'project.middleware.SSLRedirect'
+    'django.middleware.ssl.SSLRedirect'
 )
 
 ROOT_URLCONF = 'yabife.urls'
