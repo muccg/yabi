@@ -16,6 +16,10 @@ urlpatterns = patterns('',
     # (r'^admin/(.*)', admin.site.root),
 
 
+ 	(r'^tool/(?P<toolname>\w+)[/]*$', 'yabife.yabifeapp.views.tool'),
+	(r'^[/]*$', 'yabife.yabifeapp.views.index'),
 
-	(r'^[/]*$', 'yabife.yabifeapp.views.index'),                       
+
+
+
 )

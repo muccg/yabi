@@ -9,3 +9,5 @@ from django.shortcuts import render_to_response, render_mako
 def index(request):
     return render_mako('index.mako', s=settings, request=request)
 
+def tool(request, toolname):
+    return render_mako('tool.mako', s=settings, request=request, toolname=toolname)
