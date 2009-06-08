@@ -1,4 +1,4 @@
-from yabiadmin.yabmin.models import Base, ToolType, Tool, ToolParameter, ToolGroup, ToolGrouping, ToolSet, User, FileExtension, FileType, ParameterFilter, ParameterSwitchUse, ToolRslInfo, ToolRslExtensionModule, ToolRslArgumentOrder, ToolOutputExtension, QueuedWorkflow, InProgressWorkflow
+from yabiadmin.yabmin.models import Base, ToolType, Tool, ToolParameter, ToolGroup, ToolGrouping, ToolSet, User, FileExtension, FileType, ParameterFilter, ParameterSwitchUse, ToolRslInfo, ToolRslExtensionModule, ToolRslArgumentOrder, ToolOutputExtension, QueuedWorkflow, InProgressWorkflow, Credential, Backend
 from django.contrib import admin
 from django.forms.models import BaseInlineFormSet
 from django.forms import ModelForm
@@ -38,6 +38,10 @@ class ToolGroupingInline(admin.TabularInline):
 
 class ToolOutputExtensionInline(admin.TabularInline):
     model = ToolOutputExtension
+    extra = 3
+
+class BackendInline(admin.TabularInline):
+    model = Backend
     extra = 3
 
 class ToolParameterFormset(BaseInlineFormSet):
@@ -104,6 +108,14 @@ class FileTypeAdmin(AdminBase):
 class QueueAdmin(admin.ModelAdmin):
     list_display = ['name', 'user_name', 'created_on']
 
+class CredentialAdmin(AdminBase):
+    list_display = ['description', 'user', 'username']
+    inlines = [BackendInline]
+
+class BackendAdmin(AdminBase):
+    list_display = ['name', 'credential']
+
+
 admin.site.register(FileExtension, AdminBase)
 admin.site.register(ParameterFilter, AdminBase)
 admin.site.register(ParameterSwitchUse, AdminBase)
@@ -116,4 +128,5 @@ admin.site.register(ToolGroup, ToolGroupAdmin)
 admin.site.register(ToolSet, ToolSetAdmin)
 admin.site.register(User, UserAdmin)
 admin.site.register(ToolRslInfo, ToolRslInfoAdmin)
-
+admin.site.register(Credential, CredentialAdmin)
+admin.site.register(Backend, BackendAdmin)

@@ -209,6 +209,24 @@ class User(Base):
     def __unicode__(self):
         return self.name
 
+class Credential(Base):
+    description = models.CharField(max_length=512, blank=True)
+    username = models.CharField(max_length=512, blank=True)
+    password = models.CharField(max_length=512, blank=True)
+    cert = models.TextField(null=True, blank=True)
+    key = models.TextField(null=True, blank=True)
+    user = models.ForeignKey(User)
+
+    def __unicode__(self):
+        return "%s %s" % (self.description, self.user)
+
+class Backend(Base):
+    name = models.CharField(max_length=255)
+    credential = models.ForeignKey(Credential)
+
+    def __unicode__(self):
+        return self.name
+        
 class Status(models.Model):
     class Meta:
         db_table = 'status'
