@@ -123,28 +123,10 @@ def ldap_users(request):
             })
 
 
-def ws_tool(request, tool_id):
-
-##    fields = ["name", "display_name", "path", "description", "enabled","file_pass_thru",
-##              "batch_on_param__switch", "batch_on_param_bundle_files", "type__name"]
-    
-
-##    tool = Tool.objects.filter(id=tool_id).values(*fields) # returns list of dicts
-##    tool_dict = {'job':tool[0]}
-
-##    tool = Tool.objects.get(id=tool_id)
-
-##    extensions = tool.tooloutputextension_set.select_related().all()
-
-
-
-##    t = makeJsonFriendly(tool_dict)
-##    j = json.dumps(t)
-
-##    assert False
+def ws_tool(request, toolname):
 
     try:
-        tool = Tool.objects.get(id=tool_id)
+        tool = Tool.objects.get(name=toolname)
         return HttpResponse(tool.json())
     except ObjectDoesNotExist:
         return HttpResponseNotFound("Object not found")
