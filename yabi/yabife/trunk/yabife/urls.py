@@ -4,7 +4,7 @@ from django.conf.urls.defaults import *
 # from django.contrib import admin
 # admin.autodiscover()
 
-urlpatterns = patterns('',
+urlpatterns = patterns('yabife.yabifeapp.views',
     # Example:
     # (r'^{{ project_name }}/', include('{{ project_name }}.foo.urls')),
 
@@ -15,11 +15,7 @@ urlpatterns = patterns('',
     # Uncomment the next line to enable the admin:
     # (r'^admin/(.*)', admin.site.root),
 
-
- 	(r'^tool/(?P<toolname>\w+)[/]*$', 'yabife.yabifeapp.views.tool'),
-	(r'^[/]*$', 'yabife.yabifeapp.views.index'),
-
-
-
+    (r'^(?P<url>.*)$', 'proxy'),
+	(r'^[/]*$', 'index'),
 
 )
