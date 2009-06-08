@@ -90,7 +90,7 @@ class Tool(Base):
                                                                                 "filter_value", "filter__display_text", "filter__value","filter__description"))
             }
         
-        return json.dumps({'job':output})
+        return json.dumps({'tool':output})
 
     def __unicode__(self):
         return self.name

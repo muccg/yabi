@@ -8,6 +8,7 @@ from yabiadmin import ldaputils
 from django.utils import webhelpers
 import simplejson as json
 from json_util import makeJsonFriendly
+from django.contrib.auth.decorators import login_required
 
 class ToolGroupView:
     def __init__(self, name):
@@ -121,7 +122,6 @@ def ldap_users(request):
                 'unexisting_ldap_users': unexisting_ldap_users,
                 'existing_ldap_users': existing_ldap_users
             })
-
 
 def ws_tool(request, toolname):
 
