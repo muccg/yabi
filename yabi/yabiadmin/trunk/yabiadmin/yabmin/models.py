@@ -226,6 +226,22 @@ class Backend(Base):
 
     def __unicode__(self):
         return self.name
+
+    def json(self):
+
+        from django.utils import simplejson as json
+
+        output = {
+            'backend':self.name,
+            'credential':self.credential.description,
+            'username':self.credential.username,
+            'password':self.credential.password,
+            'cert':self.credential.cert,
+            'key':self.credential.key
+            }
+        
+        return json.dumps(output)
+
         
 class Status(models.Model):
     class Meta:
