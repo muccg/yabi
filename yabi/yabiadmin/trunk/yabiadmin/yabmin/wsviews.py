@@ -28,3 +28,23 @@ def credential(request, username, backend):
     except ObjectDoesNotExist:
         return HttpResponseNotFound("Object not found")
 
+
+def credential_detail(request, username, backend, detail):
+
+    try:
+        backend = Backend.objects.get(name=backend, credential__user__name=username)
+
+        if detail == 'cert':
+            return HttpResponse(backend.credential.cert)
+
+        elif detail == 'key':
+            return HttpResponse(backend.credential.key)
+
+        elif detail == 'username':
+            return HttpResponse(backend.credential.username)
+
+        else:
+            return HttpResponseNotFound("Object not found")            
+
+    except ObjectDoesNotExist:
+        return HttpResponseNotFound("Object not found")
