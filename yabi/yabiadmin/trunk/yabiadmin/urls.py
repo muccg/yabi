@@ -6,6 +6,7 @@ import os
 #admin.autodiscover()
 
 urlpatterns = patterns('',
+    (r'^ws/', include('yabiadmin.yabmin.wsurls')),
     (r'^admin/', include('yabiadmin.yabmin.urls')),
     (r'^admin/(.*)', admin.site.root),
     (r'^static/(?P<path>.*)$',

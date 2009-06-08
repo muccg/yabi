@@ -71,6 +71,27 @@ class Tool(Base):
     tool_link.allow_tags = True
 
 
+    def json(self):
+
+        from django.utils import simplejson as json
+
+        output = {
+            'name':self.name,
+            'display_name':self.display_name,
+            'path':self.path,
+            'description':self.description,
+            'enabled':self.enabled,
+            'file_pass_thru':self.file_pass_thru,
+            'batch_on_param':self.batch_on_param.switch,
+            'job_type': self.type.name,
+            'output_filetypes': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__extension")),
+            'parameter_list': list(self.toolparameter_set.order_by('id').values("rank", "mandatory", "input_file", "output_file",
+                                                                                "switch", "switch_use__display_text", "switch_use__value","switch_use__description",
+                                                                                "filter_value", "filter__display_text", "filter__value","filter__description"))
+            }
+        
+        return json.dumps({'job':output})
+
     def __unicode__(self):
         return self.name
 

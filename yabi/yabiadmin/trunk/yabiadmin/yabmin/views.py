@@ -1,10 +1,13 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render_to_response, get_object_or_404
 from django.db import connection
 from django.contrib.admin.views.decorators import staff_member_required
+from django.core.exceptions import ObjectDoesNotExist
 from yabiadmin.yabmin.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter
 from yabiadmin import ldaputils
 from django.utils import webhelpers
+import simplejson as json
+from json_util import makeJsonFriendly
 
 class ToolGroupView:
     def __init__(self, name):
@@ -119,3 +122,29 @@ def ldap_users(request):
                 'existing_ldap_users': existing_ldap_users
             })
 
+
+def ws_tool(request, tool_id):
+
+##    fields = ["name", "display_name", "path", "description", "enabled","file_pass_thru",
+##              "batch_on_param__switch", "batch_on_param_bundle_files", "type__name"]
+    
+
+##    tool = Tool.objects.filter(id=tool_id).values(*fields) # returns list of dicts
+##    tool_dict = {'job':tool[0]}
+
+##    tool = Tool.objects.get(id=tool_id)
+
+##    extensions = tool.tooloutputextension_set.select_related().all()
+
+
+
+##    t = makeJsonFriendly(tool_dict)
+##    j = json.dumps(t)
+
+##    assert False
+
+    try:
+        tool = Tool.objects.get(id=tool_id)
+        return HttpResponse(tool.json())
+    except ObjectDoesNotExist:
+        return HttpResponseNotFound("Object not found")
