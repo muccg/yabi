@@ -71,11 +71,9 @@ class Tool(Base):
     tool_link.allow_tags = True
 
 
-    def json(self):
-
-        from django.utils import simplejson as json
-
-        output = {
+    def tool_dict(self):
+        '''Gathers tool details into convenient dict for use by json or other models json'''
+        return {
             'name':self.name,
             'display_name':self.display_name,
             'path':self.path,
@@ -89,8 +87,10 @@ class Tool(Base):
                                                                                 "switch", "switch_use__display_text", "switch_use__value","switch_use__description",
                                                                                 "filter_value", "filter__display_text", "filter__value","filter__description"))
             }
-        
-        return json.dumps({'tool':output})
+
+    def json(self):
+        from django.utils import simplejson as json
+        return json.dumps({'tool':self.tool_dict()})
 
     def __unicode__(self):
         return self.name
