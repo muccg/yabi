@@ -6,7 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from yabiadmin.yabmin.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter
 from yabiadmin import ldaputils
 from django.utils import webhelpers
-import simplejson as json
+from django.utils import simplejson as json
 from json_util import makeJsonFriendly
 from django.contrib.auth.decorators import login_required
 
