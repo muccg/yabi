@@ -32,14 +32,31 @@ def toollist(request, username):
             ts = {}
             output["toolsets"].append(ts)
             ts["name"] = toolset.name
-            ts["toolgroups"] = []
+            ts["toolgroups"] = {}
 
-
+            i = 1
             for toolgroup in ToolGrouping.objects.filter(tool_set=toolset):
                 tg = {}
-                ts["toolgroups"].append(tg)
-                tg["name"] = toolgroup.tool.name
-                tg["tools"] = []
+                if not toolgroup.tool_group.name in ts["toolgroups"]:
+                    tg = {}
+                    ts["toolgroups"][toolgroup.tool_group.name] = tg
+                else:
+                    tg = ts["toolgroups"][toolgroup.tool_group.name]
+
+                if not "name" in tg:
+                    tg["name"] = toolgroup.tool_group.name
+                if not "tools" in tg:
+                    tg["tools"] = []
+
+                tool = {}
+                tool["name"] = toolgroup.tool.name
+                tool["displayname"] = toolgroup.tool.display_name
+                tool["description"] = toolgroup.tool.description                
+                tg["tools"].append(tool)
+                tool_dict = toolgroup.tool.tool_dict()
+                tool["output_filetypes"] = tool_dict["output_filetypes"]
+
+#                for tool in Tool.objects.filter(
 
 
 ##            ts = {}
