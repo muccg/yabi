@@ -26,6 +26,7 @@ class FSResource(resource.Resource):
             # status page
             page = "Yabi Filesystem Connector Resource Version: %s\n"%self.VERSION
             page += "Available backends: "+", ".join(self.backends.keys())
+            page += "\n\n"
             return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, page)
         
         # check for backend name
@@ -37,22 +38,3 @@ class FSResource(resource.Resource):
         
         return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, page)
     
-    #def locateChild(self, request, segments):
-        ## return our local file resource for these segments
-        #print "LC",request,segments
-        #if len(segments)==1 and not segments[0]:
-            ## just the slash call
-            #return self, []
-        
-        #backendname = segments[0]
-        
-        ## check for backend name
-        #if backendname not in self.backends:
-            #return None, []
-        
-        #backend = self.backends[backendname]
-        #print "found backend:",backend
-        
-        #be = backend(*segments)
-        #print be
-        #return backend(*segments), server.StopTraversal

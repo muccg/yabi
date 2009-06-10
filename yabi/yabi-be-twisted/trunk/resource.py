@@ -32,7 +32,7 @@ from fs.resource import FSResource
 
 # backends
 from fs.LocalFileResource import LocalFileResource
-
+from fs.GlobusFileResource import GlobusFileResource
 
 VERSION = 0.1
 class BaseResource(resource.PostableResource):
@@ -44,7 +44,7 @@ class BaseResource(resource.PostableResource):
         resource.PostableResource.__init__(self, *args, **kw)
         
         # our handlers
-        self.child_fs = FSResource(file=LocalFileResource)
+        self.child_fs = FSResource(file=LocalFileResource, gridftp1=GlobusFileResource)
         self.child_yabiadmin = wsgi.WSGIResource(application)
         
     def render(self, ctx):

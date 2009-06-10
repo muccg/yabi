@@ -1,0 +1,119 @@
+"""
+This is a module level certificate proxy for globus. It runs 'grid-proxy-cert' and generates a proxy to use. It keeps this
+around until it expires.
+"""
+import tempfile
+import subprocess
+import os
+import time
+import stat
+import sys
+
+class ProxyInitError(Exception):
+    pass
+
+GLOBUS_TIME_FORMAT = "%a %b %d %H:%M:%S %Y"
+CERTIFICATE_EXPIRY_MINUTES = 1                          # set this for how often we refresh
+
+CERTIFICATE_EXPIRY_SECONDS = 60*CERTIFICATE_EXPIRY_MINUTES
+CERTIFICATE_EXPIRY_TIME = "%d:%d"%(CERTIFICATE_EXPIRY_MINUTES/60,CERTIFICATE_EXPIRY_MINUTES%60)
+
+def _decode_time(timestring):
+    """turn 'Tue Jun  9 04:02:41 2009' into a unix timestamp"""
+    return time.strptime( timestring, GLOBUS_TIME_FORMAT )
+
+class CertificateProxy(object):
+    grid_proxy_init = "/usr/local/globus/bin/grid-proxy-init"
+    
+    def __init__(self):
+        self._make_cert_storage()
+    
+    def ProxyFile(self, userid):
+        """return the proxy file location for the specified user"""
+        return os.path.join( self.tempdir, "%s.proxy"%userid )
+    
+    def IsProxyValid(self, userid):
+        """Tells us if the creation time of the users proxy indicates that its valid or invalid"""
+        filename = self.ProxyFile(userid)
+        if not os.path.exists(filename):
+            # doesn't exist. Not valid
+            return False
+        
+        # get timestamp
+        fstat = os.stat(filename)
+        ctime = fstat[stat.ST_CTIME]
+        
+        return time.time()-ctime < CERTIFICATE_EXPIRY_SECONDS
+
+    def _make_cert_storage(self):
+        """makes a directory for storing the certificates in"""
+        self.tempdir = tempfile.mkdtemp()
+        print "Certificate Proxy Store created in",self.tempdir
+        
+    def CreateUserProxy(self, userid, cert, key, password):
+        """creates the proxy object for the specified user, using the passed in cert and key, decrypted by password
+        returns a struct_time representing the expiry time of the proxy
+        
+        TODO: What happens if this task blocks? The whole server blocks with it!
+        """
+        #print "CreateUserProxy",userid
+        #print "CERT",cert
+        #print "KEY",key
+        #print "PASSWORD",password
+        
+        # file locations
+        certfile = os.path.join( self.tempdir, "%s.cert"%userid )
+        keyfile = os.path.join( self.tempdir, "%s.key"%userid )
+        
+        # write out the pems
+        with open( certfile, 'wb' ) as fh:
+            fh.write(cert)
+            
+        with open( keyfile, 'wb' ) as fh:
+            fh.write(key)
+            
+        # file permissions
+        os.chmod( keyfile, 0600 )
+         
+        # where our proxy will live
+        proxyfile = self.ProxyFile(userid)
+        
+        # run "/usr/local/globus/bin/grid-proxy-init -cert PEMFILE -key KEYFILE -pwstdin -out PROXYFILE"
+        proc = subprocess.Popen( [  self.grid_proxy_init,
+                                    "-cert", certfile,
+                                    "-key", keyfile,
+                                    "-valid", CERTIFICATE_EXPIRY_TIME,
+                                    "-pwstdin", 
+                                    "-out", proxyfile ], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
+                                    
+        # run it passing in our password
+        try:
+            # TODO: non blocking version of this call
+            stdout, stderr = proc.communicate( password )
+        except OSError, ose:
+            if ose[0]==32:
+                # broken pipe
+                raise ProxyInitError, "Could not initialise proxy: Broken pipe (key/cert file could be corrupt)"
+            else:
+                raise ose
+        finally:
+            # clean up the key/cert files
+            os.unlink(certfile)
+            os.unlink(keyfile)
+        
+        code = proc.returncode
+        
+        if code:
+            # error
+            raise ProxyInitError, "Could not initialise proxy: %s"%(stdout.split("\n")[0])
+        
+        # decode the expiry time and return it as timestamp
+        res = stdout.split("\n")
+        
+        # get first line
+        res = [X.split(':',1)[1] for X in res if X.startswith('Your proxy is valid until:')][0]
+        
+        print "User proxy cert created in",proxyfile
+        
+        return _decode_time(res.strip())
+        
