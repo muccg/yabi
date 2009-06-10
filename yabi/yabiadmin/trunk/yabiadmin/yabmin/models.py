@@ -136,6 +136,7 @@ class ToolParameter(Base):
     filter_value = models.CharField(max_length=50, null=True, blank=True)
     source_param = models.ForeignKey('self', related_name='source_parent', null=True, blank=True)
     extension_param = models.ForeignKey('self', related_name='extension_parent', null=True, blank=True)
+    possible_values = models.TextField(null=True, blank=True)
 
     def __unicode__(self):
         return self.switch or ''
