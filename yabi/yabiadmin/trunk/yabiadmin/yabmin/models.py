@@ -70,6 +70,11 @@ class Tool(Base):
     tool_link.short_description = 'View'
     tool_link.allow_tags = True
 
+    def input_filetype_extensions(self):
+        '''Work out input file extensions for this tool and return a a list of them all'''
+        filetypes = reduce(lambda x, y: x+y, [list(x.accepted_filetypes.all()) for x in self.toolparameter_set.all()])
+        extensions = [ext.extension for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes])]
+        return list(set(extensions)) # remove duplicates
 
     def tool_dict(self):
         '''Gathers tool details into convenient dict for use by json or other models json'''
@@ -82,7 +87,8 @@ class Tool(Base):
             'file_pass_thru':self.file_pass_thru,
             'batch_on_param':self.batch_on_param.switch,
             'job_type': self.type.name,
-            'output_filetypes': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__extension")),
+            'input_filetypes': self.input_filetype_extensions(),
+            'output_filetypes': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__extension")),            
             'parameter_list': list(self.toolparameter_set.order_by('id').values("rank", "mandatory", "input_file", "output_file",
                                                                                 "switch", "switch_use__display_text", "switch_use__value","switch_use__description",
                                                                                 "filter_value", "filter__display_text", "filter__value","filter__description"))

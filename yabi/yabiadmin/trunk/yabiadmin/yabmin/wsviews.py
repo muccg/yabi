@@ -19,7 +19,7 @@ def tool(request, toolname):
     except ObjectDoesNotExist:
         return HttpResponseNotFound("Object not found")
 
-def toollist(request, username):
+def menu(request, username):
 
     try:
         toolsets = ToolSet.objects.filter(users__name=username)
@@ -55,7 +55,7 @@ def toollist(request, username):
                 tg["tools"].append(tool)
                 tool_dict = toolgroup.tool.tool_dict()
                 tool["output_filetypes"] = tool_dict["output_filetypes"]
-
+                tool["input_filetypes"] = tool_dict["input_filetypes"]
 #                for tool in Tool.objects.filter(
 
 
