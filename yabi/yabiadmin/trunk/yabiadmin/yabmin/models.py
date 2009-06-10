@@ -76,6 +76,11 @@ class Tool(Base):
         extensions = [ext.extension for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes])]
         return list(set(extensions)) # remove duplicates
 
+    def output_filetype_extensions(self):
+        '''Work out output file extensions for this tool and return a a list of them all'''
+        extensions = [fe.file_extension.extension for fe in self.tooloutputextension_set.all()]
+        return list(set(extensions)) # remove duplicates
+
     def tool_dict(self):
         '''Gathers tool details into convenient dict for use by json or other models json'''
         return {

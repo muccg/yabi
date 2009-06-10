@@ -55,8 +55,8 @@ def menu(request, username):
                 tool["description"] = toolgroup.tool.description                
                 tg["tools"].append(tool)
                 tool_dict = toolgroup.tool.tool_dict()
-                tool["output_filetypes"] = tool_dict["output_filetypes"]
-                tool["input_filetypes"] = tool_dict["input_filetypes"]
+                tool["output_filetypes"] = toolgroup.tool.output_filetype_extensions()
+                tool["input_filetypes"] = toolgroup.tool.input_filetype_extensions()
 
 
             # now add the toolgroups to toolsets
