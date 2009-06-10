@@ -23,25 +23,26 @@ def menu(request, username):
 
     try:
         toolsets = ToolSet.objects.filter(users__name=username)
-
         output = {"toolsets":[]}
 
+        # add each toolset
         for toolset in toolsets:
-
 
             ts = {}
             output["toolsets"].append(ts)
             ts["name"] = toolset.name
-            ts["toolgroups"] = {}
+            ts["toolgroups"] = []
 
-            i = 1
+
+            # make up a dict of toolgroups
+            toolgroups = {}
+
             for toolgroup in ToolGrouping.objects.filter(tool_set=toolset):
-                tg = {}
-                if not toolgroup.tool_group.name in ts["toolgroups"]:
+                if not toolgroup.tool_group.name in toolgroups:
                     tg = {}
-                    ts["toolgroups"][toolgroup.tool_group.name] = tg
+                    toolgroups[toolgroup.tool_group.name] = tg
                 else:
-                    tg = ts["toolgroups"][toolgroup.tool_group.name]
+                    tg = toolgroups[toolgroup.tool_group.name]
 
                 if not "name" in tg:
                     tg["name"] = toolgroup.tool_group.name
@@ -56,45 +57,16 @@ def menu(request, username):
                 tool_dict = toolgroup.tool.tool_dict()
                 tool["output_filetypes"] = tool_dict["output_filetypes"]
                 tool["input_filetypes"] = tool_dict["input_filetypes"]
-#                for tool in Tool.objects.filter(
 
 
-##            ts = {}
-##            ts["toolset"] = toolsetname
-##            ts["toolgroups"] = []
-
-##            ts["toolgroups"] = []
-
-##            toolgroup = {}
-##            toolgroup["toolgroup_name"] = tg.tool_group.name
-##            toolgroup["tools"] = []
-
-##            tool = {}
-##            if tg.tool_group.name not in ts:
-##                output[tg.tool_group.name] = []
-##            output[tg.tool_group.name].append({'name':tg.tool.name, 'displayname':tg.tool.display_name})
-
-
-
-
-##            # add toolset level
-##            if toolsetname not in output["toolsets"]:
-##                output["toolsets"].append(ts)
-            
+            # now add the toolgroups to toolsets
+            for key, value in toolgroups.iteritems():
+                ts["toolgroups"].append(value)
 
 
         return HttpResponse(json.dumps({"menu":output}))
     except ObjectDoesNotExist:
         return HttpResponseNotFound("Object not found")    
-
-
-
-##{"toolGroups": [ {"groupName":"EMBOSS", "items": [ {"description":"Produces a file containing codon usage statistics. Accepts: fa,fna,faa,seq Outputs: out",
-##"toolName":"chips",
-##"inputFiletypes":[ {"extension":"fa"}, {"extension":"fna"}, {"extension":"faa"}, {"extension":"seq"}, ],
-##"displayName":"chips",
-##"outputFiletypes":[ {"extension":"out"}, ] },
-
 
 
 def credential(request, username, backend):
