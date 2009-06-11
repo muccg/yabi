@@ -13,10 +13,7 @@ class ProxyInitError(Exception):
     pass
 
 GLOBUS_TIME_FORMAT = "%a %b %d %H:%M:%S %Y"
-CERTIFICATE_EXPIRY_MINUTES = 1                          # set this for how often we refresh
-
-CERTIFICATE_EXPIRY_SECONDS = 60*CERTIFICATE_EXPIRY_MINUTES
-CERTIFICATE_EXPIRY_TIME = "%d:%d"%(CERTIFICATE_EXPIRY_MINUTES/60,CERTIFICATE_EXPIRY_MINUTES%60)
+DEFAULT_CERTIFICATE_EXPIRY_MINUTES = 1                          # set this for how often we refresh
 
 def _decode_time(timestring):
     """turn 'Tue Jun  9 04:02:41 2009' into a unix timestamp"""
@@ -25,8 +22,15 @@ def _decode_time(timestring):
 class CertificateProxy(object):
     grid_proxy_init = "/usr/local/globus/bin/grid-proxy-init"
     
-    def __init__(self):
-        self._make_cert_storage()
+    def __init__(self, expiry=DEFAULT_CERTIFICATE_EXPIRY_MINUTES, storage=None):
+        if not storage:
+            self._make_cert_storage()
+        else:
+            assert os.path.exists(storage) and os.path.isdir(storage), "storage path needs to exist and be a directory"
+            self.tempdir=storage
+        self.CERTIFICATE_EXPIRY_MINUTES = expiry
+        self.CERTIFICATE_EXPIRY_SECONDS = 60*self.CERTIFICATE_EXPIRY_MINUTES
+        self.CERTIFICATE_EXPIRY_TIME = "%d:%d"%(self.CERTIFICATE_EXPIRY_MINUTES/60,self.CERTIFICATE_EXPIRY_MINUTES%60)
     
     def ProxyFile(self, userid):
         """return the proxy file location for the specified user"""
@@ -43,7 +47,7 @@ class CertificateProxy(object):
         fstat = os.stat(filename)
         ctime = fstat[stat.ST_CTIME]
         
-        return time.time()-ctime < CERTIFICATE_EXPIRY_SECONDS
+        return time.time()-ctime < self.CERTIFICATE_EXPIRY_SECONDS
 
     def _make_cert_storage(self):
         """makes a directory for storing the certificates in"""
@@ -82,7 +86,7 @@ class CertificateProxy(object):
         proc = subprocess.Popen( [  self.grid_proxy_init,
                                     "-cert", certfile,
                                     "-key", keyfile,
-                                    "-valid", CERTIFICATE_EXPIRY_TIME,
+                                    "-valid", self.CERTIFICATE_EXPIRY_TIME,
                                     "-pwstdin", 
                                     "-out", proxyfile ], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
                                     

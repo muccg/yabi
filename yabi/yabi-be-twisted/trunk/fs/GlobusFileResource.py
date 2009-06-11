@@ -14,46 +14,22 @@ from globus.FifoStream import FifoStream
 
 from twisted.web import client
 import json
-def AuthProxyUser(username, successcallback, deferred, *args):
-    """Auth a user via getting the credentials from the json yabiadmin backend. When the credentials are gathered, successcallback is called with the deferred.
-    The deferred should be the result channel your result will go back down"""
-    host,port = "localhost",8000
-    backend="gridftp1"
-    useragent = "YabiFS/0.1"
-    
-    factory = client.HTTPClientFactory(
-        'http://%s:%d/yabiadmin/ws/credential/%s/%s/'%(host,port,username,backend),
-        agent = useragent
-        )
-    reactor.connectTCP(host, port, factory)
-    
-    # now if the page fails for some reason. deal with it
-    def _doFailure(data):
-        print "Failed:",factory,":",type(data),data.__class__
-        print data
-        
-        deferred.callback( http.Response( responsecode.UNAUTHORIZED, {'content-type': http_headers.MimeType('text', 'plain')}, "User: %s does not have credentials for this backend\n"%username) )
-        
-    # if we get the credentials decode them and auth them
-    def _doSuccess(data):
-        print "Success",deferred,args,successcallback
-        credentials=json.loads(data)
-        print "Credentials gathered successfully for user %s"%username
-        
-        # auth the user
-        globus.Certificates.CreateUserProxy(username,credentials['cert'],credentials['key'],credentials['password'])
-        
-        successcallback(deferred, *args)
-    
-    return factory.deferred.addCallback(_doSuccess).addErrback(_doFailure)
 
 class GlobusFileResource(resource.PostableResource):
     """This is the resource that connects to the globus gridftp backends"""
     VERSION=0.1
     addSlash = False
     
-    def __init__(self,request,path=None):
+    def __init__(self,request=None,path=None,remotemethod="gsiftp",remoteserver="xe-ng2.ivec.org",remotepath="/", backend=None, authproxy=None):
         """Pass in the backends to be served out by this FSResource"""
+        
+        assert remotepath, "Remote path cannot be empty, must at least be '/'"
+        assert remotepath[0]=='/', "Remote path must be absolute (and begin with a '/' character)"
+        if remotepath[-1]!='/':
+            remotepath+='/'
+        
+        # save the details of this connector
+        self.remotemethod, self.remoteserver, self.remotepath, self.backend = remotemethod, remoteserver, remotepath, backend
         
         if path:
             # first part of path is yabi_username
@@ -63,12 +39,17 @@ class GlobusFileResource(resource.PostableResource):
             self.path=path
         else:
             self.path = None
+            
+        if not authproxy:
+            self.authproxy = globus.CertificateProxy()
+        else:
+            self.authproxy = authproxy
         
     def _make_remote_url(self):
         """return the full url for out path"""
         assert self.path, "Must only be called on a GlobusFileResource that has been constructed with a path"
         
-        return "gsiftp://xe-ng2.ivec.org/" + ("/".join(self.path))
+        return "%s://%s%s"%(self.remotemethod, self.remoteserver, self.remotepath) + ("/".join(self.path))
         
     def render(self, request):
         # if path is none, we are at out pre '/' base resource (eg. GET /fs/file )
@@ -82,9 +63,9 @@ class GlobusFileResource(resource.PostableResource):
         # auth our user
         # this may take a while, so we create a deferred for the response
         deferred = defer.Deferred()
-        if not globus.Certificates.IsProxyValid(self.username):
+        if not self.authproxy.IsProxyValid(self.username):
             # we have to auth the user. we need to get the credentials json object from the admin mango app
-            AuthProxyUser(self.username,self.RemoteFile,deferred)
+            self.AuthProxyUser(self.username, self.backend, self.RemoteFile,deferred)
         else:
             self.RemoteFile(deferred)
         
@@ -95,7 +76,7 @@ class GlobusFileResource(resource.PostableResource):
         
         result is the deferred to write our result into
         """
-        usercert = globus.Certificates.ProxyFile(self.username)
+        usercert = self.authproxy.ProxyFile(self.username)
         
         # get our read fifo
         remote_url = self._make_remote_url()
@@ -162,9 +143,9 @@ class GlobusFileResource(resource.PostableResource):
         # auth our user
         # this may take a while, so we create a deferred for the response
         deferred = defer.Deferred()
-        if not globus.Certificates.IsProxyValid(self.username):
+        if not self.authproxy.IsProxyValid(self.username):
             # we have to auth the user. we need to get the credentials json object from the admin mango app
-            AuthProxyUser(self.username,self.UploadFile,deferred,request)
+            self.AuthProxyUser(self.username,self.backend,self.UploadFile,deferred,request)
         else:
             self.UploadFile(deferred,request)
         
@@ -255,19 +236,49 @@ class GlobusFileResource(resource.PostableResource):
         # auth our user
         # this may take a while, so we create a deferred for the response
         deferred = defer.Deferred()
-        if not globus.Certificates.IsProxyValid(self.username):
+        if not self.authproxy.IsProxyValid(self.username):
             # we have to auth the user. we need to get the credentials json object from the admin mango app
-            AuthProxyUser(self.username,list_success,deferred)
+            self.AuthProxyUser(self.username,self.backend, list_success,deferred)
         else:
             # auth our user
             list_success(deferred)
         
         return deferred
+           
+    def AuthProxyUser(self, username, backend, successcallback, deferred, *args):
+        """Auth a user via getting the credentials from the json yabiadmin backend. When the credentials are gathered, successcallback is called with the deferred.
+        The deferred should be the result channel your result will go back down"""
+        host,port = "localhost",8000
+        useragent = "YabiFS/0.1"
         
+        factory = client.HTTPClientFactory(
+            'http://%s:%d/yabiadmin/ws/credential/%s/%s/'%(host,port,username,backend),
+            agent = useragent
+            )
+        reactor.connectTCP(host, port, factory)
+        
+        # now if the page fails for some reason. deal with it
+        def _doFailure(data):
+            print "Failed:",factory,":",type(data),data.__class__
+            print data
+            
+            deferred.callback( http.Response( responsecode.UNAUTHORIZED, {'content-type': http_headers.MimeType('text', 'plain')}, "User: %s does not have credentials for this backend\n"%username) )
+            
+        # if we get the credentials decode them and auth them
+        def _doSuccess(data):
+            print "Success",deferred,args,successcallback
+            credentials=json.loads(data)
+            print "Credentials gathered successfully for user %s"%username
+            
+            # auth the user
+            self.authproxy.CreateUserProxy(username,credentials['cert'],credentials['key'],credentials['password'])
+            
+            successcallback(deferred, *args)
+        
+        return factory.deferred.addCallback(_doSuccess).addErrback(_doFailure)
+
     def locateChild(self, request, segments):
         # return our local file resource for these segments
         #print "LFR::LC",request,segments
-        return GlobusFileResource(request,segments), []
-    
-
-
+        return GlobusFileResource(request,segments, remotemethod=self.remotemethod, remoteserver=self.remoteserver, remotepath=self.remotepath, backend=self.backend, authproxy=self.authproxy), []
+ 

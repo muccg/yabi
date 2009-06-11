@@ -44,7 +44,11 @@ class BaseResource(resource.PostableResource):
         resource.PostableResource.__init__(self, *args, **kw)
         
         # our handlers
-        self.child_fs = FSResource(file=LocalFileResource, gridftp1=GlobusFileResource)
+        self.child_fs = FSResource(
+                file=LocalFileResource(directory="/tmp/filesystem"),
+                gridftp1=GlobusFileResource(remoteserver="xe-ng2.ivec.org", remotepath="/scratch"),
+                gridftp2=GlobusFileResource(remoteserver="xe-ng2.ivec.org", remotepath="/scratch/bi01")
+            )
         self.child_yabiadmin = wsgi.WSGIResource(application)
         
     def render(self, ctx):

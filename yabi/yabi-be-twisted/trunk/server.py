@@ -1,5 +1,4 @@
-import sys
-import os
+import sys, os
 
 import stacklessreactor
 stacklessreactor.install()

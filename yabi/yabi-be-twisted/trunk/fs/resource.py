@@ -11,6 +11,7 @@ class FSResource(resource.Resource):
         """Pass in the backends to be served out by this FSResource"""
         self.backends={}
         for name, bend in kwargs.iteritems():
+            bend.backend = name                     # store the name in the backend, so the backend knows about it
             self.backends[name]=bend
             self.putChild(name,bend)
         

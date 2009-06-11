@@ -12,13 +12,16 @@ class LocalFileResource(resource.PostableResource):
     VERSION=0.1
     addSlash = False
     
-    def __init__(self,request,path=None):
+    def __init__(self,request=None,path=None, directory="/tmp/test", backend=None):
         """Pass in the backends to be served out by this FSResource"""
         self.path=path
+        self.backend = backend
+        
+        self.directory=directory
         
     def GetFilename(self):
         """Using this classes 'path', return the real FS path that this refers to"""
-        return os.path.join("/tmp/test",sep.join(self.path))
+        return os.path.join(self.directory,sep.join(self.path))
         
     def render(self, request):
         # if path is none, we are at out pre '/' base resource (eg. GET /fs/file )
@@ -106,4 +109,4 @@ class LocalFileResource(resource.PostableResource):
     def locateChild(self, request, segments):
         # return our local file resource for these segments
         #print "LFR::LC",request,segments
-        return LocalFileResource(request,segments), []
+        return LocalFileResource(request,segments, directory=self.directory, backend=self.backend), []
