@@ -23,7 +23,7 @@ class LocalFileResource(resource.PostableResource):
     def render(self, request):
         # if path is none, we are at out pre '/' base resource (eg. GET /fs/file )
         if self.path == None:
-            return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Local File FS Connector Version: %s"%self.VERSION)
+            return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Local File FS Connector Version: %s\n"%self.VERSION)
         
         fullpath = self.GetFilename()
         
@@ -57,10 +57,10 @@ class LocalFileResource(resource.PostableResource):
             )                   
         
         # save worked.
-        defferedchain.addCallback(lambda res: http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK: %s"%res) )
+        defferedchain.addCallback(lambda res: http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK: %s\n"%res) )
         
         # save failed
-        defferedchain.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "NOT OK: %s"%res) )
+        defferedchain.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "NOT OK: %s\n"%res) )
         
         return defferedchain
         
@@ -86,10 +86,10 @@ class LocalFileResource(resource.PostableResource):
             )                   
         
         # save worked.
-        defferedchain.addCallback(lambda res: http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK: %s"%res) )
+        defferedchain.addCallback(lambda res: http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK: %s\n"%res) )
         
         # save failed
-        defferedchain.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "NOT OK: %s"%res) )
+        defferedchain.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "NOT OK: %s\n"%res) )
         
         return defferedchain
               
@@ -97,7 +97,7 @@ class LocalFileResource(resource.PostableResource):
         fullpath = self.GetFilename()
         
         if not os.path.exists(fullpath) or not os.path.isdir(fullpath):
-            return http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Path not a directory")
+            return http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Path not a directory\n")
         
         contents = os.listdir(fullpath)
         

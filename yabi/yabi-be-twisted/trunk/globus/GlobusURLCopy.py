@@ -80,7 +80,7 @@ class GlobusURLCopy(object):
         
         assert lines[0]==url, "returned url header does not match passed in header"
         
-        return [line2[:-1] for line2 in [line.strip() for line in lines[1:] if len(line)] if line2[-1]==u"\u0000"]
+        return [(line2[:-1] if line2[-1]==u"\u0000" else line2) for line2 in [line.strip() for line in lines[1:] if len(line)]]
     
     def WriteToRemote(self, certfile, remoteurl):
         """starts a copy to remote process and returns you the following (proc, file, url) where:

@@ -36,6 +36,7 @@ def AuthProxyUser(username, successcallback, deferred, *args):
         
     # if we get the credentials decode them and auth them
     def _doSuccess(data):
+        print "Success",deferred,args,successcallback
         credentials=json.loads(data)
         print "Credentials gathered successfully for user %s"%username
         
@@ -256,7 +257,7 @@ class GlobusFileResource(resource.PostableResource):
         deferred = defer.Deferred()
         if not globus.Certificates.IsProxyValid(self.username):
             # we have to auth the user. we need to get the credentials json object from the admin mango app
-            AuthProxyUser(self.username,deferred,list_success)
+            AuthProxyUser(self.username,list_success,deferred)
         else:
             # auth our user
             list_success(deferred)
