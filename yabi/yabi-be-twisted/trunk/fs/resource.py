@@ -59,9 +59,23 @@ class FileCopyResource(resource.PostableResource):
             
             print "Copying from",sbend,"to",dbend
             
-            #readproc, readfifo = sbend.
+            # our http result channel. this stays open until the copy is finished
+            result_channel = defer.Deferred()
             
-            return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK: %s\n"%res)
+            def _write_ready( proc, fifo ):
+                print "_write_ready(",proc,",",fifo,")"
+                
+                def _read_ready( proc, fifo ):
+                    print "_read_ready(",proc,",",fifo,")"
+                    
+                
+                sbend.GetReadFifo(src_path, _read_ready, fifo)
+                
+            dbend.GetWriteFifo(dst_path, _write_ready)
+            
+            return deferred
+            
+            #return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK: %s\n"%res)
         
         deferred.addCallback(CopyCommand)
         

@@ -45,11 +45,76 @@ class GlobusFileResource(resource.PostableResource):
         else:
             self.authproxy = authproxy
         
-    def _make_remote_url(self):
+    def _make_remote_url(self, path=None):
         """return the full url for out path"""
-        assert self.path, "Must only be called on a GlobusFileResource that has been constructed with a path"
+        if not path:
+            path = self.path
+            
+        return "%s://%s%s"%(self.remotemethod, self.remoteserver, self.remotepath) + ("/".join(path))
         
-        return "%s://%s%s"%(self.remotemethod, self.remoteserver, self.remotepath) + ("/".join(self.path))
+    def GetReadFifo(self, path, deferred, fifo=None):
+        """sets up the chain needed to setup a read fifo from a remote path as a certain user.
+        
+        pass in here the username, path, and a deferred
+    
+        if a fifo is passed in, then use that as the fifo rather than creating one
+    
+        when everything is setup and ready, deferred will be called with (proc, fifo), with proc being the python subprocess Popen object
+        and fifo being the filesystem location of the fifo.
+        """
+        fifoin = fifo
+        parts = path.split("/")
+        username = parts[0]
+        path = parts[1:]
+        
+        def success( callback, *args):
+            """the user is now authed"""
+            usercert = self.authproxy.ProxyFile(username)
+            remote_url = self._make_remote_url(path)
+            process, fifo = globus.Globus.ReadFromRemote(usercert,remote_url,fifo=fifoin)
+            
+            # call the func with the process, fifo
+            callback( process,fifo )
+            
+            return
+        
+        if not self.authproxy.IsProxyValid(username):
+            self.AuthProxyUser(username, self.backend, success, deferred)
+        else:
+            success(deferred)
+            
+    def GetWriteFifo(self, path, deferred, fifo=None):
+        """sets up the chain needed to setup a read fifo from a remote path as a certain user.
+        
+        pass in here the username, path, and a deferred
+    
+        if a fifo pathis apssed in, use that one instead of making one
+    
+        when everything is setup and ready, deferred will be called with (proc, fifo), with proc being the python subprocess Popen object
+        and fifo being the filesystem location of the fifo.
+        """
+        fifoin = fifo
+        parts = path.split("/")
+        username = parts[0]
+        path = parts[1:]
+         
+        def success( callback, *args):
+            """the user is now authed"""
+            usercert = self.authproxy.ProxyFile(username)
+            remote_url = self._make_remote_url(path)
+            process, fifo = globus.Globus.WriteToRemote(usercert,remote_url,fifo=fifoin)
+            
+            # call the func with the process, fifo
+            callback( process,fifo )
+            
+            return
+        
+        if not self.authproxy.IsProxyValid(username):
+            self.AuthProxyUser(username, self.backend, success, deferred)
+        else:
+            success(deferred)
+            
+    
         
     def render(self, request):
         # if path is none, we are at out pre '/' base resource (eg. GET /fs/file )

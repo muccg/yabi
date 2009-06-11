@@ -41,11 +41,10 @@ class GlobusURLCopy(object):
         """make a fifo on the filesystem and return its path"""
         filename = tempfile.mktemp(suffix=suffix, prefix=prefix)                # insecure, but we dont care
         os.mkfifo(filename, 0600)
-        
-        # make the url filename
-        url = "file://"+os.path.normpath(filename)
-        
-        return filename, url
+        return filename
+    
+    def _make_url_for_fifo(self,filename):
+        return "file://"+os.path.normpath(filename)
     
     def ListRemote(self, certfile, url):
         """
@@ -82,7 +81,7 @@ class GlobusURLCopy(object):
         
         return [(line2[:-1] if line2[-1]==u"\u0000" else line2) for line2 in [line.strip() for line in lines[1:] if len(line)]]
     
-    def WriteToRemote(self, certfile, remoteurl):
+    def WriteToRemote(self, certfile, remoteurl, fifo=None):
         """starts a copy to remote process and returns you the following (proc, file, url) where:
         proc:   the Popen subprocess python object. Its a child process object.
         file:   the filename of the fifo object to open and write data into
@@ -90,7 +89,10 @@ class GlobusURLCopy(object):
         subenv = self._make_env(certfile)
         
         # make our source fifo to get our data from
-        file, url = self._make_fifo()
+        if not fifo:
+            fifo = self._make_fifo()
+        url = self._make_url_for_fifo(fifo)
+        print "WRITE:",fifo,url,remoteurl
         
         # the copy to remote command
         proc = subprocess.Popen(    [  self.globus_url_copy,
@@ -104,14 +106,17 @@ class GlobusURLCopy(object):
                                     #close_fds=True,
                                     env=subenv  )
         
-        return proc, file
+        return proc, fifo
     
-    def ReadFromRemote(self, certfile, remoteurl):
+    def ReadFromRemote(self, certfile, remoteurl, fifo=None):
         """Read from a remote url into a local fifo"""
         subenv = self._make_env(certfile)
         
         # make our source fifo to get our data from
-        file, url = self._make_fifo()
+        if not fifo:
+            fifo = self._make_fifo()
+        url = self._make_url_for_fifo(fifo)
+        print "READ:",fifo,url,remoteurl
         
         # the copy to remote command
         proc = subprocess.Popen(    [  self.globus_url_copy,
@@ -125,7 +130,7 @@ class GlobusURLCopy(object):
                                     #close_fds=True,
                                     env=subenv  )
         
-        return proc, file
+        return proc, fifo
     
     
         
