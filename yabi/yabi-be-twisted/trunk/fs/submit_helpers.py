@@ -4,6 +4,7 @@
 import os.path, tempfile
 from twisted.internet import defer
 from twisted.web2 import http, iweb, fileupload, responsecode
+from StringIO import StringIO
         
 TMP_DIRECTORY="/tmp"
         
@@ -13,7 +14,7 @@ def parseMultipartFormData(stream, boundary,
     # If the stream length is known to be too large upfront, abort immediately
     
     if stream.length is not None and stream.length > maxSize:
-            raise MimeFormatError("Maximum length of %d bytes exceeded." %
+            raise fileupload.MimeFormatError("Maximum length of %d bytes exceeded." %
                                                             maxSize)
     
     mms = fileupload.MultipartMimeStream(stream, boundary)
@@ -32,7 +33,7 @@ def parseMultipartFormData(stream, boundary,
         
         numFields+=1
         if numFields == maxFields:
-            raise MimeFormatError("Maximum number of fields %d exceeded"%maxFields)
+            raise fileupload.MimeFormatError("Maximum number of fields %d exceeded"%maxFields)
         
         # Parse data
         fieldname, filename, ctype, stream = datas
@@ -173,7 +174,7 @@ def parseMultipartFormDataWriter(stream, boundary,
     # If the stream length is known to be too large upfront, abort immediately
     
     if stream.length is not None and stream.length > maxSize:
-            raise MimeFormatError("Maximum length of %d bytes exceeded." %
+            raise fileupload.MimeFormatError("Maximum length of %d bytes exceeded." %
                                                             maxSize)
     
     mms = fileupload.MultipartMimeStream(stream, boundary)
@@ -192,7 +193,7 @@ def parseMultipartFormDataWriter(stream, boundary,
         
         numFields+=1
         if numFields == maxFields:
-            raise MimeFormatError("Maximum number of fields %d exceeded"%maxFields)
+            raise fileupload.MimeFormatError("Maximum number of fields %d exceeded"%maxFields)
         
         # Parse data
         fieldname, filename, ctype, stream = datas
@@ -257,18 +258,20 @@ def parsePOSTDataRemoteWriter(request, maxMem=100*1024, maxFields=1024,
         return defer.succeed(None)
 
     def updateArgs(data):
+        #print "updateArgs",data
         args = data
         request.args.update(args)
 
     def updateArgsAndFiles(data):
+        #print "updateArgsAndFiles",data
         args, files = data
         request.args.update(args)
         request.files.update(files)
 
     def error(f):
         f.trap(fileupload.MimeFormatError)
-        raise http.HTTPError(
-            http.StatusResponse(responsecode.BAD_REQUEST, str(f.value)))
+        print "POST Parse error:",f.value
+        raise f
 
     if (ctype.mediaType == 'application'
         and ctype.mediaSubtype == 'x-www-form-urlencoded'):

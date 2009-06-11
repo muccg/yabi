@@ -223,7 +223,7 @@ class GlobusFileResource(resource.PostableResource):
 
     def http_LIST(self,request):
         def list_success(deferred):
-            usercert = globus.Certificates.ProxyFile(self.username)
+            usercert = self.authproxy.ProxyFile(self.username)
             
             try:
                 contents = globus.Globus.ListRemote(usercert,self._make_remote_url())

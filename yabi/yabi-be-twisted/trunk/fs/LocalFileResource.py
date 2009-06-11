@@ -110,3 +110,5 @@ class LocalFileResource(resource.PostableResource):
         # return our local file resource for these segments
         #print "LFR::LC",request,segments
         return LocalFileResource(request,segments, directory=self.directory, backend=self.backend), []
+    
+    
