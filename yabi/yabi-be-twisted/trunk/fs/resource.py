@@ -1,9 +1,11 @@
 """Our twisted filesystem server resource"""
 
 from twisted.web2 import resource, http_headers, responsecode, http, server
-from twisted.internet import defer
+from twisted.internet import defer, reactor
 from submit_helpers import parsePOSTDataRemoteWriter
 import weakref
+
+PROCESS_CHECK_TIME = 1.0
 
 class FileCopyResource(resource.PostableResource):
     VERSION=0.1
@@ -62,18 +64,46 @@ class FileCopyResource(resource.PostableResource):
             # our http result channel. this stays open until the copy is finished
             result_channel = defer.Deferred()
             
-            def _write_ready( proc, fifo ):
-                print "_write_ready(",proc,",",fifo,")"
+            def _write_ready( procw, fifo ):
+                print "_write_ready(",procw,",",fifo,")"
                 
-                def _read_ready( proc, fifo ):
-                    print "_read_ready(",proc,",",fifo,")"
+                def _read_ready( procr, fifo ):
+                    print "_read_ready(",procr,",",fifo,")"
                     
+                    # the connection should now be pumping. We now have to wait for both processes to terminate. Then we get these processes results
+                    def check_processes(deferred):
+                        # we poll each process for exit codes.
+                        wx = procw.poll()
+                        rx = procr.poll()
+                        
+                        print wx,rx
+                        
+                        if wx==None or rx==None:
+                            reactor.callLater(PROCESS_CHECK_TIME, check_processes, deferred)
+                        else:
+                            # we have both giving an exit code.
+                            if wx==0 and rx==0:
+                                # success
+                                deferred.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream="File copied successfuly!\n"))
+                            else:
+                                # something went wrong
+                                read_error = procr.stdout.read()
+                                write_error = procw.stdout.read()
+                                
+                                if True in ["Permission denied" in error for error in (read_error, write_error)]:
+                                     deferred.callback(http.Response( responsecode.NOT_ALLOWED, {'content-type': http_headers.MimeType('text', 'plain')}, stream="File copy failed! Permission denied\n"))
+                                else:   
+                                    response  = "Read process:\nexit code:%d\noutput:%s\n\n--------------------\n\n"%(rx,procr.stdout.read())
+                                    response += "Write process:\nexit code:%d\noutput:%s\n\n--------------------\n\n"%(wx,procw.stdout.read())
+                                    deferred.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream="File copy failed!\n"+response))
+                    
+                    reactor.callLater(0, check_processes, result_channel)
                 
                 sbend.GetReadFifo(src_path, _read_ready, fifo)
                 
             dbend.GetWriteFifo(dst_path, _write_ready)
             
-            return deferred
+            return result_channel
             
             #return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK: %s\n"%res)
         
