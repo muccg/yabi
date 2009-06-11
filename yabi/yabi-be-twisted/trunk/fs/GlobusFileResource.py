@@ -2,7 +2,7 @@
 from twisted.web2 import resource, http_headers, responsecode, http, server, stream
 from twisted.internet import defer, reactor
 from os.path import sep
-import os, json
+import os, json, sys
 from submit_helpers import parsePOSTData, parsePUTData, parsePOSTDataRemoteWriter
 from twisted.web2.auth.interfaces import IAuthenticatedRequest, IHTTPUser
 
@@ -72,7 +72,8 @@ class GlobusFileResource(resource.PostableResource):
             usercert = self.authproxy.ProxyFile(username)
             remote_url = self._make_remote_url(path)
             process, fifo = globus.Globus.ReadFromRemote(usercert,remote_url,fifo=fifoin)
-            
+            #print "process read",sys.getrefcount(process)
+
             # call the func with the process, fifo
             callback( process,fifo )
             
@@ -103,6 +104,7 @@ class GlobusFileResource(resource.PostableResource):
             usercert = self.authproxy.ProxyFile(username)
             remote_url = self._make_remote_url(path)
             process, fifo = globus.Globus.WriteToRemote(usercert,remote_url,fifo=fifoin)
+            #print "process write",sys.getrefcount(process)
             
             # call the func with the process, fifo
             callback( process,fifo )

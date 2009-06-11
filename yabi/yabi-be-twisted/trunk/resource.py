@@ -47,7 +47,7 @@ class BaseResource(resource.PostableResource):
         self.child_fs = FSResource(
                 file=LocalFileResource(directory="/tmp/filesystem"),
                 gridftp1=GlobusFileResource(remoteserver="xe-ng2.ivec.org", remotepath="/scratch"),
-                gridftp2=GlobusFileResource(remoteserver="xe-ng2.ivec.org", remotepath="/scratch/bi01")
+                gridftp2=GlobusFileResource(remoteserver="xe-ng2.ivec.org", remotepath="/scratch/bi01"),
             )
         self.child_yabiadmin = wsgi.WSGIResource(application)
         

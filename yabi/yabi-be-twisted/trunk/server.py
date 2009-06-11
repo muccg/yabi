@@ -54,3 +54,13 @@ application = service.Application('twisted')
 from twisted.web2 import channel
 internet.TCPServer(PORT, channel.HTTPFactory(site)).setServiceParent(application)
 internet.SSLServer(SSL_PORT, channel.HTTPFactory(site), ServerContextFactory()).setServiceParent(application)
+
+# telnet port to python shell
+from twisted.manhole import telnet
+
+shellfactory = telnet.ShellFactory()
+reactor.listenTCP(8021, shellfactory)
+shellfactory.namespace['app']=application
+shellfactory.namespace['site']=site
+shellfactory.username = ''
+shellfactory.password = ''
