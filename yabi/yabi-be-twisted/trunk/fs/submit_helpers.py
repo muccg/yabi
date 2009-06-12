@@ -205,6 +205,11 @@ def parseMultipartFormDataWriter(stream, boundary,
             #print "...->",fieldname, filename, ctype, stream 
             #outfile = tempfile.NamedTemporaryFile(prefix=basepath)
             outfile = writer(filename)
+            if isinstance(outfile, defer.Deferred):
+                #writer not ready yet.
+                outfile = defer.waitForDeferred(outfile)
+                yield outfile
+                outfile = outfile.getResult()
             maxBuf = maxSize
         x = fileupload.readIntoFile(stream, outfile, maxBuf)
         if isinstance(x, defer.Deferred):

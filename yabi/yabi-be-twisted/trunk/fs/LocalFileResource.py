@@ -9,7 +9,9 @@ import subprocess
 
 GET_DIR_LIST = True                     # whether when you call GET on a directory, if it returns the same as LIST on that path. False throws an error on a directory.
 
-class LocalFileResource(resource.PostableResource):
+from BaseFileResource import BaseFileResource
+
+class LocalFileResource(BaseFileResource):
     """This is the resource that connects us to our local filesystem"""
     VERSION=0.1
     addSlash = False
@@ -17,6 +19,8 @@ class LocalFileResource(resource.PostableResource):
     
     def __init__(self,request=None,path=None, directory="/tmp/test", backend=None):
         """Pass in the backends to be served out by this FSResource"""
+        BaseFileResource.__init__(self,request,path)
+        
         self.path=path
         self.backend = backend
         
@@ -91,51 +95,6 @@ class LocalFileResource(resource.PostableResource):
         deferred( proc, fifo )
             
     
-    def render(self, request):
-        # if path is none, we are at out pre '/' base resource (eg. GET /fs/file )
-        if self.path == None:
-            return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Local File FS Connector Version: %s\n"%self.VERSION)
-        
-        fullpath = self.GetFilename()
-        
-        # see if file exits
-        if not os.path.exists(fullpath):
-            return http.Response( responsecode.NOT_FOUND, {'content-type': http_headers.MimeType('text', 'plain')}, "File '%s' not found\n"%sep.join(self.path))
-        
-        if GET_DIR_LIST and os.path.isdir(fullpath):
-            return self.http_LIST(request)
-        
-        fh = open(fullpath)
-        
-        return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream=stream.FileStream(fh))
-    
-    def http_POST(self, request):
-        """
-        Respond to a POST request.
-        Reads and parses the incoming body data then calls L{render}.
-    
-        @param request: the request to process.
-        @return: an object adaptable to L{iweb.IResponse}.
-        """
-        fullpath = self.GetFilename()
-        
-        if not os.path.exists(fullpath):
-            # make directories
-            os.makedirs(fullpath)
-            
-        defferedchain = parsePOSTData(request,
-            self.maxMem, self.maxFields, self.maxSize, basepath=fullpath
-            )                   
-        
-        # save worked.
-        defferedchain.addCallback(lambda res: http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK: %s\n"%res) )
-        
-        # save failed
-        defferedchain.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "NOT OK: %s\n"%res) )
-        
-        return defferedchain
-        
-        
     ##
     ## PUT: not working yet
     ##
