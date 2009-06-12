@@ -18,7 +18,6 @@ import stackless
 
 from resource import BaseResource
 
-
 # our root and google resource
 sys.path=['.']+sys.path
 import twango_resource

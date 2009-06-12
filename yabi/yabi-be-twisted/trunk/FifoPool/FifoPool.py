@@ -48,3 +48,5 @@ class FifoPool(object):
             ref = weakref.ref( proc, remove_ref )
             self._fifos[fifo].append(ref)
             
+    def MakeURLForFifo(self,filename):
+        return "file://"+os.path.normpath(filename)

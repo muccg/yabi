@@ -4,6 +4,8 @@ from twisted.internet import defer, reactor
 from os.path import sep
 import os, json
 from submit_helpers import parsePOSTData, parsePUTData
+from FifoPool import Fifos
+import subprocess
 
 GET_DIR_LIST = True                     # whether when you call GET on a directory, if it returns the same as LIST on that path. False throws an error on a directory.
 
@@ -11,6 +13,7 @@ class LocalFileResource(resource.PostableResource):
     """This is the resource that connects us to our local filesystem"""
     VERSION=0.1
     addSlash = False
+    copy = '/bin/cp'
     
     def __init__(self,request=None,path=None, directory="/tmp/test", backend=None):
         """Pass in the backends to be served out by this FSResource"""
@@ -19,10 +22,75 @@ class LocalFileResource(resource.PostableResource):
         
         self.directory=directory
         
-    def GetFilename(self):
+    def GetFilename(self, path=None):
         """Using this classes 'path', return the real FS path that this refers to"""
-        return os.path.join(self.directory,sep.join(self.path))
+        return os.path.join(self.directory,sep.join(path or self.path))
+    
+    def GetReadFifo(self, path, deferred, fifo=None):
+        """sets up the chain needed to setup a read fifo from a remote path as a certain user.
         
+        pass in here the username, path, and a deferred
+    
+        if a fifo is passed in, then use that as the fifo rather than creating one
+    
+        when everything is setup and ready, deferred will be called with (proc, fifo), with proc being the python subprocess Popen object
+        and fifo being the filesystem location of the fifo.
+        """
+        # make our source fifo to get our data from
+        if not fifo:
+            fifo = Fifos.Get()
+        src = self.GetFilename(path.split('/'))
+        print "FS READ:",fifo,src
+        
+        # the copy to remote command
+        proc = subprocess.Popen(    [  self.copy,
+                                       src,                                     # source
+                                       fifo                                      # destination
+                                    ],
+                                    stdin=None,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT,
+                                    )
+                                    
+        # link our process to this fifo, so if we die, the fifo will be cleared up
+        Fifos.WeakLink( fifo, proc )
+        
+        # callback success
+        deferred( proc, fifo )
+            
+    def GetWriteFifo(self, path, deferred, fifo=None):
+        """sets up the chain needed to setup a read fifo from a remote path as a certain user.
+        
+        pass in here the username, path, and a deferred
+    
+        if a fifo pathis apssed in, use that one instead of making one
+    
+        when everything is setup and ready, deferred will be called with (proc, fifo), with proc being the python subprocess Popen object
+        and fifo being the filesystem location of the fifo.
+        """
+        # make our source fifo to get our data from
+        if not fifo:
+            fifo = Fifos.Get()
+        dst = self.GetFilename(path.split('/'))
+        print "FS WRITE:",fifo,dst
+        
+        # the copy to remote command
+        proc = subprocess.Popen(    [  self.copy,
+                                       fifo,                                     # source
+                                       dst                                      # destination
+                                    ],
+                                    stdin=None,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT,
+                                    )
+                                    
+        # link our process to this fifo, so if we die, the fifo will be cleared up
+        Fifos.WeakLink( fifo, proc )
+        
+        # callback success
+        deferred( proc, fifo )
+            
+    
     def render(self, request):
         # if path is none, we are at out pre '/' base resource (eg. GET /fs/file )
         if self.path == None:

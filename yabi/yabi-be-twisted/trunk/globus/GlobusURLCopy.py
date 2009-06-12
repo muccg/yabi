@@ -39,15 +39,6 @@ class GlobusURLCopy(object):
         
         return subenv
     
-    #def _make_fifo(self, prefix="fifo_",suffix=""):
-        #"""make a fifo on the filesystem and return its path"""
-        #filename = tempfile.mktemp(suffix=suffix, prefix=prefix)                # insecure, but we dont care
-        #os.mkfifo(filename, 0600)
-        #return filename
-    
-    def _make_url_for_fifo(self,filename):
-        return "file://"+os.path.normpath(filename)
-    
     def ListRemote(self, certfile, url):
         """
         Return a list of files and directories at that url.
@@ -93,7 +84,7 @@ class GlobusURLCopy(object):
         # make our source fifo to get our data from
         if not fifo:
             fifo = Fifos.Get()
-        url = self._make_url_for_fifo(fifo)
+        url = Fifos.MakeURLForFifo(fifo)
         print "WRITE:",fifo,url,remoteurl
         
         # the copy to remote command
@@ -120,7 +111,7 @@ class GlobusURLCopy(object):
         # make our source fifo to get our data from
         if not fifo:
             fifo = Fifos.Get()
-        url = self._make_url_for_fifo(fifo)
+        url = Fifos.MakeURLForFifo(fifo)
         print "READ:",fifo,url,remoteurl
         
         # the copy to remote command

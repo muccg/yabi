@@ -97,8 +97,8 @@ class FileCopyResource(resource.PostableResource):
                                 if True in ["Permission denied" in error for error in (read_stdout, write_stdout)]:
                                     return deferred.callback(http.Response( responsecode.NOT_ALLOWED, {'content-type': http_headers.MimeType('text', 'plain')}, stream="File copy failed! Permission denied\n"))
                                 else:   
-                                    response  = "Read process:\nexit code:%d\noutput:%s\n\n--------------------\n\n"%(rx,procr.stdout.read())
-                                    response += "Write process:\nexit code:%d\noutput:%s\n\n--------------------\n\n"%(wx,procw.stdout.read())
+                                    response  = "Read process:\nexit code:%d\noutput:%s\n\n--------------------\n\n"%(rx,read_stdout)
+                                    response += "Write process:\nexit code:%d\noutput:%s\n\n--------------------\n\n"%(wx,write_stdout)
                                     return deferred.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream="File copy failed!\n"+response))
                     
                     reactor.callLater(0, check_processes, result_channel, procr, procw)

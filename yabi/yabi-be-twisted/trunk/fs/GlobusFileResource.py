@@ -223,7 +223,7 @@ class GlobusFileResource(resource.PostableResource):
         
         deferred: where to write the result into. This is the connection back to the web service client
         """
-        usercert = globus.Certificates.ProxyFile(self.username)
+        usercert = self.authproxy.ProxyFile(self.username)
         remote_url = self._make_remote_url()
         
         # save the subprocesses in here so we can fetch return values
