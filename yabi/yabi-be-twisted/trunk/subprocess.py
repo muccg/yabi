@@ -362,6 +362,20 @@ import traceback
 import gc
 import signal
 
+
+def no_intr(func, *args, **kw):
+    while True:
+        try:
+            print "Calling"
+            return func(*args, **kw)
+        except (OSError, IOError), e:
+            print "EXCEPTION:",e
+            if e.errno == errno.EINTR:
+                continue
+            else:
+                raise
+
+
 # Exception classes used by this module.
 class CalledProcessError(Exception):
     """This exception is raised when a process run by check_call() returns
@@ -1084,18 +1098,7 @@ class Popen(object):
                 os.close(errwrite)
 
             # Wait for exec to fail or succeed; possibly raising exception
-            
-            # special retry to make us robust to EINTR singals that are triggered when the child sends a signal back mid read. Happens under load.
-            while True:
-                try:
-                    data = os.read(errpipe_read, 1048576) # Exceptions limited to 1 MB
-                    break
-                except OSError, e:
-                    if e.errno == errno.EINTR:
-                        continue
-                    else:
-                        raise
-                    
+            data = no_intr(os.read,errpipe_read, 1048576) # Exceptions limited to 1 MB
             os.close(errpipe_read)
             if data != "":
                 os.waitpid(self.pid, 0)

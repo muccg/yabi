@@ -15,6 +15,8 @@ from globus.FifoStream import FifoStream
 from twisted.web import client
 import json
 
+import subprocess
+
 class GlobusFileResource(resource.PostableResource):
     """This is the resource that connects to the globus gridftp backends"""
     VERSION=0.1
@@ -151,7 +153,7 @@ class GlobusFileResource(resource.PostableResource):
         #print "PROC",process,"FIFO",fifo
          
         # read out the stream
-        fh = open(fifo)
+        fh = subprocess.no_intr(open,fifo)
         
         # we are gonna try and read the first character. This will open the stream and the remote process will die, if the remote file has an error.
         # doing this enables us to capture failure and return the right response code
