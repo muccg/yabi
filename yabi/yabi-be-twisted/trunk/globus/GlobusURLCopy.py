@@ -85,7 +85,7 @@ class GlobusURLCopy(object):
         if not fifo:
             fifo = Fifos.Get()
         url = Fifos.MakeURLForFifo(fifo)
-        print "WRITE:",fifo,url,remoteurl
+        #print "WRITE:",fifo,url,remoteurl
         
         # the copy to remote command
         proc = subprocess.Popen(    [  self.globus_url_copy,
@@ -112,7 +112,7 @@ class GlobusURLCopy(object):
         if not fifo:
             fifo = Fifos.Get()
         url = Fifos.MakeURLForFifo(fifo)
-        print "READ:",fifo,url,remoteurl
+        #print "READ:",fifo,url,remoteurl
         
         # the copy to remote command
         proc = subprocess.Popen(    [  self.globus_url_copy,

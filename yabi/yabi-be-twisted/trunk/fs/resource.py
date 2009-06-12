@@ -8,6 +8,17 @@ import sys, os
 
 PROCESS_CHECK_TIME = 1.0
 
+NUM_RETRIES = 5
+def delay_generator():
+    """This is a generator that generates delay times for copy retries.
+    When this delay generator expires after a number of repeating errors,
+    it returns, and the server finally returns the last error to the browser"""
+    delay = 5.0
+    yield delay
+    for i in range(NUM_RETRIES):
+        delay*=2.
+        yield delay
+
 class FileCopyResource(resource.PostableResource):
     VERSION=0.1
     maxMem = 100*1024
@@ -60,24 +71,25 @@ class FileCopyResource(resource.PostableResource):
             sbend = getattr(self.fsresource(), "child_%s"%src_be)
             dbend = getattr(self.fsresource(), "child_%s"%dst_be)
             
-            print "Copying from",sbend,"to",dbend
+            #print "Copying from",sbend,"to",dbend
+            
+            # create our delay generator in case things go pear shape
+            fail_delays = delay_generator()
             
             # our http result channel. this stays open until the copy is finished
             result_channel = defer.Deferred()
             
             def _write_ready( procw, fifo ):
-                print "_write_ready(",procw,",",fifo,")"
+                #print "_write_ready(",procw,",",fifo,")"
                 
                 def _read_ready( procr, fifo ):
-                    print "_read_ready(",procr,",",fifo,")"
+                    #print "_read_ready(",procr,",",fifo,")"
                     
                     # the connection should now be pumping. We now have to wait for both processes to terminate. Then we get these processes results
                     def check_processes(deferred, reader, writer):
                         # we poll each process for exit codes.
                         wx = writer.poll()
                         rx = reader.poll()
-                        
-                        print wx,rx
                         
                         if wx==None or rx==None:
                             # recall ourselves later
@@ -96,12 +108,24 @@ class FileCopyResource(resource.PostableResource):
                                 # something went wrong
                                 if True in ["Permission denied" in error for error in (read_stdout, write_stdout)]:
                                     return deferred.callback(http.Response( responsecode.NOT_ALLOWED, {'content-type': http_headers.MimeType('text', 'plain')}, stream="File copy failed! Permission denied\n"))
-                                else:   
-                                    response  = "Read process:\nexit code:%d\noutput:%s\n\n--------------------\n\n"%(rx,read_stdout)
-                                    response += "Write process:\nexit code:%d\noutput:%s\n\n--------------------\n\n"%(wx,write_stdout)
-                                    return deferred.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream="File copy failed!\n"+response))
+                                else:
+                                    next_delay = 0.0
+                                    if True in [("Connection refused" in error or "Connection reset by peer" in error) for error in (read_stdout, write_stdout)]:
+                                        # temporary failure. We need to try again after a delay. If there is no more delay, we return the error now.
+                                        next_delay = fail_delays.next()
+                                   
+                                    if next_delay:
+                                        print "Temporary failure. delaying for %f seconds."%next_delay
+                                        
+                                        # retrigger the whole thing again in this many seconds
+                                        reactor.callLater( next_delay, dbend.GetWriteFifo, dst_path, _write_ready)
+                                        return
+                                    else:
+                                        response  = "Read process:\nexit code:%d\noutput:%s\n\n--------------------\n\n"%(rx,read_stdout)
+                                        response += "Write process:\nexit code:%d\noutput:%s\n\n--------------------\n\n"%(wx,write_stdout)
+                                        return deferred.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream="File copy failed!\n"+response))
                     
-                    reactor.callLater(0, check_processes, result_channel, procr, procw)
+                    reactor.callLater(PROCESS_CHECK_TIME, check_processes, result_channel, procr, procw)
                 
                 sbend.GetReadFifo(src_path, _read_ready, fifo)
                 

@@ -366,10 +366,8 @@ import signal
 def no_intr(func, *args, **kw):
     while True:
         try:
-            print "Calling"
             return func(*args, **kw)
         except (OSError, IOError), e:
-            print "EXCEPTION:",e
             if e.errno == errno.EINTR:
                 continue
             else:
