@@ -19,6 +19,8 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
+LOGIN_URL = "/login"
+
 # development deployment
 if "DJANGODEV" in os.environ:
     DEBUG = True if os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug")) else ("DJANGODEBUG" in os.environ)

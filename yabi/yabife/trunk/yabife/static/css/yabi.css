@@ -1,0 +1,1552 @@
+#yabi-design-mode a{  
+    color: #af239d;
+}
+
+.loginInput {
+    margin: 1px;
+    color:#f60;
+    border:1px solid #ccc;
+    padding:3px;
+    font-weight:bold;
+    -moz-border-radius: 5px;        
+    -webkit-border-radius: 5px;
+}
+
+
+h1 {
+	margin-bottom:8px;
+	font-weight:bold;
+}
+
+h2 {
+	margin-top:6px;
+	font-weight:bold;
+    color:#f60;
+}
+
+
+.jsControll {
+        color:#F36;
+}
+
+.jsControllContainer{
+  width: 100%;
+  text-align:right;
+}
+
+.headerLinks {
+  font-size: 80%;
+}
+.toolInputs {
+    display:none;
+}
+.toolOutputs {
+    display:none;
+}
+.toolPath {
+    display:none;
+}
+.addLink {
+    position:absolute;
+    right:2px;
+    top:2px;
+    cursor:pointer;
+}
+
+
+td {
+	background-color:transparent;
+}
+#yabi-design-mode h1 {
+    color:#666;
+}
+#yabi-jobs-mode h1 {
+	//color:#F36;
+}
+#yabi-files-mode h1 {
+	color:#af239d;
+}
+#yabi-grid-mode h1 {
+	color:#af9d23;
+    padding:2px;
+}
+#yabi-help-mode h1 {
+	color:#529847;
+}
+#yabi-tools-list li {
+	background-color:#fff;
+	border:1px solid #f60;
+	margin-top:2px;
+	margin-left:18px;
+	padding:3px;
+	padding-left:10px;
+	cursor:move;
+    position:relative;
+    -moz-border-radius: 5px;        
+    -webkit-border-radius: 5px;
+}
+#yabi-design-container {
+	width:95%;
+}
+#yabi-design-dropzone {
+	padding:10px;
+}
+#yabi-design-dropzone li {
+	border:2px solid #f60;
+	padding:14px;
+	margin:2px;
+	font-size:105%;
+	position:relative;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+#yabi-design-dropzone li .toolInputs {
+    display:block;
+    position:absolute;top:3px;right:20px;font-size:70%;
+    text-align:right;
+}
+#yabi-design-dropzone li .toolOutputs {
+    display:block;
+    position:absolute;bottom:3px;right:20px;font-size:70%;
+    text-align:right;
+}
+#yabi-design-dropzone li .addLink {
+    display:none;
+}
+#yabi-design-dropzone li .delLink {
+	position:absolute;
+	top:1px;
+	right:1px;
+	font-size:80%;
+	color:#333;
+    background:url(../images/delnode.png);
+    width:14px;
+    height:13px;
+}
+#yabi-design-dropzone li .delLink.hover, #yabi-design-dropzone li .delLink:hover {
+    text-decoration:none;
+}
+
+#yabi-design-dropzone li#endMarker, #yabi-design-dropzone li#startMarker, #yabi-design-dropzone li#cleanup {
+	border:2px solid #d6d6d6;
+	color:#ccc;
+	padding:2px;
+	padding-left:14px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+.yabi-tool {
+    text-align:left;
+    border:2px solid #f60;
+    padding:14px;
+    margin:2px;
+    font-size:105%;
+    width:220px;
+    overflow:hidden;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+.yabi-tool img, .yabi-tool a, .yabi-tool div {
+    display:none;
+}
+.yabi-tool .toolDisplayName {
+    display:block;
+}
+#yabi-design-dropzone li#startMarker .flowTriangle, #yabi-design-dropzone li#cleanup .flowTriangle {
+	width:20px;
+	height:10px;
+	padding:0px;
+	margin:0px;
+	border:0px;
+	background:url(../images/yabi-flow-triangle-start.gif);
+	position:absolute;
+	bottom:-10px;
+	left:42%;
+	right:auto;
+	z-index:99;
+}
+#yabi-design-dropzone li#hinting {
+	border:none;
+	color:#ccc;
+	padding:20px;
+	padding-left:14px;
+}
+#yabi-design-dropzone li .flowTriangle {
+	width:20px;
+	height:10px;
+	padding:0px;
+	margin:0px;
+	border:0px;
+	background:url(../images/yabi-flow-triangle.gif);
+	position:absolute;
+	bottom:-10px;
+	left:42%;
+	right:auto;
+	z-index:99;
+}
+#yabi-design-mode a.toolFolder, #yabi-design-mode a.toolFolder.visited, #yabi-design-mode a.toolFolder:visited {
+	display:block;
+	width:100%;
+	padding-left:18px;
+	color:#ff6600;
+	text-decoration:none;
+	margin-top:5px;
+	background:url(../images/yabi-disclose-triangle.gif) no-repeat 5px 2px;
+}
+#yabi-design-mode a.toolFolder.hover, #yabi-design-mode a.toolFolder:hover {
+	background:url(../images/yabi-disclose-triangle-open.gif) no-repeat 1px 6px;
+}
+#yabi-design-mode ul.DDSourceList {
+	margin-bottom:10px;
+}
+#yabi-design-mode .toolContainer {
+	display:none;
+	padding:2px;
+	width:80%;
+}
+#yabi-workflow-drop {
+	margin-top:8px;
+	min-height:700px;
+}
+#yabi-design-mode #jobName #jobNameField {
+    color:#f60;
+    border:1px solid #ccc;
+    padding:3px;
+    font-weight:bold;
+}
+#yabi-design-mode #jobName #jobButtons {
+	float:right;
+}
+#yabi-design-mode #jobName #jobButtons input {
+	color:#000;
+}
+#yabi-design-mode #jobName #jobButtons input.hover, #yabi-design-mode #jobName #jobButtons input:hover {
+	cursor:pointer;
+}
+#yabi-jobs-mode .filterContainer {
+	background:#fff;
+	border:1px solid #FFddee;
+    margin-bottom: 3px;
+	padding:3px;
+	padding-left:10px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+#yabi-jobs-mode .jobFilterTitle {
+	width:90%;
+	display:block;
+	color:#f36;
+    padding-left:18px;
+    background:url(../images/yabi-jobs-disclose-triangle.gif) no-repeat 5px 2px;
+}
+#yabi-jobs-mode .jobFilterTitle.hover, #yabi-jobs-mode .jobFilterTitle:hover {
+    background:url(../images/yabi-jobs-disclose-triangle-open.gif) no-repeat 1px 6px #fff;
+}
+#yabi-jobs-mode .jobFilterContent {
+	display:block;
+	height:0px;
+	padding:0px;
+	margin:0px;
+	overflow:hidden;
+}
+#yabi-jobs-mode .jobList {
+	padding-top:8px;
+}
+#yabi-jobs-mode .jobList a {
+	border-bottom:1px solid #FFEBF0;
+	color:#333;
+	display:block;
+	padding-left:6px;
+	padding-right:6px;
+}
+#yabi-jobs-mode .jobList a:hover, #yabi-jobs-mode .jobList a.hover {
+	text-decoration:none;
+	background:#FFEBF0;
+}
+
+#yabi-jobs-mode #yabi-files-table {
+
+    background-color:#fff;
+    border:1px solid #FFEBF0;
+    font-size: 10px;
+    width:100%;
+
+}
+
+#yabi-jobs-mode #yabi-files-table th{
+
+    border-bottom:1px solid #FFEBF0;
+    font-size: 10px;
+    font-weight: bold;
+    color:#ccc;
+    padding-left: 3px;
+    padding-right: 3px;
+
+}
+
+#yabi-jobs-mode #yabi-files-table td{
+
+    background-color:#fff;
+    border-bottom:1px solid #FFEBF0;
+    border-top:1px solid #FFEBF0;
+    font-size: 10px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+
+
+#yabi-design {
+	padding:10px;
+    min-width:200px;	
+}
+#yabi-design li {
+	border:2px solid #f60;
+	padding:14px;
+    padding-top:16px;
+    padding-bottom:16px;
+	margin:2px;
+	font-size:105%;
+	position:relative;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+#yabi-design li#endMarker, #yabi-design li#startMarker, #yabi-design li#cleanup {
+	border:2px solid #d6d6d6;
+    color:#ccc;
+	padding:2px;
+	padding-left:14px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+#yabi-design li#endMarker:hover, #yabi-design li#startMarker:hover, #yabi-design li#cleanup:hover,
+#yabi-design li#endMarker.hover, #yabi-design li#startMarker.hover, #yabi-design li#cleanup.hover {
+    color:#333;
+    padding:2px;
+    padding-left:14px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+#yabi-design li .timestamp {
+    font-size:80%;
+}
+#yabi-design li#startMarker .flowTriangle {
+	width:20px;
+	height:10px;
+	padding:0px;
+	margin:0px;
+	border:0px;
+	background:url(../images/yabi-flow-triangle-start.gif);
+	position:absolute;
+	bottom:-10px;
+	left:42%;
+	right:auto;
+	z-index:99;
+}
+#yabi-design li .flowTriangle {
+	width:20px;
+	height:10px;
+	padding:0px;
+	margin:0px;
+	border:0px;
+	background:url(../images/yabi-flow-triangle.gif);
+	position:absolute;
+	bottom:-10px;
+	left:42%;
+	right:auto;
+	z-index:99;
+}
+#yabi-design li .workUnitDetails {
+	display:none;
+}
+
+
+#yabi-design-table {
+
+	background-color:#fff;
+	border:1px solid #f60;
+	font-size: 10px;
+	
+}
+
+#yabi-design-table th{
+
+	border-bottom:1px solid #f60;
+	font-size: 10px;
+	font-weight: bold;	
+	padding-left: 3px;	
+	padding-right: 3px;		
+	
+}
+
+#yabi-design-table td{
+
+	background-color:#fff;
+	border-bottom:1px solid #f60;
+	font-size: 10px;
+	padding-left: 6px;
+	padding-right: 6px;	
+}
+
+#yabi-design-table  a {
+	color: #f60;
+}
+
+
+
+.toolName {
+    display: none;
+}
+.toolDisplayName {
+}
+.toolDescription {
+    display: none;
+}
+#yabi-tools-list li.hover .toolDescription, #yabi-tools-list li:hover .toolDescription {
+    display:block;
+    position:absolute;
+    top:26px;
+    right:-300px;
+    width: 300px;
+    background:#fff;
+    border:1px solid #999;
+    z-index:900;
+}
+
+
+
+
+
+
+.flowStatuscomplete {
+
+	width:16px;
+	height:16px;
+	padding:0px;
+	margin:0px;
+	border:0px;
+	background:url(../images/ok.png);
+	position:absolute;
+    right: 1%;
+    top: 5px;
+	z-index:99;	
+	
+	
+}
+
+.flowStatuspending {
+	width:16px;
+	height:16px;
+	padding:0px;
+	margin:0px;
+	border:0px;
+	background:url(../images/pending.png);
+	position:absolute;
+    right: 1%;
+    top: 5px;
+	z-index:99;
+}
+
+.flowStatusqueued {
+	width:15px;
+	height:15px;
+	padding:0px;
+	margin:0px;
+	border:0px;
+	background:url(../images/queued.gif);
+	position:absolute;
+    right: 1%;
+    top: 5px;
+	z-index:99;
+}
+
+.flowStatuserror {
+	width:16px;
+	height:16px;
+	padding:0px;
+	margin:0px;
+	border:0px;
+	background:url(../images/error.png);
+	position:absolute;
+    right: 1%;
+    top: 5px;
+	z-index:99;
+}
+
+.flowStatusrunning {
+	width:15px;
+	height:15px;
+	padding:0px;
+	margin:0px;
+	border:0px;
+	background:url(../images/processing.gif);
+	position:absolute;
+    right: 1%;
+    top: 5px;
+	z-index:99;
+}
+
+.jobErrorMessage {
+    margin-top:4px;
+    margin-bottom:-3px;
+    padding:3px;
+    background-color:#FF3366;
+    color:#fff;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+}
+
+.runningWhere {
+    font-size:70%;
+    left-padding:5px;
+}
+
+.flowStatus {
+	width:15px;
+	height:15px;
+	padding:0px;
+	margin:0px;
+	border:0px;
+	position:absolute;
+    right: 1%;
+    top: 5px;
+    z-index:99;
+}
+
+
+
+
+html, body {
+    height: 100%;
+    margin-right:0px;
+    padding-right:0px;
+}
+body {
+	position:relative;
+}
+#doc3 {
+//	height:99%;
+//	margin-bottom:5em;
+//	overflow:auto;
+	margin-right:0px;
+	padding-right:0px;
+	margin-left:0px;
+	padding-left:0px;
+	position:relative;
+}
+#hd {
+	position:relative;
+	height:60px;
+	width:100%;
+}
+#yabi-design-mode #hd {
+	border-bottom: 3px solid #F60;
+}
+#yabi-jobs-mode #hd {
+	border-bottom: 3px solid #F36;
+}
+#yabi-files-mode #hd {
+	border-bottom: 3px solid #af239d;
+}
+#yabi-grid-mode #hd {
+	border-bottom: 3px solid #af9d23;
+}
+#yabi-help-mode #hd {
+	border-bottom: 3px solid #529847;
+}
+
+
+#yabi-files-mode a.toolFolder, #yabi-design-mode a.toolFolder.visited, #yabi-files-mode a.toolFolder:visited {
+	display:block;
+	width:90%;
+	padding-left:18px;
+	color:#af239d;
+	text-align:left;
+	text-decoration:none;
+	margin-top:5px;
+	background:url(../images/yabi-files-disclose-triangle.gif) no-repeat 5px 2px;
+}
+#yabi-files-mode a.toolFolder.hover, #yabi-files-mode a.toolFolder:hover {
+	background:url(../images/yabi-files-disclose-triangle-open.gif) no-repeat 1px 6px;
+	
+}
+
+
+
+.yabi-files-menu{
+  margin-top: 2px;
+  font-size: 13px;
+  text-align:right;
+  color: #af239d;
+  float: right;
+  
+}
+
+
+#hd #userinfo {
+	position:absolute;
+	top:24px;
+	right:4px;
+	font-size:80%;
+}
+#ft {
+	padding:0px;
+	position:absolute;
+	top:0px;
+	right:0px;
+	width:300px;
+	height:22px;
+	background-color:#fff;
+	z-index:1001;
+}
+
+#ft a.running { 
+	border-left:5px solid #f36;
+	padding-left:4px;
+	margin-left:8px;
+}
+#ft a.completed { 
+	border-left:5px solid #3c0;
+	padding-left:4px;
+	margin-left:8px;
+}
+
+#ft a.refresh { 
+	border-left:5px solid #F60;
+	padding-left:4px;
+	margin-left:8px;
+}
+
+#ft #copyright { 
+	float:right;
+	font-size:80%;
+	padding:5px;
+	padding-right:20px;
+}
+#ft #status { 
+	float:left;
+	font-size:80%;
+	padding:4px;
+	display:none;
+}
+
+#yui-main {
+	margin:0px;
+	overflow:hidden;
+}
+#yabi-col1 {
+	width:49.5%;
+}
+#yabi-design-mode #yabi-col1 {
+	border-right:2px solid #FFF0E6;
+}
+#yabi-jobs-mode #yabi-col1 {
+	border-right:2px solid #FFEBF0;
+}
+#yabi-files-mode #yabi-col1 {
+	border-right:2px solid #efd3eb;
+}
+#yabi-grid-mode #yabi-col1 {
+	border-right:2px solid #efebd3;
+}
+#yabi-help-mode #yabi-col1 {
+	border-right:2px solid #dceada;
+	width:100%;
+}
+#yabi-col2 {
+	background-color:#fff;
+	width:49.5%;
+	padding-right:0px;
+}
+#yabi-col3 {
+	width:49.5%;
+}
+#yabi-design-mode #yabi-col3 {
+	border-left:2px solid #FFF0E6;
+}
+#yabi-jobs-mode #yabi-col3 {
+	border-left:2px solid #FFEBF0;
+}
+#yabi-files-mode #yabi-col3 {
+	border-left:2px solid #efd3eb;
+}
+#yabi-grid-mode #yabi-col3 {
+	border-left:2px solid #efebd3;
+}
+#yabi-help-mode #yabi-col3 {
+	border-left:2px solid #dceada;
+}
+.yabi-column-contents {
+	padding:6px;
+	min-height:800px;
+}
+#yabi-overlay {
+	display:none;
+	position:absolute;
+	opacity:0.6;
+	z-index:999;
+	top:63px;
+	left:0px;
+	background:#777;
+	border: 1px solid black;
+}
+#yabi-saving {
+	background-color:#fff;
+	font-size:120%;
+	padding:5px;
+	position:absolute;
+	top:120px;
+	left:30%;
+	border:3px solid #ccc;
+	z-index:1000;
+}
+
+#yabi-loading {
+	background-color:#fff;
+	color: #FF6600;
+	font-size:120%;
+	padding:5px;
+	position:absolute;
+	top:120px;
+	left:30%;
+	border:3px solid #ccc;
+	z-index:1000;
+}
+
+
+#yabi-message-ajax { 
+	top:5px;	
+	color:#FFFFFF;
+	left:250px;
+	position:absolute;
+	padding-left:5px;
+	padding-top:2px;
+	padding-right:5px;
+	padding-bottom:3px;
+	font-weight:bold;
+	text-align:left;
+	visibility: hidden;
+	display:none;
+	z-index: 900;	
+    -moz-border-radius: 5px; 
+    -webkit-border-radius: 5px;
+}
+#yabi-message-fail { 
+	background-color:#FF3366;
+	top:5px;
+	color:#FFFFFF;
+	left:250px;
+	position:absolute;
+	padding-left:5px;
+	padding-top:2px;
+	padding-right:5px;
+	padding-bottom:3px;
+	min-width:500px;
+	font-weight:bold;
+	text-align:left;	
+	z-index: 900;	
+    -moz-border-radius: 5px;        
+    -webkit-border-radius: 5px;
+}
+
+#yabi-message-warn { 
+	background-color:#FF6600;
+	top:5px;	
+	color:#FFFFFF;
+	left:250px;
+	position:absolute;
+	padding-left:5px;
+	padding-top:2px;
+	padding-right:5px;
+	padding-bottom:3px;
+	min-width:500px;
+	font-weight:bold;
+	text-align:left;	
+	z-index: 900;	
+    -moz-border-radius: 5px;        
+    -webkit-border-radius: 5px;
+}
+
+#yabi-message-success { 
+	background-color:#529847;
+	top:5px;	
+	color:#FFFFFF;
+	left:250px;
+	position:absolute;
+	padding-left:5px;
+	padding-top:2px;
+	padding-right:5px;
+	padding-bottom:3px;
+	min-width:500px;
+	font-weight:bold;
+	text-align:left;	
+	z-index: 900;
+    -moz-border-radius: 5px;        
+    -webkit-border-radius: 5px;
+}
+
+#yabi-message-fail .delLink, #yabi-message-warn .delLink, #yabi-message-success .delLink, #yabi-message-ajax .delLink {
+	position:absolute;
+	top:4px;
+	right:4px;
+	font-size:80%;
+	color:#FFF;
+}
+
+.yabi-blockmessage-fail { 
+    margin:5px;
+	background-color:#FF3366;
+	color:#FFFFFF;
+	padding-left:5px;
+	padding-top:2px;
+	padding-right:5px;
+	padding-bottom:3px;
+	min-width:500px;
+	font-weight:bold;
+	text-align:left;	
+}
+
+.yabi-blockmessage-success { 
+    margin:5px;
+	background-color:#529847;
+	color:#FFFFFF;
+	padding-left:5px;
+	padding-top:2px;
+	padding-right:5px;
+	padding-bottom:3px;
+	min-width:500px;
+	font-weight:bold;
+	text-align:left;	
+}
+
+.yabi-blockmessage-warn { 
+    margin:5px;
+	background-color:#FF6600;
+	color:#FFFFFF;
+	padding-left:5px;
+	padding-top:2px;
+	padding-right:5px;
+	padding-bottom:3px;
+	min-width:500px;
+	font-weight:bold;
+	text-align:left;	
+}
+
+
+
+#yabi-tabs {
+	position:absolute;
+	left:250px;
+	bottom:6px;
+	color:#fff;
+}
+#yabi-tabs a, #yabi-tabs a.visited, #yabi-tabs a.hover, #yabi-tabs a:visited, #yabi-tabs a:hover {
+	color:#ccc;
+	text-decoration:none;
+}
+#yabi-tabs-jobs {
+	padding:6px 16px 6px 16px;
+	background-color:#fff;
+	border-top:1px solid #F36;
+	border-left:1px solid #F36;
+	border-right:1px solid #F36;
+	font-weight:bold;
+    -moz-border-radius-topleft: 5px; 
+    -webkit-border-top-left-radius: 5px;
+    -moz-border-radius-topright: 5px;
+    -webkit-border-top-right-radius: 5px;
+}
+#yabi-jobs-mode #yabi-tabs-jobs, #yabi-tabs-jobs.hover, #yabi-tabs-jobs:hover {
+	background-color:#F36;
+	color:white;
+}
+#yabi-tabs-design {
+	padding:6px 16px 6px 16px;
+	background-color:#fff;
+	border-top:1px solid #f60;
+	border-left:1px solid #f60;
+	border-right:1px solid #f60;
+	font-weight:bold;
+    -moz-border-radius-topleft: 5px; 
+    -webkit-border-top-left-radius: 5px;
+    -moz-border-radius-topright: 5px;
+    -webkit-border-top-right-radius: 5px;
+}
+#yabi-design-mode #yabi-tabs-design, #yabi-tabs-design.hover, #yabi-tabs-design:hover {
+	background-color:#F60;
+	color:white;
+}
+#yabi-tabs-files {
+	padding:6px 16px 6px 16px;
+	background-color:#fff;
+	border-top:1px solid #af239d;
+	border-left:1px solid #af239d;
+	border-right:1px solid #af239d;
+	font-weight:bold;
+    -moz-border-radius-topleft: 5px; 
+    -webkit-border-top-left-radius: 5px;
+    -moz-border-radius-topright: 5px;
+    -webkit-border-top-right-radius: 5px;
+}
+#yabi-tabs-grid {
+	padding:6px 16px 6px 16px;
+	background-color:#fff;
+	border-top:1px solid #af9d23;
+	border-left:1px solid #af9d23;
+	border-right:1px solid #af9d23;
+	font-weight:bold;
+    -moz-border-radius-topleft: 5px; 
+    -webkit-border-top-left-radius: 5px;
+    -moz-border-radius-topright: 5px;
+    -webkit-border-top-right-radius: 5px;
+}
+
+#yabi-files-mode #yabi-tabs-files, #yabi-tabs-files.hover, #yabi-tabs-files:hover {
+	background-color:#af239d;
+	color:white;
+}
+
+#yabi-grid-mode #yabi-tabs-grid, #yabi-tabs-grid.hover, #yabi-tabs-grid:hover {
+	background-color:#af9d23;
+	color:white;
+}
+
+
+#yabi-files-mode a{  
+    color: #af239d;
+}
+#yabi-grid-mode a{  
+    color: #af9d23;
+}
+
+#treeDiv a{  
+    color: #af239d;
+}
+
+
+#yabi-files-preview {
+	background-color:#fff;
+	font: Courier;
+	font-size: 9pt;
+	font-weight: normal;
+    padding:8px;
+    overflow:hidden;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+
+#yabi-files-table {
+
+	background-color:#fff;
+	border:1px solid #af239d;
+	font-size: 10px;
+	
+}
+
+#yabi-files-table th{
+
+	border-bottom:1px solid #af239d;	
+	font-size: 10px;
+	font-weight: bold;	
+	padding-left: 3px;	
+	padding-right: 3px;		
+	
+}
+
+#yabi-files-table td{
+
+	background-color:#fff;
+	border-bottom:1px solid #af239d;	
+    border-top:1px solid #af239d;
+	font-size: 10px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+	padding-left: 6px;
+	padding-right: 6px;	
+}
+
+.yabi-files-search-results {
+	background-color:#fff;
+	border:1px solid #af239d;
+    margin-bottom:10px;
+	margin-left:0px;
+	padding:3px;
+	padding-left:10px;
+	padding-bottom:10px;
+
+}
+
+#yabi-tabs-help {
+	padding:6px 16px 6px 16px;
+	background-color:#fff;
+	border-top:1px solid #529847;
+	border-left:1px solid #529847;
+	border-right:1px solid #529847;
+	font-weight:bold;
+    -moz-border-radius-topleft: 5px;
+    -webkit-border-top-left-radius: 5px;
+    -moz-border-radius-topright: 5px; 
+    -webkit-border-top-right-radius: 5px;
+}
+#yabi-help-mode #yabi-tabs-help, #yabi-tabs-help.hover, #yabi-tabs-help:hover {
+	background-color:#529847;
+	color:white;
+}
+
+#yabi-thumbnail {
+    left:auto;
+    right:auto;
+    text-align:center;
+    margin-top:20px;
+}
+#yabi-thumbnail td {
+    text-align:center;
+    vertical-align:top;
+}
+#yabi-thumbnail .caption {
+    font-size:85%;
+}
+#yabi-thumbnail a img {
+	border:1px solid silver;
+	margin:10px;
+	vertical-align: top;
+}
+
+
+
+#uploadFormDiv{
+
+	border-top:1px solid #af239d;
+	border-bottom:1px solid #af239d;	
+	border-left:1px solid #af239d;
+	border-right:1px solid #af239d;
+
+    padding:                5px 10px;
+
+    background-color:       #efd3eb;
+    
+    font:                   12px verdana, arial, helvetica, sans-serif;
+    width: 250px;
+    position:absolute;
+	text-align:right;
+	margin:2px;
+	padding:2px;    
+	z-index:10000;
+
+}
+
+#searchFormDiv{
+
+	border-top:1px solid #af239d;
+	border-bottom:1px solid #af239d;	
+	border-left:1px solid #af239d;
+	border-right:1px solid #af239d;
+
+    padding:                5px 10px;
+
+    background-color:       #efd3eb;
+    
+    font:                   12px verdana, arial, helvetica, sans-serif;
+    width: 250px;
+    position:absolute;
+	text-align:right;
+	margin:2px;
+	padding:2px;    
+	z-index:10000;
+
+}
+
+#refreshrate{
+display:inline;
+
+}
+
+
+.parameterTable .paramName {
+    padding: 3px;
+    text-align:right;
+    border: 1px;
+    color: #ccc;
+    font-weight: bold;
+}
+
+.parameterTable .paramValue {
+    padding: 3px;
+    border: 1px;
+}
+
+
+.noFiles {
+    color:#ccc;
+}
+
+
+
+a.helpSectionHeader {
+  color: #529847;
+}
+
+a.helpSectionHeader, a.helpSectionHeader.visited, a.helpSectionHeader:visited {
+	display:block;
+	width:100%;
+	padding-left:18px;
+	color:#529847;
+	text-decoration:none;
+	margin-top:5px;
+	background:url(../images/yabi-help-disclose-triangle.gif) no-repeat 5px 2px;
+}
+a.helpSectionHeader.hover, a.helpSectionHeader:hover {
+	background:url(../images/yabi-help-disclose-triangle-open.gif) no-repeat 1px 6px;
+
+}
+
+
+//new json design objects ===================================
+
+#titleDiv {
+	width: 70%;
+	position: relative;
+	float: left;
+}
+
+#submitButton {
+	width: 25%;
+	float: right;
+}
+
+#container {
+	position: relative;
+}
+
+.workflowName {
+	color:#666;
+	font-size: 110%;
+	font-weight: bold;
+	margin-bottom: 20px;
+	width: 70%;
+}
+
+.workflowContainer {
+//	background-color: #666;
+	display: block;
+	min-height: 80px;
+	position: relative;
+	top: 0px;
+	left: 0px;
+	width: 100%;
+	padding: 1px;
+}
+
+.workflowBookends {
+	border:1px solid #d6d6d6;
+    color:#ccc;
+	padding:2px;
+	padding-left:14px;
+	margin-left: 3px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+
+.jobSuperContainer {
+    position: relative;
+	z-index: 0;
+}
+
+.jobContainer {
+	border:1px solid #ccc;
+	background: #eee url(../images/job_bg.png);
+	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+	padding:4px;
+	padding-left: 12px;
+	margin:2px;
+	position:relative;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    font-size: 95%;
+    color: #666;
+    min-height: 26px;
+}
+
+.selectedJobContainer {
+	border:1px solid #77f;
+	background: #ccf url(../images/job_selected_bg.png);
+	background: -webkit-gradient(linear, left top, left bottom, from(#eef), to(#ddf));
+    -moz-box-shadow: 0px 0px 3px #77f;
+    -webkit-box-shadow: 0px 0px 3px #77f;
+	padding:4px;
+	padding-left: 12px;
+	margin:2px;
+	position:relative;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    font-size: 95%;
+    color: #666;
+    min-height: 26px;
+}
+
+.loadFailJobContainer {
+	border:1px solid #f77;
+	background: #fcc url(../images/job_loadfail_bg.png);
+	background: -webkit-gradient(linear, left top, left bottom, from(#fee), to(#fdd));
+    -moz-box-shadow: 0px 0px 3px #f77;
+    -webkit-box-shadow: 0px 0px 3px #f77;
+	padding:4px;
+	padding-left: 12px;
+	margin:2px;
+	position:relative;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    font-size: 95%;
+    color: #f66;
+}
+
+.jobContainer h1 {
+    color: #666;
+	//font-size: 105%;
+	margin-bottom: 4px;
+}
+
+.selectedJobContainer h1 {
+	//font-size: 105%;
+	margin-bottom: 4px;
+}
+
+/*.jobOptionsContainer {
+	border: 1px solid #ccc;
+	margin: 8px;
+	padding: 4px;
+	text-align: left;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+}*/
+
+.jobOptionsContainer label {
+	margin-right: 20px;
+}
+
+.jobInputs {
+	padding: 3px;
+	font-size: 90%;
+	width: 95%;
+	line-height: 1.3em;
+}
+
+.jobOutputs {
+	padding: 3px;
+	font-size: 90%;
+}
+
+.validInput {
+	background: transparent;
+	color: black;
+	padding: 4px;
+    margin-bottom: 4px;
+}
+
+.invalidInput {
+	background: red;
+	background: -webkit-gradient(linear, left top, left bottom, from(#fcc), to(#f66));
+    color: white;
+    padding: 4px;
+    margin-bottom: 4px;
+}
+
+.acceptedExtensionList {
+	color: #999;
+	padding: 2px;
+}
+
+.invalidAcceptedExtensionList {
+	color: #f00;
+	padding: 2px;
+}
+
+.acceptedExtension {
+    display: inline;
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	background-color: #eef;
+	border: 1px solid #99c;
+	padding: 1px;
+	padding-left: 8px;
+	padding-right: 8px;
+	//margin-right: 4px;
+	color: #666;
+	position: relative;
+	line-height: 1.6em;
+}
+
+.invalidAcceptedExtensionList .acceptedExtension {
+	background: #f66;
+	background: -webkit-gradient(linear, left top, left bottom, from(#fcc), to(#f66));
+	border: 1px solid #f66;
+	color: #fff;
+}
+
+.destroyDiv {
+	position:absolute;
+	top:2px;
+	right:1px;
+	font-size:80%;
+	color:#333;
+    background:url(../images/delnode.png);
+    width:14px;
+    height:13px;
+    cursor: pointer;
+}
+
+.optionsToggle {
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	background-color: #eee;
+	padding: 1px;
+	padding-left: 8px;
+	padding-right: 8px;
+	margin-right: 4px;
+	margin-bottom: 4px;
+	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+	border: 1px solid #ccc;
+	color: #000;	
+	width: 180px;
+	float: right;
+}
+
+.fileSelector {
+	margin-left: 80px;
+}
+
+.selectedFile {
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	background-color: #eef;
+	border: 1px solid #99c;
+	padding: 1px;
+	padding-left: 8px;
+	padding-right: 20px;
+	margin-right: 4px;
+	color: #666;
+	position: relative;
+}
+
+.filePadding {
+	padding-bottom: 10px;
+}
+
+.fileSelectorBreadcrumb {
+    color: #000;
+	background-color: #eee;
+	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+	vertical-align: baseline;
+	padding-top: 7px;
+	padding-bottom: 7px;
+}
+
+.fileSelectorBreadcrumb span {
+	padding: 7px;
+	padding-right: 5px;
+	padding-left: 5px;
+	cursor: pointer;
+}
+
+.fileSelectorBreadcrumb span.hover, .fileSelectorBreadcrumb span:hover {
+	background-color: #ddd;
+	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#ddd));
+	padding: 7px;
+	padding-right: 5px;
+	padding-left: 5px;
+	cursor: pointer;
+}
+
+.fileSelectorListing {
+	background-color: #fff;
+	height: 280px;
+	overflow: auto;
+}
+
+.fileSelectorListing .fileItem {
+    color: #000;
+    padding: 3px;
+    padding-left: 22px;
+	border-bottom: 1px dotted #ccc;
+	cursor: pointer;
+    background:url(../images/file.png) 2px 2px no-repeat;
+}
+
+.fileSelectorListing .dirItem {
+    color: #00f;
+    padding: 3px;
+    padding-left: 22px;
+	border-bottom: 1px dotted #ccc;
+	cursor: pointer;
+    background:url(../images/folder.png) 2px 2px no-repeat;
+}
+
+.fileSelectorListing .fileItem.hover, .fileSelectorListing .fileItem:hover, .fileSelectorListing .dirItem.hover, .fileSelectorListing .dirItem:hover {
+	background-color: #ddf;
+}
+
+.fileSelectorBrowse {
+	background-color: #ccc;
+	padding: 1px;
+}
+
+.fileSelectorUpload {
+    border-top: 1px solid #ccc;
+    color: #000;
+	background-color: #eee;
+	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+	padding: 4px;
+}
+
+.uploadingMask {
+	width: 100%;
+	height: 100%;
+}
+
+.fakeButton {
+    -webkit-border-radius: 4px;
+	-moz-border-radius: 4px;
+	background-color: #eee;
+	padding: 1px;
+	padding-left: 8px;
+	padding-right: 8px;
+	margin-right: 4px;
+	margin-bottom: 4px;
+	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+	border: 1px solid #ccc;
+	color: #000;	
+	width: 180px;
+	cursor: pointer;
+}
+
+.fakeButton.hover, .fakeButton:hover {
+	background-color: #eef;
+	background: -webkit-gradient(linear, left top, left bottom, from(#eef), to(#ccf));
+}
+
+.progressBarContainer {
+	width: 97%;
+	height: 5px;
+	border: 1px solid #d8d8d8;
+	background: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#fff));
+	padding: 0px;
+	position: relative;
+}
+
+.progressBar {
+    position: absolute;
+	width: 0%;
+	left: 0px;
+	height: 5px;
+	padding: 0px;
+	margin: 0px;
+	background-color: #6f6;
+	background: -webkit-gradient(linear, left top, left bottom, from(#6f6), to(#9c9));
+}
+
+.badgeCompleted {
+
+	width:16px;
+	height:16px;
+	padding:0px;
+	margin:0px;
+	border:0px;
+	background:url(../images/ok.png);
+	position:absolute;
+    right: 1%;
+    top: 2px;
+	z-index:99;	
+	
+	
+}
+
+.badgePending {
+	width:16px;
+	height:16px;
+	padding:0px;
+	margin:0px;
+	border:0px;
+	background:url(../images/pending.png);
+	position:absolute;
+    right: 1%;
+    top: 2px;
+	z-index:99;
+}
+
+.badgeQueued {
+	width:15px;
+	height:15px;
+	padding:0px;
+	margin:0px;
+	border:0px;
+	background:url(../images/queued.gif);
+	position:absolute;
+    right: 1%;
+    top: 2px;
+	z-index:99;
+}
+
+.badgeError {
+	width:16px;
+	height:16px;
+	padding:0px;
+	margin:0px;
+	border:0px;
+	background:url(../images/error.png);
+	position:absolute;
+    right: 1%;
+    top: 2px;
+	z-index:99;
+}
+
+.badgeRunning {
+	width:15px;
+	height:15px;
+	padding:0px;
+	margin:0px;
+	border:0px;
+	background:url(../images/processing.gif);
+	position:absolute;
+    right: 1%;
+    top: 2px;
+	z-index:99;
+}
+
+.toolCollection {
+
+}
+
+.toolSearchField {
+	width:40%;
+	border:1px solid #ccc;
+	margin-right:6px;
+}
+
+.toolListing {
+	margin-top:8px;
+}
+
+.toolGroup {
+	color: #999;
+	padding:3px;
+	margin-top:2px;
+	background: #f3f3f3;
+	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#f3f3f3));
+}
+
+.tool {
+	border:1px solid #ccc;
+	background: #eee url(../images/job_bg.png);
+	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+	padding:4px;
+	padding-left: 12px;
+	margin:2px;
+	margin-left: 16px;
+	position:relative;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    font-size: 95%;
+    color: #666;
+}

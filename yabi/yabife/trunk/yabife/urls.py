@@ -1,3 +1,4 @@
+import os
 from django.conf.urls.defaults import *
 
 # Uncomment the next two lines to enable the admin:
@@ -15,7 +16,18 @@ urlpatterns = patterns('yabife.yabifeapp.views',
     # Uncomment the next line to enable the admin:
     # (r'^admin/(.*)', admin.site.root),
 
-    (r'^(?P<url>.*)$', 'proxy'),
+    #(r'^(?P<url>.*)$', 'proxy'),
 	(r'^[/]*$', 'index'),
+    (r'^login[/]*$', 'login')                       
+
+)
+
+
+# pattern for serving statically
+# will be overridden by apache alias under WSGI
+urlpatterns += patterns('',
+    (r'^static/(?P<path>.*)$',
+                        'django.views.static.serve', 
+                        {'document_root': os.path.join(os.path.dirname(__file__),"static"), 'show_indexes': True}),
 
 )
