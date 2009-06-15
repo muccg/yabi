@@ -34,6 +34,14 @@ from fs.resource import FSResource
 from fs.LocalFileResource import LocalFileResource
 from fs.GlobusFileResource import GlobusFileResource
 
+##
+## Execution resources
+##
+from ex.resource import ExecResource
+
+# backends
+from ex.GlobusExecResource import GlobusExecResource
+
 VERSION = 0.1
 class BaseResource(resource.PostableResource):
     """This is the baseclass for out "/" HTTP resource. It does nothing but defines the various children.
@@ -43,12 +51,22 @@ class BaseResource(resource.PostableResource):
     def __init__(self, *args, **kw):
         resource.PostableResource.__init__(self, *args, **kw)
         
-        # our handlers
+        ##
+        ## our handlers
+        ##
+        
+        # filesystem backends
         self.child_fs = FSResource(
-                file=LocalFileResource(directory="/tmp/filesystem"),
-                gridftp1=GlobusFileResource(remoteserver="xe-ng2.ivec.org", remotepath="/scratch"),
-                gridftp2=GlobusFileResource(remoteserver="xe-ng2.ivec.org", remotepath="/scratch/bi01"),
+                file = LocalFileResource(directory="/tmp/filesystem"),
+                gridftp1 = GlobusFileResource(remoteserver="xe-ng2.ivec.org", remotepath="/scratch"),
+                gridftp2 = GlobusFileResource(remoteserver="xe-ng2.ivec.org", remotepath="/scratch/bi01"),
             )
+            
+        # execution backends
+        self.child_exec = ExecResource(
+                globus = GlobusExecResource( address='https://xe-ng2.ivec.org:8443/wsrf/services/ManagedJobFactoryService', maxWallTime=60, maxMemory=1024, cpus=1, queue="normal", jobType="single" )
+            )
+            
         self.child_yabiadmin = wsgi.WSGIResource(application)
         
     def render(self, ctx):
