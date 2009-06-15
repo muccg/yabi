@@ -19,6 +19,7 @@ def tool(request, toolname):
     except ObjectDoesNotExist:
         return HttpResponseNotFound("Object not found")
 
+
 def menu(request, username):
 
     try:

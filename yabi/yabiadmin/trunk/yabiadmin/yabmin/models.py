@@ -1,6 +1,8 @@
 from django.db import models
 from django import forms
 from django.contrib.auth.models import User as DjangoUser
+from django.utils import simplejson as json
+
 
 class ManyToManyField_NoSyncdb(models.ManyToManyField):
     def __init__(self, *args, **kwargs):
@@ -83,6 +85,7 @@ class Tool(Base):
 
     def tool_dict(self):
         '''Gathers tool details into convenient dict for use by json or other models json'''
+
         return {
             'name':self.name,
             'display_name':self.display_name,
@@ -92,16 +95,25 @@ class Tool(Base):
             'file_pass_thru':self.file_pass_thru,
             'batch_on_param':self.batch_on_param.switch,
             'job_type': self.type.name,
-            'input_filetypes': self.input_filetype_extensions(),
-            'output_filetypes': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__extension")),            
+            'inputExtensions': self.input_filetype_extensions(),
+            'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__extension")),            
             'parameter_list': list(self.toolparameter_set.order_by('id').values("rank", "mandatory", "input_file", "output_file",
                                                                                 "switch", "switch_use__display_text", "switch_use__value","switch_use__description",
-                                                                                "filter_value", "filter__display_text", "filter__value","filter__description"))
+                                                                                "filter_value", "filter__display_text", "filter__value","filter__description", "possible_values"))
             }
-
+    
     def json(self):
-        from django.utils import simplejson as json
-        return json.dumps({'tool':self.tool_dict()})
+
+        # the possible_values field has json in it so we need to make it decode
+        # or it will be double encoded
+        output = self.tool_dict()
+
+        for plist in output["parameter_list"]:
+            if "possible_values" in plist and plist["possible_values"]:
+                plist["possible_values"] = json.loads(plist["possible_values"])
+
+        return json.dumps({'tool':output})
+
 
     def __unicode__(self):
         return self.name
@@ -240,9 +252,6 @@ class Backend(Base):
         return self.name
 
     def json(self):
-
-        from django.utils import simplejson as json
-
         output = {
             'backend':self.name,
             'credential':self.credential.description,

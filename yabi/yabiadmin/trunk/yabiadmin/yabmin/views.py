@@ -122,11 +122,3 @@ def ldap_users(request):
                 'unexisting_ldap_users': unexisting_ldap_users,
                 'existing_ldap_users': existing_ldap_users
             })
-
-def ws_tool(request, toolname):
-
-    try:
-        tool = Tool.objects.get(name=toolname)
-        return HttpResponse(tool.json())
-    except ObjectDoesNotExist:
-        return HttpResponseNotFound("Object not found")
