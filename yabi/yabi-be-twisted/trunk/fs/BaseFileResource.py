@@ -48,7 +48,22 @@ class BaseFileResource(resource.PostableResource):
         and fifo being the filesystem location of the fifo.
         """
         assert False, "GetWriteFifo() needs to be overridden in the base class"
+        
+    def NonFatalRetryGenerator(self):
+        """This returns a generator that generates the retry delays for a non fatal error. Here you can tailor the retry
+        timeouts for this particular backend. To make it retry forever, make an infinite generator. When the generator 
+        finally exits, the error is raised. The default is an exponential backoff
+        """
+        NUM_RETRIES = 5                     # number of retries
+        delay = 5.0                         # first delay
+        for i in range(NUM_RETRIES):
+            yield delay
+            delay*=2.                       # double each time
             
+    # In order to identify a non fatal copy failure, we search for each of these phrases in stdout/stderr of the copy classes.
+    # comparison is case insensitive
+    NonFatalKeywords = [ "connection refused", "connection reset by peer" ]                 # "broken pipe"?
+    
     def render(self, request):
         # if path is none, we are at out pre '/' base resource (eg. GET /fs/file )
         if self.path == None:

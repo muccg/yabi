@@ -8,17 +8,6 @@ import sys, os
 
 PROCESS_CHECK_TIME = 1.0
 
-NUM_RETRIES = 5
-def delay_generator():
-    """This is a generator that generates delay times for copy retries.
-    When this delay generator expires after a number of repeating errors,
-    it returns, and the server finally returns the last error to the browser"""
-    delay = 5.0
-    yield delay
-    for i in range(NUM_RETRIES):
-        delay*=2.
-        yield delay
-
 class FileCopyResource(resource.PostableResource):
     VERSION=0.1
     maxMem = 100*1024
@@ -74,7 +63,11 @@ class FileCopyResource(resource.PostableResource):
             #print "Copying from",sbend,"to",dbend
             
             # create our delay generator in case things go pear shape
-            fail_delays = delay_generator()
+            src_fail_delays = sbend.NonFatalRetryGenerator()
+            dst_fail_delays = dbend.NonFatalRetryGenerator()
+            
+            src_retry_kws = sbend.NonFatalKeywords
+            dst_retry_kws = dbend.NonFatalKeywords
             
             # our http result channel. this stays open until the copy is finished
             result_channel = defer.Deferred()
@@ -110,12 +103,19 @@ class FileCopyResource(resource.PostableResource):
                                     return deferred.callback(http.Response( responsecode.NOT_ALLOWED, {'content-type': http_headers.MimeType('text', 'plain')}, stream="File copy failed! Permission denied\n"))
                                 else:
                                     next_delay = 0.0
-                                    if True in [("Connection refused" in error or "Connection reset by peer" in error) for error in (read_stdout, write_stdout)]:
-                                        # temporary failure. We need to try again after a delay. If there is no more delay, we return the error now.
-                                        next_delay = fail_delays.next()
-                                   
+                                    
+                                    # check for temporary failures. check each backend at a time
+                                    for bendphrase, benderror, bendgen in [ (src_retry_kws, read_stdout, src_fail_delays), (dst_retry_kws, write_stdout, dst_fail_delays) ]:
+                                        # is this backend temporarily failing
+                                        #print "checking",bendphrase,",", benderror,",", bendgen
+                                        #print "found?",[(phrase,error) for phrase in bendphrase for error in benderror]
+                                        if True in [phrase.lower() in benderror.lower() for phrase in bendphrase]:
+                                            #print "found!"
+                                            # temporary error. lets get our next delay for this backend
+                                            next_delay = bendgen.next()
+                                    
                                     if next_delay:
-                                        print "Temporary failure. delaying for %f seconds."%next_delay
+                                        print "Temporary failure. delaying for %.1f seconds."%next_delay
                                         
                                         # retrigger the whole thing again in this many seconds
                                         reactor.callLater( next_delay, dbend.GetWriteFifo, dst_path, _write_ready)
