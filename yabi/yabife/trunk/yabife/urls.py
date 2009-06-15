@@ -18,8 +18,8 @@ urlpatterns = patterns('yabife.yabifeapp.views',
 
     #(r'^(?P<url>.*)$', 'proxy'),
 	(r'^[/]*$', 'index'),
-    (r'^login[/]*$', 'login')                       
-
+    (r'^login[/]*$', 'login'),
+    (r'^logout[/]*$', 'logout')
 )
 
 

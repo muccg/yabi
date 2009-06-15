@@ -81,3 +81,9 @@ def login(request):
     else:
         form = LoginForm()
         return render_to_response('login.html', {'h':webhelpers, 'form':form})
+
+
+def logout(request):
+    assert False
+    django_logout(request)
+    return HttpResponseRedirect(webhelpers.url("/"))
