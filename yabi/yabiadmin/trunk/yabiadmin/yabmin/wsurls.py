@@ -6,5 +6,4 @@ urlpatterns = patterns('yabiadmin.yabmin.wsviews',
     url(r'^menu/(?P<username>\w+)[/]*$', 'menu', name='menu'),
     url(r'^credential/(?P<username>\w+)/(?P<backend>\w+)[/]*$', 'credential', name='credential'),
     url(r'^credential/(?P<username>\w+)/(?P<backend>\w+)/(?P<detail>\w+)[/]*$', 'credential_detail', name='credential_detail'),                       
-#    url(r'^ldap_users/$', 'ldap_users', name='ldap_users_view'),
 )

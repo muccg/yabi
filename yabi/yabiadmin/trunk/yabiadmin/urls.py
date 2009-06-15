@@ -5,11 +5,18 @@ from yabiadmin.yabmin import admin as yabmin
 import os
 #admin.autodiscover()
 
-urlpatterns = patterns('',
+# dispatch to either webservice, admin or general
+urlpatterns = patterns('yabiadmin.yabmin.views',
     (r'^ws/', include('yabiadmin.yabmin.wsurls')),
-    (r'^admin/', include('yabiadmin.yabmin.urls')),
-    (r'^admin/(.*)', admin.site.root),
+    (r'^admin/', include('yabiadmin.yabmin.adminurls')),
+    (r'^admin/(.*)', admin.site.root)
+)
+
+# pattern for serving statically
+# will be overridden by apache alias under WSGI
+urlpatterns += patterns('',
     (r'^static/(?P<path>.*)$',
                         'django.views.static.serve', 
                         {'document_root': os.path.join(os.path.dirname(__file__),"static"), 'show_indexes': True}),
+
 )

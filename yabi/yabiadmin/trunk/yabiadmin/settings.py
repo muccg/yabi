@@ -51,7 +51,7 @@ ADMINS = (
     ('Tech Alerts', 'alerts@ccg.murdoch.edu.au')
 )
 
-LOGIN_URL = "/admin/"
+LOGIN_URL = "/login"
 
 # so we can request /ws/tool/23 or /ws/tool/23/ and not get a 301 redirect
 APPEND_SLASH = False
