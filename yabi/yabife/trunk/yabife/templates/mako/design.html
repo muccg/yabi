@@ -1,19 +1,107 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-  <head>
-    <title>Yabi</title>
-  </head>
+<%inherit file="base.html"/>
+<%def name="header()">
 
-  <body>
-    <h1>Yabi</h1>
+<script language="javascript">
+YAHOO.util.Event.onAvailable("container", initWorkflow);
+
+var workflow;
+var tools;
+
+function initWorkflow() {
+    tools = new YabiToolCollection();
+    
+    document.getElementById("toolContainer").appendChild(tools.containerEl);
+    
+    workflow = new YabiWorkflow(true);
+    
+    document.getElementById("container").appendChild(workflow.mainEl);
+    document.getElementById("optionsDiv").appendChild(workflow.optionsEl);
+    
+    YAHOO.util.Event.addListener("submitButton", "click", submitCallback, workflow);
+}
 
 
+function submitCallback(e, wf) {
+    
+    YAHOO.util.Event.stopEvent(e);
+    alert(wf.toJSON());
+   
+    return false;
+}
 
-    <hr>
-    <address><a href="mailto:andrew@ccgmac005.localdomain">Andrew Macgregor</a></address>
-<!-- Created: Mon Jun 15 14:51:59 WST 2009 -->
-<!-- hhmts start -->
-Last modified: Mon Jun 15 14:52:03 WST 2009
-<!-- hhmts end -->
-  </body>
-</html>
+
+function summonJob(toolName) {
+    workflow.addJob(toolName);
+}
+
+function destroyWorkflow() {
+    workflow.destroy();
+    return false;
+}
+</script>
+
+
+</%def>
+
+<%def name="body()">
+
+  <div id="doc3" class="yui-t1">
+    <div id="yabi-design-mode">
+      <div id="hd">
+        <p><img src="/static/images/yabi-logo.png" alt="Yabi-logo" height="60" width="198" />  
+
+            <div id="yabi-message-ajax">
+            </div>
+
+            <div id="yabi-tabs">
+
+              <a href="${h.url('jobs')}" id="yabi-tabs-jobs">jobs</a>
+              <a href="${h.url('design')}" id="yabi-tabs-design">design</a>
+              <a href="${h.url('files')}" id="yabi-tabs-files">files</a>
+              <a href="${h.url('help')}" id="yabi-tabs-help">help!</a>
+            </div>
+
+            <div id="userinfo">
+              ${request.user.username} | <a href="${h.url('logout')}">log out</a>        </div>
+
+      </div>
+
+      <script type="text/javascript">
+        //<![CDATA[
+
+        YAHOO.util.Event.onAvailable('yabi-message-success', YAHOO.ccgyabi.YabiMessage.fade, this);
+        YAHOO.util.Event.onAvailable('yabi-message-warn', YAHOO.ccgyabi.YabiMessage.fade, this);
+        YAHOO.util.Event.onAvailable('yabi-message-fail', YAHOO.ccgyabi.YabiMessage.fade, this);
+
+        //]]>
+      </script>
+      
+      <div id="bd">
+        <div id="yui-main">
+
+          <div class="yui-g">
+            <div class="yui-g first">
+              <div id="yabi-col1" class="yui-u first">
+                <div class="yabi-column-contents">
+                  <div id="toolContainer"></div>
+                </div>
+              </div>
+              <div id="yabi-col2" class="yui-u">
+                <div class="yabi-column-contents">
+
+                  <div id="container"></div>
+                </div>
+              </div>
+            </div>
+            <div id="yabi-col3" class="yui-g">
+              <div class="yabi-column-contents">
+                <div id="optionsDiv"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</%def>

@@ -16,8 +16,10 @@ urlpatterns = patterns('yabife.yabifeapp.views',
     # Uncomment the next line to enable the admin:
     # (r'^admin/(.*)', admin.site.root),
 
-    #(r'^(?P<url>.*)$', 'proxy'),
+    (r'^(?P<url>ws/.*)$', 'proxy'),
 	(r'^[/]*$', 'design'),
+	(r'^design[/]*$', 'design'),
+	(r'^menu[/]*$', 'menu'),
     (r'^login[/]*$', 'login'),
     (r'^logout[/]*$', 'logout')
 )

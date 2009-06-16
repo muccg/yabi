@@ -50,7 +50,7 @@ class LoginForm(forms.Form):
 # views
 @login_required
 def design(request):
-    return render_to_response('design.html', {'text':'hello'})
+    return render_to_response('design.html', {'h':webhelpers, 'request':request})
 
 def login(request):
 
@@ -86,3 +86,5 @@ def login(request):
 def logout(request):
     django_logout(request)
     return HttpResponseRedirect(webhelpers.url("/"))
+
+
