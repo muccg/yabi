@@ -48,9 +48,9 @@ class LoginForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput(render_value=False))
 
 # views
-#@login_required
-def index(request):
-    return render_to_response('index.html', {'text':'hello'})
+@login_required
+def design(request):
+    return render_to_response('design.html', {'text':'hello'})
 
 def login(request):
 
@@ -69,7 +69,7 @@ def login(request):
             if user is not None:
                 if user.is_active:
                     django_login(request, user)
-                    return HttpResponseRedirect(webhelpers.url(next)) if next else HttpResponseRedirect(webhelpers.url("/"))
+                    return HttpResponseRedirect(webhelpers.url("/"))
 
             else:
                 form = LoginForm()
@@ -84,6 +84,5 @@ def login(request):
 
 
 def logout(request):
-    assert False
     django_logout(request)
     return HttpResponseRedirect(webhelpers.url("/"))

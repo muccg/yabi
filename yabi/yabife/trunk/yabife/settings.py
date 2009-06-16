@@ -26,7 +26,7 @@ if "DJANGODEV" in os.environ:
     DEBUG = True if os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug")) else ("DJANGODEBUG" in os.environ)
     TEMPLATE_DEBUG = DEBUG
     DATABASE_ENGINE = 'postgresql_psycopg2'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
-    DATABASE_NAME = 'dev_yabi_yabife'                 # Or path to database file if using sqlite3.
+    DATABASE_NAME = 'dev_yabife'                 # Or path to database file if using sqlite3.
     DATABASE_USER = 'yabifeapp'                       # Not used with sqlite3.
     DATABASE_PASSWORD = 'yabifeapp'                   # Not used with sqlite3.
     DATABASE_HOST = 'eowyn.localdomain'               # Set to empty string for localhost. Not used with sqlite3.
@@ -43,7 +43,7 @@ else:
     DEBUG = os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug"))
     TEMPLATE_DEBUG = DEBUG
     DATABASE_ENGINE = 'postgresql_psycopg2'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
-    DATABASE_NAME = 'live_yabi_yabife'                # Or path to database file if using sqlite3.
+    DATABASE_NAME = 'live_yabife'                # Or path to database file if using sqlite3.
     DATABASE_USER = 'yabifeapp'                       # Not used with sqlite3.
     DATABASE_PASSWORD = 'yabifeapp'                   # Not used with sqlite3.
     DATABASE_HOST = 'iridium.localdomain'             # Set to empty string for localhost. Not used with sqlite3.
