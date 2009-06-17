@@ -50,6 +50,8 @@ class BaseExecResource(resource.PostableResource):
         if self.path == None:
             return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Base Exec Connector Version: %s\n"%self.VERSION)
         
+        return http.Response( responsecode.NOT_ACCEPTABLE, {'content-type': http_headers.MimeType('text', 'plain')}, "Execution jobs must be submitted via POST\n")
+        
     def http_POST(self, request):
         """
         Respond to a POST request.

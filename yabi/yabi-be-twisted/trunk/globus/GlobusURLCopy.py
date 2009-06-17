@@ -15,6 +15,7 @@ def _globus_process_error(string):
     numlines = [line.strip() for line in lines if  len(line) and '0' <= line[0] <= '9']               # lines that begin with a number
     
     # lets take numbered line 0 as our information line
+    print string
     info = numlines[0]
     
     parts = info.split()

@@ -77,7 +77,7 @@ class GlobusFileResource(BaseFileResource):
             """the user is now authed"""
             usercert = self.authproxy.ProxyFile(username)
             remote_url = self._make_remote_url(path)
-            process, fifo = globus.Globus.ReadFromRemote(usercert,remote_url,fifo=fifoin)
+            process, fifo = globus.Copy.ReadFromRemote(usercert,remote_url,fifo=fifoin)
             #print "process read",sys.getrefcount(process)
 
             # call the func with the process, fifo
@@ -109,7 +109,7 @@ class GlobusFileResource(BaseFileResource):
             """the user is now authed"""
             usercert = self.authproxy.ProxyFile(username)
             remote_url = self._make_remote_url(path)
-            process, fifo = globus.Globus.WriteToRemote(usercert,remote_url,fifo=fifoin)
+            process, fifo = globus.Copy.WriteToRemote(usercert,remote_url,fifo=fifoin)
             #print "process write",sys.getrefcount(process)
             
             # call the func with the process, fifo
@@ -127,7 +127,7 @@ class GlobusFileResource(BaseFileResource):
             usercert = self.authproxy.ProxyFile(self.username)
             
             try:
-                contents = globus.Globus.ListRemote(usercert,self._make_remote_url())
+                contents = globus.Copy.ListRemote(usercert,self._make_remote_url())
                 deferred.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, json.dumps(contents)+"\n"))
             except globus.GlobusURLCopy.GlobusFTPError, error:
                 deferred.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, str(error[1])+"\n"))

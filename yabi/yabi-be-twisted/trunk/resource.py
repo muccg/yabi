@@ -64,7 +64,7 @@ class BaseResource(resource.PostableResource):
             
         # execution backends
         self.child_exec = ExecResource(
-                globus = GlobusExecResource( address='https://xe-ng2.ivec.org:8443/wsrf/services/ManagedJobFactoryService', maxWallTime=60, maxMemory=1024, cpus=1, queue="normal", jobType="single" )
+                globus1 = GlobusExecResource( address='https://xe-ng2.ivec.org:8443/wsrf/services/ManagedJobFactoryService', maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single" )
             )
             
         self.child_yabiadmin = wsgi.WSGIResource(application)
