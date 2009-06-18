@@ -128,6 +128,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django_evolution',
     'yabiadmin.yabmin',
+    'yabiadmin.yabiengine'
 )
 
 ##
