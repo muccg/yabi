@@ -9,7 +9,7 @@ from twisted.python.failure import Failure
 import globus
 
 from twisted.web import client
-import json
+import json, shlex
 
 import subprocess
 
@@ -21,16 +21,19 @@ class GlobusExecResource(BaseExecResource):
     addSlash = False
     
     # self.XXXXX parameters we are allowed to override via POST parameters. These strings are followed by their type to cast to
-    ALLOWED_OVERRIDE = [("maxWallTime",int), ("maxMemory",int), ("cpus",int), ("queue",str), ("jobType",str)]
+    ALLOWED_OVERRIDE = [("maxWallTime",int), ("maxMemory",int), ("cpus",int), ("queue",str), ("jobType",str), ("directory",str), ("stdout",str), ("stderr",str)]
     
-    def __init__(self,request=None,path=None,address='https://xe-ng2.ivec.org:8443/wsrf/services/ManagedJobFactoryService', maxWallTime=60, maxMemory=1024, cpus=1, queue="normal", jobType="single", backend=None, authproxy=None, jobs=None):
-        """Pass in the backends to be served out by this FSResource"""
-        
+    def __init__(self,request=None,path=None,host='xe-ng2.ivec.org', maxWallTime=60, maxMemory=1024, cpus=1, queue="normal", jobType="single", stdout="/dev/null", stderr="/dev/null", directory="/scratch/bi01/cwellington", dirprefix="/scratch", backend=None, authproxy=None, jobs=None):
+        """dirprefix is to be used to make the exec scratch dir and dir paths have the same "hidden root" as the filesystem backends. if
+        we have /scratch mounted on a fs backend as /fs/gridftp1/, then we cant have working directories set with "/scratch/bi01/cwellington", 
+        the prefix should be implied!
+        """
         BaseExecResource.__init__(self,request,path)
         
         # save the details of this connector
-        self.address, self.maxWallTime, self.maxMemory, self.cpus, self.queue, self.jobType = address, maxWallTime, maxMemory, cpus, queue, jobType
-        
+        self.host, self.maxWallTime, self.maxMemory, self.cpus,self.queue, self.jobType, self.stdout, self.stderr, self.directory, self.dirprefix = \
+            host,        maxWallTime,    maxMemory,      cpus,       queue,      jobType,     stdout,      stderr,      directory,      dirprefix
+         
         # our backend identifier (for mango)
         self.backend = backend
         
@@ -51,7 +54,7 @@ class GlobusExecResource(BaseExecResource):
             self.authproxy = authproxy
             
         if not jobs:
-            self.jobs = globus.Jobs.Jobs(self.authproxy)
+            self.jobs = globus.Jobs.Jobs(self.authproxy,self.backend)
         else:
             self.jobs = jobs
             
@@ -84,10 +87,20 @@ class GlobusExecResource(BaseExecResource):
                         return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "Cannot convert parameter '%s' to %s\n"%(key,cast))
                     print "setting",key,"to",cast(args[key][0])
                     setattr(self,key,cast(args[key][0]))
-                    
+            
+            # use shlex to parse the command into executable and arguments
+            command_string = args['command'][0]
+            lexer = shlex.shlex(command_string, posix=True)
+            lexer.wordchars += r"-.:;/"
+            arguments = list(lexer)
+            
             rsl = globus.ConstructRSL(
-                command = args['command'][0],
-                address = self.address,
+                command = arguments[0],
+                args = arguments[1:],
+                directory = self.directory,
+                stdout = self.stdout,
+                stderr = self.stderr,
+                address = self.host,
                 maxWallTime = self.maxWallTime,
                 maxMemory = self.maxMemory,
                 cpus = self.cpus,
@@ -105,7 +118,7 @@ class GlobusExecResource(BaseExecResource):
             def auth_success(deferred):
                 # we should spawn our process to submit the job
                 usercert = self.authproxy.ProxyFile(self.username)
-                proc = globus.Run.run(usercert,rslfile)
+                proc = globus.Run.run(usercert,rslfile,self.host)
                 print "spawned",proc
                 
                 # now we watch this processes stdout stream... we _should_ get...
@@ -135,7 +148,8 @@ class GlobusExecResource(BaseExecResource):
                         print "Submit status:",submit_status
                         
                         if submit_status!='Done.':
-                            raise Exception, "Submission failed! %s"%submit_status
+                            # some horrid error occured. 
+                            raise Exception, "Submission failed! %s"%data
                         
                         # line 1... job id
                         assert line[1].startswith("Job ID:")
@@ -147,8 +161,8 @@ class GlobusExecResource(BaseExecResource):
                         term_time = line[2].split(":",1)[-1]
                         
                         # line 3... EPR XML
-                        epr_xml = line[3]
-                        assert "EndpointReferenceType" in epr_xml
+                        epr_xml = "\n".join(line[3:])
+                        assert "EndpointReference" in epr_xml
                         
                         # OK. job submission is done... So we can return the 200 OK response code. We use a stream to keep pumping the data down, then we close the stream when done.
                         client_stream = stream.ProducerStream()
@@ -181,12 +195,14 @@ class GlobusExecResource(BaseExecResource):
                 deferred.addCallback( lambda res: client_channel.callback( http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Stream finished: %s\n"%(res)) ) )
                 
                 def stream_errorback(fail):
+                    print fail
                     if isinstance(fail,Failure):
                         if fail.getErrorMessage()=="close stream":
                             fail.trap(Exception)
                             print "Stream closed"
                             return None
                         else:
+                            client_channel.callback( http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Job stream failed! Full error Follows:\n\n%s\n"%(fail)) )
                             return fail
                     else:
                         client_channel.callback( http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Job stream failed!: %s\n"%(fail)) )
@@ -248,5 +264,21 @@ class GlobusExecResource(BaseExecResource):
     def locateChild(self, request, segments):
         # return our local file resource for these segments
         #print "LFR::LC",request,segments
-        return GlobusExecResource(request,segments,address=self.address,maxWallTime=self.maxWallTime,maxMemory=self.maxMemory,cpus=self.cpus,queue=self.queue,jobType=self.jobType, backend=self.backend, authproxy=self.authproxy, jobs=self.jobs), []
+        return GlobusExecResource(
+                request,
+                segments,
+                host=self.host,
+                maxWallTime=self.maxWallTime,
+                maxMemory=self.maxMemory,
+                cpus=self.cpus,
+                queue=self.queue,
+                jobType=self.jobType,
+                stdout=self.stdout,
+                stderr=self.stderr,
+                directory=self.directory,
+                dirprefix=self.dirprefix,
+                backend=self.backend,
+                authproxy=self.authproxy,
+                jobs=self.jobs
+            ), []
     

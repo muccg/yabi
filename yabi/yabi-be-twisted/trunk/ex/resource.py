@@ -45,7 +45,4 @@ class ExecResource(resource.Resource):
     
     def locateChild(self, request, segments):
         # return our local file resource for these segments
-        if segments[0]=="copy":
-            # wanting the file copy resource
-            return FileCopyResource(request,segments,fsresource = self), []
         return resource.Resource.locateChild(self,request,segments)

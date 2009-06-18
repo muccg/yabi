@@ -14,6 +14,7 @@ from BaseFileResource import BaseFileResource
 class LocalFileResource(BaseFileResource):
     """This is the resource that connects us to our local filesystem"""
     VERSION=0.1
+    NAME="Local File System"
     addSlash = False
     copy = '/bin/cp'
     
@@ -21,7 +22,15 @@ class LocalFileResource(BaseFileResource):
         """Pass in the backends to be served out by this FSResource"""
         BaseFileResource.__init__(self,request,path)
         
-        self.path=path
+        if path:
+            # first part of path is yabi_username
+            self.username = path[0]
+            
+            # together the whole thing is the path
+            self.path=path
+        else:
+            self.path=None
+            
         self.backend = backend
         
         self.directory=directory
@@ -40,10 +49,16 @@ class LocalFileResource(BaseFileResource):
         when everything is setup and ready, deferred will be called with (proc, fifo), with proc being the python subprocess Popen object
         and fifo being the filesystem location of the fifo.
         """
+        
         # make our source fifo to get our data from
         if not fifo:
             fifo = Fifos.Get()
-        src = self.GetFilename(path.split('/'))
+        
+        parts = path.split("/")
+        username = parts[0]
+        path = parts[1:]
+        
+        src = self.GetFilename(path)
         print "FS READ:",fifo,src
         
         # the copy to remote command
@@ -75,7 +90,12 @@ class LocalFileResource(BaseFileResource):
         # make our source fifo to get our data from
         if not fifo:
             fifo = Fifos.Get()
-        dst = self.GetFilename(path.split('/'))
+        
+        parts = path.split("/")
+        username = parts[0]
+        path = parts[1:]
+            
+        dst = self.GetFilename(path)
         print "FS WRITE:",fifo,dst
         
         # the copy to remote command
@@ -124,7 +144,7 @@ class LocalFileResource(BaseFileResource):
         return defferedchain
               
     def http_LIST(self,request):
-        fullpath = self.GetFilename()
+        fullpath = self.GetFilename(self.path[1:])
         
         if not os.path.exists(fullpath) or not os.path.isdir(fullpath):
             return http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Path not a directory\n")

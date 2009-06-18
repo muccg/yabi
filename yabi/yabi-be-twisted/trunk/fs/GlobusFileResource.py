@@ -22,6 +22,7 @@ from BaseFileResource import BaseFileResource
 class GlobusFileResource(BaseFileResource):
     """This is the resource that connects to the globus gridftp backends"""
     VERSION=0.1
+    NAME="Globus File System"
     addSlash = False
     
     def __init__(self,request=None,path=None,remotemethod="gsiftp",remoteserver="xe-ng2.ivec.org",remotepath="/", backend=None, authproxy=None):

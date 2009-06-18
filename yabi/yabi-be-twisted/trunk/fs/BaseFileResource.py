@@ -20,6 +20,7 @@ import subprocess
 class BaseFileResource(resource.PostableResource):
     """This is the resource that connects to the globus gridftp backends"""
     VERSION=0.1
+    NAME="Base File Resource"
     addSlash = False
     
     def __init__(self,request=None,path=None):
@@ -67,7 +68,7 @@ class BaseFileResource(resource.PostableResource):
     def render(self, request):
         # if path is none, we are at out pre '/' base resource (eg. GET /fs/file )
         if self.path == None:
-            return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Globus FS Connector Version: %s\n"%self.VERSION)
+            return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "%s Version: %s\n"%(self.NAME,self.VERSION))
         
         if len(self.path) and not len(self.path[-1]):
             # path ends in a '/'. Do a directory listing
@@ -78,10 +79,25 @@ class BaseFileResource(resource.PostableResource):
         
         # get our read fifo. when its ready, the callback will be just to stream this out the connection
         def callback( process, fifo ):
-            print "render ready",process,fifo
+            print "render ready callback",process,fifo
         
+            # just a quick check to see if the process has died. In the example of /bin/cp, the output fifo will NEVER be opened,
+            # because the process is already dead. If the process is already dead, we're cactus, and we should report this death.
+            if process.poll():
+                # error code! Lets die
+                client_channel.callback( http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream="Could not copy file: \n%s\n\n%s\n"%(sep.join(self.path),process.stdout.read())) )
+                return
+            
+            # also a possibility is that the process will die VERY SOON. because it hasn't opened to write to the fifo, the open to read will block forever
+            # and we will block, the process will die, we will never notice it, and that is that! SO as such, we need to open the file with
+            # O_NONBLOCK...
+             
             # read out the stream
-            fh = subprocess.no_intr(open,fifo)
+            fh = os.fdopen( os.open( fifo, os.O_RDONLY | os.O_NONBLOCK) )
+            print "fh",fh
+            
+            # OLD DEPRECATED no_intr call
+            #fh = subprocess.no_intr(open,fifo,"rb")
             
             # we are gonna try and read the first character. This will open the stream and the remote process will die, if the remote file has an error.
             # doing this enables us to capture failure and return the right response code
@@ -91,8 +107,10 @@ class BaseFileResource(resource.PostableResource):
             
             # our fifo stream object
             fifostream=FifoStream(fh)
+            print "fifo",fifostream
             
             def begin_transfer_stream(deferred, stream):
+                print "b_t_s"
                 first_char=fh.read(1)
                 if len(first_char):
                     # stream flowing! lets connect and return
@@ -121,7 +139,7 @@ class BaseFileResource(resource.PostableResource):
                             else:
                                 deferred.callback( http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream="Could not copy remote file:"+str(errortext)) )
             
-            reactor.callLater(0, begin_transfer_stream, client_channel, fifostream)
+            reactor.callLater(0.1, begin_transfer_stream, client_channel, fifostream)
         
         # begin the readfifo openning process
         self.GetReadFifo( sep.join(self.path), callback )
@@ -155,7 +173,7 @@ class BaseFileResource(resource.PostableResource):
                 
             d = defer.Deferred()
             def cb( proc, fifo ):
-                d.callback( open(fifo, "wb") )
+                d.callback( os.fdopen(os.open(fifo, os.O_WRONLY | os.O_NONBLOCK)) )
             
             print "Calling GetWriteFifo",sep.join(path), cb
             self.GetWriteFifo( sep.join(path), cb )
@@ -170,6 +188,7 @@ class BaseFileResource(resource.PostableResource):
             """Check that the upload worked. Check return codes from processes."""
             # we have to wait until we get result codes from these processes.
             def checkresults(result):
+                print "_cr"
                 results = [proc.poll() for proc,fifo in process_list]
                 if None in results:
                     reactor.callLater(PIPE_RETRY_TIME, checkresults, result)

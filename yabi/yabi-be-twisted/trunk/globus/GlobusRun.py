@@ -28,10 +28,11 @@ class GlobusRun(object):
         
         return subenv
 
-    def run(self, certfile, rslfile):
+    def run(self, certfile, rslfile, host="xe-ng2.ivec.org", factorytype="PBS"):
         """Spawn a process to run an xml job. return the process handler"""
         subenv = self._make_env(certfile)
         proc = subprocess.Popen(    [   self.globusrun_ws,
+                                        "-F", host, "-Ft", factorytype,
                                         "-submit",
                                         "-batch",
                                         "-job-description-file",
@@ -47,9 +48,10 @@ class GlobusRun(object):
         #set_file_unbuffered(proc.stdout)
         return proc
     
-    def status(self, certfile, eprfile):
+    def status(self, certfile, eprfile, host="xe-ng2.ivec.org", factorytype="PBS"):
         subenv = self._make_env(certfile)
         proc = subprocess.Popen(    [   self.globusrun_ws,
+                                        "-F", host, "-Ft", factorytype,
                                         "-status",
                                         "-job-epr-file",
                                         eprfile,
