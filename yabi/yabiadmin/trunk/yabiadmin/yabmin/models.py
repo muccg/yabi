@@ -149,7 +149,8 @@ class ToolParameter(Base):
     source_param = models.ForeignKey('self', related_name='source_parent', null=True, blank=True)
     extension_param = models.ForeignKey('self', related_name='extension_parent', null=True, blank=True)
     possible_values = models.TextField(null=True, blank=True)
-
+    default_value = models.TextField(null=True, blank=True)
+    
     def __unicode__(self):
         return self.switch or ''
 
@@ -262,88 +263,4 @@ class Backend(Base):
             }
         
         return json.dumps(output)
-
-        
-class Status(models.Model):
-    class Meta:
-        db_table = 'status'
-
-    name = models.CharField(max_length=50, unique=True)
-    description = models.TextField(null=True)
-
-class Workflow(models.Model):
-    class Meta:
-        db_table = 'workflow'
-
-    name = models.CharField(max_length=255)
-    user = models.ForeignKey(User)
-    start_time = models.DateTimeField(null=True)
-    end_time = models.DateTimeField(null=True)
-    status = models.ForeignKey(Status)
-    log_file_path = models.CharField(max_length=1000,null=True)
-    last_modified_on = models.DateTimeField(null=True, auto_now=True, editable=False)
-    created_on = models.DateTimeField(auto_now_add=True, editable=False)
-
-    def __unicode__(self):
-        return self.name
-
-class Job(models.Model):
-    class Meta:
-        db_table = 'job'
-
-    workflow = models.ForeignKey(Workflow)
-    order = models.PositiveIntegerField()
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField(null=True)
-    status = models.ForeignKey(Status)
-    work_dir = models.CharField(max_length=1000)
-
-class Subjob(models.Model):
-    class Meta:
-        db_table = 'subjob'
-
-    job = models.ForeignKey(Job)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField(null=True)
-    status = models.ForeignKey(Status)
-    job_identifier = models.TextField()
-    error_msg = models.CharField(max_length=1000, null=True)
-
-class SubjobParameter(models.Model):
-    class Meta:
-        db_table = 'subjob_parameter'
-
-    subjob = models.ForeignKey(Subjob)
-    key = models.CharField(max_length=255)
-    value = models.CharField(max_length=512)
-
-class JobParameter(models.Model):
-    class Meta:
-        db_table = 'job_parameter'
-
-    job = models.ForeignKey(Job, related_name='parameters')
-    key = models.CharField(max_length=255)
-    value = models.CharField(max_length=512, null=True)
-    source_job = models.ForeignKey(Job, related_name='ref_params', null=True) 
-
-class QueueBase(models.Model):
-    class Meta:
-        abstract = True
-
-    workflow = models.ForeignKey(Workflow) 
-    created_on = models.DateTimeField(auto_now_add=True)
-
-    def name(self):
-        return self.workflow.name
-
-    def user_name(self):
-        return self.workflow.user.name
-
-class QueuedWorkflow(QueueBase):
-    class Meta:
-        db_table = 'queue'
-
-class InProgressWorkflow(QueueBase):
-    class Meta:
-        db_table = 'in_progress'
 

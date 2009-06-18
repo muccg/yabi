@@ -1,4 +1,4 @@
-from yabiadmin.yabmin.models import Base, ToolType, Tool, ToolParameter, ToolGroup, ToolGrouping, ToolSet, User, FileExtension, FileType, ParameterFilter, ParameterSwitchUse, ToolRslInfo, ToolRslExtensionModule, ToolRslArgumentOrder, ToolOutputExtension, QueuedWorkflow, InProgressWorkflow, Credential, Backend
+from yabiadmin.yabmin.models import Base, ToolType, Tool, ToolParameter, ToolGroup, ToolGrouping, ToolSet, User, FileExtension, FileType, ParameterFilter, ParameterSwitchUse, ToolRslInfo, ToolRslExtensionModule, ToolRslArgumentOrder, ToolOutputExtension, Credential, Backend
 from django.contrib import admin
 from django.forms.models import BaseInlineFormSet
 from django.forms import ModelForm
@@ -120,8 +120,8 @@ admin.site.register(FileExtension, AdminBase)
 admin.site.register(ParameterFilter, AdminBase)
 admin.site.register(ParameterSwitchUse, AdminBase)
 admin.site.register(ToolType, AdminBase)
-admin.site.register(QueuedWorkflow, QueueAdmin)
-admin.site.register(InProgressWorkflow, QueueAdmin)
+#admin.site.register(QueuedWorkflow, QueueAdmin)
+#admin.site.register(InProgressWorkflow, QueueAdmin)
 admin.site.register(FileType, FileTypeAdmin)
 admin.site.register(Tool, ToolAdmin)
 admin.site.register(ToolGroup, ToolGroupAdmin)
