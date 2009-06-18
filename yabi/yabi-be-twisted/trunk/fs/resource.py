@@ -60,6 +60,11 @@ class FileCopyResource(resource.PostableResource):
             sbend = getattr(self.fsresource(), "child_%s"%src_be)
             dbend = getattr(self.fsresource(), "child_%s"%dst_be)
             
+            # if our destination path ends with a '/', append the filename from the source onto it. This makes sure we don't write out 
+            # the destination file as "fifo_sdfsdf"
+            if dst_path.endswith("/"):
+                dst_path+=src_path.rsplit("/",1)[-1]
+            
             #print "Copying from",sbend,"to",dbend
             
             # create our delay generator in case things go pear shape

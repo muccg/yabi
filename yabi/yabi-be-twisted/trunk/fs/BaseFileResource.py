@@ -110,8 +110,18 @@ class BaseFileResource(resource.PostableResource):
             print "fifo",fifostream
             
             def begin_transfer_stream(deferred, stream):
-                print "b_t_s"
-                first_char=fh.read(1)
+                print "b_t_s",fh
+                
+                try:
+                    first_char=fh.read(1)
+                except IOError, e:
+                    if e.errno==11:
+                        # resource temporarily unavailable. write process has not begun!
+                        reactor.callLater(PIPE_RETRY_TIME,begin_transfer_stream, deferred, stream)
+                        return deferred
+                    else:
+                        raise
+                    
                 if len(first_char):
                     # stream flowing! lets connect and return
                     stream.prepush(first_char)                      # push this data back into the head of the stream

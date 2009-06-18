@@ -90,7 +90,8 @@ class GlobusURLCopy(object):
         
         # the copy to remote command
         proc = subprocess.Popen(    [  self.globus_url_copy,
-                                        #"-nodcau",                              # see bug #3902 ( http://bugzilla.globus.org/globus/show_bug.cgi?id=3902 )
+                                        "-nodcau",                              # see bug #3902 ( http://bugzilla.globus.org/globus/show_bug.cgi?id=3902 )
+                                        "-cd",                                  # create destination directories if they dont exist
                                         url,                                     # source
                                         remoteurl                                # destination
                                     ],
@@ -117,7 +118,7 @@ class GlobusURLCopy(object):
         
         # the copy to remote command
         proc = subprocess.Popen(    [  self.globus_url_copy,
-                                        #"-nodcau",                              # see bug #3902 ( http://bugzilla.globus.org/globus/show_bug.cgi?id=3902 )
+                                        "-nodcau",                              # see bug #3902 ( http://bugzilla.globus.org/globus/show_bug.cgi?id=3902 )
                                         remoteurl,                               # source
                                         url                                      # destination
                                     ],
