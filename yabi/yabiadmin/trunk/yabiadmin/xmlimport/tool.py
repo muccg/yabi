@@ -142,6 +142,8 @@ def tool_param_from_xml(param_element):
     if filter_name:
         tool_param.filter = ParameterFilter.objects.get(value=filter_name)
 
+    tool_param.default_value = attribute_value(param_element, 'value')
+
     return tool_param
 
 def add_input_filetypes(param_element, tool_param, default_input_filetypes):
