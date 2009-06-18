@@ -3,7 +3,7 @@ from django.contrib import admin
 from yabiadmin.yabmin import admin as yabmin
 
 import os
-#admin.autodiscover()
+admin.autodiscover()
 
 # dispatch to either webservice, admin or general
 urlpatterns = patterns('yabiadmin.yabmin.views',
