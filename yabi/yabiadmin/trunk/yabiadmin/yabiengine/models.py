@@ -12,7 +12,8 @@ class Workflow(models.Model):
     log_file_path = models.CharField(max_length=1000,null=True)
     last_modified_on = models.DateTimeField(null=True, auto_now=True, editable=False)
     created_on = models.DateTimeField(auto_now_add=True, editable=False)
-
+    status = models.CharField(max_length=64, blank=True)
+    
     def __unicode__(self):
         return self.name
 
@@ -24,6 +25,11 @@ class Job(models.Model):
     cpus = models.IntegerField(null=True)
     walltime = models.IntegerField(null=True)
     stageout = models.CharField(max_length=1000, null=True)
+    status = models.CharField(max_length=64, blank=True)
+
+    def __unicode__(self):
+        return "%s - %s" % (self.workflow.name, self.order)
+
 
 class Task(models.Model):
     job = models.ForeignKey(Job)
@@ -33,7 +39,8 @@ class Task(models.Model):
     command = models.TextField(blank=True)
     exec_backend = models.CharField(max_length=256)
     error_msg = models.CharField(max_length=1000, null=True)
-
+    status = models.CharField(max_length=64, blank=True)
+    
     def json(self):
 
         output = {
