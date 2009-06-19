@@ -1,11 +1,13 @@
 from CertificateProxy import CertificateProxy
 import GlobusURLCopy
 import GlobusRun
+import GlobusShell
 import Jobs
 
 # module level "singletons"
 Copy = GlobusURLCopy.GlobusURLCopy()
 Run = GlobusRun.GlobusRun()
+Shell = GlobusShell.GlobusShell()
 
 def _deprecated_RSL( **kws ):
     return """<?xml version="1.0"?>
