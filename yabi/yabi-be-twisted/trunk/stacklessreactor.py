@@ -4,7 +4,7 @@ from twisted.internet.epollreactor import EPollReactor as StacklessBaseReactor
 import stackless
 
 # seconds between running the greenthreads. 0.0 for flat out 100% CPU
-STACKLESS_MAX_PUMP_RATE = 0.001
+STACKLESS_MAX_PUMP_RATE = 0.1
 
 class StacklessReactor(StacklessBaseReactor):
     """This reactor does the stackless green thread pumping in the main thread, interwoven with the reactor pump"""

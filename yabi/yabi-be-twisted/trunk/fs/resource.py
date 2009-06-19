@@ -38,6 +38,8 @@ class FileCopyResource(resource.PostableResource):
         NOTE: parameters must be Content-Type: application/x-www-form-urlencoded
         eg. 
         """
+        print "POST!",request
+        
         deferred = parsePOSTDataRemoteWriter( request,
             self.maxMem, self.maxFields, self.maxSize )
         
@@ -65,7 +67,7 @@ class FileCopyResource(resource.PostableResource):
             if dst_path.endswith("/"):
                 dst_path+=src_path.rsplit("/",1)[-1]
             
-            #print "Copying from",sbend,"to",dbend
+            print "Copying from",sbend,"to",dbend
             
             # create our delay generator in case things go pear shape
             src_fail_delays = sbend.NonFatalRetryGenerator()
@@ -85,27 +87,45 @@ class FileCopyResource(resource.PostableResource):
                     
                     # the connection should now be pumping. We now have to wait for both processes to terminate. Then we get these processes results
                     def check_processes(deferred, reader, writer):
+                        #print "check_processes",reader,writer
+                        
                         # we poll each process for exit codes.
                         wx = writer.poll()
                         rx = reader.poll()
                         
-                        if wx==None or rx==None:
-                            # recall ourselves later
+                        #print "wx:",wx,"rx:",rx
+                        
+                        if wx==None and rx==None:
+                            # recall ourselves later. both haven't finished
                             reactor.callLater(PROCESS_CHECK_TIME, check_processes, deferred, reader, writer)
                         else:
-                            # we have both giving an exit code.
-                            read_stdout = reader.stdout.read()
-                            write_stdout = writer.stdout.read()
-                            
-                            reader,writer=None,None
+                            # we have one giving an exit code.
+                            read_stdout=""
+                            write_stdout=""
+                            if rx:
+                                read_stdout = reader.stdout.read()
+                            if wx:
+                                write_stdout = writer.stdout.read()
                             
                             if wx==0 and rx==0:
                                 # success
                                 return deferred.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream="File copied successfuly!\n"))
                             else:
-                                # something went wrong
+                                # something went wrong with one of the processes. If a process is still alive, kill it
+                                if wx==None:
+                                    #print "killing writer ",writer
+                                    writer.kill()
+                                    #wx = "Killed due to error on reader"
+                                if rx==None:
+                                    #print "killing reader ",reader
+                                    reader.kill()
+                                    #rx = "Killed due to error on writer"
+                                    
+                                
                                 if True in ["Permission denied" in error for error in (read_stdout, write_stdout)]:
                                     return deferred.callback(http.Response( responsecode.NOT_ALLOWED, {'content-type': http_headers.MimeType('text', 'plain')}, stream="File copy failed! Permission denied\n"))
+                                elif True in ["No such file or directory" in error for error in (read_stdout, write_stdout)]:
+                                    return deferred.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream="File copy failed! No such file or directory\n"))
                                 else:
                                     next_delay = 0.0
                                     
@@ -126,8 +146,8 @@ class FileCopyResource(resource.PostableResource):
                                         reactor.callLater( next_delay, dbend.GetWriteFifo, dst_path, _write_ready)
                                         return
                                     else:
-                                        response  = "Read process:\nexit code:%d\noutput:%s\n\n--------------------\n\n"%(rx,read_stdout)
-                                        response += "Write process:\nexit code:%d\noutput:%s\n\n--------------------\n\n"%(wx,write_stdout)
+                                        response  = "Read process:\nexit code:%s\noutput:%s\n\n--------------------\n\n"%(rx,read_stdout)
+                                        response += "Write process:\nexit code:%s\noutput:%s\n\n--------------------\n\n"%(wx,write_stdout)
                                         return deferred.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream="File copy failed!\n"+response))
                     
                     reactor.callLater(PROCESS_CHECK_TIME, check_processes, result_channel, procr, procw)
