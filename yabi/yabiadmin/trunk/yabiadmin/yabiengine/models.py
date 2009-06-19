@@ -1,5 +1,7 @@
 from django.db import models
 from yabiadmin.yabmin.models import User
+from django.utils import simplejson as json, webhelpers
+
 
 class Workflow(models.Model):
     name = models.CharField(max_length=255)
@@ -23,13 +25,35 @@ class Job(models.Model):
     walltime = models.IntegerField(null=True)
     stageout = models.CharField(max_length=1000, null=True)
 
-class Subjob(models.Model):
+class Task(models.Model):
     job = models.ForeignKey(Job)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(null=True)
     job_identifier = models.TextField()
     command = models.TextField(blank=True)
+    exec_backend = models.CharField(max_length=256)
     error_msg = models.CharField(max_length=1000, null=True)
+
+    def json(self):
+
+        output = {
+            "yabiusername":self.job.workflow.user.name,
+            "taskid":self.id,
+            "statusurl":webhelpers.url("/engine/task/"),
+            "stagein":[],
+            "exec":{
+            "command":self.command,
+            "backend":self.exec_backend,
+            },
+            "stageout":self.job.stageout
+            }
+
+        stageins = self.stagein_set.all()
+        for s in stageins:
+            output["stagein"].append({"srcbackend":s.src_backend, "srcpath":s.src_path, "dstbackend":s.dst_backend, "dstpath":s.dst_path.strip(), "order":s.order})
+
+        return json.dumps(output)
+
 
 class StageIn(models.Model):
     src_backend = models.CharField(max_length=256)
@@ -37,7 +61,7 @@ class StageIn(models.Model):
     dst_backend = models.CharField(max_length=256)
     dst_path = models.TextField()
     order = models.IntegerField()
-    subjob = models.ForeignKey(Subjob)
+    task = models.ForeignKey(Task)
 
 class QueueBase(models.Model):
     class Meta:
@@ -55,7 +79,7 @@ class QueueBase(models.Model):
 class QueuedWorkflow(QueueBase):
     pass
 
-class SysLog(models.Model):
+class Syslog(models.Model):
     message = models.TextField(blank=True)
     table_name = models.CharField(max_length=64, null=True)
     table_id = models.IntegerField(null=True)

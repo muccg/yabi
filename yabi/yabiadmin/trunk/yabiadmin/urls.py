@@ -8,6 +8,7 @@ admin.autodiscover()
 # dispatch to either webservice, admin or general
 urlpatterns = patterns('yabiadmin.yabmin.views',
     (r'^ws/', include('yabiadmin.yabmin.wsurls')),
+    (r'^engine/', include('yabiadmin.yabiengine.urls')),
     (r'^admin/', include('yabiadmin.yabmin.adminurls')),
     (r'^admin/(.*)', admin.site.root)
 )
