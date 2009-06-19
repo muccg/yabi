@@ -63,3 +63,28 @@ shellfactory.namespace['app']=application
 shellfactory.namespace['site']=site
 shellfactory.username = ''
 shellfactory.password = ''
+
+# for testing lets fire up one task
+import stackless
+def tasklet(num):
+    while True:
+        #print "BAM",num
+        for i in xrange(100):
+            stackless.schedule()
+            
+def starttasklet():
+    print "starting tasklet"
+    for i in range(1000000):
+        task = stackless.tasklet(tasklet)
+        task.setup(i)
+        #print "starting",i
+        task.run()
+    print "done"
+    
+def startup():
+        # setup the cache
+        print "Startup..."
+        reactor.callLater(0.2,starttasklet) 
+
+reactor.addSystemEventTrigger("before", "startup", startup)
+
