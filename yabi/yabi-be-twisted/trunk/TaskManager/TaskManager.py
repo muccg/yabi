@@ -47,13 +47,17 @@ class TaskManager(object):
     def task(self, task):
         """Our top down greenthread code"""
         # stage in file
+        taskid = task['taskid']
+        
         for copy in task['stagein']:
             src_url = "%s/%s%s"%(copy['srcbackend'],task['yabiusername'],copy['srcpath'])
             dst_url = "%s/%s%s"%(copy['dstbackend'],task['yabiusername'],copy['dstpath'])
             if not Copy(src_url,dst_url):
                 # error copying!
-                print "ERROR in task",task['taskid']
+                print "TASK[%s]: Copy %s to %s Error!"%(taskid,src_url,dst_url)
                 return                      # finish task
+            else:
+                print "TASK[%s]: Copy %s to %s Success!"%(taskid,src_url,dst_url)
             
         for wait in range(100):
             print "waiting",wait

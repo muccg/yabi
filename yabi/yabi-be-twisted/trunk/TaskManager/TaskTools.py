@@ -71,7 +71,7 @@ def Get(host,port,path):
     while not get_complete[0] and not get_failed[0]:
         schedule()
         
-    if get_failed:
+    if get_failed[0]:
         raise GetFailure(get_failed[0])
     
     return get_complete[0]
@@ -112,7 +112,7 @@ def Post(host,port,path,**kws):
     while not get_complete[0] and not get_failed[0]:
         schedule()
         
-    if get_failed:
+    if get_failed[0]:
         raise GetFailure(get_failed[0])
     
     return get_complete[0]

@@ -109,6 +109,7 @@ class FileCopyResource(resource.PostableResource):
                             
                             if wx==0 and rx==0:
                                 # success
+                                print "File copy done!"
                                 return deferred.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream="File copied successfuly!\n"))
                             else:
                                 # something went wrong with one of the processes. If a process is still alive, kill it
