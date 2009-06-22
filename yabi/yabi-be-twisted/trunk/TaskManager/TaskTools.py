@@ -1,13 +1,17 @@
 """All these funcs are done in a blocking manner using a stackless aproach. Not your normal funcs"""
 
-from stackless import schedule
+from stackless import schedule, tasklet
 from twisted.web import client
 from twisted.internet import reactor
 import time
 
 COPY_RETRY = 3
 COPY_PATH = "/fs/copy"
-COPY_HOST, COPY_PORT = "localhost",8000
+
+EXEC_PATH = "/exec/%(backend)s/%(username)s"
+
+
+WS_HOST, WS_PORT = "localhost",8000
 USER_AGENT = "YabiStackless/0.1"
 
 def encode_multipart_formdata(fields={}, files=[], content_type='application/octet-stream'):
@@ -38,15 +42,69 @@ def encode_multipart_formdata(fields={}, files=[], content_type='application/oct
     return content_type, body
 
 
+class CallbackHTTPClient(client.HTTPPageGetter):
+    callback = None
+    
+    def SetCallback(self, callback):
+        self.callback = callback
+    
+    #def lineReceived(self, line):
+        #print "LINE_RECEIVED:",line
+        #return client.HTTPPageGetter.lineReceived(self,line)
+    
+    # ask for page as HTTP/1.1 so we get chunked response
+    def sendCommand(self, command, path):
+        self.transport.write('%s %s HTTP/1.1\r\n' % (command, path))
+        
+    # capture "connection:close" so we stay HTTP/1.1 keep alive!
+    def sendHeader(self, name, value):
+        if name.lower()=="connection" and value.lower()=="close":
+            return
+        return client.HTTPPageGetter.sendHeader(self,name,value)
+    
+    def rawDataReceived(self, data):
+        if self.callback:
+            print "CALLING CALLBACK",self.callback
+            # hook in here to process chunked updates
+            lines=data.split("\r\n")
+            chunk_size = int(lines[0].split(';')[0],16)
+            chunk = lines[1]
+            
+            assert len(chunk)==chunk_size, "Chunked transfer decoding error. Chunk size mismatch"
+            
+            # run the callback in a tasklet!!! Stops scheduler getting into a looped blocking state
+            reporter=tasklet(self.callback)
+            reporter.setup(chunk)
+            reporter.run()
+            
+        else:
+            print "NO CALLBACK"
+        return client.HTTPPageGetter.rawDataReceived(self,data)
 
+class CallbackHTTPClientFactory(client.HTTPClientFactory):
+    protocol = CallbackHTTPClient
+    
+    def __init__(self, url, method='GET', postdata=None, headers=None,
+                 agent="Twisted PageGetter", timeout=0, cookies=None,
+                 followRedirect=True, redirectLimit=20, callback=None):
+        self._callback=callback
+        return client.HTTPClientFactory.__init__(self, url, method, postdata, headers, agent, timeout, cookies, followRedirect, redirectLimit)
+    
+    def buildProtocol(self, addr):
+        p = client.HTTPClientFactory.buildProtocol(self, addr)
+        p.SetCallback(self._callback)
+        return p
+
+    def SetCallback(self, callback):
+        self._callback=callback
 
 
 class GetFailure(Exception):
     pass
 
-def Get(host,port,path):
+def Get(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory):
     """Stackless integrated twisted webclient"""
-    factory = client.HTTPClientFactory(
+    factory = factory_class(
         "http://%s:%d%s"%(host,port,path),
         agent = USER_AGENT
         )
@@ -77,21 +135,56 @@ def Get(host,port,path):
     return get_complete[0]
 
 import urllib
-def Post(host,port,path,**kws):
+def Post(path,**kws):
     """Stackless integrated twisted webclient"""
+    if 'host' in kws:
+        host = kws['host']
+        del kws['host']
+    else:
+        host = WS_HOST
+        
+    if 'port' in kws:
+        port = kws['port']
+        del kws['port']
+    else:
+        port = WS_PORT
+        
+    if 'datacallback' in kws:
+        datacallback = kws['datacallback']
+        del kws['datacallback']
+    else:
+        datacallback = None
+    
     postdata=urllib.urlencode(kws)
     #postdata="src=gridftp1/cwellington/bi01/cwellington/test&dst=gridftp1/cwellington/bi01/cwellington/test2"
     print "POST DATA:",postdata
     
-    factory = client.HTTPClientFactory(
-        "http://%s:%d%s"%(host,port,path),
-        agent = USER_AGENT,
-        method="POST",
-        postdata=postdata,
-        headers={
-            'Content-Type':"application/x-www-form-urlencoded;charset=utf-8"
-            }
-        )
+    if datacallback:
+        factory = CallbackHTTPClientFactory(
+            str("http://%s:%d%s"%(host,port,path)),
+            agent = USER_AGENT,
+            method="POST",
+            postdata=postdata,
+            headers={
+                'Content-Type':"application/x-www-form-urlencoded",
+                'Accept':'*/*',
+                'Content-Length':"65"
+                },
+            callback=datacallback
+            )
+    else:
+        factory = client.HTTPClientFactory(
+            str("http://%s:%d%s"%(host,port,path)),
+            agent = USER_AGENT,
+            method="POST",
+            postdata=postdata,
+            headers={
+                'Content-Type':"application/x-www-form-urlencoded",
+                'Accept':'*/*',
+                'Content-Length':"65"
+                },
+            )
+        
     reactor.connectTCP(host, port, factory)
     
     get_complete = [False]
@@ -117,7 +210,6 @@ def Post(host,port,path,**kws):
     
     return get_complete[0]
 
-
 def Sleep(seconds):
     """sleep tasklet for this many seconds. seconds is a float"""
     now = time.time()
@@ -130,10 +222,25 @@ def Copy(src,dst):
     print "Copying %s to %s"%(src,dst)
     for num in range(COPY_RETRY):
         try:
-            Post(COPY_HOST,COPY_PORT,COPY_PATH,src=src,dst=dst)
+            Post(COPY_PATH,src=src,dst=dst)
             # success!
             return True
         except GetFailure, err:
             print "Copy failed with error:",err
             Sleep(5.0)
-    return False
+    raise err
+    
+def Log(logpath,message):
+    """Report an error to the webservice"""
+    print "Reporting error to %s"%(logpath)
+    Post(logpath, message=message)              # error exception should bubble up and be caught
+    
+def Status(statuspath, message):
+    """Report some status to the webservice"""
+    print "Reporting status to %s"%(statuspath)
+    Post(statuspath, status=message)              # error exception should bubble up and be caught
+    
+def Exec(backend, username, command, callbackfunc=None, **kwargs):
+    # setup the status callback
+    Post(EXEC_PATH%{'backend':backend, 'username':username}, command=command, datacallback=callbackfunc, **kwargs )
+    

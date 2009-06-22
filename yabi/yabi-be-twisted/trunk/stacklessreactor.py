@@ -13,7 +13,6 @@ class StacklessReactor(StacklessBaseReactor):
         """Calls the base reactors doIteration, and then fires off all the stackless threads"""
         if timeout > STACKLESS_MAX_PUMP_RATE:
             timeout = STACKLESS_MAX_PUMP_RATE
-        #print ".",timeout
         stackless.schedule()
         return StacklessBaseReactor.doIteration(self,timeout)
 
