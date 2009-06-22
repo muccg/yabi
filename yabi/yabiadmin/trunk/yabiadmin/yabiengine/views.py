@@ -45,6 +45,9 @@ def status(request, model, id):
             model = str(model).lower()
             id = int(id)
             status = str(request.POST["status"])
+
+            # truncate status to 64 chars to avoid any sql field length errors
+            status = status[:64]
                 
             m = models[model]
             obj = m.objects.get(id=id)
