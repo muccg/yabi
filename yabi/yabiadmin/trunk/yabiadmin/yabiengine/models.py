@@ -90,3 +90,13 @@ class Syslog(models.Model):
     message = models.TextField(blank=True)
     table_name = models.CharField(max_length=64, null=True)
     table_id = models.IntegerField(null=True)
+
+    def __unicode__(self):
+        return self.message
+
+    def json(self):
+        return json.dumps({ 'table_name':self.table_name,
+                            'table_id':self.table_id,
+                            'message':self.message
+                            }
+                          )

@@ -3,7 +3,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import webhelpers
 from django.utils import simplejson as json
-from yabiadmin.yabiengine.models import Task, Job, Workflow
+from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
 
 def task(request):
 
@@ -20,17 +20,17 @@ def task(request):
         return HttpResponseNotFound("Object not found")
 
 
-def status(request, model=None, id=None, status=None):
+def status(request, model, id):
 
     models = {'task':Task, 'job':Job, 'workflow':Workflow}
+
+    # sanity checks
+    if model.lower() not in models.keys():
+        raise ObjectDoesNotExist()
 
     try:
 
         if request.method == "GET":
-
-            # sanity checks
-            if not model or not id or model.lower() not in models.keys():
-                raise ObjectDoesNotExist()
 
             m = models[model.lower()]
             obj = m.objects.get(id=id)
@@ -39,22 +39,49 @@ def status(request, model=None, id=None, status=None):
 
         else:
 
-            # check we have required params
-            for key in ["model", "id", "status"]:
-                if key not in request.POST:
-                    raise ObjectDoesNotExist()
+            if "status" not in request.POST:
+                raise ObjectDoesNotExist()
 
-            model = str(request.POST["model"]).lower()
-            id = int(request.POST["id"])
+            model = str(model).lower()
+            id = int(id)
             status = str(request.POST["status"])
                 
-            if model not in models.keys():
-                raise ObjectDoesNotExist()
-            
             m = models[model]
             obj = m.objects.get(id=id)
             obj.status=status
             obj.save()
+
+            return HttpResponse("Thanks!")
+
+    except (ObjectDoesNotExist,ValueError):
+        return HttpResponseNotFound("Object not found")
+
+
+def error(request, table, id):
+
+    try:
+
+        if request.method == "GET":
+            entries = Syslog.objects.filter(table_name=table, table_id=id)
+
+            if not entries:
+                raise ObjectDoesNotExist()
+
+            output = [{"table_name":x.table_name, "table_id":x.table_id, "message":x.message} for x in entries]
+            return HttpResponse(json.dumps(output))
+
+        else:
+
+            # check we have required params
+            if "message" not in request.POST:
+                raise ObjectDoesNotExist()
+
+            syslog = Syslog(table_name=str(table),
+                            table_id=int(id),
+                            message=str(request.POST["message"])
+                            )
+
+            syslog.save()
 
             return HttpResponse("Thanks!")
 
