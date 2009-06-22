@@ -98,6 +98,8 @@ class GlobusFileResource(BaseFileResource):
         if remotepath[-1]!='/':
             remotepath+='/'
         
+        self.username=None
+        
         # save the details of this connector
         self.remotemethod, self.remoteserver, self.remotepath, self.backend = remotemethod, remoteserver, remotepath, backend
         
@@ -314,12 +316,23 @@ class GlobusFileResource(BaseFileResource):
             _is_authed(deferred)
         return deferred
            
-    def http_MKDIR(self, request):
+    def http_MKDIR(self, request, path=None):
+        """mkdir command. Uses self.path. If path is passed in (not None), then it overrides the request.path, and we go make this path instead.
+        remember path must be a list.
+        """
+        
+        # TODO: clean this up. pass username through, don't set it on us. Could be a security flaw!
+        if path:
+            self.username = path[0]
+        else:
+            path=self.path
+            
+        
         # 1. auth our user. when they are authed, do the followng...
         def _is_authed(deferred):
             # fire up the ls process.
             usercert = self.authproxy.ProxyFile(self.username)
-            directory = os.path.join(self.remotepath,"/".join(self.path[1:]))           # path[0] is the username
+            directory = os.path.join(self.remotepath,"/".join(path[1:]))           # path[0] is the username
             proc = globus.Shell.mkdir(usercert,self.remoteserver,directory)
             
             data_result = []
@@ -365,12 +378,15 @@ class GlobusFileResource(BaseFileResource):
             _is_authed(deferred)
         return deferred
 
-    def http_DELETE(self, request, recurse=True):
+    def http_DELETE(self, request, recurse=True, path=None):
+        """If path is passed in, remove this remote path instead of self.path (like MKDIR)"""
+        path = path or self.path
+        
         # 1. auth our user. when they are authed, do the followng...
         def _is_authed(deferred):
             # fire up the ls process.
             usercert = self.authproxy.ProxyFile(self.username)
-            directory = os.path.join(self.remotepath,"/".join(self.path[1:]))           # path[0] is the username
+            directory = os.path.join(self.remotepath,"/".join(path[1:]))           # path[0] is the username
             proc = globus.Shell.rm(usercert,self.remoteserver,directory, args="-r" if recurse else "")
             
             data_result = []
@@ -413,10 +429,8 @@ class GlobusFileResource(BaseFileResource):
             # our user is valid
             _is_authed(deferred)
         return deferred
-
-
            
-    # TODO:, the following in a mixin
+    # TODO: move the following into a mixin
     def AuthProxyUser(self, username, backend, successcallback, deferred, *args):
         """Auth a user via getting the credentials from the json yabiadmin backend. When the credentials are gathered, successcallback is called with the deferred.
         The deferred should be the result channel your result will go back down"""

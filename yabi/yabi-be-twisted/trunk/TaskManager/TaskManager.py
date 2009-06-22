@@ -2,6 +2,8 @@ from twisted.web import client
 from twisted.internet import reactor
 import json
 import stackless
+import weakref
+import random
 
 from TaskTools import Copy, Sleep, Log, Status, Exec
 
@@ -13,8 +15,23 @@ class TaskManager(object):
     JOBLESS_PAUSE = 5.0                 # wait this long when theres no more jobs, to try to get another job
     JOB_PAUSE = 0.0                     # wait this long when you successfully got a job, to get the next job
     
+    WORKING_DIR_CHARS="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789"
+    WORKING_DIR_LEN = 16                # length of filename for working directory
+    
     def __init__(self):
         self.pausechannel = stackless.channel()
+    
+        self._tasks=weakref.WeakKeyDictionary()                  # keys are weakrefs. values are remote working directory
+    
+    def make_unique_name(self, prefix="work-",suffix=""):
+        """make a unique name for the working directory"""
+        makename = lambda: prefix+"".join([random.choice(self.WORKING_DIR_CHARS) for num in range(self.WORKING_DIR_LEN)])+suffix
+        
+        name = makename()
+        while name in self._tasks.values():
+            name = makename()
+            
+        return name
     
     def start(self):
         """Begin the task manager by going and getting a task"""
@@ -39,6 +56,8 @@ class TaskManager(object):
         tasklet = stackless.tasklet(self.task)
         tasklet.setup(taskdescription)
         tasklet.run()
+        
+        self._tasks[tasklet] = None
         
         # task successfully started. Lets try and start anotherone.
         self.pausechannel.send(self.JOB_PAUSE)
@@ -108,6 +127,17 @@ class TaskManager(object):
             
             print "TASK[%s]: Copy %s to %s Success!"%(taskid,src_url,dst_url)
         
+        # make our working directory
+        status("mkdir")
+        dirname = self.make_unique_name()
+        print "Making directory",dirname
+        self._tasks[stackless.getcurrent()]=dirname
+        #try:
+            ##Mkdir()
+            #pass
+        #except 
+        
+        
         # now we are going to run the job
         status("exec")
         
@@ -123,7 +153,7 @@ class TaskManager(object):
         log("Submitting to %s command: %s"%(task['exec']['backend'],task['exec']['command']))
         
         try:
-            Exec(task['exec']['backend'], task['yabiusername'], command=task['exec']['command'], directory="/tmp", callbackfunc=_task_status_change)                # this blocks untill the command is complete.
+            Exec(task['exec']['backend'], task['yabiusername'], command=task['exec']['command'], directory="/tmp", stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change)                # this blocks untill the command is complete.
             log("Execution finished")
         except GetFailure, error:
             # error executing
@@ -135,5 +165,8 @@ class TaskManager(object):
         # stageout
         log("Staging out results")
         status('stageout')
+        
+        # recursively copy the working directory to our stageout area
+        log("Staging out remote %s to %s..."%("/tmp",task['stageout']))
         
         
