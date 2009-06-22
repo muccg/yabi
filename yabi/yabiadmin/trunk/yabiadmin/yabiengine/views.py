@@ -8,10 +8,12 @@ from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
 def task(request):
 
     try:
-        tasks = Task.objects.all()
+        tasks = Task.objects.filter(status="")
 
         if tasks:
             task = tasks[0]
+            task.status="requested"
+            task.save()
             return HttpResponse(task.json())
         else:
             raise ObjectDoesNotExist()

@@ -46,7 +46,7 @@ class Task(models.Model):
         output = {
             "yabiusername":self.job.workflow.user.name,
             "taskid":self.id,
-            "statusurl":webhelpers.url("/engine/task/"),
+            "statusurl":webhelpers.url("/engine/status/task/%d" % self.id),
             "stagein":[],
             "exec":{
             "command":self.command,

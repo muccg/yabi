@@ -15,7 +15,7 @@ class JobAdmin(admin.ModelAdmin):
     list_display = ['order', 'start_time', 'end_time', 'cpus', 'walltime', 'stageout']
 
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ['job', 'start_time', 'end_time', 'job_identifier', 'command', 'error_msg']
+    list_display = ['job', 'start_time', 'end_time', 'job_identifier', 'command', 'error_msg', 'status']
 
 class StageInAdmin(admin.ModelAdmin):
     list_display = ['src_backend', 'src_path', 'dst_backend', 'dst_path', 'order', 'task']
