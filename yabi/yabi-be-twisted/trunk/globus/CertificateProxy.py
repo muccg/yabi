@@ -120,4 +120,4 @@ class CertificateProxy(object):
         print "User proxy cert created in",proxyfile
         
         return _decode_time(res.strip())
-        
+      

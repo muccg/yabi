@@ -35,7 +35,7 @@ class FileMkdirResource(resource.PostableResource):
         NOTE: parameters must be Content-Type: application/x-www-form-urlencoded
         eg. 
         """
-        print "POST!",request
+        #print "POST!",request
         
         deferred = parsePOSTDataRemoteWriter( request,
             self.maxMem, self.maxFields, self.maxSize )
@@ -62,7 +62,7 @@ class FileMkdirResource(resource.PostableResource):
             
             if isinstance(mkdir,defer.Deferred):
                 def _mkdir_done(res):
-                    print dir(res)
+                    #print dir(res)
                     if res.code!=200:
                         client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "NOT OK: %s\n"%str(res.stream.read())) )
                     else:

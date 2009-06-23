@@ -34,7 +34,13 @@ class LocalFileResource(BaseFileResource):
         self.backend = backend
         
         self.directory=directory
-        
+    
+    def PrefixRemotePath(self, urlpath):
+        """url path gridftp1/cwellington/bi01/cwellington/work-ZGTlVm25EyG7POq5
+        becomes fs path /tmp/filesystem/bi01/cwellington/work-ZGTlVm25EyG7POq5
+        """
+        return os.path.join(self.directory, "/".join(urlpath.split("/")[2:]))
+    
     def GetFilename(self, path=None):
         """Using this classes 'path', return the real FS path that this refers to"""
         return os.path.join(self.directory,sep.join(path or self.path))
@@ -59,7 +65,7 @@ class LocalFileResource(BaseFileResource):
         path = parts[1:]
         
         src = self.GetFilename(path)
-        print "FS READ:",fifo,src
+        #print "FS READ:",fifo,src
         
         # the copy to remote command
         proc = subprocess.Popen(    [  self.copy,
@@ -96,7 +102,7 @@ class LocalFileResource(BaseFileResource):
         path = parts[1:]
             
         dst = self.GetFilename(path)
-        print "FS WRITE:",fifo,dst
+        #print "FS WRITE:",fifo,dst
         
         # the copy to remote command
         proc = subprocess.Popen(    [  self.copy,
@@ -191,7 +197,8 @@ class LocalFileResource(BaseFileResource):
                     storage['files'].append( (f,os.stat(pathname)[stat.ST_SIZE],timeproc(os.stat(pathname)[stat.ST_MTIME])) )
                 else:
                     # Unknown file type, print a message
-                    print 'Skipping %s' % pathname
+                    #print 'Skipping %s' % pathname
+                    pass
                     
             shortenedpath = "/"+username+top[len(self.directory):]              # munge the filename into its url part path
             subtrees[shortenedpath]=storage
@@ -208,7 +215,6 @@ class LocalFileResource(BaseFileResource):
         fullpath = self.GetFilename(path[1:])
         
         os.makedirs(fullpath)
-        
         
         return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Directory successfully made.\n")
     

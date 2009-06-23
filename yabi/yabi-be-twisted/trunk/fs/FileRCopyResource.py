@@ -5,7 +5,7 @@ import weakref
 import sys, os
 
 import stackless
-from TaskManager.TaskTools import Sleep, Copy, List, Mkdir
+from TaskManager.TaskTools import Sleep, Copy, List, Mkdir, GetFailure
 
 class FileRCopyResource(resource.PostableResource):
     VERSION=0.1
@@ -37,7 +37,7 @@ class FileRCopyResource(resource.PostableResource):
         NOTE: parameters must be Content-Type: application/x-www-form-urlencoded
         eg. 
         """
-        print "POST!",request
+        #print "POST!",request
         
         deferred = parsePOSTDataRemoteWriter( request,
             self.maxMem, self.maxFields, self.maxSize )
@@ -79,8 +79,12 @@ class FileRCopyResource(resource.PostableResource):
                         # make directory
                         destpath = directory[len(src_path)+1:]
                         if dst+destpath not in created:
-                            print dst+destpath,"not in",created
-                            Mkdir(dst+destpath)
+                            #print dst+destpath,"not in",created
+                            try:
+                                Mkdir(dst+destpath)
+                            except GetFailure, gf:
+                                # ignore. directory probably already exists
+                                pass
                             created.append(dst+destpath)
                              
                         for file,size,date in fsystem[directory]['files']:

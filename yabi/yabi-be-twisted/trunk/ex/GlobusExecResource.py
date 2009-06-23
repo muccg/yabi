@@ -73,7 +73,7 @@ class GlobusExecResource(BaseExecResource):
         
         # callback for when input data processing is completed
         def callback(result):
-            print "cb1"
+            #print "cb1"
             args = request.args
             
             if "command" not in args:
@@ -85,7 +85,7 @@ class GlobusExecResource(BaseExecResource):
                         val = cast(args[key][0])
                     except ValueError, ve:
                         return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "Cannot convert parameter '%s' to %s\n"%(key,cast))
-                    print "setting",key,"to",cast(args[key][0])
+                    #print "setting",key,"to",cast(args[key][0])
                     setattr(self,key,cast(args[key][0]))
             
             # use shlex to parse the command into executable and arguments
@@ -119,7 +119,7 @@ class GlobusExecResource(BaseExecResource):
                 # we should spawn our process to submit the job
                 usercert = self.authproxy.ProxyFile(self.username)
                 proc = globus.Run.run(usercert,rslfile,self.host)
-                print "spawned",proc
+                #print "spawned",proc
                 
                 # now we watch this processes stdout stream... we _should_ get...
                 ### Submitting job...Done.
@@ -135,9 +135,9 @@ class GlobusExecResource(BaseExecResource):
                 from twisted.web2.stream import readStream
                 
                 def _got_data(data):
-                    print "_g_d1 ->",data,"<-"
+                    #print "_g_d1 ->",data,"<-"
                     if data:
-                        print "DATA",data,"END"
+                        #print "DATA",data,"END"
                         
                         # job submission has a result.
                         line = [l.strip() for l in data.split("\n")]
@@ -154,7 +154,7 @@ class GlobusExecResource(BaseExecResource):
                         # line 1... job id
                         assert line[1].startswith("Job ID:")
                         job_id = line[1].split(":")[-1]
-                        print "Job ID:", job_id
+                        #print "Job ID:", job_id
                         
                         # line 2... termination time
                         assert line[2].startswith("Termination time:")
@@ -169,7 +169,7 @@ class GlobusExecResource(BaseExecResource):
                         client_channel.callback( http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
                         
                         def callback(uuid,state):
-                            print "uuid:",uuid,"state:",state
+                            #print "uuid:",uuid,"state:",state
                             client_stream.write("%s\n"%state)
                             
                             if state=="Done":
@@ -178,7 +178,7 @@ class GlobusExecResource(BaseExecResource):
                         def errback(uuid,error):
                             error = "Job status check failed!: %s - %s\n"%(uuid,error)
                             client_stream.write(error)
-                            print error
+                            #print error
                             client_stream.finish()                      # close it. we're cactus
                         
                         self.jobs.AddJob( job_id, self.username, epr_xml, callback=callback, errback=errback )
@@ -187,19 +187,19 @@ class GlobusExecResource(BaseExecResource):
                         raise Exception, "close stream"
                         
                 # this deferred will be triggered on finish
-                print "STDOUT=",proc.stdout
-                print dir(proc.stdout)
+                #print "STDOUT=",proc.stdout
+                #print dir(proc.stdout)
                 deferred = readStream(proc.stdout, _got_data)
                 
                 # when we are finished, trigger the cliennt channel to respond
                 deferred.addCallback( lambda res: client_channel.callback( http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Stream finished: %s\n"%(res)) ) )
                 
                 def stream_errorback(fail):
-                    print fail
+                    #print fail
                     if isinstance(fail,Failure):
                         if fail.getErrorMessage()=="close stream":
                             fail.trap(Exception)
-                            print "Stream closed"
+                            #print "Stream closed"
                             return None
                         else:
                             client_channel.callback( http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Job stream failed! Full error Follows:\n\n%s\n"%(fail)) )
@@ -243,16 +243,16 @@ class GlobusExecResource(BaseExecResource):
         
         # now if the page fails for some reason. deal with it
         def _doFailure(data):
-            print "Failed:",factory,":",type(data),data.__class__
-            print data
+            #print "Failed:",factory,":",type(data),data.__class__
+            #print data
             
             deferred.callback( http.Response( responsecode.UNAUTHORIZED, {'content-type': http_headers.MimeType('text', 'plain')}, "User: %s does not have credentials for this backend\n"%username) )
             
         # if we get the credentials decode them and auth them
         def _doSuccess(data):
-            print "Success",deferred,args,successcallback
+            #print "Success",deferred,args,successcallback
             credentials=json.loads(data)
-            print "Credentials gathered successfully for user %s"%username
+            #print "Credentials gathered successfully for user %s"%username
             
             # auth the user
             self.authproxy.CreateUserProxy(username,credentials['cert'],credentials['key'],credentials['password'])

@@ -79,7 +79,7 @@ class BaseFileResource(resource.PostableResource):
         
         # get our read fifo. when its ready, the callback will be just to stream this out the connection
         def callback( process, fifo ):
-            print "render ready callback",process,fifo
+            #print "render ready callback",process,fifo
         
             # just a quick check to see if the process has died. In the example of /bin/cp, the output fifo will NEVER be opened,
             # because the process is already dead. If the process is already dead, we're cactus, and we should report this death.
@@ -107,10 +107,10 @@ class BaseFileResource(resource.PostableResource):
             
             # our fifo stream object
             fifostream=FifoStream(fh)
-            print "fifo",fifostream
+            #print "fifo",fifostream
             
             def begin_transfer_stream(deferred, stream):
-                print "b_t_s",fh
+                #print "b_t_s",fh
                 
                 try:
                     first_char=fh.read(1)
@@ -142,7 +142,7 @@ class BaseFileResource(resource.PostableResource):
                         else:
                             # error. capture it
                             errortext = process.stdout.read()
-                            print "ERROR:",errortext
+                            #print "ERROR:",errortext
                             
                             if "No such file or directory" in errortext:
                                 deferred.callback( http.Response( responsecode.NOT_FOUND, {'content-type': http_headers.MimeType('text', 'plain')}, stream="Remote file not found: %s\n"%(sep.join(self.path))) )
@@ -185,7 +185,7 @@ class BaseFileResource(resource.PostableResource):
             def cb( proc, fifo ):
                 d.callback( os.fdopen(os.open(fifo, os.O_WRONLY | os.O_NONBLOCK)) )
             
-            print "Calling GetWriteFifo",sep.join(path), cb
+            #print "Calling GetWriteFifo",sep.join(path), cb
             self.GetWriteFifo( sep.join(path), cb )
              
             return d

@@ -12,6 +12,8 @@ from FileDeleteResource import FileDeleteResource
 from FileListResource import FileListResource
 from FileMkdirResource import FileMkdirResource
 
+from FSCache import FSCache
+
 class FSResource(resource.Resource):
     """This is the resource that connects to all the filesystem backends"""
     VERSION=0.1
@@ -24,6 +26,7 @@ class FSResource(resource.Resource):
             bend.backend = name                     # store the name in the backend, so the backend knows about it
             self.backends[name]=bend
             self.putChild(name,bend)
+            FSCache[name]=bend
         
     def render(self, request):
         # break our request path into parts

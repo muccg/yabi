@@ -5,42 +5,18 @@ from twisted.web import client
 from twisted.internet import reactor
 import time
 import json
+import os
 
 COPY_RETRY = 3
 COPY_PATH = "/fs/copy"
+RCOPY_PATH = "/fs/rcopy"
 LIST_PATH = "/fs/ls"
 EXEC_PATH = "/exec/%(backend)s/%(username)s"
 MKDIR_PATH = "/fs/mkdir"
+RM_PATH = "/fs/rm"
 
 WS_HOST, WS_PORT = "localhost",8000
 USER_AGENT = "YabiStackless/0.1"
-
-def encode_multipart_formdata(fields={}, files=[], content_type='application/octet-stream'):
-    """
-    fields is a sequence of (name, value) elements for regular form fields.
-    files is a sequence of (name, filename, value) elements for data to be uploaded as files
-    content_type is the contentype to send
-    Return (content_type, body) ready for httplib.HTTP instance
-    """
-    BOUNDARY = '----------ThIs_Is_tHe_bouNdaRY_$'
-    CRLF = '\r\n'
-    L = []
-    for (key, value) in fields.iteritems():
-        L.append('--' + BOUNDARY)
-        L.append('Content-Disposition: form-data; name="%s"' % key)
-        L.append('')
-        L.append(str(value))
-    for (key, filename, value) in files:
-        L.append('--' + BOUNDARY)
-        L.append('Content-Disposition: form-data; name="%s";filename="%s"' % (key, filename))
-        L.append('Content-Type: %s' % content_type)
-        L.append('')
-        L.append(str(value))
-    L.append('--' + BOUNDARY + '--')
-    L.append('')
-    body = CRLF.join(L)
-    content_type = 'multipart/form-data; boundary=%s' % BOUNDARY
-    return content_type, body
 
 
 class CallbackHTTPClient(client.HTTPPageGetter):
@@ -231,6 +207,16 @@ def Copy(src,dst,retry=COPY_RETRY):
             Sleep(5.0)
     raise err
     
+def RCopy(src, dst):
+    print "RCopying %s to %s"%(src,dst)
+    try:
+        Post(RCOPY_PATH,src=src,dst=dst)
+        # success!
+        return True
+    except GetFailure, err:
+        print "Copy failed with error:",err
+        raise
+    
 def List(path,recurse=False):
     #print "posting",LIST_PATH,path,recurse
     data = Post(LIST_PATH,dir=path,recurse=recurse)
@@ -240,7 +226,9 @@ def List(path,recurse=False):
 def Mkdir(path):
     return Post(MKDIR_PATH,dir=path)
 
-     
+def Rm(path, recurse=False):
+    return Post(RM_PATH,dir=path,recurse=recurse)
+
 def Log(logpath,message):
     """Report an error to the webservice"""
     print "Reporting error to %s"%(logpath)
@@ -255,3 +243,6 @@ def Exec(backend, username, command, callbackfunc=None, **kwargs):
     # setup the status callback
     Post(EXEC_PATH%{'backend':backend, 'username':username}, command=command, datacallback=callbackfunc, **kwargs )
     
+def UserCreds(username,backend):
+    """Get a users credentials"""
+    return json.loads(Get(str('/yabiadmin/ws/credential/%s/%s/'%(username,backend))))

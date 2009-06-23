@@ -116,6 +116,12 @@ class GlobusFileResource(BaseFileResource):
             self.authproxy = globus.CertificateProxy()
         else:
             self.authproxy = authproxy
+    
+    def PrefixRemotePath(self, urlpath):
+        """url path gridftp1/cwellington/bi01/cwellington/work-ZGTlVm25EyG7POq5
+        becomes fs path /scratch/bi01/cwellington/work-ZGTlVm25EyG7POq5
+        """
+        return os.path.join(self.remotepath, "/".join(urlpath.split("/")[2:]))
         
     def _make_remote_url(self, path=None):
         """return the full url for out path"""
@@ -227,12 +233,12 @@ class GlobusFileResource(BaseFileResource):
             
             # now we just read the output until process is finished
             def _ls_read():
-                print "_ls_read"
+                #print "_ls_read"
                 
                 data = proc.stdout.read(BUFFER_SIZE)
                 
                 if len(data):
-                    print "read",len(data),"bytes"
+                    #print "read",len(data),"bytes"
                     
                     data_result.append(data)
                     
@@ -241,7 +247,7 @@ class GlobusFileResource(BaseFileResource):
                     # reschedule us
                     reactor.callLater(0.0 if len(data) else 0.2,_ls_read)                   # back off if we got no data
                 else:
-                    print "PROC ENDED",proc.poll
+                    #print "PROC ENDED",proc.poll
                     data_result.append(proc.stdout.read())
                 
                     #print "RESULT",data_result
@@ -255,7 +261,7 @@ class GlobusFileResource(BaseFileResource):
                         ls_data[directory]=ls_data[None]
                         del ls_data[None]
                         
-                    print "".join(data_result)
+                    #print "".join(data_result)
                         
                     # now we need to munge the path locations to be url descendents, not remote fs descendants
                     remote_mount_parts = self.remotepath.split("/")
@@ -293,7 +299,7 @@ class GlobusFileResource(BaseFileResource):
                             prefix_parts = request_parts
                         else:
                             prefix_parts, culled = request_parts[:-len(path_parts_sans_username)],request_parts[-len(path_parts_sans_username):]
-                            print culled, path_parts_sans_username
+                            #print culled, path_parts_sans_username
                             assert culled==path_parts_sans_username
                         
                         #print prefix_parts
@@ -346,12 +352,12 @@ class GlobusFileResource(BaseFileResource):
             
             # now we just read the output until process is finished
             def _mkdir_read():
-                print "_mkdir_read"
+                #print "_mkdir_read"
                 
                 data = proc.stdout.read(BUFFER_SIZE)
                 
                 if len(data):
-                    print "read",len(data),"bytes"
+                    #print "read",len(data),"bytes"
                     
                     data_result.append(data)
                     
@@ -363,7 +369,7 @@ class GlobusFileResource(BaseFileResource):
                     returncode = proc.poll()
                     data_result.append(proc.stdout.read())              # read the last bit of data
                 
-                    print "RC:",returncode
+                    #print "RC:",returncode
                 
                     if returncode:
                         # failure
@@ -401,12 +407,12 @@ class GlobusFileResource(BaseFileResource):
             
             # now we just read the output until process is finished
             def _rm_read():
-                print "_rm_read"
+                #print "_rm_read"
                 
                 data = proc.stdout.read(BUFFER_SIZE)
                 
                 if len(data):
-                    print "read",len(data),"bytes"
+                    #print "read",len(data),"bytes"
                     
                     data_result.append(data)
                     
@@ -453,14 +459,14 @@ class GlobusFileResource(BaseFileResource):
         
         # now if the page fails for some reason. deal with it
         def _doFailure(data):
-            print "Failed:",factory,":",type(data),data.__class__
-            print data
+            #print "Failed:",factory,":",type(data),data.__class__
+            #print data
             
             deferred.callback( http.Response( responsecode.UNAUTHORIZED, {'content-type': http_headers.MimeType('text', 'plain')}, "User: %s does not have credentials for this backend\n"%username) )
             
         # if we get the credentials decode them and auth them
         def _doSuccess(data):
-            print "Success",deferred,args,successcallback
+            #print "Success",deferred,args,successcallback
             credentials=json.loads(data)
             print "Credentials gathered successfully for user %s"%username
             

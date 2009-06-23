@@ -37,7 +37,7 @@ class FileCopyResource(resource.PostableResource):
         NOTE: parameters must be Content-Type: application/x-www-form-urlencoded
         eg. 
         """
-        print "POST!",request
+        #print "POST!",request
         
         deferred = parsePOSTDataRemoteWriter( request,
             self.maxMem, self.maxFields, self.maxSize )
@@ -66,7 +66,7 @@ class FileCopyResource(resource.PostableResource):
             if dst_path.endswith("/"):
                 dst_path+=src_path.rsplit("/",1)[-1]
             
-            print "Copying from",sbend,"to",dbend
+            #print "Copying from",sbend,"to",dbend
             
             # create our delay generator in case things go pear shape
             src_fail_delays = sbend.NonFatalRetryGenerator()
@@ -111,7 +111,7 @@ class FileCopyResource(resource.PostableResource):
                             
                             if wx==0 and rx==0:
                                 # success
-                                print "File copy done!"
+                                #print "File copy done!"
                                 return deferred.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream="File copied successfuly!\n"))
                             else:
                                 # something went wrong with one of the processes. If a process is still alive, kill it

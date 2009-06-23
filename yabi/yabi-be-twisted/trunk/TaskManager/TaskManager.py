@@ -4,8 +4,9 @@ import json
 import stackless
 import weakref
 import random
+import os
 
-from TaskTools import Copy, Sleep, Log, Status, Exec
+from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Mkdir, Rm, List, UserCreds, GetFailure
 
 class TaskManager(object):
     TASK_HOST = "localhost"
@@ -82,8 +83,6 @@ class TaskManager(object):
         return factory.deferred.addCallback(self.start_task).addErrback(_doFailure)
         
     def task(self,task, taskrunner=None):
-        print "JSON:",task
-        
         taskid = task['taskid']
         if not taskrunner:
             taskrunner=self.task_mainline
@@ -98,6 +97,10 @@ class TaskManager(object):
         
     def task_mainline(self, task):
         """Our top down greenthread code"""
+        print "=========JSON============="
+        print task
+        print "=========================="
+        
         # stage in file
         taskid = task['taskid']
         
@@ -122,22 +125,36 @@ class TaskManager(object):
                 status("error")
                 log("Copying %s to %s failed: %s"%(src_url,dst_url, error))
                 return              # finish task
-            
-            log("Copying %s to %s Success"%(src_url,dst_url))
-            
+           
             print "TASK[%s]: Copy %s to %s Success!"%(taskid,src_url,dst_url)
         
+        # get our credential working directory. We lookup the execution backends auth proxy cache, and get the users home directory from that
+        # this comes from their credentials.
+        usercreds = UserCreds(task['yabiusername'],task['exec']['backend'])
+        homedir = usercreds['homedir']
+                
         # make our working directory
         status("mkdir")
         dirname = self.make_unique_name()
-        print "Making directory",dirname
+        fulldirname = os.path.join(homedir,dirname)
+        print "Making directory",fulldirname
         self._tasks[stackless.getcurrent()]=dirname
-        #try:
-            ##Mkdir()
-            #pass
-        #except 
+        try:
+            Mkdir(fulldirname)
+        except GetFailure, error:
+            # error making directory
+            print "TASK[%s]:Mkdir failed!"%(taskid)
+            status("error")
+            log("Making working directory of %s failed: %s"%(dirname,error))
+            return 
         
-        
+        # we need to turn our backend path into a full remote fs path
+        # get our backend
+        from FSCache import FSCache
+        fs_bend_name = fulldirname.split("/")[0]
+        fs_bend = FSCache[fs_bend_name]
+        bend_path = fs_bend.PrefixRemotePath(fulldirname)
+         
         # now we are going to run the job
         status("exec")
         
@@ -153,7 +170,7 @@ class TaskManager(object):
         log("Submitting to %s command: %s"%(task['exec']['backend'],task['exec']['command']))
         
         try:
-            Exec(task['exec']['backend'], task['yabiusername'], command=task['exec']['command'], directory="/tmp", stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change)                # this blocks untill the command is complete.
+            Exec(task['exec']['backend'], task['yabiusername'], command=task['exec']['command'], directory=bend_path, stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change)                # this blocks untill the command is complete.
             log("Execution finished")
         except GetFailure, error:
             # error executing
@@ -167,6 +184,53 @@ class TaskManager(object):
         status('stageout')
         
         # recursively copy the working directory to our stageout area
-        log("Staging out remote %s to %s..."%("/tmp",task['stageout']))
+        log("Staging out remote %s to %s..."%(bend_path,task['stageout']))
+        
+        # make sure we have the stageout directory
+        log("making stageout directory %s"%task['stageout'])
+        try:
+            Mkdir(task['stageout'])
+        except GetFailure, error:
+            pass
+        
+        try:
+            RCopy(fulldirname+"/",task['stageout'])
+            log("Files successfuly staged out")
+        except GetFailure, error:
+            # error executing
+            print "TASK[%s]: Stageout failed!"%(taskid)
+            status("error")
+            log("Staging out remote %s to %s failed... %s"%(bend_path,task['stageout'],error))
+            return              # finish task
+        
+        # cleanup
+        status("cleaning")
+        log("Cleaning up job...")
+        
+        for copy in task['stagein']:
+            dst_url = "%s/%s%s"%(copy['dstbackend'],task['yabiusername'],copy['dstpath'])
+            log("Deleting %s..."%(dst_url))
+            try:
+                Rm(dst_url, recurse=True)
+            except GetFailure, error:
+                # error copying!
+                print "TASK[%s]: Delete %s Error!"%(dst_url)
+                status("error")
+                log("Deleting %s failed: %s"%(dst_url, error))
+                return              # finish task
+            
+        # cleanup working dir
+        try:
+            Rm(fulldirname, recurse=True)
+            log("Stageout directory %s deleted"%fulldirname)
+        except GetFailure, error:
+            # error copying!
+            print "TASK[%s]: Delete %s Error!"%(fulldirname)
+            status("error")
+            log("Deleting %s failed: %s"%(fulldirname, error))
+            return  
+        
+        log("Job completed successfully")
+        status("complete")
         
         

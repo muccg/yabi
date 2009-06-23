@@ -55,6 +55,10 @@ class BaseResource(resource.PostableResource):
         ## our handlers
         ##
         
+        ##
+        ## TODO CAVEAT: these backends should be created dynamically based on data pulled from the yabi backend webservice
+        ##
+        
         # filesystem backends
         self.child_fs = FSResource(
                 file = LocalFileResource(directory="/tmp/filesystem"),
