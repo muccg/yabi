@@ -2,7 +2,7 @@
 from twisted.web2 import resource, http_headers, responsecode, http, server, stream
 from twisted.internet import defer, reactor
 from os.path import sep
-import os, json
+import os, json, stat
 from submit_helpers import parsePOSTData, parsePUTData
 from FifoPool import Fifos
 import subprocess
@@ -143,7 +143,7 @@ class LocalFileResource(BaseFileResource):
         
         return defferedchain
               
-    def http_LIST(self,request):
+    def http_LIST_old(self,request):
         fullpath = self.GetFilename(self.path[1:])
         
         if not os.path.exists(fullpath) or not os.path.isdir(fullpath):
@@ -152,6 +152,82 @@ class LocalFileResource(BaseFileResource):
         contents = os.listdir(fullpath)
         
         return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, json.dumps(contents)+"\n")
+    
+    def http_LIST(self,request,path=None,username=None,recurse=False):
+        path = path or self.path
+        username = username or self.username
+        
+        fullpath = self.GetFilename(path[1:])
+        
+        if not os.path.exists(fullpath) or not os.path.isdir(fullpath):
+            return http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Path not a directory\n")
+        
+        def walktree(top):
+            '''recursively descend the directory tree rooted at top,
+            calling the callback function for each regular file'''
+        
+            storage={'files':[],'directories':[]}
+            subtrees={}
+            
+            for f in os.listdir(top):
+                pathname = os.path.join(top, f)
+                mode = os.stat(pathname)[stat.ST_MODE]
+                if stat.S_ISDIR(mode):
+                    # It's a directory, 
+                    storage['directories'].append( (f,os.stat(pathname)[stat.ST_SIZE],os.stat(pathname)[stat.ST_MTIME]) )
+                    if recurse:
+                        #recurse into it
+                        sub = walktree(pathname)
+                        subtrees.update(sub)
+                elif stat.S_ISREG(mode):
+                    # It's a file, call the callback function
+                    storage['files'].append( (f,os.stat(pathname)[stat.ST_SIZE],os.stat(pathname)[stat.ST_MTIME]) )
+                else:
+                    # Unknown file type, print a message
+                    print 'Skipping %s' % pathname
+                    
+            shortenedpath = "/"+username+top[len(self.directory):]              # munge the filename into its url part path
+            subtrees[shortenedpath]=storage
+            return subtrees
+        
+        contents = walktree(fullpath)
+        
+        return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, json.dumps(contents)+"\n")
+    
+    def http_MKDIR(self,request,path=None,username=None):
+        path = path or self.path
+        username = username or self.username
+        
+        fullpath = self.GetFilename(path[1:])
+        
+        os.makedirs(fullpath)
+        
+        
+        return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Directory successfully made.\n")
+    
+    def http_DELETE(self,request,path=None,username=None, recurse=False):
+        path = path or self.path
+        username = username or self.username
+        
+        if recurse:
+            def del_tree(root):
+                for path, dirs, files in os.walk(root, False):
+                    for fn in files:
+                        os.unlink(os.path.join(path, fn))
+                    for dn in dirs:
+                        os.rmdir(os.path.join(path, dn))
+                os.rmdir(root)
+        else:
+            def del_tree(root):
+                os.unlink(root)
+        
+        fullpath = self.GetFilename(path[1:])
+        
+        del_tree(fullpath)
+        
+        return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Deletion successful.\n")
+    
+    
     
     def locateChild(self, request, segments):
         # return our local file resource for these segments

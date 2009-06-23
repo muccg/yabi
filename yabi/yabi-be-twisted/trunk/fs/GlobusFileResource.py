@@ -212,12 +212,15 @@ class GlobusFileResource(BaseFileResource):
         
         return deferred
            
-    def http_LIST(self, request, recurse=False):
+    def http_LIST(self, request, recurse=False, path=None, username=None):
         # 1. auth our user. when they are authed, do the followng...
+        path = path or self.path
+        username = username or self.username
+        
         def _is_authed(deferred):
             # fire up the ls process.
-            usercert = self.authproxy.ProxyFile(self.username)
-            directory = os.path.join(self.remotepath,"/".join(self.path[1:]))           # path[0] is the username
+            usercert = self.authproxy.ProxyFile(username)
+            directory = os.path.join(self.remotepath,"/".join(path[1:]))           # path[0] is the username
             proc = globus.Shell.ls(usercert,self.remoteserver,directory, args="-alFR" if recurse else "-alF" )
             
             data_result = []
@@ -252,14 +255,20 @@ class GlobusFileResource(BaseFileResource):
                         ls_data[directory]=ls_data[None]
                         del ls_data[None]
                         
+                    print "".join(data_result)
+                        
                     # now we need to munge the path locations to be url descendents, not remote fs descendants
                     remote_mount_parts = self.remotepath.split("/")
                     assert remote_mount_parts[0]=="" and remote_mount_parts[-1]==""
                     remote_mount_parts=remote_mount_parts[1:-1]
                     #print remote_mount_parts
-                    request_parts = request.path.split("/")
-                    assert request_parts[0]=="" and request_parts[-1]==""
-                    request_parts=request_parts[1:-1]
+                    request_parts = path
+                    
+                    if request_parts[0]=="":
+                        request_parts=request_parts[1:]
+                    if request_parts[-1]=="":
+                        request_parts=request_parts[:-1]
+                     
                     #print request_parts
                     def munge_filename(remotepath):
                         remote_parts = remotepath.split("/")
@@ -277,8 +286,8 @@ class GlobusFileResource(BaseFileResource):
                         assert removedprefix == remote_mount_parts
                         
                         # prepend with the first parts of request_parts
-                        assert self.path[-1]=="", "path does not end in '/'"
-                        username_part,path_parts_sans_username = self.path[:1],self.path[1:-1]
+                        assert path[-1]=="", "path does not end in '/'"
+                        username_part,path_parts_sans_username = path[:1],path[1:-1]
                         if not len(path_parts_sans_username):
                             # asking relatively for "/" under be/username/
                             prefix_parts = request_parts
@@ -295,43 +304,41 @@ class GlobusFileResource(BaseFileResource):
                         
                         
                     processed_data = {}
-                    for key in ls_data:
-                        munged_filename = munge_filename(key)
-                        processed_data[munged_filename] = ls_data[key]
+                    try:
+                        for key in ls_data:
+                            munged_filename = munge_filename(key)
+                            processed_data[munged_filename] = ls_data[key]
+                    except AssertionError, ae:
+                        deferred.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, str(ae)))
                     
                     deferred.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, json.dumps(processed_data)))
-            
-                        
                     
             reactor.callLater(0,_ls_read)
             
             
         # 1. auth our user
         deferred = defer.Deferred()
-        if not self.authproxy.IsProxyValid(self.username):
+        if not self.authproxy.IsProxyValid(username):
             # we have to auth the user. we need to get the credentials json object from the admin mango app
-            self.AuthProxyUser(self.username,self.backend, _is_authed,deferred)
+            self.AuthProxyUser(username,self.backend, _is_authed,deferred)
         else:
             # our user is valid
             _is_authed(deferred)
         return deferred
            
-    def http_MKDIR(self, request, path=None):
+    def http_MKDIR(self, request, path=None, username=None):
         """mkdir command. Uses self.path. If path is passed in (not None), then it overrides the request.path, and we go make this path instead.
         remember path must be a list.
         """
         
-        # TODO: clean this up. pass username through, don't set it on us. Could be a security flaw!
-        if path:
-            self.username = path[0]
-        else:
-            path=self.path
+        path = path or self.path
+        username = username or self.username
             
         
         # 1. auth our user. when they are authed, do the followng...
         def _is_authed(deferred):
             # fire up the ls process.
-            usercert = self.authproxy.ProxyFile(self.username)
+            usercert = self.authproxy.ProxyFile(username)
             directory = os.path.join(self.remotepath,"/".join(path[1:]))           # path[0] is the username
             proc = globus.Shell.mkdir(usercert,self.remoteserver,directory)
             
@@ -370,22 +377,23 @@ class GlobusFileResource(BaseFileResource):
             
         # 1. auth our user
         deferred = defer.Deferred()
-        if not self.authproxy.IsProxyValid(self.username):
+        if not self.authproxy.IsProxyValid(username):
             # we have to auth the user. we need to get the credentials json object from the admin mango app
-            self.AuthProxyUser(self.username,self.backend, _is_authed,deferred)
+            self.AuthProxyUser(username,self.backend, _is_authed,deferred)
         else:
             # our user is valid
             _is_authed(deferred)
         return deferred
 
-    def http_DELETE(self, request, recurse=True, path=None):
+    def http_DELETE(self, request, recurse=True, path=None, username=None):
         """If path is passed in, remove this remote path instead of self.path (like MKDIR)"""
         path = path or self.path
+        username = username or self.username
         
         # 1. auth our user. when they are authed, do the followng...
         def _is_authed(deferred):
             # fire up the ls process.
-            usercert = self.authproxy.ProxyFile(self.username)
+            usercert = self.authproxy.ProxyFile(username)
             directory = os.path.join(self.remotepath,"/".join(path[1:]))           # path[0] is the username
             proc = globus.Shell.rm(usercert,self.remoteserver,directory, args="-r" if recurse else "")
             
@@ -422,9 +430,9 @@ class GlobusFileResource(BaseFileResource):
             
         # 1. auth our user
         deferred = defer.Deferred()
-        if not self.authproxy.IsProxyValid(self.username):
+        if not self.authproxy.IsProxyValid(username):
             # we have to auth the user. we need to get the credentials json object from the admin mango app
-            self.AuthProxyUser(self.username,self.backend, _is_authed,deferred)
+            self.AuthProxyUser(username,self.backend, _is_authed,deferred)
         else:
             # our user is valid
             _is_authed(deferred)
