@@ -113,7 +113,7 @@ class CredentialAdmin(AdminBase):
     inlines = [BackendInline]
 
 class BackendAdmin(AdminBase):
-    list_display = ['name', 'credential']
+    list_display = ['name', 'homedir', 'credential']
 
 
 admin.site.register(FileExtension, AdminBase)

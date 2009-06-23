@@ -247,6 +247,7 @@ class Credential(Base):
 
 class Backend(Base):
     name = models.CharField(max_length=255)
+    homedir = models.CharField(max_length=512, blank=True, null=True)
     credential = models.ForeignKey(Credential)
 
     def __unicode__(self):
@@ -255,6 +256,7 @@ class Backend(Base):
     def json(self):
         output = {
             'backend':self.name,
+            'homedir':self.homedir,
             'credential':self.credential.description,
             'username':self.credential.username,
             'password':self.credential.password,
