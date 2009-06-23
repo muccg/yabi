@@ -56,6 +56,10 @@ class FileListResource(resource.PostableResource):
             
             bendname,username,pathremainder = path[0], path[1], path[2:]
             
+            print path
+            
+            assert bendname, "must list on a valid backend"
+            
             # get the backend
             bend = getattr(self.fsresource(), "child_%s"%bendname)
             

@@ -4,7 +4,8 @@ from submit_helpers import parsePOSTDataRemoteWriter
 import weakref
 import sys, os
 
-PROCESS_CHECK_TIME = 1.0
+# how often to check back on a process
+PROCESS_CHECK_TIME = 0.01
 
 class FileCopyResource(resource.PostableResource):
     VERSION=0.1

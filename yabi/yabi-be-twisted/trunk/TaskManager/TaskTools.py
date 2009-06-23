@@ -4,12 +4,13 @@ from stackless import schedule, tasklet
 from twisted.web import client
 from twisted.internet import reactor
 import time
+import json
 
 COPY_RETRY = 3
 COPY_PATH = "/fs/copy"
-
+LIST_PATH = "/fs/ls"
 EXEC_PATH = "/exec/%(backend)s/%(username)s"
-
+MKDIR_PATH = "/fs/mkdir"
 
 WS_HOST, WS_PORT = "localhost",8000
 USER_AGENT = "YabiStackless/0.1"
@@ -217,10 +218,10 @@ def Sleep(seconds):
     while time.time()<then:
         schedule()
 
-def Copy(src,dst):
+def Copy(src,dst,retry=COPY_RETRY):
     """Copy src (url) to dst (url) using the fileservice"""
     print "Copying %s to %s"%(src,dst)
-    for num in range(COPY_RETRY):
+    for num in range(retry):
         try:
             Post(COPY_PATH,src=src,dst=dst)
             # success!
@@ -230,6 +231,16 @@ def Copy(src,dst):
             Sleep(5.0)
     raise err
     
+def List(path,recurse=False):
+    #print "posting",LIST_PATH,path,recurse
+    data = Post(LIST_PATH,dir=path,recurse=recurse)
+    #print "LIST:",data
+    return json.loads(data)
+
+def Mkdir(path):
+    return Post(MKDIR_PATH,dir=path)
+
+     
 def Log(logpath,message):
     """Report an error to the webservice"""
     print "Reporting error to %s"%(logpath)

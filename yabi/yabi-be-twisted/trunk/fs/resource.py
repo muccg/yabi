@@ -7,6 +7,7 @@ import weakref
 import sys, os
 
 from FileCopyResource import FileCopyResource
+from FileRCopyResource import FileRCopyResource
 from FileDeleteResource import FileDeleteResource
 from FileListResource import FileListResource
 from FileMkdirResource import FileMkdirResource
@@ -59,5 +60,8 @@ class FSResource(resource.Resource):
             return FileListResource(request,segments,fsresource=self), []
         elif segments[0]=="rm":
             return FileDeleteResource(request,segments,fsresource=self), []
+        elif segments[0]=="rcopy":
+            return FileRCopyResource(request,segments,fsresource=self), []
+        
         
         return resource.Resource.locateChild(self,request,segments)
