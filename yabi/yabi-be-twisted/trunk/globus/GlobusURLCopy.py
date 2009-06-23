@@ -1,5 +1,6 @@
 """Class to encapsulate the functionality in "globus-url-copy"
 """
+from AsyncWrapper import AExec as Popen
 import subprocess
 import os
 import tempfile
@@ -50,7 +51,7 @@ class GlobusURLCopy(object):
         subenv = self._make_env(certfile)
         
         # the list command
-        proc = subprocess.Popen(    [  self.globus_url_copy,
+        proc = Popen(    [  self.globus_url_copy,
                                         "-nodcau",                              # see bug #3902 ( http://bugzilla.globus.org/globus/show_bug.cgi?id=3902 )
                                         "-list",    url
                                     ],
@@ -89,7 +90,7 @@ class GlobusURLCopy(object):
         #print "WRITE:",fifo,url,remoteurl
         
         # the copy to remote command
-        proc = subprocess.Popen(    [  self.globus_url_copy,
+        proc = Popen(    [  self.globus_url_copy,
                                         "-nodcau",                              # see bug #3902 ( http://bugzilla.globus.org/globus/show_bug.cgi?id=3902 )
                                         "-cd",                                  # create destination directories if they dont exist
                                         url,                                     # source
@@ -117,7 +118,7 @@ class GlobusURLCopy(object):
         #print "READ:",fifo,url,remoteurl
         
         # the copy to remote command
-        proc = subprocess.Popen(    [  self.globus_url_copy,
+        proc = Popen(    [  self.globus_url_copy,
                                         "-nodcau",                              # see bug #3902 ( http://bugzilla.globus.org/globus/show_bug.cgi?id=3902 )
                                         remoteurl,                               # source
                                         url                                      # destination

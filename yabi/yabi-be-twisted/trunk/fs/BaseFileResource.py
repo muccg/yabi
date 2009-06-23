@@ -183,11 +183,36 @@ class BaseFileResource(resource.PostableResource):
                 
             d = defer.Deferred()
             def cb( proc, fifo ):
-                d.callback( os.fdopen(os.open(fifo, os.O_WRONLY | os.O_NONBLOCK)) )
+                #def _call():
+                    #print "CALLBACK",proc,fifo
+                    ##print proc.stdout.read()
+                    ##d.callback( open(fifo, "wb") )
+                    #try:
+                        #print "NEW OPEN"
+                        #print os.path.exists(fifo)
+                        #d.callback( os.fdopen(os.open(fifo, os.O_WRONLY | os.O_NONBLOCK), "w") )
+                    #except OSError, ose:
+                        #if ose.errno==22 or ose.errno==11:
+                            ## cant open write nonblock to fifo!
+                            #raise
+                            #print "OLD SCHOOL OPEN"
+                            #d.callback( open(fifo, "wb") )
+                        #else:
+                            #raise
+                    #print "DONE"
+                    ##
+                #reactor.callLater(3.0,_call)
+                def _call():
+                    print "cb",proc,fifo
+                    #d.callback(open(fifo, "wb") )
+                    d.callback( os.fdopen(os.open(fifo, os.O_WRONLY | os.O_NONBLOCK), "w") )
+                reactor.callLater(1.0,_call)
             
-            #print "Calling GetWriteFifo",sep.join(path), cb
+            print "Calling GetWriteFifo",sep.join(path), cb
             self.GetWriteFifo( sep.join(path), cb )
-             
+            
+            print "RETURNING:",d
+            
             return d
         
         defferedchain = parsePOSTDataRemoteWriter(request,

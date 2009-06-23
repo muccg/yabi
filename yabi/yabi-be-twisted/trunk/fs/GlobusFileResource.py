@@ -246,6 +246,9 @@ class GlobusFileResource(BaseFileResource):
                 if proc.poll()==None:
                     # reschedule us
                     reactor.callLater(0.0 if len(data) else 0.2,_ls_read)                   # back off if we got no data
+                elif proc.poll()!=0:
+                    # error running remote list
+                    deferred.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, str("".join(data_result))))
                 else:
                     #print "PROC ENDED",proc.poll
                     data_result.append(proc.stdout.read())

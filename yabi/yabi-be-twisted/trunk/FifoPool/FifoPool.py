@@ -18,7 +18,7 @@ class FifoPool(object):
         
     def _make_cert_storage(self):
         """makes a directory for storing the certificates in"""
-        self.storage = tempfile.mkdtemp()
+        self.storage = tempfile.mkdtemp(prefix="yabi-fifo-")
         print "FifoPool created in",self.storage
     
     def _make_fifo(self, prefix="fifo_",suffix=""):

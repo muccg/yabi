@@ -51,7 +51,7 @@ class CertificateProxy(object):
 
     def _make_cert_storage(self):
         """makes a directory for storing the certificates in"""
-        self.tempdir = tempfile.mkdtemp()
+        self.tempdir = tempfile.mkdtemp(prefix="yabi-credentials-")
         print "Certificate Proxy Store created in",self.tempdir
         
     def CreateUserProxy(self, userid, cert, key, password):
