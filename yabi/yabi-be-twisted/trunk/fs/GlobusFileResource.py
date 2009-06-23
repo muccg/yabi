@@ -10,7 +10,7 @@ import globus
 
 GET_DIR_LIST = True                     # whether when you call GET on a directory, if it returns the same as LIST on that path. False throws an error on a directory.
 PIPE_RETRY_TIME = 1.0                   # how often in seconds to check for an initialised pipe has failed or started flowing
-BUFFER_SIZE = 8192                      # the read() buffer size. Must be less than the socket buffer size
+BUFFER_SIZE = 1024                      # the read() buffer size. Must be less than the socket buffer size
 from globus.FifoStream import FifoStream
 
 from twisted.web import client

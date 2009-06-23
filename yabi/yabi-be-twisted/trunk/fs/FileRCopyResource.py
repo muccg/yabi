@@ -88,7 +88,6 @@ class FileRCopyResource(resource.PostableResource):
                             Copy(src_be+directory+"/"+file,dst+destpath+'/'+file,retry=1)
                             #Sleep(0.5)
                     
-                    Sleep(5.0)
                     result_channel.callback(
                                                     http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Copied successfuly\n")
                                 )

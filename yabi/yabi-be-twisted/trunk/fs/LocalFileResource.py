@@ -5,7 +5,7 @@ from os.path import sep
 import os, json, stat
 from submit_helpers import parsePOSTData, parsePUTData
 from FifoPool import Fifos
-import subprocess
+import subprocess, time
 
 GET_DIR_LIST = True                     # whether when you call GET on a directory, if it returns the same as LIST on that path. False throws an error on a directory.
 
@@ -169,19 +169,26 @@ class LocalFileResource(BaseFileResource):
             storage={'files':[],'directories':[]}
             subtrees={}
             
+            timeproc = lambda timestamp: time.strftime("%b %d %H:%M",time.localtime(timestamp))
+            
+            #add details for '.' and '..'
+            for fname in [".",".."]:
+                pathname=os.path.join(top,fname)
+                storage['directories'].append( (fname,os.stat(pathname)[stat.ST_SIZE],timeproc(os.stat(pathname)[stat.ST_MTIME])) )
+            
             for f in os.listdir(top):
                 pathname = os.path.join(top, f)
                 mode = os.stat(pathname)[stat.ST_MODE]
                 if stat.S_ISDIR(mode):
                     # It's a directory, 
-                    storage['directories'].append( (f,os.stat(pathname)[stat.ST_SIZE],os.stat(pathname)[stat.ST_MTIME]) )
+                    storage['directories'].append( (f,os.stat(pathname)[stat.ST_SIZE],timeproc(os.stat(pathname)[stat.ST_MTIME])) )
                     if recurse:
                         #recurse into it
                         sub = walktree(pathname)
                         subtrees.update(sub)
                 elif stat.S_ISREG(mode):
                     # It's a file, call the callback function
-                    storage['files'].append( (f,os.stat(pathname)[stat.ST_SIZE],os.stat(pathname)[stat.ST_MTIME]) )
+                    storage['files'].append( (f,os.stat(pathname)[stat.ST_SIZE],timeproc(os.stat(pathname)[stat.ST_MTIME])) )
                 else:
                     # Unknown file type, print a message
                     print 'Skipping %s' % pathname

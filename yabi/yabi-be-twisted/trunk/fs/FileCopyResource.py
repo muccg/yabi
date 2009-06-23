@@ -4,7 +4,7 @@ from submit_helpers import parsePOSTDataRemoteWriter
 import weakref
 import sys, os
 
-# how often to check back on a process
+# how often to check back on a process. 
 PROCESS_CHECK_TIME = 0.01
 
 class FileCopyResource(resource.PostableResource):
@@ -94,7 +94,10 @@ class FileCopyResource(resource.PostableResource):
                         
                         #print "wx:",wx,"rx:",rx
                         
-                        if wx==None and rx==None:
+                        ##
+                        ## TODO: check this following logic thouroughly
+                        ##
+                        if (wx==None and rx==None) or (wx==None and rx==0) or (wx==0 and rx==None):
                             # recall ourselves later. both haven't finished
                             reactor.callLater(PROCESS_CHECK_TIME, check_processes, deferred, reader, writer)
                         else:
