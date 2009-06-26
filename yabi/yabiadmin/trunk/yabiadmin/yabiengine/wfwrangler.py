@@ -1,48 +1,44 @@
+from django.conf import settings
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
+from yabiadmin.yabiengine.YabiJobException import YabiJobException
+
 
 def walk(workflow):
 
     for job in workflow.job_set.all().order_by("order"):
 
-        #check job status
-        process_job(job)
+        try:
+
+            #check job status
+            prepare_dependencies(job)
+            prepare_files(job)
+            prepare_tasks(job)
+            process_job(job)
+
+        except (YabiJobException):
+            continue
 
 
 
-def must_be_ready(func):
 
-    def ready(job):
-        print "Checking the job is ready to run."
-        func(job)
+def prepare_dependencies(job):
+    print "Checking the job is ready to run."
+    print job.status_dependencies_ready()
 
-    return ready
+def prepare_files(job):
+    print "Gathering the files."
+    print job.status_files_ready()    
 
-
-def gather_inputs(func):
-
-    def gather(job):
-        print "Gathering the inputs."
-        func(job)
-
-    return gather
-
-
-def prepare_tasks(func):
-
-    def prepare(job):
-        print "Preparing the tasks."
-        func(job)
-
-    return prepare
+def prepare_tasks(job):
+    print "Preparing the tasks."
+    print job.status_tasks_ready()
 
 
 
-@must_be_ready
-@gather_inputs
-@prepare_tasks
 def process_job(job):
     print "Setting job status to run"
     print "------------------------------"
+    print job.status_complete()
     job.status = "run_me"
     job.save()
 

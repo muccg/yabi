@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 from yabiadmin.yabmin.models import User
 from django.utils import simplejson as json, webhelpers
 
@@ -31,6 +32,20 @@ class Job(models.Model):
 
     def __unicode__(self):
         return "%s - %s" % (self.workflow.name, self.order)
+
+    def status_dependencies_ready(self):
+        return self.status == settings.STATUS['dependencies_ready']
+
+    def status_files_ready(self):
+        return self.status == settings.STATUS['files_ready']
+
+    def status_tasks_ready(self):
+        return self.status == settings.STATUS['tasks_ready']
+
+    def status_complete(self):
+        return self.status == settings.STATUS['complete']
+    
+
 
 
 class Task(models.Model):

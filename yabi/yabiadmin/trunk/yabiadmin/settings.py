@@ -190,3 +190,10 @@ AUTHENTICATION_BACKENDS = (
 
 # for local development, this is set to the static serving directory. For deployment use Apache Alias
 STATIC_SERVER_PATH = os.path.join(PROJECT_DIRECTORY,"static")
+
+# status settings that can be used on workflow, job and task
+STATUS = {'dependencies_ready':'dependencies_ready',
+          'files_ready':'files_ready',
+          'tasks_ready':'tasks_ready',
+          'complete':'complete'          
+          }
