@@ -12,7 +12,7 @@ class SyslogAdmin(admin.ModelAdmin):
     list_display = ['message', 'table_name', 'table_id']
 
 class JobAdmin(admin.ModelAdmin):
-    list_display = ['order', 'start_time', 'end_time', 'cpus', 'walltime', 'stageout']
+    list_display = ['order', 'command', 'commandparams', 'start_time', 'end_time', 'cpus', 'walltime', 'stageout']
 
 class TaskAdmin(admin.ModelAdmin):
     list_display = ['job', 'start_time', 'end_time', 'job_identifier', 'command', 'error_msg', 'status']

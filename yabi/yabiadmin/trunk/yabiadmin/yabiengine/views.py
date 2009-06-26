@@ -4,6 +4,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import webhelpers
 from django.utils import simplejson as json
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
+import wfwrangler
 
 def task(request):
 
@@ -55,6 +56,10 @@ def status(request, model, id):
             obj = m.objects.get(id=id)
             obj.status=status
             obj.save()
+
+            # trigger the workflow walk
+            if isinstance(obj, Job):
+                wfwrangler.walk(obj.workflow)
 
             return HttpResponse("Thanks!")
 

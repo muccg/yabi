@@ -27,7 +27,7 @@ class Job(models.Model):
     stageout = models.CharField(max_length=1000, null=True)
     status = models.CharField(max_length=64, blank=True)
     command = models.TextField()
-    commandparams = models.TextField()
+    commandparams = models.TextField(blank=True)
 
     def __unicode__(self):
         return "%s - %s" % (self.workflow.name, self.order)

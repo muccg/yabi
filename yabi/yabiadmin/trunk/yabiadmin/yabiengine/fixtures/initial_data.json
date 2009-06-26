@@ -1,0 +1,6371 @@
+[
+    {
+        "pk": 1, 
+        "model": "yabiengine.workflow", 
+        "fields": {
+            "status": "", 
+            "name": "blast_test", 
+            "log_file_path": "test", 
+            "start_time": "2009-06-18 10:10:00", 
+            "created_on": "2009-06-19 10:57:24", 
+            "json": "test", 
+            "end_time": "2009-06-18 11:10:00", 
+            "last_modified_on": "2009-06-19 20:09:13", 
+            "user": 2
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "yabiengine.job", 
+        "fields": {
+            "status": "", 
+            "workflow": 1, 
+            "start_time": "2009-06-18 10:10:00", 
+            "cpus": 128, 
+            "end_time": "2009-06-18 10:10:00", 
+            "order": 0, 
+            "stageout": "file/cwellington/blast-stageout", 
+            "walltime": 24
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "yabiengine.task", 
+        "fields": {
+            "status": "stageout", 
+            "start_time": "2009-06-18 10:00:00", 
+            "exec_backend": "globus1", 
+            "job": 1, 
+            "job_identifier": "newtest", 
+            "command": "blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "end_time": "2009-06-18 10:00:00", 
+            "error_msg": "none"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "yabiengine.task", 
+        "fields": {
+            "status": "requested", 
+            "start_time": "2009-06-18 10:00:00", 
+            "exec_backend": "globus1", 
+            "job": 1, 
+            "job_identifier": "blahblah", 
+            "command": "blastall -p blastn -d nt -F T -v 500 -i /scratch/bi01/cwellington/AA123456.fa", 
+            "end_time": "2009-06-18 10:00:00", 
+            "error_msg": "none"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "yabiengine.stagein", 
+        "fields": {
+            "dst_path": "/bi01/cwellington/AA123456.fa\r\n\r\n", 
+            "task": 1, 
+            "src_backend": "file", 
+            "src_path": "/input/AA123456.fa", 
+            "dst_backend": "gridftp1", 
+            "order": 0
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "There was an error", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "testtest", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "testtesttest", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 failed: Copy failed... File copy failed! No such file or directory\n", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 6, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 7, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 failed: Copy failed... File copy failed! No such file or directory\n", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 8, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 9, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 10, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 11, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 12, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 13, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 14, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to 1 command: 1", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 15, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 16, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 17, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 18, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 19, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 20, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 21, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 22, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 23, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Raised uncaught exception: 'instancemethod' object is unsubscriptable", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 24, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Raised uncaught exception: 'instancemethod' object is unsubscriptable", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 25, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Raised uncaught exception: 'instancemethod' object is unsubscriptable", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 26, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Raised uncaught exception: 'instancemethod' object is unsubscriptable", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 27, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 28, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 29, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 30, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 31, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Raised uncaught exception: global name 'EXEC_PATH' is not defined", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 32, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 33, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 34, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 35, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 36, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Raised uncaught exception: global name 'EXEC_PATH' is not defined", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 37, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 38, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 39, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 40, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 41, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Raised uncaught exception: global name 'EXEC_PATH' is not defined", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 42, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 43, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 44, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 45, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 46, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Raised uncaught exception: global name 'EXEC_PATH' is not defined", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 47, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 48, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 49, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 50, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 51, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Raised uncaught exception: url must be str, not unicode", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 52, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 53, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 54, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 55, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 56, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 57, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 58, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 59, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 60, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 61, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 62, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 63, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 64, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 65, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 66, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 67, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 68, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 69, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 70, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 71, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 72, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 73, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 74, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 75, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 76, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 77, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 78, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 79, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 80, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 81, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 82, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 83, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 84, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 85, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 86, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 87, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 88, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 89, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 90, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 91, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 92, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 93, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 94, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 95, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 96, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 97, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 98, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 99, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 100, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 101, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 102, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 103, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 104, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 105, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 106, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 107, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 108, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 109, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 110, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 111, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 112, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 113, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 114, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 115, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 116, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 117, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 118, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 119, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 120, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 121, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 122, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 123, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 124, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 125, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 126, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 127, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 128, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 129, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 130, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 131, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 132, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 133, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 134, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 135, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 136, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 137, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 138, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 139, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 140, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 141, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 142, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 143, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 144, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 145, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 146, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 147, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 148, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 149, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 150, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 151, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 152, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 153, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 154, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 155, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 156, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Raised uncaught exception: name 'callback' is not defined", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 157, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 158, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 159, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 160, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 161, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Raised uncaught exception: Exec() got an unexpected keyword argument 'callback'", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 162, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 163, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 164, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 165, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 166, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 167, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 168, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 169, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 170, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 171, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 172, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 173, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 174, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 175, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 176, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 177, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 178, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 179, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 180, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 181, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 182, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 183, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 184, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 185, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 186, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 187, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 188, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 189, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 190, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 191, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 192, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 193, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 194, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 195, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 196, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 197, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 198, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 199, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 200, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 201, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 202, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 203, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 204, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 205, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 206, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 207, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 208, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 209, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 210, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 211, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 212, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 213, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 214, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 215, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 216, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 217, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 218, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 219, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: CleanUp", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 220, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 221, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 222, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 223, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 224, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 225, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 226, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 227, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 228, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 229, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 230, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 231, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 232, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 233, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 234, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 235, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 236, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 237, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 238, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 239, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 240, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 241, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 242, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 243, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 244, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 245, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 246, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 247, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 248, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 249, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 250, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 251, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 252, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 253, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 254, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 255, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Raised uncaught exception: global name 'errorurl' is not defined", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 256, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Raised uncaught exception: global name 'errorurl' is not defined", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 257, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Raised uncaught exception: global name 'errorurl' is not defined", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 258, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Submitting to globus1 command: sort -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 259, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 260, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 261, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 262, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 263, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Submitting to globus1 command: sort -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 264, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 265, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 266, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 267, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 268, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 269, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 270, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 271, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 272, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 273, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Submitting to globus1 command: sort -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 274, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 275, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 276, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 277, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 278, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 279, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 280, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 281, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Submitting to globus1 command: sort -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 282, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 283, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 284, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 285, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 286, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 287, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 288, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: CleanUp", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 289, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 290, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 291, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 292, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 293, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 294, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 295, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Submitting to globus1 command: sort -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 296, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 297, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 298, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 299, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 300, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Submitting to globus1 command: sort -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 301, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 302, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 303, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 304, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 305, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Submitting to globus1 command: sort -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 306, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 307, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 308, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 309, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 310, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 311, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 312, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 313, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 314, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 315, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 316, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 317, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 318, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 319, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 320, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 321, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 322, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 323, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 324, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 325, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 326, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 327, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 328, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 329, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 330, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 331, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 332, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 333, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 334, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 335, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 336, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 337, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 338, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 339, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 340, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 341, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 342, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 343, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 344, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 345, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 346, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 347, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Active", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 348, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 349, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 350, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 351, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out /tmp to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 352, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 353, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 354, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 355, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Raised uncaught exception: 'TaskManager' object has no attribute 'make_unique_name'", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 356, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 357, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 358, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 359, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 360, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 361, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 362, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 363, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 364, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 365, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /tmp to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 366, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 367, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 368, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 369, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 370, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 371, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 372, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 373, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 374, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /tmp to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 375, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 376, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 377, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 378, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 379, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 380, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 381, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 382, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 383, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 384, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /tmp to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 385, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 386, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 387, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 388, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 389, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 390, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 391, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 392, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 393, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 394, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /tmp to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 395, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 396, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 397, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 398, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 399, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 400, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 401, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 402, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 403, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /tmp to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 404, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 405, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 406, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 407, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 408, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 409, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 410, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 411, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 412, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 413, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 414, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 415, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /tmp to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 416, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 417, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 418, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Staging out remote /tmp to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 419, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 420, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 421, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 422, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 423, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 424, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 425, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 426, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 427, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 428, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 429, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 430, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 431, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 2, 
+            "message": "Staging out remote /tmp to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 432, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 433, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 434, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /tmp to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 435, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 436, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 437, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 438, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: gobbledeblast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 439, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 440, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 441, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 442, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 443, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /tmp to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 444, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 445, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 446, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 447, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: gobbledeblast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 448, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 449, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 450, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: CleanUp", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 451, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 452, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 453, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 454, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /tmp to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 455, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 456, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 457, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 458, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: gobbledeblast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 459, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 460, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 461, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 462, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 463, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /tmp to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 464, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 465, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 466, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 467, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: gobbledeblast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 468, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 469, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: CleanUp", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 470, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 471, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 472, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 473, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 474, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: gobbledeblast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 475, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 476, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 477, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 478, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 479, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 480, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /tmp to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 481, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 482, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 483, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 484, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: gobbledeblast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 485, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 486, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 487, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 488, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 489, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /tmp to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 490, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 491, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 492, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 493, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Raised uncaught exception: url must be str, not unicode", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 494, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 495, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 496, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 497, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Raised uncaught exception: global name 'os' is not defined", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 498, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 499, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 500, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 501, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Raised uncaught exception: global name 'os' is not defined", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 502, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 503, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 504, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 505, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Raised uncaught exception: global name 'os' is not defined", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 506, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 507, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 508, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 509, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: gobbledeblast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 510, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 511, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 512, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: CleanUp", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 513, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 514, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 515, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 516, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /tmp to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 517, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 518, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 519, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 520, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: gobbledeblast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 521, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 522, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 523, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 524, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 525, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /tmp to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 526, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 527, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 528, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 529, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Raised uncaught exception: 'work-gzJSNMw03ll42t1L'", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 530, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 531, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 532, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 533, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: gobbledeblast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 534, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Job status check failed!: f2e20642-5fbb-11de-9dbb-00144f2404a4 - [Failure instance: Traceback: <type 'exceptions.AssertionError'>: Check Job failed. Full error follows:\n\nglobusrun-ws: Job failed: Invalid directory path \"/scratch/gridftp1/cwellington/bi01/cwellington/work-ZGTlVm25EyG7POq5\". \nCurrent job state: Failed\n\n\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/globus/Jobs.py:133:check_job_status\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/globus/Jobs.py:66:readStream\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/globus/Jobs.py:27:run\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/globus/Jobs.py:39:_read\n--- <exception caught here> ---\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/globus/Jobs.py:53:_gotData\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/globus/Jobs.py:114:_status_returned\n]", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 535, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 536, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 537, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /tmp to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 538, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 539, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 540, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 541, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: gobbledeblast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 542, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 543, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 544, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 545, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 546, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 547, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /tmp to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 548, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 549, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 550, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: gobbledeblast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 551, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 552, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 553, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 554, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 555, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 556, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /scratch/bi01/cwellington/work-GVrtU_tUbfzNB1_d to fs/storage...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 557, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Raised uncaught exception: global name 'GetFailure' is not defined", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 558, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 559, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 560, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: gobbledeblast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 561, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 562, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 563, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 564, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 565, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 566, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /scratch/bi01/cwellington/work-NOgEh_m8jnFyzD0G to file/cwellington/stageout...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 567, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "making stageout directory file/cwellington/stageout", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 568, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /scratch/bi01/cwellington/work-NOgEh_m8jnFyzD0G to file/cwellington/stageout failed... Copy failed... NOT OK: [Failure instance: Traceback: <type 'exceptions.AssertionError'>: 'src' path must end in a '/'\n/usr/local/stackless/lib/python2.6/site-packages/twisted/internet/defer.py:628:gotResult\n/usr/local/stackless/lib/python2.6/site-packages/twisted/internet/defer.py:605:_deferGenerator\n/usr/local/stackless/lib/python2.6/site-packages/twisted/internet/defer.py:241:callback\n/usr/local/stackless/lib/python2.6/site-packages/twisted/internet/defer.py:310:_startRunCallbacks\n--- <exception caught here> ---\n/usr/local/stackless/lib/python2.6/site-packages/twisted/internet/defer.py:326:_runCallbacks\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/fs/FileRCopyResource.py:54:RCopyCommand\n]\n", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 569, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 570, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 571, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: gobbledeblast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 572, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 573, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 574, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 575, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 576, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 577, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /scratch/bi01/cwellington/work-rc3ooDuMmJhRoLWy to file/cwellington/stageout...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 578, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "making stageout directory file/cwellington/stageout", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 579, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /scratch/bi01/cwellington/work-rc3ooDuMmJhRoLWy to file/cwellington/stageout failed... Copy failed... Copy failed... NOT OK: [Failure instance: Traceback: <type 'exceptions.OSError'>: [Errno 17] File exists: '/tmp/filesystem/stageout/'\n/usr/local/stackless/lib/python2.6/site-packages/twisted/internet/defer.py:628:gotResult\n/usr/local/stackless/lib/python2.6/site-packages/twisted/internet/defer.py:605:_deferGenerator\n/usr/local/stackless/lib/python2.6/site-packages/twisted/internet/defer.py:241:callback\n/usr/local/stackless/lib/python2.6/site-packages/twisted/internet/defer.py:310:_startRunCallbacks\n--- <exception caught here> ---\n/usr/local/stackless/lib/python2.6/site-packages/twisted/internet/defer.py:326:_runCallbacks\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/fs/FileMkdirResource.py:61:MkdirCommand\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/fs/LocalFileResource.py:217:http_MKDIR\n/usr/local/stackless/lib/python2.6/os.py:157:makedirs\n]\n", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 580, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 581, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/README to gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18 Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 582, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: gobbledeblast -p blastn -d nt -F T -v 500 -i blastfile_2009-06-18", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 583, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 584, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 585, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 586, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 587, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /scratch/bi01/cwellington/work-BC0aiDWqQKH0Ozmu to file/cwellington/stageout...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 588, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "making stageout directory file/cwellington/stageout", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 589, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Files successfuly staged out", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 590, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Cleaning up job...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 591, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Deleting gridftp1/cwellington/bi01/cwellington/blastfile_2009-06-18...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 592, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Stageout directory gridftp1/cwellington/bi01/cwellington/work-BC0aiDWqQKH0Ozmu deleted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 593, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Job completed successfully", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 594, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/input/AA123456.fa to gridftp1/cwellington/bi01/cwellington/AA123456.fa...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 595, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/input/AA123456.fa to gridftp1/cwellington/bi01/cwellington/AA123456.fa Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 596, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blast -p blastn -d nt -F T -v 500 -i ../AA123456", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 597, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 598, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: CleanUp", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 599, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 600, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 601, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 602, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /scratch/bi01/cwellington/work-vAAHQgrodKgClxEH to file/cwellington/blast-stageout...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 603, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "making stageout directory file/cwellington/blast-stageout", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 604, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Files successfuly staged out", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 605, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Cleaning up job...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 606, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Deleting gridftp1/cwellington/bi01/cwellington/AA123456.fa...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 607, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Stageout directory gridftp1/cwellington/bi01/cwellington/work-vAAHQgrodKgClxEH deleted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 608, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Job completed successfully", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 609, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/input/AA123456.fa to gridftp1/cwellington/bi01/cwellington/AA123456.fa...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 610, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/input/AA123456.fa to gridftp1/cwellington/bi01/cwellington/AA123456.fa Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 611, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: whereis blast #blast -p blastn -d nt -F T -v 500 -i ../AA123456", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 612, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 613, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 614, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 615, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 616, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /scratch/bi01/cwellington/work-sUMaqaZkTXSO2cFD to file/cwellington/blast-stageout...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 617, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "making stageout directory file/cwellington/blast-stageout", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 618, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Files successfuly staged out", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 619, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Cleaning up job...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 620, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Deleting gridftp1/cwellington/bi01/cwellington/AA123456.fa...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 621, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Stageout directory gridftp1/cwellington/bi01/cwellington/work-sUMaqaZkTXSO2cFD deleted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 622, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Job completed successfully", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 623, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/input/AA123456.fa to gridftp1/cwellington/bi01/cwellington/AA123456.fa...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 624, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/input/AA123456.fa to gridftp1/cwellington/bi01/cwellington/AA123456.fa Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 625, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blastall -p blastn -d nt -F T -v 500 -i ../AA123456", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 626, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 627, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Active", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 628, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: CleanUp", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 629, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 630, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 631, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 632, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /scratch/bi01/cwellington/work-3Yq9y4l7fEPVXFdQ to file/cwellington/blast-stageout...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 633, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "making stageout directory file/cwellington/blast-stageout", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 634, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Files successfuly staged out", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 635, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Cleaning up job...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 636, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Deleting gridftp1/cwellington/bi01/cwellington/AA123456.fa...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 637, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Stageout directory gridftp1/cwellington/bi01/cwellington/work-3Yq9y4l7fEPVXFdQ deleted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 638, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Job completed successfully", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 639, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/input/AA123456.fa to gridftp1/cwellington/bi01/cwellington/AA123456.fa...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 640, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/input/AA123456.fa to gridftp1/cwellington/bi01/cwellington/AA123456.fa Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 641, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blastall -p blastn -d nt -F T -v 500 -i /scratch/bi01/cwellington/AA123456.fa", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 642, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 643, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Active", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 644, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 645, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 646, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 647, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /scratch/bi01/cwellington/work-gHKF255xyAlyGXy8 to file/cwellington/blast-stageout...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 648, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "making stageout directory file/cwellington/blast-stageout", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 649, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Files successfuly staged out", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 650, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Cleaning up job...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 651, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Deleting gridftp1/cwellington/bi01/cwellington/AA123456.fa...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 652, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Stageout directory gridftp1/cwellington/bi01/cwellington/work-gHKF255xyAlyGXy8 deleted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 653, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Job completed successfully", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 654, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/input/AA123456.fa to gridftp1/cwellington/bi01/cwellington/AA123456.fa...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 655, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/input/AA123456.fa to gridftp1/cwellington/bi01/cwellington/AA123456.fa Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 656, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blastall -p blastn -d nt -F T -v 500 -i /scratch/bi01/cwellington/AA123456.fa", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 657, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 658, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Pending", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 659, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Active", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 660, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: CleanUp", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 661, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 662, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 663, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 664, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /scratch/bi01/cwellington/work-jspQ3AEvb65iDqVv to file/cwellington/blast-stageout...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 665, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "making stageout directory file/cwellington/blast-stageout", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 666, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Files successfuly staged out", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 667, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Cleaning up job...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 668, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Deleting gridftp1/cwellington/bi01/cwellington/AA123456.fa...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 669, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Stageout directory gridftp1/cwellington/bi01/cwellington/work-jspQ3AEvb65iDqVv deleted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 670, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Job completed successfully", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 671, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/input/AA123456.fa to gridftp1/cwellington/bi01/cwellington/AA123456.fa...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 672, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/input/AA123456.fa to gridftp1/cwellington/bi01/cwellington/AA123456.fa failed: Copy failed... File copy failed! No such file or directory\n", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 673, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/input/AA123456.fa to gridftp1/cwellington/bi01/cwellington/AA123456.fa...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 674, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/input/AA123456.fa to gridftp1/cwellington/bi01/cwellington/AA123456.fa...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 675, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/input/AA123456.fa to gridftp1/cwellington/bi01/cwellington/AA123456.fa Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 676, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blastall -p blastn -d nt -F T -v 500 -i /scratch/bi01/cwellington/AA123456.fa", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 677, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Job status check failed!: 9863d1e8-5fe1-11de-8b3a-00144f2404a4 - [Failure instance: Traceback: <type 'exceptions.AssertionError'>: Check Job failed. Full error follows:\n\nglobusrun-ws: Job failed: Invalid directory path \"/scratch/bi01/cwellington/work-jq8g0Hw15sRBnnQw\". \nCurrent job state: Failed\n\n\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/globus/Jobs.py:133:check_job_status\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/globus/Jobs.py:66:readStream\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/globus/Jobs.py:27:run\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/globus/Jobs.py:39:_read\n--- <exception caught here> ---\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/globus/Jobs.py:53:_gotData\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/globus/Jobs.py:114:_status_returned\n]", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 678, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 679, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 680, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /scratch/bi01/cwellington/work-jq8g0Hw15sRBnnQw to file/cwellington/blast-stageout...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 681, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "making stageout directory file/cwellington/blast-stageout", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 682, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /scratch/bi01/cwellington/work-jq8g0Hw15sRBnnQw to file/cwellington/blast-stageout failed... Copy failed... Copy failed... NOT OK: GLOBUS_LOCATION environment variable undefined.\r\n\n", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 683, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/input/AA123456.fa to gridftp1/cwellington/bi01/cwellington/AA123456.fa...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 684, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/input/AA123456.fa to gridftp1/cwellington/bi01/cwellington/AA123456.fa Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 685, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blastall -p blastn -d nt -F T -v 500 -i /scratch/bi01/cwellington/AA123456.fa", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 686, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Job status check failed!: cf26dff4-5fe1-11de-8203-00144f2404a4 - [Failure instance: Traceback: <type 'exceptions.AssertionError'>: Check Job failed. Full error follows:\n\nglobusrun-ws: Job failed: Invalid directory path \"/scratch/bi01/cwellington/work-_CQpfiqXyll9NAEc\". \nCurrent job state: Failed\n\n\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/globus/Jobs.py:133:check_job_status\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/globus/Jobs.py:66:readStream\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/globus/Jobs.py:27:run\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/globus/Jobs.py:39:_read\n--- <exception caught here> ---\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/globus/Jobs.py:53:_gotData\n/home/cwellington/Development/Django/Yabi/yabi/yabi-be-twisted/trunk/globus/Jobs.py:114:_status_returned\n]", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 687, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/input/AA123456.fa to gridftp1/cwellington/bi01/cwellington/AA123456.fa...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 688, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Copying file/cwellington/input/AA123456.fa to gridftp1/cwellington/bi01/cwellington/AA123456.fa Success", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 689, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Submitting to globus1 command: blastall -p blastn -d nt -F T -v 500 -i /scratch/bi01/cwellington/AA123456.fa", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 690, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Unsubmitted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 691, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Active", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 692, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Remote execution backend changed status to: Done", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 693, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Execution finished", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 694, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out results", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 695, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Staging out remote /scratch/bi01/cwellington/work-FzE1S03cyXFQEGZg to file/cwellington/blast-stageout...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 696, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "making stageout directory file/cwellington/blast-stageout", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 697, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Files successfuly staged out", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 698, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Cleaning up job...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 699, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Deleting gridftp1/cwellington/bi01/cwellington/AA123456.fa...", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 700, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Stageout directory gridftp1/cwellington/bi01/cwellington/work-FzE1S03cyXFQEGZg deleted", 
+            "table_name": "task"
+        }
+    }, 
+    {
+        "pk": 701, 
+        "model": "yabiengine.syslog", 
+        "fields": {
+            "table_id": 1, 
+            "message": "Job completed successfully", 
+            "table_name": "task"
+        }
+    }
+]
