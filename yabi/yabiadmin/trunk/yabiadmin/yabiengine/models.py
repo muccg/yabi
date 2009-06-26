@@ -26,6 +26,8 @@ class Job(models.Model):
     walltime = models.IntegerField(null=True)
     stageout = models.CharField(max_length=1000, null=True)
     status = models.CharField(max_length=64, blank=True)
+    command = models.TextField()
+    commandparams = models.TextField()
 
     def __unicode__(self):
         return "%s - %s" % (self.workflow.name, self.order)
@@ -38,6 +40,7 @@ class Task(models.Model):
     job_identifier = models.TextField()
     command = models.TextField(blank=True)
     exec_backend = models.CharField(max_length=256)
+    fs_backend = models.CharField(max_length=256)
     error_msg = models.CharField(max_length=1000, null=True)
     status = models.CharField(max_length=64, blank=True)
     
@@ -52,6 +55,7 @@ class Task(models.Model):
             "exec":{
             "command":self.command,
             "backend":self.exec_backend,
+            "fsbackend":self.fs_backend,
             },
             "stageout":self.job.stageout
             }

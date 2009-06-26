@@ -1,4 +1,4 @@
-from yabiadmin.yabmin.models import Base, ToolType, Tool, ToolParameter, ToolGroup, ToolGrouping, ToolSet, User, FileExtension, FileType, ParameterFilter, ParameterSwitchUse, ToolRslInfo, ToolRslExtensionModule, ToolRslArgumentOrder, ToolOutputExtension, Credential, Backend
+from yabiadmin.yabmin.models import Base, Tool, ToolParameter, ToolGroup, ToolGrouping, ToolSet, User, FileExtension, FileType, ParameterFilter, ParameterSwitchUse, ToolRslInfo, ToolRslExtensionModule, ToolRslArgumentOrder, ToolOutputExtension, Credential, Backend
 from django.contrib import admin
 from django.forms.models import BaseInlineFormSet
 from django.forms import ModelForm
@@ -86,7 +86,7 @@ class ToolForm(ModelForm):
         self.fields["batch_on_param"].queryset = ToolParameter.objects.filter(tool=self.instance)
 
 class ToolAdmin(AdminBase):
-    list_display = ['name', 'enabled', 'type', 'tool_groups_str', 'tool_link', 'created_by', 'created_on']
+    list_display = ['name', 'enabled', 'backend', 'tool_groups_str', 'tool_link', 'created_by', 'created_on']
     inlines = [ToolOutputExtensionInline, ToolParameterInline] # need to add back in tool groupings and find out why it is not working with mango
 
     def get_form(self, request, obj=None, **kwargs):
@@ -113,13 +113,12 @@ class CredentialAdmin(AdminBase):
     inlines = [BackendInline]
 
 class BackendAdmin(AdminBase):
-    list_display = ['name', 'homedir', 'credential']
+    list_display = ['name', 'description']
 
 
 admin.site.register(FileExtension, AdminBase)
 admin.site.register(ParameterFilter, AdminBase)
 admin.site.register(ParameterSwitchUse, AdminBase)
-admin.site.register(ToolType, AdminBase)
 #admin.site.register(QueuedWorkflow, QueueAdmin)
 #admin.site.register(InProgressWorkflow, QueueAdmin)
 admin.site.register(FileType, FileTypeAdmin)

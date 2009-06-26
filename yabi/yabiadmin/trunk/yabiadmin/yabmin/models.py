@@ -32,13 +32,6 @@ class FileType(Base):
     def __unicode__(self):
         return self.name
 
-class ToolType(Base):
-    name = models.CharField(max_length=255, unique=True)
-    description = models.TextField(null=True, blank=True)
-
-    def __unicode__(self):
-        return self.name
-
 class Tool(Base):
     class Meta:
         ordering = ("name",)
@@ -48,7 +41,7 @@ class Tool(Base):
     path = models.CharField(max_length=512, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     enabled = models.BooleanField(default=True)
-    type = models.ForeignKey(ToolType)
+    backend = models.ForeignKey('Backend')
     groups = models.ManyToManyField('ToolGroup', through='ToolGrouping', null=True, blank=True)
     output_filetypes = models.ManyToManyField(FileExtension, through='ToolOutputExtension', null=True, blank=True)
     file_pass_thru = models.BooleanField(default=False)
@@ -234,6 +227,7 @@ class User(Base):
     def __unicode__(self):
         return self.name
 
+
 class Credential(Base):
     description = models.CharField(max_length=512, blank=True)
     username = models.CharField(max_length=512, blank=True)
@@ -241,14 +235,16 @@ class Credential(Base):
     cert = models.TextField(null=True, blank=True)
     key = models.TextField(null=True, blank=True)
     user = models.ForeignKey(User)
+    backends = models.ManyToManyField('Backend', through='BackendCredential', null=True, blank=True)
 
     def __unicode__(self):
         return "%s %s" % (self.description, self.user)
 
 class Backend(Base):
     name = models.CharField(max_length=255)
-    homedir = models.CharField(max_length=512, blank=True, null=True)
-    credential = models.ForeignKey(Credential)
+    description = models.CharField(max_length=512, blank=True)
+    remote_server = models.TextField()
+    remote_path = models.TextField()
 
     def __unicode__(self):
         return self.name
@@ -266,3 +262,8 @@ class Backend(Base):
         
         return json.dumps(output)
 
+
+class BackendCredential(Base):
+    backend = models.ForeignKey(Backend)
+    credential = models.ForeignKey(Credential)
+    homedir = models.CharField(max_length=512, blank=True, null=True)

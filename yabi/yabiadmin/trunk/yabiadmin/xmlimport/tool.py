@@ -12,7 +12,7 @@ error the transaction is rolled back.
 """
 import glob, os, sys
 from xml.dom.minidom import parse
-from yabiadmin.yabmin.models import Tool, ToolType, ToolParameter, ParameterSwitchUse, ParameterFilter, FileExtension, FileType, ToolOutputExtension
+from yabiadmin.yabmin.models import Tool, Backend, ToolParameter, ParameterSwitchUse, ParameterFilter, FileExtension, FileType, ToolOutputExtension
 from django.db import transaction
 
 def import_tool(filename):
@@ -36,7 +36,7 @@ def populate_simple_fields(tool, job_element):
             name='toolName', path='toolPath', 
             display_name='displayName', description='description')
     job_type_name = attribute_value(job_element, 'jobType')
-    tool.type = get_or_create_refdata(ToolType, job_type_name)
+    tool.backend = get_or_create_refdata(Backend, job_type_name)
 
 def validate_simple_fields(tool, tool_name):
     assert tool_name == tool.name, ("Inconsistent tool name. " 

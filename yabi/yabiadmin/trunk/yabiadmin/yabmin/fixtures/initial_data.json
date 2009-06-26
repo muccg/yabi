@@ -1,7 +1,7 @@
 [
     {
         "pk": 1, 
-        "model": "yabmin.tooltype", 
+        "model": "yabmin.backend", 
         "fields": {
             "description": "Tools that are executed on the old cluster called grindel.", 
             "created_on": "2009-03-30 00:37:30", 
@@ -11,7 +11,7 @@
     }, 
     {
         "pk": 2, 
-        "model": "yabmin.tooltype", 
+        "model": "yabmin.backend", 
         "fields": {
             "description": "Tools that are executed locally on the back-end.", 
             "created_on": "2009-03-30 00:37:53", 
@@ -21,7 +21,7 @@
     },
     {
         "pk": 3, 
-        "model": "yabmin.tooltype", 
+        "model": "yabmin.backend", 
         "fields": {
             "description": "Tools that are executed on the new cluster.", 
             "created_on": "2009-03-30 00:37:53", 
@@ -135,6 +135,24 @@
             "display_text": "remove path", 
             "description": "Removes the path component from the parameter value.", 
             "value": "removePath", 
+            "created_on": "2009-03-31 16:43:22", 
+            "last_modified_on": "2009-03-31 16:43:22"
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "yabmin.user", 
+        "fields": {
+            "name": "andrew", 
+            "created_on": "2009-03-31 16:43:22", 
+            "last_modified_on": "2009-03-31 16:43:22"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "yabmin.user", 
+        "fields": {
+            "name": "crispin", 
             "created_on": "2009-03-31 16:43:22", 
             "last_modified_on": "2009-03-31 16:43:22"
         }

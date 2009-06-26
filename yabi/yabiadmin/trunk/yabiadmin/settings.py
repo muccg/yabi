@@ -22,7 +22,7 @@ if "DJANGODEV" in os.environ:
     DATABASE_NAME = 'dev_yabmin'            # Or path to database file if using sqlite3.
     DATABASE_USER = 'yabminapp'             # Not used with sqlite3.
     DATABASE_PASSWORD = 'yabminapp'         # Not used with sqlite3.
-    DATABASE_HOST = 'eowyn'             # Set to empty string for localhost. Not used with sqlite3.
+    DATABASE_HOST = 'eowyn.localdomain'             # Set to empty string for localhost. Not used with sqlite3.
     DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
     SSL_ENABLED = False
     DEV_SERVER = True
@@ -38,7 +38,7 @@ else:
     DATABASE_NAME = 'dev_yabmin'            # Or path to database file if using sqlite3.
     DATABASE_USER = 'yabminapp'             # Not used with sqlite3.
     DATABASE_PASSWORD = 'yabminapp'         # Not used with sqlite3.
-    DATABASE_HOST = 'eowyn'             # Set to empty string for localhost. Not used with sqlite3.
+    DATABASE_HOST = 'eowyn.localdomain'             # Set to empty string for localhost. Not used with sqlite3.
     DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
     SSL_ENABLED = True
     DEV_SERVER = False
