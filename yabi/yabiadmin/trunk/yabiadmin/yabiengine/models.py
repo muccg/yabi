@@ -33,14 +33,8 @@ class Job(models.Model):
     def __unicode__(self):
         return "%s - %s" % (self.workflow.name, self.order)
 
-    def status_dependencies_ready(self):
-        return self.status == settings.STATUS['dependencies_ready']
-
-    def status_files_ready(self):
-        return self.status == settings.STATUS['files_ready']
-
-    def status_tasks_ready(self):
-        return self.status == settings.STATUS['tasks_ready']
+    def status_ready(self):
+        return self.status == settings.STATUS['ready']
 
     def status_complete(self):
         return self.status == settings.STATUS['complete']
@@ -50,7 +44,7 @@ class Job(models.Model):
 
 class Task(models.Model):
     job = models.ForeignKey(Job)
-    start_time = models.DateTimeField()
+    start_time = models.DateTimeField(null=True)
     end_time = models.DateTimeField(null=True)
     job_identifier = models.TextField()
     command = models.TextField(blank=True)

@@ -1,5 +1,6 @@
 # Django settings for yabi project.
 import os
+import logging
 
 if not os.environ.has_key('PROJECT_DIRECTORY'):
 	os.environ['PROJECT_DIRECTORY']=os.path.dirname(__file__)
@@ -192,8 +193,13 @@ AUTHENTICATION_BACKENDS = (
 STATIC_SERVER_PATH = os.path.join(PROJECT_DIRECTORY,"static")
 
 # status settings that can be used on workflow, job and task
-STATUS = {'dependencies_ready':'dependencies_ready',
-          'files_ready':'files_ready',
-          'tasks_ready':'tasks_ready',
+STATUS = {'ready':'ready',
           'complete':'complete'          
           }
+
+
+LOG_FILENAME = WRITABLE_DIRECTORY + '/yabiadmin.log'
+LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.critical
+logging.basicConfig(filename=LOG_FILENAME,level=LOGGING_LEVEL,)
+
+
