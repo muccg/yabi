@@ -1,0 +1,2 @@
+class YabiJobException(Exception):
+    pass
