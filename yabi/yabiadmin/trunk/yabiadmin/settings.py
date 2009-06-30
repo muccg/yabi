@@ -27,6 +27,7 @@ if "DJANGODEV" in os.environ:
     DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
     SSL_ENABLED = False
     DEV_SERVER = True
+    YABIBACKEND_SERVER = ''
 
     # debug site table
     SITE_ID = 1
@@ -43,10 +44,18 @@ else:
     DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
     SSL_ENABLED = True
     DEV_SERVER = False
-
+    YABIBACKEND_SERVER = ''
+    
     # development site id
     SITE_ID = 1
 
+
+
+YABIBACKEND_COPY = '/fs/copy'
+YABIBACKEND_RCOPY = '/fs/rcopy'
+YABIBACKEND_MKDIR = '/fs/mkdir'
+YABIBACKEND_RM = '/fs/rm'
+YABIBACKEND_LIST = '/fs/ls'
 
 ADMINS = (
     ('Tech Alerts', 'alerts@ccg.murdoch.edu.au')
