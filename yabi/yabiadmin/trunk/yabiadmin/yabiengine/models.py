@@ -104,6 +104,7 @@ class Syslog(models.Model):
     message = models.TextField(blank=True)
     table_name = models.CharField(max_length=64, null=True)
     table_id = models.IntegerField(null=True)
+    created_on = models.DateTimeField(null=True, auto_now=True, editable=False)
 
     def __unicode__(self):
         return self.message
