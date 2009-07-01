@@ -1,7 +1,7 @@
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
-from yabiadmin.yabmin.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet
+from yabiadmin.yabmin.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential
 from django.utils import webhelpers
 from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
@@ -70,8 +70,8 @@ def menu(request, username):
 def credential(request, username, backend):
 
     try:
-        backend = Backend.objects.get(name=backend, credential__user__name=username)
-        return HttpResponse(backend.json())
+        bc = BackendCredential.objects.get(backend__name=backend, credential__user__name=username)
+        return HttpResponse(bc.json())
     except ObjectDoesNotExist:
         return HttpResponseNotFound("Object not found")
 

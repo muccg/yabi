@@ -249,9 +249,14 @@ class Backend(Base):
     def __unicode__(self):
         return self.name
 
+class BackendCredential(Base):
+    backend = models.ForeignKey(Backend)
+    credential = models.ForeignKey(Credential)
+    homedir = models.CharField(max_length=512, blank=True, null=True)
+
     def json(self):
         output = {
-            'backend':self.name,
+            'backend':self.backend.name,
             'homedir':self.homedir,
             'credential':self.credential.description,
             'username':self.credential.username,
@@ -261,9 +266,3 @@ class Backend(Base):
             }
         
         return json.dumps(output)
-
-
-class BackendCredential(Base):
-    backend = models.ForeignKey(Backend)
-    credential = models.ForeignKey(Credential)
-    homedir = models.CharField(max_length=512, blank=True, null=True)
