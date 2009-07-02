@@ -85,7 +85,6 @@ def Get(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory
         "http://%s:%d%s"%(host,port,path),
         agent = USER_AGENT
         )
-    reactor.connectTCP(host, port, factory)
     
     get_complete = [False]
     get_failed = [False]
@@ -101,7 +100,9 @@ def Get(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory
         get_complete[0] = data
         
     factory.deferred.addCallback(_doSuccess).addErrback(_doFailure)
-    
+
+    reactor.connectTCP(host, port, factory)
+
     # now we schedule this thread until the task is complete
     while not get_complete[0] and not get_failed[0]:
         schedule()
@@ -162,21 +163,21 @@ def Post(path,**kws):
                 },
             )
         
-    reactor.connectTCP(host, port, factory)
-    
     get_complete = [False]
     get_failed = [False]
     
     # now if the get fails for some reason. deal with it
     def _doFailure(data):
-        #print "Failed:",factory,":",type(data),data.__class__
+        print "Post Failed:",factory,":",type(data),data.__class__
         get_failed[0] = "Copy failed... "+data.value.response
     
     def _doSuccess(data):
-        #print "success"
+        print "Post success"
         get_complete[0] = data
         
     factory.deferred.addCallback(_doSuccess).addErrback(_doFailure)
+
+    reactor.connectTCP(host, port, factory)
     
     # now we schedule this thread until the task is complete
     while not get_complete[0] and not get_failed[0]:
