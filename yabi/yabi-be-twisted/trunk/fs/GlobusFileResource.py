@@ -182,6 +182,9 @@ class GlobusFileResource(BaseFileResource):
             """the user is now authed"""
             usercert = self.authproxy.ProxyFile(username)
             remote_url = self._make_remote_url(path)
+
+            print "REMOTE URL: %s" % remote_url
+            
             process, fifo = globus.Copy.WriteToRemote(usercert,remote_url,fifo=fifoin)
             #print "process write",sys.getrefcount(process)
             

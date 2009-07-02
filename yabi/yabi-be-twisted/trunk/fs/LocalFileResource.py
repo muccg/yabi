@@ -65,7 +65,7 @@ class LocalFileResource(BaseFileResource):
         path = parts[1:]
         
         src = self.GetFilename(path)
-        #print "FS READ:",fifo,src
+        print "FS READ:",fifo,src
         
         # the copy to remote command
         proc = subprocess.Popen(    [  self.copy,
