@@ -68,6 +68,9 @@ class CertificateProxy(object):
         # file locations
         certfile = os.path.join( self.tempdir, "%s.cert"%userid )
         keyfile = os.path.join( self.tempdir, "%s.key"%userid )
+
+        print certfile
+        print keyfile
         
         # write out the pems
         with open( certfile, 'wb' ) as fh:
@@ -78,12 +81,14 @@ class CertificateProxy(object):
             
         # file permissions
         os.chmod( keyfile, 0600 )
+        os.chmod( certfile, 0644 )
          
         # where our proxy will live
         proxyfile = self.ProxyFile(userid)
         
         # run "/usr/local/globus/bin/grid-proxy-init -cert PEMFILE -key KEYFILE -pwstdin -out PROXYFILE"
         proc = subprocess.Popen( [  self.grid_proxy_init,
+                                    "-debug",
                                     "-cert", certfile,
                                     "-key", keyfile,
                                     "-valid", self.CERTIFICATE_EXPIRY_TIME,
@@ -94,6 +99,8 @@ class CertificateProxy(object):
         try:
             # TODO: non blocking version of this call
             stdout, stderr = proc.communicate( password )
+            print stdout
+            print stderr
         except OSError, ose:
             if ose[0]==32:
                 # broken pipe
@@ -104,7 +111,7 @@ class CertificateProxy(object):
             # clean up the key/cert files
             os.unlink(certfile)
             os.unlink(keyfile)
-        
+
         code = proc.returncode
         
         if code:
