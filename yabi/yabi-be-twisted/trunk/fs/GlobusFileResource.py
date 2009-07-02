@@ -1,4 +1,3 @@
-
 from twisted.web2 import resource, http_headers, responsecode, http, server, stream
 from twisted.internet import defer, reactor
 from os.path import sep
@@ -7,6 +6,7 @@ from submit_helpers import parsePOSTData, parsePUTData, parsePOSTDataRemoteWrite
 from twisted.web2.auth.interfaces import IAuthenticatedRequest, IHTTPUser
 
 import globus
+from globus.CertificateProxy import ProxyInitError
 
 GET_DIR_LIST = True                     # whether when you call GET on a directory, if it returns the same as LIST on that path. False throws an error on a directory.
 PIPE_RETRY_TIME = 1.0                   # how often in seconds to check for an initialised pipe has failed or started flowing
@@ -158,6 +158,7 @@ class GlobusFileResource(BaseFileResource):
             return
         
         if not self.authproxy.IsProxyValid(username):
+            print "Calling AuthProxy from GetReadFifo"
             self.AuthProxyUser(username, self.backend, success, deferred)
         else:
             success(deferred)
@@ -190,7 +191,9 @@ class GlobusFileResource(BaseFileResource):
             return
         
         if not self.authproxy.IsProxyValid(username):
+            print "Calling AuthProxy from GetWriteFifo"
             self.AuthProxyUser(username, self.backend, success, deferred)
+            
         else:
             success(deferred)
             
@@ -211,6 +214,7 @@ class GlobusFileResource(BaseFileResource):
         deferred = defer.Deferred()
         if not self.authproxy.IsProxyValid(self.username):
             # we have to auth the user. we need to get the credentials json object from the admin mango app
+            print "Calling AuthProxy from http_LIST_old"
             self.AuthProxyUser(self.username,self.backend, list_success,deferred)
         else:
             # auth our user
@@ -329,6 +333,7 @@ class GlobusFileResource(BaseFileResource):
         deferred = defer.Deferred()
         if not self.authproxy.IsProxyValid(username):
             # we have to auth the user. we need to get the credentials json object from the admin mango app
+            print "Calling AuthProxy from http_LIST"
             self.AuthProxyUser(username,self.backend, _is_authed,deferred)
         else:
             # our user is valid
@@ -388,6 +393,7 @@ class GlobusFileResource(BaseFileResource):
         deferred = defer.Deferred()
         if not self.authproxy.IsProxyValid(username):
             # we have to auth the user. we need to get the credentials json object from the admin mango app
+            print "Calling AuthProxy from http_MKDIR"
             self.AuthProxyUser(username,self.backend, _is_authed,deferred)
         else:
             # our user is valid
@@ -441,6 +447,7 @@ class GlobusFileResource(BaseFileResource):
         deferred = defer.Deferred()
         if not self.authproxy.IsProxyValid(username):
             # we have to auth the user. we need to get the credentials json object from the admin mango app
+            print "Calling AuthProxy from http_DELETE"
             self.AuthProxyUser(username,self.backend, _is_authed,deferred)
         else:
             # our user is valid
@@ -454,31 +461,40 @@ class GlobusFileResource(BaseFileResource):
         host,port = "localhost",8000
         useragent = "YabiFS/0.1"
         
+        print 'AuthProxyUser: http://%s:%d/yabiadmin/ws/credential/%s/%s/'%(host,port,username,backend)
+
         factory = client.HTTPClientFactory(
             'http://%s:%d/yabiadmin/ws/credential/%s/%s/'%(host,port,username,backend),
             agent = useragent
             )
-        reactor.connectTCP(host, port, factory)
-        
+
         # now if the page fails for some reason. deal with it
         def _doFailure(data):
-            #print "Failed:",factory,":",type(data),data.__class__
-            #print data
-            
+            print "Failed in AuthProxyUser:",factory,":",type(data),data.__class__
             deferred.callback( http.Response( responsecode.UNAUTHORIZED, {'content-type': http_headers.MimeType('text', 'plain')}, "User: %s does not have credentials for this backend\n"%username) )
             
         # if we get the credentials decode them and auth them
         def _doSuccess(data):
-            #print "Success",deferred,args,successcallback
+            print "Success in AuthProxyUser",deferred,args,successcallback
             credentials=json.loads(data)
             print "Credentials gathered successfully for user %s"%username
-            
+
             # auth the user
-            self.authproxy.CreateUserProxy(username,credentials['cert'],credentials['key'],credentials['password'])
-            
+            try:
+                print "Trying to CreateUserProxy"
+                self.authproxy.CreateUserProxy(username,credentials['cert'],credentials['key'],credentials['password'])
+
+            except ProxyInitError, e:
+                print "Exception from CreateUserProxy"
+                # if the createUserProxy fails we need to catch the exception here
+                # so we can log it and see in the logs where the problem is
+                # otherwise it is seen as a copy problem
+
             successcallback(deferred, *args)
         
-        return factory.deferred.addCallback(_doSuccess).addErrback(_doFailure)
+        f = factory.deferred.addCallback(_doSuccess).addErrback(_doFailure)
+        reactor.connectTCP(host, port, factory)
+        return f
 
     def locateChild(self, request, segments):
         # return our local file resource for these segments
