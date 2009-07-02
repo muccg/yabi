@@ -156,7 +156,7 @@ class FileCopyResource(resource.PostableResource):
                     reactor.callLater(PROCESS_CHECK_TIME, check_processes, result_channel, procr, procw)
                 
                 sbend.GetReadFifo(src_path, _read_ready, fifo)
-                
+
             dbend.GetWriteFifo(dst_path, _write_ready)
             
             return result_channel

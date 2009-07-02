@@ -49,14 +49,14 @@ class FileMkdirResource(resource.PostableResource):
                 return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "copy must specify a directory 'dir' to make\n")
             
             directory = request.args['dir'][0]
-           
+
             path = directory.split("/")
             
             bendname,username,pathremainder = path[0], path[1], path[2:]
-            
+
             # get the backend
             bend = getattr(self.fsresource(), "child_%s"%bendname)
-            
+
             # make the directory. returns a deferred, in which the result will be called down
             mkdir=bend.http_MKDIR(request,path=[username]+pathremainder, username=username)
             
