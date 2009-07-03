@@ -27,7 +27,7 @@ if "DJANGODEV" in os.environ:
     DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
     SSL_ENABLED = False
     DEV_SERVER = True
-    YABIBACKEND_SERVER = ''
+    YABIBACKEND_SERVER = 'boromir.localdomain:8000'
 
     # debug site table
     SITE_ID = 1

@@ -13,10 +13,12 @@ class SyslogAdmin(admin.ModelAdmin):
 
 class JobAdmin(admin.ModelAdmin):
     list_display = ['order', 'status', 'command', 'commandparams', 'start_time', 'end_time', 'cpus', 'walltime', 'stageout']
+    list_filter = ['workflow']
 
 class TaskAdmin(admin.ModelAdmin):
     list_display = ['status', 'job', 'start_time', 'end_time', 'job_identifier', 'command', 'error_msg']
-
+    list_filter = ['job__workflow']
+    
 class StageInAdmin(admin.ModelAdmin):
     list_display = ['src_backend', 'src_path', 'dst_backend', 'dst_path', 'order', 'task']
 

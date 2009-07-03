@@ -4,6 +4,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
 from yabiadmin.yabiengine.YabiJobException import YabiJobException
+from yabiadmin.yabiengine import backend
+from django.utils import simplejson as json
 
 
 def walk(workflow):
@@ -60,8 +62,15 @@ def prepare_tasks(job):
             for file in files:
                 input_files.append(file)
 
-        if param.startswith("file://") and param.endswith("/"):
+        if param.startswith("file") and param.endswith("/"):
             logger.info('Processing uri %s' % param)
+
+            results = json.loads(backend.ls(param))
+
+            for key in results.keys():
+                for file in results[key]["files"]:
+                    input_files.append(file[0])                    
+
             files = [] # query backend with uri
             for file in files:
                 input_files.append(file)
