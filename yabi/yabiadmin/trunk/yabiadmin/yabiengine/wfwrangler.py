@@ -62,7 +62,7 @@ def prepare_tasks(job):
             for file in files:
                 input_files.append(file)
 
-        if param.startswith("file") and param.endswith("/"):
+        if param.startswith("file://") and param.endswith("/"):
             logger.info('Processing uri %s' % param)
 
             results = json.loads(backend.ls(param))

@@ -243,11 +243,14 @@ class Credential(Base):
 class Backend(Base):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=512, blank=True)
-    remote_server = models.TextField()
-    remote_path = models.TextField()
+    scheme = models.CharField(max_length=64)
+    hostname = models.CharField(max_length=512, blank=True, null=True)
+    port = models.IntegerField(null=True, blank=True)
+    path = models.CharField(max_length=512, blank=True, null=True)
 
     def __unicode__(self):
         return self.name
+
 
 class BackendCredential(Base):
     backend = models.ForeignKey(Backend)
