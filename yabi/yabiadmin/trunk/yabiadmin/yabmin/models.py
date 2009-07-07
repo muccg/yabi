@@ -2,7 +2,7 @@ from django.db import models
 from django import forms
 from django.contrib.auth.models import User as DjangoUser
 from django.utils import simplejson as json
-
+from yabiadmin.yabiengine import backend
 
 class ManyToManyField_NoSyncdb(models.ManyToManyField):
     def __init__(self, *args, **kwargs):
@@ -257,10 +257,16 @@ class BackendCredential(Base):
     credential = models.ForeignKey(Credential)
     homedir = models.CharField(max_length=512, blank=True, null=True)
 
+    # turn the correct URI in the db into the pseudo-path currently expected by BE
+    # TODO FIX THIS ie once BE takes URI then remove this
+    def homedir_hack(self):
+        #HACK replace first instance of backend username with yabi username
+        return backend.translate_uri(self.homedir.replace(self.credential.username, self.credential.user.name, 1))
+
     def json(self):
         output = {
             'backend':self.backend.name,
-            'homedir':self.homedir,
+            'homedir':self.homedir_hack(),
             'credential':self.credential.description,
             'username':self.credential.username,
             'password':self.credential.password,
