@@ -70,7 +70,7 @@ def menu(request, username):
 def credential(request, username, backend):
 
     try:
-        bc = BackendCredential.objects.get(backend__name=backend, credential__username)
+        bc = BackendCredential.objects.get(backend__name=backend, credential__username=username)
         return HttpResponse(bc.json())
     except ObjectDoesNotExist:
         return HttpResponseNotFound("Object not found")
