@@ -230,7 +230,7 @@ class User(Base):
 
 class Credential(Base):
     description = models.CharField(max_length=512, blank=True)
-    username = models.CharField(max_length=512, blank=True)
+    username = models.CharField(max_length=512)
     password = models.CharField(max_length=512, blank=True)
     cert = models.TextField(null=True, blank=True)
     key = models.TextField(null=True, blank=True)
