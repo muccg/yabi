@@ -75,6 +75,10 @@ class Task(models.Model):
 
         return json.dumps(output)
 
+    def __unicode__(self):
+        return self.job_identifier
+
+
 
 class StageIn(models.Model):
     src_backend = models.CharField(max_length=256)
