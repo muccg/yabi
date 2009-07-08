@@ -261,7 +261,7 @@ class BackendCredential(Base):
     # TODO FIX THIS ie once BE takes URI then remove this
     def homedir_hack(self):
         #HACK replace first instance of backend username with yabi username
-        return uri2pseudopath(self.homedir.replace(self.credential.username, self.credential.user.name, 1))
+        return uri_get_pseudopath(self.homedir.replace(self.credential.username, self.credential.user.name, 1))
 
     def json(self):
         output = {
