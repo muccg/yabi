@@ -7,8 +7,6 @@ from yabiadmin.yabmin.models import Backend, BackendCredential
 from yabiadmin.yabiengine.YabiJobException import YabiJobException
 from yabiadmin.yabiengine.urihelper import uri_get_path, uri_get_scheme
 from yabiadmin.yabiengine import backendhelper
-from django.utils import simplejson as json
-
 
 def walk(workflow):
 
@@ -77,25 +75,21 @@ def prepare_tasks(job):
         if param.startswith("file://") and param.endswith("/"):
             logger.info('Processing uri %s' % param)
 
-            results = json.loads(backendhelper.ls(param))
+            # get_file_list will return a list of file tuples
+            for file in backendhelper.get_file_list(param):
 
-            for key in results.keys():
-                for file in results[key]["files"]:
+                taskcommand = job.command.replace("%", "%s%s%s" % (b.path, uri_get_path(bc.homedir),file[0]))
+                logger.info('Creating task for job id: %s using command: %s' % (job.id, taskcommand))
+                t = Task(job=job, command=taskcommand, status="ready")
+                t.save()
 
-
-
-                    taskcommand = job.command.replace("%", "%s%s%s" % (b.path, uri_get_path(bc.homedir),file[0]))
-                    logger.info('Creating task for job id: %s using command: %s' % (job.id, taskcommand))
-                    t = Task(job=job, command=taskcommand, status="ready")
-                    t.save()
-
-                    s = StageIn(task=t,
-                                src_backend=uri_get_scheme(param),
-                                src_path="%s%s" % (uri_get_path(param), file[0]), # change the name of uri2homedir
-                                dst_backend=job.fs_backend,
-                                dst_path="%s%s" % (uri_get_path(bc.homedir), file[0]),
-                                order=0)
-                    s.save()
+                s = StageIn(task=t,
+                            src_backend=uri_get_scheme(param),
+                            src_path="%s%s" % (uri_get_path(param), file[0]),
+                            dst_backend=job.fs_backend,
+                            dst_path="%s%s" % (uri_get_path(bc.homedir), file[0]),
+                            order=0)
+                s.save()
 
 
 
