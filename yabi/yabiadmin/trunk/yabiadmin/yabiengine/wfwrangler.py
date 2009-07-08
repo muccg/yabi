@@ -64,6 +64,10 @@ def prepare_tasks(job):
 
     for param in eval(job.commandparams):
 
+
+        ##################################################
+        # handle yabi:// uris
+        ##################################################
         if param.startswith("yabi://"):
             logger.info('Processing uri %s' % param)
             files = [] # query backend with uri
@@ -71,33 +75,22 @@ def prepare_tasks(job):
                 input_files.append(file)
 
 
+        ##################################################
+        # handle file:// uris that are directories
+        ##################################################
+
         # uris ending with a / on the end of the path are directories
         if param.startswith("file://") and param.endswith("/"):
             logger.info('Processing uri %s' % param)
 
             # get_file_list will return a list of file tuples
-            for file in backendhelper.get_file_list(param):
-
-                taskcommand = job.command.replace("%", "%s%s%s" % (b.path, uri_get_path(bc.homedir),file[0]))
-                logger.info('Creating task for job id: %s using command: %s' % (job.id, taskcommand))
-                t = Task(job=job, command=taskcommand, status="ready")
-                t.save()
-
-                s = StageIn(task=t,
-                            src_backend=uri_get_scheme(param),
-                            src_path="%s%s" % (uri_get_path(param), file[0]),
-                            dst_backend=job.fs_backend,
-                            dst_path="%s%s" % (uri_get_path(bc.homedir), file[0]),
-                            order=0)
-                s.save()
+            for f in backendhelper.get_file_list(param):
+                create_task(job, param, f, b, bc)
 
 
-
-
-
-
-
-
+        ##################################################
+        # handle file:// uris
+        ##################################################
 
         if param.startswith("file://"):
             logger.info('Processing uri %s' % param)            
@@ -109,5 +102,20 @@ def prepare_job(job):
     logger.info('Setting job id %s to ready' % job.id)                
     job.status = settings.STATUS["ready"]
     job.save()
+
+
+def create_task(job, param, file, backend, backendcredential):
+    taskcommand = job.command.replace("%", "%s%s%s" % (backend.path, uri_get_path(backendcredential.homedir),file[0]))
+    logger.info('Creating task for job id: %s using command: %s' % (job.id, taskcommand))
+    t = Task(job=job, command=taskcommand, status="ready")
+    t.save()
+
+    s = StageIn(task=t,
+                src_backend=uri_get_scheme(param),
+                src_path="%s%s" % (uri_get_path(param), file[0]),
+                dst_backend=job.fs_backend,
+                dst_path="%s%s" % (uri_get_path(backendcredential.homedir), file[0]),
+                order=0)
+    s.save()
 
 
