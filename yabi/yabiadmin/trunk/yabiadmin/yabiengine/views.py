@@ -4,16 +4,17 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import webhelpers
 from django.utils import simplejson as json
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
+from django.conf import settings
 import wfwrangler
 
 def task(request):
 
     try:
-        tasks = Task.objects.filter(status="ready")
+        tasks = Task.objects.filter(status=settings.STATUS["ready"])
 
         if tasks:
             task = tasks[0]
-            task.status="requested"
+            task.status=settings.STATUS["requested"]
             task.save()
             return HttpResponse(task.json())
         else:
