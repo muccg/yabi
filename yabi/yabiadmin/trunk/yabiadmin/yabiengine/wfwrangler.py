@@ -72,8 +72,9 @@ def prepare_tasks(job):
             logger.info('Processing uri %s' % param)
             files = [] # query backend with uri
             for file in files:
-                input_files.append(file)
+                input_files.append(file) #TODO THIS IS NOT DONE YET
 
+            continue
 
         ##################################################
         # handle file:// uris that are directories
@@ -85,16 +86,21 @@ def prepare_tasks(job):
 
             # get_file_list will return a list of file tuples
             for f in backendhelper.get_file_list(param):
-                create_task(job, param, f, b, bc)
+                create_task(job, param, f[0], b, bc)
+
+            continue
 
 
         ##################################################
         # handle file:// uris
         ##################################################
-
         if param.startswith("file://"):
             logger.info('Processing uri %s' % param)            
+            rest, filename = param.rsplit("/",1)
+            create_task(job, rest + "/", filename, b, bc)
             input_files.append(param)
+
+            continue
 
 
 
@@ -105,16 +111,16 @@ def prepare_job(job):
 
 
 def create_task(job, param, file, backend, backendcredential):
-    taskcommand = job.command.replace("%", "%s%s%s" % (backend.path, uri_get_path(backendcredential.homedir),file[0]))
+    taskcommand = job.command.replace("%", "%s%s%s" % (backend.path, uri_get_path(backendcredential.homedir),file))
     logger.info('Creating task for job id: %s using command: %s' % (job.id, taskcommand))
     t = Task(job=job, command=taskcommand, status="ready")
     t.save()
 
     s = StageIn(task=t,
                 src_backend=uri_get_scheme(param),
-                src_path="%s%s" % (uri_get_path(param), file[0]),
+                src_path="%s%s" % (uri_get_path(param), file),
                 dst_backend=job.fs_backend,
-                dst_path="%s%s" % (uri_get_path(backendcredential.homedir), file[0]),
+                dst_path="%s%s" % (uri_get_path(backendcredential.homedir), file),
                 order=0)
     s.save()
 

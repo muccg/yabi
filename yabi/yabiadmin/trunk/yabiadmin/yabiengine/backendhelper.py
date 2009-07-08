@@ -27,7 +27,6 @@ def get_file_list(uri):
     if r.status == 200:
 
         results = json.loads(r.read())
-
         for key in results.keys():
             for file in results[key]["files"]:
                 file_list.append(file)
