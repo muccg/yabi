@@ -27,6 +27,8 @@ class Job(models.Model):
     walltime = models.IntegerField(null=True)
     stageout = models.CharField(max_length=1000, null=True)
     status = models.CharField(max_length=64, blank=True)
+    exec_backend = models.CharField(max_length=256)
+    fs_backend = models.CharField(max_length=256)
     command = models.TextField()
     commandparams = models.TextField(blank=True)
 
@@ -44,13 +46,13 @@ class Job(models.Model):
 
 class Task(models.Model):
     job = models.ForeignKey(Job)
-    start_time = models.DateTimeField(null=True)
-    end_time = models.DateTimeField(null=True)
-    job_identifier = models.TextField()
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    job_identifier = models.TextField(blank=True)
     command = models.TextField(blank=True)
-    exec_backend = models.CharField(max_length=256)
-    fs_backend = models.CharField(max_length=256)
-    error_msg = models.CharField(max_length=1000, null=True)
+    exec_backend = models.CharField(max_length=256, blank=True)
+    fs_backend = models.CharField(max_length=256, blank=True)
+    error_msg = models.CharField(max_length=1000, null=True, blank=True)
     status = models.CharField(max_length=64, blank=True)
     
     def json(self):
@@ -63,8 +65,8 @@ class Task(models.Model):
             "stagein":[],
             "exec":{
             "command":self.command,
-            "backend":self.exec_backend,
-            "fsbackend":self.fs_backend,
+            "backend":self.job.exec_backend,
+            "fsbackend":self.job.fs_backend,
             },
             "stageout":self.job.stageout
             }

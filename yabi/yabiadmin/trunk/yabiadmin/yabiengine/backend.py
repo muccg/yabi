@@ -27,9 +27,8 @@ def ls(uri):
 
 
 def translate_uri(uri):
-    
-    from yabiadmin.yabmin.models import Backend
 
+    from yabiadmin.yabmin.models import Backend
     from urlparse import urlparse, urlsplit
     scheme, rest = uri.split(":",1)
     u = urlparse(rest)
@@ -44,3 +43,15 @@ def translate_uri(uri):
     
     return "%s/%s%s" % (backend.name, u.username, u.path)
 
+
+def uri2homedir(uri):
+
+    from urlparse import urlparse, urlsplit
+    scheme, rest = uri.split(":",1)
+    u = urlparse(rest)
+    return u.path
+
+def scheme(uri):
+
+    scheme, rest = uri.split(":",1)
+    return scheme
