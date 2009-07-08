@@ -9,7 +9,7 @@ import wfwrangler
 def task(request):
 
     try:
-        tasks = Task.objects.filter(status="")
+        tasks = Task.objects.filter(status="ready")
 
         if tasks:
             task = tasks[0]
