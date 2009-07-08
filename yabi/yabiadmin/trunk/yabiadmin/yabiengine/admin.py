@@ -10,6 +10,8 @@ class QueuedWorkflowAdmin(admin.ModelAdmin):
 
 class SyslogAdmin(admin.ModelAdmin):
     list_display = ['message', 'table_name', 'table_id', 'created_on']
+    search_fields = ['table_name', 'table_id']
+
 
 class JobAdmin(admin.ModelAdmin):
     list_display = ['order', 'status', 'command', 'commandparams', 'start_time', 'end_time', 'cpus', 'walltime', 'stageout']
