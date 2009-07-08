@@ -6,7 +6,7 @@ logger = logging.getLogger('yabiengine')
 
 from django.core.exceptions import ObjectDoesNotExist
 
-def uri2pseudopath(uri):
+def uri_get_pseudopath(uri):
 
     from yabiadmin.yabmin.models import Backend
     from urlparse import urlparse, urlsplit
@@ -24,14 +24,14 @@ def uri2pseudopath(uri):
     return "%s/%s%s" % (backend.name, u.username, u.path)
 
 
-def uri2homedir(uri):
+def uri_get_path(uri):
 
     from urlparse import urlparse, urlsplit
     scheme, rest = uri.split(":",1)
     u = urlparse(rest)
     return u.path
 
-def scheme(uri):
+def uri_get_scheme(uri):
 
     scheme, rest = uri.split(":",1)
     return scheme

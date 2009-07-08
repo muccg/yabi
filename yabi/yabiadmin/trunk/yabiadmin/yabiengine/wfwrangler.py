@@ -5,7 +5,8 @@ from django.conf import settings
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog, StageIn
 from yabiadmin.yabmin.models import Backend, BackendCredential
 from yabiadmin.yabiengine.YabiJobException import YabiJobException
-from yabiadmin.yabiengine import backend
+from yabiadmin.yabiengine.urihelper import uri_get_path
+from yabiadmin.yabiengine import backendhelper
 from django.utils import simplejson as json
 
 
@@ -76,23 +77,23 @@ def prepare_tasks(job):
         if param.startswith("file://") and param.endswith("/"):
             logger.info('Processing uri %s' % param)
 
-            results = json.loads(backend.ls(param))
+            results = json.loads(backendhelper.ls(param))
 
             for key in results.keys():
                 for file in results[key]["files"]:
 
 
 
-                    taskcommand = job.command.replace("%", "%s%s%s" % (b.path, backend.uri2homedir(bc.homedir),file[0]))
+                    taskcommand = job.command.replace("%", "%s%s%s" % (b.path, uri_get_path(bc.homedir),file[0]))
                     logger.info('Creating task for job id: %s using command: %s' % (job.id, taskcommand))
                     t = Task(job=job, command=taskcommand, status="ready")
                     t.save()
 
                     s = StageIn(task=t,
-                                src_backend=backend.scheme(param),
-                                src_path="%s%s" % (backend.uri2homedir(param), file[0]), # change the name of uri2homedir
+                                src_backend=uri_get_scheme(param),
+                                src_path="%s%s" % (uri_get_path(param), file[0]), # change the name of uri2homedir
                                 dst_backend=job.fs_backend,
-                                dst_path="%s%s" % (backend.uri2homedir(bc.homedir), file[0]),
+                                dst_path="%s%s" % (uri_get_path(bc.homedir), file[0]),
                                 order=0)
                     s.save()
 
