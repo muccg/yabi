@@ -31,6 +31,18 @@ class GlobusShell(object):
 
     def execute(self, certfile, host, *command):
         """Run inside gsissh, this command line. Command parts are passed in as a list of parameters, not a string."""
+
+        # TODO FIXME
+        #
+        # Calling Popen is currently broken in Twisted. This is due to the way signal handling is done in twisted.
+        # Reference:  http://twistedmatrix.com/trac/ticket/733
+        # A quick google can find plenty of other references and various workarounds.
+        #
+        # Suggestion: Use spawnProcess within the twisted api. Specifically there is some utils code within the 
+        # twisted api which makes this really easy.
+        # Reference: http://twistedmatrix.com/documents/8.2.0/api/twisted.internet.utils.html
+
+
         subenv = self._make_env(certfile)
         proc = Popen( [  self.gsissh,
                                     host ] +
