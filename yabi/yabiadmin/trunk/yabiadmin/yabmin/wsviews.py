@@ -6,6 +6,10 @@ from django.utils import webhelpers
 from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
+from yabiadmin.yabiengine import wfbuilder
+
+import logging
+logger = logging.getLogger('yabmin')
 
 
 def tool(request, toolname):
@@ -65,6 +69,17 @@ def menu(request, username):
         return HttpResponse(json.dumps({"menu":output}))
     except ObjectDoesNotExist:
         return HttpResponseNotFound("Object not found")    
+
+
+def submitworkflow(request):
+    logger.debug('submitworkflow')
+    try:
+        # probably want to catch the type of exceptions we may get from this
+        wfbuilder.build(request.POST['username'], request.POST["workflowjson"])
+        
+        return HttpResponse(request.POST["workflowjson"])
+    except KeyError,e:
+        return HttpResponseNotFound(e.message)
 
 
 def credential(request, username, backend):

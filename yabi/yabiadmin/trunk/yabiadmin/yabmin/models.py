@@ -87,12 +87,13 @@ class Tool(Base):
             'enabled':self.enabled,
             'file_pass_thru':self.file_pass_thru,
             'batch_on_param':self.batch_on_param.switch,
-            'job_type': self.type.name,
+            'job_type': self.backend.name,
             'inputExtensions': self.input_filetype_extensions(),
             'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__extension")),            
             'parameter_list': list(self.toolparameter_set.order_by('id').values("rank", "mandatory", "input_file", "output_file",
                                                                                 "switch", "switch_use__display_text", "switch_use__value","switch_use__description",
-                                                                                "filter_value", "filter__display_text", "filter__value","filter__description", "possible_values"))
+                                                                                "filter_value", "filter__display_text", "filter__value","filter__description", "possible_values",
+                                                                                "default_value"))
             }
     
     def json(self):
