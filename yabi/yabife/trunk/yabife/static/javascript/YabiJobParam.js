@@ -13,7 +13,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
     this.valid = false;
     this.filterGroupHash = [];
     this.switchName = obj["switch"];
-    this.defaultValue = obj.value;
+    this.defaultValue = obj.default_value;
     this.subscribedParams = []; //these params change when this param changes
     this.consumableFiles = []; //items that could be consumed
     this.consumedFiles = []; //actual items consumed. unless allowsBatching = true then this will only be one file
@@ -38,11 +38,11 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
         this.isMandatory = false;
     }
     
-    if (this.payload.inputFile == "yes") {
+    if (this.payload.input_file === true) {
         this.isInputFile = true;
     }
     
-    if (this.payload.outputFile == "yes") {
+    if (this.payload.output_file === true) {
         this.isOutputFile = true;
     }
 
@@ -69,31 +69,31 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
     
     //some parameters accept multiple possibleValues
     //render as a select
-    if (this.payload.possibleValues) {
+    if (this.payload.possible_values) {
         this.renderMode = "select";
         
         //possible sub-elements are 'values' or 'filterGroup'
-        if (this.payload.possibleValues.value) {
+        if (this.payload.possible_values.value) {
             //coerce single values into an array
-            if (!YAHOO.lang.isArray(this.payload.possibleValues.value)) {
-                this.possibleValues = [this.payload.possibleValues.value];
+            if (!YAHOO.lang.isArray(this.payload.possible_values.value)) {
+                this.possibleValues = [this.payload.possible_values.value];
             }
             
-            this.possibleValues = this.payload.possibleValues.value;
+            this.possibleValues = this.payload.possible_values.value;
         }
         
-        if (this.payload.possibleValues.filterGroup) {
+        if (this.payload.possible_values.filterGroup) {
             key = "";
-            if (this.payload.possibleValues.filteredBySwitch) {
-                key = this.job.paramValue(this.payload.possibleValues.filteredBySwitch);
+            if (this.payload.possible_values.filteredBySwitch) {
+                key = this.job.paramValue(this.payload.possible_values.filteredBySwitch);
             }
         
-            if (!YAHOO.lang.isArray(this.payload.possibleValues.filterGroup)) {
-                this.payload.possibleValues.filterGroup = [this.payload.possibleValues.filterGroup];
+            if (!YAHOO.lang.isArray(this.payload.possible_values.filterGroup)) {
+                this.payload.possible_values.filterGroup = [this.payload.possible_values.filterGroup];
             }
             
-            for (var index in this.payload.possibleValues.filterGroup) {
-                this.filterGroupHash[this.payload.possibleValues.filterGroup[index].key] = this.payload.possibleValues.filterGroup[index];
+            for (var index in this.payload.possible_values.filterGroup) {
+                this.filterGroupHash[this.payload.possible_values.filterGroup[index].key] = this.payload.possible_values.filterGroup[index];
             }
             
             //set default
@@ -103,8 +103,8 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
             }
             
             //subscribe
-            if (this.payload.possibleValues.filteredBySwitch && this.job.getParam(this.payload.possibleValues.filteredBySwitch)) {
-                this.job.getParam(this.payload.possibleValues.filteredBySwitch).addSubscriber(this);
+            if (this.payload.possible_values.filteredBySwitch && this.job.getParam(this.payload.possible_values.filteredBySwitch)) {
+                this.job.getParam(this.payload.possible_values.filteredBySwitch).addSubscriber(this);
             }
         }
     }
