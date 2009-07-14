@@ -99,8 +99,7 @@ def addJob(workflow, job_dict, order):
     # now save the command and commandparams
     job.command = ' '.join(command)
     job.commandparams = repr(commandparams) # save string repr of list
-
-    logger.info(job.commandparams)
+    job.status = settings.STATUS['pending']
     job.save()
 
     # cache job for later reference
