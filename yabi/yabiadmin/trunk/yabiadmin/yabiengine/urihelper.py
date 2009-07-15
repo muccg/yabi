@@ -35,3 +35,16 @@ def uri_get_scheme(uri):
 
     scheme, rest = uri.split(":",1)
     return scheme
+
+
+def get_backend_uri(backend):
+    from yabiadmin.yabmin.models import Backend
+    from urlparse import urlunparse
+    assert isinstance(backend, Backend)
+
+    netloc = backend.hostname
+    if backend.port:
+        netloc += ':%d' % backend.port
+
+    return urlunparse((backend.scheme, netloc, backend.path, '', '', ''))
+    

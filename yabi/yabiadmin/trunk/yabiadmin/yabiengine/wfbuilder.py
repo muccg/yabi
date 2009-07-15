@@ -5,7 +5,7 @@ from django.conf import settings
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog, StageIn
 from yabiadmin.yabmin.models import Backend, BackendCredential, Tool, User
 from yabiadmin.yabiengine.YabiJobException import YabiJobException
-from yabiadmin.yabiengine.urihelper import uri_get_path, uri_get_scheme
+from yabiadmin.yabiengine.urihelper import uri_get_path, uri_get_scheme, get_backend_uri
 from yabiadmin.yabiengine import backendhelper
 import simplejson as json
 import datetime
@@ -14,13 +14,15 @@ job_cache = {}
 
 def build(username, workflow_json):
     logger.debug('build')
+
+    logger.debug(workflow_json)
     
     workflow_dict = json.loads(workflow_json)
     job_cache = {}
 
     try:
         user = User.objects.get(name=username)
-        workflow = Workflow(name=workflow_dict["name"], json=workflow_json, user=user)
+        workflow = Workflow(name=slugify(workflow_dict["name"]), json=workflow_json, user=user)
         workflow.save()
     
         for i,job_dict in enumerate(workflow_dict["jobs"]):
@@ -96,10 +98,19 @@ def addJob(workflow, job_dict, order):
                 pass
 
 
-    # now save the command and commandparams
+    # add other attributes
     job.command = ' '.join(command)
     job.commandparams = repr(commandparams) # save string repr of list
     job.status = settings.STATUS['pending']
+
+
+    ## TODO raise error when no credential for user
+    backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.backend)
+    job.stageout = "%s%d/%d/" % (backendcredential.homedir, workflow.id, job.id)
+    job.exec_backend = get_backend_uri(tool.backend)
+
+    job.cpus = tool.cpus
+    job.walltime = tool.walltime
     job.save()
 
     # cache job for later reference
@@ -124,3 +135,18 @@ def get_param_value(workflow, tp):
 
     return value
 
+
+
+def slugify(value):
+    """
+    Normalizes string, converts to lowercase, removes non-alpha characters,
+    and converts spaces to hyphens.
+    TODO this function is from djangos defaultfilters.py which is not in mango
+    we should work on getting these back into mango and take advantage of all
+    of djangos safe string stuff
+    """
+    import unicodedata
+    import re
+    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
+    value = unicode(re.sub('[^\w\s-]', '', value).strip().lower())
+    return re.sub('[-\s]+', '-', value)
