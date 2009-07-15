@@ -47,6 +47,8 @@ class Tool(Base):
     file_pass_thru = models.BooleanField(default=False)
     batch_on_param = models.ForeignKey('ToolParameter', related_name='batch_tool', null=True, blank=True)
     batch_on_param_bundle_files = models.NullBooleanField(null=True, blank=True)
+    cpus = models.IntegerField(null=True, blank=True)
+    walltime = models.IntegerField(null=True, blank=True)
 
     def tool_groups_str(self):
         return ",".join(
