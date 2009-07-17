@@ -26,6 +26,9 @@ def walk(workflow):
         except YabiJobException,e:
             logger.info("Caught YabiJobException with message: " + e.message)
             continue
+        except ObjectDoesNotExist,e:
+            logger.critical("ObjectDoesNotExist at wfwrangler.walk: " + e.message)
+            raise
 
 
 def check_dependencies(job):
@@ -35,20 +38,15 @@ def check_dependencies(job):
     """
     logger.info('Check dependencies for jobid: %s...' % job.id)
 
-    try:
-        for param in eval(job.commandparams):
+    for param in eval(job.commandparams):
 
-            if param.startswith("yabi://"):
-                logger.info('Evaluating param: %s' % param)
-                scheme, uriparts = uriparse(param)
-                workflowid, jobid = uriparts.path.strip('/').split('/')
-                param_job = Job.objects.get(workflow__id=workflowid, id=jobid)
-                if param_job.status != settings.STATUS["complete"]:
-                    raise YabiJobException("Job command parameter not complete. Job:%s Param:%s" % (job.id, param))
-
-    except ObjectDoesNotExist, e:
-        raise YabiJobException('Error with job param: %s' % e.message)
-
+        if param.startswith("yabi://"):
+            logger.info('Evaluating param: %s' % param)
+            scheme, uriparts = uriparse(param)
+            workflowid, jobid = uriparts.path.strip('/').split('/')
+            param_job = Job.objects.get(workflow__id=workflowid, id=jobid)
+            if param_job.status != settings.STATUS["complete"]:
+                raise YabiJobException("Job command parameter not complete. Job:%s Param:%s" % (job.id, param))
 
 def prepare_tasks(job):
     logger.info('Preparing tasks for jobid: %s...' % job.id)
@@ -110,7 +108,6 @@ def prepare_tasks(job):
             logger.info('****************************************')
             logger.info('Unhandled type: ' + param)
             logger.info('****************************************')
-
 
 
 def prepare_job(job):

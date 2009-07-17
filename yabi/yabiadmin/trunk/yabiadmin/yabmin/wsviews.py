@@ -3,7 +3,10 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from yabiadmin.yabmin.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential
 from django.utils import webhelpers
-from django.utils import simplejson as json
+try:
+    from django.utils import simplejson as json
+except ImportError:
+    import json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from yabiadmin.yabiengine import wfbuilder
