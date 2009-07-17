@@ -7,7 +7,7 @@ from yabiadmin.yabmin.models import Backend, BackendCredential, Tool, User
 from yabiadmin.yabiengine.YabiJobException import YabiJobException
 from yabiadmin.yabiengine.urihelper import get_backend_uri
 from yabiadmin.yabiengine import backendhelper
-import simplejson as json
+from django.utils import simplejson as json
 import datetime
 
 job_cache = {}
