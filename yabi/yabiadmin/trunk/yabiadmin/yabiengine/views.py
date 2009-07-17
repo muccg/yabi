@@ -6,6 +6,8 @@ from django.utils import simplejson as json
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
 from django.conf import settings
 import wfwrangler
+import logging
+logger = logging.getLogger('yabiengine')
 
 def task(request):
 
@@ -25,6 +27,7 @@ def task(request):
 
 
 def status(request, model, id):
+    logger.info('status')
 
     models = {'task':Task, 'job':Job, 'workflow':Workflow}
 

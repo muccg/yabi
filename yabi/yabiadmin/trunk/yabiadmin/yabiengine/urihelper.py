@@ -24,18 +24,16 @@ def uri_get_pseudopath(uri):
     return "%s/%s%s" % (backend.name, u.username, u.path)
 
 
-def uri_get_path(uri):
-
-    from urlparse import urlparse, urlsplit
+def uriparse(uri):
+    """
+    This function returns a tuple containing the scheme and the ParseResult object.
+    It is done this way as urlparse only accepts a specific list of url schemes
+    and yabi:// is not one of them. The ParseResult object is read-only so
+    we cannot inject the scheme back into it.
+    """
+    from urlparse import urlparse
     scheme, rest = uri.split(":",1)
-    u = urlparse(rest)
-    return u.path
-
-def uri_get_scheme(uri):
-
-    scheme, rest = uri.split(":",1)
-    return scheme
-
+    return (scheme, urlparse(rest))
 
 def get_backend_uri(backend):
     from yabiadmin.yabmin.models import Backend

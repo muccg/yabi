@@ -82,8 +82,9 @@ class ToolForm(ModelForm):
         self.fields["batch_on_param"].queryset = ToolParameter.objects.filter(tool=self.instance)
 
 class ToolAdmin(AdminBase):
-    list_display = ['name', 'enabled', 'backend', 'tool_groups_str', 'tool_link', 'created_by', 'created_on']
+    list_display = ['name', 'path', 'enabled', 'backend', 'fs_backend', 'tool_groups_str', 'tool_link', 'created_by', 'created_on']
     inlines = [ToolOutputExtensionInline, ToolParameterInline] # need to add back in tool groupings and find out why it is not working with mango
+    search_fields = ['name', 'path']
 
     def get_form(self, request, obj=None, **kwargs):
         return ToolForm

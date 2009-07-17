@@ -5,7 +5,7 @@ from django.conf import settings
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog, StageIn
 from yabiadmin.yabmin.models import Backend, BackendCredential, Tool, User
 from yabiadmin.yabiengine.YabiJobException import YabiJobException
-from yabiadmin.yabiengine.urihelper import uri_get_path, uri_get_scheme, get_backend_uri
+from yabiadmin.yabiengine.urihelper import get_backend_uri
 from yabiadmin.yabiengine import backendhelper
 import simplejson as json
 import datetime
@@ -105,9 +105,10 @@ def addJob(workflow, job_dict, order):
 
 
     ## TODO raise error when no credential for user
-    backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.backend)
+    backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.fs_backend)
     job.stageout = "%s%d/%d/" % (backendcredential.homedir, workflow.id, job.id)
     job.exec_backend = get_backend_uri(tool.backend)
+    job.fs_backend = get_backend_uri(tool.fs_backend)
 
     job.cpus = tool.cpus
     job.walltime = tool.walltime
@@ -128,7 +129,8 @@ def get_param_value(workflow, tp):
             if type(item) == dict:
 
                 if 'type' in item and 'jobId' in item:
-                    value = u"yabi://%d/%d/" % (workflow.id, job_cache[item['jobId']].id)
+                    # TODO - adding localhost.localdomain to uri at the moment, should this be pulled in from somewhere
+                    value = u"yabi://localhost.localdomain/%d/%d/" % (workflow.id, job_cache[item['jobId']].id)
                 
             elif type(item) == str or type(item) == unicode:
                 value += item

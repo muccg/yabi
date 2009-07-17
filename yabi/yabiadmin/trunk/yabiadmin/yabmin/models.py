@@ -42,6 +42,7 @@ class Tool(Base):
     description = models.TextField(null=True, blank=True)
     enabled = models.BooleanField(default=True)
     backend = models.ForeignKey('Backend')
+    fs_backend = models.ForeignKey('Backend', related_name="fs_backends")
     groups = models.ManyToManyField('ToolGroup', through='ToolGrouping', null=True, blank=True)
     output_filetypes = models.ManyToManyField(FileExtension, through='ToolOutputExtension', null=True, blank=True)
     file_pass_thru = models.BooleanField(default=False)
