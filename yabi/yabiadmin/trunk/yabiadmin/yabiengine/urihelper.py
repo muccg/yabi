@@ -32,9 +32,15 @@ def uriparse(uri):
     we cannot inject the scheme back into it.
     """
     from urlparse import urlparse
-    scheme, rest = uri.split(":",1)
-    return (scheme, urlparse(rest))
-
+    logger.debug(uri)
+    try:
+        scheme, rest = uri.split(":",1)
+        return (scheme, urlparse(rest))
+    except ValueError, e:
+        logger.critical("%s - ValueError for uri: %s" % ("urihelper.uriparse", uri))
+        logger.critical("%s - %s" % ("urihelper.uriparse", e.message))
+        raise
+    
 def get_backend_uri(backend):
     from yabiadmin.yabmin.models import Backend
     from urlparse import urlunparse

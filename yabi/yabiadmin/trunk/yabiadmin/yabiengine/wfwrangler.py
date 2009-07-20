@@ -130,7 +130,7 @@ def create_task(job, param, file, backend, backendcredential):
     s = StageIn(task=t,
                 src_backend=param_scheme,
                 src_path="%s%s" % (param_uriparts.path, file),
-                dst_backend=job.fs_backend,
+                dst_backend=backend_scheme,
                 dst_path="%s%s" % (backend_uriparts.path, file),
                 order=0)
     s.save()

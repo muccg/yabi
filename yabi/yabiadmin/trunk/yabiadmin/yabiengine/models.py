@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from yabiadmin.yabmin.models import User
+from yabiadmin.yabiengine import backendhelper
 from django.utils import simplejson as json, webhelpers
 
 
@@ -65,8 +66,8 @@ class Task(models.Model):
             "stagein":[],
             "exec":{
             "command":self.command,
-            "backend":self.job.exec_backend,
-            "fsbackend":self.job.fs_backend,
+            "backend":backendhelper.get_backend_from_uri(self.job.exec_backend).name,
+            "fsbackend":backendhelper.get_backend_from_uri(self.job.fs_backend).name,
             },
             "stageout":self.job.stageout
             }

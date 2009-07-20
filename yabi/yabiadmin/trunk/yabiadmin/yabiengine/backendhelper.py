@@ -53,7 +53,6 @@ def get_backend_from_uri(uri):
         logger.critical("ObjectDoesNotExist for uri: %s" % uri)
         logger.critical("Scheme: %s" % scheme)
         logger.critical("Hostname: %s" % parts.hostname)
-
         raise
 
 
