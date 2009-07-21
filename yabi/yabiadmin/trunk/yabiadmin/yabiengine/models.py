@@ -74,7 +74,7 @@ class Task(models.Model):
 
         stageins = self.stagein_set.all()
         for s in stageins:
-            output["stagein"].append({"srcbackend":s.src_backend, "srcpath":s.src_path, "dstbackend":s.dst_backend, "dstpath":s.dst_path.strip(), "order":s.order})
+            output["stagein"].append({"srcbackend":s.src, "srcpath":s.src, "dstbackend":s.dst, "dstpath":s.dst, "order":s.order})
 
         return json.dumps(output)
 
@@ -84,10 +84,8 @@ class Task(models.Model):
 
 
 class StageIn(models.Model):
-    src_backend = models.CharField(max_length=256)
-    src_path = models.TextField()
-    dst_backend = models.CharField(max_length=256)
-    dst_path = models.TextField()
+    src = models.CharField(max_length=256)
+    dst = models.CharField(max_length=256)
     order = models.IntegerField()
     task = models.ForeignKey(Task)
 

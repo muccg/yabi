@@ -116,6 +116,9 @@ def prepare_job(job):
     job.save()
 
 
+
+
+
 def create_task(job, param, file, backend, backendcredential):
 
     param_scheme, param_uriparts = uriparse(param)
@@ -128,10 +131,8 @@ def create_task(job, param, file, backend, backendcredential):
 
 
     s = StageIn(task=t,
-                src_backend=param_scheme,
-                src_path="%s%s" % (param_uriparts.path, file),
-                dst_backend=backend_scheme,
-                dst_path="%s%s" % (backend_uriparts.path, file),
+                src="%s%s" % (param, file),
+                dst="%s%s" % (backendcredential.homedir, file),
                 order=0)
     s.save()
 
