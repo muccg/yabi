@@ -22,10 +22,8 @@ class TaskAdmin(admin.ModelAdmin):
     list_filter = ['job__workflow']
     
 class StageInAdmin(admin.ModelAdmin):
-    list_display = ['src_backend', 'src_path', 'dst_backend', 'dst_path', 'order', 'task']
+    list_display = ['src', 'dst', 'order', 'task']
 
-class StageInAdmin(admin.ModelAdmin):
-    list_display = ['src_backend', 'src_path', 'dst_backend', 'dst_path', 'order', 'task']
 
 
 admin.site.register(Workflow, WorkflowAdmin)
