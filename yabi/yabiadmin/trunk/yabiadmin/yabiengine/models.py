@@ -2,6 +2,7 @@ from django.db import models
 from django.conf import settings
 from yabiadmin.yabmin.models import User
 from yabiadmin.yabiengine import backendhelper
+from yabiadmin.yabiengine.urihelper import uriparse
 from django.utils import simplejson as json, webhelpers
 
 
@@ -74,7 +75,13 @@ class Task(models.Model):
 
         stageins = self.stagein_set.all()
         for s in stageins:
-            output["stagein"].append({"srcbackend":s.src, "srcpath":s.src, "dstbackend":s.dst, "dstpath":s.dst, "order":s.order})
+            src_backend = backendhelper.get_backend_from_uri(s.src).name
+            src_scheme, src_rest = uriparse(s.src)
+            dst_backend = backendhelper.get_backend_from_uri(s.dst).name
+            dst_scheme, dst_rest = uriparse(s.dst)
+
+
+            output["stagein"].append({"srcbackend":src_backend, "srcpath":src_rest.path, "dstbackend":dst_backend, "dstpath":dst_rest.path, "order":s.order})
 
         return json.dumps(output)
 
