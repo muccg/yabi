@@ -10,7 +10,7 @@ import logging
 logger = logging.getLogger('yabiengine')
 
 def task(request):
-
+    raise Exception("There is an exception being raised")
     try:
         tasks = Task.objects.filter(status=settings.STATUS["ready"])
 
