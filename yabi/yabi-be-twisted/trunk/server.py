@@ -35,7 +35,7 @@ log.DefaultCommonAccessLoggingObserver().start()
 
 # Create the site and application objects
 site = server.Site(res)
-application = service.Application("gencache")
+application = service.Application("yabi-be-twisted")
 
 # for HTTPS, we need a server context factory to build the context for each ssl connection
 class ServerContextFactory:
