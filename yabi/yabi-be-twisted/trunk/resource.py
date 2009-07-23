@@ -6,8 +6,6 @@ import os, sys
 ## MANGO child
 ##
 
-os.environ['DJANGODEV']="1"
-os.environ['DJANGODEBUG']="1"
 os.environ['TWISTED_MANGO']='1'
 
 MANGO_APP = "yabiadmin"
