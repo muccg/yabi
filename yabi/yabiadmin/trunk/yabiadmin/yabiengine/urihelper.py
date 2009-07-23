@@ -33,6 +33,7 @@ def uriparse(uri):
     """
     from urlparse import urlparse
     logger.debug(uri)
+
     try:
         scheme, rest = uri.split(":",1)
         return (scheme, urlparse(rest))
@@ -40,6 +41,11 @@ def uriparse(uri):
         logger.critical("%s - ValueError for uri: %s" % ("urihelper.uriparse", uri))
         logger.critical("%s - %s" % ("urihelper.uriparse", e.message))
         raise
+    except AttributeError, e:
+        logger.critical("%s - AttributeError for uri: %s" % ("urihelper.uriparse", uri))
+        logger.critical("%s - %s" % ("urihelper.uriparse", e.message))
+        raise
+
     
 def get_backend_uri(backend):
     from yabiadmin.yabmin.models import Backend
