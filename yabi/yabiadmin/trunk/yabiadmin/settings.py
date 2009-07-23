@@ -57,9 +57,10 @@ YABIBACKEND_MKDIR = '/fs/mkdir'
 YABIBACKEND_RM = '/fs/rm'
 YABIBACKEND_LIST = '/fs/ls'
 
+# make sure that this is a tuple of tuples
 ADMINS = (
-    #('Tech Alerts', 'alerts@ccg.murdoch.edu.au')
-    ('Andrew', 'andrew@ccg.murdoch.edu.au')    
+    ('Tech Alerts', 'alerts@ccg.murdoch.edu.au'),
+    #('Andrew', 'andrew@ccg.murdoch.edu.au')    
 )
 
 LOGIN_URL = "/login"
