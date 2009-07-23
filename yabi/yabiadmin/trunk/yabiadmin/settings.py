@@ -212,7 +212,7 @@ STATUS = {'pending':'pending',
 
 
 LOG_FILENAME = WRITABLE_DIRECTORY + '/yabiadmin.log'
-LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.critical
+LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
 logging.basicConfig(filename=LOG_FILENAME,level=LOGGING_LEVEL,)
 
 
