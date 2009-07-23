@@ -58,7 +58,8 @@ YABIBACKEND_RM = '/fs/rm'
 YABIBACKEND_LIST = '/fs/ls'
 
 ADMINS = (
-    ('Tech Alerts', 'alerts@ccg.murdoch.edu.au')
+    #('Tech Alerts', 'alerts@ccg.murdoch.edu.au')
+    ('Andrew', 'andrew@ccg.murdoch.edu.au')    
 )
 
 LOGIN_URL = "/login"
