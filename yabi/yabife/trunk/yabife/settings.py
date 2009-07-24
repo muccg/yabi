@@ -55,6 +55,15 @@ else:
     # development site id
     SITE_ID = 1
 
+
+# email server
+EMAIL_HOST = 'ccg.murdoch.edu.au'
+EMAIL_APP_NAME = "Yabi Front End"
+SERVER_EMAIL = "apache@ccg.murdoch.edu.au"
+EMAIL_SUBJECT_PREFIX = "Yabi Frontend %s %s:"%("DEBUG" if DEBUG else "","DEV_SERVER" if DEV_SERVER else "")
+
+
+
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
