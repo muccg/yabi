@@ -109,7 +109,7 @@ def addJob(workflow, job_dict, order):
     # HACK change the first occurance of username from backend username to yabi username
     # TODO fix this
     bc_homedir = backendcredential.homedir.replace(backendcredential.credential.username, backendcredential.credential.user.name, 1)
-    stageout = uri_get_pseudopath("%s%d/%d/" % (bc_homedir, workflow.id, job.id))
+    stageout = "%s%d/%d/" % (bc_homedir, workflow.id, job.id)
     job.stageout = stageout
     job.exec_backend = get_backend_uri(tool.backend)
     job.fs_backend = get_backend_uri(tool.fs_backend)

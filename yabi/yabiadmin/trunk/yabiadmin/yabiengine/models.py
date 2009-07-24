@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from yabiadmin.yabmin.models import User
 from yabiadmin.yabiengine import backendhelper
-from yabiadmin.yabiengine.urihelper import uriparse
+from yabiadmin.yabiengine.urihelper import uriparse, uri_get_pseudopath
 from django.utils import simplejson as json, webhelpers
 
 
@@ -70,7 +70,7 @@ class Task(models.Model):
             "backend":backendhelper.get_backend_from_uri(self.job.exec_backend).name,
             "fsbackend":backendhelper.get_backend_from_uri(self.job.fs_backend).name,
             },
-            "stageout":self.job.stageout
+            "stageout":uri_get_pseudopath(self.job.stageout)
             }
 
         stageins = self.stagein_set.all()
