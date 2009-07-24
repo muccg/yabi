@@ -102,6 +102,20 @@ def prepare_tasks(job):
 
 
         ##################################################
+        # handle gridftp:// gridftp uris that are directories
+        ##################################################
+
+        # uris ending with a / on the end of the path are directories
+        elif param.startswith("gridftp://") and param.endswith("/"):
+            logger.info('Processing uri %s' % param)
+
+            # get_file_list will return a list of file tuples
+            for f in backendhelper.get_file_list(param):
+                create_task(job, param, f[0], b, bc)
+
+
+
+        ##################################################
         # handle unknown types
         ##################################################
         else:
