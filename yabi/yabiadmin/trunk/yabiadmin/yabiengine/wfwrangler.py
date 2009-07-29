@@ -1,5 +1,6 @@
 import logging
 logger = logging.getLogger('yabiengine')
+from os.path import splitext
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog, StageIn
@@ -56,6 +57,12 @@ def prepare_tasks(job):
     # get the backend for this job
     b = backendhelper.get_backend_from_uri(job.exec_backend)
     bc = BackendCredential.objects.get(backend=b, credential__user=job.workflow.user)
+
+    # reconstitute the input filetype extension list so each create_task can use it
+    if job.input_filetype_extensions:
+        job.extensions = eval(job.input_filetype_extensions)
+    else:
+        job.extensions = []
 
     paramlist = eval(job.commandparams)
     for param in paramlist:
@@ -137,17 +144,20 @@ def create_task(job, param, file, backend, backendcredential):
 
     param_scheme, param_uriparts = uriparse(param)
     backend_scheme, backend_uriparts = uriparse(backendcredential.homedir)
-    
-    taskcommand = job.command.replace("%", "%s%s%s" % (backend.path, backend_uriparts.path,file))
-    logger.info('Creating task for job id: %s using command: %s' % (job.id, taskcommand))
-    t = Task(job=job, command=taskcommand, status="ready")
-    t.save()
+    root, ext = splitext(file)
+
+    # only make tasks for expected filetypes
+    if ext.strip('.') in job.extensions:
+        taskcommand = job.command.replace("%", "%s%s%s" % (backend.path, backend_uriparts.path,file))
+        logger.info('Creating task for job id: %s using command: %s' % (job.id, taskcommand))
+        t = Task(job=job, command=taskcommand, status="ready")
+        t.save()
 
 
-    s = StageIn(task=t,
-                src="%s%s" % (param, file),
-                dst="%s%s" % (backendcredential.homedir, file),
-                order=0)
-    s.save()
+        s = StageIn(task=t,
+                    src="%s%s" % (param, file),
+                    dst="%s%s" % (backendcredential.homedir, file),
+                    order=0)
+        s.save()
 
 

@@ -33,6 +33,7 @@ class Job(models.Model):
     fs_backend = models.CharField(max_length=256)
     command = models.TextField()
     commandparams = models.TextField(blank=True)
+    input_filetype_extensions = models.TextField(blank=True)
 
     def __unicode__(self):
         return "%s - %s" % (self.workflow.name, self.order)

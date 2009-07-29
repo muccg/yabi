@@ -50,8 +50,6 @@ def addJob(workflow, job_dict, order):
     job.save()
 
 
-
-
     # process the parameterList to get a useful dict
     param_dict = {}
     for tp in job_dict["parameterList"]["parameter"]:
@@ -102,6 +100,9 @@ def addJob(workflow, job_dict, order):
     job.command = ' '.join(command)
     job.commandparams = repr(commandparams) # save string repr of list
     job.status = settings.STATUS['pending']
+
+    # add a list of input file extensions as string, we will reconstitute this for use in the wfwrangler
+    job.input_filetype_extensions = "%s" % tool.input_filetype_extensions()
 
 
     ## TODO raise error when no credential for user
