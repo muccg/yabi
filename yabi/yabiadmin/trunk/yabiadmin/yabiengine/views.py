@@ -71,28 +71,6 @@ def status(request, model, id):
         return HttpResponseNotFound("Object not found")
 
 
-def reset_workflow(request, id):
-
-    try:
-
-        workflow = Workflow.objects.get(id=id)
-
-        jobs = Job.objects.filter(workflow=workflow)
-        for j in jobs:
-
-            tasks = Task.objects.filter(job=j)
-            for t in tasks:
-                t.delete()
-
-            j.status=""
-            j.save()
-
-        return HttpResponse("Workflow %s reset." % id)
-
-    except (ObjectDoesNotExist,ValueError):
-        return HttpResponseNotFound("Object not found")
-
-
 def error(request, table, id):
 
     try:

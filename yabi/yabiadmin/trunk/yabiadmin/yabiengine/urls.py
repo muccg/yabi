@@ -4,5 +4,4 @@ urlpatterns = patterns('yabiadmin.yabiengine.views',
     (r'^task[/]*$', 'task'),
     (r'^status/(?P<model>\w+)/(?P<id>\d+)[/]*$', 'status'),
     (r'^error/(?P<table>\w+)/(?P<id>\d+)[/]*$', 'error'),
-    (r'^reset_workflow/(?P<id>\d+)[/]*$', 'reset_workflow')
 )
