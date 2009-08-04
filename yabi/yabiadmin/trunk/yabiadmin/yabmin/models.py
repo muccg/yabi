@@ -70,8 +70,9 @@ class Tool(Base):
 
     def input_filetype_extensions(self):
         '''Work out input file extensions for this tool and return a a list of them all'''
-        filetypes = reduce(lambda x, y: x+y, [list(x.accepted_filetypes.all()) for x in self.toolparameter_set.all()])
-        extensions = [ext.extension for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes])]
+        # empty list passed to reduce is initializer, see reduce docs
+        filetypes = reduce(lambda x, y: x+y, [list(x.accepted_filetypes.all()) for x in self.toolparameter_set.all()],[])
+        extensions = [ext.extension for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]
         return list(set(extensions)) # remove duplicates
 
     def output_filetype_extensions(self):
@@ -89,7 +90,7 @@ class Tool(Base):
             'description':self.description,
             'enabled':self.enabled,
             'file_pass_thru':self.file_pass_thru,
-            'batch_on_param':self.batch_on_param.switch,
+            'batch_on_param':self.batch_on_param.switch if self.batch_on_param else '',
             'job_type': self.backend.name,
             'inputExtensions': self.input_filetype_extensions(),
             'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__extension")),            
