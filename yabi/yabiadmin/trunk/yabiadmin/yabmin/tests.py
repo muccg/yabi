@@ -28,11 +28,30 @@ class TestYabmin(unittest.TestCase):
 
     def testTool(self):
 
+        # test existing tool
         c = Client()
         response = c.get('/ws/tool/blast.xe.ivec.org')
         self.assertEqual(response.status_code, 200)
-
         payload = json.loads(response.content)
+        self.assertEqual(payload["tool"]["name"], "blast.xe.ivec.org")
 
-        print payload
+        # test non-existant to ensure we don't explode app
+        response = c.get('/ws/tool/testingtool_thisshouldnotexist')
+        self.assertEqual(response.status_code, 404)
 
+
+    def testMenu(self):
+
+        ## TODO need to set up some menu items in fixture to test for them
+
+        # test existing tool
+        c = Client()
+        response = c.get('/ws/menu/andrew')
+        self.assertEqual(response.status_code, 200)
+        print response.content
+##        payload = json.loads(response.content)
+##        self.assertEqual(payload["tool"]["name"], "blast.xe.ivec.org")
+
+##        # test non-existant to ensure we don't explode app
+##        response = c.get('/ws/tool/testingtool_thisshouldnotexist')
+##        self.assertEqual(response.status_code, 404)
