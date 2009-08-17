@@ -104,7 +104,7 @@ class Tool(Base):
             tp = ToolParameter.objects.get(id=p["id"])
             p["acceptedExtensionList"] = tp.input_filetype_extensions()
 
-        return tool_dict["parameter_list"]
+        return tool_dict
     
     def json(self):
 
