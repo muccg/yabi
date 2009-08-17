@@ -1,4 +1,5 @@
 import unittest
+from django.test import TestCase
 from django.test.client import Client
 from yabiadmin.yabmin.models import *
 from django.conf import settings
@@ -35,16 +36,16 @@ class TestYabmin(unittest.TestCase):
         payload = json.loads(response.content)
         self.assertEqual(payload["tool"]["name"], "blast.xe.ivec.org")
 
+    def testInvalidTool(self):
         # test non-existant to ensure we don't explode app
+        c = Client()
         response = c.get('/ws/tool/testingtool_thisshouldnotexist')
         self.assertEqual(response.status_code, 404)
 
 
     def testMenu(self):
 
-        ## TODO need to set up some menu items in fixture to test for them
-
-        # test existing tool
+        # get menu for andrew
         c = Client()
         response = c.get('/ws/menu/andrew')
         self.assertEqual(response.status_code, 200)
@@ -61,12 +62,65 @@ class TestYabmin(unittest.TestCase):
         self.assertEqual(tool["outputExtensions"][0], "bls")
         self.assertEqual(tool["inputExtensions"][0], "fa")        
 
+
+    def testInvalidMenu(self):
         # test non-existant user to ensure we don't explode app
         # menu is set up to return empty json structure but not
         # return 404 so it does not break front end
+        c = Client()
         response = c.get('/ws/menu/testingtool_thisshouldnotexist')
         self.assertEqual(response.status_code, 200)
         payload = json.loads(response.content)
         self.assertEqual(payload["menu"]["toolsets"], [])        
 
 
+
+    def testCredential(self):
+
+        # get credential for andrew
+        c = Client()
+        response = c.get('/ws/credential/andrew/gridftp1')
+        self.assertEqual(response.status_code, 200)
+
+        payload = json.loads(response.content)
+        self.assertEqual(payload["username"], "amacgregor")
+        self.assertEqual(payload["backend"], "gridftp1")
+
+
+    def testInvalidCredential(self):
+        c = Client()
+        response = c.get('/ws/credential/testing_this_should_fail/gridftp1')
+        self.assertEqual(response.status_code, 404)
+
+
+
+
+## TODO FIX THIS - Django test case really sux - very slow, change this back to plain unittest.TestCase
+
+
+class TestYabminWithDjangoTestCase(TestCase):
+
+
+    def setUp(self):
+
+        # change authentication to backend on the fly
+        # manual says don't do this, but we are only testing right?
+        settings.AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',
+                                            )
+        user, created = User.objects.get_or_create(name="testuser")
+        if created:
+            user.save()
+        self.assertNotEqual(user, None)
+
+
+
+    def tearDown(self):
+        pass
+
+    
+    def testCredentialDetailCert(self):
+
+        # get credential for andrew
+        c = Client()
+        response = c.get('/ws/credential/andrew/gridftp1/cert')
+        self.assertContains(response, "-----BEGIN CERTIFICATE-----", count=1, status_code=200)
