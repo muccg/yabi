@@ -93,16 +93,16 @@ def credential(request, username, backend):
 def credential_detail(request, username, backend, detail):
 
     try:
-        backend = Backend.objects.get(name=backend, credential__user__name=username)
+        bc = BackendCredential.objects.get(backend__name=backend, credential__user__name=username)
 
         if detail == 'cert':
-            return HttpResponse(backend.credential.cert)
+            return HttpResponse(bc.credential.cert)
 
         elif detail == 'key':
-            return HttpResponse(backend.credential.key)
+            return HttpResponse(bc.credential.key)
 
         elif detail == 'username':
-            return HttpResponse(backend.credential.username)
+            return HttpResponse(bc.credential.username)
 
         else:
             return HttpResponseNotFound("Object not found")            
