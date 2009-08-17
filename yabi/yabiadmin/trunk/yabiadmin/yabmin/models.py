@@ -83,7 +83,7 @@ class Tool(Base):
     def tool_dict(self):
         '''Gathers tool details into convenient dict for use by json or other models json'''
 
-        return {
+        tool_dict = {
             'name':self.name,
             'display_name':self.display_name,
             'path':self.path,
@@ -94,11 +94,17 @@ class Tool(Base):
             'job_type': self.backend.name,
             'inputExtensions': self.input_filetype_extensions(),
             'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__extension")),            
-            'parameter_list': list(self.toolparameter_set.order_by('id').values("rank", "mandatory", "input_file", "output_file",
+            'parameter_list': list(self.toolparameter_set.order_by('id').values("id", "rank", "mandatory", "input_file", "output_file",
                                                                                 "switch", "switch_use__display_text", "switch_use__value","switch_use__description",
                                                                                 "filter_value", "filter__display_text", "filter__value","filter__description", "possible_values",
                                                                                 "default_value"))
             }
+
+        for p in tool_dict["parameter_list"]:
+            tp = ToolParameter.objects.get(id=p["id"])
+            p["acceptedExtensionList"] = tp.input_filetype_extensions()
+
+        return tool_dict["parameter_list"]
     
     def json(self):
 
@@ -151,6 +157,14 @@ class ToolParameter(Base):
     
     def __unicode__(self):
         return self.switch or ''
+
+    def input_filetype_extensions(self):
+        '''Work out input file extensions for this toolparameter and return a a list of them all'''
+        # empty list passed to reduce is initializer, see reduce docs
+        filetypes = self.accepted_filetypes.all()
+        extensions = [ext.extension for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]
+        return list(set(extensions)) # remove duplicates
+
 
 class ToolRslInfo(Base):
     executable = models.CharField(max_length=50)
