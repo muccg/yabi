@@ -56,7 +56,6 @@ def menu(request, username):
                 tool["displayName"] = toolgroup.tool.display_name
                 tool["description"] = toolgroup.tool.description                
                 tg["tools"].append(tool)
-                tool_dict = toolgroup.tool.tool_dict()
                 tool["outputExtensions"] = toolgroup.tool.output_filetype_extensions()
                 tool["inputExtensions"] = toolgroup.tool.input_filetype_extensions()
 
