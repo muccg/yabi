@@ -281,7 +281,72 @@
             "last_modified_on": "2009-06-26 12:44:17", 
             "name": "fa (GEN)"
         }
+    },
+
+
+    {
+        "pk": 6, 
+        "model": "yabmin.filetype", 
+        "fields": {
+            "description": null, 
+            "created_by": 1, 
+            "created_on": "2009-06-26 12:44:17", 
+            "extensions": [
+                9
+            ], 
+            "last_modified_by": 1, 
+            "last_modified_on": "2009-06-26 12:44:17", 
+            "name": "fna (GEN)"
+        }
     }, 
+    {
+        "pk": 7, 
+        "model": "yabmin.filetype", 
+        "fields": {
+            "description": null, 
+            "created_by": 1, 
+            "created_on": "2009-06-26 12:44:17", 
+            "extensions": [
+                10
+            ], 
+            "last_modified_by": 1, 
+            "last_modified_on": "2009-06-26 12:44:17", 
+            "name": "faa (GEN)"
+        }
+    }, 
+
+    {
+        "pk": 16, 
+        "model": "yabmin.filetype", 
+        "fields": {
+            "description": null, 
+            "created_by": 1, 
+            "created_on": "2009-06-26 12:44:20", 
+            "extensions": [
+                28
+            ], 
+            "last_modified_by": 1, 
+            "last_modified_on": "2009-06-26 12:44:20", 
+            "name": "fasta (GEN)"
+        }
+    }, 
+
+    {
+        "pk": 33, 
+        "model": "yabmin.filetype", 
+        "fields": {
+            "description": null, 
+            "created_by": 1, 
+            "created_on": "2009-06-26 12:44:26", 
+            "extensions": [
+                7
+            ], 
+            "last_modified_by": 1, 
+            "last_modified_on": "2009-06-26 12:44:26", 
+            "name": "* (GEN)"
+        }
+    }, 
+
     {
         "pk": 1, 
         "model": "yabmin.parameterswitchuse", 
@@ -413,7 +478,172 @@
             "last_modified_on": "2009-07-17 10:47:42", 
             "description": "BLAST the input files based on the options selected."
         }
+    },
+
+    {
+        "pk": 12, 
+        "model": "yabmin.tool", 
+        "fields": {
+            "batch_on_param": 118, 
+            "file_pass_thru": false, 
+            "walltime": "", 
+            "display_name": "blast top hits", 
+            "name": "blasttophits", 
+            "batch_on_param_bundle_files": false, 
+            "enabled": true, 
+            "cpus": "", 
+            "created_by": 1, 
+            "created_on": "2009-06-26 12:44:18", 
+            "last_modified_by": 1, 
+            "fs_backend": 8, 
+            "path": "/usr/local/bin/ccg-blastparser", 
+            "backend": 2, 
+            "last_modified_on": "2009-07-17 14:18:00", 
+            "description": "Parse a blast report and convert to yabixml format for use by other tools. This file outputs yabixml format for use with tools that require yabixml such as 'get KEGG Id'."
+        }
     }, 
+
+    {
+        "pk": 75, 
+        "model": "yabmin.tool", 
+        "fields": {
+            "batch_on_param": 977, 
+            "file_pass_thru": true, 
+            "walltime": "", 
+            "display_name": "select file", 
+            "name": "fileselector", 
+            "batch_on_param_bundle_files": false, 
+            "enabled": true, 
+            "cpus": "", 
+            "created_by": null, 
+            "created_on": "2009-06-26 12:44:27", 
+            "last_modified_by": 2, 
+            "fs_backend": 9, 
+            "path": "echo", 
+            "backend": 9, 
+            "last_modified_on": "2009-08-04 13:27:58", 
+            "description": "Select a file from your workspace directory."
+        }
+    }, 
+
+
+
+    {
+        "pk": 70, 
+        "model": "yabmin.tool", 
+        "fields": {
+            "batch_on_param": 957, 
+            "file_pass_thru": false, 
+            "walltime": "", 
+            "display_name": "split fasta", 
+            "name": "fastasplitter", 
+            "batch_on_param_bundle_files": false, 
+            "enabled": true, 
+            "cpus": "", 
+            "created_by": 1, 
+            "created_on": "2009-06-26 12:44:26", 
+            "last_modified_by": 1, 
+            "fs_backend": 6, 
+            "path": "/scratch/bi01/amacgregor/bin/ccg-fastasplitter", 
+            "backend": 7, 
+            "last_modified_on": "2009-07-20 15:14:51", 
+            "description": "Split a file containing fasta records into multiple files."
+        }
+    }, 
+
+    {
+        "pk": 118, 
+        "model": "yabmin.toolparameter", 
+        "fields": {
+            "default_value": "", 
+            "rank": 1, 
+            "mandatory": true, 
+            "input_file": true, 
+            "filter_value": null, 
+            "possible_values": null, 
+            "tool": 12, 
+            "output_file": false, 
+            "switch": "inputFiles", 
+            "created_by": 1, 
+            "extension_param": null, 
+            "filter": null, 
+            "created_on": "2009-06-26 12:44:18", 
+            "last_modified_by": 1, 
+            "input_extensions": [], 
+            "source_param": null, 
+            "switch_use": 2, 
+            "accepted_filetypes": [
+                9
+            ], 
+            "last_modified_on": "2009-06-26 12:44:18"
+        }
+    }, 
+
+    {
+        "pk": 957, 
+        "model": "yabmin.toolparameter", 
+        "fields": {
+            "default_value": "", 
+            "rank": null, 
+            "mandatory": true, 
+            "input_file": true, 
+            "filter_value": "", 
+            "possible_values": "", 
+            "tool": 70, 
+            "output_file": false, 
+            "switch": "-i", 
+            "created_by": null, 
+            "extension_param": null, 
+            "filter": null, 
+            "created_on": "2009-06-26 12:44:26", 
+            "last_modified_by": 1, 
+            "input_extensions": [], 
+            "source_param": null, 
+            "switch_use": 3, 
+            "accepted_filetypes": [
+                5, 
+                6, 
+                7, 
+                16
+            ], 
+            "last_modified_on": "2009-07-20 15:14:51"
+        }
+    }, 
+
+
+
+
+    {
+        "pk": 977, 
+        "model": "yabmin.toolparameter", 
+        "fields": {
+            "default_value": "selected files", 
+            "rank": 1, 
+            "mandatory": true, 
+            "input_file": true, 
+            "filter_value": null, 
+            "possible_values": null, 
+            "tool": 75, 
+            "output_file": false, 
+            "switch": "files", 
+            "created_by": 1, 
+            "extension_param": null, 
+            "filter": null, 
+            "created_on": "2009-06-26 12:44:27", 
+            "last_modified_by": 1, 
+            "input_extensions": [], 
+            "source_param": null, 
+            "switch_use": 2, 
+            "accepted_filetypes": [
+                33
+            ], 
+            "last_modified_on": "2009-06-26 12:44:27"
+        }
+    }, 
+
+
+
+
     {
         "pk": 31, 
         "model": "yabmin.toolparameter", 
@@ -488,6 +718,32 @@
             "last_modified_on": "2009-06-26 12:44:17", 
             "name": "gb (GEN)"
         }
+    },
+    {
+        "pk": 9, 
+        "model": "yabmin.filetype", 
+        "fields": {
+            "description": null, 
+            "created_by": 1, 
+            "created_on": "2009-06-26 12:44:18", 
+            "extensions": [
+                11
+            ], 
+            "last_modified_by": 1, 
+            "last_modified_on": "2009-06-26 12:44:18", 
+            "name": "bls (GEN)"
+        }
+    },
+    {
+        "pk": 7, 
+        "model": "yabmin.fileextension", 
+        "fields": {
+            "extension": "*", 
+            "created_on": "2009-06-26 12:44:17", 
+            "created_by": 1, 
+            "last_modified_on": "2009-06-26 12:44:17", 
+            "last_modified_by": 1
+        }
     }, 
     {
         "pk": 8, 
@@ -544,6 +800,17 @@
             "last_modified_by": null
         }
     },
+    {
+        "pk": 28, 
+        "model": "yabmin.fileextension", 
+        "fields": {
+            "extension": "fasta", 
+            "created_on": "2009-06-26 12:44:20", 
+            "created_by": 1, 
+            "last_modified_on": "2009-06-26 12:44:20", 
+            "last_modified_by": 1
+        }
+    }, 
 
 
 
