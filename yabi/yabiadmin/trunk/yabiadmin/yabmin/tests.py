@@ -22,7 +22,6 @@ class TestYabmin(unittest.TestCase):
         self.assertNotEqual(user, None)
 
 
-
     def tearDown(self):
         pass
 
@@ -93,34 +92,23 @@ class TestYabmin(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
 
 
-
-
-## TODO FIX THIS - Django test case really sux - very slow, change this back to plain unittest.TestCase
-
-
-class TestYabminWithDjangoTestCase(TestCase):
-
-
-    def setUp(self):
-
-        # change authentication to backend on the fly
-        # manual says don't do this, but we are only testing right?
-        settings.AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',
-                                            )
-        user, created = User.objects.get_or_create(name="testuser")
-        if created:
-            user.save()
-        self.assertNotEqual(user, None)
-
-
-
-    def tearDown(self):
-        pass
-
-    
     def testCredentialDetailCert(self):
-
-        # get credential for andrew
         c = Client()
         response = c.get('/ws/credential/andrew/gridftp1/cert')
-        self.assertContains(response, "-----BEGIN CERTIFICATE-----", count=1, status_code=200)
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue("-----BEGIN CERTIFICATE-----" in response.content)
+
+
+    def testCredentialDetailKey(self):
+        c = Client()
+        response = c.get('/ws/credential/andrew/gridftp1/key')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue("-----BEGIN RSA PRIVATE KEY-----" in response.content)
+
+
+    def testCredentialDetailUsername(self):
+        c = Client()
+        response = c.get('/ws/credential/andrew/gridftp1/username')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue("amacgregor" in response.content)
+
