@@ -1,5 +1,3 @@
-import logging
-logger = logging.getLogger('yabiengine')
 from os.path import splitext
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
@@ -9,7 +7,10 @@ from yabiadmin.yabiengine.YabiJobException import YabiJobException
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.yabiengine import backendhelper
 
+logger = settings.YABIENGINELOGGER
+
 def walk(workflow):
+    logger.debug('')
 
     for job in workflow.job_set.all().order_by("order"):
         logger.info('Walking job id: %s' % job.id)
@@ -37,6 +38,7 @@ def check_dependencies(job):
     Start with a ready value of True and if any of the dependecies are not ready set ready to False.
     If dependencies are all met change job status to settings.STATUS['dependencies_ready']
     """
+    logger.debug('')
     logger.info('Check dependencies for jobid: %s...' % job.id)
 
     for param in eval(job.commandparams):
@@ -50,6 +52,7 @@ def check_dependencies(job):
                 raise YabiJobException("Job command parameter not complete. Job:%s Param:%s" % (job.id, param))
 
 def prepare_tasks(job):
+    logger.debug('')
     logger.info('Preparing tasks for jobid: %s...' % job.id)
 
     input_files = []
@@ -132,6 +135,7 @@ def prepare_tasks(job):
 
 
 def prepare_job(job):
+    logger.debug('')
     logger.info('Setting job id %s to ready' % job.id)                
     job.status = settings.STATUS["ready"]
     job.save()
@@ -141,6 +145,7 @@ def prepare_job(job):
 
 
 def create_task(job, param, file, backend, backendcredential):
+    logger.debug('')
 
     param_scheme, param_uriparts = uriparse(param)
     backend_scheme, backend_uriparts = uriparse(backendcredential.homedir)

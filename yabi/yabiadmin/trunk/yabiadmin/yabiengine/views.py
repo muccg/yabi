@@ -6,11 +6,12 @@ from django.utils import simplejson as json
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
 from django.conf import settings
 import wfwrangler
-import logging
-logger = logging.getLogger('yabiengine')
+
+logger = settings.YABIENGINELOGGER
 
 def task(request):
-
+    logger.debug('')
+    
     try:
         tasks = Task.objects.filter(status=settings.STATUS["ready"])
 
@@ -27,7 +28,7 @@ def task(request):
 
 
 def status(request, model, id):
-    logger.info('status')
+    logger.debug('')
 
     models = {'task':Task, 'job':Job, 'workflow':Workflow}
 
@@ -72,7 +73,8 @@ def status(request, model, id):
 
 
 def error(request, table, id):
-
+    logger.debug('')
+    
     try:
 
         if request.method == "GET":

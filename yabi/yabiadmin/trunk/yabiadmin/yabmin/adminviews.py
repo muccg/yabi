@@ -10,17 +10,22 @@ from django.utils import simplejson as json
 from json_util import makeJsonFriendly
 from django.contrib.auth.decorators import login_required
 
+logger = settings.YABIADMINLOGGER
+
 class ToolGroupView:
     def __init__(self, name):
+        logger.debug('')
         self.name = name
         self.tools = set([])
 
     def sorted_tools(self):
+        logger.debug('')        
         for tool in sorted(self.tools):
             yield tool
 
 class ToolParamView:
     def __init__(self, tool_param):
+        logger.debug('')        
         self._tool_param = tool_param
         self.rank = tool_param.rank is None and ' ' or tool_param.rank
         self.switch = tool_param.switch
@@ -28,6 +33,7 @@ class ToolParamView:
         self.properties = self.other_properties()
         
     def other_properties(self):
+        logger.debug('')
         tp = self._tool_param
         props = []
         
@@ -54,11 +60,13 @@ class ToolParamView:
         return props
 
 def format_params(tool_parameters):
+    logger.debug('')
     for param in tool_parameters:        
         yield ToolParamView(param)
 
 @staff_member_required
 def tool(request, tool_id):
+    logger.debug('')
     tool = get_object_or_404(Tool, pk=tool_id)
     
     return render_to_response('yabmin/tool.html', {
@@ -71,6 +79,7 @@ def tool(request, tool_id):
 
 @staff_member_required
 def user_tools(request, user_id):
+    logger.debug('')
     tooluser = get_object_or_404(User, pk=user_id)
     tool_groupings = ToolGrouping.objects.filter(tool_set__users=tooluser)
     unique_tool_groups = {}
@@ -89,20 +98,24 @@ def user_tools(request, user_id):
 
 class LdapUser:
     def __init__(self, uid, dn, full_name):
+        logger.debug('')
         self.uid = uid
         self.dn = dn
         self.full_name = full_name
 
 def format(dn, ldap_user):
+    logger.debug('')
     return LdapUser(ldap_user['uid'][0], dn, ldap_user['cn'][0])
 
 def register_users(uids):
+    logger.debug('')
     for uid in uids:
         user = User(name=uid)
         user.save()
 
 @staff_member_required
 def ldap_users(request):
+    logger.debug('')
     if request.method == 'POST':
         register_users(request.POST.keys())
 

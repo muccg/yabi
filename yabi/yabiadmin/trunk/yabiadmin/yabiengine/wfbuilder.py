@@ -1,5 +1,3 @@
-import logging
-logger = logging.getLogger('yabiengine')
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog, StageIn
@@ -10,10 +8,13 @@ from yabiadmin.yabiengine import backendhelper
 from django.utils import simplejson as json
 import datetime
 
+logger = settings.YABIENGINELOGGER
+
+
 job_cache = {}
 
 def build(username, workflow_json):
-    logger.debug('build')
+    logger.debug('')
 
     logger.debug(workflow_json)
     
@@ -39,8 +40,8 @@ def build(username, workflow_json):
 
 
 def addJob(workflow, job_dict, order):
-    logger.debug('addJob')
-
+    logger.debug('')
+    
     tool = Tool.objects.get(name=job_dict["toolName"])
 
     # add a job, return None if no backend as nothing needs to be run
@@ -127,6 +128,8 @@ def addJob(workflow, job_dict, order):
 
 
 def get_param_value(workflow, tp):
+    logger.debug('')
+
     value = ''
     if type(tp["value"]) == list:
         for item in tp["value"]:
@@ -152,6 +155,8 @@ def slugify(value):
     we should work on getting these back into mango and take advantage of all
     of djangos safe string stuff
     """
+    logger.debug('')
+
     import unicodedata
     import re
     value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')

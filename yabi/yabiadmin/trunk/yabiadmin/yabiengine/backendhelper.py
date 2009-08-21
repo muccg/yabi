@@ -5,18 +5,15 @@ from urllib import urlencode
 from yabiadmin.yabiengine.urihelper import uri_get_pseudopath, uriparse
 from yabiadmin.yabmin.models import Backend
 from django.core.exceptions import ObjectDoesNotExist
-import logging
-logger = logging.getLogger('yabiengine')
-
-
 from django.core.exceptions import ObjectDoesNotExist
 
+logger = settings.YABIENGINELOGGER
 
 def get_file_list(uri):
     """
     Return a list of file tuples
     """
-    
+    logger.debug('')
     logger.info("Listing: %s" % uri)
 
     data = {'dir': uri_get_pseudopath(uri)}
@@ -43,6 +40,7 @@ def get_backend_from_uri(uri):
     """
     Returns a Backend object given a uri
     """
+    logger.debug('')
     scheme, parts = uriparse(uri)
 
     try:

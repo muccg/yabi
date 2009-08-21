@@ -1,13 +1,13 @@
 from django.conf import settings
 import httplib
 from urllib import urlencode
-import logging
-logger = logging.getLogger('yabiengine')
-
 from django.core.exceptions import ObjectDoesNotExist
 
-def uri_get_pseudopath(uri):
+logger = settings.YABIENGINELOGGER
 
+def uri_get_pseudopath(uri):
+    logger.debug('')
+    
     from yabiadmin.yabmin.models import Backend
     from urlparse import urlparse, urlsplit
     scheme, rest = uri.split(":",1)
@@ -25,6 +25,8 @@ def uri_get_pseudopath(uri):
 
 
 def uriparse(uri):
+    logger.debug('')
+
     """
     This function returns a tuple containing the scheme and the ParseResult object.
     It is done this way as urlparse only accepts a specific list of url schemes
@@ -48,6 +50,8 @@ def uriparse(uri):
 
     
 def get_backend_uri(backend):
+    logger.debug('')
+
     from yabiadmin.yabmin.models import Backend
     from urlparse import urlunparse
     assert isinstance(backend, Backend)

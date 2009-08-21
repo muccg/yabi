@@ -1,6 +1,5 @@
 # Django settings for yabi project.
 import os
-import logging
 
 if not os.environ.has_key('PROJECT_DIRECTORY'):
 	os.environ['PROJECT_DIRECTORY']=os.path.dirname(__file__)
@@ -210,9 +209,24 @@ STATUS = {'pending':'pending',
           'complete':'complete'
           }
 
-
-LOG_FILENAME = WRITABLE_DIRECTORY + '/yabiadmin.log'
+##
+## Logging setup
+##
+import logging, logging.handlers
+LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
 LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
-logging.basicConfig(filename=LOG_FILENAME,level=LOGGING_LEVEL,)
+formatter = logging.Formatter("%(asctime)s:%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s:%(message)s")
 
+# yabiengine log
+fh = logging.handlers.TimedRotatingFileHandler(LOG_DIRECTORY + '/yabiengine.log', 'midnight')
+fh.setFormatter(formatter)
+YABIENGINELOGGER = logging.getLogger('yabiengine')
+YABIENGINELOGGER.setLevel(LOGGING_LEVEL)
+YABIENGINELOGGER.addHandler(fh)
 
+# yabiadmin log
+fh = logging.handlers.TimedRotatingFileHandler(LOG_DIRECTORY + '/yabiadmin.log', 'midnight')
+fh.setFormatter(formatter)
+YABIADMINLOGGER = logging.getLogger('yabiadmin')
+YABIADMINLOGGER.setLevel(LOGGING_LEVEL)
+YABIADMINLOGGER.addHandler(fh)

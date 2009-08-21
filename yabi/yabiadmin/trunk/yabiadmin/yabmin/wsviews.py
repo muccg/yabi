@@ -6,13 +6,14 @@ from django.utils import webhelpers
 from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 from yabiadmin.yabiengine import wfbuilder
 
-import logging
-logger = logging.getLogger('yabmin')
+logger = settings.YABIADMINLOGGER
 
 
 def tool(request, toolname):
+    logger.debug('')
 
     try:
         tool = Tool.objects.get(name=toolname)
@@ -22,7 +23,8 @@ def tool(request, toolname):
 
 
 def menu(request, username):
-
+    logger.debug('')
+    
     try:
         toolsets = ToolSet.objects.filter(users__name=username)
         output = {"toolsets":[]}
@@ -71,7 +73,8 @@ def menu(request, username):
 
 
 def submitworkflow(request):
-    logger.debug('submitworkflow')
+    logger.debug('')
+    
     try:
         # probably want to catch the type of exceptions we may get from this
         wfbuilder.build(request.POST['username'], request.POST["workflowjson"])
@@ -82,7 +85,8 @@ def submitworkflow(request):
 
 
 def credential(request, username, backend):
-
+    logger.debug('')
+    
     try:
         bc = BackendCredential.objects.get(backend__name=backend, credential__user__name=username)
         return HttpResponse(bc.json())
@@ -91,7 +95,8 @@ def credential(request, username, backend):
 
 
 def credential_detail(request, username, backend, detail):
-
+    logger.debug('')
+    
     try:
         bc = BackendCredential.objects.get(backend__name=backend, credential__user__name=username)
 
