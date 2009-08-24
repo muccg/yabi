@@ -132,10 +132,10 @@ class TestYabmin(unittest.TestCase):
         self.assertTrue(wf.json, workflowjson)
         self.assertTrue(wf.user.name, 'andrew')
 
-        jobs = Job.objects.filter(workflow=wf)
+        jobs = Job.objects.filter(workflow=wf).order_by('order')
         self.assertTrue(len(jobs),3)
 
-        j1 = Job.objects.get(id=1)
+        j1 = jobs[0]
         self.assertTrue(j1.exec_backend,'globus://xe-ng2.ivec.org/scratch')        
         self.assertTrue(j1.fs_backend,'gridftp://xe-ng2.ivec.org/scratch')        
         self.assertTrue(j1.stageout,'gridftp://andrew@xe-ng2.ivec.org/bi01/amacgregor/1/1/')        
@@ -144,7 +144,7 @@ class TestYabmin(unittest.TestCase):
         self.assertTrue(j1.commandparams,"[u'file://localhost.localdomain/input/1003_5915.fa']")
         self.assertTrue(j1.input_filetype_extensions,"[u'fa', u'fasta', u'faa', u'fna']")
 
-        j2 = Job.objects.get(id=2)
+        j2 = jobs[1]
         self.assertTrue(j2.exec_backend,'globus://xe-ng2.ivec.org/scratch')        
         self.assertTrue(j2.fs_backend,'gridftp://xe-ng2.ivec.org/scratch')        
         self.assertTrue(j2.stageout,'gridftp://andrew@xe-ng2.ivec.org/bi01/amacgregor/1/2/')
@@ -154,7 +154,7 @@ class TestYabmin(unittest.TestCase):
         self.assertTrue(j2.input_filetype_extensions,"[u'fa', u'faa', u'gb', u'fna']")
 
 
-        j3 = Job.objects.get(id=3)
+        j3 = jobs[2]
         self.assertTrue(j3.exec_backend,'local://localhost.localdomain:8000')
         self.assertTrue(j3.fs_backend,'file://localhost.localdomain:8000')
         self.assertTrue(j3.stageout,'file://andrew@localhost.localdomain:8003/andrew/1/3/')

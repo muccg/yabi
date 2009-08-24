@@ -25,11 +25,12 @@ def task(request):
         
     except ObjectDoesNotExist:
         return HttpResponseNotFound("Object not found")
-
+    except Exception, e:
+        logger.critical("Caught Exception: %s" % e.message)
+        return HttpResponseNotFound("Object not found")
 
 def status(request, model, id):
     logger.debug('')
-
     models = {'task':Task, 'job':Job, 'workflow':Workflow}
 
     # sanity checks
@@ -70,6 +71,9 @@ def status(request, model, id):
 
     except (ObjectDoesNotExist,ValueError):
         return HttpResponseNotFound("Object not found")
+    except Exception, e:
+        logger.critical("Caught Exception: %s" % e.message)
+        return HttpResponseNotFound("Object not found")
 
 
 def error(request, table, id):
@@ -102,4 +106,7 @@ def error(request, table, id):
             return HttpResponse("Thanks!")
 
     except (ObjectDoesNotExist,ValueError):
+        return HttpResponseNotFound("Object not found")
+    except Exception, e:
+        logger.critical("Caught Exception: %s" % e.message)
         return HttpResponseNotFound("Object not found")

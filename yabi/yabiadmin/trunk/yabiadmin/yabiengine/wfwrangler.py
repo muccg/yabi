@@ -31,6 +31,10 @@ def walk(workflow):
         except ObjectDoesNotExist,e:
             logger.critical("ObjectDoesNotExist at wfwrangler.walk: " + e.message)
             raise
+        except Exception,e:
+            logger.critical("Error in workflow wrangler: " + e.message)
+            raise
+        
 
 
 def check_dependencies(job):
