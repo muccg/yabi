@@ -2,6 +2,7 @@ import unittest
 from django.test import TestCase
 from django.test.client import Client
 from yabiadmin.yabmin.models import *
+from yabiadmin.yabiengine.models import *
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 import datetime
@@ -117,14 +118,47 @@ class TestYabmin(unittest.TestCase):
 
     def testSubmitWorkflow(self):
         c = Client()
+
+        workflowjson = '{"name":"unittest","jobs":[{"toolName":"fileselector","jobId":1,"valid":true,"parameterList":{"parameter":[{"switchName":"files","valid":true,"value":["1003_5915.fa"]}]}},{"toolName":"fastasplitter","jobId":2,"valid":true,"parameterList":{"parameter":[{"switchName":"-i","valid":true,"value":["file://localhost.localdomain/input/1003_5915.fa"]}]}},{"toolName":"blast.xe.ivec.org","jobId":3,"valid":true,"parameterList":{"parameter":[{"switchName":"-p","valid":true,"value":["blastn"]},{"switchName":"-d","valid":true,"value":["nt"]},{"switchName":"-i","valid":true,"value":[{"type":"job","jobId":2}]}]}},{"toolName":"blasttophits","jobId":4,"valid":true,"parameterList":{"parameter":[{"switchName":"inputFiles","valid":true,"value":[{"type":"job","jobId":3}]},{"switchName":"hitCount","valid":true,"value":["10"]}]}}]}'
+
         response = c.post('/ws/submitworkflow',
                           {'username':'andrew',
-                           'workflowjson':'{"name":"curl test","jobs":[{"toolName":"fileselector","jobId":1,"valid":true,"parameterList":{"parameter":[{"switchName":"files","valid":true,"value":["1003_5915.fa"]}]}},{"toolName":"fastasplitter","jobId":2,"valid":true,"parameterList":{"parameter":[{"switchName":"-i","valid":true,"value":["file://localhost.localdomain/input/1003_5915.fa"]}]}},{"toolName":"blast.xe.ivec.org","jobId":3,"valid":true,"parameterList":{"parameter":[{"switchName":"-p","valid":true,"value":["blastn"]},{"switchName":"-d","valid":true,"value":["nt"]},{"switchName":"-i","valid":true,"value":[{"type":"job","jobId":2}]}]}},{"toolName":"blasttophits","jobId":4,"valid":true,"parameterList":{"parameter":[{"switchName":"inputFiles","valid":true,"value":[{"type":"job","jobId":3}]},{"switchName":"hitCount","valid":true,"value":["10"]}]}}]}'
+                           'workflowjson': workflowjson
                            })
 
         self.assertEqual(response.status_code, 200)
 
+        wf = Workflow.objects.get(name='unittest')
+        self.assertTrue(wf.json, workflowjson)
+        self.assertTrue(wf.user.name, 'andrew')
+
+        jobs = Job.objects.filter(workflow=wf)
+        self.assertTrue(len(jobs),3)
+
+        j1 = Job.objects.get(id=1)
+        self.assertTrue(j1.exec_backend,'globus://xe-ng2.ivec.org/scratch')        
+        self.assertTrue(j1.fs_backend,'gridftp://xe-ng2.ivec.org/scratch')        
+        self.assertTrue(j1.stageout,'gridftp://andrew@xe-ng2.ivec.org/bi01/amacgregor/1/1/')        
+        self.assertTrue(j1.status,'pending')
+        self.assertTrue(j1.command,'/scratch/bi01/amacgregor/bin/ccg-fastasplitter -i %')
+        self.assertTrue(j1.commandparams,"[u'file://localhost.localdomain/input/1003_5915.fa']")
+        self.assertTrue(j1.input_filetype_extensions,"[u'fa', u'fasta', u'faa', u'fna']")
+
+        j2 = Job.objects.get(id=2)
+        self.assertTrue(j2.exec_backend,'globus://xe-ng2.ivec.org/scratch')        
+        self.assertTrue(j2.fs_backend,'gridftp://xe-ng2.ivec.org/scratch')        
+        self.assertTrue(j2.stageout,'gridftp://andrew@xe-ng2.ivec.org/bi01/amacgregor/1/2/')
+        self.assertTrue(j2.status,'pending')
+        self.assertTrue(j2.command,'blastall -i %')
+        self.assertTrue(j2.commandparams,"[u'yabi://localhost.localdomain/1/1/']")
+        self.assertTrue(j2.input_filetype_extensions,"[u'fa', u'faa', u'gb', u'fna']")
 
 
-
-
+        j3 = Job.objects.get(id=3)
+        self.assertTrue(j3.exec_backend,'local://localhost.localdomain:8000')
+        self.assertTrue(j3.fs_backend,'file://localhost.localdomain:8000')
+        self.assertTrue(j3.stageout,'file://andrew@localhost.localdomain:8003/andrew/1/3/')
+        self.assertTrue(j3.status,'pending')
+        self.assertTrue(j3.command,'/usr/local/bin/ccg-blastparser %')
+        self.assertTrue(j3.commandparams,"[u'yabi://localhost.localdomain/1/2/']")
+        self.assertTrue(j3.input_filetype_extensions,"[u'bls']")

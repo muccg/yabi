@@ -24,7 +24,7 @@ def build(username, workflow_json):
         user = User.objects.get(name=username)
         workflow = Workflow(name=slugify(workflow_dict["name"]), json=workflow_json, user=user)
         workflow.save()
-    
+
         for i,job_dict in enumerate(workflow_dict["jobs"]):
             job = addJob(workflow, job_dict, i)
 
@@ -125,7 +125,6 @@ def addJob(workflow, job_dict, order):
     # cache job for later reference
     job_id = job_dict["jobId"] # the id that is used in the json
     job_cache[job_id] = job
-
 
 
 def get_param_value(workflow, tp):
