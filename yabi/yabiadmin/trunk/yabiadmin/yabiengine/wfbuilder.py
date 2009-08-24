@@ -15,7 +15,6 @@ job_cache = {}
 
 def build(username, workflow_json):
     logger.debug('')
-
     logger.debug(workflow_json)
     
     workflow_dict = json.loads(workflow_json)
@@ -35,7 +34,9 @@ def build(username, workflow_json):
     except KeyError, e:
         logger.critical(e.message)
         raise
-
+    except Exception, e:
+        logger.critical(e.message)
+        raise
 
 
 
@@ -108,6 +109,7 @@ def addJob(workflow, job_dict, order):
 
     ## TODO raise error when no credential for user
     backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.fs_backend)
+
     # HACK change the first occurance of username from backend username to yabi username
     # TODO fix this
     bc_homedir = backendcredential.homedir.replace(backendcredential.credential.username, backendcredential.credential.user.name, 1)
@@ -123,7 +125,6 @@ def addJob(workflow, job_dict, order):
     # cache job for later reference
     job_id = job_dict["jobId"] # the id that is used in the json
     job_cache[job_id] = job
-
 
 
 

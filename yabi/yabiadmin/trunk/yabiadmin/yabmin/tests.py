@@ -113,6 +113,8 @@ class TestYabmin(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue("amacgregor" in response.content)
 
+
+
     def testSubmitWorkflow(self):
         c = Client()
         response = c.post('/ws/submitworkflow',
@@ -120,7 +122,6 @@ class TestYabmin(unittest.TestCase):
                            'workflowjson':'{"name":"curl test","jobs":[{"toolName":"fileselector","jobId":1,"valid":true,"parameterList":{"parameter":[{"switchName":"files","valid":true,"value":["1003_5915.fa"]}]}},{"toolName":"fastasplitter","jobId":2,"valid":true,"parameterList":{"parameter":[{"switchName":"-i","valid":true,"value":["file://localhost.localdomain/input/1003_5915.fa"]}]}},{"toolName":"blast.xe.ivec.org","jobId":3,"valid":true,"parameterList":{"parameter":[{"switchName":"-p","valid":true,"value":["blastn"]},{"switchName":"-d","valid":true,"value":["nt"]},{"switchName":"-i","valid":true,"value":[{"type":"job","jobId":2}]}]}},{"toolName":"blasttophits","jobId":4,"valid":true,"parameterList":{"parameter":[{"switchName":"inputFiles","valid":true,"value":[{"type":"job","jobId":3}]},{"switchName":"hitCount","valid":true,"value":["10"]}]}}]}'
                            })
 
-        print response.content
         self.assertEqual(response.status_code, 200)
 
 

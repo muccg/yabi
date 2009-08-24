@@ -50,11 +50,17 @@ def uriparse(uri):
 
     
 def get_backend_uri(backend):
-    logger.debug('')
+    logger.debug('Backend: %s' % backend)
 
     from yabiadmin.yabmin.models import Backend
     from urlparse import urlunparse
     assert isinstance(backend, Backend)
+
+    # check for the things vital to building a uri
+    if not backend.hostname:
+        raise Exception('No backend hostname for backend: %s' % backend)
+    if not backend.scheme:
+        raise Exception('No backend scheme for backend: %s' % backend)
 
     netloc = backend.hostname
     if backend.port:

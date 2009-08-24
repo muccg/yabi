@@ -62,8 +62,13 @@
         "model": "yabmin.backend", 
         "fields": {
             "description": "Tools that are executed locally on the back-end.", 
-            "created_on": "2009-03-30 00:37:53", 
-            "last_modified_on": "2009-03-30 00:37:53", 
+            "hostname": "localhost.localdomain", 
+            "created_by": 1, 
+            "created_on": "2009-07-06 15:49:02", 
+            "last_modified_by": 1, 
+            "path": "", 
+            "scheme": "local", 
+            "port": 8000, 
             "name": "local"
         }
     },
