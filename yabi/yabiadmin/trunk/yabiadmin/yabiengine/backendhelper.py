@@ -8,7 +8,10 @@ from yabiadmin.yabmin.models import Backend
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ObjectDoesNotExist
 
-logger = settings.YABIENGINELOGGER
+import logging
+import yabilogging
+logger = logging.getLogger('yabiengine')
+
 
 def get_file_list(uri):
     """

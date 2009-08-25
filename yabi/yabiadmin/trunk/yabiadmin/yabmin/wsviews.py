@@ -9,7 +9,9 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from yabiadmin.yabiengine import wfbuilder
 
-logger = settings.YABIADMINLOGGER
+import logging
+import yabilogging
+logger = logging.getLogger('yabiadmin')
 
 
 def tool(request, toolname):

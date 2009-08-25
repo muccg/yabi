@@ -7,7 +7,10 @@ from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
 from django.conf import settings
 import wfwrangler
 
-logger = settings.YABIENGINELOGGER
+import logging
+import yabilogging
+logger = logging.getLogger('yabiengine')
+
 
 def task(request):
     logger.debug('')

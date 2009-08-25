@@ -7,7 +7,10 @@ from yabiadmin.yabiengine.YabiJobException import YabiJobException
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.yabiengine import backendhelper
 
-logger = settings.YABIENGINELOGGER
+import logging
+import yabilogging
+logger = logging.getLogger('yabiengine')
+
 
 def walk(workflow):
     logger.debug('')

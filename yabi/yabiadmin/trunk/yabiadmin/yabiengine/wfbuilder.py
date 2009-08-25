@@ -8,7 +8,9 @@ from yabiadmin.yabiengine import backendhelper
 from django.utils import simplejson as json
 import datetime
 
-logger = settings.YABIENGINELOGGER
+import logging
+import yabilogging
+logger = logging.getLogger('yabiengine')
 
 
 job_cache = {}

@@ -3,7 +3,10 @@ import httplib
 from urllib import urlencode
 from django.core.exceptions import ObjectDoesNotExist
 
-logger = settings.YABIENGINELOGGER
+import logging
+import yabilogging
+logger = logging.getLogger('yabiengine')
+
 
 def uri_get_pseudopath(uri):
     logger.debug('')

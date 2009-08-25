@@ -212,21 +212,8 @@ STATUS = {'pending':'pending',
 ##
 ## Logging setup
 ##
-import logging, logging.handlers
+import logging
 LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
 LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
-formatter = logging.Formatter("%(asctime)s:%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s:%(message)s")
+LOGGING_FORMATTER = logging.Formatter("%(asctime)s:%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s:%(message)s")
 
-# yabiengine log
-fh = logging.handlers.TimedRotatingFileHandler(LOG_DIRECTORY + '/yabiengine.log', 'midnight')
-fh.setFormatter(formatter)
-YABIENGINELOGGER = logging.getLogger('yabiengine')
-YABIENGINELOGGER.setLevel(LOGGING_LEVEL)
-YABIENGINELOGGER.addHandler(fh)
-
-# yabiadmin log
-fh = logging.handlers.TimedRotatingFileHandler(LOG_DIRECTORY + '/yabiadmin.log', 'midnight')
-fh.setFormatter(formatter)
-YABIADMINLOGGER = logging.getLogger('yabiadmin')
-YABIADMINLOGGER.setLevel(LOGGING_LEVEL)
-YABIADMINLOGGER.addHandler(fh)
