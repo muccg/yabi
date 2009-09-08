@@ -476,9 +476,9 @@ YabiJob.prototype.solidify = function(obj) {
     }
     
     //does it accept inputs?
-//     if (this.payload.baat.job.inputFiletypes.acceptsInput == "true") {
-//         this.acceptsInput = true;
-//     }
+     if (this.payload.tool.accepts_input == true) {
+         this.acceptsInput = true;
+     }
     
     //generate parameter objects
     var params = this.payload.tool.parameter_list; //array
