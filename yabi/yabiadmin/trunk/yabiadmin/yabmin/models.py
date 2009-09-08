@@ -45,7 +45,7 @@ class Tool(Base):
     fs_backend = models.ForeignKey('Backend', related_name="fs_backends")
     groups = models.ManyToManyField('ToolGroup', through='ToolGrouping', null=True, blank=True)
     output_filetypes = models.ManyToManyField(FileExtension, through='ToolOutputExtension', null=True, blank=True)
-    file_pass_thru = models.BooleanField(default=False)
+    accepts_input = models.BooleanField(default=False)
     batch_on_param = models.ForeignKey('ToolParameter', related_name='batch_tool', null=True, blank=True)
     batch_on_param_bundle_files = models.NullBooleanField(null=True, blank=True)
     cpus = models.CharField(max_length=64, null=True, blank=True)
@@ -89,7 +89,7 @@ class Tool(Base):
             'path':self.path,
             'description':self.description,
             'enabled':self.enabled,
-            'file_pass_thru':self.file_pass_thru,
+            'accepts_input':self.accepts_input,
             'batch_on_param':self.batch_on_param.switch if self.batch_on_param else '',
             'job_type': self.backend.name,
             'inputExtensions': self.input_filetype_extensions(),

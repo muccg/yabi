@@ -467,7 +467,7 @@
         "model": "yabmin.tool", 
         "fields": {
             "batch_on_param": 31, 
-            "file_pass_thru": false, 
+            "accepts_input": true, 
             "walltime": "60:00:00", 
             "display_name": "blast", 
             "name": "blast.xe.ivec.org", 
@@ -490,7 +490,7 @@
         "model": "yabmin.tool", 
         "fields": {
             "batch_on_param": 118, 
-            "file_pass_thru": false, 
+            "accepts_input": true, 
             "walltime": "", 
             "display_name": "blast top hits", 
             "name": "blasttophits", 
@@ -513,7 +513,7 @@
         "model": "yabmin.tool", 
         "fields": {
             "batch_on_param": 977, 
-            "file_pass_thru": true, 
+            "accepts_input": true, 
             "walltime": "", 
             "display_name": "select file", 
             "name": "fileselector", 
@@ -538,7 +538,7 @@
         "model": "yabmin.tool", 
         "fields": {
             "batch_on_param": 957, 
-            "file_pass_thru": false, 
+            "accepts_input": false, 
             "walltime": "", 
             "display_name": "split fasta", 
             "name": "fastasplitter", 
