@@ -9,8 +9,12 @@ from django.utils import webhelpers
 from django.utils import simplejson as json
 from json_util import makeJsonFriendly
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
 
-logger = settings.YABIADMINLOGGER
+import logging
+import yabilogging
+logger = logging.getLogger('yabiadmin')
+
 
 class ToolGroupView:
     def __init__(self, name):
