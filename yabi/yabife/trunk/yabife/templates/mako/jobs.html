@@ -2,45 +2,26 @@
 <%def name="header()">
 
 <script language="javascript">
-YAHOO.util.Event.onAvailable("container", initWorkflow);
+YAHOO.util.Event.onAvailable("container", initWorkflowListing);
 
+var workflowListing;
 var workflow;
-var tools;
 
-function initWorkflow() {
-    tools = new YabiToolCollection();
+function initWorkflowListing() {
+    workflowListing = new YabiWorkflowCollection();
+    workflowListing.solidify(YAHOO.lang.JSON.parse('[{"name":"test", "status":"Completed", "tags":["blast", "spirochaetes"], "last_modified_on":"09-09-2009", "id":1}, {"name":"sample", "status":"Completed", "tags":["hmmpfam", "spirochaetes"], "last_modified_on":"10-09-2009", "id":2}, {"name":"zip", "status":"Completed", "tags":["zip"], "last_modified_on":"10-09-2009", "id":3}]'));
+    document.getElementById("workflowListingContainer").appendChild(workflowListing.containerEl);
     
-    document.getElementById("toolContainer").appendChild(tools.containerEl);
-    
-    workflow = new YabiWorkflow(true);
-    
+    workflow = new YabiWorkflow(false);
     document.getElementById("container").appendChild(workflow.mainEl);
     document.getElementById("optionsDiv").appendChild(workflow.optionsEl);
-    
-    YAHOO.util.Event.addListener("submitButton", "click", submitCallback, workflow);
+    workflow.updateName('test workflow');
+    workflow.addJob("fileselector", false);
 }
 
-
-function submitCallback(e, wf) {
-    
-
-    // TODO remove hardcoded url
-    // TODO add decent callbacks
-    YAHOO.util.Event.stopEvent(e);
-
-    var baseURL = "http://127.0.0.1:8000/ws/submitworkflow/";
-    
-    jsCallback = {
-        success: function (obj) {alert("Success on submit!");},
-        failure: function (obj){alert("Fail on submit!");},
-        argument: [this] };
-    var data = "workflowjson=" + wf.toJSON()
-    jsTransaction = YAHOO.util.Connect.asyncRequest('POST', baseURL, jsCallback, data);
-}
-
-
-function summonJob(toolName) {
-    workflow.addJob(toolName);
+function summonWorkflow(id) {
+    workflow = new YabiWorkflow(false);
+    workflow.hydrate(id);
 }
 
 function destroyWorkflow() {
@@ -54,8 +35,8 @@ function destroyWorkflow() {
 
 <%def name="body()">
 
-  <div id="doc3" class="yui-t1" style="height:100%; width:100%;">
-    <div id="yabi-design-mode">
+  <div id="doc3" class="yui-t1" style="height:100%;">
+    <div id="yabi-jobs-mode">
       <div id="hd">
         <p><img src="/static/images/yabi-logo.png" alt="Yabi-logo" height="60" width="198" />  
 
@@ -84,19 +65,17 @@ function destroyWorkflow() {
 
         //]]>
       </script>
-
       
 
           <div style="position:absolute;left:0px;top:63px;width:290px;padding:5px;">
-                  <div id="toolContainer"></div>
+                  <div id="workflowListingContainer"></div>
           </div>
           <div style="position:absolute;left:300px;top:63px;width:330px;height:90%;background:url('/static/images/middle_bg.png');padding:20px;padding-top:15px;">
                   <div id="container"></div>
           </div>
-          <div style="position:absolute;left:670px;top:63px;padding:5px;min-width:400px;">
+          <div style="position:absolute;left:670px;top:63px;padding:5px;">
                 <div id="optionsDiv"></div>
           </div>
-      
 
     </div>
   </div>

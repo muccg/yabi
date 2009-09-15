@@ -52,7 +52,7 @@ function YabiJob(toolName, jobId, preloadValues) {
     this.optionsEl.setAttribute("class", "jobOptionsContainer");
     
     this.optionsToggleEl = document.createElement('div');
-    this.optionsToggleEl.className = "optionsToggle";
+    this.optionsToggleEl.className = "optionsToggle fakeButton";
     this.optionsToggleEl.appendChild(document.createTextNode('show all options'));
     YAHOO.util.Event.addListener(this.optionsToggleEl, "click", this.toggleOptionsCallback, this);
     this.optionsEl.appendChild(this.optionsToggleEl);

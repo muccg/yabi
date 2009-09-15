@@ -10,9 +10,12 @@ function YabiToolCollection() {
     this.containerEl = document.createElement("div");
     this.containerEl.className = "toolCollection";
     
+    this.filterEl = document.createElement("div");
+    this.filterEl.className = "filterPanel";
+    
     this.searchLabelEl = document.createElement("label");
     this.searchLabelEl.appendChild(document.createTextNode("Find tool: "));
-    this.containerEl.appendChild(this.searchLabelEl);
+    this.filterEl.appendChild(this.searchLabelEl);
     
     this.searchEl = document.createElement("input");
     this.searchEl.className = "toolSearchField";
@@ -22,7 +25,7 @@ function YabiToolCollection() {
     YAHOO.util.Event.addListener(this.searchEl, "keyup", this.filterCallback, this);
     YAHOO.util.Event.addListener(this.searchEl, "change", this.filterCallback, this);
     
-    this.containerEl.appendChild(this.searchEl);
+    this.filterEl.appendChild(this.searchEl);
     
     this.clearFilterEl = document.createElement("span");
     this.clearFilterEl.className = "fakeButton";
@@ -30,7 +33,9 @@ function YabiToolCollection() {
     this.clearFilterEl.style.visibility = "hidden";
     YAHOO.util.Event.addListener(this.clearFilterEl, "click", this.clearFilterCallback, this);
 
-    this.containerEl.appendChild(this.clearFilterEl);
+    this.filterEl.appendChild(this.clearFilterEl);
+    
+    this.containerEl.appendChild(this.filterEl);
     
     this.listingEl = document.createElement("div");
     this.listingEl.className = "toolListing";

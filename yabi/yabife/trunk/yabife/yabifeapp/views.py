@@ -77,6 +77,10 @@ class LoginForm(forms.Form):
 @login_required
 def design(request):
     return render_to_response('design.html', {'h':webhelpers, 'request':request})
+    
+@login_required
+def jobs(request):
+    return render_to_response('jobs.html', {'h':webhelpers, 'request':request})
 
 def login(request):
 

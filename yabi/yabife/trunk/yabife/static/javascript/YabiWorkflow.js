@@ -50,7 +50,7 @@ function YabiWorkflow(editable) {
     
     this.startEl = document.createElement("div");
     this.startEl.appendChild(document.createTextNode("start"));
-    this.startEl.className = "workflowBookends";
+    this.startEl.className = "workflowStartBookend";
     
     this.mainEl.appendChild(this.startEl);
     
@@ -58,7 +58,7 @@ function YabiWorkflow(editable) {
 
     this.startEl = document.createElement("div");
     this.startEl.appendChild(document.createTextNode("end"));
-    this.startEl.className = "workflowBookends";
+    this.startEl.className = "workflowEndBookend";
     
     this.mainEl.appendChild(this.startEl);
 

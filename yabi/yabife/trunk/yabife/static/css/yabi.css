@@ -48,8 +48,8 @@ h2 {
 }
 .addLink {
     position:absolute;
-    right:2px;
-    top:2px;
+    right:4px;
+    top:5px;
     cursor:pointer;
 }
 
@@ -401,9 +401,7 @@ td {
 }
 .toolDisplayName {
 }
-.toolDescription {
-    display: none;
-}
+
 #yabi-tools-list li.hover .toolDescription, #yabi-tools-list li:hover .toolDescription {
     display:block;
     position:absolute;
@@ -540,21 +538,7 @@ body {
 	position:relative;
 	height:60px;
 	width:100%;
-}
-#yabi-design-mode #hd {
-	border-bottom: 3px solid #F60;
-}
-#yabi-jobs-mode #hd {
-	border-bottom: 3px solid #F36;
-}
-#yabi-files-mode #hd {
-	border-bottom: 3px solid #af239d;
-}
-#yabi-grid-mode #hd {
-	border-bottom: 3px solid #af9d23;
-}
-#yabi-help-mode #hd {
-	border-bottom: 3px solid #529847;
+    border-bottom: 3px solid #3879e5;
 }
 
 
@@ -721,69 +705,17 @@ body {
 	color:#FFFFFF;
 	left:250px;
 	position:absolute;
-	padding-left:5px;
-	padding-top:2px;
-	padding-right:5px;
-	padding-bottom:3px;
+	padding-left:7px;
+	padding-top:5px;
+	padding-right:7px;
+	padding-bottom:5px;
 	font-weight:bold;
 	text-align:left;
 	visibility: hidden;
+    min-width:400px;
 	display:none;
 	z-index: 900;	
     -moz-border-radius: 5px; 
-    -webkit-border-radius: 5px;
-}
-#yabi-message-fail { 
-	background-color:#FF3366;
-	top:5px;
-	color:#FFFFFF;
-	left:250px;
-	position:absolute;
-	padding-left:5px;
-	padding-top:2px;
-	padding-right:5px;
-	padding-bottom:3px;
-	min-width:500px;
-	font-weight:bold;
-	text-align:left;	
-	z-index: 900;	
-    -moz-border-radius: 5px;        
-    -webkit-border-radius: 5px;
-}
-
-#yabi-message-warn { 
-	background-color:#FF6600;
-	top:5px;	
-	color:#FFFFFF;
-	left:250px;
-	position:absolute;
-	padding-left:5px;
-	padding-top:2px;
-	padding-right:5px;
-	padding-bottom:3px;
-	min-width:500px;
-	font-weight:bold;
-	text-align:left;	
-	z-index: 900;	
-    -moz-border-radius: 5px;        
-    -webkit-border-radius: 5px;
-}
-
-#yabi-message-success { 
-	background-color:#529847;
-	top:5px;	
-	color:#FFFFFF;
-	left:250px;
-	position:absolute;
-	padding-left:5px;
-	padding-top:2px;
-	padding-right:5px;
-	padding-bottom:3px;
-	min-width:500px;
-	font-weight:bold;
-	text-align:left;	
-	z-index: 900;
-    -moz-border-radius: 5px;        
     -webkit-border-radius: 5px;
 }
 
@@ -795,63 +727,23 @@ body {
 	color:#FFF;
 }
 
-.yabi-blockmessage-fail { 
-    margin:5px;
-	background-color:#FF3366;
-	color:#FFFFFF;
-	padding-left:5px;
-	padding-top:2px;
-	padding-right:5px;
-	padding-bottom:3px;
-	min-width:500px;
-	font-weight:bold;
-	text-align:left;	
-}
-
-.yabi-blockmessage-success { 
-    margin:5px;
-	background-color:#529847;
-	color:#FFFFFF;
-	padding-left:5px;
-	padding-top:2px;
-	padding-right:5px;
-	padding-bottom:3px;
-	min-width:500px;
-	font-weight:bold;
-	text-align:left;	
-}
-
-.yabi-blockmessage-warn { 
-    margin:5px;
-	background-color:#FF6600;
-	color:#FFFFFF;
-	padding-left:5px;
-	padding-top:2px;
-	padding-right:5px;
-	padding-bottom:3px;
-	min-width:500px;
-	font-weight:bold;
-	text-align:left;	
-}
-
-
 
 #yabi-tabs {
 	position:absolute;
 	left:250px;
-	bottom:6px;
+	bottom:4px;
 	color:#fff;
 }
-#yabi-tabs a, #yabi-tabs a.visited, #yabi-tabs a.hover, #yabi-tabs a:visited, #yabi-tabs a:hover {
+#yabi-tabs a {
 	color:#ccc;
 	text-decoration:none;
 }
 #yabi-tabs-jobs {
-	padding:6px 16px 6px 16px;
+	padding:4px 16px 4px 16px;
 	background-color:#fff;
-	border-top:1px solid #F36;
-	border-left:1px solid #F36;
-	border-right:1px solid #F36;
+	border-top:1px solid #eee;
+	border-left:1px solid #eee;
+	border-right:1px solid #eee;
 	font-weight:bold;
     -moz-border-radius-topleft: 5px; 
     -webkit-border-top-left-radius: 5px;
@@ -859,15 +751,18 @@ body {
     -webkit-border-top-right-radius: 5px;
 }
 #yabi-jobs-mode #yabi-tabs-jobs, #yabi-tabs-jobs.hover, #yabi-tabs-jobs:hover {
-	background-color:#F36;
+	background-color:#3879e5;
+    border-top:1px solid #3879e5;
+	border-left:1px solid #3879e5;
+	border-right:1px solid #3879e5;
 	color:white;
 }
 #yabi-tabs-design {
-	padding:6px 16px 6px 16px;
+	padding:4px 16px 4px 16px;
 	background-color:#fff;
-	border-top:1px solid #f60;
-	border-left:1px solid #f60;
-	border-right:1px solid #f60;
+	border-top:1px solid #eee;
+	border-left:1px solid #eee;
+	border-right:1px solid #eee;
 	font-weight:bold;
     -moz-border-radius-topleft: 5px; 
     -webkit-border-top-left-radius: 5px;
@@ -875,125 +770,57 @@ body {
     -webkit-border-top-right-radius: 5px;
 }
 #yabi-design-mode #yabi-tabs-design, #yabi-tabs-design.hover, #yabi-tabs-design:hover {
-	background-color:#F60;
+	background-color:#3879e5;
+    border-top:1px solid #3879e5;
+	border-left:1px solid #3879e5;
+	border-right:1px solid #3879e5;
 	color:white;
 }
 #yabi-tabs-files {
-	padding:6px 16px 6px 16px;
+	padding:4px 16px 4px 16px;
 	background-color:#fff;
-	border-top:1px solid #af239d;
-	border-left:1px solid #af239d;
-	border-right:1px solid #af239d;
+	border-top:1px solid #eee;
+	border-left:1px solid #eee;
+	border-right:1px solid #eee;
 	font-weight:bold;
     -moz-border-radius-topleft: 5px; 
     -webkit-border-top-left-radius: 5px;
     -moz-border-radius-topright: 5px;
     -webkit-border-top-right-radius: 5px;
-}
-#yabi-tabs-grid {
-	padding:6px 16px 6px 16px;
-	background-color:#fff;
-	border-top:1px solid #af9d23;
-	border-left:1px solid #af9d23;
-	border-right:1px solid #af9d23;
-	font-weight:bold;
-    -moz-border-radius-topleft: 5px; 
-    -webkit-border-top-left-radius: 5px;
-    -moz-border-radius-topright: 5px;
-    -webkit-border-top-right-radius: 5px;
-}
-
-#yabi-files-mode #yabi-tabs-files, #yabi-tabs-files.hover, #yabi-tabs-files:hover {
-	background-color:#af239d;
-	color:white;
-}
-
-#yabi-grid-mode #yabi-tabs-grid, #yabi-tabs-grid.hover, #yabi-tabs-grid:hover {
-	background-color:#af9d23;
-	color:white;
-}
-
-
-#yabi-files-mode a{  
-    color: #af239d;
-}
-#yabi-grid-mode a{  
-    color: #af9d23;
-}
-
-#treeDiv a{  
-    color: #af239d;
-}
-
-
-#yabi-files-preview {
-	background-color:#fff;
-	font: Courier;
-	font-size: 9pt;
-	font-weight: normal;
-    padding:8px;
-    overflow:hidden;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-}
-
-#yabi-files-table {
-
-	background-color:#fff;
-	border:1px solid #af239d;
-	font-size: 10px;
-	
-}
-
-#yabi-files-table th{
-
-	border-bottom:1px solid #af239d;	
-	font-size: 10px;
-	font-weight: bold;	
-	padding-left: 3px;	
-	padding-right: 3px;		
-	
-}
-
-#yabi-files-table td{
-
-	background-color:#fff;
-	border-bottom:1px solid #af239d;	
-    border-top:1px solid #af239d;
-	font-size: 10px;
-    padding-top: 2px;
-    padding-bottom: 2px;
-	padding-left: 6px;
-	padding-right: 6px;	
-}
-
-.yabi-files-search-results {
-	background-color:#fff;
-	border:1px solid #af239d;
-    margin-bottom:10px;
-	margin-left:0px;
-	padding:3px;
-	padding-left:10px;
-	padding-bottom:10px;
-
 }
 
 #yabi-tabs-help {
-	padding:6px 16px 6px 16px;
+	padding:4px 16px 4px 16px;
 	background-color:#fff;
-	border-top:1px solid #529847;
-	border-left:1px solid #529847;
-	border-right:1px solid #529847;
+	border-top:1px solid #eee;
+	border-left:1px solid #eee;
+	border-right:1px solid #eee;
 	font-weight:bold;
-    -moz-border-radius-topleft: 5px;
+    -moz-border-radius-topleft: 5px; 
     -webkit-border-top-left-radius: 5px;
-    -moz-border-radius-topright: 5px; 
+    -moz-border-radius-topright: 5px;
     -webkit-border-top-right-radius: 5px;
 }
+
 #yabi-help-mode #yabi-tabs-help, #yabi-tabs-help.hover, #yabi-tabs-help:hover {
-	background-color:#529847;
+	background-color:#3879e5;
+    border-top:1px solid #3879e5;
+	border-left:1px solid #3879e5;
+	border-right:1px solid #3879e5;
 	color:white;
 }
+
+
+#yabi-files-mode #yabi-tabs-files, #yabi-tabs-files.hover, #yabi-tabs-files:hover {
+	background-color:#3879e5;
+    border-top:1px solid #3879e5;
+	border-left:1px solid #3879e5;
+	border-right:1px solid #3879e5;
+	color:white;
+}
+
+
+
 
 #yabi-thumbnail {
     left:auto;
@@ -1015,92 +842,12 @@ body {
 }
 
 
-
-#uploadFormDiv{
-
-	border-top:1px solid #af239d;
-	border-bottom:1px solid #af239d;	
-	border-left:1px solid #af239d;
-	border-right:1px solid #af239d;
-
-    padding:                5px 10px;
-
-    background-color:       #efd3eb;
-    
-    font:                   12px verdana, arial, helvetica, sans-serif;
-    width: 250px;
-    position:absolute;
-	text-align:right;
-	margin:2px;
-	padding:2px;    
-	z-index:10000;
-
-}
-
-#searchFormDiv{
-
-	border-top:1px solid #af239d;
-	border-bottom:1px solid #af239d;	
-	border-left:1px solid #af239d;
-	border-right:1px solid #af239d;
-
-    padding:                5px 10px;
-
-    background-color:       #efd3eb;
-    
-    font:                   12px verdana, arial, helvetica, sans-serif;
-    width: 250px;
-    position:absolute;
-	text-align:right;
-	margin:2px;
-	padding:2px;    
-	z-index:10000;
-
-}
-
 #refreshrate{
 display:inline;
 
 }
 
 
-.parameterTable .paramName {
-    padding: 3px;
-    text-align:right;
-    border: 1px;
-    color: #ccc;
-    font-weight: bold;
-}
-
-.parameterTable .paramValue {
-    padding: 3px;
-    border: 1px;
-}
-
-
-.noFiles {
-    color:#ccc;
-}
-
-
-
-a.helpSectionHeader {
-  color: #529847;
-}
-
-a.helpSectionHeader, a.helpSectionHeader.visited, a.helpSectionHeader:visited {
-	display:block;
-	width:100%;
-	padding-left:18px;
-	color:#529847;
-	text-decoration:none;
-	margin-top:5px;
-	background:url(/static/images/yabi-help-disclose-triangle.gif) no-repeat 5px 2px;
-}
-a.helpSectionHeader.hover, a.helpSectionHeader:hover {
-	background:url(/static/images/yabi-help-disclose-triangle-open.gif) no-repeat 1px 6px;
-
-}
 
 
 //new json design objects ===================================
@@ -1124,29 +871,55 @@ a.helpSectionHeader.hover, a.helpSectionHeader:hover {
 	color:#666;
 	font-size: 110%;
 	font-weight: bold;
-	margin-bottom: 20px;
-	width: 70%;
+    padding:6px;
+    padding-left:14px;
+    background:#fff;
+    border:1px solid #eee;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-box-shadow: 0px 1px 2px #eee;
+    -webkit-box-shadow: 0px 1px 2px #eee;
+}
+
+#yabi-design-mode .workflowName {
+    width:200px;
+}
+
+#yabi-jobs-mode .workflowName {
+    width:310px;
 }
 
 .workflowContainer {
 //	background-color: #666;
 	display: block;
-	min-height: 80px;
+//	min-height: 80px;
 	position: relative;
 	top: 0px;
 	left: 0px;
 	width: 100%;
 	padding: 1px;
+    margin-top:10px;
+    margin-bottom:10px;
+    margin-right: 15px;
 }
 
-.workflowBookends {
-	border:1px solid #d6d6d6;
-    color:#ccc;
-	padding:2px;
-	padding-left:14px;
-	margin-left: 3px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
+.workflowStartBookend {
+    color:#8ba9dc;
+    text-shadow:0px 1px 1px #fff;
+    border-bottom:2px solid white;
+//    margin-left:15px;
+//    margin-right:15px;
+    margin-top:20px;
+    padding-left:30px;
+}
+
+.workflowEndBookend {
+    color:#8ba9dc;
+    text-shadow:0px 1px 1px #fff;
+    border-top:2px solid white;
+//    margin-left:15px;
+//    margin-right:15px;
+    padding-left:30px;
 }
 
 .jobSuperContainer {
@@ -1158,32 +931,37 @@ a.helpSectionHeader.hover, a.helpSectionHeader:hover {
 	border:1px solid #ccc;
 	background: #eee url(/static/images/job_bg.png);
 	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+    -moz-box-shadow: 0px 1px 2px #ccc;
+    -webkit-box-shadow: 0px 1px 2px #ccc;
 	padding:4px;
 	padding-left: 12px;
-	margin:2px;
+    padding-right: 10px;
 	position:relative;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     font-size: 95%;
     color: #666;
+    text-shadow: 0px 1px 1px #fff;
     min-height: 26px;
+    margin-bottom:6px;
 }
 
 .selectedJobContainer {
-	border:1px solid #77f;
+	border:1px solid #3879e6;
 	background: #ccf url(/static/images/job_selected_bg.png);
-	background: -webkit-gradient(linear, left top, left bottom, from(#eef), to(#ddf));
-    -moz-box-shadow: 0px 0px 3px #77f;
-    -webkit-box-shadow: 0px 0px 3px #77f;
+	background: -webkit-gradient(linear, left top, left bottom, from(#eceff3), to(#dbe5f6));
+    -moz-box-shadow: 0px 0px 3px #3879e6;
+    -webkit-box-shadow: 0px 0px 3px #3879e6;
 	padding:4px;
 	padding-left: 12px;
-	margin:2px;
 	position:relative;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     font-size: 95%;
     color: #666;
+    text-shadow:0px 1px 1px #fff;
     min-height: 26px;
+    margin-bottom:6px;
 }
 
 .loadFailJobContainer {
@@ -1194,12 +972,12 @@ a.helpSectionHeader.hover, a.helpSectionHeader:hover {
     -webkit-box-shadow: 0px 0px 3px #f77;
 	padding:4px;
 	padding-left: 12px;
-	margin:2px;
 	position:relative;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     font-size: 95%;
     color: #f66;
+    margin-bottom:6px;
 }
 
 .jobContainer h1 {
@@ -1208,19 +986,28 @@ a.helpSectionHeader.hover, a.helpSectionHeader:hover {
 	margin-bottom: 4px;
 }
 
+.jobInputs {
+    text-shadow:none;
+}
+
+.jobOutputs {
+    text-shadow:none;
+}
+
+
 .selectedJobContainer h1 {
 	//font-size: 105%;
 	margin-bottom: 4px;
 }
 
-/*.jobOptionsContainer {
-	border: 1px solid #ccc;
-	margin: 8px;
-	padding: 4px;
-	text-align: left;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-}*/
+//.jobOptionsContainer {
+//    width:100%;
+//}
+
+#optionsDiv {
+    width:100%;
+    padding:10px;
+}
 
 .jobOptionsContainer label {
 	margin-right: 20px;
@@ -1298,19 +1085,9 @@ a.helpSectionHeader.hover, a.helpSectionHeader:hover {
 }
 
 .optionsToggle {
-	-webkit-border-radius: 8px;
-	-moz-border-radius: 8px;
-	background-color: #eee;
-	padding: 1px;
-	padding-left: 8px;
-	padding-right: 8px;
-	margin-right: 4px;
-	margin-bottom: 4px;
-	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
-	border: 1px solid #ccc;
-	color: #000;	
-	width: 180px;
-	float: right;
+	position: absolute;
+    top: 5px;
+    right: 5px;
 }
 
 .fileSelector {
@@ -1422,8 +1199,9 @@ a.helpSectionHeader.hover, a.helpSectionHeader:hover {
 }
 
 .fakeButton.hover, .fakeButton:hover {
-	background-color: #eef;
-	background: -webkit-gradient(linear, left top, left bottom, from(#eef), to(#ccf));
+	border:1px solid #3879e6;
+	background: #ccf url(/static/images/job_selected_bg.png);
+	background: -webkit-gradient(linear, left top, left bottom, from(#eceff3), to(#dbe5f6));
 }
 
 .progressBarContainer {
@@ -1455,8 +1233,8 @@ a.helpSectionHeader.hover, a.helpSectionHeader:hover {
 	border:0px;
 	background:url(/static/images/ok.png);
 	position:absolute;
-    right: 1%;
-    top: 2px;
+    right: 10px;
+    top: 4px;
 	z-index:99;	
 	
 	
@@ -1470,8 +1248,8 @@ a.helpSectionHeader.hover, a.helpSectionHeader:hover {
 	border:0px;
 	background:url(/static/images/pending.png);
 	position:absolute;
-    right: 1%;
-    top: 2px;
+    right: 10px;
+    top: 4px;
 	z-index:99;
 }
 
@@ -1483,8 +1261,8 @@ a.helpSectionHeader.hover, a.helpSectionHeader:hover {
 	border:0px;
 	background:url(/static/images/queued.gif);
 	position:absolute;
-    right: 1%;
-    top: 2px;
+    right: 10px;
+    top: 4px;
 	z-index:99;
 }
 
@@ -1496,8 +1274,8 @@ a.helpSectionHeader.hover, a.helpSectionHeader:hover {
 	border:0px;
 	background:url(/static/images/error.png);
 	position:absolute;
-    right: 1%;
-    top: 2px;
+    right: 10px;
+    top: 4px;
 	z-index:99;
 }
 
@@ -1509,13 +1287,21 @@ a.helpSectionHeader.hover, a.helpSectionHeader:hover {
 	border:0px;
 	background:url(/static/images/processing.gif);
 	position:absolute;
-    right: 1%;
-    top: 2px;
+    right: 10px;
+    top: 4px;
 	z-index:99;
 }
 
 .toolCollection {
 
+}
+
+.toolDescription {
+    display: none;
+    border-top:1px solid #eee;
+    color:#aaa;
+    padding-top:2px;
+    margin-top:3px;
 }
 
 .toolSearchField {
@@ -1532,21 +1318,109 @@ a.helpSectionHeader.hover, a.helpSectionHeader:hover {
 	color: #999;
 	padding:3px;
 	margin-top:2px;
-	background: #f3f3f3;
-	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#f3f3f3));
+    border-bottom:2px solid #eee;
+    margin-bottom:4px;
+    font-size:90%;
 }
 
 .tool {
-	border:1px solid #ccc;
+	border:1px solid #ddd;
 	background: #eee url(/static/images/job_bg.png);
 	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+    -moz-box-shadow: 0px 1px 2px #eee;
+    -webkit-box-shadow: 0px 1px 2px #eee;
 	padding:4px;
 	padding-left: 12px;
-	margin:2px;
-	margin-left: 16px;
+    padding-right: 10px;
+	margin:4px;
+	margin-left: 6px;
+    margin-right: 4px;
 	position:relative;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     font-size: 95%;
     color: #666;
+    text-shadow: 0px 1px 1px #fff;
+}
+
+.workflowProxy {
+	border:1px solid #ddd;
+	background: #eee url(/static/images/job_bg.png);
+	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+    -moz-box-shadow: 0px 1px 2px #eee;
+    -webkit-box-shadow: 0px 1px 2px #eee;
+	padding:4px;
+	padding-left: 12px;
+    padding-right: 10px;
+	margin:4px;
+	margin-left: 6px;
+    margin-right: 4px;
+	position:relative;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    font-size: 95%;
+    color: #666;
+    font-weight:bold;
+    text-shadow: 0px 1px 1px #fff;
+}
+
+.selectedWorkflowProxy {
+	border:1px solid #3879e6;
+	background: #ccf url(/static/images/job_selected_bg.png);
+	background: -webkit-gradient(linear, left top, left bottom, from(#eceff3), to(#dbe5f6));
+    -moz-box-shadow: 0px 0px 3px #3879e6;
+    -webkit-box-shadow: 0px 0px 3px #3879e6;
+	padding:4px;
+	padding-left: 12px;
+	margin:4px;
+	position:relative;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    margin-left: 6px;
+    margin-right: 4px;
+    font-size: 95%;
+    font-weight:bold;
+    color: #666;
+    min-height: 26px;
+    text-shadow:0px 1px 1px #fff;
+}
+
+.filterPanel {
+    background-color: #dbe5f6;
+    border-bottom: 1px solid #b7c9e6;
+    margin:-5px;
+    margin-bottom: 4px;
+    padding:10px;
+}
+
+.filterStatus {
+    margin-top:5px;
+}
+
+.workflowListing {
+    padding-top:8px;
+}
+
+.workflowSearchField {
+    margin-right:6px;
+}
+
+.workflowDate {
+    position:absolute;
+    right:50px;
+    top:6px;
+    color:#8ba9dc;
+    font-size:90%;
+    font-weight:normal;
+    text-shadow:0px 1px 1px #fff;
+}
+
+.tagDiv {
+    border-top:1px solid #fff;
+    margin-top:3px;
+    padding-top:2px;
+    width:90%;
+    color:#8ba9dc;
+    font-size:90%;
+    font-weight:normal;
 }

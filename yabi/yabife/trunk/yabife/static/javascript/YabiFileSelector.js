@@ -195,8 +195,13 @@ YabiFileSelector.prototype.renderInvalid = function() {
         this.selectedFilesEl.removeChild(this.selectedFilesEl.firstChild);
     }
 
-    this.selectedFilesEl.className = "invalidInput";
-    this.selectedFilesEl.appendChild(document.createTextNode("no files selected"));
+    this.selectedFilesEl.className = "invalidAcceptedExtensionList";
+    var nofilesEl = document.createElement("span");
+    nofilesEl.className = "acceptedExtension";
+    
+    nofilesEl.appendChild(document.createTextNode("no files selected"));
+    
+    this.selectedFilesEl.appendChild(nofilesEl);
 };
 
 /**

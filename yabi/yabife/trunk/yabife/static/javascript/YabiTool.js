@@ -19,10 +19,19 @@ function YabiTool(obj, collection) {
     this.el.appendChild(this.toolEl);
     
     var addEl = new Image();
-    addEl.src = "/static/images/addtool.gif";
+    addEl.src = "/static/images/addtool.png";
     addEl.className = "addLink";
     YAHOO.util.Event.addListener(addEl, "click", collection.addCallback, this.payload.name);
     this.el.appendChild(addEl);
+    
+    this.descriptionEl = document.createElement("div");
+    this.descriptionEl.className = "toolDescription";
+    
+    this.descriptionEl.appendChild(document.createTextNode(this.payload.description));
+    
+    this.toolEl.appendChild(this.descriptionEl);
+    
+    YAHOO.util.Event.addListener(this.toolEl, "click", this.descriptionCallback, this);
 }
 
 YabiTool.prototype.toString = function() {
@@ -68,4 +77,19 @@ YabiTool.prototype.matchesFilter = function(needle) {
     }
 
     return false;
+};
+
+YabiTool.prototype.toggleDescription = function() {
+    if (this.descriptionEl.style.display !== "block") {
+        this.descriptionEl.style.display = "block";
+    } else {
+        this.descriptionEl.style.display = "none";
+    }
+};
+
+
+//  CALLBACKS
+
+YabiTool.prototype.descriptionCallback = function(e, target) {
+    target.toggleDescription();
 };
