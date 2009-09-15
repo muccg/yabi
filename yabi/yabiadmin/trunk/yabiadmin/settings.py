@@ -27,7 +27,8 @@ if "DJANGODEV" in os.environ:
     SSL_ENABLED = False
     DEV_SERVER = True
     YABIBACKEND_SERVER = 'boromir.localdomain:8000'
-
+    YABISTORE_SERVER = "127.0.0.1:8002"
+    
     # debug site table
     SITE_ID = 1
 
@@ -44,6 +45,7 @@ else:
     SSL_ENABLED = True
     DEV_SERVER = False
     YABIBACKEND_SERVER = ''
+    YABISTORE_SERVER = "127.0.0.1:8002"
     
     # development site id
     SITE_ID = 1

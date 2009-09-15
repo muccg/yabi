@@ -4,6 +4,13 @@ from yabiadmin.yabmin.models import User
 from yabiadmin.yabiengine import backendhelper
 from yabiadmin.yabiengine.urihelper import uriparse, uri_get_pseudopath
 from django.utils import simplejson as json, webhelpers
+from django.db.models.signals import post_save
+import httplib
+from urllib import urlencode
+
+import logging
+import yabilogging
+logger = logging.getLogger('yabiengine')
 
 
 class Workflow(models.Model):
@@ -128,3 +135,37 @@ class Syslog(models.Model):
                             'message':self.message
                             }
                           )
+
+
+# TODO make this more robust.
+# add exceptions
+def yabistore_storeworkflow(sender, **kwargs):
+    logger.debug('')
+    wf = kwargs['instance']
+
+    if kwargs['created']:
+        resource = '/workflows/%s/' % wf.user.name
+    else:
+        resource = '/workflows/%s/%s' % (wf.user.name, wf.id)
+
+    data = {'json':wf.json,
+            'name':wf.name,
+            'status':wf.status
+            }
+
+    data = urlencode(data)
+    headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
+
+    logger.debug(resource)
+    logger.debug(data)
+
+    conn = httplib.HTTPConnection(settings.YABISTORE_SERVER)
+    conn.request('POST', resource, data, headers)
+    r = conn.getresponse()
+
+    logger.debug(r.status)
+    logger.debug(r.read())
+
+
+# connect up django signals
+post_save.connect(yabistore_storeworkflow, sender=Workflow)
