@@ -40,6 +40,32 @@ def proxy(request, url):
     return HttpResponse(r.read(),status=int(r.status))
 
 
+# proxy view to pass through all requests set up in urls.py to yabistore
+# TODO this could probably be merged with proxy view
+def storeproxy(request, url):
+
+    if not url.startswith("/"):
+        url = "/" + url
+
+    if request.method == "GET":
+
+        resource = "%s%s" % (url, urlencode(request.GET))
+        conn = httplib.HTTPConnection(settings.YABISTORE_SERVER)
+        conn.request(request.method, resource)
+        r = conn.getresponse()
+
+    elif request.method == "POST":
+
+        resource = "%s" % url
+        data = urlencode(request.POST)
+        headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
+
+        conn = httplib.HTTPConnection(settings.YABISTORE_SERVER)
+        conn.request(request.method, resource, data, headers)
+        r = conn.getresponse()
+
+    return HttpResponse(r.read(),status=int(r.status))
+
 
 
 # forms

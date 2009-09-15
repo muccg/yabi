@@ -17,6 +17,7 @@ urlpatterns = patterns('yabife.yabifeapp.views',
     # (r'^admin/(.*)', admin.site.root),
 
     (r'^(?P<url>ws/.*)$', 'proxy'),
+    (r'^(?P<url>store/.*)$', 'storeproxy'),                       
 	(r'^[/]*$', 'design'),
 	(r'^design[/]*$', 'design'),
 	(r'^menu[/]*$', 'menu'),
