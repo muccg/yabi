@@ -8,7 +8,18 @@
 function YabiWorkflow(editable) {
     this.payload = {};
     this.isPropagating = false; //recursion protection
-    this.name = new Date().toString(); //default workflow name is the current date/time
+    
+    //util fn
+    var dblzeropad = function(number) {
+        if (number < 10) {
+            number = "0" + number;
+        }
+        return number;
+    };
+    
+    var date = new Date();
+    this.name = "unnamed (" + date.getFullYear() + "-" + dblzeropad(date.getMonth()) + "-" + dblzeropad(date.getDate()) + " " + dblzeropad(date.getHours()) + ":" + dblzeropad(date.getMinutes()) + ")";
+    
 	this.status = "Design";
 	this.refreshTimer = null;
 	this.selectedJob = null;

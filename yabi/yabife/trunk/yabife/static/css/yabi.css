@@ -883,6 +883,7 @@ display:inline;
 
 #yabi-design-mode .workflowName {
     width:200px;
+    padding-left:6px;
 }
 
 #yabi-jobs-mode .workflowName {

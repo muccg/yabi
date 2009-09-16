@@ -20,6 +20,7 @@ urlpatterns = patterns('yabife.yabifeapp.views',
     (r'^(?P<url>workflows/.*)$', 'storeproxy'),                       
 	(r'^[/]*$', 'design'),
 	(r'^design[/]*$', 'design'),
+	(r'^jobs[/]*$', 'jobs'),
 	(r'^menu[/]*$', 'menu'),
     (r'^login[/]*$', 'login'),
     (r'^logout[/]*$', 'logout')
