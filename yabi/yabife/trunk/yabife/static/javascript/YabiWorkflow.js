@@ -65,19 +65,25 @@ function YabiWorkflow(editable) {
     
     this.mainEl.appendChild(this.startEl);
     
+    //add empty workflow marker
+    this.hintEl = document.createElement('div');
+    this.hintEl.className = 'workflowHint';
+    this.mainEl.appendChild(this.hintEl);
+    
     this.mainEl.appendChild(this.containerEl);
 
-    this.startEl = document.createElement("div");
-    this.startEl.appendChild(document.createTextNode("end"));
-    this.startEl.className = "workflowEndBookend";
+    this.endEl = document.createElement("div");
+    this.endEl.appendChild(document.createTextNode("end"));
+    this.endEl.className = "workflowEndBookend";
     
-    this.mainEl.appendChild(this.startEl);
+    this.mainEl.appendChild(this.endEl);
 
     if (this.editable) {    
         this.dd = new YAHOO.util.DDTarget(this.containerEl);
     }
     
     this.optionsEl = document.createElement('div');
+
 }
 
 /**
@@ -91,6 +97,8 @@ YabiWorkflow.prototype.addJob = function(toolName, preloadValues) {
         return;
     }
     this.processing = true;
+    
+    this.hintEl.style.display = "none";
     
     var invoke, destroyEl;
 
@@ -175,6 +183,10 @@ YabiWorkflow.prototype.deleteJob = function(job) {
     
     this.jobs.splice(delIndex, 1);
 
+    if (this.jobs.length == 0) {
+        this.hintEl.style.display = "block";
+    }
+    
     job.destroy();
 
     this.containerEl.removeChild(job.containerEl);

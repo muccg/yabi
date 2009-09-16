@@ -55,6 +55,16 @@ function YabiWorkflowCollection() {
     
     this.containerEl.appendChild(this.filterEl);
     
+    //no results div
+    this.noResultsDiv = document.createElement("div");
+    this.noResultsDiv.className = 'wfNoResultsDiv';
+    this.noResultsDiv.appendChild(document.createTextNode('no matching workflows'));
+    this.containerEl.appendChild(this.noResultsDiv);
+    
+    //no selected wf div, not added explicitly
+    this.noSelectionDiv = document.createElement("div");
+    this.noSelectionDiv.className = 'wfSelectionHint';
+    
     this.listingEl = document.createElement("div");
     this.listingEl.className = "workflowListing";
     
@@ -129,6 +139,7 @@ YabiWorkflowCollection.prototype.toString = function() {
 YabiWorkflowCollection.prototype.filter = function() {
     var filterVal = this.searchEl.value;
     var statusFilterVal = this.statusFilter.value;
+    var visibleCount = 0;
     
     if (filterVal === "") {
         this.clearFilterEl.style.visibility = "hidden";
@@ -139,9 +150,16 @@ YabiWorkflowCollection.prototype.filter = function() {
     for (var index in this.workflows) {
         if (this.workflows[index].matchesFilters(filterVal, statusFilterVal)) {
             this.workflows[index].el.style.display = "block";
+            visibleCount++;
         } else {
             this.workflows[index].el.style.display = "none";
         }
+    }
+    
+    if (visibleCount > 0) {
+        this.noResultsDiv.style.display = "none";
+    } else {
+        this.noResultsDiv.style.display = "block";
     }
 };
 
@@ -154,6 +172,8 @@ YabiWorkflowCollection.prototype.clearFilter = function() {
 };
 
 YabiWorkflowCollection.prototype.select = function(id) {
+    this.noSelectionDiv.style.display = "none";
+    
     for (var i in this.workflows) {
         if (this.workflows[i].id == id) {
             this.workflows[i].setSelected(true);

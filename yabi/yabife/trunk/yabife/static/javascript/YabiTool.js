@@ -4,10 +4,11 @@
  * YabiTool
  * render a single yabi tool
  */
-function YabiTool(obj, collection) {
+function YabiTool(obj, collection, groupEl) {
 
     this.payload = obj;
     this.collection = collection;
+    this.groupEl = groupEl;
 
     this.el = document.createElement("div");
     this.el.style.position = "relative";

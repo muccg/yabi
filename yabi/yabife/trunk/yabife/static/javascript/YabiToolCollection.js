@@ -6,7 +6,8 @@
  */
 function YabiToolCollection() {
     this.tools = [];
-
+    this.groupEls = [];
+    
     this.containerEl = document.createElement("div");
     this.containerEl.className = "toolCollection";
     
@@ -36,6 +37,12 @@ function YabiToolCollection() {
     this.filterEl.appendChild(this.clearFilterEl);
     
     this.containerEl.appendChild(this.filterEl);
+    
+    //no results div
+    this.noResultsDiv = document.createElement("div");
+    this.noResultsDiv.className = 'wfNoResultsDiv';
+    this.noResultsDiv.appendChild(document.createTextNode('no matching tools'));
+    this.containerEl.appendChild(this.noResultsDiv);
     
     this.listingEl = document.createElement("div");
     this.listingEl.className = "toolListing";
@@ -67,9 +74,11 @@ YabiToolCollection.prototype.solidify = function(obj) {
             tempGroupEl.className = "toolGroup";
             tempGroupEl.appendChild(document.createTextNode(toolgroup.name));
             this.listingEl.appendChild(tempGroupEl);
-        
+            
+            this.groupEls.push(tempGroupEl);
+            
             for (var subindex in toolgroup.tools) {
-                tempTool = new YabiTool(toolgroup.tools[subindex], this);
+                tempTool = new YabiTool(toolgroup.tools[subindex], this, tempGroupEl);
             
                 this.listingEl.appendChild(tempTool.el);
             
@@ -81,9 +90,12 @@ YabiToolCollection.prototype.solidify = function(obj) {
                 tempTool.dd.onDragOver = workflow.onDragOverJobCallback;
 
                 this.tools.push(tempTool);
+                
             }
         }
     }
+    
+    this.filter();
 };
 
 /**
@@ -116,6 +128,7 @@ YabiToolCollection.prototype.toString = function() {
  */
 YabiToolCollection.prototype.filter = function() {
     var filterVal = this.searchEl.value;
+    var visibleCount = 0;
     
     if (filterVal === "") {
         this.clearFilterEl.style.visibility = "hidden";
@@ -123,12 +136,24 @@ YabiToolCollection.prototype.filter = function() {
         this.clearFilterEl.style.visibility = "visible";
     }
     
+    for (var gindex in this.groupEls) {
+        this.groupEls[gindex].style.display = "none";
+    }
+    
     for (var index in this.tools) {
         if (this.tools[index].matchesFilter(filterVal)) {
             this.tools[index].el.style.display = "block";
+            this.tools[index].groupEl.style.display = "block";
+            visibleCount++;
         } else {
             this.tools[index].el.style.display = "none";
         }
+    }
+
+    if (visibleCount === 0) {
+        this.noResultsDiv.style.display = "block";
+    } else {
+        this.noResultsDiv.style.display = "none";
     }
 };
 
