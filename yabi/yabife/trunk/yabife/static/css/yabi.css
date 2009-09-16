@@ -54,7 +54,7 @@ td {
 	padding:0px;
 	margin:0px;
 	border:0px;
-	background:url(/static/images/ok.png);
+	background:url(../images/ok.png);
 	position:absolute;
     right: 1%;
     top: 5px;
@@ -69,7 +69,7 @@ td {
 	padding:0px;
 	margin:0px;
 	border:0px;
-	background:url(/static/images/pending.png);
+	background:url(../images/pending.png);
 	position:absolute;
     right: 1%;
     top: 5px;
@@ -82,7 +82,7 @@ td {
 	padding:0px;
 	margin:0px;
 	border:0px;
-	background:url(/static/images/queued.gif);
+	background:url(../images/queued.gif);
 	position:absolute;
     right: 1%;
     top: 5px;
@@ -95,7 +95,7 @@ td {
 	padding:0px;
 	margin:0px;
 	border:0px;
-	background:url(/static/images/error.png);
+	background:url(../images/error.png);
 	position:absolute;
     right: 1%;
     top: 5px;
@@ -108,7 +108,7 @@ td {
 	padding:0px;
 	margin:0px;
 	border:0px;
-	background:url(/static/images/processing.gif);
+	background:url(../images/processing.gif);
 	position:absolute;
     right: 1%;
     top: 5px;
@@ -176,7 +176,7 @@ body {
     top:63px;
     width:330px;
     height:90%;
-    background:url(/static/images/middle_bg.png);
+    background:url(../images/middle_bg.png);
     padding:20px;
     padding-top:15px;
 }
@@ -484,7 +484,7 @@ display:inline;
     width:282px;
     height:120px;
     margin:20px;
-    background:url(/static/images/empty_workflow_help.png);
+    background:url(../images/empty_workflow_help.png);
 }
 
 .wfSelectionHint {
@@ -492,7 +492,7 @@ display:inline;
     height:146px;
     margin:20px;
     margin-left:5px;
-    background:url(/static/images/no_wf_selection.png) no-repeat;
+    background:url(../images/no_wf_selection.png) no-repeat;
 }
 
 .wfNoResultsDiv {
@@ -518,7 +518,7 @@ display:inline;
 
 .jobContainer {
 	border:1px solid #ccc;
-	background: #eee url(/static/images/job_bg.png);
+	background: #eee url(../images/job_bg.png);
 	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
     -moz-box-shadow: 0px 1px 2px #ccc;
     -webkit-box-shadow: 0px 1px 2px #ccc;
@@ -537,7 +537,7 @@ display:inline;
 
 .selectedJobContainer {
 	border:1px solid #3879e6;
-	background: #ccf url(/static/images/job_selected_bg.png);
+	background: #ccf url(../images/job_selected_bg.png);
 	background: -webkit-gradient(linear, left top, left bottom, from(#eceff3), to(#dbe5f6));
     -moz-box-shadow: 0px 0px 3px #3879e6;
     -webkit-box-shadow: 0px 0px 3px #3879e6;
@@ -555,7 +555,7 @@ display:inline;
 
 .loadFailJobContainer {
 	border:1px solid #f77;
-	background: #fcc url(/static/images/job_loadfail_bg.png);
+	background: #fcc url(../images/job_loadfail_bg.png);
 	background: -webkit-gradient(linear, left top, left bottom, from(#fee), to(#fdd));
     -moz-box-shadow: 0px 0px 3px #f77;
     -webkit-box-shadow: 0px 0px 3px #f77;
@@ -675,7 +675,7 @@ display:inline;
 	right:1px;
 	font-size:80%;
 	color:#333;
-    background:url(/static/images/delnode.png);
+    background:url(../images/delnode.png);
     width:14px;
     height:13px;
     cursor: pointer;
@@ -745,7 +745,7 @@ display:inline;
     padding-left: 22px;
 	border-bottom: 1px dotted #ccc;
 	cursor: pointer;
-    background:url(/static/images/file.png) 2px 2px no-repeat;
+    background:url(../images/file.png) 2px 2px no-repeat;
 }
 
 .fileSelectorListing .dirItem {
@@ -754,7 +754,7 @@ display:inline;
     padding-left: 22px;
 	border-bottom: 1px dotted #ccc;
 	cursor: pointer;
-    background:url(/static/images/folder.png) 2px 2px no-repeat;
+    background:url(../images/folder.png) 2px 2px no-repeat;
 }
 
 .fileSelectorListing .fileItem.hover, .fileSelectorListing .fileItem:hover, .fileSelectorListing .dirItem.hover, .fileSelectorListing .dirItem:hover {
@@ -797,7 +797,7 @@ display:inline;
 
 .fakeButton.hover, .fakeButton:hover {
 	border:1px solid #3879e6;
-	background: #ccf url(/static/images/job_selected_bg.png);
+	background: #ccf url(../images/job_selected_bg.png);
 	background: -webkit-gradient(linear, left top, left bottom, from(#eceff3), to(#dbe5f6));
 }
 
@@ -828,7 +828,7 @@ display:inline;
 	padding:0px;
 	margin:0px;
 	border:0px;
-	background:url(/static/images/ok.png);
+	background:url(../images/ok.png);
 	position:absolute;
     right: 10px;
     top: 4px;
@@ -843,7 +843,7 @@ display:inline;
 	padding:0px;
 	margin:0px;
 	border:0px;
-	background:url(/static/images/pending.png);
+	background:url(../images/pending.png);
 	position:absolute;
     right: 10px;
     top: 4px;
@@ -856,7 +856,7 @@ display:inline;
 	padding:0px;
 	margin:0px;
 	border:0px;
-	background:url(/static/images/queued.gif);
+	background:url(../images/queued.gif);
 	position:absolute;
     right: 10px;
     top: 4px;
@@ -869,7 +869,7 @@ display:inline;
 	padding:0px;
 	margin:0px;
 	border:0px;
-	background:url(/static/images/error.png);
+	background:url(../images/error.png);
 	position:absolute;
     right: 10px;
     top: 4px;
@@ -882,7 +882,7 @@ display:inline;
 	padding:0px;
 	margin:0px;
 	border:0px;
-	background:url(/static/images/processing.gif);
+	background:url(../images/processing.gif);
 	position:absolute;
     right: 10px;
     top: 4px;
@@ -930,7 +930,7 @@ display:inline;
 
 .tool {
 	border:1px solid #ddd;
-	background: #eee url(/static/images/job_bg.png);
+	background: #eee url(../images/job_bg.png);
 	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
     -moz-box-shadow: 0px 1px 2px #eee;
     -webkit-box-shadow: 0px 1px 2px #eee;
@@ -950,7 +950,7 @@ display:inline;
 
 .workflowProxy {
 	border:1px solid #ddd;
-	background: #eee url(/static/images/job_bg.png);
+	background: #eee url(../images/job_bg.png);
 	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
     -moz-box-shadow: 0px 1px 2px #eee;
     -webkit-box-shadow: 0px 1px 2px #eee;
@@ -971,7 +971,7 @@ display:inline;
 
 .selectedWorkflowProxy {
 	border:1px solid #3879e6;
-	background: #ccf url(/static/images/job_selected_bg.png);
+	background: #ccf url(../images/job_selected_bg.png);
 	background: -webkit-gradient(linear, left top, left bottom, from(#eceff3), to(#dbe5f6));
     -moz-box-shadow: 0px 0px 3px #3879e6;
     -webkit-box-shadow: 0px 0px 3px #3879e6;
