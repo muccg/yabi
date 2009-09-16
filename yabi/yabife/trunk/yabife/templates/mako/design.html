@@ -32,7 +32,7 @@ function submitCallback(e, wf) {
         YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Workflow is missing required inputs. Please correct before submitting.");
     } else {
 
-        var baseURL = appURL + "/ws/submitworkflow/";
+        var baseURL = appURL + "ws/submitworkflow/";
         
         jsCallback = {
             success: function (obj) {alert("Success on submit!");},
