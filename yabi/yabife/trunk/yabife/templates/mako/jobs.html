@@ -47,13 +47,13 @@ function destroyWorkflow() {
 
             <div id="yabi-tabs">
 
-              <a href="${h.url('jobs')}" id="yabi-tabs-jobs">jobs</a>
-              <a href="${h.url('design')}" id="yabi-tabs-design">design</a>
-              <a href="${h.url('files')}" id="yabi-tabs-files">files</a>
+              <a href="${h.url('/jobs')}" id="yabi-tabs-jobs">jobs</a>
+              <a href="${h.url('/design')}" id="yabi-tabs-design">design</a>
+              <a href="${h.url('/files')}" id="yabi-tabs-files">files</a>
             </div>
 
             <div id="userinfo">
-              <a href="${h.url('logout')}" class="fakeButton">log out ${request.user.username}</a>        
+              <a href="${h.url('/logout')}" class="fakeButton">log out ${request.user.username}</a>        
             </div>
 
       </div>
