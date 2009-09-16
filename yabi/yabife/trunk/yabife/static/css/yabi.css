@@ -933,6 +933,7 @@ display:inline;
     padding:10px;
     color:#8ba9dc;
     font-size:90%;
+    display:none;
 }
 
 .workflowEndBookend {
@@ -1320,6 +1321,14 @@ display:inline;
 
 .toolDescription {
     display: none;
+    border-top:1px solid #eee;
+    color:#aaa;
+    padding-top:2px;
+    margin-top:3px;
+}
+
+.toolHelp {
+    font-size:90%;
     border-top:1px solid #eee;
     color:#aaa;
     padding-top:2px;

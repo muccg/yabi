@@ -30,6 +30,57 @@ function YabiTool(obj, collection, groupEl) {
     
     this.descriptionEl.appendChild(document.createTextNode(this.payload.description));
     
+    //input filetypes
+    this.inputsEl = document.createElement("div");
+    this.inputsEl.className = "toolHelp";
+    this.inputsEl.appendChild(document.createTextNode("accepts: "));
+    this.acceptedExtensionEl = document.createElement("span");
+    this.acceptedExtensionEl.setAttribute("class", "acceptedExtensionList");
+    this.inputsEl.appendChild(this.acceptedExtensionEl);
+    
+    if (!YAHOO.lang.isArray(this.payload.inputExtensions)) {
+        this.payload.inputExtensions = [this.payload.inputExtensions];
+    }
+    
+    for (index in this.payload.inputExtensions) {
+        ext = document.createTextNode(this.payload.inputExtensions[index]);
+        spanEl = document.createElement("span");
+        spanEl.setAttribute("class", "acceptedExtension");
+        spanEl.appendChild(ext);
+        this.acceptedExtensionEl.appendChild(spanEl);
+        
+        
+        this.acceptedExtensionEl.appendChild(document.createTextNode(" "));
+    }
+    
+    //output filetypes
+    this.outputsEl = document.createElement("div");
+    this.outputsEl.className = "toolHelp";
+    this.outputsEl.appendChild(document.createTextNode("outputs: "));
+    this.outputExtensionEl = document.createElement("span");
+    this.outputExtensionEl.setAttribute("class", "acceptedExtensionList");
+    this.outputsEl.appendChild(this.outputExtensionEl);
+    
+    if (! YAHOO.lang.isUndefined(this.payload.outputExtensions)) {
+        
+        if (!YAHOO.lang.isArray(this.payload.outputExtensions)) {
+            this.payload.outputExtensions = [this.payload.outputExtensions];
+        }
+        
+        for (index in this.payload.outputExtensions) {
+            ext = document.createTextNode(this.payload.outputExtensions[index]);
+            spanEl = document.createElement("span");
+            spanEl.setAttribute("class", "acceptedExtension");
+            spanEl.appendChild(ext);
+            this.outputExtensionEl.appendChild(spanEl);
+            
+            this.outputExtensionEl.appendChild(document.createTextNode(" "));
+        }
+    }    
+    
+    this.descriptionEl.appendChild(this.inputsEl);
+    this.descriptionEl.appendChild(this.outputsEl);
+    
     this.toolEl.appendChild(this.descriptionEl);
     
     YAHOO.util.Event.addListener(this.toolEl, "click", this.descriptionCallback, this);
