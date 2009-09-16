@@ -189,6 +189,12 @@ body {
 	font-size:80%;
 }
 
+.addLink {
+    position:absolute;
+    right:4px;
+    top:5px;
+    cursor:pointer;
+}
 
 #yui-main {
 	margin:0px;
