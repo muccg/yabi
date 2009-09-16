@@ -19,7 +19,7 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-LOGIN_URL = "/login"
+LOGIN_URL = url("/login")
 
 # development deployment
 if "DJANGODEV" in os.environ:
