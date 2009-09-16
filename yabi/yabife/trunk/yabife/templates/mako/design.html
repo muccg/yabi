@@ -77,7 +77,8 @@ function destroyWorkflow() {
             </div>
 
             <div id="userinfo">
-              ${request.user.username} | <a href="${h.url('logout')}">log out</a>        </div>
+              <a href="${h.url('logout')}" class="fakeButton">log out ${request.user.username}</a>        
+            </div>
 
       </div>
 

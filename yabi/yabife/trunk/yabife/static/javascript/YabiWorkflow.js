@@ -280,13 +280,25 @@ YabiWorkflow.prototype.updateName = function(value) {
 	
 	if (this.editable) {
 		this.nameEl.value = value;
-	} else {
+    } else {
 		while (this.nameEl.firstChild) {
 			this.nameEl.removeChild(this.nameEl.firstChild);
 		}
 		
 		this.nameEl.appendChild(document.createTextNode(value));
 	}
+};
+
+/**
+ * getName
+ *
+ */
+YabiWorkflow.prototype.getName = function() {
+    if (this.editable) {
+        return this.nameEl.value;
+    } else {
+        return this.name;
+    }
 };
 
 /**
@@ -297,6 +309,13 @@ YabiWorkflow.prototype.updateName = function(value) {
 YabiWorkflow.prototype.isValid = function() {
     if (this.jobs.length < 1) {
         return false;
+    }
+    console.log(this.getName());
+    if (this.getName() === "") {
+        this.nameEl.className = "invalidWorkflowName";
+        return false;
+    } else {
+        this.nameEl.className = "workflowName";
     }
     
     for (var index in this.jobs) {

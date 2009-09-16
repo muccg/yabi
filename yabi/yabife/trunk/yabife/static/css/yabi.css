@@ -1,7 +1,3 @@
-#yabi-design-mode a{  
-    color: #af239d;
-}
-
 .loginInput {
     margin: 1px;
     color:#f60;
@@ -22,6 +18,11 @@ h2 {
 	margin-top:6px;
 	font-weight:bold;
     color:#f60;
+}
+
+a, a.visited, a:visited {
+    color: #3879e6;
+    text-decoration:none;
 }
 
 
@@ -73,295 +74,6 @@ td {
 #yabi-help-mode h1 {
 	color:#529847;
 }
-#yabi-tools-list li {
-	background-color:#fff;
-	border:1px solid #f60;
-	margin-top:2px;
-	margin-left:18px;
-	padding:3px;
-	padding-left:10px;
-	cursor:move;
-    position:relative;
-    -moz-border-radius: 5px;        
-    -webkit-border-radius: 5px;
-}
-#yabi-design-container {
-	width:95%;
-}
-#yabi-design-dropzone {
-	padding:10px;
-}
-#yabi-design-dropzone li {
-	border:2px solid #f60;
-	padding:14px;
-	margin:2px;
-	font-size:105%;
-	position:relative;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-}
-#yabi-design-dropzone li .toolInputs {
-    display:block;
-    position:absolute;top:3px;right:20px;font-size:70%;
-    text-align:right;
-}
-#yabi-design-dropzone li .toolOutputs {
-    display:block;
-    position:absolute;bottom:3px;right:20px;font-size:70%;
-    text-align:right;
-}
-#yabi-design-dropzone li .addLink {
-    display:none;
-}
-#yabi-design-dropzone li .delLink {
-	position:absolute;
-	top:1px;
-	right:1px;
-	font-size:80%;
-	color:#333;
-    background:url(/static/images/delnode.png);
-    width:14px;
-    height:13px;
-}
-#yabi-design-dropzone li .delLink.hover, #yabi-design-dropzone li .delLink:hover {
-    text-decoration:none;
-}
-
-#yabi-design-dropzone li#endMarker, #yabi-design-dropzone li#startMarker, #yabi-design-dropzone li#cleanup {
-	border:2px solid #d6d6d6;
-	color:#ccc;
-	padding:2px;
-	padding-left:14px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-}
-.yabi-tool {
-    text-align:left;
-    border:2px solid #f60;
-    padding:14px;
-    margin:2px;
-    font-size:105%;
-    width:220px;
-    overflow:hidden;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-}
-.yabi-tool img, .yabi-tool a, .yabi-tool div {
-    display:none;
-}
-.yabi-tool .toolDisplayName {
-    display:block;
-}
-#yabi-design-dropzone li#startMarker .flowTriangle, #yabi-design-dropzone li#cleanup .flowTriangle {
-	width:20px;
-	height:10px;
-	padding:0px;
-	margin:0px;
-	border:0px;
-	background:url(/static/images/yabi-flow-triangle-start.gif);
-	position:absolute;
-	bottom:-10px;
-	left:42%;
-	right:auto;
-	z-index:99;
-}
-#yabi-design-dropzone li#hinting {
-	border:none;
-	color:#ccc;
-	padding:20px;
-	padding-left:14px;
-}
-#yabi-design-dropzone li .flowTriangle {
-	width:20px;
-	height:10px;
-	padding:0px;
-	margin:0px;
-	border:0px;
-	background:url(/static/images/yabi-flow-triangle.gif);
-	position:absolute;
-	bottom:-10px;
-	left:42%;
-	right:auto;
-	z-index:99;
-}
-#yabi-design-mode a.toolFolder, #yabi-design-mode a.toolFolder.visited, #yabi-design-mode a.toolFolder:visited {
-	display:block;
-	width:100%;
-	padding-left:18px;
-	color:#ff6600;
-	text-decoration:none;
-	margin-top:5px;
-	background:url(/static/images/yabi-disclose-triangle.gif) no-repeat 5px 2px;
-}
-#yabi-design-mode a.toolFolder.hover, #yabi-design-mode a.toolFolder:hover {
-	background:url(/static/images/yabi-disclose-triangle-open.gif) no-repeat 1px 6px;
-}
-#yabi-design-mode ul.DDSourceList {
-	margin-bottom:10px;
-}
-#yabi-design-mode .toolContainer {
-	display:none;
-	padding:2px;
-	width:80%;
-}
-#yabi-workflow-drop {
-	margin-top:8px;
-	min-height:700px;
-}
-#yabi-design-mode #jobName #jobNameField {
-    color:#f60;
-    border:1px solid #ccc;
-    padding:3px;
-    font-weight:bold;
-}
-#yabi-design-mode #jobName #jobButtons {
-	float:right;
-}
-#yabi-design-mode #jobName #jobButtons input {
-	color:#000;
-}
-#yabi-design-mode #jobName #jobButtons input.hover, #yabi-design-mode #jobName #jobButtons input:hover {
-	cursor:pointer;
-}
-#yabi-jobs-mode .filterContainer {
-	background:#fff;
-	border:1px solid #FFddee;
-    margin-bottom: 3px;
-	padding:3px;
-	padding-left:10px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-}
-#yabi-jobs-mode .jobFilterTitle {
-	width:90%;
-	display:block;
-	color:#f36;
-    padding-left:18px;
-    background:url(/static/images/yabi-jobs-disclose-triangle.gif) no-repeat 5px 2px;
-}
-#yabi-jobs-mode .jobFilterTitle.hover, #yabi-jobs-mode .jobFilterTitle:hover {
-    background:url(/static/images/yabi-jobs-disclose-triangle-open.gif) no-repeat 1px 6px #fff;
-}
-#yabi-jobs-mode .jobFilterContent {
-	display:block;
-	height:0px;
-	padding:0px;
-	margin:0px;
-	overflow:hidden;
-}
-#yabi-jobs-mode .jobList {
-	padding-top:8px;
-}
-#yabi-jobs-mode .jobList a {
-	border-bottom:1px solid #FFEBF0;
-	color:#333;
-	display:block;
-	padding-left:6px;
-	padding-right:6px;
-}
-#yabi-jobs-mode .jobList a:hover, #yabi-jobs-mode .jobList a.hover {
-	text-decoration:none;
-	background:#FFEBF0;
-}
-
-#yabi-jobs-mode #yabi-files-table {
-
-    background-color:#fff;
-    border:1px solid #FFEBF0;
-    font-size: 10px;
-    width:100%;
-
-}
-
-#yabi-jobs-mode #yabi-files-table th{
-
-    border-bottom:1px solid #FFEBF0;
-    font-size: 10px;
-    font-weight: bold;
-    color:#ccc;
-    padding-left: 3px;
-    padding-right: 3px;
-
-}
-
-#yabi-jobs-mode #yabi-files-table td{
-
-    background-color:#fff;
-    border-bottom:1px solid #FFEBF0;
-    border-top:1px solid #FFEBF0;
-    font-size: 10px;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    padding-left: 6px;
-    padding-right: 6px;
-}
-
-
-
-#yabi-design {
-	padding:10px;
-    min-width:200px;	
-}
-#yabi-design li {
-	border:2px solid #f60;
-	padding:14px;
-    padding-top:16px;
-    padding-bottom:16px;
-	margin:2px;
-	font-size:105%;
-	position:relative;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-}
-#yabi-design li#endMarker, #yabi-design li#startMarker, #yabi-design li#cleanup {
-	border:2px solid #d6d6d6;
-    color:#ccc;
-	padding:2px;
-	padding-left:14px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-}
-#yabi-design li#endMarker:hover, #yabi-design li#startMarker:hover, #yabi-design li#cleanup:hover,
-#yabi-design li#endMarker.hover, #yabi-design li#startMarker.hover, #yabi-design li#cleanup.hover {
-    color:#333;
-    padding:2px;
-    padding-left:14px;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-}
-#yabi-design li .timestamp {
-    font-size:80%;
-}
-#yabi-design li#startMarker .flowTriangle {
-	width:20px;
-	height:10px;
-	padding:0px;
-	margin:0px;
-	border:0px;
-	background:url(/static/images/yabi-flow-triangle-start.gif);
-	position:absolute;
-	bottom:-10px;
-	left:42%;
-	right:auto;
-	z-index:99;
-}
-#yabi-design li .flowTriangle {
-	width:20px;
-	height:10px;
-	padding:0px;
-	margin:0px;
-	border:0px;
-	background:url(/static/images/yabi-flow-triangle.gif);
-	position:absolute;
-	bottom:-10px;
-	left:42%;
-	right:auto;
-	z-index:99;
-}
-#yabi-design li .workUnitDetails {
-	display:none;
-}
-
 
 #yabi-design-table {
 
@@ -539,22 +251,6 @@ body {
 	height:60px;
 	width:100%;
     border-bottom: 3px solid #3879e5;
-}
-
-
-#yabi-files-mode a.toolFolder, #yabi-design-mode a.toolFolder.visited, #yabi-files-mode a.toolFolder:visited {
-	display:block;
-	width:90%;
-	padding-left:18px;
-	color:#af239d;
-	text-align:left;
-	text-decoration:none;
-	margin-top:5px;
-	background:url(/static/images/yabi-files-disclose-triangle.gif) no-repeat 5px 2px;
-}
-#yabi-files-mode a.toolFolder.hover, #yabi-files-mode a.toolFolder:hover {
-	background:url(/static/images/yabi-files-disclose-triangle-open.gif) no-repeat 1px 6px;
-	
 }
 
 
@@ -875,6 +571,20 @@ display:inline;
     padding-left:14px;
     background:#fff;
     border:1px solid #eee;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-box-shadow: 0px 1px 2px #eee;
+    -webkit-box-shadow: 0px 1px 2px #eee;
+}
+
+.invalidWorkflowName {
+	color:#666;
+	font-size: 110%;
+	font-weight: bold;
+    padding:6px;
+    padding-left:14px;
+    background:#fff;
+    border:2px solid #f00;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
     -moz-box-shadow: 0px 1px 2px #eee;
