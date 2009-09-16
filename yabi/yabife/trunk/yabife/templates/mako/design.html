@@ -32,7 +32,7 @@ function submitCallback(e, wf) {
         YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Workflow is missing required inputs. Please correct before submitting.");
     } else {
 
-        var baseURL = "http://127.0.0.1:8000/ws/submitworkflow/";
+        var baseURL = appURL + "/ws/submitworkflow/";
         
         jsCallback = {
             success: function (obj) {alert("Success on submit!");},
@@ -63,7 +63,7 @@ function destroyWorkflow() {
   <div id="doc3" class="yui-t1" style="height:100%; width:100%;">
     <div id="yabi-design-mode">
       <div id="hd">
-        <p><img src="/static/images/yabi-logo.png" alt="Yabi-logo" height="60" width="198" />  
+        <p><img src="${h.url('/static/images/yabi-logo.png')}" alt="Yabi-logo" height="60" width="198" />  
 
             <div id="yabi-message-ajax">
             </div>

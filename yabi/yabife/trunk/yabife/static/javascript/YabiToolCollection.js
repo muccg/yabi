@@ -105,7 +105,7 @@ YabiToolCollection.prototype.solidify = function(obj) {
  *
  */
 YabiToolCollection.prototype.hydrate = function() {
-    var baseURL = "http://127.0.0.1:8000/ws/menu/andrew/";
+    var baseURL = appURL + "/ws/menu/andrew/";
     
     //load json
     var jsUrl, jsCallback, jsTransaction;

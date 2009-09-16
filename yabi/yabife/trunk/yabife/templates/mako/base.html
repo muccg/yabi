@@ -12,40 +12,43 @@
 
 <link rel="shortcut icon" href="/favicon.ico" />
 
-<script src="/static/javascript/yui-2.4.1/yahoo/yahoo-min.js" language="JavaScript" type="text/javascript"></script>
+<script src="${h.url('/static/javascript/yui-2.4.1/yahoo/yahoo-min.js')}" language="JavaScript" type="text/javascript"></script>
 
-<script src="/static/javascript/yui-2.4.1/event/event-min.js" language="JavaScript" type="text/javascript"></script>
-<script src="/static/javascript/yui-2.4.1/connection/connection-min.js" language="JavaScript" type="text/javascript"></script>
+<script src="${h.url('/static/javascript/yui-2.4.1/event/event-min.js')}" language="JavaScript" type="text/javascript"></script>
+<script src="${h.url('/static/javascript/yui-2.4.1/connection/connection-min.js')}" language="JavaScript" type="text/javascript"></script>
 
-<script src="/static/javascript/yui-2.4.1/dom/dom-min.js" language="JavaScript" type="text/javascript"></script>
-<script src="/static/javascript/yui-2.4.1/dragdrop/dragdrop-min.js" language="JavaScript" type="text/javascript"></script>
-<script src="/static/javascript/yui-2.4.1/animation/animation-min.js" language="JavaScript" type="text/javascript"></script>
-<script src="/static/javascript/yui-2.4.1/json/json-beta-min.js" language="JavaScript" type="text/javascript"></script>
+<script src="${h.url('/static/javascript/yui-2.4.1/dom/dom-min.js')}" language="JavaScript" type="text/javascript"></script>
+<script src="${h.url('/static/javascript/yui-2.4.1/dragdrop/dragdrop-min.js')}" language="JavaScript" type="text/javascript"></script>
+<script src="${h.url('/static/javascript/yui-2.4.1/animation/animation-min.js')}" language="JavaScript" type="text/javascript"></script>
+<script src="${h.url('/static/javascript/yui-2.4.1/json/json-beta-min.js')}" language="JavaScript" type="text/javascript"></script>
 
-<script language="JavaScript" type="text/javascript">YAHOO.namespace("ccgyabi");</script>
+<script language="JavaScript" type="text/javascript">
+    YAHOO.namespace("ccgyabi");
+    var appURL = "${h.url('/')";
+</script>
 
-<script type="text/javascript" src="/static/javascript/DDList.js" language="JavaScript"></script>
-<script type="text/javascript" src="/static/javascript/YabiAcceptedExtensionList.js" language="JavaScript"></script>
-<script type="text/javascript" src="/static/javascript/YabiFileSelector.js" language="JavaScript"></script>
-<script type="text/javascript" src="/static/javascript/YabiJob.js" language="JavaScript"></script>
-<script type="text/javascript" src="/static/javascript/YabiJobFileValue.js" language="JavaScript"></script>
-<script type="text/javascript" src="/static/javascript/YabiJobParam.js" language="JavaScript"></script>
-<script type="text/javascript" src="/static/javascript/YabiSimpleFileValue.js" language="JavaScript"></script>
-<script type="text/javascript" src="/static/javascript/YabiTool.js" language="JavaScript"></script>
-<script type="text/javascript" src="/static/javascript/YabiToolCollection.js" language="JavaScript"></script>
-<script type="text/javascript" src="/static/javascript/YabiWorkflow.js" language="JavaScript"></script>
-<script type="text/javascript" src="/static/javascript/YabiWorkflowCollection.js" language="JavaScript"></script>
-<script type="text/javascript" src="/static/javascript/YabiWorkflowProxy.js" language="JavaScript"></script>
-
-
-<script type="text/javascript" src="/static/javascript/cookies.js" language="JavaScript"></script>
-<script type="text/javascript" src="/static/javascript/visualEffects.js" language="JavaScript"></script>
-<script type="text/javascript" src="/static/javascript/yabiMessage.js" language="JavaScript"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/DDList.js')}" language="JavaScript"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiAcceptedExtensionList.js')}" language="JavaScript"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiFileSelector.js')}" language="JavaScript"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiJob.js')}" language="JavaScript"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiJobFileValue.js')}" language="JavaScript"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiJobParam.js')}" language="JavaScript"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiSimpleFileValue.js')}" language="JavaScript"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiTool.js')}" language="JavaScript"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiToolCollection.js')}" language="JavaScript"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiWorkflow.js')}" language="JavaScript"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiWorkflowCollection.js')}" language="JavaScript"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiWorkflowProxy.js')}" language="JavaScript"></script>
 
 
-<link rel="stylesheet" type="text/css" media="screen" href="/static/css/main.css" />
-<link rel="stylesheet" type="text/css" media="screen" href="/static/css/reset-fonts-grids-min.css" />
-<link rel="stylesheet" type="text/css" media="screen" href="/static/css/yabi.css" />
+<script type="text/javascript" src="${h.url('/static/javascript/cookies.js')}" language="JavaScript"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/visualEffects.js')}" language="JavaScript"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/yabiMessage.js')}" language="JavaScript"></script>
+
+
+<link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/main.css')}" />
+<link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/reset-fonts-grids-min.css')}" />
+<link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/yabi.css')}" />
 ${ next.header() }
 </head>
 <body>

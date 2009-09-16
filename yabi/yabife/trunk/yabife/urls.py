@@ -21,6 +21,7 @@ urlpatterns = patterns('yabife.yabifeapp.views',
 	(r'^[/]*$', 'design'),
 	(r'^design[/]*$', 'design'),
 	(r'^jobs[/]*$', 'jobs'),
+    (r'^files[/]*$', 'files'),
 	(r'^menu[/]*$', 'menu'),
     (r'^login[/]*$', 'login'),
     (r'^logout[/]*$', 'logout')
