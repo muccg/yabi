@@ -26,38 +26,10 @@ a, a.visited, a:visited {
 }
 
 
-.jsControll {
-        color:#F36;
-}
-
-.jsControllContainer{
-  width: 100%;
-  text-align:right;
-}
-
-.headerLinks {
-  font-size: 80%;
-}
-.toolInputs {
-    display:none;
-}
-.toolOutputs {
-    display:none;
-}
-.toolPath {
-    display:none;
-}
-.addLink {
-    position:absolute;
-    right:4px;
-    top:5px;
-    cursor:pointer;
-}
-
-
 td {
 	background-color:transparent;
 }
+
 #yabi-design-mode h1 {
     color:#666;
 }
@@ -74,61 +46,6 @@ td {
 #yabi-help-mode h1 {
 	color:#529847;
 }
-
-#yabi-design-table {
-
-	background-color:#fff;
-	border:1px solid #f60;
-	font-size: 10px;
-	
-}
-
-#yabi-design-table th{
-
-	border-bottom:1px solid #f60;
-	font-size: 10px;
-	font-weight: bold;	
-	padding-left: 3px;	
-	padding-right: 3px;		
-	
-}
-
-#yabi-design-table td{
-
-	background-color:#fff;
-	border-bottom:1px solid #f60;
-	font-size: 10px;
-	padding-left: 6px;
-	padding-right: 6px;	
-}
-
-#yabi-design-table  a {
-	color: #f60;
-}
-
-
-
-.toolName {
-    display: none;
-}
-.toolDisplayName {
-}
-
-#yabi-tools-list li.hover .toolDescription, #yabi-tools-list li:hover .toolDescription {
-    display:block;
-    position:absolute;
-    top:26px;
-    right:-300px;
-    width: 300px;
-    background:#fff;
-    border:1px solid #999;
-    z-index:900;
-}
-
-
-
-
-
 
 .flowStatuscomplete {
 
@@ -271,46 +188,7 @@ body {
 	right:4px;
 	font-size:80%;
 }
-#ft {
-	padding:0px;
-	position:absolute;
-	top:0px;
-	right:0px;
-	width:300px;
-	height:22px;
-	background-color:#fff;
-	z-index:1001;
-}
 
-#ft a.running { 
-	border-left:5px solid #f36;
-	padding-left:4px;
-	margin-left:8px;
-}
-#ft a.completed { 
-	border-left:5px solid #3c0;
-	padding-left:4px;
-	margin-left:8px;
-}
-
-#ft a.refresh { 
-	border-left:5px solid #F60;
-	padding-left:4px;
-	margin-left:8px;
-}
-
-#ft #copyright { 
-	float:right;
-	font-size:80%;
-	padding:5px;
-	padding-right:20px;
-}
-#ft #status { 
-	float:left;
-	font-size:80%;
-	padding:4px;
-	display:none;
-}
 
 #yui-main {
 	margin:0px;
@@ -318,45 +196,6 @@ body {
 }
 #yabi-col1 {
 	width:49.5%;
-}
-#yabi-design-mode #yabi-col1 {
-	border-right:2px solid #FFF0E6;
-}
-#yabi-jobs-mode #yabi-col1 {
-	border-right:2px solid #FFEBF0;
-}
-#yabi-files-mode #yabi-col1 {
-	border-right:2px solid #efd3eb;
-}
-#yabi-grid-mode #yabi-col1 {
-	border-right:2px solid #efebd3;
-}
-#yabi-help-mode #yabi-col1 {
-	border-right:2px solid #dceada;
-	width:100%;
-}
-#yabi-col2 {
-	background-color:#fff;
-	width:49.5%;
-	padding-right:0px;
-}
-#yabi-col3 {
-	width:49.5%;
-}
-#yabi-design-mode #yabi-col3 {
-	border-left:2px solid #FFF0E6;
-}
-#yabi-jobs-mode #yabi-col3 {
-	border-left:2px solid #FFEBF0;
-}
-#yabi-files-mode #yabi-col3 {
-	border-left:2px solid #efd3eb;
-}
-#yabi-grid-mode #yabi-col3 {
-	border-left:2px solid #efebd3;
-}
-#yabi-help-mode #yabi-col3 {
-	border-left:2px solid #dceada;
 }
 .yabi-column-contents {
 	padding:6px;
@@ -570,6 +409,7 @@ display:inline;
     padding:6px;
     padding-left:14px;
     background:#fff;
+    width:210px;
     border:1px solid #eee;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
@@ -584,6 +424,7 @@ display:inline;
     padding:6px;
     padding-left:14px;
     background:#fff;
+    width:210px;
     border:2px solid #f00;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
