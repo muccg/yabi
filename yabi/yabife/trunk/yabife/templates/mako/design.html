@@ -27,15 +27,21 @@ function submitCallback(e, wf) {
     // TODO remove hardcoded url
     // TODO add decent callbacks
     YAHOO.util.Event.stopEvent(e);
-
-    var baseURL = "http://127.0.0.1:8000/ws/submitworkflow/";
     
-    jsCallback = {
-        success: function (obj) {alert("Success on submit!");},
-        failure: function (obj){alert("Fail on submit!");},
-        argument: [this] };
-    var data = "workflowjson=" + wf.toJSON()
-    jsTransaction = YAHOO.util.Connect.asyncRequest('POST', baseURL, jsCallback, data);
+    if (!wf.isValid()) {
+        YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Workflow is missing required inputs. Please correct before submitting.");
+    } else {
+
+        var baseURL = "http://127.0.0.1:8000/ws/submitworkflow/";
+        
+        jsCallback = {
+            success: function (obj) {alert("Success on submit!");},
+            failure: function (obj){alert("Fail on submit!");},
+            argument: [this] };
+        var data = "workflowjson=" + wf.toJSON()
+        jsTransaction = YAHOO.util.Connect.asyncRequest('POST', baseURL, jsCallback, data);
+        
+    }
 }
 
 

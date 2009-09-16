@@ -290,6 +290,25 @@ YabiWorkflow.prototype.updateName = function(value) {
 };
 
 /**
+ * isValid
+ *
+ * verify validity of all jobs before proceeding
+ */
+YabiWorkflow.prototype.isValid = function() {
+    if (this.jobs.length < 1) {
+        return false;
+    }
+    
+    for (var index in this.jobs) {
+        if (!this.jobs[index].valid) {
+            return false;
+        }
+    }
+    
+    return true;
+};
+
+/**
  * toJSON
  *
  * produces a json string for this workflow
