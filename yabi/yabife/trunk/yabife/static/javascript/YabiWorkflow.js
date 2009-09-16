@@ -414,9 +414,13 @@ YabiWorkflow.prototype.hydrateCallback = function(o) {
     var json = o.responseText;
     var i;
     
-    target = o.argument[0];
-    
-    target.solidify(YAHOO.lang.JSON.parse(json));
+    try {
+        target = o.argument[0];
+        
+        target.solidify(YAHOO.lang.JSON.parse(json));
+    } catch (e) {
+        YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Error loading workflow");
+    }
 };
 
 YabiWorkflow.prototype.delJobCallback = function(e, invoke) {

@@ -208,7 +208,7 @@ YabiToolCollection.prototype.hydrateResponse = function(o) {
         
         target.solidify(YAHOO.lang.JSON.parse(json));
     } catch (e) {
-        console.log(e);
+        YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Error fetching tools listing");
     }
 };
 
@@ -217,7 +217,7 @@ YabiToolCollection.prototype.startDragToolCallback = function(x, y) {
 
     //work out which tool it is
     for (var index in tools.tools) {
-        console.log("comparing "+tools.tools[index].toString());
+        //console.log("comparing "+tools.tools[index].toString());
         if (this.getEl() == tools.tools[index].el) {
             tool = tools.tools[index];
             break;
@@ -225,7 +225,7 @@ YabiToolCollection.prototype.startDragToolCallback = function(x, y) {
     }
     
     if (YAHOO.lang.isUndefined(tool)) {
-        console.log("failed to find tool");
+        YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Failed to find tool");
         return false;
     }
 

@@ -564,7 +564,8 @@ YabiJob.prototype.hydrateResponse = function(o) {
         target.displayName = "(tool '"+ target.toolName +"' failed to load)";
         target.updateTitle();
         target.renderLoadFailJob();
-        console.log(e);
+        
+        YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Error loading tool details");
     }
 };
 
