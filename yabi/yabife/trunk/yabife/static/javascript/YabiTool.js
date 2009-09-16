@@ -106,13 +106,13 @@ YabiTool.prototype.matchesFilter = function(needle) {
         needle = needle.substring(2);
         
         for (index in this.payload.inputExtensions) {
-            if (this.payload.inputExtensions[index].extension == needle) {
+            if (this.payload.inputExtensions[index] == needle) {
                 return true;
             }
         }
         
         for (index in this.payload.outputExtensions) {
-            if (this.payload.outputExtensions[index].extension == needle) {
+            if (this.payload.outputExtensions[index] == needle) {
                 return true;
             }        
         }
@@ -120,9 +120,8 @@ YabiTool.prototype.matchesFilter = function(needle) {
     
     if (needle.indexOf("in:") === 0) {
         needle = needle.substring(3);
-        
         for (index in this.payload.inputExtensions) {
-            if (this.payload.inputExtensions[index].extension == needle) {
+            if (this.payload.inputExtensions[index] == needle) {
                 return true;
             }
         }

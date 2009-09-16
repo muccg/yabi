@@ -1063,6 +1063,14 @@ display:inline;
     margin-bottom: 4px;
 }
 
+.invalidParam {
+    border:2px solid red;
+}
+
+.validParam {
+    border:1px solid #ddd;
+}
+
 .acceptedExtensionList {
 	color: #999;
 	padding: 2px;

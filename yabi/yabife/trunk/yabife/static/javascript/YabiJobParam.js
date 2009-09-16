@@ -477,15 +477,13 @@ YabiJobParam.prototype.validate = function() {
         if (this.renderMode == "fileselector") {
             this.fileSelector.renderInvalid();
         } else {
-            this.inputEl.style.backgroundColor = "red";
-            this.inputEl.style.color = "white";
+            this.inputEl.className = "invalidParam";
         }
     } else {
         if (this.renderMode == "fileselector") {
             this.fileSelector.renderValid();
         } else {
-            this.inputEl.style.backgroundColor = "transparent";
-            this.inputEl.style.color = "black";
+            this.inputEl.className = "validParam";
         }
     }
 };
