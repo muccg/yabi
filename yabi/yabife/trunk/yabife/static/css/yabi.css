@@ -170,7 +170,16 @@ body {
     border-bottom: 3px solid #3879e5;
 }
 
-
+.yabiMiddleColumn {
+    position:absolute;
+    left:300px;
+    top:63px;
+    width:330px;
+    height:90%;
+    background:url(/static/images/middle_bg.png);
+    padding:20px;
+    padding-top:15px;
+}
 
 .yabi-files-menu{
   margin-top: 2px;
