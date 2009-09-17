@@ -34,6 +34,7 @@ if "DJANGODEV" in os.environ:
     YABIADMIN_SERVER = "localhost.localdomain"
     YABIADMIN_BASE = "/yabiadmin/trunk"    
     YABISTORE_SERVER = "localhost.localdomain"
+    YABISTORE_BASE = "/yabistore/trunk"
     SSL_ENABLED = False
     DEV_SERVER = True
     
