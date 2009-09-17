@@ -28,8 +28,9 @@ def build(username, workflow_json):
         workflow = Workflow(name=slugify(workflow_dict["name"]), json=workflow_json, user=user)
         workflow.save()
 
-##         for i,job_dict in enumerate(workflow_dict["jobs"]):
-##             job = addJob(workflow, job_dict, i)
+        for i,job_dict in enumerate(workflow_dict["jobs"]):
+            logger.debug(workflow_dict["jobs"])
+            #job = addJob(workflow, job_dict, i)
 
     except ObjectDoesNotExist, e:
         logger.critical(e)
