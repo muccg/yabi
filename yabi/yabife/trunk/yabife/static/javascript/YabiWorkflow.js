@@ -183,7 +183,7 @@ YabiWorkflow.prototype.deleteJob = function(job) {
     
     this.jobs.splice(delIndex, 1);
 
-    if (this.jobs.length == 0) {
+    if (this.jobs.length === 0) {
         this.hintEl.style.display = "block";
     }
     

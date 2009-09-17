@@ -372,6 +372,22 @@ YabiJobParam.prototype.getValue = function(useInternal) {
     }
 };
 
+
+/**
+ * focus
+ *
+ * focusses the input, if possible
+ */
+YabiJobParam.prototype.focus = function() {
+    if (!this.editable) {
+        return;
+    }
+    
+    if (this.renderMode == "input") {
+        this.inputEl.focus();
+    }
+};
+
 /**
  * toJSON
  *

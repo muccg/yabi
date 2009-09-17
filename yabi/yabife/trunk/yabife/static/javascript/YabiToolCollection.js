@@ -59,6 +59,7 @@ function YabiToolCollection() {
 
 YabiToolCollection.prototype.solidify = function(obj) {
     var tempTool;
+    var toolgroup;
     
     this.payload = obj;
     
@@ -68,7 +69,7 @@ YabiToolCollection.prototype.solidify = function(obj) {
 
         for (var index in obj.menu.toolsets[toolsetindex].toolgroups) {
 
-            var toolgroup = obj.menu.toolsets[toolsetindex].toolgroups[index];
+            toolgroup = obj.menu.toolsets[toolsetindex].toolgroups[index];
 
             tempGroupEl = document.createElement("div");
             tempGroupEl.className = "toolGroup";

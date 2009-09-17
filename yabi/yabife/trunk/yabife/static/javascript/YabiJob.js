@@ -207,6 +207,16 @@ YabiJob.prototype.selectJob = function() {
     
     //show the options panel
     this.optionsEl.style.display = "block";
+    
+    //put focus on the first invalid param
+    if (!this.valid) {
+        for (var index in this.params) {
+            if (!this.params[index].valid) {
+                this.params[index].focus();
+                break;
+            }
+        }
+    }
 };
 
 /**
@@ -457,9 +467,9 @@ YabiJob.prototype.solidify = function(obj) {
         for (index in this.payload.tool.outputExtensions) {
             
             //add to the outputextensionsarray
-            this.outputExtensions.push(this.payload.tool.outputExtensions[index]["file_extension__extension"]);
+            this.outputExtensions.push(this.payload.tool.outputExtensions[index].file_extension__extension);
             
-            ext = document.createTextNode(this.payload.tool.outputExtensions[index]["file_extension__extension"]);
+            ext = document.createTextNode(this.payload.tool.outputExtensions[index].file_extension__extension);
             spanEl = document.createElement("span");
             spanEl.setAttribute("class", "acceptedExtension");
             spanEl.appendChild(ext);
@@ -476,7 +486,7 @@ YabiJob.prototype.solidify = function(obj) {
     }
     
     //does it accept inputs?
-     if (this.payload.tool.accepts_input == true) {
+     if (this.payload.tool.accepts_input === true) {
          this.acceptsInput = true;
      }
     
@@ -491,7 +501,7 @@ YabiJob.prototype.solidify = function(obj) {
             this.params.push(paramObj);
             this.optionsEl.appendChild(paramObj.containerEl);
 
-            if (paramObj.payload.mandatory != true) {
+            if (paramObj.payload.mandatory !== true) {
                 allMandatory = false;
             }
         }
@@ -499,7 +509,7 @@ YabiJob.prototype.solidify = function(obj) {
         paramObj = new YabiJobParam(target, params, (params["switch"] == this.batchParameter), this.editable, this.preloadValueFor(params["switch"]));
         this.params.push(paramObj);
         this.optionsEl.appendChild(paramObj.containerEl);
-        if (paramObj.payload.mandatory != true) {
+        if (paramObj.payload.mandatory !== true) {
             allMandatory = false;
         }
     }
