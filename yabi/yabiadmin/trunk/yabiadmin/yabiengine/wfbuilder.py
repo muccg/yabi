@@ -30,12 +30,14 @@ def build(username, workflow_json):
 
         for i,job_dict in enumerate(workflow_dict["jobs"]):
             logger.debug(workflow_dict["jobs"])
-            #job = addJob(workflow, job_dict, i)
+            job = addJob(workflow, job_dict, i)
 
     except ObjectDoesNotExist, e:
         logger.critical(e)
         raise
     except KeyError, e:
+        #import traceback
+        #print traceback.print_exc()
         logger.critical(e)
         raise
     except Exception, e:
@@ -55,6 +57,10 @@ def addJob(workflow, job_dict, order):
     job = Job(workflow=workflow, order=order, start_time=datetime.datetime.now())
     job.save()
 
+
+    # cache job for later reference
+    job_id = job_dict["jobId"] # the id that is used in the json
+    job_cache[job_id] = job
 
     # process the parameterList to get a useful dict
     param_dict = {}
@@ -126,14 +132,9 @@ def addJob(workflow, job_dict, order):
     job.walltime = tool.walltime
     job.save()
 
-    # cache job for later reference
-    job_id = job_dict["jobId"] # the id that is used in the json
-    job_cache[job_id] = job
-
 
 def get_param_value(workflow, tp):
     logger.debug('')
-    logger.debug('Tool Parameter:%s' % tp)
     
     value = ''
     if type(tp["value"]) == list:
