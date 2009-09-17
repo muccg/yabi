@@ -32,6 +32,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
     this.value = this.defaultValue;
 
     this.containerEl = document.createElement('div');
+    this.containerEl.className = "jobParam";
 
     if (this.payload.mandatory !== true) {
         this.containerEl.style.display = "none";

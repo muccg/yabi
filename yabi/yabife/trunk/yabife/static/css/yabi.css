@@ -601,10 +601,23 @@ display:inline;
     padding:10px;
 }
 
-.jobOptionsContainer label {
+.jobParam {
+    position:relative;
+}
+
+.jobParam label {
+    display:block;
 	margin-right: 20px;
     width:100px;
-    display:block;
+    position:absolute;
+    top:0px;
+    left:0px;
+}
+
+.jobParam input {
+    position:absolute;
+    top:0px;
+    left:120px;
 }
 
 .jobInputs {
