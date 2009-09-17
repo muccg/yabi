@@ -796,6 +796,11 @@ display:inline;
 	background-color: #eee;
 	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
 	padding: 4px;
+    height:1.5em;
+}
+
+.fileSelectorUpload input {
+    left:1px;
 }
 
 .uploadingMask {
