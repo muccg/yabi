@@ -284,7 +284,7 @@ YabiFileSelector.prototype.renderSelectedFiles = function() {
  * fetches file listing from server
  */
 YabiFileSelector.prototype.hydrate = function(path) {
-    var baseURL = "http://boromir5.localdomain/yabi/ntakayama/index.php/filebrowser/list";
+    var baseURL = appURL + "ws/fs/list";
     
     //load json
     var jsUrl, jsCallback, jsTransaction;
@@ -316,7 +316,7 @@ YabiFileSelector.prototype.expandCallback = function(e, invoker) {
 };
 
 YabiFileSelector.prototype.uploadClickCallback = function(e, target) {
-    var baseURL = "http://boromir5.localdomain/yabi/ntakayama/index.php/files/upload";
+    var baseURL = appURL + "ws/fs/upload";
     
     YAHOO.util.Event.stopEvent(e);
     

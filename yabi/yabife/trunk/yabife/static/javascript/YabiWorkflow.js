@@ -351,11 +351,11 @@ YabiWorkflow.prototype.toJSON = function() {
  */
 YabiWorkflow.prototype.hydrate = function(workflowId) {
     this.workflowId = workflowId;
-    var baseURL = "http://boromir5.localdomain/yabi/ntakayama/index.php/workflow/json";
+    var baseURL = appURL + "workflows/" + YAHOO.ccgyabi.username + "/" + workflowId;
     
     //load json
     var jsUrl, jsCallback, jsTransaction;
-    jsUrl =  baseURL + "?workflow=" + workflowId;
+    jsUrl =  baseURL;
     jsCallback = {
             success: this.hydrateCallback,
             failure: this.hydrateCallback,
