@@ -86,9 +86,9 @@ def submitworkflow(request):
         
         return HttpResponse(request.POST["workflowjson"])
     except KeyError,e:
-        return HttpResponseNotFound(e.message)
+        return HttpResponseNotFound(e)
     except Exception,e:
-        return HttpResponseNotFound(e.message)
+        return HttpResponseNotFound(e)
 
 
 def credential(request, username, backend):

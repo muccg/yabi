@@ -168,4 +168,4 @@ def yabistore_storeworkflow(sender, **kwargs):
 
 
 # connect up django signals
-post_save.connect(yabistore_storeworkflow, sender=Workflow)
+#post_save.connect(yabistore_storeworkflow, sender=Workflow)
