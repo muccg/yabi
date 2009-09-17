@@ -1032,3 +1032,46 @@ display:inline;
     font-size:90%;
     font-weight:normal;
 }
+
+.loginFormButton {
+	color:#3879e6;
+	font-size: 110%;
+	font-weight: bold;
+	border:1px solid #3879e6;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-box-shadow: 0px 1px 2px #eee;
+    -webkit-box-shadow: 0px 1px 2px #eee;
+    margin:4px;
+    padding:4px;
+    padding-left:8px;
+    padding-right:8px;
+    margin-left:220px;
+    margin-top: 0px;
+    margin-right:0px;
+
+	background: #ccf url(../images/job_selected_bg.png);
+	background: -webkit-gradient(linear, left top, left bottom, from(#eceff3), to(#dbe5f6));
+}
+
+.loginForm {
+    margin-top:16px;
+}
+
+.loginForm input {
+	color:#666;
+	font-size: 110%;
+	font-weight: bold;
+    padding:6px;
+    padding-left:14px;
+    background:#fff;
+    width:210px;
+    border:1px solid #eee;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-box-shadow: 0px 1px 2px #eee;
+    -webkit-box-shadow: 0px 1px 2px #eee;
+    margin:4px;
+}
+
+

@@ -9,10 +9,15 @@
 <a href="/yabi/index.php/"><img src="${h.url('/static/images/yabi-logo.png')}" alt="Yabi-logo" height="60" width="198" /></a><p>
 <br/>
 
+<div style="position:relative;">
 <form enctype="multipart/form-data" method="post" action="${ h.url("/login") }">
-${form.as_p()}<br/>
-<input type="submit" value="Log In" />
+<div class="loginForm">
+${form.as_p()}
+<br/>
+</div>
+<input type="submit" value="Log In" class="loginFormButton"/>
 </form>
+</div>
 <br/><br/> 
 % for key, error_list in form.errors.iteritems():
     % for err in error_list:
@@ -30,11 +35,12 @@ ${form.as_p()}<br/>
 <p>
 <br/>
 <center>
-<table width="400px">
+<table width="600px">
 
 <tr>
-    <td valign="top" style="font-weight:bold;padding-bottom:4px;">Work In Progress</td>
-    <td valign="top"><ul><li>Now with awesomeness<li></ul></td>
+    <td width="100px;">&nbsp;</td>
+    <td valign="top" style="font-weight:bold;padding-bottom:4px;padding-right:10px;">Work In Progress</td>
+    <td valign="top"><ul><li>Yabi is currently under construction. Please watch your HEAD.<li></ul></td>
 </tr>
 
 </table>
