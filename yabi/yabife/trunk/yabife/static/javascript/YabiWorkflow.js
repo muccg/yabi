@@ -68,8 +68,10 @@ function YabiWorkflow(editable) {
     //add empty workflow marker
     this.hintEl = document.createElement('div');
     this.hintEl.className = 'workflowHint';
-    this.mainEl.appendChild(this.hintEl);
-    
+    if (this.editable) {
+        this.mainEl.appendChild(this.hintEl);
+    }
+        
     this.mainEl.appendChild(this.containerEl);
 
     this.endEl = document.createElement("div");
