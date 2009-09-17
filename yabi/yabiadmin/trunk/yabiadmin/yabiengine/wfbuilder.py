@@ -31,13 +31,13 @@ def build(username, workflow_json):
             job = addJob(workflow, job_dict, i)
 
     except ObjectDoesNotExist, e:
-        logger.critical(e.message)
+        logger.critical(e)
         raise
     except KeyError, e:
-        logger.critical(e.message)
+        logger.critical(e)
         raise
     except Exception, e:
-        logger.critical(e.message)
+        logger.critical(e)
         raise
 
 
