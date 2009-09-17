@@ -13,27 +13,35 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate
 from django import forms
 
+import logging
+import yabilogging
+logger = logging.getLogger('yabife')
+
 
 # proxy view to pass through all requests set up in urls.py
 def proxy(request, url):
-
+    logger.debug('')
+    
     if not url.startswith("/"):
         url = "/" + url
-
+    
     if request.method == "GET":
 
-        resource = "%s%s" % (url, urlencode(request.GET))
+        resource = "/yabiadmin/andrew%s%s" % (url, urlencode(request.GET))
+        logger.debug('Resource: %s' % resource)
         conn = httplib.HTTPConnection(settings.YABIADMIN_SERVER)
+        logger.debug('Server: %s' % settings.YABIADMIN_SERVER)        
         conn.request(request.method, resource)
         r = conn.getresponse()
 
     elif request.method == "POST":
 
-        resource = "%s" % url
+        resource = "yabiadmin/andrew%s" % url
+        logger.debug('Resource: %s' % resource)
         data = urlencode(request.POST)
         headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
-
         conn = httplib.HTTPConnection(settings.YABIADMIN_SERVER)
+        logger.debug('Server: %s' % settings.YABIADMIN_SERVER)
         conn.request(request.method, resource, data, headers)
         r = conn.getresponse()
 

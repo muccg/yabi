@@ -31,8 +31,8 @@ if "DJANGODEV" in os.environ:
     DATABASE_PASSWORD = 'yabifeapp'                   # Not used with sqlite3.
     DATABASE_HOST = 'eowyn.localdomain'               # Set to empty string for localhost. Not used with sqlite3.
     DATABASE_PORT = ''                                # Set to empty string for default. Not used with sqlite3.
-    YABIADMIN_SERVER = "faramir.localdomain:8000/yabiadmin/"
-    YABISTORE_SERVER = "faramir.localdomain/yabistore/trunk/"
+    YABIADMIN_SERVER = "localhost.localdomain"
+    YABISTORE_SERVER = "localhost.localdomain"
     SSL_ENABLED = False
     DEV_SERVER = True
     
@@ -183,3 +183,12 @@ AUTHENTICATION_BACKENDS = (
 
 # for local development, this is set to the static serving directory. For deployment use Apache Alias
 STATIC_SERVER_PATH = os.path.join(PROJECT_DIRECTORY,"static")
+
+
+##
+## Logging setup
+##
+import logging
+LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
+LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
+LOGGING_FORMATTER = logging.Formatter("%(asctime)s:%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s:%(message)s")
