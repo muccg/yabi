@@ -19,8 +19,7 @@ function YabiTool(obj, collection, groupEl) {
     
     this.el.appendChild(this.toolEl);
     
-    var addEl = new Image();
-    addEl.src = "/static/images/addtool.png";
+    var addEl = document.createElement("div");
     addEl.className = "addLink";
     YAHOO.util.Event.addListener(addEl, "click", collection.addCallback, this.payload.name);
     this.el.appendChild(addEl);

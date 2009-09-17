@@ -203,6 +203,9 @@ body {
     right:4px;
     top:5px;
     cursor:pointer;
+    width:39px;
+    height:16px;
+    background:url(../images/addtool.png) no-repeat;
 }
 
 #yui-main {
