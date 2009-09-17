@@ -78,6 +78,7 @@ def submitworkflow(request):
     logger.debug('')
     
     try:
+        logger.debug(request.POST)
         # probably want to catch the type of exceptions we may get from this
         wfbuilder.build(request.POST['username'], request.POST["workflowjson"])
         
