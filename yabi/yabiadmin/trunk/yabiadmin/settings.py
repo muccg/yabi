@@ -27,7 +27,8 @@ if "DJANGODEV" in os.environ:
     SSL_ENABLED = False
     DEV_SERVER = True
     YABIBACKEND_SERVER = 'boromir.localdomain:8000'
-    YABISTORE_SERVER = "127.0.0.1:8002"
+    YABISTORE_SERVER = "localhost.localdomain"
+    YABISTORE_BASE = "/yabistore/trunk"
     
     # debug site table
     SITE_ID = 1
@@ -44,8 +45,9 @@ else:
     DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
     SSL_ENABLED = False
     DEV_SERVER = False
-    YABIBACKEND_SERVER = ''
-    YABISTORE_SERVER = "127.0.0.1:8002"
+    YABIBACKEND_SERVER = 'boromir.localdomain:8000'
+    YABISTORE_SERVER = "localhost.localdomain"
+    YABISTORE_BASE = "/yabistore/trunk"
     
     # development site id
     SITE_ID = 1

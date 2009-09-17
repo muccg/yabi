@@ -144,9 +144,9 @@ def yabistore_storeworkflow(sender, **kwargs):
     wf = kwargs['instance']
 
     if kwargs['created']:
-        resource = '/workflows/%s/' % wf.user.name
+        resource = '%s/workflows/%s/' % (settings.YABISTORE_BASE,wf.user.name)
     else:
-        resource = '/workflows/%s/%s' % (wf.user.name, wf.id)
+        resource = '%s/workflows/%s/%s' % (settings.YABISTORE_BASE, wf.user.name, wf.id)
 
     data = {'json':wf.json,
             'name':wf.name,
