@@ -603,6 +603,8 @@ display:inline;
 
 .jobOptionsContainer label {
 	margin-right: 20px;
+    width:100px;
+    display:block;
 }
 
 .jobInputs {
@@ -686,8 +688,8 @@ display:inline;
 
 .optionsToggle {
 	position: absolute;
-    top: 5px;
-    right: 5px;
+    top: 12px;
+    right: 0px;
 }
 
 .fileSelector {
