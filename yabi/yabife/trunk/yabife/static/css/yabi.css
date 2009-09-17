@@ -603,12 +603,12 @@ display:inline;
 
 .jobParam {
     position:relative;
+    margin-bottom:3px;
 }
 
 .jobParam label {
     display:block;
-	margin-right: 20px;
-    width:100px;
+    width:90px;
     position:absolute;
     top:0px;
     left:0px;
@@ -617,7 +617,7 @@ display:inline;
 .jobParam input {
     position:absolute;
     top:0px;
-    left:120px;
+    left:100px;
 }
 
 .jobInputs {
