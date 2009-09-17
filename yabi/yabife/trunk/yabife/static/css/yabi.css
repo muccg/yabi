@@ -801,6 +801,7 @@ display:inline;
 
 .fileSelectorUpload input {
     left:1px;
+    top:3px;
 }
 
 .uploadingMask {
