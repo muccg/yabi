@@ -7,6 +7,9 @@
 function YabiWorkflowCollection() {
     this.workflows = [];
     
+    this.loadedWorkflow = null;
+    this.loadedWorkflowEl = document.createElement("div");
+    
     this.containerEl = document.createElement("div");
     this.containerEl.className = "workflowCollection";
     
@@ -173,6 +176,14 @@ YabiWorkflowCollection.prototype.clearFilter = function() {
 
 YabiWorkflowCollection.prototype.select = function(id) {
     this.noSelectionDiv.style.display = "none";
+    
+    if (this.loadedWorkflow !== null) {
+        this.loadedWorkflow.destroy();
+    }
+    
+    this.loadedWorkflow = new YabiWorkflow(false);
+    this.loadedWorkflow.hydrate(id);
+    this.loadedWorkflowEl.appendChild(this.loadedWorkflow.mainEl);
     
     for (var i in this.workflows) {
         if (this.workflows[i].id == id) {

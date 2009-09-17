@@ -14,11 +14,7 @@ function initWorkflowListing() {
     
     document.getElementById("container").appendChild(workflowListing.noSelectionDiv);
     
-//    workflow = new YabiWorkflow(false);
-//    document.getElementById("container").appendChild(workflow.mainEl);
-//    document.getElementById("optionsDiv").appendChild(workflow.optionsEl);
-//    workflow.updateName('test workflow');
-//    workflow.addJob("fileselector", false);
+    document.getElementById("container").appendChild(workflowListing.loadedWorkflowEl);
 }
 
 function summonWorkflow(id) {
