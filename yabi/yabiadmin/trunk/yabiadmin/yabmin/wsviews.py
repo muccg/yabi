@@ -11,7 +11,7 @@ from yabiadmin.yabiengine import wfbuilder
 
 import logging
 import yabilogging
-logger = logging.getLogger('yabiadmin')
+logger = logging.getLogger('yabiengine')
 
 
 def tool(request, toolname):
