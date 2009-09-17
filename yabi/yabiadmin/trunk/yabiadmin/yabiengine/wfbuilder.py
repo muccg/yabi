@@ -132,7 +132,8 @@ def addJob(workflow, job_dict, order):
 
 def get_param_value(workflow, tp):
     logger.debug('')
-
+    logger.debug('Tool Parameter:%s' % tp)
+    
     value = ''
     if type(tp["value"]) == list:
         for item in tp["value"]:
