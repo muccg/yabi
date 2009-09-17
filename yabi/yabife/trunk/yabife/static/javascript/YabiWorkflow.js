@@ -310,7 +310,7 @@ YabiWorkflow.prototype.isValid = function() {
     if (this.jobs.length < 1) {
         return false;
     }
-    console.log(this.getName());
+    
     if (this.getName() === "") {
         this.nameEl.className = "invalidWorkflowName";
         return false;
