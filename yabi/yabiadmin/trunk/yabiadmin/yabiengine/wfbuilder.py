@@ -23,6 +23,7 @@ def build(username, workflow_json):
     job_cache = {}
 
     try:
+
         user = User.objects.get(name=username)
         workflow = Workflow(name=slugify(workflow_dict["name"]), json=workflow_json, user=user)
         workflow.save()

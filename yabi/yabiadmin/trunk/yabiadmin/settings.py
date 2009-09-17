@@ -42,7 +42,7 @@ else:
     DATABASE_PASSWORD = 'yabminapp'         # Not used with sqlite3.
     DATABASE_HOST = 'eowyn.localdomain'             # Set to empty string for localhost. Not used with sqlite3.
     DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
-    SSL_ENABLED = True
+    SSL_ENABLED = False
     DEV_SERVER = False
     YABIBACKEND_SERVER = ''
     YABISTORE_SERVER = "127.0.0.1:8002"
@@ -216,6 +216,7 @@ STATUS = {'pending':'pending',
 ##
 import logging
 LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
-LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
+LOGGING_LEVEL = logging.DEBUG
+#LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
 LOGGING_FORMATTER = logging.Formatter("%(asctime)s:%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s:%(message)s")
 
