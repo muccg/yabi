@@ -209,6 +209,7 @@ YabiToolCollection.prototype.hydrateResponse = function(o) {
         target.solidify(YAHOO.lang.JSON.parse(json));
     } catch (e) {
         YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Error fetching tools listing");
+        target.solidify({'menu':{'toolsets':[]}});
     }
 };
 
