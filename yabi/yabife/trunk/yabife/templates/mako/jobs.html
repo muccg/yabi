@@ -5,11 +5,9 @@
 YAHOO.util.Event.onAvailable("container", initWorkflowListing);
 
 var workflowListing;
-var workflow;
 
 function initWorkflowListing() {
     workflowListing = new YabiWorkflowCollection();
-//    workflowListing.solidify(YAHOO.lang.JSON.parse('[{"name":"test", "status":"Completed", "tags":["blast", "spirochaetes"], "last_modified_on":"09-09-2009", "id":1}, {"name":"sample", "status":"Completed", "tags":["hmmpfam", "spirochaetes"], "last_modified_on":"10-09-2009", "id":2}, {"name":"zip", "status":"Completed", "tags":["zip"], "last_modified_on":"10-09-2009", "id":3}]'));
     document.getElementById("workflowListingContainer").appendChild(workflowListing.containerEl);
     
     document.getElementById("container").appendChild(workflowListing.noSelectionDiv);
@@ -19,15 +17,6 @@ function initWorkflowListing() {
     document.getElementById("optionsDiv").appendChild(workflowListing.loadedWorkflowOptionsEl);
 }
 
-function summonWorkflow(id) {
-    workflow = new YabiWorkflow(false);
-    workflow.hydrate(id);
-}
-
-function destroyWorkflow() {
-    workflow.destroy();
-    return false;
-}
 </script>
 
 
