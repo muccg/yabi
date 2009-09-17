@@ -115,7 +115,7 @@ YabiWorkflowCollection.prototype.solidify = function(obj) {
  *
  */
 YabiWorkflowCollection.prototype.hydrate = function() {
-    var baseURL = appURL + "workflows/ntakayama/";
+    var baseURL = appURL + "workflows/" + YAHOO.ccgyabi.username + "/";
     
     //load json
     var jsUrl, jsCallback, jsTransaction;
