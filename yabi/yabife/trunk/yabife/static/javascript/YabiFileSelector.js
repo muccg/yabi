@@ -346,7 +346,11 @@ YabiFileSelector.prototype.uploadResponse = function(o) {
 YabiFileSelector.prototype.hydrateResponse = function(o) {
     var json = o.responseText;
    
-    target = o.argument[0];
-    
-    target.hydrateProcess(YAHOO.lang.JSON.parse(json));
+    try {
+        target = o.argument[0];
+        
+        target.hydrateProcess(YAHOO.lang.JSON.parse(json));
+    } catch (e) {
+        YAHOO.ccgyabi.YabiMessage.yabiMessageFail('Error loading file listing');
+    }
 };
