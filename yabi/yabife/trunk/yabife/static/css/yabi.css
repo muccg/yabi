@@ -614,7 +614,7 @@ display:inline;
     left:0px;
 }
 
-.jobParam input, .jobParams select {
+.jobParam input, .jobParam select {
     position:absolute;
     top:0px;
     left:100px;
@@ -785,6 +785,7 @@ display:inline;
 }
 
 .fileSelectorUpload {
+    position:relative;
     border-top: 1px solid #ccc;
     color: #000;
 	background-color: #eee;
