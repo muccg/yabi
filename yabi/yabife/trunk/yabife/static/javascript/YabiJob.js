@@ -98,7 +98,7 @@ YabiJob.prototype.emittedFiles = function() {
  */
 YabiJob.prototype.hydrate = function() {
 
-    var baseURL = "/ws/tool/";
+    var baseURL = appURL + "ws/tool/";
     
     //load json
     var jsUrl, jsCallback, jsTransaction;
