@@ -451,11 +451,15 @@ YabiWorkflow.prototype.destroy = function() {
 YabiWorkflow.prototype.hydrateCallback = function(o) {
     var json = o.responseText;
     var i;
+    var obj;
     
     try {
         target = o.argument[0];
         
-        target.solidify(YAHOO.lang.JSON.parse(json));
+        obj = YAHOO.lang.JSON.parse(json);
+        
+        
+        target.solidify(YAHOO.lang.JSON.parse(obj.json));
     } catch (e) {
         YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Error loading workflow");
     }
