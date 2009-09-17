@@ -6,14 +6,14 @@
 <div>
 <br style="margin-top:100px;" />    
 
-<a href="/yabi/index.php/"><img src="/static/images/yabi-logo.png" alt="Yabi-logo" height="60" width="198" /></a><p>
+<a href="/yabi/index.php/"><img src="${h.url('/static/images/yabi-logo.png')}" alt="Yabi-logo" height="60" width="198" /></a><p>
 <br/>
 
 <form enctype="multipart/form-data" method="post" action="${ h.url("/login") }">
 ${form.as_p()}<br/>
 <input type="submit" value="Log In" />
 </form>
-<br/><br/> [<a href="/yabi/index.php/registration">Register Here</a>]
+<br/><br/> 
 % for key, error_list in form.errors.iteritems():
     % for err in error_list:
         <span class="error">${key.title()}: ${ err }</span><br/>
@@ -31,80 +31,22 @@ ${form.as_p()}<br/>
 <br/>
 <center>
 <table width="400px">
-<tr>
-    <td valign="top" style="font-weight:bold;padding-bottom:4px;">Release 10/7/2008</td>
-    <td valign="top"><ul><li>Resolved javascript issues with Internet Explorer<li></ul></td>
 
-</tr>
 <tr>
-    <td valign="top" style="font-weight:bold;padding-bottom:4px;">Release 26/5/2008</td>
-    <td valign="top"><ul><li>Resolved validation issue when re-using workflows<li>Resolved PHP errors when contacting the middleware</ul></td>
+    <td valign="top" style="font-weight:bold;padding-bottom:4px;">Work In Progress</td>
+    <td valign="top"><ul><li>Now with awesomeness<li></ul></td>
 </tr>
+
 </table>
 </center>
 <p>
-
-<div id="yabi-thumbnail">
-<center>
-<table>
-
-<tr>
-<td>
-<a href="screencasts/login.html"><img src="/yabi/images/screencast_tn.jpg" alt="Screencast_tn" height="82" width="128" /><br><div class="caption">screencast: logging in</div></a>
-</td>
-<td>
-<a href="screencasts/simpleblast.html"><img src="/yabi/images/screencast_tn.jpg" alt="Screencast_tn" height="82" width="128" /><br><div class="caption">screencast: simple workflow (blast)</div></a>
-</td>
-<td>
-<a href="screencasts/fileupload.html"><img src="/yabi/images/screencast_tn.jpg" alt="Screencast_tn" height="82" width="128" /><br><div class="caption">screencast: uploading files</div></a>
-</td>
-<td>
-<a href="screencasts/convertingfiles.html"><img src="/yabi/images/screencast_tn.jpg" alt="Screencast_tn" height="82" width="128" /><br><div class="caption">screencast: converting files</div></a>
-</td>
-
-</tr>
-<tr>
-<td>
-<a href="screencasts/gridsetup.html"><img src="/yabi/images/screencast_tn.jpg" alt="Screencast_tn" height="82" width="128" /><br><div class="caption">screencast: grid setup</div></a>
-</td>
-<td>
-<a href="screencasts/blastprettyprint.html"><img src="/yabi/images/screencast_tn.jpg" alt="Screencast_tn" height="82" width="128" /><br><div class="caption">screencast: blast output formatting</div></a>
-</td>
-<td>
-<a href="screencasts/blasttophits.html"><img src="/yabi/images/screencast_tn.jpg" alt="Screencast_tn" height="82" width="128" /><br><div class="caption">screencast: blast top hits</div></a>
-</td>
-<td>
-<a href="screencasts/annotate.html"><img src="/yabi/images/screencast_tn.jpg" alt="Screencast_tn" height="82" width="128" /><br><div class="caption">screencast: blast annotate <br>(no sound)</div></a>
-
-</td>
-</tr>
-<tr>
-<td>
-<a href="screencasts/annotateresults.html"><img src="/yabi/images/screencast_tn.jpg" alt="Screencast_tn" height="82" width="128" /><br><div class="caption">screencast: blast annotate results <br>(no sound)</div></a>
-</td>
-<td>
-<a href="screencasts/celera.html"><img src="/yabi/images/screencast_tn.jpg" alt="Screencast_tn" height="82" width="128" /><br><div class="caption">screencast: celera assembly <br>(no sound)</div></a>
-</td>
-<td>
-<a href="screencasts/celeraresults.html"><img src="/yabi/images/screencast_tn.jpg" alt="Screencast_tn" height="82" width="128" /><br><div class="caption">screencast: celera results <br>(no sound)</div></a>
-
-</td>
-<td>
-
-</td>
-</tr>
-</table>
-</center>
-</div>
-
-</div>
 
 <br />
 
 <div style="float:centre;font-size:80%">
 <p>Authorised by: <a href="mailto:mbellgard@ccg.murdoch.edu.au"> Prof Matthew Bellgard</a>; Director, <a href="http://ccg.murdoch.edu.au/">Centre for Comparative Genomics</a><br />
 
-<a href="http://www.murdoch.edu.au/copy/copy.html" >Disclaimer &amp; Copyright Notice</a> &copy; 2006 <a href="http://www.murdoch.edu.au/about/murdoch.html">Murdoch University</a><br/>
+<a href="http://www.murdoch.edu.au/copy/copy.html" >Disclaimer &amp; Copyright Notice</a> &copy; 2006, 2009 <a href="http://www.murdoch.edu.au/about/murdoch.html">Murdoch University</a><br/>
 Contact: <a href="mailto:web@ccg.murdoch.edu.au">Site administrator.</a>
 </p>
 </div>
