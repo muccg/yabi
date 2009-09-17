@@ -76,9 +76,11 @@ def menu(request, username):
 
 def submitworkflow(request):
     logger.debug('')
-    
+   
+    logger.debug(request)
+
+
     try:
-        logger.debug(request)
         # probably want to catch the type of exceptions we may get from this
         wfbuilder.build(request.POST['username'], request.POST["workflowjson"])
         
