@@ -42,9 +42,9 @@ function YabiFileSelector(param) {
     this.uploadFormEl.setAttribute("ENCTYPE", "multipart/form-data");
     this.uploadFormEl.setAttribute("METHOD", "POST");
     
-    this.uploadLabelEl = document.createElement("label");
-    this.uploadLabelEl.appendChild(document.createTextNode("upload a file to 'workspace': "));
-    this.uploadFormEl.appendChild(this.uploadLabelEl);
+    //this.uploadLabelEl = document.createElement("label");
+//    this.uploadLabelEl.appendChild(document.createTextNode("upload a file to 'workspace': "));
+//    this.uploadFormEl.appendChild(this.uploadLabelEl);
     
     var msgEl = document.createElement("input");
     msgEl.setAttribute("type", "hidden");
@@ -63,7 +63,7 @@ function YabiFileSelector(param) {
     this.uploadMaskEl.appendChild(document.createTextNode(" ... uploading ... "));
     
     this.uploadButtonEl = document.createElement("span");
-    this.uploadButtonEl.className = "fakeButton";
+    this.uploadButtonEl.className = "fakeButton fakeUploadButton";
     this.uploadButtonEl.appendChild(document.createTextNode("Upload"));
     this.uploadFormEl.appendChild(this.uploadButtonEl);
     

@@ -603,7 +603,7 @@ display:inline;
 
 .jobParam {
     position:relative;
-    margin-bottom:6px;
+    margin-bottom:8px;
 }
 
 .jobParam label {
@@ -653,6 +653,11 @@ display:inline;
 
 .validParam {
     border:1px solid #ddd;
+}
+
+.fakeUploadButton {
+    position:absolute;
+    right:0px;
 }
 
 .acceptedExtensionList {
@@ -810,7 +815,7 @@ display:inline;
 	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
 	border: 1px solid #ccc;
 	color: #000;	
-	width: 180px;
+	//width: 180px;
 	cursor: pointer;
 }
 
