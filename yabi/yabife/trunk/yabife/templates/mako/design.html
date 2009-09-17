@@ -36,7 +36,7 @@ function submitCallback(e, wf) {
             success: function (obj) {YAHOO.ccgyabi.YabiMessage.yabiMessageSuccess("Success on submit!");},
             failure: function (obj){YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Fail on submit!");},
             argument: [this] };
-        var data = "username=" + ${request.user.username} + "workflowjson=" + wf.toJSON();
+        var data = "username=${request.user.username}&workflowjson=" + wf.toJSON();
         jsTransaction = YAHOO.util.Connect.asyncRequest('POST', baseURL, jsCallback, data);
         
     }
