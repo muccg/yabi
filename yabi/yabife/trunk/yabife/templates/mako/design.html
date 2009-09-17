@@ -23,8 +23,6 @@ function initWorkflow() {
 
 function submitCallback(e, wf) {
     
-
-    // TODO remove hardcoded url
     // TODO add decent callbacks
     YAHOO.util.Event.stopEvent(e);
     
@@ -35,10 +33,10 @@ function submitCallback(e, wf) {
         var baseURL = appURL + "ws/submitworkflow/";
         
         jsCallback = {
-            success: function (obj) {alert("Success on submit!");},
-            failure: function (obj){alert("Fail on submit!");},
+            success: function (obj) {YAHOO.ccgyabi.YabiMessage.yabiMessageSuccess("Success on submit!");},
+            failure: function (obj){YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Fail on submit!");},
             argument: [this] };
-        var data = "workflowjson=" + wf.toJSON()
+        var data = "username=" + ${request.user.username} + "workflowjson=" + wf.toJSON();
         jsTransaction = YAHOO.util.Connect.asyncRequest('POST', baseURL, jsCallback, data);
         
     }
