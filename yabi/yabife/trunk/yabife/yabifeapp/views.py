@@ -27,7 +27,7 @@ def proxy(request, url):
     
     if request.method == "GET":
 
-        resource = "/yabiadmin/andrew%s%s" % (url, urlencode(request.GET))
+        resource = "%s%s%s" % (settings.YABIADMIN_BASE, url, urlencode(request.GET))
         logger.debug('Resource: %s' % resource)
         conn = httplib.HTTPConnection(settings.YABIADMIN_SERVER)
         logger.debug('Server: %s' % settings.YABIADMIN_SERVER)        
@@ -36,7 +36,7 @@ def proxy(request, url):
 
     elif request.method == "POST":
 
-        resource = "yabiadmin/andrew%s" % url
+        resource = "%s%s%s" % (settings.YABIADMIN_BASE, url, urlencode(request.GET))
         logger.debug('Resource: %s' % resource)
         data = urlencode(request.POST)
         headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}

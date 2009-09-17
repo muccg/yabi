@@ -32,6 +32,7 @@ if "DJANGODEV" in os.environ:
     DATABASE_HOST = 'eowyn.localdomain'               # Set to empty string for localhost. Not used with sqlite3.
     DATABASE_PORT = ''                                # Set to empty string for default. Not used with sqlite3.
     YABIADMIN_SERVER = "localhost.localdomain"
+    YABIADMIN_BASE = "/yabiadmin/trunk"    
     YABISTORE_SERVER = "localhost.localdomain"
     SSL_ENABLED = False
     DEV_SERVER = True
