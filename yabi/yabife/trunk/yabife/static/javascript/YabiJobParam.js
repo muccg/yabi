@@ -89,6 +89,12 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
                     tempEl.appendChild(document.createTextNode(this.job.workflow.getDisplayNameForJobId(this.defaultValue[index].jobId) + '/' + this.defaultValue[index].filename));
                     
                     this.valueEl.appendChild(tempEl);
+                } else if (this.defaultValue[index].type == 'file') {
+                    tempEl = document.createElement('span');
+                    tempEl.className = 'acceptedExtension';
+                    tempEl.appendChild(document.createTextNode(this.defaultValue[index].filename));
+                    
+                    this.valueEl.appendChild(tempEl);
                 } else {
                     this.valueEl.appendChild(document.createTextNode('other file input'));
                 }
