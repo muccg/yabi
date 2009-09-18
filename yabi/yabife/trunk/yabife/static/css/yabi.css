@@ -614,7 +614,7 @@ display:inline;
     left:0px;
 }
 
-.jobParam input, .jobParam select {
+.jobParam input, .jobParam select, .jobParam .value {
     position:absolute;
     top:0px;
     left:100px;

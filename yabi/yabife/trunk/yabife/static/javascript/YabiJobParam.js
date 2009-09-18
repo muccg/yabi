@@ -62,7 +62,19 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
     //or if not editable, make it a div
     if (!this.editable) {
         this.renderMode = "viewonly";
-        this.containerEl.appendChild(document.createTextNode(this.displayName + " = " + this.defaultValue));
+        this.labelEl = document.createElement("label");
+        this.labelEl.appendChild(document.createTextNode(this.displayName));
+        this.containerEl.appendChild(this.labelEl);
+        
+        this.valueEl = document.createElement("div");
+        this.containerEl.appendChild(this.valueEl);
+        if (!YAHOO.lang.isObject(this.defaultValue)) {
+            this.valueEl.appendChild(document.createTextNode(this.defaultValue));
+        } else {
+            //TODO rendering differently per file type
+            this.valueEl.appendChild(document.createTextNode('file input'));
+        }
+        
         return;
     }
     
