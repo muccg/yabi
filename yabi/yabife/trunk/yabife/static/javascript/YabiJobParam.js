@@ -99,7 +99,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
                         //register a placeholder el to be updated with name when loaded
                         namePlaceholderEl = document.createElement('span');
                         tempEl.appendChild(namePlaceholderEl);
-                        tempEl.appendChild('/' + this.defaultValue[index].filename));
+                        tempEl.appendChild('/' + this.defaultValue[index].filename);
                         
                         this.job.workflow.getJobForId(this.defaultValue[index].jobId).registerNameDependency(namePlaceholderEl);
                     }
