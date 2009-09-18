@@ -67,12 +67,16 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
         this.containerEl.appendChild(this.labelEl);
         
         this.valueEl = document.createElement("div");
+        this.valueEl.className = "value";
         this.containerEl.appendChild(this.valueEl);
-        if (!YAHOO.lang.isObject(this.defaultValue)) {
-            this.valueEl.appendChild(document.createTextNode(this.defaultValue));
-        } else {
-            //TODO rendering differently per file type
-            this.valueEl.appendChild(document.createTextNode('file input'));
+        
+        for (var index in this.defaultValue) {
+            if (!YAHOO.lang.isObject(this.defaultValue[index])) {
+                this.valueEl.appendChild(document.createTextNode(this.defaultValue[index]));
+            } else {
+                //TODO rendering differently per file type
+                this.valueEl.appendChild(document.createTextNode('file input'));
+            }
         }
         
         return;
