@@ -541,7 +541,7 @@ YabiJob.prototype.solidify = function(obj) {
 YabiJob.prototype.preloadValueFor = function(switchName) {
     if (! YAHOO.lang.isUndefined(this.preloadValues) && this.preloadValues.length > 0) {
         for (var index in this.preloadValues) {
-            if (! YAHOO.lang.isUndefined(this.preloadValues[index]) && this.preloadValues[index]["switch"] == switchName) {
+            if (! YAHOO.lang.isUndefined(this.preloadValues[index]) && this.preloadValues[index].switchName == switchName) {
                 return this.preloadValues[index].value;
             }
         }
