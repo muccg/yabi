@@ -10,6 +10,8 @@ function initWorkflowListing() {
     workflowListing = new YabiWorkflowCollection();
     document.getElementById("workflowListingContainer").appendChild(workflowListing.containerEl);
     
+    workflowListing.slider.subscribe("change", function() { workflowListing.changeDateRange(); });
+    
     document.getElementById("container").appendChild(workflowListing.noSelectionDiv);
     
     document.getElementById("container").appendChild(workflowListing.loadedWorkflowEl);

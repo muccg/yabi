@@ -6,6 +6,7 @@
  */
 function YabiWorkflowCollection() {
     this.workflows = [];
+    this.dateStart = '1970-01-01';
     
     this.loadedWorkflow = null;
     this.loadedWorkflowEl = document.createElement("div");
@@ -57,6 +58,33 @@ function YabiWorkflowCollection() {
     
     this.filterEl.appendChild(this.statusFilterContainer);
     
+    //date slider
+    this.sliderContainerEl = document.createElement("div");
+    this.sliderContainerEl.className = "sliderContainer";
+    var labelDiv = document.createElement("div");
+    labelDiv.className = "sliderLabel";
+    labelDiv.appendChild(document.createTextNode('Date range:'));
+    this.sliderContainerEl.appendChild(labelDiv);
+    this.sliderEl = document.createElement("div");
+    this.sliderEl.className = "yui-h-slider slider-bg";
+    this.slideThumbEl = document.createElement("div");
+    this.slideThumbEl.className = "yui-slider-thumb slider-thumb";
+    var sliderImage = new Image();
+    sliderImage.src = appURL + "static/images/slider-thumb.png";
+    this.slideThumbEl.appendChild( sliderImage );
+    this.sliderEl.appendChild(this.slideThumbEl);
+    this.sliderContainerEl.appendChild(this.sliderEl);
+    this.sliderValueEl = document.createElement("div");
+    this.sliderValueEl.className = "sliderValue";
+    this.sliderValueEl.appendChild(document.createTextNode('past 7 days'));
+    this.sliderContainerEl.appendChild(this.sliderValueEl);
+    
+    this.filterEl.appendChild(this.sliderContainerEl);
+    
+    this.slider = YAHOO.widget.Slider.getHorizSlider(this.sliderEl, this.slideThumbEl, 0, 160, 40);
+    this.slider.animate = true;
+    this.slider.setValue(40, true);
+    
     this.containerEl.appendChild(this.filterEl);
     
     //no results div
@@ -80,7 +108,43 @@ function YabiWorkflowCollection() {
     this.containerEl.appendChild(this.listingEl);
     
     this.hydrate();
-}
+};
+
+YabiWorkflowCollection.prototype.changeDateRange = function() {
+    var value = (this.slider.getValue() - 10) / 40;
+    
+    while (this.sliderValueEl.firstChild) {
+        this.sliderValueEl.removeChild(this.sliderValueEl.firstChild);
+    }
+    
+    var today = new Date();
+    var year = today.getFullYear();
+    var month = today.getMonth();
+    var date = today.getDate();
+    var epoch = new Date();
+    epoch.setTime(0);
+
+    var filterDate = today;
+    
+    if (value === 0) {
+        this.sliderValueEl.appendChild(document.createTextNode('today'));
+    } else if (value === 1) {
+        this.sliderValueEl.appendChild(document.createTextNode('past 7 days'));
+        filterDate.setDate(filterDate.getDate() - 7);
+    } else if (value === 2) {
+        this.sliderValueEl.appendChild(document.createTextNode('past month'));
+        filterDate.setMonth(filterDate.getMonth() - 1);
+    } else if (value === 3) {
+        this.sliderValueEl.appendChild(document.createTextNode('past year'));
+        filterDate.setFullYear(filterDate.getFullYear() - 1);
+    } else if (value === 4) {
+        this.sliderValueEl.appendChild(document.createTextNode('forever'));
+        filterDate = epoch;
+    }
+    
+    this.dateStart = filterDate.getFullYear() + '-' + (filterDate.getMonth() + 1) + '-' + filterDate.getDate();
+    
+};
 
 YabiWorkflowCollection.prototype.solidify = function(obj) {
     var tempWorkflow;
@@ -119,7 +183,7 @@ YabiWorkflowCollection.prototype.solidify = function(obj) {
  *
  */
 YabiWorkflowCollection.prototype.hydrate = function() {
-    var baseURL = appURL + "workflows/" + YAHOO.ccgyabi.username + "/";
+    var baseURL = appURL + "workflows/" + YAHOO.ccgyabi.username + "/datesearch?start=" + this.dateStart;
     
     //load json
     var jsUrl, jsCallback, jsTransaction;

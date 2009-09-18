@@ -1027,10 +1027,45 @@ display:inline;
     margin:-5px;
     margin-bottom: 4px;
     padding:10px;
+    padding-bottom:5px;
 }
 
 .filterStatus {
     margin-top:5px;
+}
+
+.sliderContainer {
+    height:40px;
+    position:relative;
+}
+
+.sliderLabel {
+    position:absolute;
+    left:0px;
+    width:80px;
+    padding-top:6px;
+}
+
+.slider-bg {
+    margin-top:5px;
+    height:20px;
+    width:180px;
+    background:url(../images/slider-bg.png) no-repeat;
+    position:absolute;
+    left:80px;
+}
+
+.slider-thumb {
+    margin-left:-5px;
+    padding-top:3px;
+}
+
+.sliderValue {
+    position:absolute;
+    top:25px;
+    left:140px;
+    color:#8ba9dc;
+    font-size:90%;
 }
 
 .workflowListing {
