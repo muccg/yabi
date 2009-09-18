@@ -74,10 +74,13 @@ def menu(request, username):
         return HttpResponseNotFound("Object not found")    
 
 
-def list(request):
+def ls(request):
+    assert False
     logger.debug('')
-
     logger.debug(request)
+
+    return HttpResponse('here')
+    
 
 ##     try:
 ##         tool = Tool.objects.get(name=toolname)
