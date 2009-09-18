@@ -39,6 +39,7 @@ def proxy(request, url):
         resource = "%s%s%s" % (settings.YABIADMIN_BASE, url, urlencode(request.GET))
         logger.debug('Resource: %s' % resource)
         data = urlencode(request.POST)
+        logger.debug('Data: %s' % data)
         headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
         conn = httplib.HTTPConnection(settings.YABIADMIN_SERVER)
         logger.debug('Server: %s' % settings.YABIADMIN_SERVER)
