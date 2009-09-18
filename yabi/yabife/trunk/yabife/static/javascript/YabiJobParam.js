@@ -80,11 +80,17 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
                 if (this.defaultValue[index].type == 'job') {
                     tempEl = document.createElement('span');
                     tempEl.className = 'acceptedExtension';
-                    tempEl.appendChild(document.createTextNode('files from: ' + this.job.workflow.getDisplayNameForJobId(this.defaultValue[index].jobId)));
+                    tempEl.appendChild(document.createTextNode(this.job.workflow.getDisplayNameForJobId(this.defaultValue[index].jobId)));
+                    
+                    this.valueEl.appendChild(tempEl);
+                } else if (this.defaultValue[index].type == 'jobfile') {
+                    tempEl = document.createElement('span');
+                    tempEl.className = 'acceptedExtension';
+                    tempEl.appendChild(document.createTextNode(this.job.workflow.getDisplayNameForJobId(this.defaultValue[index].jobId) + '/' + this.defaultValue[index].filename));
                     
                     this.valueEl.appendChild(tempEl);
                 } else {
-                    this.valueEl.appendChild(document.createTextNode('file input'));
+                    this.valueEl.appendChild(document.createTextNode('other file input'));
                 }
             }
         }
