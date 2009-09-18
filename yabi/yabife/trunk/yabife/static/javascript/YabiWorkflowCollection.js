@@ -85,6 +85,9 @@ function YabiWorkflowCollection() {
     this.slider.animate = true;
     this.slider.setValue(40, true);
     
+    //update date range before initial fetch
+    this.changeDateRange();
+    
     this.containerEl.appendChild(this.filterEl);
     
     //no results div
