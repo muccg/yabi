@@ -19,7 +19,7 @@ logger = logging.getLogger('yabife')
 
 
 # proxy view to pass through all requests set up in urls.py
-def proxy(request, url):
+def proxy(request, url, server, base):
     logger.debug('')
     
     if not url.startswith("/"):
@@ -27,54 +27,36 @@ def proxy(request, url):
     
     if request.method == "GET":
 
-        resource = "%s%s?%s" % (settings.YABIADMIN_BASE, url, urlencode(request.GET))
+        resource = "%s%s?%s" % (base, url, urlencode(request.GET))
         logger.debug('Resource: %s' % resource)
-        conn = httplib.HTTPConnection(settings.YABIADMIN_SERVER)
-        logger.debug('Server: %s' % settings.YABIADMIN_SERVER)        
+        conn = httplib.HTTPConnection(server)
+        logger.debug('Server: %s' % server)        
         conn.request(request.method, resource)
         r = conn.getresponse()
 
     elif request.method == "POST":
 
-        resource = "%s%s" % (settings.YABIADMIN_BASE, url)
+        resource = "%s%s" % (base, url)
         logger.debug('Resource: %s' % resource)
         data = urlencode(request.POST)
         logger.debug('Data: %s' % data)
         headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
-        conn = httplib.HTTPConnection(settings.YABIADMIN_SERVER)
-        logger.debug('Server: %s' % settings.YABIADMIN_SERVER)
+        conn = httplib.HTTPConnection(server)
+        logger.debug('Server: %s' % server)
         conn.request(request.method, resource, data, headers)
         r = conn.getresponse()
 
     return HttpResponse(r.read(),status=int(r.status))
 
 
-# proxy view to pass through all requests set up in urls.py to yabistore
-# TODO this could probably be merged with proxy view
+def adminproxy(request, url):
+    logger.debug('')
+    return proxy(request, url, settings.YABIADMIN_SERVER, settings.YABIADMIN_BASE)
+    
+
 def storeproxy(request, url):
-
-    if not url.startswith("/"):
-        url = "/" + url
-
-    if request.method == "GET":
-
-        resource = "%s%s%s" % (settings.YABISTORE_BASE, url, urlencode(request.GET))
-        conn = httplib.HTTPConnection(settings.YABISTORE_SERVER)
-        conn.request(request.method, resource)
-        r = conn.getresponse()
-
-    elif request.method == "POST":
-
-        resource = "%s%s" % (settings.YABISTORE_BASE, url)
-        data = urlencode(request.POST)
-        headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
-
-        conn = httplib.HTTPConnection(settings.YABISTORE_SERVER)
-        conn.request(request.method, resource, data, headers)
-        r = conn.getresponse()
-
-    return HttpResponse(r.read(),status=int(r.status))
-
+    logger.debug('')
+    return proxy(request, url, settings.YABISTORE_SERVER, settings.YABISTORE_BASE)
 
 
 # forms
