@@ -48,6 +48,34 @@ def get_file_list(uri):
     return file_list
 
 
+def get_listing(uri):
+    """
+    Return a listing from backend
+    """
+    logger.debug('')
+    logger.info("Listing: %s" % uri)
+
+
+    try:
+        data = {'dir': uri_get_pseudopath(uri)}
+        data = urlencode(data)
+        headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
+        conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
+        conn.request('POST', settings.YABIBACKEND_LIST, data, headers)
+        r = conn.getresponse()
+    except socket.error, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
+        raise
+    except httplib.CannotSendRequest, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
+        raise
+
+    logger.info("Status of return from yabi backend is: %s" % r.status)
+
+    return r.read()
+
+
+
 def get_backend_from_uri(uri):
     """
     Returns a Backend object given a uri

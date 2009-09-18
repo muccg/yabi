@@ -83,7 +83,7 @@ def ls(request):
     # TODO don't user request.META['USER'] should be authing here somehow and using django user object ie request.user
     uri = 'file://localhost.localdomain/%s%s' % (request.META['USER'], request.GET['uri'])
 
-    filelisting = backendhelper.get_file_list(uri)
+    filelisting = backendhelper.get_listing(uri)
 
     return HttpResponse(filelisting)
     
