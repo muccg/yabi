@@ -604,6 +604,7 @@ display:inline;
 .jobParam {
     position:relative;
     margin-bottom:8px;
+    height:1.2em;
 }
 
 .jobParam label {
