@@ -7,9 +7,17 @@
 function YabiWorkflowCollection() {
     this.workflows = [];
     
+    //util fn
+    var dblzeropad = function(number) {
+        if (number < 10) {
+            number = "0" + number;
+        }
+        return number;
+    };
+    
     var defaultStartDate = new Date();
     defaultStartDate.setDate(defaultStartDate.getDate() - 7);
-    this.dateStart = defaultStartDate.getFullYear() + '-' + (defaultStartDate.getMonth() + 1) + '-' + defaultStartDate.getDate();
+    this.dateStart = defaultStartDate.getFullYear() + '-' + dblzeropad(defaultStartDate.getMonth() + 1) + '-' + dblzeropad(defaultStartDate.getDate());
     
     this.loadedWorkflow = null;
     this.loadedWorkflowEl = document.createElement("div");
@@ -120,6 +128,14 @@ YabiWorkflowCollection.prototype.changeDateRange = function() {
         this.sliderValueEl.removeChild(this.sliderValueEl.firstChild);
     }
     
+    //util fn
+    var dblzeropad = function(number) {
+        if (number < 10) {
+            number = "0" + number;
+        }
+        return number;
+    };
+    
     var today = new Date();
     var epoch = new Date();
     epoch.setTime(0);
@@ -142,7 +158,7 @@ YabiWorkflowCollection.prototype.changeDateRange = function() {
         filterDate = epoch;
     }
     
-    this.dateStart = filterDate.getFullYear() + '-' + (filterDate.getMonth() + 1) + '-' + filterDate.getDate();
+    this.dateStart = filterDate.getFullYear() + '-' + dblzeropad(filterDate.getMonth() + 1) + '-' + dblzeropad(filterDate.getDate());
     
     //reload
     this.hydrate();
