@@ -6,6 +6,7 @@
  */
 function YabiJob(toolName, jobId, preloadValues) {
     this.toolName = toolName;
+    this.displayName = toolName; //temporary while loading
     this.jobId = jobId;
     this.payload = {};
     this.preloadValues = preloadValues;
