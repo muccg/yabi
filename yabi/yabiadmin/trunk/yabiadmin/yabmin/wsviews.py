@@ -74,6 +74,18 @@ def menu(request, username):
         return HttpResponseNotFound("Object not found")    
 
 
+def list(request):
+    logger.debug('')
+
+    logger.debug(request)
+
+##     try:
+##         tool = Tool.objects.get(name=toolname)
+##         return HttpResponse(tool.json())
+##     except ObjectDoesNotExist:
+##         return HttpResponseNotFound("Object not found")
+
+
 def submitworkflow(request):
     logger.debug('')
    
