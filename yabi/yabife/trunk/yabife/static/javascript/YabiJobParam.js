@@ -80,7 +80,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
                 if (this.defaultValue[index].type == 'job') {
                     tempEl = document.createElement('span');
                     tempEl.className = 'acceptedExtension';
-                    tempEl.appendChild(document.createTextNode('files from ' + this.defaultValue[index].jobId));
+                    tempEl.appendChild(document.createTextNode('files from: ' + this.job.workflow.getDisplayNameForJobId(this.defaultValue[index].jobId)));
                     
                     this.valueEl.appendChild(tempEl);
                 } else {

@@ -305,6 +305,22 @@ YabiWorkflow.prototype.getName = function() {
     }
 };
 
+
+/**
+ * getDisplayNameForJobId
+ */
+YabiWorkflow.prototype.getDisplayNameForJobId = function(jobId) {
+    var num = parseInt(jobId);
+    num = num - 1;
+    
+    if (num < this.jobs.length) {
+        return this.jobs[num].toString();
+    } else {
+        return "unknown";
+    }
+};
+
+
 /**
  * isValid
  *
