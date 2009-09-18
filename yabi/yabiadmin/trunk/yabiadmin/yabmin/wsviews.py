@@ -8,6 +8,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from yabiadmin.yabiengine import wfbuilder
+from yabiadmin.yabiengine import backendhelper
 
 import logging
 import yabilogging
@@ -75,11 +76,16 @@ def menu(request, username):
 
 
 def ls(request):
-    assert False
     logger.debug('')
-    logger.debug(request)
+    logger.debug(request.GET)
 
-    return HttpResponse('here')
+    # TODO remove hard coding. Should pass in uri here
+    # TODO don't user request.META['USER'] should be authing here somehow and using django user object ie request.user
+    uri = 'file://localhost.localdomain/%s%s' % (request.META['USER'], request.GET['uri'])
+
+    filelisting = backendhelper.get_file_list(uri)
+
+    return HttpResponse(filelisting)
     
 
 ##     try:
