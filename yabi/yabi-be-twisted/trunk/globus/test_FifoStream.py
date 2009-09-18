@@ -152,4 +152,37 @@ class FifoStreamTest(unittest.TestCase):
         self.assertEqual(type(exc), IOError)
         self.assertEqual(exc.errno, 32)             # errno 32 = Broken Pipe
         
+    def test_fifostream_prepush_nothing(self):
+        """Check that the fifo is read through"""
+        fifo = self.create_fifo()
         
+        # start writing into the fifo
+        q = Queue()
+        p = Process(target=self.writer_task, args=(fifo,q))
+        p.start()
+    
+        f=open(fifo)
+        fifostream = FifoStream.FifoStream(f)
+        self.assert_(fifostream)
+
+        fifostream.prepush("")
+
+        # first read
+        data = fifostream.read()
+        self.assertEquals(data,(self.data*self.count)[:len(data)])
+        
+        # keep reading until its done
+        piece = ""
+        while piece!=None:
+            data += piece
+            piece = fifostream.read()
+        
+        self.assertEquals(len(data),self.count*len(self.data))                  # make sure the length of the data is correct
+        self.assertEquals(data,self.data*self.count)                            # make sure the data matches exactly
+        
+        f.close()
+        self.destroy_fifo(fifo)
+
+        # writer should have no error
+        exc = q.get()
+        self.assertEquals(exc,None)
