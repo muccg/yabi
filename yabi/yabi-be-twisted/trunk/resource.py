@@ -76,5 +76,3 @@ class BaseResource(resource.PostableResource):
         return http.Response(responsecode.OK,
                         {'content-type': http_headers.MimeType('text', 'plain')},
                          "Twisted Yabi Core: %s"%VERSION)
-                                            
-                                                

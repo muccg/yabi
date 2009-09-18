@@ -9,7 +9,12 @@ import time
 import stat
 import sys
 
+import log
+
 class ProxyInitError(Exception):
+    pass
+
+class ProxyInvalidPassword(Exception):
     pass
 
 GLOBUS_TIME_FORMAT = "%a %b %d %H:%M:%S %Y"
@@ -18,6 +23,14 @@ DEFAULT_CERTIFICATE_EXPIRY_MINUTES = 60*3                          # set this fo
 def _decode_time(timestring):
     """turn 'Tue Jun  9 04:02:41 2009' into a unix timestamp"""
     return time.strptime( timestring, GLOBUS_TIME_FORMAT )
+
+def rm_rf(root):
+    for path, dirs, files in os.walk(root, False):
+        for fn in files:
+            os.unlink(os.path.join(path, fn))
+        for dn in dirs:
+            os.rmdir(os.path.join(path, dn))
+    os.rmdir(root)
 
 class CertificateProxy(object):
     grid_proxy_init = "/usr/local/globus/bin/grid-proxy-init"
@@ -31,6 +44,17 @@ class CertificateProxy(object):
         self.CERTIFICATE_EXPIRY_MINUTES = expiry
         self.CERTIFICATE_EXPIRY_SECONDS = 60*self.CERTIFICATE_EXPIRY_MINUTES
         self.CERTIFICATE_EXPIRY_TIME = "%d:%d"%(self.CERTIFICATE_EXPIRY_MINUTES/60,self.CERTIFICATE_EXPIRY_MINUTES%60)
+    
+    def CleanUp(self):
+        """Clean up the proxy directory"""
+        assert(self.tempdir)
+        rm_rf(self.tempdir)
+        self.tempdir=None
+    
+    @property
+    def storage(self):
+        """A property that is the directory we store the cert proxies in"""
+        return self.tempdir
     
     def ProxyFile(self, userid):
         """return the proxy file location for the specified user"""
@@ -52,7 +76,7 @@ class CertificateProxy(object):
     def _make_cert_storage(self):
         """makes a directory for storing the certificates in"""
         self.tempdir = tempfile.mkdtemp(prefix="yabi-credentials-")
-        print "Certificate Proxy Store created in",self.tempdir
+        log.info("Certificate Proxy Store created in '%s'"%self.tempdir)
         
     def CreateUserProxy(self, userid, cert, key, password):
         """creates the proxy object for the specified user, using the passed in cert and key, decrypted by password
@@ -69,9 +93,6 @@ class CertificateProxy(object):
         certfile = os.path.join( self.tempdir, "%s.cert"%userid )
         keyfile = os.path.join( self.tempdir, "%s.key"%userid )
 
-        print certfile
-        print keyfile
-        
         # write out the pems
         with open( certfile, 'wb' ) as fh:
             fh.write(cert)
@@ -99,8 +120,6 @@ class CertificateProxy(object):
         try:
             # TODO: non blocking version of this call
             stdout, stderr = proc.communicate( password )
-            print stdout
-            print stderr
         except OSError, ose:
             if ose[0]==32:
                 # broken pipe
@@ -116,6 +135,8 @@ class CertificateProxy(object):
         
         if code:
             # error
+            if "Bad passphrase for key" in stdout:
+                raise ProxyInvalidPassword, "Could not initialise proxy: Invalid password"
             raise ProxyInitError, "Could not initialise proxy: %s"%(stdout.split("\n")[0])
         
         # decode the expiry time and return it as timestamp
@@ -123,8 +144,6 @@ class CertificateProxy(object):
         
         # get first line
         res = [X.split(':',1)[1] for X in res if X.startswith('Your proxy is valid until:')][0]
-        
-        print "User proxy cert created in",proxyfile
         
         return _decode_time(res.strip())
       
