@@ -288,7 +288,7 @@ YabiFileSelector.prototype.hydrate = function(path) {
     
     //load json
     var jsUrl, jsCallback, jsTransaction;
-    jsUrl =  baseURL + "?path=" + escape(path);
+    jsUrl =  baseURL + "?uri=" + escape(path);
     jsCallback = {
             success: this.hydrateResponse,
             failure: this.hydrateResponse,
