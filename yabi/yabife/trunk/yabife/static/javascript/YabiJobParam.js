@@ -20,6 +20,8 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
     this.isMandatory = true;
     this.editable = editable;
     
+    var tempEl;
+    
     this.displayName = obj.displayName;
     if (! obj.hasOwnProperty("displayName")) {
         this.displayName = obj["switch"];
@@ -75,7 +77,15 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
                 this.valueEl.appendChild(document.createTextNode(this.defaultValue[index]));
             } else {
                 //TODO rendering differently per file type
-                this.valueEl.appendChild(document.createTextNode('file input'));
+                if (this.defaultValue[index].type == 'job') {
+                    tempEl = document.createElement('span');
+                    tempEl.className = 'acceptedExtension';
+                    tempEl.appendChild(document.createTextNode('files from ' + this.defaultValue[index].jobId));
+                    
+                    this.valueEl.appendChild(tempEl);
+                } else {
+                    this.valueEl.appendChild(document.createTextNode('file input'));
+                }
             }
         }
         
