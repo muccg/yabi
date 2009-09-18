@@ -20,7 +20,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
     this.isMandatory = true;
     this.editable = editable;
     
-    var tempEl;
+    var tempEl, namePlaceholderEl;
     
     this.displayName = obj.displayName;
     if (! obj.hasOwnProperty("displayName")) {
@@ -76,17 +76,33 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
             if (!YAHOO.lang.isObject(this.defaultValue[index])) {
                 this.valueEl.appendChild(document.createTextNode(this.defaultValue[index]));
             } else {
-                //TODO rendering differently per file type
+                //rendering differently per file type
                 if (this.defaultValue[index].type == 'job') {
                     tempEl = document.createElement('span');
                     tempEl.className = 'acceptedExtension';
-                    tempEl.appendChild(document.createTextNode(this.job.workflow.getDisplayNameForJobId(this.defaultValue[index].jobId)));
+                    
+                    if (this.job.workflow.isJobIdLoaded(this.defaultValue[index].jobId)) {
+                        tempEl.appendChild(document.createTextNode(this.job.workflow.getDisplayNameForJobId(this.defaultValue[index].jobId)));
+                    } else {
+                        //register tempEl to be updated with name when it is loaded
+                        this.job.workflow.getJobForId(this.defaultValue[index].jobId).registerNameDependency(tempEl);
+                    }
                     
                     this.valueEl.appendChild(tempEl);
                 } else if (this.defaultValue[index].type == 'jobfile') {
                     tempEl = document.createElement('span');
                     tempEl.className = 'acceptedExtension';
-                    tempEl.appendChild(document.createTextNode(this.job.workflow.getDisplayNameForJobId(this.defaultValue[index].jobId) + '/' + this.defaultValue[index].filename));
+                    
+                    if (this.job.workflow.isJobIdLoaded(this.defaultValue[index].jobId)) {
+                        tempEl.appendChild(document.createTextNode(this.job.workflow.getDisplayNameForJobId(this.defaultValue[index].jobId) + '/' + this.defaultValue[index].filename));
+                    } else {
+                        //register a placeholder el to be updated with name when loaded
+                        namePlaceholderEl = document.createElement('span');
+                        tempEl.appendChild(namePlaceholderEl);
+                        tempEl.appendChild('/' + this.defaultValue[index].filename));
+                        
+                        this.job.workflow.getJobForId(this.defaultValue[index].jobId).registerNameDependency(namePlaceholderEl);
+                    }
                     
                     this.valueEl.appendChild(tempEl);
                 } else if (this.defaultValue[index].type == 'file') {

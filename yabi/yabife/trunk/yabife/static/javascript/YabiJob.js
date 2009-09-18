@@ -5,6 +5,7 @@
  * create a new yabi job (node) corresponding to a tool
  */
 function YabiJob(toolName, jobId, preloadValues) {
+    this.loaded = false;
     this.toolName = toolName;
     this.displayName = toolName; //temporary while loading
     this.jobId = jobId;
@@ -127,6 +128,15 @@ YabiJob.prototype.updateTitle = function() {
     
     //update job title too
     this.titleEl.replaceChild(document.createTextNode(updatedTitle), this.titleEl.firstChild);
+    
+    //update our name dependents and clear them
+    if (!YAHOO.lang.isUndefined(this.nameDependents)) {
+        for (var index in this.nameDependents) {
+            this.nameDependents[index].appendChild(document.createTextNode(updatedTitle));
+        }
+        
+        this.nameDependents = [];
+    }
 };
 
 /**
@@ -533,6 +543,22 @@ YabiJob.prototype.solidify = function(obj) {
         //tell workflow to propagate new variable info
         this.workflow.propagateFiles();
     }
+    
+    //now we are finished loading
+    this.loaded = true;
+};
+
+/**
+ * registerNameDependency
+ *
+ * allows spans or divs in other elements to be updated with the displayName of this job when it has loaded properly
+ */
+YabiJob.prototype.registerNameDependency = function(element) {
+    if (YAHOO.lang.isUndefined(this.nameDependents)) {
+        this.nameDependents = [];
+    }
+    
+    this.nameDependents.push(element);
 };
 
 /**

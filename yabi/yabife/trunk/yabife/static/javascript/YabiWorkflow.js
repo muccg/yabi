@@ -322,6 +322,36 @@ YabiWorkflow.prototype.getDisplayNameForJobId = function(jobId) {
 
 
 /**
+ * isJobIdLoaded
+ */
+YabiWorkflow.prototype.isJobIdLoaded = function(jobId) {
+    var num = parseInt(jobId);
+    num = num - 1;
+    
+    if (num < this.jobs.length) {
+        return this.jobs[num].loaded;
+    } else {
+        //no such jobId, so, uh, yes it is
+        return true;
+    }
+};
+
+/**
+ * getJobForId
+ */
+YabiWorkflow.prototype.getJobForId = function(jobId) {
+    var num = parseInt(jobId);
+    num = num - 1;
+    
+    if (num < this.jobs.length) {
+        return this.jobs[num];
+    } else {
+        //no such jobId, so, uh, oops
+        return null;
+    }
+};
+
+/**
  * isValid
  *
  * verify validity of all jobs before proceeding
