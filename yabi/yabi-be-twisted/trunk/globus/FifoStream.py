@@ -54,6 +54,8 @@ class FifoStream(SimpleStream):
                 self.length -= bytesRead
             return b
 
-    def close(self):
+    def close(self, close_handle=True):
+        if close_handle:
+            self.f.close()
         self.f = None
         SimpleStream.close(self)

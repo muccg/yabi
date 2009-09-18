@@ -77,7 +77,7 @@ mBhcDDtYK60lxLByc853hAQEVD2rnh6iBC2rKLQnIu8gubz0l/crvQ==
 
 TEST_KEY_PW = "1234567890"
 
-class TestSetup(unittest.TestCase):
+class CertificateProxyTest(unittest.TestCase):
     """Test the server sets up correctly and tears down correctly."""
     _suppressUpDownWarning = True
     PORT = 9000
