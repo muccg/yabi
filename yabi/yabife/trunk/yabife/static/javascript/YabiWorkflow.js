@@ -18,7 +18,9 @@ function YabiWorkflow(editable) {
     };
     
     var date = new Date();
-    this.name = "unnamed (" + date.getFullYear() + "-" + dblzeropad(date.getMonth()) + "-" + dblzeropad(date.getDate()) + " " + dblzeropad(date.getHours()) + ":" + dblzeropad(date.getMinutes()) + ")";
+    if (editable) {
+        this.name = "unnamed (" + date.getFullYear() + "-" + dblzeropad(date.getMonth()) + "-" + dblzeropad(date.getDate()) + " " + dblzeropad(date.getHours()) + ":" + dblzeropad(date.getMinutes()) + ")";
+    }
     
 	this.status = "Design";
 	this.refreshTimer = null;
