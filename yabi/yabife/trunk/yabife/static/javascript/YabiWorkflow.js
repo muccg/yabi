@@ -70,6 +70,10 @@ function YabiWorkflow(editable) {
     this.tagListEl = document.createElement('span');
     this.tagEl.appendChild( this.tagListEl );
     
+    this.tagInputEl = document.createElement('input');
+    this.tagInputEl.className = "displayNone";
+    this.tagEl.appendChild( this.tagInputEl );
+    
     this.tagAddLink = new Image();
     this.tagAddLink.src = appURL + 'static/images/addtag.png';
     YAHOO.util.Event.addListener(this.tagAddLink, "click", this.addTagCallback, this);
@@ -632,4 +636,6 @@ YabiWorkflow.prototype.nameChangeCallback = function(e, obj) {
 
 YabiWorkflow.prototype.addTagCallback = function(e, obj) {
     //do stuff
+    obj.tagListEl.style.display = 'none';
+    obj.tagInputEl.style.display = 'block';
 };
