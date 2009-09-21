@@ -81,11 +81,14 @@ function YabiWorkflow(editable) {
     
     this.tagHintDiv = document.createElement("div");
     this.tagHintDiv.className = "displayNone";
+    
     this.tagCancelEl = document.createElement("span");
+    this.tagCancelEl.className = "fakeButton";
     this.tagCancelEl.appendChild( document.createTextNode('cancel') );
     YAHOO.util.Event.addListener(this.tagCancelEl, "click", this.cancelTagsCallback, this);
     
     this.tagSaveEl = document.createElement("span");
+    this.tagSaveEl.className = "fakeButton";
     this.tagSaveEl.appendChild( document.createTextNode('save') );
     YAHOO.util.Event.addListener(this.tagSaveEl, "click", this.saveTagsCallback, this);
     
@@ -707,7 +710,6 @@ YabiWorkflow.prototype.addTagCallback = function(e, obj) {
     obj.tagListEl.style.display = 'none';
     obj.tagInputEl.style.display = 'inline';
     obj.tagHintDiv.className = "tagHint";
-    obj.tagSaveEl.className = "fakeButton";
 };
 
 YabiWorkflow.prototype.cancelTagsCallback = function(e, obj) {
