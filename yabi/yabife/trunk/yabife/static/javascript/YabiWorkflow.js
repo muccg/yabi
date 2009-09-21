@@ -458,7 +458,7 @@ YabiWorkflow.prototype.hydrate = function(workflowId) {
  * save tags
  */
 YabiWorkflow.prototype.saveTags = function() {
-    if (YAHOO.lang.isUndefined(this.workflowId) {
+    if (YAHOO.lang.isUndefined(this.workflowId)) {
         this.tagsFinishedSaving();
         return;
     }
