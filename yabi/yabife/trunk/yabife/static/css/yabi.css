@@ -706,6 +706,7 @@ display:inline;
 	color: #666;
 	position: relative;
 	line-height: 1.6em;
+    cursor: pointer;
 }
 
 .selectedStatusFilter {
@@ -722,6 +723,7 @@ display:inline;
 	color: #fff;
 	position: relative;
 	line-height: 1.6em;
+    cursor: pointer;
 }
 
 .destroyDiv {
