@@ -58,11 +58,14 @@ def addJob(workflow, job_dict, order):
 
     tool = Tool.objects.get(name=job_dict["toolName"])
 
-    # add a job, return None if no backend as nothing needs to be run
-    if tool.backend.name == 'nullbackend':
-        return None
     job = Job(workflow=workflow, order=order, start_time=datetime.datetime.now())
     job.save()
+
+    # add a job, return None if no backend as nothing needs to be run
+    if tool.backend.name == 'nullbackend':
+        job.status = settings.STATUS['complete']
+        job.save()
+
 
 
     # cache job for later reference
