@@ -637,5 +637,5 @@ YabiWorkflow.prototype.nameChangeCallback = function(e, obj) {
 YabiWorkflow.prototype.addTagCallback = function(e, obj) {
     //do stuff
     obj.tagListEl.style.display = 'none';
-    obj.tagInputEl.style.display = 'block';
+    obj.tagInputEl.style.display = 'inline';
 };
