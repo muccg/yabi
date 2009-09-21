@@ -54,7 +54,8 @@ def build(username, workflow_json):
 
 def addJob(workflow, job_dict, order):
     logger.debug('')
-    
+    logger.debug(job_dict)    
+
     tool = Tool.objects.get(name=job_dict["toolName"])
 
     # add a job, return None if no backend as nothing needs to be run
