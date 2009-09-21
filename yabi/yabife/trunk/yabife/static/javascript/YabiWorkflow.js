@@ -74,10 +74,10 @@ function YabiWorkflow(editable) {
     this.tagInputEl.className = "displayNone";
     this.tagEl.appendChild( this.tagInputEl );
     
-    this.tagAddLink = new Image();
-    this.tagAddLink.src = appURL + 'static/images/addtag.png';
-    YAHOO.util.Event.addListener(this.tagAddLink, "click", this.addTagCallback, this);
-    this.tagEl.appendChild(this.tagAddLink);
+//    this.tagAddLink = new Image();
+//    this.tagAddLink.src = appURL + 'static/images/addtag.png';
+//    YAHOO.util.Event.addListener(this.tagAddLink, "click", this.addTagCallback, this);
+//    this.tagEl.appendChild(this.tagAddLink);
 
     this.mainEl.appendChild(this.tagEl);
     
@@ -493,6 +493,16 @@ YabiWorkflow.prototype.fetchProgress = function() {
 };
 
 /**
+ * setTags
+ *
+ * update tags array and input field simultaneously
+ */
+YabiWorkflow.prototype.setTags = function(tagArray) {
+    this.tags = tagArray;
+    this.tagInputEl.value = tagArray;
+};
+
+/**
  * destroy
  *
  * delete any internal variables and dom handlers
@@ -534,7 +544,7 @@ YabiWorkflow.prototype.hydrateCallback = function(o) {
         obj = YAHOO.lang.JSON.parse(json);
         
         //preprocess wrapper meta data
-        target.tags = obj.tags;
+        target.setTags(obj.tags);
         
         target.solidify(YAHOO.lang.JSON.parse(obj.json));
     } catch (e) {
