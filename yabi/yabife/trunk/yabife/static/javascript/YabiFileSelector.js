@@ -113,10 +113,10 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
         for (var index in this.browseListing[toplevelindex].directories) {
             fileEl = document.createElement("div");
             fileEl.className = "dirItem";
-            fileEl.appendChild(document.createTextNode(this.browseListing[toplevelindex][index][0]));
+            fileEl.appendChild(document.createTextNode(this.browseListing[toplevelindex].directories[index][0]));
             this.fileListEl.appendChild(fileEl);
             
-            invoker = {"target":this, "object":new YabiSimpleFileValue(this.pathComponents, this.browseListing[index].filename)};
+            invoker = {"target":this, "object":new YabiSimpleFileValue(this.pathComponents, this.browseListing[toplevelindex].directories[index][0])};
             
             expandEl = document.createElement("a");
             expandEl.appendChild(document.createTextNode(" (browse)"));
@@ -127,10 +127,10 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
         for (var index in this.browseListing[toplevelindex].files) {
             fileEl = document.createElement("div");
             fileEl.className = "fileItem";
-            fileEl.appendChild(document.createTextNode(this.browseListing[toplevelindex][index][0]));
+            fileEl.appendChild(document.createTextNode(this.browseListing[toplevelindex].files[index][0]));
             this.fileListEl.appendChild(fileEl);
             
-            invoker = {"target":this, "object":new YabiSimpleFileValue(this.pathComponents, this.browseListing[index].filename)};
+            invoker = {"target":this, "object":new YabiSimpleFileValue(this.pathComponents, this.browseListing[toplevelindex].files[index][0])};
             
             YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
         }
