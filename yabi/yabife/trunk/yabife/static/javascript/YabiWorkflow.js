@@ -85,6 +85,7 @@ function YabiWorkflow(editable) {
     this.tagSaveEl.appendChild( document.createTextNode('save') );
     YAHOO.util.Event.addListener(this.tagSaveEl, "click", this.saveTagsCallback, this);
     this.tagHintDiv.appendChild(this.tagSaveEl);
+    this.tagEl.appendChild(this.tagHintDiv);
 
     this.mainEl.appendChild(this.tagEl);
     
@@ -673,6 +674,7 @@ YabiWorkflow.prototype.addTagCallback = function(e, obj) {
     //do stuff
     obj.tagListEl.style.display = 'none';
     obj.tagInputEl.style.display = 'inline';
+    obj.tagHintDiv.className = "fakeButton";
 };
 
 YabiWorkflow.prototype.saveTagsCallback = function(e, obj) {
