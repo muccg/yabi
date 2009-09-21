@@ -6,7 +6,9 @@ from yabiadmin.yabiengine.YabiJobException import YabiJobException
 from yabiadmin.yabiengine.urihelper import get_backend_uri, uri_get_pseudopath
 from yabiadmin.yabiengine import backendhelper
 from django.utils import simplejson as json
+from yabiengine import wfwrangler
 import datetime
+
 
 import logging
 import yabilogging
@@ -31,6 +33,9 @@ def build(username, workflow_json):
         for i,job_dict in enumerate(workflow_dict["jobs"]):
             logger.debug(workflow_dict["jobs"])
             job = addJob(workflow, job_dict, i)
+
+        # start processing
+        wfwrangler.walk(obj.workflow)
 
     except ObjectDoesNotExist, e:
         logger.critical(e)
