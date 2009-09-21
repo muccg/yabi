@@ -81,9 +81,14 @@ function YabiWorkflow(editable) {
     
     this.tagHintDiv = document.createElement("div");
     this.tagHintDiv.className = "displayNone";
+    this.tagCancelEl = document.createElement("span");
+    this.tagCancelEl.appendChild( document.createTextNode('cancel') );
+    YAHOO.util.Event.addListener(this.tagCancelEl, "click", this.cancelTagsCallback, this);
+    
     this.tagSaveEl = document.createElement("span");
     this.tagSaveEl.appendChild( document.createTextNode('save') );
     YAHOO.util.Event.addListener(this.tagSaveEl, "click", this.saveTagsCallback, this);
+    
     this.tagHintDiv.appendChild(this.tagSaveEl);
     this.tagEl.appendChild(this.tagHintDiv);
 
@@ -447,7 +452,7 @@ YabiWorkflow.prototype.hydrate = function(workflowId) {
  * save tags
  */
 YabiWorkflow.prototype.saveTags = function() {
-    var baseURL = appURL + "workflows/" + YAHOO.ccgyabi.username + "/" + this.workflowId + "/tags/add";
+    var baseURL = appURL + "workflows/" + YAHOO.ccgyabi.username + "/" + this.workflowId + "/tags";
     
     //load json
     var jsUrl, jsCallback, jsTransaction;
@@ -526,6 +531,19 @@ YabiWorkflow.prototype.fetchProgress = function() {
 YabiWorkflow.prototype.setTags = function(tagArray) {
     this.tags = tagArray;
     this.tagInputEl.value = tagArray;
+};
+
+/**
+ * cancelTagEditing
+ *
+ * reset tag input to the same as the tags array, hide editing fields
+ */
+YabiWorkflow.prototype.cancelEditingTags = function() {
+    this.tagInputEl.value = this.tags;
+    this.tagHintDiv.className = "displayNone";
+    this.tagAddLink.className = "";
+    this.tagInputEl.className = "displayNone";
+    this.tagListEl.className = "";
 };
 
 /**
@@ -676,6 +694,10 @@ YabiWorkflow.prototype.addTagCallback = function(e, obj) {
     obj.tagInputEl.style.display = 'inline';
     obj.tagHintDiv.className = "tagHint";
     obj.tagSaveEl.className = "fakeButton";
+};
+
+YabiWorkflow.prototype.cancelTagsCallback = function(e, obj) {
+    obj.cancelTagEditing();
 };
 
 YabiWorkflow.prototype.saveTagsCallback = function(e, obj) {
