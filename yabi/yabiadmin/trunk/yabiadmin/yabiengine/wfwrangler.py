@@ -75,6 +75,13 @@ def prepare_tasks(job):
         job.extensions = []
 
     paramlist = eval(job.commandparams)
+
+    if not paramlist:
+        # job operates without batchonparam
+        t = Task(job=job, command=job.command, status="ready")
+        t.save()
+        
+    
     for param in paramlist:
 
         ##################################################
