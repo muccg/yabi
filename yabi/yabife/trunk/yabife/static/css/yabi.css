@@ -815,7 +815,7 @@ display:inline;
 }
 
 .fileSelectorListing .fileItem.hover, .fileSelectorListing .fileItem:hover, .fileSelectorListing .dirItem.hover, .fileSelectorListing .dirItem:hover {
-	background-color: #ddf;
+	background-color: #dbe5f6;
 }
 
 .fileSelectorBrowse {
