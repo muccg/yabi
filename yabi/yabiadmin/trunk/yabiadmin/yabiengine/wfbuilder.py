@@ -35,6 +35,7 @@ def build(username, workflow_json):
             job = addJob(workflow, job_dict, i)
 
         # start processing
+        logger.debug('-----Starting workflow id %d -----' % workflow.id)
         wfwrangler.walk(workflow)
 
     except ObjectDoesNotExist, e:

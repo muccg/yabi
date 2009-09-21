@@ -98,9 +98,6 @@ def ls(request):
 def submitworkflow(request):
     logger.debug('')
    
-    logger.debug(request)
-
-
     try:
         # probably want to catch the type of exceptions we may get from this
         wfbuilder.build(request.POST['username'], request.POST["workflowjson"])
