@@ -230,7 +230,7 @@ YabiWorkflowCollection.prototype.toString = function() {
  */
 YabiWorkflowCollection.prototype.filter = function() {
     var filterVal = this.searchEl.value;
-    var statusFilterVal = this.statusFilter.value;
+    var statusFilterVal = this.statusFilterValue;
     var visibleCount = 0;
     
     if (filterVal === "") {
