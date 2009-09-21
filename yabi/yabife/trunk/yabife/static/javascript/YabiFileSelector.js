@@ -75,7 +75,7 @@ function YabiFileSelector(param) {
     this.browseEl.appendChild(this.uploadEl);
     
     // update the browser
-    this.updateBrowser(new YabiSimpleFileValue([], 'workspace'));
+    this.updateBrowser(new YabiSimpleFileValue(['/workspace'], ''));
 }
 
 /**
@@ -89,7 +89,9 @@ YabiFileSelector.prototype.updateBrowser = function(location) {
     if (this.pathComponents.length === 0) {
         this.pathComponents.push([]);
     }
-    this.pathComponents.push(location.filename);
+    if (location.filename !== '') {
+        this.pathComponents.push(location.filename);
+    }
     
     //clear existing files
     while (this.fileListEl.firstChild) {
