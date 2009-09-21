@@ -68,6 +68,7 @@ function YabiWorkflow(editable) {
     this.tagEl.appendChild( document.createTextNode('Tags: ') );
     
     this.tagListEl = document.createElement('span');
+    this.tagListEl.className = "displayNone";
     this.tagEl.appendChild( this.tagListEl );
     
     this.tagInputEl = document.createElement('input');
