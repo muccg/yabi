@@ -156,6 +156,7 @@ def get_param_value(workflow, tp):
             elif type(item) == str or type(item) == unicode:
                 value += item
 
+    logger.debug(value)
     return value
 
 
