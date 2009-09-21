@@ -69,7 +69,11 @@ YabiWorkflowProxy.prototype.matchesFilters = function(needle, status) {
         }
     }
     
-    //TODO add additional filters here on keywords
+    //add additional filters here on keywords
+    var tagUnified = '' + this.payload.tags;
+    if (tagUnified.indexOf(needle) != -1) {
+        return true;
+    }
     
     return false;
 };
