@@ -41,6 +41,9 @@ class CertificateProxy(object):
         else:
             assert os.path.exists(storage) and os.path.isdir(storage), "storage path needs to exist and be a directory"
             self.tempdir=storage
+        self.SetExpiryTime(expiry)
+    
+    def SetExpiryTime(self, expiry):
         self.CERTIFICATE_EXPIRY_MINUTES = expiry
         self.CERTIFICATE_EXPIRY_SECONDS = 60*self.CERTIFICATE_EXPIRY_MINUTES
         self.CERTIFICATE_EXPIRY_TIME = "%d:%d"%(self.CERTIFICATE_EXPIRY_MINUTES/60,self.CERTIFICATE_EXPIRY_MINUTES%60)
