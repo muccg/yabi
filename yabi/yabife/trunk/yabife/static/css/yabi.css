@@ -782,7 +782,7 @@ display:inline;
 }
 
 .fileSelectorBreadcrumb span.hover, .fileSelectorBreadcrumb span:hover {
-	background-color: #ddd;
+	background-color: #eee;
 	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#ddd));
 	padding: 7px;
 	padding-right: 5px;
@@ -791,7 +791,7 @@ display:inline;
 }
 
 .fileSelectorListing {
-	background-color: #fff;
+	background-color: #eee;
 	height: 280px;
 	overflow: auto;
 }
@@ -800,18 +800,18 @@ display:inline;
     color: #000;
     padding: 3px;
     padding-left: 22px;
-	border-bottom: 1px dotted #ccc;
+	border-bottom: 1px dotted #eee;
 	cursor: pointer;
-    background:url(../images/file.png) 2px 2px no-repeat;
+    background:#fff url(../images/file.png) 2px 2px no-repeat;
 }
 
 .fileSelectorListing .dirItem {
     color: #00f;
     padding: 3px;
     padding-left: 22px;
-	border-bottom: 1px dotted #ccc;
+	border-bottom: 1px dotted #eee;
 	cursor: pointer;
-    background:url(../images/folder.png) 2px 2px no-repeat;
+    background:#fff url(../images/folder.png) 2px 2px no-repeat;
 }
 
 .fileSelectorListing .fileItem.hover, .fileSelectorListing .fileItem:hover, .fileSelectorListing .dirItem.hover, .fileSelectorListing .dirItem:hover {
@@ -825,7 +825,7 @@ display:inline;
 
 .fileSelectorUpload {
     position:relative;
-    border-top: 1px solid #ccc;
+    border-top: 1px solid #eee;
     color: #000;
 	background-color: #eee;
 	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
