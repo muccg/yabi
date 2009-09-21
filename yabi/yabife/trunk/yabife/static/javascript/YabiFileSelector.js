@@ -111,6 +111,7 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
     // each file and directory is an array of [fname, size in bytes, date]
     for (var toplevelindex in this.browseListing) {
         for (var index in this.browseListing[toplevelindex].directories) {
+            fileEl = document.createElement("div");
             fileEl.className = "dirItem";
             fileEl.appendChild(document.createTextNode(this.browseListing[toplevelindex][index][0]));
             this.fileListEl.appendChild(fileEl);
@@ -124,6 +125,7 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
         }
         for (var index in this.browseListing[toplevelindex].files) {
+            fileEl = document.createElement("div");
             fileEl.className = "fileItem";
             fileEl.appendChild(document.createTextNode(this.browseListing[toplevelindex][index][0]));
             this.fileListEl.appendChild(fileEl);
@@ -380,6 +382,5 @@ YabiFileSelector.prototype.hydrateResponse = function(o) {
         target.hydrateProcess(YAHOO.lang.JSON.parse(json));
     } catch (e) {
         YAHOO.ccgyabi.YabiMessage.yabiMessageFail('Error loading file listing');
-        console.log(e);
     }
 };
