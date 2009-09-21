@@ -71,7 +71,6 @@ function YabiWorkflow(editable) {
     this.tagEl.appendChild( this.tagListEl );
     
     this.tagInputEl = document.createElement('input');
-    this.tagInputEl.className = "displayNone";
     this.tagEl.appendChild( this.tagInputEl );
     
 //    this.tagAddLink = new Image();
