@@ -81,7 +81,7 @@ function YabiWorkflow(editable) {
     
     this.tagHintDiv = document.createElement("div");
     this.tagHintDiv.className = "displayNone";
-    this.tagSaveEl = document.createElement("a");
+    this.tagSaveEl = document.createElement("span");
     this.tagSaveEl.appendChild( document.createTextNode('save') );
     YAHOO.util.Event.addListener(this.tagSaveEl, "click", this.saveTagsCallback, this);
     this.tagHintDiv.appendChild(this.tagSaveEl);
@@ -447,7 +447,7 @@ YabiWorkflow.prototype.hydrate = function(workflowId) {
  * save tags
  */
 YabiWorkflow.prototype.saveTags = function() {
-    var baseURL = appURL + "workflows/" + YAHOO.ccgyabi.username + "/" + workflowId + "/tags/add";
+    var baseURL = appURL + "workflows/" + YAHOO.ccgyabi.username + "/" + this.workflowId + "/tags/add";
     
     //load json
     var jsUrl, jsCallback, jsTransaction;
@@ -674,7 +674,8 @@ YabiWorkflow.prototype.addTagCallback = function(e, obj) {
     //do stuff
     obj.tagListEl.style.display = 'none';
     obj.tagInputEl.style.display = 'inline';
-    obj.tagHintDiv.className = "fakeButton";
+    obj.tagHintDiv.className = "tagHint";
+    obj.tagSaveEl.className = "fakeButton";
 };
 
 YabiWorkflow.prototype.saveTagsCallback = function(e, obj) {

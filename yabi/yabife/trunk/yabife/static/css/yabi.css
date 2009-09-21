@@ -492,6 +492,11 @@ display:inline;
     right:4px;
 }
 
+.tagHint {
+    margin-top:3px;
+    text-align:right;
+}
+
 .workflowContainer {
 //	background-color: #666;
 	display: block;
