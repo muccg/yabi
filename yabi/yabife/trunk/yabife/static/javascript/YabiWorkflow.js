@@ -64,10 +64,11 @@ function YabiWorkflow(editable) {
     
     //tag el
     this.tagEl = document.createElement('div');
-    this.tagEl.className = 'tagList';
+    this.tagEl.className = 'tagListContainer';
     this.tagEl.appendChild( document.createTextNode('Tags: ') );
     
     this.tagListEl = document.createElement('span');
+    this.tagListEl.className 'tagList';
     this.tagEl.appendChild( this.tagListEl );
     
     this.tagInputEl = document.createElement('input');
@@ -545,9 +546,9 @@ YabiWorkflow.prototype.setTags = function(tagArray) {
 YabiWorkflow.prototype.cancelTagEditing = function() {
     this.tagInputEl.value = this.tags;
     this.tagHintDiv.className = "displayNone";
-    this.tagAddLink.className = "";
+    this.tagAddLink.className = "tagAddLink";
     this.tagInputEl.className = "displayNone";
-    this.tagListEl.className = "";
+    this.tagListEl.className = "tagList";
 };
 
 /**
@@ -558,9 +559,9 @@ YabiWorkflow.prototype.cancelTagEditing = function() {
 YabiWorkflow.prototype.tagsFinishedSaving = function() {
     this.tags = this.tagInputEl.split(",");
     this.tagHintDiv.className = "displayNone";
-    this.tagAddLink.className = "";
+    this.tagAddLink.className = "tagAddLink";
     this.tagInputEl.className = "displayNone";
-    this.tagListEl.className = "";
+    this.tagListEl.className = "tagList";
 };
 
 /**
@@ -721,8 +722,15 @@ YabiWorkflow.prototype.saveTagsCallback = function(e, obj) {
     obj.saveTags();
 };
 
-YabiWorkflow.prototype.saveTagsResponseCallback = function(e, obj) {
+YabiWorkflow.prototype.saveTagsResponseCallback = function(o) {
     //do stuff
     YAHOO.ccgyabi.YabiMessage.yabiMessageSuccess("tags saved");
-    obj.tagsFinishedSaving();
+    var obj;
+    
+    try {
+        obj = o.argument[0];
+        obj.tagsFinishedSaving();
+    } catch (e) {
+        //do nothing
+    }
 };

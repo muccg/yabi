@@ -459,7 +459,7 @@ display:inline;
     width:310px;
 }
 
-.tagList {
+.tagListContainer {
 	color:#666;
     margin-top:8px;
     padding:3px;
@@ -474,7 +474,7 @@ display:inline;
     position:relative;
 }
 
-.tagList input {
+.tagListContainer input {
     background:white;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
@@ -482,10 +482,14 @@ display:inline;
     border:none;
 }
 
-.tagList img {
+.tagAddLink {
     position:absolute;
     top:3px;
     right:4px;
+}
+
+.tagList {
+    display:inline;
 }
 
 .tagHint {
