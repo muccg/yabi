@@ -86,6 +86,9 @@ function YabiFileSelector(param) {
 YabiFileSelector.prototype.updateBrowser = function(location) {
     //console.log(location);
     this.pathComponents = location.path.slice();
+    if (this.pathComponents.length === 0) {
+        this.pathComponents.push([]);
+    }
     this.pathComponents.push(location.filename);
     
     //clear existing files
@@ -172,7 +175,7 @@ YabiFileSelector.prototype.updateBreadcrumbs = function() {
         this.breadcrumbContainerEl.removeChild(this.breadcrumbContainerEl.firstChild);
     }
     
-    //a single space acts as a spacer node to prevent the container collpasing around the breadcrumbs
+    //a single space acts as a spacer node to prevent the container collapsing around the breadcrumbs
     this.breadcrumbContainerEl.appendChild(document.createTextNode(" "));
     
     var prevpath = [];
