@@ -76,6 +76,7 @@ function YabiWorkflow(editable) {
     this.tagEl.appendChild( this.tagInputEl );
     
     this.tagAddLink = new Image();
+    this.tagAddLink.className = "tagAddLink";
     this.tagAddLink.src = appURL + 'static/images/addtag.png';
     YAHOO.util.Event.addListener(this.tagAddLink, "click", this.addTagCallback, this);
     this.tagEl.appendChild(this.tagAddLink);
@@ -546,9 +547,9 @@ YabiWorkflow.prototype.setTags = function(tagArray) {
 YabiWorkflow.prototype.cancelTagEditing = function() {
     this.tagInputEl.value = this.tags;
     this.tagHintDiv.className = "displayNone";
-    this.tagAddLink.className = "tagAddLink";
     this.tagInputEl.style.display = "none";
     this.tagListEl.style.display = "inline";
+    this.tagAddLink.style.display = "block";
 };
 
 /**
@@ -564,9 +565,9 @@ YabiWorkflow.prototype.tagsFinishedSaving = function() {
     this.tagListEl.appendChild( document.createTextNode('' + this.tags) );    
 
     this.tagHintDiv.className = "displayNone";
-    this.tagAddLink.className = "tagAddLink";
     this.tagInputEl.style.display = "none";
     this.tagListEl.style.display = "inline";
+    this.tagAddLink.style.display = "block";
 };
 
 /**
@@ -713,6 +714,7 @@ YabiWorkflow.prototype.nameChangeCallback = function(e, obj) {
 
 YabiWorkflow.prototype.addTagCallback = function(e, obj) {
     //do stuff
+    obj.tagAddLink.style.display = 'none';
     obj.tagListEl.style.display = 'none';
     obj.tagInputEl.style.display = 'inline';
     obj.tagHintDiv.className = "tagHint";
