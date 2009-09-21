@@ -718,6 +718,7 @@ YabiWorkflow.prototype.addTagCallback = function(e, obj) {
     obj.tagListEl.style.display = 'none';
     obj.tagInputEl.style.display = 'inline';
     obj.tagHintDiv.className = "tagHint";
+    obj.tagInputEl.focus();
 };
 
 YabiWorkflow.prototype.cancelTagsCallback = function(e, obj) {
