@@ -89,6 +89,7 @@ function YabiWorkflow(editable) {
     this.tagSaveEl.appendChild( document.createTextNode('save') );
     YAHOO.util.Event.addListener(this.tagSaveEl, "click", this.saveTagsCallback, this);
     
+    this.tagHintDiv.appendChild(this.tagCancelEl);
     this.tagHintDiv.appendChild(this.tagSaveEl);
     this.tagEl.appendChild(this.tagHintDiv);
 
@@ -547,6 +548,19 @@ YabiWorkflow.prototype.cancelEditingTags = function() {
 };
 
 /**
+ * tagsFinishedSaving
+ *
+ * hide editing fields, solidify tags editing field into an array
+ */
+YabiWorkflow.prototype.cancelEditingTags = function() {
+    this.tags = this.tagInputEl.split(",");
+    this.tagHintDiv.className = "displayNone";
+    this.tagAddLink.className = "";
+    this.tagInputEl.className = "displayNone";
+    this.tagListEl.className = "";
+};
+
+/**
  * destroy
  *
  * delete any internal variables and dom handlers
@@ -708,4 +722,5 @@ YabiWorkflow.prototype.saveTagsCallback = function(e, obj) {
 YabiWorkflow.prototype.saveTagsResponseCallback = function(e, obj) {
     //do stuff
     YAHOO.ccgyabi.YabiMessage.yabiMessageSuccess("tags saved");
+    obj.tagsFinishedSaving();
 };

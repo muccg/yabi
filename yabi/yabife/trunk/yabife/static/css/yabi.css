@@ -494,7 +494,11 @@ display:inline;
 
 .tagHint {
     margin-top:3px;
+    padding-top:3px;
     text-align:right;
+}
+.tagHint span {
+    margin-right:4px;
 }
 
 .workflowContainer {
