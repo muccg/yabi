@@ -474,10 +474,6 @@ display:inline;
     position:relative;
 }
 
-.tagList span {
-    color:#3879e5;
-}
-
 .tagList input {
     background:white;
     -moz-border-radius: 4px;

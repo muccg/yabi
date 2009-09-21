@@ -542,7 +542,7 @@ YabiWorkflow.prototype.setTags = function(tagArray) {
  *
  * reset tag input to the same as the tags array, hide editing fields
  */
-YabiWorkflow.prototype.cancelEditingTags = function() {
+YabiWorkflow.prototype.cancelTagEditing = function() {
     this.tagInputEl.value = this.tags;
     this.tagHintDiv.className = "displayNone";
     this.tagAddLink.className = "";
@@ -555,7 +555,7 @@ YabiWorkflow.prototype.cancelEditingTags = function() {
  *
  * hide editing fields, solidify tags editing field into an array
  */
-YabiWorkflow.prototype.cancelEditingTags = function() {
+YabiWorkflow.prototype.tagsFinishedSaving = function() {
     this.tags = this.tagInputEl.split(",");
     this.tagHintDiv.className = "displayNone";
     this.tagAddLink.className = "";
