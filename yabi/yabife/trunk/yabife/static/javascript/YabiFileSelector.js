@@ -86,9 +86,6 @@ function YabiFileSelector(param) {
 YabiFileSelector.prototype.updateBrowser = function(location) {
     //console.log(location);
     this.pathComponents = location.path.slice();
-    if (this.pathComponents.length === 0) {
-        this.pathComponents.push([]);
-    }
     if (location.filename !== '') {
         this.pathComponents.push(location.filename);
     }
