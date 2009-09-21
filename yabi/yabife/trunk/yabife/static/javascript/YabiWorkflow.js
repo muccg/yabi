@@ -557,7 +557,7 @@ YabiWorkflow.prototype.cancelTagEditing = function() {
  * hide editing fields, solidify tags editing field into an array
  */
 YabiWorkflow.prototype.tagsFinishedSaving = function() {
-    this.tags = this.tagInputEl.split(",");
+    this.tags = this.tagInputEl.value.split(",");
     this.tagHintDiv.className = "displayNone";
     this.tagAddLink.className = "tagAddLink";
     this.tagInputEl.className = "displayNone";
