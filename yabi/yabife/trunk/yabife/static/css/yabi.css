@@ -459,6 +459,20 @@ display:inline;
     width:310px;
 }
 
+.tagList {
+	color:#666;
+    margin-top:6px;
+    padding:6px;
+    padding-left:14px;
+    background:#dbe5f6;
+    width:210px;
+    border:1px solid #b7c9e6;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-box-shadow: 0px 1px 2px #eee;
+    -webkit-box-shadow: 0px 1px 2px #eee;
+}
+
 .workflowContainer {
 //	background-color: #666;
 	display: block;

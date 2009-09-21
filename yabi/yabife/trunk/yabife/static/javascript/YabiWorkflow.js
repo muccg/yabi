@@ -8,6 +8,7 @@
 function YabiWorkflow(editable) {
     this.payload = {};
     this.isPropagating = false; //recursion protection
+    this.tags = [];
     
     //util fn
     var dblzeropad = function(number) {
@@ -63,16 +64,16 @@ function YabiWorkflow(editable) {
     
     //tag el
     this.tagEl = document.createElement('div');
-    this.tagEl.className = 'workflowName';
+    this.tagEl.className = 'tagList';
     this.tagEl.appendChild( document.createTextNode('Tags: ') );
     
     this.tagListEl = document.createElement('span');
-    this.tagListEl.className = 'tagList';
     this.tagEl.appendChild( this.tagListEl );
     
     this.tagAddLink = new Image();
     this.tagAddLink.src = appURL + 'static/images/addtag.png';
-    YAHOO.util.Event.addListener(this.taggAddLink, "click", this.addTagCallback, this);
+    YAHOO.util.Event.addListener(this.tagAddLink, "click", this.addTagCallback, this);
+    this.tagEl.appendChild(this.tagAddLink);
 
     this.mainEl.appendChild(this.tagEl);
     
@@ -448,7 +449,7 @@ YabiWorkflow.prototype.solidify = function(obj) {
     while (this.tagListEl.firstChild) {
         this.tagListEl.removeChild(this.tagListEl.firstChild);
     }
-    this.tagListEl.appendChild( document.createTextNode(obj.tags) );
+    this.tagListEl.appendChild( document.createTextNode(this.tags) );
     
 	for (var index in obj.jobs) {
 		if (updateMode) {
@@ -528,6 +529,8 @@ YabiWorkflow.prototype.hydrateCallback = function(o) {
         
         obj = YAHOO.lang.JSON.parse(json);
         
+        //preprocess wrapper meta data
+        target.tags = obj.tags;
         
         target.solidify(YAHOO.lang.JSON.parse(obj.json));
     } catch (e) {
