@@ -751,8 +751,8 @@ display:inline;
 .selectedFile {
 	-webkit-border-radius: 8px;
 	-moz-border-radius: 8px;
-	background-color: #eef;
-	border: 1px solid #99c;
+	background-color: #ebf0f3;
+	border: 1px solid #b7c9e6;
 	padding: 1px;
 	padding-left: 8px;
 	padding-right: 20px;
