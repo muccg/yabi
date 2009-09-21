@@ -51,24 +51,6 @@ function YabiWorkflowCollection() {
     
     this.filterEl.appendChild(this.clearFilterEl);
     
-    this.statusFilterContainer = document.createElement("div");
-    this.statusFilterContainer.className = "filterStatus";
-    this.statusFilterContainer.appendChild( document.createTextNode("Filter by status: ") );
-    
-    this.statusFilter = document.createElement("select");
-    var statuses = ['All', 'Design', 'Running', 'Completed'];
-    var tmpOpt;
-    for (var index in statuses) {
-        tmpOpt = document.createElement("option");
-        tmpOpt.value = statuses[index];
-        tmpOpt.text = statuses[index];
-        this.statusFilter.appendChild( tmpOpt );
-    }
-    YAHOO.util.Event.addListener(this.statusFilter, "change", this.filterCallback, this);
-    this.statusFilterContainer.appendChild(this.statusFilter);
-    
-    this.filterEl.appendChild(this.statusFilterContainer);
-    
     //date slider
     this.sliderContainerEl = document.createElement("div");
     this.sliderContainerEl.className = "sliderContainer";
@@ -95,6 +77,30 @@ function YabiWorkflowCollection() {
     this.slider = YAHOO.widget.Slider.getHorizSlider(this.sliderEl, this.slideThumbEl, 0, 160, 40);
     this.slider.animate = true;
     this.slider.setValue(40, true);
+
+    
+    this.statusFilterContainer = document.createElement("div");
+    this.statusFilterContainer.className = "filterStatus";
+    this.statusFilterContainer.appendChild( document.createTextNode("Status: ") );
+    
+    var statuses = ['All', 'Running', 'Completed'];
+    this.statusEls = [];
+    var tmpItem;
+    for (var index in statuses) {
+        tmpItem = document.createElement("span");
+        tmpItem.className = "statusFilter";
+        tmpItem.appendChild( document.createTextNode(statuses[index]) );
+        this.statusFilterContainer.appendChild( tmpItem );
+        YAHOO.util.Event.addListener(tmpItem, "click", this.statusFilterCallback, {'target':this, 'value':statuses[index], 'el':tmpItem});
+        
+        this.statusEls[statuses[index]] = tmpItem;
+    }
+    
+    //default status filter is All
+    this.statusEls['All'].className = 'selectedStatusFilter';
+    this.statusFilterValue = 'All';
+    
+    this.filterEl.appendChild(this.statusFilterContainer);
     
     this.containerEl.appendChild(this.filterEl);
     
@@ -257,6 +263,21 @@ YabiWorkflowCollection.prototype.clearFilter = function() {
     this.filter();
 };
 
+/**
+ * statusFilter
+ */
+YabiWorkflowCollection.prototype.statusFilter = function(value, el) {
+    this.statusFilterValue = value;
+    
+    //change classes on the filter spans
+    for (var index in this.statusEls) {
+        this.statusEls[index].className = 'statusFilter';
+    }
+    el.className = 'selectedStatusFilter';
+    
+    this.filter();
+};
+
 YabiWorkflowCollection.prototype.select = function(id) {
     this.noSelectionDiv.style.display = "none";
     
@@ -286,6 +307,14 @@ YabiWorkflowCollection.prototype.select = function(id) {
  */
 YabiWorkflowCollection.prototype.filterCallback = function(e, target) {
     target.filter();
+};
+
+/**
+ * statusFilterCallback
+ *
+ */
+YabiWorkflowCollection.prototype.statusFilterCallback = function(e, invoker) {
+    invoker.target.statusFilter(invoker.value, invoker.el);
 };
 
 /**
