@@ -547,8 +547,8 @@ YabiWorkflow.prototype.cancelTagEditing = function() {
     this.tagInputEl.value = this.tags;
     this.tagHintDiv.className = "displayNone";
     this.tagAddLink.className = "tagAddLink";
-    this.tagInputEl.className = "displayNone";
-    this.tagListEl.className = "tagList";
+    this.tagInputEl.style.display = "none";
+    this.tagListEl.style.display = "inline";
 };
 
 /**
@@ -558,10 +558,15 @@ YabiWorkflow.prototype.cancelTagEditing = function() {
  */
 YabiWorkflow.prototype.tagsFinishedSaving = function() {
     this.tags = this.tagInputEl.value.split(",");
+    while (this.tagListEl.firstChild) {
+        this.tagListEl.removeChild(this.tagListEl.firstChild);
+    }
+    this.tagListEl.appendChild( document.createTextNode('' + this.tags) );    
+
     this.tagHintDiv.className = "displayNone";
     this.tagAddLink.className = "tagAddLink";
-    this.tagInputEl.className = "displayNone";
-    this.tagListEl.className = "tagList";
+    this.tagInputEl.style.display = "none";
+    this.tagListEl.style.display = "inline";
 };
 
 /**
