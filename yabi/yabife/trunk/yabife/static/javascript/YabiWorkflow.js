@@ -61,6 +61,21 @@ function YabiWorkflow(editable) {
     
     this.mainEl.appendChild(this.nameEl);
     
+    //tag el
+    this.tagEl = document.createElement('div');
+    this.tagEl.className = 'workflowName';
+    this.tagEl.appendChild( document.createTextNode('Tags: ') );
+    
+    this.tagListEl = document.createElement('span');
+    this.tagListEl.className = 'tagList';
+    this.tagEl.appendChild( this.tagListEl );
+    
+    this.tagAddLink = new Image();
+    this.tagAddLink.src = appURL + 'static/images/addtag.png';
+    YAHOO.util.Event.addListener(this.taggAddLink, "click", this.addTagCallback, this);
+
+    this.mainEl.appendChild(this.tagEl);
+    
     this.startEl = document.createElement("div");
     this.startEl.appendChild(document.createTextNode("start"));
     this.startEl.className = "workflowStartBookend";
@@ -430,6 +445,11 @@ YabiWorkflow.prototype.solidify = function(obj) {
 	    updateMode = true;
 	}
 	
+    while (this.tagListEl.firstChild) {
+        this.tagListEl.removeChild(this.tagListEl.firstChild);
+    }
+    this.tagListEl.appendChild( document.createTextNode(obj.tags) );
+    
 	for (var index in obj.jobs) {
 		if (updateMode) {
 		    job = this.jobs[index];
@@ -605,4 +625,8 @@ YabiWorkflow.prototype.onDragOverJobCallback = function(e, id) {
 
 YabiWorkflow.prototype.nameChangeCallback = function(e, obj) {
     obj.name = obj.nameEl.value;
+};
+
+YabiWorkflow.prototype.addTagCallback = function(e, obj) {
+    //do stuff
 };
