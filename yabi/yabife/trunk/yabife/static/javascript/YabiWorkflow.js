@@ -78,6 +78,13 @@ function YabiWorkflow(editable) {
     this.tagAddLink.src = appURL + 'static/images/addtag.png';
     YAHOO.util.Event.addListener(this.tagAddLink, "click", this.addTagCallback, this);
     this.tagEl.appendChild(this.tagAddLink);
+    
+    this.tagHintDiv = document.createElement("div");
+    this.tagHintDiv.className = "displayNone";
+    this.tagSaveEl = document.createElement("a");
+    this.tagSaveEl.appendChild( document.createTextNode('save') );
+    YAHOO.util.Event.addListener(this.tagSaveEl, "click", this.saveTagsCallback, this);
+    this.tagHintDiv.appendChild(this.tagSaveEl);
 
     this.mainEl.appendChild(this.tagEl);
     
@@ -434,6 +441,24 @@ YabiWorkflow.prototype.hydrate = function(workflowId) {
 };
 
 /**
+ * saveTags
+ *
+ * save tags
+ */
+YabiWorkflow.prototype.saveTags = function() {
+    var baseURL = appURL + "workflows/" + YAHOO.ccgyabi.username + "/" + workflowId + "/tags/add";
+    
+    //load json
+    var jsUrl, jsCallback, jsTransaction;
+    jsUrl =  baseURL;
+    jsCallback = {
+    success: this.saveTagsResponseCallback,
+    failure: this.saveTagsResponseCallback,
+        argument: [this] };
+    jsTransaction = YAHOO.util.Connect.asyncRequest('POST', jsUrl, jsCallback, "taglist="+escape(this.tagInputEl.value));
+};
+
+/**
  * solidify
  *
  * handle json response, populating object and rendering as required
@@ -648,4 +673,14 @@ YabiWorkflow.prototype.addTagCallback = function(e, obj) {
     //do stuff
     obj.tagListEl.style.display = 'none';
     obj.tagInputEl.style.display = 'inline';
+};
+
+YabiWorkflow.prototype.saveTagsCallback = function(e, obj) {
+    //do stuff
+    obj.saveTags();
+};
+
+YabiWorkflow.prototype.saveTagsResponseCallback = function(e, obj) {
+    //do stuff
+    YAHOO.ccgyabi.YabiMessage.yabiMessageSuccess("tags saved");
 };
