@@ -12,7 +12,7 @@ from yabiadmin.yabiengine import backendhelper
 
 import logging
 import yabilogging
-logger = logging.getLogger('yabiengine')
+logger = logging.getLogger('yabiadmin')
 
 
 def tool(request, toolname):
