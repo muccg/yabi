@@ -422,7 +422,7 @@ YabiWorkflow.prototype.isValid = function() {
  * produces a json string for this workflow
  */
 YabiWorkflow.prototype.toJSON = function() {
-    var result = {  "name":this.name };
+    var result = {  "name":this.name, "tags":this.tags };
     
     var jobs = [];
     for (var index in this.jobs) {
@@ -458,6 +458,11 @@ YabiWorkflow.prototype.hydrate = function(workflowId) {
  * save tags
  */
 YabiWorkflow.prototype.saveTags = function() {
+    if (YAHOO.lang.isUndefined(this.workflowId) {
+        this.tagsFinishedSaving();
+        return;
+    }
+    
     var baseURL = appURL + "workflows/" + YAHOO.ccgyabi.username + "/" + this.workflowId + "/tags";
     
     //load json
