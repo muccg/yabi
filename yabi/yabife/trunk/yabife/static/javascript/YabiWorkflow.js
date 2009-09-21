@@ -68,16 +68,16 @@ function YabiWorkflow(editable) {
     this.tagEl.appendChild( document.createTextNode('Tags: ') );
     
     this.tagListEl = document.createElement('span');
-    this.tagListEl.className = "displayNone";
     this.tagEl.appendChild( this.tagListEl );
     
     this.tagInputEl = document.createElement('input');
+    this.tagInputEl.className = "displayNone";
     this.tagEl.appendChild( this.tagInputEl );
     
-//    this.tagAddLink = new Image();
-//    this.tagAddLink.src = appURL + 'static/images/addtag.png';
-//    YAHOO.util.Event.addListener(this.tagAddLink, "click", this.addTagCallback, this);
-//    this.tagEl.appendChild(this.tagAddLink);
+    this.tagAddLink = new Image();
+    this.tagAddLink.src = appURL + 'static/images/addtag.png';
+    YAHOO.util.Event.addListener(this.tagAddLink, "click", this.addTagCallback, this);
+    this.tagEl.appendChild(this.tagAddLink);
 
     this.mainEl.appendChild(this.tagEl);
     
