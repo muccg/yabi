@@ -579,10 +579,6 @@ YabiWorkflow.prototype.fetchProgress = function() {
 YabiWorkflow.prototype.setTags = function(tagArray) {
     this.tags = tagArray;
     this.tagInputEl.value = tagArray;
-    
-    for (var index in this.attachedProxies) {
-        this.attachedProxies[index].setTags(tagArray);
-    }
 };
 
 /**
@@ -609,6 +605,11 @@ YabiWorkflow.prototype.tagsFinishedSaving = function() {
         this.tagListEl.removeChild(this.tagListEl.firstChild);
     }
     this.tagListEl.appendChild( document.createTextNode('' + this.tags) );    
+    
+    //notify attached proxies
+    for (var index in this.attachedProxies) {
+        this.attachedProxies[index].setTags(tagArray);
+    }
 
     this.tagHintDiv.className = "displayNone";
     this.tagInputEl.style.display = "none";
