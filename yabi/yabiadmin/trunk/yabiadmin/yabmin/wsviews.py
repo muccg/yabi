@@ -83,11 +83,11 @@ def ls(request):
     if request.GET['uri']:
         
         # TODO remove hard coding. Should pass in uri here
-        uri = 'file://%s@localhost.localdomain/%s%s' % (request['yabiusername'], request['yabiusername'], request.GET['uri'])
+        uri = 'file://%s@localhost.localdomain/%s%s' % (request.GET['yabiusername'], request.GET['yabiusername'], request.GET['uri'])
         filelisting = backendhelper.get_listing(uri)
 
     else:
-        filelisting = backendhelper.get_backend_list(request['yabiusername'])
+        filelisting = backendhelper.get_backend_list(request.GET['yabiusername'])
 
 
     return HttpResponse(filelisting)

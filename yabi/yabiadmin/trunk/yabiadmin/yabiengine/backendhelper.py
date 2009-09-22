@@ -103,7 +103,6 @@ def get_backend_list(yabiusername):
     logger.debug('')
 
     try:
-
         return BackendCredential.objects.filter(credential__user__name=yabiusername)
 
     except ObjectDoesNotExist, e:
