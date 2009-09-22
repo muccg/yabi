@@ -147,6 +147,7 @@ html, body {
 }
 body {
 	position:relative;
+    background:url(../images/yabi_bg.png repeat-y);
 }
 #doc3 {
 //	height:99%;
@@ -163,6 +164,7 @@ body {
 	height:60px;
 	width:100%;
     border-bottom: 3px solid #3879e5;
+    background-color:white;
 }
 
 .yabiMiddleColumn {
@@ -171,7 +173,7 @@ body {
     top:63px;
     width:330px;
     height:90%;
-    background:url(../images/middle_bg.png);
+    //background:url(../images/middle_bg.png);
     padding:20px;
     padding-top:10px;
 }
