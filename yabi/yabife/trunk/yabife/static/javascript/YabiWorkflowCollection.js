@@ -195,6 +195,10 @@ YabiWorkflowCollection.prototype.solidify = function(obj) {
         this.listingEl.appendChild(tempWorkflow.el);
         
         this.workflows.push(tempWorkflow);
+        
+        if (this.loadedWorkflow != null && tempWorkflow.id == this.loadedWorkflow.id) {
+            this.loadedWorkflow.attachProxy(tempWorkflow);
+        }
     }
     
     this.filter();
