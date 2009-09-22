@@ -147,7 +147,7 @@ html, body {
 }
 body {
 	position:relative;
-    background:url(../images/yabi_bg.png repeat-y);
+    background:url(../images/yabi_bg.png) repeat-y;
 }
 #doc3 {
 //	height:99%;
