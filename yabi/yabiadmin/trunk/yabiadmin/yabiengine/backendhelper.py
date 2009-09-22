@@ -95,3 +95,21 @@ def get_backend_from_uri(uri):
 
 
 
+
+def get_backend_list(yabiusername):
+    """
+    Returns a list of backends for user
+    """
+    logger.debug('')
+
+    try:
+
+        return BackendCredential.objects.filter(credential__user__name=yabiusername)
+
+    except ObjectDoesNotExist, e:
+        logger.critical("ObjectDoesNotExist for uri: %s" % uri)
+        logger.critical("Scheme: %s" % scheme)
+        logger.critical("Hostname: %s" % parts.hostname)
+        raise
+
+
