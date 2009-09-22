@@ -2,14 +2,16 @@
 <%def name="header()">
 
 <script language="javascript">
-YAHOO.util.Event.onAvailable("container", initFileSelector);
+YAHOO.util.Event.onAvailable("rightContainer", initFileSelector);
 
-var fileselector;
+var leftfileselector, rightfileselector;
 
 function initFileSelector() {
-    fileselector = new YabiFileSelector(null, true);
+    leftfileselector = new YabiFileSelector(null, true);
+    rightfileselector = new YabiFileSelector(null, true);
     
-    document.getElementById("container").appendChild(fileselector.containerEl);
+    document.getElementById("leftContainer").appendChild(leftfileselector.containerEl);
+    document.getElementById("rightContainer").appendChild(rightfileselector.containerEl);
 }
 
 </script>
@@ -51,8 +53,12 @@ function initFileSelector() {
       </script>
 
 
-          <div style="position:absolute;left:80px;top:63px;padding:5px;min-width:600px;">
-                <div id="container"></div>
+          <div style="position:absolute;left:10px;top:63px;padding:5px;width:400px;">
+                <div id="leftContainer"></div>
+          </div>
+          
+          <div style="position:absolute;left:420px;top:63px;padding:5px;width:400px;">
+                <div id="rightContainer"></div>
           </div>
       
 
