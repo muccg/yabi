@@ -760,7 +760,7 @@ display:inline;
 	-webkit-border-radius: 8px;
 	-moz-border-radius: 8px;
     background-color: #3879e5;
-    background:url(../static/images/selectedWFbg.png) repeat-x;
+    background:url(../images/selectedWFbg.png) repeat-x;
 	background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
 	border: 1px solid #3879e5;
 	padding: 1px;
