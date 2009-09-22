@@ -4,11 +4,12 @@
  * YabiFileSelector
  * create a new file selector object, to allow selection of files from yabi, or via upload
  */
-function YabiFileSelector(param) {
+function YabiFileSelector(param, isBrowseMode) {
     this.selectedFiles = [];
     this.pathComponents = [];
     this.browseListing = [];
     this.param = param;
+    this.isBrowseMode = isBrowseMode;
     
     this.containerEl = document.createElement("div");
     this.containerEl.className = "fileSelector";
@@ -124,7 +125,10 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             expandEl.appendChild(document.createTextNode(" (browse)"));
             fileEl.appendChild(expandEl);
             YAHOO.util.Event.addListener(expandEl, "click", this.expandCallback, invoker);
-            YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
+            
+            if (!this.isBrowseMode) {
+                YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
+            }
         }
         for (var index in this.browseListing[toplevelindex].files) {
             fileEl = document.createElement("div");
@@ -134,7 +138,9 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             
             invoker = {"target":this, "object":new YabiSimpleFileValue(this.pathComponents, this.browseListing[toplevelindex].files[index][0])};
             
-            YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
+            if (!this.isBrowseMode) {
+                YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
+            }
         }
     }
     

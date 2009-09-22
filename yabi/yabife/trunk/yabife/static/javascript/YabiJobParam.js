@@ -180,7 +180,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
         this.inputEl.value = this.defaultValue;
         this.inputEl.style.width = "180px";
     } else if (this.renderMode == "fileselector") {
-        this.fileSelector = new YabiFileSelector(this);
+        this.fileSelector = new YabiFileSelector(this, false);
         this.inputEl = this.fileSelector.containerEl;
     }
     this.containerEl.appendChild(this.inputEl);

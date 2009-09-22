@@ -7,7 +7,7 @@ YAHOO.util.Event.onAvailable("container", initFileSelector);
 var fileselector;
 
 function initFileSelector() {
-    fileselector = new YabiFileSelector(null);
+    fileselector = new YabiFileSelector(null, true);
     
     document.getElementById("container").appendChild(fileselector.containerEl);
 }
