@@ -93,6 +93,7 @@ YabiFileSelector.prototype.updateBrowser = function(location) {
     
     //clear existing files
     while (this.fileListEl.firstChild) {
+        YAHOO.util.Event.purgeElement(this.fileListEl.firstChild);
         this.fileListEl.removeChild(this.fileListEl.firstChild);
     }
 
@@ -140,6 +141,13 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             
             if (!this.isBrowseMode) {
                 YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
+
+                tempDD = new YAHOO.util.DDProxy(fileEl);
+//                tempDD.startDrag = startDragToolCallback;
+//                tempDD.endDrag = workflow.endDragJobCallback;
+//                tempDD.onDrag = workflow.onDragJobCallback;
+//                tempDD.onDragOver = workflow.onDragOverJobCallback;
+                
             }
         }
     }

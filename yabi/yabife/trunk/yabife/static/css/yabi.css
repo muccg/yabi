@@ -799,6 +799,10 @@ display:inline;
 	margin-left: 80px;
 }
 
+#yabi-jobs-mode .fileSelector {
+    margin-left:5px;
+}
+
 .selectedFile {
 	-webkit-border-radius: 8px;
 	-moz-border-radius: 8px;
