@@ -4,7 +4,7 @@ import httplib
 import socket
 from urllib import urlencode
 from yabiadmin.yabiengine.urihelper import uri_get_pseudopath, uriparse
-from yabiadmin.yabmin.models import Backend
+from yabiadmin.yabmin.models import Backend, BackendCredential
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ObjectDoesNotExist
 
