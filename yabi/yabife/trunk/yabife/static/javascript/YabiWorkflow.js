@@ -64,18 +64,6 @@ function YabiWorkflow(editable) {
     
     this.mainEl.appendChild(this.nameEl);
     
-    if (this.editable) {
-        //actions toolbar
-        this.toolbarEl = document.createElement('div');
-        this.toolbarEl.className = 'workflowToolbar';
-        this.mainEl.appendChild(this.toolbarEl);
-        
-        this.reuseButtonEl = document.createElement('div');
-        this.reuseButtonEl.className = 'fakeButton';
-        this.reuseButtonEl.appendChild( document.createTextNode() );
-        YAHOO.util.Event.addListener(this.reuseButtonEl, "click", this.reuseCallback, this);
-    }
-    
     //tag el
     this.tagEl = document.createElement('div');
     this.tagEl.className = 'tagListContainer';
@@ -114,6 +102,19 @@ function YabiWorkflow(editable) {
 
     this.mainEl.appendChild(this.tagEl);
     
+    if (!this.editable) {
+        //actions toolbar
+        this.toolbarEl = document.createElement('div');
+        this.toolbarEl.className = 'workflowToolbar';
+        this.mainEl.appendChild(this.toolbarEl);
+
+        this.reuseButtonEl = document.createElement('span');
+        this.reuseButtonEl.className = 'fakeButton';
+        this.reuseButtonEl.appendChild( document.createTextNode( 're-use' ) );
+        YAHOO.util.Event.addListener(this.reuseButtonEl, "click", this.reuseCallback, this);
+        this.toolbarEl.appendChild(this.reuseButtonEl);
+    }
+
     this.startEl = document.createElement("div");
     this.startEl.appendChild(document.createTextNode("start"));
     this.startEl.className = "workflowStartBookend";

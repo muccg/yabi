@@ -178,7 +178,7 @@ body {
     height:90%;
     background:url(../images/middle_bg.png);
     padding:20px;
-    padding-top:15px;
+    padding-top:10px;
 }
 
 .yabi-files-menu{
@@ -502,8 +502,12 @@ display:inline;
     margin-right:4px;
 }
 
+.workflowToolbar {
+    margin-top:9px;
+}
+
 .workflowContainer {
-//	background-color: #666;
+//	background-color: #dbe5f6;
 	display: block;
 //	min-height: 80px;
 	position: relative;
@@ -897,7 +901,7 @@ display:inline;
 	margin-bottom: 4px;
 	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
 	border: 1px solid #ccc;
-	color: #000;	
+	color: #666;	
 	//width: 180px;
 	cursor: pointer;
 }
