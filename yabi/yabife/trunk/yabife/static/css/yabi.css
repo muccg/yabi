@@ -301,7 +301,8 @@ body {
     -webkit-border-top-right-radius: 5px;
 }
 #yabi-jobs-mode #yabi-tabs-jobs, #yabi-tabs-jobs.hover, #yabi-tabs-jobs:hover {
-	background-color:#3879e5;
+    background:#3879e5 url(../images/selectedWFbg.png) repeat-x;
+	background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
     border-top:1px solid #3879e5;
 	border-left:1px solid #3879e5;
 	border-right:1px solid #3879e5;
@@ -320,7 +321,8 @@ body {
     -webkit-border-top-right-radius: 5px;
 }
 #yabi-design-mode #yabi-tabs-design, #yabi-tabs-design.hover, #yabi-tabs-design:hover {
-	background-color:#3879e5;
+    background:#3879e5 url(../images/selectedWFbg.png) repeat-x;
+	background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
     border-top:1px solid #3879e5;
 	border-left:1px solid #3879e5;
 	border-right:1px solid #3879e5;
@@ -353,7 +355,8 @@ body {
 }
 
 #yabi-help-mode #yabi-tabs-help, #yabi-tabs-help.hover, #yabi-tabs-help:hover {
-	background-color:#3879e5;
+    background:#3879e5 url(../images/selectedWFbg.png) repeat-x;
+	background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
     border-top:1px solid #3879e5;
 	border-left:1px solid #3879e5;
 	border-right:1px solid #3879e5;
@@ -362,7 +365,8 @@ body {
 
 
 #yabi-files-mode #yabi-tabs-files, #yabi-tabs-files.hover, #yabi-tabs-files:hover {
-	background-color:#3879e5;
+    background:#3879e5 url(../images/selectedWFbg.png) repeat-x;
+	background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
     border-top:1px solid #3879e5;
 	border-left:1px solid #3879e5;
 	border-right:1px solid #3879e5;
