@@ -1060,40 +1060,24 @@ display:inline;
 }
 
 .workflowProxy {
-	border:1px solid #ddd;
-	background: #eee url(../images/job_bg.png);
-	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
-    -moz-box-shadow: 0px 1px 2px #eee;
-    -webkit-box-shadow: 0px 1px 2px #eee;
+	border-bottom:1px solid #ddd;
 	padding:4px;
 	padding-left: 12px;
     padding-right: 10px;
-	margin:4px;
-	margin-left: 6px;
-    margin-right: 4px;
 	position:relative;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
     font-size: 95%;
     color: #666;
     font-weight:bold;
     text-shadow: 0px 1px 1px #fff;
+    min-height: 26px;
 }
 
 .selectedWorkflowProxy {
-	border:1px solid #3879e6;
-	background: #ccf url(../images/job_selected_bg.png);
-	background: -webkit-gradient(linear, left top, left bottom, from(#eceff3), to(#dbe5f6));
-    -moz-box-shadow: 0px 0px 3px #3879e6;
-    -webkit-box-shadow: 0px 0px 3px #3879e6;
+	border-bottom:1px solid #3879e6;
+	background: #ccf;
 	padding:4px;
 	padding-left: 12px;
-	margin:4px;
 	position:relative;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    margin-left: 6px;
-    margin-right: 4px;
     font-size: 95%;
     font-weight:bold;
     color: #666;
@@ -1150,6 +1134,9 @@ display:inline;
 
 .workflowListing {
     padding-top:8px;
+    margin-left:-5px;
+    margin-right:-5px;
+    margin-top:-4px;
 }
 
 .workflowSearchField {
