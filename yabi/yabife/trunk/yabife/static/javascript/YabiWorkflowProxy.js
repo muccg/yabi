@@ -62,6 +62,14 @@ YabiWorkflowProxy.prototype.setSelected = function(state) {
     }
 };
 
+YabiWorkflowProxy.prototype.setTags = function(tagArray) {
+    while (this.tagEl.firstChild) {
+        this.tagEl.removeChild(this.tagEl.firstChild);
+    }
+    
+    this.tagEl.appendChild( document.createTextNode(tagArray) );
+};
+
 /**
  * matchesFilter
  * 

@@ -293,6 +293,7 @@ YabiWorkflowCollection.prototype.select = function(id) {
     for (var i in this.workflows) {
         if (this.workflows[i].id == id) {
             this.workflows[i].setSelected(true);
+            this.loadedWorkflow.attachProxy(this.workflows[i]); //attach this proxy to the loaded workflow
         } else {
             this.workflows[i].setSelected(false);
         }

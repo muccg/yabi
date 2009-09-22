@@ -9,6 +9,7 @@ function YabiWorkflow(editable) {
     this.payload = {};
     this.isPropagating = false; //recursion protection
     this.tags = [];
+    this.attachedProxies = [];
     
     //util fn
     var dblzeropad = function(number) {
@@ -256,6 +257,15 @@ YabiWorkflow.prototype.deleteJob = function(job) {
     this.propagateFiles();
     
     this.deleting = false;
+};
+
+/**
+ * attachProxy
+ *
+ * attaches a workflowProxy to this workflow, so that changes in this workflow are propagated back to the proxy
+ */
+YabiWorkflow.prototype.attachProxy = function(proxy) {
+    this.attachedProxies.push(proxy);
 };
 
 /**
@@ -569,6 +579,10 @@ YabiWorkflow.prototype.fetchProgress = function() {
 YabiWorkflow.prototype.setTags = function(tagArray) {
     this.tags = tagArray;
     this.tagInputEl.value = tagArray;
+    
+    for (var index in this.attachedProxies) {
+        this.attachedProxies[index].setTags(tagArray);
+    }
 };
 
 /**
