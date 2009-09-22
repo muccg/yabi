@@ -608,7 +608,7 @@ YabiWorkflow.prototype.tagsFinishedSaving = function() {
     
     //notify attached proxies
     for (var index in this.attachedProxies) {
-        this.attachedProxies[index].setTags(tagArray);
+        this.attachedProxies[index].setTags(this.tags);
     }
 
     this.tagHintDiv.className = "displayNone";
