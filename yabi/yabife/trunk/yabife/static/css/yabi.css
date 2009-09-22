@@ -12,6 +12,7 @@
 h1 {
 	margin-bottom:8px;
 	font-weight:bold;
+    color:#666;
 }
 
 h2 {
@@ -30,12 +31,6 @@ td {
 	background-color:transparent;
 }
 
-#yabi-design-mode h1 {
-    color:#666;
-}
-#yabi-jobs-mode h1 {
-	//color:#F36;
-}
 #yabi-files-mode h1 {
 	color:#af239d;
 }
@@ -637,6 +632,7 @@ display:inline;
 .selectedJobContainer h1 {
 	//font-size: 105%;
 	margin-bottom: 4px;
+    color:#fff;
 }
 
 //.jobOptionsContainer {
