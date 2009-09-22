@@ -52,14 +52,14 @@ function YabiWorkflow(editable) {
         this.nameEl.id = "titleDiv";
         this.nameEl.value = this.name;
     
-        YAHOO.util.Event.addListener(this.nameEl, "blur", this.nameChangeCallback, this);
+        YAHOO.util.Event.addListener(this.nameEl, "blur", this.nameBlurCallback, this);
         YAHOO.util.Event.addListener(this.nameEl, "keyup", this.nameChangeCallback, this);
         YAHOO.util.Event.addListener(this.nameEl, "change", this.nameChangeCallback, this);
+        YAHOO.util.Event.addListener(this.nameEl, "click", this.nameFocusCallback, this);
     } else {
         this.nameEl = document.createElement('div');
         this.nameEl.className = "workflowName";
         this.nameEl.id = "titleDiv";
-        YAHOO.util.Event.addListener(this.nameEl, "focusin", this.nameFocusCallback, this);
     }
     
     this.mainEl.appendChild(this.nameEl);
@@ -716,6 +716,13 @@ YabiWorkflow.prototype.onDragOverJobCallback = function(e, id) {
 };
 
 YabiWorkflow.prototype.nameChangeCallback = function(e, obj) {
+    obj.name = obj.nameEl.value;
+};
+
+YabiWorkflow.prototype.nameBlurCallback = function(e, obj) {
+    if (obj.nameEl.value === "") {
+        obj.nameEl.value = obj.prefillName;
+    }
     obj.name = obj.nameEl.value;
 };
 
