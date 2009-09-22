@@ -1158,6 +1158,7 @@ display:inline;
 
 .selectedWorkflowProxy .workflowDate {
     text-shadow:0px 1px 1px #666;
+    color:white;
 }
 
 .tagDiv {
@@ -1167,6 +1168,11 @@ display:inline;
     color:#8ba9dc;
     font-size:90%;
     font-weight:normal;
+}
+
+.selectedWorkflowProxy .tagDiv {
+    text-shadow:0px 1px 1px #666;
+    color:white;
 }
 
 .loginFormButton {
