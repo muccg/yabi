@@ -945,7 +945,7 @@ display:inline;
 	border:0px;
 	background:url(../images/ok.png);
 	position:absolute;
-    right: 10px;
+    right: 9px;
     top: 4px;
 	z-index:99;	
 	
@@ -960,7 +960,7 @@ display:inline;
 	border:0px;
 	background:url(../images/pending.png);
 	position:absolute;
-    right: 10px;
+    right: 9px;
     top: 4px;
 	z-index:99;
 }
@@ -973,7 +973,7 @@ display:inline;
 	border:0px;
 	background:url(../images/queued.gif);
 	position:absolute;
-    right: 10px;
+    right: 9px;
     top: 4px;
 	z-index:99;
 }
@@ -986,7 +986,7 @@ display:inline;
 	border:0px;
 	background:url(../images/error.png);
 	position:absolute;
-    right: 10px;
+    right: 9px;
     top: 4px;
 	z-index:99;
 }
@@ -999,7 +999,7 @@ display:inline;
 	border:0px;
 	background:url(../images/processing.gif);
 	position:absolute;
-    right: 10px;
+    right: 9px;
     top: 4px;
 	z-index:99;
 }
@@ -1152,7 +1152,7 @@ display:inline;
 
 .workflowDate {
     position:absolute;
-    right:10px;
+    right:36px;
     top:6px;
     color:#8ba9dc;
     font-size:90%;
