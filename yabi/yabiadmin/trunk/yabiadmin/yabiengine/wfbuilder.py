@@ -158,7 +158,7 @@ def get_param_value(workflow, tp):
                     value = u"yabi://localhost.localdomain/%d/%d/" % (workflow.id, job_cache[item['jobId']].id)
 
                 # handle links to previous file selects
-                elif 'type' in item and 'file' in item:
+                elif 'type' in item and 'filename' in item:
                     value = item['filename']
                 
             elif type(item) == str or type(item) == unicode:
