@@ -110,7 +110,7 @@ YabiJob.prototype.hydrate = function() {
             success: this.hydrateResponse,
             failure: this.hydrateResponse,
             argument: [this] };
-    jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
+    this.jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
 };
 
 /**
@@ -291,6 +291,10 @@ YabiJob.prototype.renderLoadFailJob = function() {
  * cleans up properly
  */
 YabiJob.prototype.destroy = function() {
+    if (YAHOO.util.Connect.isCallInProgress( this.jsTransaction )) {
+        YAHOO.util.Connect.abort( this.jsTransaction, null, false );
+    }
+    
     for (var param in this.params) {
         this.params[param].destroy();
     }

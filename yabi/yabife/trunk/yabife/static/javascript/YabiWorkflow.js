@@ -464,7 +464,7 @@ YabiWorkflow.prototype.hydrate = function(workflowId) {
             success: this.hydrateCallback,
             failure: this.hydrateCallback,
             argument: [this] };
-    jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
+    this.jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
 };
 
 /**
@@ -608,6 +608,10 @@ YabiWorkflow.prototype.tagsFinishedSaving = function() {
  * delete any internal variables and dom handlers
  */
 YabiWorkflow.prototype.destroy = function() {
+    if (YAHOO.util.Connect.isCallInProgress( this.jsTransaction )) {
+        YAHOO.util.Connect.abort( this.jsTransaction, null, false );
+    }
+    
     if (this.refreshTimer !== null) {
         window.clearInterval(this.refreshTimer);
     }
@@ -628,7 +632,7 @@ YabiWorkflow.prototype.destroy = function() {
     //purge all listeners on nameEl
     YAHOO.util.Event.purgeElement(this.nameEl);
     
-    //remove the workfow from its container
+    //remove the workflow from its container
     this.mainEl.parentNode.removeChild(this.mainEl);
 };
 
