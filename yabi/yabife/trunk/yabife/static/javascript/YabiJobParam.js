@@ -61,6 +61,8 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
         }
     } 
     
+    var index;
+    
     //or if not editable, make it a div
     if (!this.editable) {
         this.renderMode = "viewonly";
@@ -72,7 +74,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
         this.valueEl.className = "value";
         this.containerEl.appendChild(this.valueEl);
         
-        for (var index in this.defaultValue) {
+        for (index in this.defaultValue) {
             if (!YAHOO.lang.isObject(this.defaultValue[index])) {
                 this.valueEl.appendChild(document.createTextNode(this.defaultValue[index]));
             } else {
@@ -147,7 +149,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
                 this.payload.possible_values.filterGroup = [this.payload.possible_values.filterGroup];
             }
             
-            for (var index in this.payload.possible_values.filterGroup) {
+            for (index in this.payload.possible_values.filterGroup) {
                 this.filterGroupHash[this.payload.possible_values.filterGroup[index].key] = this.payload.possible_values.filterGroup[index];
             }
             

@@ -364,7 +364,7 @@ YabiWorkflow.prototype.getName = function() {
  * getDisplayNameForJobId
  */
 YabiWorkflow.prototype.getDisplayNameForJobId = function(jobId) {
-    var num = parseInt(jobId);
+    var num = parseInt(jobId, 10);
     num = num - 1;
     
     if (num < this.jobs.length) {
@@ -379,7 +379,7 @@ YabiWorkflow.prototype.getDisplayNameForJobId = function(jobId) {
  * isJobIdLoaded
  */
 YabiWorkflow.prototype.isJobIdLoaded = function(jobId) {
-    var num = parseInt(jobId);
+    var num = parseInt(jobId, 10);
     num = num - 1;
     
     if (num < this.jobs.length) {
@@ -394,7 +394,7 @@ YabiWorkflow.prototype.isJobIdLoaded = function(jobId) {
  * getJobForId
  */
 YabiWorkflow.prototype.getJobForId = function(jobId) {
-    var num = parseInt(jobId);
+    var num = parseInt(jobId, 10);
     num = num - 1;
     
     if (num < this.jobs.length) {

@@ -108,12 +108,12 @@ YabiFileSelector.prototype.updateBrowser = function(location) {
  */
 YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
     this.browseListing = jsonObj;
-    var fileEl, invoker, expandEl;
+    var fileEl, invoker, expandEl, index;
     
     // new style 20090921 has the path as the key for the top level, then files as an array and directories as an array
     // each file and directory is an array of [fname, size in bytes, date]
     for (var toplevelindex in this.browseListing) {
-        for (var index in this.browseListing[toplevelindex].directories) {
+        for (index in this.browseListing[toplevelindex].directories) {
             fileEl = document.createElement("div");
             fileEl.className = "dirItem";
             fileEl.appendChild(document.createTextNode(this.browseListing[toplevelindex].directories[index][0]));
@@ -130,7 +130,7 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
                 YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
             }
         }
-        for (var index in this.browseListing[toplevelindex].files) {
+        for (index in this.browseListing[toplevelindex].files) {
             fileEl = document.createElement("div");
             fileEl.className = "fileItem";
             fileEl.appendChild(document.createTextNode(this.browseListing[toplevelindex].files[index][0]));

@@ -97,7 +97,7 @@ function YabiWorkflowCollection() {
     }
     
     //default status filter is All
-    this.statusEls['All'].className = 'selectedStatusFilter';
+    this.statusEls.All.className = 'selectedStatusFilter';
     this.statusFilterValue = 'All';
     
     this.filterEl.appendChild(this.statusFilterContainer);
@@ -125,7 +125,7 @@ function YabiWorkflowCollection() {
     this.containerEl.appendChild(this.listingEl);
     
     this.hydrate();
-};
+}
 
 YabiWorkflowCollection.prototype.changeDateRange = function() {
     var value = (this.slider.getValue() - 10) / 40;

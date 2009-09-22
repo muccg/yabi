@@ -22,7 +22,7 @@ function YabiJob(toolName, jobId, preloadValues) {
     this.editable = true; //default true
     this.showingProgress = false;
     this.progress = 0;
-    this.workflow; //set later by the workflow
+    this.workflow = null; //set later by the workflow
     
     //___CONTAINER EL___
     //this is used to retain the job's position in a workflow while alowing us to replace the jobEl
