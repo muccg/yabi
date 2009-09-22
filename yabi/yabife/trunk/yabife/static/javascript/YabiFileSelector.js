@@ -141,14 +141,14 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             
             if (!this.isBrowseMode) {
                 YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
-
-                tempDD = new YAHOO.util.DDProxy(fileEl);
-//                tempDD.startDrag = startDragToolCallback;
-//                tempDD.endDrag = workflow.endDragJobCallback;
-//                tempDD.onDrag = workflow.onDragJobCallback;
-//                tempDD.onDragOver = workflow.onDragOverJobCallback;
-                
             }
+            
+            tempDD = new YAHOO.util.DDProxy(fileEl);
+            //                tempDD.startDrag = startDragToolCallback;
+            //                tempDD.endDrag = workflow.endDragJobCallback;
+            //                tempDD.onDrag = workflow.onDragJobCallback;
+            //                tempDD.onDragOver = workflow.onDragOverJobCallback;
+            
         }
     }
     
