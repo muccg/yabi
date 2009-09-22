@@ -13,6 +13,9 @@ function initWorkflow() {
     document.getElementById("toolContainer").appendChild(tools.containerEl);
     
     workflow = new YabiWorkflow(true);
+% if reuseId:
+    workflow.hydrate(${reuseId});
+% endif
     
     document.getElementById("container").appendChild(workflow.mainEl);
     document.getElementById("optionsDiv").appendChild(workflow.optionsEl);

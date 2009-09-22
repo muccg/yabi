@@ -64,6 +64,18 @@ function YabiWorkflow(editable) {
     
     this.mainEl.appendChild(this.nameEl);
     
+    if (this.editable) {
+        //actions toolbar
+        this.toolbarEl = document.createElement('div');
+        this.toolbarEl.className = 'workflowToolbar';
+        this.mainEl.appendChild(this.toolbarEl);
+        
+        this.reuseButtonEl = document.createElement('div');
+        this.reuseButtonEl.className = 'fakeButton';
+        this.reuseButtonEl.appendChild( document.createTextNode() );
+        YAHOO.util.Event.addListener(this.reuseButtonEl, "click", this.reuseCallback, this);
+    }
+    
     //tag el
     this.tagEl = document.createElement('div');
     this.tagEl.className = 'tagListContainer';
@@ -455,6 +467,18 @@ YabiWorkflow.prototype.hydrate = function(workflowId) {
 };
 
 /**
+ * reuse
+ *
+ * reload the whole page with a reuse URL
+ */
+YabiWorkflow.prototype.reuse = function() {
+    var baseURL = appURL + "design/reuse/" + this.workflowId;
+
+    window.location = baseURL;
+};
+
+
+/**
  * saveTags
  *
  * save tags
@@ -750,6 +774,11 @@ YabiWorkflow.prototype.cancelTagsCallback = function(e, obj) {
 YabiWorkflow.prototype.saveTagsCallback = function(e, obj) {
     //do stuff
     obj.saveTags();
+};
+
+YabiWorkflow.prototype.reuseCallback = function(e, obj) {
+    //do stuff
+    obj.reuse();
 };
 
 YabiWorkflow.prototype.saveTagsResponseCallback = function(o) {
