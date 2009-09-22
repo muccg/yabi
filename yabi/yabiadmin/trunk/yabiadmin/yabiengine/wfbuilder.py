@@ -152,9 +152,14 @@ def get_param_value(workflow, tp):
 
             if type(item) == dict:
 
+                # handle links to previous nodes
                 if 'type' in item and 'jobId' in item:
                     # TODO - adding localhost.localdomain to uri at the moment, should this be pulled in from somewhere
                     value = u"yabi://localhost.localdomain/%d/%d/" % (workflow.id, job_cache[item['jobId']].id)
+
+                # handle links to previous file selects
+                elif 'type' in item and 'file' in item:
+                    value = item['filename']
                 
             elif type(item) == str or type(item) == unicode:
                 value += item
