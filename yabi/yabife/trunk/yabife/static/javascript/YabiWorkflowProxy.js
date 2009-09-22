@@ -8,6 +8,7 @@
 function YabiWorkflowProxy(obj, collection) {
     
     this.payload = obj;
+    this.detailsPayload = { 'name':this.payload.name }; //fallback value in case json parse fails
     this.collection = collection;
     
     this.id = obj.id;
@@ -17,7 +18,13 @@ function YabiWorkflowProxy(obj, collection) {
     
     this.proxyEl = document.createElement("div");
     this.proxyEl.className = "workflowProxy";
-    this.proxyEl.appendChild(document.createTextNode(this.payload.name));
+    
+    //parse a better name
+    try {
+        this.detailsPayload = YAHOO.util.JSON.parse(this.payload.json);
+    } catch (e) {}
+    
+    this.proxyEl.appendChild(document.createTextNode(this.detailsPayload.name));
     
     this.dateEl = document.createElement("div");
     this.dateEl.className = "workflowDate";
