@@ -59,7 +59,7 @@ function YabiWorkflow(editable) {
         this.nameEl = document.createElement('div');
         this.nameEl.className = "workflowName";
         this.nameEl.id = "titleDiv";
-        YAHOO.util.Event.addListener(this.nameEl, "focus", this.nameFocusCallback, this);
+        YAHOO.util.Event.addListener(this.nameEl, "focusin", this.nameFocusCallback, this);
     }
     
     this.mainEl.appendChild(this.nameEl);
