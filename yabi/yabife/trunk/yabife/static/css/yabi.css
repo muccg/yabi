@@ -1029,7 +1029,7 @@ display:inline;
 }
 
 .toolSearchField {
-	width:40%;
+	width:48%;
 	border:1px solid #ccc;
 	margin-right:6px;
 }
@@ -1225,4 +1225,12 @@ display:inline;
 
 .displayNone {
     display:none;
+}
+
+.copyright {
+    position:absolute;
+    top:1px;
+    right:1px;
+    font-size:80%;
+    color:#b7c9e6;
 }

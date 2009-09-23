@@ -34,7 +34,7 @@ function YabiWorkflowCollection() {
     this.filterEl.appendChild(this.searchLabelEl);
     
     this.searchEl = document.createElement("input");
-    this.searchEl.className = "workflowSearchField";
+    this.searchEl.className = "toolSearchField";
     
     //attach key events for changes/keypresses
     YAHOO.util.Event.addListener(this.searchEl, "blur", this.filterCallback, this);
