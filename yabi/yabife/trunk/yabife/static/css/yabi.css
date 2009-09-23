@@ -1229,8 +1229,8 @@ display:inline;
 
 .copyright {
     position:absolute;
-    top:1px;
-    right:1px;
+    top:3px;
+    right:6px;
     font-size:80%;
-    color:#b7c9e6;
+    color:#3879e6;
 }
