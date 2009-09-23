@@ -32,6 +32,12 @@ class TestYabmin(unittest.TestCase):
         pass
 
 
+
+
+    ########################################
+    ## tool
+    ########################################
+
     def testTool(self):
 
         # test existing tool
@@ -48,11 +54,17 @@ class TestYabmin(unittest.TestCase):
         self.assertEqual(response.status_code, 404)
 
 
+
+
+    ########################################
+    ## menu
+    ########################################
+
     def testMenu(self):
 
         # get menu for andrew
         c = Client()
-        response = c.get('/ws/menu/andrew')
+        response = c.get('/ws/menu/andrew?yabiusername=andrew')
         self.assertEqual(response.status_code, 200)
 
         payload = json.loads(response.content)
@@ -73,12 +85,33 @@ class TestYabmin(unittest.TestCase):
         # menu is set up to return empty json structure but not
         # return 404 so it does not break front end
         c = Client()
-        response = c.get('/ws/menu/testingtool_thisshouldnotexist')
-        self.assertEqual(response.status_code, 200)
-        payload = json.loads(response.content)
-        self.assertEqual(payload["menu"]["toolsets"], [])        
+        response = c.get('/ws/menu/testingtool_thisshouldnotexist?yabiusername=andrew')
+        self.assertEqual(response.status_code, 403)
 
 
+    def testMenuDifferentUser(self):
+        """
+        This test is designed to check that menu DOES NOT return another users
+        menu items
+        """
+        # get menu for cwellington with yabiusername of andrew
+        c = Client()
+        response = c.get('/ws/menu/cwellington?yabiusername=andrew')
+        self.assertEqual(response.status_code, 403)
+
+    def testMenuButNoYabiusername(self):
+
+        # get menu for andrew
+        c = Client()
+        response = c.get('/ws/menu/andrew')
+        self.assertEqual(response.status_code, 403)
+
+
+
+
+    ########################################
+    ## credential
+    ########################################
 
     def testCredential(self):
 
@@ -119,6 +152,11 @@ class TestYabmin(unittest.TestCase):
         self.assertTrue("amacgregor" in response.content)
 
 
+
+
+    ########################################
+    ## submitWorkflow
+    ########################################
 
     def testSubmitWorkflow(self):
         c = Client()

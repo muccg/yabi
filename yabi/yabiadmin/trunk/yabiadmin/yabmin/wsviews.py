@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from yabiadmin.yabmin.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential
@@ -27,6 +27,9 @@ def tool(request, toolname):
 
 def menu(request, username):
     logger.debug('')
+
+    if 'yabiusername' not in request.GET or request.GET['yabiusername'] != username:
+        return HttpResponseForbidden("Trying to view menu for different user.")        
     
     try:
         toolsets = ToolSet.objects.filter(users__name=username)
