@@ -3,7 +3,7 @@ from django.utils import simplejson as json
 import httplib
 import socket
 from urllib import urlencode
-from yabiadmin.yabiengine.urihelper import uri_get_pseudopath, uriparse
+from yabiadmin.yabiengine.urihelper import uri_get_pseudopath, uriparse, get_backend_uri, get_backend_userdir
 from yabiadmin.yabmin.models import Backend, BackendCredential
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ObjectDoesNotExist
@@ -95,15 +95,23 @@ def get_backend_from_uri(uri):
 
 
 
-
 def get_backend_list(yabiusername):
     """
-    Returns a list of backends for user
+    Returns a list of backends for user, returns in json as the plain list is passed to the
+    twisted backend which returns json
     """
     logger.debug('')
 
     try:
-        return BackendCredential.objects.filter(credential__user__name=yabiusername)
+
+        results = { yabiusername: {'files':[], 'directories':[] }}
+
+
+        for bc in BackendCredential.objects.filter(credential__user__name=yabiusername):
+            uri = get_backend_userdir(bc, yabiusername)
+            results[yabiusername]['directories'].append([uri, 0, ''])
+
+        return json.dumps(results)
 
     except ObjectDoesNotExist, e:
         logger.critical("ObjectDoesNotExist for uri: %s" % uri)

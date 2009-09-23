@@ -70,4 +70,29 @@ def get_backend_uri(backend):
         netloc += ':%d' % backend.port
 
     return urlunparse((backend.scheme, netloc, backend.path, '', '', ''))
-    
+
+
+def get_backend_userdir(backendcredential, yabiusername):
+    """
+    Supplies the front end with a list of backend uris including the user's home dir
+    """
+    logger.debug('Backendcredential: %s' % backendcredential)
+
+    from yabiadmin.yabmin.models import BackendCredential
+    from urlparse import urlunparse
+    assert isinstance(backendcredential, BackendCredential)
+
+    # check for the things vital to building a uri
+    if not backendcredential.backend.hostname:
+        raise Exception('No backend hostname for backend: %s' % backendcredential.backend)
+    if not backendcredential.backend.scheme:
+        raise Exception('No backend scheme for backend: %s' % backendcredential.backend)
+
+    netloc = "%s@%s" % (backendcredential.credential.username, backendcredential.backend.hostname)
+    if backendcredential.backend.port:
+        netloc += ':%d' % backendcredential.backend.port
+
+    path = backendcredential.backend.path + backendcredential.homedir
+
+    return urlunparse((backendcredential.backend.scheme, netloc, path, '', '', ''))
+

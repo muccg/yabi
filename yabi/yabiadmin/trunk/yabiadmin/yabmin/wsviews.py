@@ -76,6 +76,10 @@ def menu(request, username):
 
 
 def ls(request):
+    """
+    This function will return a list of backends the user has access to IF the uri is empty. If the uri
+    is not empty then it will pass on the call to the backend to get a listing of that uri
+    """
     logger.debug('')
     logger.debug(request.GET)
 
@@ -89,15 +93,8 @@ def ls(request):
     else:
         filelisting = backendhelper.get_backend_list(request.GET['yabiusername'])
 
-
     return HttpResponse(filelisting)
     
-
-##     try:
-##         tool = Tool.objects.get(name=toolname)
-##         return HttpResponse(tool.json())
-##     except ObjectDoesNotExist:
-##         return HttpResponseNotFound("Object not found")
 
 
 def submitworkflow(request):
