@@ -17,6 +17,10 @@ class TestYabmin(unittest.TestCase):
         # manual says don't do this, but we are only testing right?
         settings.AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
         settings.DEBUG = True
+        settings.YABISTORE_SERVER = "127.0.0.1:8001"
+        settings.YABISTORE_BASE = ""
+
+
         
         user, created = User.objects.get_or_create(name="testuser")
         if created:

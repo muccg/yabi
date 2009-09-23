@@ -128,7 +128,9 @@ def addJob(workflow, job_dict, order):
 
 
     ## TODO raise error when no credential for user
+    logger.debug('%s - %s' % (workflow.user, tool.fs_backend))
     backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.fs_backend)
+    logger.debug(backendcredential)
 
     # HACK change the first occurance of username from backend username to yabi username
     # TODO fix this

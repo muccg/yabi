@@ -210,7 +210,20 @@
             "last_modified_on": "2009-07-20 15:54:42", 
             "backend": 8
         }
-    }, 
+    },
+    {
+        "pk": 8, 
+        "model": "yabmin.backendcredential", 
+        "fields": {
+            "credential": 3, 
+            "homedir": "file://andrew@localhost.localdomain:8003/andrew/", 
+            "created_by": 2, 
+            "created_on": "2009-07-17 14:20:00", 
+            "last_modified_by": 2, 
+            "last_modified_on": "2009-07-20 15:54:42", 
+            "backend": 9
+        }
+    },
     {
         "pk": 5, 
         "model": "yabmin.backendcredential", 
