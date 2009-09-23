@@ -15,6 +15,18 @@ import yabilogging
 logger = logging.getLogger('yabiadmin')
 
 
+def validate_user(f):
+    """
+    Decorator that should be applied to all functions which take a username. It will check this username
+    against the yabiusername that the proxy has injected into the GET dictionary
+    """
+    def check_user(request, username, *args, **kwargs):
+        if 'yabiusername' not in request.GET or request.GET['yabiusername'] != username:
+            return HttpResponseForbidden("Trying to view menu for different user.")        
+        return f(request,username, *args, **kwargs)
+    return check_user
+
+
 def tool(request, toolname):
     logger.debug('')
 
@@ -25,11 +37,9 @@ def tool(request, toolname):
         return HttpResponseNotFound("Object not found")
 
 
+@validate_user
 def menu(request, username):
     logger.debug('')
-
-    if 'yabiusername' not in request.GET or request.GET['yabiusername'] != username:
-        return HttpResponseForbidden("Trying to view menu for different user.")        
     
     try:
         toolsets = ToolSet.objects.filter(users__name=username)
@@ -113,34 +123,3 @@ def submitworkflow(request):
     except Exception,e:
         return HttpResponseNotFound(e)
 
-
-def credential(request, username, backend):
-    logger.debug('')
-    
-    try:
-        bc = BackendCredential.objects.get(backend__name=backend, credential__user__name=username)
-        return HttpResponse(bc.json())
-    except ObjectDoesNotExist:
-        return HttpResponseNotFound("Object not found")
-
-
-def credential_detail(request, username, backend, detail):
-    logger.debug('')
-    
-    try:
-        bc = BackendCredential.objects.get(backend__name=backend, credential__user__name=username)
-
-        if detail == 'cert':
-            return HttpResponse(bc.credential.cert)
-
-        elif detail == 'key':
-            return HttpResponse(bc.credential.key)
-
-        elif detail == 'username':
-            return HttpResponse(bc.credential.username)
-
-        else:
-            return HttpResponseNotFound("Object not found")            
-
-    except ObjectDoesNotExist:
-        return HttpResponseNotFound("Object not found")
