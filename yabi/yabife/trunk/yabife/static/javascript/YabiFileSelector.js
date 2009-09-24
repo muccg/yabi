@@ -195,6 +195,7 @@ YabiFileSelector.prototype.updateBreadcrumbs = function() {
     this.homeEl = new Image();
     this.homeEl.src = appURL + "static/images/home.png";
     YAHOO.util.Event.addListener(this.homeEl, "click", this.goToRoot, this);
+    this.breadcrumbContainerEl.appendChild(this.homeEl);
     
     var prevpath = [];
     for (var index in this.pathComponents) {
