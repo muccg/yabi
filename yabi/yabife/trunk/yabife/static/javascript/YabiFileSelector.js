@@ -127,8 +127,8 @@ YabiFileSelector.prototype.updateBrowser = function(location) {
  */
 YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
     this.browseListing = jsonObj;
-    var fileEl, invoker, expandEl, index;
-    
+    var fileEl, invoker, selectEl, index;
+   
     // new style 20090921 has the path as the key for the top level, then files as an array and directories as an array
     // each file and directory is an array of [fname, size in bytes, date]
     for (var toplevelindex in this.browseListing) {
@@ -140,13 +140,13 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             
             invoker = {"target":this, "object":new YabiSimpleFileValue(this.pathComponents, this.browseListing[toplevelindex].directories[index][0])};
             
-            expandEl = document.createElement("a");
-            expandEl.appendChild(document.createTextNode(" (browse)"));
-            fileEl.appendChild(expandEl);
-            YAHOO.util.Event.addListener(expandEl, "click", this.expandCallback, invoker);
-            
+            YAHOO.util.Event.addListener(fileEl, "click", this.expandCallback, invoker);
+
             if (!this.isBrowseMode) {
-                YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
+		selectEl = document.createElement("a");
+		selectEl.appendChild(document.createTextNode('(select)'));
+		fileEl.appendChild(selectEl);
+		YAHOO.util.Event.addListener(selectEl, "click", this.selectFileCallback, invoker);
             }
         }
         for (index in this.browseListing[toplevelindex].files) {
@@ -387,6 +387,9 @@ YabiFileSelector.prototype.goToRoot = function(e, target) {
 YabiFileSelector.prototype.selectFileCallback = function(e, invoker) {
     var target = invoker.target;
     target.selectFile(invoker.object);
+
+    //prevent propagation from passing on to expand
+    YAHOO.util.Event.stopEvent(e);
 };
 
 YabiFileSelector.prototype.deleteFileCallback = function(e, invoker) {

@@ -831,7 +831,7 @@ display:inline;
 
 .fileSelectorBreadcrumb {
     color: #000;
-	background-color: #eee;
+	background: #eee url(../images/breadcrumb_bg.png) repeat-x;
 	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
 	vertical-align: baseline;
 	padding-top: 3px;
@@ -847,6 +847,7 @@ display:inline;
     font-size:90%;
     background:url(../images/bc_left.png) no-repeat;
     padding-left:12px;
+    position:relative;
 }
 
 .fileSelectorListing {
@@ -857,7 +858,7 @@ display:inline;
 }
 
 .fileSelectorListing .fileItem {
-    color: #000;
+    color: #666;
     padding: 3px;
     padding-left: 22px;
 	border-bottom: 1px dotted #eee;
@@ -866,7 +867,7 @@ display:inline;
 }
 
 .fileSelectorListing .dirItem {
-    color: #00f;
+    color: #666;
     padding: 3px;
     padding-left: 22px;
 	border-bottom: 1px dotted #eee;
@@ -874,7 +875,11 @@ display:inline;
     background:#fff url(../images/folder.png) 2px 2px no-repeat;
 }
 
-.fileSelectorListing .fileItem.hover, .fileSelectorListing .fileItem:hover, .fileSelectorListing .dirItem.hover, .fileSelectorListing .dirItem:hover {
+.fileSelectorListing .dirItem.hover, .fileSelectorListing .dirItem:hover {
+    background:#dbe5f6 url(../images/folder_open.png) 2px 2px no-repeat;
+}
+
+.fileSelectorListing .fileItem.hover, .fileSelectorListing .fileItem:hover {
 	background-color: #dbe5f6;
 }
 
