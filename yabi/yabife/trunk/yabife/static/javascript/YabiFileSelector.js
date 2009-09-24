@@ -142,7 +142,7 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             
             YAHOO.util.Event.addListener(fileEl, "click", this.expandCallback, invoker);
 
-            if (!this.isBrowseMode) {
+            if (!this.isBrowseMode && this.pathComponents.length > 0) {
 		selectEl = document.createElement("a");
 		selectEl.appendChild(document.createTextNode('(select)'));
 		fileEl.appendChild(selectEl);
