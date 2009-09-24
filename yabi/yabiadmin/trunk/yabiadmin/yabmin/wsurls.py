@@ -10,6 +10,6 @@ urlpatterns = patterns('yabiadmin.yabmin.ws_frontend_views',
 
 # backend webservices
 urlpatterns += patterns('yabiadmin.yabmin.ws_backend_views',
-    url(r'^credential/(?P<scheme>\w+)/(?P<username>\w+)/(?P<hostname>[\w-.]+)[/]*$', 'credential', name='credential'),
-    url(r'^credential/(?P<scheme>\w+)/(?P<username>\w+)/(?P<hostname>[\w-.]+)/(?P<detail>\w+)[/]*$', 'credential_detail', name='credential_detail'),                       
+    url(r'^credential/(?P<scheme>\w+)/(?P<username>\w+)/(?P<hostname>[\w\-.]+)[/]*$', 'credential', name='credential'),
+    url(r'^credential/(?P<scheme>\w+)/(?P<username>\w+)/(?P<hostname>[\w\-.]+)/(?P<detail>\w+)[/]*$', 'credential_detail', name='credential_detail'),                       
 )
