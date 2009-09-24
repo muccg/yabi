@@ -505,9 +505,11 @@ display:inline;
 
 .tagHelp {
     position:absolute;
-    right:-15px;
-    top:5px;
+    left:190px;
+    top:45px;
     display:none;
+    -moz-opacity:0; filter:alpha(opacity=0); opacity:0;
+    z-index:100;
 }
 
 .workflowToolbar {
