@@ -23,13 +23,24 @@ function YabiFileSelector(param, isBrowseMode) {
     this.browseEl = document.createElement("div");
     this.browseEl.className = "fileSelectorBrowse";
     
+    //toplevel
+    this.toplevelEl = document.createElement("div");
+    this.toplevelEl.className = "fileSelectorBreadcrumb";
+    this.browseEl.appendChild(this.toplevelEl);
+
     //home el
     this.homeEl = document.createElement("span");
     var homeImg = new Image();
-    this.homeImg.src = appURL + "static/images/home.png";
-    this.homeEl.appendChild(this.homeImg);
+    homeImg.src = appURL + "static/images/home.png";
+    this.homeEl.appendChild(homeImg);
     YAHOO.util.Event.addListener(this.homeEl, "click", this.goToRoot, this);
-    this.browseEl.appendChild(this.homeEl);
+    this.toplevelEl.appendChild(this.homeEl);
+    this.browseEl.appendChild(this.toplevelEl);
+
+    //rootEl
+    this.rootEl = document.createElement("span");
+    this.rootEl.className = "fileSelectorBreadcrumb";
+    this.toplevelEl.appendChild(this.rootEl);
     
     // the breadcrumb div
     this.breadcrumbContainerEl = document.createElement("div");
@@ -84,7 +95,7 @@ function YabiFileSelector(param, isBrowseMode) {
     this.browseEl.appendChild(this.uploadEl);
     
     // update the browser
-    this.updateBrowser(new YabiSimpleFileValue(['/workspace'], ''));
+    this.updateBrowser(new YabiSimpleFileValue([], ''));
 }
 
 /**
@@ -196,6 +207,10 @@ YabiFileSelector.prototype.updateBreadcrumbs = function() {
         this.breadcrumbContainerEl.removeChild(this.breadcrumbContainerEl.firstChild);
     }
     
+    if (this.rootEl.firstChild) {
+        this.rootEl.removeChild(this.rootEl.firstChild);
+    }
+    
     //a single space acts as a spacer node to prevent the container collapsing around the breadcrumbs
     this.breadcrumbContainerEl.appendChild(document.createTextNode(" "));
     
@@ -203,7 +218,12 @@ YabiFileSelector.prototype.updateBreadcrumbs = function() {
     for (var index in this.pathComponents) {
         spanEl = document.createElement("span");
         spanEl.appendChild(document.createTextNode("> " + this.pathComponents[index]));
-        this.breadcrumbContainerEl.appendChild(spanEl);
+        
+        if (prevpath.length === 0) {
+            this.rootEl.appendChild(spanEl);
+        } else {
+            this.breadcrumbContainerEl.appendChild(spanEl);
+        }
         
         invoker = {"target":this, "object":new YabiSimpleFileValue(prevpath.slice(), this.pathComponents[index])};
         
@@ -356,8 +376,8 @@ YabiFileSelector.prototype.hydrate = function(path) {
  *
  * load the root element to get a list of fs backends
  */
-YabiFileSelector.prototype.goToRoot = function(target) {
-    target.hydrate(new YabiSimpleFileValue([], ""));
+YabiFileSelector.prototype.goToRoot = function(e, target) {
+    target.updateBrowser(new YabiSimpleFileValue([], ""));
 };
 
 YabiFileSelector.prototype.selectFileCallback = function(e, invoker) {

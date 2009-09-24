@@ -11,6 +11,10 @@ function YabiSimpleFileValue(path, filename) {
 }
 
 YabiSimpleFileValue.prototype.toString = function() {
+    if (this.path.length === 0) {
+        return this.filename;
+    }
+
     return this.path.join("/") + "/" + this.filename;
 };
 

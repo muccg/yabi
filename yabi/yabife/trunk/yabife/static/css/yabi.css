@@ -834,23 +834,22 @@ display:inline;
 	background-color: #eee;
 	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
 	vertical-align: baseline;
-	padding-top: 7px;
-	padding-bottom: 7px;
+	padding-top: 3px;
+	padding-bottom: 3px;
+    height:1.2em;
 }
 
 .fileSelectorBreadcrumb span {
-	padding: 7px;
-	padding-right: 5px;
-	padding-left: 5px;
+	padding: 3px;
 	cursor: pointer;
+    font-size:90%;
+    background:url(../images/bc_left.png) no-repeat;
+    padding-left:6px;
 }
 
 .fileSelectorBreadcrumb span.hover, .fileSelectorBreadcrumb span:hover {
 	background-color: #eee;
 	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#ddd));
-	padding: 7px;
-	padding-right: 5px;
-	padding-left: 5px;
 	cursor: pointer;
 }
 
@@ -858,6 +857,7 @@ display:inline;
 	background-color: #eee;
 	height: 280px;
 	overflow: auto;
+    font-size:90%;
 }
 
 .fileSelectorListing .fileItem {
