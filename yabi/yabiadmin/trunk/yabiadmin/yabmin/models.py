@@ -276,16 +276,11 @@ class BackendCredential(Base):
     credential = models.ForeignKey(Credential)
     homedir = models.CharField(max_length=512, blank=True, null=True)
 
-    # turn the correct URI in the db into the pseudo-path currently expected by BE
-    # TODO FIX THIS ie once BE takes URI then remove this
-    def homedir_hack(self):
-        #HACK replace first instance of backend username with yabi username
-        return uri_get_pseudopath(self.homedir.replace(self.credential.username, self.credential.user.name, 1))
-
     def json(self):
         output = {
-            'backend':self.backend.name,
-            'homedir':self.homedir_hack(),
+            'name':self.backend.name,
+            'scheme':self.backend.scheme,
+            'homedir':self.homedir,
             'credential':self.credential.description,
             'username':self.credential.username,
             'password':self.credential.password,

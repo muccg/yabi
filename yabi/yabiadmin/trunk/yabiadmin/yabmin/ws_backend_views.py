@@ -27,7 +27,7 @@ def credential(request, scheme, username, hostname):
         return HttpResponseNotFound("Object not found")
 
 
-def credential_detail(request, scheme, username, hostname):
+def credential_detail(request, scheme, username, hostname, detail):
     logger.debug('')
     
     try:
