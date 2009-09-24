@@ -39,7 +39,6 @@ function YabiFileSelector(param, isBrowseMode) {
 
     //rootEl
     this.rootEl = document.createElement("span");
-    this.rootEl.className = "fileSelectorBreadcrumb";
     this.toplevelEl.appendChild(this.rootEl);
     
     // the breadcrumb div
@@ -208,6 +207,7 @@ YabiFileSelector.prototype.updateBreadcrumbs = function() {
     }
     
     if (this.rootEl.firstChild) {
+        YAHOO.util.Event.purgeElement(this.rootEl);
         this.rootEl.removeChild(this.rootEl.firstChild);
     }
     
@@ -216,11 +216,15 @@ YabiFileSelector.prototype.updateBreadcrumbs = function() {
     
     var prevpath = [];
     for (var index in this.pathComponents) {
-        spanEl = document.createElement("span");
-        spanEl.appendChild(document.createTextNode("> " + this.pathComponents[index]));
+        if (prevpath.length === 0) {
+            spanEl = this.rootEl;
+        } else {
+            spanEl = document.createElement("span");
+        }
+
+        spanEl.appendChild(document.createTextNode(this.pathComponents[index]));
         
         if (prevpath.length === 0) {
-            this.rootEl.appendChild(spanEl);
         } else {
             this.breadcrumbContainerEl.appendChild(spanEl);
         }

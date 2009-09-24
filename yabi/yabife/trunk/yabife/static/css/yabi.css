@@ -841,16 +841,12 @@ display:inline;
 
 .fileSelectorBreadcrumb span {
 	padding: 3px;
+    padding-top:4px;
+    padding-bottom:2px;
 	cursor: pointer;
     font-size:90%;
     background:url(../images/bc_left.png) no-repeat;
-    padding-left:6px;
-}
-
-.fileSelectorBreadcrumb span.hover, .fileSelectorBreadcrumb span:hover {
-	background-color: #eee;
-	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#ddd));
-	cursor: pointer;
+    padding-left:12px;
 }
 
 .fileSelectorListing {
