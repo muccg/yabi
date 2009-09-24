@@ -20,14 +20,14 @@ def get_file_list(uri):
     logger.debug('')
     logger.info("Listing: %s" % uri)
 
-
     try:
-        data = {'dir': uri_get_pseudopath(uri)}
-        data = urlencode(data)
-        headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
+        resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, uri)
+        logger.debug('Resource: %s' % resource)
         conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
-        conn.request('POST', settings.YABIBACKEND_LIST, data, headers)
+        logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
+        conn.request('GET', resource)
         r = conn.getresponse()
+ 
     except socket.error, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
         raise
@@ -55,14 +55,14 @@ def get_listing(uri):
     logger.debug('')
     logger.info("Listing: %s" % uri)
 
-
     try:
-        data = {'dir': uri_get_pseudopath(uri)}
-        data = urlencode(data)
-        headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
+        resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, uri)
+        logger.debug('Resource: %s' % resource)
         conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
-        conn.request('POST', settings.YABIBACKEND_LIST, data, headers)
+        logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
+        conn.request('GET', resource)
         r = conn.getresponse()
+
     except socket.error, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
         raise

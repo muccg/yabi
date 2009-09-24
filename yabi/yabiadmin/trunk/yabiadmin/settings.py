@@ -26,7 +26,7 @@ if "DJANGODEV" in os.environ:
     DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
     SSL_ENABLED = False
     DEV_SERVER = True
-    YABIBACKEND_SERVER = 'localhost.localdomain:8000'
+    YABIBACKEND_SERVER = 'localhost.localdomain:8100'
     YABISTORE_SERVER = "localhost.localdomain"
     YABISTORE_BASE = "/yabistore/trunk"
     
