@@ -930,7 +930,7 @@ display:inline;
 }
 
 .progressBarContainer {
-	width: 97%;
+	width: 298px;
 	height: 5px;
 	border: 1px solid #d8d8d8;
 	background: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#fff));
