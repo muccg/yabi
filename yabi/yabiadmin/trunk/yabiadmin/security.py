@@ -1,5 +1,6 @@
 from django.http import HttpResponseForbidden
 from urlparse import urlparse
+from yabiadmin.utils import json_error
 
 def validate_user(f):
     """
@@ -10,11 +11,11 @@ def validate_user(f):
 
         if request.method == 'GET':
             if 'yabiusername' not in request.GET or request.GET['yabiusername'] != username:
-                return HttpResponseForbidden("Trying to view resource for different user.")
+                return HttpResponseForbidden(json_error("Trying to view resource for different user."))
 
         elif request.method == 'POST':
             if 'yabiusername' not in request.POST or request.POST['yabiusername'] != username:
-                return HttpResponseForbidden("Trying to view resource for different user.")
+                return HttpResponseForbidden(json_error("Trying to view resource for different user."))
 
         return f(request,username, *args, **kwargs)
     return check_user
@@ -46,11 +47,14 @@ def validate_uri(f):
                 yabiusername = request.POST['yabiusername']
 
         if uri:
-            scheme, rest = uri.split(":",1) # split required for non RFC uris ie gridftp, yabifs
-            u = urlparse(rest)
-            if u.username != yabiusername:
-                return HttpResponseForbidden("Trying to view uri for different user.")                
-
+            try:
+                scheme, rest = uri.split(":",1) # split required for non RFC uris ie gridftp, yabifs
+                u = urlparse(rest)
+                if u.username != yabiusername:
+                    return HttpResponseForbidden(json_error("Trying to view uri for different user."))
+            except ValueError, e:
+                return HttpResponseForbidden(json_error("Invalid URI."))
+            
         return f(request, *args, **kwargs)
     return check_uri
 

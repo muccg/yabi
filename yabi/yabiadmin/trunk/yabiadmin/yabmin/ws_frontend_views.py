@@ -86,11 +86,7 @@ def ls(request):
     logger.debug(request.GET)
 
     if request.GET['uri']:
-        
-        # TODO remove hard coding. Should pass in uri here
-        uri = 'file://%s@localhost.localdomain/%s%s' % (request.GET['yabiusername'], request.GET['yabiusername'], request.GET['uri'])
-        filelisting = backendhelper.get_listing(uri)
-
+        filelisting = backendhelper.get_listing(request.GET['uri'])
     else:
         filelisting = backendhelper.get_backend_list(request.GET['yabiusername'])
 
