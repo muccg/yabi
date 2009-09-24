@@ -1,6 +1,9 @@
-from django.http import HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden
+from django.core.exceptions import ObjectDoesNotExist
 from urlparse import urlparse
 from yabiadmin.utils import json_error
+from yabiadmin.yabmin.models import BackendCredential
+
 
 def validate_user(f):
     """
@@ -21,9 +24,6 @@ def validate_user(f):
     return check_user
 
 
-
-#TODO this will actually need to get credential for backend based on uri then check username against credential
-# and backend against yabiusername
 def validate_uri(f):
     """
     Decorator that should be applied to all functions which take a uri. It will check the uri for a username that
@@ -48,13 +48,26 @@ def validate_uri(f):
 
         if uri:
             try:
+
                 scheme, rest = uri.split(":",1) # split required for non RFC uris ie gridftp, yabifs
                 u = urlparse(rest)
-                if u.username != yabiusername:
+
+                # find a matching credential based on uri
+                # check that credentials yabiusername matches that passed from front end
+                bc = BackendCredential.objects.get(backend__hostname=u.hostname,
+                                                   backend__scheme=scheme,
+                                                   credential__username=u.username)
+
+                if bc.credential.user.name != yabiusername:
                     return HttpResponseForbidden(json_error("Trying to view uri for different user."))
+
+            except ObjectDoesNotExist, e:
+                return HttpResponseForbidden(json_error("No backend credential found."))                
+
             except ValueError, e:
                 return HttpResponseForbidden(json_error("Invalid URI."))
             
+
         return f(request, *args, **kwargs)
     return check_uri
 
