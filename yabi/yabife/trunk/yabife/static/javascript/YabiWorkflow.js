@@ -108,7 +108,7 @@ function YabiWorkflow(editable) {
     helpImg.src = appURL + "static/images/tagHelp.png";
     this.tagHelpEl.appendChild(helpImg);
     this.tagEl.appendChild(this.tagHelpEl);
-    YAHOO.util.Event.addListener(this.tagHelpEl, "click", function(obj) { var myAnim = new YAHOO.util.Anim(obj.tagHelpEl, { opacity: { to: 0 } }, 0.25, YAHOO.util.Easing.easeOut); myAnim.animate(); }, this);
+    YAHOO.util.Event.addListener(this.tagHelpEl, "click", function(e, obj) { var myAnim = new YAHOO.util.Anim(obj.tagHelpEl, { opacity: { to: 0 } }, 0.25, YAHOO.util.Easing.easeOut); myAnim.onComplete.subscribe(function() { this.getEl().style.display = "none"; }); myAnim.animate(); }, this);
 
 
     this.mainEl.appendChild(this.tagEl);
@@ -602,7 +602,8 @@ YabiWorkflow.prototype.cancelTagEditing = function() {
     this.tagInputEl.style.display = "none";
     this.tagListEl.style.display = "inline";
     this.tagAddLink.style.display = "block";
-    var myAnim = new YAHOO.util.Anim(obj.tagHelpEl, { opacity: { to: 0 } }, 0.25, YAHOO.util.Easing.easeOut);
+    var myAnim = new YAHOO.util.Anim(this.tagHelpEl, { opacity: { to: 0 } }, 0.25, YAHOO.util.Easing.easeOut);
+    myAnim.onComplete.subscribe(function() { this.getEl().style.display = "none"; });
     myAnim.animate();
 };
 
@@ -627,7 +628,8 @@ YabiWorkflow.prototype.tagsFinishedSaving = function() {
     this.tagInputEl.style.display = "none";
     this.tagListEl.style.display = "inline";
     this.tagAddLink.style.display = "block";
-    var myAnim = new YAHOO.util.Anim(obj.tagHelpEl, { opacity: { to: 0 } }, 0.25, YAHOO.util.Easing.easeOut);
+    var myAnim = new YAHOO.util.Anim(this.tagHelpEl, { opacity: { to: 0 } }, 0.25, YAHOO.util.Easing.easeOut);
+    myAnim.onComplete.subscribe(function() { this.getEl().style.display = "none"; });
     myAnim.animate();
 };
 
@@ -798,6 +800,7 @@ YabiWorkflow.prototype.addTagCallback = function(e, obj) {
     obj.tagListEl.style.display = 'none';
     obj.tagInputEl.style.display = 'inline';
     obj.tagHintDiv.className = "tagHint";
+    obj.tagHelpEl.style.display = "block";
     var myAnim = new YAHOO.util.Anim(obj.tagHelpEl, { opacity: { to: 255 } }, 0.25, YAHOO.util.Easing.easeOut);
     myAnim.animate();
     obj.tagInputEl.focus();
