@@ -23,6 +23,14 @@ function YabiFileSelector(param, isBrowseMode) {
     this.browseEl = document.createElement("div");
     this.browseEl.className = "fileSelectorBrowse";
     
+    //home el
+    this.homeEl = document.createElement("span");
+    var homeImg = new Image();
+    this.homeImg.src = appURL + "static/images/home.png";
+    this.homeEl.appendChild(this.homeImg);
+    YAHOO.util.Event.addListener(this.homeEl, "click", this.goToRoot, this);
+    this.browseEl.appendChild(this.homeEl);
+    
     // the breadcrumb div
     this.breadcrumbContainerEl = document.createElement("div");
     this.breadcrumbContainerEl.className = "fileSelectorBreadcrumb";
@@ -191,12 +199,6 @@ YabiFileSelector.prototype.updateBreadcrumbs = function() {
     //a single space acts as a spacer node to prevent the container collapsing around the breadcrumbs
     this.breadcrumbContainerEl.appendChild(document.createTextNode(" "));
     
-    //home el
-    this.homeEl = new Image();
-    this.homeEl.src = appURL + "static/images/home.png";
-    YAHOO.util.Event.addListener(this.homeEl, "click", this.goToRoot, this);
-    this.breadcrumbContainerEl.appendChild(this.homeEl);
-    
     var prevpath = [];
     for (var index in this.pathComponents) {
         spanEl = document.createElement("span");
@@ -209,15 +211,6 @@ YabiFileSelector.prototype.updateBreadcrumbs = function() {
         
         prevpath.push(this.pathComponents[index]);
     }
-};
-
-/**
- * goToRoot
- *
- * load the root element to get a list of fs backends
- */
-YabiFileSelector.prototype.goToRoot = function(target) {
-    target.hydrate(new YabiSimpleFileValue([], ""));
 };
 
 /**
@@ -358,6 +351,15 @@ YabiFileSelector.prototype.hydrate = function(path) {
 };
 
 // ==== CALLBACKS ====
+/**
+ * goToRoot
+ *
+ * load the root element to get a list of fs backends
+ */
+YabiFileSelector.prototype.goToRoot = function(target) {
+    target.hydrate(new YabiSimpleFileValue([], ""));
+};
+
 YabiFileSelector.prototype.selectFileCallback = function(e, invoker) {
     var target = invoker.target;
     target.selectFile(invoker.object);
