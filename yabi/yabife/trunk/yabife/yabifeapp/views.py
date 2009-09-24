@@ -28,7 +28,10 @@ def proxy(request, url, server, base):
 
     logger.debug('Request is: %s' % request.user.username)
     
-
+    ## TODO CODEREVIEW
+    ## Is is possible to post to a page and still send get params,
+    ## are they dropped by this proxy. Would it be possible to override yabiusername by
+    ## crafting a post and sending yabiusername as a get param as well
 
     if request.method == "GET":
 
