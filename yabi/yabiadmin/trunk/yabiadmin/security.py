@@ -21,7 +21,8 @@ def validate_user(f):
 
 
 
-
+#TODO this will actually need to get credential for backend based on uri then check username against credential
+# and backend against yabiusername
 def validate_uri(f):
     """
     Decorator that should be applied to all functions which take a uri. It will check the uri for a username that

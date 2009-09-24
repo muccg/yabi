@@ -9,7 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from yabiadmin.yabiengine import wfbuilder
 from yabiadmin.yabiengine import backendhelper
-from yabiadmin.security import validate_user
+from yabiadmin.security import validate_user, validate_uri
 
 import logging
 import yabilogging
@@ -76,7 +76,7 @@ def menu(request, username):
     except ObjectDoesNotExist:
         return HttpResponseNotFound("Object not found")    
 
-
+@validate_uri
 def ls(request):
     """
     This function will return a list of backends the user has access to IF the uri is empty. If the uri
@@ -84,7 +84,6 @@ def ls(request):
     """
     logger.debug('')
     logger.debug(request.GET)
-
 
     if request.GET['uri']:
         

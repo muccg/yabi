@@ -204,3 +204,15 @@ class TestYabmin(unittest.TestCase):
         self.assertTrue(j3.command,'/usr/local/bin/ccg-blastparser %')
         self.assertTrue(j3.commandparams,"[u'yabi://localhost.localdomain/1/2/']")
         self.assertTrue(j3.input_filetype_extensions,"[u'bls']")
+
+
+
+    ########################################
+    ## ls
+    ########################################
+    def testLsInvalidUserInUri(self):
+
+        c = Client()
+        response = c.get('/ws/fs/list?uri=gripftp://cwellington@xe-ng2.ivec.org/scratch/bio1/andrew/workspace/')
+        self.assertEqual(response.status_code, 403) # this should be forbidden
+
