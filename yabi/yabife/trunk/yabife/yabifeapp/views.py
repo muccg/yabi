@@ -12,6 +12,7 @@ from django.utils import webhelpers
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate
 from django import forms
+import copy
 
 import logging
 import yabilogging
@@ -24,10 +25,17 @@ def proxy(request, url, server, base):
     
     if not url.startswith("/"):
         url = "/" + url
+
+    logger.debug('Request is: %s' % request.user.username)
     
+
+
     if request.method == "GET":
 
-        resource = "%s%s?%s" % (base, url, urlencode(request.GET))
+        get_params = copy.copy(request.GET)
+        get_params['yabiusername'] = request.user.username
+
+        resource = "%s%s?%s" % (base, url, urlencode(get_params))
         logger.debug('Resource: %s' % resource)
         conn = httplib.HTTPConnection(server)
         logger.debug('Server: %s' % server)        
@@ -38,7 +46,11 @@ def proxy(request, url, server, base):
 
         resource = "%s%s" % (base, url)
         logger.debug('Resource: %s' % resource)
-        data = urlencode(request.POST)
+
+        post_params = copy.copy(request.POST)
+        post_params['yabiusername'] = request.user.username
+
+        data = urlencode(post_params)
         logger.debug('Data: %s' % data)
         headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
         conn = httplib.HTTPConnection(server)
