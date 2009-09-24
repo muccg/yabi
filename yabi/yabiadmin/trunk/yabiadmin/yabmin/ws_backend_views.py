@@ -14,21 +14,27 @@ import logging
 import yabilogging
 logger = logging.getLogger('yabiadmin')
 
-def credential(request, username, backend):
-    logger.debug('')
+def credential(request, scheme, username, hostname):
+    logger.debug('Credential request for scheme: %s username: %s hostname: %s' % (scheme, username, hostname))
     
     try:
-        bc = BackendCredential.objects.get(backend__name=backend, credential__user__name=username)
+        bc = BackendCredential.objects.get(backend__scheme=scheme,
+                                           credential__username=username,
+                                           backend__hostname=hostname)
         return HttpResponse(bc.json())
+
     except ObjectDoesNotExist:
         return HttpResponseNotFound("Object not found")
 
 
-def credential_detail(request, username, backend, detail):
+def credential_detail(request, scheme, username, hostname):
     logger.debug('')
     
     try:
-        bc = BackendCredential.objects.get(backend__name=backend, credential__user__name=username)
+        bc = BackendCredential.objects.get(backend__scheme=scheme,
+                                           credential__username=username,
+                                           backend__hostname=hostname)
+
 
         if detail == 'cert':
             return HttpResponse(bc.credential.cert)
