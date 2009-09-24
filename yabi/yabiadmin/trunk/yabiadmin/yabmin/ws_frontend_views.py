@@ -9,22 +9,11 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from yabiadmin.yabiengine import wfbuilder
 from yabiadmin.yabiengine import backendhelper
+from yabiadmin.security import validate_user
 
 import logging
 import yabilogging
 logger = logging.getLogger('yabiadmin')
-
-
-def validate_user(f):
-    """
-    Decorator that should be applied to all functions which take a username. It will check this username
-    against the yabiusername that the proxy has injected into the GET dictionary
-    """
-    def check_user(request, username, *args, **kwargs):
-        if 'yabiusername' not in request.GET or request.GET['yabiusername'] != username:
-            return HttpResponseForbidden("Trying to view menu for different user.")        
-        return f(request,username, *args, **kwargs)
-    return check_user
 
 
 def tool(request, toolname):
