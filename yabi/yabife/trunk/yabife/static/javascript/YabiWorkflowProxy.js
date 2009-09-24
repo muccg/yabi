@@ -63,6 +63,8 @@ YabiWorkflowProxy.prototype.setSelected = function(state) {
 };
 
 YabiWorkflowProxy.prototype.setTags = function(tagArray) {
+    this.payload.tags = tagArray;
+    
     while (this.tagEl.firstChild) {
         this.tagEl.removeChild(this.tagEl.firstChild);
     }
