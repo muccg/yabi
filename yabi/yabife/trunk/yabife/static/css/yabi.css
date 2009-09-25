@@ -857,6 +857,10 @@ display:inline;
     font-size:90%;
 }
 
+.ddDesired {
+    background: #dbe5f6 -webkit-gradient(linear, left top, left bottom, to(#5aa4fb), from(#dbe5f6));
+}
+
 .fileSelectorListing .fileItem {
     color: #666;
     padding: 3px;

@@ -93,6 +93,8 @@ function YabiFileSelector(param, isBrowseMode) {
 
     this.browseEl.appendChild(this.uploadEl);
     
+    //this.ddTarget = new YAHOO.util.DDTarget(this.fileListEl, 'files', {});
+
     // update the browser
     this.updateBrowser(new YabiSimpleFileValue([], ''));
 }
@@ -113,6 +115,13 @@ YabiFileSelector.prototype.updateBrowser = function(location) {
     while (this.fileListEl.firstChild) {
         YAHOO.util.Event.purgeElement(this.fileListEl.firstChild);
         this.fileListEl.removeChild(this.fileListEl.firstChild);
+    }
+
+    //disable drop target if location is empty (ie. the root)
+    if (location.toString() === "") {
+  //      this.ddTarget.lock();
+    } else {
+  //      this.ddTarget.unlock();
     }
 
     this.hydrate(location.toString());
@@ -147,6 +156,31 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
 		selectEl.appendChild(document.createTextNode('(select)'));
 		fileEl.appendChild(selectEl);
 		YAHOO.util.Event.addListener(selectEl, "click", this.selectFileCallback, invoker);
+            } else if (this.isBrowseMode) {
+                tempDD = new YAHOO.util.DDProxy(fileEl, 'files', {isTarget:true});
+                tempDD.endDrag = function(e) {
+                    var DOM = YAHOO.util.Dom;
+                    var lel = this.getEl();
+                    var del = this.getDragEl();
+
+                    // Show the drag frame briefly so we can get its position
+                    // del.style.visibility = "";
+                    DOM.setStyle(del, "visibility", "");
+
+                    // Hide the linked element before the move to get around a Safari 
+                    // rendering bug.
+                    //lel.style.visibility = "hidden";
+                    DOM.setStyle(lel, "visibility", "hidden");
+                    //disable the move-to-el
+                    //YAHOO.util.DDM.moveToEl(lel, del);
+                    //del.style.visibility = "hidden";
+                    DOM.setStyle(del, "visibility", "hidden");
+                    //lel.style.visibility = "";
+                    DOM.setStyle(lel, "visibility", "");
+                };
+                tempDD.onDragDrop = function(e, id) { YAHOO.util.Dom.removeClass(id, 'ddDesired'); }; //TODO make this function determine where it was dropped and issue an ajax call to move the file, then refresh the browsers that are affected
+                tempDD.onDragEnter = function(e, id) { YAHOO.util.Dom.addClass(id, 'ddDesired'); } ;
+                tempDD.onDragOut = function(e, id) { YAHOO.util.Dom.removeClass(id, 'ddDesired'); } ;
             }
         }
         for (index in this.browseListing[toplevelindex].files) {
@@ -159,14 +193,32 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             
             if (!this.isBrowseMode) {
                 YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
+            } else {
+                tempDD = new YAHOO.util.DDProxy(fileEl, 'files', {isTarget:false});
+                tempDD.endDrag = function(e) {
+	    	    var DOM = YAHOO.util.Dom;
+		    var lel = this.getEl();
+		    var del = this.getDragEl();
+
+		    // Show the drag frame briefly so we can get its position
+		    // del.style.visibility = "";
+		    DOM.setStyle(del, "visibility", ""); 
+
+		    // Hide the linked element before the move to get around a Safari 
+		    // rendering bug.
+		    //lel.style.visibility = "hidden";
+		    DOM.setStyle(lel, "visibility", "hidden"); 
+                    //disable the move-to-el
+		    //YAHOO.util.DDM.moveToEl(lel, del);
+		    //del.style.visibility = "hidden";
+		    DOM.setStyle(del, "visibility", "hidden"); 
+		    //lel.style.visibility = "";
+		    DOM.setStyle(lel, "visibility", ""); 
+	        };
+                tempDD.onDragDrop = function(e, id) { console.log("copy to :" + document.getElementById(id).innerHTML); YAHOO.util.Dom.removeClass(id, 'ddDesired'); }; //TODO make this function determine where it was dropped and issue an ajax call to move the file, then refresh the browsers that are affected
+                tempDD.onDragEnter = function(e, id) { console.log(id); YAHOO.util.Dom.addClass(id, 'ddDesired'); } ;
+                tempDD.onDragOut = function(e, id) { YAHOO.util.Dom.removeClass(id, 'ddDesired'); } ;
             }
-            
-            tempDD = new YAHOO.util.DDProxy(fileEl, 'default', {isTarget:false});
-            //                tempDD.startDrag = startDragToolCallback;
-            tempDD.endDrag = function(e, dd) { console.log(e); console.log(id); };
-            //                tempDD.onDrag = workflow.onDragJobCallback;
-            tempDD.onDragEnter = function(e, id) { e.toElement.style.backgroundColor = '#fcc'; console.log(e); console.log(id); } ;
-            tempDD.onDragOut = function(e, id) { e.toElement.style.backgroundColor = '#fff'; console.log(e); console.log(id); } ;
         }
     }
 
