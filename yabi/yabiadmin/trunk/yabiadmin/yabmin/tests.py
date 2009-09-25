@@ -161,11 +161,13 @@ class TestYabmin(unittest.TestCase):
     def testSubmitWorkflow(self):
         c = Client()
 
-        workflowjson = '{"name":"unittest","jobs":[{"toolName":"fileselector","jobId":1,"valid":true,"parameterList":{"parameter":[{"switchName":"files","valid":true,"value":["1003_5915.fa"]}]}},{"toolName":"fastasplitter","jobId":2,"valid":true,"parameterList":{"parameter":[{"switchName":"-i","valid":true,"value":["file://localhost.localdomain/input/1003_5915.fa"]}]}},{"toolName":"blast.xe.ivec.org","jobId":3,"valid":true,"parameterList":{"parameter":[{"switchName":"-p","valid":true,"value":["blastn"]},{"switchName":"-d","valid":true,"value":["nt"]},{"switchName":"-i","valid":true,"value":[{"type":"job","jobId":2}]}]}},{"toolName":"blasttophits","jobId":4,"valid":true,"parameterList":{"parameter":[{"switchName":"inputFiles","valid":true,"value":[{"type":"job","jobId":3}]},{"switchName":"hitCount","valid":true,"value":["10"]}]}}]}'
+        #workflowjson = '{"name":"unittest","jobs":[{"toolName":"fileselector","jobId":1,"valid":true,"parameterList":{"parameter":[{"switchName":"files","valid":true,"value":["1003_5915.fa"]}]}},{"toolName":"fastasplitter","jobId":2,"valid":true,"parameterList":{"parameter":[{"switchName":"-i","valid":true,"value":["file://localhost.localdomain/input/1003_5915.fa"]}]}},{"toolName":"blast.xe.ivec.org","jobId":3,"valid":true,"parameterList":{"parameter":[{"switchName":"-p","valid":true,"value":["blastn"]},{"switchName":"-d","valid":true,"value":["nt"]},{"switchName":"-i","valid":true,"value":[{"type":"job","jobId":2}]}]}},{"toolName":"blasttophits","jobId":4,"valid":true,"parameterList":{"parameter":[{"switchName":"inputFiles","valid":true,"value":[{"type":"job","jobId":3}]},{"switchName":"hitCount","valid":true,"value":["10"]}]}}]}'
+        workflowjson = '{"name":"unittest","tags":[],"jobs":[{"toolName":"fileselector","jobId":1,"valid":true,"parameterList":{"parameter":[{"switchName":"files","valid":true,"value":[{"path":["yabifs://andrew@localhost.localdomain:8000/andrew/","workspace"],"filename":"AA123456.fa","type":"file"}]}]}},{"toolName":"blast.xe.ivec.org","jobId":2,"valid":true,"parameterList":{"parameter":[{"switchName":"-p","valid":true,"value":["blastp"]},{"switchName":"-d","valid":true,"value":["aa"]},{"switchName":"-i","valid":true,"value":[{"type":"job","jobId":1}]}]}},{"toolName":"blasttophits","jobId":3,"valid":true,"parameterList":{"parameter":[{"switchName":"inputFiles","valid":true,"value":[{"type":"job","jobId":2}]},{"switchName":"hitCount","valid":true,"value":["10"]}]}}]}'
 
         response = c.post('/ws/submitworkflow',
                           {'username':'andrew',
-                           'workflowjson': workflowjson
+                           'workflowjson': workflowjson,
+                           'yabiusername': 'andrew'
                            })
 
         self.assertEqual(response.status_code, 200)

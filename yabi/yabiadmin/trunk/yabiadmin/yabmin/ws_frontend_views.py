@@ -79,6 +79,7 @@ def menu(request, *args, **kwargs):
     except ObjectDoesNotExist:
         return HttpResponseNotFound(json_error("Object not found"))    
 
+
 @validate_uri
 def ls(request):
     """
@@ -86,7 +87,6 @@ def ls(request):
     is not empty then it will pass on the call to the backend to get a listing of that uri
     """
     logger.debug('')
-    logger.debug(request.GET)
 
     try:
         if request.GET['uri']:
@@ -97,6 +97,7 @@ def ls(request):
         return HttpResponse(filelisting)
     except Exception, e:
         return HttpResponseNotFound(json_error(e))
+
     
 @validate_user
 def submitworkflow(request):
