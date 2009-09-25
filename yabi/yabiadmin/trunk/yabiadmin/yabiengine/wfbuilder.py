@@ -3,7 +3,7 @@ from django.conf import settings
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog, StageIn
 from yabiadmin.yabmin.models import Backend, BackendCredential, Tool, User
 from yabiadmin.yabiengine.YabiJobException import YabiJobException
-from yabiadmin.yabiengine.urihelper import get_backend_uri, uri_get_pseudopath
+from yabiadmin.yabiengine.urihelper import uri_get_pseudopath
 from yabiadmin.yabiengine import backendhelper
 from django.utils import simplejson as json
 from yabiengine import wfwrangler
@@ -19,7 +19,6 @@ job_cache = {}
 
 def build(username, workflow_json):
     logger.debug('')
-    logger.debug(workflow_json)
     
     workflow_dict = json.loads(workflow_json)
     job_cache = {}
@@ -31,7 +30,6 @@ def build(username, workflow_json):
         workflow.save()
 
         for i,job_dict in enumerate(workflow_dict["jobs"]):
-            logger.debug(workflow_dict["jobs"])
             job = addJob(workflow, job_dict, i)
 
         # start processing
@@ -42,8 +40,6 @@ def build(username, workflow_json):
         logger.critical(e)
         raise
     except KeyError, e:
-        #import traceback
-        #print traceback.print_exc()
         logger.critical(e)
         raise
     except Exception, e:
@@ -54,19 +50,11 @@ def build(username, workflow_json):
 
 def addJob(workflow, job_dict, order):
     logger.debug('')
-    logger.debug(job_dict)    
 
     tool = Tool.objects.get(name=job_dict["toolName"])
 
     job = Job(workflow=workflow, order=order, start_time=datetime.datetime.now())
     job.save()
-
-    # add a job, return None if no backend as nothing needs to be run
-    if tool.backend.name == 'nullbackend':
-        job.status = settings.STATUS['complete']
-        job.save()
-
-
 
     # cache job for later reference
     job_id = job_dict["jobId"] # the id that is used in the json
@@ -74,10 +62,8 @@ def addJob(workflow, job_dict, order):
 
     # process the parameterList to get a useful dict
     param_dict = {}
-    for tp in job_dict["parameterList"]["parameter"]:
-            param_dict[tp["switchName"]] = get_param_value(workflow, tp)
-
-    logger.info("Param_Dict: %s" % param_dict)
+    for toolparam in job_dict["parameterList"]["parameter"]:
+            param_dict[toolparam["switchName"]] = get_param_value(workflow, toolparam)
 
     # now build up the command
     command = []
@@ -115,29 +101,31 @@ def addJob(workflow, job_dict, order):
             pass # TODO figure out what to do with this one
 
         elif switchuse == 'none':
-                pass
+            pass
 
 
     # add other attributes
     job.command = ' '.join(command)
     job.commandparams = repr(commandparams) # save string repr of list
-    job.status = settings.STATUS['pending']
+
+
+    # set status to complete if null backend
+    if tool.backend.name == 'nullbackend':
+        job.status = settings.STATUS['complete']
+    else:
+        job.status = settings.STATUS['pending']
 
     # add a list of input file extensions as string, we will reconstitute this for use in the wfwrangler
-    job.input_filetype_extensions = "%s" % tool.input_filetype_extensions()
+    job.input_filetype_extensions = str(tool.input_filetype_extensions())
 
 
     ## TODO raise error when no credential for user
     logger.debug('%s - %s' % (workflow.user, tool.fs_backend))
     backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.fs_backend)
 
-    # HACK change the first occurance of username from backend username to yabi username
-    # TODO fix this
-    bc_homedir = backendcredential.homedir.replace(backendcredential.credential.username, backendcredential.credential.user.name, 1)
-    stageout = "%s%d/%d/" % (bc_homedir, workflow.id, job.id)
-    job.stageout = stageout
-    job.exec_backend = get_backend_uri(tool.backend)
-    job.fs_backend = get_backend_uri(tool.fs_backend)
+    job.stageout = "%s%s%d/%d/" % (tool.backend.uri, backendcredential.homedir, workflow.id, job.id)
+    job.exec_backend = tool.backend.uri
+    job.fs_backend = tool.fs_backend.uri
 
     job.cpus = tool.cpus
     job.walltime = tool.walltime

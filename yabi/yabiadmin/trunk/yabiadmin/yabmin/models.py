@@ -3,6 +3,7 @@ from django import forms
 from django.contrib.auth.models import User as DjangoUser
 from django.utils import simplejson as json
 from yabiadmin.yabiengine.urihelper import uri_get_pseudopath
+from urlparse import urlparse, urlunparse
 
 class ManyToManyField_NoSyncdb(models.ManyToManyField):
     def __init__(self, *args, **kwargs):
@@ -267,6 +268,15 @@ class Backend(Base):
     port = models.IntegerField(null=True, blank=True)
     path = models.CharField(max_length=512, blank=True, null=True)
 
+
+    @property
+    def uri(self):
+        netloc = self.hostname
+        if self.port:
+            netloc += ':%d' % self.port
+
+        return urlunparse((self.scheme, netloc, self.path, '', '', ''))
+
     def __unicode__(self):
         return self.name
 
@@ -289,3 +299,11 @@ class BackendCredential(Base):
             }
         
         return json.dumps(output)
+
+
+    @property
+    def homedir_uri(self):
+        """
+        Returns full uri to the user's homedir
+        """
+        return self.backend.uri + self.backend.path + self.homedir

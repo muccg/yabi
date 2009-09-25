@@ -52,26 +52,6 @@ def uriparse(uri):
         raise
 
     
-def get_backend_uri(backend):
-    logger.debug('Backend: %s' % backend)
-
-    from yabiadmin.yabmin.models import Backend
-    from urlparse import urlunparse
-    assert isinstance(backend, Backend)
-
-    # check for the things vital to building a uri
-    if not backend.hostname:
-        raise Exception('No backend hostname for backend: %s' % backend)
-    if not backend.scheme:
-        raise Exception('No backend scheme for backend: %s' % backend)
-
-    netloc = backend.hostname
-    if backend.port:
-        netloc += ':%d' % backend.port
-
-    return urlunparse((backend.scheme, netloc, backend.path, '', '', ''))
-
-
 def get_backend_userdir(backendcredential, yabiusername):
     """
     Supplies the front end with a list of backend uris including the user's home dir

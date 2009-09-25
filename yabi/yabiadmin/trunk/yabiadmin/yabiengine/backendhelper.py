@@ -3,7 +3,7 @@ from django.utils import simplejson as json
 import httplib
 import socket
 from urllib import urlencode
-from yabiadmin.yabiengine.urihelper import uri_get_pseudopath, uriparse, get_backend_uri, get_backend_userdir
+from yabiadmin.yabiengine.urihelper import uri_get_pseudopath, uriparse, get_backend_userdir
 from yabiadmin.yabmin.models import Backend, BackendCredential
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ObjectDoesNotExist
@@ -106,10 +106,8 @@ def get_backend_list(yabiusername):
 
         results = { yabiusername: {'files':[], 'directories':[] }}
 
-
         for bc in BackendCredential.objects.filter(credential__user__name=yabiusername):
-            uri = get_backend_userdir(bc, yabiusername)
-            results[yabiusername]['directories'].append([uri, 0, ''])
+            results[yabiusername]['directories'].append([bc.homedir_uri, 0, ''])
 
         return json.dumps(results)
 
