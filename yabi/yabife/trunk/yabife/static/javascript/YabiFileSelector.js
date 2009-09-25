@@ -158,27 +158,8 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
 		YAHOO.util.Event.addListener(selectEl, "click", this.selectFileCallback, invoker);
             } else if (this.isBrowseMode) {
                 tempDD = new YAHOO.util.DDProxy(fileEl, 'files', {isTarget:true});
-                tempDD.endDrag = function(e) {
-                    var DOM = YAHOO.util.Dom;
-                    var lel = this.getEl();
-                    var del = this.getDragEl();
-
-                    // Show the drag frame briefly so we can get its position
-                    // del.style.visibility = "";
-                    DOM.setStyle(del, "visibility", "");
-
-                    // Hide the linked element before the move to get around a Safari 
-                    // rendering bug.
-                    //lel.style.visibility = "hidden";
-                    DOM.setStyle(lel, "visibility", "hidden");
-                    //disable the move-to-el
-                    //YAHOO.util.DDM.moveToEl(lel, del);
-                    //del.style.visibility = "hidden";
-                    DOM.setStyle(del, "visibility", "hidden");
-                    //lel.style.visibility = "";
-                    DOM.setStyle(lel, "visibility", "");
-                };
-                tempDD.onDragDrop = function(e, id) { YAHOO.util.Dom.removeClass(id, 'ddDesired'); }; //TODO make this function determine where it was dropped and issue an ajax call to move the file, then refresh the browsers that are affected
+                tempDD.endDrag = this.movelessDrop;
+                tempDD.onDragDrop = function(e, id) { console.log("folder copy to :" + document.getElementById(id).innerHTML); YAHOO.util.Dom.removeClass(id, 'ddDesired'); }; //TODO make this function determine where it was dropped and issue an ajax call to move the file, then refresh the browsers that are affected
                 tempDD.onDragEnter = function(e, id) { YAHOO.util.Dom.addClass(id, 'ddDesired'); } ;
                 tempDD.onDragOut = function(e, id) { YAHOO.util.Dom.removeClass(id, 'ddDesired'); } ;
             }
@@ -195,26 +176,7 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
                 YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
             } else {
                 tempDD = new YAHOO.util.DDProxy(fileEl, 'files', {isTarget:false});
-                tempDD.endDrag = function(e) {
-	    	    var DOM = YAHOO.util.Dom;
-		    var lel = this.getEl();
-		    var del = this.getDragEl();
-
-		    // Show the drag frame briefly so we can get its position
-		    // del.style.visibility = "";
-		    DOM.setStyle(del, "visibility", ""); 
-
-		    // Hide the linked element before the move to get around a Safari 
-		    // rendering bug.
-		    //lel.style.visibility = "hidden";
-		    DOM.setStyle(lel, "visibility", "hidden"); 
-                    //disable the move-to-el
-		    //YAHOO.util.DDM.moveToEl(lel, del);
-		    //del.style.visibility = "hidden";
-		    DOM.setStyle(del, "visibility", "hidden"); 
-		    //lel.style.visibility = "";
-		    DOM.setStyle(lel, "visibility", ""); 
-	        };
+                tempDD.endDrag = this.movelessDrop;
                 tempDD.onDragDrop = function(e, id) { console.log("copy to :" + document.getElementById(id).innerHTML); YAHOO.util.Dom.removeClass(id, 'ddDesired'); }; //TODO make this function determine where it was dropped and issue an ajax call to move the file, then refresh the browsers that are affected
                 tempDD.onDragEnter = function(e, id) { console.log(id); YAHOO.util.Dom.addClass(id, 'ddDesired'); } ;
                 tempDD.onDragOut = function(e, id) { YAHOO.util.Dom.removeClass(id, 'ddDesired'); } ;
@@ -473,4 +435,26 @@ YabiFileSelector.prototype.hydrateResponse = function(o) {
     } catch (e) {
         YAHOO.ccgyabi.YabiMessage.yabiMessageFail('Error loading file listing');
     }
+};
+
+// drag n drop
+YabiFileSelector.prototype.movelessDrop = function(e) {
+    var DOM = YAHOO.util.Dom;
+    var lel = this.getEl();
+    var del = this.getDragEl();
+    
+    // Show the drag frame briefly so we can get its position
+    // del.style.visibility = "";
+    DOM.setStyle(del, "visibility", "");
+    
+    // Hide the linked element before the move to get around a Safari 
+    // rendering bug.
+    //lel.style.visibility = "hidden";
+    DOM.setStyle(lel, "visibility", "hidden");
+    //disable the move-to-el
+    //YAHOO.util.DDM.moveToEl(lel, del);
+    //del.style.visibility = "hidden";
+    DOM.setStyle(del, "visibility", "hidden");
+    //lel.style.visibility = "";
+    DOM.setStyle(lel, "visibility", "");
 };
