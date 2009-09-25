@@ -4,13 +4,23 @@ from urlparse import urlparse
 from yabiadmin.utils import json_error
 from yabiadmin.yabmin.models import BackendCredential
 
+## import logging
+## import yabilogging
+## logger = logging.getLogger('yabiadmin')
 
 def validate_user(f):
     """
     Decorator that should be applied to all functions which take a username. It will check this username
     against the yabiusername that the proxy has injected into the GET or POST object
     """
-    def check_user(request, username, *args, **kwargs):
+    def check_user(request, *args, **kwargs):
+
+        username = None
+        if 'username' in kwargs:
+            username = kwargs['username']
+        elif 'username' in request.POST:
+            username = request.POST['username']
+
 
         if request.method == 'GET':
             if 'yabiusername' not in request.GET or request.GET['yabiusername'] != username:
@@ -20,7 +30,7 @@ def validate_user(f):
             if 'yabiusername' not in request.POST or request.POST['yabiusername'] != username:
                 return HttpResponseForbidden(json_error("Trying to view resource for different user."))
 
-        return f(request,username, *args, **kwargs)
+        return f(request, *args, **kwargs)
     return check_user
 
 

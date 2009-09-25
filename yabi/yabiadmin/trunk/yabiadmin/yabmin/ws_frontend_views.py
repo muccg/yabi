@@ -10,12 +10,13 @@ from django.conf import settings
 from yabiadmin.yabiengine import wfbuilder
 from yabiadmin.yabiengine import backendhelper
 from yabiadmin.security import validate_user, validate_uri
+from yabiadmin.utils import json_error
 
 import logging
 import yabilogging
 logger = logging.getLogger('yabiadmin')
 
-
+## TODO do we want to limit tools to those the user can access?
 def tool(request, toolname):
     logger.debug('')
 
@@ -23,12 +24,14 @@ def tool(request, toolname):
         tool = Tool.objects.get(name=toolname)
         return HttpResponse(tool.json())
     except ObjectDoesNotExist:
-        return HttpResponseNotFound("Object not found")
+        return HttpResponseNotFound(json_error("Object not found"))
 
 
 @validate_user
-def menu(request, username):
+def menu(request, *args, **kwargs):
     logger.debug('')
+
+    username = kwargs["username"]
     
     try:
         toolsets = ToolSet.objects.filter(users__name=username)
@@ -74,7 +77,7 @@ def menu(request, username):
 
         return HttpResponse(json.dumps({"menu":output}))
     except ObjectDoesNotExist:
-        return HttpResponseNotFound("Object not found")    
+        return HttpResponseNotFound(json_error("Object not found"))    
 
 @validate_uri
 def ls(request):
@@ -85,25 +88,27 @@ def ls(request):
     logger.debug('')
     logger.debug(request.GET)
 
-    if request.GET['uri']:
-        filelisting = backendhelper.get_listing(request.GET['uri'])
-    else:
-        filelisting = backendhelper.get_backend_list(request.GET['yabiusername'])
+    try:
+        if request.GET['uri']:
+            filelisting = backendhelper.get_listing(request.GET['uri'])
+        else:
+            filelisting = backendhelper.get_backend_list(request.GET['yabiusername'])
 
-    return HttpResponse(filelisting)
+        return HttpResponse(filelisting)
+    except Exception, e:
+        return HttpResponseNotFound(json_error(e))
     
-
-
+@validate_user
 def submitworkflow(request):
     logger.debug('')
-   
+    
     try:
         # probably want to catch the type of exceptions we may get from this
         wfbuilder.build(request.POST['username'], request.POST["workflowjson"])
         
         return HttpResponse(request.POST["workflowjson"])
     except KeyError,e:
-        return HttpResponseNotFound(e)
+        return HttpResponseNotFound(json_error(e))
     except Exception,e:
-        return HttpResponseNotFound(e)
+        return HttpResponseNotFound(json_error(e))
 
