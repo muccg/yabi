@@ -836,7 +836,7 @@ display:inline;
 	vertical-align: baseline;
 	padding-top: 3px;
 	padding-bottom: 3px;
-    height:1.2em;
+    min-height:1.2em;
 }
 
 .fileSelectorBreadcrumb span {

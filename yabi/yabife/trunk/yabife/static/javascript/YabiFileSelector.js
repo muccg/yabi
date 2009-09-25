@@ -163,35 +163,13 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             
             tempDD = new YAHOO.util.DDProxy(fileEl);
             //                tempDD.startDrag = startDragToolCallback;
-            //                tempDD.endDrag = workflow.endDragJobCallback;
+            tempDD.endDrag = function(e, dd) { console.log(e); console.log(id); };
             //                tempDD.onDrag = workflow.onDragJobCallback;
             //                tempDD.onDragOver = workflow.onDragOverJobCallback;
             
         }
     }
-    
-//OLD STYLE PARSING    
-//    for (var index in this.browseListing) {
-//        fileEl = document.createElement("div");
-//        if (this.browseListing[index].isDir && this.browseListing[index].isDir == "true") {
-//            fileEl.className = "dirItem";
-//        } else {
-//            fileEl.className = "fileItem";
-//        }
-//        fileEl.appendChild(document.createTextNode(this.browseListing[index].filename));
-//        this.fileListEl.appendChild(fileEl);
-//
-//        invoker = {"target":this, "object":new YabiSimpleFileValue(this.pathComponents, this.browseListing[index].filename)};
-//        
-//        if (this.browseListing[index].isDir && this.browseListing[index].isDir == "true") {
-//            expandEl = document.createElement("a");
-//            expandEl.appendChild(document.createTextNode(" (browse)"));
-//            fileEl.appendChild(expandEl);
-//            YAHOO.util.Event.addListener(expandEl, "click", this.expandCallback, invoker);
-//        }
-//        
-//        YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
-//    }
+
 };
 
 /**
