@@ -82,7 +82,7 @@ def validate_uri(f):
 
 
             except ObjectDoesNotExist, e:
-                return HttpResponseForbidden(json_error("No backend credential found."))                
+                return HttpResponseForbidden(json_error("No backend credential found."))
 
             except ValueError, e:
                 return HttpResponseForbidden(json_error("Invalid URI."))

@@ -306,4 +306,10 @@ class BackendCredential(Base):
         """
         Returns full uri to the user's homedir
         """
-        return self.backend.uri + self.backend.path + self.homedir
+        netloc = '%s@%s' % (self.credential.username, self.backend.hostname)
+        if self.backend.port:
+            netloc += ':%d' % self.backend.port
+
+        uri = urlunparse((self.backend.scheme, netloc, self.backend.path, '', '', ''))
+
+        return uri + self.homedir
