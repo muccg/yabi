@@ -66,7 +66,7 @@
             "created_by": 1, 
             "created_on": "2009-07-06 15:49:02", 
             "last_modified_by": 1, 
-            "path": "", 
+            "path": "/", 
             "scheme": "local", 
             "port": 8000, 
             "name": "local"
@@ -91,8 +91,8 @@
             "created_by": 2, 
             "created_on": "2009-07-06 15:49:02", 
             "last_modified_by": 1, 
-            "path": "", 
-            "scheme": "file", 
+            "path": "/", 
+            "scheme": "yabifs", 
             "port": 8000, 
             "last_modified_on": "2009-07-17 15:22:14", 
             "name": "file"
@@ -123,7 +123,7 @@
             "created_by": 2, 
             "created_on": "2009-07-13 14:01:21", 
             "last_modified_by": 2, 
-            "path": "", 
+            "path": "/", 
             "scheme": "null", 
             "port": null, 
             "last_modified_on": "2009-07-13 14:01:34", 
@@ -151,7 +151,7 @@
         "model": "yabmin.backendcredential", 
         "fields": {
             "credential": 2, 
-            "homedir": "bi01/amacgregor/", 
+            "homedir": "/bi01/amacgregor/", 
             "created_by": 2, 
             "created_on": "2009-07-06 17:11:14", 
             "last_modified_by": 2, 
@@ -164,7 +164,7 @@
         "model": "yabmin.backendcredential", 
         "fields": {
             "credential": 2, 
-            "homedir": "bi01/amacgregor/", 
+            "homedir": "/bi01/amacgregor/", 
             "created_by": 2, 
             "created_on": "2009-07-06 17:11:14", 
             "last_modified_by": 2, 
@@ -177,7 +177,7 @@
         "model": "yabmin.backendcredential", 
         "fields": {
             "credential": 1, 
-            "homedir": "bi01/cwellington/", 
+            "homedir": "/bi01/cwellington/", 
             "created_by": 2, 
             "created_on": "2009-07-01 10:19:40", 
             "last_modified_by": 2, 
@@ -190,7 +190,7 @@
         "model": "yabmin.backendcredential", 
         "fields": {
             "credential": 1, 
-            "homedir": "bi01/cwellington/", 
+            "homedir": "/bi01/cwellington/", 
             "created_by": 2, 
             "created_on": "2009-07-01 10:19:40", 
             "last_modified_by": 2, 
@@ -203,7 +203,7 @@
         "model": "yabmin.backendcredential", 
         "fields": {
             "credential": 3, 
-            "homedir": "andrew/", 
+            "homedir": "/andrew/", 
             "created_by": 2, 
             "created_on": "2009-07-17 14:20:00", 
             "last_modified_by": 2, 
@@ -216,7 +216,7 @@
         "model": "yabmin.backendcredential", 
         "fields": {
             "credential": 3, 
-            "homedir": "andrew/", 
+            "homedir": "/andrew/", 
             "created_by": 2, 
             "created_on": "2009-07-17 14:20:00", 
             "last_modified_by": 2, 
@@ -229,7 +229,7 @@
         "model": "yabmin.backendcredential", 
         "fields": {
             "credential": 3, 
-            "homedir": "andrew/", 
+            "homedir": "/andrew/", 
             "created_by": 2, 
             "created_on": "2009-07-15 12:03:06", 
             "last_modified_by": 2, 

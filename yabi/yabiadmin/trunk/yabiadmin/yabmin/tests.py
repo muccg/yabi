@@ -17,6 +17,7 @@ class TestYabmin(unittest.TestCase):
         # manual says don't do this, but we are only testing right?
         settings.AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
         settings.DEBUG = True
+        YABIBACKEND_SERVER = 'faramir.localdomain:8100'
         settings.YABISTORE_SERVER = "127.0.0.1:8001"
         settings.YABISTORE_BASE = ""
 
@@ -212,9 +213,24 @@ class TestYabmin(unittest.TestCase):
     ########################################
     ## ls
     ########################################
-    def testLsInvalidUserInUri(self):
 
+    def testLs(self):
         c = Client()
-        response = c.get('/ws/fs/list?uri=gripftp://cwellington@xe-ng2.ivec.org/scratch/bio1/andrew/workspace/')
+        response = c.get('/ws/fs/list?yabiusername=andrew&uri=gridftp://amacgregor@xe-ng2.ivec.org/scratch/bi01/amacgregor/')    
+        self.assertEqual(response.status_code, 200)
+
+
+    def testLsInvalidUserInUri(self):
+        c = Client()
+        response = c.get('/ws/fs/list?yabiusername=cwellington&uri=gridftp://amacgregor@xe-ng2.ivec.org/scratch/bi01/amacgregor/')        
         self.assertEqual(response.status_code, 403) # this should be forbidden
+        payload = json.loads(response.content)
+        self.assertEqual(payload['error'], 'Trying to view uri for different user.')
+
+    def testInvalidDir(self):
+        c = Client()
+        response = c.get('/ws/fs/list?yabiusername=andrew&uri=gridftp://amacgregor@xe-ng2.ivec.org/etc/')    
+        self.assertEqual(response.status_code, 403)
+        payload = json.loads(response.content)
+        self.assertEqual(payload['error'], 'Invalid path.')
 
