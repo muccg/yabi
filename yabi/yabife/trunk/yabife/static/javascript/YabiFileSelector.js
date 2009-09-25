@@ -161,12 +161,12 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
                 YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
             }
             
-            tempDD = new YAHOO.util.DDProxy(fileEl);
+            tempDD = new YAHOO.util.DDProxy(fileEl, 'default', {isTarget:false});
             //                tempDD.startDrag = startDragToolCallback;
             tempDD.endDrag = function(e, dd) { console.log(e); console.log(id); };
             //                tempDD.onDrag = workflow.onDragJobCallback;
-            //                tempDD.onDragOver = workflow.onDragOverJobCallback;
-            
+            tempDD.onDragEnter = function(e, id) { e.toElement.style.backgroundColor = '#fcc'; console.log(e); console.log(id); } ;
+            tempDD.onDragOut = function(e, id) { e.toElement.style.backgroundColor = '#fff'; console.log(e); console.log(id); } ;
         }
     }
 
