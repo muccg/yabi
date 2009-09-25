@@ -26,8 +26,12 @@ def validate_user(f):
 
 def validate_uri(f):
     """
-    Decorator that should be applied to all functions which take a uri. It will check the uri for a username that
-    matches the yabiusername in the GET or POST object
+    Decorator that should be applied to all functions which take a uri.
+
+    It applies the following checks:
+
+    1. The supplied yabiusername matches the username associated with the credential for the uri
+    2. The start of the uri's path matches the path allowed for the user based on backend.path and backendcredential.homedir
     """
     def check_uri(request, *args, **kwargs):
 
@@ -53,13 +57,19 @@ def validate_uri(f):
                 u = urlparse(rest)
 
                 # find a matching credential based on uri
-                # check that credentials yabiusername matches that passed from front end
                 bc = BackendCredential.objects.get(backend__hostname=u.hostname,
                                                    backend__scheme=scheme,
                                                    credential__username=u.username)
 
+                # check that credentials yabiusername matches that passed from front end
                 if bc.credential.user.name != yabiusername:
                     return HttpResponseForbidden(json_error("Trying to view uri for different user."))
+
+                # check that the start of the path matches what the user has access to
+                validpath = bc.backend.path + bc.homedir
+                if not u.path.startswith(validpath):
+                    return HttpResponseForbidden(json_error("Invalid path."))
+
 
             except ObjectDoesNotExist, e:
                 return HttpResponseForbidden(json_error("No backend credential found."))                
