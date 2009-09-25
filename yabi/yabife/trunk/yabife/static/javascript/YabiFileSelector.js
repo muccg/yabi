@@ -93,7 +93,7 @@ function YabiFileSelector(param, isBrowseMode) {
 
     this.browseEl.appendChild(this.uploadEl);
     
-    //this.ddTarget = new YAHOO.util.DDTarget(this.fileListEl, 'files', {});
+    this.ddTarget = new YAHOO.util.DDTarget(this.fileListEl, 'files', {});
 
     // update the browser
     this.updateBrowser(new YabiSimpleFileValue([], ''));
@@ -119,9 +119,9 @@ YabiFileSelector.prototype.updateBrowser = function(location) {
 
     //disable drop target if location is empty (ie. the root)
     if (location.toString() === "") {
-  //      this.ddTarget.lock();
+        this.ddTarget.lock();
     } else {
-  //      this.ddTarget.unlock();
+        this.ddTarget.unlock();
     }
 
     this.hydrate(location.toString());
