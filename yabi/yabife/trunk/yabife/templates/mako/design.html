@@ -19,9 +19,9 @@ function initWorkflow() {
     
     workflow.afterSelectJob = function(job) {
         if (job === null) {
-            tools.searchEl.setValue("");
+            tools.searchEl.value = "";
         } else {
-            tools.searchEl.setValue("in:"+job.emittedFileTypes());
+            tools.searchEl.value = "in:"+job.emittedFileTypes();
         }
         tools.filter();
     };
