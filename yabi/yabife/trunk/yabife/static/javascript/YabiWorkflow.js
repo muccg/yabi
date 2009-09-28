@@ -236,6 +236,8 @@ YabiWorkflow.prototype.deleteJob = function(job) {
 
     if (job == this.selectedJob) {
         this.selectedJob = null;
+        
+        this.afterSelectJob(null);
     }
 
     //iterate jobs array, leaving out this item
