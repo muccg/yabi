@@ -609,7 +609,7 @@ display:inline;
     -webkit-border-radius: 4px;
     font-size: 95%;
     color: #fff;
-    text-shadow:0px 1px 1px #666;
+    text-shadow:0px -1px 1px #666;
     min-height: 26px;
     margin-bottom:6px;
 }
@@ -1112,7 +1112,7 @@ display:inline;
     font-weight:bold;
     color: #fff;
     min-height: 26px;
-    text-shadow:0px 1px 1px #666;
+    text-shadow:0px -1px 1px #666;
 }
 
 .filterPanel {
@@ -1183,7 +1183,7 @@ display:inline;
 }
 
 .selectedWorkflowProxy .workflowDate {
-    text-shadow:0px 1px 1px #666;
+    text-shadow:0px -1px 1px #666;
     color:white;
 }
 
@@ -1196,7 +1196,7 @@ display:inline;
 }
 
 .selectedWorkflowProxy .tagDiv {
-    text-shadow:0px 1px 1px #666;
+    text-shadow:0px -1px 1px #666;
     color:white;
 }
 

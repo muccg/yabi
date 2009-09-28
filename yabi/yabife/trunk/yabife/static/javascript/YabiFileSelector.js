@@ -73,7 +73,7 @@ function YabiFileSelector(param, isBrowseMode) {
     
     this.formFileEl = document.createElement("input");
     this.formFileEl.setAttribute("type", "file");
-    this.formFileEl.setAttribute("name", "file");
+    this.formFileEl.setAttribute("name", "file1");
     this.uploadFormEl.appendChild(this.formFileEl);
 
     //the uploading mask is only used to temporarily replace the uploadFormEl when submitted    
@@ -127,6 +127,15 @@ YabiFileSelector.prototype.updateBrowser = function(location) {
     this.hydrate(location.toString());
     
     this.updateBreadcrumbs();
+};
+
+/**
+ * currentPath
+ *
+ * return current path as a YabiSimpleFileValue
+ */
+YabiFileSelector.prototype.currentPath = function() {
+    return new YabiSimpleFileValue(this.pathComponents, '');
 };
 
 /**
@@ -398,9 +407,11 @@ YabiFileSelector.prototype.expandCallback = function(e, invoker) {
 };
 
 YabiFileSelector.prototype.uploadClickCallback = function(e, target) {
-    var baseURL = appURL + "ws/fs/upload";
-    
     YAHOO.util.Event.stopEvent(e);
+    
+    var baseURL = appURL + "ws/fs/put";
+    var uri = target.currentPath().toString();
+    baseURL = baseURL + "?uri=" + escape(uri);
     
     //load json
     var jsUrl, jsCallback, jsTransaction;
