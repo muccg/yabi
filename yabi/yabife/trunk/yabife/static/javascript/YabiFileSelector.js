@@ -427,7 +427,7 @@ YabiFileSelector.prototype.uploadClickCallback = function(e, target) {
 
 YabiFileSelector.prototype.uploadResponse = function(o) {
     var json = o.responseText;
-    
+
     target = o.argument[0];
     target.uploadFormEl.reset();
     
