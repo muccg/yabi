@@ -168,9 +168,9 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             } else if (this.isBrowseMode) {
                 tempDD = new YAHOO.util.DDProxy(fileEl, 'files', {isTarget:true});
                 tempDD.endDrag = this.movelessDrop;
-                tempDD.onDragDrop = function(e, id) { console.log("folder copy to :" + document.getElementById(id).innerHTML); YAHOO.util.Dom.removeClass(id, 'ddDesired'); }; //TODO make this function determine where it was dropped and issue an ajax call to move the file, then refresh the browsers that are affected
-                tempDD.onDragEnter = function(e, id) { YAHOO.util.Dom.addClass(id, 'ddDesired'); } ;
-                tempDD.onDragOut = function(e, id) { YAHOO.util.Dom.removeClass(id, 'ddDesired'); } ;
+                tempDD.onDragDrop = function(e, id) { console.log("folder copy to :" + document.getElementById(id).innerHTML); document.getElementById(id).borderColor = "white"; }; //TODO make this function determine where it was dropped and issue an ajax call to move the file, then refresh the browsers that are affected
+                tempDD.onDragEnter = function(e, id) { document.getElementById(id).borderColor = "#3879e6"; } ;
+                tempDD.onDragOut = function(e, id) { document.getElementById(id).borderColor = "white"; } ;
             }
         }
         for (index in this.browseListing[toplevelindex].files) {
@@ -186,9 +186,9 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             } else {
                 tempDD = new YAHOO.util.DDProxy(fileEl, 'files', {isTarget:false});
                 tempDD.endDrag = this.movelessDrop;
-                tempDD.onDragDrop = function(e, id) { console.log("copy to :" + document.getElementById(id).innerHTML); YAHOO.util.Dom.removeClass(id, 'ddDesired'); }; //TODO make this function determine where it was dropped and issue an ajax call to move the file, then refresh the browsers that are affected
-                tempDD.onDragEnter = function(e, id) { console.log(id); YAHOO.util.Dom.addClass(id, 'ddDesired'); } ;
-                tempDD.onDragOut = function(e, id) { YAHOO.util.Dom.removeClass(id, 'ddDesired'); } ;
+                tempDD.onDragDrop = function(e, id) { console.log("copy to :" + document.getElementById(id).innerHTML); document.getElementById(id).borderColor = "white"; }; //TODO make this function determine where it was dropped and issue an ajax call to move the file, then refresh the browsers that are affected
+                tempDD.onDragEnter = function(e, id) { document.getElementById(id).borderColor = "#3879e6"; } ;
+                tempDD.onDragOut = function(e, id) { document.getElementById(id).borderColor = "white"; } ;
             }
         }
     }
