@@ -95,7 +95,8 @@ YabiTool.prototype.toString = function() {
  * returns true/false if it matches text
  */
 YabiTool.prototype.matchesFilter = function(needle) {
-    var index;
+    var index, bindex, subneedle;
+    var needles = [];
 
     if (this.payload.displayName.indexOf(needle) != -1) {
         return true;
@@ -120,13 +121,19 @@ YabiTool.prototype.matchesFilter = function(needle) {
     if (needle.indexOf("in:") === 0) {
         needle = needle.substring(3);
         
-        if (needle === "*") {
-            return true;
-        }
+        needles = needle.split(',');
         
-        for (index in this.payload.inputExtensions) {
-            if (this.payload.inputExtensions[index] == needle) {
+        for (bindex in needles) {
+            subneedle = needles[bindex];
+            
+            if (subneedle === "*") {
                 return true;
+            }
+            
+            for (index in this.payload.inputExtensions) {
+                if (this.payload.inputExtensions[index] == subneedle) {
+                    return true;
+                }
             }
         }
     }
