@@ -176,10 +176,11 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
 		YAHOO.util.Event.addListener(selectEl, "click", this.selectFileCallback, invoker);
             } else if (this.isBrowseMode) {
                 tempDD = new YAHOO.util.DDProxy(fileEl, 'files', {isTarget:true});
+                tempDD.overCount = 0;
                 tempDD.endDrag = this.movelessDrop;
-                tempDD.onDragDrop = function(e, id) { handleDrop(this, id); document.getElementById(id).style.borderColor = "white"; }; //TODO make this function determine where it was dropped and issue an ajax call to move the file, then refresh the browsers that are affected
-                tempDD.onDragEnter = function(e, id) { document.getElementById(id).style.borderColor = "#3879e6"; } ;
-                tempDD.onDragOut = function(e, id) { document.getElementById(id).style.borderColor = "white"; } ;
+                tempDD.onDragDrop = function(e, id) { if (this.overCount === 1) { handleDrop(this, id); } this.overCount -= 1; document.getElementById(id).style.borderColor = "white"; }; //TODO make this function determine where it was dropped and issue an ajax call to move the file, then refresh the browsers that are affected
+                tempDD.onDragEnter = function(e, id) { this.overCount += 1; document.getElementById(id).style.borderColor = "#3879e6"; } ;
+                tempDD.onDragOut = function(e, id) { this.overCount -= 1; document.getElementById(id).style.borderColor = "white"; } ;
                 tempDD.invoker = invoker;
             }
         }
@@ -195,10 +196,11 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
                 YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
             } else {
                 tempDD = new YAHOO.util.DDProxy(fileEl, 'files', {isTarget:false});
+                tempDD.overCount = 0;
                 tempDD.endDrag = this.movelessDrop;
-                tempDD.onDragDrop = function(e, id) { handleDrop(this, id); document.getElementById(id).style.borderColor = "white"; }; //TODO make this function determine where it was dropped and issue an ajax call to move the file, then refresh the browsers that are affected
-                tempDD.onDragEnter = function(e, id) { document.getElementById(id).style.borderColor = "#3879e6"; } ;
-                tempDD.onDragOut = function(e, id) { document.getElementById(id).style.borderColor = "white"; } ;
+                tempDD.onDragDrop = function(e, id) { if (this.overCount === 1) { handleDrop(this, id); } this.overCount -= 1; document.getElementById(id).style.borderColor = "white"; }; //TODO make this function determine where it was dropped and issue an ajax call to move the file, then refresh the browsers that are affected
+                tempDD.onDragEnter = function(e, id) { this.overCount += 1; document.getElementById(id).style.borderColor = "#3879e6"; } ;
+                tempDD.onDragOut = function(e, id) { this.overCount -= 1; document.getElementById(id).style.borderColor = "white"; } ;
                 tempDD.invoker = invoker;
             }
         }
