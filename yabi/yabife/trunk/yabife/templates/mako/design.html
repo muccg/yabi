@@ -17,7 +17,7 @@ function initWorkflow() {
     workflow.hydrate(${reuseId});
 % endif
     
-    workflow.afterSelectJob = function(job) {
+    var updateFilter = function(job) {
         if (job === null) {
             tools.searchEl.value = "";
         } else {
@@ -25,6 +25,9 @@ function initWorkflow() {
         }
         tools.filter();
     };
+
+    workflow.afterSelectJob = updateFilter;
+    workflow.afterPropagate = updateFilter;
     
     document.getElementById("container").appendChild(workflow.mainEl);
     document.getElementById("optionsDiv").appendChild(workflow.optionsEl);

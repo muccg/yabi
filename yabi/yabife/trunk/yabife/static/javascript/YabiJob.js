@@ -106,17 +106,22 @@ YabiJob.prototype.emittedFileTypes = function() {
     var actualExtensions = [];
     if (this.outputExtensions.length === 1 && this.outputExtensions[0] === "*") {
         for (var index in ef) {
+            if (ef[index] instanceof YabiJob) {
+                continue;
+            }
+
             value = ef[index].filename;
-            if (value.lastIndexOf(".") === -1) {
+            if (value.lastIndexOf(".") < 0) {
                 //skip this item if there is no extension
                 continue;
             }
+
             finalExtension = value.substr( value.lastIndexOf(".") + 1 );
             actualExtensions.push(finalExtension);
         }
     }
     if (actualExtensions.length > 0) {
-        return this.outputExtensions;
+        return actualExtensions;
     }
     
     return this.outputExtensions;

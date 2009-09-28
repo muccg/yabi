@@ -326,6 +326,11 @@ YabiWorkflow.prototype.propagateFiles = function(sender) {
         }
     }
     this.isPropagating = false;
+
+    //afterPropagate call for other objects to hook in to
+    if (!YAHOO.lang.isUndefined(this.afterPropagate) && !YAHOO.lang.isUndefined(sender)) {
+        this.afterPropagate(sender);
+    }
 };
 
 /**
