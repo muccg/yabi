@@ -100,6 +100,25 @@ YabiJob.prototype.emittedFiles = function() {
  * produces a list of file types emitted by this job
  */
 YabiJob.prototype.emittedFileTypes = function() {
+    //if the tool outputs '*' then try to return instead a list of actual file extensions from param inputs
+    var ef = this.emittedFiles();
+    var finalExtension, value;
+    var actualExtensions = [];
+    if (this.outputExtensions.length === 1 && this.outputExtensions[0] === "*") {
+        for (var index in ef) {
+            value = ef[index].filename;
+            if (value.lastIndexOf(".") === -1) {
+                //skip this item if there is no extension
+                continue;
+            }
+            finalExtension = value.substr( value.lastIndexOf(".") + 1 );
+            actualExtensions.push(finalExtension);
+        }
+    }
+    if (actualExtensions.length > 0) {
+        return this.outputExtensions;
+    }
+    
     return this.outputExtensions;
 };
 
