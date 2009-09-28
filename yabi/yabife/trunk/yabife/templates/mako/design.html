@@ -21,7 +21,7 @@ function initWorkflow() {
         if (job === null) {
             tools.searchEl.value = "";
         } else {
-            tools.searchEl.value = "in:"+job.emittedFileTypes();
+            tools.searchEl.value = "in:" + job.emittedFileTypes();
         }
         tools.filter();
     };

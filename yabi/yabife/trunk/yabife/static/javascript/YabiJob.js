@@ -555,6 +555,9 @@ YabiJob.prototype.solidify = function(obj) {
     if (this.editable) {
         //tell workflow to propagate new variable info
         this.workflow.propagateFiles();
+        
+        //workflow delayed selectjob callback to allow propagation after this job is loaded
+        this.workflow.delayedSelectJob(this);
     }
     
     //now we are finished loading

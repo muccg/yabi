@@ -344,13 +344,22 @@ YabiWorkflow.prototype.selectJob = function(object) {
             }
             
             //callback hook to allow other elements to hook in when jobs are selected/deselected
-            if (!YAHOO.lang.isUndefined(this.afterSelectJob)) {
+            if (!YAHOO.lang.isUndefined(this.afterSelectJob) && object.loaded) {
                 this.afterSelectJob(object);
             }
         } else {
             this.jobs[index].deselectJob();
         }
     }
+};
+
+/**
+ * delayedSelectJob
+ *
+ * exists for the purpose of allowing an afterSelectJob callback after a tool has loaded
+ */
+YabiWorkflow.prototype.delayedSelectJob = function(job) {
+    this.afterSelectJob(job);
 };
 
 /**
