@@ -95,6 +95,15 @@ YabiJob.prototype.emittedFiles = function() {
 };
 
 /**
+ * emittedFileTypes
+ *
+ * produces a list of file types emitted by this job
+ */
+YabiJob.prototype.emittedFileTypes = function() {
+    return this.outputExtensions;
+};
+
+/**
  * hydrate
  * 
  * performs an AJAX json fetch of all the tool details and data

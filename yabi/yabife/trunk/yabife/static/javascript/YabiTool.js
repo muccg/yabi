@@ -119,6 +119,11 @@ YabiTool.prototype.matchesFilter = function(needle) {
     
     if (needle.indexOf("in:") === 0) {
         needle = needle.substring(3);
+        
+        if (needle === "*") {
+            return true;
+        }
+        
         for (index in this.payload.inputExtensions) {
             if (this.payload.inputExtensions[index] == needle) {
                 return true;

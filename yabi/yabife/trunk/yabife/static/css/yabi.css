@@ -307,6 +307,7 @@ body {
 	border-left:1px solid #3879e5;
 	border-right:1px solid #3879e5;
 	color:white;
+    text-shadow:0px -1px 1px #666;    
 }
 #yabi-tabs-design {
 	padding:4px 16px 4px 16px;
@@ -327,6 +328,7 @@ body {
 	border-left:1px solid #3879e5;
 	border-right:1px solid #3879e5;
 	color:white;
+    text-shadow:0px -1px 1px #666;
 }
 #yabi-tabs-files {
 	padding:4px 16px 4px 16px;
@@ -361,6 +363,7 @@ body {
 	border-left:1px solid #3879e5;
 	border-right:1px solid #3879e5;
 	color:white;
+    text-shadow:0px -1px 1px #666;
 }
 
 
@@ -371,6 +374,7 @@ body {
 	border-left:1px solid #3879e5;
 	border-right:1px solid #3879e5;
 	color:white;
+    text-shadow:0px -1px 1px #666;
 }
 
 
@@ -855,14 +859,17 @@ display:inline;
 	height: 280px;
 	overflow: auto;
     font-size:90%;
-    border:1px solid #fff;
+}
+
+.ddDesired {
+    background: #dbe5f6 -webkit-gradient(linear, left top, left bottom, to(#5aa4fb), from(#dbe5f6));
 }
 
 .fileSelectorListing .fileItem {
     color: #666;
     padding: 3px;
     padding-left: 22px;
-    border:1px solid #fff;
+	border-bottom: 1px dotted #eee;
 	cursor: pointer;
     background:#fff url(../images/file.png) 2px 2px no-repeat;
 }
@@ -871,7 +878,7 @@ display:inline;
     color: #666;
     padding: 3px;
     padding-left: 22px;
-    border:1px solid #fff;
+	border-bottom: 1px dotted #eee;
 	cursor: pointer;
     background:#fff url(../images/folder.png) 2px 2px no-repeat;
 }

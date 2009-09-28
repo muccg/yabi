@@ -17,6 +17,15 @@ function initWorkflow() {
     workflow.hydrate(${reuseId});
 % endif
     
+    workflow.afterSelectJob = function(job) {
+        if (job === null) {
+            tools.searchEl.setValue("");
+        } else {
+            tools.searchEl.setValue("in:"+job.emittedFileTypes());
+        }
+        tools.filter();
+    };
+    
     document.getElementById("container").appendChild(workflow.mainEl);
     document.getElementById("optionsDiv").appendChild(workflow.optionsEl);
     

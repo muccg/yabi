@@ -342,6 +342,11 @@ YabiWorkflow.prototype.selectJob = function(object) {
                 this.jobs[index].selectJob();
                 this.selectedJob = object;
             }
+            
+            //callback hook to allow other elements to hook in when jobs are selected/deselected
+            if (!YAHOO.lang.isUndefined(this.afterSelectJob)) {
+                this.afterSelectJob(object);
+            }
         } else {
             this.jobs[index].deselectJob();
         }
