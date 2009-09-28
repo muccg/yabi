@@ -859,6 +859,7 @@ display:inline;
 	height: 280px;
 	overflow: auto;
     font-size:90%;
+    border:1px solid white;
 }
 
 .fileSelectorListing .fileItem {

@@ -5,21 +5,28 @@
  * create a new file value which represents the path and relevant filename
  */
 function YabiSimpleFileValue(path, filename) {
-    this.path = path;
+    this.pathComponents = path.slice();
+
+    this.path = path.slice();
+    this.root = this.path.shift();
     this.filename = filename;
     this.type = "file";
 }
 
 YabiSimpleFileValue.prototype.toString = function() {
-    if (this.path.length === 0) {
+    if (YAHOO.lang.isUndefined(this.root)) {
         return this.filename;
     }
 
     if (this.filename === '') {
-        return this.path.join("/");
+        return this.root + this.path.join("/");
     }
 
-    return this.path.join("/") + "/" + this.filename;
+    if (this.path.length === 0) {
+        return this.root + this.filename;
+    }
+
+    return this.root + this.path.join("/") + "/" + this.filename;
 };
 
 YabiSimpleFileValue.prototype.isEqual = function(b) {
