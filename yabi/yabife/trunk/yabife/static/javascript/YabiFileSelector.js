@@ -433,7 +433,7 @@ YabiFileSelector.prototype.uploadResponse = function(o) {
     
     target.uploadEl.replaceChild(target.uploadFormEl, target.uploadMaskEl);
     
-    target.updateBrowser(new YabiSimpleFileValue([], 'workspace'));
+    target.updateBrowser(new YabiSimpleFileValue([], target.currentPath()));
 };
 
 YabiFileSelector.prototype.hydrateResponse = function(o) {
