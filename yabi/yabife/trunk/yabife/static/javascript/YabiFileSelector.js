@@ -196,6 +196,7 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
                 YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
             } else {
                 downloadEl = document.createElement("div");
+                downloadEl.className = "download";
                 downloadImg = new Image();
                 downloadImg.src = appURL + "static/images/download.png";
                 downloadEl.appendChild( downloadImg );

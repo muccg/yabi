@@ -869,6 +869,13 @@ display:inline;
 	border: 1px solid white;
 	cursor: pointer;
     background:#fff url(../images/file.png) 2px 2px no-repeat;
+    position:relative;
+}
+
+.fileSelectorListing .fileItem .download {
+    position:absolute;
+    right:4px;
+    top: 4px;
 }
 
 .fileSelectorListing .dirItem {
