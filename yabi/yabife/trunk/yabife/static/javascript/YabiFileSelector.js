@@ -443,21 +443,21 @@ YabiFileSelector.prototype.humanReadableSizeFromBytes = function(bytes) {
     if (bytes > (300 * 1024 * 1024)) { //GB
         humanSize = bytes / (1024 * 1024 * 1024);
         humanSize = humanSize.toFixed(2);
-        humanSize += "GB";
+        humanSize += " GB";
         return humanSize;
     }
     
     if (bytes > (300 * 1024)) { //MB
         humanSize = bytes / (1024 * 1024);
         humanSize = humanSize.toFixed(2);
-        humanSize += "MB";
+        humanSize += " MB";
         return humanSize;
     }
     
     //kB
     humanSize = bytes / (1024);
     humanSize = humanSize.toFixed(0);
-    humanSize += "kB";
+    humanSize += " kB";
     return humanSize;
 };
 
