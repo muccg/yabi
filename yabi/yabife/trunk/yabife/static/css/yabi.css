@@ -883,6 +883,12 @@ display:inline;
     top: 4px;
 }
 
+.fileSelectorListing .fileItem .deleteFile {
+    position:absolute;
+    right:64px;
+    top: 4px;
+}
+
 .fileSelectorListing .fileItem .fileSize {
     position:absolute;
     right:34px;

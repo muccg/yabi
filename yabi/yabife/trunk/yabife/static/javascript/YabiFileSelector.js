@@ -208,6 +208,14 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             if (!this.isBrowseMode) {
                 YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
             } else {
+                deleteEl = document.createElement("div");
+                deleteEl.className = "deleteFile";
+                deleteImg = new Image();
+                deleteImg.src = appURL + "static/images/delete.png";
+                deleteEl.appendChild( deleteImg );
+                fileEl.appendChild( deleteEl );
+                YAHOO.util.Event.addListener(deleteEl, "click", this.deleteFileCallback, invoker);
+                
                 downloadEl = document.createElement("div");
                 downloadEl.className = "download";
                 downloadImg = new Image();
@@ -488,6 +496,16 @@ YabiFileSelector.prototype.selectFileCallback = function(e, invoker) {
 YabiFileSelector.prototype.downloadFileCallback = function(e, invoker) {
     var target = invoker.target;
     target.downloadFile(invoker.object);
+    
+    //prevent propagation from passing on to expand
+    YAHOO.util.Event.stopEvent(e);
+};
+
+YabiFileSelector.prototype.deleteFileCallback = function(e, invoker) {
+    var target = invoker.target;
+    
+    //TODO implement file deletion
+    //target.deleteFile(invoker.object);
     
     //prevent propagation from passing on to expand
     YAHOO.util.Event.stopEvent(e);
