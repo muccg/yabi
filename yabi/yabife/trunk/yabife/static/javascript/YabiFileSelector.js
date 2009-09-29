@@ -214,7 +214,7 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
                 deleteImg.src = appURL + "static/images/delete.png";
                 deleteEl.appendChild( deleteImg );
                 fileEl.appendChild( deleteEl );
-                YAHOO.util.Event.addListener(deleteEl, "click", this.deleteFileCallback, invoker);
+                YAHOO.util.Event.addListener(deleteEl, "click", this.deleteRemoteFileCallback, invoker);
                 
                 downloadEl = document.createElement("div");
                 downloadEl.className = "download";
@@ -415,7 +415,7 @@ YabiFileSelector.prototype.renderSelectedFiles = function() {
         fileEl.appendChild(delEl);
         
         invoker = {"target":this, "object":index};
-        YAHOO.util.Event.addListener(delEl, "click", this.deleteFileCallback, invoker);
+        YAHOO.util.Event.addListener(delEl, "click", this.unselectFileCallback, invoker);
     
         wrapperEl.appendChild(fileEl);
         
@@ -501,7 +501,7 @@ YabiFileSelector.prototype.downloadFileCallback = function(e, invoker) {
     YAHOO.util.Event.stopEvent(e);
 };
 
-YabiFileSelector.prototype.deleteFileCallback = function(e, invoker) {
+YabiFileSelector.prototype.deleteRemoteFileCallback = function(e, invoker) {
     var target = invoker.target;
     
     //TODO implement file deletion
@@ -511,7 +511,7 @@ YabiFileSelector.prototype.deleteFileCallback = function(e, invoker) {
     YAHOO.util.Event.stopEvent(e);
 };
 
-YabiFileSelector.prototype.deleteFileCallback = function(e, invoker) {
+YabiFileSelector.prototype.unselectFileCallback = function(e, invoker) {
     var target = invoker.target;
     target.deleteFileAtIndex(invoker.object);
 };
