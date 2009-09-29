@@ -118,3 +118,32 @@ def get_backend_list(yabiusername):
         raise
 
 
+
+def put_file(uri, fh):
+    """
+    Upload a file to the backend
+    """
+    logger.debug('')
+
+
+## curl -F file1=@index.html -F file2=@fish.csv
+## faramir:8100/fs/put?uri=gridftp://cwellington@xe-ng2.ivec.org/scratch/bi01/cwellington/
+
+    try:
+        resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, uri)
+        logger.debug('Resource: %s' % resource)
+        conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
+        logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
+        conn.request('GET', resource, fh)
+        r = conn.getresponse()
+        logger.info("Status of return from yabi backend is: %s" % r.status)
+ 
+    except socket.error, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
+        raise
+    except httplib.CannotSendRequest, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
+        raise
+
+
+

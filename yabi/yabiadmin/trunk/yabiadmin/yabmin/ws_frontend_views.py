@@ -12,6 +12,9 @@ from yabiadmin.yabiengine import backendhelper
 from yabiadmin.security import validate_user, validate_uri
 from yabiadmin.utils import json_error
 
+
+from yabmin.file_upload import *
+
 import logging
 import yabilogging
 logger = logging.getLogger('yabiadmin')
@@ -98,7 +101,72 @@ def ls(request):
     except Exception, e:
         return HttpResponseNotFound(json_error(e))
 
-    
+
+
+
+def put(request):
+    """
+    This function will return a list of backends the user has access to IF the uri is empty. If the uri
+    is not empty then it will pass on the call to the backend to get a listing of that uri
+    """
+    logger.debug('')
+    import socket
+    import httplib
+
+    try:
+        resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, request.GET['uri'])
+
+        # TODO this only works with files written to disk by django
+        # at the moment so the FILE_UPLOAD_MAX_MEMORY_SIZE must be set to 0
+        # in settings.py
+        files = []
+        in_file = request.FILES['file1']
+        files.append((in_file.name, in_file.name, in_file.temporary_file_path()))
+        h = post_multipart(settings.YABIBACKEND_SERVER, resource, [], files)
+
+        CHUNKSIZE=8192
+        fh=open(in_file.temporary_file_path(),'rb')
+        while True:
+            dat=fh.read(CHUNKSIZE)
+            if len(dat)==0:
+                break
+            h.send(dat)
+        fh.close()
+
+        return HttpResponse('ok')
+        
+    except socket.error, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
+        raise
+    except httplib.CannotSendRequest, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
+        raise
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 @validate_user
 def submitworkflow(request):
     logger.debug('')

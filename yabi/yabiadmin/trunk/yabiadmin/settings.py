@@ -59,6 +59,7 @@ YABIBACKEND_RCOPY = '/fs/rcopy'
 YABIBACKEND_MKDIR = '/fs/mkdir'
 YABIBACKEND_RM = '/fs/rm'
 YABIBACKEND_LIST = '/fs/ls'
+YABIBACKEND_PUT = '/fs/put'
 
 # make sure that this is a tuple of tuples
 ADMINS = (
@@ -222,3 +223,8 @@ LOGGING_LEVEL = logging.DEBUG
 #LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
 LOGGING_FORMATTER = logging.Formatter("%(asctime)s:%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s:%(message)s")
 
+
+
+# TODO the file upload only handles files that are written to disk at them moment
+# so this MUST be set to 0
+FILE_UPLOAD_MAX_MEMORY_SIZE = 0
