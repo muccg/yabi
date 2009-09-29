@@ -888,15 +888,11 @@ display:inline;
 }
 
 .fileSelectorListing .dirItem.hover, .fileSelectorListing .dirItem:hover {
-    background:#dbe5f6 url(../images/folder_open.png) 2px 2px no-repeat;
+    background:#fff url(../images/folder_open.png) 2px 2px no-repeat;
 }
 
 .fileSelectorListing .dirItem a {
     float:right;
-}
-
-.fileSelectorListing .fileItem.hover, .fileSelectorListing .fileItem:hover {
-	background-color: #dbe5f6;
 }
 
 .fileSelectorBrowse {

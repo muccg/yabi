@@ -118,10 +118,13 @@ YabiFileSelector.prototype.updateBrowser = function(location) {
     }
 
     //disable drop target if location is empty (ie. the root)
+    //disable uploader as well
     if (location.toString() === "") {
         this.ddTarget.lock();
+        this.uploadEl.style.visibility = "hidden";
     } else {
         this.ddTarget.unlock();
+        this.uploadEl.style.visibility = "visible";
     }
 
     this.ddTarget.invoker = {'object':new YabiSimpleFileValue(this.pathComponents, ''), 'target':this};
