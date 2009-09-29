@@ -124,15 +124,6 @@ def put(request):
         files.append((in_file.name, in_file.name, in_file.temporary_file_path()))
         h = post_multipart(settings.YABIBACKEND_SERVER, resource, [], files)
 
-        CHUNKSIZE=8192
-        fh=open(in_file.temporary_file_path(),'rb')
-        while True:
-            dat=fh.read(CHUNKSIZE)
-            if len(dat)==0:
-                break
-            h.send(dat)
-        fh.close()
-
         return HttpResponse('ok')
         
     except socket.error, e:
