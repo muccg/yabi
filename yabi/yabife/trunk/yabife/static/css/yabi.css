@@ -855,7 +855,7 @@ display:inline;
 }
 
 .fileSelectorListing {
-	background-color: #eee;
+	background-color: #f6f6f6;
 	height: 280px;
 	overflow: auto;
     font-size:90%;
