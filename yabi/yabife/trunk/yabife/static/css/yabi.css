@@ -844,8 +844,8 @@ display:inline;
     min-height:1.2em;
     -webkit-border-top-left-radius:4px;
     -webkit-border-top-right-radius:4px;
-    -moz-border-top-left-radius:4px;
-    -moz-border-top-right-radius:4px;
+    -moz-border-radius-topleft:4px;
+    -moz-border-radius-topright:4px;
 }
 
 .fileSelectorBreadcrumb span {
