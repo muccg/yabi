@@ -906,6 +906,9 @@ display:inline;
 
 .fileSelectorBrowse {
 	background-color: #eee;
+    border: 1px solid #eee;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
 	padding: 1px;
 }
 
