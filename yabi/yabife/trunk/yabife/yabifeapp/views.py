@@ -1,6 +1,6 @@
 # Create your views here.
 import httplib
-from urllib import urlencode
+from urllib import urlencode, unquote
 from django.conf.urls.defaults import *
 from django.conf import settings
 from django.http import HttpResponse
@@ -18,6 +18,8 @@ import logging
 import yabilogging
 logger = logging.getLogger('yabife')
 
+from yabifeapp.file_upload import *
+
 
 # proxy view to pass through all requests set up in urls.py
 def proxy(request, url, server, base):
@@ -26,7 +28,7 @@ def proxy(request, url, server, base):
     if not url.startswith("/"):
         url = "/" + url
 
-    logger.debug('Request is: %s' % request.user.username)
+    logger.debug(request.FILES)
     
     ## TODO CODEREVIEW
     ## Is is possible to post to a page and still send get params,
@@ -44,6 +46,31 @@ def proxy(request, url, server, base):
         logger.debug('Server: %s' % server)        
         conn.request(request.method, resource)
         r = conn.getresponse()
+
+
+    elif request.FILES:
+        logger.debug('====================FILES====================')
+        logger.debug(request.GET)
+        logger.debug(request.FILES)
+        logger.debug(request.GET['uri'])
+
+        get_params = copy.copy(request.GET)
+        get_params['yabiusername'] = request.user.username
+
+        resource = "%s%s?%s" % (base, url, urlencode(get_params))
+
+        logger.debug(resource)
+
+        # TODO this only works with files written to disk by django
+        # at the moment so the FILE_UPLOAD_MAX_MEMORY_SIZE must be set to 0
+        # in settings.py
+        files = []
+        in_file = request.FILES['file1']
+        files.append(('file1', in_file.name, in_file.temporary_file_path()))
+        h = post_multipart(server, resource, [], files)
+        logger.debug(in_file.temporary_file_path())
+
+
 
     elif request.method == "POST":
 

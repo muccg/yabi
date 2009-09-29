@@ -194,3 +194,8 @@ import logging
 LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
 LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
 LOGGING_FORMATTER = logging.Formatter("%(asctime)s:%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s:%(message)s")
+
+
+# TODO the file upload only handles files that are written to disk at them moment
+# so this MUST be set to 0
+FILE_UPLOAD_MAX_MEMORY_SIZE = 0
