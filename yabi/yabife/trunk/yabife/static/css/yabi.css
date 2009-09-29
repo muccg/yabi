@@ -722,6 +722,7 @@ display:inline;
 .fakeUploadButton {
     position:absolute;
     right:0px;
+    color:#666;
 }
 
 .acceptedExtensionList {
@@ -1262,5 +1263,5 @@ display:inline;
     top:6px;
     right:6px;
     font-size:80%;
-    color:#3879e6;
+    color:#999;
 }
