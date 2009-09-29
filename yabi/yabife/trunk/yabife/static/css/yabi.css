@@ -879,19 +879,19 @@ display:inline;
 
 .fileSelectorListing .fileItem .download {
     position:absolute;
-    right:4px;
+    right:0px;
     top: 4px;
 }
 
 .fileSelectorListing .fileItem .deleteFile {
     position:absolute;
-    right:64px;
+    right:72px;
     top: 4px;
 }
 
 .fileSelectorListing .fileItem .fileSize {
     position:absolute;
-    right:34px;
+    right:16px;
     top: 4px;
     color: #999;
     font-size:90%;
