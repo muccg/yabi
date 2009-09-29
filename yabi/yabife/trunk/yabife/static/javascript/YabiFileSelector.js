@@ -146,7 +146,7 @@ YabiFileSelector.prototype.currentPath = function() {
  */
 YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
     this.browseListing = jsonObj;
-    var fileEl, invoker, selectEl, index;
+    var fileEl, invoker, selectEl, downloadEl, downloadImg, index;
     var handleDrop = function(srcDD, destid) {
         var target = YAHOO.util.DragDropMgr.getDDById(destid);
         var src, dest;
@@ -195,6 +195,13 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             if (!this.isBrowseMode) {
                 YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
             } else {
+                downloadEl = document.createElement("div");
+                downloadImg = new Image();
+                downloadImg.src = appURL + "static/images/download.png";
+                downloadEl.appendChild( downloadImg );
+                fileEl.appendChild( downloadEl );
+                YAHOO.util.Event.addListener(downloadEl, "click", this.downloadFileCallback, invoker);
+                
                 tempDD = new YAHOO.util.DDProxy(fileEl, 'files', {isTarget:false});
                 tempDD.overCount = 0;
                 tempDD.endDrag = this.movelessDrop;
@@ -336,6 +343,15 @@ YabiFileSelector.prototype.selectFile = function(file) {
 };
 
 /**
+ * downloadFile
+ *
+ * download file via web service call
+ */
+YabiFileSelector.prototype.downloadFile = function(file) {
+    window.location = appURL + "ws/fs/get?uri=" + file.toString();
+};
+
+/**
  * deleteFileAtIndex
  *
  * removes file from selectedFiles array and re-renders list
@@ -414,6 +430,14 @@ YabiFileSelector.prototype.selectFileCallback = function(e, invoker) {
     var target = invoker.target;
     target.selectFile(invoker.object);
 
+    //prevent propagation from passing on to expand
+    YAHOO.util.Event.stopEvent(e);
+};
+
+YabiFileSelector.prototype.downloadFileCallback = function(e, invoker) {
+    var target = invoker.target;
+    target.downloadFile(invoker.object);
+    
     //prevent propagation from passing on to expand
     YAHOO.util.Event.stopEvent(e);
 };
