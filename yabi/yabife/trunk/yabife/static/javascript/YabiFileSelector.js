@@ -156,7 +156,7 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
         src = srcDD.invoker.object;
         dest = target.invoker.object;
 
-        console.log(src + " copy to " + dest);
+        srcDD.invoker.target.handleDrop(src, dest);
     };
 
     // new style 20090921 has the path as the key for the top level, then files as an array and directories as an array
@@ -219,7 +219,7 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
                 tempDD = new YAHOO.util.DDProxy(fileEl, 'files', {isTarget:false});
                 tempDD.overCount = 0;
                 tempDD.endDrag = this.movelessDrop;
-                tempDD.onDragDrop = function(e, id) { if (this.overCount === 1) { handleDrop(this, id); } this.overCount -= 1; document.getElementById(id).style.borderColor = "white"; }; //TODO make this function determine where it was dropped and issue an ajax call to move the file, then refresh the browsers that are affected
+                tempDD.onDragDrop = function(e, id) { try { if (this.overCount === 1) { handleDrop(this, id); } this.overCount -= 1; document.getElementById(id).style.borderColor = "white"; } catch (e) { } }; 
                 tempDD.onDragEnter = function(e, id) { this.overCount += 1; document.getElementById(id).style.borderColor = "#3879e6"; } ;
                 tempDD.onDragOut = function(e, id) { this.overCount -= 1; document.getElementById(id).style.borderColor = "white"; } ;
                 tempDD.invoker = invoker;
@@ -232,13 +232,19 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
 /**
  * handleDrop
  */
-YabiFileSelector.prototype.handleDrop = function(srcDD, destid) {
-    var target = YAHOO.util.DragDropMgr.getDDById(id);
-    var src, dest;
-    src = srcDD.invoker.object;
-    dest = target.invoker.object;
+YabiFileSelector.prototype.handleDrop = function(src, dest) {
+    //send copy command
+    var baseURL = appURL + "ws/fs/cp";
 
-    console.log(src + " copy to " + dest);
+    //load json
+    var jsUrl, jsCallback, jsTransaction;
+    jsUrl =  baseURL + "?src=" + escape(src) + "&dest=" + escape(dest);
+    jsCallback = {
+            success: this.copyResponse,
+            failure: this.copyResponse,
+            argument: [this] };
+    jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
+
 };
 
 /**
@@ -540,6 +546,12 @@ YabiFileSelector.prototype.hydrateResponse = function(o) {
     } catch (e) {
         YAHOO.ccgyabi.YabiMessage.yabiMessageFail('Error loading file listing');
     }
+};
+
+YabiFileSelector.prototype.copyResponse = function(o) {
+    var json = o.responseText;
+
+    //TODO invoke refresh on component
 };
 
 // drag n drop
