@@ -110,6 +110,8 @@ def put(request):
     is not empty then it will pass on the call to the backend to get a listing of that uri
     """
     logger.debug('')
+    logger.debug(request)
+    logger.debug(request.FILES)    
     import socket
     import httplib
 
@@ -122,8 +124,8 @@ def put(request):
         files = []
         in_file = request.FILES['file1']
         files.append((in_file.name, in_file.name, in_file.temporary_file_path()))
+        logger.debug(files)
         h = post_multipart(settings.YABIBACKEND_SERVER, resource, [], files)
-
         return HttpResponse('ok')
         
     except socket.error, e:
