@@ -878,6 +878,14 @@ display:inline;
     top: 4px;
 }
 
+.fileSelectorListing .fileItem .fileSize {
+    position:absolute;
+    right:34px;
+    top: 4px;
+    color: #999;
+    font-size:90%;
+}
+
 .fileSelectorListing .dirItem {
     color: #666;
     padding: 3px;

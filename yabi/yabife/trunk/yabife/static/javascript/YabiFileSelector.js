@@ -149,7 +149,7 @@ YabiFileSelector.prototype.currentPath = function() {
  */
 YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
     this.browseListing = jsonObj;
-    var fileEl, invoker, selectEl, downloadEl, downloadImg, index;
+    var fileEl, invoker, selectEl, downloadEl, downloadImg, sizeEl, fileSize, index;
     var handleDrop = function(srcDD, destid) {
         var target = YAHOO.util.DragDropMgr.getDDById(destid);
         var src, dest;
@@ -192,6 +192,16 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             fileEl.className = "fileItem";
             fileEl.appendChild(document.createTextNode(this.browseListing[toplevelindex].files[index][0]));
             this.fileListEl.appendChild(fileEl);
+            
+            //file size
+            fileSize = this.browseListing[toplevelindex].files[index][1];
+            //convert from bytes to kB or MB or GB
+            fileSize = this.humanReadableSizeFromBytes(fileSize);
+            
+            sizeEl = document.createElement("div");
+            sizeEl.className = "fileSize";
+            sizeEl.appendChild( document.createTextNode( fileSize ) );
+            fileEl.appendChild( sizeEl );
             
             invoker = {"target":this, "object":new YabiSimpleFileValue(this.pathComponents, this.browseListing[toplevelindex].files[index][0])};
             
@@ -418,6 +428,37 @@ YabiFileSelector.prototype.hydrate = function(path) {
             failure: this.hydrateResponse,
             argument: [this] };
     jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
+};
+
+/**
+ * humanReadableSizeFromBytes
+ */
+YabiFileSelector.prototype.humanReadableSizeFromBytes = function(bytes) {
+    if (!YAHOO.lang.isNumber(bytes)) {
+        return bytes;
+    }
+    
+    var humanSize;
+    
+    if (bytes > (300 * 1024 * 1024)) { //GB
+        humanSize = bytes / (1024 * 1024 * 1024);
+        humanSize = humanSize.toFixed(2);
+        humanSize += "GB";
+        return humanSize;
+    }
+    
+    if (bytes > (300 * 1024)) { //MB
+        humanSize = bytes / (1024 * 1024);
+        humanSize = humanSize.toFixed(2);
+        humanSize += "MB";
+        return humanSize;
+    }
+    
+    //kB
+    humanSize = bytes / (1024);
+    humanSize = humanSize.toFixed(0);
+    humanSize += "kB";
+    return humanSize;
 };
 
 // ==== CALLBACKS ====
