@@ -121,7 +121,7 @@ def addJob(workflow, job_dict, order):
 
     ## TODO raise error when no credential for user
     logger.debug('%s - %s' % (workflow.user, tool.fs_backend))
-    exec_backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.exec_backend)
+    exec_backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.backend)
     fs_backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.fs_backend)
 
     #TODO hardcoded
