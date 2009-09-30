@@ -5,6 +5,7 @@ from yabiadmin.yabiengine import backendhelper
 from yabiadmin.yabiengine.urihelper import uriparse, uri_get_pseudopath
 from django.utils import simplejson as json, webhelpers
 from django.db.models.signals import post_save
+from django.utils.webhelpers import url
 import httplib
 from urllib import urlencode
 
@@ -51,8 +52,6 @@ class Job(models.Model):
     def status_complete(self):
         return self.status == settings.STATUS['complete']
     
-
-
 
 class Task(models.Model):
     job = models.ForeignKey(Job)

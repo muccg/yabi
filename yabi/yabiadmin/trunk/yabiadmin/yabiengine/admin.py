@@ -13,9 +13,18 @@ class SyslogAdmin(admin.ModelAdmin):
     search_fields = ['table_name', 'table_id']
 
 
+## def link_to_tasks(obj):
+##     return '<a href="%s?job__workflow__exact=%d">%s</a>' % (url('/admin/yabiengine/task/'), obj.id, "Tasks")
+## link_to_tasks.allow_tags = True
+## link_to_tasks.short_description = "Tasks"
+
+
 class JobAdmin(admin.ModelAdmin):
     list_display = ['order', 'status', 'command', 'commandparams', 'start_time', 'end_time', 'cpus', 'walltime', 'stageout']
     list_filter = ['workflow']
+
+
+
 
 class TaskAdmin(admin.ModelAdmin):
     list_display = ['status', 'job', 'start_time', 'end_time', 'job_identifier', 'command', 'error_msg']
