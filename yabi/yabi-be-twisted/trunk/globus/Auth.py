@@ -22,7 +22,7 @@ class GlobusAuth(object):
         The deferred should be the result channel your result will go back down"""
         assert hasattr(self,"authproxy"), "Class must have an authproxy parameter"
         
-        host,port = "localhost",8100
+        host,port = "localhost",8000
         useragent = "YabiFS/0.1"
         
         print "AuthProxyUser %s://%s@%s/"%(scheme,username,host)
