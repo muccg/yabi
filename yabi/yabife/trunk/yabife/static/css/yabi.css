@@ -791,6 +791,46 @@ display:inline;
     cursor: pointer;
 }
 
+.autofilterContainer {
+    top-margin:6px;
+}
+
+.virtualCheckbox {
+    display: inline;
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+	background-color: #ebf0f3;
+    border: 1px solid #b7c9e6;
+	padding: 1px;
+	padding-left: 8px;
+	padding-right: 8px;
+	margin-right: 4px;
+	color: #666;
+	position: relative;
+	line-height: 1.6em;
+    cursor: pointer;
+    width:26px;
+}
+
+.virtualCheckboxOn {
+    display: inline;
+	-webkit-border-radius: 8px;
+	-moz-border-radius: 8px;
+    background-color: #3879e5;
+    background:#3879e5 url(../images/selectedWFbg.png) repeat-x;
+	background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
+	border: 1px solid #3879e5;
+	padding: 1px;
+	padding-left: 8px;
+	padding-right: 8px;
+	margin-right: 4px;
+	color: #fff;
+	position: relative;
+	line-height: 1.6em;
+    cursor: pointer;
+    width:26px;
+}
+
 .destroyDiv {
 	position:absolute;
 	top:2px;
