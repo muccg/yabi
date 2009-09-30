@@ -52,7 +52,7 @@ function submitCallback(e, wf) {
         var baseURL = appURL + "ws/submitworkflow/";
         
         jsCallback = {
-            success: function (obj) {YAHOO.ccgyabi.YabiMessage.yabiMessageSuccess("Success on submit!");},
+            success: function (obj) {YAHOO.ccgyabi.YabiMessage.yabiMessageSuccess("Success on submit!"); window.location = appURL + "jobs"; },
             failure: function (obj){YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Fail on submit!");},
             argument: [this] };
         var data = "username=${request.user.username}&workflowjson=" + wf.toJSON();
