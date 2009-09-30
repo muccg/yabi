@@ -69,9 +69,13 @@ shellfactory.username = ''
 shellfactory.password = ''
 
 def startup():
-        # setup the TaskManager
-        import TaskManager
-        reactor.callLater(0.1,TaskManager.startup) 
+        # setup the TaskManager if we are needed
+        if "TASKMANAGER" in os.environ:
+            print "Starting task manager"
+            import TaskManager
+            reactor.callLater(0.1,TaskManager.startup) 
+        else:
+            print "NOT starting task manager"
 
 reactor.addSystemEventTrigger("before", "startup", startup)
 

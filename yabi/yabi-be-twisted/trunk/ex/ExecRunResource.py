@@ -9,7 +9,7 @@ import json
 from globus.Auth import NoCredentials
 from globus.CertificateProxy import ProxyInitError
 
-from utils.stacklesstools import WaitForDeferredData
+from utils.stacklesstools import WaitForDeferredData, sleep
 from utils.parsers import parse_url
 
 from twisted.internet.defer import Deferred
@@ -61,7 +61,8 @@ class ExecRunResource(resource.PostableResource):
         
         def run_tasklet(channel):
             while True:
-                stackless.schedule()
+                sleep(10.0)
+                return channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Bing!\n"))
         
         tasklet = stackless.tasklet(run_tasklet)
         tasklet.setup( client_channel )
