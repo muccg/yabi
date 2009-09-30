@@ -888,6 +888,8 @@ display:inline;
     -webkit-border-top-right-radius:4px;
     -moz-border-radius-topleft:4px;
     -moz-border-radius-topright:4px;
+    overflow:hidden;
+    text-overflow:ellipsis;
 }
 
 .fileSelectorBreadcrumb span {
