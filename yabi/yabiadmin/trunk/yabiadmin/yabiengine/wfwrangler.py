@@ -84,6 +84,9 @@ def prepare_tasks(job):
     
     for param in paramlist:
 
+        #TODO refactor each of these code blocks into handlers
+
+
         ##################################################
         # handle yabi:// uris
         ##################################################
@@ -105,6 +108,10 @@ def prepare_tasks(job):
         ##################################################
         # handle file:// uris that are directories
         ##################################################
+
+
+        # TODO change this to handle yabifs uris instead of file uris
+        # also do this for the next handler
 
         # uris ending with a / on the end of the path are directories
         elif param.startswith("file://") and param.endswith("/"):

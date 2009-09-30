@@ -149,6 +149,15 @@ def get_param_value(workflow, tp):
                 # handle links to previous file selects
                 elif 'type' in item and 'filename' in item:
                     value = item['filename']
+
+
+
+
+                    #TODO get the full uri here instead of item['filename']
+
+
+
+                    
                 
             elif type(item) == str or type(item) == unicode:
                 value += item

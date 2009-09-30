@@ -71,6 +71,7 @@ def status(request, model, id):
             if isinstance(obj, Job):
                 wfwrangler.walk(obj.workflow)
 
+            #TODO return something sensible here
             return HttpResponse("Thanks!")
 
     except (ObjectDoesNotExist,ValueError):
