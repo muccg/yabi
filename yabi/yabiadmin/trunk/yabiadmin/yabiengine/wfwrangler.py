@@ -195,7 +195,7 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
 
         s = StageIn(task=t,
                     src="%s%s" % (param, file),
-                    dst="%s%s%s" % (fs_be.uri, fs_bc.homedir, file),
+                    dst="%s%s" % (fs_bc.homedir_uri, file),
                     order=0)
         s.save()
 
