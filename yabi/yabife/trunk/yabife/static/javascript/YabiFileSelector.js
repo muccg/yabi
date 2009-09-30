@@ -380,6 +380,22 @@ YabiFileSelector.prototype.downloadFile = function(file) {
 };
 
 /**
+ * deleteRemoteFile
+ */
+YabiFileSelector.prototype.deleteRemoteFile = function(file) {
+    var baseURL = appURL + "ws/fs/rm";
+    
+    //load json
+    var jsUrl, jsCallback, jsTransaction;
+    jsUrl =  baseURL + "?uri=" + escape(file.toString());
+    jsCallback = {
+    success: this.deleteRemoteResponse,
+    failure: this.deleteRemoteResponse,
+        argument: [this] };
+    jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
+};
+
+/**
  * deleteFileAtIndex
  *
  * removes file from selectedFiles array and re-renders list
@@ -504,8 +520,8 @@ YabiFileSelector.prototype.downloadFileCallback = function(e, invoker) {
 YabiFileSelector.prototype.deleteRemoteFileCallback = function(e, invoker) {
     var target = invoker.target;
     
-    //TODO implement file deletion
-    //target.deleteFile(invoker.object);
+    //file deletion
+    target.deleteRemoteFile(invoker.object);
     
     //prevent propagation from passing on to expand
     YAHOO.util.Event.stopEvent(e);
@@ -551,6 +567,14 @@ YabiFileSelector.prototype.uploadResponse = function(o) {
     
     target.uploadEl.replaceChild(target.uploadFormEl, target.uploadMaskEl);
     
+    target.updateBrowser(new YabiSimpleFileValue(target.pathComponents, ''));
+};
+
+YabiFileSelector.prototype.deleteRemoteResponse = function(o) {
+    var json = o.responseText;
+    
+    target = o.argument[0];
+
     target.updateBrowser(new YabiSimpleFileValue(target.pathComponents, ''));
 };
 
