@@ -79,8 +79,10 @@ YabiWorkflowProxy.prototype.setTags = function(tagArray) {
  */
 YabiWorkflowProxy.prototype.matchesFilters = function(needle, status) {
     var index;
+    var haystack = this.detailsPayload.name.toLowerCase();
+    needle = needle.toLowerCase();
     
-    if (this.payload.name.indexOf(needle) != -1) {
+    if (haystack.indexOf(needle) != -1) {
         if (status == 'All' || this.payload.status == status) {        
             return true;
         }
@@ -88,6 +90,7 @@ YabiWorkflowProxy.prototype.matchesFilters = function(needle, status) {
     
     //add additional filters here on keywords
     var tagUnified = '' + this.payload.tags;
+    tagUnified = tagUnified.toLowerCase();
     if (tagUnified.indexOf(needle) != -1) {
         if (status == 'All' || this.payload.status == status) {        
             return true;

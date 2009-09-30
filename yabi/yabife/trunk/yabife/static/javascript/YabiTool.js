@@ -97,8 +97,10 @@ YabiTool.prototype.toString = function() {
 YabiTool.prototype.matchesFilter = function(needle) {
     var index, bindex, subneedle;
     var needles = [];
+    var haystack = this.payload.displayName.toLowerCase();
+    needle = needle.toLowerCase();
 
-    if (this.payload.displayName.indexOf(needle) != -1) {
+    if (haystack.indexOf(needle) != -1) {
         return true;
     }
     
