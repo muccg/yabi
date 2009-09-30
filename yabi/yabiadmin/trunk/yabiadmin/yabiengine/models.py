@@ -81,8 +81,8 @@ class Task(models.Model):
             "stagein":[],
             "exec":{
             "command":self.command,
-            "backend":backendhelper.get_backend_from_uri(self.job.exec_backend).name,
-            "fsbackend":backendhelper.get_backend_from_uri(self.job.fs_backend).name,
+            "backend":self.job.exec_backend,
+            "fsbackend":self.job.fs_backend,
             },
             "stageout":self.job.stageout
             }
