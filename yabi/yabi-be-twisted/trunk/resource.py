@@ -29,8 +29,9 @@ def application(environ, start):
 from fs.resource import FSResource
 
 # backends
-from fs.LocalFileResource import LocalFileResource
-from fs.GlobusFileResource import GlobusFileResource
+
+from fs.connector.LocalFilesystem import LocalFilesystem
+from fs.connector.GridFTP import GridFTP
 
 ##
 ## Execution resources
@@ -38,7 +39,7 @@ from fs.GlobusFileResource import GlobusFileResource
 from ex.resource import ExecResource
 
 # backends
-from ex.GlobusExecResource import GlobusExecResource
+from ex.GlobusExec import GlobusExec
 
 VERSION = 0.1
 class BaseResource(resource.PostableResource):
@@ -59,14 +60,16 @@ class BaseResource(resource.PostableResource):
         
         # filesystem backends
         self.child_fs = FSResource(
-                file = LocalFileResource(directory="/tmp/filesystem"),
-                gridftp1 = GlobusFileResource(remoteserver="xe-ng2.ivec.org", remotepath="/scratch"),
-                gridftp2 = GlobusFileResource(remoteserver="xe-ng2.ivec.org", remotepath="/scratch/bi01"),
+                #file = LocalFileResource(directory="/tmp/filesystem"),
+                #gridftp1 = GlobusFileResource(remoteserver="xe-ng2.ivec.org", remotepath="/scratch"),
+                #gridftp2 = GlobusFileResource(remoteserver="xe-ng2.ivec.org", remotepath="/scratch/bi01"),
+                yabifs = LocalFilesystem(directory="/tmp/filesystem"),
+                gridftp = GridFTP()
             )
             
         # execution backends
         self.child_exec = ExecResource(
-                globus1 = GlobusExecResource( host="xe-ng2.ivec.org", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", backend="globus1" )
+                globus = GlobusExec()
             )
             
         self.child_yabiadmin = wsgi.WSGIResource(application)
@@ -75,4 +78,4 @@ class BaseResource(resource.PostableResource):
         """Just returns a helpful text string"""
         return http.Response(responsecode.OK,
                         {'content-type': http_headers.MimeType('text', 'plain')},
-                         "Twisted Yabi Core: %s"%VERSION)
+                         "Twisted Yabi Core: %s\n"%VERSION)

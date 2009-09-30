@@ -1,9 +1,15 @@
 from twisted.web2 import resource, http_headers, responsecode, http, server
 from twisted.internet import defer, reactor
-from submit_helpers import parsePOSTDataRemoteWriter
 import weakref
 import sys, os
+import stackless
+import json
 
+from Exceptions import PermissionDenied, InvalidPath
+from globus.Auth import NoCredentials
+from globus.CertificateProxy import ProxyInitError
+
+from utils.parsers import parse_url
 
 class FileListResource(resource.PostableResource):
     VERSION=0.1
@@ -20,69 +26,49 @@ class FileListResource(resource.PostableResource):
         
         self.fsresource = weakref.ref(fsresource)
         
-    def render(self, request):
-        # break our request path into parts
-        return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be POST\n")
-
     def http_POST(self, request):
-        """
-        Respond to a POST request.
-        Reads and parses the incoming body data then calls L{render}.
-    
-        @param request: the request to process.
-        @return: an object adaptable to L{iweb.IResponse}.
+        # break our request path into parts
+        return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be GET\n")
+
+    def http_GET(self, request):
+        if "uri" not in request.args:
+            return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided\n")
+
+        uri = request.args['uri'][0]
+        scheme, address = parse_url(uri)
         
-        NOTE: parameters must be Content-Type: application/x-www-form-urlencoded
-        eg. 
-        """
-        #print "POST!",request
+        if not hasattr(address,"username"):
+            return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No username provided in uri\n")
         
-        deferred = parsePOSTDataRemoteWriter( request,
-            self.maxMem, self.maxFields, self.maxSize )
+        recurse = 'recurse' in request.args
+        bendname = scheme
+        username = address.username
+        path = address.path
+        hostname = address.hostname
         
+        print "URI",uri
+        print "ADDRESS",address
+        
+        # get the backend
+        fsresource = self.fsresource()
+        if bendname not in fsresource.Backends():
+            return http.Response( responsecode.NOT_FOUND, {'content-type': http_headers.MimeType('text', 'plain')}, "Backend '%s' not found\n"%bendname)
+            
+        bend = fsresource.GetBackend(bendname)
+        
+        # our client channel
         client_channel = defer.Deferred()
         
-        # Copy command
-        def ListCommand(res):
-            # source and destination
-            if 'dir' not in request.args:
-                return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "copy must specify a directory 'dir' to make\n")
+        def do_list():
+            print "hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
+            try:
+                lister=bend.ls(hostname,path=path, username=username,recurse=recurse)
+                client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream=json.dumps(lister)))
+            except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
+                client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
             
-            recurse = 'recurse' in request.args
-            
-            directory = request.args['dir'][0]
-           
-            path = directory.split("/")
-            
-            bendname,username,pathremainder = path[0], path[1], path[2:]
-            
-            print path
-            
-            assert bendname, "must list on a valid backend"
-            
-            # get the backend
-            bend = getattr(self.fsresource(), "child_%s"%bendname)
-            
-            # make the directory. returns a deferred, in which the result will be called down
-            lister=bend.http_LIST(request,path=[username]+pathremainder, username=username,recurse=recurse)
-            
-            if isinstance(lister,defer.Deferred):
-                def _list_done(res):
-                    #print dir(res)
-                    if res.code!=200:
-                        client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "NOT OK: %s\n"%str(res.stream.read())) )
-                    else:
-                        client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream=res.stream) )
-                
-                lister.addCallback(_list_done)
-                lister.addErrback( lambda r: client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "NOT OK: %s\n"%str(r)) ))
-            else:
-                client_channel.callback(lister)
-             
-        # on success, make the dir
-        deferred.addCallback(ListCommand)
-        
-        # save failed
-        deferred.addErrback(lambda res: client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "NOT OK: %s\n"%str(res)) ))
+        tasklet = stackless.tasklet(do_list)
+        tasklet.setup()
+        tasklet.run()
         
         return client_channel

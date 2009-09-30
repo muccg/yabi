@@ -3,7 +3,7 @@ from twisted.web2 import resource, http_headers, responsecode, http, server, str
 from twisted.internet import defer, reactor
 from os.path import sep
 import os, json, sys
-from submit_helpers import parsePOSTData, parsePUTData, parsePOSTDataRemoteWriter
+
 from twisted.web2.auth.interfaces import IAuthenticatedRequest, IHTTPUser
 
 import globus

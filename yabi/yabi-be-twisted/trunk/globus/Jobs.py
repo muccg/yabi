@@ -106,7 +106,7 @@ class Jobs(object):
         # get the remote status.
         def check_job_status():
             usercert = self.authproxy.ProxyFile(username)
-            proc = globus.Run.status(usercert,eprfile)
+            procproto = globus.Run.status(usercert,eprfile)
             
             # when proc returns... we want to do the following
             def _status_returned(data):

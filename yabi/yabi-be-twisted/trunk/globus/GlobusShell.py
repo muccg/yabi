@@ -1,26 +1,40 @@
-from AsyncWrapper import AExec as Popen
-from subprocess import PIPE,  STDOUT
 import os
-#from pythonhdr import PyFile_AsFile
-#import ctypes
-
-#libc=ctypes.cdll.LoadLibrary("libc.so.6")
-#print libc
-
-
-## python versions of setvbuf
-#def set_file_unbuffered(file):
-    #fp = PyFile_AsFile(file)
+from twisted.internet import protocol
+from twisted.internet import reactor
     
-    #libc.setvbuf(fp,None,1,0)
+class GlobusShellProcessProtocol(protocol.ProcessProtocol):
+    def __init__(self, stdin=None):
+        self.stdin=stdin
+        self.err = ""
+        self.out = ""
+        self.exitcode = None
+        
+    def connectionMade(self):
+        # when the process finally spawns, close stdin, to indicate we have nothing to say to it
+        if self.stdin:
+            self.transport.write(self.stdin)
+        self.transport.closeStdin()
+        
+    def outReceived(self, data):
+        self.out += data
+        
+    def errReceived(self, data):
+        self.err += data
     
-
+    def processEnded(self, status_object):
+        self.exitcode = status_object.value.exitCode
+        
+    def isDone(self):
+        return self.exitcode != None
 
 class GlobusShell(object):
     gsissh = '/usr/local/globus/bin/gsissh'
     
     def __init__(self):
         pass
+
+    def _make_path(self):
+        return "/usr/local/globus/bin"    
 
     def _make_env(self, certfile):
         """Return a custom environment for the specified cert file"""
@@ -41,20 +55,17 @@ class GlobusShell(object):
         # Suggestion: Use spawnProcess within the twisted api. Specifically there is some utils code within the 
         # twisted api which makes this really easy.
         # Reference: http://twistedmatrix.com/documents/8.2.0/api/twisted.internet.utils.html
-
-
+       
         subenv = self._make_env(certfile)
-        proc = Popen( [  self.gsissh,
-                                    host ] +
-                                  list(command),
-                                  shell=False,
-                                  stdin=None,
-                                  stdout=PIPE,
-                                  stderr=STDOUT,
-                                  env=subenv,
-                                  bufsize=1024
-                                )
-        return proc
+        pp = GlobusShellProcessProtocol()
+        print "COMMAND:",list(command)
+        reactor.spawnProcess(   pp,
+                                self.gsissh,
+                                [ self.gsissh, host ] + list(command),
+                                env=subenv,
+                                path=self._make_path()
+                            )
+        return pp
 
     def ls(self, certfile, host, directory, args="-alFR"):
         return self.execute(certfile,host,"ls",args,directory)

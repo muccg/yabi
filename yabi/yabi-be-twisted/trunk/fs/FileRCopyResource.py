@@ -1,6 +1,6 @@
 from twisted.web2 import resource, http_headers, responsecode, http, server
 from twisted.internet import defer, reactor
-from submit_helpers import parsePOSTDataRemoteWriter
+from utils.submit_helpers import parsePOSTDataRemoteWriter
 import weakref
 import sys, os
 

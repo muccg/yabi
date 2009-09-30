@@ -2,9 +2,11 @@
 
 from twisted.web2 import resource, http_headers, responsecode, http, server
 from twisted.internet import defer, reactor
-from submit_helpers import parsePOSTDataRemoteWriter
+
 import weakref
 import sys, os
+
+from ExecRunResource import ExecRunResource
 
 class ExecResource(resource.Resource):
     """This is the resource that connects to all the filesystem backends"""
@@ -17,8 +19,14 @@ class ExecResource(resource.Resource):
         for name, bend in kwargs.iteritems():
             bend.backend = name                     # store the name in the backend, so the backend knows about it
             self.backends[name]=bend
-            self.putChild(name,bend)
-        
+            #self.putChild(name,bend)
+            
+    def GetBackend(self, name):
+        return self.backends[name]
+    
+    def Backends(self):
+        return self.backends.keys()
+                
     def render(self, request):
         # break our request path into parts
         parts = request.path.split("/")
@@ -45,4 +53,8 @@ class ExecResource(resource.Resource):
     
     def locateChild(self, request, segments):
         # return our local file resource for these segments
+        if segments[0]=="run":
+            # wanting the file copy resource
+            return ExecRunResource(request,segments,fsresource = self), []
+        
         return resource.Resource.locateChild(self,request,segments)

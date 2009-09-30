@@ -3,7 +3,7 @@ from twisted.web2 import resource, http_headers, responsecode, http, server, str
 from twisted.internet import defer, reactor
 from os.path import sep
 import os, json, sys
-from submit_helpers import parsePOSTData, parsePUTData, parsePOSTDataRemoteWriter
+from utils.submit_helpers import parsePOSTData, parsePUTData, parsePOSTDataRemoteWriter
 from twisted.web2.auth.interfaces import IAuthenticatedRequest, IHTTPUser
 from twisted.python.failure import Failure
 import globus
@@ -30,7 +30,7 @@ def JobPollGeneratorDefault():
     while True:
         yield 10.0
 
-class GlobusExecResource(BaseExecResource, globus.Auth):
+class GlobusExec(BaseExecResource, globus.Auth):
     """This is the resource that connects to the globus gridftp backends"""
     VERSION=0.1
     addSlash = False
@@ -47,7 +47,7 @@ class GlobusExecResource(BaseExecResource, globus.Auth):
         
         # save the details of this connector
         self.host, self.maxWallTime, self.maxMemory, self.cpus,self.queue, self.jobType, self.stdout, self.stderr, self.directory, self.dirprefix = \
-             host,      maxWallTime,      maxMemory,      cpus,     queue,      jobType,      stdout,      stderr,      directory,      dirprefix
+            host,        maxWallTime,    maxMemory,      cpus,       queue,      jobType,     stdout,      stderr,      directory,      dirprefix
          
         # our backend identifier (for mango)
         self.backend = backend

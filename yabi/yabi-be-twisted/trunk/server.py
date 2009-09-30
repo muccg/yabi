@@ -20,11 +20,15 @@ from resource import BaseResource
 
 # our root and google resource
 sys.path=['.']+sys.path
-import twango_resource
 
 # run as root
-PORT = 8000
-SSL_PORT = 4430
+PORT = 8100
+TELNET_PORT = 8121
+SSL_PORT = 4431
+
+# make sure our env is sane
+import os
+assert "GLOBUS_LOCATION" in os.environ
 
 # Create the resource we will be serving
 base = BaseResource()
@@ -58,7 +62,7 @@ internet.SSLServer(SSL_PORT, channel.HTTPFactory(site), ServerContextFactory()).
 from twisted.manhole import telnet
 
 shellfactory = telnet.ShellFactory()
-reactor.listenTCP(8021, shellfactory)
+reactor.listenTCP(TELNET_PORT, shellfactory)
 shellfactory.namespace['app']=application
 shellfactory.namespace['site']=site
 shellfactory.username = ''

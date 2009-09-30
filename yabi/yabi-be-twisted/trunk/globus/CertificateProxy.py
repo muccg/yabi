@@ -87,11 +87,6 @@ class CertificateProxy(object):
         
         TODO: What happens if this task blocks? The whole server blocks with it!
         """
-        #print "CreateUserProxy",userid
-        #print "CERT",cert
-        #print "KEY",key
-        #print "PASSWORD",password
-        
         # file locations
         certfile = os.path.join( self.tempdir, "%s.cert"%userid )
         keyfile = os.path.join( self.tempdir, "%s.key"%userid )

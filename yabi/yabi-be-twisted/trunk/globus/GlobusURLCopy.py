@@ -1,11 +1,39 @@
 """Class to encapsulate the functionality in "globus-url-copy"
 """
-from AsyncWrapper import AExec as Popen
-import subprocess
 import os
 import tempfile
 import sys
 from FifoPool import Fifos
+
+from twisted.internet import protocol
+from twisted.internet import reactor
+
+class GlobusURLCopyProcessProtocol(protocol.ProcessProtocol):
+    def __init__(self):
+        self.err = ""
+        self.out = ""
+        self.exitcode = None
+        self.started = False
+        
+    def connectionMade(self):
+        # when the process finally spawns, close stdin, to indicate we have nothing to say to it
+        self.transport.closeStdin()
+        self.started = True
+        
+    def outReceived(self, data):
+        self.out += data
+        
+    def errReceived(self, data):
+        self.err += data
+        
+    def processEnded(self, status_object):
+        self.exitcode = status_object.value.exitCode
+        
+    def isDone(self):
+        return self.exitcode != None
+    
+    def isStarted(self):
+        return self.started
 
 class GlobusFTPError(Exception):
     pass
@@ -86,26 +114,26 @@ class GlobusURLCopy(object):
         # make our source fifo to get our data from
         if not fifo:
             fifo = Fifos.Get()
+            print "generated",fifo
+            
         url = Fifos.MakeURLForFifo(fifo)
-        #print "WRITE:",fifo,url,remoteurl
+        
+        pp = GlobusURLCopyProcessProtocol()
         
         # the copy to remote command
-        proc = Popen(    [  self.globus_url_copy,
+        reactor.spawnProcess(   pp,
+                                self.globus_url_copy,
+                                [ self.globus_url_copy,
                                         "-nodcau",                              # see bug #3902 ( http://bugzilla.globus.org/globus/show_bug.cgi?id=3902 )
                                         "-cd",                                  # create destination directories if they dont exist
                                         url,                                     # source
                                         remoteurl                                # destination
                                     ],
-                                    stdin=None,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT,
-                                    #close_fds=True,
-                                    env=subenv  )
-                                    
-        # link our process to this fifo, so if we die, the fifo will be cleared up
-        Fifos.WeakLink( fifo, proc )
+                                env=subenv,
+                                path="/bin"
+                            )
         
-        return proc, fifo
+        return pp, fifo
     
     def ReadFromRemote(self, certfile, remoteurl, fifo=None):
         """Read from a remote url into a local fifo"""
@@ -117,21 +145,23 @@ class GlobusURLCopy(object):
         url = Fifos.MakeURLForFifo(fifo)
         #print "READ:",fifo,url,remoteurl
         
-        # the copy to remote command
-        proc = Popen(    [  self.globus_url_copy,
-                                        "-nodcau",                              # see bug #3902 ( http://bugzilla.globus.org/globus/show_bug.cgi?id=3902 )
-                                        remoteurl,                               # source
-                                        url                                      # destination
-                                    ],
-                                    stdin=None,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT,
-                                    #close_fds=True,
-                                    env=subenv  )
-                                    
-        Fifos.WeakLink( fifo, proc )
+        pp = GlobusURLCopyProcessProtocol()
         
-        return proc, fifo
+        # the copy to remote command
+        reactor.spawnProcess(   pp,
+                                self.globus_url_copy,
+                                [  self.globus_url_copy,
+                                    "-nodcau",                              # see bug #3902 ( http://bugzilla.globus.org/globus/show_bug.cgi?id=3902 )
+                                    remoteurl,                               # source
+                                    url                                      # destination
+                                ],
+                                env=subenv,
+                                path="/bin"
+                            )
+                                    
+        #Fifos.WeakLink( fifo, proc )
+        
+        return pp, fifo
     
     
         

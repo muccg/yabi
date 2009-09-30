@@ -5,6 +5,7 @@ from twisted.internet import interfaces as ti_interfaces, defer, reactor, protoc
 from twisted.python import components, log
 from twisted.python.failure import Failure
 from twisted.web2.stream import SimpleStream, ISendfileableStream
+import errno
 
 class FifoStream(SimpleStream):
     implements(ISendfileableStream)
@@ -12,7 +13,7 @@ class FifoStream(SimpleStream):
     CHUNK_SIZE = 2 ** 2 ** 2 ** 2 - 32
 
     f = None
-    def __init__(self, f, length=None):
+    def __init__(self, f, length=None, truncate=None):
         """
         Create the stream from file handle f. If you set length, will be closed when length is reached
         
@@ -21,11 +22,14 @@ class FifoStream(SimpleStream):
         self.f = f
         self.prebuffer = ''
         self.length = length
+        self.truncate = truncate            # truncate at this many bytes without warning or error
         
     def prepush(self, data):
         self.prebuffer+=data
         
     def read(self, sendfile=False):
+        #print "read()",self.length,self.truncate
+        
         if self.f is None:
             return None
 
@@ -33,16 +37,28 @@ class FifoStream(SimpleStream):
         if length == 0:
             self.f = None
             return None
+        
+        truncate = self.truncate
+        if truncate is not None and truncate <= 0:
+            self.f=None
+            return None
 
         # Fall back to standard read
-        if length:
-            readSize = min(length, self.CHUNK_SIZE)
-        else:
-            readSize = self.CHUNK_SIZE
+        readSize = min(truncate if truncate else self.CHUNK_SIZE, length if length else self.CHUNK_SIZE, self.CHUNK_SIZE)
+        #print "Readsize",readSize
 
-        b = self.prebuffer+self.f.read(readSize)
+        readsuccess = False
+        while not readsuccess:
+            try:
+                b = self.prebuffer+self.f.read(readSize)
+                readsuccess=True
+            except IOError, ioe:
+                #print "IOE",str(ioe)
+                if ioe.errno != errno.EAGAIN and ioe.errno != errno.EINTR:
+                    raise ioe
+            
         self.prebuffer=''
-        bytesRead = len(b)
+        bytesRead = len(b)              # this could be greater than truncate!
         if not bytesRead:
             if length:
                 raise RuntimeError("Ran out of data reading file %r, expected %d more bytes" % (self.f, length))
@@ -52,6 +68,17 @@ class FifoStream(SimpleStream):
         else:
             if self.length:
                 self.length -= bytesRead
+            
+            if self.truncate:
+                if bytesRead>self.truncate:
+                    t = self.truncate
+                    self.truncate -= bytesRead
+                    self.prebuffer=b[t:]
+                    #print "T:",t
+                    return b[:t]
+                else:
+                    self.truncate -= bytesRead
+            
             return b
 
     def close(self, close_handle=True):

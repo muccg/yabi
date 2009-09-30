@@ -1,19 +1,24 @@
-from twisted.web2 import resource, http_headers, responsecode, http, server
+from twisted.web2 import resource, http_headers, responsecode, http, server, fileupload
 from twisted.internet import defer, reactor
-import weakref
-import sys, os, json, stackless
 
-from Exceptions import PermissionDenied, InvalidPath
+import weakref
+import sys, os
+import stackless
+import json
+
 from globus.Auth import NoCredentials
 from globus.CertificateProxy import ProxyInitError
 
+from utils.stacklesstools import WaitForDeferredData
 from utils.parsers import parse_url
 
-class FileDeleteResource(resource.PostableResource):
+from twisted.internet.defer import Deferred
+from utils.FifoStream import FifoStream
+
+DOWNLOAD_BLOCK_SIZE = 8192
+
+class ExecRunResource(resource.PostableResource):
     VERSION=0.1
-    maxMem = 100*1024
-    maxFields = 16
-    maxSize = 10*1024*102
     
     def __init__(self,request=None, path=None, fsresource=None):
         """Pass in the backends to be served out by this FSResource"""
@@ -27,7 +32,7 @@ class FileDeleteResource(resource.PostableResource):
     def http_POST(self, request):
         # break our request path into parts
         return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be GET\n")
-
+                        
     def http_GET(self, request):
         if "uri" not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided\n")
@@ -38,36 +43,28 @@ class FileDeleteResource(resource.PostableResource):
         if not hasattr(address,"username"):
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No username provided in uri\n")
         
-        recurse = 'recurse' in request.args
-        bendname = scheme
         username = address.username
         path = address.path
         hostname = address.hostname
         
-        print "URI",uri
-        print "ADDRESS",address
+        basepath, filename = os.path.split(path)
         
         # get the backend
         fsresource = self.fsresource()
-        if bendname not in fsresource.Backends():
-            return http.Response( responsecode.NOT_FOUND, {'content-type': http_headers.MimeType('text', 'plain')}, "Backend '%s' not found\n"%bendname)
+        if scheme not in fsresource.Backends():
+            return http.Response( responsecode.NOT_FOUND, {'content-type': http_headers.MimeType('text', 'plain')}, "Backend '%s' not found\n"%scheme)
             
-        bend = fsresource.GetBackend(bendname)
+        bend = self.fsresource().GetBackend(scheme)
         
         # our client channel
         client_channel = defer.Deferred()
         
-        def do_rm():
-            print "hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
-            try:
-                lister=bend.rm(hostname,path=path, username=username,recurse=recurse)
-                client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
-            except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
-                client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
-            
-        tasklet = stackless.tasklet(do_rm)
-        tasklet.setup()
+        def run_tasklet(channel):
+            while True:
+                stackless.schedule()
+        
+        tasklet = stackless.tasklet(run_tasklet)
+        tasklet.setup( client_channel )
         tasklet.run()
         
         return client_channel
-       

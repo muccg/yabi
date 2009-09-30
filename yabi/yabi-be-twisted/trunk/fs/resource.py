@@ -2,7 +2,6 @@
 
 from twisted.web2 import resource, http_headers, responsecode, http, server
 from twisted.internet import defer, reactor
-from submit_helpers import parsePOSTDataRemoteWriter
 import weakref
 import sys, os
 
@@ -11,8 +10,8 @@ from FileRCopyResource import FileRCopyResource
 from FileDeleteResource import FileDeleteResource
 from FileListResource import FileListResource
 from FileMkdirResource import FileMkdirResource
-
-from FSCache import FSCache
+from FilePutResource import FilePutResource
+from FileGetResource import FileGetResource
 
 class FSResource(resource.Resource):
     """This is the resource that connects to all the filesystem backends"""
@@ -23,10 +22,14 @@ class FSResource(resource.Resource):
         """Pass in the backends to be served out by this FSResource"""
         self.backends={}
         for name, bend in kwargs.iteritems():
-            bend.backend = name                     # store the name in the backend, so the backend knows about it
+            bend.scheme = name                     # store the name in the backend, so the backend knows about it
             self.backends[name]=bend
-            self.putChild(name,bend)
-            FSCache[name]=bend
+            
+    def GetBackend(self, name):
+        return self.backends[name]
+    
+    def Backends(self):
+        return self.backends.keys()
         
     def render(self, request):
         # break our request path into parts
@@ -65,6 +68,10 @@ class FSResource(resource.Resource):
             return FileDeleteResource(request,segments,fsresource=self), []
         elif segments[0]=="rcopy":
             return FileRCopyResource(request,segments,fsresource=self), []
+        elif segments[0]=="put":
+            return FilePutResource(request,segments,fsresource=self), []
+        elif segments[0]=="get":
+            return FileGetResource(request,segments,fsresource=self), []
         
         
         return resource.Resource.locateChild(self,request,segments)
