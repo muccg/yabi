@@ -144,6 +144,15 @@ def prepare_tasks(job):
                 create_task(job, param, f[0], exec_be, exec_bc, fs_be, fs_bc)
 
 
+        ##################################################
+        # handle file:// uris
+        ##################################################
+        elif param.startswith("gridftp://"):
+            logger.info('Processing uri %s' % param)            
+            rest, filename = param.rsplit("/",1)
+            create_task(job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc)
+            input_files.append(param)
+            
 
         ##################################################
         # handle unknown types
