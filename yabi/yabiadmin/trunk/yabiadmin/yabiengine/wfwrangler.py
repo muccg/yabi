@@ -109,12 +109,8 @@ def prepare_tasks(job):
         # handle file:// uris that are directories
         ##################################################
 
-
-        # TODO change this to handle yabifs uris instead of file uris
-        # also do this for the next handler
-
         # uris ending with a / on the end of the path are directories
-        elif param.startswith("file://") and param.endswith("/"):
+        elif param.startswith("yabifs://") and param.endswith("/"):
             logger.info('Processing uri %s' % param)
 
             # get_file_list will return a list of file tuples
@@ -125,7 +121,7 @@ def prepare_tasks(job):
         ##################################################
         # handle file:// uris
         ##################################################
-        elif param.startswith("file://"):
+        elif param.startswith("yabifs://"):
             logger.info('Processing uri %s' % param)            
             rest, filename = param.rsplit("/",1)
             create_task(job, rest + "/", filename, b, bc)
@@ -167,14 +163,19 @@ def prepare_job(job):
 
 def create_task(job, param, file, backend, backendcredential):
     logger.debug('')
+    logger.debug("job %s" % job)
+    logger.debug("file %s" % file)
+    logger.debug("param %s" % param)
+    logger.debug("backend %s" % backend)
+    logger.debug("backendcredential %s" % backendcredential)
 
     param_scheme, param_uriparts = uriparse(param)
-    backend_scheme, backend_uriparts = uriparse(backendcredential.homedir)
+#    backend_scheme, backend_uriparts = uriparse(backendcredential.homedir)
     root, ext = splitext(file)
 
     # only make tasks for expected filetypes
     if ext.strip('.') in job.extensions:
-        taskcommand = job.command.replace("%", "%s%s%s" % (backend.path, backend_uriparts.path,file))
+        taskcommand = job.command.replace("%", "%s%s%s" % (backend.path, backendcredential.homedir,file))
         logger.info('Creating task for job id: %s using command: %s' % (job.id, taskcommand))
         t = Task(job=job, command=taskcommand, status="ready")
         t.save()
@@ -182,7 +183,7 @@ def create_task(job, param, file, backend, backendcredential):
 
         s = StageIn(task=t,
                     src="%s%s" % (param, file),
-                    dst="%s%s" % (backendcredential.homedir, file),
+                    dst="%s%s%s" % (backend.uri, backendcredential.homedir, file),
                     order=0)
         s.save()
 

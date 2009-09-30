@@ -8,7 +8,7 @@ from yabiadmin.yabiengine import backendhelper
 from django.utils import simplejson as json
 from yabiengine import wfwrangler
 import datetime
-
+import os
 
 import logging
 import yabilogging
@@ -63,7 +63,7 @@ def addJob(workflow, job_dict, order):
     # process the parameterList to get a useful dict
     param_dict = {}
     for toolparam in job_dict["parameterList"]["parameter"]:
-            param_dict[toolparam["switchName"]] = get_param_value(workflow, toolparam)
+        param_dict[toolparam["switchName"]] = get_param_value(workflow, toolparam)
 
     # now build up the command
     command = []
@@ -123,7 +123,13 @@ def addJob(workflow, job_dict, order):
     logger.debug('%s - %s' % (workflow.user, tool.fs_backend))
     backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.fs_backend)
 
-    job.stageout = "%s%s%d/%d/" % (tool.backend.uri, backendcredential.homedir, workflow.id, job.id)
+    #TODO hardcoded
+    if tool.backend.name == 'nullbackend':
+        job.stageout = None
+    else:
+        job.stageout = "%s%s%d/%d/" % (tool.backend.uri, backendcredential.homedir, workflow.id, job.id)
+
+
     job.exec_backend = tool.backend.uri
     job.fs_backend = tool.fs_backend.uri
 
@@ -134,6 +140,8 @@ def addJob(workflow, job_dict, order):
 
 def get_param_value(workflow, tp):
     logger.debug('')
+
+    logger.debug("====================: %s" % tp)
     
     value = ''
     if type(tp["value"]) == list:
@@ -144,20 +152,21 @@ def get_param_value(workflow, tp):
                 # handle links to previous nodes
                 if 'type' in item and 'jobId' in item:
                     # TODO - adding localhost.localdomain to uri at the moment, should this be pulled in from somewhere
-                    value = u"yabi://localhost.localdomain/%d/%d/" % (workflow.id, job_cache[item['jobId']].id)
+
+                    previous_job = job_cache[item['jobId']]
+
+                    if previous_job.stageout == None:
+                        value = eval(previous_job.commandparams)[0] # TODO this is a bit of a hack
+                    else:
+                        value = u"yabi://localhost.localdomain/%d/%d/" % (workflow.id, job_cache[item['jobId']].id)
 
                 # handle links to previous file selects
-                elif 'type' in item and 'filename' in item:
-                    value = item['filename']
+                elif 'type' in item and 'filename' in item and 'root' in item:
+                    path = os.path.join(*item['path'])
+                    if not path.endswith(os.sep):
+                        path = path + os.sep
+                    value = '%s%s%s' % (item['root'], path, item['filename'])
 
-
-
-
-                    #TODO get the full uri here instead of item['filename']
-
-
-
-                    
                 
             elif type(item) == str or type(item) == unicode:
                 value += item
