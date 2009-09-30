@@ -65,8 +65,11 @@ def prepare_tasks(job):
     input_files = []
 
     # get the backend for this job
-    b = backendhelper.get_backend_from_uri(job.exec_backend)
-    bc = BackendCredential.objects.get(backend=b, credential__user=job.workflow.user)
+    exec_be = backendhelper.get_backend_from_uri(job.exec_backend)
+    exec_bc = BackendCredential.objects.get(backend=exec_be, credential__user=job.workflow.user)
+    fs_be = backendhelper.get_backend_from_uri(job.fs_backend)
+    fs_bc = BackendCredential.objects.get(backend=fs_be, credential__user=job.workflow.user)
+
 
     # reconstitute the input filetype extension list so each create_task can use it
     if job.input_filetype_extensions:
@@ -115,7 +118,7 @@ def prepare_tasks(job):
 
             # get_file_list will return a list of file tuples
             for f in backendhelper.get_file_list(param):
-                create_task(job, param, f[0], b, bc)
+                create_task(job, param, f[0], exec_be, exec_bc, fs_be, fs_bc)
 
 
         ##################################################
@@ -124,7 +127,7 @@ def prepare_tasks(job):
         elif param.startswith("yabifs://"):
             logger.info('Processing uri %s' % param)            
             rest, filename = param.rsplit("/",1)
-            create_task(job, rest + "/", filename, b, bc)
+            create_task(job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc)
             input_files.append(param)
 
 
@@ -138,7 +141,7 @@ def prepare_tasks(job):
 
             # get_file_list will return a list of file tuples
             for f in backendhelper.get_file_list(param):
-                create_task(job, param, f[0], b, bc)
+                create_task(job, param, f[0], exec_be, exec_bc, fs_be, fs_bc)
 
 
 
@@ -161,13 +164,13 @@ def prepare_job(job):
 
 
 
-def create_task(job, param, file, backend, backendcredential):
+def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
     logger.debug('')
     logger.debug("job %s" % job)
     logger.debug("file %s" % file)
     logger.debug("param %s" % param)
-    logger.debug("backend %s" % backend)
-    logger.debug("backendcredential %s" % backendcredential)
+    logger.debug("exec_be %s" % exec_be)
+    logger.debug("exec_bc %s" % exec_bc)
 
     param_scheme, param_uriparts = uriparse(param)
 #    backend_scheme, backend_uriparts = uriparse(backendcredential.homedir)
@@ -175,7 +178,7 @@ def create_task(job, param, file, backend, backendcredential):
 
     # only make tasks for expected filetypes
     if ext.strip('.') in job.extensions:
-        taskcommand = job.command.replace("%", "%s%s%s" % (backend.path, backendcredential.homedir,file))
+        taskcommand = job.command.replace("%", "%s%s%s" % (exec_be.path, exec_bc.homedir,file))
         logger.info('Creating task for job id: %s using command: %s' % (job.id, taskcommand))
         t = Task(job=job, command=taskcommand, status="ready")
         t.save()
@@ -183,7 +186,7 @@ def create_task(job, param, file, backend, backendcredential):
 
         s = StageIn(task=t,
                     src="%s%s" % (param, file),
-                    dst="%s%s%s" % (backend.uri, backendcredential.homedir, file),
+                    dst="%s%s%s" % (fs_be.uri, fs_bc.homedir, file),
                     order=0)
         s.save()
 
