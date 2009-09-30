@@ -5,6 +5,9 @@
  * create a new file value which represents the path and relevant filename
  */
 function YabiSimpleFileValue(path, filename) {
+    if (!YAHOO.lang.isArray(path)) {
+        path = [path];
+    }
     this.pathComponents = path.slice();
 
     this.path = path.slice();
