@@ -153,6 +153,12 @@ function YabiWorkflow(editable) {
     
     this.optionsEl = document.createElement('div');
 
+    //add an enter key listener for the tags field
+    var enterTags = new YAHOO.util.KeyListener(this.tagInputEl, { ctrl:false, keys:13 }, 
+                                         { fn:this.saveTags(), 
+                                         scope:this,
+                                         correctScope:true } );
+    enterTags.enable();
 }
 
 /**
