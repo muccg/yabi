@@ -18,7 +18,7 @@ function initWorkflow() {
 % endif
     
     var updateFilter = function(job) {
-        if (job === null) {
+        if (job === null && tools.autofilter) {
             tools.searchEl.value = "";
         } else {
             tools.searchEl.value = "in:" + job.emittedFileTypes();

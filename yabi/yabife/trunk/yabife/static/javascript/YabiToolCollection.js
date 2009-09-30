@@ -7,6 +7,7 @@
 function YabiToolCollection() {
     this.tools = [];
     this.groupEls = [];
+    this.autofilter = true;
     
     this.containerEl = document.createElement("div");
     this.containerEl.className = "toolCollection";
@@ -35,6 +36,19 @@ function YabiToolCollection() {
     YAHOO.util.Event.addListener(this.clearFilterEl, "click", this.clearFilterCallback, this);
 
     this.filterEl.appendChild(this.clearFilterEl);
+    
+    //autofilter
+    this.autofilterContainer = document.createElement('div');
+    this.autofilterContainer.appendChild( document.createTextNode('Use selection to auto-filter?') );
+    
+    this.autofilterEl = document.createElement("span");
+    this.autofilterEl.className = "virtualCheckboxOn";
+    this.autofilterEl.appendChild( document.createTextNode('on') );
+    this.statusFilterContainer.appendChild( tmpItem );
+    YAHOO.util.Event.addListener(this.autofilterEl, "click", this.autofilterCallback, this);
+    this.autofilterContainer.appendChild(this.autofilterEl);
+    
+    this.filterEl.appendChild(this.autofilterContainer);
     
     this.containerEl.appendChild(this.filterEl);
     
@@ -166,6 +180,21 @@ YabiToolCollection.prototype.clearFilter = function() {
     this.filter();
 };
 
+/**
+ * autofilterToggle
+ */
+YabiToolCollection.prototype.autofilterToggle = function() {
+    this.autofilter = !this.autofilter;
+    
+    if (this.autofilter) {
+        this.autofilterEl.className = "virtualCheckboxOn";
+        this.autofilterEl.innerHTML = "on";
+    } else {
+        this.autofilterEl.className = "virtualCheckbox";
+        this.autofilterEl.innerHTML = "off";
+    }
+};
+
 // --------- callback methods, these require a target via their inputs --------
 
 /**
@@ -182,6 +211,15 @@ YabiToolCollection.prototype.filterCallback = function(e, target) {
  */
 YabiToolCollection.prototype.clearFilterCallback = function(e, target) {
     target.clearFilter();
+};
+
+/**
+ * autofilterCallback
+ *
+ * toggle autofiltering
+ */
+YabiToolCollection.prototype.autofilterCallback = function(e, target) {
+    target.autofilterToggle();
 };
 
 /**
