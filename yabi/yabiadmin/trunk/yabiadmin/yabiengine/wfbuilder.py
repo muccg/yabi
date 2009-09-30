@@ -162,9 +162,11 @@ def get_param_value(workflow, tp):
 
                 # handle links to previous file selects
                 elif 'type' in item and 'filename' in item and 'root' in item:
-                    path = os.path.join(*item['path'])
-                    if not path.endswith(os.sep):
-                        path = path + os.sep
+                    path = ''
+                    if item['path']:
+                        path = os.path.join(*item['path'])
+                        if not path.endswith(os.sep):
+                            path = path + os.sep
                     value = '%s%s%s' % (item['root'], path, item['filename'])
 
                 
