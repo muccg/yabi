@@ -551,7 +551,7 @@ YabiFileSelector.prototype.uploadResponse = function(o) {
     
     target.uploadEl.replaceChild(target.uploadFormEl, target.uploadMaskEl);
     
-    target.updateBrowser(new YabiSimpleFileValue(target.currentPath(), ''));
+    target.updateBrowser(new YabiSimpleFileValue(target.pathComponents, ''));
 };
 
 YabiFileSelector.prototype.hydrateResponse = function(o) {
