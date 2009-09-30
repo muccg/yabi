@@ -4,9 +4,9 @@ from urlparse import urlparse
 from yabiadmin.utils import json_error
 from yabiadmin.yabmin.models import BackendCredential
 
-## import logging
-## import yabilogging
-## logger = logging.getLogger('yabiadmin')
+import logging
+import yabilogging
+logger = logging.getLogger('yabiadmin')
 
 def validate_user(f):
     """
@@ -44,24 +44,26 @@ def validate_uri(f):
     2. The start of the uri's path matches the path allowed for the user based on backend.path and backendcredential.homedir
     """
     def check_uri(request, *args, **kwargs):
+        logger.debug('')
 
         uri = None
         yabiusername = None
-        
-        if request.method == 'GET':
-            if 'uri' in request.GET:
-                uri = request.GET['uri']
-            if 'yabiusername' in request.GET:
-                yabiusername = request.GET['yabiusername']
-                
-        elif request.method == 'POST':
-            if 'uri' in request.POST:
-                uri = request.POST['uri']
-            if 'yabiusername' in request.POST:
+
+        if 'uri' in request.GET:
+            uri = request.GET['uri']
+        elif 'uri' in request.POST:
+            uri = request.POST['uri']
+
+        if 'yabiusername' in request.GET:
+            yabiusername = request.GET['yabiusername']
+        elif 'yabiusername' in request.POST:
                 yabiusername = request.POST['yabiusername']
 
-        if uri:
-            try:
+        try:
+
+            if uri:
+                if not yabiusername:
+                    raise ValueError
 
                 scheme, rest = uri.split(":",1) # split required for non RFC uris ie gridftp, yabifs
                 u = urlparse(rest)
@@ -81,11 +83,12 @@ def validate_uri(f):
                     return HttpResponseForbidden(json_error("Invalid path."))
 
 
-            except ObjectDoesNotExist, e:
-                return HttpResponseForbidden(json_error("No backend credential found."))
+        except ObjectDoesNotExist, e:
+            return HttpResponseForbidden(json_error("No backend credential found."))
 
-            except ValueError, e:
-                return HttpResponseForbidden(json_error("Invalid URI."))
+        except ValueError, e:
+            return HttpResponseForbidden(json_error("Invalid URI."))
+        
             
 
         return f(request, *args, **kwargs)

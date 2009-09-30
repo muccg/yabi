@@ -109,8 +109,7 @@ def put(request):
     Uploads a file to the supplied URI
     """
     logger.debug('')
-    logger.debug(request)
-    logger.debug(request.FILES)    
+
     import socket
     import httplib
 
