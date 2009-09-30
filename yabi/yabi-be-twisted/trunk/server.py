@@ -22,9 +22,9 @@ from resource import BaseResource
 sys.path=['.']+sys.path
 
 # run as root
-PORT = 8100
-TELNET_PORT = 8121
-SSL_PORT = 4431
+PORT = 8000
+TELNET_PORT = 8021
+SSL_PORT = 4430
 
 # make sure our env is sane
 import os
