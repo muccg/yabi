@@ -28,6 +28,10 @@ class Workflow(models.Model):
     def __unicode__(self):
         return self.name
 
+    @property
+    def workflowid(self):
+        return self.id
+    
 class Job(models.Model):
     workflow = models.ForeignKey(Workflow)
     order = models.PositiveIntegerField()
@@ -51,7 +55,10 @@ class Job(models.Model):
 
     def status_complete(self):
         return self.status == settings.STATUS['complete']
-    
+
+    @property
+    def workflowid(self):
+        return self.workflow.id
 
 class Task(models.Model):
     job = models.ForeignKey(Job)
@@ -95,6 +102,10 @@ class Task(models.Model):
     def __unicode__(self):
         return self.job_identifier
 
+    @property
+    def workflowid(self):
+        return self.job.workflow.id
+
 
 
 class StageIn(models.Model):
@@ -102,6 +113,11 @@ class StageIn(models.Model):
     dst = models.CharField(max_length=256)
     order = models.IntegerField()
     task = models.ForeignKey(Task)
+
+    @property
+    def workflowid(self):
+        return self.task.job.workflow.id
+
 
 class QueueBase(models.Model):
     class Meta:
