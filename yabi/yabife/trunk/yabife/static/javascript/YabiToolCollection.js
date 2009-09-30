@@ -39,6 +39,7 @@ function YabiToolCollection() {
     
     //autofilter
     this.autofilterContainer = document.createElement('div');
+    this.autofilterContainer.className = "autofilterContainer";
     this.autofilterContainer.appendChild( document.createTextNode('Use selection to auto-filter?') );
     
     this.autofilterEl = document.createElement("span");
