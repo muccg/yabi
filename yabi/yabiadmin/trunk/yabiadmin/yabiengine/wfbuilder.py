@@ -127,7 +127,7 @@ def addJob(workflow, job_dict, order):
     if tool.backend.name == 'nullbackend':
         job.stageout = None
     else:
-        job.stageout = "%s%s%d/%d/" % (tool.backend.uri, backendcredential.homedir, workflow.id, job.id)
+        job.stageout = "%s%s%d/%d/" % (tool.fs_backend.uri, backendcredential.homedir, workflow.id, job.id)
 
 
     job.exec_backend = tool.backend.uri

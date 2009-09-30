@@ -78,7 +78,7 @@ class Task(models.Model):
             "backend":backendhelper.get_backend_from_uri(self.job.exec_backend).name,
             "fsbackend":backendhelper.get_backend_from_uri(self.job.fs_backend).name,
             },
-            "stageout":uri_get_pseudopath(self.job.stageout)
+            "stageout":self.job.stageout
             }
 
         stageins = self.stagein_set.all()
@@ -89,7 +89,7 @@ class Task(models.Model):
             dst_scheme, dst_rest = uriparse(s.dst)
 
 
-            output["stagein"].append({"srcbackend":src_backend, "srcpath":src_rest.path, "dstbackend":dst_backend, "dstpath":dst_rest.path, "order":s.order})
+            output["stagein"].append({"src":s.src, "dst":s.dst, "order":s.order})
 
         return json.dumps(output)
 
