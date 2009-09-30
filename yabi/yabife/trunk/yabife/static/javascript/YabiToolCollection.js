@@ -44,7 +44,7 @@ function YabiToolCollection() {
     this.autofilterEl = document.createElement("span");
     this.autofilterEl.className = "virtualCheckboxOn";
     this.autofilterEl.appendChild( document.createTextNode('on') );
-    this.statusFilterContainer.appendChild( tmpItem );
+
     YAHOO.util.Event.addListener(this.autofilterEl, "click", this.autofilterCallback, this);
     this.autofilterContainer.appendChild(this.autofilterEl);
     
