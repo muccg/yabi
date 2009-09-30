@@ -155,7 +155,7 @@ function YabiWorkflow(editable) {
 
     //add an enter key listener for the tags field
     var enterTags = new YAHOO.util.KeyListener(this.tagInputEl, { ctrl:false, keys:13 }, 
-                                         { fn:this.saveTags(), 
+                                         { fn:this.saveTags, 
                                          scope:this,
                                          correctScope:true } );
     enterTags.enable();
@@ -537,6 +537,8 @@ YabiWorkflow.prototype.reuse = function() {
  * save tags
  */
 YabiWorkflow.prototype.saveTags = function() {
+    this.tagInputEl.blur();
+
     if (YAHOO.lang.isUndefined(this.workflowId)) {
         this.tagsFinishedSaving();
         return;
