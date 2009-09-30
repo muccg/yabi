@@ -242,11 +242,11 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
  */
 YabiFileSelector.prototype.handleDrop = function(src, dest) {
     //send copy command
-    var baseURL = appURL + "ws/fs/cp";
+    var baseURL = appURL + "ws/fs/copy";
 
     //load json
     var jsUrl, jsCallback, jsTransaction;
-    jsUrl =  baseURL + "?src=" + escape(src) + "&dest=" + escape(dest);
+    jsUrl =  baseURL + "?src=" + escape(src) + "&dst=" + escape(dest);
     jsCallback = {
             success: this.copyResponse,
             failure: this.copyResponse,
