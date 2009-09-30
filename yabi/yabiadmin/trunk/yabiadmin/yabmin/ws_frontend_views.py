@@ -103,11 +103,10 @@ def ls(request):
 
 
 
-
+@validate_uri
 def put(request):
     """
-    This function will return a list of backends the user has access to IF the uri is empty. If the uri
-    is not empty then it will pass on the call to the backend to get a listing of that uri
+    Uploads a file to the supplied URI
     """
     logger.debug('')
     logger.debug(request)
