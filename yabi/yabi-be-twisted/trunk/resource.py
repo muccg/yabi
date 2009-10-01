@@ -39,7 +39,7 @@ from fs.connector.GridFTP import GridFTP
 from ex.resource import ExecResource
 
 # backends
-from ex.GlobusExec import GlobusExec
+from ex.connector.GlobusConnector import GlobusConnector
 
 VERSION = 0.1
 class BaseResource(resource.PostableResource):
@@ -69,7 +69,7 @@ class BaseResource(resource.PostableResource):
             
         # execution backends
         self.child_exec = ExecResource(
-                globus = GlobusExec()
+                globus = GlobusConnector()
             )
             
         self.child_yabiadmin = wsgi.WSGIResource(application)

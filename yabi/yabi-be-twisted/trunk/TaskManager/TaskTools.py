@@ -11,13 +11,14 @@ COPY_RETRY = 3
 COPY_PATH = "/fs/copy"
 RCOPY_PATH = "/fs/rcopy"
 LIST_PATH = "/fs/ls"
-EXEC_PATH = "/exec/%(backend)s/%(username)s"
+EXEC_PATH = "/exec/run"
 MKDIR_PATH = "/fs/mkdir"
 RM_PATH = "/fs/rm"
 
 WS_HOST, WS_PORT = "localhost",8000
 USER_AGENT = "YabiStackless/0.1"
 
+import urllib
 
 class CallbackHTTPClient(client.HTTPPageGetter):
     callback = None
@@ -40,10 +41,16 @@ class CallbackHTTPClient(client.HTTPPageGetter):
         return client.HTTPPageGetter.sendHeader(self,name,value)
     
     def rawDataReceived(self, data):
-        if self.callback:
+        if int(self.status) != 200:
+            # we got an error. TODO: something graceful here
+            print "ERROR. NON 200 CODE RETURNED FOR JOB EXEC STATUS"
+            print [self.status]
+            print [data]
+        elif self.callback:
             print "CALLING CALLBACK",self.callback
             # hook in here to process chunked updates
             lines=data.split("\r\n")
+            print "LINES",[lines]
             chunk_size = int(lines[0].split(';')[0],16)
             chunk = lines[1]
             
@@ -79,12 +86,16 @@ class CallbackHTTPClientFactory(client.HTTPClientFactory):
 class GetFailure(Exception):
     pass
 
-def Get(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory):
+def Get(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory, **kws):
     """Stackless integrated twisted webclient"""
+    getdata=urllib.urlencode(kws)
+    print "GETDATA:",getdata,"PATH:",path
+    
     factory = factory_class(
-        "http://%s:%d%s"%(host,port,path),
+        "http://%s:%d%s"%(host,port,path+"?"+getdata),
         agent = USER_AGENT
         )
+    factory.noisy = False
     
     get_complete = [False]
     get_failed = [False]
@@ -93,7 +104,7 @@ def Get(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory
     def _doFailure(data):
         print "Failed:",factory,":",type(data),data.__class__
         print data
-        get_failed[0] = "Copy failed"
+        get_failed[0] = "GET %s?%s failed"%path,getdata
     
     def _doSuccess(data):
         print "success"
@@ -112,7 +123,6 @@ def Get(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory
     
     return get_complete[0]
 
-import urllib
 def Post(path,**kws):
     """Stackless integrated twisted webclient"""
     if 'host' in kws:
@@ -163,13 +173,15 @@ def Post(path,**kws):
                 },
             )
         
+    factory.noisy = False
+        
     get_complete = [False]
     get_failed = [False]
     
     # now if the get fails for some reason. deal with it
     def _doFailure(data):
         print "Post Failed:",factory,":",type(data),data.__class__
-        get_failed[0] = "Copy failed... "+data.value.response
+        get_failed[0] = "POST failed... "+data.value.response
     
     def _doSuccess(data):
         print "Post success"
@@ -200,11 +212,11 @@ def Copy(src,dst,retry=COPY_RETRY):
     print "Copying %s to %s"%(src,dst)
     for num in range(retry):
         try:
-            Post(COPY_PATH,src=src,dst=dst)
+            Get(COPY_PATH,src=src,dst=dst)
             # success!
             return True
         except GetFailure, err:
-            print "Copy failed with error:",err
+            print "Post failed with error:",err
             Sleep(5.0)
     raise err
     
@@ -225,10 +237,10 @@ def List(path,recurse=False):
     return json.loads(data)
 
 def Mkdir(path):
-    return Post(MKDIR_PATH,dir=path)
+    return Get(MKDIR_PATH,uri=path)
 
 def Rm(path, recurse=False):
-    return Post(RM_PATH,dir=path,recurse=recurse)
+    return Get(RM_PATH,dir=path,recurse=recurse)
 
 def Log(logpath,message):
     """Report an error to the webservice"""
@@ -240,10 +252,17 @@ def Status(statuspath, message):
     print "Reporting status to %s"%(statuspath)
     Post(statuspath, status=message)              # error exception should bubble up and be caught
     
-def Exec(backend, username, command, callbackfunc=None, **kwargs):
+def Exec(backend, command, callbackfunc=None, **kwargs):
     # setup the status callback
-    Post(EXEC_PATH%{'backend':backend, 'username':username}, command=command, datacallback=callbackfunc, **kwargs )
+    print "backend:",[backend]
+    print "command:",[command]
+    print "callbackfunc:",[callbackfunc]
+    print "kwargs:",kwargs
     
-def UserCreds(username,backend):
+    kwargs['uri']=backend
+    
+    Post(EXEC_PATH, command=command, datacallback=callbackfunc, **kwargs )
+    
+def UserCreds(scheme,username,hostname):
     """Get a users credentials"""
-    return json.loads(Get(str('/yabiadmin/ws/credential/%s/%s/'%(username,backend))))
+    return json.loads(Get(str('/yabiadmin/ws/credential/%s/%s/%s/'%(scheme,username,hostname))))

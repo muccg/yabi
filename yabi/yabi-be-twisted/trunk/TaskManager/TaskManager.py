@@ -6,6 +6,8 @@ import weakref
 import random
 import os
 
+from utils.parsers import parse_url
+
 from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Mkdir, Rm, List, UserCreds, GetFailure
 
 class TaskManager(object):
@@ -16,26 +18,13 @@ class TaskManager(object):
     JOBLESS_PAUSE = 5.0                 # wait this long when theres no more jobs, to try to get another job
     JOB_PAUSE = 0.0                     # wait this long when you successfully got a job, to get the next job
     
-    WORKING_DIR_CHARS="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789"
-    WORKING_DIR_LEN = 16                # length of filename for working directory
-    
     def __init__(self):
         self.pausechannel = stackless.channel()
     
         self._tasks=weakref.WeakKeyDictionary()                  # keys are weakrefs. values are remote working directory
     
-    def make_unique_name(self, prefix="work-",suffix=""):
-        """make a unique name for the working directory"""
-        makename = lambda: prefix+"".join([random.choice(self.WORKING_DIR_CHARS) for num in range(self.WORKING_DIR_LEN)])+suffix
-        
-        name = makename()
-        while name in self._tasks.values():
-            name = makename()
-            
-        return name
-    
     def start(self):
-        """Begin the task manager by going and getting a task"""
+        """Begin the task manager tasklet. This tasklet continually pops tasks from yabiadmin and sets them up for running"""
         self.runner_thread = stackless.tasklet(self.runner)
         self.runner_thread.setup()
         self.runner_thread.run()
@@ -58,6 +47,7 @@ class TaskManager(object):
         tasklet.setup(taskdescription)
         tasklet.run()
         
+        # mark in the weakrefdict that this tasklet exists
         self._tasks[tasklet] = None
         
         # task successfully started. Lets try and start anotherone.
@@ -66,23 +56,25 @@ class TaskManager(object):
          
     def get_next_task(self):
         host,port = "localhost",8000
-        useragent = "YabiFS/0.1"
+        useragent = "YabiExec/0.1"
         
         factory = client.HTTPClientFactory(
             self.TASK_URL,
             agent = useragent
             )
+        factory.noisy = False
         reactor.connectTCP(host, port, factory)
         
         # now if the page fails for some reason. deal with it
         def _doFailure(data):
-            print "No more jobs. Sleeping for",self.JOBLESS_PAUSE
+            #print "No more jobs. Sleeping for",self.JOBLESS_PAUSE
             # no more tasks. we should wait for the next task.
             self.pausechannel.send(self.JOBLESS_PAUSE)
             
         return factory.deferred.addCallback(self.start_task).addErrback(_doFailure)
         
     def task(self,task, taskrunner=None):
+        """Entry point for Task tasklet"""
         taskid = task['taskid']
         if not taskrunner:
             taskrunner=self.task_mainline
@@ -113,48 +105,53 @@ class TaskManager(object):
         
         status("stagein")
         for copy in task['stagein']:
-            src_url = "%s/%s%s"%(copy['srcbackend'],task['yabiusername'],copy['srcpath'])
-            dst_url = "%s/%s%s"%(copy['dstbackend'],task['yabiusername'],copy['dstpath'])
-            log("Copying %s to %s..."%(src_url,dst_url))
+            print "COPY:",copy
+            #src_url = "%s/%s%s"%(copy['srcbackend'],task['yabiusername'],copy['srcpath'])
+            #dst_url = "%s/%s%s"%(copy['dstbackend'],task['yabiusername'],copy['dstpath'])
+            
+            src = copy['src']
+            dst = copy['dst']
+            
+            log("Copying %s to %s..."%(src,dst))
             try:
-                Copy(src_url,dst_url)
-                log("Copying %s to %s Success"%(src_url,dst_url))
+                Copy(src,dst)
+                log("Copying %s to %s Success"%(src,dst))
             except GetFailure, error:
                 # error copying!
-                print "TASK[%s]: Copy %s to %s Error!"%(taskid,src_url,dst_url)
+                print "TASK[%s]: Copy %s to %s Error!"%(taskid,src,dst)
                 status("error")
-                log("Copying %s to %s failed: %s"%(src_url,dst_url, error))
+                log("Copying %s to %s failed: %s"%(src,dst, error))
                 return              # finish task
            
-            print "TASK[%s]: Copy %s to %s Success!"%(taskid,src_url,dst_url)
+            print "TASK[%s]: Copy %s to %s Success!"%(taskid,src,dst)
         
         # get our credential working directory. We lookup the execution backends auth proxy cache, and get the users home directory from that
         # this comes from their credentials.
-        usercreds = UserCreds(task['yabiusername'],task['exec']['backend'])
-        homedir = usercreds['homedir']
+        
+        scheme, address = parse_url(task['exec']['backend'])
+        usercreds = UserCreds(scheme, address.username, address.hostname)
+        #homedir = usercreds['homedir']
+        workingdir = address.path
+        
+        print "USERCREDS",usercreds
                 
         # make our working directory
         status("mkdir")
-        dirname = self.make_unique_name()
-        fulldirname = os.path.join(homedir,dirname)
-        print "Making directory",fulldirname
-        self._tasks[stackless.getcurrent()]=dirname
+        
+        fsscheme, fsaddress = parse_url(task['exec']['fsbackend'])
+        mkuri = fsscheme+"://"+fsaddress.username+"@"+fsaddress.hostname+workingdir
+        
+        print "Making directory",mkuri
+        self._tasks[stackless.getcurrent()]=workingdir
         try:
-            Mkdir(fulldirname)
+            Mkdir(mkuri)
         except GetFailure, error:
             # error making directory
             print "TASK[%s]:Mkdir failed!"%(taskid)
             status("error")
-            log("Making working directory of %s failed: %s"%(dirname,error))
+            log("Making working directory of %s failed: %s"%(mkuri,error))
             return 
         
-        # we need to turn our backend path into a full remote fs path
-        # get our backend
-        from FSCache import FSCache
-        fs_bend_name = fulldirname.split("/")[0]
-        fs_bend = FSCache[fs_bend_name]
-        bend_path = fs_bend.PrefixRemotePath(fulldirname)
-         
         # now we are going to run the job
         status("exec")
         
@@ -170,7 +167,7 @@ class TaskManager(object):
         log("Submitting to %s command: %s"%(task['exec']['backend'],task['exec']['command']))
         
         try:
-            Exec(task['exec']['backend'], task['yabiusername'], command=task['exec']['command'], directory=bend_path, stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change)                # this blocks untill the command is complete.
+            Exec(task['exec']['backend'], command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change)                # this blocks untill the command is complete.
             log("Execution finished")
         except GetFailure, error:
             # error executing

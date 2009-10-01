@@ -1,0 +1,99 @@
+from ExecConnector import ExecConnector
+
+import shlex
+import globus
+import stackless
+import tempfile
+
+from utils.stacklesstools import sleep
+
+# for Job status updates, poll this often
+def JobPollGeneratorDefault():
+    """Generator for these MUST be infinite. Cause you don't know how long the job will take. Default is to hit it pretty hard."""
+    delay = 1.0
+    while delay<10.0:
+        yield delay
+        delay *= 1.05           # increase by 5%
+    
+    while True:
+        yield 10.0
+
+class GlobusConnector(ExecConnector, globus.Auth):
+    def __init__(self):
+        self.CreateAuthProxy()
+    
+    def run(self, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single"):
+        # use shlex to parse the command into executable and arguments
+        lexer = shlex.shlex(command, posix=True)
+        lexer.wordchars += r"-.:;/"
+        arguments = list(lexer)
+        
+        rsl = globus.ConstructRSL(
+            command = arguments[0],
+            args = arguments[1:],
+            directory = working,
+            stdout = stdout,
+            stderr = stderr,
+            address = host,
+            maxWallTime = maxWallTime,
+            maxMemory = maxMemory,
+            cpus = cpus,
+            queue = queue,
+            jobType = jobType
+        )
+        
+        # store the rsl in a file
+        rslfile = globus.writersltofile(rsl)
+        
+        # first we need to auth the proxy
+        self.EnsureAuthed(scheme,username,host)
+        
+        # now submit the job via globus
+        usercert = self.GetAuthProxy(host).ProxyFile(username)
+        
+        # TODO: what if our proxy has expired in the meantime? (rare, but possible)
+        processprotocol = globus.Run.run( usercert, rslfile, host)
+        
+        while not processprotocol.isDone():
+            stackless.schedule()
+            
+        assert processprotocol.exitcode==0
+        
+        # now we want to continually check the status of the job
+        job_id = processprotocol.job_id
+        epr = processprotocol.epr
+        
+        # save the epr to a tempfile so we can use it again and again
+        temp = tempfile.NamedTemporaryFile(suffix=".epr",delete=False)
+        temp.write(epr)
+        temp.close()
+            
+        eprfile = temp.name
+            
+        state = None
+        delay = JobPollGeneratorDefault()
+        while state!="Done":
+            # pause
+            sleep(delay.next())
+            
+            self.EnsureAuthed(scheme,username,host)
+            processprotocol = globus.Run.status( usercert, eprfile, host )
+            
+            while not processprotocol.isDone():
+                stackless.schedule()
+                
+            if processprotocol.exitcode:
+                # error occured running statecheck... sometimes globus just fails cause its a fucktard.
+                print "Job status check for %s Failed (%d) - %s / %s\n"%(job_id,processprotocol.exitcode,processprotocol.out,processprotocol.err)
+                channel.write("Failed - %s\n"%(processprotocol.err))
+                channel.finish()
+                return
+            
+            newstate = processprotocol.jobstate
+            if state!=newstate:
+                state=newstate
+                channel.write("%s\n"%state)
+            
+            
+        channel.finish()
+       
