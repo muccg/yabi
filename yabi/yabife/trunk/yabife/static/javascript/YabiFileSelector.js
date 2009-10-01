@@ -376,7 +376,7 @@ YabiFileSelector.prototype.selectFile = function(file) {
  * download file via web service call
  */
 YabiFileSelector.prototype.downloadFile = function(file) {
-    window.location = appURL + "ws/fs/get?uri=" + file.toString();
+    window.location = appURL + "ws/fs/get?uri=" + escape(file.toString());
 };
 
 /**
