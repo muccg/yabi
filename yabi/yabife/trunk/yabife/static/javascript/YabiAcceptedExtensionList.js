@@ -15,26 +15,26 @@ function YabiAcceptedExtensionList(obj) {
     this.acceptedExtensions = [];
     this.acceptedExtensionEls = [];
         
-    if (!YAHOO.lang.isUndefined(obj) && obj.hasOwnProperty("acceptedExtension")) {
+    if (!YAHOO.lang.isUndefined(obj)) {
         this.containerEl.appendChild(document.createTextNode(" accepts "));
     
-        if (YAHOO.lang.isArray(obj.acceptedExtension)) {
-            for (index in this.payload.acceptedExtension) {
+        if (YAHOO.lang.isArray(obj)) {
+            for (index in this.payload) {
                 acceptedExtensionEl = document.createElement('span');
                 acceptedExtensionEl.setAttribute("class", "acceptedExtension");
-                acceptedExtensionEl.appendChild(document.createTextNode(obj.acceptedExtension[index]));
+                acceptedExtensionEl.appendChild(document.createTextNode(obj[index]));
                 this.containerEl.appendChild(acceptedExtensionEl);
                 
                 //space to allow line wrap
                 this.containerEl.appendChild(document.createTextNode(" "));
                 
                 this.acceptedExtensionEls.push(acceptedExtensionEl);
-                this.acceptedExtensions.push(obj.acceptedExtension[index]);
+                this.acceptedExtensions.push(obj[index]);
             }
         } else {
             acceptedExtensionEl = document.createElement('span');
             acceptedExtensionEl.setAttribute("class", "acceptedExtension");
-            acceptedExtensionEl.appendChild(document.createTextNode(obj.acceptedExtension));
+            acceptedExtensionEl.appendChild(document.createTextNode(obj));
             this.containerEl.appendChild(acceptedExtensionEl);
             
             this.acceptedExtensionEls.push(acceptedExtensionEl);
