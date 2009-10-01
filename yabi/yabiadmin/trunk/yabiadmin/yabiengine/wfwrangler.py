@@ -184,19 +184,25 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
     param_scheme, param_uriparts = uriparse(param)
 #    backend_scheme, backend_uriparts = uriparse(backendcredential.homedir)
     root, ext = splitext(file)
-
+    
     # only make tasks for expected filetypes
     if ext.strip('.') in job.extensions:
-        taskcommand = job.command.replace("%", "%s%s%s" % (exec_be.path, exec_bc.homedir,file))
-        logger.info('Creating task for job id: %s using command: %s' % (job.id, taskcommand))
-        t = Task(job=job, command=taskcommand, status="ready")
+
+        t = Task(job=job, status=settings.STATUS['ready'])
+        t.save() # so task has id
+        logger.debug('saved========================================')
+        t.working_dir = create_uniq_dirname(job, t)
+        t.command = job.command.replace("%", "%s%s%s%s" % (exec_be.path, exec_bc.homedir, t.working_dir, file))
         t.save()
 
+        logger.info('Creating task for job id: %s using command: %s' % (job.id, t.command))
 
         s = StageIn(task=t,
                     src="%s%s" % (param, file),
-                    dst="%s%s" % (fs_bc.homedir_uri, file),
+                    dst="%s%s%s" % (fs_bc.homedir_uri, t.working_dir, file),
                     order=0)
         s.save()
 
-
+def create_uniq_dirname(job, task):
+    logger.debug('')
+    return 'work-job%d-task%d/' % (job.id, task.id)

@@ -70,6 +70,8 @@ class Task(models.Model):
     fs_backend = models.CharField(max_length=256, blank=True)
     error_msg = models.CharField(max_length=1000, null=True, blank=True)
     status = models.CharField(max_length=64, blank=True)
+    working_dir = models.CharField(max_length=256, null=True, blank=True)
+
     
     def json(self):
 
