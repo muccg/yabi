@@ -100,9 +100,10 @@ class LocalFilesystem(FSConnector.FSConnector):
             timeproc = lambda timestamp: time.strftime("%b %d %H:%M",time.localtime(timestamp))
             
             #add details for '.' and '..'
-            for fname in [".",".."]:
-                pathname=os.path.join(top,fname)
-                storage['directories'].append( (fname,os.stat(pathname)[stat.ST_SIZE],timeproc(os.stat(pathname)[stat.ST_MTIME])) )
+            if not culldots:
+                for fname in [".",".."]:
+                    pathname=os.path.join(top,fname)
+                    storage['directories'].append( (fname,os.stat(pathname)[stat.ST_SIZE],timeproc(os.stat(pathname)[stat.ST_MTIME])) )
             
             for f in os.listdir(top):
                 pathname = os.path.join(top, f)

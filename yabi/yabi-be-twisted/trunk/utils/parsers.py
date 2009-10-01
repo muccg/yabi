@@ -62,7 +62,7 @@ def parse_ls_directories(data, culldots=True):
                 filelisting, dirlisting = [], []
 
             if line[0][-1]=="/":
-                if not culldots and (line[0][:-1]!="." and line[0][:-1]!=".."):
+                if not culldots or (line[0][:-1]!="." and line[0][:-1]!=".."):
                     dirlisting.append((line[0][:-1],line[1],line[2]))                #line[0][:-1] removes the trailing /
             else:
                 filelisting.append(line)
