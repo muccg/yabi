@@ -17,7 +17,7 @@ function YabiAcceptedExtensionList(obj) {
         
     if (!YAHOO.lang.isUndefined(obj)) {
         if (YAHOO.lang.isArray(obj)) {
-            this.containerEl.appendChild(document.createTextNode(" accepts "));
+//            this.containerEl.appendChild(document.createTextNode(" accepts "));
 
             for (index in this.payload) {
                 acceptedExtensionEl = document.createElement('span');
@@ -32,7 +32,7 @@ function YabiAcceptedExtensionList(obj) {
                 this.acceptedExtensions.push(obj[index]);
             }
         } else {
-            this.containerEl.appendChild(document.createTextNode(" accepts "));
+//            this.containerEl.appendChild(document.createTextNode(" accepts "));
 
             acceptedExtensionEl = document.createElement('span');
             acceptedExtensionEl.setAttribute("class", "acceptedExtension");
