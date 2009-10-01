@@ -60,6 +60,8 @@ YABIBACKEND_MKDIR = '/fs/mkdir'
 YABIBACKEND_RM = '/fs/rm'
 YABIBACKEND_LIST = '/fs/ls'
 YABIBACKEND_PUT = '/fs/put'
+YABIBACKEND_GET = '/fs/get'
+
 
 # make sure that this is a tuple of tuples
 ADMINS = (

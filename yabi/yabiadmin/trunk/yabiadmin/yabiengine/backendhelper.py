@@ -7,6 +7,9 @@ from yabiadmin.yabiengine.urihelper import uri_get_pseudopath, uriparse, get_bac
 from yabiadmin.yabmin.models import Backend, BackendCredential
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.servers.basehttp import FileWrapper
+
+
 
 import logging
 import yabilogging
@@ -27,6 +30,18 @@ def get_file_list(uri):
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
         conn.request('GET', resource)
         r = conn.getresponse()
+
+        logger.info("Status of return from yabi backend is: %s" % r.status)
+        
+        file_list = []
+        if r.status == 200:
+
+            results = json.loads(r.read())
+            for key in results.keys():
+                for file in results[key]["files"]:
+                    file_list.append(file)
+
+        return file_list
  
     except socket.error, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
@@ -34,18 +49,6 @@ def get_file_list(uri):
     except httplib.CannotSendRequest, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
         raise
-
-    logger.info("Status of return from yabi backend is: %s" % r.status)
-
-    file_list = []
-    if r.status == 200:
-
-        results = json.loads(r.read())
-        for key in results.keys():
-            for file in results[key]["files"]:
-                file_list.append(file)
-
-    return file_list
 
 
 def get_listing(uri):
@@ -145,5 +148,56 @@ def put_file(uri, fh):
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
         raise
 
+
+def get_file(uri):
+    """
+    Return a file at given uri
+    """
+    logger.debug('')
+    logger.info("Getting: %s" % uri)
+
+    try:
+        resource = "%s?uri=%s" % (settings.YABIBACKEND_GET, uri)
+        logger.debug('Resource: %s' % resource)
+        conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
+        logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
+        conn.request('GET', resource)
+        r = conn.getresponse()
+
+        logger.info("Status of return from yabi backend is: %s" % r.status)
+
+        return FileWrapper(r, blksize=1024**2)
+ 
+    except socket.error, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
+        raise
+    except httplib.CannotSendRequest, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
+        raise
+
+
+
+
+
+## this is not used, was from here
+##    http://metalinguist.wordpress.com/2008/02/12/django-file-and-stream-serving-performance-gotcha/
+## but there is a build in FileWrapper object here django.core.servers.basehttp import FileWrapper
+## that we use instead
+## remove eventually, left here for reference for now
+
+## class FileIterWrapper(object):
+##     def __init__(self, flo, chunk_size = 1024**2):
+##         self.flo = flo
+##         self.chunk_size = chunk_size
+
+##     def next(self):
+##         data = self.flo.read(self.chunk_size)
+##         if data:
+##             return data
+##         else:
+##             raise StopIteration
+
+##     def __iter__(self):
+##         return self
 
 

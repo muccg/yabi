@@ -8,9 +8,10 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from yabiadmin.yabiengine import wfbuilder
-from yabiadmin.yabiengine import backendhelper
+from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file
 from yabiadmin.security import validate_user, validate_uri
 from yabiadmin.utils import json_error
+import mimetypes
 
 
 from yabmin.file_upload import *
@@ -93,14 +94,62 @@ def ls(request):
 
     try:
         if request.GET['uri']:
-            filelisting = backendhelper.get_listing(request.GET['uri'])
+            filelisting = get_listing(request.GET['uri'])
         else:
-            filelisting = backendhelper.get_backend_list(request.GET['yabiusername'])
+            filelisting = get_backend_list(request.GET['yabiusername'])
 
         return HttpResponse(filelisting)
     except Exception, e:
         return HttpResponseNotFound(json_error(e))
 
+
+
+
+#@validate_uri
+def get(request):
+    """
+    Returns the requested uri. get_file returns an httplib response wrapped in a FileIterWrapper. This can then be read
+    by HttpResponse
+    """
+    logger.debug('')
+
+    try:
+        uri = request.GET['uri']
+
+        try:
+            filename = uri.rsplit('/', 1)[1]
+        except IndexError, e:
+            logger.critical('Unable to get filename from uri: %s' % uri)
+            filename = 'default.txt'
+
+        logger.debug(uri)
+        logger.debug(filename)
+
+        response = HttpResponse(get_file(uri))
+
+        type, encoding = mimetypes.guess_type(filename)
+        if type is not None:
+            response['content-type'] = type
+
+        if encoding is not None:
+            response['content-encoding'] = encoding
+
+        response['content-disposition'] = 'attachment; filename=%s' % filename
+
+        return response
+
+    
+    #return HttpResponse(get_file(request.GET['uri']))
+#        return HttpResponse(open('/export/home/tech/macgregor/svn-devel/ccg/yabi/yabi-be-twisted/trunk/yabiadmin/alice.txt'))
+##         response = HttpResponse(FileIterWrapper(open('/export/home/tech/macgregor/svn-devel/ccg/yabi/yabi-be-twisted/trunk/yabiadmin/alice.txt')))
+##         response['Content-Disposition'] = 'attachment; filename=foo.xls'
+##         return response
+
+
+#        return HttpResponse(FileIterWrapper(open('/export/home/tech/macgregor/svn-devel/ccg/yabi/yabi-be-twisted/trunk/yabiadmin/alice.txt')))
+
+    except Exception, e:
+        return HttpResponseNotFound(json_error(e))
 
 
 @validate_uri
