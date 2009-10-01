@@ -12,7 +12,9 @@ from django.utils import webhelpers
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate
 from django import forms
+from django.core.servers.basehttp import FileWrapper
 import copy
+
 
 import logging
 import yabilogging
@@ -88,7 +90,15 @@ def proxy(request, url, server, base):
         conn.request(request.method, resource, data, headers)
         r = conn.getresponse()
 
-    return HttpResponse(r.read(),status=int(r.status))
+    response = HttpResponse(r.read(), status=int(r.status))
+
+    if r.getheader('content-disposition', None):
+        response['content-disposition'] = r.getheader('content-disposition')
+
+    if r.getheader('content-type', None):
+        response['content-type'] = r.getheader('content-type')
+
+    return response
 
 
 def adminproxy(request, url):
