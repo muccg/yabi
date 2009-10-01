@@ -17,10 +17,9 @@ class TestYabmin(unittest.TestCase):
         # manual says don't do this, but we are only testing right?
         settings.AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
         settings.DEBUG = True
-        YABIBACKEND_SERVER = 'faramir.localdomain:8100'
+        settings.YABIBACKEND_SERVER = 'faramir.localdomain:8000'
         settings.YABISTORE_SERVER = "127.0.0.1:8001"
         settings.YABISTORE_BASE = ""
-
 
         
         user, created = User.objects.get_or_create(name="testuser")
@@ -181,13 +180,15 @@ class TestYabmin(unittest.TestCase):
         self.assertTrue(len(jobs),3)
 
         j1 = jobs[0]
-        self.assertTrue(j1.exec_backend,'globus://xe-ng2.ivec.org/scratch')        
-        self.assertTrue(j1.fs_backend,'gridftp://xe-ng2.ivec.org/scratch')        
-        self.assertTrue(j1.stageout,'gridftp://andrew@xe-ng2.ivec.org/bi01/amacgregor/1/1/')        
+
+
+        self.assertTrue(j1.exec_backend,'null://andrew@localhost.localdomain/andrew/')
+        self.assertTrue(j1.fs_backend,'null://andrew@localhost.localdomain/andrew/')
+        self.assertEquals(j1.stageout, None)
         self.assertTrue(j1.status,'pending')
-        self.assertTrue(j1.command,'/scratch/bi01/amacgregor/bin/ccg-fastasplitter -i %')
-        self.assertTrue(j1.commandparams,"[u'file://localhost.localdomain/input/1003_5915.fa']")
-        self.assertTrue(j1.input_filetype_extensions,"[u'fa', u'fasta', u'faa', u'fna']")
+        self.assertTrue(j1.command,'echo %')
+        self.assertTrue(j1.commandparams,"[u'']")
+        self.assertTrue(j1.input_filetype_extensions,"[u'*']")
 
         j2 = jobs[1]
         self.assertTrue(j2.exec_backend,'globus://xe-ng2.ivec.org/scratch')        
@@ -216,7 +217,7 @@ class TestYabmin(unittest.TestCase):
 
     def testLs(self):
         c = Client()
-        response = c.get('/ws/fs/list?yabiusername=andrew&uri=gridftp://amacgregor@xe-ng2.ivec.org/scratch/bi01/amacgregor/')    
+        response = c.get('/ws/fs/list?yabiusername=andrew&uri=gridftp://amacgregor@xe-ng2.ivec.org/scratch/bi01/amacgregor/')
         self.assertEqual(response.status_code, 200)
 
 

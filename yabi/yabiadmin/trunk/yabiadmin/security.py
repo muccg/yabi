@@ -4,9 +4,9 @@ from urlparse import urlparse
 from yabiadmin.utils import json_error
 from yabiadmin.yabmin.models import BackendCredential
 
-import logging
-import yabilogging
-logger = logging.getLogger('yabiadmin')
+##import logging
+##import yabilogging
+##logger = logging.getLogger('yabiadmin')
 
 def validate_user(f):
     """
@@ -44,7 +44,6 @@ def validate_uri(f):
     2. The start of the uri's path matches the path allowed for the user based on backend.path and backendcredential.homedir
     """
     def check_uri(request, *args, **kwargs):
-        logger.debug('')
 
         uri = None
         yabiusername = None
