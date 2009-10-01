@@ -667,7 +667,7 @@ display:inline;
 .jobParam {
     position:relative;
     margin-bottom:8px;
-    height:1.2em;
+    min-height:1.2em;
 }
 
 .jobParam label {
@@ -728,6 +728,8 @@ display:inline;
 .acceptedExtensionList {
 	color: #999;
 	padding: 2px;
+    position:absolute;
+    left:286px;
 }
 
 .invalidAcceptedExtensionList {
