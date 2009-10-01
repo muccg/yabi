@@ -8,7 +8,7 @@ function YabiAcceptedExtensionList(obj) {
     this.payload = obj;
     this.allowsBatching = false;
 
-    this.containerEl = document.createElement('span');
+    this.containerEl = document.createElement('div');
     this.containerEl.setAttribute("class", "acceptedExtensionList");
 
     var acceptedExtensionEl;

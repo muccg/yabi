@@ -666,7 +666,8 @@ display:inline;
 
 .jobParam {
     position:relative;
-    margin-bottom:8px;
+    padding-bottom:8px;
+    padding-top:2px;
     min-height:1.2em;
 }
 
@@ -674,7 +675,7 @@ display:inline;
     display:block;
     width:90px;
     position:absolute;
-    top:0px;
+    top:2px;
     left:0px;
     overflow:hidden;
     text-overflow:ellipsis;
@@ -691,12 +692,43 @@ display:inline;
 	font-size: 90%;
 	width: 95%;
 	line-height: 1.3em;
+    position:relative;
+}
+
+.jobInputs .acceptedExtensionList {
+    margin-left:50px;
+}
+
+.jobInputs .invalidAcceptedExtensionList {
+    margin-left:50px;
+}
+
+.jobInputs label {
+    position:absolute;
+    left:0px;
+    top:7px;
 }
 
 .jobOutputs {
 	padding: 3px;
 	font-size: 90%;
+    position:relative;
 }
+
+.jobOutputs label {
+    position:absolute;
+    left:0px;
+    top:7px;
+}
+
+.jobOutputs .acceptedExtensionList {
+    margin-left:50px;
+}
+
+.jobOutputs .invalidAcceptedExtensionList {
+    margin-left:50px;
+}
+
 
 .validInput {
 	background: transparent;
@@ -733,8 +765,9 @@ display:inline;
 }
 
 .jobParam .acceptedExtensionList {
-    position:absolute;
-    left:286px;
+    margin-left:286px;
+    overflow:hidden;
+    text-overflow:ellipsis;
 }
 
 .invalidAcceptedExtensionList {

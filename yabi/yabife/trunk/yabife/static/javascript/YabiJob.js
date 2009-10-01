@@ -478,10 +478,12 @@ YabiJob.prototype.solidify = function(obj) {
     this.displayName = this.payload.tool.display_name;
     
     this.inputsEl.removeChild(this.inputsEl.childNodes[0]);
-    this.inputsEl.appendChild(document.createTextNode("accepts: "));
+    var label = document.createElement("label");
+    label.appendChild(document.createTextNode("accepts: "));
+    this.inputsEl.appendChild(label);
     
     //input filetypes
-    this.acceptedExtensionEl = document.createElement("span");
+    this.acceptedExtensionEl = document.createElement("div");
     this.acceptedExtensionEl.setAttribute("class", "acceptedExtensionList");
     this.inputsEl.appendChild(this.acceptedExtensionEl);
     
@@ -502,8 +504,12 @@ YabiJob.prototype.solidify = function(obj) {
     
     //output filetypes
     this.outputsEl.removeChild(this.outputsEl.childNodes[0]);
-    this.outputsEl.appendChild(document.createTextNode("outputs: "));
-    this.outputExtensionEl = document.createElement("span");
+    label = document.createElement("label");
+    label.appendChild(document.createTextNode("outputs: "));
+    this.outputsEl.appendChild(label);
+
+
+    this.outputExtensionEl = document.createElement("div");
     this.outputExtensionEl.setAttribute("class", "acceptedExtensionList");
     this.outputsEl.appendChild(this.outputExtensionEl);
 
