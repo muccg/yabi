@@ -192,7 +192,11 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
     
     this.acceptedExtensionList = new YabiAcceptedExtensionList(ael);
     this.acceptedExtensionList.allowsBatching = this.allowsBatching;
-    this.containerEl.appendChild(this.acceptedExtensionList.containerEl);
+    
+    if (this.renderMode != "fileselector") {
+        //dont show accepted extensions for a file selector (looks funny)
+        this.containerEl.appendChild(this.acceptedExtensionList.containerEl);
+    }
     
     //attach key events for changes/keypresses
     YAHOO.util.Event.addListener(this.inputEl, "blur", this.userValidate, this);
