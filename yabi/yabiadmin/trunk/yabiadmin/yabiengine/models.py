@@ -8,7 +8,7 @@ from django.db.models.signals import post_save
 from django.utils.webhelpers import url
 import httplib
 from urllib import urlencode
-from yabiengine import wfwrangler
+#from yabiengine import wfwrangler
 
 
 import logging
@@ -196,7 +196,7 @@ def task_save(sender, **kwargs):
     if not incomplete_tasks:
         t.job.status = settings.STATUS['complete']
         t.job.save()
-        wfwrangler.walk(t.workflow)
+        #wfwrangler.walk(t.workflow)
 
     # check for error status
     # set the job status to error
