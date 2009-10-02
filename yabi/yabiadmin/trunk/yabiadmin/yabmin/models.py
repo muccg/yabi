@@ -290,7 +290,7 @@ class BackendCredential(Base):
         output = {
             'name':self.backend.name,
             'scheme':self.backend.scheme,
-            'homedir':self.homedir,
+            'homedir':self.homedir_uri,
             'credential':self.credential.description,
             'username':self.credential.username,
             'password':self.credential.password,
