@@ -83,8 +83,8 @@ class Task(models.Model):
             "stagein":[],
             "exec":{
             "command":self.command,
-            "backend":self.job.exec_backend,
-            "fsbackend":self.job.fs_backend,
+            "backend": "%s%s" % (self.job.exec_backend, self.working_dir),
+            "fsbackend": "%s%s" % (self.job.fs_backend, self.working_dir),,
             },
             "stageout":self.job.stageout
             }
