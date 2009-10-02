@@ -213,7 +213,8 @@ STATIC_SERVER_PATH = os.path.join(PROJECT_DIRECTORY,"static")
 STATUS = {'pending':'pending',
           'ready':'ready',
           'requested':'requested',
-          'complete':'complete'
+          'complete':'complete',
+          'error':'error'
           }
 
 ##

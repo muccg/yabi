@@ -184,5 +184,25 @@ def yabistore_storeworkflow(sender, **kwargs):
     logger.debug(r.read())
 
 
+def task_save(sender, **kwargs):
+
+    #Checks all the tasks are complete, if so, changes status on job
+    #and triggers the workflow walk
+    incomplete_tasks = Task.objects.filter(job=sender.job).exclude(status=settings.status['complete'])
+    if not incomplete_tasks:
+        sender.job.status = settings.status['complete']
+        sender.job.save()
+        wfwrangler.walk(sender.workflow)
+
+    # check for error status
+    # set the job status to error
+    error_tasks = Task.objects.filter(job=sender.job, status=settings.status['error'])
+    if error_tasks:
+        sender.job.status = settings.status['error']
+        sender.job.save()
+
+        
+
 # connect up django signals
 post_save.connect(yabistore_storeworkflow, sender=Workflow)
+post_save.connect(task_save, sender=Task)

@@ -66,11 +66,6 @@ def status(request, model, id):
             obj.status=status
             obj.save()
 
-            # trigger the workflow walk
-            # TODO we should use django signals to trigger workflow.walk on workflow.save()
-            if isinstance(obj, Job):
-                wfwrangler.walk(obj.workflow)
-
             #TODO return something sensible here
             return HttpResponse("Thanks!")
 
