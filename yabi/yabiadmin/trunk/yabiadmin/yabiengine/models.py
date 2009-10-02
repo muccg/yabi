@@ -8,6 +8,8 @@ from django.db.models.signals import post_save
 from django.utils.webhelpers import url
 import httplib
 from urllib import urlencode
+from yabiengine import wfwrangler
+
 
 import logging
 import yabilogging
