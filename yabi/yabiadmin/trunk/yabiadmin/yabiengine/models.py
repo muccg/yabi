@@ -156,57 +156,99 @@ class Syslog(models.Model):
 
 # TODO make this more robust.
 # add exceptions
-def yabistore_storeworkflow(sender, **kwargs):
+def yabistore_update(resource, data):
     logger.debug('')
-    wf = kwargs['instance']
-
-    if kwargs['created']:
-        resource = '%s/workflows/%s/' % (settings.YABISTORE_BASE,wf.user.name)
-    else:
-        resource = '%s/workflows/%s/%s' % (settings.YABISTORE_BASE, wf.user.name, wf.id)
-
-    data = {'json':wf.json,
-            'name':wf.name,
-            'status':wf.status
-            }
-
     data = urlencode(data)
     headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
-
-    logger.debug(resource)
-    logger.debug(data)
-
     conn = httplib.HTTPConnection(settings.YABISTORE_SERVER)
     conn.request('POST', resource, data, headers)
     r = conn.getresponse()
-
     logger.debug(r.status)
     logger.debug(r.read())
 
 
+def workflow_save(sender, **kwargs):
+    logger.debug('')
+    workflow = kwargs['instance']
+
+    try:
+        # update the yabistore
+        if kwargs['created']:
+            resource = '%s/workflows/%s/' % (settings.YABISTORE_BASE, workflow.user.name)
+        else:
+            resource = '%s/workflows/%s/%s' % (settings.YABISTORE_BASE, workflow.user.name, workflow.id)
+
+        data = {'json':workflow.json,
+                'name':workflow.name,
+                'status':workflow.status
+                }
+        yabistore_update(resource, data)
+
+    except Exception, e:
+        logger.critical(e)
+        raise
+
+
+def job_save(sender, **kwargs):
+    logger.debug('')
+    job = kwargs['instance']
+
+    try:
+        # update the yabistore
+        if kwargs['created']:
+            resource = '%s/jobs/%s/' % (settings.YABISTORE_BASE, job.workflow.user.name)
+        else:
+            resource = '%s/jobs/%s/%s' % (settings.YABISTORE_BASE, job.workflow.user.name, job.id)
+
+        data = {'status':t.status }
+        yabistore_update(resource, data)
+
+    except Exception, e:
+        logger.critical(e)
+        raise
+
+    
+
 def task_save(sender, **kwargs):
     logger.debug('')
-    t = kwargs['instance']
+    task = kwargs['instance']
 
-    #Checks all the tasks are complete, if so, changes status on job
-    #and triggers the workflow walk
-    incomplete_tasks = Task.objects.filter(job=t.job).exclude(status=settings.STATUS['complete'])
-    if not incomplete_tasks:
-        t.job.status = settings.STATUS['complete']
-        t.job.save()
-        wfwrangler.walk(t.job.workflow)
+    try:
+        # update the yabistore
+        if kwargs['created']:
+            resource = '%s/tasks/%s/' % (settings.YABISTORE_BASE,task.job.workflow.user.name)
+        else:
+            resource = '%s/tasks/%s/%s' % (settings.YABISTORE_BASE, task.job.workflow.user.name, task.id)
 
-    # check for error status
-    # set the job status to error
-    error_tasks = Task.objects.filter(job=t.job, status=settings.STATUS['error'])
-    if error_tasks:
-        t.job.status = settings.STATUS['error']
-        t.job.save()
+        data = {'error_msg':task.error_msg,
+                'status':task.status
+                }
+        yabistore_update(resource, data)
+
+        #Checks all the tasks are complete, if so, changes status on job
+        #and triggers the workflow walk
+        incomplete_tasks = Task.objects.filter(job=task.job).exclude(status=settings.STATUS['complete'])
+        if not incomplete_tasks:
+            task.job.status = settings.STATUS['complete']
+            task.job.save()
+            wfwrangler.walk(task.job.workflow)
+
+        # check for error status
+        # set the job status to error
+        error_tasks = Task.objects.filter(job=task.job, status=settings.STATUS['error'])
+        if error_tasks:
+            task.job.status = settings.STATUS['error']
+            task.job.save()
+
+    except Exception, e:
+        logger.critical(e)
+        raise
+
 
         
 
 # connect up django signals
-post_save.connect(yabistore_storeworkflow, sender=Workflow)
+post_save.connect(workflow_save, sender=Workflow)
 post_save.connect(task_save, sender=Task)
 
 
