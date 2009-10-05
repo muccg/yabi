@@ -25,17 +25,19 @@ class FileCopyResource(resource.PostableResource):
         self.fsresource = weakref.ref(fsresource)
         
     def http_POST(self,request):
+        print "Copy called with POST, not GET"
         return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "copy must be accessed via GET\n")
         
     def http_GET(self, request):
         # break our request path into parts
+        print "Copy",request,request.args
         if 'src' not in request.args or 'dst' not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "copy must specify source 'src' and destination 'dst'\n")
         
         src = request.args['src'][0]
         dst = request.args['dst'][0]
             
-        print "Copying from %s -> %s"%(src,dst)
+        #print "Copying from %s -> %s"%(src,dst)
         
         src_scheme, src_address = parse_url(src)
         dst_scheme, dst_address = parse_url(dst)
@@ -52,7 +54,7 @@ class FileCopyResource(resource.PostableResource):
         dbend = self.fsresource().GetBackend(dst_scheme)
         
         # copying from
-        print "Copying from",sbend,"to",dbend
+        #print "Copying from",sbend,"to",dbend
         
         # create our delay generator in case things go pear shape
         # TODO: actually use these things
@@ -62,12 +64,12 @@ class FileCopyResource(resource.PostableResource):
         src_retry_kws = sbend.NonFatalKeywords
         dst_retry_kws = dbend.NonFatalKeywords
         
-        print "src_hostname",src_hostname
-        print "src_username",src_username
-        print "src_path",src_path, src_filename
-        print "dst_hostname",dst_hostname
-        print "dst_username",dst_username
-        print "dst_path",dst_path, dst_filename
+        #print "src_hostname",src_hostname
+        #print "src_username",src_username
+        #print "src_path",src_path, src_filename
+        #print "dst_hostname",dst_hostname
+        #print "dst_username",dst_username
+        #print "dst_path",dst_path, dst_filename
         
         # if no dest filename is provided, use the src_filename
         dst_filename = src_filename if not len(dst_filename) else dst_filename
@@ -76,8 +78,8 @@ class FileCopyResource(resource.PostableResource):
             writeproto, fifo = dbend.GetWriteFifo(dst_hostname, dst_username, dst_path, dst_filename)
             readproto, fifo2 = sbend.GetReadFifo(src_hostname, src_username, src_path, src_filename, fifo)
             
-            print "READ:",readproto,fifo
-            print "WRITE:",writeproto,fifo2
+            #print "READ:",readproto,fifo
+            #print "WRITE:",writeproto,fifo2
             
             # wait for one to finish
             while not readproto.isDone() and not writeproto.isDone():
@@ -86,12 +88,19 @@ class FileCopyResource(resource.PostableResource):
             # if one died and not the other, then kill the non dead one
             if readproto.isDone() and readproto.exitcode!=0 and not writeproto.isDone():
                 # readproto failed. write proto is still running. Kill it
-                print "READ FAILED"
+                print "READ FAILED",readproto.exitcode,writeproto.exitcode
                 os.kill(writeproto.transport.pid, signal.SIGKILL)
             else:
                 # wait for write to finish
+                print "WFW",readproto.exitcode,writeproto.exitcode
                 while writeproto.exitcode == None:
                     stackless.schedule()
+                    
+                # did write succeed?
+                if writeproto.exitcode == 0:
+                    print "WFR",readproto.exitcode,writeproto.exitcode
+                    while readproto.exitcode == None:
+                        stackless.schedule()
             
             if readproto.exitcode==0 and writeproto.exitcode==0:
                 channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Copy OK\n"))
@@ -100,6 +109,7 @@ class FileCopyResource(resource.PostableResource):
                 wexit = "Killed" if writeproto.exitcode==None else str(writeproto.exitcode)
                 
                 msg = ("Copy failed:\n\nRead process: %s\n"+readproto.err+"\n\nWrite process: %s\n"+writeproto.err+"\n")%(rexit,wexit)
+                print "MSG",msg
                 channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, msg))
             
         client_channel = defer.Deferred()

@@ -46,8 +46,8 @@ class FileListResource(resource.PostableResource):
         path = address.path
         hostname = address.hostname
         
-        print "URI",uri
-        print "ADDRESS",address
+        #print "URI",uri
+        #print "ADDRESS",address
         
         # get the backend
         fsresource = self.fsresource()
@@ -60,7 +60,7 @@ class FileListResource(resource.PostableResource):
         client_channel = defer.Deferred()
         
         def do_list():
-            print "hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
+            #print "hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
             try:
                 lister=bend.ls(hostname,path=path, username=username,recurse=recurse)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream=json.dumps(lister)))

@@ -82,7 +82,9 @@ class GlobusConnector(ExecConnector, globus.Auth):
             while not processprotocol.isDone():
                 stackless.schedule()
                 
-            if processprotocol.exitcode:
+            #print "STATE:",processprotocol.jobstate, processprotocol.exitcode
+                
+            if processprotocol.exitcode and processprotocol.jobstate!="Done":
                 # error occured running statecheck... sometimes globus just fails cause its a fucktard.
                 print "Job status check for %s Failed (%d) - %s / %s\n"%(job_id,processprotocol.exitcode,processprotocol.out,processprotocol.err)
                 channel.write("Failed - %s\n"%(processprotocol.err))

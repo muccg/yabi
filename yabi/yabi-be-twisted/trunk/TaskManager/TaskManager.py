@@ -8,7 +8,12 @@ import os
 
 from utils.parsers import parse_url
 
-from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Mkdir, Rm, List, UserCreds, GetFailure
+from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Mkdir, Rm, List, UserCreds, GETFailure
+
+# if debug is on, full tracebacks are logged into yabiadmin
+DEBUG = True
+
+import traceback
 
 class TaskManager(object):
     TASK_HOST = "localhost"
@@ -82,9 +87,11 @@ class TaskManager(object):
             return taskrunner(task)
         except Exception, exc:
             print "TASK[%s] raised uncaught exception: %s"%(taskid,exc)
-            Log(task['errorurl'],"Raised uncaught exception: %s"%(exc))
+            if DEBUG:
+                Log(task['errorurl'],"Raised uncaught exception: %s"%(traceback.format_exc()))
+            else:
+                Log(task['errorurl'],"Raised uncaught exception: %s"%(exc))
             Status(task['statusurl'],"error")
-            import traceback
             traceback.print_exc()
         
     def task_mainline(self, task):
@@ -116,7 +123,7 @@ class TaskManager(object):
             try:
                 Copy(src,dst)
                 log("Copying %s to %s Success"%(src,dst))
-            except GetFailure, error:
+            except GETFailure, error:
                 # error copying!
                 print "TASK[%s]: Copy %s to %s Error!"%(taskid,src,dst)
                 status("error")
@@ -145,7 +152,7 @@ class TaskManager(object):
         self._tasks[stackless.getcurrent()]=workingdir
         try:
             Mkdir(mkuri)
-        except GetFailure, error:
+        except GETFailure, error:
             # error making directory
             print "TASK[%s]:Mkdir failed!"%(taskid)
             status("error")
@@ -169,7 +176,7 @@ class TaskManager(object):
         try:
             Exec(task['exec']['backend'], command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change)                # this blocks untill the command is complete.
             log("Execution finished")
-        except GetFailure, error:
+        except GETFailure, error:
             # error executing
             print "TASK[%s]: Execution failed!"%(taskid)
             status("error")
@@ -181,51 +188,61 @@ class TaskManager(object):
         status('stageout')
         
         # recursively copy the working directory to our stageout area
-        log("Staging out remote %s to %s..."%(bend_path,task['stageout']))
+        log("Staging out remote %s to %s..."%(workingdir,task['stageout']))
         
         # make sure we have the stageout directory
         log("making stageout directory %s"%task['stageout'])
+        print "STAGEOUT:",task['stageout']
         try:
             Mkdir(task['stageout'])
-        except GetFailure, error:
+        except GETFailure, error:
             pass
         
         try:
-            RCopy(fulldirname+"/",task['stageout'])
+            RCopy(mkuri,task['stageout'])
             log("Files successfuly staged out")
-        except GetFailure, error:
+        except GETFailure, error:
             # error executing
             print "TASK[%s]: Stageout failed!"%(taskid)
             status("error")
-            log("Staging out remote %s to %s failed... %s"%(bend_path,task['stageout'],error))
+            if DEBUG:
+                log("Staging out remote %s to %s failed... \n%s"%(mkuri,task['stageout'],traceback.format_exc()))
+            else:
+                log("Staging out remote %s to %s failed... %s"%(mkuri,task['stageout'],error))
             return              # finish task
         
         # cleanup
         status("cleaning")
         log("Cleaning up job...")
         
+        # cleanup working dir
         for copy in task['stagein']:
-            dst_url = "%s/%s%s"%(copy['dstbackend'],task['yabiusername'],copy['dstpath'])
+            dst_url = mkuri
             log("Deleting %s..."%(dst_url))
             try:
+                print "RM1:",dst_url
                 Rm(dst_url, recurse=True)
-            except GetFailure, error:
+            except GETFailure, error:
                 # error copying!
-                print "TASK[%s]: Delete %s Error!"%(dst_url)
+                print "TASK[%s]: Delete %s Error!"%(taskid, dst_url)
                 status("error")
                 log("Deleting %s failed: %s"%(dst_url, error))
                 return              # finish task
             
-        # cleanup working dir
-        try:
-            Rm(fulldirname, recurse=True)
-            log("Stageout directory %s deleted"%fulldirname)
-        except GetFailure, error:
-            # error copying!
-            print "TASK[%s]: Delete %s Error!"%(fulldirname)
-            status("error")
-            log("Deleting %s failed: %s"%(fulldirname, error))
-            return  
+        ## cleanup working dir
+        #try:
+            #print "RM2:",mkuri
+            #Rm(mkuri, recurse=True)
+            #log("Stageout directory %s deleted"%mkuri)
+        #except GETFailure, error:
+            ## error copying!
+            #print "TASK[%s]: Delete %s Error!"%(taskid, mkuri),error
+            #status("error")
+            #if DEBUG:
+                #log("Deleting %s failed: %s"%(mkuri, traceback.format_exc()))
+            #else:
+                #log("Deleting %s failed: %s"%(mkuri, error))
+            #return  
         
         log("Job completed successfully")
         status("complete")

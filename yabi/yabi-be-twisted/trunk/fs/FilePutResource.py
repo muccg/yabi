@@ -68,7 +68,7 @@ class FilePutResource(resource.PostableResource):
                 reader = req.stream.read()
                 
                 while True:
-                    print "DATA:",WaitForDeferredData(reader)
+                    #print "DATA:",WaitForDeferredData(reader)
                     stackless.schedule()
                 
                 raise Exception
@@ -77,16 +77,16 @@ class FilePutResource(resource.PostableResource):
                 if boundary is None:
                     return channel.callback(http.HTTPError(http.StatusResponse(responsecode.BAD_REQUEST,"Boundary not specified in Content-Type.")))
                 
-                print "Boundary:",boundary
+                #print "Boundary:",boundary
                 
                 # our backend writer
                 bend = self.fsresource().GetBackend(scheme)
-                print "BEND:",bend
+                #print "BEND:",bend
                 
                 class MyMimeStreamDecoder(MimeStreamDecoder):
                     """Override this class and put in our own file open methods"""
                     def open_write_stream(self, filename):
-                        print "Uploading file:",filename
+                        #print "Uploading file:",filename
                         self.procproto, fifo = bend.GetWriteFifo(hostname,username,path,filename)
                         self.fileopen = no_intr(open,fifo,"wb")
                         
@@ -117,7 +117,7 @@ class FilePutResource(resource.PostableResource):
                         reader = req.stream.read()
                         stackless.schedule()
                 except IOError, ioe:
-                    print "IOError!!!",ioe
+                    #print "IOError!!!",ioe
                     # sleep until the task finished
                     while not parser.procproto.isDone():
                         stackless.schedule()

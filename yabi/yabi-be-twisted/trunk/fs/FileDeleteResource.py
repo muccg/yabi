@@ -9,6 +9,8 @@ from globus.CertificateProxy import ProxyInitError
 
 from utils.parsers import parse_url
 
+import traceback
+
 class FileDeleteResource(resource.PostableResource):
     VERSION=0.1
     maxMem = 100*1024
@@ -44,8 +46,8 @@ class FileDeleteResource(resource.PostableResource):
         path = address.path
         hostname = address.hostname
         
-        print "URI",uri
-        print "ADDRESS",address
+        #print "URI",uri
+        #print "ADDRESS",address
         
         # get the backend
         fsresource = self.fsresource()
@@ -58,11 +60,12 @@ class FileDeleteResource(resource.PostableResource):
         client_channel = defer.Deferred()
         
         def do_rm():
-            print "hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
+            #print "hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
             try:
                 lister=bend.rm(hostname,path=path, username=username,recurse=recurse)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
             except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
+                print "rm call failed...\n%s"%traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
             
         tasklet = stackless.tasklet(do_rm)

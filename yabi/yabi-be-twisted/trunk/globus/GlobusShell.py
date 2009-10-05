@@ -58,7 +58,7 @@ class GlobusShell(object):
        
         subenv = self._make_env(certfile)
         pp = GlobusShellProcessProtocol()
-        print "COMMAND:",list(command)
+        #print "COMMAND:",list(command)
         reactor.spawnProcess(   pp,
                                 self.gsissh,
                                 [ self.gsissh, host ] + list(command),

@@ -26,16 +26,86 @@ def sleep(seconds):
     while time.time()<wakeup:
         schedule()
 
-def GET(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory):
+import urllib
+
+class CallbackHTTPClient(client.HTTPPageGetter):
+    callback = None
+    
+    def SetCallback(self, callback):
+        self.callback = callback
+    
+    #def lineReceived(self, line):
+        #print "LINE_RECEIVED:",line
+        #return client.HTTPPageGetter.lineReceived(self,line)
+    
+    # ask for page as HTTP/1.1 so we get chunked response
+    def sendCommand(self, command, path):
+        self.transport.write('%s %s HTTP/1.1\r\n' % (command, path))
+        
+    # capture "connection:close" so we stay HTTP/1.1 keep alive!
+    def sendHeader(self, name, value):
+        if name.lower()=="connection" and value.lower()=="close":
+            return
+        return client.HTTPPageGetter.sendHeader(self,name,value)
+    
+    def rawDataReceived(self, data):
+        if int(self.status) != 200:
+            # we got an error. TODO: something graceful here
+            #print "ERROR. NON 200 CODE RETURNED FOR JOB EXEC STATUS"
+            print [self.status]
+            print [data]
+        elif self.callback:
+            #print "CALLING CALLBACK",self.callback
+            # hook in here to process chunked updates
+            lines=data.split("\r\n")
+            #print "LINES",[lines]
+            chunk_size = int(lines[0].split(';')[0],16)
+            chunk = lines[1]
+            
+            assert len(chunk)==chunk_size, "Chunked transfer decoding error. Chunk size mismatch"
+            
+            # run the callback in a tasklet!!! Stops scheduler getting into a looped blocking state
+            reporter=tasklet(self.callback)
+            reporter.setup(chunk)
+            reporter.run()
+            
+        else:
+            #print "NO CALLBACK"
+            pass
+        return client.HTTPPageGetter.rawDataReceived(self,data)
+
+class CallbackHTTPClientFactory(client.HTTPClientFactory):
+    protocol = CallbackHTTPClient
+    
+    def __init__(self, url, method='GET', postdata=None, headers=None,
+                 agent="Twisted PageGetter", timeout=0, cookies=None,
+                 followRedirect=True, redirectLimit=20, callback=None):
+        self._callback=callback
+        return client.HTTPClientFactory.__init__(self, url, method, postdata, headers, agent, timeout, cookies, followRedirect, redirectLimit)
+    
+    def buildProtocol(self, addr):
+        p = client.HTTPClientFactory.buildProtocol(self, addr)
+        p.SetCallback(self._callback)
+        return p
+
+    def SetCallback(self, callback):
+        self._callback=callback
+
+
+def GET(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory,**kws):
     """Stackless integrated twisted webclient GET
     Pass in the path to get and optionally the host and port
     raises a GETFailure exception on failure
     returns the return code and data on success 
     """
+    getdata=urllib.urlencode(kws)
+    
     factory = factory_class(
-        "http://%s:%d%s"%(host,port,path),
-        agent = USER_AGENT
+        "http://%s:%d%s"%(host,port,path+"?"+getdata),
+        agent = USER_AGENT,
+        
         )
+    factory.noisy=False
     
     # switches to trigger the unblocking of the stackless thread
     get_complete = [False]
@@ -43,11 +113,12 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory
     
     # now if the get fails for some reason. deal with it
     def _doFailure(data):
-        print "Failed:",factory,":",type(data),data.__class__
-        print data
-        get_failed[0] = "GET failed"
-    
+        print "FAILED:",factory.status,":",type(data),data.__class__
+        #print data
+        get_failed[0] = int(factory.status), factory.message, data
+     
     def _doSuccess(data):
+        print "SUCCESS:",factory.status,factory.message, data
         get_complete[0] = int(factory.status), factory.message, data
     
     # start the connection
@@ -59,6 +130,7 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory
         schedule()
         
     if get_failed[0]:
+        print "RAISING GETFailure"
         raise GETFailure(get_failed[0])
     
     return get_complete[0]
@@ -85,7 +157,7 @@ def POST(path,**kws):
     
     postdata=urllib.urlencode(kws)
     #postdata="src=gridftp1/cwellington/bi01/cwellington/test&dst=gridftp1/cwellington/bi01/cwellington/test2"
-    print "POST DATA:",postdata
+    #print "POST DATA:",postdata
     
     if datacallback:
         factory = CallbackHTTPClientFactory(
@@ -113,17 +185,19 @@ def POST(path,**kws):
                 },
             )
         
+    factory.noisy=False
+        
     get_complete = [False]
     get_failed = [False]
     
     # now if the get fails for some reason. deal with it
     def _doFailure(data):
-        print "Post Failed:",factory,":",type(data),data.__class__
-        get_failed[0] = "Copy failed... "+data.value.response
+        #print "Post Failed:",factory,":",type(data),data.__class__
+        get_failed[0] = int(factory.status), factory.message, data
     
     def _doSuccess(data):
-        print "Post success"
-        get_complete[0] = data
+        #print "Post success"
+        get_complete[0] = int(factory.status), factory.message, data
         
     factory.deferred.addCallback(_doSuccess).addErrback(_doFailure)
 
@@ -134,10 +208,9 @@ def POST(path,**kws):
         schedule()
         
     if get_failed[0]:
-        raise GetFailure(get_failed[0])
+        raise GETFailure(get_failed[0])
     
     return get_complete[0]
-
 
 
 def WaitForDeferredData(deferred):

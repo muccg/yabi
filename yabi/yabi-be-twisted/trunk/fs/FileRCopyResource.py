@@ -5,7 +5,9 @@ import weakref
 import sys, os
 
 import stackless
-from TaskManager.TaskTools import Sleep, Copy, List, Mkdir, GetFailure
+from TaskManager.TaskTools import Sleep, Copy, List, Mkdir, GETFailure
+
+from utils.parsers import parse_url
 
 class FileRCopyResource(resource.PostableResource):
     VERSION=0.1
@@ -55,9 +57,20 @@ class FileRCopyResource(resource.PostableResource):
             if not dst.endswith('/'):
                 dst += '/'
             
-            # seperate out the backends
-            src_be, src_path = src.split("/",1)
-            dst_be, dst_path = dst.split("/",1)
+            # parse the source and dest uris
+            src_scheme, src_address = parse_url(src)
+            dst_scheme, dst_address = parse_url(dst)
+            
+            src_username = src_address.username
+            dst_username = dst_address.username
+            src_path, src_filename = os.path.split(src_address.path)
+            dst_path, dst_filename = os.path.split(dst_address.path)
+            src_hostname = src_address.hostname
+            dst_hostname = dst_address.hostname
+            
+            # backends
+            sbend = self.fsresource().GetBackend(src_scheme)
+            dbend = self.fsresource().GetBackend(dst_scheme)
             
             print "RCopying from %s -> %s"%(src,dst)
             
@@ -72,25 +85,33 @@ class FileRCopyResource(resource.PostableResource):
                     # get a recursive listing of the source
                     fsystem = List(path=src,recurse=True)
                     
+                    print "Fsystem:",fsystem
+                    
                     # remember the directories we make so we only make them once
                     created=[]
                     
                     for directory in sorted(fsystem.keys()):
                         # make directory
-                        destpath = directory[len(src_path)+1:]
+                        destpath = directory[len(src_path)+1:]              # the subpath part
+                        print "D:",dst,":",destpath,";",src_path
                         if dst+destpath not in created:
                             #print dst+destpath,"not in",created
                             try:
                                 Mkdir(dst+destpath)
-                            except GetFailure, gf:
+                            except GETFailure, gf:
                                 # ignore. directory probably already exists
                                 pass
                             created.append(dst+destpath)
                              
                         for file,size,date in fsystem[directory]['files']:
-                            print "Copy(",src_be+directory+"/"+file,",",dst+destpath+'/'+file,")"
-                            Copy(src_be+directory+"/"+file,dst+destpath+'/'+file,retry=1)
-                            #Sleep(0.5)
+                            #print "COPY",file,size,date
+                            #print "EXTRA",">",destpath,">",directory
+                            src_uri = src+destpath+file
+                            dst_uri = dst+destpath+file
+                            print "Copy(",src_uri,",",dst_uri,")"
+                            #print "Copy(",sbend+directory+"/"+file,",",dst+destpath+'/'+file,")"
+                            Copy(src_uri,dst_uri,retry=1)
+                            Sleep(0.5)
                     
                     result_channel.callback(
                                                     http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Copied successfuly\n")

@@ -25,7 +25,7 @@ class GlobusAuth(object):
         host,port = "localhost",8000
         useragent = "YabiFS/0.1"
         
-        print "AuthProxyUser %s://%s@%s/"%(scheme,username,host)
+        #print "AuthProxyUser %s://%s@%s/"%(scheme,username,host)
         
         try:
             status, message, data = GET( path ="/yabiadmin/ws/credential/%s/%s/%s/"%(scheme,username,hostname),

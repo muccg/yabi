@@ -42,7 +42,7 @@ class FileMkdirResource(resource.PostableResource):
         
         fsresource = self.fsresource()
         if scheme not in fsresource.Backends():
-            return http.Response( responsecode.NOT_FOUND, {'content-type': http_headers.MimeType('text', 'plain')}, "Backend '%s' not found\n"%bendname)
+            return http.Response( responsecode.NOT_FOUND, {'content-type': http_headers.MimeType('text', 'plain')}, "Backend '%s' not found\n"%scheme)
             
         bend = fsresource.GetBackend(scheme)
         
@@ -50,7 +50,7 @@ class FileMkdirResource(resource.PostableResource):
         client_channel = defer.Deferred()
         
         def do_mkdir():
-            print "hostname=",hostname,"path=",path,"username=",username
+            #print "hostname=",hostname,"path=",path,"username=",username
             try:
                 lister=bend.mkdir(hostname,path=path, username=username)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))

@@ -22,19 +22,20 @@ class FSWriteProtocol(protocol.ProcessProtocol):
         
     def outReceived(self, data):
         self.out += data
-        print "OUT:",data
+        #print "OUT:",data
         
     def errReceived(self, data):
         self.err += data
-        print "ERR:",data
+        #print "ERR:",data
             
     def outConnectionLost(self):
         # stdout was closed. this will be our endpoint reference
-        print "OCL"
+        #print "OCL"
+        pass
         
     def processEnded(self, status_object):
         self.exitcode = status_object.value.exitCode
-        print "EXIT:",self.exitcode
+        #print "EXIT:",self.exitcode
         
     def isDone(self):
         return self.exitcode != None
@@ -88,7 +89,7 @@ class LocalFilesystem(FSConnector.FSConnector):
         if not os.path.isdir(fullpath):
             raise InvalidPath("Path is not a directory")
         
-        print "FULLPATH:",fullpath
+        #print "FULLPATH:",fullpath
         
         def walktree(top):
             '''recursively descend the directory tree rooted at top,
