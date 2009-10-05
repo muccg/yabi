@@ -8,8 +8,6 @@ from django.db.models.signals import post_save
 from django.utils.webhelpers import url
 import httplib
 from urllib import urlencode
-#from yabiengine import wfwrangler
-
 
 import logging
 import yabilogging
@@ -196,7 +194,7 @@ def task_save(sender, **kwargs):
     if not incomplete_tasks:
         t.job.status = settings.STATUS['complete']
         t.job.save()
-        #wfwrangler.walk(t.workflow)
+        wfwrangler.walk(t.job.workflow)
 
     # check for error status
     # set the job status to error
@@ -210,3 +208,8 @@ def task_save(sender, **kwargs):
 # connect up django signals
 post_save.connect(yabistore_storeworkflow, sender=Workflow)
 post_save.connect(task_save, sender=Task)
+
+
+# must import this here to avoid circular reference
+from yabiengine import wfwrangler
+
