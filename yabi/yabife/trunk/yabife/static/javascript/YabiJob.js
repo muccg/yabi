@@ -497,8 +497,17 @@ YabiJob.prototype.solidify = function(obj) {
         spanEl.setAttribute("class", "acceptedExtension");
         spanEl.appendChild(ext);
         this.acceptedExtensionEl.appendChild(spanEl);
+    
+        this.acceptedExtensionEl.appendChild(document.createTextNode(" "));
+    }
+    
+    if (this.payload.tool.inputExtensions.length === 0) {
+        ext = document.createTextNode("user input");
+        spanEl = document.createElement("span");
+        spanEl.setAttribute("class", "acceptedExtension");
+        spanEl.appendChild(ext);
+        this.acceptedExtensionEl.appendChild(spanEl);
         
-
         this.acceptedExtensionEl.appendChild(document.createTextNode(" "));
     }
     
