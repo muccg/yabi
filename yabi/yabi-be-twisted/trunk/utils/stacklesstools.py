@@ -13,7 +13,7 @@ import os
 
 from stackless import schedule, tasklet
 
-WS_HOST, WS_PORT = "localhost",8000
+WS_HOST, WS_PORT = "localhost",int(os.environ['PORT']) if 'PORT' in os.environ else 8000
 USER_AGENT = "YabiStackless/0.1"
 
 ## errors
@@ -107,6 +107,8 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory
         )
     factory.noisy=False
     
+    print "GETing","http://%s:%d%s"%(host,port,path+"?"+getdata),
+    
     # switches to trigger the unblocking of the stackless thread
     get_complete = [False]
     get_failed = [False]
@@ -173,6 +175,7 @@ def POST(path,**kws):
             callback=datacallback
             )
     else:
+        print str("http://%s:%d%s"%(host,port,path))
         factory = client.HTTPClientFactory(
             str("http://%s:%d%s"%(host,port,path)),
             agent = USER_AGENT,
@@ -182,7 +185,7 @@ def POST(path,**kws):
                 'Content-Type':"application/x-www-form-urlencoded",
                 'Accept':'*/*',
                 'Content-Length':"65"
-                },
+                }
             )
         
     factory.noisy=False

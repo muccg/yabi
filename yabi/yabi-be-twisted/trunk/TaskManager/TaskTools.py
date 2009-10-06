@@ -15,7 +15,7 @@ EXEC_PATH = "/exec/run"
 MKDIR_PATH = "/fs/mkdir"
 RM_PATH = "/fs/rm"
 
-WS_HOST, WS_PORT = "localhost",8000
+WS_HOST, WS_PORT = "localhost",int(os.environ['PORT']) if 'PORT' in os.environ else 8000
 USER_AGENT = "YabiStackless/0.1"
 
 from utils.stacklesstools import GET, POST, GETFailure
@@ -78,14 +78,31 @@ def Rm(path, recurse=False):
 def Log(logpath,message):
     """Report an error to the webservice"""
     #print "Reporting error to %s"%(logpath)
-    code,msg,data = POST(logpath, message=message)              # error exception should bubble up and be caught
+    print "Logging to %s"%(logpath)
+    print "log=",message
+    
+    if "://" in logpath:
+        from urlparse import urlparse
+        parsed = urlparse(logpath)
+        
+        code,msg,data = POST(parsed.path, status=message,host=parsed.hostname,port=parsed.port)              # error exception should bubble up and be caught
+    else:
+        code,msg,data = POST(logpath, status=message)              # error exception should bubble up and be caught
     assert code==200
+
     
 def Status(statuspath, message):
     """Report some status to the webservice"""
     print "Reporting status to %s"%(statuspath)
     print "status=",message
-    code,msg,data = POST(statuspath, status=message)              # error exception should bubble up and be caught
+    
+    if "://" in statuspath:
+        from urlparse import urlparse
+        parsed = urlparse(statuspath)
+        
+        code,msg,data = POST(parsed.path, status=message,host=parsed.hostname,port=parsed.port)              # error exception should bubble up and be caught
+    else:
+        code,msg,data = POST(statuspath, status=message)              # error exception should bubble up and be caught
     assert code==200
     
 def Exec(backend, command, callbackfunc=None, **kwargs):
@@ -102,6 +119,7 @@ def Exec(backend, command, callbackfunc=None, **kwargs):
 def UserCreds(scheme,username,hostname):
     """Get a users credentials"""
     # see if we can get the credentials
+    print "UserCreds",scheme,username,hostname
     code, message, data = GET(str('/yabiadmin/ws/credential/%s/%s/%s/'%(scheme,username,hostname)))
     assert code==200
     return json.loads(data)

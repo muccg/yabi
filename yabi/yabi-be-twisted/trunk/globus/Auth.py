@@ -43,7 +43,7 @@ class GlobusAuth(object):
             return credentials
         
         except GETFailure, gf:
-            raise NoCredentials( "User: %s does not have credentials for this backend\n"%username )
+            raise NoCredentials( "User: %s does not have credentials for this backend %s\n"%(username,scheme) )
         
     
     def EnsureAuthed(self, scheme, username, hostname):

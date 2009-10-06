@@ -18,7 +18,7 @@ import traceback
 class TaskManager(object):
     TASK_HOST = "localhost"
     TASK_PORT = int(os.environ['PORT']) if 'PORT' in os.environ else 8000
-    TASK_URL = "http://%s:%d/yabiadmin/engine/task/"%(TASK_HOST,TASK_PORT)
+    TASK_URL = "/yabiadmin/engine/task/"
     
     JOBLESS_PAUSE = 5.0                 # wait this long when theres no more jobs, to try to get another job
     JOB_PAUSE = 0.0                     # wait this long when you successfully got a job, to get the next job
@@ -60,14 +60,25 @@ class TaskManager(object):
          
          
     def get_next_task(self):
-        host,port = self.TASK_HOST,self.TASK_PORT
+        host,port,TASK_URL = self.TASK_HOST,self.TASK_PORT,self.TASK_URL
+        if 'YABIADMIN' in os.environ:
+            pre,post = os.environ['YABIADMIN'].split('/',1)
+            post="/"+post
+            if ':' in pre:
+                host,port=pre.split(":")
+                port=int(port)
+            else:
+                host=pre
+                
+            TASK_URL = "/engine/task/"
+                
         useragent = "YabiExec/0.1"
         
         factory = client.HTTPClientFactory(
-            self.TASK_URL,
+            TASK_URL,
             agent = useragent
             )
-        factory.noisy = False
+        factory.noisy = True
         reactor.connectTCP(host, port, factory)
         
         # now if the page fails for some reason. deal with it
@@ -87,12 +98,12 @@ class TaskManager(object):
             return taskrunner(task)
         except Exception, exc:
             print "TASK[%s] raised uncaught exception: %s"%(taskid,exc)
+            traceback.print_exc()
             if DEBUG:
                 Log(task['errorurl'],"Raised uncaught exception: %s"%(traceback.format_exc()))
             else:
                 Log(task['errorurl'],"Raised uncaught exception: %s"%(exc))
             Status(task['statusurl'],"error")
-            traceback.print_exc()
         
     def task_mainline(self, task):
         """Our top down greenthread code"""
