@@ -455,7 +455,7 @@ YabiFileSelector.prototype.renderSelectedFiles = function() {
  * fetches file listing from server
  */
 YabiFileSelector.prototype.hydrate = function(path) {
-    var baseURL = appURL + "ws/fs/list";
+    var baseURL = appURL + "ws/fs/ls";
     
     // cancel previous transaction if it exists
     if (this.jsTransaction != null && YAHOO.util.Connect.isCallInProgress( this.jsTransaction ) ) {

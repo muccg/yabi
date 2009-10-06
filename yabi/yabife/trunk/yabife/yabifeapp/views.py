@@ -14,7 +14,7 @@ from django.contrib.auth import login as django_login, logout as django_logout, 
 from django import forms
 from django.core.servers.basehttp import FileWrapper
 import copy
-
+import os
 
 import logging
 import yabilogging
@@ -27,8 +27,10 @@ from yabifeapp.file_upload import *
 def proxy(request, url, server, base):
     logger.debug('')
     
-    if not url.startswith("/"):
-        url = "/" + url
+    print "PROXY",request.method,repr(url),repr(server),repr(base)
+    
+    #if not url.startswith("/"):
+        #url = "/" + url
 
     logger.debug(request.FILES)
     
@@ -42,12 +44,15 @@ def proxy(request, url, server, base):
         get_params = copy.copy(request.GET)
         get_params['yabiusername'] = request.user.username
 
-        resource = "%s%s?%s" % (base, url, urlencode(get_params))
+        resource = "%s?%s" % (os.path.join(base, url), urlencode(get_params))
         logger.debug('Resource: %s' % resource)
+        print "Connecting to:",server
         conn = httplib.HTTPConnection(server)
         logger.debug('Server: %s' % server)        
         conn.request(request.method, resource)
+        print "%sing %r"%(request.method,resource)
         r = conn.getresponse()
+        
 
 
     elif request.FILES:
@@ -59,7 +64,7 @@ def proxy(request, url, server, base):
         get_params = copy.copy(request.GET)
         get_params['yabiusername'] = request.user.username
 
-        resource = "%s%s?%s" % (base, url, urlencode(get_params))
+        resource = "%s?%s" % (os.path.join(base, url), urlencode(get_params))
 
         logger.debug(resource)
 
@@ -76,7 +81,7 @@ def proxy(request, url, server, base):
 
     elif request.method == "POST":
 
-        resource = "%s%s" % (base, url)
+        resource = os.path.join(base, url)
         logger.debug('Resource: %s' % resource)
 
         post_params = copy.copy(request.POST)
@@ -86,10 +91,13 @@ def proxy(request, url, server, base):
         logger.debug('Data: %s' % data)
         headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
         conn = httplib.HTTPConnection(server)
+        print "Connecting to:",server
         logger.debug('Server: %s' % server)
         conn.request(request.method, resource, data, headers)
+        print "%sing %r with data %s and headers %s"%(request.method,resource,data,headers)
         r = conn.getresponse()
 
+    print "returning response:",r.status
     response = HttpResponse(r.read(), status=int(r.status))
 
     if r.getheader('content-disposition', None):

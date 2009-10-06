@@ -44,6 +44,11 @@ if "DJANGODEV" in os.environ:
     SSL_ENABLED = False
     DEV_SERVER = True
     
+    print "YABISTORE_SERVER =",YABISTORE_SERVER
+    print "YABISTORE_BASE =",YABISTORE_BASE
+    print "YABIADMIN_SERVER =",YABIADMIN_SERVER
+    print "YABIADMIN_BASE =",YABIADMIN_BASE
+    
     # debug site table
     SITE_ID = 1
     
