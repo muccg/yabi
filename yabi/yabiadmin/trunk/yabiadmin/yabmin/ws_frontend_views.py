@@ -211,8 +211,7 @@ def put(request):
 def submitworkflow(request):
     logger.debug('')
     
-    print "SWF:",request
-    print "POST:",request.POST['username']
+    print "POST KEYS:",request.POST.keys()
     
     
     # probably want to catch the type of exceptions we may get from this

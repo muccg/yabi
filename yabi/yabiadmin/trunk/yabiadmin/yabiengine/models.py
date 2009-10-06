@@ -6,7 +6,7 @@ from yabiadmin.yabiengine.urihelper import uriparse, uri_get_pseudopath
 from django.utils import simplejson as json, webhelpers
 from django.db.models.signals import post_save
 from django.utils.webhelpers import url
-import httplib
+import httplib, os
 from urllib import urlencode
 
 import logging
@@ -163,6 +163,7 @@ def yabistore_update(resource, data):
     headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
     conn = httplib.HTTPConnection(settings.YABISTORE_SERVER)
     conn.request('POST', resource, data, headers)
+    print "POST",resource,data
     r = conn.getresponse()
     
     status = r.status
@@ -177,13 +178,15 @@ def yabistore_update(resource, data):
 def workflow_save(sender, **kwargs):
     logger.debug('')
     workflow = kwargs['instance']
+    
+    print "WORKFLOW SAVE",workflow
 
     try:
         # update the yabistore
         if kwargs['created']:
-            resource = '%s/workflows/%s/' % (settings.YABISTORE_BASE, workflow.user.name)
+            resource = os.path.join(settings.YABISTORE_BASE,"workflows", workflow.user.name)
         else:
-            resource = '%s/workflows/%s/%d' % (settings.YABISTORE_BASE, workflow.user.name, workflow.yabistore_id)
+            resource = os.path.join(settings.YABISTORE_BASE,"workflows", workflow.user.name, str(workflow.yabistore_id))
 
         data = {'json':workflow.json,
                 'name':workflow.name,
@@ -193,6 +196,13 @@ def workflow_save(sender, **kwargs):
 
         print "status",repr(status)
         print "data",repr(data)
+        
+        # if this was created. save the returned id into yabistore_id
+        if kwargs['created']:
+            print "SAVING WFID"
+            assert status==200
+            workflow.yabistore_id = int(data)
+            workflow.save()
         
     except Exception, e:
         logger.critical(e)
@@ -206,12 +216,12 @@ def job_save(sender, **kwargs):
     try:
         # update the yabistore
         if kwargs['created']:
-            resource = '%s/jobs/%s/' % (settings.YABISTORE_BASE, job.workflow.user.name)
+            resource = os.path.join(settings.YABISTORE_BASE,"jobs",job.workflow.user.name)
         else:
-            resource = '%s/jobs/%s/%s' % (settings.YABISTORE_BASE, job.workflow.user.name, job.id)
+            resource = os.path.join(settings.YABISTORE_BASE,"jobs",job.workflow.user.name, job.id)
 
         data = {'status':t.status }
-        yabistore_update(resource, data)
+        #yabistore_update(resource, data)
 
     except Exception, e:
         logger.critical(e)
@@ -226,14 +236,14 @@ def task_save(sender, **kwargs):
     try:
         # update the yabistore
         if kwargs['created']:
-            resource = '%s/tasks/%s/' % (settings.YABISTORE_BASE,task.job.workflow.user.name)
+            resource = os.path.join(settings.YABISTORE_BASE,'tasks',task.job.workflow.user.name)
         else:
-            resource = '%s/tasks/%s/%s' % (settings.YABISTORE_BASE, task.job.workflow.user.name, task.id)
+            resource = os.path.join(settings.YABISTORE_BASE,'tasks',task.job.workflow.user.name, str(task.id) )
 
         data = {'error_msg':task.error_msg,
                 'status':task.status
                 }
-        yabistore_update(resource, data)
+        #yabistore_update(resource, data)
 
         #Checks all the tasks are complete, if so, changes status on job
         #and triggers the workflow walk
