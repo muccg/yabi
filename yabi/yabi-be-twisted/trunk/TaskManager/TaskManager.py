@@ -17,7 +17,7 @@ import traceback
 
 class TaskManager(object):
     TASK_HOST = "localhost"
-    TASK_PORT = 8000
+    TASK_PORT = int(os.environ['PORT']) if 'PORT' in os.environ else 8000
     TASK_URL = "http://%s:%d/yabiadmin/engine/task/"%(TASK_HOST,TASK_PORT)
     
     JOBLESS_PAUSE = 5.0                 # wait this long when theres no more jobs, to try to get another job
@@ -60,7 +60,7 @@ class TaskManager(object):
          
          
     def get_next_task(self):
-        host,port = "localhost",8000
+        host,port = self.TASK_HOST,self.TASK_PORT
         useragent = "YabiExec/0.1"
         
         factory = client.HTTPClientFactory(
