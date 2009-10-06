@@ -302,6 +302,10 @@ YabiWorkflowCollection.prototype.select = function(id) {
             this.workflows[i].setSelected(false);
         }
     }
+    
+    if (this.onSelectionCallback !== null) {
+        this.onSelectionCallback();
+    }
 };
 
 // --------- callback methods, these require a target via their inputs --------

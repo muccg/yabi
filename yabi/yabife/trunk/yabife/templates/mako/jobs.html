@@ -4,13 +4,31 @@
 <script language="javascript">
 YAHOO.util.Event.onAvailable("container", initWorkflowListing);
 
-var workflowListing;
+var workflowListing, refreshInterval;
+
+var examineProgress = function(status) {
+    if (status == "Completed") {
+        window.clearInterval(refreshInterval);
+    }
+};
+
+var fetchProgress = function() {
+    workflowListing.loadedWorkflow.fetchProgress( examineProgress );
+};
 
 function initWorkflowListing() {
     workflowListing = new YabiWorkflowCollection();
     document.getElementById("workflowListingContainer").appendChild(workflowListing.containerEl);
     
     workflowListing.slider.subscribe("change", function() { workflowListing.changeDateRange(); });
+    
+    workflowListing.onSelectionCallback = function() {
+        if (refreshInterval !== null) {
+            window.clearInterval(refreshInterval);
+        }
+        
+        refreshInterval = window.setInterval( fetchProgress , 5000 );
+    }
     
     document.getElementById("container").appendChild(workflowListing.noSelectionDiv);
     

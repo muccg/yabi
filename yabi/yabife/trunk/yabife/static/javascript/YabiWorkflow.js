@@ -26,7 +26,6 @@ function YabiWorkflow(editable) {
     }
     
 	this.status = "Design";
-	this.refreshTimer = null;
 	this.selectedJob = null;
     
     this.editable = true;
@@ -592,26 +591,18 @@ YabiWorkflow.prototype.solidify = function(obj) {
 };
 
 /**
- * waitForJob
- *
- * start an interval to continuously refresh this workflow until completed
- */
-YabiWorkflow.prototype.waitForJob = function() {
-    this.refreshTimer = window.setInterval(function() { workflow.fetchProgress(); }, 5000);
-};
-
-/**
  * fetchProgress
  *
  * one-time fetch current workflow status
  */
-YabiWorkflow.prototype.fetchProgress = function() {
+YabiWorkflow.prototype.fetchProgress = function(callback) {
     //console.log("fetch progress");
-
-    this.hydrate(this.workflowId);
+    if (this.status !== "Completed") {
+        this.hydrate(this.workflowId);
+    }
     
-    if (this.status == "Completed") {
-        window.clearInterval(this.refreshTimer);
+    if (callback !== null) {
+        callback(this.status);
     }
 };
 
@@ -675,10 +666,6 @@ YabiWorkflow.prototype.tagsFinishedSaving = function() {
 YabiWorkflow.prototype.destroy = function() {
     if (YAHOO.util.Connect.isCallInProgress( this.jsTransaction )) {
         YAHOO.util.Connect.abort( this.jsTransaction, null, false );
-    }
-    
-    if (this.refreshTimer !== null) {
-        window.clearInterval(this.refreshTimer);
     }
     
     var job;
