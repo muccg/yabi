@@ -586,7 +586,7 @@ YabiWorkflow.prototype.solidify = function(obj) {
         }
         
         if (!this.editable) {
-    		job.renderProgress(obj.jobs[index].status, obj.jobs[index].progress);
+    		job.renderProgress(obj.jobs[index].status, obj.jobs[index].tasksCompleted, obj.jobs[index].tasksTotal);
 		}
 	}
 };

@@ -422,12 +422,19 @@ YabiJob.prototype.getParam = function(switchName) {
  *
  * render progress bar/badges
  */
-YabiJob.prototype.renderProgress = function(status, value) {
-    if (status === null || value === null) {
+YabiJob.prototype.renderProgress = function(status, completed, total) {
+    if (status === null || completed === null || total === null) {
         return;
     }
 
-    this.progress = value;
+    try {
+        completed = parseInt(completed);
+        total = parseint(total);
+    } catch (e) {
+        return;
+    }
+
+    this.progress = completed / total;
 
     if (!this.showingProgress) {
         this.statusEl = document.createElement("div");
