@@ -22,7 +22,7 @@ from resource import BaseResource
 sys.path=['.']+sys.path
 
 # run as root
-PORT = 8000
+PORT = int(os.environ['PORT']) if 'PORT' in os.environ else 8000
 TELNET_PORT = 8021
 SSL_PORT = 4430
 
