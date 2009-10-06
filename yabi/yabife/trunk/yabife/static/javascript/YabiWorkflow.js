@@ -715,7 +715,7 @@ YabiWorkflow.prototype.hydrateCallback = function(o) {
         //preprocess wrapper meta data
         target.setTags(obj.tags);
         
-        target.solidify(YAHOO.lang.JSON.parse(obj.json));
+        target.solidify(obj.json);
     } catch (e) {
         YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Error loading workflow");
     }
