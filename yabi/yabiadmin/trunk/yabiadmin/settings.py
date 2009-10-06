@@ -31,7 +31,10 @@ if "DJANGODEV" in os.environ:
     DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
     SSL_ENABLED = False
     DEV_SERVER = True
-    YABIBACKEND_SERVER = YABIBACKEND.split("/")
+    YABIBACKEND_SERVER, YABIBACKEND_BASE = YABIBACKEND.split("/")
+    YABIBACKEND_BASE = "/" + YABIBACKEND_BASE                                   # NOT USED PRESENTLY
+    assert YABIBACKEND_BASE=="/"
+    
     YABISTORE_SERVER, YABISTORE_BASE = YABISTORE.split('/',1)
     YABISTORE_BASE = "/" + YABISTORE_BASE
     

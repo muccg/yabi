@@ -211,13 +211,12 @@ def put(request):
 def submitworkflow(request):
     logger.debug('')
     
-    try:
-        # probably want to catch the type of exceptions we may get from this
-        wfbuilder.build(request.POST['username'], request.POST["workflowjson"])
-        
-        return HttpResponse(request.POST["workflowjson"])
-    except KeyError,e:
-        return HttpResponseNotFound(json_error(e))
-    except Exception,e:
-        return HttpResponseNotFound(json_error(e))
+    print "SWF:",request
+    print "POST:",request.POST['username']
+    
+    
+    # probably want to catch the type of exceptions we may get from this
+    wfbuilder.build(request.POST['username'], request.POST["workflowjson"])
+    
+    return HttpResponse(request.POST["workflowjson"])
 
