@@ -164,8 +164,13 @@ def yabistore_update(resource, data):
     conn = httplib.HTTPConnection(settings.YABISTORE_SERVER)
     conn.request('POST', resource, data, headers)
     r = conn.getresponse()
-    logger.debug(r.status)
-    logger.debug(r.read())
+    
+    status, data = r.status, r.data
+    
+    logger.debug(status)
+    logger.debug(data)
+    
+    return status,data
 
 
 def workflow_save(sender, **kwargs):
@@ -177,14 +182,17 @@ def workflow_save(sender, **kwargs):
         if kwargs['created']:
             resource = '%s/workflows/%s/' % (settings.YABISTORE_BASE, workflow.user.name)
         else:
-            resource = '%s/workflows/%s/%s' % (settings.YABISTORE_BASE, workflow.user.name, workflow.id)
+            resource = '%s/workflows/%s/%d' % (settings.YABISTORE_BASE, workflow.user.name, workflow.yabistore_id)
 
         data = {'json':workflow.json,
                 'name':workflow.name,
                 'status':workflow.status
                 }
-        yabistore_update(resource, data)
+        status, data = yabistore_update(resource, data)
 
+        print "status",repr(status)
+        print "data",repr(data)
+        
     except Exception, e:
         logger.critical(e)
         raise
