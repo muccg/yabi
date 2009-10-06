@@ -165,7 +165,8 @@ def yabistore_update(resource, data):
     conn.request('POST', resource, data, headers)
     r = conn.getresponse()
     
-    status, data = r.status, r.read()
+    status = r.status
+    data = r.read()
     
     logger.debug(status)
     logger.debug(data)
