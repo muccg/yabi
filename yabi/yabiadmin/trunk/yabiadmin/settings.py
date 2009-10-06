@@ -13,6 +13,11 @@ from django.utils.webhelpers import url
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+#
+# if we are deploying a DJANGODEV development version, we can override settings with environment variables
+#
+YABIBACKEND = os.environ["YABIBACKEND"] if "YABIBACKEND" in os.environ else "localhost.localdomain:8000/"
+YABISTORE = os.environ["YABISTORE"] if "YABISTORE" in os.environ else "faramir.localdomain/yabistore/trunk"
 
 # development deployment
 if "DJANGODEV" in os.environ:
@@ -26,9 +31,9 @@ if "DJANGODEV" in os.environ:
     DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
     SSL_ENABLED = False
     DEV_SERVER = True
-    YABIBACKEND_SERVER = 'localhost.localdomain:8000'
-    YABISTORE_SERVER = "faramir.localdomain"
-    YABISTORE_BASE = "/yabistore/trunk"
+    YABIBACKEND_SERVER = YABIBACKEND.split("/")
+    YABISTORE_SERVER, YABISTORE_BASE = YABISTORE.split('/',1)
+    YABISTORE_BASE = "/" + YABISTORE_BASE
     
     # debug site table
     SITE_ID = 1
