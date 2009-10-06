@@ -27,7 +27,7 @@ if "DJANGODEV" in os.environ:
     SSL_ENABLED = False
     DEV_SERVER = True
     YABIBACKEND_SERVER = 'localhost.localdomain:8000'
-    YABISTORE_SERVER = "localhost.localdomain"
+    YABISTORE_SERVER = "faramir.localdomain"
     YABISTORE_BASE = "/yabistore/trunk"
     
     # debug site table
