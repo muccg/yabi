@@ -10,6 +10,7 @@ function YabiFileSelector(param, isBrowseMode) {
     this.browseListing = [];
     this.param = param;
     this.isBrowseMode = isBrowseMode;
+    this.jsTransaction = null;
     
     this.containerEl = document.createElement("div");
     this.containerEl.className = "fileSelector";
@@ -158,6 +159,12 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
 
         srcDD.invoker.target.handleDrop(src, dest);
     };
+    
+    //clear existing files
+    while (this.fileListEl.firstChild) {
+        YAHOO.util.Event.purgeElement(this.fileListEl.firstChild);
+        this.fileListEl.removeChild(this.fileListEl.firstChild);
+    }
 
     // new style 20090921 has the path as the key for the top level, then files as an array and directories as an array
     // each file and directory is an array of [fname, size in bytes, date]
@@ -450,14 +457,19 @@ YabiFileSelector.prototype.renderSelectedFiles = function() {
 YabiFileSelector.prototype.hydrate = function(path) {
     var baseURL = appURL + "ws/fs/list";
     
+    // cancel previous transaction if it exists
+    if (this.jsTransaction != null && YAHOO.util.Connect.isCallInProgress( this.jsTransaction ) ) {
+        YAHOO.util.Connect.abort( this.jsTransaction, null, false );
+    }
+    
     //load json
-    var jsUrl, jsCallback, jsTransaction;
+    var jsUrl, jsCallback;
     jsUrl =  baseURL + "?uri=" + escape(path);
     jsCallback = {
             success: this.hydrateResponse,
             failure: this.hydrateResponse,
             argument: [this] };
-    jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
+    this.jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
 };
 
 /**
@@ -588,6 +600,8 @@ YabiFileSelector.prototype.hydrateResponse = function(o) {
         target.hydrateProcess(YAHOO.lang.JSON.parse(json));
     } catch (e) {
         YAHOO.ccgyabi.YabiMessage.yabiMessageFail('Error loading file listing');
+    } finally {
+        this.jsTransaction = null;
     }
 };
 
