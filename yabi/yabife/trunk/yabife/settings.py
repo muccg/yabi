@@ -21,6 +21,12 @@ MANAGERS = ADMINS
 
 LOGIN_URL = url("/login")
 
+#
+# if we are deploying a DJANGODEV development version, we can override settings with environment variables
+#
+YABIADMIN = os.environ["YABIADMIN"] if "YABIADMIN" in os.environ else "localhost.localdomain:8000/yabiadmin"
+YABISTORE = os.environ["YABISTORE"] if "YABISTORE" in os.environ else "faramir.localdomain/yabistore/trunk"
+
 # development deployment
 if "DJANGODEV" in os.environ:
     DEBUG = True if os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug")) else ("DJANGODEBUG" in os.environ)
@@ -31,10 +37,10 @@ if "DJANGODEV" in os.environ:
     DATABASE_PASSWORD = 'yabifeapp'                   # Not used with sqlite3.
     DATABASE_HOST = 'eowyn.localdomain'               # Set to empty string for localhost. Not used with sqlite3.
     DATABASE_PORT = ''                                # Set to empty string for default. Not used with sqlite3.
-    YABIADMIN_SERVER = "localhost.localdomain:8000"
-    YABIADMIN_BASE = "/yabiadmin"    
-    YABISTORE_SERVER = "localhost.localdomain"
-    YABISTORE_BASE = "/yabistore/trunk"
+    YABIADMIN_SERVER, YABIADMIN_BASE = YABIADMIN.split('/',1)
+    YABIADMIN_BASE = "/" + YABIADMIN_BASE
+    YABISTORE_SERVER, YABISTORE_BASE = YABISTORE.split('/',1)
+    YABISTORE_BASE = "/" + YABISTORE_BASE
     SSL_ENABLED = False
     DEV_SERVER = True
     
