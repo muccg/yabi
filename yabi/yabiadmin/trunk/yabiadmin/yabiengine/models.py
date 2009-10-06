@@ -75,12 +75,21 @@ class Task(models.Model):
 
     
     def json(self):
+        # formulate our status url and our error url
+        if 'YABIADMIN' in os.environ:                                                   # if we are forced to talk to a particular admin
+            statusurl = "http://%sengine/status/task/%d"%(os.environ['YABIADMIN'],self.id)
+            errorurl = "http://%sengine/status/task/%d"%(os.environ['YABIADMIN'],self.id)
+        else:
+            # use the yabiadmin embedded in this server
+            statusurl = webhelpers.url("/engine/status/task/%d" % self.id)
+            errorurl = webhelpers.url("/engine/error/task/%d" % self.id)
+            
 
         output = {
             "yabiusername":self.job.workflow.user.name,
             "taskid":self.id,
-            "statusurl":webhelpers.url("/engine/status/task/%d" % self.id),
-            "errorurl":webhelpers.url("/engine/error/task/%d" % self.id),
+            "statusurl":statusurl,
+            "errorurl":errorurl,
             "stagein":[],
             "exec":{
             "command":self.command,
