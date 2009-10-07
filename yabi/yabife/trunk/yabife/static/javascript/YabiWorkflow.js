@@ -166,6 +166,7 @@ function YabiWorkflow(editable) {
         this.fileOutputsEl.appendChild( this.fileOutputsSelector.containerEl );
         this.fileOutputsEl.style.display = 'none';
         this.fileOutputsSelector.fileListEl.style.height = "180px";
+        this.fileOutputsSelector.containerEl.style.marginLeft = "4px";
     }
 
     //add an enter key listener for the tags field
@@ -637,8 +638,10 @@ YabiWorkflow.prototype.fetchProgress = function(callback) {
  * update tags array and input field simultaneously
  */
 YabiWorkflow.prototype.setTags = function(tagArray) {
-    this.tags = tagArray;
-    this.tagInputEl.value = tagArray;
+    if (this.tagInputEl.style.display == "none") {
+        this.tags = tagArray;
+        this.tagInputEl.value = tagArray;
+    } //dont sent the tags if they are being edited
 };
 
 /**

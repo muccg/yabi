@@ -42,74 +42,6 @@ td {
 	color:#529847;
 }
 
-.flowStatuscomplete {
-
-	width:16px;
-	height:16px;
-	padding:0px;
-	margin:0px;
-	border:0px;
-	background:url(../images/ok.png);
-	position:absolute;
-    right: 1%;
-    top: 5px;
-	z-index:99;	
-	
-	
-}
-
-.flowStatuspending {
-	width:16px;
-	height:16px;
-	padding:0px;
-	margin:0px;
-	border:0px;
-	background:url(../images/pending.png);
-	position:absolute;
-    right: 1%;
-    top: 5px;
-	z-index:99;
-}
-
-.flowStatusqueued {
-	width:15px;
-	height:15px;
-	padding:0px;
-	margin:0px;
-	border:0px;
-	background:url(../images/queued.gif);
-	position:absolute;
-    right: 1%;
-    top: 5px;
-	z-index:99;
-}
-
-.flowStatuserror {
-	width:16px;
-	height:16px;
-	padding:0px;
-	margin:0px;
-	border:0px;
-	background:url(../images/error.png);
-	position:absolute;
-    right: 1%;
-    top: 5px;
-	z-index:99;
-}
-
-.flowStatusrunning {
-	width:15px;
-	height:15px;
-	padding:0px;
-	margin:0px;
-	border:0px;
-	background:url(../images/processing.gif);
-	position:absolute;
-    right: 1%;
-    top: 5px;
-	z-index:99;
-}
-
 .jobErrorMessage {
     margin-top:4px;
     margin-bottom:-3px;
@@ -1127,15 +1059,15 @@ display:inline;
 }
 
 .badgeRunning {
-	width:15px;
-	height:15px;
+	width:18px;
+	height:18px;
 	padding:0px;
 	margin:0px;
 	border:0px;
 	background:url(../images/processing.gif) no-repeat;
 	position:absolute;
-    right: 9px;
-    top: 4px;
+    right: 7px;
+    top: 2px;
 	z-index:99;
 }
 
