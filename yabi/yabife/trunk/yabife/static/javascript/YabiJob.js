@@ -429,7 +429,7 @@ YabiJob.prototype.renderProgress = function(status, completed, total) {
 
     try {
         completed = parseInt(completed);
-        total = parseint(total);
+        total = parseInt(total);
     } catch (e) {
         return;
     }
