@@ -434,7 +434,7 @@ YabiJob.prototype.renderProgress = function(status, completed, total) {
         return;
     }
 
-    this.progress = completed / total;
+    this.progress = 100 * completed / total;
 
     if (!this.showingProgress) {
         this.statusEl = document.createElement("div");
