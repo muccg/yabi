@@ -1003,7 +1003,7 @@ display:inline;
 	background: -webkit-gradient(linear, left top, left bottom, from(#6f6), to(#9c9));
 }
 
-.badgeCompleted {
+.badgecompleted {
 
 	width:16px;
 	height:16px;
@@ -1015,37 +1015,22 @@ display:inline;
     right: 9px;
     top: 4px;
 	z-index:99;	
-	
-	
 }
 
-.badgePending {
-	width:16px;
-	height:16px;
+.badgepending {
+	width:18px;
+	height:18px;
 	padding:0px;
 	margin:0px;
 	border:0px;
 	background:url(../images/pending.png) no-repeat;
 	position:absolute;
-    right: 9px;
-    top: 4px;
+    right: 7px;
+    top: 2px;
 	z-index:99;
 }
 
-.badgeQueued {
-	width:15px;
-	height:15px;
-	padding:0px;
-	margin:0px;
-	border:0px;
-	background:url(../images/queued.gif) no-repeat;
-	position:absolute;
-    right: 9px;
-    top: 4px;
-	z-index:99;
-}
-
-.badgeError {
+.badgeerror {
 	width:16px;
 	height:16px;
 	padding:0px;
@@ -1058,7 +1043,7 @@ display:inline;
 	z-index:99;
 }
 
-.badgeRunning {
+.badgerunning {
 	width:18px;
 	height:18px;
 	padding:0px;
