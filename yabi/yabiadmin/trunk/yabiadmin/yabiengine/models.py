@@ -179,6 +179,8 @@ def yabistore_update(resource, data):
     status = r.status
     data = r.read()
     
+    print "result:",status,data
+    
     logger.debug(status)
     logger.debug(data)
     
