@@ -284,8 +284,8 @@ def task_save(sender, **kwargs):
         if not kwargs['created']:
             resource = os.path.join(settings.YABISTORE_BASE,'workflows',task.job.workflow.user.name, str(task.job.workflow.yabistore_id), str(task.job.order) )
             data = dict(    status=status,
-                            tasksComplete=done,
-                            tasksTotal=total
+                            tasksComplete=float(done),
+                            tasksTotal=float(total)
                         )
             if errorMessage:
                 data['errorMessage']=errorMessage
