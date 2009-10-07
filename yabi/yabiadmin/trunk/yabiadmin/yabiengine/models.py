@@ -173,7 +173,7 @@ def yabistore_update(resource, data):
     headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
     conn = httplib.HTTPConnection(settings.YABISTORE_SERVER)
     conn.request('POST', resource, data, headers)
-    print "POST",resource,data
+    print "YABISTORE POST",settings.YABISTORE_SERVER,resource,data
     r = conn.getresponse()
     
     status = r.status
