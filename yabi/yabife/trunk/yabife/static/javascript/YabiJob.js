@@ -423,7 +423,7 @@ YabiJob.prototype.getParam = function(switchName) {
  * render progress bar/badges
  */
 YabiJob.prototype.renderProgress = function(status, completed, total) {
-    if (status === null || completed === null || total === null) {
+    if (YAHOO.lang.isUndefined(status) || YAHOO.lang.isUndefined(completed) || YAHOO.lang.isUndefined(total)) {
         return;
     }
 
