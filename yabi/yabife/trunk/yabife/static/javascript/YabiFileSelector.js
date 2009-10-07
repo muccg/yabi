@@ -4,7 +4,7 @@
  * YabiFileSelector
  * create a new file selector object, to allow selection of files from yabi, or via upload
  */
-function YabiFileSelector(param, isBrowseMode) {
+function YabiFileSelector(param, isBrowseMode, filePath) {
     this.selectedFiles = [];
     this.pathComponents = [];
     this.browseListing = [];
@@ -97,7 +97,10 @@ function YabiFileSelector(param, isBrowseMode) {
     this.ddTarget = new YAHOO.util.DDTarget(this.fileListEl, 'files', {});
 
     // update the browser
-    this.updateBrowser(new YabiSimpleFileValue([], ''));
+    if (YAHOO.lang.isUndefined(filePath) || filePath === null) {
+        filePath = new YabiSimpleFileValue([], '');
+    }
+    this.updateBrowser(filePath);
 }
 
 /**

@@ -65,6 +65,7 @@ function YabiJob(toolName, jobId, preloadValues) {
     this.optionsTitleEl.appendChild(document.createTextNode('Options for '));
     this.optionsTitleEl.appendChild(this.optionsTitlePlaceholderEl);
     this.optionsEl.appendChild(this.optionsTitleEl);
+
 }
 
 /**
@@ -604,7 +605,7 @@ YabiJob.prototype.solidify = function(obj) {
         
         //workflow delayed selectjob callback to allow propagation after this job is loaded
         this.workflow.delayedSelectJob(this);
-    }
+    } 
     
     //now we are finished loading
     this.loaded = true;

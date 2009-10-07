@@ -151,6 +151,14 @@ function YabiWorkflow(editable) {
     }
     
     this.optionsEl = document.createElement('div');
+    
+    if (!editable) {
+        this.fileOutputsEl = document.createElement('div');
+        //not editable, create a file selector to point at the stageout directory if it exists
+        this.fileOutputsSelector = new YabiFileSelector(null, true);
+        this.fileOutputsSelector.uploadEl.style.display = 'none';
+        this.fileOutputsEl.appendChild( this.fileOutputsSelector.containerEl );
+    }
 
     //add an enter key listener for the tags field
     var enterTags = new YAHOO.util.KeyListener(this.tagInputEl, { ctrl:false, keys:13 }, 
