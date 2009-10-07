@@ -1,5 +1,7 @@
 import sys, os
 
+from urlparse import urlparse
+
 import stacklessreactor
 stacklessreactor.install()
 
@@ -25,6 +27,10 @@ sys.path=['.']+sys.path
 PORT = int(os.environ['PORT']) if 'PORT' in os.environ else 8000
 TELNET_PORT = 8021
 SSL_PORT = 4430
+
+import conf
+if "YABIADMIN" in os.environ:
+    conf.yabiadmin.parse_url(os.environ['YABIADMIN'])
 
 # make sure our env is sane
 import os
@@ -69,13 +75,17 @@ shellfactory.username = ''
 shellfactory.password = ''
 
 def startup():
-        # setup the TaskManager if we are needed
-        if "TASKMANAGER" in os.environ:
-            print "Starting task manager"
-            import TaskManager
-            reactor.callLater(0.1,TaskManager.startup) 
-        else:
-            print "NOT starting task manager"
+    # setup yabiadmin server, port and path as global variables
+    print "yabiadmin server:",conf.yabiadmin.SERVER,"port:",conf.yabiadmin.PORT,"path:",conf.yabiadmin.PATH
+    
+        
+    # setup the TaskManager if we are needed
+    if "TASKMANAGER" in os.environ:
+        print "Starting task manager"
+        import TaskManager
+        reactor.callLater(0.1,TaskManager.startup) 
+    else:
+        print "NOT starting task manager"
 
 reactor.addSystemEventTrigger("before", "startup", startup)
 

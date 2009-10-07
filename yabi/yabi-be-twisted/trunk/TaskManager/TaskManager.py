@@ -15,10 +15,12 @@ DEBUG = True
 
 import traceback
 
+import conf
+
 class TaskManager(object):
     TASK_HOST = "localhost"
     TASK_PORT = int(os.environ['PORT']) if 'PORT' in os.environ else 8000
-    TASK_URL = "/yabiadmin/engine/task/"
+    TASK_URL = "engine/task/"
     
     JOBLESS_PAUSE = 5.0                 # wait this long when theres no more jobs, to try to get another job
     JOB_PAUSE = 0.0                     # wait this long when you successfully got a job, to get the next job
@@ -60,26 +62,15 @@ class TaskManager(object):
          
          
     def get_next_task(self):
-        host,port,TASK_URL = self.TASK_HOST,self.TASK_PORT,self.TASK_URL
-        if 'YABIADMIN' in os.environ:
-            pre,post = os.environ['YABIADMIN'].split('/',1)
-            post="/"+post
-            if ':' in pre:
-                host,port=pre.split(":")
-                port=int(port)
-            else:
-                host=pre
-                
-            TASK_URL = "/engine/task/"
-                
+         
         useragent = "YabiExec/0.1"
         
         factory = client.HTTPClientFactory(
-            TASK_URL,
+            os.path.join(conf.yabiadmin.PATH,self.TASK_URL),
             agent = useragent
             )
         factory.noisy = True
-        reactor.connectTCP(host, port, factory)
+        reactor.connectTCP(conf.yabiadmin.SERVER, conf.yabiadmin.PORT, factory)
         
         # now if the page fails for some reason. deal with it
         def _doFailure(data):

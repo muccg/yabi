@@ -1,7 +1,7 @@
 """Encapsulation of globus Authentication proxies as a mixin"""
 
 from utils.stacklesstools import GET, GETFailure, sleep
-import json
+import json, os
 from globus.CertificateProxy import CertificateProxy
 
 class NoCredentials(Exception):
@@ -25,12 +25,15 @@ class GlobusAuth(object):
         host,port = "localhost",8000
         useragent = "YabiFS/0.1"
         
+        import conf
         #print "AuthProxyUser %s://%s@%s/"%(scheme,username,host)
+        print "AUTHPROXYUSER"
+        print conf.yabiadmin.SERVER, conf.yabiadmin.PORT,conf.yabiadmin.PATH
         
         try:
-            status, message, data = GET( path ="/yabiadmin/ws/credential/%s/%s/%s/"%(scheme,username,hostname),
-                                        host = host,
-                                        port = port )
+            status, message, data = GET( path = os.path.join(conf.yabiadmin.PATH,"ws/credential/%s/%s/%s/"%(scheme,username,hostname)),
+                                        host = conf.yabiadmin.SERVER,
+                                        port = conf.yabiadmin.PORT )
             
             assert status==200
             credentials = json.loads( data )

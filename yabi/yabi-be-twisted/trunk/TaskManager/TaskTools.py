@@ -84,10 +84,10 @@ def Log(logpath,message):
     if "://" in logpath:
         from urlparse import urlparse
         parsed = urlparse(logpath)
-        
-        code,msg,data = POST(parsed.path, status=message,host=parsed.hostname,port=parsed.port)              # error exception should bubble up and be caught
+        #print "LOG:",parsed.path, message,parsed.hostname,parsed.port
+        code,msg,data = POST(parsed.path, message=message,host=parsed.hostname,port=parsed.port)              # error exception should bubble up and be caught
     else:
-        code,msg,data = POST(logpath, status=message)              # error exception should bubble up and be caught
+        code,msg,data = POST(logpath, message=message)              # error exception should bubble up and be caught
     assert code==200
 
     
@@ -120,6 +120,8 @@ def UserCreds(scheme,username,hostname):
     """Get a users credentials"""
     # see if we can get the credentials
     print "UserCreds",scheme,username,hostname
-    code, message, data = GET(str('/yabiadmin/ws/credential/%s/%s/%s/'%(scheme,username,hostname)))
+    import conf
+    url = os.path.join(conf.yabiadmin.PATH,'ws/credential/%s/%s/%s/'%(scheme,username,hostname))
+    code, message, data = GET(url, host=conf.yabiadmin.SERVER, port=conf.yabiadmin.PORT)
     assert code==200
     return json.loads(data)

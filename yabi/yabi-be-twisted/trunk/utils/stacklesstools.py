@@ -30,6 +30,7 @@ import urllib
 
 class CallbackHTTPClient(client.HTTPPageGetter):
     callback = None
+    errordata=None
     
     def SetCallback(self, callback):
         self.callback = callback
@@ -52,8 +53,8 @@ class CallbackHTTPClient(client.HTTPPageGetter):
         if int(self.status) != 200:
             # we got an error. TODO: something graceful here
             #print "ERROR. NON 200 CODE RETURNED FOR JOB EXEC STATUS"
-            print [self.status]
-            print [data]
+            self.errordata=data
+            print "errordata",data
         elif self.callback:
             #print "CALLING CALLBACK",self.callback
             # hook in here to process chunked updates
@@ -86,10 +87,12 @@ class CallbackHTTPClientFactory(client.HTTPClientFactory):
     def buildProtocol(self, addr):
         p = client.HTTPClientFactory.buildProtocol(self, addr)
         p.SetCallback(self._callback)
+        self.last_client = p
         return p
 
     def SetCallback(self, callback):
         self._callback=callback
+        
 
 
 def GET(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory,**kws):
@@ -101,7 +104,7 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory
     getdata=urllib.urlencode(kws)
     
     factory = factory_class(
-        "http://%s:%d%s"%(host,port,path+"?"+getdata),
+        str("http://%s:%d%s"%(host,port,path+"?"+getdata)),
         agent = USER_AGENT,
         
         )
@@ -151,6 +154,8 @@ def POST(path,**kws):
     else:
         port = WS_PORT
         
+    errorpage=[None]
+        
     if 'datacallback' in kws:
         datacallback = kws['datacallback']
         del kws['datacallback']
@@ -161,32 +166,18 @@ def POST(path,**kws):
     #postdata="src=gridftp1/cwellington/bi01/cwellington/test&dst=gridftp1/cwellington/bi01/cwellington/test2"
     #print "POST DATA:",postdata
     
-    if datacallback:
-        factory = CallbackHTTPClientFactory(
-            str("http://%s:%d%s"%(host,port,path)),
-            agent = USER_AGENT,
-            method="POST",
-            postdata=postdata,
-            headers={
-                'Content-Type':"application/x-www-form-urlencoded",
-                'Accept':'*/*',
-                'Content-Length':"65"
-                },
-            callback=datacallback
-            )
-    else:
-        print str("http://%s:%d%s"%(host,port,path))
-        factory = client.HTTPClientFactory(
-            str("http://%s:%d%s"%(host,port,path)),
-            agent = USER_AGENT,
-            method="POST",
-            postdata=postdata,
-            headers={
-                'Content-Type':"application/x-www-form-urlencoded",
-                'Accept':'*/*',
-                'Content-Length':"65"
-                }
-            )
+    factory = CallbackHTTPClientFactory(
+        str("http://%s:%d%s"%(host,port,path)),
+        agent = USER_AGENT,
+        method="POST",
+        postdata=postdata,
+        headers={
+            'Content-Type':"application/x-www-form-urlencoded",
+            'Accept':'*/*',
+            'Content-Length':"65"
+            },
+        callback=datacallback
+        )
         
     factory.noisy=False
         
@@ -195,8 +186,9 @@ def POST(path,**kws):
     
     # now if the get fails for some reason. deal with it
     def _doFailure(data):
-        #print "Post Failed:",factory,":",type(data),data.__class__
-        get_failed[0] = int(factory.status), factory.message, data
+        #print "Post Failed:",factory,":",type(data),dir(factory)
+        #print factory.last_client.errordata
+        get_failed[0] = int(factory.status), factory.message, "Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
     
     def _doSuccess(data):
         #print "Post success"
