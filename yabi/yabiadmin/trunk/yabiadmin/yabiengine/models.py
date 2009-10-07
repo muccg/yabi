@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.conf import settings
 from yabiadmin.yabmin.models import User
 from yabiadmin.yabiengine import backendhelper
@@ -201,6 +202,7 @@ def workflow_save(sender, **kwargs):
                 'name':workflow.name,
                 'status':workflow.status
                 }
+        print "workflow_save::yabistoreupdate",resource,data
         status, data = yabistore_update(resource, data)
 
         print "status",repr(status)
@@ -230,7 +232,7 @@ def job_save(sender, **kwargs):
             resource = os.path.join(settings.YABISTORE_BASE,"jobs",job.workflow.user.name, job.id)
 
         data = {'status':t.status }
-        #yabistore_update(resource, data)
+        print "job_save::yabistore_update(",resource,",", data,")"
 
     except Exception, e:
         logger.critical(e)
@@ -252,7 +254,45 @@ def task_save(sender, **kwargs):
         data = {'error_msg':task.error_msg,
                 'status':task.status
                 }
+        
+        print "task_save::OLD_UPDATE",resource,data
         #yabistore_update(resource, data)
+
+        #from django.db.models import Count
+        total = len(Task.objects.filter(job=task.job))
+        done = len(Task.objects.filter(job=task.job,status=settings.STATUS['complete']))
+
+        print "%d/%d"%(done,total)
+        
+        print "job:",task.job
+        print "job id:",task.job.order
+        
+        # work out if this job is in an error state
+        errored = [X for X in Task.objects.filter(job=task.job,status=settings.STATUS['error'])]
+        erroredcount = len(errored)
+        
+        # how tasks are still ready. If they are all still ready, then the task is not runnig
+        running = len(Task.objects.filter(job=task.job).filter(Q(status=settings.STATUS['ready'])|Q(status=settings.STATUS['requested'])))<total
+        
+        status = "completed" if done==total else "error" if errored else "running" if running else "pending"
+        
+        errorMessage = None if not erroredcount else errored[0].error_msg
+        
+        if len(errored):
+            print "message=",errored[0].error_msg
+        
+        if not kwargs['created']:
+            resource = os.path.join(settings.YABISTORE_BASE,'workflows',task.job.workflow.user.name, str(task.job.workflow.yabistore_id), str(task.job.order) )
+            data = dict(    status=status,
+                            tasksComplete=done,
+                            tasksTotal=total
+                        )
+            if errorMessage:
+                data['errorMessage']=errorMessage
+                            
+            print "task_save::yabistoreupdate",resource,data
+            yabistore_update(resource, data)
+            
 
         #Checks all the tasks are complete, if so, changes status on job
         #and triggers the workflow walk
