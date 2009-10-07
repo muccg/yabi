@@ -137,6 +137,9 @@ MIDDLEWARE_CLASSES = (
 )
 #MIDDLEWARE_CLASSES += ('yabmin.middleware.Logging',)
 
+# our session cookie name (set to be different to admin)
+SESSION_COOKIE_NAME = "yabiadmincookie"
+
 ROOT_URLCONF = 'yabiadmin.urls'
 
 TEMPLATE_DIRS = (
