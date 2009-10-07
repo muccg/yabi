@@ -655,9 +655,13 @@ display:inline;
     color:#fff;
 }
 
-//.jobOptionsContainer {
-//    width:100%;
-//}
+.jobOptionsContainer {
+    position:relative;
+}
+
+.fileOutputs {
+    margin-bottom:18px;
+}
 
 #optionsDiv {
     width:100%;

@@ -151,13 +151,21 @@ function YabiWorkflow(editable) {
     }
     
     this.optionsEl = document.createElement('div');
+    this.optionsEl.className = "jobOptionsContainer";
     
     if (!editable) {
         this.fileOutputsEl = document.createElement('div');
+        this.fileOutputsEl.className = "fileOutputs";
+        var header = document.createElement('h1');
+        header.appendChild( document.createTextNode('File outputs') );
+        this.fileOutputsEl.appendChild( header );
+
         //not editable, create a file selector to point at the stageout directory if it exists
         this.fileOutputsSelector = new YabiFileSelector(null, true);
         this.fileOutputsSelector.uploadEl.style.display = 'none';
         this.fileOutputsEl.appendChild( this.fileOutputsSelector.containerEl );
+        this.fileOutputsEl.style.display = 'none';
+        this.fileOutputsSelector.fileListEl.style.height = "180px";
     }
 
     //add an enter key listener for the tags field
@@ -352,6 +360,10 @@ YabiWorkflow.prototype.propagateFiles = function(sender) {
  * tells a job to render as selected, and tells all other jobs to render deselected
  */
 YabiWorkflow.prototype.selectJob = function(object) {
+    if (!this.editable) {
+        this.fileOutputsEl.style.display = "none";
+    }
+
     //iterate
     for (var index in this.jobs) {
         if (this.jobs[index] == object) {
@@ -367,6 +379,11 @@ YabiWorkflow.prototype.selectJob = function(object) {
                 this.jobs[index].selectJob();
                 this.selectedJob = object;
                 
+                if (!this.editable) {
+                    this.fileOutputsEl.style.display = "block";
+                    this.fileOutputsSelector.updateBrowser(new YabiSimpleFileValue([], '')); //TODO make this use the selected job's stageoutDir if it exists
+                }
+
                 //callback hook to allow other elements to hook in when jobs are selected/deselected
                 if (!YAHOO.lang.isUndefined(this.afterSelectJob) && object.loaded) {
                     this.afterSelectJob(object);
