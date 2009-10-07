@@ -127,6 +127,9 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.ssl.SSLRedirect'
 )
 
+# our session cookie name (set to be different to admin)
+SESSION_COOKIE_NAME = "yabifecookie"
+
 ROOT_URLCONF = 'yabife.urls'
 
 TEMPLATE_DIRS = (
