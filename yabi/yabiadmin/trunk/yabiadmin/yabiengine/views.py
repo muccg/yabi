@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseServerError
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import webhelpers
@@ -24,13 +24,13 @@ def task(request):
             task.save()
             return HttpResponse(task.json())
         else:
-            raise ObjectDoesNotExist()
+            raise ObjectDoesNotExist("No more tasks")  
         
     except ObjectDoesNotExist:
         return HttpResponseNotFound("Object not found")
     except Exception, e:
         logger.critical("Caught Exception: %s" % e.message)
-        return HttpResponseNotFound("Object not found")
+        return HttpResponseServerError(e.message)
 
 def status(request, model, id):
     logger.debug('')
@@ -52,7 +52,7 @@ def status(request, model, id):
         else:
 
             if "status" not in request.POST:
-                raise ObjectDoesNotExist()
+                raise HttpResponseServerError("POST request to error service should contain 'message' parameter\n")
 
             model = str(model).lower()
             id = int(id)
@@ -75,7 +75,7 @@ def status(request, model, id):
         import traceback
         print "!!!!",traceback.format_exc()
         logger.critical("Caught Exception: %s" % e.message)
-        return HttpResponseNotFound("Object not found")
+        return HttpResponseServerError(e.message)
 
 
 def error(request, table, id):
@@ -96,7 +96,7 @@ def error(request, table, id):
 
             # check we have required params
             if "message" not in request.POST:
-                raise ObjectDoesNotExist()
+                return HttpResponseServerError("POST request to error service should contain 'message' parameter\n")
 
             syslog = Syslog(table_name=str(table),
                             table_id=int(id),

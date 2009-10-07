@@ -78,7 +78,7 @@ class Task(models.Model):
         # formulate our status url and our error url
         if 'YABIADMIN' in os.environ:                                                   # if we are forced to talk to a particular admin
             statusurl = "http://%sengine/status/task/%d"%(os.environ['YABIADMIN'],self.id)
-            errorurl = "http://%sengine/status/task/%d"%(os.environ['YABIADMIN'],self.id)
+            errorurl = "http://%sengine/error/task/%d"%(os.environ['YABIADMIN'],self.id)
         else:
             # use the yabiadmin embedded in this server
             statusurl = webhelpers.url("/engine/status/task/%d" % self.id)
