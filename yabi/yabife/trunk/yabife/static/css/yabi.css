@@ -397,7 +397,7 @@ display:inline;
 }
 
 .tagListContainer {
-	color:#666;
+	color:#b7c9e6;
     margin-top:8px;
     padding:3px;
     padding-left:14px;
@@ -974,6 +974,8 @@ display:inline;
 	border: 1px solid #ccc;
 	color: #666;	
 	//width: 180px;
+    -moz-box-shadow: 0px 1px 1px #ddd;
+    -webkit-box-shadow: 0px 1px 1px #ddd;
 	cursor: pointer;
 }
 
