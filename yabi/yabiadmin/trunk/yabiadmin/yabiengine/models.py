@@ -237,12 +237,13 @@ def job_save(sender, **kwargs):
             print "job_save::yabistoreupdate",resource,data
             yabistore_update(resource, data)
         elif job.status!="ready" and job.status!="complete":
-            workflow_id = job.workflow.yabistore_id
-            resource = os.path.join(settings.YABISTORE_BASE,'workflows',job.workflow.user.name, str(workflow_id), str(job.order) )
-            data = dict( stageout=job.stageout )
-            
-            print "job_save::yabistoreupdate",resource,data
-            yabistore_update(resource, data)
+            if job.stageout:
+                workflow_id = job.workflow.yabistore_id
+                resource = os.path.join(settings.YABISTORE_BASE,'workflows',job.workflow.user.name, str(workflow_id), str(job.order) )
+                data = dict( stageout=job.stageout )
+                
+                print "job_save::yabistoreupdate",resource,data
+                yabistore_update(resource, data)
 
     except Exception, e:
         logger.critical(e)
