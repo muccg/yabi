@@ -35,5 +35,10 @@ YabiSimpleFileValue.prototype.toString = function() {
 YabiSimpleFileValue.prototype.isEqual = function(b) {
     //console.log(this + " isEqual? " + b);
     //we don't allow files that have the same filename to be selected, even if they come from different paths
-    return (this.root == b.root && this.pathComponents == b.pathComponents && this.filename == b.filename);
+    var equal = true;
+    
+    equal = equal && (this.pathComponents.join("/") == b.pathComponents.join("/"));
+    equal = equal && (this.filename = b.filename);
+    
+    return equal;
 };
