@@ -381,7 +381,7 @@ YabiWorkflow.prototype.selectJob = function(object) {
                 this.jobs[index].selectJob();
                 this.selectedJob = object;
                 
-                if (!this.editable) {
+                if (!this.editable && !YAHOO.lang.isUndefined(this.payload.jobs[index].stageout)) {
                     this.fileOutputsEl.style.display = "block";
                     this.fileOutputsSelector.updateBrowser(new YabiSimpleFileValue([this.payload.jobs[index].stageout], '')); //TODO make this use the selected job's stageoutDir if it exists
                 }
