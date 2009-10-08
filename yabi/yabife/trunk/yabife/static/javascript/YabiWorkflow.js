@@ -713,6 +713,10 @@ YabiWorkflow.prototype.destroy = function() {
     
     //remove the workflow from its container
     this.mainEl.parentNode.removeChild(this.mainEl);
+    
+    if (!YAHOO.lang.isUndefined(this.fileOutputsEl)) {
+        this.fileOutputsEl.parentNode.removeChild(this.fileOutputsEl);
+    }
 };
 
 //---- CALLBACKS ----
