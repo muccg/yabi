@@ -162,6 +162,7 @@ function YabiWorkflow(editable) {
 
         //not editable, create a file selector to point at the stageout directory if it exists
         this.fileOutputsSelector = new YabiFileSelector(null, true);
+        this.fileOutputsSelector.homeEl.style.display = 'none';
         this.fileOutputsSelector.uploadEl.style.display = 'none';
         this.fileOutputsEl.appendChild( this.fileOutputsSelector.containerEl );
         this.fileOutputsEl.style.display = 'none';
@@ -382,7 +383,7 @@ YabiWorkflow.prototype.selectJob = function(object) {
                 
                 if (!this.editable) {
                     this.fileOutputsEl.style.display = "block";
-                    this.fileOutputsSelector.updateBrowser(new YabiSimpleFileValue([], '')); //TODO make this use the selected job's stageoutDir if it exists
+                    this.fileOutputsSelector.updateBrowser(new YabiSimpleFileValue([this.payload.jobs[index].stageout], '')); //TODO make this use the selected job's stageoutDir if it exists
                 }
 
                 //callback hook to allow other elements to hook in when jobs are selected/deselected
