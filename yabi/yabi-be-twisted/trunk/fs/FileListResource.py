@@ -60,7 +60,7 @@ class FileListResource(resource.PostableResource):
         client_channel = defer.Deferred()
         
         def do_list():
-            #print "hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
+            print "dolist() hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
             try:
                 lister=bend.ls(hostname,path=path, username=username,recurse=recurse)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream=json.dumps(lister)))

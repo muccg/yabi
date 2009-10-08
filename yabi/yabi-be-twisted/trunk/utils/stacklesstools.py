@@ -103,6 +103,8 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory
     """
     getdata=urllib.urlencode(kws)
     
+    print "=>",str("http://%s:%d%s"%(host,port,path+"?"+getdata))
+    
     factory = factory_class(
         str("http://%s:%d%s"%(host,port,path+"?"+getdata)),
         agent = USER_AGENT,

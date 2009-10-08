@@ -76,7 +76,9 @@ class GridFTP(FSConnector.FSConnector, globus.Auth):
     
     def ls(self, host, username, path, recurse=False, culldots=True):
         # make sure we are authed
+        print "EA"
         self.EnsureAuthed(self.scheme,username,host)
+        print "done"
         
         usercert = self.GetAuthProxy(host).ProxyFile(username)
         pp = globus.Shell.ls(usercert,host,path, args="-alFR" if recurse else "-alF" )
