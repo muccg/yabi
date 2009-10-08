@@ -84,7 +84,7 @@ def menu(request, *args, **kwargs):
         return HttpResponseNotFound(json_error("Object not found"))    
 
 
-@validate_uri
+#@validate_uri
 def ls(request):
     """
     This function will return a list of backends the user has access to IF the uri is empty. If the uri
@@ -92,8 +92,12 @@ def ls(request):
     """
     logger.debug('')
 
+    print "LS"
+
     try:
+        print "GET:",request.GET['uri']
         if request.GET['uri']:
+            print "get_listing"
             filelisting = get_listing(request.GET['uri'])
         else:
             filelisting = get_backend_list(request.GET['yabiusername'])

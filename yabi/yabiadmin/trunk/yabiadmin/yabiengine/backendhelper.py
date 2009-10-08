@@ -61,10 +61,13 @@ def get_listing(uri):
     try:
         resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, uri)
         logger.debug('Resource: %s' % resource)
+        print 'Resource: %s' % resource
         conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
+        print 'Server: %s' % settings.YABIBACKEND_SERVER
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
         conn.request('GET', resource)
         r = conn.getresponse()
+        print 'response',r
 
     except socket.error, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
@@ -75,6 +78,7 @@ def get_listing(uri):
 
     logger.info("Status of return from yabi backend is: %s" % r.status)
 
+    print "reading"
     return r.read()
 
 

@@ -257,31 +257,66 @@ def task_save(sender, **kwargs):
                 'status':task.status
                 }
         
-        print "task_save::OLD_UPDATE",resource,data
+        print "task_save...",resource,data
         #yabistore_update(resource, data)
 
+        # get all the tasks for this job
+        jobtasks = Task.objects.filter(job=task.job)
+        running = False
+        error = False
+        score=0.0
+        for task in jobtasks:
+            status = task.status
+            print "STATUS",status
+            score += { 
+                'ready':0.0,
+                'requested':0.01,
+                'stagein':0.05,
+                'mkdir':0.1,
+                'exec':0.11,
+                'exec:unsubmitted':0.12,
+                'exec:pending':0.13,
+                'exec:running':0.2,
+                'exec:cleanup':0.7,
+                'exec:done':0.75,
+                'stageout':0.8,
+                'cleaning':0.9,
+                'complete':1.0,
+                'error':0.0
+                }[status]
+                
+            if status!='ready' and status!='requested':
+                running=True
+            
+            if status=='error':
+                error=True
+        
         #from django.db.models import Count
-        total = len(Task.objects.filter(job=task.job))
-        done = len(Task.objects.filter(job=task.job,status=settings.STATUS['complete']))
+        total = float(len(jobtasks))
+        done=score
 
-        print "%d/%d"%(done,total)
+        print "%f/%f"%(done,total)
         
         print "job:",task.job
         print "job id:",task.job.order
         
         # work out if this job is in an error state
-        errored = [X for X in Task.objects.filter(job=task.job,status=settings.STATUS['error'])]
-        erroredcount = len(errored)
+        errored = [X.error_msg for X in jobtasks if X.status=='error']
         
-        # how tasks are still ready. If they are all still ready, then the task is not runnig
-        running = len(Task.objects.filter(job=task.job).filter(Q(status=settings.STATUS['ready'])|Q(status=settings.STATUS['requested'])))<total
+        status = None
+        if error:
+            status="error"
+        elif done==total:
+            status="completed"
+        elif running:
+            status="running"
+        else:
+            status="pending"
         
-        status = "completed" if done==total else "error" if errored else "running" if running else "pending"
-        
-        errorMessage = None if not erroredcount else errored[0].error_msg
+        errorMessage = None if not error else errored[0]
         
         if len(errored):
-            print "message=",errored[0].error_msg
+            print "message=",errored[0]
         
         if not kwargs['created']:
             resource = os.path.join(settings.YABISTORE_BASE,'workflows',task.job.workflow.user.name, str(task.job.workflow.yabistore_id), str(task.job.order) )
