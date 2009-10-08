@@ -823,7 +823,7 @@ display:inline;
 
 .optionsToggle {
 	position: absolute;
-    top: 12px;
+    top: 0px;
     right: 0px;
 }
 
