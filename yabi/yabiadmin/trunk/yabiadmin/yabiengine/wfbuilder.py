@@ -129,6 +129,9 @@ def addJob(workflow, job_dict, order):
         job.stageout = None
     else:
         job.stageout = "%s%d/%d/" % (fs_backendcredential.homedir_uri, workflow.id, job.id)
+        
+        # make that directory
+        backendhelper.mkdir(job.stageout)
 
 
     job.exec_backend = exec_backendcredential.homedir_uri

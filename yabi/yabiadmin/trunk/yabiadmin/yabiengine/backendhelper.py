@@ -82,6 +82,36 @@ def get_listing(uri):
     return r.read()
 
 
+def mkdir(uri):
+    """
+    Make a directory via the backend
+    """
+    logger.debug('')
+    logger.info("backendhelper::mkdir(%r)"%uri)
+    
+    try:
+        resource = "%s?uri=%s" % (settings.YABIBACKEND_MKDIR, uri)
+        logger.debug('Resource: %s' % resource)
+        print 'Resource: %s' % resource
+        conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
+        print 'Server: %s' % settings.YABIBACKEND_SERVER
+        logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
+        conn.request('GET', resource)
+        r = conn.getresponse()
+        print 'response',r
+
+    except socket.error, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
+        raise
+    except httplib.CannotSendRequest, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
+        raise
+
+    logger.info("Status of return from yabi backend is: %s" % r.status)
+
+    print "reading"
+    return r.read() 
+
 
 def get_backend_from_uri(uri):
     """
