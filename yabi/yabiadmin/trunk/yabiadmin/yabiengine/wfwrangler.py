@@ -15,7 +15,8 @@ logger = logging.getLogger('yabiengine')
 def walk(workflow):
     logger.debug('')
 
-    for job in workflow.job_set.all().order_by("order"):
+    jobset = [X for X in workflow.job_set.all().order_by("order")]
+    for job in jobset:
         logger.info('Walking job id: %s' % job.id)
         try:
 

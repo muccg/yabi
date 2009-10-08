@@ -97,7 +97,7 @@ class Task(models.Model):
             "backend": "%s%s" % (self.job.exec_backend, self.working_dir),
             "fsbackend": "%s%s" % (self.job.fs_backend, self.working_dir),
             },
-            "stageout":self.job.stageout
+            "stageout":self.job.stageout+"/"+str(self.id)+"/"
             }
 
         stageins = self.stagein_set.all()
@@ -227,14 +227,22 @@ def job_save(sender, **kwargs):
     job = kwargs['instance']
 
     try:
-        # update the yabistore
-        if kwargs['created']:
-            resource = os.path.join(settings.YABISTORE_BASE,"jobs",job.workflow.user.name)
-        else:
-            resource = os.path.join(settings.YABISTORE_BASE,"jobs",job.workflow.user.name, job.id)
-
-        data = {'status':t.status }
-        print "job_save::yabistore_update(",resource,",", data,")"
+        # if our job status is complete, force the annotation of this in the workflow
+        if job.status=="complete":
+            
+            workflow_id = job.workflow.yabistore_id
+            resource = os.path.join(settings.YABISTORE_BASE,'workflows',job.workflow.user.name, str(workflow_id), str(job.order) )
+            data = dict( status="completed", tasksTotal=1.0, tasksComplete=1.0 )
+            
+            print "job_save::yabistoreupdate",resource,data
+            yabistore_update(resource, data)
+        elif job.status!="ready" and job.status!="complete":
+            workflow_id = job.workflow.yabistore_id
+            resource = os.path.join(settings.YABISTORE_BASE,'workflows',job.workflow.user.name, str(workflow_id), str(job.order) )
+            data = dict( stageout=job.stageout )
+            
+            print "job_save::yabistoreupdate",resource,data
+            yabistore_update(resource, data)
 
     except Exception, e:
         logger.critical(e)
@@ -318,6 +326,12 @@ def task_save(sender, **kwargs):
         if len(errored):
             print "message=",errored[0]
         
+            # if there are errors, and the relative job has a status that isn't 'error'
+            if task.job.status != 'error':
+                # set the job to error
+                task.job.status='error'
+                task.job.save()
+        
         if not kwargs['created']:
             resource = os.path.join(settings.YABISTORE_BASE,'workflows',task.job.workflow.user.name, str(task.job.workflow.yabistore_id), str(task.job.order) )
             data = dict(    status=status,
@@ -330,11 +344,12 @@ def task_save(sender, **kwargs):
             print "task_save::yabistoreupdate",resource,data
             yabistore_update(resource, data)
             
+            
 
         #Checks all the tasks are complete, if so, changes status on job
         #and triggers the workflow walk
         incomplete_tasks = Task.objects.filter(job=task.job).exclude(status=settings.STATUS['complete'])
-        if not incomplete_tasks:
+        if not len(incomplete_tasks):
             task.job.status = settings.STATUS['complete']
             task.job.save()
             wfwrangler.walk(task.job.workflow)
@@ -356,6 +371,7 @@ def task_save(sender, **kwargs):
 # connect up django signals
 post_save.connect(workflow_save, sender=Workflow)
 post_save.connect(task_save, sender=Task)
+post_save.connect(job_save, sender=Job)
 
 
 # must import this here to avoid circular reference

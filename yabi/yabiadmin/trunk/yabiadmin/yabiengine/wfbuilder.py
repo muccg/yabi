@@ -26,7 +26,7 @@ def build(username, workflow_json):
     try:
 
         user = User.objects.get(name=username)
-        workflow = Workflow(name=slugify(workflow_dict["name"]), json=workflow_json, user=user)
+        workflow = Workflow(name=workflow_dict["name"], json=workflow_json, user=user)
         workflow.save()
 
         for i,job_dict in enumerate(workflow_dict["jobs"]):
