@@ -614,6 +614,12 @@ YabiWorkflow.prototype.solidify = function(obj) {
     		job.renderProgress(obj.jobs[index].status, obj.jobs[index].tasksComplete, obj.jobs[index].tasksTotal);
 		}
 	}
+    
+    
+    for (var proxy in this.attachedProxies) {
+        proxy.badgeEl.className = "badge"+this.payload.status;
+        proxy.payload.status = this.payload.status;
+    }
 };
 
 /**
