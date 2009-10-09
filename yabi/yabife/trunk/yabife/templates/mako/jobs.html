@@ -7,7 +7,7 @@ YAHOO.util.Event.onAvailable("container", initWorkflowListing);
 var workflowListing, refreshInterval;
 
 var examineProgress = function(status) {
-    if (status == "Completed") {
+    if (status == "completed") {
         window.clearInterval(refreshInterval);
     }
 };
