@@ -591,7 +591,7 @@ YabiWorkflow.prototype.solidify = function(obj) {
 	this.payload = obj;
 	var updateMode = false;
 	
-	var job;
+	var job, index;
 	
 	this.updateName(obj.name);
 
@@ -604,7 +604,7 @@ YabiWorkflow.prototype.solidify = function(obj) {
     }
     this.tagListEl.appendChild( document.createTextNode(this.tags) );
     
-	for (var index in obj.jobs) {
+	for (index in obj.jobs) {
 		if (updateMode) {
 		    job = this.jobs[index];
 	    } else {
@@ -615,8 +615,9 @@ YabiWorkflow.prototype.solidify = function(obj) {
 		}
 	}
     
-    
-    for (var proxy in this.attachedProxies) {
+    var proxy;
+    for (index in this.attachedProxies) {
+        proxy = this.attachedProxies[index];
         proxy.badgeEl.className = "badge"+this.payload.status;
         proxy.payload.status = this.payload.status;
     }
