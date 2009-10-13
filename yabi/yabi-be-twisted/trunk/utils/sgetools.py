@@ -73,11 +73,12 @@ def qsub(jobname, command, user="yabi", stdout="STDOUT.txt", stderr="STDERR.txt"
     arguments = list(lexer)
      
      # make a temporary file to store the command in
-    temp = tempfile.NamedTemporaryFile()
+    tempfile = tempfile.mktemp()
+    temp=open(tempfile,'w+b')
     temp.write(" ".join(arguments))
     
     # run the qsub process.
-    pp = qsub_spawn(jobname,temp.name)
+    pp = qsub_spawn(jobname,tempfile)
     
     while not pp.isDone():
         stackless.schedule()
@@ -87,9 +88,9 @@ def qsub(jobname, command, user="yabi", stdout="STDOUT.txt", stderr="STDERR.txt"
         from ex.connector.ExecConnector import ExecutionError
         raise ExecutionError(err)
     
-    # now we want to continually check the status of the job
-    job_id = pp.job_id
-    epr = pp.epr
+    # delete temp?
+    temp.close()
+    os.unlink(tempfile)
 
 class QstatProcessProtocol(protocol.ProcessProtocol):
     """ Job returns 'Your job 10 ("jobname") has been submitted'
