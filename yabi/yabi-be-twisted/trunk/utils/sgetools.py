@@ -39,6 +39,7 @@ class QsubProcessProtocol(protocol.ProcessProtocol):
         print "OUT:",self.out
         print "ERR:",self.err
         print "RE_MATCH:",re_match
+        print "Group",re_match.groups()
         
     def processEnded(self, status_object):
         self.exitcode = status_object.value.exitCode

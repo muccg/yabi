@@ -35,7 +35,7 @@ if "YABIADMIN" in os.environ:
 # make sure our env is sane
 import os
 assert "GLOBUS_LOCATION" in os.environ
-assert "SGE_ROOT" in os.environ
+#assert "SGE_ROOT" in os.environ
 
 # Create the resource we will be serving
 base = BaseResource()
