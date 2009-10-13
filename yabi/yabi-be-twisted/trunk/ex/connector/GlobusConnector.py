@@ -7,6 +7,8 @@ import tempfile
 
 from utils.stacklesstools import sleep
 
+from twisted.web2 import stream, http, responsecode, http_headers
+
 # for Job status updates, poll this often
 def JobPollGeneratorDefault():
     """Generator for these MUST be infinite. Cause you don't know how long the job will take. Default is to hit it pretty hard."""
@@ -57,7 +59,13 @@ class GlobusConnector(ExecConnector, globus.Auth):
         while not processprotocol.isDone():
             stackless.schedule()
             
-        assert processprotocol.exitcode==0
+        if processprotocol.exitcode!=0:
+            channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = pp.err ))
+            return
+        
+        # send an OK message, but leave the stream open
+        client_stream = stream.ProducerStream()
+        channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
         
         # now we want to continually check the status of the job
         job_id = processprotocol.job_id
@@ -87,15 +95,15 @@ class GlobusConnector(ExecConnector, globus.Auth):
             if processprotocol.exitcode and processprotocol.jobstate!="Done":
                 # error occured running statecheck... sometimes globus just fails cause its a fucktard.
                 print "Job status check for %s Failed (%d) - %s / %s\n"%(job_id,processprotocol.exitcode,processprotocol.out,processprotocol.err)
-                channel.write("Failed - %s\n"%(processprotocol.err))
-                channel.finish()
+                client_stream.write("Failed - %s\n"%(processprotocol.err))
+                client_stream.finish()
                 return
             
             newstate = processprotocol.jobstate
             if state!=newstate:
                 state=newstate
-                channel.write("%s\n"%state)
+                client_stream.write("%s\n"%state)
             
             
-        channel.finish()
+        client_stream.finish()
        

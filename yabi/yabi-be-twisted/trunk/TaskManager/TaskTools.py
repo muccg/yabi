@@ -18,7 +18,7 @@ RM_PATH = "/fs/rm"
 WS_HOST, WS_PORT = "localhost",int(os.environ['PORT']) if 'PORT' in os.environ else 8000
 USER_AGENT = "YabiStackless/0.1"
 
-from utils.stacklesstools import GET, POST, GETFailure
+from utils.stacklesstools import GET, POST, GETFailure, CloseConnections
 
 def Sleep(seconds):
     """sleep tasklet for this many seconds. seconds is a float"""

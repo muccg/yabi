@@ -4,6 +4,9 @@ class NotImplemented(Exception):
     """Exception to mark methods that haven't been overridden... yet..."""
     pass
 
+class ExecutionError(Exception):
+    pass
+
 class ExecConnector(object):
     """Base class for a filesystem connector"""
     

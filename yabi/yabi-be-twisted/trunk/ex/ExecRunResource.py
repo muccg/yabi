@@ -73,18 +73,15 @@ class ExecRunResource(resource.PostableResource):
                 kwargs[key]=cast(args[key][0])
         
         # we are gonna try submitting the job. We will need to make a deferred to return, because this could take a while
-        client_stream = stream.ProducerStream()
-        
-        def submit_job(test):
-            while True:
-                client_stream.write(".")
-                stackless.schedule()
+        #client_stream = stream.ProducerStream()
+        client_deferred = defer.Deferred()
         
         task = stackless.tasklet(bend.run)
-        task.setup(command, basepath, scheme, username, hostname, client_stream, **kwargs)
+        task.setup(command, basepath, scheme, username, hostname, client_deferred, **kwargs)
         task.run()
         
-        return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream )
+        return client_deferred
+        #return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream )
         
     def http_POST(self, request):
         """

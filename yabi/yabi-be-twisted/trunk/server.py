@@ -86,6 +86,13 @@ def startup():
         reactor.callLater(0.1,TaskManager.startup) 
     else:
         print "NOT starting task manager"
+        
 
 reactor.addSystemEventTrigger("before", "startup", startup)
+
+def shutdown():
+    import TaskManager
+    TaskManager.shutdown()
+    
+reactor.addSystemEventTrigger("before","shutdown",shutdown)
 

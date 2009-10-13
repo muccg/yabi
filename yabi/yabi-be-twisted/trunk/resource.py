@@ -40,6 +40,7 @@ from ex.resource import ExecResource
 
 # backends
 from ex.connector.GlobusConnector import GlobusConnector
+from ex.connector.SGEConnector import SGEConnector
 
 VERSION = 0.1
 class BaseResource(resource.PostableResource):
@@ -69,7 +70,8 @@ class BaseResource(resource.PostableResource):
             
         # execution backends
         self.child_exec = ExecResource(
-                globus = GlobusConnector()
+                globus = GlobusConnector(),
+                gse = SGEConnector(),
             )
             
         self.child_yabiadmin = wsgi.WSGIResource(application)

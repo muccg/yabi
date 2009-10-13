@@ -19,6 +19,11 @@ USER_AGENT = "YabiStackless/0.1"
 ## errors
 class GETFailure(Exception): pass
 class DeferredError(Exception): pass
+class CloseConnections(Exception):
+    """A special exception raised in tasklets by the engine shutdown.
+    It closes all the open tcp connections associated with this tasklet and then retries the last event.
+    """
+    pass
 
 def sleep(seconds):
     """Sleep the tasklet for this many seconds"""
@@ -134,11 +139,16 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory
 
     # now we schedule this thread until the task is complete
     while not get_complete[0] and not get_failed[0]:
+        #print "G"
         schedule()
         
     if get_failed[0]:
-        print "RAISING GETFailure"
-        raise GETFailure(get_failed[0])
+        if type(get_failed)==tuple and len(get_failed[0])==3:
+            # failed naturally
+            raise GETFailure(get_failed[0])
+        else:
+            # failed by tasklet serialisation and restoration
+            return GET(path, host, port, factory_class, **kws)
     
     return get_complete[0]
 
@@ -202,10 +212,16 @@ def POST(path,**kws):
     
     # now we schedule this thread until the task is complete
     while not get_complete[0] and not get_failed[0]:
+        #print "P"
         schedule()
         
     if get_failed[0]:
-        raise GETFailure(get_failed[0])
+        if type(get_failed)==tuple and len(get_failed[0])==3:
+            # failed naturally
+            raise GETFailure(get_failed[0])
+        else:
+            # failed by tasklet serialisation and restoration
+            return POST(path, host=host, port=port, datacallback=datacallback, **kws)
     
     return get_complete[0]
 

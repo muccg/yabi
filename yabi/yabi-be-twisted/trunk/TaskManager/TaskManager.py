@@ -2,13 +2,13 @@ from twisted.web import client
 from twisted.internet import reactor
 import json
 import stackless
-import weakref
 import random
 import os
+import pickle
 
 from utils.parsers import parse_url
 
-from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Mkdir, Rm, List, UserCreds, GETFailure
+from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Mkdir, Rm, List, UserCreds, GETFailure, CloseConnections
 
 # if debug is on, full tracebacks are logged into yabiadmin
 DEBUG = True
@@ -16,6 +16,35 @@ DEBUG = True
 import traceback
 
 import conf
+
+from Tasklets import tasklets
+
+class CustomTasklet(stackless.tasklet):
+    # When this is present, it is called in lieu of __reduce__.
+    # As the base tasklet class provides it, we need to as well.
+    def __reduce_ex__(self, pickleVersion):
+        return self.__reduce__()
+
+    def __reduce__(self):
+        # Get into the list that will eventually be returned to
+        # __setstate__ and append our own entry into it (the
+        # dictionary of instance variables).
+        ret = list(stackless.tasklet.__reduce__(self))
+        l = list(ret[2])
+        l.append(self.__dict__)
+        ret[2] = tuple(l)
+        return tuple(ret)
+
+    def __setstate__(self, l):
+        # Update the instance dictionary with the value we added in.
+        self.__dict__.update(l[-1])
+        # Let the tasklet get on with being reconstituted by giving
+        # it the original list (removing our addition).
+        return stackless.tasklet.__setstate__(self, l[:-1])
+
+class CustomTasklet(stackless.tasklet):
+    pass
+
 
 class TaskManager(object):
     TASK_HOST = "localhost"
@@ -27,8 +56,6 @@ class TaskManager(object):
     
     def __init__(self):
         self.pausechannel = stackless.channel()
-    
-        self._tasks=weakref.WeakKeyDictionary()                  # keys are weakrefs. values are remote working directory
     
     def start(self):
         """Begin the task manager tasklet. This tasklet continually pops tasks from yabiadmin and sets them up for running"""
@@ -50,12 +77,13 @@ class TaskManager(object):
         print "starting task:",taskdescription['taskid']
         
         # make the task and run it
-        tasklet = stackless.tasklet(self.task)
+        tasklet = CustomTasklet(self.task)
         tasklet.setup(taskdescription)
-        tasklet.run()
         
-        # mark in the weakrefdict that this tasklet exists
-        self._tasks[tasklet] = None
+        #add to save list
+        tasklets.add(tasklet)
+        
+        tasklet.run()
         
         # task successfully started. Lets try and start anotherone.
         self.pausechannel.send(self.JOB_PAUSE)
@@ -151,7 +179,7 @@ class TaskManager(object):
         mkuri = fsscheme+"://"+fsaddress.username+"@"+fsaddress.hostname+workingdir
         
         print "Making directory",mkuri
-        self._tasks[stackless.getcurrent()]=workingdir
+        #self._tasks[stackless.getcurrent()]=workingdir
         try:
             Mkdir(mkuri)
         except GETFailure, error:
@@ -164,26 +192,36 @@ class TaskManager(object):
         # now we are going to run the job
         status("exec")
         
-        # callback for job execution status change messages
-        def _task_status_change(line):
-            """Each line that comes back from the webservice gets passed into this callback"""
-            line = line.strip()
-            print "_task_status_change(",line,")"
-            log("Remote execution backend changed status to: %s"%(line))
-            status("exec:%s"%(line.lower()))
-        
-        # submit the job to the execution middle ware
-        log("Submitting to %s command: %s"%(task['exec']['backend'],task['exec']['command']))
-        
-        try:
-            Exec(task['exec']['backend'], command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change)                # this blocks untill the command is complete.
-            log("Execution finished")
-        except GETFailure, error:
-            # error executing
-            print "TASK[%s]: Execution failed!"%(taskid)
-            status("error")
-            log("Execution of %s on %s failed: %s"%(task['exec']['command'],task['exec']['backend'],error))
-            return              # finish task
+        retry=True
+        while retry:
+            retry=False
+            
+            try:
+                # callback for job execution status change messages
+                def _task_status_change(line):
+                    """Each line that comes back from the webservice gets passed into this callback"""
+                    line = line.strip()
+                    print "_task_status_change(",line,")"
+                    log("Remote execution backend changed status to: %s"%(line))
+                    status("exec:%s"%(line.lower()))
+                
+                # submit the job to the execution middle ware
+                log("Submitting to %s command: %s"%(task['exec']['backend'],task['exec']['command']))
+                
+                try:
+                    Exec(task['exec']['backend'], command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change)                # this blocks untill the command is complete.
+                    log("Execution finished")
+                except GETFailure, error:
+                    # error executing
+                    print "TASK[%s]: Execution failed!"%(taskid)
+                    status("error")
+                    log("Execution of %s on %s failed: %s"%(task['exec']['command'],task['exec']['backend'],error))
+                    return              # finish task
+            except CloseConnections, cc:
+                print "CLOSECONNECTIONS",cc
+                retry=True
+                
+            stackless.schedule()
         
         # stageout
         log("Staging out results")
@@ -230,21 +268,6 @@ class TaskManager(object):
                 status("error")
                 log("Deleting %s failed: %s"%(dst_url, error))
                 return              # finish task
-            
-        ## cleanup working dir
-        #try:
-            #print "RM2:",mkuri
-            #Rm(mkuri, recurse=True)
-            #log("Stageout directory %s deleted"%mkuri)
-        #except GETFailure, error:
-            ## error copying!
-            #print "TASK[%s]: Delete %s Error!"%(taskid, mkuri),error
-            #status("error")
-            #if DEBUG:
-                #log("Deleting %s failed: %s"%(mkuri, traceback.format_exc()))
-            #else:
-                #log("Deleting %s failed: %s"%(mkuri, error))
-            #return  
         
         log("Job completed successfully")
         status("complete")
