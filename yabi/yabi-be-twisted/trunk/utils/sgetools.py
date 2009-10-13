@@ -10,6 +10,7 @@ from tempfile import mktemp
 import os
 
 QSUB_COMMAND = "/opt/sge/6.2u3/bin/lx24-amd64/qsub"             #-N job-101 /home/yabi/test-remote
+QSTAT_COMMAND = "/opt/sge/6.2u3/bin/lx24-amd64/qstat"
 
 SUDO = "/usr/bin/sudo"
 
@@ -22,6 +23,8 @@ class QsubProcessProtocol(protocol.ProcessProtocol):
         self.err = ""
         self.out = ""
         self.exitcode = None
+        self.jobid = None
+        self.jobname = None
         
     def connectionMade(self):
         # when the process finally spawns, close stdin, to indicate we have nothing to say to it
@@ -39,7 +42,11 @@ class QsubProcessProtocol(protocol.ProcessProtocol):
         print "OUT:",self.out
         print "ERR:",self.err
         print "RE_MATCH:",re_match
-        print "Group",re_match.groups()
+        if re_match  and self.exitcode==0:
+            print "Group",re_match.groups()
+            jobid, jobname = re_match.groups()
+            self.jobid = int(jobid)
+            self.jobname = jobname
         
     def processEnded(self, status_object):
         self.exitcode = status_object.value.exitCode
@@ -93,6 +100,8 @@ def qsub(jobname, command, user="yabi", stdout="STDOUT.txt", stderr="STDERR.txt"
     
     # delete temp?
     os.unlink(tempfile)
+    
+    return pp.jobid
 
 class QstatProcessProtocol(protocol.ProcessProtocol):
     """ Job returns 'Your job 10 ("jobname") has been submitted'
@@ -132,6 +141,8 @@ job-ID  prior   name       user         state submit/start at     queue         
         # stdout was closed. this will be our endpoint reference
         re_match = self.regexp.search(self.out)
         print "RE_MATCH:",re_match
+        if re_match:
+            print "groups:",re_match.groups()
         
     def processEnded(self, status_object):
         self.exitcode = status_object.value.exitCode
@@ -139,24 +150,33 @@ job-ID  prior   name       user         state submit/start at     queue         
     def isDone(self):
         return self.exitcode != None
     
-def qstat(jobid=None, jobname=None):
-    """return the status of a running job via qstat"""
+def qstat_spawn(user="yabi"):
+    """return the status of a running job via qstat
+    /opt/sge/6.2u3/bin/lx24-amd64/qstat -u yabi
+    """
     subenv = os.environ.copy()
-    path = "/bin:/sbin:/usr/bin:/usr/sbin"
     pp = QstatProcessProtocol()
     reactor.spawnProcess(   pp,
-                            SUDO, 
+                            QSTAT_COMMAND, 
                             args=[
-                                SUDO,
+                                QSTAT_COMMAND,
                                 "-u",
-                                user,
-                                QSUB_COMMAND,
-                                "-N",
-                                jobname,
-                                commandfile
+                                user
                             ],
-                            env=subenv,
-                            path=path
+                            env=subenv
                         )
 
     return pp
+
+def qstat(user="yabi"):
+    # run the qsub process.
+    pp = qstat_spawn(user)
+    
+    while not pp.isDone():
+        stackless.schedule()
+        
+    if pp.exitcode!=0:
+        err = pp.err
+        from ex.connector.ExecConnector import ExecutionError
+        raise ExecutionError(err)
+    

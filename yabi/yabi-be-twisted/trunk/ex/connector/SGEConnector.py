@@ -25,47 +25,37 @@ class SGEConnector(ExecConnector, globus.Auth):
     
     def run(self, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single"):
         try:
-            res = qsub("jobname", username, command)
-        
-            print "RESULT",res
+            jobid = qsub("jobname", username, command)
+            print "JOB ID",jobid
         
         except ExecutionError, ee:
             channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = str(ee) ))
+            return
         
-    def oldrun(self, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single"):
-        # save the epr to a tempfile so we can use it again and again
-        temp = tempfile.NamedTemporaryFile(suffix=".epr",delete=False)
-        temp.write(epr)
-        temp.close()
-            
-        eprfile = temp.name
-            
+        # send an OK message, but leave the stream open
+        client_stream = stream.ProducerStream()
+        channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
+        
         state = None
         delay = JobPollGeneratorDefault()
         while state!="Done":
             # pause
             sleep(delay.next())
             
-            self.EnsureAuthed(scheme,username,host)
-            processprotocol = globus.Run.status( usercert, eprfile, host )
-            
-            while not processprotocol.isDone():
-                stackless.schedule()
+            jobsummary = qstat()
                 
-            #print "STATE:",processprotocol.jobstate, processprotocol.exitcode
-                
-            if processprotocol.exitcode and processprotocol.jobstate!="Done":
-                # error occured running statecheck... sometimes globus just fails cause its a fucktard.
-                print "Job status check for %s Failed (%d) - %s / %s\n"%(job_id,processprotocol.exitcode,processprotocol.out,processprotocol.err)
-                channel.write("Failed - %s\n"%(processprotocol.err))
-                channel.finish()
-                return
+            #if processprotocol.exitcode and processprotocol.jobstate!="Done":
+                ## error occured running statecheck... sometimes globus just fails cause its a fucktard.
+                #print "Job status check for %s Failed (%d) - %s / %s\n"%(job_id,processprotocol.exitcode,processprotocol.out,processprotocol.err)
+                #client_stream.write("Failed - %s\n"%(processprotocol.err))
+                #client_stream.finish()
+                #return
             
-            newstate = processprotocol.jobstate
-            if state!=newstate:
-                state=newstate
-                channel.write("%s\n"%state)
+            #newstate = processprotocol.jobstate
+            #if state!=newstate:
+                #state=newstate
+                #client_stream.write("%s\n"%state)
             
             
-        channel.finish()
-       
+        client_stream.finish()
+     

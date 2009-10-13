@@ -65,7 +65,7 @@ class GlobusConnector(ExecConnector, globus.Auth):
         
         # send an OK message, but leave the stream open
         client_stream = stream.ProducerStream()
-        channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
+        channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
         
         # now we want to continually check the status of the job
         job_id = processprotocol.job_id
