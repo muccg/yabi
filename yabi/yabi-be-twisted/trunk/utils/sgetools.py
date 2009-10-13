@@ -76,6 +76,8 @@ def qsub(jobname, command, user="yabi", stdout="STDOUT.txt", stderr="STDERR.txt"
     tempfile = mktemp()
     temp=open(tempfile,'w+b')
     temp.write(" ".join(arguments))
+    temp.write("\n")
+    temp.close()
     
     # run the qsub process.
     pp = qsub_spawn(jobname,tempfile)
@@ -89,7 +91,6 @@ def qsub(jobname, command, user="yabi", stdout="STDOUT.txt", stderr="STDERR.txt"
         raise ExecutionError(err)
     
     # delete temp?
-    temp.close()
     os.unlink(tempfile)
 
 class QstatProcessProtocol(protocol.ProcessProtocol):
