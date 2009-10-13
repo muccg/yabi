@@ -6,7 +6,7 @@ from twisted.internet import reactor
 import re
 import stackless
 import shlex
-import tempfile
+from tempfile import mktemp
 import os
 
 QSUB_COMMAND = "/opt/sge/6.2u3/bin/lx24-amd64/qsub"             #-N job-101 /home/yabi/test-remote
@@ -73,7 +73,7 @@ def qsub(jobname, command, user="yabi", stdout="STDOUT.txt", stderr="STDERR.txt"
     arguments = list(lexer)
      
      # make a temporary file to store the command in
-    tempfile = tempfile.mktemp()
+    tempfile = mktemp()
     temp=open(tempfile,'w+b')
     temp.write(" ".join(arguments))
     
