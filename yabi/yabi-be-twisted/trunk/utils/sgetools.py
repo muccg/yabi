@@ -120,7 +120,7 @@ job-ID  prior   name       user         state submit/start at     queue         
                             \s+(\w+)                    # state
                             \s+([\d/]+)                 # submit/start
                             \s+(\d+:\d+:\d+)            # at
-                            \s+(.+)\s*$                 # everything else on the line
+                            \s+(.+)\s+$                 # everything else on the line
                         """, re.VERBOSE)
     
     def __init__(self):
