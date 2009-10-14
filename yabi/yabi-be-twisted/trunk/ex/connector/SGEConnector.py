@@ -42,7 +42,7 @@ class SGEConnector(ExecConnector, globus.Auth):
             # pause
             sleep(delay.next())
             
-            jobsummary = qstat()
+            jobsummary = qstat(user=username)
             
             if jobid in jobsummary:
                 # job has not finished
