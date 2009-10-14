@@ -120,7 +120,8 @@ job-ID  prior   name       user         state submit/start at     queue         
                             \s+(\w+)                    # state
                             \s+([\d/]+)                 # submit/start
                             \s+(\d+:\d+:\d+)            # at
-                            \s+(.+)\s+$                 # everything else on the line
+                            \s+([\w\d\-@]*)             # submit host (optional)
+                            \s+(\d+)\s+$                # everything else on the line
                         """, re.VERBOSE)
     
     def __init__(self):
@@ -147,9 +148,9 @@ job-ID  prior   name       user         state submit/start at     queue         
             re_match = self.regexp.search(line)
             #print "RE_MATCH:",re_match
             if re_match:
-                jobid, prior, name, user, status, submit, at, rest = re_match.groups()
+                jobid, prior, name, user, status, submit, at, host, rest = re_match.groups()
                 jobid=int(jobid)
-                self.jobs[jobid] = dict(name=name,user=user,status=status,submit=submit,at=at,rest=rest,prior=prior)
+                self.jobs[jobid] = dict(name=name,user=user,status=status,submit=submit,at=at,rest=rest,host=host,prior=prior)
                 print self.jobs[jobid]
                 #print "id",jobid
                 
