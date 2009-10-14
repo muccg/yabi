@@ -44,6 +44,7 @@ class SGEConnector(ExecConnector, globus.Auth):
             
             jobsummary = qstat()[jobid]
                 
+            
             print "Job summary:",jobsummary
                 
             #if processprotocol.exitcode and processprotocol.jobstate!="Done":
