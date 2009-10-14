@@ -119,13 +119,16 @@ job-ID  prior   name       user         state submit/start at     queue         
                             \s+(\w+)                    # state
                             \s+([\d/]+)                 # submit/start
                             \s+(\d+:\d+:\d+)            # at
-                            \s+(.+)                     # everything else on the line
+                            \s+(.+)\s*                  # everything else on the line
                         """, re.VERBOSE)
     
     def __init__(self):
         self.err = ""
         self.out = ""
         self.exitcode = None
+        
+        # where we store the data gathered from the process
+        self.jobs = {}
         
     def connectionMade(self):
         # when the process finally spawns, close stdin, to indicate we have nothing to say to it
@@ -139,10 +142,15 @@ job-ID  prior   name       user         state submit/start at     queue         
             
     def outConnectionLost(self):
         # stdout was closed. this will be our endpoint reference
-        re_match = self.regexp.search(self.out)
-        print "RE_MATCH:",re_match
-        if re_match:
-            print "groups:",re_match.groups()
+        for line in self.out.split("\n"):
+            re_match = self.regexp.search(line)
+            print "RE_MATCH:",re_match
+            if re_match:
+                jobid, prior, name, user, status, submit, at, rest = re_match.groups()
+                jobid=int(jobid)
+                self.jobs[jobid] = (name,user,status,submit,at,rest,prior)
+                
+        print self.jobs
         
     def processEnded(self, status_object):
         self.exitcode = status_object.value.exitCode
