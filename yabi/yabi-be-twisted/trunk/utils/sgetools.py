@@ -68,6 +68,8 @@ def qsub_spawn(jobname, commandfile, user="yabi", stdout="STDOUT.txt", stderr="S
                                 QSUB_COMMAND,
                                 "-N",
                                 jobname,
+                                "-e",stderr,
+                                "-o",stdout,
                                 commandfile
                             ],
                             env=subenv
