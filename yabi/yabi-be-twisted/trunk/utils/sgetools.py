@@ -149,7 +149,8 @@ job-ID  prior   name       user         state submit/start at     queue         
             if re_match:
                 jobid, prior, name, user, status, submit, at, rest = re_match.groups()
                 jobid=int(jobid)
-                self.jobs[jobid] = (name,user,status,submit,at,rest,prior)
+                self.jobs[jobid] = dict(name=name,user=user,status=status,submit=submit,at=at,rest=rest,prior=prior)
+                print self.jobs[jobid]
                 #print "id",jobid
                 
         #print self.jobs
