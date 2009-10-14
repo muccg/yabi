@@ -149,6 +149,7 @@ job-ID  prior   name       user         state submit/start at     queue         
                 jobid, prior, name, user, status, submit, at, rest = re_match.groups()
                 jobid=int(jobid)
                 self.jobs[jobid] = (name,user,status,submit,at,rest,prior)
+                print "id",jobid
                 
         print self.jobs
         
