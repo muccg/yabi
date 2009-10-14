@@ -47,7 +47,7 @@ class SGEConnector(ExecConnector, globus.Auth):
             if jobid in jobsummary:
                 # job has not finished
                 status = jobsummary[jobid]['status']
-                newstate = dict(qw="Unsubmitted", t="Pending",r="Running",hqw="Unsubmitted",ht="Pending",h="Pending",E="Error")[status]
+                newstate = dict(qw="Unsubmitted", t="Pending",r="Running",hqw="Unsubmitted",ht="Pending",h="Pending",E="Error",Eqw="Error")[status]
             else:
                 # job has finished
                 newstate = "Done"
