@@ -57,6 +57,10 @@ class SGEConnector(ExecConnector, globus.Auth):
             if state!=newstate:
                 state=newstate
                 client_stream.write("%s\n"%state)
+                
+            if state=="Error":
+                client_stream.finish()
+                return
             
             
         client_stream.finish()
