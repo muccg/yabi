@@ -181,6 +181,13 @@ def qstat_spawn(user="yabi"):
     """
     subenv = os.environ.copy()
     pp = QstatProcessProtocol()
+    
+    print [
+                                QSTAT_COMMAND,
+                                "-u",
+                                user
+                            ]
+    
     reactor.spawnProcess(   pp,
                             QSTAT_COMMAND, 
                             args=[
