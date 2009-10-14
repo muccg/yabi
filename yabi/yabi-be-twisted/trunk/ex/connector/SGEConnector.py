@@ -47,14 +47,13 @@ class SGEConnector(ExecConnector, globus.Auth):
             if jobid in jobsummary:
                 # job has not finished
                 status = jobsummary[jobid]['status']
-                state = dict(qw="Unsubmitted", t="Pending",r="Running",hqw="Unsubmitted",ht="Pending",h="Pending",E="Error")[status]
+                newstate = dict(qw="Unsubmitted", t="Pending",r="Running",hqw="Unsubmitted",ht="Pending",h="Pending",E="Error")[status]
             else:
                 # job has finished
-                state = "Done"
+                newstate = "Done"
             print "Job summary:",jobsummary
                 
             
-            newstate = processprotocol.jobstate
             if state!=newstate:
                 state=newstate
                 client_stream.write("%s\n"%state)
