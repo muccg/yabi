@@ -59,6 +59,17 @@ def qsub_spawn(jobname, commandfile, user="yabi", stdout="STDOUT.txt", stderr="S
     """Spawn a process to run an xml job. return the process handler"""
     subenv = os.environ.copy()
     pp = QsubProcessProtocol()
+    print [
+                                SUDO,
+                                "-u",
+                                user,
+                                QSUB_COMMAND,
+                                "-N",
+                                jobname,
+                                "-e",stderr,
+                                "-o",stdout,
+                                commandfile
+                            ]
     reactor.spawnProcess(   pp,
                             SUDO, 
                             args=[
