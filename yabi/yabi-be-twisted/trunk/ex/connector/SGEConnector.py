@@ -1,5 +1,6 @@
 from ExecConnector import ExecConnector, ExecutionError
 from twisted.web2 import http, responsecode, http_headers
+from twisted.internet import stream
 
 import shlex
 import globus
