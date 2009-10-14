@@ -155,7 +155,7 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
-    'django_evolution',
+    #'django_evolution',
     'yabiadmin.yabmin',
     'yabiadmin.yabiengine'
 )
