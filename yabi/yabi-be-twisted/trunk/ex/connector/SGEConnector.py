@@ -42,22 +42,22 @@ class SGEConnector(ExecConnector, globus.Auth):
             # pause
             sleep(delay.next())
             
-            jobsummary = qstat()[jobid]
-                
+            jobsummary = qstat()
             
+            if jobid in jobsummary:
+                # job has not finished
+                status = jobsummary[jobid]['status']
+                state = dict(qw="Unsubmitted", t="Pending",r="Running",hqw="Unsubmitted",ht="Pending",h="Pending",E="Error")[status]
+            else:
+                # job has finished
+                state = "Done"
             print "Job summary:",jobsummary
                 
-            #if processprotocol.exitcode and processprotocol.jobstate!="Done":
-                ## error occured running statecheck... sometimes globus just fails cause its a fucktard.
-                #print "Job status check for %s Failed (%d) - %s / %s\n"%(job_id,processprotocol.exitcode,processprotocol.out,processprotocol.err)
-                #client_stream.write("Failed - %s\n"%(processprotocol.err))
-                #client_stream.finish()
-                #return
             
-            #newstate = processprotocol.jobstate
-            #if state!=newstate:
-                #state=newstate
-                #client_stream.write("%s\n"%state)
+            newstate = processprotocol.jobstate
+            if state!=newstate:
+                state=newstate
+                client_stream.write("%s\n"%state)
             
             
         client_stream.finish()
