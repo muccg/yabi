@@ -102,7 +102,7 @@ def qsub(jobname, command, user="yabi", stdout="STDOUT.txt", stderr="STDERR.txt"
     temp.close()
     
     # run the qsub process.
-    pp = qsub_spawn(jobname,tempfile)
+    pp = qsub_spawn(jobname,tempfile,user=user)
     
     while not pp.isDone():
         stackless.schedule()
