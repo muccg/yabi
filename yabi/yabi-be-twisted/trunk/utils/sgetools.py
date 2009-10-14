@@ -39,15 +39,15 @@ class QsubProcessProtocol(protocol.ProcessProtocol):
     def outConnectionLost(self):
         # stdout was closed. this will be our endpoint reference
         re_match = self.regexp.search(self.out)
-        print "OUT:",self.out
-        print "ERR:",self.err
-        print "RE_MATCH:",re_match
+        #print "OUT:",self.out
+        #print "ERR:",self.err
+        #print "RE_MATCH:",re_match
         if re_match:
-            print "Group",re_match.groups()
+            #print "Group",re_match.groups()
             jobid, jobname = re_match.groups()
             self.jobid = int(jobid)
             self.jobname = jobname
-            print "jobid=",jobid
+            #print "jobid=",jobid
         
     def processEnded(self, status_object):
         self.exitcode = status_object.value.exitCode
@@ -120,7 +120,7 @@ job-ID  prior   name       user         state submit/start at     queue         
                             \s+(\w+)                    # state
                             \s+([\d/]+)                 # submit/start
                             \s+(\d+:\d+:\d+)            # at
-                            \s+(.+)\s*                  # everything else on the line
+                            \s+(.+)\s*$                 # everything else on the line
                         """, re.VERBOSE)
     
     def __init__(self):
@@ -145,12 +145,12 @@ job-ID  prior   name       user         state submit/start at     queue         
         # stdout was closed. this will be our endpoint reference
         for line in self.out.split("\n"):
             re_match = self.regexp.search(line)
-            print "RE_MATCH:",re_match
+            #print "RE_MATCH:",re_match
             if re_match:
                 jobid, prior, name, user, status, submit, at, rest = re_match.groups()
                 jobid=int(jobid)
                 self.jobs[jobid] = (name,user,status,submit,at,rest,prior)
-                print "id",jobid
+                #print "id",jobid
                 
         print self.jobs
         
@@ -189,4 +189,6 @@ def qstat(user="yabi"):
         err = pp.err
         from ex.connector.ExecConnector import ExecutionError
         raise ExecutionError(err)
+    
+    return pp.jobs
     

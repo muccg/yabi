@@ -42,7 +42,9 @@ class SGEConnector(ExecConnector, globus.Auth):
             # pause
             sleep(delay.next())
             
-            jobsummary = qstat()
+            jobsummary = qstat()[jobid]
+                
+            print "Job summary:",jobsummary
                 
             #if processprotocol.exitcode and processprotocol.jobstate!="Done":
                 ## error occured running statecheck... sometimes globus just fails cause its a fucktard.
