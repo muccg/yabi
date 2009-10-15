@@ -624,6 +624,8 @@ display:inline;
     -moz-border-radius-topleft:6px;
     -moz-border-radius-bottomleft:6px;
     padding-left:6px;
+    left:-6px;
+    width:96px;
 }
 
 .jobParam input, .jobParam select, .jobParam .value {
