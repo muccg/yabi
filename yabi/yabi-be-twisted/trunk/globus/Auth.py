@@ -35,6 +35,7 @@ class GlobusAuth(object):
                                         port = conf.yabiadmin.PORT )
             
             assert status==200
+            print "GET status returned",data
             credentials = json.loads( data )
             
             # create the user proxy
