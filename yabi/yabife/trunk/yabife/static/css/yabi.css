@@ -572,6 +572,7 @@ display:inline;
 }
 
 .jobContainer h1 {
+    font-size:105%;
     color: #666;
 	margin-bottom: 0px;
     padding-bottom: 4px;
@@ -588,6 +589,7 @@ display:inline;
 
 
 .selectedJobContainer h1 {
+    font-size:105%;
 	margin-bottom: 0px;
     color:#fff;
     padding-bottom: 4px;
