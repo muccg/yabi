@@ -642,6 +642,7 @@ display:inline;
 
 .jobInputs {
 	padding: 3px;
+	padding-bottom:0px;
 	font-size: 90%;
 	width: 95%;
 	line-height: 1.3em;
@@ -666,6 +667,7 @@ display:inline;
 	padding: 3px;
 	font-size: 90%;
     position:relative;
+	margin-top:-3px;
 }
 
 .jobOutputs label {
@@ -833,9 +835,9 @@ display:inline;
 	right:1px;
 	font-size:80%;
 	color:#333;
-    background:url(../images/delnode.png);
-    width:14px;
-    height:13px;
+    background:url(../images/delnode.png) no-repeat;
+    width:17px;
+    height:17px;
     cursor: pointer;
 }
 
