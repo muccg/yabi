@@ -632,7 +632,7 @@ display:inline;
 .jobParam input, .jobParam select, .jobParam .value {
     position:absolute;
     top:2px;
-    left:100px;
+    left:110px;
 }
 
 .jobInputs {
@@ -840,7 +840,7 @@ display:inline;
 }
 
 .fileSelector {
-	margin-left: 104px;
+	margin-left: 114px;
 }
 
 #yabi-files-mode .fileSelector {
