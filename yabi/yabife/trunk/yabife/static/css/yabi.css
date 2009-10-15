@@ -617,6 +617,14 @@ display:inline;
     text-overflow:ellipsis;
 }
 
+.mandatoryParamLabel {
+    background-color:#8ba9dc;
+    -webkit-border-top-left-radius:6px;
+    -webkit-border-bottom-left-radius:6px;
+    -moz-border-radius-topleft:6px;
+    -moz-border-radius-bottomleft:6px;
+}
+
 .jobParam input, .jobParam select, .jobParam .value {
     position:absolute;
     top:2px;

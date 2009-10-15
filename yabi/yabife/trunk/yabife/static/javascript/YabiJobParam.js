@@ -169,7 +169,8 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
     //___LABEL EL___
     this.labelEl = document.createElement('label');
     if (this.payload.mandatory === true) {
-        this.labelEl.appendChild(document.createTextNode("* "));
+        //this.labelEl.appendChild(document.createTextNode("* "));
+        this.labelEl.className = "mandatoryParamLabel";
     }
     this.labelEl.appendChild(document.createTextNode(this.displayName));
     this.containerEl.appendChild(this.labelEl);
