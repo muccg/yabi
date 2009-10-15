@@ -99,8 +99,8 @@ class CallbackHTTPClientFactory(client.HTTPClientFactory):
         self._callback=callback
         
 
-
-def GET(path, host=WS_HOST, port=WS_PORT, factory_class=CallbackHTTPClientFactory,**kws):
+#def GET(path, host=WS_HOST, port=WS_PORT, factory_class=CallbackHTTPClientFactory,**kws):
+def GET(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory,**kws):
     """Stackless integrated twisted webclient GET
     Pass in the path to get and optionally the host and port
     raises a GETFailure exception on failure
@@ -125,15 +125,15 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=CallbackHTTPClientFactor
     
     # now if the get fails for some reason. deal with it
     def _doFailure(data):
-        #print "FAILED:",factory.status,":",type(data),data
-        #print "FACTORY",dir(factory)
-        ##print data
-        #get_failed[0] = int(factory.status), factory.message, data
-        print "FACTORY DIR",dir(factory),factory.__class__
-        
-        print "FAILED:",factory.status,":",type(data),"Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
+        print "FAILED:",factory.status,":",type(data),data
+        print "FACTORY",dir(factory)
         #print data
-        get_failed[0] = int(factory.status), factory.message, "Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
+        get_failed[0] = int(factory.status), factory.message, data
+        #print "FACTORY DIR",dir(factory),factory.__class__
+        
+        #print "FAILED:",factory.status,":",type(data),"Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
+        ##print data
+        #get_failed[0] = int(factory.status), factory.message, "Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
         
     def _doSuccess(data):
         print "SUCCESS:",factory.status,factory.message, data
