@@ -145,7 +145,7 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=CallbackHTTPClientFactor
 
     # now we schedule this thread until the task is complete
     while not get_complete[0] and not get_failed[0]:
-        print "G",get_complete[0],"G2",get_failed[0]
+        #print "G",get_complete[0],"G2",get_failed[0]
         schedule()
         
     if get_failed[0]:
