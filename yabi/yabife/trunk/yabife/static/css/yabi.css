@@ -618,11 +618,12 @@ display:inline;
 }
 
 .mandatoryParamLabel {
-    background-color:#8ba9dc;
+    background-color:#ebf0f3;
     -webkit-border-top-left-radius:6px;
     -webkit-border-bottom-left-radius:6px;
     -moz-border-radius-topleft:6px;
     -moz-border-radius-bottomleft:6px;
+    padding-left:6px;
 }
 
 .jobParam input, .jobParam select, .jobParam .value {
@@ -836,7 +837,7 @@ display:inline;
 }
 
 .fileSelector {
-	margin-left: 80px;
+	margin-left: 104px;
 }
 
 #yabi-files-mode .fileSelector {
