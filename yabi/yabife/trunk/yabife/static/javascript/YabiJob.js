@@ -478,7 +478,7 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
             this.errorEl = document.createElement("div");
             this.errorEl.className = "jobErrorMsg";
             this.errorEl.appendChild( document.createTextNode("Error running job. "+message) );
-            this.containerEl.appendChild(this.errorEl);
+            this.jobEl.appendChild(this.errorEl);
         }
     }
 
