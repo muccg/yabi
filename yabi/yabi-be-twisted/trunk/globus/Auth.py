@@ -40,6 +40,7 @@ class GlobusAuth(object):
             print "GET AuthProxy returned",status
             print "MESSAGE",message
             print "DATA",data
+            print "END DATA"
             credentials = json.loads( data )
             
             # create the user proxy
