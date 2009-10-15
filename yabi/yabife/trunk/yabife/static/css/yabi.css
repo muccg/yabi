@@ -573,8 +573,9 @@ display:inline;
 
 .jobContainer h1 {
     color: #666;
-	//font-size: 105%;
-	margin-bottom: 4px;
+	margin-bottom: 0px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #eee;
 }
 
 .jobInputs {
@@ -587,9 +588,10 @@ display:inline;
 
 
 .selectedJobContainer h1 {
-	//font-size: 105%;
-	margin-bottom: 4px;
+	margin-bottom: 0px;
     color:#fff;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #eee;
 }
 
 .jobOptionsContainer {
