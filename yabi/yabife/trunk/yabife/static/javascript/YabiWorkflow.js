@@ -383,7 +383,7 @@ YabiWorkflow.prototype.selectJob = function(object) {
                 
                 if (!this.editable && !YAHOO.lang.isUndefined(this.payload.jobs[index].stageout)) {
                     this.fileOutputsEl.style.display = "block";
-                    this.fileOutputsSelector.updateBrowser(new YabiSimpleFileValue([this.payload.jobs[index].stageout], '')); //TODO make this use the selected job's stageoutDir if it exists
+                    this.fileOutputsSelector.updateBrowser(new YabiSimpleFileValue([this.payload.jobs[index].stageout], ''));
                 }
 
                 //callback hook to allow other elements to hook in when jobs are selected/deselected
@@ -591,7 +591,7 @@ YabiWorkflow.prototype.solidify = function(obj) {
 	this.payload = obj;
 	var updateMode = false;
 	
-	var job, index;
+	var job, index, oldJobStatus;
 	
 	this.updateName(obj.name);
 
@@ -611,7 +611,13 @@ YabiWorkflow.prototype.solidify = function(obj) {
 	        job = this.addJob(obj.jobs[index].toolName, obj.jobs[index].parameterList.parameter);
         }
         if (!this.editable) {
-    		job.renderProgress(obj.jobs[index].status, obj.jobs[index].tasksComplete, obj.jobs[index].tasksTotal);
+    		oldJobStatus = job.status;
+            
+            job.renderProgress(obj.jobs[index].status, obj.jobs[index].tasksComplete, obj.jobs[index].tasksTotal);
+            
+            if (this.selectedJob == job && oldJobStatus != job.status) {
+                this.fileOutputsSelector.updateBrowser(new YabiSimpleFileValue([this.payload.jobs[index].stageout], ''));
+            }
 		}
 	}
     
