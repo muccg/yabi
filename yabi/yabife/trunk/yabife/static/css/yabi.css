@@ -213,7 +213,7 @@ body {
 #yabi-tabs {
 	position:absolute;
 	left:250px;
-	bottom:4px;
+	bottom:2px;
 	color:#fff;
 }
 #yabi-tabs a {
@@ -241,6 +241,11 @@ body {
 	color:white;
     text-shadow:0px -1px 1px #666;    
 }
+
+#yabi-jobs-mode #yabi-tabs-jobs, #yabi-design-mode #yabi-tabs-design, #yabi-files-mode #yabi-tabs-files {
+	font-size:133%;
+}
+
 #yabi-tabs-design {
 	padding:4px 16px 4px 16px;
 	background-color:#fff;
