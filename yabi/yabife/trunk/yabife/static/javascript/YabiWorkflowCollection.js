@@ -212,16 +212,20 @@ YabiWorkflowCollection.prototype.solidify = function(obj) {
  *
  */
 YabiWorkflowCollection.prototype.hydrate = function() {
+    if (YAHOO.util.Connect.isCallInProgress( this.jsTransaction )) {
+        YAHOO.util.Connect.abort( this.jsTransaction, null, false );
+    }
+    
     var baseURL = appURL + "workflows/" + YAHOO.ccgyabi.username + "/datesearch?start=" + this.dateStart;
     
     //load json
-    var jsUrl, jsCallback, jsTransaction;
+    var jsUrl, jsCallback;
     jsUrl =  baseURL;
     jsCallback = {
     success: this.hydrateResponse,
     failure: this.hydrateResponse,
         argument: [this] };
-    jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
+    this.jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
 };
 
 YabiWorkflowCollection.prototype.toString = function() {
