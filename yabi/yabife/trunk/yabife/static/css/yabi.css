@@ -609,7 +609,7 @@ display:inline;
 
 .jobParam label {
     display:block;
-    width:90px;
+    width:100px;
     position:absolute;
     top:2px;
     left:0px;
@@ -619,7 +619,7 @@ display:inline;
 
 .jobParam input, .jobParam select, .jobParam .value {
     position:absolute;
-    top:0px;
+    top:2px;
     left:100px;
 }
 
