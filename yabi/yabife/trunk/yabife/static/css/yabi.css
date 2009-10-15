@@ -640,6 +640,10 @@ display:inline;
     left:110px;
 }
 
+input {
+    height: 1.5em;
+}
+
 .jobInputs {
 	padding: 3px;
 	padding-bottom:0px;
