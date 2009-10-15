@@ -38,8 +38,8 @@ class GlobusAuth(object):
             print "FROM:",os.path.join(conf.yabiadmin.PATH,"ws/credential/%s/%s/%s/"%(scheme,username,hostname))
             print "H,S",conf.yabiadmin.SERVER,conf.yabiadmin.PORT
             print "GET AuthProxy returned",status
-            print message
-            print data
+            print "MESSAGE",message
+            print "DATA",data
             credentials = json.loads( data )
             
             # create the user proxy
