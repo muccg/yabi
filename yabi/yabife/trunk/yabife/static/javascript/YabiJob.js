@@ -423,7 +423,7 @@ YabiJob.prototype.getParam = function(switchName) {
  *
  * render progress bar/badges
  */
-YabiJob.prototype.renderProgress = function(status, completed, total) {
+YabiJob.prototype.renderProgress = function(status, completed, total, message) {
     if (YAHOO.lang.isUndefined(status) || YAHOO.lang.isUndefined(completed) || YAHOO.lang.isUndefined(total)) {
         return;
     }
@@ -467,6 +467,18 @@ YabiJob.prototype.renderProgress = function(status, completed, total) {
     //and hide the progress bar if the progress is 100%
     if (this.progress >= 100) {
         this.progressContainerEl.style.display = "none";
+    }
+    
+    //if error
+    if (status == 'error') {
+        if (YAHOO.lang.isUndefined(message)) {
+            message = '';
+        }
+        if (YAHOO.lang.isUndefined(this.errorEl)) {
+            this.errorEl = document.createElement("div");
+            this.errorEl.className = "jobErrorMsg";
+            this.errorEl.appendChild( document.createTextNode("Error running job. "+message) );
+        }
     }
 
 };

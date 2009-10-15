@@ -588,6 +588,21 @@ display:inline;
     text-shadow:none;
 }
 
+.jobErrorMsg {
+    border:1px solid #f77;
+	background: #fcc url(../images/job_loadfail_bg.png);
+	background: -webkit-gradient(linear, left top, left bottom, from(#fee), to(#fdd));
+    -moz-box-shadow: 0px 0px 3px #f77;
+    -webkit-box-shadow: 0px 0px 3px #f77;
+	padding:4px;
+	padding-left: 12px;
+	position:relative;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    font-size: 95%;
+    color: #f66;
+    margin-bottom:6px;
+}
 
 .selectedJobContainer h1 {
     font-size:105%;
