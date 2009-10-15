@@ -710,6 +710,7 @@ display:inline;
 .acceptedExtensionList {
 	color: #999;
 	padding: 2px;
+    min-height:1.2em;
 }
 
 .jobParam .acceptedExtensionList {
