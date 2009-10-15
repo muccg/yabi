@@ -577,6 +577,7 @@ display:inline;
 	margin-bottom: 0px;
     padding-bottom: 4px;
     border-bottom: 1px solid #eee;
+    width:298px;
 }
 
 .jobInputs {
@@ -594,6 +595,7 @@ display:inline;
     color:#fff;
     padding-bottom: 4px;
     border-bottom: 1px solid #5aa4fb;
+    width:298px;
 }
 
 .jobOptionsContainer {
