@@ -84,6 +84,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth):
         pp = globus.Shell.ls(usercert,host,path, args="-alFR" if recurse else "-alF" )
         
         while not pp.isDone():
+            print "pp is not Done",pp.exitcode
             stackless.schedule()
             
         err, out = pp.err, pp.out
@@ -91,8 +92,10 @@ class GridFTP(FSConnector.FSConnector, globus.Auth):
         if pp.exitcode!=0:
             # error occurred
             if "Permission denied" in err:
+                print "PERM DENIED"
                 raise PermissionDenied(err)
             else:
+                print "INV PATH"
                 raise InvalidPath(err)
         
         ls_data = parse_ls(out, culldots=culldots)

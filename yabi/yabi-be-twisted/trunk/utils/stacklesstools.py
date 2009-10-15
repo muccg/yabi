@@ -100,7 +100,7 @@ class CallbackHTTPClientFactory(client.HTTPClientFactory):
         
 
 
-def GET(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory,**kws):
+def GET(path, host=WS_HOST, port=WS_PORT, factory_class=CallbackHTTPClientFactory,**kws):
     """Stackless integrated twisted webclient GET
     Pass in the path to get and optionally the host and port
     raises a GETFailure exception on failure
@@ -125,10 +125,16 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory
     
     # now if the get fails for some reason. deal with it
     def _doFailure(data):
-        print "FAILED:",factory.status,":",type(data),data.__class__
+        #print "FAILED:",factory.status,":",type(data),data
+        #print "FACTORY",dir(factory)
+        ##print data
+        #get_failed[0] = int(factory.status), factory.message, data
+        print "FACTORY DIR",dir(factory),factory.__class__
+        
+        print "FAILED:",factory.status,":",type(data),"Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
         #print data
-        get_failed[0] = int(factory.status), factory.message, data
-     
+        get_failed[0] = int(factory.status), factory.message, "Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
+        
     def _doSuccess(data):
         print "SUCCESS:",factory.status,factory.message, data
         get_complete[0] = int(factory.status), factory.message, data
@@ -139,16 +145,20 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=client.HTTPClientFactory
 
     # now we schedule this thread until the task is complete
     while not get_complete[0] and not get_failed[0]:
-        #print "G"
+        print "G",get_complete[0],"G2",get_failed[0]
         schedule()
         
     if get_failed[0]:
-        if type(get_failed)==tuple and len(get_failed[0])==3:
+        print "get_failed=",get_failed
+        if type(get_failed[0])==tuple and len(get_failed[0])==3:
             # failed naturally
             raise GETFailure(get_failed[0])
-        else:
+        elif get_failed[0]==True:
             # failed by tasklet serialisation and restoration
             return GET(path, host, port, factory_class, **kws)
+        else:
+            print "GETFailed=",get_failed
+            assert False, "got unknown GET failure response"
     
     return get_complete[0]
 
@@ -216,12 +226,15 @@ def POST(path,**kws):
         schedule()
         
     if get_failed[0]:
-        if type(get_failed)==tuple and len(get_failed[0])==3:
+        if type(get_failed[0])==tuple and len(get_failed[0])==3:
             # failed naturally
             raise GETFailure(get_failed[0])
-        else:
+        elif get_failed[0]:
             # failed by tasklet serialisation and restoration
             return POST(path, host=host, port=port, datacallback=datacallback, **kws)
+        else:
+            print "POSTFailed=",get_failed
+            assert False, "got unknown POST failure response"
     
     return get_complete[0]
 

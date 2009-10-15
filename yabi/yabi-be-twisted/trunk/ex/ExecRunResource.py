@@ -55,6 +55,7 @@ class ExecRunResource(resource.PostableResource):
         
         # get the backend
         fsresource = self.fsresource()
+        print "BACKENDS",fsresource.Backends()
         if scheme not in fsresource.Backends():
             return http.Response( responsecode.NOT_FOUND, {'content-type': http_headers.MimeType('text', 'plain')}, "Backend '%s' not found\n"%scheme)
             

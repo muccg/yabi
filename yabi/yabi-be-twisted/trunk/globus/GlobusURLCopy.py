@@ -69,41 +69,6 @@ class GlobusURLCopy(object):
         
         return subenv
     
-    def ListRemote(self, certfile, url):
-        """
-        Return a list of files and directories at that url.
-        
-        TODO: what if this blocks?
-        """
-        # environment for our subprocess
-        subenv = self._make_env(certfile)
-        
-        # the list command
-        proc = Popen(    [  self.globus_url_copy,
-                                        "-nodcau",                              # see bug #3902 ( http://bugzilla.globus.org/globus/show_bug.cgi?id=3902 )
-                                        "-list",    url
-                                    ],
-                                    stdin=subprocess.PIPE,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT,
-                                    env=subenv  )
-                                 
-        stdout, stderr = proc.communicate()                          # run list command: TODO: NON BLOCKING
-        
-        result = proc.returncode
-        
-        if result:
-            # process the error. turn into and error code and a message. then raise this as an exception
-            code, message = _globus_process_error(stdout)
-            raise GlobusFTPError, (code, message)
-        
-        # assume we worked. Parse output into file listing
-        lines = stdout.split("\n")
-        
-        assert lines[0]==url, "returned url header does not match passed in header"
-        
-        return [(line2[:-1] if line2[-1]==u"\u0000" else line2) for line2 in [line.strip() for line in lines[1:] if len(line)]]
-    
     def WriteToRemote(self, certfile, remoteurl, fifo=None):
         """starts a copy to remote process and returns you the following (proc, file, url) where:
         proc:   the Popen subprocess python object. Its a child process object.
@@ -121,6 +86,15 @@ class GlobusURLCopy(object):
         pp = GlobusURLCopyProcessProtocol()
         
         # the copy to remote command
+        print "GlobusURLCopy::WriteToRemote",certfile,remoteurl
+        print subenv
+        print [ self.globus_url_copy,
+                                        "-nodcau",                              # see bug #3902 ( http://bugzilla.globus.org/globus/show_bug.cgi?id=3902 )
+                                        "-cd",                                  # create destination directories if they dont exist
+                                        url,                                     # source
+                                        remoteurl                                # destination
+                                    ]
+        
         reactor.spawnProcess(   pp,
                                 self.globus_url_copy,
                                 [ self.globus_url_copy,

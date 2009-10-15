@@ -61,10 +61,11 @@ def RCopy(src, dst):
         raise
     
 def List(path,recurse=False):
-    #print "posting",LIST_PATH,path,recurse
+    print "LIST posting",LIST_PATH,path,recurse
     code, message, data = GET(LIST_PATH,uri=path,recurse=recurse)
+    print "RESPONSE",code,message,data
     assert code==200
-    #print "LIST:",data
+    print "LIST:",data
     return json.loads(data)
 
 def Mkdir(path):

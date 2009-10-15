@@ -149,6 +149,28 @@ class TaskManager(object):
             src = copy['src']
             dst = copy['dst']
             
+            # check that destination directory exists.
+            scheme,address = parse_url(dst)
+            
+            print "S:",scheme
+            print "A:",address
+            
+            directory, file = os.path.split(address.path)
+            remotedir = scheme+"://"+address.netloc+directory
+            print "CHECKING remote:",remotedir
+            
+            try:
+                print "CALLING"
+                listing = List(remotedir)
+                print "RETURNING"
+                print "result:", listing
+            except Exception, error:
+                # directory does not exist
+                print "Remote DIR does not exist"
+                
+                #make dir
+                Mkdir(remotedir)
+            
             log("Copying %s to %s..."%(src,dst))
             try:
                 Copy(src,dst)

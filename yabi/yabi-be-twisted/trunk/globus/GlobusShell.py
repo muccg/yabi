@@ -17,12 +17,19 @@ class GlobusShellProcessProtocol(protocol.ProcessProtocol):
         
     def outReceived(self, data):
         self.out += data
+        print "OUT:",data
         
     def errReceived(self, data):
         self.err += data
+        print "ERR:",data
     
+    def outConnectionLost(self):
+        # stdout was closed. this will be our endpoint reference
+        print "Out lost"
+        
     def processEnded(self, status_object):
         self.exitcode = status_object.value.exitCode
+        print "proc ended",self.exitcode
         
     def isDone(self):
         return self.exitcode != None
@@ -58,7 +65,8 @@ class GlobusShell(object):
        
         subenv = self._make_env(certfile)
         pp = GlobusShellProcessProtocol()
-        #print "COMMAND:",list(command)
+        print "ENV",subenv
+        print "COMMAND:",[ self.gsissh, host ] +list(command)
         reactor.spawnProcess(   pp,
                                 self.gsissh,
                                 [ self.gsissh, host ] + list(command),

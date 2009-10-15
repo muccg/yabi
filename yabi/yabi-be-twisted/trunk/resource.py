@@ -71,7 +71,7 @@ class BaseResource(resource.PostableResource):
         # execution backends
         self.child_exec = ExecResource(
                 globus = GlobusConnector(),
-                gse = SGEConnector(),
+                sge = SGEConnector(),
             )
             
         self.child_yabiadmin = wsgi.WSGIResource(application)
