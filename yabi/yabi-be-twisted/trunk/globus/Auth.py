@@ -39,7 +39,10 @@ class GlobusAuth(object):
             print "H,S",conf.yabiadmin.SERVER,conf.yabiadmin.PORT
             print "GET AuthProxy returned",status
             print "MESSAGE",message
-            print "DATA",data
+            print "DATA"
+            print "="*60
+            print data
+            print "="*60
             print "END DATA"
             credentials = json.loads( data )
             
