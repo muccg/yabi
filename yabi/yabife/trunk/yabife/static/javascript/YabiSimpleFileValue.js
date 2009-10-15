@@ -33,7 +33,7 @@ YabiSimpleFileValue.prototype.toString = function() {
 };
 
 YabiSimpleFileValue.prototype.isEqual = function(b) {
-    console.log(this + " isEqual? " + b);
+    //console.log(this + " isEqual? " + b);
     //we don't allow files that have the same filename to be selected, even if they come from different paths
     var equal = true;
     
