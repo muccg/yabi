@@ -1232,6 +1232,10 @@ input {
     padding-top:3px;
 }
 
+.listingLoading {
+    padding:135px;
+}
+
 .sliderValue {
     position:absolute;
     top:25px;

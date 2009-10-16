@@ -120,7 +120,9 @@ function YabiWorkflowCollection() {
     
     this.loadingEl = document.createElement("div");
     this.loadingEl.className = "listingLoading";
-    this.loadingEl.appendChild( document.createTextNode( " Loading... " ) );
+    var loadImg = new Image();
+    loadImg.src = appURL + "static/images/largeLoading.gif";
+    this.loadingEl.appendChild( loadImg );
     this.listingEl.appendChild(this.loadingEl);
     
     this.containerEl.appendChild(this.listingEl);
