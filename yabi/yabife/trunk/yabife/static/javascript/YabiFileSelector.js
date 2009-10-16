@@ -51,6 +51,12 @@ function YabiFileSelector(param, isBrowseMode, filePath) {
     this.fileListEl = document.createElement("div");
     this.fileListEl.className = "fileSelectorListing";
     this.browseEl.appendChild(this.fileListEl);
+    
+    this.loadingEl = document.createElement("div");
+    this.loadingEl.className = "listingLoading";
+    var loadImg = new Image();
+    loadImg.src = appURL + "static/images/largeLoading.gif";
+    this.loadingEl.appendChild( loadImg );
 
     this.containerEl.appendChild(this.browseEl);
     
@@ -121,6 +127,9 @@ YabiFileSelector.prototype.updateBrowser = function(location) {
         this.fileListEl.removeChild(this.fileListEl.firstChild);
     }
 
+    //add loading el
+    this.fileListEl.appendChild(this.loadingEl);
+    
     //disable drop target if location is empty (ie. the root)
     //disable uploader as well
     if (location.toString() === "") {
