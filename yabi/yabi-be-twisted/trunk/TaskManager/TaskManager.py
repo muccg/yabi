@@ -160,7 +160,7 @@ class TaskManager(object):
             print "CHECKING remote:",remotedir
             
             try:
-                print "CALLING"
+                print "CALLING LIST"
                 listing = List(remotedir)
                 print "RETURNING"
                 print "result:", listing
