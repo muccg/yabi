@@ -612,6 +612,8 @@ YabiFileSelector.prototype.hydrateResponse = function(o) {
         target.hydrateProcess(YAHOO.lang.JSON.parse(json));
     } catch (e) {
         YAHOO.ccgyabi.YabiMessage.yabiMessageFail('Error loading file listing');
+        
+        target.fileListEl.removeChild( target.loadingEl );
     } finally {
         this.jsTransaction = null;
     }
