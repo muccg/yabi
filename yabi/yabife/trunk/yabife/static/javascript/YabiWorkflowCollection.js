@@ -77,7 +77,7 @@ function YabiWorkflowCollection() {
     
     this.slider = YAHOO.widget.Slider.getHorizSlider(this.sliderEl, this.slideThumbEl, 0, 160, 40);
     this.slider.animate = true;
-    this.slider.setValue(40, false);
+    this.slider.setValue(40, true, false, true);
 
     
     this.statusFilterContainer = document.createElement("div");
