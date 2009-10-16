@@ -22,7 +22,7 @@ h2 {
 }
 
 a, a.visited, a:visited {
-    color: #3879e6;
+    color: #666;
     text-decoration:none;
 }
 
