@@ -980,6 +980,12 @@ input {
     float:right;
 }
 
+.fileSelectorListing .dirItem .deleteFile {
+    position:absolute;
+    right:18px;
+    top: 4px;
+}
+
 .fileSelectorBrowse {
 	background-color: #eee;
     border: 1px solid #eee;
