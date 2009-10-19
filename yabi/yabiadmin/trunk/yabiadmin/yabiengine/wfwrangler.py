@@ -11,6 +11,9 @@ import logging
 import yabilogging
 logger = logging.getLogger('yabiengine')
 
+# this is used to join subpaths to already cinstructed urls
+def url_join(*args):
+    return reduce(lambda a,b: a+b if a.endswith('/') else a+'/'+b, args)
 
 def walk(workflow):
     logger.debug('')
@@ -201,7 +204,7 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
         t.save() # so task has id
         logger.debug('saved========================================')
         t.working_dir = create_uniq_dirname(job, t)
-        t.command = job.command.replace("%", "%s%s%s%s" % (exec_be.path, exec_bc.homedir, t.working_dir, file))
+        t.command = job.command.replace("%", url_join(exec_be.path, exec_bc.homedir, t.working_dir, file))
         t.save()
 
         logger.info('Creating task for job id: %s using command: %s' % (job.id, t.command))
