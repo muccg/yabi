@@ -129,11 +129,11 @@ body {
 
 .addLink {
     position:absolute;
-    right:4px;
-    top:5px;
+    right:0px;
+    top:0px;
     cursor:pointer;
-    width:39px;
-    height:16px;
+    width:53px;
+    height:25px;
     background:url(../images/addtool.png) no-repeat;
 }
 
