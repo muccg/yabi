@@ -10,6 +10,10 @@ from django.utils.webhelpers import url
 import httplib, os
 from urllib import urlencode
 
+# this is used to join subpaths to already cinstructed urls
+def url_join(*args):
+    return reduce(lambda a,b: a+b if a.endswith('/') else a+'/'+b, args)
+
 import logging
 import yabilogging
 logger = logging.getLogger('yabiengine')
@@ -61,9 +65,6 @@ class Job(models.Model):
     @property
     def workflowid(self):
         return self.workflow.id
-
-def url_join(*args):
-    return reduce(lambda a,b: a+b if a.endswith('/') else a+'/'+b, args)
 
 class Task(models.Model):
     job = models.ForeignKey(Job)
@@ -228,8 +229,6 @@ def job_save(sender, **kwargs):
     logger.debug('')
     job = kwargs['instance']
 
-    print "JOB SAVE:",kwargs
-
     try:
         # if our job status is complete, force the annotation of this in the workflow
         if job.status==settings.STATUS['complete']:
@@ -259,8 +258,6 @@ def task_save(sender, **kwargs):
     logger.debug('')
     task = kwargs['instance']
 
-    print "TASK SAVE:",kwargs
-
     try:
         # update the yabistore
         if kwargs['created']:
@@ -272,9 +269,6 @@ def task_save(sender, **kwargs):
                 'status':task.status
                 }
         
-        print "task_save...",resource,data
-        #yabistore_update(resource, data)
-
         # get all the tasks for this job
         jobtasks = Task.objects.filter(job=task.job)
         running = False
@@ -282,7 +276,6 @@ def task_save(sender, **kwargs):
         score=0.0
         for task in jobtasks:
             status = task.status
-            print "STATUS",status
             score += { 
                 'ready':0.0,
                 'requested':0.01,
@@ -310,11 +303,6 @@ def task_save(sender, **kwargs):
         total = float(len(jobtasks))
         done=score
 
-        print "%f/%f"%(done,total)
-        
-        print "job:",task.job
-        print "job id:",task.job.order
-        
         # work out if this job is in an error state
         errored = [X.error_msg for X in jobtasks if X.status=='error']
         
@@ -331,7 +319,7 @@ def task_save(sender, **kwargs):
         errorMessage = None if not error else errored[0]
         
         if len(errored):
-            print "message=",errored[0]
+            #print "message=",errored[0]
         
             # if there are errors, and the relative job has a status that isn't 'error'
             if task.job.status != 'error':
@@ -348,7 +336,7 @@ def task_save(sender, **kwargs):
             if errorMessage:
                 data['errorMessage']=errorMessage
                             
-            print "task_save::yabistoreupdate",resource,data
+            #print "task_save::yabistoreupdate",resource,data
             yabistore_update(resource, data)
             
             
