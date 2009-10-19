@@ -1237,6 +1237,10 @@ input {
     padding-top:90px;
 }
 
+.fileSelectorListing .listingLoading {
+    padding:70px;
+}
+
 .sliderValue {
     position:absolute;
     top:25px;
