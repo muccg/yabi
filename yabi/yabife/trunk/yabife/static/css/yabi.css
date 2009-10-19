@@ -763,9 +763,9 @@ input {
 	-moz-border-radius: 8px;
 	background-color: #ebf0f3;
     border: 1px solid #b7c9e6;
-	padding: 1px;
-	padding-left: 8px;
-	padding-right: 8px;
+	padding: 0px;
+	padding-left: 7px;
+	padding-right: 7px;
 	//margin-right: 4px;
 	color: #666;
 	position: relative;
@@ -774,7 +774,6 @@ input {
 
 .invalidAcceptedExtensionList .acceptedExtension {
 	background: #f66;
-	background: -webkit-gradient(linear, left top, left bottom, from(#fcc), to(#f66));
 	border: 1px solid #f66;
 	color: #fff;
 }

@@ -183,7 +183,7 @@ function YabiWorkflow(editable) {
  *
  * adds a job to the end of the workflow
  */
-YabiWorkflow.prototype.addJob = function(toolName, preloadValues) {
+YabiWorkflow.prototype.addJob = function(toolName, preloadValues, shouldFadeIn) {
 
     if (this.processing) {
         return;
@@ -234,10 +234,24 @@ YabiWorkflow.prototype.addJob = function(toolName, preloadValues) {
         this.selectJob(job);
     }
 
+    if (YAHOO.lang.isUndefined(shouldFadeIn)) {
+        shouldFadeIn = true;
+    }
+
+    if (shouldFadeIn) {
+        //start off the opacity at 0.0
+        job.containerEl.style.opacity = 0.0;
+    }
+
     //add into the DOM    
     this.containerEl.appendChild(job.containerEl);
     this.optionsEl.appendChild(job.optionsEl);
-        
+    
+    if (shouldFadeIn) {
+        var anim = new YAHOO.util.Anim(job.containerEl, { opacity: { from: 0.0, to: 1.0 } }, 1.0, YAHOO.util.Easing.Linear);
+        anim.animate();
+    }
+
     this.processing = false;
     
     return job;
@@ -782,7 +796,11 @@ YabiWorkflow.prototype.endDragJobCallback = function(e) {
         this.getEl().style.visibility = "";
     } else {
         this.jobEl.style.visibility = "";
-        this.jobEl.style.opacity = "1.0";
+        //this.jobEl.style.opacity = "1.0";
+
+        var anim = new YAHOO.util.Anim(this.jobEl, { opacity: { to: 1.0 } }, 0.6, YAHOO.util.Easing.Linear);
+        anim.animate();
+
         this.optionsEl.style.display = "block";
     }
     this.getDragEl().style.visibility = "hidden";

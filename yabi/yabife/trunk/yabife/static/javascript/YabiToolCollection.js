@@ -272,7 +272,7 @@ YabiToolCollection.prototype.startDragToolCallback = function(x, y) {
         return false;
     }
 
-    var job = workflow.addJob(tool.toString());
+    var job = workflow.addJob(tool.toString(), undefined, false);
     //job.containerEl.style.visibility = "hidden";
     job.containerEl.style.opacity = "0.1";
     job.optionsEl.style.display = "none";
