@@ -197,13 +197,15 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
                 fileEl.appendChild(selectEl);
                 YAHOO.util.Event.addListener(selectEl, "click", this.selectFileCallback, invoker);
             } else if (this.isBrowseMode) {
-                deleteEl = document.createElement("div");
-                deleteEl.className = "deleteFile";
-                deleteImg = new Image();
-                deleteImg.src = appURL + "static/images/delete.png";
-                deleteEl.appendChild( deleteImg );
-                fileEl.appendChild( deleteEl );
-                YAHOO.util.Event.addListener(deleteEl, "click", this.deleteRemoteFileCallback, invoker);
+                if (this.pathComponents.length > 0) {
+		    deleteEl = document.createElement("div");
+		    deleteEl.className = "deleteFile";
+		    deleteImg = new Image();
+		    deleteImg.src = appURL + "static/images/delete.png";
+		    deleteEl.appendChild( deleteImg );
+		    fileEl.appendChild( deleteEl );
+		    YAHOO.util.Event.addListener(deleteEl, "click", this.deleteRemoteFileCallback, invoker);
+                }
                 
                 tempDD = new YAHOO.util.DDProxy(fileEl, 'files', {isTarget:true});
                 tempDD.overCount = 0;
