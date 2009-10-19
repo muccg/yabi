@@ -27,7 +27,7 @@ from yabifeapp.file_upload import *
 def proxy(request, url, server, base):
     logger.debug('')
     
-    print "PROXY",request.method,repr(url),repr(server),repr(base)
+    #print "PROXY",request.method,repr(url),repr(server),repr(base)
     
     #if not url.startswith("/"):
         #url = "/" + url
@@ -46,11 +46,11 @@ def proxy(request, url, server, base):
 
         resource = "%s?%s" % (os.path.join(base, url), urlencode(get_params))
         logger.debug('Resource: %s' % resource)
-        print "Connecting to:",server
+        #print "Connecting to:",server
         conn = httplib.HTTPConnection(server)
         logger.debug('Server: %s' % server)        
         conn.request(request.method, resource)
-        print "%sing %r"%(request.method,resource)
+        #print "%sing %r"%(request.method,resource)
         r = conn.getresponse()
         
 
@@ -91,13 +91,13 @@ def proxy(request, url, server, base):
         logger.debug('Data: %s' % data)
         headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
         conn = httplib.HTTPConnection(server)
-        print "Connecting to:",server
+        #print "Connecting to:",server
         logger.debug('Server: %s' % server)
         conn.request(request.method, resource, data, headers)
-        print "%sing %r with data %s and headers %s"%(request.method,resource,data,headers)
+        #print "%sing %r with data %s and headers %s"%(request.method,resource,data,headers)
         r = conn.getresponse()
 
-    print "returning response:",r.status
+    #print "returning response:",r.status
     response = HttpResponse(r.read(), status=int(r.status))
 
     if r.getheader('content-disposition', None):
