@@ -192,11 +192,19 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             YAHOO.util.Event.addListener(fileEl, "click", this.expandCallback, invoker);
 
             if (!this.isBrowseMode && this.pathComponents.length > 0) {
-		selectEl = document.createElement("a");
-		selectEl.appendChild(document.createTextNode('(select)'));
-		fileEl.appendChild(selectEl);
-		YAHOO.util.Event.addListener(selectEl, "click", this.selectFileCallback, invoker);
+                selectEl = document.createElement("a");
+                selectEl.appendChild(document.createTextNode('(select)'));
+                fileEl.appendChild(selectEl);
+                YAHOO.util.Event.addListener(selectEl, "click", this.selectFileCallback, invoker);
             } else if (this.isBrowseMode) {
+                deleteEl = document.createElement("div");
+                deleteEl.className = "deleteFile";
+                deleteImg = new Image();
+                deleteImg.src = appURL + "static/images/delete.png";
+                deleteEl.appendChild( deleteImg );
+                fileEl.appendChild( deleteEl );
+                YAHOO.util.Event.addListener(deleteEl, "click", this.deleteRemoteFileCallback, invoker);
+                
                 tempDD = new YAHOO.util.DDProxy(fileEl, 'files', {isTarget:true});
                 tempDD.overCount = 0;
                 tempDD.endDrag = this.movelessDrop;
