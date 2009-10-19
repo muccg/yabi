@@ -25,7 +25,8 @@ class SGEConnector(ExecConnector, globus.Auth):
     
     def run(self, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single"):
         try:
-            jobid = qsub("jobname", command=command, user=username)
+            print "QSUB",command,"WORKING:",working
+            jobid = qsub("jobname", command=command, user=username, workingdir=working)
             print "JOB ID",jobid
         
         except ExecutionError, ee:

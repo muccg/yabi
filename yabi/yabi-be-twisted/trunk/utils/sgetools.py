@@ -55,7 +55,7 @@ class QsubProcessProtocol(protocol.ProcessProtocol):
     def isDone(self):
         return self.exitcode != None
     
-def qsub_spawn(jobname, commandfile, user="yabi", stdout="STDOUT.txt", stderr="STDERR.txt"):
+def qsub_spawn(jobname, commandfile, user="yabi", workingdir="/home/yabi", stdout="STDOUT.txt", stderr="STDERR.txt"):
     """Spawn a process to run an xml job. return the process handler"""
     subenv = os.environ.copy()
     pp = QsubProcessProtocol()
@@ -68,6 +68,7 @@ def qsub_spawn(jobname, commandfile, user="yabi", stdout="STDOUT.txt", stderr="S
                                 jobname,
                                 "-e",stderr,
                                 "-o",stdout,
+                                "-wd",workingdir,
                                 commandfile
                             ]
     reactor.spawnProcess(   pp,
@@ -81,6 +82,7 @@ def qsub_spawn(jobname, commandfile, user="yabi", stdout="STDOUT.txt", stderr="S
                                 jobname,
                                 "-e",stderr,
                                 "-o",stdout,
+                                "-wd",workingdir,
                                 commandfile
                             ],
                             env=subenv
@@ -88,7 +90,7 @@ def qsub_spawn(jobname, commandfile, user="yabi", stdout="STDOUT.txt", stderr="S
 
     return pp
 
-def qsub(jobname, command, user="yabi", stdout="STDOUT.txt", stderr="STDERR.txt"):
+def qsub(jobname, command, user="yabi", workingdir="/home/yabi", stdout="STDOUT.txt", stderr="STDERR.txt"):
     # use shlex to parse the command into executable and arguments
     lexer = shlex.shlex(command, posix=True)
     lexer.wordchars += r"-.:;/"
@@ -102,7 +104,7 @@ def qsub(jobname, command, user="yabi", stdout="STDOUT.txt", stderr="STDERR.txt"
     temp.close()
     
     # run the qsub process.
-    pp = qsub_spawn(jobname,tempfile,user=user)
+    pp = qsub_spawn(jobname,tempfile,user=user,workingdir=workingdir)
     
     while not pp.isDone():
         stackless.schedule()
