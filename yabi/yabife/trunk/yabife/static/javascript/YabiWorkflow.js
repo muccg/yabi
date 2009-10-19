@@ -782,6 +782,7 @@ YabiWorkflow.prototype.endDragJobCallback = function(e) {
         this.getEl().style.visibility = "";
     } else {
         this.jobEl.style.visibility = "";
+        this.jobEl.style.opacity = "1.0";
         this.optionsEl.style.display = "block";
     }
     this.getDragEl().style.visibility = "hidden";

@@ -273,7 +273,8 @@ YabiToolCollection.prototype.startDragToolCallback = function(x, y) {
     }
 
     var job = workflow.addJob(tool.toString());
-    job.containerEl.style.visibility = "hidden";
+    //job.containerEl.style.visibility = "hidden";
+    job.containerEl.style.opacity = "0.1";
     job.optionsEl.style.display = "none";
     
     this.jobEl = job.containerEl;
