@@ -2,6 +2,7 @@ from django.conf import settings
 from django.utils import simplejson as json
 import httplib
 import socket
+import os
 from urllib import urlencode
 from yabiadmin.yabiengine.urihelper import uri_get_pseudopath, uriparse, get_backend_userdir
 from yabiadmin.yabmin.models import Backend, BackendCredential
@@ -16,7 +17,7 @@ import yabilogging
 logger = logging.getLogger('yabiengine')
 
 
-def get_file_list(uri):
+def get_file_list(uri, recurse=True):
     """
     Return a list of file tuples
     """
@@ -25,6 +26,8 @@ def get_file_list(uri):
 
     try:
         resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, uri)
+        if recurse:
+            resource += "&recurse"
         logger.debug('Resource: %s' % resource)
         conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
@@ -37,10 +40,17 @@ def get_file_list(uri):
         if r.status == 200:
 
             results = json.loads(r.read())
+            
+            print "FILELIST RESULTS:",results
+            shortpath=reduce(lambda x,y: x if len(x)<len(y) else y,results.keys())
+            spl = len(shortpath)
+            
             for key in results.keys():
                 for file in results[key]["files"]:
-                    file_list.append(file)
+                    print "KEY",key,"FILE",file
+                    file_list.append([os.path.join(key[spl:],file[0])]+file[1:])
 
+        print "RETURNING:",file_list
         return file_list
  
     except socket.error, e:

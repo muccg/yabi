@@ -44,7 +44,6 @@ def walk(workflow):
 def check_dependencies(job):
     """Check each of the dependencies in the jobs command params.
     Start with a ready value of True and if any of the dependecies are not ready set ready to False.
-    If dependencies are all met change job status to settings.STATUS['dependencies_ready']
     """
     logger.debug('')
     logger.info('Check dependencies for jobid: %s...' % job.id)
@@ -89,7 +88,7 @@ def prepare_tasks(job):
     for param in paramlist:
 
         #TODO refactor each of these code blocks into handlers
-
+        print "PARAM:",param
 
         ##################################################
         # handle yabi:// uris
@@ -116,9 +115,12 @@ def prepare_tasks(job):
         # uris ending with a / on the end of the path are directories
         elif param.startswith("yabifs://") and param.endswith("/"):
             logger.info('Processing uri %s' % param)
+    
+            print "PROCESSING",param,"->",backendhelper.get_file_list(param)
 
             # get_file_list will return a list of file tuples
             for f in backendhelper.get_file_list(param):
+                print "FILELIST",f
                 create_task(job, param, f[0], exec_be, exec_bc, fs_be, fs_bc)
 
 
@@ -140,6 +142,8 @@ def prepare_tasks(job):
         elif param.startswith("gridftp://") and param.endswith("/"):
             logger.info('Processing uri %s' % param)
 
+            print "PROCESSING",param,"->",backendhelper.get_file_list(param)
+
             # get_file_list will return a list of file tuples
             for f in backendhelper.get_file_list(param):
                 create_task(job, param, f[0], exec_be, exec_bc, fs_be, fs_bc)
@@ -151,8 +155,12 @@ def prepare_tasks(job):
         elif param.startswith("gridftp://"):
             logger.info('Processing uri %s' % param)            
             rest, filename = param.rsplit("/",1)
+            
+            print "PROCESSING",param
+            
             create_task(job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc)
             input_files.append(param)
+            
             
 
         ##################################################

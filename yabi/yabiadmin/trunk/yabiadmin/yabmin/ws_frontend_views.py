@@ -91,9 +91,7 @@ def ls(request):
     is not empty then it will pass on the call to the backend to get a listing of that uri
     """
     logger.debug('')
-
-    print "LS"
-
+    
     try:
         print "GET:",request.GET['uri']
         if request.GET['uri']:
@@ -215,7 +213,7 @@ def put(request):
 def submitworkflow(request):
     logger.debug('')
     
-    print "POST KEYS:",request.POST.keys()
+    logger.debug("POST KEYS: %r"%request.POST.keys())
     
     
     # probably want to catch the type of exceptions we may get from this

@@ -62,6 +62,9 @@ class Job(models.Model):
     def workflowid(self):
         return self.workflow.id
 
+def url_join(*args):
+    return reduce(lambda a,b: a+b if a.endswith('/') else a+'/'+b, args)
+
 class Task(models.Model):
     job = models.ForeignKey(Job)
     start_time = models.DateTimeField(null=True, blank=True)
@@ -84,7 +87,6 @@ class Task(models.Model):
             # use the yabiadmin embedded in this server
             statusurl = webhelpers.url("/engine/status/task/%d" % self.id)
             errorurl = webhelpers.url("/engine/error/task/%d" % self.id)
-            
 
         output = {
             "yabiusername":self.job.workflow.user.name,
@@ -94,8 +96,8 @@ class Task(models.Model):
             "stagein":[],
             "exec":{
             "command":self.command,
-            "backend": "%s%s" % (self.job.exec_backend, self.working_dir),
-            "fsbackend": "%s%s" % (self.job.fs_backend, self.working_dir),
+            "backend": url_join(self.job.exec_backend, self.working_dir),
+            "fsbackend": url_join(self.job.fs_backend, self.working_dir),
             },
             "stageout":self.job.stageout+"/"+str(self.id)+"/"
             }
@@ -226,9 +228,11 @@ def job_save(sender, **kwargs):
     logger.debug('')
     job = kwargs['instance']
 
+    print "JOB SAVE:",kwargs
+
     try:
         # if our job status is complete, force the annotation of this in the workflow
-        if job.status=="complete":
+        if job.status==settings.STATUS['complete']:
             
             workflow_id = job.workflow.yabistore_id
             resource = os.path.join(settings.YABISTORE_BASE,'workflows',job.workflow.user.name, str(workflow_id), str(job.order) )
@@ -254,6 +258,8 @@ def job_save(sender, **kwargs):
 def task_save(sender, **kwargs):
     logger.debug('')
     task = kwargs['instance']
+
+    print "TASK SAVE:",kwargs
 
     try:
         # update the yabistore
