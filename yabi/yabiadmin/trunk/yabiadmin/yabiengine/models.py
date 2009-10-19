@@ -318,8 +318,8 @@ def task_save(sender, **kwargs):
         
         errorMessage = None if not error else errored[0]
         
-        if len(errored):
-            #print "message=",errored[0]
+        if error:
+            print "ERROR! message=",errored[0]
         
             # if there are errors, and the relative job has a status that isn't 'error'
             if task.job.status != 'error':
