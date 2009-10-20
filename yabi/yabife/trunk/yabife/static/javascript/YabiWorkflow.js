@@ -668,7 +668,7 @@ YabiWorkflow.prototype.fetchProgress = function(callback) {
  * update tags array and input field simultaneously
  */
 YabiWorkflow.prototype.setTags = function(tagArray) {
-    if (this.tagInputEl.style.display != "block") {
+    if (this.tagInputEl.style.display != "inline") {
         this.tags = tagArray;
         this.tagInputEl.value = tagArray;
     } //dont set the tags if they are being edited
