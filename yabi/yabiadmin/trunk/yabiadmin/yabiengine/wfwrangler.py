@@ -215,9 +215,16 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
                     #src="%s%s" % (param, file),
                     #dst="%s%s%s" % (fs_bc.homedir_uri, t.working_dir, file),
                     #order=0)
+                    
+        # TODO: Fix this whole dual backend bullshit!
+        destscheme = fs_bc.homedir_uri.split('//',1)[0]
+        dest = exec_be.uri.split('//',1)[1]
+        
+        destcomposite = destscheme+"//"+dest
+                    
         s = StageIn(task=t,
                     src=url_join(param, file),
-                    dst=url_join(exec_be.uri,t.working_dir, file),
+                    dst=url_join(destcomposite,t.working_dir, file),
                     order=0)
         
         s.save()
