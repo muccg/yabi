@@ -977,7 +977,9 @@ input {
 }
 
 .fileSelectorListing .dirItem a {
-    float:right;
+    position:absolute;
+    top:1px;
+    right:1px;
 }
 
 .fileSelectorListing .dirItem .deleteFile {
