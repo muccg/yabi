@@ -72,11 +72,12 @@ YabiAcceptedExtensionList.prototype.validForValue = function(value) {
     //if it is a job, then examine its output filetypes and allow if any pass
     if (YAHOO.lang.isObject(value) && value instanceof YabiJob) {
         //console.log(value + " is object");
+
         extensions = value.outputExtensions;
         if (!YAHOO.lang.isArray(extensions)) {
             extensions = [extensions];
         }
-        
+   
         for (var index in extensions) {
             //if the job emitting does not accept inputs and emits an extension of * then do not allow the job to emit * if it has no other emitted files that are valid (this prevents file selectors from emitting invalid values)
             
@@ -99,6 +100,7 @@ YabiAcceptedExtensionList.prototype.validForValue = function(value) {
                             return true;
                         }
                     }
+
                 }
                 
                 //otherwise, invalid
@@ -113,9 +115,12 @@ YabiAcceptedExtensionList.prototype.validForValue = function(value) {
         //if we fall through to here, return false
         return false;
     } else {
-        
+        if (YAHOO.lang.isUndefined(value) || value === null) {
+            return false;
+        }
+
         //if there is no extension on the filename, allow it implicitly
-        if (value.indexOf(".") == -1) {
+        if (value.length < 1 || value.indexOf(".") == -1) {
             return true;
         }
         

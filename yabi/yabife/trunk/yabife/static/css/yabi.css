@@ -616,6 +616,7 @@ display:inline;
 
 .jobOptionsContainer {
     position:relative;
+    width:500px;
 }
 
 .fileOutputs {
@@ -660,6 +661,7 @@ display:inline;
     position:absolute;
     top:2px;
     left:110px;
+    width:290px;
 }
 
 input {

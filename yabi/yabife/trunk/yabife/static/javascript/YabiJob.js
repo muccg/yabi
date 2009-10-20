@@ -23,6 +23,7 @@ function YabiJob(toolName, jobId, preloadValues) {
     this.showingProgress = false;
     this.progress = 0;
     this.workflow = null; //set later by the workflow
+    this.batchParameter = null;
     
     //___CONTAINER EL___
     //this is used to retain the job's position in a workflow while alowing us to replace the jobEl
@@ -583,6 +584,7 @@ YabiJob.prototype.solidify = function(obj) {
         for (paramIndex in params) {
             
             paramObj = new YabiJobParam(target, params[paramIndex], (params[paramIndex]["switch"] == this.batchParameter), this.editable, this.preloadValueFor(params[paramIndex]["switch"]));
+
             this.params.push(paramObj);
             this.optionsEl.appendChild(paramObj.containerEl);
 
@@ -675,7 +677,7 @@ YabiJob.prototype.hydrateResponse = function(o) {
     } catch (e) {
         target.valid = false;
         target.failLoad = true;
-        target.displayName = "(tool '"+ target.toolName +"' failed to load)";
+        target.displayName = "(tool '"+ target.toolName +"' failed to load)"+e.message;
         target.updateTitle();
         target.renderLoadFailJob();
         

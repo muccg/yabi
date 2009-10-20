@@ -23,7 +23,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
     var tempEl, namePlaceholderEl;
     
     this.displayName = obj.displayName;
-    if (! obj.hasOwnProperty("displayName")) {
+    if (! YAHOO.lang.hasOwnProperty(obj, "displayName")) {
         this.displayName = obj["switch"];
     }
     
@@ -206,6 +206,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
     
     //run an initial validation on the default value
     this.validate();
+
 }
 
 /**
@@ -511,6 +512,7 @@ YabiJobParam.prototype.addSubscriber = function(subscriber) {
  * validate current value
  */
 YabiJobParam.prototype.validate = function() {
+
     //sync this.consumedFiles to the value of the input
     if (this.renderMode == "input") {
         this.consumedFiles = [this.getValue()];
@@ -541,9 +543,12 @@ YabiJobParam.prototype.validate = function() {
     //if this is meant to be an input file, validate filetypes
     if (this.isInputFile) {
         //first, verify that consumedFiles exist, if so then we are fine
+
         if (this.consumedFiles.length === 0) {
+
             //alternatively, check if the user has manually typed some text that hasn't become a 'consumed file'
             if (!this.acceptedExtensionList.validForValue(this.getValue())) {
+
                 //console.log("failed the valid extension test");
                 this.valid = false;
             }
@@ -564,6 +569,7 @@ YabiJobParam.prototype.validate = function() {
             this.inputEl.className = "validParam";
         }
     }
+
 };
 
 /**
