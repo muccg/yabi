@@ -205,16 +205,22 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
         t.save() # so task has id
         logger.debug('saved========================================')
         t.working_dir = create_uniq_dirname(job, t)
-        t.command = job.command.replace("%", url_join(exec_be.path, exec_bc.homedir, t.working_dir, file))
+        t.command = job.command.replace("%", url_join(exec_be.path
+         t.working_dir, file))
         t.save()
 
         logger.info('Creating task for job id: %s using command: %s' % (job.id, t.command))
         logger.info('working dir is: %s' % (t.working_dir) )
 
+        #s = StageIn(task=t,
+                    #src="%s%s" % (param, file),
+                    #dst="%s%s%s" % (fs_bc.homedir_uri, t.working_dir, file),
+                    #order=0)
         s = StageIn(task=t,
-                    src="%s%s" % (param, file),
-                    dst="%s%s%s" % (fs_bc.homedir_uri, t.working_dir, file),
+                    src=url_join(param, file),
+                    dst=url_join(exec_be.uri,t.working_dir, file)
                     order=0)
+        
         s.save()
 
 def create_uniq_dirname(job, task):
