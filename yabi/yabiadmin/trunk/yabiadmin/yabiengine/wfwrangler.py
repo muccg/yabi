@@ -221,7 +221,9 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
         dest = exec_be.uri.split('//',1)[1]
         
         destcomposite = destscheme+"//"+dest
-                    
+        
+        logger.info('destcomposite is: %s' % (destcomposite) )
+        
         s = StageIn(task=t,
                     src=url_join(param, file),
                     dst=url_join(destcomposite,t.working_dir, file),
