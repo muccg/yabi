@@ -193,6 +193,9 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
     logger.debug("param %s" % param)
     logger.debug("exec_be %s" % exec_be)
     logger.debug("exec_bc %s" % exec_bc)
+    logger.debug("fs_be %s" % fs_be)
+    logger.debug("fs_bc %s" % fs_bc)
+    
 
     param_scheme, param_uriparts = uriparse(param)
 #    backend_scheme, backend_uriparts = uriparse(backendcredential.homedir)
