@@ -1315,6 +1315,8 @@ input {
 
 	background: #ccf url(../images/job_selected_bg.png);
 	background: -webkit-gradient(linear, left top, left bottom, from(#eceff3), to(#dbe5f6));
+    height:1.9em;
+
 }
 
 .loginForm {
