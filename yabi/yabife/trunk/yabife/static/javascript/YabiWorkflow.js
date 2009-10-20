@@ -850,12 +850,9 @@ YabiWorkflow.prototype.onDragOverJobCallback = function(e, id) {
     }
 
     if (destEl.className == "jobSuperContainer") {
-        //TODO use mid-point to determine if they are going up and have gone past the mid-point of destEl
-        midY = YAHOO.util.Dom.getXY(destEl)[1] + (destEl.style.height / 2);
-        
-        if (this.goingUp && YAHOO.util.Event.getPageY(e) < midY) {
+        if (this.goingUp) {
             srcEl.parentNode.insertBefore(srcEl, destEl);
-        } else if (this.goingDown && YAHOO.util.Event.getPageY(e) > midY) {
+        } else {
             srcEl.parentNode.insertBefore(srcEl, destEl.nextSibling);
         }
     }
