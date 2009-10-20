@@ -192,7 +192,7 @@ YabiWorkflow.prototype.addJob = function(toolName, preloadValues, shouldFadeIn) 
     
     this.hintEl.style.display = "none";
     
-    var invoke, destroyEl;
+    var invoke, destroyEl, destroyImg;
 
     var job = new YabiJob(toolName, this.jobs.length + 1, preloadValues);
     job.editable = this.editable;
@@ -216,6 +216,9 @@ YabiWorkflow.prototype.addJob = function(toolName, preloadValues, shouldFadeIn) 
         //decorate the job with a 'destroy' link
         destroyEl = document.createElement("div");
         destroyEl.setAttribute("class", "destroyDiv");
+        destroyImg = new Image();
+        destroyImg.src = appURL + "static/images/delnode.png";
+        destroyEl.appendChild( destroyImg );
         job.jobEl.appendChild(destroyEl);
     
         //attach events    
