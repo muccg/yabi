@@ -214,23 +214,24 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
         logger.info('Creating task for job id: %s using command: %s' % (job.id, t.command))
         logger.info('working dir is: %s' % (t.working_dir) )
 
-        #s = StageIn(task=t,
-                    #src="%s%s" % (param, file),
-                    #dst="%s%s%s" % (fs_bc.homedir_uri, t.working_dir, file),
-                    #order=0)
-                    
-        # TODO: Fix this whole dual backend bullshit!
-        destscheme = fs_bc.homedir_uri.split('//',1)[0]
-        dest = exec_be.uri.split('//',1)[1]
-        
-        destcomposite = destscheme+"//"+dest
-        
-        logger.info('destcomposite is: %s' % (destcomposite) )
-        
         s = StageIn(task=t,
-                    src=url_join(param, file),
-                    dst=url_join(exec_be.uri,t.working_dir, file),
+                    src="%s%s" % (param, file),
+                    dst="%s%s%s" % (fs_bc.homedir_uri, t.working_dir, file),
                     order=0)
+                    
+        logger.debug("Stagein: %s <=> %s <=> %s"%(fs_bc.homedir_uri, t.working_dir, file))
+        # TODO: Fix this whole dual backend bullshit!
+        #destscheme = fs_bc.homedir_uri.split('//',1)[0]
+        #dest = exec_be.uri.split('//',1)[1]
+        
+        #destcomposite = destscheme+"//"+dest
+        
+        #logger.info('destcomposite is: %s' % (destcomposite) )
+        
+        #s = StageIn(task=t,
+                    #src=url_join(param, file),
+                    #dst=url_join(exec_be.uri,t.working_dir, file),
+                    #order=0)
         
         s.save()
 
