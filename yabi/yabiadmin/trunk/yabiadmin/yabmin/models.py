@@ -258,7 +258,7 @@ class Credential(Base):
     backends = models.ManyToManyField('Backend', through='BackendCredential', null=True, blank=True)
 
     def __unicode__(self):
-        return "%s %s" % (self.description, self.user)
+        return "Credential <id=%d description=%s username=%s user=%s backends=%s>" % (self.id, self.description if len(self.description)<20 else self.description[:20], self.username, self.user.name, self.backends_set)
 
 class Backend(Base):
     name = models.CharField(max_length=255)
@@ -278,13 +278,15 @@ class Backend(Base):
         return urlunparse((self.scheme, netloc, self.path, '', '', ''))
 
     def __unicode__(self):
-        return self.name
-
+        return "Backend <%d name=%s scheme=%s hostname=%s port=%d path=%s>"%(self.id, self.name,self.scheme,self.hostname,self.port,self.path)
 
 class BackendCredential(Base):
     backend = models.ForeignKey(Backend)
     credential = models.ForeignKey(Credential)
     homedir = models.CharField(max_length=512, blank=True, null=True)
+
+    def __unicode__(self):
+        return "BackendCredential <%d backend.id=%d credential.id=%d homedir=%s>"%(self.id,self.backend.id,self.credential.id,self.homedir)
 
     def json(self):
         output = {
