@@ -209,6 +209,7 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
         t.save()
 
         logger.info('Creating task for job id: %s using command: %s' % (job.id, t.command))
+        logger.info('working dir is: %s' % (t.working_dir) )
 
         s = StageIn(task=t,
                     src="%s%s" % (param, file),
