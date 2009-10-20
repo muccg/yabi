@@ -5,6 +5,8 @@ from django.utils import simplejson as json
 from yabiadmin.yabiengine.urihelper import uri_get_pseudopath
 from urlparse import urlparse, urlunparse
 
+DEBUG = False
+
 class ManyToManyField_NoSyncdb(models.ManyToManyField):
     def __init__(self, *args, **kwargs):
         super(ManyToManyField_NoSyncdb, self).__init__(*args, **kwargs)
@@ -258,7 +260,9 @@ class Credential(Base):
     backends = models.ManyToManyField('Backend', through='BackendCredential', null=True, blank=True)
 
     def __unicode__(self):
-        return "Credential <id=%s description=%s username=%s user=%s backends=%s>" % (self.id, self.description if len(self.description)<20 else self.description[:20], self.username, self.user.name, self.backends.all())
+        if DEBUG:
+            return "Credential <id=%s description=%s username=%s user=%s backends=%s>" % (self.id, self.description if len(self.description)<20 else self.description[:20], self.username, self.user.name, self.backends.all())
+        return "Credential %s username:%s for yabiuser:%s"%(self.description,self.username,self.user.name)
 
 class Backend(Base):
     name = models.CharField(max_length=255)
@@ -278,7 +282,9 @@ class Backend(Base):
         return urlunparse((self.scheme, netloc, self.path, '', '', ''))
 
     def __unicode__(self):
-        return "Backend <%s name=%s scheme=%s hostname=%s port=%s path=%s>"%(self.id, self.name,self.scheme,self.hostname,self.port,self.path)
+        if DEBUG:
+            return "Backend <%s name=%s scheme=%s hostname=%s port=%s path=%s>"%(self.id, self.name,self.scheme,self.hostname,self.port,self.path)
+        return "Backend %s %s://%s:%s%s"%(self.description,self.scheme,self.hostname,self.port,self.path)
 
 class BackendCredential(Base):
     backend = models.ForeignKey(Backend)
@@ -286,7 +292,9 @@ class BackendCredential(Base):
     homedir = models.CharField(max_length=512, blank=True, null=True)
 
     def __unicode__(self):
-        return "BackendCredential <%s backend.id=%s credential.id=%s homedir=%s>"%(self.id,self.backend.id,self.credential.id,self.homedir)
+        if DEBUG:
+            return "BackendCredential <%s backend.id=%s credential.id=%s homedir=%s>"%(self.id,self.backend.id,self.credential.id,self.homedir)
+        return "BackendCredential %s"%(self.id)
 
     def json(self):
         output = {
