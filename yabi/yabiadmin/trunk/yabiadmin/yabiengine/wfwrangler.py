@@ -73,6 +73,7 @@ def prepare_tasks(job):
     fs_be = backendhelper.get_backend_from_uri(job.fs_backend)
     fs_bc = BackendCredential.objects.get(backend=fs_be, credential__user=job.workflow.user)
 
+    logger.debug("wfwrangler::prepare_tasks() exec_be:%s exec_bc:%s fs_be:%s fs_bc:%s"%(exec_be,exec_bc,fs_be,fs_bc))
 
     # reconstitute the input filetype extension list so each create_task can use it
     if job.input_filetype_extensions:
