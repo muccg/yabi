@@ -3,8 +3,7 @@
 </%def>
 
 <%def name="body()">
-<div style="position:absolute;height:100%;width:100%;top:0px;left:0px;background-color:white;">
-<br style="margin-top:100px;" />    
+<div style="position:absolute;height:100%;width:100%;top:0px;left:0px;background-color:white;padding-top:150px;">
 
 <a href="${h.url('/')}"><img src="${h.url('/static/images/yabi-logo.png')}" alt="Yabi-logo" height="60" width="198" /></a><p>
 <br/>
@@ -29,20 +28,16 @@ ${form.as_p()}
 %endif
 
 
+
 <p>
 <br/>
 <center>
-<table width="600px">
+<table width="600px" style="background-color:#eee;padding:10px;-moz-border-radius:4px;-webkit-border-radius:4px;">
 
 <tr>
-    <td width="100px;">&nbsp;</td>
-    <td valign="top" style="padding-bottom:4px;padding-right:60px;">YABI is best viewed in</td>
-    <td valign="top">other browsers, such as IE, may not render things properly</td>
-</tr>
-<tr>
-    <td width="100px;">&nbsp;</td>
-    <td valign="top" style="padding-bottom:4px;padding-right:60px;"><a href="http://apple.com/safari/"><img src="${h.url('/static/images/safari.png')}" alt="Safari"></a> <a href="http://getfirefox.com/"><img src="${h.url('/static/images/firefox.png')}" alt="Firefox"></a></td>
-    <td valign="top"><img src="${h.url('/static/images/ie_icon.png')}" alt="IE"></td>
+    <td width="80px">&nbsp;</td>
+    <td valign="top" style="font-weight:bold;padding:10px;">Work In Progress</td>
+    <td valign="top" style="padding:10px;"><ul><li>Yabi is currently under construction. Please watch your HEAD.<li></ul></td>
 </tr>
 
 </table>
@@ -53,12 +48,11 @@ ${form.as_p()}
 <p>
 <br/>
 <center>
-<table width="600px">
+<table width="400px" style="margin-top:20px">
 
 <tr>
-    <td width="100px;">&nbsp;</td>
-    <td valign="top" style="font-weight:bold;padding-bottom:4px;padding-right:10px;">Work In Progress</td>
-    <td valign="top"><ul><li>Yabi is currently under construction. Please watch your HEAD.<li></ul></td>
+    <td valign="middle" style="padding-bottom:4px;padding-right:10px;">YABI is best viewed in standards compliant browsers: </td>
+    <td valign="top" ><a href="http://apple.com/safari/"><img src="${h.url('/static/images/safari.png')}" alt="Safari"></a> <a href="http://getfirefox.com/"><img src="${h.url('/static/images/firefox.png')}" alt="Firefox"></a></td>
 </tr>
 
 </table>
@@ -73,7 +67,7 @@ ${form.as_p()}
 <a href="http://www.murdoch.edu.au/copy/copy.html" >Disclaimer &amp; Copyright Notice</a> &copy; 2006, 2009 <a href="http://www.murdoch.edu.au/about/murdoch.html">Murdoch University</a><br/>
 Contact: <a href="mailto:web@ccg.murdoch.edu.au">Site administrator.</a>
 <br />
-Logo font is 'effortless', by Tup Wanders
+Logo font 'effortless' by Tup Wanders
 </p>
 </div>
 </%def>

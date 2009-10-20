@@ -1297,24 +1297,26 @@ input {
 }
 
 .loginFormButton {
-	color:#3879e6;
+	color:white;
 	font-size: 110%;
 	font-weight: bold;
-	border:1px solid #3879e6;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
     -moz-box-shadow: 0px 1px 2px #eee;
     -webkit-box-shadow: 0px 1px 2px #eee;
     margin:4px;
     padding:4px;
-    padding-left:8px;
-    padding-right:8px;
+    padding-left:18px;
+    padding-right:18px;
     margin-left:220px;
     margin-top: 0px;
     margin-right:0px;
+    text-shadow:0px -1px 1px #666;
+    border:1px solid #3879e6;
 
-	background: #ccf url(../images/job_selected_bg.png);
-	background: -webkit-gradient(linear, left top, left bottom, from(#eceff3), to(#dbe5f6));
+	background: #3879e6 url(../images/selectedWFbg.png);
+        background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
+
     height:1.9em;
 
 }
@@ -1331,12 +1333,16 @@ input {
     padding-left:14px;
     background:#fff;
     width:210px;
-    border:1px solid #eee;
+    border:2px solid #3879e6;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
     -moz-box-shadow: 0px 1px 2px #eee;
     -webkit-box-shadow: 0px 1px 2px #eee;
     margin:4px;
+}
+
+.loginForm label {
+    color: #3879e6;
 }
 
 .displayNone {
