@@ -226,7 +226,7 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
         
         s = StageIn(task=t,
                     src=url_join(param, file),
-                    dst=url_join(destcomposite,t.working_dir, file),
+                    dst=url_join(exec_be.uri,t.working_dir, file),
                     order=0)
         
         s.save()
