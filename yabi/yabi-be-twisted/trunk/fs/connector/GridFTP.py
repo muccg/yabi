@@ -8,7 +8,7 @@ from twisted.internet import protocol
 from twisted.internet import reactor
 import os
 
-DEBUG = True
+DEBUG = False
 
 class GridFTP(FSConnector.FSConnector, globus.Auth):
     """This is the resource that connects to the globus gridftp backends"""
@@ -76,15 +76,12 @@ class GridFTP(FSConnector.FSConnector, globus.Auth):
     
     def ls(self, host, username, path, recurse=False, culldots=True):
         # make sure we are authed
-        print "EA"
         self.EnsureAuthed(self.scheme,username,host)
-        print "done"
         
         usercert = self.GetAuthProxy(host).ProxyFile(username)
         pp = globus.Shell.ls(usercert,host,path, args="-alFR" if recurse else "-alF" )
         
         while not pp.isDone():
-            print "pp is not Done",pp.exitcode
             stackless.schedule()
             
         err, out = pp.err, pp.out
@@ -92,10 +89,8 @@ class GridFTP(FSConnector.FSConnector, globus.Auth):
         if pp.exitcode!=0:
             # error occurred
             if "Permission denied" in err:
-                print "PERM DENIED"
                 raise PermissionDenied(err)
             else:
-                print "INV PATH"
                 raise InvalidPath(err)
         
         ls_data = parse_ls(out, culldots=culldots)

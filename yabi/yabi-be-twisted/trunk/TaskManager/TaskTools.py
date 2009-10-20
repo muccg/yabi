@@ -33,16 +33,16 @@ def Copy(src,dst,retry=COPY_RETRY):
     """Copy src (url) to dst (url) using the fileservice"""
     print "Copying %s to %s"%(src,dst)
     for num in range(retry):
-        print "num=",num
+        #print "retry num=",num
         try:
             code,message,data = GET(COPY_PATH,src=src,dst=dst)
             print "code=",repr(code)
             if int(code)==200:
                 # success!
-                print "SUCC"
+                #print "SUCC"
                 return True
             else:
-                print "FAIL"
+                #print "FAIL"
                 raise CopyError(data)
         except GETFailure, err:
             print "Post failed with error:",err
@@ -51,7 +51,7 @@ def Copy(src,dst,retry=COPY_RETRY):
     raise err
     
 def RCopy(src, dst):
-    print "RCopying %s to %s"%(src,dst)
+    #print "RCopying %s to %s"%(src,dst)
     try:
         POST(RCOPY_PATH,src=src,dst=dst)
         # success!
@@ -61,11 +61,11 @@ def RCopy(src, dst):
         raise
     
 def List(path,recurse=False):
-    print "LIST posting",LIST_PATH,path,recurse
+    #print "LIST posting",LIST_PATH,path,recurse
     code, message, data = GET(LIST_PATH,uri=path,recurse=recurse)
-    print "RESPONSE",code,message,data
+    #print "RESPONSE",code,message,data
     assert code==200
-    print "LIST:",data
+    #print "LIST:",data
     return json.loads(data)
 
 def Mkdir(path):
@@ -79,7 +79,7 @@ def Rm(path, recurse=False):
 def Log(logpath,message):
     """Report an error to the webservice"""
     #print "Reporting error to %s"%(logpath)
-    print "Logging to %s"%(logpath)
+    #print "Logging to %s"%(logpath)
     print "log=",message
     
     if "://" in logpath:
@@ -94,7 +94,7 @@ def Log(logpath,message):
     
 def Status(statuspath, message):
     """Report some status to the webservice"""
-    print "Reporting status to %s"%(statuspath)
+    #print "Reporting status to %s"%(statuspath)
     print "status=",message
     
     if "://" in statuspath:
@@ -120,7 +120,7 @@ def Exec(backend, command, callbackfunc=None, **kwargs):
 def UserCreds(scheme,username,hostname):
     """Get a users credentials"""
     # see if we can get the credentials
-    print "UserCreds",scheme,username,hostname
+    #print "UserCreds",scheme,username,hostname
     import conf
     url = os.path.join(conf.yabiadmin.PATH,'ws/credential/%s/%s/%s/'%(scheme,username,hostname))
     code, message, data = GET(url, host=conf.yabiadmin.SERVER, port=conf.yabiadmin.PORT)

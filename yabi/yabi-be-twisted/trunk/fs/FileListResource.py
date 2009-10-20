@@ -60,14 +60,14 @@ class FileListResource(resource.PostableResource):
         client_channel = defer.Deferred()
         
         def do_list():
-            print "dolist() hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
+            #print "dolist() hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
             try:
                 lister=bend.ls(hostname,path=path, username=username,recurse=recurse)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream=json.dumps(lister)))
             except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
-                print "IP"
+                #print "IP"
                 client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
-                print "POST CALLBACK"
+                #print "POST CALLBACK"
             
         tasklet = stackless.tasklet(do_list)
         tasklet.setup()

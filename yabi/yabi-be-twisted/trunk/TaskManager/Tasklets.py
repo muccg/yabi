@@ -15,11 +15,11 @@ class Tasklets(object):
         self.tasks = []
         
     def add(self, tasklet):
-        print "ADD",tasklet
+        #print "ADD",tasklet
         self.tasks.append(tasklet)
         
     def save(self, directory="/tmp/yabi-tasklets"):
-        print "TASKS Save",self.tasks
+        #print "TASKS Save",self.tasks
         
         for task in self.tasks:
             # before we pickle it, if we are waiting on a connection in our stack frame, then set it to have failed
@@ -29,7 +29,7 @@ class Tasklets(object):
                 task.frame.f_locals['get_failed'][0]=True
         
         for task in self.tasks:
-            print "pickling:",task
+            #print "pickling:",task
             pickled_task = pickle.dumps(task)
             with open(os.path.join(directory,str(id(task))), 'wb') as fh:
                 fh.write(pickled_task) 
@@ -42,7 +42,7 @@ class Tasklets(object):
                 data = fh.read()
              
             task = pickle.loads(data)
-            print "LOAD",f,task
+            #print "LOAD",f,task
             os.unlink(os.path.join(directory,f))
             
             try:

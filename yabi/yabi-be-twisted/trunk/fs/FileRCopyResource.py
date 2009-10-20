@@ -72,7 +72,7 @@ class FileRCopyResource(resource.PostableResource):
             sbend = self.fsresource().GetBackend(src_scheme)
             dbend = self.fsresource().GetBackend(dst_scheme)
             
-            print "RCopying from %s -> %s"%(src,dst)
+            #print "RCopying from %s -> %s"%(src,dst)
             
             #our http result channel. this stays open until the copy is finished
             result_channel = defer.Deferred()
@@ -85,7 +85,7 @@ class FileRCopyResource(resource.PostableResource):
                     # get a recursive listing of the source
                     fsystem = List(path=src,recurse=True)
                     
-                    print "Fsystem:",fsystem
+                    #print "Fsystem:",fsystem
                     
                     # remember the directories we make so we only make them once
                     created=[]
@@ -93,7 +93,7 @@ class FileRCopyResource(resource.PostableResource):
                     for directory in sorted(fsystem.keys()):
                         # make directory
                         destpath = directory[len(src_path)+1:]              # the subpath part
-                        print "D:",dst,":",destpath,";",src_path
+                        #print "D:",dst,":",destpath,";",src_path
                         if dst+destpath not in created:
                             #print dst+destpath,"not in",created
                             try:
@@ -108,7 +108,7 @@ class FileRCopyResource(resource.PostableResource):
                             #print "EXTRA",">",destpath,">",directory
                             src_uri = src+destpath+file
                             dst_uri = dst+destpath+file
-                            print "Copy(",src_uri,",",dst_uri,")"
+                            #print "Copy(",src_uri,",",dst_uri,")"
                             #print "Copy(",sbend+directory+"/"+file,",",dst+destpath+'/'+file,")"
                             Copy(src_uri,dst_uri,retry=1)
                             Sleep(0.5)

@@ -65,7 +65,7 @@ class FileDeleteResource(resource.PostableResource):
                 lister=bend.rm(hostname,path=path, username=username,recurse=recurse)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
             except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
-                print "rm call failed...\n%s"%traceback.format_exc()
+                #print "rm call failed...\n%s"%traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
             
         tasklet = stackless.tasklet(do_rm)

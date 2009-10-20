@@ -59,7 +59,7 @@ class CallbackHTTPClient(client.HTTPPageGetter):
             # we got an error. TODO: something graceful here
             #print "ERROR. NON 200 CODE RETURNED FOR JOB EXEC STATUS"
             self.errordata=data
-            print "errordata",data
+            #print "errordata",data
         elif self.callback:
             #print "CALLING CALLBACK",self.callback
             # hook in here to process chunked updates
@@ -106,7 +106,7 @@ class RememberingHTTPClient(client.HTTPPageGetter):
             # we got an error. TODO: something graceful here
             #print "ERROR. NON 200 CODE RETURNED FOR JOB EXEC STATUS"
             self.errordata=data
-            print "errordata",data
+            #print "errordata",data
         return client.HTTPPageGetter.rawDataReceived(self,data)        
 
 class RememberingHTTPClientFactory(client.HTTPClientFactory):
@@ -125,7 +125,7 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=RememberingHTTPClientFac
     """
     getdata=urllib.urlencode(kws)
     
-    print "=>",str("http://%s:%d%s"%(host,port,path+"?"+getdata))
+    #print "=>",str("http://%s:%d%s"%(host,port,path+"?"+getdata))
     
     factory = factory_class(
         str("http://%s:%d%s"%(host,port,path+"?"+getdata)),
@@ -134,7 +134,7 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=RememberingHTTPClientFac
         )
     factory.noisy=False
     
-    print "GETing","http://%s:%d%s"%(host,port,path+"?"+getdata),
+    #print "GETing","http://%s:%d%s"%(host,port,path+"?"+getdata),
     
     # switches to trigger the unblocking of the stackless thread
     get_complete = [False]
@@ -148,14 +148,14 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=RememberingHTTPClientFac
         #get_failed[0] = int(factory.status), factory.message, data
         #print "FACTORY DIR",dir(factory),factory.__class__
         
-        print "_DO_FAILURE",type(factory),factory.__class__,dir(factory),factory.last_client,dir(factory.last_client)
+        #print "_DO_FAILURE",type(factory),factory.__class__,dir(factory),factory.last_client,dir(factory.last_client)
         
-        print "FAILED:",factory.status,":",type(data),"Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
+        #print "FAILED:",factory.status,":",type(data),"Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
         #print data
         get_failed[0] = int(factory.status), factory.message, "Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
         
     def _doSuccess(data):
-        print "SUCCESS:",factory.status,factory.message, data
+        #print "SUCCESS:",factory.status,factory.message, data
         get_complete[0] = int(factory.status), factory.message, data
     
     # start the connection
@@ -168,7 +168,7 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=RememberingHTTPClientFac
         schedule()
         
     if get_failed[0]:
-        print "get_failed=",get_failed
+        #print "get_failed=",get_failed
         if type(get_failed[0])==tuple and len(get_failed[0])==3:
             # failed naturally
             raise GETFailure(get_failed[0])
@@ -176,7 +176,7 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=RememberingHTTPClientFac
             # failed by tasklet serialisation and restoration
             return GET(path, host, port, factory_class, **kws)
         else:
-            print "GETFailed=",get_failed
+            #print "GETFailed=",get_failed
             assert False, "got unknown GET failure response"
     
     return get_complete[0]
@@ -252,7 +252,7 @@ def POST(path,**kws):
             # failed by tasklet serialisation and restoration
             return POST(path, host=host, port=port, datacallback=datacallback, **kws)
         else:
-            print "POSTFailed=",get_failed
+            #print "POSTFailed=",get_failed
             assert False, "got unknown POST failure response"
     
     return get_complete[0]
