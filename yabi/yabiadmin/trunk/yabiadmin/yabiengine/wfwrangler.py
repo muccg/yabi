@@ -71,6 +71,10 @@ def prepare_tasks(job):
     exec_be = backendhelper.get_backend_from_uri(job.exec_backend)
     exec_bc = BackendCredential.objects.get(backend=exec_be, credential__user=job.workflow.user)
     fs_be = backendhelper.get_backend_from_uri(job.fs_backend)
+    fs_bcs = BackendCredential.objects.filter(backend=fs_be, credential__user=job.workflow.user)
+
+    logger.debug("total fs_bc=%s"%(fs_bcs))
+    
     fs_bc = BackendCredential.objects.get(backend=fs_be, credential__user=job.workflow.user)
 
     logger.debug("wfwrangler::prepare_tasks() exec_be:%s exec_bc:%s fs_be:%s fs_bc:%s"%(exec_be,exec_bc,fs_be,fs_bc))
