@@ -842,7 +842,7 @@ YabiWorkflow.prototype.onDragJobCallback = function(e) {
 
 YabiWorkflow.prototype.onDragOverJobCallback = function(e, id) {
     var destEl = YAHOO.util.Dom.get(id);
-    var srcEl;
+    var srcEl, midY;
     if (this.dragType == "job") {
         srcEl = this.getEl();
     } else {
@@ -851,10 +851,11 @@ YabiWorkflow.prototype.onDragOverJobCallback = function(e, id) {
 
     if (destEl.className == "jobSuperContainer") {
         //TODO use mid-point to determine if they are going up and have gone past the mid-point of destEl
-
-        if (this.goingUp) {
+        midY = YAHOO.util.Dom.getXY(destEl)[1] + (destEl.style.height / 2);
+        
+        if (this.goingUp && YAHOO.util.Event.getPageY(e) < midY) {
             srcEl.parentNode.insertBefore(srcEl, destEl);
-        } else {
+        } else if (this.goingDown && YAHOO.util.Event.getPageY(e) > midY) {
             srcEl.parentNode.insertBefore(srcEl, destEl.nextSibling);
         }
     }
