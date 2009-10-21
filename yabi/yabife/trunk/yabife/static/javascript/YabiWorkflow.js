@@ -181,6 +181,10 @@ function YabiWorkflow(editable) {
 YabiWorkflow.prototype.setStatus = function(statusText) {
     this.status = statusText;
     
+    if (this.editable) {
+        return;
+    }
+    
     var loadImg;
     if (this.status !== "Completed" && this.status !== "Error") {
         if (YAHOO.lang.isUndefined(this.loadingEl) || this.loadingEl === null) {
