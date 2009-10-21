@@ -671,6 +671,10 @@ YabiWorkflow.prototype.fetchProgress = function(callback) {
         this.mainEl.appendChild(this.loadingEl);
         
         this.hydrate(this.workflowId);
+    } else {
+        //completed or error, remove the loadingEl
+        this.mainEl.removeChild(this.loadingEl);
+        this.loadingEl = null;
     }
     
     if (callback !== null) {
