@@ -1289,6 +1289,16 @@ input {
     text-shadow:0px -1px 1px #666;
 }
 
+.workflowLoading {
+    background: #f6f6f6;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    padding:6px;
+}
+
+.workflowLoading img {
+    margin-right:8px;
+}
 
 .loginFormButton {
 	color:white;
