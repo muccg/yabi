@@ -178,6 +178,35 @@ function YabiWorkflow(editable) {
     enterTags.enable();
 }
 
+YabiWorkflow.prototype.setStatus = function(statusText) {
+    this.status = statusText;
+    
+    var loadImg;
+    if (this.status !== "Completed" && this.status !== "Error") {
+        if (YAHOO.lang.isUndefined(this.loadingEl) || this.loadingEl === null) {
+            this.loadingEl = document.createElement("div");
+            this.loadingEl.className = "workflowLoading";
+            loadImg = new Image();
+            loadImg.src = appURL + "static/images/processing.gif";
+            this.loadingEl.appendChild(loadImg);
+            
+            this.loadingTextEl = document.createElement("span");
+        }
+        
+        this.loadingTextEl.innerHTML = "workflow running, waiting for completion...";
+        this.loadingEl.appendChild( this.loadingTextEl );
+        
+        this.mainEl.appendChild(this.loadingEl);
+    } else {
+        //completed or error, remove the loadingEl
+        if (YAHOO.lang.isUndefined(this.loadingEl) || this.loadingEl === null) {
+        } else {
+            this.mainEl.removeChild(this.loadingEl);
+            this.loadingEl = null;
+        }
+    }
+};
+
 /**
  * addJob
  *
@@ -653,29 +682,9 @@ YabiWorkflow.prototype.solidify = function(obj) {
  */
 YabiWorkflow.prototype.fetchProgress = function(callback) {
     //console.log("fetch progress");
-    var loadImg;
     if (this.status !== "Completed" && this.status !== "Error") {
-        if (YAHOO.lang.isUndefined(this.loadingEl) || this.loadingEl === null) {
-            this.loadingEl = document.createElement("div");
-            this.loadingEl.className = "workflowLoading";
-            loadImg = new Image();
-            loadImg.src = appURL + "static/images/processing.gif";
-            this.loadingEl.appendChild(loadImg);
-            
-            this.loadingTextEl = document.createElement("span");
-        }
-
-        this.loadingTextEl.innerHTML = "workflow running, waiting for completion...";
-        this.loadingEl.appendChild( this.loadingTextEl );
-        
-        this.mainEl.appendChild(this.loadingEl);
-        
         this.hydrate(this.workflowId);
-    } else {
-        //completed or error, remove the loadingEl
-        this.mainEl.removeChild(this.loadingEl);
-        this.loadingEl = null;
-    }
+    } 
     
     if (callback !== null) {
         callback(this.status);
@@ -783,6 +792,8 @@ YabiWorkflow.prototype.hydrateCallback = function(o) {
         
         //preprocess wrapper meta data
         target.setTags(obj.tags);
+        
+        target.setStatus(obj.status);
         
         target.solidify(obj.json);
     } catch (e) {
