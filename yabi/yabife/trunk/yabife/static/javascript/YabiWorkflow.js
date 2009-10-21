@@ -682,7 +682,7 @@ YabiWorkflow.prototype.solidify = function(obj) {
  */
 YabiWorkflow.prototype.fetchProgress = function(callback) {
     //console.log("fetch progress");
-    if (this.status !== "Completed" && this.status !== "Error") {
+    if (this.status.toLowerCase() !== "completed" && this.status.toLowerCase() !== "error") {
         this.hydrate(this.workflowId);
     } 
     
