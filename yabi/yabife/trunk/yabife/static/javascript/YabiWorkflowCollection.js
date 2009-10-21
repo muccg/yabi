@@ -201,6 +201,7 @@ YabiWorkflowCollection.prototype.solidify = function(obj) {
         
         if (this.loadedWorkflow !== null && tempWorkflow.id == this.loadedWorkflow.workflowId) {
             this.loadedWorkflow.attachProxy(tempWorkflow);
+            tempWorkflow.setSelected(true);
         }
     }
     
