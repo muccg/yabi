@@ -1290,14 +1290,18 @@ input {
 }
 
 .workflowLoading {
-    background: #f6f6f6;
+    margin-top:15px;
+    text-align:center;
+    background: #fefefe;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     padding:6px;
+    color:#666;
 }
 
 .workflowLoading img {
     margin-right:8px;
+    vertical-align:sub;
 }
 
 .loginFormButton {
