@@ -801,8 +801,10 @@ YabiWorkflow.prototype.destroy = function() {
     }
 
     if (!YAHOO.lang.isUndefined(this.hydrateDiv)) {
-        document.body.removeChild(this.hydrateDiv);
-        this.hydrateDiv = null;
+        try {
+            document.body.removeChild(this.hydrateDiv);
+            this.hydrateDiv = null;
+        } catch (e) {}
     }
 };
 
