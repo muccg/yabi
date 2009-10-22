@@ -582,6 +582,15 @@ YabiWorkflow.prototype.toJSON = function() {
  * fetch workflow definition from the server
  */
 YabiWorkflow.prototype.hydrate = function(workflowId) {
+    if (YAHOO.lang.isUndefined(this.workflowId)) {
+        this.hydrateDiv = document.createElement("div");
+        this.hydrateDiv.className = "workflowHydrating";
+        var loadImg = new Image();
+        loadImg.src = appURL + "static/images/largeLoading.gif";
+        this.hydrateDiv.appendChild( loadImg );
+        document.body.appendChild(this.hydrateDiv);
+    }
+
     this.workflowId = workflowId;
     var baseURL = appURL + "workflows/" + YAHOO.ccgyabi.username + "/" + workflowId;
     
@@ -593,6 +602,15 @@ YabiWorkflow.prototype.hydrate = function(workflowId) {
             failure: this.hydrateCallback,
             argument: [this] };
     this.jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
+
+};
+
+YabiWorkflow.prototype.fadeHydratingDiv = function() {
+    //fade out and remove the loading element   
+    var anim = new YAHOO.util.Anim(this.hydrateDiv, { opacity: { to: 0.0 } }, 0.6, YAHOO.util.Easing.Linear);
+    anim.onComplete.subscribe(function() { document.body.removeChild(this.getEl()); this.hydratingDiv = null; });
+    anim.animate();
+
 };
 
 /**
@@ -788,7 +806,9 @@ YabiWorkflow.prototype.hydrateCallback = function(o) {
     var json = o.responseText;
     var i;
     var obj;
-    
+ 
+    o.argument[0].fadeHydratingDiv();
+
     try {
         target = o.argument[0];
         
