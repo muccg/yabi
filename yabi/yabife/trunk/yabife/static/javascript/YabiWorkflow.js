@@ -608,7 +608,7 @@ YabiWorkflow.prototype.hydrate = function(workflowId) {
 YabiWorkflow.prototype.fadeHydratingDiv = function() {
     //fade out and remove the loading element   
     var anim = new YAHOO.util.Anim(this.hydrateDiv, { opacity: { to: 0.0 } }, 0.6, YAHOO.util.Easing.Linear);
-    anim.onComplete.subscribe(function() { document.body.removeChild(this.getEl()); this.hydratingDiv = null; });
+    anim.onComplete.subscribe(function() { document.body.removeChild(this.hydrateDiv); this.hydrateDiv = null; });
     anim.animate();
 
 };
@@ -798,6 +798,11 @@ YabiWorkflow.prototype.destroy = function() {
     
     if (!YAHOO.lang.isUndefined(this.fileOutputsEl)) {
         this.fileOutputsEl.parentNode.removeChild(this.fileOutputsEl);
+    }
+
+    if (!YAHOO.lang.isUndefined(this.hydrateDiv)) {
+        document.body.removeChild(this.hydrateDiv);
+        this.hydrateDiv = null;
     }
 };
 
