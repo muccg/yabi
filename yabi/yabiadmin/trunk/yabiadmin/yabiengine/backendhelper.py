@@ -4,10 +4,9 @@ import httplib
 import socket
 import os
 from urllib import urlencode
-from yabiadmin.yabiengine.urihelper import uri_get_pseudopath, uriparse, get_backend_userdir
+from yabiadmin.yabiengine.urihelper import uriparse, get_backend_userdir
 from yabiadmin.yabmin.models import Backend, BackendCredential
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.servers.basehttp import FileWrapper
 
 
@@ -15,6 +14,22 @@ from django.core.servers.basehttp import FileWrapper
 import logging
 import yabilogging
 logger = logging.getLogger('yabiengine')
+
+
+def get_backendcredential_for_uri(uri):
+    """
+    Looks up a backend credential based on the supplied uri, which should include a username.
+    Returns bc, will log and reraise MultipleObjectsReturned exception if more than one credential
+    """
+    scheme, uriparts = uriparse(uri)
+    try:
+        bc = BackendCredential.objects.get(backend__hostname=uriparts.hostname,
+                                           backend__scheme=scheme,
+                                           credential__username=uriparts.username)
+        return bc
+    except MultipleObjectsReturned, e:
+        logger.critical(e)
+        raise    
 
 
 def get_file_list(uri, recurse=True):
@@ -29,9 +44,19 @@ def get_file_list(uri, recurse=True):
         if recurse:
             resource += "&recurse"
         logger.debug('Resource: %s' % resource)
-        conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
-        conn.request('GET', resource)
+
+
+        bc = get_backendcredential_for_uri(uri)
+        data = dict([('username', bc.credential.username),
+                    ('password', bc.credential.password),
+                    ('cert', bc.credential.cert),
+                    ('key', bc.credential.key)])
+        data = urlencode(data)        
+
+        conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
+        conn.request('POST', resource, data)
+
         r = conn.getresponse()
 
         logger.info("Status of return from yabi backend is: %s" % r.status)
@@ -70,12 +95,21 @@ def get_listing(uri):
 
     try:
         resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, uri)
+
         logger.debug('Resource: %s' % resource)
-        print 'Resource: %s' % resource
-        conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
-        print 'Server: %s' % settings.YABIBACKEND_SERVER
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
-        conn.request('GET', resource)
+        print 'Resource: %s' % resource
+        print 'Server: %s' % settings.YABIBACKEND_SERVER
+
+        bc = get_backendcredential_for_uri(uri)
+        data = dict([('username', bc.credential.username),
+                    ('password', bc.credential.password),
+                    ('cert', bc.credential.cert),
+                    ('key', bc.credential.key)])
+        data = urlencode(data)        
+
+        conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
+        conn.request('POST', resource, data)
         r = conn.getresponse()
         print 'response',r
 
@@ -101,12 +135,21 @@ def mkdir(uri):
     
     try:
         resource = "%s?uri=%s" % (settings.YABIBACKEND_MKDIR, uri)
+
         logger.debug('Resource: %s' % resource)
-        print 'Resource: %s' % resource
-        conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
-        print 'Server: %s' % settings.YABIBACKEND_SERVER
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
-        conn.request('GET', resource)
+        print 'Resource: %s' % resource
+        print 'Server: %s' % settings.YABIBACKEND_SERVER
+
+        bc = get_backendcredential_for_uri(uri)
+        data = dict([('username', bc.credential.username),
+                    ('password', bc.credential.password),
+                    ('cert', bc.credential.cert),
+                    ('key', bc.credential.key)])
+        data = urlencode(data)        
+
+        conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
+        conn.request('POST', resource, data)
         r = conn.getresponse()
         print 'response',r
 
@@ -172,6 +215,8 @@ def put_file(uri, fh):
     """
     logger.debug('')
 
+    assert False, "Is this deprecated?"
+
 
 ## curl -F file1=@index.html -F file2=@fish.csv
 ## faramir:8100/fs/put?uri=gridftp://cwellington@xe-ng2.ivec.org/scratch/bi01/cwellington/
@@ -181,6 +226,7 @@ def put_file(uri, fh):
         logger.debug('Resource: %s' % resource)
         conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
+
         conn.request('GET', resource, fh)
         r = conn.getresponse()
         logger.info("Status of return from yabi backend is: %s" % r.status)
@@ -203,9 +249,17 @@ def get_file(uri):
     try:
         resource = "%s?uri=%s" % (settings.YABIBACKEND_GET, uri)
         logger.debug('Resource: %s' % resource)
-        conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
-        conn.request('GET', resource)
+
+        bc = get_backendcredential_for_uri(uri)
+        data = dict([('username', bc.credential.username),
+                    ('password', bc.credential.password),
+                    ('cert', bc.credential.cert),
+                    ('key', bc.credential.key)])
+        data = urlencode(data)        
+
+        conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
+        conn.request('POST', resource, data)
         r = conn.getresponse()
 
         logger.info("Status of return from yabi backend is: %s" % r.status)

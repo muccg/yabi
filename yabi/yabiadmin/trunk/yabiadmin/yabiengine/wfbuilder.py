@@ -3,7 +3,6 @@ from django.conf import settings
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog, StageIn
 from yabiadmin.yabmin.models import Backend, BackendCredential, Tool, User
 from yabiadmin.yabiengine.YabiJobException import YabiJobException
-from yabiadmin.yabiengine.urihelper import uri_get_pseudopath
 from yabiadmin.yabiengine import backendhelper
 from django.utils import simplejson as json
 from yabiengine import wfwrangler

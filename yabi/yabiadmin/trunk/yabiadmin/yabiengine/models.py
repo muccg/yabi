@@ -3,7 +3,7 @@ from django.db.models import Q
 from django.conf import settings
 from yabiadmin.yabmin.models import User
 from yabiadmin.yabiengine import backendhelper
-from yabiadmin.yabiengine.urihelper import uriparse, uri_get_pseudopath
+from yabiadmin.yabiengine.urihelper import uriparse
 from django.utils import simplejson as json, webhelpers
 from django.db.models.signals import post_save
 from django.utils.webhelpers import url

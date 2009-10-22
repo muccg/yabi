@@ -8,7 +8,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from yabiadmin.yabiengine import wfbuilder
-from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file
+from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_backendcredential_for_uri
 from yabiadmin.security import validate_user, validate_uri
 from yabiadmin.utils import json_error
 import mimetypes
@@ -165,7 +165,8 @@ def put(request):
     import httplib
 
     try:
-        resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, request.GET['uri'])
+        uri = request.GET['uri']
+        resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, uri)
 
         # TODO this only works with files written to disk by django
         # at the moment so the FILE_UPLOAD_MAX_MEMORY_SIZE must be set to 0
@@ -174,7 +175,14 @@ def put(request):
         in_file = request.FILES['file1']
         files.append((in_file.name, in_file.name, in_file.temporary_file_path()))
         logger.debug(files)
-        h = post_multipart(settings.YABIBACKEND_SERVER, resource, [], files)
+
+        bc = get_backendcredential_for_uri(uri)
+        data = [('username', bc.credential.username),
+                    ('password', bc.credential.password),
+                    ('cert', bc.credential.cert),
+                    ('key', bc.credential.key)]
+
+        h = post_multipart(settings.YABIBACKEND_SERVER, resource, data, files)
         return HttpResponse('ok')
         
     except socket.error, e:
