@@ -611,7 +611,7 @@ YabiWorkflow.prototype.hydrate = function(workflowId) {
 
 YabiWorkflow.prototype.fadeHydratingDiv = function() {
     //fade out and remove the loading element   
-    var anim = new YAHOO.util.Anim(this.hydrateDiv, { opacity: { to: 0.0 } }, 0.6, YAHOO.util.Easing.Linear);
+    var anim = new YAHOO.util.Anim(this.hydrateDiv, { opacity: { to: 0.0 } }, 0.3, YAHOO.util.Easing.Linear);
     anim.onComplete.subscribe(function() { document.body.removeChild(this.getEl()); });
     anim.animate();
 
@@ -869,7 +869,7 @@ YabiWorkflow.prototype.endDragJobCallback = function(e) {
         this.jobEl.style.visibility = "";
         //this.jobEl.style.opacity = "1.0";
 
-        anim = new YAHOO.util.Anim(this.jobEl, { opacity: { to: 1.0 } }, 0.6, YAHOO.util.Easing.Linear);
+        anim = new YAHOO.util.Anim(this.jobEl, { opacity: { to: 1.0 } }, 0.3, YAHOO.util.Easing.Linear);
         anim.animate();
 
         this.optionsEl.style.display = "block";
