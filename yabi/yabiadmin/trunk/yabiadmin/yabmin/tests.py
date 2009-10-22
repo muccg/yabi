@@ -217,20 +217,20 @@ class TestYabmin(unittest.TestCase):
 
     def testLs(self):
         c = Client()
-        response = c.get('/ws/fs/list?yabiusername=andrew&uri=gridftp://amacgregor@xe-ng2.ivec.org/scratch/bi01/amacgregor/')
+        response = c.get('/ws/fs/ls?yabiusername=andrew&uri=gridftp://amacgregor@xe-ng2.ivec.org/scratch/bi01/amacgregor/')
         self.assertEqual(response.status_code, 200)
 
 
     def testLsInvalidUserInUri(self):
         c = Client()
-        response = c.get('/ws/fs/list?yabiusername=cwellington&uri=gridftp://amacgregor@xe-ng2.ivec.org/scratch/bi01/amacgregor/')        
+        response = c.get('/ws/fs/ls?yabiusername=cwellington&uri=gridftp://amacgregor@xe-ng2.ivec.org/scratch/bi01/amacgregor/')        
         self.assertEqual(response.status_code, 403) # this should be forbidden
         payload = json.loads(response.content)
         self.assertEqual(payload['error'], 'Trying to view uri for different user.')
 
     def testInvalidDir(self):
         c = Client()
-        response = c.get('/ws/fs/list?yabiusername=andrew&uri=gridftp://amacgregor@xe-ng2.ivec.org/etc/')    
+        response = c.get('/ws/fs/ls?yabiusername=andrew&uri=gridftp://amacgregor@xe-ng2.ivec.org/etc/')    
         self.assertEqual(response.status_code, 403)
         payload = json.loads(response.content)
         self.assertEqual(payload['error'], 'Invalid path.')
