@@ -18,6 +18,7 @@ function YabiWorkflow(editable) {
         }
         return number;
     };
+    var header;
     
     var date = new Date();
     if (editable) {
@@ -156,7 +157,7 @@ function YabiWorkflow(editable) {
     if (!editable) {
         this.fileOutputsEl = document.createElement('div');
         this.fileOutputsEl.className = "fileOutputs";
-        var header = document.createElement('h1');
+        header = document.createElement('h1');
         header.appendChild( document.createTextNode('File outputs') );
         this.fileOutputsEl.appendChild( header );
 
@@ -283,8 +284,9 @@ YabiWorkflow.prototype.addJob = function(toolName, preloadValues, shouldFadeIn) 
     this.containerEl.appendChild(job.containerEl);
     this.optionsEl.appendChild(job.optionsEl);
     
+    var anim;
     if (shouldFadeIn) {
-        var anim = new YAHOO.util.Anim(job.containerEl, { opacity: { from: 0.0, to: 1.0 } }, 1.0, YAHOO.util.Easing.Linear);
+        anim = new YAHOO.util.Anim(job.containerEl, { opacity: { from: 0.0, to: 1.0 } }, 1.0, YAHOO.util.Easing.Linear);
         anim.animate();
     }
 
@@ -582,10 +584,12 @@ YabiWorkflow.prototype.toJSON = function() {
  * fetch workflow definition from the server
  */
 YabiWorkflow.prototype.hydrate = function(workflowId) {
+    var loadImg;
+    
     if (YAHOO.lang.isUndefined(this.workflowId)) {
         this.hydrateDiv = document.createElement("div");
         this.hydrateDiv.className = "workflowHydrating";
-        var loadImg = new Image();
+        loadImg = new Image();
         loadImg.src = appURL + "static/images/largeLoading.gif";
         this.hydrateDiv.appendChild( loadImg );
         document.body.appendChild(this.hydrateDiv);
@@ -857,13 +861,15 @@ YabiWorkflow.prototype.startDragJobCallback = function(x, y) {
 };
 
 YabiWorkflow.prototype.endDragJobCallback = function(e) {
+    var anim;
+    
     if (this.dragType == "job") {
         this.getEl().style.visibility = "";
     } else {
         this.jobEl.style.visibility = "";
         //this.jobEl.style.opacity = "1.0";
 
-        var anim = new YAHOO.util.Anim(this.jobEl, { opacity: { to: 1.0 } }, 0.6, YAHOO.util.Easing.Linear);
+        anim = new YAHOO.util.Anim(this.jobEl, { opacity: { to: 1.0 } }, 0.6, YAHOO.util.Easing.Linear);
         anim.animate();
 
         this.optionsEl.style.display = "block";

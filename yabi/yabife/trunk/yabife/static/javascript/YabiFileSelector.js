@@ -480,7 +480,7 @@ YabiFileSelector.prototype.hydrate = function(path) {
     var baseURL = appURL + "ws/fs/ls";
     
     // cancel previous transaction if it exists
-    if (this.jsTransaction != null && YAHOO.util.Connect.isCallInProgress( this.jsTransaction ) ) {
+    if (this.jsTransaction !== null && YAHOO.util.Connect.isCallInProgress( this.jsTransaction ) ) {
         YAHOO.util.Connect.abort( this.jsTransaction, null, false );
     }
     
