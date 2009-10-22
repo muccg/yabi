@@ -2,7 +2,6 @@ from django.db import models
 from django import forms
 from django.contrib.auth.models import User as DjangoUser
 from django.utils import simplejson as json
-from yabiadmin.yabiengine.urihelper import uri_get_pseudopath
 from urlparse import urlparse, urlunparse
 
 DEBUG = False
