@@ -96,6 +96,7 @@ class FileListResource(resource.PostableResource):
         deferred = parsePOSTDataRemoteWriter(request)
         
         def post_parsed(result):
+            print "List::POST2",request.args
             return self.handle_list(request)
         
         deferred.addCallback(post_parsed)
