@@ -112,11 +112,13 @@ def parsePOSTData(request, maxMem=100*1024, maxFields=1024,
 
     if (ctype.mediaType == 'application'
         and ctype.mediaSubtype == 'x-www-form-urlencoded'):
+        print "A"
         d = fileupload.parse_urlencoded(request.stream)
         d.addCallbacks(updateArgs, error)
         return d
     elif (ctype.mediaType == 'multipart'
         and ctype.mediaSubtype == 'form-data'):
+        print "B"
         boundary = ctype.params.get('boundary')
         if boundary is None:
             return defer.fail(http.HTTPError(
@@ -128,6 +130,7 @@ def parsePOSTData(request, maxMem=100*1024, maxFields=1024,
         d.addCallbacks(updateArgsAndFiles, error)
         return d
     else:
+        print "C"
         return defer.fail(http.HTTPError(
             http.StatusResponse(
                 responsecode.BAD_REQUEST,

@@ -11,7 +11,7 @@ from globus.CertificateProxy import ProxyInitError
 
 from utils.parsers import parse_url
 
-from utils.submit_helpers import parseMultipartFormData
+from utils.submit_helpers import parsePOSTData
 
 class FileListResource(resource.PostableResource):
     VERSION=0.1
@@ -93,7 +93,7 @@ class FileListResource(resource.PostableResource):
         @return: an object adaptable to L{iweb.IResponse}.
         """
         print "List::POST",request.args
-        deferred = parseMultipartFormData(request)
+        deferred = parsePOSTData(request)
         
         def post_parsed(result):
             print "List::POST2",request.args
