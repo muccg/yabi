@@ -24,7 +24,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth):
         """return the full url for out path"""
         return "%s://%s%s"%(self.copymode,server,remotepath) + path
     
-    def mkdir(self, host, username, path, **creds):
+    def mkdir(self, host, username, path, creds={}):
         # make sure we are authed
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
@@ -52,7 +52,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth):
         
         return mkdir_data
         
-    def rm(self, host, username, path, recurse=False, creds):
+    def rm(self, host, username, path, recurse=False, creds={}):
         # make sure we are authed
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
@@ -80,7 +80,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth):
         
         return rm_data
     
-    def ls(self, host, username, path, recurse=False, culldots=True, creds):
+    def ls(self, host, username, path, recurse=False, culldots=True, creds={}):
         # make sure we are authed
         if creds:
             print "handed creds:",creds
@@ -119,7 +119,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth):
                         
         return ls_data
         
-    def GetWriteFifo(self, host=None, username=None, path=None, filename=None, fifo=None, **creds):
+    def GetWriteFifo(self, host=None, username=None, path=None, filename=None, fifo=None, creds={}):
         """sets up the chain needed to setup a read fifo from a remote path as a certain user.
         
         pass in here the username, path, and a deferred
@@ -142,7 +142,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth):
         
         return pp, fifo
     
-    def GetReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, **creds):
+    def GetReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, creds={}):
         """sets up the chain needed to setup a read fifo from a remote path as a certain user.
         
         pass in here the username, path, and a deferred
