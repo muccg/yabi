@@ -50,8 +50,8 @@ class FileListResource(resource.PostableResource):
         
         # compile any credentials together to pass to backend
         creds={}
-        if "credentials" in request.args:
-            for varname in ['key','password','username','cert']:
+        for varname in ['key','password','username','cert']:
+            if varname in request.args:
                 creds[varname] = request.args[varname][0]
         
         
