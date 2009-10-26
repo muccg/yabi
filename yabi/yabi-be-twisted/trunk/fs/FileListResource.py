@@ -72,7 +72,6 @@ class FileListResource(resource.PostableResource):
         def do_list():
             #print "dolist() hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
             try:
-                print "BEND=",bend,"creds=",creds
                 lister=bend.ls(hostname,path=path, username=username,recurse=recurse, creds=creds)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream=json.dumps(lister)))
             except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
@@ -94,11 +93,9 @@ class FileListResource(resource.PostableResource):
         @param request: the request to process.
         @return: an object adaptable to L{iweb.IResponse}.
         """
-        print "List::POST",request.args
         deferred = parsePOSTData(request)
         
         def post_parsed(result):
-            print "List::POST2",request.args
             return self.handle_list(request)
         
         deferred.addCallback(post_parsed)
@@ -107,5 +104,4 @@ class FileListResource(resource.PostableResource):
         return deferred
 
     def http_GET(self, request):
-        print "List::GET",request.args
         return self.handle_list(request)

@@ -25,17 +25,20 @@ class FileMkdirResource(resource.PostableResource):
         
         self.fsresource = weakref.ref(fsresource)
         
-    def http_POST(self, request):
-        # break our request path into parts
-        return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be GET\n")
-
-    def http_GET(self, request):
+    def handle_mkdir(self, request):
         if 'uri' not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "copy must specify a directory 'uri' to make\n")
         
         uri = request.args['uri'][0]
         scheme, address = parse_url(uri)
-        
+
+        # compile any credentials together to pass to backend
+        creds={}
+        for varname in ['key','password','username','cert']:
+            if varname in request.args:
+                creds[varname] = request.args[varname][0]
+                del request.args[varname]
+
         username = address.username
         path = address.path
         hostname = address.hostname
@@ -52,7 +55,7 @@ class FileMkdirResource(resource.PostableResource):
         def do_mkdir():
             #print "hostname=",hostname,"path=",path,"username=",username
             try:
-                lister=bend.mkdir(hostname,path=path, username=username)
+                mkdirer=bend.mkdir(hostname,path=path, username=username, creds=creds)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
             except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
                 client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
@@ -62,3 +65,25 @@ class FileMkdirResource(resource.PostableResource):
         tasklet.run()
         
         return client_channel
+    
+    def http_POST(self, request):
+        """
+        Respond to a POST request.
+        Reads and parses the incoming body data then calls L{render}.
+    
+        @param request: the request to process.
+        @return: an object adaptable to L{iweb.IResponse}.
+        """
+        deferred = parsePOSTData(request)
+        
+        def post_parsed(result):
+            return self.handle_mkdir(request)
+        
+        deferred.addCallback(post_parsed)
+        deferred.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Job Submission Failed %s\n"%res) )
+        
+        return deferred
+
+    def http_GET(self, request):
+        return self.handle_mkdir(request)
+    

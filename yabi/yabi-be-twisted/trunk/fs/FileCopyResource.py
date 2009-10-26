@@ -24,15 +24,18 @@ class FileCopyResource(resource.PostableResource):
         
         self.fsresource = weakref.ref(fsresource)
         
-    def http_POST(self,request):
-        #print "Copy called with POST, not GET"
-        return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "copy must be accessed via GET\n")
-        
-    def http_GET(self, request):
+    def handle_copy(self, request):
         # break our request path into parts
         #print "Copy",request,request.args
         if 'src' not in request.args or 'dst' not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "copy must specify source 'src' and destination 'dst'\n")
+        
+        # compile any credentials together to pass to backend
+        creds={}
+        for varname in ['key','password','username','cert']:
+            if varname in request.args:
+                creds[varname] = request.args[varname][0]
+                del request.args[varname]
         
         src = request.args['src'][0]
         dst = request.args['dst'][0]
@@ -119,4 +122,25 @@ class FileCopyResource(resource.PostableResource):
         tasklet.run()
             
         return client_channel
+            
+    def http_POST(self, request):
+        """
+        Respond to a POST request.
+        Reads and parses the incoming body data then calls L{render}.
+    
+        @param request: the request to process.
+        @return: an object adaptable to L{iweb.IResponse}.
+        """
+        deferred = parsePOSTData(request)
+        
+        def post_parsed(result):
+            return self.handle_copy(request)
+        
+        deferred.addCallback(post_parsed)
+        deferred.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Job Submission Failed %s\n"%res) )
+        
+        return deferred
+
+    def http_GET(self, request):
+        return self.handle_copy(request)
 

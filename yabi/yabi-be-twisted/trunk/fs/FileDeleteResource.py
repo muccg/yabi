@@ -26,11 +26,7 @@ class FileDeleteResource(resource.PostableResource):
         
         self.fsresource = weakref.ref(fsresource)
         
-    def http_POST(self, request):
-        # break our request path into parts
-        return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be GET\n")
-
-    def http_GET(self, request):
+    def handle_delete(self, request):
         if "uri" not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided\n")
 
@@ -39,6 +35,13 @@ class FileDeleteResource(resource.PostableResource):
         
         if not hasattr(address,"username"):
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No username provided in uri\n")
+        
+        # compile any credentials together to pass to backend
+        creds={}
+        for varname in ['key','password','username','cert']:
+            if varname in request.args:
+                creds[varname] = request.args[varname][0]
+                del request.args[varname]
         
         recurse = 'recurse' in request.args
         bendname = scheme
@@ -62,7 +65,7 @@ class FileDeleteResource(resource.PostableResource):
         def do_rm():
             #print "hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
             try:
-                lister=bend.rm(hostname,path=path, username=username,recurse=recurse)
+                deleter=bend.rm(hostname,path=path, username=username,recurse=recurse, creds=creds)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
             except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
                 #print "rm call failed...\n%s"%traceback.format_exc()
@@ -73,4 +76,25 @@ class FileDeleteResource(resource.PostableResource):
         tasklet.run()
         
         return client_channel
-       
+
+    def http_POST(self, request):
+        """
+        Respond to a POST request.
+        Reads and parses the incoming body data then calls L{render}.
+    
+        @param request: the request to process.
+        @return: an object adaptable to L{iweb.IResponse}.
+        """
+        deferred = parsePOSTData(request)
+        
+        def post_parsed(result):
+            return self.handle_delete(request)
+        
+        deferred.addCallback(post_parsed)
+        deferred.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Job Submission Failed %s\n"%res) )
+        
+        return deferred
+
+    def http_GET(self, request):
+        return self.handle_delete(request)
+

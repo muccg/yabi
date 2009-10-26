@@ -44,6 +44,13 @@ class FilePutResource(resource.PostableResource):
         uri = request.args['uri'][0]
         scheme, address = parse_url(uri)
         
+        # compile any credentials together to pass to backend
+        creds={}
+        for varname in ['key','password','username','cert']:
+            if varname in request.args:
+                creds[varname] = request.args[varname][0]
+                del request.args[varname]
+        
         if not hasattr(address,"username"):
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No username provided in uri\n")
         
@@ -87,7 +94,7 @@ class FilePutResource(resource.PostableResource):
                     """Override this class and put in our own file open methods"""
                     def open_write_stream(self, filename):
                         #print "Uploading file:",filename
-                        self.procproto, fifo = bend.GetWriteFifo(hostname,username,path,filename)
+                        self.procproto, fifo = bend.GetWriteFifo(hostname,username,path,filename, creds=creds)
                         self.fileopen = no_intr(open,fifo,"wb")
                         
                     def close_write_stream(self):
