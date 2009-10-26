@@ -10,7 +10,7 @@ class ExecutionError(Exception):
 class ExecConnector(object):
     """Base class for a filesystem connector"""
     
-    def run(self, command, working, address, callback, *args, **kwargs):
+    def run(self, command, working, address, callback, **creds):
         """Run a job on a backend. extra params can be passed in that are specific to a backend. They should all have defaults if ommitted
         
         command is the command to run

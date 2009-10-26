@@ -7,26 +7,26 @@ class NotImplemented(Exception):
 class FSConnector(object):
     """Base class for a filesystem connector"""
     
-    def GetReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None):
+    def GetReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, **creds):
         """sets up the chain needed to setup a read fifo from a remote path as a certain user.
         """
         raise NotImplemented("GetReadFifo not implemented")
             
-    def GetWriteFifo(self, host=None, username=None, path=None, filename=None, fifo=None):
+    def GetWriteFifo(self, host=None, username=None, path=None, filename=None, fifo=None, **creds):
         """sets up the chain needed to setup a write fifo to a remote path as a certain user.
         """
         raise NotImplemented("GetWriteFifo not implemented")
         
-    def ls(self, host=None, username=None, path=None, recurse=False, culldots=True):
+    def ls(self, host=None, username=None, path=None, recurse=False, culldots=True, **creds):
         raise NotImplemented("ls not implemented")
         
-    def mkdir(self, host=None, username=None, path=None):
+    def mkdir(self, host=None, username=None, path=None, **creds):
         """mkdir command. Uses self.path. If path is passed in (not None), then it overrides the request.path, and we go make this path instead.
         remember path must be a list.
         """
         raise NotImplemented("mkdir not implemented")
 
-    def rm(self, host=None, username=None, path=None, recurse=False):
+    def rm(self, host=None, username=None, path=None, recurse=False, **creds):
         """If path is passed in, remove this remote path instead of self.path (like MKDIR)"""
         raise NotImplemented("rm not implemented")
     

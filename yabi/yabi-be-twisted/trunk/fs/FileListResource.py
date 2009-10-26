@@ -46,6 +46,13 @@ class FileListResource(resource.PostableResource):
         path = address.path
         hostname = address.hostname
         
+        # compile any credentials together to pass to backend
+        creds={}
+        if "credentials" in request.args:
+            for varname in ['key','password','username','cert']:
+                creds[varname] = request.args[varname][0]
+        
+        
         #print "URI",uri
         #print "ADDRESS",address
         
@@ -62,7 +69,7 @@ class FileListResource(resource.PostableResource):
         def do_list():
             #print "dolist() hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
             try:
-                lister=bend.ls(hostname,path=path, username=username,recurse=recurse)
+                lister=bend.ls(hostname,path=path, username=username,recurse=recurse, request.args, **creds)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream=json.dumps(lister)))
             except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
                 #print "IP"
@@ -74,3 +81,5 @@ class FileListResource(resource.PostableResource):
         tasklet.run()
         
         return client_channel
+            
+    

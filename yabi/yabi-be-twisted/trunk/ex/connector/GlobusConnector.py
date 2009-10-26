@@ -24,7 +24,7 @@ class GlobusConnector(ExecConnector, globus.Auth):
     def __init__(self):
         self.CreateAuthProxy()
     
-    def run(self, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single"):
+    def run(self, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", **creds):
         # use shlex to parse the command into executable and arguments
         lexer = shlex.shlex(command, posix=True)
         lexer.wordchars += r"-.:;/"
@@ -48,7 +48,10 @@ class GlobusConnector(ExecConnector, globus.Auth):
         rslfile = globus.writersltofile(rsl)
         
         # first we need to auth the proxy
-        self.EnsureAuthed(scheme,username,host)
+        if creds:
+            self.EnsureAuthedWithCredentials(host, **creds)
+        else:
+            self.EnsureAuthed(self.scheme,username,host)
         
         # now submit the job via globus
         usercert = self.GetAuthProxy(host).ProxyFile(username)
@@ -84,7 +87,10 @@ class GlobusConnector(ExecConnector, globus.Auth):
             # pause
             sleep(delay.next())
             
-            self.EnsureAuthed(scheme,username,host)
+            if creds:
+                self.EnsureAuthedWithCredentials(host, **creds)
+            else:
+                self.EnsureAuthed(self.scheme,username,host)
             processprotocol = globus.Run.status( usercert, eprfile, host )
             
             while not processprotocol.isDone():

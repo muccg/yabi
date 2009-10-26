@@ -20,6 +20,7 @@ class GlobusAuth(object):
     def AuthProxyUser(self, scheme, username, hostname, *args):
         """Auth a user via getting the credentials from the json yabiadmin backend. When the credentials are gathered, successcallback is called with the deferred.
         The deferred should be the result channel your result will go back down"""
+        assert False, "This approach is now deprecated"
         assert hasattr(self,"authproxy"), "Class must have an authproxy parameter"
         
         useragent = "YabiFS/0.1"
@@ -58,6 +59,7 @@ class GlobusAuth(object):
         
     
     def EnsureAuthed(self, scheme, username, hostname):
+        assert False, "This approach is now deprecated"
         # do we have an authenticator for this host?
         if hostname not in self.authproxy:
             # no!
@@ -68,3 +70,18 @@ class GlobusAuth(object):
                 return self.AuthProxyUser(scheme,username,hostname)
             # else user is already authed
                 
+    def AuthProxyUserWithCredentials(self, hostname, username, cert, key, password):
+        if hostname not in self.authproxy:
+            self.authproxy[hostname]=CertificateProxy()
+        self.authproxy[hostname].CreateUserProxy(username,cert,key,password)
+        
+    def EnsureAuthedWithCredentials(self, hostname, username, cert, key, password):
+        if hostname not in self.authproxy:
+            # no!
+            return self.AuthProxyUserWithCredentials(hostname,cert,key,password)
+        else:
+            # yes! lets see if we have a valid cert
+            if not self.authproxy[hostname].IsProxyValid(username):
+                return self.AuthProxyUserWithCredentials(hostname,cert,key,password)
+            # else user is already authed
+        
