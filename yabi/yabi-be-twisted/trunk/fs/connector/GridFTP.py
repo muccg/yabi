@@ -52,7 +52,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth):
         
         return mkdir_data
         
-    def rm(self, host, username, path, recurse=False, **creds):
+    def rm(self, host, username, path, recurse=False, creds):
         # make sure we are authed
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
@@ -80,7 +80,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth):
         
         return rm_data
     
-    def ls(self, host, username, path, recurse=False, culldots=True, **creds):
+    def ls(self, host, username, path, recurse=False, culldots=True, creds):
         # make sure we are authed
         if creds:
             print "handed creds:",creds
