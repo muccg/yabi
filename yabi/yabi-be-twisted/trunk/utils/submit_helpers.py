@@ -89,12 +89,14 @@ def parsePOSTData(request, maxMem=100*1024, maxFields=1024,
     """
     print "parsePOSTData"
     if request.stream.length == 0:
+        print "request.length=0"
         return defer.succeed(None)
 
     parser = None
     ctype = request.headers.getHeader('content-type')
 
     if ctype is None:
+        print "ctype is none"
         return defer.succeed(None)
 
     def updateArgs(data):
