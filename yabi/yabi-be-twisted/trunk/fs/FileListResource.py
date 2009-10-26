@@ -92,6 +92,7 @@ class FileListResource(resource.PostableResource):
         @param request: the request to process.
         @return: an object adaptable to L{iweb.IResponse}.
         """
+        print "List::POST",request.args
         deferred = parsePOSTDataRemoteWriter(request)
         
         def post_parsed(result):
@@ -103,4 +104,5 @@ class FileListResource(resource.PostableResource):
         return deferred
 
     def http_GET(self, request):
+        print "List::GET",request.args
         return self.handle_list(request)
