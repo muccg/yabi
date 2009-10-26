@@ -11,8 +11,7 @@ from json_util import makeJsonFriendly
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 
-import logging
-import yabilogging
+from django.contrib import logging
 logger = logging.getLogger('yabiadmin')
 
 

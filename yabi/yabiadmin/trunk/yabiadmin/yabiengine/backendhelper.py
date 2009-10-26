@@ -11,8 +11,7 @@ from django.core.servers.basehttp import FileWrapper
 
 
 
-import logging
-import yabilogging
+from django.contrib import logging
 logger = logging.getLogger('yabiengine')
 
 
@@ -31,6 +30,18 @@ def get_backendcredential_for_uri(uri):
         logger.critical(e)
         raise    
 
+
+def POST(resource, datadict, extraheaders={}, server=None):
+    """Do a x-www-form-urlencoded style POST. That is NOT a file upload style"""
+    data = urlencode(datadict)
+    headers = {"Content-type": "application/x-www-form-urlencoded",
+    headers.update(extraheaders)
+    
+    server = server if server else settings.YABIBACKEND_SERVER
+    
+    conn = httplib.HTTPConnection(server)
+    conn.request('POST', resource, data, headers)
+    return conn.getresponse()
 
 def get_file_list(uri, recurse=True):
     """
@@ -52,12 +63,8 @@ def get_file_list(uri, recurse=True):
                     ('password', bc.credential.password),
                     ('cert', bc.credential.cert),
                     ('key', bc.credential.key)])
-        data = urlencode(data)        
-
-        conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
-        conn.request('POST', resource, data)
-
-        r = conn.getresponse()
+        
+        r = POST(resource,data)
 
         logger.info("Status of return from yabi backend is: %s" % r.status)
         
@@ -106,12 +113,7 @@ def get_listing(uri):
                     ('password', bc.credential.password),
                     ('cert', bc.credential.cert),
                     ('key', bc.credential.key)])
-        data = urlencode(data)        
-
-        conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
-        conn.request('POST', resource, data)
-        r = conn.getresponse()
-        print 'response',r
+        r = POST(resource,data)
 
     except socket.error, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
@@ -146,12 +148,7 @@ def mkdir(uri):
                     ('password', bc.credential.password),
                     ('cert', bc.credential.cert),
                     ('key', bc.credential.key)])
-        data = urlencode(data)        
-
-        conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
-        conn.request('POST', resource, data)
-        r = conn.getresponse()
-        print 'response',r
+        r = POST(resource,data)
 
     except socket.error, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
@@ -256,12 +253,8 @@ def get_file(uri):
                     ('password', bc.credential.password),
                     ('cert', bc.credential.cert),
                     ('key', bc.credential.key)])
-        data = urlencode(data)        
-
-        conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
-        conn.request('POST', resource, data)
-        r = conn.getresponse()
-
+        r = POST(resource,data)
+        
         logger.info("Status of return from yabi backend is: %s" % r.status)
 
         return FileWrapper(r, blksize=1024**2)

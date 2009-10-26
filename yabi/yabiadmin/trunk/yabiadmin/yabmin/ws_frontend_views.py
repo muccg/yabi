@@ -16,8 +16,7 @@ import mimetypes
 
 from yabmin.file_upload import *
 
-import logging
-import yabilogging
+from django.contrib import logging
 logger = logging.getLogger('yabiadmin')
 
 ## TODO do we want to limit tools to those the user can access?

@@ -8,6 +8,7 @@ if not os.environ.has_key('SCRIPT_NAME'):								# this will be missing if we ar
 PROJECT_DIRECTORY = os.environ['PROJECT_DIRECTORY']
 SCRIPT_NAME = os.environ['SCRIPT_NAME']
 
+#import django.contrib.admin
 from django.utils.webhelpers import url
 
 DEBUG = True
@@ -236,7 +237,7 @@ LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
 LOGGING_LEVEL = logging.DEBUG
 #LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
 LOGGING_FORMATTER = logging.Formatter("%(asctime)s:%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s:%(message)s")
-
+LOGS = ['yabiengine','yabiadmin']
 
 
 # TODO the file upload only handles files that are written to disk at them moment

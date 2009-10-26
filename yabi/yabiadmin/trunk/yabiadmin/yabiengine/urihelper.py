@@ -3,8 +3,7 @@ import httplib
 from urllib import urlencode
 from django.core.exceptions import ObjectDoesNotExist
 
-import logging
-import yabilogging
+from django.contrib import logging
 logger = logging.getLogger('yabiengine')
 
 
