@@ -37,7 +37,10 @@ def POST(resource, datadict, extraheaders={}, server=None):
     headers = {"Content-type": "application/x-www-form-urlencoded",
     headers.update(extraheaders)
     
-    server = server if server else settings.YABIBACKEND_SERVER
+    #server = server if server else settings.YABIBACKEND_SERVER
+    
+    if not server:
+        server=settings.YABIBACKEND_SERVER
     
     conn = httplib.HTTPConnection(server)
     conn.request('POST', resource, data, headers)
