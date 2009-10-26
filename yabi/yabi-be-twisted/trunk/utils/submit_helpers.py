@@ -87,16 +87,13 @@ def parsePOSTData(request, maxMem=100*1024, maxFields=1024,
             itself doesn't hold a return value, the request is modified directly.
     @rtype: C{defer.Deferred}
     """
-    print "parsePOSTData"
     if request.stream.length == 0:
-        print "request.length=0"
         return defer.succeed(None)
 
     parser = None
     ctype = request.headers.getHeader('content-type')
 
     if ctype is None:
-        print "ctype is none"
         return defer.succeed(None)
 
     def updateArgs(data):
@@ -115,13 +112,11 @@ def parsePOSTData(request, maxMem=100*1024, maxFields=1024,
 
     if (ctype.mediaType == 'application'
         and ctype.mediaSubtype == 'x-www-form-urlencoded'):
-        print "A"
         d = fileupload.parse_urlencoded(request.stream)
         d.addCallbacks(updateArgs, error)
         return d
     elif (ctype.mediaType == 'multipart'
         and ctype.mediaSubtype == 'form-data'):
-        print "B"
         boundary = ctype.params.get('boundary')
         if boundary is None:
             return defer.fail(http.HTTPError(
@@ -133,7 +128,6 @@ def parsePOSTData(request, maxMem=100*1024, maxFields=1024,
         d.addCallbacks(updateArgsAndFiles, error)
         return d
     else:
-        print "C"
         return defer.fail(http.HTTPError(
             http.StatusResponse(
                 responsecode.BAD_REQUEST,

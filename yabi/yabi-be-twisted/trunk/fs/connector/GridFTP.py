@@ -83,8 +83,10 @@ class GridFTP(FSConnector.FSConnector, globus.Auth):
     def ls(self, host, username, path, recurse=False, culldots=True, **creds):
         # make sure we are authed
         if creds:
+            print "handed creds:",creds
             self.EnsureAuthedWithCredentials(host, **creds)
         else:
+            print "not handed creds"
             self.EnsureAuthed(self.scheme,username,host)
         
         usercert = self.GetAuthProxy(host).ProxyFile(username)
