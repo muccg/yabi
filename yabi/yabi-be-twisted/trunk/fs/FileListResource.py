@@ -69,7 +69,7 @@ class FileListResource(resource.PostableResource):
         def do_list():
             #print "dolist() hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
             try:
-                lister=bend.ls(hostname,path=path, username=username,recurse=recurse, request.args, **creds)
+                lister=bend.ls(hostname,path=path, username=username,recurse=recurse, **creds)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream=json.dumps(lister)))
             except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
                 #print "IP"
