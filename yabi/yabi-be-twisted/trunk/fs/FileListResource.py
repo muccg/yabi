@@ -26,11 +26,11 @@ class FileListResource(resource.PostableResource):
         
         self.fsresource = weakref.ref(fsresource)
         
-    def http_POST(self, request):
+    def old_http_POST(self, request):
         # break our request path into parts
         return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be GET\n")
 
-    def http_GET(self, request):
+    def handle_list(self, request):
         if "uri" not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided\n")
 
@@ -82,4 +82,23 @@ class FileListResource(resource.PostableResource):
         
         return client_channel
             
+    def http_POST(self, request):
+        """
+        Respond to a POST request.
+        Reads and parses the incoming body data then calls L{render}.
     
+        @param request: the request to process.
+        @return: an object adaptable to L{iweb.IResponse}.
+        """
+        deferred = parsePOSTDataRemoteWriter(request)
+        
+        def post_parsed(result):
+            return self.handle_list(request)
+        
+        deferred.addCallback(post_parsed)
+        deferred.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Job Submission Failed %s\n"%res) )
+        
+        return deferred
+
+    def http_GET(self, request):
+        return self.handle_list(request)
