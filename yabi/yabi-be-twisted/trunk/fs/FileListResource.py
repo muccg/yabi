@@ -53,6 +53,7 @@ class FileListResource(resource.PostableResource):
         for varname in ['key','password','username','cert']:
             if varname in request.args:
                 creds[varname] = request.args[varname][0]
+                del request.args[varname]
         
         
         #print "URI",uri
