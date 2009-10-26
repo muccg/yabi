@@ -34,13 +34,10 @@ def get_backendcredential_for_uri(uri):
 def POST(resource, datadict, extraheaders={}, server=None):
     """Do a x-www-form-urlencoded style POST. That is NOT a file upload style"""
     data = urlencode(datadict)
-    headers = {"Content-type": "application/x-www-form-urlencoded",
+    headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
     headers.update(extraheaders)
     
-    #server = server if server else settings.YABIBACKEND_SERVER
-    
-    if not server:
-        server=settings.YABIBACKEND_SERVER
+    server = server if server else settings.YABIBACKEND_SERVER
     
     conn = httplib.HTTPConnection(server)
     conn.request('POST', resource, data, headers)
