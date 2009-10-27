@@ -90,7 +90,7 @@ class GlobusConnector(ExecConnector, globus.Auth):
             if creds:
                 self.EnsureAuthedWithCredentials(host, **creds)
             else:
-                self.EnsureAuthed(self.scheme,username,host)
+                self.EnsureAuthed(scheme,username,host)
             processprotocol = globus.Run.status( usercert, eprfile, host )
             
             while not processprotocol.isDone():
