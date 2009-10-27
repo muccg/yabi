@@ -170,7 +170,7 @@ AUTH_LDAP_SERVERS = (
     'ldaps://fds2.localdomain', 
     'ldaps://fds3.localdomain',
 )
-AUTH_LDAP_BASE = 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
+AUTH_LDAP_USER_BASE = 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
 AUTH_LDAP_GROUP_BASE = 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
 AUTH_LDAP_ADMIN_GROUP = 'admin'
 AUTH_LDAP_GROUP = 'admin' # only admin users should be able to log in
