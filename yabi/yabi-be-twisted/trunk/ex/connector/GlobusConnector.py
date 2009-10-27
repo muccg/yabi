@@ -51,7 +51,7 @@ class GlobusConnector(ExecConnector, globus.Auth):
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
         else:
-            self.EnsureAuthed(self.scheme,username,host)
+            self.EnsureAuthed(scheme,username,host)
         
         # now submit the job via globus
         usercert = self.GetAuthProxy(host).ProxyFile(username)
