@@ -10,7 +10,7 @@ import os
 
 DEBUG = False
 
-class GridFTP(FSConnector.FSConnector, globus.Auth):
+class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
     """This is the resource that connects to the globus gridftp backends"""
     VERSION=0.1
     NAME="Globus File System"

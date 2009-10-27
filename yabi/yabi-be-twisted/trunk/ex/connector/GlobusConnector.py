@@ -29,7 +29,7 @@ def JobPollGeneratorDefault():
     while True:
         yield 10.0
 
-class GlobusConnector(ExecConnector, globus.Auth):
+class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
     def __init__(self):
         ExecConnector.__init__(self)
         self.CreateAuthProxy()
@@ -58,10 +58,15 @@ class GlobusConnector(ExecConnector, globus.Auth):
         rslfile = globus.writersltofile(rsl)
         
         # first we need to auth the proxy
-        if creds:
-            self.EnsureAuthedWithCredentials(host, **creds)
-        else:
-            self.EnsureAuthed(scheme,username,host)
+        try:
+            if creds:
+                self.EnsureAuthedWithCredentials(host, **creds)
+            else:
+                self.EnsureAuthed(scheme,username,host)
+        except globus.Auth.AuthException, ae:
+            # connection problems.
+            channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = "Could not get auth credentials for %s://%s@%s. %s\n"%(scheme,username,host,str(ae)) ))
+            return
         
         # now submit the job via globus
         usercert = self.GetAuthProxy(host).ProxyFile(username)

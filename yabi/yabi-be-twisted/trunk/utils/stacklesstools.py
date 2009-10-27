@@ -5,6 +5,7 @@ functions that block a stackless tasklet.
 from twisted.web import client
 from twisted.internet import reactor
 from twisted.internet.defer import Deferred
+from twisted.python.failure import Failure
 
 import urllib
 import time
@@ -132,7 +133,7 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=RememberingHTTPClientFac
         agent = USER_AGENT,
         
         )
-    factory.noisy=False
+    factory.noisy=True
     
     #print "GETing","http://%s:%d%s"%(host,port,path+"?"+getdata),
     
@@ -142,25 +143,19 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=RememberingHTTPClientFac
     
     # now if the get fails for some reason. deal with it
     def _doFailure(data):
-        #print "FAILED:",factory.status,":",type(data),data
-        #print "FACTORY",dir(factory)
-        ##print data
-        #get_failed[0] = int(factory.status), factory.message, data
-        #print "FACTORY DIR",dir(factory),factory.__class__
-        
-        #print "_DO_FAILURE",type(factory),factory.__class__,dir(factory),factory.last_client,dir(factory.last_client)
-        
-        #print "FAILED:",factory.status,":",type(data),"Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
-        #print data
-        get_failed[0] = int(factory.status), factory.message, "Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
+        if isinstance(data,Failure):
+            exc = data.value
+            get_failed[0] = -1, str(exc), None
+        else:
+            get_failed[0] = int(factory.status), factory.message, "Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
         
     def _doSuccess(data):
-        #print "SUCCESS:",factory.status,factory.message, data
+        print "SUCCESS:",factory.status,factory.message, data
         get_complete[0] = int(factory.status), factory.message, data
     
     # start the connection
     factory.deferred.addCallback(_doSuccess).addErrback(_doFailure)
-    reactor.connectTCP(host, port, factory)
+    print "CONNECT RETURNED",reactor.connectTCP(host, port, factory)
 
     # now we schedule this thread until the task is complete
     while not get_complete[0] and not get_failed[0]:
@@ -168,7 +163,7 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=RememberingHTTPClientFac
         schedule()
         
     if get_failed[0]:
-        #print "get_failed=",get_failed
+        print "get_failed=",get_failed
         if type(get_failed[0])==tuple and len(get_failed[0])==3:
             # failed naturally
             raise GETFailure(get_failed[0])
@@ -227,9 +222,11 @@ def POST(path,**kws):
     
     # now if the get fails for some reason. deal with it
     def _doFailure(data):
-        #print "Post Failed:",factory,":",type(data),dir(factory)
-        #print factory.last_client.errordata
-        get_failed[0] = int(factory.status), factory.message, "Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
+        if isinstance(data,Failure):
+            exc = data.value
+            get_failed[0] = -1, str(exc), None
+        else:
+            get_failed[0] = int(factory.status), factory.message, "Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
     
     def _doSuccess(data):
         #print "Post success"

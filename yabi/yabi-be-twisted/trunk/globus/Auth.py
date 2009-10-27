@@ -8,6 +8,9 @@ class NoCredentials(Exception):
     """User has no globus credentials for this server"""
     pass
 
+class AuthException(Exception):
+    pass
+
 class GlobusAuth(object):
     
     def CreateAuthProxy(self):
@@ -26,8 +29,8 @@ class GlobusAuth(object):
         
         import conf
         #print "AuthProxyUser %s://%s@%s/"%(scheme,username,host)
-        print "AUTHPROXYUSER"
-        print conf.yabiadmin.SERVER, conf.yabiadmin.PORT,conf.yabiadmin.PATH
+        #print "AUTHPROXYUSER"
+        #print conf.yabiadmin.SERVER, conf.yabiadmin.PORT,conf.yabiadmin.PATH
         
         try:
             status, message, data = GET( path = os.path.join(conf.yabiadmin.PATH,"ws/credential/%s/%s/%s/"%(scheme,username,hostname)),
@@ -45,7 +48,11 @@ class GlobusAuth(object):
             return credentials
         
         except GETFailure, gf:
-            raise NoCredentials( "User: %s does not have credentials for this backend %s\n"%(username,scheme) )
+            gf_message = gf.args[0]
+            if gf_message[0]==-1:
+                # connection problems
+                raise AuthException( "Tried to get credentials from %s:%d and failed: %s"%(conf.yabiadmin.SERVER,conf.yabiadmin.PORT,gf_message[1]) )
+            raise NoCredentials( "User: %s does not have credentials for this backend %s on host %s\n"%(username,scheme,hostname) )
         
     
     def EnsureAuthed(self, scheme, username, hostname):

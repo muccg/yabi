@@ -29,7 +29,7 @@ def JobPollGeneratorDefault():
     while True:
         yield 10.0
 
-class SGEConnector(ExecConnector, globus.Auth):
+class SGEConnector(ExecConnector):
     def __init__(self):
         ExecConnector.__init__(self)
         self.CreateAuthProxy()

@@ -11,6 +11,11 @@ import sys
 
 import log
 
+from twisted.internet import protocol
+from twisted.internet import reactor
+
+import stackless
+
 class ProxyInitError(Exception):
     pass
 
@@ -31,6 +36,31 @@ def rm_rf(root):
         for dn in dirs:
             os.rmdir(os.path.join(path, dn))
     os.rmdir(root)
+
+class GridProxyInitProcessProtocol(protocol.ProcessProtocol):
+    def __init__(self, stdin=None):
+        self.stdin=stdin
+        self.err = ""
+        self.out = ""
+        self.exitcode = None
+        
+    def connectionMade(self):
+        # when the process finally spawns, close stdin, to indicate we have nothing to say to it
+        if self.stdin:
+            self.transport.write(self.stdin)
+        self.transport.closeStdin()
+        
+    def outReceived(self, data):
+        self.out += data
+        
+    def errReceived(self, data):
+        self.err += data
+            
+    def processEnded(self, status_object):
+        self.exitcode = status_object.value.exitCode
+        
+    def isDone(self):
+        return self.exitcode != None
 
 class CertificateProxy(object):
     grid_proxy_init = "/usr/local/globus/bin/grid-proxy-init"
@@ -105,40 +135,52 @@ class CertificateProxy(object):
         # where our proxy will live
         proxyfile = self.ProxyFile(userid)
         
+        # now run the grid-proxy-init code
         # run "/usr/local/globus/bin/grid-proxy-init -cert PEMFILE -key KEYFILE -pwstdin -out PROXYFILE"
-        proc = subprocess.Popen( [  self.grid_proxy_init,
+        subenv = os.environ.copy()
+        path="/usr/bin"
+        pp = GridProxyInitProcessProtocol(password)
+        reactor.spawnProcess(   pp,
+                                self.grid_proxy_init,
+                                [  self.grid_proxy_init,
                                     "-debug",
                                     "-cert", certfile,
                                     "-key", keyfile,
                                     "-valid", self.CERTIFICATE_EXPIRY_TIME,
                                     "-pwstdin", 
-                                    "-out", proxyfile ], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT )
-                                    
+                                    "-out", proxyfile ],
+                                env=subenv,
+                                path=path
+                            )
+        
         # run it passing in our password
-        try:
-            # TODO: non blocking version of this call
-            stdout, stderr = proc.communicate( password )
-        except OSError, ose:
-            if ose[0]==32:
-                # broken pipe
-                raise ProxyInitError, "Could not initialise proxy: Broken pipe (key/cert file could be corrupt)"
-            else:
-                raise ose
-        finally:
-            # clean up the key/cert files
-            os.unlink(certfile)
-            os.unlink(keyfile)
+        #try:
+            ## TODO: non blocking version of this call
+            #stdout, stderr = proc.communicate( password )
+        #except OSError, ose:
+            #if ose[0]==32:
+                ## broken pipe
+                #raise ProxyInitError, "Could not initialise proxy: Broken pipe (key/cert file could be corrupt)"
+            #else:
+                #raise ose
+        #finally:
+            ## clean up the key/cert files
+            #os.unlink(certfile)
+            #os.unlink(keyfile)
+            
+        while not pp.isDone():
+            stackless.schedule()
 
-        code = proc.returncode
+        code = pp.exitcode
         
         if code:
             # error
-            if "Bad passphrase for key" in stdout:
+            if "Bad passphrase for key" in pp.out:
                 raise ProxyInvalidPassword, "Could not initialise proxy: Invalid password"
-            raise ProxyInitError, "Could not initialise proxy: %s"%(stdout.split("\n")[0])
+            raise ProxyInitError, "Could not initialise proxy: %s"%(pp.out.split("\n")[0])
         
         # decode the expiry time and return it as timestamp
-        res = stdout.split("\n")
+        res = pp.out.split("\n")
         
         # get first line
         res = [X.split(':',1)[1] for X in res if X.startswith('Your proxy is valid until:')][0]

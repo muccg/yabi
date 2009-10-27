@@ -10,7 +10,4 @@ Copy = GlobusURLCopy.GlobusURLCopy()
 Run = GlobusRun.GlobusRun()
 Shell = GlobusShell.GlobusShell()
 
-# shortcuts to classes
-Auth = Auth.GlobusAuth
-
 from RSL import RSL, ConstructRSL, writersltofile
