@@ -1,4 +1,14 @@
 from ExecConnector import ExecConnector, ExecutionError
+
+# a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
+ENV_CHILD_INHERIT = ['SGE_ROOT','PATH']
+
+# a list of environment variables that *must* be present for this connector to function
+ENV_CHECK = ['SGE_ROOT']
+
+# the schema we will be registered under. ie. schema://username@hostname:port/path/
+SCHEMA = "sge"
+
 from twisted.web2 import http, responsecode, http_headers, stream
 
 import shlex
@@ -21,6 +31,7 @@ def JobPollGeneratorDefault():
 
 class SGEConnector(ExecConnector, globus.Auth):
     def __init__(self):
+        ExecConnector.__init__(self)
         self.CreateAuthProxy()
     
     def run(self, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", **creds):

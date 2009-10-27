@@ -1,5 +1,14 @@
 from ExecConnector import ExecConnector
 
+# a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
+ENV_CHILD_INHERIT = ['GLOBUS_LOCATION','LD_LIBRARY_PATH','LIBPATH','GLOBUS_PATH','DYLD_LIBRARY_PATH','SHLIB_PATH','PATH']
+
+# a list of environment variables that *must* be present for this connector to function
+ENV_CHECK = ['GLOBUS_LOCATION']
+
+# the schema we will be registered under. ie. schema://username@hostname:port/path/
+SCHEMA = "globus"
+
 import shlex
 import globus
 import stackless
@@ -22,6 +31,7 @@ def JobPollGeneratorDefault():
 
 class GlobusConnector(ExecConnector, globus.Auth):
     def __init__(self):
+        ExecConnector.__init__(self)
         self.CreateAuthProxy()
     
     def run(self, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", **creds):

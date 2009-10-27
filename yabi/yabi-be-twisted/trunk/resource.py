@@ -69,12 +69,18 @@ class BaseResource(resource.PostableResource):
             )
             
         # execution backends
-        self.child_exec = ExecResource(
-                globus = GlobusConnector(),
-                sge = SGEConnector(),
-            )
+        #self.child_exec = ExecResource(
+                #globus = GlobusConnector(),
+                #sge = SGEConnector(),
+            #)
+            
+        # dynamic execution backends
+        self.child_exec = ExecResource()
             
         self.child_yabiadmin = wsgi.WSGIResource(application)
+        
+    def LoadExecConnectors(self):
+        self.child_exec.LoadConnectors()
         
     def render(self, ctx):
         """Just returns a helpful text string"""
