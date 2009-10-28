@@ -10,7 +10,7 @@ from twisted.internet import reactor
 
 from BaseShell import BaseShell, BaseShellProcessProtocol
 
-class GlobusURLCopyProcessProtocol(BaseShellProcessProtocoll):
+class GlobusURLCopyProcessProtocol(BaseShellProcessProtocol):
     def __init__(self):
         BaseShellProcessProtocol.__init__(self)
         self.started = False
