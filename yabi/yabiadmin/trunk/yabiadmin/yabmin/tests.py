@@ -18,8 +18,8 @@ class TestYabmin(unittest.TestCase):
         settings.AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
         settings.DEBUG = True
         settings.YABIBACKEND_SERVER = 'faramir.localdomain:8000'
-        settings.YABISTORE_SERVER = "127.0.0.1:8001"
-        settings.YABISTORE_BASE = ""
+        settings.YABISTORE_SERVER = "faramir.localdomain"
+        settings.YABISTORE_BASE = "/yabistore/trunk"
 
         
         user, created = User.objects.get_or_create(name="testuser")

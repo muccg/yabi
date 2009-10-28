@@ -176,14 +176,17 @@ def yabistore_update(resource, data):
     headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
     conn = httplib.HTTPConnection(settings.YABISTORE_SERVER)
     conn.request('POST', resource, data, headers)
-    print "YABISTORE POST",settings.YABISTORE_SERVER,resource,data
+    logger.debug("YABISTORE POST:")
+    logger.debug(settings.YABISTORE_SERVER)
+    logger.debug(resource)
+    logger.debug(data)
+
     r = conn.getresponse()
     
     status = r.status
     data = r.read()
     
-    print "result:",status,data
-    
+    logger.debug("result:")
     logger.debug(status)
     logger.debug(data)
     
@@ -194,7 +197,8 @@ def workflow_save(sender, **kwargs):
     logger.debug('')
     workflow = kwargs['instance']
     
-    print "WORKFLOW SAVE",workflow
+    logger.debug("WORKFLOW SAVE")
+    logger.debug(workflow)
 
     try:
         # update the yabistore
@@ -207,15 +211,19 @@ def workflow_save(sender, **kwargs):
                 'name':workflow.name,
                 'status':workflow.status
                 }
-        print "workflow_save::yabistoreupdate",resource,data
+
+        logger.debug("workflow_save::yabistoreupdate")
+        logger.debug(resource)
+        logger.debug(data)
+        
         status, data = yabistore_update(resource, data)
 
-        print "status",repr(status)
-        print "data",repr(data)
+        logger.debug("STATUS: %s" % status)
+        logger.debug("DATA: %s" % data)
         
         # if this was created. save the returned id into yabistore_id
         if kwargs['created']:
-            print "SAVING WFID"
+            logger.debug("SAVING WFID")
             assert status==200
             workflow.yabistore_id = int(data)
             workflow.save()
@@ -237,7 +245,10 @@ def job_save(sender, **kwargs):
             resource = os.path.join(settings.YABISTORE_BASE,'workflows',job.workflow.user.name, str(workflow_id), str(job.order) )
             data = dict( status="completed", tasksTotal=1.0, tasksComplete=1.0 )
             
-            print "job_save::yabistoreupdate",resource,data
+            logger.debug("job_save::yabistoreupdate")
+            logger.debug(resource)
+            logger.debug(data)
+            
             yabistore_update(resource, data)
         elif job.status!="ready" and job.status!="complete":
             if job.stageout:
@@ -245,7 +256,10 @@ def job_save(sender, **kwargs):
                 resource = os.path.join(settings.YABISTORE_BASE,'workflows',job.workflow.user.name, str(workflow_id), str(job.order) )
                 data = dict( stageout=job.stageout )
                 
-                print "job_save::yabistoreupdate",resource,data
+                logger.debug("job_save::yabistoreupdate")
+                logger.debug(resource)
+                logger.debug(data)
+                
                 yabistore_update(resource, data)
 
     except Exception, e:
@@ -319,7 +333,7 @@ def task_save(sender, **kwargs):
         errorMessage = None if not error else errored[0]
         
         if error:
-            print "ERROR! message=",errored[0]
+            logger.debug("ERROR! message= %s" % errored[0])
         
             # if there are errors, and the relative job has a status that isn't 'error'
             if task.job.status != 'error':

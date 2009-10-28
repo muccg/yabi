@@ -21,7 +21,7 @@ def credential(request, scheme, username, hostname):
         bc = BackendCredential.objects.get(backend__scheme=scheme,
                                            credential__username=username,
                                            backend__hostname=hostname)
-        print "returning bc...",bc
+        logger.debug("returning bc... %s" % bc)
         return HttpResponse(bc.json())
 
     except ObjectDoesNotExist:

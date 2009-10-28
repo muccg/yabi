@@ -27,10 +27,11 @@ def task(request):
             raise ObjectDoesNotExist("No more tasks")  
         
     except ObjectDoesNotExist:
-        return HttpResponseNotFound("Object not found")
+        return HttpResponseNotFound("Object not found.")
     except Exception, e:
-        logger.critical("Caught Exception: %s" % e.message)
-        return HttpResponseServerError(e.message)
+        logger.critical("Caught Exception:")
+        logger.critical(e)
+        return HttpResponseServerError("Error requesting task.")
 
 def status(request, model, id):
     logger.debug('')

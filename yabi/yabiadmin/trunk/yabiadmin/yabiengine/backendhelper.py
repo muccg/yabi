@@ -73,16 +73,16 @@ def get_file_list(uri, recurse=True):
 
             results = json.loads(r.read())
             
-            print "FILELIST RESULTS:",results
+            logger.debug("FILELIST RESULTS: %s" % results)
             shortpath=reduce(lambda x,y: x if len(x)<len(y) else y,results.keys())
             spl = len(shortpath)
             
             for key in results.keys():
                 for file in results[key]["files"]:
-                    print "KEY",key,"FILE",file
+                    logger.debug("KEY: %s FILE: %s" %(key,file))
                     file_list.append([os.path.join(key[spl:],file[0])]+file[1:])
 
-        print "RETURNING:",file_list
+        logger.debug("RETURNING: %s" %file_list)
         return file_list
  
     except socket.error, e:
@@ -105,8 +105,6 @@ def get_listing(uri):
 
         logger.debug('Resource: %s' % resource)
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
-        print 'Resource: %s' % resource
-        print 'Server: %s' % settings.YABIBACKEND_SERVER
 
         bc = get_backendcredential_for_uri(uri)
         data = dict([('username', bc.credential.username),
@@ -124,7 +122,7 @@ def get_listing(uri):
 
     logger.info("Status of return from yabi backend is: %s" % r.status)
 
-    print "reading"
+    logger.debug("reading")
     return r.read()
 
 
@@ -140,8 +138,6 @@ def mkdir(uri):
 
         logger.debug('Resource: %s' % resource)
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
-        print 'Resource: %s' % resource
-        print 'Server: %s' % settings.YABIBACKEND_SERVER
 
         bc = get_backendcredential_for_uri(uri)
         data = dict([('username', bc.credential.username),
@@ -159,7 +155,7 @@ def mkdir(uri):
 
     logger.info("Status of return from yabi backend is: %s" % r.status)
 
-    print "reading"
+    logger.debug("reading")
     return r.read() 
 
 

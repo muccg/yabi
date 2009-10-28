@@ -83,7 +83,7 @@ def menu(request, *args, **kwargs):
         return HttpResponseNotFound(json_error("Object not found"))    
 
 
-#@validate_uri
+@validate_uri
 def ls(request):
     """
     This function will return a list of backends the user has access to IF the uri is empty. If the uri
@@ -92,9 +92,9 @@ def ls(request):
     logger.debug('')
     
     try:
-        print "GET:",request.GET['uri']
+        logger.debug("GET: %s " %request.GET['uri'])
         if request.GET['uri']:
-            print "get_listing"
+            logger.debug("get_listing")
             filelisting = get_listing(request.GET['uri'])
         else:
             filelisting = get_backend_list(request.GET['yabiusername'])
@@ -106,7 +106,7 @@ def ls(request):
 
 
 
-#@validate_uri
+@validate_uri
 def get(request):
     """
     Returns the requested uri. get_file returns an httplib response wrapped in a FileIterWrapper. This can then be read
@@ -192,36 +192,10 @@ def put(request):
         raise
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#@validate_user
+@validate_user
 def submitworkflow(request):
     logger.debug('')
-    
     logger.debug("POST KEYS: %r"%request.POST.keys())
-    
     
     # probably want to catch the type of exceptions we may get from this
     wfbuilder.build(request.POST['username'], request.POST["workflowjson"])

@@ -1,5 +1,8 @@
 import datetime
 
+from django.contrib import logging
+logger = logging.getLogger('yabiadmin')
+
 def makeJsonFriendly(data):
   '''Will traverse a dict or list compound data struct and
      make any datetime.datetime fields json friendly
@@ -21,6 +24,7 @@ def makeJsonFriendly(data):
           pass # do nothing
       
   except Exception, e:
-      print 'makeJsonFriendly encountered an error: ', str(e)
-
+      logger.critical("makeJsonFriendly encountered an error: %s" % str(e)) 
+      raise
+      
   return data
