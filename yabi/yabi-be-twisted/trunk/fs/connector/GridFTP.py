@@ -8,6 +8,15 @@ from twisted.internet import protocol
 from twisted.internet import reactor
 import os
 
+# a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
+ENV_CHILD_INHERIT = ['PATH']
+
+# a list of environment variables that *must* be present for this connector to function
+ENV_CHECK = []
+
+# the schema we will be registered under. ie. schema://username@hostname:port/path/
+SCHEMA = "gridftp"
+
 DEBUG = False
 
 class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
@@ -17,6 +26,9 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
     copymode = "gsiftp"
     
     def __init__(self):
+        FSConnector.FSConnector.__init__(self)
+        globus.Auth.GlobusAuth.__init__(self)
+        
         # we need to store a number of certificateproxies
         self.CreateAuthProxy()
     

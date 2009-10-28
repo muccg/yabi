@@ -32,6 +32,7 @@ def JobPollGeneratorDefault():
 class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
     def __init__(self):
         ExecConnector.__init__(self)
+        globus.Auth.GlobusAuth.__init__(self)
         self.CreateAuthProxy()
     
     def run(self, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", **creds):

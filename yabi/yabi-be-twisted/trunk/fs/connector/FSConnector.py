@@ -6,6 +6,12 @@ class NotImplemented(Exception):
 
 class FSConnector(object):
     """Base class for a filesystem connector"""
+    def __init__(self):
+        self.childenv = {}
+   
+    def SetEnvironment(self, env):
+        """Pass in the environment setup you want any child processes to inherit"""
+        self.childenv = env.copy()
     
     def GetReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, **creds):
         """sets up the chain needed to setup a read fifo from a remote path as a certain user.
@@ -44,3 +50,4 @@ class FSConnector(object):
     # In order to identify a non fatal copy failure, we search for each of these phrases in stdout/stderr of the copy classes.
     # comparison is case insensitive
     NonFatalKeywords = [ "connection refused", "connection reset by peer" ]                 # "broken pipe"?
+    

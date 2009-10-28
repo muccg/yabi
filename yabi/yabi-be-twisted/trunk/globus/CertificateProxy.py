@@ -47,7 +47,7 @@ class GridProxyInitProcessProtocol(protocol.ProcessProtocol):
     def connectionMade(self):
         # when the process finally spawns, close stdin, to indicate we have nothing to say to it
         if self.stdin:
-            self.transport.write(self.stdin)
+            self.transport.write(str(self.stdin))
         self.transport.closeStdin()
         
     def outReceived(self, data):

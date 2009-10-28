@@ -3,6 +3,15 @@ import os, stat, time
 from fs.Exceptions import InvalidPath
 from FifoPool import Fifos
 
+# a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
+ENV_CHILD_INHERIT = ['PATH']
+
+# a list of environment variables that *must* be present for this connector to function
+ENV_CHECK = []
+
+# the schema we will be registered under. ie. schema://username@hostname:port/path/
+SCHEMA = "yabifs"
+
 DEBUG = True
 
 from twisted.internet import protocol
@@ -51,6 +60,7 @@ class LocalFilesystem(FSConnector.FSConnector):
     copy = '/bin/cp'
     
     def __init__(self, directory):
+        FSConnector.FSConnector.__init__(self)
         self.directory = directory
     
     def _get_filename(self, path):
