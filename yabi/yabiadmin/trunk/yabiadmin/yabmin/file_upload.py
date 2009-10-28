@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import httplib
 import mimetypes
 import os 
@@ -9,6 +8,10 @@ import zipfile
 import StringIO
 from stat import *
 
+from django.contrib import logging
+logger = logging.getLogger('yabiadmin')
+
+
 def post_multipart(host, selector, fields, files):
 	"""
 	Post fields and files to an http host as multipart/form-data.
@@ -16,7 +19,7 @@ def post_multipart(host, selector, fields, files):
 	files is a sequence of (name, filename, value) elements for data to be uploaded as files
 	Return the server's response page.
 	"""
-	print "post_multipart"
+	logger.debug("post_multipart")
 	content_type=encode_multipart_content_type()
 	h = httplib.HTTP(host)
 	h.putrequest('POST', selector)
@@ -44,7 +47,7 @@ def encode_multipart_formdata(stream,fields, files):
 	files is a sequence of (name, filename, value) elements for data to be uploaded as files
 	Return (content_type, body) ready for httplib.HTTP instance
 	"""
-	print "encode_multipart_formdata(",stream,",",fields,",",files,")"
+	#print "encode_multipart_formdata(",stream,",",fields,",",files,")"
 	BOUNDARY = encode_multipart_make_boundary()
 	CRLF = '\r\n'
 	L = []
@@ -74,7 +77,7 @@ def encode_multipart_formdata(stream,fields, files):
 	return
 	
 def encode_content_length(fields, files):
-	print "encode_content_length(",fields,",",files,")"
+	#print "encode_content_length(",fields,",",files,")"
 	BOUNDARY = encode_multipart_make_boundary()
 	CRLF = '\r\n'
 	length=0
