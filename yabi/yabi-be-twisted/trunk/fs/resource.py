@@ -13,24 +13,21 @@ from FileMkdirResource import FileMkdirResource
 from FilePutResource import FilePutResource
 from FileGetResource import FileGetResource
 
-class FSResource(resource.Resource):
+from utils.BackendResource import BackendResource
+
+class FSResource(resource.Resource, BackendResource):
     """This is the resource that connects to all the filesystem backends"""
-    VERSION=0.1
+    VERSION=0.2
     addSlash = True
     
     def __init__(self,*args,**kwargs):
-        """Pass in the backends to be served out by this FSResource"""
-        self.backends={}
-        for name, bend in kwargs.iteritems():
-            bend.scheme = name                     # store the name in the backend, so the backend knows about it
-            self.backends[name]=bend
-            
-    def GetBackend(self, name):
-        return self.backends[name]
+        BackendResource.__init__(self,*args,**kwargs)
     
-    def Backends(self):
-        return self.backends.keys()
-        
+    def LoadConnectors(self):
+        """Load all the backend connectors into our backends"""
+        import connector
+        return BackendResource.LoadConnectors(self,connector,'FSConnector','fs')
+    
     def render(self, request):
         # break our request path into parts
         parts = request.path.split("/")

@@ -12,6 +12,9 @@ ENV_CHECK = []
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "yabifs"
 
+# the location of the directory we will serve out. This can be overridden in the constuctor if wanted
+DIRECTORY = "/tmp/filesystem/"
+
 DEBUG = True
 
 from twisted.internet import protocol
@@ -59,7 +62,7 @@ class LocalFilesystem(FSConnector.FSConnector):
     NAME="Globus File System"
     copy = '/bin/cp'
     
-    def __init__(self, directory):
+    def __init__(self, directory=DIRECTORY):
         FSConnector.FSConnector.__init__(self)
         self.directory = directory
     

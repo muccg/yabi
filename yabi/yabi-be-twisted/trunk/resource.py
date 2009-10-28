@@ -42,7 +42,7 @@ from ex.resource import ExecResource
 from ex.connector.GlobusConnector import GlobusConnector
 from ex.connector.SGEConnector import SGEConnector
 
-VERSION = 0.1
+VERSION = 0.2
 class BaseResource(resource.PostableResource):
     """This is the baseclass for out "/" HTTP resource. It does nothing but defines the various children.
     It is also the location where you hook in you tools, or wsgi apps."""
@@ -54,33 +54,19 @@ class BaseResource(resource.PostableResource):
         ##
         ## our handlers
         ##
-        
-        ##
-        ## TODO CAVEAT: these backends should be created dynamically based on data pulled from the yabi backend webservice
-        ##
-        
-        # filesystem backends
-        self.child_fs = FSResource(
-                #file = LocalFileResource(directory="/tmp/filesystem"),
-                #gridftp1 = GlobusFileResource(remoteserver="xe-ng2.ivec.org", remotepath="/scratch"),
-                #gridftp2 = GlobusFileResource(remoteserver="xe-ng2.ivec.org", remotepath="/scratch/bi01"),
-                yabifs = LocalFilesystem(directory="/tmp/filesystem"),
-                gridftp = GridFTP()
-            )
-            
-        # execution backends
-        #self.child_exec = ExecResource(
-                #globus = GlobusConnector(),
-                #sge = SGEConnector(),
-            #)
-            
-        # dynamic execution backends
-        self.child_exec = ExecResource()
-            
+        self.child_fs = FSResource()
+        self.child_exec = ExecResource() 
         self.child_yabiadmin = wsgi.WSGIResource(application)
         
     def LoadExecConnectors(self):
         self.child_exec.LoadConnectors()
+        
+    def LoadFSConnectors(self):
+        self.child_fs.LoadConnectors()
+        
+    def LoadConnectors(self):
+        self.LoadExecConnectors()
+        self.LoadFSConnectors()
         
     def render(self, ctx):
         """Just returns a helpful text string"""

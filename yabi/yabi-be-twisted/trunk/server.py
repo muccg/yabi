@@ -80,7 +80,7 @@ def startup():
     print "yabiadmin server:",conf.yabiadmin.SERVER,"port:",conf.yabiadmin.PORT,"path:",conf.yabiadmin.PATH
     
     print "Loading connectors..."
-    base.LoadExecConnectors()
+    base.LoadConnectors()
         
     # setup the TaskManager if we are needed
     if "TASKMANAGER" in os.environ:
