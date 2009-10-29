@@ -117,12 +117,12 @@ def Exec(backend, command, callbackfunc=None, **kwargs):
     
     POST(EXEC_PATH, command=command, datacallback=callbackfunc, **kwargs )
     
-def UserCreds(scheme,username,hostname):
+def UserCreds(yabiusername, scheme,username,hostname):
     """Get a users credentials"""
     # see if we can get the credentials
     #print "UserCreds",scheme,username,hostname
     import conf
-    url = os.path.join(conf.yabiadmin.PATH,'ws/credential/%s/%s/%s/'%(scheme,username,hostname))
+    url = os.path.join(conf.yabiadmin.PATH,'ws/credential/%s/%s/%s/%s/'%(yabiusername,scheme,username,hostname))
     code, message, data = GET(url, host=conf.yabiadmin.SERVER, port=conf.yabiadmin.PORT)
     assert code==200
     return json.loads(data)

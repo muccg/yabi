@@ -135,6 +135,7 @@ class TaskManager(object):
         
         statusurl = task['statusurl']
         errorurl = task['errorurl']
+        yabiusername = task['yabiusername']
         
         # shortcuts for our status and log calls
         status = lambda x: Status(statusurl,x)
@@ -188,7 +189,7 @@ class TaskManager(object):
         # this comes from their credentials.
         
         scheme, address = parse_url(task['exec']['backend'])
-        usercreds = UserCreds(scheme, address.username, address.hostname)
+        usercreds = UserCreds(yabiusername, scheme, address.username, address.hostname)
         #homedir = usercreds['homedir']
         workingdir = address.path
         
