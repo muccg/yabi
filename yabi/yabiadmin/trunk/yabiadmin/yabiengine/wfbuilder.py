@@ -1,4 +1,4 @@
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.conf import settings
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog, StageIn
 from yabiadmin.yabmin.models import Backend, BackendCredential, Tool, User
@@ -119,12 +119,12 @@ def addJob(workflow, job_dict, order):
 
     try:
         exec_backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.backend)
-    except ObjectDoesNotExist:
+    except (ObjectDoesNotExist, MultipleObjectsReturned):
         logger.critical('Invalid credentials for user: %s and backend: %s' % (workflow.user, tool.backend))
         raise
     try:
         fs_backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.fs_backend)
-    except ObjectDoesNotExist:
+    except (ObjectDoesNotExist, MultipleObjectsReturned):
         logger.critical('Invalid credentials for user: %s and backend: %s' % (workflow.user, tool.fs_backend))
         raise
 

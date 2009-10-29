@@ -283,7 +283,7 @@ class Backend(Base):
     def __unicode__(self):
         if DEBUG:
             return "Backend <%s name=%s scheme=%s hostname=%s port=%s path=%s>"%(self.id, self.name,self.scheme,self.hostname,self.port,self.path)
-        return "Backend %s %s://%s:%s%s"%(self.description,self.scheme,self.hostname,self.port,self.path)
+        return "Backend %s %s %s://%s:%s%s"%(self.name, self.description,self.scheme,self.hostname,self.port,self.path)
 
 class BackendCredential(Base):
     backend = models.ForeignKey(Backend)

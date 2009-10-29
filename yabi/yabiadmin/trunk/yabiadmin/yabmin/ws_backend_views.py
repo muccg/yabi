@@ -25,11 +25,8 @@ def credential(request, yabiusername, scheme, username, hostname):
         logger.debug("returning bc... %s" % bc)
         return HttpResponse(bc.json())
 
-    except ObjectDoesNotExist:
-        logger.critical('No backend credential found for yabiusername: %s scheme: %s hostname: %s username: %s' % (yabiusername, scheme, hostname, username))
-        return HttpResponseNotFound("Object not found")
-    except MultipleObjectsReturned:
-        logger.critical('Multiple credentials found for yabiusername: %s scheme: %s hostname: %s username: %s' % (yabiusername, scheme, hostname, username))
+    except (ObjectDoesNotExist, MultipleObjectsReturned):
+        logger.critical('Invalid backend credential found for yabiusername: %s scheme: %s hostname: %s username: %s' % (yabiusername, scheme, hostname, username))
         return HttpResponseNotFound("Object not found")
 
 
@@ -55,9 +52,6 @@ def credential_detail(request, yabiusername, scheme, username, hostname, detail)
         else:
             return HttpResponseNotFound("Object not found")            
 
-    except ObjectDoesNotExist:
-        logger.critical('No backend credential found for yabiusername: %s scheme: %s hostname: %s username: %s' % (yabiusername, scheme, hostname, username))
-        return HttpResponseNotFound("Object not found")
-    except MultipleObjectsReturned:
-        logger.critical('Multiple credentials found for yabiusername: %s scheme: %s hostname: %s username: %s' % (yabiusername, scheme, hostname, username))
+    except (ObjectDoesNotExist, MultipleObjectsReturned):
+        logger.critical('Invalid backend credential found for yabiusername: %s scheme: %s hostname: %s username: %s' % (yabiusername, scheme, hostname, username))
         return HttpResponseNotFound("Object not found")
