@@ -117,7 +117,7 @@ class TestYabmin(unittest.TestCase):
 
         # get credential for andrew
         c = Client()
-        response = c.get('/ws/credential/gridftp/amacgregor/xe-ng2.ivec.org')
+        response = c.get('/ws/credential/andrew/gridftp/amacgregor/xe-ng2.ivec.org')
         self.assertEqual(response.status_code, 200)
 
         payload = json.loads(response.content)
@@ -127,27 +127,27 @@ class TestYabmin(unittest.TestCase):
 
     def testInvalidCredential(self):
         c = Client()
-        response = c.get('/ws/credential/gridftp/testing_this_should_fail/xe-ng2.ivec.org')
+        response = c.get('/ws/credential/andrew/gridftp/testing_this_should_fail/xe-ng2.ivec.org')
         self.assertEqual(response.status_code, 404)
 
 
     def testCredentialDetailCert(self):
         c = Client()
-        response = c.get('/ws/credential/gridftp/amacgregor/xe-ng2.ivec.org/cert')
+        response = c.get('/ws/credential/andrew/gridftp/amacgregor/xe-ng2.ivec.org/cert')
         self.assertEqual(response.status_code, 200)
         self.assertTrue("-----BEGIN CERTIFICATE-----" in response.content)
 
 
     def testCredentialDetailKey(self):
         c = Client()
-        response = c.get('/ws/credential/gridftp/amacgregor/xe-ng2.ivec.org/key')
+        response = c.get('/ws/credential/andrew/gridftp/amacgregor/xe-ng2.ivec.org/key')
         self.assertEqual(response.status_code, 200)
         self.assertTrue("-----BEGIN RSA PRIVATE KEY-----" in response.content)
 
 
     def testCredentialDetailUsername(self):
         c = Client()
-        response = c.get('/ws/credential/gridftp/amacgregor/xe-ng2.ivec.org/username')
+        response = c.get('/ws/credential/andrew/gridftp/amacgregor/xe-ng2.ivec.org/username')
         self.assertEqual(response.status_code, 200)
         self.assertTrue("amacgregor" in response.content)
 
