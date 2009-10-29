@@ -32,6 +32,7 @@ from fs.resource import FSResource
 
 from fs.connector.LocalFilesystem import LocalFilesystem
 from fs.connector.GridFTP import GridFTP
+from fs.connector.SGEFilesystem import SGEFilesystem
 
 ##
 ## Execution resources
