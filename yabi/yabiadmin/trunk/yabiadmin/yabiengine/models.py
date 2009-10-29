@@ -301,6 +301,7 @@ def task_save(sender, **kwargs):
                 'exec:active':0.2,
                 'exec:cleanup':0.7,
                 'exec:done':0.75,
+                'exec:error':0.0,
                 'stageout':0.8,
                 'cleaning':0.9,
                 'complete':1.0,
