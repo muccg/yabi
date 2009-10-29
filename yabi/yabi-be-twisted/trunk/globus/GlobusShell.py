@@ -21,4 +21,11 @@ class GlobusShell(BaseShell):
                 host 
             ] + list(command)
         )
-
+    def ls(self, certfile, host, directory, args="-alFR"):
+        return self.execute(certfile,host,"ls",args,directory)
+      
+    def mkdir(self, certfile, host, directory, args="-p"):
+        return self.execute(certfile,host,"mkdir",args,directory)
+      
+    def rm(self, certfile, host, directory, args=None):
+        return self.execute(certfile,host,"rm",args,directory) if args else self.execute(certfile,host,"rm",directory) 
