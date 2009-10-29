@@ -117,15 +117,16 @@ def addJob(workflow, job_dict, order):
     # add a list of input file extensions as string, we will reconstitute this for use in the wfwrangler
     job.input_filetype_extensions = str(tool.input_filetype_extensions())
 
-
-    ## TODO raise error when no credential for user
-    logger.debug('%s - %s' % (workflow.user, tool.fs_backend))
-    exec_backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.backend)
-    fs_backendcredentials = BackendCredential.objects.filter(credential__user=workflow.user, backend=tool.fs_backend)
-    logger.debug('ALL BEC: %s' % (fs_backendcredentials))
-    
-    
-    fs_backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.fs_backend)
+    try:
+        exec_backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.backend)
+    except ObjectDoesNotExist:
+        logger.critical('Invalid credentials for user: %s and backend: %s' % (workflow.user, tool.backend))
+        raise
+    try:
+        fs_backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.fs_backend)
+    except ObjectDoesNotExist:
+        logger.critical('Invalid credentials for user: %s and backend: %s' % (workflow.user, tool.fs_backend))
+        raise
 
     #TODO hardcoded
     if tool.backend.name == 'nullbackend':

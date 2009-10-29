@@ -1,6 +1,6 @@
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden
 from django.shortcuts import render_to_response, get_object_or_404
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from yabiadmin.yabmin.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential
 from django.utils import webhelpers
 from django.utils import simplejson as json
@@ -14,28 +14,34 @@ import logging
 import yabilogging
 logger = logging.getLogger('yabiadmin')
 
-def credential(request, scheme, username, hostname):
-    logger.debug('Credential request for scheme: %s username: %s hostname: %s' % (scheme, username, hostname))
+def credential(request, yabiusername, scheme, username, hostname):
+    logger.debug('Credential request for yabiusername: %s scheme: %s username: %s hostname: %s' % (yabiusername, scheme, username, hostname))
     
     try:
-        bc = BackendCredential.objects.get(backend__scheme=scheme,
+        bc = BackendCredential.objects.get(credential__user__name=yabiusername,
+                                           backend__scheme=scheme,
                                            credential__username=username,
                                            backend__hostname=hostname)
         logger.debug("returning bc... %s" % bc)
         return HttpResponse(bc.json())
 
     except ObjectDoesNotExist:
+        logger.critical('No backend credential found for yabiusername: %s scheme: %s hostname: %s username: %s' % (yabiusername, scheme, hostname, username))
+        return HttpResponseNotFound("Object not found")
+    except MultipleObjectsReturned:
+        logger.critical('Multiple credentials found for yabiusername: %s scheme: %s hostname: %s username: %s' % (yabiusername, scheme, hostname, username))
         return HttpResponseNotFound("Object not found")
 
 
-def credential_detail(request, scheme, username, hostname, detail):
+
+def credential_detail(request, yabiusername, scheme, username, hostname, detail):
     logger.debug('')
     
     try:
-        bc = BackendCredential.objects.get(backend__scheme=scheme,
+        bc = BackendCredential.objects.get(credential__user__name=yabiusername,
+                                           backend__scheme=scheme,
                                            credential__username=username,
                                            backend__hostname=hostname)
-
 
         if detail == 'cert':
             return HttpResponse(bc.credential.cert)
@@ -50,4 +56,8 @@ def credential_detail(request, scheme, username, hostname, detail):
             return HttpResponseNotFound("Object not found")            
 
     except ObjectDoesNotExist:
+        logger.critical('No backend credential found for yabiusername: %s scheme: %s hostname: %s username: %s' % (yabiusername, scheme, hostname, username))
+        return HttpResponseNotFound("Object not found")
+    except MultipleObjectsReturned:
+        logger.critical('Multiple credentials found for yabiusername: %s scheme: %s hostname: %s username: %s' % (yabiusername, scheme, hostname, username))
         return HttpResponseNotFound("Object not found")
