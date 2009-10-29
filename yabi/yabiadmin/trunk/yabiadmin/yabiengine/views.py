@@ -75,8 +75,8 @@ def status(request, model, id):
     except Exception, e:
         import traceback
         print "!!!!",traceback.format_exc()
-        logger.critical("Caught Exception: %s" % e.message)
-        return HttpResponseServerError(e.message)
+        logger.critical("Caught Exception: %s" % e)
+        return HttpResponseServerError(e)
 
 
 def error(request, table, id):
