@@ -92,7 +92,13 @@ class LocalFilesystem(FSConnector.FSConnector):
         return True
     
     def mkdir(self, host, username, path, creds):
-        os.makedirs(self._get_filename(path))
+        try:
+            os.makedirs(self._get_filename(path))
+        except OSError, ose:
+            if ose[0]==17:
+                #file exists
+                return True
+            raise ose
         return True
      
     def ls(self, host, username, path, recurse=False, culldots=True, creds={}):

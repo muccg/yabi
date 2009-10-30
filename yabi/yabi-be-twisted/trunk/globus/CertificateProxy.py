@@ -46,17 +46,26 @@ class GridProxyInitProcessProtocol(protocol.ProcessProtocol):
         
     def connectionMade(self):
         # when the process finally spawns, close stdin, to indicate we have nothing to say to it
+        #print "CM"
         if self.stdin:
-            self.transport.write(str(self.stdin))
+            #print "writing",self.stdin
+            self.transport.write(str(self.stdin)+"\n")
         self.transport.closeStdin()
         
+    def connectionLost(self):
+        #print "CL"
+        pass
+        
     def outReceived(self, data):
+        #print "OR",data
         self.out += data
         
     def errReceived(self, data):
+        #print "ER", data
         self.err += data
             
     def processEnded(self, status_object):
+        #print "PE"
         self.exitcode = status_object.value.exitCode
         
     def isDone(self):
@@ -153,21 +162,6 @@ class CertificateProxy(object):
                                 path=path
                             )
         
-        # run it passing in our password
-        #try:
-            ## TODO: non blocking version of this call
-            #stdout, stderr = proc.communicate( password )
-        #except OSError, ose:
-            #if ose[0]==32:
-                ## broken pipe
-                #raise ProxyInitError, "Could not initialise proxy: Broken pipe (key/cert file could be corrupt)"
-            #else:
-                #raise ose
-        #finally:
-            ## clean up the key/cert files
-            #os.unlink(certfile)
-            #os.unlink(keyfile)
-            
         while not pp.isDone():
             stackless.schedule()
 

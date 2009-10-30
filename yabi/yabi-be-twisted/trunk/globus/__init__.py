@@ -1,3 +1,6 @@
+import stacklessreactor
+stacklessreactor.install()
+
 from CertificateProxy import CertificateProxy
 import GlobusURLCopy
 import GlobusRun
