@@ -2,6 +2,7 @@ import FSConnector
 import os, stat, time
 from fs.Exceptions import InvalidPath
 from FifoPool import Fifos
+import stackless
 
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
 ENV_CHILD_INHERIT = ['PATH']
