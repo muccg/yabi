@@ -33,13 +33,13 @@ def walk(workflow):
 
             
         except YabiJobException,e:
-            logger.info("Caught YabiJobException with message: " + e.message)
+            logger.info("Caught YabiJobException with message: " + e)
             continue
         except ObjectDoesNotExist,e:
-            logger.critical("ObjectDoesNotExist at wfwrangler.walk: " + e.message)
+            logger.critical("ObjectDoesNotExist at wfwrangler.walk: " + e)
             raise
         except Exception,e:
-            logger.critical("Error in workflow wrangler: " + e.message)
+            logger.critical("Error in workflow wrangler: " + e)
             raise
         
 
