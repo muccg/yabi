@@ -21,6 +21,5 @@ def install():
     Install the epoll() reactor.
     """
     p = StacklessReactor()
-    #from twisted.internet.main import installReactor
-    from twisted.application.reactors import installReactor
+    from twisted.internet.main import installReactor
     installReactor(p)
