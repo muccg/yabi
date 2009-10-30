@@ -322,3 +322,16 @@ class BackendCredential(Base):
         uri = urlunparse((self.backend.scheme, netloc, self.backend.path, '', '', ''))
 
         return uri + self.homedir
+
+    @property
+    def uri(self):
+        """
+        Returns full uri
+        """
+        netloc = '%s@%s' % (self.credential.username, self.backend.hostname)
+        if self.backend.port:
+            netloc += ':%d' % self.backend.port
+
+        uri = urlunparse((self.backend.scheme, netloc, self.backend.path, '', '', ''))
+
+        return uri

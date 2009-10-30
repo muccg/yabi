@@ -1,4 +1,5 @@
 from os.path import splitext
+import os
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog, StageIn
@@ -33,13 +34,13 @@ def walk(workflow):
 
             
         except YabiJobException,e:
-            logger.info("Caught YabiJobException with message: " + e)
+            logger.info("Caught YabiJobException with message: %s" % e)
             continue
         except ObjectDoesNotExist,e:
-            logger.critical("ObjectDoesNotExist at wfwrangler.walk: " + e)
+            logger.critical("ObjectDoesNotExist at wfwrangler.walk: %s" % e)
             raise
         except Exception,e:
-            logger.critical("Error in workflow wrangler: " + e)
+            logger.critical("Error in workflow wrangler: %s" % e)
             raise
         
 
@@ -69,13 +70,9 @@ def prepare_tasks(job):
 
     # get the backend for this job
     exec_be = backendhelper.get_backend_from_uri(job.exec_backend)
-    exec_bc = BackendCredential.objects.get(backend=exec_be, credential__user=job.workflow.user)
+    exec_bc = BackendCredential.objects.get(credential__user__name=job.workflow.user.name, backend=exec_be, credential__user=job.workflow.user)
     fs_be = backendhelper.get_backend_from_uri(job.fs_backend)
-    fs_bcs = BackendCredential.objects.filter(backend=fs_be, credential__user=job.workflow.user)
-
-    logger.debug("total fs_bc=%s"%(fs_bcs))
-    
-    fs_bc = BackendCredential.objects.get(backend=fs_be, credential__user=job.workflow.user)
+    fs_bc = BackendCredential.objects.get(credential__user__name=job.workflow.user.name, backend=fs_be, credential__user=job.workflow.user)
 
     logger.debug("wfwrangler::prepare_tasks() exec_be:%s exec_bc:%s fs_be:%s fs_bc:%s"%(exec_be,exec_bc,fs_be,fs_bc))
 
@@ -222,10 +219,10 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
 
         s = StageIn(task=t,
                     src="%s%s" % (param, file),
-                    dst="%s%s%s" % (fs_bc.homedir_uri, t.working_dir, file),
+                    dst="%s%s" % (fs_bc.uri, os.path.join(exec_be.path, t.working_dir, file)),
                     order=0)
                     
-        logger.debug("Stagein: %s <=> %s <=> %s"%(fs_bc.homedir_uri, t.working_dir, file))
+        logger.debug("Stagein: %s <=> %s " % (s.src, s.dst))
         # TODO: Fix this whole dual backend bullshit!
         #destscheme = fs_bc.homedir_uri.split('//',1)[0]
         #dest = exec_be.uri.split('//',1)[1]
