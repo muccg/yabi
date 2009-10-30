@@ -15,7 +15,7 @@ class GlobusShell(BaseShell):
 
     def execute(self, certfile, host, command):
         """Run inside gsissh, this command line. Command parts are passed in as a list of parameters, not a string."""
-        BaseShell.execute(self,GlobusShellProcessProtocol,certfile,
+        return BaseShell.execute(self,GlobusShellProcessProtocol,certfile,
             [ 
                 self.gsissh, 
                 host 
