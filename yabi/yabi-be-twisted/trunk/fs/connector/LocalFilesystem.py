@@ -145,7 +145,7 @@ class LocalFilesystem(FSConnector.FSConnector):
                     #print 'Skipping %s' % pathname
                     pass
                     
-            shortenedpath = top[len(self.directory):]              # munge the filename into its url part path
+            shortenedpath = "/"+top[len(self.directory):]              # munge the filename into its url part path
             subtrees[shortenedpath]=storage
             return subtrees
         
