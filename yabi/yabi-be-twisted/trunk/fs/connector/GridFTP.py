@@ -41,7 +41,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
         else:
-            self.EnsureAuthed(self.scheme,username,host)
+            self.EnsureAuthed(SCHEMA,username,host)
         
         usercert = self.GetAuthProxy(host).ProxyFile(username)
         pp = globus.Shell.mkdir(usercert,host,path)
