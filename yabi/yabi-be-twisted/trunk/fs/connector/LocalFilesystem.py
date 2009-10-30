@@ -13,7 +13,7 @@ ENV_CHECK = []
 SCHEMA = "yabifs"
 
 # the location of the directory we will serve out. This can be overridden in the constuctor if wanted
-DIRECTORY = "/tmp/filesystem/"
+DIRECTORY = "/"
 
 DEBUG = True
 
