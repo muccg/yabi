@@ -95,7 +95,7 @@ def ls(request):
         logger.debug("GET: %s " %request.GET['uri'])
         if request.GET['uri']:
             logger.debug("get_listing")
-            filelisting = get_listing(request.GET['uri'])
+            filelisting = get_listing(request.GET['yabiusername'], request.GET['uri'])
         else:
             filelisting = get_backend_list(request.GET['yabiusername'])
 
@@ -116,7 +116,8 @@ def get(request):
 
     try:
         uri = request.GET['uri']
-
+        yabiusername = request.GET['yabiusername']
+        
         try:
             filename = uri.rsplit('/', 1)[1]
         except IndexError, e:
@@ -126,7 +127,7 @@ def get(request):
         logger.debug(uri)
         logger.debug(filename)
 
-        response = HttpResponse(get_file(uri))
+        response = HttpResponse(get_file(yabiusername, uri))
 
         type, encoding = mimetypes.guess_type(filename)
         if type is not None:

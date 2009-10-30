@@ -125,10 +125,10 @@ def prepare_tasks(job):
             logger.info('Processing uri %s' % param)
     
             logger.debug("PROCESSING")
-            logger.debug("%s -> %s" % (param, backendhelper.get_file_list(param)))
+            logger.debug("%s -> %s" % (param, backendhelper.get_file_list(job.workflow.user.name, param)))
 
             # get_file_list will return a list of file tuples
-            for f in backendhelper.get_file_list(param):
+            for f in backendhelper.get_file_list(job.workflow.user.name, param):
                 logger.debug("FILELIST %s" % f)
                 create_task(job, param, f[0], exec_be, exec_bc, fs_be, fs_bc)
 
@@ -152,10 +152,10 @@ def prepare_tasks(job):
             logger.info('Processing uri %s' % param)
 
             logger.debug("PROCESSING")
-            logger.debug("%s -> %s" % (param, backendhelper.get_file_list(param)))
+            logger.debug("%s -> %s" % (param, backendhelper.get_file_list(job.workflow.user.name, param)))
 
             # get_file_list will return a list of file tuples
-            for f in backendhelper.get_file_list(param):
+            for f in backendhelper.get_file_list(job.workflow.user.name, param):
                 create_task(job, param, f[0], exec_be, exec_bc, fs_be, fs_bc)
 
 

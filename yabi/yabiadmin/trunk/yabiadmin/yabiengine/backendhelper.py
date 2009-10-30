@@ -15,18 +15,19 @@ from django.contrib import logging
 logger = logging.getLogger('yabiengine')
 
 
-def get_backendcredential_for_uri(uri):
+def get_backendcredential_for_uri(yabiusername, uri):
     """
     Looks up a backend credential based on the supplied uri, which should include a username.
-    Returns bc, will log and reraise MultipleObjectsReturned exception if more than one credential
+    Returns bc, will log and reraise ObjectDoesNotExist and MultipleObjectsReturned exceptions if more than one credential
     """
     scheme, uriparts = uriparse(uri)
     try:
-        bc = BackendCredential.objects.get(backend__hostname=uriparts.hostname,
+        bc = BackendCredential.objects.get(credential__user__name=yabiusername,
+                                           backend__hostname=uriparts.hostname,
                                            backend__scheme=scheme,
                                            credential__username=uriparts.username)
         return bc
-    except MultipleObjectsReturned, e:
+    except (ObjectDoesNotExist,MultipleObjectsReturned), e:
         logger.critical(e)
         raise    
 
@@ -58,7 +59,7 @@ def get_file_list(uri, recurse=True):
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
 
 
-        bc = get_backendcredential_for_uri(uri)
+        bc = get_backendcredential_for_uri(yabiusername, uri)
         data = dict([('username', bc.credential.username),
                     ('password', bc.credential.password),
                     ('cert', bc.credential.cert),
@@ -93,7 +94,7 @@ def get_file_list(uri, recurse=True):
         raise
 
 
-def get_listing(uri):
+def get_listing(yabiusername, uri):
     """
     Return a listing from backend
     """
@@ -106,7 +107,7 @@ def get_listing(uri):
         logger.debug('Resource: %s' % resource)
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
 
-        bc = get_backendcredential_for_uri(uri)
+        bc = get_backendcredential_for_uri(yabiusername, uri)
         data = dict([('username', bc.credential.username),
                     ('password', bc.credential.password),
                     ('cert', bc.credential.cert),
@@ -126,12 +127,12 @@ def get_listing(uri):
     return r.read()
 
 
-def mkdir(uri):
+def mkdir(yabiusername, uri):
     """
     Make a directory via the backend
     """
     logger.debug('')
-    logger.info("backendhelper::mkdir(%r)"%uri)
+    logger.info("backendhelper::mkdir(%s %r)" % (yabiusername, uri))
     
     try:
         resource = "%s?uri=%s" % (settings.YABIBACKEND_MKDIR, uri)
@@ -139,7 +140,7 @@ def mkdir(uri):
         logger.debug('Resource: %s' % resource)
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
 
-        bc = get_backendcredential_for_uri(uri)
+        bc = get_backendcredential_for_uri(yabiusername, uri)
         data = dict([('username', bc.credential.username),
                     ('password', bc.credential.password),
                     ('cert', bc.credential.cert),
@@ -232,7 +233,7 @@ def put_file(uri, fh):
         raise
 
 
-def get_file(uri):
+def get_file(yabiusername, uri):
     """
     Return a file at given uri
     """
@@ -244,7 +245,7 @@ def get_file(uri):
         logger.debug('Resource: %s' % resource)
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
 
-        bc = get_backendcredential_for_uri(uri)
+        bc = get_backendcredential_for_uri(yabiusername, uri)
         data = dict([('username', bc.credential.username),
                     ('password', bc.credential.password),
                     ('cert', bc.credential.cert),
