@@ -46,26 +46,26 @@ class GridProxyInitProcessProtocol(protocol.ProcessProtocol):
         
     def connectionMade(self):
         # when the process finally spawns, close stdin, to indicate we have nothing to say to it
-        #print "CM"
+        print "CM"
         if self.stdin:
-            #print "writing",self.stdin
-            self.transport.write(str(self.stdin)+"\n")
+            print "writing",self.stdin
+            self.transport.write(str(self.stdin))
         self.transport.closeStdin()
         
     def connectionLost(self):
-        #print "CL"
+        print "CL"
         pass
         
     def outReceived(self, data):
-        #print "OR",data
+        print "OR",data
         self.out += data
         
     def errReceived(self, data):
-        #print "ER", data
+        print "ER", data
         self.err += data
             
     def processEnded(self, status_object):
-        #print "PE"
+        print "PE"
         self.exitcode = status_object.value.exitCode
         
     def isDone(self):
@@ -148,7 +148,7 @@ class CertificateProxy(object):
         # run "/usr/local/globus/bin/grid-proxy-init -cert PEMFILE -key KEYFILE -pwstdin -out PROXYFILE"
         subenv = os.environ.copy()
         path="/usr/bin"
-        pp = GridProxyInitProcessProtocol(password)
+        pp = GridProxyInitProcessProtocol("%s\n\n"%password)
         reactor.spawnProcess(   pp,
                                 self.grid_proxy_init,
                                 [  self.grid_proxy_init,

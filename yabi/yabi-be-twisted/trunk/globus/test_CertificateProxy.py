@@ -1,5 +1,9 @@
-#import stacklessreactor
+import stacklessreactor
 #stacklessreactor.install()
+
+from twisted.application.reactors import Reactor
+
+stacked = Reactor('stackless','stacklessreactor.StacklessReactor', 'Reactor that pumps the stackless loop')
 
 import CertificateProxy
 from twisted.trial import unittest, reporter, runner
@@ -30,14 +34,26 @@ class CertificateProxyTest(unittest.TestCase):
         def run():
             self.proxy.CreateUserProxy('test_user', TEST_CERT, TEST_KEY, TEST_KEY_PW)
             
+        from twisted.internet.task import LoopingCall
+        
+        def call():
+            print "call"
+            stackless.schedule()
+        
+        lc = LoopingCall(call)
+        lc.start(0.1)
+        
+        
+            
         if True:
             task = stackless.tasklet(run)
             task.setup()
             task.run()
             
             while task.alive:
-                reactor.doIteration(0.1)
-                stackless.schedule()
+                pass
+                #reactor.doIteration(0.1)
+                #stackless.schedule()
         else:
             run()
             
