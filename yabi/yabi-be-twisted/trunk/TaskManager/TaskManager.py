@@ -127,7 +127,7 @@ class TaskManager(object):
     def task_mainline(self, task):
         """Our top down greenthread code"""
         print "=========JSON============="
-        print json.dump(task, sort_keys=True, indent=4)
+        print json.dumps(task, sort_keys=True, indent=4)
         print "=========================="
         
         # stage in file
