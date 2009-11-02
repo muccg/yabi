@@ -151,18 +151,11 @@ class TaskManager(object):
         
         status("stagein")
         for copy in task['stagein']:
-            print "COPY:",copy
-            #src_url = "%s/%s%s"%(copy['srcbackend'],task['yabiusername'],copy['srcpath'])
-            #dst_url = "%s/%s%s"%(copy['dstbackend'],task['yabiusername'],copy['dstpath'])
-            
             src = copy['src']
             dst = copy['dst']
             
             # check that destination directory exists.
             scheme,address = parse_url(dst)
-            
-            print "S:",scheme
-            print "A:",address
             
             directory, file = os.path.split(address.path)
             remotedir = scheme+"://"+address.netloc+directory
@@ -199,25 +192,28 @@ class TaskManager(object):
         scheme, address = parse_url(task['exec']['backend'])
         usercreds = UserCreds(yabiusername, scheme, address.username, address.hostname)
         #homedir = usercreds['homedir']
-        workingdir = address.path
+        workingdir = task['exec']['workingdir']
+        
+        assert not address, "Error. JSON[exec][backend] has a path. Execution backend URI's must not have a path" 
         
         print "USERCREDS",usercreds
                 
         # make our working directory
         status("mkdir")
         
-        fsscheme, fsaddress = parse_url(task['exec']['fsbackend'])
-        mkuri = fsscheme+"://"+fsaddress.username+"@"+fsaddress.hostname+workingdir
+        #fsscheme, fsaddress = parse_url(task['exec']['fsbackend'])
+        #mkuri = fsscheme+"://"+fsaddress.username+"@"+fsaddress.hostname+workingdir
+        fsbackend = task['exec']['fsbackend']
         
-        print "Making directory",mkuri
+        print "Making directory",fsbackend
         #self._tasks[stackless.getcurrent()]=workingdir
         try:
-            Mkdir(mkuri)
+            Mkdir(fsbackend)
         except GETFailure, error:
             # error making directory
             print "TASK[%s]:Mkdir failed!"%(taskid)
             status("error")
-            log("Making working directory of %s failed: %s"%(mkuri,error))
+            log("Making working directory of %s failed: %s"%(fsbackend,error))
             return 
         
         # now we are going to run the job
@@ -270,16 +266,16 @@ class TaskManager(object):
             pass
         
         try:
-            RCopy(mkuri,task['stageout'])
+            RCopy(fsbackend,task['stageout'])
             log("Files successfuly staged out")
         except GETFailure, error:
             # error executing
             print "TASK[%s]: Stageout failed!"%(taskid)
             status("error")
             if DEBUG:
-                log("Staging out remote %s to %s failed... \n%s"%(mkuri,task['stageout'],traceback.format_exc()))
+                log("Staging out remote %s to %s failed... \n%s"%(fsbackend,task['stageout'],traceback.format_exc()))
             else:
-                log("Staging out remote %s to %s failed... %s"%(mkuri,task['stageout'],error))
+                log("Staging out remote %s to %s failed... %s"%(fsbackend,task['stageout'],error))
             return              # finish task
         
         # cleanup
@@ -288,7 +284,7 @@ class TaskManager(object):
         
         # cleanup working dir
         for copy in task['stagein']:
-            dst_url = mkuri
+            dst_url = fsbackend
             log("Deleting %s..."%(dst_url))
             try:
                 print "RM1:",dst_url
