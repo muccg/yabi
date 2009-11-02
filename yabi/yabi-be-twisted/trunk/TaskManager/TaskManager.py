@@ -137,6 +137,14 @@ class TaskManager(object):
         errorurl = task['errorurl']
         yabiusername = task['yabiusername']
         
+        # sanity check...
+        for key in ['errorurl','exec','stagein','stageout','statusurl','taskid','yabiusername']:
+            assert key in task, "Task JSON description is missing a vital key '%s'"%key
+        
+        # check the exec section
+        for key in ['backend', 'command', 'fsbackend', 'workingdir']:
+            assert key in task['exec'], "Task JSON description is missing a vital key inside the 'exec' section. Key name is '%s'"%key
+        
         # shortcuts for our status and log calls
         status = lambda x: Status(statusurl,x)
         log = lambda x: Log(errorurl,x)
