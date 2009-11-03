@@ -226,8 +226,8 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
         
         t.working_dir = create_uniq_dirname(job, t)
         
-        fsscheme, fsbackend_parts = parse_url(self.job.fs_backend)
-        execscheme, execbackend_parts = parse_url(self.job.exec_backend)
+        fsscheme, fsbackend_parts = parse_url(job.fs_backend)
+        execscheme, execbackend_parts = parse_url(job.exec_backend)
         
         t.command = job.command.replace("%", url_join(fsbackend_parts.path,t.working_dir, file))
         t.save()
