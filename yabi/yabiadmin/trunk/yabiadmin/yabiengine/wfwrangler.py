@@ -237,7 +237,7 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
 
         s = StageIn(task=t,
                     src="%s%s" % (param, file),
-                    dst="%s%s" % (fs_bc.uri, os.path.join(fsbackend_parts.path, t.working_dir, file)),
+                    dst="%s://%s@%s%s" % (fsscheme,fsbackend_parts.username,fsbackend_parts.hostname, os.path.join(fsbackend_parts.path, t.working_dir, file)),
                     order=0)
                     
         logger.debug("Stagein: %s <=> %s " % (s.src, s.dst))
