@@ -210,7 +210,9 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
         t = Task(job=job, status=settings.STATUS['ready'])
         t.save() # so task has id
         logger.debug('saved========================================')
+        
         t.working_dir = create_uniq_dirname(job, t)
+        
         t.command = job.command.replace("%", url_join(exec_be.path,t.working_dir, file))
         t.save()
 

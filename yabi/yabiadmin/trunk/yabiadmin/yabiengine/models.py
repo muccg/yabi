@@ -14,6 +14,20 @@ from urllib import urlencode
 def url_join(*args):
     return reduce(lambda a,b: a+b if a.endswith('/') else a+'/'+b, args)
 
+import urlparse
+import re
+re_url_schema = re.compile(r'\w+')
+
+def parse_url(uri):
+    """Parse a url via the inbuilt urlparse. But this is slightly different
+    as it can handle non-standard schemas. returns the schema and then the
+    tuple from urlparse"""
+    scheme, rest = uri.split(":",1)
+    assert re_url_schema.match(scheme)
+    return scheme, urlparse.urlparse(rest)
+
+
+
 import logging
 import yabilogging
 logger = logging.getLogger('yabiengine')
@@ -89,6 +103,8 @@ class Task(models.Model):
             statusurl = webhelpers.url("/engine/status/task/%d" % self.id)
             errorurl = webhelpers.url("/engine/error/task/%d" % self.id)
 
+        fsscheme, fsbackend_parts = parse_url(self.job.fs_backend)
+
         output = {
             "yabiusername":self.job.workflow.user.name,
             "taskid":self.id,
@@ -99,7 +115,7 @@ class Task(models.Model):
                     "command":self.command,
                     "backend": url_join(self.job.exec_backend),
                     "fsbackend": url_join(self.job.fs_backend, self.working_dir),
-                    "workingdir": self.working_dir
+                    "workingdir": os.path.join(fsbackend_parts.path,self.working_dir)
                     },
             "stageout":self.job.stageout+"/"+str(self.id)+"/"
             }
