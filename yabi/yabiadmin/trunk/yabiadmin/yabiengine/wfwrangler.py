@@ -12,6 +12,19 @@ import logging
 import yabilogging
 logger = logging.getLogger('yabiengine')
 
+import urlparse
+import re
+re_url_schema = re.compile(r'\w+')
+
+def parse_url(uri):
+    """Parse a url via the inbuilt urlparse. But this is slightly different
+    as it can handle non-standard schemas. returns the schema and then the
+    tuple from urlparse"""
+    scheme, rest = uri.split(":",1)
+    assert re_url_schema.match(scheme)
+    return scheme, urlparse.urlparse(rest)
+
+
 # this is used to join subpaths to already cinstructed urls
 def url_join(*args):
     return reduce(lambda a,b: a+b if a.endswith('/') else a+'/'+b, args)
@@ -213,7 +226,10 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
         
         t.working_dir = create_uniq_dirname(job, t)
         
-        t.command = job.command.replace("%", url_join(exec_be.path,t.working_dir, file))
+        fsscheme, fsbackend_parts = parse_url(self.job.fs_backend)
+        execscheme, execbackend_parts = parse_url(self.job.exec_backend)
+        
+        t.command = job.command.replace("%", url_join(fsbackend_parts.path,t.working_dir, file))
         t.save()
 
         logger.info('Creating task for job id: %s using command: %s' % (job.id, t.command))
