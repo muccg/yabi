@@ -96,10 +96,11 @@ class Task(models.Model):
             "errorurl":errorurl,
             "stagein":[],
             "exec":{
-            "command":self.command,
-            "backend": url_join(self.job.exec_backend, self.working_dir),
-            "fsbackend": url_join(self.job.fs_backend, self.working_dir),
-            },
+                    "command":self.command,
+                    "backend": url_join(self.job.exec_backend),
+                    "fsbackend": url_join(self.job.fs_backend, self.working_dir),
+                    "workingdir": self.working_dir
+                    },
             "stageout":self.job.stageout+"/"+str(self.id)+"/"
             }
 
