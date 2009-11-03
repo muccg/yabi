@@ -194,7 +194,7 @@ class TaskManager(object):
         #homedir = usercreds['homedir']
         workingdir = task['exec']['workingdir']
         
-        assert not address.path, "Error. JSON[exec][backend] has a path. Execution backend URI's must not have a path (path is %s)"%address.path 
+        assert address.path=="/", "Error. JSON[exec][backend] has a path. Execution backend URI's must not have a path (path is %s)"%address.path 
         
         print "USERCREDS",usercreds
                 
