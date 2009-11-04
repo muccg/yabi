@@ -35,7 +35,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         globus.Auth.GlobusAuth.__init__(self)
         self.CreateAuthProxy()
     
-    def run(self, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", **creds):
+    def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", **creds):
         # use shlex to parse the command into executable and arguments
         lexer = shlex.shlex(command, posix=True)
         lexer.wordchars += r"-.:;/"
@@ -106,7 +106,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
             if creds:
                 self.EnsureAuthedWithCredentials(host, **creds)
             else:
-                self.EnsureAuthed(scheme,username,host)
+                self.EnsureAuthed(yabiusername, scheme,username,host)
             processprotocol = globus.Run.status( usercert, eprfile, host )
             
             while not processprotocol.isDone():

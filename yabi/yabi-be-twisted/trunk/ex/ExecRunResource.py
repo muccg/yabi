@@ -34,6 +34,10 @@ class ExecRunResource(resource.PostableResource):
     def handle_run(self,request):
         args = request.args
         
+        if "yabiusername" not in args:
+            return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "Job submission must have a yabiusername set (so we can get credentials)!\n")
+        yabiusername = args['yabiusername'][0]
+        
         if "command" not in args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "Job submission must have a command!\n")
         command = args['command'][0]
@@ -80,7 +84,7 @@ class ExecRunResource(resource.PostableResource):
         client_deferred = defer.Deferred()
         
         task = stackless.tasklet(bend.run)
-        task.setup(command, basepath, scheme, username, hostname, client_deferred, **kwargs)
+        task.setup(yabiusername, command, basepath, scheme, username, hostname, client_deferred, **kwargs)
         task.run()
         
         return client_deferred

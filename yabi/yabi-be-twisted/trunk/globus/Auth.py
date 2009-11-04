@@ -20,7 +20,7 @@ class GlobusAuth(object):
     def GetAuthProxy(self, hostname):
         return self.authproxy[hostname]
     
-    def AuthProxyUser(self, scheme, username, hostname, *args):
+    def AuthProxyUser(self, yabiusername, scheme, username, hostname, *args):
         """Auth a user via getting the credentials from the json yabiadmin backend. When the credentials are gathered, successcallback is called with the deferred.
         The deferred should be the result channel your result will go back down"""
         assert hasattr(self,"authproxy"), "Class must have an authproxy parameter"
@@ -33,7 +33,7 @@ class GlobusAuth(object):
         #print conf.yabiadmin.SERVER, conf.yabiadmin.PORT,conf.yabiadmin.PATH
         
         try:
-            status, message, data = GET( path = os.path.join(conf.yabiadmin.PATH,"ws/credential/%s/%s/%s/"%(scheme,username,hostname)),
+            status, message, data = GET( path = os.path.join(conf.yabiadmin.PATH,"ws/credential/%s/%s/%s/%s/"%(yabiusername,scheme,username,hostname)),
                                         host = conf.yabiadmin.SERVER,
                                         port = conf.yabiadmin.PORT )
             
@@ -55,15 +55,15 @@ class GlobusAuth(object):
             raise NoCredentials( "User: %s does not have credentials for this backend %s on host %s\n"%(username,scheme,hostname) )
         
     
-    def EnsureAuthed(self, scheme, username, hostname):
+    def EnsureAuthed(self, yabiusername, scheme, username, hostname):
         # do we have an authenticator for this host?
         if hostname not in self.authproxy:
             # no!
-            return self.AuthProxyUser(scheme,username,hostname)
+            return self.AuthProxyUser(yabiusername, scheme,username,hostname)
         else:
             # yes! lets see if we have a valid cert
             if not self.authproxy[hostname].IsProxyValid(username):
-                return self.AuthProxyUser(scheme,username,hostname)
+                return self.AuthProxyUser(yabiusername,scheme,username,hostname)
             # else user is already authed
                 
     def AuthProxyUserWithCredentials(self, hostname, username, cert, key, password):
