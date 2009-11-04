@@ -16,6 +16,8 @@ from utils.parsers import parse_url
 
 from twisted.internet.defer import Deferred
 
+from utils.submit_helpers import parsePOSTData
+
 UPLOAD_BLOCK_SIZE = 1024 * 256
 
 class FilePutResource(resource.PostableResource):

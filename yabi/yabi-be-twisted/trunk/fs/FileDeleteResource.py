@@ -9,6 +9,8 @@ from globus.CertificateProxy import ProxyInitError
 
 from utils.parsers import parse_url
 
+from utils.submit_helpers import parsePOSTData
+
 import traceback
 
 class FileDeleteResource(resource.PostableResource):

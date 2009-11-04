@@ -17,6 +17,8 @@ from utils.parsers import parse_url
 from twisted.internet.defer import Deferred
 from utils.FifoStream import FifoStream
 
+from utils.submit_helpers import parsePOSTData
+
 DOWNLOAD_BLOCK_SIZE = 8192
 
 class FileGetResource(resource.PostableResource):

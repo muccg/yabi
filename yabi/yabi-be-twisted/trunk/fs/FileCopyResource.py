@@ -9,6 +9,8 @@ PROCESS_CHECK_TIME = 0.01
 
 from utils.parsers import parse_url
 
+from utils.submit_helpers import parsePOSTData
+
 class FileCopyResource(resource.PostableResource):
     VERSION=0.1
     maxMem = 100*1024
