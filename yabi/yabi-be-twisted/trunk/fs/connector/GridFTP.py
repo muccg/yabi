@@ -36,13 +36,12 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         """return the full url for out path"""
         return "%s://%s%s"%(self.copymode,server,remotepath) + path
     
-    def mkdir(self, host, username, path, creds={}):
+    def mkdir(self, host, username, path, yabiusername, creds={}):
         # make sure we are authed
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
         else:
-            assert False, "mkdir MUST be called with a credential attached"
-            self.EnsureAuthed(SCHEMA,username,host)
+            self.EnsureAuthed(yabiusername,SCHEMA,username,host)
         
         usercert = self.GetAuthProxy(host).ProxyFile(username)
         pp = globus.Shell.mkdir(usercert,host,path)
@@ -65,12 +64,12 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         
         return mkdir_data
         
-    def rm(self, host, username, path, recurse=False, creds={}):
+    def rm(self, host, username, path, yabiusername, recurse=False, creds={}):
         # make sure we are authed
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
         else:
-            self.EnsureAuthed(SCHEMA,username,host)
+            self.EnsureAuthed(yabiusername, SCHEMA,username,host)
         
         usercert = self.GetAuthProxy(host).ProxyFile(username)
         pp = globus.Shell.rm(usercert,host,path,args="-r" if recurse else "")
@@ -93,12 +92,12 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         
         return rm_data
     
-    def ls(self, host, username, path, recurse=False, culldots=True, creds={}):
+    def ls(self, host, username, path, yabiusername, recurse=False, culldots=True, creds={}):
         # make sure we are authed
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
         else:
-            self.EnsureAuthed(SCHEMA,username,host)
+            self.EnsureAuthed(yabiusername, SCHEMA,username,host)
         
         usercert = self.GetAuthProxy(host).ProxyFile(username)
         pp = globus.Shell.ls(usercert,host,path, args="-alFR" if recurse else "-alF" )
@@ -130,7 +129,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
                         
         return ls_data
         
-    def GetWriteFifo(self, host=None, username=None, path=None, filename=None, fifo=None, creds={}):
+    def GetWriteFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}):
         """sets up the chain needed to setup a read fifo from a remote path as a certain user.
         
         pass in here the username, path, and a deferred
@@ -146,14 +145,14 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
         else:
-            self.EnsureAuthed(SCHEMA,username,host)
+            self.EnsureAuthed(yabiusername, SCHEMA,username,host)
         usercert = self.GetAuthProxy(host).ProxyFile(username)
         
         pp, fifo = globus.Copy.WriteToRemote(usercert,dst,fifo=fifo)
         
         return pp, fifo
     
-    def GetReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, creds={}):
+    def GetReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}):
         """sets up the chain needed to setup a read fifo from a remote path as a certain user.
         
         pass in here the username, path, and a deferred
@@ -169,7 +168,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
         else:
-            self.EnsureAuthed(SCHEMA,username,host)
+            self.EnsureAuthed(yabiusername,SCHEMA,username,host)
         usercert = self.GetAuthProxy(host).ProxyFile(username)
         
         pp, fifo = globus.Copy.ReadFromRemote(usercert,dst,fifo=fifo)
