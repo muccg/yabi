@@ -53,6 +53,10 @@ class FileRCopyResource(resource.PostableResource):
             src = request.args['src'][0]
             dst = request.args['dst'][0]
             
+            yabiusername = request.args['yabiusername'][0] if "yabiusername" in request.args else None
+        
+            assert yabiusername, "You pass in a yabiusername so I can go get a credential."
+            
             assert src.endswith('/'), "'src' path must end in a '/'"
             if not dst.endswith('/'):
                 dst += '/'
@@ -83,7 +87,7 @@ class FileRCopyResource(resource.PostableResource):
             def rcopy_runner_thread():
                 try:
                     # get a recursive listing of the source
-                    fsystem = List(path=src,recurse=True)
+                    fsystem = List(path=src,recurse=True,yabiusername=yabiusername)
                     
                     #print "Fsystem:",fsystem
                     
@@ -97,7 +101,7 @@ class FileRCopyResource(resource.PostableResource):
                         if dst+destpath not in created:
                             #print dst+destpath,"not in",created
                             try:
-                                Mkdir(dst+destpath)
+                                Mkdir(dst+destpath,yabiusername=yabiusername)
                             except GETFailure, gf:
                                 # ignore. directory probably already exists
                                 pass
@@ -110,7 +114,7 @@ class FileRCopyResource(resource.PostableResource):
                             dst_uri = dst+destpath+file
                             #print "Copy(",src_uri,",",dst_uri,")"
                             #print "Copy(",sbend+directory+"/"+file,",",dst+destpath+'/'+file,")"
-                            Copy(src_uri,dst_uri,retry=1)
+                            Copy(src_uri,dst_uri,retry=1,yabiusername=yabiusername)
                             Sleep(0.5)
                     
                     result_channel.callback(
