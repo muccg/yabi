@@ -37,6 +37,10 @@ class FileCopyResource(resource.PostableResource):
                 creds[varname] = request.args[varname][0]
                 del request.args[varname]
         
+        yabiusername = request.args['yabiusername'][0] if "yabiusername" in request.args else None
+        
+        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
+        
         src = request.args['src'][0]
         dst = request.args['dst'][0]
             
@@ -78,8 +82,8 @@ class FileCopyResource(resource.PostableResource):
         dst_filename = src_filename if not len(dst_filename) else dst_filename
         
         def copy(channel):
-            writeproto, fifo = dbend.GetWriteFifo(dst_hostname, dst_username, dst_path, dst_filename)
-            readproto, fifo2 = sbend.GetReadFifo(src_hostname, src_username, src_path, src_filename, fifo)
+            writeproto, fifo = dbend.GetWriteFifo(dst_hostname, dst_username, dst_path, dst_filename,yabiusername=yabiusername)
+            readproto, fifo2 = sbend.GetReadFifo(src_hostname, src_username, src_path, src_filename, fifo,yabiusername=yabiusername)
             
             #print "READ:",readproto,fifo
             #print "WRITE:",writeproto,fifo2
