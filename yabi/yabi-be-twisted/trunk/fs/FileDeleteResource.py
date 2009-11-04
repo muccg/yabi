@@ -43,6 +43,10 @@ class FileDeleteResource(resource.PostableResource):
                 creds[varname] = request.args[varname][0]
                 del request.args[varname]
         
+        yabiusername = request.args['yabiusername'][0] if "yabiusername" in request.args else None
+        
+        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
+        
         recurse = 'recurse' in request.args
         bendname = scheme
         username = address.username
@@ -65,7 +69,7 @@ class FileDeleteResource(resource.PostableResource):
         def do_rm():
             #print "hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
             try:
-                deleter=bend.rm(hostname,path=path, username=username,recurse=recurse, creds=creds)
+                deleter=bend.rm(hostname,path=path, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
             except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
                 #print "rm call failed...\n%s"%traceback.format_exc()
