@@ -36,7 +36,9 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         """return the full url for out path"""
         return "%s://%s%s"%(self.copymode,server,remotepath) + path
     
-    def mkdir(self, host, username, path, yabiusername, creds={}):
+    def mkdir(self, host, username, path, yabiusername=None, creds={}):
+        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
+        
         # make sure we are authed
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
@@ -64,7 +66,8 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         
         return mkdir_data
         
-    def rm(self, host, username, path, yabiusername, recurse=False, creds={}):
+    def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}):
+        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         # make sure we are authed
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
@@ -92,7 +95,8 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         
         return rm_data
     
-    def ls(self, host, username, path, yabiusername, recurse=False, culldots=True, creds={}):
+    def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}):
+        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         # make sure we are authed
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
@@ -139,6 +143,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         when everything is setup and ready, deferred will be called with (proc, fifo), with proc being the python subprocess Popen object
         and fifo being the filesystem location of the fifo.
         """
+        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         dst = os.path.join(self._make_remote_url(host,path),filename)
         
         # make sure we are authed
@@ -162,6 +167,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         when everything is setup and ready, deferred will be called with (proc, fifo), with proc being the python subprocess Popen object
         and fifo being the filesystem location of the fifo.
         """
+        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         dst = os.path.join(self._make_remote_url(host,path),filename)
         
         # make sure we are authed
