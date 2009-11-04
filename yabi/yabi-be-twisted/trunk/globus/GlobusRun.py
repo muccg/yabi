@@ -35,10 +35,13 @@ class GlobusStatusWSProcessProtocol(BaseShellProcessProtocol):
         
     def outReceived(self, data):
         self.out += data
+        print "OUT:",data
         
         if "job state" in self.out:
             result = re_currentjobstate.search(self.out)
             self.jobstate = result.group(1)
+            
+    
         
 from twisted.internet import reactor
 
