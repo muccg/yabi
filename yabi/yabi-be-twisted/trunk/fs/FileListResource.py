@@ -55,6 +55,9 @@ class FileListResource(resource.PostableResource):
                 creds[varname] = request.args[varname][0]
                 del request.args[varname]
         
+        yabiusername = request.args['yabiusername'][0] if "yabiusername" in request.args else None
+        
+        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         #print "URI",uri
         #print "ADDRESS",address
@@ -72,7 +75,7 @@ class FileListResource(resource.PostableResource):
         def do_list():
             #print "dolist() hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
             try:
-                lister=bend.ls(hostname,path=path, username=username,recurse=recurse, creds=creds)
+                lister=bend.ls(hostname,path=path, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream=json.dumps(lister)))
             except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
                 #print "IP"
