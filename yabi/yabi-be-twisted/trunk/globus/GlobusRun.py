@@ -23,6 +23,10 @@ class GlobusRunWSProcessProtocol(BaseShellProcessProtocol):
             
             result = re_termtime.search(self.err)
             self.termtime = result.group(1)
+            
+    def outConnectionLost(self):
+        # stdout was closed. this will be our endpoint reference
+        self.epr = self.out 
         
 class GlobusStatusWSProcessProtocol(BaseShellProcessProtocol):
     def __init__(self):
