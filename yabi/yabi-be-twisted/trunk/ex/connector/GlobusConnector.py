@@ -63,7 +63,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
             if creds:
                 self.EnsureAuthedWithCredentials(host, **creds)
             else:
-                self.EnsureAuthed(scheme,username,host)
+                self.EnsureAuthed(yabiusername,scheme,username,host)
         except globus.Auth.AuthException, ae:
             # connection problems.
             channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = "Could not get auth credentials for %s://%s@%s. %s\n"%(scheme,username,host,str(ae)) ))
