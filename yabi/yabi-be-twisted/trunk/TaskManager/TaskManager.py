@@ -236,7 +236,8 @@ class TaskManager(object):
                 log("Submitting to %s command: %s"%(task['exec']['backend'],task['exec']['command']))
                 
                 try:
-                    Exec(task['exec']['backend'], command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=yabiusername)                # this blocks untill the command is complete.
+                    uri = task['exec']['backend']+workingdir
+                    Exec(uri, command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=yabiusername)                # this blocks untill the command is complete.
                     log("Execution finished")
                 except GETFailure, error:
                     # error executing
