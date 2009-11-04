@@ -40,7 +40,11 @@ class FileMkdirResource(resource.PostableResource):
             if varname in request.args:
                 creds[varname] = request.args[varname][0]
                 del request.args[varname]
-
+    
+        yabiusername = request.args['yabiusername'][0] if "yabiusername" in request.args else None
+        
+        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
+        
         username = address.username
         path = address.path
         hostname = address.hostname
@@ -57,7 +61,7 @@ class FileMkdirResource(resource.PostableResource):
         def do_mkdir():
             #print "hostname=",hostname,"path=",path,"username=",username
             try:
-                mkdirer=bend.mkdir(hostname,path=path, username=username, creds=creds)
+                mkdirer=bend.mkdir(hostname,path=path, username=username, yabiusername=yabiusername, creds=creds)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
             except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
                 client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
