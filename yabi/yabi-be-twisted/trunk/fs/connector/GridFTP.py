@@ -41,6 +41,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
         else:
+            assert False, "mkdir MUST be called with a credential attached"
             self.EnsureAuthed(SCHEMA,username,host)
         
         usercert = self.GetAuthProxy(host).ProxyFile(username)
