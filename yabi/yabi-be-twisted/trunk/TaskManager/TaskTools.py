@@ -29,13 +29,13 @@ def Sleep(seconds):
 
 class CopyError(Exception): pass
 
-def Copy(src,dst,retry=COPY_RETRY):
+def Copy(src,dst,retry=COPY_RETRY, **kwargs):
     """Copy src (url) to dst (url) using the fileservice"""
     print "Copying %s to %s"%(src,dst)
     for num in range(retry):
         #print "retry num=",num
         try:
-            code,message,data = GET(COPY_PATH,src=src,dst=dst)
+            code,message,data = GET(COPY_PATH,src=src,dst=dst, **kwargs)
             print "code=",repr(code)
             if int(code)==200:
                 # success!
@@ -50,29 +50,29 @@ def Copy(src,dst,retry=COPY_RETRY):
     
     raise err
     
-def RCopy(src, dst):
+def RCopy(src, dst, **kwargs):
     #print "RCopying %s to %s"%(src,dst)
     try:
-        POST(RCOPY_PATH,src=src,dst=dst)
+        POST(RCOPY_PATH,src=src,dst=dst, **kwargs)
         # success!
         return True
     except GETFailure, err:
         print "Copy failed with error:",err
         raise
     
-def List(path,recurse=False):
+def List(path,recurse=False, **kwargs):
     #print "LIST posting",LIST_PATH,path,recurse
-    code, message, data = GET(LIST_PATH,uri=path,recurse=recurse)
+    code, message, data = GET(LIST_PATH,uri=path,recurse=recurse, **kwargs)
     #print "RESPONSE",code,message,data
     assert code==200
     #print "LIST:",data
     return json.loads(data)
 
-def Mkdir(path):
-    return GET(MKDIR_PATH,uri=path)
+def Mkdir(path, **kwargs):
+    return GET(MKDIR_PATH,uri=path, **kwargs)
 
-def Rm(path, recurse=False):
-    code, message, data = GET(RM_PATH,uri=path,recurse=recurse)
+def Rm(path, recurse=False, **kwargs):
+    code, message, data = GET(RM_PATH,uri=path,recurse=recurse, **kwargs)
     assert code==200
     return data
 

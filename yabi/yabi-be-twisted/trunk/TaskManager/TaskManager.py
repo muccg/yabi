@@ -163,7 +163,7 @@ class TaskManager(object):
             
             try:
                 print "CALLING LIST"
-                listing = List(remotedir)
+                listing = List(remotedir, yabiusername=yabiusername)
                 print "RETURNING"
                 print "result:", listing
             except Exception, error:
@@ -171,11 +171,11 @@ class TaskManager(object):
                 print "Remote DIR does not exist"
                 
                 #make dir
-                Mkdir(remotedir)
+                Mkdir(remotedir, yabiusername=yabiusername)
             
             log("Copying %s to %s..."%(src,dst))
             try:
-                Copy(src,dst)
+                Copy(src,dst, yabiusername=yabiusername)
                 log("Copying %s to %s Success"%(src,dst))
             except GETFailure, error:
                 # error copying!
@@ -208,7 +208,7 @@ class TaskManager(object):
         print "Making directory",fsbackend
         #self._tasks[stackless.getcurrent()]=workingdir
         try:
-            Mkdir(fsbackend)
+            Mkdir(fsbackend, yabiusername=yabiusername)
         except GETFailure, error:
             # error making directory
             print "TASK[%s]:Mkdir failed!"%(taskid)
@@ -236,7 +236,7 @@ class TaskManager(object):
                 log("Submitting to %s command: %s"%(task['exec']['backend'],task['exec']['command']))
                 
                 try:
-                    Exec(task['exec']['backend'], command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=task['yabiusername'])                # this blocks untill the command is complete.
+                    Exec(task['exec']['backend'], command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, , yabiusername=yabiusername)                # this blocks untill the command is complete.
                     log("Execution finished")
                 except GETFailure, error:
                     # error executing
@@ -261,12 +261,12 @@ class TaskManager(object):
         log("making stageout directory %s"%task['stageout'])
         print "STAGEOUT:",task['stageout']
         try:
-            Mkdir(task['stageout'])
+            Mkdir(task['stageout'], yabiusername=yabiusername)
         except GETFailure, error:
             pass
         
         try:
-            RCopy(fsbackend,task['stageout'])
+            RCopy(fsbackend,task['stageout'], yabiusername=yabiusername)
             log("Files successfuly staged out")
         except GETFailure, error:
             # error executing
@@ -288,7 +288,7 @@ class TaskManager(object):
             log("Deleting %s..."%(dst_url))
             try:
                 print "RM1:",dst_url
-                Rm(dst_url, recurse=True)
+                Rm(dst_url, yabiusername=yabiusername, recurse=True)
             except GETFailure, error:
                 # error copying!
                 print "TASK[%s]: Delete %s Error!"%(taskid, dst_url)
