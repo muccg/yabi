@@ -479,11 +479,13 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
     if (status == 'error') {
         if (YAHOO.lang.isUndefined(message)) {
             message = '';
+        } else {
+            message = "\n" + message;
         }
         if (YAHOO.lang.isUndefined(this.errorEl)) {
             this.errorEl = document.createElement("div");
             this.errorEl.className = "jobErrorMsg";
-            this.errorEl.appendChild( document.createTextNode("Error running job. "+message) );
+            this.errorEl.appendChild( document.createTextNode("error running job "+message) );
             this.jobEl.appendChild(this.errorEl);
         }
     }
