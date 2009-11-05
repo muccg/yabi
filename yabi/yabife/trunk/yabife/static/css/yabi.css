@@ -1041,6 +1041,11 @@ input {
 	background: -webkit-gradient(linear, left top, left bottom, from(#6f6), to(#9c9));
 }
 
+.errorBar {
+    background-color: red;
+	background: -webkit-gradient(linear, left top, left bottom, from(red), to(#f66));
+}
+
 .badgecompleted {
 
 	width:16px;
@@ -1277,17 +1282,12 @@ input {
 }
 
 .jobErrorMsg {
-    border:1px solid #f00;
-        background: #f00;
-        background: -webkit-gradient(linear, left top, left bottom, from(#f00), to(#f66));
-    -moz-box-shadow: 0px 0px 3px #f77;
-    -webkit-box-shadow: 0px 0px 3px #f77;
-        padding:4px;
-        padding-left: 12px;
-        position:relative;
-    -moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
+    padding:4px;
+    padding-left: 12px;
+    position:relative;
     font-size: 95%;
+    font-weight:bold;
+    text-align:right;
     width:280px;
     color: #fff;
     margin-bottom:6px;

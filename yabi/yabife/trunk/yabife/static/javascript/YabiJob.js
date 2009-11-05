@@ -465,6 +465,11 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
     //update progress bar
     this.progressEl.style.width = this.progress + "%";
     
+    //change color if in error
+    if (status == "error") {
+        this.progressEl.className = "progressBar errorBar";
+    }
+    
     //and hide the progress bar if the progress is 100%
     if (this.progress >= 100) {
         this.progressContainerEl.style.display = "none";
