@@ -46,6 +46,7 @@ function YabiWorkflow(editable) {
         this.submitEl = document.createElement('button');
         this.submitEl.appendChild(document.createTextNode("run"));
         this.submitEl.id = "submitButton";
+        this.submitEl.className = "fakeButton largeButton";
         this.mainEl.appendChild(this.submitEl);
 
         this.nameEl = document.createElement('input');

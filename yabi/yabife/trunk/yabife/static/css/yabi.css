@@ -1009,6 +1009,12 @@ input {
 	cursor: pointer;
 }
 
+.largeButton {
+    padding:4px;
+    font-size:120%;
+    text-shadow: 0px 1px 1px #fff;
+}
+
 //.fakeButton.hover, .fakeButton:hover {
 //	border:1px solid #3879e6;
 //	background: #ccf url(../images/job_selected_bg.png);
