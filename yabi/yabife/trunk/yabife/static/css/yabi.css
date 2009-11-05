@@ -1289,10 +1289,15 @@ input {
     font-weight:bold;
     text-align:right;
     width:280px;
-    color: #fff;
+    color: #f00;
     margin-bottom:6px;
     margin-top:6px;
-    text-shadow:0px -1px 1px #666;
+    text-shadow:0px 1px 1px #fff;
+}
+
+.selectedJobContainer .jobErrorMsg {
+    text-shadow:none;
+    color:white;
 }
 
 .workflowHydrating {
