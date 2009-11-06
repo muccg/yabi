@@ -288,9 +288,10 @@ def copy_file(yabiusername, src, dst):
         r = POST(resource,data)
         
         logger.info("Status of return from yabi backend is: %s" % r.status)
-        logger.debug("contents of return from yabi backend is: %s" % dir(r))
+        data=r.read()
+        logger.debug("contents of return from yabi backend is: %s" % data)
 
-        return FileWrapper(r, blksize=1024**2)
+        return data
  
     except socket.error, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
