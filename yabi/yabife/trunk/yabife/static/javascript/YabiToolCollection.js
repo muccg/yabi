@@ -172,7 +172,9 @@ YabiToolCollection.prototype.filter = function() {
     }
 
     if (visibleCount === 0) {
-        this.noResultsDiv.style.display = "block";
+        if (this.tools.length !== 0) {
+            this.noResultsDiv.style.display = "block";
+        }
     } else {
         this.noResultsDiv.style.display = "none";
     }
