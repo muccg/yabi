@@ -114,9 +114,9 @@ def copy(request):
     
     try:
         logger.debug("Copy: %s -> %s " %(request.GET['src'],request.GET['dst']))
-        filelisting = copy_file(request.GET['yabiusername'],request.GET['src'],request.GET['dst'])
+        status, data = copy_file(request.GET['yabiusername'],request.GET['src'],request.GET['dst'])
 
-        return HttpResponse(filelisting)
+        return HttpResponse(content=data, status=status)
     except Exception, e:
         return HttpResponseNotFound(json_error(e))
 

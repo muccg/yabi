@@ -270,7 +270,7 @@ def copy_file(yabiusername, src, dst):
     logger.info('Copying: %s -> %s' % (src,dst) )
     
     try:
-        resource = "%s?src=%s&dst=%s" % (settings.YABIBACKEND_COPY, src, dst)
+        resource = "%s?src=%s&dst=%s&recurse=True" % (settings.YABIBACKEND_COPY, src, dst)
         logger.debug('Resource: %s' % resource)
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
 
@@ -291,7 +291,7 @@ def copy_file(yabiusername, src, dst):
         data=r.read()
         logger.debug("contents of return from yabi backend is: %s" % data)
 
-        return data
+        return r.status, data
  
     except socket.error, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
