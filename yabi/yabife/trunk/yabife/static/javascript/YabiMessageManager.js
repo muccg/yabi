@@ -13,7 +13,6 @@ function YabiMessageManager(container) {
 YabiMessageManager.prototype.addMessage = function (key, value, styleName) {
     var el = document.createElement('div');
     el.className = styleName;
-    el.style.display = "none";
     el.appendChild(document.createTextNode(value));
     this.containerEl.appendChild(el);
     this.addDiv(el); //animate in
@@ -32,7 +31,6 @@ YabiMessageManager.prototype.removeMessage = function (key) {
 YabiMessageManager.prototype.addDiv = function(div) {
     var anim = new YAHOO.util.Anim(div, { height: { to: 20.0 } }, 1.0, YAHOO.util.Easing.Linear);
     anim.animate();
-    div.style.display = "block";
 };
 
 YabiMessageManager.prototype.removeDiv = function(div) {
