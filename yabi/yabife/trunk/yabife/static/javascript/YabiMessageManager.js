@@ -29,12 +29,12 @@ YabiMessageManager.prototype.removeMessage = function (key) {
 };
 
 YabiMessageManager.prototype.addDiv = function(div) {
-    var anim = new YAHOO.util.Anim(div, { height: { to: 20.0 } }, 1.0, YAHOO.util.Easing.Linear);
+    var anim = new YAHOO.util.Anim(div, { opacity: { to: 1.0 } }, 0.3, YAHOO.util.Easing.Linear);
     anim.animate();
 };
 
 YabiMessageManager.prototype.removeDiv = function(div) {
-    var anim = new YAHOO.util.Anim(div, { height: { to: 0.0 } }, 1.0, YAHOO.util.Easing.Linear);
+    var anim = new YAHOO.util.Anim(div, { opacity: { to: 0.0 } }, 0.3, YAHOO.util.Easing.Linear);
     anim.onComplete.subscribe(function() { this.getEl().parentNode.removeChild(this.getEl()); });
     anim.animate();
 };

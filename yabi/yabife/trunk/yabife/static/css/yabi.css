@@ -1392,8 +1392,11 @@ input {
 }
 
 .fileOperationMessage {
-    padding:3px;
+    margin:3px;
+    padding:6px;
     padding-left:30px;
-    min-height:20px;
-    background: url(../images/processing.gif) no-repeat 2px 2px;
+    background: #f6f6f6 url(../images/processing.gif) no-repeat 4px 4px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    color:black;
 }
