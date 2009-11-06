@@ -13,6 +13,7 @@ function YabiMessageManager(container) {
 YabiMessageManager.prototype.addMessage = function (key, value, styleName) {
     var el = document.createElement('div');
     el.className = styleName;
+    el.style.display = "none";
     el.appendChild(document.createTextNode(value));
     this.containerEl.appendChild(el);
     this.addDiv(el); //animate in
@@ -24,17 +25,18 @@ YabiMessageManager.prototype.removeMessage = function (key) {
         this.removeDiv(this.messages[key]); //animate out
         delete this.messages[key];
     } catch (e) {
-        console.log("argh "+e);
+        //console.log("argh "+e);
     }
 };
 
 YabiMessageManager.prototype.addDiv = function(div) {
-    var anim = new YAHOO.util.Anim(div, { height: { to: 20.0 } }, 0.3, YAHOO.util.Easing.Linear);
+    var anim = new YAHOO.util.Anim(div, { height: { to: 20.0 } }, 1.0, YAHOO.util.Easing.Linear);
     anim.animate();
+    div.style.display = "block";
 };
 
 YabiMessageManager.prototype.removeDiv = function(div) {
-    var anim = new YAHOO.util.Anim(div, { height: { to: 0.0 } }, 0.3, YAHOO.util.Easing.Linear);
+    var anim = new YAHOO.util.Anim(div, { height: { to: 0.0 } }, 1.0, YAHOO.util.Easing.Linear);
     anim.onComplete.subscribe(function() { this.getEl().parentNode.removeChild(this.getEl()); });
     anim.animate();
 };
