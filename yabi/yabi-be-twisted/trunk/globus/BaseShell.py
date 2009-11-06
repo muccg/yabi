@@ -27,6 +27,12 @@ class BaseShellProcessProtocol(protocol.ProcessProtocol):
         # stdout was closed. this will be our endpoint reference
         print "Out lost"
         
+    def inConenctionLost(self):
+        print "In lost"
+        
+    def errConnectionLost(self):
+        print "Err lost"
+        
     def processEnded(self, status_object):
         self.exitcode = status_object.value.exitCode
         print "proc ended",self.exitcode
