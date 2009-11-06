@@ -271,7 +271,7 @@ def rm_file(yabiusername, uri):
     logger.info("Removing: %s" % uri)
 
     try:
-        resource = "%s?uri=%s&recurse" % (settings.YABIBACKEND_RM, uri)
+        resource = "%s?uri=%s" % (settings.YABIBACKEND_RM, uri)
         logger.debug('Resource: %s' % resource)
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
 
