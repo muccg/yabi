@@ -264,8 +264,39 @@ def get_file(yabiusername, uri):
         raise
 
 
+def copy_file(yabiusername, src, dst):
+    """Send a request to the backend to perform the specified file copy"""
+    logger.debug('')
+    logger.info('Copying: %s -> %s' % (src,dst) )
+    
+    try:
+        resource = "%s?src=%s&dst=%s" % (settings.YABIBACKEND_COPY, src, dst)
+        logger.debug('Resource: %s' % resource)
+        logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
 
+        # get credentials for src and destination backend
+        src_bc = get_backendcredential_for_uri(yabiusername, src)
+        dst_bc = get_backendcredential_for_uri(yabiusername, dst)
+        data = dict([('src_username', src_bc.credential.username),
+                    ('src_password', src_bc.credential.password),
+                    ('src_cert', src_bc.credential.cert),
+                    ('src_key', src_bc.credential.key),
+                    ('dst_username', dst_bc.credential.username),
+                    ('dst_password', dst_bc.credential.password),
+                    ('dst_cert', dst_bc.credential.cert),
+                    ('dst_key', dst_bc.credential.key)])
+        r = POST(resource,data)
+        
+        logger.info("Status of return from yabi backend is: %s" % r.status)
 
+        return FileWrapper(r, blksize=1024**2)
+ 
+    except socket.error, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
+        raise
+    except httplib.CannotSendRequest, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
+        raise
 
 ## this is not used, was from here
 ##    http://metalinguist.wordpress.com/2008/02/12/django-file-and-stream-serving-performance-gotcha/

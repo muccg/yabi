@@ -8,7 +8,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from yabiadmin.yabiengine import wfbuilder
-from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_backendcredential_for_uri
+from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_backendcredential_for_uri, copy_file
 from yabiadmin.security import validate_user, validate_uri
 from yabiadmin.utils import json_error
 import mimetypes
@@ -104,6 +104,21 @@ def ls(request):
         return HttpResponseNotFound(json_error(e))
 
 
+@validate_uri
+def copy(request):
+    """
+    This function will return a list of backends the user has access to IF the uri is empty. If the uri
+    is not empty then it will pass on the call to the backend to get a listing of that uri
+    """
+    logger.debug('')
+    
+    try:
+        logger.debug("GET: %s " %request.GET['uri'])
+        filelisting = copy_file(request.GET['yabiusername'],request.GET['src'],request.GET['dst'])
+
+        return HttpResponse(filelisting)
+    except Exception, e:
+        return HttpResponseNotFound(json_error(e))
 
 
 @validate_uri
