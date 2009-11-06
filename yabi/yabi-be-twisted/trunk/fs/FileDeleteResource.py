@@ -91,6 +91,7 @@ class FileDeleteResource(resource.PostableResource):
         @param request: the request to process.
         @return: an object adaptable to L{iweb.IResponse}.
         """
+        print "A"
         deferred = parsePOSTData(request)
         
         def post_parsed(result):
@@ -102,5 +103,6 @@ class FileDeleteResource(resource.PostableResource):
         return deferred
 
     def http_GET(self, request):
+        print "B"
         return self.handle_delete(request)
 
