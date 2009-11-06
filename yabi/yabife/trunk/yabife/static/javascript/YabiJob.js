@@ -684,7 +684,7 @@ YabiJob.prototype.hydrateResponse = function(o) {
     } catch (e) {
         target.valid = false;
         target.failLoad = true;
-        target.displayName = "(tool '"+ target.toolName +"' failed to load)"+e.message;
+        target.displayName = "(tool '"+ target.toolName +"' failed to load)";
         target.updateTitle();
         target.renderLoadFailJob();
         

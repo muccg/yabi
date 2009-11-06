@@ -187,7 +187,7 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             fileEl.appendChild(document.createTextNode(this.browseListing[toplevelindex].directories[index][0]));
             this.fileListEl.appendChild(fileEl);
             
-            invoker = {"target":this, "object":new YabiSimpleFileValue(this.pathComponents, this.browseListing[toplevelindex].directories[index][0])};
+            invoker = {"target":this, "object":new YabiSimpleFileValue(this.pathComponents, this.browseListing[toplevelindex].directories[index][0], "directory")};
             
             YAHOO.util.Event.addListener(fileEl, "click", this.expandCallback, invoker);
 
