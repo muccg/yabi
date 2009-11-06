@@ -20,23 +20,23 @@ function YabiSimpleFileValue(path, filename, type) {
 }
 
 YabiSimpleFileValue.prototype.toString = function() {
-    if (YAHOO.lang.isUndefined(this.root)) {
-        return this.filename;
-    }
-
-    if (this.filename === '') {
-        return this.root + this.path.join("/");
-    }
-
-    if (this.path.length === 0) {
-        return this.root + this.filename;
-    }
-    
     var optionalSlash = "";
     if (this.type == "directory") {
         optionalSlash = "/";
     }
 
+    if (YAHOO.lang.isUndefined(this.root)) {
+        return this.filename + optionalSlash;
+    }
+
+    if (this.filename === '') {
+        return this.root + this.path.join("/") + optionalSlash;
+    }
+
+    if (this.path.length === 0) {
+        return this.root + this.filename + optionalSlash;
+    }
+    
     return this.root + this.path.join("/") + "/" + this.filename + optionalSlash;
 };
 

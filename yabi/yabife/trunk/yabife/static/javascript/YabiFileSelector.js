@@ -559,7 +559,7 @@ YabiFileSelector.prototype.deleteRemoteFileCallback = function(e, invoker) {
     
     //file deletion
     target.deleteRemoteFile(invoker.object);
-    
+
     //prevent propagation from passing on to expand
     YAHOO.util.Event.stopEvent(e);
 };
