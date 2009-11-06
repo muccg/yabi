@@ -91,11 +91,12 @@ class FileCopyResource(resource.PostableResource):
             writeproto, fifo = dbend.GetWriteFifo(dst_hostname, dst_username, dst_path, dst_filename,yabiusername=yabiusername,creds=creds['dst'] if 'dst' in creds else {})
             readproto, fifo2 = sbend.GetReadFifo(src_hostname, src_username, src_path, src_filename, fifo,yabiusername=yabiusername,creds=creds['src'] if 'src' in creds else {})
             
-            #print "READ:",readproto,fifo
-            #print "WRITE:",writeproto,fifo2
-            
+            print "READ:",readproto,fifo2
+            print "WRITE:",writeproto,fifo
+                       
             # wait for one to finish
             while not readproto.isDone() and not writeproto.isDone():
+                print "rp",readproto.exitcode,"wp",writeproto.exitcode
                 stackless.schedule()
             
             # if one died and not the other, then kill the non dead one
