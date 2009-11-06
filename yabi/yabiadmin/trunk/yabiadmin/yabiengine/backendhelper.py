@@ -268,7 +268,7 @@ def rm_file(yabiusername, uri):
     Return a file at given uri
     """
     logger.debug('')
-    logger.info("Getting: %s" % uri)
+    logger.info("Removing: %s" % uri)
 
     try:
         resource = "%s?uri=%s&recurse" % (settings.YABIBACKEND_RM, uri)
