@@ -8,6 +8,7 @@ urlpatterns = patterns('yabiadmin.yabmin.ws_frontend_views',
     url(r'^fs/get[/]*$', 'get', name='get'),
     url(r'^fs/put[/]*$', 'put', name='put'),
     url(r'^fs/copy[/]*$', 'copy', name='copy'),
+    url(r'^fs/rm[/]*$', 'rm', name='rm'),
     url(r'^submitworkflow[/]*$', 'submitworkflow', name='submitworkflow')
 )
 
