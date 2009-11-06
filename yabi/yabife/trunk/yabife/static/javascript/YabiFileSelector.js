@@ -169,7 +169,7 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
         src = srcDD.invoker.object;
         dest = target.invoker.object;
 
-        srcDD.invoker.target.handleDrop(src, dest);
+        srcDD.invoker.target.handleDrop(src, dest, srcDD.invoker.target, target.invoker.target);
     };
     
     //clear existing files
@@ -269,7 +269,7 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
 /**
  * handleDrop
  */
-YabiFileSelector.prototype.handleDrop = function(src, dest) {
+YabiFileSelector.prototype.handleDrop = function(src, dest, srcFileSelector, destFileselector) {
     //send copy command
     var baseURL = appURL + "ws/fs/copy";
 
@@ -279,7 +279,7 @@ YabiFileSelector.prototype.handleDrop = function(src, dest) {
     jsCallback = {
             success: this.copyResponse,
             failure: this.copyResponse,
-            argument: [this] };
+            argument: [destFileselector] };
     jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
 
 };
