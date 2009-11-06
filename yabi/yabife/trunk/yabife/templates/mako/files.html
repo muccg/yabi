@@ -3,8 +3,9 @@
 
 <script language="javascript">
 YAHOO.util.Event.onAvailable("rightContainer", initFileSelector);
+YAHOO.util.Event.onAvailable("fileOperationStatus", initMessageManager);
 
-var leftfileselector, rightfileselector;
+var leftfileselector, rightfileselector, messageManager;
 
 function initFileSelector() {
     leftfileselector = new YabiFileSelector(null, true);
@@ -12,6 +13,10 @@ function initFileSelector() {
     
     document.getElementById("leftContainer").appendChild(leftfileselector.containerEl);
     document.getElementById("rightContainer").appendChild(rightfileselector.containerEl);
+}
+
+function initMessageManager() {
+    messageManager = new YabiMessageManager("fileOperationStatus");
 }
 
 </script>
@@ -52,16 +57,19 @@ function initFileSelector() {
         //]]>
       </script>
 
-
           <div style="position:absolute;left:60px;top:470px;padding:10px;width:700px;font-size:90%;color:#666;">
-              This is the file management tab. The following actions are available:
-              <ul style="margin-top:15px;margin-left:15px;">
-                  <li>- Use one or both panels to navigate the file systems you have access to
-                  <li>- Drag and drop files from one panel to another, or onto folders in either panel
-                  <li>- Click the <img src="${h.url('/static/images/download.png')}"> icon to download a file
-                  <li>- Upload files into either panel (file will upload to the current folder viewed in that panel)
-                  <li>- Delete files by clicking the <img src="${h.url('/static/images/delete.png')}"> icon
-              </ul>
+              <div id="fileOperationStatus">
+              </div>
+              <div>
+                  This is the file management tab. The following actions are available:
+                  <ul style="margin-top:15px;margin-left:15px;">
+                      <li>- Use one or both panels to navigate the file systems you have access to
+                      <li>- Drag and drop files from one panel to another, or onto folders in either panel
+                      <li>- Click the <img src="${h.url('/static/images/download.png')}"> icon to download a file
+                      <li>- Upload files into either panel (file will upload to the current folder viewed in that panel)
+                      <li>- Delete files by clicking the <img src="${h.url('/static/images/delete.png')}"> icon
+                  </ul>
+              </div>
           </div>
 
           <div style="position:absolute;left:10px;top:63px;padding:5px;width:400px;">

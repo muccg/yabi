@@ -282,6 +282,9 @@ YabiFileSelector.prototype.handleDrop = function(src, dest, srcFileSelector, des
             argument: [destFileselector] };
     jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
 
+    if (!YAHOO.lang.isUndefined(messageManager)) {
+        messageManager.addMessage(jsTransaction, 'Copying '+src+' to '+dest);
+    }
 };
 
 /**
@@ -637,6 +640,9 @@ YabiFileSelector.prototype.copyResponse = function(o) {
     //invoke refresh on component
     target.updateBrowser(new YabiSimpleFileValue(target.pathComponents, ''));
 
+    if (!YAHOO.lang.isUndefined(messageManager)) {
+        messageManager.removeMessage(o);
+    }
 };
 
 // drag n drop
