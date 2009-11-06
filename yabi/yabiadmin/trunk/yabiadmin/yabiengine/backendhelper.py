@@ -270,8 +270,10 @@ def rm_file(yabiusername, uri):
     logger.debug('')
     logger.info("Removing: %s" % uri)
 
+    recurse = '&recurse' if uri[-1]=='/' else ''
+
     try:
-        resource = "%s?uri=%s" % (settings.YABIBACKEND_RM, uri)
+        resource = "%s?uri=%s%s" % (settings.YABIBACKEND_RM, uri,recurse)
         logger.debug('Resource: %s' % resource)
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
 
@@ -301,11 +303,10 @@ def copy_file(yabiusername, src, dst):
     logger.debug('')
     logger.info('Copying: %s -> %s' % (src,dst) )
     
-    #if dst[-1]!="/":
-        #dst+="/"
+    recurse = '&recurse' if src[-1]=='/' else ''
     
     try:
-        resource = "%s?src=%s&dst=%s&recurse" % (settings.YABIBACKEND_COPY, src, dst)
+        resource = "%s?src=%s&dst=%s%s" % (settings.YABIBACKEND_COPY, src, dst,recurse)
         logger.debug('Resource: %s' % resource)
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
 
