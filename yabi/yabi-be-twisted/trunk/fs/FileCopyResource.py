@@ -34,10 +34,14 @@ class FileCopyResource(resource.PostableResource):
         
         # compile any credentials together to pass to backend
         creds={}
-        for varname in ['key','password','username','cert']:
-            if varname in request.args:
-                creds[varname] = request.args[varname][0]
-                del request.args[varname]
+        for part in ['src','dst']:
+            for varname in ['key','password','username','cert']:
+                keyname = "%s_%s"%(part,varname)
+                if keyname in request.args:
+                    if part not in creds:
+                        creds[part]={}
+                    creds[part][varname] = request.args[keyname][0]
+                    del request.args[keyname]
         
         yabiusername = request.args['yabiusername'][0] if "yabiusername" in request.args else None
         
@@ -84,8 +88,8 @@ class FileCopyResource(resource.PostableResource):
         dst_filename = src_filename if not len(dst_filename) else dst_filename
         
         def copy(channel):
-            writeproto, fifo = dbend.GetWriteFifo(dst_hostname, dst_username, dst_path, dst_filename,yabiusername=yabiusername)
-            readproto, fifo2 = sbend.GetReadFifo(src_hostname, src_username, src_path, src_filename, fifo,yabiusername=yabiusername)
+            writeproto, fifo = dbend.GetWriteFifo(dst_hostname, dst_username, dst_path, dst_filename,yabiusername=yabiusername,creds=creds['dst'] if 'dst' in creds else {})
+            readproto, fifo2 = sbend.GetReadFifo(src_hostname, src_username, src_path, src_filename, fifo,yabiusername=yabiusername,creds=creds['src'] if 'src' in creds else {})
             
             #print "READ:",readproto,fifo
             #print "WRITE:",writeproto,fifo2
