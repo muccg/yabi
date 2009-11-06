@@ -263,6 +263,38 @@ def get_file(yabiusername, uri):
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
         raise
 
+def rm_file(yabiusername, uri):
+    """
+    Return a file at given uri
+    """
+    logger.debug('')
+    logger.info("Getting: %s" % uri)
+
+    try:
+        resource = "%s?uri=%s&recurse" % (settings.YABIBACKEND_RM, uri)
+        logger.debug('Resource: %s' % resource)
+        logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
+
+        bc = get_backendcredential_for_uri(yabiusername, uri)
+        data = dict([('username', bc.credential.username),
+                    ('password', bc.credential.password),
+                    ('cert', bc.credential.cert),
+                    ('key', bc.credential.key)])
+        r = POST(resource,data)
+        
+        logger.info("Status of return from yabi backend is: %s" % r.status)
+        data=r.read()
+        logger.debug("contents of return from yabi backend is: %s" % data)
+
+        return r.status, data
+ 
+    except socket.error, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
+        raise
+    except httplib.CannotSendRequest, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
+        raise
+
 
 def copy_file(yabiusername, src, dst):
     """Send a request to the backend to perform the specified file copy"""
@@ -273,7 +305,7 @@ def copy_file(yabiusername, src, dst):
         #dst+="/"
     
     try:
-        resource = "%s?src=%s&dst=%s&recurse=True" % (settings.YABIBACKEND_COPY, src, dst)
+        resource = "%s?src=%s&dst=%s&recurse" % (settings.YABIBACKEND_COPY, src, dst)
         logger.debug('Resource: %s' % resource)
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
 
