@@ -71,6 +71,9 @@ function YabiToolCollection() {
     
     this.containerEl.appendChild(this.listingEl);
 
+    this.searchEl.value = "select";
+    this.filter();
+    
     this.hydrate();
 }
 
