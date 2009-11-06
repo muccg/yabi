@@ -15,14 +15,26 @@ YabiMessageManager.prototype.addMessage = function (key, value, styleName) {
     el.className = styleName;
     el.appendChild(document.createTextNode(value));
     this.containerEl.appendChild(el);
+    this.addDiv(el); //animate in
     this.messages[key] = el;
 };
 
 YabiMessageManager.prototype.removeMessage = function (key) {
     try {
-        this.containerEl.removeChild(this.messages[key]);
+        this.removeDiv(this.messages[key]); //animate out
         delete this.messages[key];
     } catch (e) {
         console.log("argh "+e);
     }
+};
+
+YabiMessageManager.prototype.addDiv = function(div) {
+    var anim = new YAHOO.util.Anim(div, { height: { to: 20.0 } }, 0.3, YAHOO.util.Easing.Linear);
+    anim.animate();
+};
+
+YabiMessageManager.prototype.removeDiv = function(div) {
+    var anim = new YAHOO.util.Anim(div, { height: { to: 0.0 } }, 0.3, YAHOO.util.Easing.Linear);
+    anim.onComplete.subscribe(function() { this.getEl().parentNode.removeChild(this.getEl()); });
+    anim.animate();
 };
