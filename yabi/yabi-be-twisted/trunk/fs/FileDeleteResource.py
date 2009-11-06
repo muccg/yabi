@@ -69,7 +69,7 @@ class FileDeleteResource(resource.PostableResource):
         client_channel = defer.Deferred()
         
         def do_rm():
-            #print "hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
+            print "DO_RM hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
             try:
                 deleter=bend.rm(hostname,path=path, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
