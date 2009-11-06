@@ -74,7 +74,7 @@ class LocalFilesystem(FSConnector.FSConnector):
             
         return os.path.join(self.directory,path)
     
-    def rm(self, host, username, path, recurse=False, creds=None):
+    def rm(self, host, username, path, yabiusername=None, recurse=False, creds=None):
         if recurse:
             def del_tree(root):
                 for path, dirs, files in os.walk(root, False):
@@ -92,7 +92,7 @@ class LocalFilesystem(FSConnector.FSConnector):
         del_tree(fullpath)
         return True
     
-    def mkdir(self, host, username, path, creds):
+    def mkdir(self, host, username, path, creds, yabiusername=None ):
         try:
             os.makedirs(self._get_filename(path))
         except OSError, ose:
@@ -102,7 +102,7 @@ class LocalFilesystem(FSConnector.FSConnector):
             raise ose
         return True
      
-    def ls(self, host, username, path, recurse=False, culldots=True, creds={}):
+    def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}):
         fullpath = self._get_filename(path)
         if not os.path.exists(fullpath):
             raise InvalidPath("Invalid path.")
@@ -159,7 +159,7 @@ class LocalFilesystem(FSConnector.FSConnector):
     def _make_path(self):
         return "/bin"
 
-    def GetWriteFifo(self, host=None, username=None, path=None, filename=None, fifo=None, creds={}):
+    def GetWriteFifo(self, host=None, username=None, path=None, yabiusername=None, filename=None, fifo=None, creds={}):
         """sets up the chain needed to setup a write fifo to a remote path as a certain user.
         """
         # make our source fifo to get our data from
@@ -183,7 +183,7 @@ class LocalFilesystem(FSConnector.FSConnector):
         
         return procproto, fifo
             
-    def GetReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, creds={}):
+    def GetReadFifo(self, host=None, username=None, path=None, yabiusername=None, filename=None, fifo=None, creds={}):
         """sets up the chain needed to setup a write fifo to a remote path as a certain user.
         """
         # make our source fifo to get our data from
