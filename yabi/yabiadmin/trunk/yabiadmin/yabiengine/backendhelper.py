@@ -288,7 +288,7 @@ def copy_file(yabiusername, src, dst):
         r = POST(resource,data)
         
         logger.info("Status of return from yabi backend is: %s" % r.status)
-        logger.debug("contents of return from yabi backend is: %s" % r.data)
+        logger.debug("contents of return from yabi backend is: %s" % dir(r))
 
         return FileWrapper(r, blksize=1024**2)
  
