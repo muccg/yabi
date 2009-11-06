@@ -631,8 +631,12 @@ YabiFileSelector.prototype.hydrateResponse = function(o) {
 
 YabiFileSelector.prototype.copyResponse = function(o) {
     var json = o.responseText;
+    
+    var target = o.argument[0];
 
-    //TODO invoke refresh on component
+    //invoke refresh on component
+    target.updateBrowser(new YabiSimpleFileValue(target.pathComponents, ''));
+
 };
 
 // drag n drop
