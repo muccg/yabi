@@ -12,14 +12,14 @@ function YabiMessageManager(container) {
     return this;
 }
 
-YabiMessageManager.prototype.addMessage(key, value) {
+YabiMessageManager.prototype.addMessage = function (key, value) {
     var el = document.createElement('div');
     el.appendChild(document.createTextNode(value));
     this.containerEl.appendChild(el);
     this.messages[key] = el;
 };
 
-YabiMessageManager.prototype.removeMessage(key) {
+YabiMessageManager.prototype.removeMessage = function (key) {
     try {
         this.containerEl.removeChild(this.messages[key]);
         delete this.messages[key];
