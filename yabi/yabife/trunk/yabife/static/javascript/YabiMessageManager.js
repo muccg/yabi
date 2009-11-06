@@ -8,12 +8,11 @@
 function YabiMessageManager(container) {
     this.containerEl = YAHOO.util.Dom.get(container);
     this.messages = [];
-    
-    return this;
 }
 
-YabiMessageManager.prototype.addMessage = function (key, value) {
+YabiMessageManager.prototype.addMessage = function (key, value, styleName) {
     var el = document.createElement('div');
+    el.className = styleName;
     el.appendChild(document.createTextNode(value));
     this.containerEl.appendChild(el);
     this.messages[key] = el;

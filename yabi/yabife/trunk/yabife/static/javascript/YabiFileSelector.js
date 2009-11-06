@@ -283,7 +283,7 @@ YabiFileSelector.prototype.handleDrop = function(src, dest, srcFileSelector, des
     jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
 
     if (!YAHOO.lang.isUndefined(messageManager)) {
-        messageManager.addMessage(jsTransaction, 'Copying '+src+' to '+dest);
+        messageManager.addMessage(jsTransaction, 'Copying '+src+' to '+dest, 'fileOperationMessage');
     }
 };
 

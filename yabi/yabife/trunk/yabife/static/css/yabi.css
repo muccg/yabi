@@ -1386,3 +1386,14 @@ input {
     font-size:80%;
     color:#999;
 }
+
+#fileOperationStatus {
+    padding-bottom:10px;
+}
+
+.fileOperationMessage {
+    padding:3px;
+    padding-left:30px;
+    min-height:20px;
+    background: url(../images/processing.gif) no-repeat 2px 2px;
+}
