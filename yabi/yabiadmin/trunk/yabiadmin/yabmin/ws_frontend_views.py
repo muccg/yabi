@@ -113,7 +113,7 @@ def copy(request):
     logger.debug('')
     
     try:
-        logger.debug("GET: %s " %request.GET['uri'])
+        logger.debug("Copy: %s -> %s " %(request.GET['src'],request.GET['dst']))
         filelisting = copy_file(request.GET['yabiusername'],request.GET['src'],request.GET['dst'])
 
         return HttpResponse(filelisting)
