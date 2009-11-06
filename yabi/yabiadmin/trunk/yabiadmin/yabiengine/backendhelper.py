@@ -269,6 +269,9 @@ def copy_file(yabiusername, src, dst):
     logger.debug('')
     logger.info('Copying: %s -> %s' % (src,dst) )
     
+    if dst[-1]!="/":
+        dst+="/"
+    
     try:
         resource = "%s?src=%s&dst=%s&recurse=True" % (settings.YABIBACKEND_COPY, src, dst)
         logger.debug('Resource: %s' % resource)
