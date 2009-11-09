@@ -64,7 +64,7 @@ YAHOO.ccgyabi.YabiMessage = function () {
         function(message) {
 
 		    var yabiMessage = YAHOO.util.Dom.get('yabi-message-ajax');
-            yabiMessage.style.backgroundColor = '#529847';
+            yabiMessage.style.backgroundColor = '#00da00';
             var closeLink = '&nbsp;&nbsp;&nbsp;&nbsp;<a class="delLink" href="#" onClick="YAHOO.ccgyabi.YabiMessage.close(\'yabi-message-ajax\');">[x]</a>';
             var newMessage = message + closeLink;
             yabiMessage.innerHTML = newMessage;
