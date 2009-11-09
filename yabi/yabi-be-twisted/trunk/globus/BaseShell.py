@@ -2,6 +2,8 @@ import os
 from twisted.internet import protocol
 from twisted.internet import reactor
     
+DEBUG = False
+    
 class BaseShellProcessProtocol(protocol.ProcessProtocol):
     def __init__(self, stdin=None):
         self.stdin=stdin
@@ -17,25 +19,31 @@ class BaseShellProcessProtocol(protocol.ProcessProtocol):
         
     def outReceived(self, data):
         self.out += data
-        print "OUT:",data
+        if DEBUG:
+            print "OUT:",data
         
     def errReceived(self, data):
         self.err += data
-        print "ERR:",data
+        if DEBUG:
+            print "ERR:",data
     
     def outConnectionLost(self):
         # stdout was closed. this will be our endpoint reference
-        print "Out lost"
+        if DEBUG:
+            print "Out lost"
         
     def inConenctionLost(self):
-        print "In lost"
+        if DEBUG:
+            print "In lost"
         
     def errConnectionLost(self):
-        print "Err lost"
+        if DEBUG:
+            print "Err lost"
         
     def processEnded(self, status_object):
         self.exitcode = status_object.value.exitCode
-        print "proc ended",self.exitcode
+        if DEBUG:
+            print "proc ended",self.exitcode
         
     def isDone(self):
         return self.exitcode != None
@@ -52,13 +60,16 @@ class BaseShell(object):
         subenv = environ.copy() if environ!=None else os.environ.copy()
         subenv['X509_USER_PROXY'] = certfile
         return subenv    
-        return subenv
 
     def execute(self, protocol, certfile, command):
         """execute a command using a process protocol"""
 
         subenv = self._make_env(certfile)
         pp = protocol()
+        if DEBUG:
+            print "env",subenv
+            print "exec:",command
+            
         reactor.spawnProcess(   pp,
                                 command[0],
                                 command,
