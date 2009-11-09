@@ -1094,7 +1094,7 @@ input {
 	border:0px;
 	background:url(../images/processing.gif) no-repeat;
 	position:absolute;
-    right: 7px;
+    right: 9px;
     top: 2px;
 	z-index:99;
 }
