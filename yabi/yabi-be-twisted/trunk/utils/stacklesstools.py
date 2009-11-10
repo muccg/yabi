@@ -3,6 +3,7 @@ functions that block a stackless tasklet.
 """
 
 from twisted.web import client
+from twisted.web.client import HTTPPageDownloader
 from twisted.internet import reactor
 from twisted.internet.defer import Deferred
 from twisted.python.failure import Failure
@@ -10,9 +11,13 @@ from twisted.python.failure import Failure
 import urllib
 import time
 import json
-import os
+import os, types
 
 from stackless import schedule, tasklet
+
+from CallbackHTTPClient import CallbackHTTPClient, CallbackHTTPClientFactory, CallbackHTTPDownloader
+from RememberingHTTPClient import RememberingHTTPClient, RememberingHTTPClientFactory, RememberingHTTPDownloader
+
 
 WS_HOST, WS_PORT = "localhost",int(os.environ['PORT']) if 'PORT' in os.environ else 8000
 USER_AGENT = "YabiStackless/0.1"
@@ -33,89 +38,6 @@ def sleep(seconds):
         schedule()
 
 import urllib
-
-class CallbackHTTPClient(client.HTTPPageGetter):
-    callback = None
-    errordata=None
-    
-    def SetCallback(self, callback):
-        self.callback = callback
-    
-    #def lineReceived(self, line):
-        #print "LINE_RECEIVED:",line
-        #return client.HTTPPageGetter.lineReceived(self,line)
-    
-    # ask for page as HTTP/1.1 so we get chunked response
-    def sendCommand(self, command, path):
-        self.transport.write('%s %s HTTP/1.1\r\n' % (command, path))
-        
-    # capture "connection:close" so we stay HTTP/1.1 keep alive!
-    def sendHeader(self, name, value):
-        if name.lower()=="connection" and value.lower()=="close":
-            return
-        return client.HTTPPageGetter.sendHeader(self,name,value)
-    
-    def rawDataReceived(self, data):
-        if int(self.status) != 200:
-            # we got an error. TODO: something graceful here
-            #print "ERROR. NON 200 CODE RETURNED FOR JOB EXEC STATUS"
-            self.errordata=data
-            #print "errordata",data
-        elif self.callback:
-            #print "CALLING CALLBACK",self.callback
-            # hook in here to process chunked updates
-            lines=data.split("\r\n")
-            #print "LINES",[lines]
-            chunk_size = int(lines[0].split(';')[0],16)
-            chunk = lines[1]
-            
-            assert len(chunk)==chunk_size, "Chunked transfer decoding error. Chunk size mismatch"
-            
-            # run the callback in a tasklet!!! Stops scheduler getting into a looped blocking state
-            reporter=tasklet(self.callback)
-            reporter.setup(chunk)
-            reporter.run()
-            
-        else:
-            #print "NO CALLBACK"
-            pass
-        return client.HTTPPageGetter.rawDataReceived(self,data)
-
-class CallbackHTTPClientFactory(client.HTTPClientFactory):
-    protocol = CallbackHTTPClient
-    
-    def __init__(self, url, method='GET', postdata=None, headers=None,
-                 agent="Twisted PageGetter", timeout=0, cookies=None,
-                 followRedirect=True, redirectLimit=20, callback=None):
-        self._callback=callback
-        return client.HTTPClientFactory.__init__(self, url, method, postdata, headers, agent, timeout, cookies, followRedirect, redirectLimit)
-    
-    def buildProtocol(self, addr):
-        p = client.HTTPClientFactory.buildProtocol(self, addr)
-        p.SetCallback(self._callback)
-        self.last_client = p
-        return p
-
-    def SetCallback(self, callback):
-        self._callback=callback
-
-class RememberingHTTPClient(client.HTTPPageGetter):
-    errordata=None
-    
-    def rawDataReceived(self, data):
-        if int(self.status) != 200:
-            # we got an error. TODO: something graceful here
-            #print "ERROR. NON 200 CODE RETURNED FOR JOB EXEC STATUS"
-            self.errordata=data
-            #print "errordata",data
-        return client.HTTPPageGetter.rawDataReceived(self,data)        
-
-class RememberingHTTPClientFactory(client.HTTPClientFactory):
-    protocol = RememberingHTTPClient
-    
-    def buildProtocol(self, addr):
-        self.last_client = client.HTTPClientFactory.buildProtocol(self, addr)
-        return self.last_client
 
 #def GET(path, host=WS_HOST, port=WS_PORT, factory_class=CallbackHTTPClientFactory,**kws):
 def GET(path, host=WS_HOST, port=WS_PORT, factory_class=RememberingHTTPClientFactory,**kws):
