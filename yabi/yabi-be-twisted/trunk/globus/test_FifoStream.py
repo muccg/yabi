@@ -1,4 +1,4 @@
-import FifoStream
+from utils import FifoStream
 from twisted.trial import unittest, reporter, runner
 import tempfile
 import os

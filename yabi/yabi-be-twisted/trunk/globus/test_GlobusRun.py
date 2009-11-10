@@ -17,6 +17,15 @@ import stackless
 from utils.stacklesstest import StacklessTest
 from utils.stacklesstools import sleep
 
+
+import re
+
+re_uuid = re.compile(r'.*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*',flags=re.MULTILINE)
+
+def has_valid_uuid(data):
+    """return true if the data contains a valid uuid"""
+    return re_uuid.search(data)!=None
+
 class GlobusRunTest(StacklessTest):
     """Test the server sets up correctly and tears down correctly."""
     
@@ -126,20 +135,16 @@ class GlobusRunTest(StacklessTest):
         def _test(pp):
             stdout, stderr, exitcode = pp.out, pp.err, pp.exitcode
             
-            print "-"*20
-            print stdout
-            print "-"*20
-            print stderr
-            print "-"*20
-            
-            
             # we should be informed that we need a proxy
             self.assert_("Submitting job" in stderr)
-            self.assert_("Failed" in stderr)
-            self.assert_("expired" in stderr)
-            #self.assert_("Could not verify credential" in stdout)
-            #self.assert_("Invalid CRL: The available CRL has expired" in stdout)
-            self.assert_(exitcode!=0)
+            self.assert_("Done." in stderr)
+            self.assert_("Job ID: uuid:" in stderr)
+            self.assert_("Termination time:" in stderr)
+             
+            # make sure it contains a valid uuid
+            self.assert_(has_valid_uuid(stderr))
+             
+            self.assert_(exitcode==0)
         
         return self.deferred_test(test_code,_test)
         
