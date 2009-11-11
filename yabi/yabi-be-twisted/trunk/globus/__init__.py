@@ -1,4 +1,4 @@
-from CertificateProxy import CertificateProxy
+import CertificateProxy
 import GlobusURLCopy
 import GlobusRun
 import GlobusShell
