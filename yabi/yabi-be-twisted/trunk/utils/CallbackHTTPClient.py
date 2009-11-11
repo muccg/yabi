@@ -7,8 +7,9 @@ from twisted.python import failure, log
 import os, types
 
 class CallbackHTTPClient(client.HTTPPageGetter):
-    callback = None
-    errordata=None
+    def __init__(self, *args, **kwargs):
+        self.callback = None
+        self.errordata = None
     
     def SetCallback(self, callback):
         self.callback = callback
@@ -19,22 +20,20 @@ class CallbackHTTPClient(client.HTTPPageGetter):
     
     # ask for page as HTTP/1.1 so we get chunked response
     def sendCommand(self, command, path):
-        self.transport.write('%s %s HTTP/1.1\r\n' % (command, path))
+        self.transport.write('%s %s HTTP/1.0\r\n' % (command, path))
         
     # capture "connection:close" so we stay HTTP/1.1 keep alive!
     def sendHeader(self, name, value):
         if name.lower()=="connection" and value.lower()=="close":
-            return
+            return 
         return client.HTTPPageGetter.sendHeader(self,name,value)
     
     def rawDataReceived(self, data):
         if int(self.status) != 200:
             # we got an error. TODO: something graceful here
-            #print "ERROR. NON 200 CODE RETURNED FOR JOB EXEC STATUS"
             self.errordata=data
-            #print "errordata",data
+            
         elif self.callback:
-            #print "CALLING CALLBACK",self.callback
             # hook in here to process chunked updates
             lines=data.split("\r\n")
             #print "LINES",[lines]
@@ -49,8 +48,8 @@ class CallbackHTTPClient(client.HTTPPageGetter):
             reporter.run()
             
         else:
-            #print "NO CALLBACK"
             pass
+        #print "RECV",data
         return client.HTTPPageGetter.rawDataReceived(self,data)
 
 class CallbackHTTPPageGetter(client.HTTPPageGetter,CallbackHTTPClient):
@@ -71,6 +70,7 @@ class CallbackHTTPClientFactory(client.HTTPClientFactory):
         return client.HTTPClientFactory.__init__(self, url, method, postdata, headers, agent, timeout, cookies, followRedirect, redirectLimit)
     
     def buildProtocol(self, addr):
+        #print "bp",addr
         p = client.HTTPClientFactory.buildProtocol(self, addr)
         p.SetCallback(self._callback)
         self.last_client = p

@@ -24,10 +24,17 @@ class RememberingHTTPClientFactory(client.HTTPClientFactory):
         self.last_client = client.HTTPClientFactory.buildProtocol(self, addr)
         return self.last_client
 
+class RememberingHTTPPageGetter(client.HTTPPageGetter,RememberingHTTPClient):
+    pass
+
+
+class RememberingHTTPPageDownloader(client.HTTPPageDownloader,RememberingHTTPClient):
+    pass
+
 class RememberingHTTPDownloader(RememberingHTTPClientFactory):
     """Download to a file."""
 
-    protocol = HTTPPageDownloader
+    protocol = RememberingHTTPPageDownloader
     value = None
 
     def __init__(self, url, fileOrName,
