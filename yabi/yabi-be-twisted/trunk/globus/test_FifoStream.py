@@ -15,6 +15,16 @@ class FifoStreamTest(unittest.TestCase):
     env = {'HOME': os.environ['HOME']}
     path = "/bin:/sbin:/usr/bin:/usr/sbin"
     
+    timeout = 10.0
+    
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.p = None
+        
+    def tearDown(self):
+        if self.p and hasattr(self.p, 'terminate'):
+            self.p.terminate()
+    
     def create_fifo(self):
         """create a fifo and return its path"""
         fname = tempfile.mktemp()
@@ -43,9 +53,9 @@ class FifoStreamTest(unittest.TestCase):
         
         # start writing into the fifo
         q = Queue()
-        p = Process(target=self.writer_task, args=(fifo,q))
-        p.start()
-    
+        self.p = Process(target=self.writer_task, args=(fifo,q))
+        self.p.start()
+        
         f=open(fifo)
         fifostream = FifoStream.FifoStream(f)
         self.assert_(fifostream)
@@ -58,15 +68,15 @@ class FifoStreamTest(unittest.TestCase):
         self.failIfEqual(exc,None)
         self.assertEqual(type(exc), IOError)
         self.assertEqual(exc.errno, 32)             # errno 32 = Broken Pipe
-        
+            
     def test_fifostream_read(self):
         """Check that the fifo is read through"""
         fifo = self.create_fifo()
         
         # start writing into the fifo
         q = Queue()
-        p = Process(target=self.writer_task, args=(fifo,q))
-        p.start()
+        self.p = Process(target=self.writer_task, args=(fifo,q))
+        self.p.start()
     
         f=open(fifo)
         fifostream = FifoStream.FifoStream(f)
@@ -98,8 +108,8 @@ class FifoStreamTest(unittest.TestCase):
         
         # start writing into the fifo
         q = Queue()
-        p = Process(target=self.writer_task, args=(fifo,q))
-        p.start()
+        self.p = Process(target=self.writer_task, args=(fifo,q))
+        self.p.start()
     
         f=open(fifo)
         fifostream = FifoStream.FifoStream(f)
@@ -132,8 +142,8 @@ class FifoStreamTest(unittest.TestCase):
         
         # start writing into the fifo
         q = Queue()
-        p = Process(target=self.writer_task, args=(fifo,q))
-        p.start()
+        self.p = Process(target=self.writer_task, args=(fifo,q))
+        self.p.start()
     
         f=open(fifo)
         fifostream = FifoStream.FifoStream(f)
@@ -158,8 +168,8 @@ class FifoStreamTest(unittest.TestCase):
         
         # start writing into the fifo
         q = Queue()
-        p = Process(target=self.writer_task, args=(fifo,q))
-        p.start()
+        self.p = Process(target=self.writer_task, args=(fifo,q))
+        self.p.start()
     
         f=open(fifo)
         fifostream = FifoStream.FifoStream(f)

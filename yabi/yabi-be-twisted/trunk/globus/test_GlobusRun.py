@@ -17,7 +17,6 @@ import stackless
 from utils.stacklesstest import StacklessTest
 from utils.stacklesstools import sleep
 
-
 import re
 
 re_uuid = re.compile(r'.*[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}.*',flags=re.MULTILINE)
@@ -28,6 +27,8 @@ def has_valid_uuid(data):
 
 class GlobusRunTest(StacklessTest):
     """Test the server sets up correctly and tears down correctly."""
+    timeout = 70.0
+    
     
     def setUp(self):
         StacklessTest.setUp(self)
@@ -149,6 +150,6 @@ class GlobusRunTest(StacklessTest):
         return self.deferred_test(test_code,_test)
         
         
-    
+    test_run_remote_date_with_expired_proxy.skip = "Expired proxy test taskes too long"
         
     

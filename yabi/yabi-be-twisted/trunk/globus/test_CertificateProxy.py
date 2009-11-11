@@ -17,6 +17,8 @@ class CertificateProxyTest(StacklessTest):
     _suppressUpDownWarning = True
     PORT = 9000
 
+    timeout = 10.0
+
     def setUp(self):
         StacklessTest.setUp(self)
         self.proxy = CertificateProxy.CertificateProxy()
