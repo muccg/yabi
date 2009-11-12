@@ -33,6 +33,7 @@ class CertificateProxyTest(StacklessTest):
     def test_create_valid_user_proxy(self):
         """Test that we can successfuly create a user proxy cert"""
         def _test(runner):
+            self.assert_( self.exception is None )
             self.assert_( os.path.exists( self.proxy.ProxyFile('test_user') ) )
             self.assert_( self.proxy.IsProxyValid('test_user') )
         
