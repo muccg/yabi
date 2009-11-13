@@ -17,9 +17,9 @@ class TestYabmin(unittest.TestCase):
         # manual says don't do this, but we are only testing right?
         settings.AUTHENTICATION_BACKENDS = ('django.contrib.auth.backends.ModelBackend',)
         settings.DEBUG = True
-        settings.YABIBACKEND_SERVER = 'faramir.localdomain:8000'
-        settings.YABISTORE_SERVER = "faramir.localdomain"
-        settings.YABISTORE_BASE = "/yabistore/trunk"
+        #settings.YABIBACKEND_SERVER = 'faramir.localdomain:8000'
+        #settings.YABISTORE_SERVER = "faramir.localdomain"
+        #settings.YABISTORE_BASE = "/yabistore/trunk"
 
         
         user, created = User.objects.get_or_create(name="testuser")
