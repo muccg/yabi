@@ -4,9 +4,12 @@ import tempfile
 import os
 from processing import Process, Queue
 from twisted.internet import reactor, protocol
+from twisted.python.runtime import platformType
 import random
 
 CHARS = r"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890!@#$%^&*()-=_+`~[]{};':,./<>?\|"
+
+SIG_DEBUG = True
 
 class FifoStreamTest(unittest.TestCase):
     """Test the server sets up correctly and tears down correctly."""
@@ -20,6 +23,11 @@ class FifoStreamTest(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.p = None
+        
+        # lets install a signal handler for EINTR
+        import signal
+        
+        signal.siginterrupt( signal.SIGCHLD, False )
         
     def tearDown(self):
         if self.p and hasattr(self.p, 'terminate'):
