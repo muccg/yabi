@@ -18,7 +18,7 @@ from OpenSSL import SSL
 # for stackless
 import stackless
 
-from resource import BaseResource
+from BaseResource import BaseResource
 
 # our root and google resource
 sys.path=['.']+sys.path

@@ -18,6 +18,7 @@ from stackless import schedule, tasklet
 from CallbackHTTPClient import CallbackHTTPClient, CallbackHTTPClientFactory, CallbackHTTPDownloader
 from RememberingHTTPClient import RememberingHTTPClient, RememberingHTTPClientFactory, RememberingHTTPDownloader
 
+DEBUG = False
 
 WS_HOST, WS_PORT = "localhost",int(os.environ['PORT']) if 'PORT' in os.environ else 8000
 USER_AGENT = "YabiStackless/0.1"
@@ -72,20 +73,23 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=RememberingHTTPClientFac
             get_failed[0] = int(factory.status), factory.message, "Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
         
     def _doSuccess(data):
-        print "SUCCESS:",factory.status,factory.message, data
+        if DEBUG:
+            print "SUCCESS:",factory.status,factory.message, data
         get_complete[0] = int(factory.status), factory.message, data
     
     # start the connection
     factory.deferred.addCallback(_doSuccess).addErrback(_doFailure)
-    print "CONNECT RETURNED",reactor.connectTCP(host, port, factory)
+    reactor.connectTCP(host, port, factory)
 
     # now we schedule this thread until the task is complete
     while not get_complete[0] and not get_failed[0]:
-        #print "G",get_complete[0],"G2",get_failed[0]
+        if DEBUG:
+            print "G",get_complete[0],"G2",get_failed[0]
         schedule()
         
     if get_failed[0]:
-        print "get_failed=",get_failed
+        if DEBUG:
+            print "get_failed=",get_failed
         if type(get_failed[0])==tuple and len(get_failed[0])==3:
             # failed naturally
             raise GETFailure(get_failed[0])
