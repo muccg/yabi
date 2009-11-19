@@ -18,7 +18,7 @@ from stackless import schedule, tasklet
 from CallbackHTTPClient import CallbackHTTPClient, CallbackHTTPClientFactory, CallbackHTTPDownloader
 from RememberingHTTPClient import RememberingHTTPClient, RememberingHTTPClientFactory, RememberingHTTPDownloader
 
-DEBUG = False
+DEBUG = True
 
 WS_HOST, WS_PORT = "localhost",int(os.environ['PORT']) if 'PORT' in os.environ else 8000
 USER_AGENT = "YabiStackless/0.1"
@@ -51,14 +51,19 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=RememberingHTTPClientFac
     
     #print "=>",str("http://%s:%d%s"%(host,port,path+"?"+getdata))
     
+    fullpath=str("http://%s:%d%s"%(host,port,path))
+    if getdata:
+        fullpath += "?"+getdata
+        
     factory = factory_class(
-        str("http://%s:%d%s"%(host,port,path+"?"+getdata)),
+        fullpath,
         agent = USER_AGENT,
         
         )
     factory.noisy=True
     
-    #print "GETing","http://%s:%d%s"%(host,port,path+"?"+getdata),
+    if DEBUG:
+        print "GETing",fullpath
     
     # switches to trigger the unblocking of the stackless thread
     get_complete = [False]
