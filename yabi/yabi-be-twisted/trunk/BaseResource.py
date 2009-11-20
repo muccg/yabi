@@ -58,15 +58,15 @@ class BaseResource(resource.PostableResource):
         self.child_exec = ExecResource() 
         self.child_yabiadmin = wsgi.WSGIResource(application)
         
-    def LoadExecConnectors(self):
-        self.child_exec.LoadConnectors()
+    def LoadExecConnectors(self, quiet=False):
+        self.child_exec.LoadConnectors(quiet)
         
-    def LoadFSConnectors(self):
-        self.child_fs.LoadConnectors()
+    def LoadFSConnectors(self, quiet=False):
+        self.child_fs.LoadConnectors(quiet)
         
-    def LoadConnectors(self):
-        self.LoadExecConnectors()
-        self.LoadFSConnectors()
+    def LoadConnectors(self, quiet=False):
+        self.LoadExecConnectors(quiet)
+        self.LoadFSConnectors(quiet)
         
     def render(self, ctx):
         """Just returns a helpful text string"""

@@ -19,7 +19,7 @@ class BackendResource(object):
     def Backends(self):
         return self.backends.keys()
     
-    def LoadConnectors(self, connector, skip='BaseClass', brief='unknown'):
+    def LoadConnectors(self, connector, skip='BaseClass', brief='unknown', quiet=False):
         """Load all the backend connectors into our backends. Use module passed in as connector, and skip the class named in skip
         'brief' is just a short textual description for error reporting. should be 'exec' or 'fs'
         """
@@ -33,14 +33,16 @@ class BackendResource(object):
                     # some env var failed
                     missing_envs = [ conn.ENV_CHECK[ind] for ind,val in enumerate(envcheck) if not val]
                     
-                    print "Skipping %s connector %s. Environment variable%s %s missing" % (
+                    if not quiet:
+                        print "Skipping %s connector %s. Environment variable%s %s missing" % (
                             brief,
                             connector_name, 
                             "s" if len(missing_envs)>1 else "",
                             ",".join( missing_envs )
                         )
                 else:
-                    print "Adding %s connector %s under schema %s"%(brief,connector_name,conn.SCHEMA)
+                    if not quiet:
+                        print "Adding %s connector %s under schema %s"%(brief,connector_name,conn.SCHEMA)
                     
                     # lets save what env vars we can save away
                     connector_env = {}
@@ -57,4 +59,5 @@ class BackendResource(object):
                     # add it in
                     self.AddBackend(conn.SCHEMA, backend)
             else:
-                print "Skipping %s connector %s. Connector needs ENV_CHILD_INHERIT, ENV_CHECK and SCHEMA"%(brief,connector_name)
+                if not quiet:
+                    print "Skipping %s connector %s. Connector needs ENV_CHILD_INHERIT, ENV_CHECK and SCHEMA"%(brief,connector_name)

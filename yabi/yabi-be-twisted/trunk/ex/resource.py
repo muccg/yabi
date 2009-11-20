@@ -17,10 +17,10 @@ class ExecResource(resource.Resource, BackendResource):
     def __init__(self,*args,**kwargs):
         BackendResource.__init__(self,*args,**kwargs)
         
-    def LoadConnectors(self):
+    def LoadConnectors(self, quiet=False):
         """Load all the backend connectors into our backends"""
         import connector
-        return BackendResource.LoadConnectors(self,connector,'ExecConnector','exec')
+        return BackendResource.LoadConnectors(self,connector,'ExecConnector','exec', quiet=quiet)
         
     def render(self, request):
         # break our request path into parts
