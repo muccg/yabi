@@ -18,7 +18,7 @@ from stackless import schedule, tasklet
 from CallbackHTTPClient import CallbackHTTPClient, CallbackHTTPClientFactory, CallbackHTTPDownloader
 from RememberingHTTPClient import RememberingHTTPClient, RememberingHTTPClientFactory, RememberingHTTPDownloader
 
-DEBUG = True
+DEBUG = False
 
 WS_HOST, WS_PORT = "localhost",int(os.environ['PORT']) if 'PORT' in os.environ else 8000
 USER_AGENT = "YabiStackless/0.1"

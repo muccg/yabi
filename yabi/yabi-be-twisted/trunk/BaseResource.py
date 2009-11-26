@@ -11,17 +11,27 @@ os.environ['TWISTED_MANGO']='1'
 MANGO_APP = "yabiadmin"
 
 # Environment setup for your Django project files:
-sys.path.append(MANGO_APP)
+sys.path.append(os.path.join(os.path.dirname(__file__),MANGO_APP))
 os.environ['DJANGO_SETTINGS_MODULE'] = '%s.settings'%MANGO_APP
 
 from twisted.web2 import wsgi
+from django.conf import settings
+from django.core.management import setup_environ
+
+import yabiadmin.settings
+setup_environ(yabiadmin.settings)
+
 from django.core.handlers.wsgi import WSGIHandler
 
 def application(environ, start):
     os.environ['SCRIPT_NAME']=environ['SCRIPT_NAME']
     if 'DJANGODEV' in environ:
         os.environ['DJANGODEV']=environ['DJANGODEV']
-    return WSGIHandler()(environ,start)
+    if 'DJANGODEBUG' in environ:
+        os.environ['DJANGODEBUG']=environ['DJANGODEBUG']
+    result = WSGIHandler()(environ,start)
+    #print "result:\n\n",result
+    return result
     
 ##
 ## Filesystem resources
