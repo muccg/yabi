@@ -115,12 +115,14 @@ class FilePutResource(resource.PostableResource):
                 parser.set_boundary(boundary)
                 
                 reader = req.stream.read()
+                #print "READER",reader
                 
                 try:
                     while reader is not None:
                         dat = WaitForDeferredData(reader)
                         
                         # process data snippet
+                        print "SNIPPET",dat
                         parser.feed(dat)
                         
                         reader = req.stream.read()
