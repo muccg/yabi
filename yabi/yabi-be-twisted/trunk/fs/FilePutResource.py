@@ -40,9 +40,14 @@ class FilePutResource(resource.PostableResource):
         return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be POST\n")
                         
     def http_POST(self, request):
+        print "!!!!", dir(request)
+        print request.params
+        print request.args
+        
         if "uri" not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided in GET parameters\n")
 
+        print "???"
         uri = request.args['uri'][0]
         scheme, address = parse_url(uri)
         
@@ -77,7 +82,7 @@ class FilePutResource(resource.PostableResource):
                 reader = req.stream.read()
                 
                 while True:
-                    #print "DATA:",WaitForDeferredData(reader)
+                    print "DATA:",WaitForDeferredData(reader)
                     stackless.schedule()
                 
                 raise Exception
@@ -90,7 +95,7 @@ class FilePutResource(resource.PostableResource):
                 
                 # our backend writer
                 bend = self.fsresource().GetBackend(scheme)
-                #print "BEND:",bend
+                print "BEND:",bend
                 
                 class MyMimeStreamDecoder(MimeStreamDecoder):
                     """Override this class and put in our own file open methods"""
@@ -115,7 +120,7 @@ class FilePutResource(resource.PostableResource):
                 parser.set_boundary(boundary)
                 
                 reader = req.stream.read()
-                #print "READER",reader
+                print "READER",reader
                 
                 try:
                     while reader is not None:

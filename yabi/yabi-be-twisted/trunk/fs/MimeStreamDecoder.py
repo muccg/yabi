@@ -11,6 +11,8 @@ def no_intr(func, *args, **kw):
             else:
                 raise
 
+import StringIO
+
 class MimeStreamDecoder(object):
     """This is my super no memory usage streaming Mime upload decoder"""
     
@@ -23,8 +25,20 @@ class MimeStreamDecoder(object):
         self.content_type = "None/None"
         self.bodyline=False
         
+        self.datastream = None                  # for saving data segments (not files)
+        self.datakeyname = None                 # save the keyname
+        self.datavalues = {}                    # storage 
+        
     def set_boundary(self, boundary):
         self.boundary = boundary
+    
+    def open_data_stream(self):
+        self.datastream = StringIO.StringIO()
+    
+    def close_data_stream(self):
+        print "DATA",self.datakeyname,"=",self.datastream.getvalue()
+        self.datavalues[self.datakeyname]=self.datastream.getvalue()
+        self.datastream = None
     
     def open_write_stream(self, filename):
         """Override this to return the file like object"""
@@ -36,10 +50,13 @@ class MimeStreamDecoder(object):
         self.fileopen = None
         
     def write_line(self, line):
-        no_intr(self.fileopen.write,line)
+        no_intr(getattr(self.fileopen or self.datastream,"write"),line)
         
     def write_line_ending(self):
-        self.fileopen.write(self.line_ending)
+        if self.fileopen:
+            self.fileopen.write(self.line_ending)
+        else:
+            self.datastream.write(self.line_ending)
     
     def guess_line_ending(self, data):
         """from a section of data, try and guess the line ending"""
@@ -61,11 +78,17 @@ class MimeStreamDecoder(object):
             if part.lower().startswith('content-disposition:'):
                 assert part.endswith('form-data')
             else:
-                key,value = part.split('=')
-                extra[key] = value if (value[0]!='"' and value[1]!='"') else value[1:-1]
+                if len(part):
+                    key,value = part.split('=')
+                    extra[key] = value if (value[0]!='"' and value[1]!='"') else value[1:-1]
         
         # open our file write handle
-        self.open_write_stream(extra['filename'])
+        if 'filename' not in extra:
+            #data segment
+            self.datakeyname = extra['name']
+            self.open_data_stream()
+        else:
+            self.open_write_stream(extra['filename'])
         
     def parse_content_type(self,line):
         assert line.lower().startswith('content-type:')
@@ -94,6 +117,9 @@ class MimeStreamDecoder(object):
                             # close the file. this is the inbetween boundary. another file is coming
                             self.close_write_stream()
                             self._is_header = True
+                        elif self.datastream:
+                            self.close_data_stream()
+                            self._is_header = True
                         else:
                             # this is our first boundary
                             self._is_header = True
@@ -102,6 +128,9 @@ class MimeStreamDecoder(object):
                         if self.fileopen:
                             # close the file. this is the inbetween boundary. another file is coming
                             self.close_write_stream()
+                            self._is_header = True
+                        elif self.datastream:
+                            self.close_data_stream()
                             self._is_header = True
                 else:
                     if self._is_header:

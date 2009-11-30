@@ -1,113 +1,13 @@
 #!/usr/bin/env python
 
-"""http upload functions for testing yabi backend"""
-
 import httplib
 import mimetypes
 import os 
 import email
 import sys
+import zipfile
 import StringIO
 from stat import *
-
-from stackless import schedule
-import urllib 
-from utils.stacklesstools import CallbackHTTPClientFactory, USER_AGENT
-
-from twisted.web import client
-from twisted.web.client import HTTPPageDownloader
-from twisted.internet import reactor
-from twisted.internet.defer import Deferred
-from twisted.python.failure import Failure
-
-def POST_upload(path,filelist,**kws):
-    """Stackless integrated twisted webclient POST"""
-    if 'host' in kws:
-        host = kws['host']
-        del kws['host']
-    else:
-        host = WS_HOST
-        
-    if 'port' in kws:
-        port = kws['port']
-        del kws['port']
-    else:
-        port = WS_PORT
-        
-    errorpage=[None]
-        
-    if 'datacallback' in kws:
-        datacallback = kws['datacallback']
-        del kws['datacallback']
-    else:
-        datacallback = None
-        
-    # encode an upload
-    import StringIO
-    data = StringIO.StringIO()
-    data.send = data.write                      # make it behave like a socket
-    encode_multipart_formdata(data,{},filelist)
-            
-    
-    postdata=urllib.urlencode(kws)
-    #postdata="src=gridftp1/cwellington/bi01/cwellington/test&dst=gridftp1/cwellington/bi01/cwellington/test2"
-    #print "POST DATA:",postdata
-    
-    print postdata
-    print str(encode_content_length(kws,filelist))
-    
-    factory = CallbackHTTPClientFactory(
-        str("http://%s:%d%s"%(host,port,path)),
-        agent = USER_AGENT,
-        method="POST",
-        postdata=postdata,
-        headers={
-            'Content-Type':encode_multipart_content_type(),
-            'Accept':'*/*',
-            'Content-Length':str(encode_content_length(kws,filelist))
-            },
-        callback=datacallback
-        )
-        
-    factory.noisy=True
-        
-    get_complete = [False]
-    get_failed = [False]
-    
-    # now if the get fails for some reason. deal with it
-    def _doFailure(data):
-        if isinstance(data,Failure):
-            exc = data.value
-            get_failed[0] = -1, str(exc), None
-        else:
-            get_failed[0] = int(factory.status), factory.message, "Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
-    
-    def _doSuccess(data):
-        #print "Post success"
-        get_complete[0] = int(factory.status), factory.message, data
-        
-    factory.deferred.addCallback(_doSuccess).addErrback(_doFailure)
-
-    reactor.connectTCP(host, port, factory)
-    
-    # now we schedule this thread until the task is complete
-    while not get_complete[0] and not get_failed[0]:
-        #print "P"
-        schedule()
-        
-    if get_failed[0]:
-        if type(get_failed[0])==tuple and len(get_failed[0])==3:
-            # failed naturally
-            raise GETFailure(get_failed[0])
-        elif get_failed[0]:
-            # failed by tasklet serialisation and restoration
-            return POST(path, host=host, port=port, datacallback=datacallback, **kws)
-        else:
-            #print "POSTFailed=",get_failed
-            assert False, "got unknown POST failure response"
-    
-    return get_complete[0]
-
 
 def post_multipart(host, selector, fields, files):
 	"""
@@ -147,6 +47,7 @@ def encode_multipart_formdata(stream,fields, files):
 	print "encode_multipart_formdata(",stream,",",fields,",",files,")"
 	BOUNDARY = encode_multipart_make_boundary()
 	CRLF = '\r\n'
+	L = []
 	for (key, value) in fields:
 		stream.send('--' + BOUNDARY + CRLF)
 		stream.send('Content-Disposition: form-data; name="%s"' % key + CRLF)
@@ -190,3 +91,108 @@ def encode_content_length(fields, files):
 
 def get_content_type(filename):
 	return mimetypes.guess_type(filename)[0] or 'application/octet-stream'
+
+def extract_zip( filename, dir ):
+	print "unzipping",filename
+	zf = zipfile.ZipFile( filename )
+	namelist = zf.namelist()
+	dirlist = filter( lambda x: x.endswith( '/' ), namelist )
+	filelist = filter( lambda x: not x.endswith( '/' ), namelist )
+	# make base
+	pushd = os.getcwd()
+	if not os.path.isdir( dir ):
+		os.mkdir( dir )
+	os.chdir( dir )
+	# create directory structure
+	dirlist.sort()
+	for dirs in dirlist:
+		dirs = dirs.split( '/' )
+		prefix = ''
+		for dir in dirs:
+			dirname = os.path.join( prefix, dir )
+			if dir and not os.path.isdir( dirname ):
+				os.mkdir( dirname )
+			prefix = dirname
+	# extract files
+	for fn in filelist:
+		try:
+			out = open( fn, 'wb' )
+			buffer = StringIO.StringIO( zf.read( fn ))
+			buflen = 2 ** 20
+			datum = buffer.read( buflen )
+			while datum:
+				out.write( datum )
+				datum = buffer.read( buflen )
+			out.close()
+		finally:
+			print fn
+	os.chdir( pushd )
+	
+def output(s, outfile = sys.stdout):
+	outfile.write(s)
+
+def decode_part(msg):
+	"Decode one part of the message"
+	
+	decode_headers(msg)
+	encoding = msg["Content-Transfer-Encoding"]
+	
+	if encoding in (None, '', '7bit', '8bit', 'binary'):
+		outstring = str(msg.get_payload())
+	else: # Decode from transfer ecoding to text or binary form
+		outstring = str(msg.get_payload(decode=1))
+		set_header(msg, "Content-Transfer-Encoding", "8bit")
+		msg["X-MIME-Autoconverted"] = "from %s to 8bit by %s id %s" % (encoding, host_name, sys.arv[0])
+	
+	# Test all mask lists and find what to do with this content type
+	masks = []
+	ctype = msg.get_content_type()
+	if ctype:
+		masks.append(ctype)
+	mtype = msg.get_content_maintype()
+	if mtype:
+		masks.append(mtype + '/*')
+	masks.append('*/*')
+	
+	for content_type in masks:
+		if content_type in GlobalOptions.totext_mask:
+			totext(msg, outstring)
+			return
+		elif content_type in GlobalOptions.binary_mask:
+			output_headers(msg)
+			output(outstring)
+			return
+		elif content_type in GlobalOptions.ignore_mask:
+			output_headers(msg)
+			output("\nMessage body of type `%s' skipped.\n" % content_type)
+			return
+		elif content_type in GlobalOptions.error_mask:
+			raise ValueError, "content type `%s' prohibited" % content_type
+	
+	# Neither content type nor masks were listed - decode by default
+	totext(msg, outstring)
+	
+
+def extract_multipart(filename, dir):
+	"""TODO: check this works and work on delegate support"""
+	msg = email.message_from_file(infile)
+	boundary = msg.get_boundary()
+	
+	if msg.is_multipart():
+		for subpart in msg.get_payload():
+			output("\n--%s\n" % boundary)
+			decode_part(subpart)
+	
+		output("\n--%s--\n" % boundary)
+	
+		if msg.epilogue:
+			output(msg.epilogue)
+	
+	else:
+		if msg.has_key("Content-Type"): # Simple one-part message - decode it
+			decode_part(msg)
+	
+		else: # Not a message, just text - copy it literally
+			output(str(msg))
+
+		
