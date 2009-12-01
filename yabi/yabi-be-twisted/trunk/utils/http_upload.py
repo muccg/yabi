@@ -60,7 +60,14 @@ def encode_multipart_formdata(stream,fields, files):
 		stream.send('Content-Type: %s' % get_content_type(filename) + CRLF)
 		stream.send(CRLF)
 		
-		stream.send(data)
+                if type(data)==file:
+                    while True:
+                        dat=data.read(CHUNKSIZE)
+                        if len(dat)==0:
+                                break
+                        stream.send(dat)
+                else:
+                    stream.send(data)
 		
 		stream.send(CRLF)
 	stream.send('--' + BOUNDARY + '--' + CRLF)
@@ -83,7 +90,10 @@ def encode_content_length(fields, files):
 		length+=len('Content-Disposition: form-data; name="%s"; filename="%s"' % (key, filename) + CRLF)
 		length+=len('Content-Type: %s' % get_content_type(filename) + CRLF)
 		length+=len(CRLF)
-		length+=len(data)
+		if type(data)==file:
+                    length+=os.stat(data.name)[ST_SIZE]
+                else:
+                    length+=len(data)
 		length+=len(CRLF)
 	length+=len('--' + BOUNDARY + '--' + CRLF)
 	length+=len(CRLF)
