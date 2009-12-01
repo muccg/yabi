@@ -36,7 +36,7 @@ class MimeStreamDecoder(object):
         self.datastream = StringIO.StringIO()
     
     def close_data_stream(self):
-        print "DATA",self.datakeyname,"=",self.datastream.getvalue()
+        #print "DATA",self.datakeyname,"=",self.datastream.getvalue()
         self.datavalues[self.datakeyname]=self.datastream.getvalue()
         self.datastream = None
     
