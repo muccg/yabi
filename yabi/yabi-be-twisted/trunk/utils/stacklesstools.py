@@ -49,8 +49,9 @@ def GET(path, host=WS_HOST, port=WS_PORT, factory_class=RememberingHTTPClientFac
     """
     getdata=urllib.urlencode(kws)
     
-    #print "=>",str("http://%s:%d%s"%(host,port,path+"?"+getdata))
-    
+    if DEBUG:
+        print "=>",str("http://%s:%d%s"%(host,port,path+"?"+getdata))
+        
     fullpath=str("http://%s:%d%s"%(host,port,path))
     if getdata:
         fullpath += "?"+getdata
