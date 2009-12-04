@@ -11,6 +11,8 @@ from utils.parsers import parse_url
 
 from utils.submit_helpers import parsePOSTData
 
+DEBUG = False
+
 class FileCopyResource(resource.PostableResource):
     VERSION=0.1
     maxMem = 100*1024
@@ -91,8 +93,9 @@ class FileCopyResource(resource.PostableResource):
             writeproto, fifo = dbend.GetWriteFifo(dst_hostname, dst_username, dst_path, dst_filename,yabiusername=yabiusername,creds=creds['dst'] if 'dst' in creds else {})
             readproto, fifo2 = sbend.GetReadFifo(src_hostname, src_username, src_path, src_filename, fifo,yabiusername=yabiusername,creds=creds['src'] if 'src' in creds else {})
             
-            print "READ:",readproto,fifo2
-            print "WRITE:",writeproto,fifo
+            if DEBUG:
+                print "READ:",readproto,fifo2
+                print "WRITE:",writeproto,fifo
                        
             # wait for one to finish
             while not readproto.isDone() and not writeproto.isDone():
