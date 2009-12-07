@@ -23,7 +23,7 @@ setup_environ(yabiadmin.settings)
 
 from django.core.handlers.wsgi import WSGIHandler
 
-def application(environ, start):
+def application1(environ, start):
     os.environ['SCRIPT_NAME']=environ['SCRIPT_NAME']
     if 'DJANGODEV' in environ:
         os.environ['DJANGODEV']=environ['DJANGODEV']
@@ -32,6 +32,28 @@ def application(environ, start):
     result = WSGIHandler()(environ,start)
     #print "result:\n\n",result
     return result
+    
+def application2(environ, start):
+    os.environ['SCRIPT_NAME']=environ['SCRIPT_NAME']
+    if 'DJANGODEV' in environ:
+        os.environ['DJANGODEV']=environ['DJANGODEV']
+    if 'DJANGODEBUG' in environ:
+        os.environ['DJANGODEBUG']=environ['DJANGODEBUG']
+    result = WSGIHandler()(environ,start)
+    #print "result:\n\n",result
+    return result
+    
+def application3(environ, start):
+    os.environ['SCRIPT_NAME']=environ['SCRIPT_NAME']
+    if 'DJANGODEV' in environ:
+        os.environ['DJANGODEV']=environ['DJANGODEV']
+    if 'DJANGODEBUG' in environ:
+        os.environ['DJANGODEBUG']=environ['DJANGODEBUG']
+    result = WSGIHandler()(environ,start)
+    #print "result:\n\n",result
+    return result
+    
+
     
 ##
 ## Filesystem resources
@@ -66,7 +88,9 @@ class BaseResource(resource.PostableResource):
         ##
         self.child_fs = FSResource()
         self.child_exec = ExecResource() 
-        self.child_yabiadmin = wsgi.WSGIResource(application)
+        self.child_yabiadmin = wsgi.WSGIResource(application1)
+        self.child_yabistore = wsgi.WSGIResource(application2)
+        self.child_yabife = wsgi.WSGIResource(application3)
         
     def LoadExecConnectors(self, quiet=False):
         self.child_exec.LoadConnectors(quiet)

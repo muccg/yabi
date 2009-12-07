@@ -29,6 +29,7 @@ TELNET_PORT = int(os.environ['TELNET_PORT']) if 'TELNET_PORT' in os.environ else
 SSL_PORT = int(os.environ['SSL_PORT']) if 'SSL_PORT' in os.environ else 4430
 
 import conf
+conf.Configuration.read_config()
 if "YABIADMIN" in os.environ:
     conf.yabiadmin.parse_url(os.environ['YABIADMIN'])
 
