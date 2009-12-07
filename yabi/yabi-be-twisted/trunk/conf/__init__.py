@@ -113,5 +113,5 @@ class Configuration(object):
     @classmethod
     def sanitise(cls):
         """Check the settings for sanity"""
-        
+        pass
     
