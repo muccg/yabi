@@ -150,6 +150,7 @@ class Configuration(object):
             portstore = ipstore[port] if port in ipstore else {}
             
             # then path
+            path = self.config[section]['path']
             if path in portstore:
                 # error. duplicate path
                 raise ConfigError, "overlapping application paths"
