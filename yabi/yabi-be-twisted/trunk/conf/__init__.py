@@ -77,62 +77,65 @@ class Configuration(object):
                     }
     }
         
-    @classmethod
-    def read_from_file(cls,filename):
+    def read_from_file(self,filename):
         conf_parser = ConfigParser.SafeConfigParser()
         conf_parser.read(filename)
         
         # main sections
-        for section in cls.SECTIONS:
+        for section in self.SECTIONS:
             if conf_parser.has_section(section):
                 # process section
                 
-                if section not in cls.config:
-                    cls.config[section] = {}
+                if section not in self.config:
+                    self.config[section] = {}
                 
-                for key in cls.KEYS:
+                for key in self.KEYS:
                     if conf_parser.has_option(section,key):
-                        cls.config[section][key] = conf_parser.get(section,key)
+                        self.config[section][key] = conf_parser.get(section,key)
         
         # global section
         name = "global"
         if conf_parser.has_section(name):
-            cls.config[name]['user'] = conf_parser.get(name,'user')
-            cls.config[name]['group'] = conf_parser.get(name,'group')
+            self.config[name]['user'] = conf_parser.get(name,'user')
+            self.config[name]['group'] = conf_parser.get(name,'group')
             
         # taskmanager section
         name = "taskmanager"
         if conf_parser.has_section(name):
-            cls.config[name]['polldelay'] = conf_parser.get(name,'polldelay')
-            cls.config[name]['simultaneous'] = conf_parser.get(name,'simultaneous')
-            cls.config[name]['startup'] = boolean_proc(conf_parser.get(name,'startup'))
+            self.config[name]['polldelay'] = conf_parser.get(name,'polldelay')
+            self.config[name]['simultaneous'] = conf_parser.get(name,'simultaneous')
+            self.config[name]['startup'] = boolean_proc(conf_parser.get(name,'startup'))
             
-    @classmethod
-    def read_config(cls, search=SEARCH_PATH):
+    def read_config(self, search=SEARCH_PATH):
         for part in search:
-            cls.read_from_file(os.path.expanduser(part))
+            self.read_from_file(os.path.expanduser(part))
             
-    @classmethod
-    def get_section_conf(cls,section):
-        return cls.config[section]
+    def get_section_conf(self,section):
+        return self.config[section]
     
-    @classmethod
-    def sanitise(cls):
+    def sanitise(self):
         """Check the settings for sanity"""
-        for section in cls.SECTIONS:
-            cls.config[section]['startup'] = boolean_proc(cls.config[section]['startup'])
-            cls.config[section]['port'] = port_setting(cls.config[section]['port'])
+        for section in self.SECTIONS:
+            self.config[section]['startup'] = boolean_proc(self.config[section]['startup'])
+            self.config[section]['port'] = port_setting(self.config[section]['port'])
         
     
     ##
     ## Methods to gather settings
     ##
-    @classmethod
-    def yabiadmin(cls):
-        return "%s:%d%s"%tuple(cls.config['admin']['port']+(cls.config['admin']['path'],))
+    @property
+    def yabiadmin(self):
+        return "%s:%d%s"%tuple(self.config['admin']['port']+(self.config['admin']['path'],))
     
-    @classmethod
-    def yabistore(cls):
-        return "%s:%d%s"%tuple(cls.config['store']['port']+(cls.config['store']['path'],))
+    @property
+    def yabistore(self):
+        return "%s:%d%s"%tuple(self.config['store']['port']+(self.config['store']['path'],))
     
     
+    ##
+    ## classify the settings into a ip/port based classification
+    ##
+    #@classmethod
+    #def 
+    
+config = Configuration()

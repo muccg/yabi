@@ -28,11 +28,9 @@ PORT = int(os.environ['PORT']) if 'PORT' in os.environ else 8000
 TELNET_PORT = int(os.environ['TELNET_PORT']) if 'TELNET_PORT' in os.environ else 8021
 SSL_PORT = int(os.environ['SSL_PORT']) if 'SSL_PORT' in os.environ else 4430
 
-import conf
-conf.Configuration.read_config()
-conf.Configuration.sanitise()
-if "YABIADMIN" in os.environ:
-    conf.yabiadmin.parse_url(os.environ['YABIADMIN'])
+from conf import config
+config.read_config()
+config.sanitise()
 
 # make sure our env is sane
 import os
@@ -79,7 +77,7 @@ shellfactory.password = ''
 
 def startup():
     # setup yabiadmin server, port and path as global variables
-    print "yabi admin server:",conf.Configuration.yabiadmin()
+    print "yabi admin server:",config.yabiadmin
     
     print "Loading connectors..."
     base.LoadConnectors()
