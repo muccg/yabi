@@ -52,17 +52,24 @@ class Configuration(object):
         'backend':  {
                         "port":"0.0.0.0:8000",
                         "path":"/",
-                        "startup":"true"
+                        "startup":"true",
+                        
+                        "admin":None                # none means "use the one provided here"
                     },
         'admin':    {
                         "port":"0.0.0.0:8000",
                         "path":"/yabiadmin",
-                        "startup":"true"
+                        "startup":"true",
+                        
+                        "backend":None,
+                        "store":None,
                     },
         'frontend': {
                         "port":"0.0.0.0:8000",
                         "path":"/fe",
-                        "startup":"true"
+                        "startup":"true",
+                        
+                        "admin":None
                     },
         'store':    {
                         "port":"0.0.0.0:8000",

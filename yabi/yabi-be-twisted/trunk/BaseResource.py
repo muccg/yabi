@@ -6,52 +6,52 @@ import os, sys
 ## MANGO child
 ##
 
-os.environ['TWISTED_MANGO']='1'
+#os.environ['TWISTED_MANGO']='1'
 
-MANGO_APP = "yabiadmin"
+#MANGO_APP = "yabiadmin"
 
-# Environment setup for your Django project files:
-sys.path.append(os.path.join(os.path.dirname(__file__),MANGO_APP))
-os.environ['DJANGO_SETTINGS_MODULE'] = '%s.settings'%MANGO_APP
+## Environment setup for your Django project files:
+#sys.path.append(os.path.join(os.path.dirname(__file__),MANGO_APP))
+#os.environ['DJANGO_SETTINGS_MODULE'] = '%s.settings'%MANGO_APP
 
-from twisted.web2 import wsgi
-from django.conf import settings
-from django.core.management import setup_environ
+#from twisted.web2 import wsgi
+#from django.conf import settings
+#from django.core.management import setup_environ
 
-import yabiadmin.settings
-setup_environ(yabiadmin.settings)
+#import yabiadmin.settings
+#setup_environ(yabiadmin.settings)
 
-from django.core.handlers.wsgi import WSGIHandler
+#from django.core.handlers.wsgi import WSGIHandler
 
-def application1(environ, start):
-    os.environ['SCRIPT_NAME']=environ['SCRIPT_NAME']
-    if 'DJANGODEV' in environ:
-        os.environ['DJANGODEV']=environ['DJANGODEV']
-    if 'DJANGODEBUG' in environ:
-        os.environ['DJANGODEBUG']=environ['DJANGODEBUG']
-    result = WSGIHandler()(environ,start)
-    #print "result:\n\n",result
-    return result
+#def application1(environ, start):
+    #os.environ['SCRIPT_NAME']=environ['SCRIPT_NAME']
+    #if 'DJANGODEV' in environ:
+        #os.environ['DJANGODEV']=environ['DJANGODEV']
+    #if 'DJANGODEBUG' in environ:
+        #os.environ['DJANGODEBUG']=environ['DJANGODEBUG']
+    #result = WSGIHandler()(environ,start)
+    ##print "result:\n\n",result
+    #return result
     
-def application2(environ, start):
-    os.environ['SCRIPT_NAME']=environ['SCRIPT_NAME']
-    if 'DJANGODEV' in environ:
-        os.environ['DJANGODEV']=environ['DJANGODEV']
-    if 'DJANGODEBUG' in environ:
-        os.environ['DJANGODEBUG']=environ['DJANGODEBUG']
-    result = WSGIHandler()(environ,start)
-    #print "result:\n\n",result
-    return result
+#def application2(environ, start):
+    #os.environ['SCRIPT_NAME']=environ['SCRIPT_NAME']
+    #if 'DJANGODEV' in environ:
+        #os.environ['DJANGODEV']=environ['DJANGODEV']
+    #if 'DJANGODEBUG' in environ:
+        #os.environ['DJANGODEBUG']=environ['DJANGODEBUG']
+    #result = WSGIHandler()(environ,start)
+    ##print "result:\n\n",result
+    #return result
     
-def application3(environ, start):
-    os.environ['SCRIPT_NAME']=environ['SCRIPT_NAME']
-    if 'DJANGODEV' in environ:
-        os.environ['DJANGODEV']=environ['DJANGODEV']
-    if 'DJANGODEBUG' in environ:
-        os.environ['DJANGODEBUG']=environ['DJANGODEBUG']
-    result = WSGIHandler()(environ,start)
-    #print "result:\n\n",result
-    return result
+#def application3(environ, start):
+    #os.environ['SCRIPT_NAME']=environ['SCRIPT_NAME']
+    #if 'DJANGODEV' in environ:
+        #os.environ['DJANGODEV']=environ['DJANGODEV']
+    #if 'DJANGODEBUG' in environ:
+        #os.environ['DJANGODEBUG']=environ['DJANGODEBUG']
+    #result = WSGIHandler()(environ,start)
+    ##print "result:\n\n",result
+    #return result
     
 
     
@@ -88,9 +88,9 @@ class BaseResource(resource.PostableResource):
         ##
         self.child_fs = FSResource()
         self.child_exec = ExecResource() 
-        self.child_yabiadmin = wsgi.WSGIResource(application1)
-        self.child_yabistore = wsgi.WSGIResource(application2)
-        self.child_yabife = wsgi.WSGIResource(application3)
+        #self.child_yabiadmin = wsgi.WSGIResource(application1)
+        #self.child_yabistore = wsgi.WSGIResource(application2)
+        #self.child_yabife = wsgi.WSGIResource(application3)
         
     def LoadExecConnectors(self, quiet=False):
         self.child_exec.LoadConnectors(quiet)
