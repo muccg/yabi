@@ -1,0 +1,76 @@
+#! /bin/sh
+#
+# portmap       Start/Stop RPC portmapper
+#
+# chkconfig: 345 13 87
+# description: The portmapper manages RPC connections, which are used by \
+#              protocols such as NFS and NIS. The portmap server must be \
+#              running on machines which act as servers for protocols which \
+#              make use of the RPC mechanism.
+# processname: portmap
+
+TWISTD="/usr/local/stackless/bin/twistd"
+TAP="server.py"
+RUNDIR="run-dir"
+NAME="yabibe"
+
+# This is an interactive program, we need the current locale
+[ -f /etc/profile.d/lang.sh ] && . /etc/profile.d/lang.sh
+# We can't Japanese on normal console at boot time, so force LANG=C.
+if [ "$LANG" = "ja" -o "$LANG" = "ja_JP.eucJP" ]; then
+    if [ "$TERM" = "linux" ] ; then
+        LANG=C
+    fi
+fi
+
+# Source function library.
+. /etc/init.d/functions
+
+#  check for required files
+if [ ! -x "${TWISTD}"]
+then
+        echo "$0: Aborting, no $TWISTD found"
+        exit 0
+fi
+if [ ! -r "${TAP}" ]
+then
+        echo "$0: Aborting, no file $TAP found."
+        exit 0
+fi
+
+#  set up run directory if necessary
+if [ ! -d "${RUNDIR}" ]
+then
+        mkdir -p "${RUNDIR}"
+fi
+
+
+case "$1" in
+        start)
+                echo -n "Starting $NAME"
+                daemon ${TWISTD}  \\
+                                --pidfile=$pidfile \\
+                                --rundir=$rundir \\
+                                --%(twistd_option)s=$file \\
+                                --logfile=$logfile
+                status %(rpm_file)s
+                ;;
+
+        stop)
+                echo -n "Stopping %(rpm_file)s: twistd"
+                kill `cat "${pidfile}"`
+                status %(rpm_file)s
+                ;;
+
+        restart)
+                "${0}" stop
+                "${0}" start
+                ;;
+
+    *)
+                echo "Usage: ${0} {start|stop|restart|}" >&2
+                exit 1
+                ;;
+esac
+
+exit 0
