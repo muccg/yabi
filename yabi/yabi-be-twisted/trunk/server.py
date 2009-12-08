@@ -30,6 +30,7 @@ SSL_PORT = int(os.environ['SSL_PORT']) if 'SSL_PORT' in os.environ else 4430
 
 import conf
 conf.Configuration.read_config()
+conf.Configuration.sanitise()
 if "YABIADMIN" in os.environ:
     conf.yabiadmin.parse_url(os.environ['YABIADMIN'])
 
@@ -78,7 +79,7 @@ shellfactory.password = ''
 
 def startup():
     # setup yabiadmin server, port and path as global variables
-    print "yabiadmin server:",conf.yabiadmin.SERVER,"port:",conf.yabiadmin.PORT,"path:",conf.yabiadmin.PATH
+    print "yabi admin server:",conf.Configuration.yabiadmin()
     
     print "Loading connectors..."
     base.LoadConnectors()
