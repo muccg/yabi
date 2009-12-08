@@ -35,6 +35,9 @@ def port_setting(port):
 # process boolean string into python boolean type
 boolean_proc = lambda x: x.lower()=="true" or x.lower()=="t" or x.lower()=="yes" or x.lower()=="y"
 
+class ConfigError(Exception):
+    pass
+
 ##
 ## The Configuration store. Singleton.
 ##
@@ -135,7 +138,27 @@ class Configuration(object):
     ##
     ## classify the settings into a ip/port based classification
     ##
-    #@classmethod
-    #def 
+    def classify_ports(self):
+        ips = {}
+        for section in self.SECTIONS:
+            ip, port = self.config[section]['port']
+            
+            # ip number
+            ipstore = ips[ip] if ip in ips else {}
+            
+            # then port
+            portstore = ipstore[port] if port in ipstore else {}
+            
+            # then path
+            if path in portstore:
+                # error. duplicate path
+                raise ConfigError, "overlapping application paths"
+            
+            portstore[path] = section
+            
+            ipstore[port] = portstore
+            ips[ip] = ipstore
+            
+        return ips
     
 config = Configuration()

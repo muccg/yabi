@@ -31,6 +31,7 @@ SSL_PORT = int(os.environ['SSL_PORT']) if 'SSL_PORT' in os.environ else 4430
 from conf import config
 config.read_config()
 config.sanitise()
+print config.classify_ports()
 
 # make sure our env is sane
 import os
