@@ -99,10 +99,10 @@ fi
 case "$1" in
         start)
                 echo -n "Starting $NAME"
-                daemon ${TWISTD}  \\
-                                --pidfile=$PID_FILE \\
-                                --rundir=$RUNNING_DIR \\
-                                --logfile=$LOG_FILE \\
+                daemon ${TWISTD}  \
+                                --pidfile=$PID_FILE \
+                                --rundir=$RUNNING_DIR \
+                                --logfile=$LOG_FILE \
                                 ${TAP}
                 status $NAME
                 ;;
