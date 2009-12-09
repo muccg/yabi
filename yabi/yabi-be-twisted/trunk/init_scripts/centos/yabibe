@@ -9,10 +9,12 @@
 #              make use of the RPC mechanism.
 # processname: portmap
 
-TWISTD="/usr/local/stackless/bin/twistd"
-TAP="server.py"
-RUNDIR="run-dir"
 NAME="yabibe"
+TWISTD="/usr/local/stackless/bin/twistd"
+BACKEND_DIR="/usr/local/yabi/backend"
+TAP="server.py"
+RUNDIR="/var/run/yabi/backend"
+PIDFILE="${RUNDIR}/${NAME}.pid"
 
 # This is an interactive program, we need the current locale
 [ -f /etc/profile.d/lang.sh ] && . /etc/profile.d/lang.sh
@@ -29,7 +31,7 @@ fi
 #  check for required files
 if [ ! -x "${TWISTD}"]
 then
-        echo "$0: Aborting, no $TWISTD found"
+        echo "$0: Aborting, no $TWISTD found."
         exit 0
 fi
 if [ ! -r "${TAP}" ]
@@ -41,25 +43,25 @@ fi
 #  set up run directory if necessary
 if [ ! -d "${RUNDIR}" ]
 then
-        mkdir -p "${RUNDIR}"
+        echo "$0: Aborting, running directory $RUNDIR does not exist."
+        exit 0
 fi
-
 
 case "$1" in
         start)
                 echo -n "Starting $NAME"
                 daemon ${TWISTD}  \\
-                                --pidfile=$pidfile \\
-                                --rundir=$rundir \\
-                                --%(twistd_option)s=$file \\
-                                --logfile=$logfile
-                status %(rpm_file)s
+                                --pidfile=$PIDFILE \\
+                                --rundir=$RUNDIR \\
+                                --logfile=$LOGFILE \\
+                                ${TAP}
+                status $NAME
                 ;;
 
         stop)
-                echo -n "Stopping %(rpm_file)s: twistd"
-                kill `cat "${pidfile}"`
-                status %(rpm_file)s
+                echo -n "Stopping ${NAME}"
+                kill `cat "${PIDFILE}"`
+                status $NAME
                 ;;
 
         restart)
