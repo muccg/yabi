@@ -114,7 +114,10 @@ case "$1" in
 
         stop)
                 echo -n "Stopping ${NAME}"
-                kill `cat "${PIDFILE}"`
+                kill `cat "${PID_FILE}"`
+                sleep 3
+                kill -9 `cat "${PID_FILE}"`
+                rm -f "${PID_FILE}"
                 status $NAME
                 ;;
 
