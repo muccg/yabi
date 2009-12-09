@@ -43,6 +43,12 @@ if "DJANGODEV" in os.environ:
     YABISTORE_BASE = "/" + YABISTORE_BASE
     SSL_ENABLED = False
     DEV_SERVER = True
+
+    AUTH_LDAP_SERVER = ('ldaps://fdsdev.localdomain',)
+    AUTH_LDAP_BASE = 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
+    AUTH_LDAP_GROUP_BASE = 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
+    AUTH_LDAP_GROUP = 'yabi'
+    DEFAULT_GROUP = "baseuser"
     
     print "YABISTORE_SERVER =",YABISTORE_SERVER
     print "YABISTORE_BASE =",YABISTORE_BASE
@@ -64,6 +70,12 @@ else:
     DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
     YABIADMIN_SERVER = "127.0.0.1:8001"
     YABISTORE_SERVER = "127.0.0.1:8002"
+
+    AUTH_LDAP_SERVER = ('ldaps://fdsdev.localdomain',)
+    AUTH_LDAP_BASE = 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
+    AUTH_LDAP_GROUP_BASE = 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
+    AUTH_LDAP_GROUP = 'yabi'
+    DEFAULT_GROUP = "baseuser"
 
     SSL_ENABLED = True
     DEV_SERVER = False
@@ -182,19 +194,9 @@ CAPTCHA_ROOT = os.path.join(MEDIA_ROOT, 'captchas')
 CAPTCHA_URL = os.path.join(MEDIA_URL, 'captchas')
 
 
-##
-## Auth settings
-##
-AUTH_LDAP_SERVER = 'ldaps://fds2.localdomain'
-AUTH_LDAP_BASE = 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
-AUTH_LDAP_GROUP_BASE = 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
-AUTH_LDAP_GROUP = 'yabi'
-DEFAULT_GROUP = "baseuser"
-
-
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.LDAPBackend',
-#    'django.contrib.auth.backends.ModelBackend',
+    'django.contrib.auth.backends.NoAuthModelBackend',
 )
 
 # for local development, this is set to the static serving directory. For deployment use Apache Alias
