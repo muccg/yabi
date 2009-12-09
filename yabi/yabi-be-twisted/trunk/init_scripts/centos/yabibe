@@ -89,7 +89,7 @@ if [ "${pidfile}X" = "X" ]; then PID_FILE="/var/run/yabi/backend.pid"; else PID_
 #  set up run directory if necessary
 if [ ! -d "${RUNNING_DIR}" ]
 then
-        echo "$0: Aborting, running directory $RUNDIR does not exist."
+        echo "$0: Aborting, running directory $RUNNING_DIR does not exist."
         exit 0
 fi
 
