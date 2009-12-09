@@ -99,7 +99,7 @@ then
         exit 0
 fi
 
-if [ ! -f "${TAP}" ]
+if [ ! -e "${TAP}" ]
 then
         echo "$0: Aborting, tap file ${TAP} not found."
         exit 0
