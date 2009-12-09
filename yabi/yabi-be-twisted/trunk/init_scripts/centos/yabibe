@@ -47,7 +47,7 @@ cfg.parser () {
         
 # search a path for a file
 find_conf () {
-    for PART in "${HOME}/.yabi/${CONFFILE}" "${HOME}/${CONFFILE}" "/etc/${CONFFILE}"
+    for PART in "${HOME}/.yabi/${CONFFILE}" "${HOME}/.yabi/backend/${CONFFILE}" "${HOME}/${CONFFILE}" "${HOME}/.yabi" "/etc/${CONFFILE}" "/etc/yabi/${CONFFILE}" 
     do
         if [ -f $PART ]
         then
