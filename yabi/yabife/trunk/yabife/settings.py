@@ -24,7 +24,7 @@ LOGIN_URL = url("/login")
 #
 # if we are deploying a DJANGODEV development version, we can override settings with environment variables
 #
-YABIADMIN = os.environ["YABIADMIN"] if "YABIADMIN" in os.environ else "localhost.localdomain:8000/yabiadmin"
+YABIADMIN = os.environ["YABIADMIN"] if "YABIADMIN" in os.environ else "faramir.localdomain/yabiadmin/trunk"
 YABISTORE = os.environ["YABISTORE"] if "YABISTORE" in os.environ else "faramir.localdomain/yabistore/trunk"
 
 # development deployment
