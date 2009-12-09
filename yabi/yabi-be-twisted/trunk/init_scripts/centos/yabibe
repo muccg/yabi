@@ -88,7 +88,7 @@ cfg.section.backend
 if [ "${runningdir}X" = "X" ]; then RUNNING_DIR="/var/run/yabi/backend"; else RUNNING_DIR=$runningdir; fi
 if [ "${logfile}X" = "X" ]; then LOG_FILE="/var/log/yabi/backend.log"; else LOG_FILE=$logfile; fi
 if [ "${pidfile}X" = "X" ]; then PID_FILE="/var/run/yabi/backend.pid"; else PID_FILE=$pidfile; fi
-if [ "${source}X" = "X" ]; then SOURCE="/var/run/yabi/backend.pid"; else SOURCE=$source; fi
+if [ "${source}X" = "X" ]; then SOURCE="~/yabi/yabi-be-twisted/trunk/server.py"; else SOURCE=$source; fi
 
 TAP="${SOURCE}/server.py"
 
@@ -110,8 +110,8 @@ fi
 case "$1" in
         start)
                 echo -n "Starting $NAME"
-                echo daemon ${TWISTD} --pidfile=$PID_FILE --rundir=$RUNNING_DIR --logfile=$LOG_FILE ${TAP}
-                daemon ${TWISTD} --pidfile=$PID_FILE --rundir=$RUNNING_DIR --logfile=$LOG_FILE ${TAP}
+                echo daemon ${TWISTD} --pidfile=$PID_FILE --rundir=$RUNNING_DIR --logfile=$LOG_FILE --python=${TAP}
+                daemon ${TWISTD} --pidfile=$PID_FILE --rundir=$RUNNING_DIR --logfile=$LOG_FILE --python=${TAP}
                 status $NAME
                 ;;
 
