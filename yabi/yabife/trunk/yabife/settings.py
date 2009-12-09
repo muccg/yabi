@@ -45,11 +45,11 @@ if "DJANGODEV" in os.environ:
     DEV_SERVER = True
 
     AUTH_LDAP_SERVER = ('ldaps://fdsdev.localdomain',)
-    AUTH_LDAP_BASE = 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
+    AUTH_LDAP_USER_BASE = 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
     AUTH_LDAP_GROUP_BASE = 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
     AUTH_LDAP_GROUP = 'yabi'
     DEFAULT_GROUP = "baseuser"
-    
+
     print "YABISTORE_SERVER =",YABISTORE_SERVER
     print "YABISTORE_BASE =",YABISTORE_BASE
     print "YABIADMIN_SERVER =",YABIADMIN_SERVER
@@ -140,7 +140,8 @@ MIDDLEWARE_CLASSES = (
 )
 
 # our session cookie name (set to be different to admin)
-SESSION_COOKIE_NAME = "yabifecookie"
+SESSION_COOKIE_PATH = url('/')
+SESSION_SAVE_EVERY_REQUEST = True
 
 ROOT_URLCONF = 'yabife.urls'
 
