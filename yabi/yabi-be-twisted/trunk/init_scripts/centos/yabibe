@@ -108,8 +108,7 @@ fi
 case "$1" in
         start)
                 echo -n "Starting $NAME"
-                echo daemon ${TWISTD} --pidfile=$PID_FILE --rundir=$RUNNING_DIR --logfile=$LOG_FILE --python=${TAP}
-                daemon ${TWISTD} --pidfile=$PID_FILE --rundir=$RUNNING_DIR --logfile=$LOG_FILE --python=${TAP}
+                ${TWISTD} --pidfile=$PID_FILE --rundir=$RUNNING_DIR --logfile=$LOG_FILE --python=${TAP}
                 status $NAME
                 ;;
 
