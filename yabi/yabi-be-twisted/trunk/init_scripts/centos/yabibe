@@ -106,8 +106,8 @@ fi
 case "$1" in
         start)
                 echo -n "Starting $NAME"
-                daemon ${TWISTD} --nodaemon --pidfile=$PID_FILE --rundir=$RUNNING_DIR --logfile=$LOG_FILE --python=${TAP}
-                status $NAME
+                ${TWISTD} --pidfile=$PID_FILE --rundir=$RUNNING_DIR --logfile=$LOG_FILE --python=${TAP}
+                status -p $PID_FILE $NAME
                 ;;
 
         stop)
@@ -116,7 +116,7 @@ case "$1" in
                 sleep 3
                 kill -9 `cat "${PID_FILE}"` >& /dev/null
                 rm -f "${PID_FILE}"
-                status $NAME
+                status -p $PID_FILE $NAME
                 ;;
 
         restart)
