@@ -20,9 +20,7 @@ config.sanitise()
 application = service.Application('yabiadmin')
 
 # Environment setup for your Django project files:
-MANGO_APP = "yabiadmin"
-sys.path.append(os.path.join(os.path.dirname(__file__),MANGO_APP))
-os.environ['DJANGO_SETTINGS_MODULE'] = '%s.settings'%MANGO_APP
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 from twisted.web2 import wsgi
 from django.conf import settings
