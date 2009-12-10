@@ -174,6 +174,8 @@ class Configuration(object):
     
     
     
+    
+    
     @property
     def yabistore(self):
         return "%s:%d%s"%tuple(self.config['store']['port']+(self.config['store']['path'],))
