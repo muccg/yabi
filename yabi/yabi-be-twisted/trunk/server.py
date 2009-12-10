@@ -90,68 +90,30 @@ def app_builder(appname):
         return result
     return app
 
-for modname in resource_directories:
-    path = config.config[modname]['path']
-    assert path.count("/")==1 and path.startswith('/'), "Path must be single directory based at the root. eg '/yabiadmin'"
-    
-    path = path[1:]
-    
-    modules[modname] = wsgi.WSGIResource(app_builder(modname))
-    
-    print "module",modname,"=",modules[modname]
-    
-mainresource = None
-for ip in portconfig:
-    print "IP",ip
-    for port in portconfig[ip]:
-        print "Port:",port
-        
-        # make a resource to serve out here
-        if "backend" in portconfig[ip][port].values():
-            mainresource = resource = BaseResource()
-        else:
-            resource = web2resource.PostableResource()
-            resource.addSlash = True
-        
-        # Setup default common access logging
-        res = log.LogWrapperResource(resource)
-        log.DefaultCommonAccessLoggingObserver().start()
-        
-        # Create the site and application objects
-        site = server.Site(res)
+# Create the resource we will be serving
+base = BaseResource()
 
-        internet.TCPServer(port, channel.HTTPFactory(site)).setServiceParent(application)
-        #internet.SSLServer(SSL_PORT, channel.HTTPFactory(site), ServerContextFactory()).setServiceParent(application)
-        
-        for path, module in portconfig[ip][port].iteritems():
-            print "path:",path,"module:",module
-            if module!="backend":
-                resource.putChild(path[1:], modules[module])
+# Setup default common access logging
+res = log.LogWrapperResource(base)
+log.DefaultCommonAccessLoggingObserver().start()
 
-## Create the resource we will be serving
-#base = BaseResource()
+# Create the site and application objects
+site = server.Site(res)
 
-## Setup default common access logging
-#res = log.LogWrapperResource(base)
-#log.DefaultCommonAccessLoggingObserver().start()
+# for HTTPS, we need a server context factory to build the context for each ssl connection
+class ServerContextFactory:
+    def getContext(self):
+        """Create an SSL context.
+        This is a sample implementation that loads a certificate from a file
+        called 'server.pem'."""
+        ctx = SSL.Context(SSL.SSLv23_METHOD)
+        ctx.use_certificate_file('servercert.pem')
+        ctx.use_privatekey_file('serverkey.pem')
+        return ctx
 
-## Create the site and application objects
-#site = server.Site(res)
-
-## for HTTPS, we need a server context factory to build the context for each ssl connection
-#class ServerContextFactory:
-    #def getContext(self):
-        #"""Create an SSL context.
-        #This is a sample implementation that loads a certificate from a file
-        #called 'server.pem'."""
-        #ctx = SSL.Context(SSL.SSLv23_METHOD)
-        #ctx.use_certificate_file('servercert.pem')
-        #ctx.use_privatekey_file('serverkey.pem')
-        #return ctx
-
-#from twisted.web2 import channel
-#internet.TCPServer(PORT, channel.HTTPFactory(site)).setServiceParent(application)
-#internet.SSLServer(SSL_PORT, channel.HTTPFactory(site), ServerContextFactory()).setServiceParent(application)
+from twisted.web2 import channel
+internet.TCPServer(PORT, channel.HTTPFactory(site)).setServiceParent(application)
+internet.SSLServer(SSL_PORT, channel.HTTPFactory(site), ServerContextFactory()).setServiceParent(application)
 
 # telnet port to python shell
 from twisted.manhole import telnet
@@ -168,7 +130,7 @@ def startup():
     print "yabi admin server:",config.yabiadmin
     
     print "Loading connectors..."
-    mainresource.LoadConnectors()
+    base.LoadConnectors()
         
     # setup the TaskManager if we are needed
     if "TASKMANAGER" in os.environ:
