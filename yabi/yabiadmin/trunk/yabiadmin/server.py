@@ -26,8 +26,8 @@ from twisted.web2 import wsgi
 from django.conf import settings
 from django.core.management import setup_environ
 
-import yabiadmin.settings
-setup_environ(yabiadmin.settings)
+import settings
+setup_environ(settings)
 
 from django.core.handlers.wsgi import WSGIHandler
 
