@@ -122,6 +122,6 @@ def UserCreds(yabiusername, scheme,username,hostname):
     # see if we can get the credentials
     #print "UserCreds",scheme,username,hostname
     url = os.path.join(config.yabiadminpath,'ws/credential/%s/%s/%s/%s/'%(yabiusername,scheme,username,hostname))
-    code, message, data = GET(url, host=conf.yabiadmin.SERVER, port=conf.yabiadmin.PORT)
+    code, message, data = GET(url, host=config.yabiadminserver, port=config.yabiadminport)
     assert code==200
     return json.loads(data)
