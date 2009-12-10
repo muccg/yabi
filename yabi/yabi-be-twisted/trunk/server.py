@@ -69,7 +69,7 @@ if config.config['backend']['telnet']:
 
 def startup():
     # setup yabiadmin server, port and path as global variables
-    print "yabi admin server:",config.config["backend"]["yabiadmin"]
+    print "yabi admin server:",config.config["backend"]["admin"]
     
     print "Loading connectors..."
     base.LoadConnectors()
