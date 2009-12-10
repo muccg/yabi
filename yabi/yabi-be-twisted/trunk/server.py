@@ -24,9 +24,9 @@ from BaseResource import BaseResource
 sys.path=['.']+sys.path
 
 # run as root
-PORT = int(os.environ['PORT']) if 'PORT' in os.environ else 8000
-TELNET_PORT = int(os.environ['TELNET_PORT']) if 'TELNET_PORT' in os.environ else 8021
-SSL_PORT = int(os.environ['SSL_PORT']) if 'SSL_PORT' in os.environ else 4430
+#PORT = int(os.environ['PORT']) if 'PORT' in os.environ else 8000
+#TELNET_PORT = int(os.environ['TELNET_PORT']) if 'TELNET_PORT' in os.environ else 8021
+#SSL_PORT = int(os.environ['SSL_PORT']) if 'SSL_PORT' in os.environ else 4430
 
 from conf import config
 config.read_config()
@@ -112,8 +112,8 @@ class ServerContextFactory:
         return ctx
 
 from twisted.web2 import channel
-internet.TCPServer(PORT, channel.HTTPFactory(site)).setServiceParent(application)
-internet.SSLServer(SSL_PORT, channel.HTTPFactory(site), ServerContextFactory()).setServiceParent(application)
+internet.TCPServer(config.config['backend']['port'][1], channel.HTTPFactory(site)).setServiceParent(application)
+internet.SSLServer(config.config['backend']['sslport'][1], channel.HTTPFactory(site), ServerContextFactory()).setServiceParent(application)
 
 # telnet port to python shell
 from twisted.manhole import telnet
