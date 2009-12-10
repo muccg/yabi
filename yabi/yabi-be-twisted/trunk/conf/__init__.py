@@ -160,6 +160,10 @@ class Configuration(object):
     def yabiadminport(self):
         return self.config['admin']['port'][1]
     
+    @property
+    def yabiadminpath(self):
+        return self.config['admin']['path']
+    
     
     
     @property

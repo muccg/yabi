@@ -94,11 +94,11 @@ class TaskManager(object):
         useragent = "YabiExec/0.1"
         
         factory = client.HTTPClientFactory(
-            os.path.join(conf.yabiadmin.PATH,self.TASK_URL),
+            os.path.join(config.config["backend"]["admin"].yabiadminpath,self.TASK_URL),
             agent = useragent
             )
         factory.noisy = True
-        reactor.connectTCP(config.config["backend"]["admin"].yabiadminserver, conf.yabiadminport, factory)
+        reactor.connectTCP(config.config["backend"]["admin"].yabiadminserver, config.config["backend"]["admin"].yabiadminport, factory)
         
         # now if the page fails for some reason. deal with it
         def _doFailure(data):
