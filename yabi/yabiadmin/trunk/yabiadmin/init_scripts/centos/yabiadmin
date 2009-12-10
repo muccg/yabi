@@ -80,7 +80,7 @@ fi
 
 # read configuration.
 cfg.parser $YABICONF
-cfg.section.backend
+cfg.section.admin
 
 # setup parameters
 if [ "${runningdir}X" = "X" ]; then RUNNING_DIR="/var/run/yabi/backend"; else RUNNING_DIR=$runningdir; fi
