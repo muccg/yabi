@@ -11,7 +11,18 @@ import ConfigParser
 import os.path
 import re
 
-from utils.parsers import parse_url
+
+import urlparse
+import re
+re_url_schema = re.compile(r'\w+')
+
+def parse_url(uri):
+    """Parse a url via the inbuilt urlparse. But this is slightly different
+    as it can handle non-standard schemas. returns the schema and then the
+    tuple from urlparse"""
+    scheme, rest = uri.split(":",1)
+    assert re_url_schema.match(scheme)
+    return scheme, urlparse.urlparse(rest)
 
 SEARCH_PATH = ["~/.yabi/yabi.conf","~/.yabi/backend/yabi.conf","~/yabi.conf","~/.yabi","/etc/yabi.conf","/etc/yabi/yabi.conf"]
 
