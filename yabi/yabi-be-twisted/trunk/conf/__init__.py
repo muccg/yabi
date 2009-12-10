@@ -125,6 +125,11 @@ class Configuration(object):
             self.config[name]['simultaneous'] = conf_parser.get(name,'simultaneous')
             self.config[name]['startup'] = boolean_proc(conf_parser.get(name,'startup'))
             
+        # backend section
+        name = "backend"
+        if conf_parser.has_section(name):
+            self.config[name]['admin'] = conf_parser.get(name,'admin')
+            
     def read_config(self, search=SEARCH_PATH):
         for part in search:
             self.read_from_file(os.path.expanduser(part))
