@@ -88,7 +88,7 @@ def Log(logpath,message):
         #print "LOG:",parsed.path, message,parsed.hostname,parsed.port
         code,msg,data = POST(parsed.path, message=message,host=parsed.hostname,port=parsed.port)              # error exception should bubble up and be caught
     else:
-        code,msg,data = POST(logpath, , host=config.yabiadminserver,port=config.yabiadminport, message=message)              # error exception should bubble up and be caught
+        code,msg,data = POST(logpath, host=config.yabiadminserver,port=config.yabiadminport, message=message)              # error exception should bubble up and be caught
     assert code==200
 
     
