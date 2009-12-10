@@ -114,7 +114,8 @@ case "$1" in
                 echo -n "Stopping ${NAME}..."
                 kill `cat "${PID_FILE}"`
                 sleep 3
-                kill -9 `cat "${PID_FILE}"` >& /dev/null
+                PID=`cat "${PID_FILE}" 2>/dev/null`
+                kill -9 $PID >& /dev/null
                 rm -f "${PID_FILE}" >& /dev/null
                 status -p $PID_FILE $NAME
                 ;;
