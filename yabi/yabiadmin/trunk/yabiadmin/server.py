@@ -12,8 +12,6 @@ from twisted.python import util
 # for SSL context
 from OpenSSL import SSL
 
-from BaseResource import BaseResource
-
 from conf import config
 config.read_config()
 config.sanitise()
@@ -21,8 +19,31 @@ config.sanitise()
 # Twisted Application Framework setup:
 application = service.Application('yabiadmin')
 
-# Create the resource we will be serving
-base = BaseResource()
+# Environment setup for your Django project files:
+MANGO_APP = "yabiadmin"
+sys.path.append(os.path.join(os.path.dirname(__file__),MANGO_APP))
+os.environ['DJANGO_SETTINGS_MODULE'] = '%s.settings'%MANGO_APP
+
+from twisted.web2 import wsgi
+from django.conf import settings
+from django.core.management import setup_environ
+
+import yabiadmin.settings
+setup_environ(yabiadmin.settings)
+
+from django.core.handlers.wsgi import WSGIHandler
+
+def application(environ, start):
+    os.environ['SCRIPT_NAME']=environ['SCRIPT_NAME']
+    if 'DJANGODEV' in environ:
+        os.environ['DJANGODEV']=environ['DJANGODEV']
+    if 'DJANGODEBUG' in environ:
+        os.environ['DJANGODEBUG']=environ['DJANGODEBUG']
+    result = WSGIHandler()(environ,start)
+    #print "result:\n\n",result
+    return result
+    
+base = wsgi.WSGIResource(application)
 
 # Setup default common access logging
 res = log.LogWrapperResource(base)
