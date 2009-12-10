@@ -20,7 +20,8 @@ from RememberingHTTPClient import RememberingHTTPClient, RememberingHTTPClientFa
 
 DEBUG = False
 
-WS_HOST, WS_PORT = "localhost",int(os.environ['PORT']) if 'PORT' in os.environ else 8000
+from conf import config
+
 USER_AGENT = "YabiStackless/0.1"
 
 ## errors
@@ -41,12 +42,15 @@ def sleep(seconds):
 import urllib
 
 #def GET(path, host=WS_HOST, port=WS_PORT, factory_class=CallbackHTTPClientFactory,**kws):
-def GET(path, host=WS_HOST, port=WS_PORT, factory_class=RememberingHTTPClientFactory,**kws):
+def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,**kws):
     """Stackless integrated twisted webclient GET
     Pass in the path to get and optionally the host and port
     raises a GETFailure exception on failure
     returns the return code and data on success 
     """
+    host=host or config.yabiadminserver
+    port=port or config.yabiadminport
+    
     getdata=urllib.urlencode(kws)
     
     if DEBUG:
@@ -114,13 +118,13 @@ def POST(path,**kws):
         host = kws['host']
         del kws['host']
     else:
-        host = WS_HOST
+        host = config.yabiadminserver
         
     if 'port' in kws:
         port = kws['port']
         del kws['port']
     else:
-        port = WS_PORT
+        port = config.yabiadminport
         
     errorpage=[None]
         
