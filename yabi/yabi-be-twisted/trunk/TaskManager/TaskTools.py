@@ -103,7 +103,7 @@ def Status(statuspath, message):
         
         code,msg,data = POST(parsed.path, status=message,host=parsed.hostname,port=parsed.port)              # error exception should bubble up and be caught
     else:
-        code,msg,data = POST(statuspath, status=message)              # error exception should bubble up and be caught
+        code,msg,data = POST(host=config.yabiadminserver,port=config.yabiadminport,statuspath, status=message)              # error exception should bubble up and be caught
     assert code==200
     
 def Exec(backend, command, callbackfunc=None, **kwargs):
