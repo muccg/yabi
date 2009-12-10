@@ -15,7 +15,7 @@ DEBUG = True
 
 import traceback
 
-import conf
+from conf import config
 
 from Tasklets import tasklets
 
@@ -98,7 +98,7 @@ class TaskManager(object):
             agent = useragent
             )
         factory.noisy = True
-        reactor.connectTCP(conf.yabiadmin.SERVER, conf.yabiadmin.PORT, factory)
+        reactor.connectTCP(config.config["backend"]["admin"].yabiadminserver, conf.yabiadminport, factory)
         
         # now if the page fails for some reason. deal with it
         def _doFailure(data):

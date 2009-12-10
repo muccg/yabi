@@ -151,6 +151,16 @@ class Configuration(object):
     @property
     def yabiadmin(self):
         return "%s:%d%s"%tuple(self.config['admin']['port']+(self.config['admin']['path'],))
+
+    @property
+    def yabiadminserver(self):
+        return self.config['admin']['port'][0]
+    
+    @property
+    def yabiadminport(self):
+        return self.config['admin']['port'][1]
+    
+    
     
     @property
     def yabistore(self):
