@@ -62,9 +62,9 @@ class ServerContextFactory:
         return ctx
 
 from twisted.web2 import channel
-internet.TCPServer(config.config['admin']['port'][1], channel.HTTPFactory(site)).setServiceParent(application)
+internet.TCPServer(config.config['admin']['port'][1], channel.HTTPFactory(site)) #.setServiceParent(application)
 if config.config["admin"]["ssl"]:
-    internet.SSLServer(config.config['admin']['sslport'][1], channel.HTTPFactory(site), ServerContextFactory()).setServiceParent(application)
+    internet.SSLServer(config.config['admin']['sslport'][1], channel.HTTPFactory(site), ServerContextFactory()) #.setServiceParent(application)
 
 def startup():
     # setup yabiadmin server, port and path as global variables
