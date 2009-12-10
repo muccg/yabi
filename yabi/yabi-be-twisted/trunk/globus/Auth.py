@@ -30,8 +30,8 @@ class GlobusAuth(object):
         
         try:
             status, message, data = GET( path = os.path.join(config.yabiadminpath,"ws/credential/%s/%s/%s/%s/"%(yabiusername,scheme,username,hostname)),
-                                        host = conf.yabiadmin.SERVER,
-                                        port = conf.yabiadmin.PORT )
+                                        host = config.yabiadminserver,
+                                        port = config.yabiadminport )
             
             assert status==200
             credentials = json.loads( data )
