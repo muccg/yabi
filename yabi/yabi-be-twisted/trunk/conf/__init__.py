@@ -11,7 +11,7 @@ import ConfigParser
 import os.path
 import re
 
-SEARCH_PATH = [".yabi","yabi.conf","~/.yabi","~/.yabi/yabi.conf","/etc/yabi.conf","/etc/yabi/yabi.conf"]
+SEARCH_PATH = ["~/.yabi/yabi.conf","~/.yabi/backend/yabi.conf","~/yabi.conf","~/.yabi","/etc/yabi.conf","/etc/yabi/yabi.conf"]
 
 ##
 ## Support functions that do some text processing
