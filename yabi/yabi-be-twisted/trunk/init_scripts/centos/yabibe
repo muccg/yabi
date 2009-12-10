@@ -78,8 +78,6 @@ then
         exit 0
 fi
 
-echo YABI: $YABICONF
-
 # read configuration.
 cfg.parser $YABICONF
 cfg.section.backend
@@ -108,7 +106,7 @@ fi
 case "$1" in
         start)
                 echo -n "Starting $NAME"
-                ${TWISTD} --pidfile=$PID_FILE --rundir=$RUNNING_DIR --logfile=$LOG_FILE --python=${TAP}
+                daemon ${TWISTD} --nodaemon --pidfile=$PID_FILE --rundir=$RUNNING_DIR --logfile=$LOG_FILE --python=${TAP}
                 status $NAME
                 ;;
 
@@ -116,7 +114,7 @@ case "$1" in
                 echo -n "Stopping ${NAME}"
                 kill `cat "${PID_FILE}"`
                 sleep 3
-                kill -9 `cat "${PID_FILE}"`
+                kill -9 `cat "${PID_FILE}"` >& /dev/null
                 rm -f "${PID_FILE}"
                 status $NAME
                 ;;
