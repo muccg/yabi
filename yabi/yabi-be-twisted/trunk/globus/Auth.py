@@ -3,6 +3,7 @@
 from utils.stacklesstools import GET, GETFailure, sleep
 import json, os
 from globus.CertificateProxy import CertificateProxy
+from conf import config
 
 class NoCredentials(Exception):
     """User has no globus credentials for this server"""
@@ -27,13 +28,8 @@ class GlobusAuth(object):
         
         useragent = "YabiFS/0.1"
         
-        import conf
-        #print "AuthProxyUser %s://%s@%s/"%(scheme,username,host)
-        #print "AUTHPROXYUSER"
-        #print conf.yabiadmin.SERVER, conf.yabiadmin.PORT,conf.yabiadmin.PATH
-        
         try:
-            status, message, data = GET( path = os.path.join(conf.yabiadmin.PATH,"ws/credential/%s/%s/%s/%s/"%(yabiusername,scheme,username,hostname)),
+            status, message, data = GET( path = os.path.join(config.yabiadminpath,"ws/credential/%s/%s/%s/%s/"%(yabiusername,scheme,username,hostname)),
                                         host = conf.yabiadmin.SERVER,
                                         port = conf.yabiadmin.PORT )
             

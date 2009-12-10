@@ -6,6 +6,7 @@ from twisted.internet import reactor
 import time
 import json
 import os
+from conf import config
 
 COPY_RETRY = 3
 COPY_PATH = "/fs/copy"
@@ -121,8 +122,7 @@ def UserCreds(yabiusername, scheme,username,hostname):
     """Get a users credentials"""
     # see if we can get the credentials
     #print "UserCreds",scheme,username,hostname
-    import conf
-    url = os.path.join(conf.yabiadmin.PATH,'ws/credential/%s/%s/%s/%s/'%(yabiusername,scheme,username,hostname))
+    url = os.path.join(config.yabiadminpath,'ws/credential/%s/%s/%s/%s/'%(yabiusername,scheme,username,hostname))
     code, message, data = GET(url, host=conf.yabiadmin.SERVER, port=conf.yabiadmin.PORT)
     assert code==200
     return json.loads(data)
