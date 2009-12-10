@@ -31,7 +31,7 @@ setup_environ(settings)
 
 from django.core.handlers.wsgi import WSGIHandler
 
-def application(environ, start):
+def wsgiapp(environ, start):
     os.environ['SCRIPT_NAME']=environ['SCRIPT_NAME']
     if 'DJANGODEV' in environ:
         os.environ['DJANGODEV']=environ['DJANGODEV']
@@ -41,7 +41,7 @@ def application(environ, start):
     #print "result:\n\n",result
     return result
     
-base = wsgi.WSGIResource(application)
+base = wsgi.WSGIResource(wsgiapp)
 
 # Setup default common access logging
 res = log.LogWrapperResource(base)
@@ -62,9 +62,9 @@ class ServerContextFactory:
         return ctx
 
 from twisted.web2 import channel
-internet.TCPServer(config.config['admin']['port'][1], channel.HTTPFactory(site)) #.setServiceParent(application)
+internet.TCPServer(config.config['admin']['port'][1], channel.HTTPFactory(site)).setServiceParent(application)
 if config.config["admin"]["ssl"]:
-    internet.SSLServer(config.config['admin']['sslport'][1], channel.HTTPFactory(site), ServerContextFactory()) #.setServiceParent(application)
+    internet.SSLServer(config.config['admin']['sslport'][1], channel.HTTPFactory(site), ServerContextFactory()).setServiceParent(application)
 
 def startup():
     # setup yabiadmin server, port and path as global variables
