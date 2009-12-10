@@ -138,7 +138,7 @@ class Configuration(object):
             self.config[section]['sslport'] = port_setting(self.config[section]['sslport'])
             
             if 'telnet' in self.config[section]:
-                self.config[section]['startup'] = boolean_proc(self.config[section]['startup'])
+                self.config[section]['telnet'] = boolean_proc(self.config[section]['telnet'])
             if 'telnetport' in self.config[section]:
                 self.config[section]['telnetport'] = port_setting(self.config[section]['telnetport'])
             
