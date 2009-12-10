@@ -45,12 +45,13 @@ class ConfigError(Exception):
 class Configuration(object):
     """Holds the running configuration for the full yabi stack that is running under this twistd"""
     SECTIONS = ['backend','admin','frontend','store']       # sections of the config file
-    KEYS = ['port','path','startup']
+    KEYS = ['port','path','startup','sslport']
     
     # defaults
     config = {
         'backend':  {
                         "port":"0.0.0.0:8000",
+                        "sslport":"0.0.0.0:8443",
                         "path":"/",
                         "startup":"true",
                         
@@ -58,6 +59,7 @@ class Configuration(object):
                     },
         'admin':    {
                         "port":"0.0.0.0:8000",
+                        "sslport":"0.0.0.0:8443",
                         "path":"/yabiadmin",
                         "startup":"true",
                         
@@ -66,6 +68,7 @@ class Configuration(object):
                     },
         'frontend': {
                         "port":"0.0.0.0:8000",
+                        "sslport":"0.0.0.0:8443",
                         "path":"/fe",
                         "startup":"true",
                         
@@ -73,6 +76,7 @@ class Configuration(object):
                     },
         'store':    {
                         "port":"0.0.0.0:8000",
+                        "sslport":"0.0.0.0:8443",
                         "path":"/store",
                         "startup":"true"
                     },
@@ -128,6 +132,8 @@ class Configuration(object):
         for section in self.SECTIONS:
             self.config[section]['startup'] = boolean_proc(self.config[section]['startup'])
             self.config[section]['port'] = port_setting(self.config[section]['port'])
+            self.config[section]['sslport'] = port_setting(self.config[section]['sslport'])
+            
         
     
     ##
