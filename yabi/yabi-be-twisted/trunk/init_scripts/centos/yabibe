@@ -105,17 +105,17 @@ fi
 
 case "$1" in
         start)
-                echo -n "Starting $NAME"
+                echo -n "Starting $NAME..."
                 ${TWISTD} --pidfile=$PID_FILE --rundir=$RUNNING_DIR --logfile=$LOG_FILE --python=${TAP}
                 status -p $PID_FILE $NAME
                 ;;
 
         stop)
-                echo -n "Stopping ${NAME}"
+                echo -n "Stopping ${NAME}..."
                 kill `cat "${PID_FILE}"`
                 sleep 3
                 kill -9 `cat "${PID_FILE}"` >& /dev/null
-                rm -f "${PID_FILE}"
+                rm -f "${PID_FILE}" >& /dev/null
                 status -p $PID_FILE $NAME
                 ;;
 
