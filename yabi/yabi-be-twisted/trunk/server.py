@@ -21,7 +21,6 @@ from BaseResource import BaseResource
 from conf import config
 config.read_config()
 config.sanitise()
-portconfig = config.classify_ports()
 
 # make sure our env is sane
 import os
