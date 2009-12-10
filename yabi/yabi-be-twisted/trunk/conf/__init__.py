@@ -55,6 +55,9 @@ class Configuration(object):
                         "path":"/",
                         "startup":"true",
                         
+                        "telnet":"false",
+                        "telnetport":"0.0.0.0:8021",
+                        
                         "admin":None                # none means "use the one provided here"
                     },
         'admin':    {
@@ -133,6 +136,11 @@ class Configuration(object):
             self.config[section]['startup'] = boolean_proc(self.config[section]['startup'])
             self.config[section]['port'] = port_setting(self.config[section]['port'])
             self.config[section]['sslport'] = port_setting(self.config[section]['sslport'])
+            
+            if 'telnet' in self.config[section]:
+                self.config[section]['startup'] = boolean_proc(self.config[section]['startup'])
+            if 'telnetport' in self.config[section]:
+                self.config[section]['telnetport'] = port_setting(self.config[section]['telnetport'])
             
         
     

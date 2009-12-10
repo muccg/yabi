@@ -115,15 +115,16 @@ from twisted.web2 import channel
 internet.TCPServer(config.config['backend']['port'][1], channel.HTTPFactory(site)).setServiceParent(application)
 internet.SSLServer(config.config['backend']['sslport'][1], channel.HTTPFactory(site), ServerContextFactory()).setServiceParent(application)
 
-# telnet port to python shell
-from twisted.manhole import telnet
-
-shellfactory = telnet.ShellFactory()
-reactor.listenTCP(TELNET_PORT, shellfactory)
-shellfactory.namespace['app']=application
-shellfactory.namespace['site']=site
-shellfactory.username = ''
-shellfactory.password = ''
+if config.config['backend']['telnet']:
+    # telnet port to python shell
+    from twisted.manhole import telnet
+    
+    shellfactory = telnet.ShellFactory()
+    reactor.listenTCP(config.config['backend']['telnetport'][1], shellfactory)
+    shellfactory.namespace['app']=application
+    shellfactory.namespace['site']=site
+    shellfactory.username = ''
+    shellfactory.password = ''
 
 def startup():
     # setup yabiadmin server, port and path as global variables
