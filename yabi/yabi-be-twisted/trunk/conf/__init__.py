@@ -11,6 +11,8 @@ import ConfigParser
 import os.path
 import re
 
+from utils.parsers import parse_url
+
 SEARCH_PATH = ["~/.yabi/yabi.conf","~/.yabi/backend/yabi.conf","~/yabi.conf","~/.yabi","/etc/yabi.conf","/etc/yabi/yabi.conf"]
 
 ##
@@ -150,19 +152,20 @@ class Configuration(object):
     ##
     @property
     def yabiadmin(self):
-        return "%s:%d%s"%tuple(self.config['admin']['port']+(self.config['admin']['path'],))
+        scheme,rest = parse_url(self.config['backend']['admin'])
+        return "%s:%d%s"%(rest.host,rest.port,rest.path)
 
     @property
     def yabiadminserver(self):
-        return self.config['admin']['port'][0]
-    
+        return parse_url(self.config['backend']['admin'])[1].host
+        
     @property
     def yabiadminport(self):
-        return self.config['admin']['port'][1]
+        return parse_url(self.config['backend']['admin'])[1].port
     
     @property
     def yabiadminpath(self):
-        return self.config['admin']['path']
+        return parse_url(self.config['backend']['admin'])[1].path
     
     
     
