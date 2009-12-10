@@ -98,7 +98,10 @@ class TaskManager(object):
             agent = useragent
             )
         factory.noisy = True
+        print "reactor.connectTCP(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.TASK_URL),")"
         reactor.connectTCP(config.yabiadminserver, config.yabiadminport, factory)
+        
+        
         
         # now if the page fails for some reason. deal with it
         def _doFailure(data):
