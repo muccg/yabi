@@ -197,6 +197,8 @@ def put(request):
 
     try:
         uri = request.GET['uri']
+        yabiusername = request.GET['yabiusername']
+        
         resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, uri)
 
         # TODO this only works with files written to disk by django
@@ -207,7 +209,7 @@ def put(request):
         files.append((in_file.name, in_file.name, in_file.temporary_file_path()))
         logger.debug(files)
 
-        bc = get_backendcredential_for_uri(uri)
+        bc = get_backendcredential_for_uri(yabiusername, uri)
         data = [('username', bc.credential.username),
                     ('password', bc.credential.password),
                     ('cert', bc.credential.cert),
