@@ -49,6 +49,9 @@ else:
     class BaseResource(resource.PostableResource):
         addSlash=True
     
+        def render(self, request):
+            print "render"
+    
         def locateChild(self, request, segments):
             # return our local file resource for these segments
             print "SEG",segments
