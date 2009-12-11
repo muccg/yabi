@@ -20,7 +20,7 @@ import logging
 import yabilogging
 logger = logging.getLogger('yabife')
 
-from yabifeapp.file_upload import *
+from yabifeapp.http_upload import *
 
 
 # proxy view to pass through all requests set up in urls.py
@@ -76,8 +76,8 @@ def proxy(request, url, server, base):
         files.append(('file1', in_file.name, in_file.temporary_file_path()))
         h = post_multipart(server, resource, [], files)
         logger.debug(in_file.temporary_file_path())
-
-
+        r = h.getresponse()
+        
 
     elif request.method == "POST":
 
