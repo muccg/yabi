@@ -41,8 +41,22 @@ def wsgiapp(environ, start):
     #print "result:\n\n",result
     return result
     
-base = wsgi.WSGIResource(wsgiapp)
-
+# now we are either the base resource, or we need to create a base resource and then create
+# a child_ chain to the resource.
+if not config.config["admin"]["path"] or config.config["admin"]["path"]=="/":
+    base = wsgi.WSGIResource(wsgiapp)
+else:
+    class BaseResource(resource.PostableResource):
+        addSlash=True
+    
+        def locateChild(self, request, segments):
+            # return our local file resource for these segments
+            print "SEG",segments
+            
+            return resource.Resource.locateChild(self,request,segments)
+    
+    base = BaseResource()
+     
 # Setup default common access logging
 res = log.LogWrapperResource(base)
 log.DefaultCommonAccessLoggingObserver().start()
