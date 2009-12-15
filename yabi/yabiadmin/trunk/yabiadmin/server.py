@@ -21,8 +21,11 @@ application = service.Application('yabiadmin')
 
 # Environment setup for your Django project files:
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-os.environ['DJANGODEV'] = '1'
-os.environ['DJANGODEBUG'] = '1'
+
+if config.config["admin"]["database"]=="dev":
+    os.environ['DJANGODEV']='1'
+if config.config["admin"]["debug"]:
+    os.environ['DJANGODEBUG'] = '1'
 
 from twisted.web2 import wsgi, resource
 from django.conf import settings
@@ -40,10 +43,10 @@ def wsgiapp(environ, start):
     #this doesn't work in here
     #os.environ['SCRIPT_NAME']=config.config["admin"]["path"]
  
-    if 'DJANGODEV' in environ:
-        os.environ['DJANGODEV']=environ['DJANGODEV']
-    if 'DJANGODEBUG' in environ:
-        os.environ['DJANGODEBUG']=environ['DJANGODEBUG']
+    #if 'DJANGODEV' in environ:
+        #os.environ['DJANGODEV']=environ['DJANGODEV']
+    #if 'DJANGODEBUG' in environ:
+        #os.environ['DJANGODEBUG']=environ['DJANGODEBUG']
         
     result = WSGIHandler()(environ,start)
     #print "result:\n\n",result
