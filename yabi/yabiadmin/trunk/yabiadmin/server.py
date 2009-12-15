@@ -74,11 +74,11 @@ else:
                 # remove the matching first entry
                 adminpath.pop(0)
                 asksegments.pop(0)
-                
+            
             print "adminpath",adminpath
             print "asksegments",asksegments
-            if not len(adminpath):
-                return wsgi.WSGIResource(wsgiapp).locateChild(request,asksegments), asksegments
+            #if not len(adminpath):
+                #return wsgi.WSGIResource(wsgiapp).locateChild(request,asksegments), asksegments
                 
             return resource.Resource.locateChild(self,request,segments)
     
