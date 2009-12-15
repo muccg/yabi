@@ -34,6 +34,7 @@ from django.core.handlers.wsgi import WSGIHandler
 def wsgiapp(environ, start):
     #os.environ['SCRIPT_NAME']=environ['SCRIPT_NAME']
     os.environ['SCRIPT_NAME']=config.config["admin"]["path"]
+    environ['SCRIPT_NAME']=config.config["admin"]["path"]
     if 'DJANGODEV' in environ:
         os.environ['DJANGODEV']=environ['DJANGODEV']
     if 'DJANGODEBUG' in environ:
