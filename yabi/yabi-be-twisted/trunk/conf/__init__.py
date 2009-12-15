@@ -172,7 +172,7 @@ class Configuration(object):
                 telnet=boolean_proc,
                 telnetport=port_setting,
                 debug=boolean_proc
-            }
+            )
             
             for key, val in conversions.iteritems():
                 if key in self.config[section]:
