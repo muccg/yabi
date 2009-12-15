@@ -43,10 +43,10 @@ from django.core.handlers.wsgi import WSGIHandler
 def wsgiapp(environ, start):
     if config.config["admin"]["database"]=="dev":
         os.environ['DJANGODEV']='1'
-        eviron['DJANGODEV']='1'
+        environ['DJANGODEV']='1'
     if config.config["admin"]["debug"]:
         os.environ['DJANGODEBUG'] = '1'
-        eviron['DJANGODEBUG']='1'
+        environ['DJANGODEBUG']='1'
     
     return WSGIHandler()(environ,start)
     
