@@ -97,7 +97,7 @@ class Configuration(object):
                         "port":"0.0.0.0:8000",
                         "sslport":"0.0.0.0:8443",
                         "path":"/store",
-                        "startup":"true"
+                        "startup":"true",
                         
                         "debug": "true"             # run the app in debug mode
                     },
