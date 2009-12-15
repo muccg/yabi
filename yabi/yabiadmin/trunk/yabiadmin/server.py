@@ -55,12 +55,12 @@ else:
     class BaseResource(resource.PostableResource):
         addSlash=True
     
-        def render(self, request):
-            print "render"
+        #def render(self, request):
+            #print "render"
     
         def locateChild(self, request, segments):
             # return our local file resource for these segments
-            print "SEG",segments
+            #print "SEG",segments
             
             # strip trailing /'s (  [''] )
             adminpath = config.config["admin"]["path"].split("/")
@@ -77,14 +77,14 @@ else:
                 adminpath.pop(0)
                 asksegments.pop(0)
             
-            print "adminpath",adminpath
-            print "asksegments",asksegments
+            #print "adminpath",adminpath
+            #print "asksegments",asksegments
              
             if len(adminpath):
                 # our request is not under the admin path
                 return resource.Resource.locateChild(self,request,segments)
             
-            print "WSGI",wsgi.WSGIResource(wsgiapp), asksegments
+            #print "WSGI",wsgi.WSGIResource(wsgiapp), asksegments
             return wsgi.WSGIResource(wsgiapp), asksegments
             
     
