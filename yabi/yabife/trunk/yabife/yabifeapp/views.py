@@ -16,8 +16,7 @@ from django.core.servers.basehttp import FileWrapper
 import copy
 import os
 
-import logging
-import yabilogging
+from django.contrib import logging
 logger = logging.getLogger('yabife')
 
 from yabifeapp.http_upload import *

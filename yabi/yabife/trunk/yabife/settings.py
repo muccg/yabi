@@ -195,6 +195,16 @@ CAPTCHA_ROOT = os.path.join(MEDIA_ROOT, 'captchas')
 CAPTCHA_URL = os.path.join(MEDIA_URL, 'captchas')
 
 
+##
+## Auth settings
+##
+AUTH_LDAP_SERVER = 'ldaps://fds1.localdomain'
+AUTH_LDAP_BASE = 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
+AUTH_LDAP_GROUP_BASE = 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
+AUTH_LDAP_GROUP = 'yabi'
+DEFAULT_GROUP = "baseuser"
+
+
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.LDAPBackend',
     'django.contrib.auth.backends.NoAuthModelBackend',
@@ -211,7 +221,7 @@ import logging
 LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
 LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
 LOGGING_FORMATTER = logging.Formatter("%(asctime)s:%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s:%(message)s")
-
+LOGS = ['yabife']
 
 # TODO the file upload only handles files that are written to disk at them moment
 # so this MUST be set to 0
