@@ -66,11 +66,13 @@ else:
                 asksegments = asksegments[:-1]
                 
             # while the segments match, consume more
-            while len(adminpath) and adminpath[0]==asksegments[0]:
+            while len(adminpath) and len(asksegments) and adminpath[0]==asksegments[0]:
                 # remove the matching first entry
                 adminpath.pop(0)
                 asksegments.pop(0)
                 
+            print "adminpath",adminpath
+            print "asksegments",asksegments
             if not len(adminpath):
                 return wsgi.WSGIResource(wsgiapp)(request,asksegments), asksegments
                 
