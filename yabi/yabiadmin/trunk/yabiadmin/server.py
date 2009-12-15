@@ -56,7 +56,25 @@ else:
             # return our local file resource for these segments
             print "SEG",segments
             
-            return resource.Resource.locateChild(self,request,segments)
+            # strip trailing /'s (  [''] )
+            adminpath = config.config["admin"]["path"].split("/")
+            while not adminpath[-1]:
+                adminpath = adminpath[:-1]
+                
+            asksegments = segments
+            while not asksegments[-1]:
+                asksegments = asksegments[:-1]
+                
+            # while the segments match, consume more
+            while len(adminpath) and adminpath[0]==asksegments[0]:
+                # remove the matching first entry
+                adminpath.pop(0)
+                asksegments.pop(0)
+                
+            if not len(adminpath):
+                return wsgi.WSGIResource(wsgiapp)(request,asksegments), asksegments
+                
+            return resource.Resource.locateChild(self,request,asksegments)
     
     base = BaseResource()
      
