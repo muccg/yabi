@@ -174,7 +174,7 @@ class Configuration(object):
                 debug=boolean_proc
             )
             
-            for key, val in conversions.iteritems():
+            for key, value in conversions.iteritems():
                 if key in self.config[section]:
                     self.config[section][key] = value(self.config[section][key])
          
