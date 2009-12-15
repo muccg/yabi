@@ -26,6 +26,7 @@ if config.config["admin"]["database"]=="dev":
     os.environ['DJANGODEV']='1'
 if config.config["admin"]["debug"]:
     os.environ['DJANGODEBUG'] = '1'
+print "DJANGODEBUG",os.environ['DJANGODEBUG']
 
 from twisted.web2 import wsgi, resource
 from django.conf import settings
@@ -40,17 +41,7 @@ setup_environ(settings)
 from django.core.handlers.wsgi import WSGIHandler
 
 def wsgiapp(environ, start):
-    #this doesn't work in here
-    #os.environ['SCRIPT_NAME']=config.config["admin"]["path"]
- 
-    #if 'DJANGODEV' in environ:
-        #os.environ['DJANGODEV']=environ['DJANGODEV']
-    #if 'DJANGODEBUG' in environ:
-        #os.environ['DJANGODEBUG']=environ['DJANGODEBUG']
-        
-    result = WSGIHandler()(environ,start)
-    #print "result:\n\n",result
-    return result
+    return WSGIHandler()(environ,start)
     
 # now we are either the base resource, or we need to create a base resource and then create
 # a child_ chain to the resource.
@@ -60,12 +51,8 @@ else:
     class BaseResource(resource.PostableResource):
         addSlash=True
     
-        #def render(self, request):
-            #print "render"
-    
         def locateChild(self, request, segments):
             # return our local file resource for these segments
-            #print "SEG",segments
             
             # strip trailing /'s (  [''] )
             adminpath = config.config["admin"]["path"].split("/")
@@ -82,14 +69,10 @@ else:
                 adminpath.pop(0)
                 asksegments.pop(0)
             
-            #print "adminpath",adminpath
-            #print "asksegments",asksegments
-             
             if len(adminpath):
                 # our request is not under the admin path
                 return resource.Resource.locateChild(self,request,segments)
             
-            #print "WSGI",wsgi.WSGIResource(wsgiapp), asksegments
             return wsgi.WSGIResource(wsgiapp), asksegments
             
     
