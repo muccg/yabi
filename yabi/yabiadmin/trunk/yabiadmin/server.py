@@ -82,7 +82,7 @@ else:
                 # our request is not under the admin path
                 return resource.Resource.locateChild(self,request,segments)
             
-            print "WSGI",wsgi.WSGIResource(wsgiapp)
+            print "WSGI",wsgi.WSGIResource(wsgiapp), asksegments
             return wsgi.WSGIResource(wsgiapp), asksegments
             
     
