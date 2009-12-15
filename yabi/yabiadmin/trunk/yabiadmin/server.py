@@ -65,10 +65,8 @@ else:
             
             
                 
-            asksegments = segments
-            while len(asksegments) and not asksegments[-1]:
-                asksegments = asksegments[:-1]
-                
+            asksegments = segments[:]
+            
             # while the segments match, consume more
             while len(adminpath) and len(asksegments) and adminpath[0]==asksegments[0]:
                 # remove the matching first entry
