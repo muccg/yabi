@@ -58,8 +58,12 @@ else:
             
             # strip trailing /'s (  [''] )
             adminpath = config.config["admin"]["path"].split("/")
-            while not adminpath[-1]:
-                adminpath = adminpath[:-1]
+            while adminpath and not adminpath[-1]:
+                adminpath.pop()
+            while adminpath and not adminpath[0]:
+                adminpath.pop(0)
+            
+            
                 
             asksegments = segments
             while len(asksegments) and not asksegments[-1]:
