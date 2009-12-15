@@ -80,7 +80,7 @@ else:
             if not len(adminpath):
                 return wsgi.WSGIResource(wsgiapp).locateChild(request,asksegments), asksegments
                 
-            return resource.Resource.locateChild(self,request,asksegments)
+            return resource.Resource.locateChild(self,request,segments)
     
     base = BaseResource()
      
