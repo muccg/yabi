@@ -77,10 +77,13 @@ else:
             
             print "adminpath",adminpath
             print "asksegments",asksegments
-            #if not len(adminpath):
-                #return wsgi.WSGIResource(wsgiapp).locateChild(request,asksegments), asksegments
-                
-            return resource.Resource.locateChild(self,request,segments)
+             
+            if len(adminpath):
+                # our request is not under the admin path
+                return resource.Resource.locateChild(self,request,segments)
+            
+            return wsgi.WSGIResource(wsgiapp), asksegments
+            
     
     base = BaseResource()
      
