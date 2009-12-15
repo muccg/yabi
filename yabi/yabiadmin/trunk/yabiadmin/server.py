@@ -26,6 +26,10 @@ from twisted.web2 import wsgi, resource
 from django.conf import settings
 from django.core.management import setup_environ
 
+os.environ['SCRIPT_NAME']=config.config["admin"]["path"]
+    
+print "SCRIPT_NAME",os.environ['SCRIPT_NAME']
+
 import settings
 setup_environ(settings)
 
