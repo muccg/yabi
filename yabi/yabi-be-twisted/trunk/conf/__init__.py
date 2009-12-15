@@ -83,7 +83,7 @@ class Configuration(object):
                         "store":None,
                         
                         "database":"dev",           # 'dev' or 'live'. In the future could also be 'custom' to override with a different db
-                        "debug": "true"             # run the app in debug mode
+                        "debug": "false"            # run the app in debug mode
                     },
         'frontend': {
                         "port":"0.0.0.0:8000",
