@@ -26,9 +26,8 @@ from twisted.web2 import wsgi, resource
 from django.conf import settings
 from django.core.management import setup_environ
 
+# this has to be out here for it to work.
 os.environ['SCRIPT_NAME']=config.config["admin"]["path"]
-    
-print "SCRIPT_NAME",os.environ['SCRIPT_NAME']
 
 import settings
 setup_environ(settings)
@@ -36,11 +35,9 @@ setup_environ(settings)
 from django.core.handlers.wsgi import WSGIHandler
 
 def wsgiapp(environ, start):
-    #os.environ['SCRIPT_NAME']=environ['SCRIPT_NAME']
-    os.environ['SCRIPT_NAME']=config.config["admin"]["path"]
-    
-    print "SCRIPT_NAME",os.environ['SCRIPT_NAME']
-    
+    #this doesn't work in here
+    #os.environ['SCRIPT_NAME']=config.config["admin"]["path"]
+ 
     if 'DJANGODEV' in environ:
         os.environ['DJANGODEV']=environ['DJANGODEV']
     if 'DJANGODEBUG' in environ:
