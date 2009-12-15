@@ -28,6 +28,8 @@ if config.config["admin"]["debug"]:
     os.environ['DJANGODEBUG'] = '1'
 print "debug:",config.config["admin"]["debug"]
 print "DJANGODEBUG",os.environ['DJANGODEBUG']
+print "db:",config.config["admin"]["database"]
+print "DJANGODEV",os.environ['DJANGODEV']
 
 from twisted.web2 import wsgi, resource
 from django.conf import settings
