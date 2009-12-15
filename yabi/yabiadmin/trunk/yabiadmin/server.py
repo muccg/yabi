@@ -21,6 +21,8 @@ application = service.Application('yabiadmin')
 
 # Environment setup for your Django project files:
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+os.environ['DJANGODEV'] = '1'
+os.environ['DJANGODEBUG'] = '1'
 
 from twisted.web2 import wsgi, resource
 from django.conf import settings
