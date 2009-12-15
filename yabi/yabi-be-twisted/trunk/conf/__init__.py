@@ -81,6 +81,9 @@ class Configuration(object):
                         
                         "backend":None,
                         "store":None,
+                        
+                        "database":"dev",           # 'dev' or 'live'. In the future could also be 'custom' to override with a different db
+                        "debug": "true"             # run the app in debug mode
                     },
         'frontend': {
                         "port":"0.0.0.0:8000",
@@ -88,13 +91,15 @@ class Configuration(object):
                         "path":"/fe",
                         "startup":"true",
                         
-                        "admin":None
+                        "admin":None,
                     },
         'store':    {
                         "port":"0.0.0.0:8000",
                         "sslport":"0.0.0.0:8443",
                         "path":"/store",
                         "startup":"true"
+                        
+                        "debug": "true"             # run the app in debug mode
                     },
         'global':   {
                         "user":"yabi",
@@ -145,9 +150,9 @@ class Configuration(object):
         if conf_parser.has_section(name):
             self.config[name]['backend'] = conf_parser.get(name,'backend')
             self.config[name]['store'] = conf_parser.get(name,'store')
-            
-        
-            
+            self.config[name]['database'] = "dev" if conf_parser.get(name,'database').lower()=="dev" else "live"
+            self.config[name]['debug'] = conf_parser.get(name,'debug')
+
     def read_config(self, search=SEARCH_PATH):
         for part in search:
             self.read_from_file(os.path.expanduser(part))
@@ -163,13 +168,16 @@ class Configuration(object):
             self.config[section]['ssl'] = boolean_proc(self.config[section]['ssl'])
             self.config[section]['sslport'] = port_setting(self.config[section]['sslport'])
             
-            if 'telnet' in self.config[section]:
-                self.config[section]['telnet'] = boolean_proc(self.config[section]['telnet'])
-            if 'telnetport' in self.config[section]:
-                self.config[section]['telnetport'] = port_setting(self.config[section]['telnetport'])
+            conversions = dict( 
+                telnet=boolean_proc,
+                telnetport=port_setting,
+                debug=boolean_proc
+            }
             
-        
-    
+            for key, val in conversions.iteritems():
+                if key in self.config[section]:
+                    self.config[section][key] = value(self.config[section][key])
+         
     ##
     ## Methods to gather settings
     ##
