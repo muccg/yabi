@@ -151,7 +151,7 @@ class Configuration(object):
             self.config[name]['backend'] = conf_parser.get(name,'backend')
             self.config[name]['store'] = conf_parser.get(name,'store')
             self.config[name]['database'] = "dev" if conf_parser.has_option(name,'database') and conf_parser.get(name,'database').lower()=="dev" else "live"
-            self.config[name]['debug'] = conf_parser.get(name,'debug')
+            self.config[name]['debug'] = conf_parser.get(name,'debug') if conf_parser.has_option(name,'debug') else "false"
 
     def read_config(self, search=SEARCH_PATH):
         for part in search:
