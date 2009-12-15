@@ -62,7 +62,7 @@ else:
                 adminpath = adminpath[:-1]
                 
             asksegments = segments
-            while not asksegments[-1]:
+            while len(asksegments) and not asksegments[-1]:
                 asksegments = asksegments[:-1]
                 
             # while the segments match, consume more
