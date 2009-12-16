@@ -107,8 +107,6 @@ if config.config[NAME]["ssl"]:
 
 def startup():
     # setup yabiadmin server, port and path as global variables
-    print "yabi backend server:",config.config[NAME]["backend"]
-    
     pass
 
 reactor.addSystemEventTrigger("before", "startup", startup)
