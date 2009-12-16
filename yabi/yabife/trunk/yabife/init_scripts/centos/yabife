@@ -9,7 +9,7 @@
 #              make use of the RPC mechanism.
 # processname: portmap
 
-NAME="yabiadmin"
+NAME="yabife"
 TWISTD="/usr/local/stackless/bin/twistd"
 CONFFILE="yabi.conf"
 
@@ -80,7 +80,7 @@ fi
 
 # read configuration.
 cfg.parser $YABICONF
-cfg.section.admin
+cfg.section.frontend
 
 # setup parameters
 if [ "${runningdir}X" = "X" ]; then RUNNING_DIR="/var/run/yabi/backend"; else RUNNING_DIR=$runningdir; fi
