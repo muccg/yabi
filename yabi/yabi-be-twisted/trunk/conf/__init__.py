@@ -153,6 +153,18 @@ class Configuration(object):
             self.config[name]['database'] = "dev" if conf_parser.has_option(name,'database') and conf_parser.get(name,'database').lower()=="dev" else "live"
             self.config[name]['debug'] = conf_parser.get(name,'debug') if conf_parser.has_option(name,'debug') else "false"
 
+        name = "store"
+        if conf_parser.has_section(name):
+            self.config[name]['database'] = "dev" if conf_parser.has_option(name,'database') and conf_parser.get(name,'database').lower()=="dev" else "live"
+            self.config[name]['debug'] = conf_parser.get(name,'debug') if conf_parser.has_option(name,'debug') else "false"
+
+        name = "frontend"
+        if conf_parser.has_section(name):
+            self.config[name]['database'] = "dev" if conf_parser.has_option(name,'database') and conf_parser.get(name,'database').lower()=="dev" else "live"
+            self.config[name]['debug'] = conf_parser.get(name,'debug') if conf_parser.has_option(name,'debug') else "false"
+
+        
+
     def read_config(self, search=SEARCH_PATH):
         for part in search:
             self.read_from_file(os.path.expanduser(part))
