@@ -32,7 +32,10 @@ from django.conf import settings
 from django.core.management import setup_environ
 
 # this has to be out here for it to work.
-os.environ['SCRIPT_NAME']=config.config["admin"]["path"]
+if config.config["admin"]["path"]=='/':
+    os.environ['SCRIPT_NAME']=''
+else:
+    os.environ['SCRIPT_NAME']=config.config["admin"]["path"]
 
 import settings
 setup_environ(settings)
@@ -73,7 +76,6 @@ else:
                 return resource.Resource.locateChild(self,request,segments)
             
             return wsgi.WSGIResource(wsgiapp), asksegments
-            
     
     base = BaseResource()
      
