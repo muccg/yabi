@@ -12,19 +12,22 @@ from twisted.python import util
 # for SSL context
 from OpenSSL import SSL
 
+NAME = "admin"
+APPNAME = "yabiadmin"
+
 from conf import config
 config.read_config()
 config.sanitise()
 
 # Twisted Application Framework setup:
-application = service.Application('yabiadmin')
+application = service.Application(APPNAME)
 
 # Environment setup for your Django project files:
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
-if config.config["admin"]["database"]=="dev":
+if config.config[NAME]["database"]=="dev":
     os.environ['DJANGODEV']='1'
-if config.config["admin"]["debug"]:
+if config.config[NAME]["debug"]:
     os.environ['DJANGODEBUG'] = '1'
 
 from twisted.web2 import wsgi, resource
@@ -32,10 +35,10 @@ from django.conf import settings
 from django.core.management import setup_environ
 
 # this has to be out here for it to work.
-if config.config["admin"]["path"]=='/':
+if config.config[NAME]["path"]=='/':
     os.environ['SCRIPT_NAME']=''
 else:
-    os.environ['SCRIPT_NAME']=config.config["admin"]["path"]
+    os.environ['SCRIPT_NAME']=config.config[NAME]["path"]
 
 import settings
 setup_environ(settings)
@@ -47,7 +50,7 @@ def wsgiapp(environ, start):
     
 # now we are either the base resource, or we need to create a base resource and then create
 # a child_ chain to the resource.
-if not config.config["admin"]["path"] or config.config["admin"]["path"]=="/":
+if not config.config[NAME]["path"] or config.config[NAME]["path"]=="/":
     base = wsgi.WSGIResource(wsgiapp)
 else:
     class BaseResource(resource.PostableResource):
@@ -57,7 +60,7 @@ else:
             # return our local file resource for these segments
             
             # strip trailing /'s (  [''] )
-            adminpath = config.config["admin"]["path"].split("/")
+            adminpath = config.config[NAME]["path"].split("/")
             while adminpath and not adminpath[-1]:
                 adminpath.pop()
             while adminpath and not adminpath[0]:
@@ -98,13 +101,13 @@ class ServerContextFactory:
         return ctx
 
 from twisted.web2 import channel
-internet.TCPServer(config.config['admin']['port'][1], channel.HTTPFactory(site)).setServiceParent(application)
-if config.config["admin"]["ssl"]:
-    internet.SSLServer(config.config['admin']['sslport'][1], channel.HTTPFactory(site), ServerContextFactory()).setServiceParent(application)
+internet.TCPServer(config.config[NAME]['port'][1], channel.HTTPFactory(site)).setServiceParent(application)
+if config.config[NAME]["ssl"]:
+    internet.SSLServer(config.config[NAME]['sslport'][1], channel.HTTPFactory(site), ServerContextFactory()).setServiceParent(application)
 
 def startup():
     # setup yabiadmin server, port and path as global variables
-    print "yabi backend server:",config.config["admin"]["backend"]
+    print "yabi backend server:",config.config[NAME]["backend"]
     
     pass
 
