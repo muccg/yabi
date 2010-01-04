@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Configuration
 =============
@@ -70,6 +71,9 @@ class Configuration(object):
                         
                         "telnet":"false",
                         "telnetport":"0.0.0.0:8021",
+                        
+                        "fifos":"/tmp/",
+                        "tasklets":"/tmp/",
                         
                         "admin":None                # none means "use the one provided here"
                     },
@@ -145,6 +149,8 @@ class Configuration(object):
         name = "backend"
         if conf_parser.has_section(name):
             self.config[name]['admin'] = conf_parser.get(name,'admin')
+            self.config[name]['fifos'] = conf_parser.get(name,'fifos')
+            self.config[name]['tasklets'] = conf_parser.get(name,'tasklets')
             
         name = "admin"
         if conf_parser.has_section(name):

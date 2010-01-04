@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 import os
 import tempfile
 import weakref
 
+from conf import config
 
 class FifoPool(object):
     """FifoPool is a pool of fifo objects. This allows us to quickly ascertain how many transfers are going on.
@@ -12,13 +14,14 @@ class FifoPool(object):
             assert os.path.exists(storage) and os.path.isdir(storage), "Storage directory %s does not exist"%storage
             self.storage = storage
         else:
-            self._make_cert_storage()
+            self._make_fifo_storage()
         
         self._fifos={}
         
-    def _make_cert_storage(self):
-        """makes a directory for storing the certificates in"""
-        self.storage = tempfile.mkdtemp(prefix="yabi-fifo-")
+    def _make_fifo_storage(self, directory=None):
+        """makes a directory for storing the fifos in"""
+        directory = directory or config.config['backend']['fifos']
+        self.storage = tempfile.mkdtemp(prefix="yabi-fifo-", dir=directory)
         #print "FifoPool created in",self.storage
     
     def _make_fifo(self, prefix="fifo_",suffix=""):

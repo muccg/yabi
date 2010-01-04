@@ -1,9 +1,12 @@
+# -*- coding: utf-8 -*-
 
 import TaskManager
 
 Tasks = TaskManager.TaskManager()
 
 from Tasklets import tasklets
+
+from conf import config
 
 def startup():
     """Start up the TaskManager, so it can go and get some jobs..."""
@@ -16,4 +19,4 @@ def startup():
     
 def shutdown():
     """pickle tasks to disk"""
-    tasklets.save()
+    tasklets.save(directory=conf['backend']['tasklets'])
