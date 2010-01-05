@@ -149,8 +149,10 @@ class Configuration(object):
         name = "backend"
         if conf_parser.has_section(name):
             self.config[name]['admin'] = conf_parser.get(name,'admin')
-            self.config[name]['fifos'] = conf_parser.get(name,'fifos')
-            self.config[name]['tasklets'] = conf_parser.get(name,'tasklets')
+            if conf_parser.has_option(name,'fifos'):
+                self.config[name]['fifos'] = conf_parser.get(name,'fifos')
+            if conf_parser.has_option(name,'tasklets'):
+                self.config[name]['tasklets'] = conf_parser.get(name,'tasklets')
             
         name = "admin"
         if conf_parser.has_section(name):
