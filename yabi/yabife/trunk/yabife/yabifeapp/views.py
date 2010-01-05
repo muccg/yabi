@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Create your views here.
 import httplib
 from urllib import urlencode, unquote
@@ -97,7 +98,10 @@ def proxy(request, url, server, base):
         r = conn.getresponse()
 
     #print "returning response:",r.status
-    response = HttpResponse(r.read(), status=int(r.status))
+    data = r.read()
+    response = HttpResponse(data, status=int(r.status))
+
+    logger.debug("Got %d bytes returned with status code %d. First part of data is: %s"%(len(data),r.status,data[:64 if len(data)<64 else len(data)]))
 
     if r.getheader('content-disposition', None):
         response['content-disposition'] = r.getheader('content-disposition')
