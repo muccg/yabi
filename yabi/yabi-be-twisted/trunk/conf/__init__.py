@@ -21,6 +21,7 @@ def parse_url(uri):
     """Parse a url via the inbuilt urlparse. But this is slightly different
     as it can handle non-standard schemas. returns the schema and then the
     tuple from urlparse"""
+    uri = uri.strip()
     scheme, rest = uri.split(":",1)
     assert re_url_schema.match(scheme)
     return scheme, urlparse.urlparse(rest)
