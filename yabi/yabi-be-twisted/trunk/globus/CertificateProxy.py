@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 This is a module level certificate proxy for globus. It runs 'grid-proxy-cert' and generates a proxy to use. It keeps this
 around until it expires.
@@ -13,6 +14,8 @@ import log
 
 from twisted.internet import protocol
 from twisted.internet import reactor
+
+from conf import config
 
 import stackless
 
@@ -115,9 +118,11 @@ class CertificateProxy(object):
         
         return time.time()-ctime < self.CERTIFICATE_EXPIRY_SECONDS
 
-    def _make_cert_storage(self):
+    def _make_cert_storage(self, directory=None):
         """makes a directory for storing the certificates in"""
-        self.tempdir = tempfile.mkdtemp(prefix="yabi-credentials-")
+        directory = directory or config.config['backend']['certificates']
+        
+        self.tempdir = tempfile.mkdtemp(prefix="yabi-credentials-", dir=directory)
         log.info("Certificate Proxy Store created in '%s'"%self.tempdir)
         
     def CreateUserProxy(self, userid, cert, key, password):

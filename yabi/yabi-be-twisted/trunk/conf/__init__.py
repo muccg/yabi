@@ -75,6 +75,7 @@ class Configuration(object):
                         
                         "fifos":"/tmp/",
                         "tasklets":"/tmp/",
+                        "certificates":"/tmp/",
                         
                         "admin":None                # none means "use the one provided here"
                     },
@@ -154,6 +155,9 @@ class Configuration(object):
                 self.config[name]['fifos'] = conf_parser.get(name,'fifos')
             if conf_parser.has_option(name,'tasklets'):
                 self.config[name]['tasklets'] = conf_parser.get(name,'tasklets')
+            if conf_parser.has_option(name,'certificates'):
+                self.config[name]['certificates'] = conf_parser.get(name,'certificates')
+            
             
         name = "admin"
         if conf_parser.has_section(name):
