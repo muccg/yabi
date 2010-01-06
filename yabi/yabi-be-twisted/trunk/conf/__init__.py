@@ -98,6 +98,7 @@ class Configuration(object):
                         "startup":"true",
                         
                         "admin":None,
+                        "store": None,
                     },
         'store':    {
                         "port":"0.0.0.0:8000",
@@ -175,7 +176,8 @@ class Configuration(object):
         if conf_parser.has_section(name):
             self.config[name]['database'] = "dev" if conf_parser.has_option(name,'database') and conf_parser.get(name,'database').lower()=="dev" else "live"
             self.config[name]['debug'] = conf_parser.get(name,'debug') if conf_parser.has_option(name,'debug') else "false"
-
+            self.config[name]['admin'] = conf_parser.get(name,'backend')
+            self.config[name]['store'] = conf_parser.get(name,'store')
         
 
     def read_config(self, search=SEARCH_PATH):
