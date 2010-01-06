@@ -109,6 +109,8 @@ class Configuration(object):
                         "path":"/store",
                         "startup":"true",
                         
+                        "history":"/tmp/",
+                        
                         "debug": "true"             # run the app in debug mode
                     },
         'global':   {
@@ -174,6 +176,7 @@ class Configuration(object):
         if conf_parser.has_section(name):
             self.config[name]['database'] = "dev" if conf_parser.has_option(name,'database') and conf_parser.get(name,'database').lower()=="dev" else "live"
             self.config[name]['debug'] = conf_parser.get(name,'debug') if conf_parser.has_option(name,'debug') else "false"
+            self.config[name]['history'] = path_sanitise(conf_parser.get(name,'history'))
 
         name = "frontend"
         if conf_parser.has_section(name):
