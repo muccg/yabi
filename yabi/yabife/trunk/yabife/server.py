@@ -21,8 +21,8 @@ config.read_config()
 config.sanitise()
 
 # configure up our YABISTORE and YABIADMIN env variables for the django application
-os.environ['YABISTORE'] = config.config['fe']['admin']
-os.environ['YABIADMIN'] = config.config['fe']['store']
+os.environ['YABISTORE'] = config.config['frontend']['admin']
+os.environ['YABIADMIN'] = config.config['frontend']['store']
 
 # Twisted Application Framework setup:
 application = service.Application(APPNAME)
