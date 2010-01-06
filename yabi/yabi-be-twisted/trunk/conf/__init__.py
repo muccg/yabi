@@ -50,6 +50,9 @@ def port_setting(port):
 # process boolean string into python boolean type
 boolean_proc = lambda x: x.lower()=="true" or x.lower()=="t" or x.lower()=="yes" or x.lower()=="y"
 
+def path_sanitise(path):
+    return os.path.normpath(os.path.expanduser(path))
+
 class ConfigError(Exception):
     pass
 
@@ -153,11 +156,11 @@ class Configuration(object):
         if conf_parser.has_section(name):
             self.config[name]['admin'] = conf_parser.get(name,'admin')
             if conf_parser.has_option(name,'fifos'):
-                self.config[name]['fifos'] = conf_parser.get(name,'fifos')
+                self.config[name]['fifos'] = path_sanitise(conf_parser.get(name,'fifos'))
             if conf_parser.has_option(name,'tasklets'):
-                self.config[name]['tasklets'] = conf_parser.get(name,'tasklets')
+                self.config[name]['tasklets'] = path_sanitise(conf_parser.get(name,'tasklets'))
             if conf_parser.has_option(name,'certificates'):
-                self.config[name]['certificates'] = conf_parser.get(name,'certificates')
+                self.config[name]['certificates'] = path_sanitise(conf_parser.get(name,'certificates'))
             
             
         name = "admin"
@@ -229,6 +232,7 @@ class Configuration(object):
     @property
     def yabistore(self):
         return "%s:%d%s"%tuple(self.config['store']['port']+(self.config['store']['path'],))
+    
     
     
     ##
