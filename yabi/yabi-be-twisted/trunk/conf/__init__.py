@@ -210,7 +210,7 @@ class Configuration(object):
     def yabiadmin(self):
         scheme,rest = parse_url(self.config['backend']['admin'])
         return "%s:%d%s"%(rest.hostname,rest.port,rest.path)
-
+        
     @property
     def yabiadminserver(self):
         return parse_url(self.config['backend']['admin'])[1].hostname
@@ -222,9 +222,6 @@ class Configuration(object):
     @property
     def yabiadminpath(self):
         return parse_url(self.config['backend']['admin'])[1].path
-    
-    
-    
     
     
     @property
