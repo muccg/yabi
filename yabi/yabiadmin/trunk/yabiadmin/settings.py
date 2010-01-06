@@ -62,7 +62,7 @@ else:
     # development site id
     SITE_ID = 1
 
-print "DJANGODEV","DJANGODEV" in os.eviron
+print "DJANGODEV","DJANGODEV" in os.environ
 print "DJANGODEBUG",DEBUG
 print "YABISTORE",YABISTORE
 print "YABISTORE_SERVER",YABISTORE_SERVER
