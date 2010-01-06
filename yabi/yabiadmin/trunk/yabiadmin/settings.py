@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Django settings for yabi project.
 import os
 
@@ -32,7 +33,7 @@ if "DJANGODEV" in os.environ:
     DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
     SSL_ENABLED = False
     DEV_SERVER = True
-    YABIBACKEND_SERVER, YABIBACKEND_BASE = YABIBACKEND.split("/")
+    YABIBACKEND_SERVER, YABIBACKEND_BASE = YABIBACKEND.split("/",1)
     YABIBACKEND_BASE = "/" + YABIBACKEND_BASE                                   # NOT USED PRESENTLY
     assert YABIBACKEND_BASE=="/"
     
@@ -60,6 +61,16 @@ else:
     
     # development site id
     SITE_ID = 1
+
+print "DJANGODEV","DJANGODEV" in os.eviron
+print "DJANGODEBUG",DEBUG
+print "YABISTORE",YABISTORE
+print "YABISTORE_SERVER",YABISTORE_SERVER
+print "YABISTORE_BASE",YABISTORE_BASE
+print "YABIBACKEND",YABIBACKEND
+print "YABIBACKEND_SERVER",YABIBACKEND_SERVER
+print "YABIBACKEND_BASE",YABIBACKEND_BASE
+
 
 
 
