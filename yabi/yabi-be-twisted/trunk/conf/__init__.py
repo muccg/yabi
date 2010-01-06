@@ -176,7 +176,7 @@ class Configuration(object):
         if conf_parser.has_section(name):
             self.config[name]['database'] = "dev" if conf_parser.has_option(name,'database') and conf_parser.get(name,'database').lower()=="dev" else "live"
             self.config[name]['debug'] = conf_parser.get(name,'debug') if conf_parser.has_option(name,'debug') else "false"
-            self.config[name]['admin'] = conf_parser.get(name,'backend')
+            self.config[name]['admin'] = conf_parser.get(name,'admin')
             self.config[name]['store'] = conf_parser.get(name,'store')
         
 
