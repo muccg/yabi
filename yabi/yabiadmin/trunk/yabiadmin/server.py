@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys, os
 
 from urlparse import urlparse
@@ -18,6 +19,10 @@ APPNAME = "yabiadmin"
 from conf import config
 config.read_config()
 config.sanitise()
+
+# configure up our YABISTORE and YABIADMIN env variables for the django application
+os.environ['YABISTORE'] = config.config['admin']['store']
+os.environ['YABIBACKEND'] = config.config['admin']['backend']
 
 # Twisted Application Framework setup:
 application = service.Application(APPNAME)
