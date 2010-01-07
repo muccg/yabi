@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseServerError
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
@@ -14,6 +15,10 @@ logger = logging.getLogger('yabiengine')
 
 def task(request):
     logger.debug('')
+    
+    # we need to see if the host requesting the task is the host that is allowed to request it (the one configured in our settings or config file)
+    ipaddress = request.META[ "HTTP_X_FORWARDED_FOR" if "HTTP_X_FORWARDED_FOR" in request.META else "REMOTE_ADDR" ]
+    logger.debug("Task rquest originating from: %s"%ipaddress)
     
     try:
         tasks = Task.objects.filter(status=settings.STATUS["ready"])
