@@ -32,7 +32,7 @@ def task(request):
     ip,port = origin.split(":")
     
     logger.debug("ip:%s port:%s"%(ip,port))
-    logger.debug("b,i:%s b,p:%s"%(config.config['backend']['ip'],config.config['backend']['port']))
+    logger.debug("b,i:%s b,p:%s"%(config.config['backend']['port'][0],config.config['backend']['port'][1]))
     
     #if config.config['backend']['ip'] != ip and 
     
