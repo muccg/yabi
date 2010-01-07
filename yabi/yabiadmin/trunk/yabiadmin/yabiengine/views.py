@@ -30,10 +30,11 @@ def task(request):
     
     # verify that the requesters origin is correct
     ip,port = origin.split(":")
+    exp_ip, exp_port = config.config['backend']['port']
     
-    logger.debug("ip:%s port:%s"%(ip,port))
-    logger.debug("b,i:%s b,p:%s"%(config.config['backend']['port'][0],config.config['backend']['port'][1]))
-    
+    if ip != exp_ip or port != exp_port:
+        return HttpResponseServerError("Error requesting task. Origin incorrect. This is not the admin you are looking for")
+       
     #if config.config['backend']['ip'] != ip and 
     
     try:
