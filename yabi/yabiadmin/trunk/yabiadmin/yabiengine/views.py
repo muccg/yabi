@@ -18,7 +18,7 @@ def task(request):
     logger.debug('')
     
     # we need to see if the host requesting the task is the host that is allowed to request it (the one configured in our settings or config file)
-    ipaddress = request.get_host()
+    ipaddress = request.META[ "HTTP_X_FORWARDED_FOR" if "HTTP_X_FORWARDED_FOR" in request.META else "REMOTE_ADDR" ]
     logger.debug("Task request originating from: %s"%ipaddress)
     
     if "origin" not in request.REQUEST:
