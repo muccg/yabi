@@ -95,7 +95,7 @@ class TaskManager(object):
         useragent = "YabiExec/0.1"
         
         factory = client.HTTPClientFactory(
-            os.path.join(config.yabiadminpath,self.TASK_URL+"?origin=127.0.0.1:8000"),
+            os.path.join(config.yabiadminpath,self.TASK_URL+"?origin=%s:%s"%tuple(config.config['backend']['port'])),
             agent = useragent
             )
         factory.noisy = True
