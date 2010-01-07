@@ -30,10 +30,10 @@ def task(request):
     
     # verify that the requesters origin is correct
     ip,port = origin.split(":")
-    exp_ip, exp_port = config.config['backend']['port']
+    exp_ip, exp_port = config.config['backend']['port'][0],str(config.config['backend']['port'][1])
     
     if ip != exp_ip or port != exp_port:
-        logger.critical("IP %s requested task but had incorrect identifier set. Expected id %s:%s but got %s:%s instead."%(ipaddress,type(exp_ip),type(exp_port),type(ip),type(port)))
+        logger.critical("IP %s requested task but had incorrect identifier set. Expected id %s:%s but got %s:%s instead."%(ipaddress,exp_ip,exp_port,ip,port))
         return HttpResponseServerError("Error requesting task. Origin incorrect. This is not the admin you are looking for")
        
     #if config.config['backend']['ip'] != ip and 
