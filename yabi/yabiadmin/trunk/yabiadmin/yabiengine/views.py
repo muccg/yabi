@@ -12,13 +12,29 @@ import logging
 import yabilogging
 logger = logging.getLogger('yabiengine')
 
+from conf import config
 
 def task(request):
     logger.debug('')
     
     # we need to see if the host requesting the task is the host that is allowed to request it (the one configured in our settings or config file)
-    ipaddress = request.META[ "HTTP_X_FORWARDED_FOR" if "HTTP_X_FORWARDED_FOR" in request.META else "REMOTE_ADDR" ]
-    logger.debug("Task rquest originating from: %s"%ipaddress)
+    ipaddress = request.get_host()
+    logger.debug("Task request originating from: %s"%ipaddress)
+    
+    if "origin" not in request.REQUEST:
+        logger.critical("IP %s requested task but had no origin identifier set."%ipaddress)
+        return HttpResponseServerError("Error requesting task. No origin identifier set.")
+    
+    # get sender id
+    origin = request.REQUEST["origin"]
+    
+    # verify that the requesters origin is correct
+    ip,port = origin.split(":")
+    
+    logger.debug("ip:%s port:%s"%(ip,port))
+    logger.debug("b,i:%s b,p:%s"%(config.config['backend']['ip'],config.config['backend']['port']))
+    
+    #if config.config['backend']['ip'] != ip and 
     
     try:
         tasks = Task.objects.filter(status=settings.STATUS["ready"])
