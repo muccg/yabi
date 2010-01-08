@@ -91,8 +91,16 @@ class Configuration(object):
                         "backend":None,
                         "store":None,
                         
-                        "database":"dev",           # 'dev' or 'live'. In the future could also be 'custom' to override with a different db
-                        "debug": "false"            # run the app in debug mode
+                        "database":"dev",           # 'dev' or 'live'. Can also be 'custom' to override with a different db
+                        "debug": "false",           # run the app in debug mode
+                        
+                        # custom database setting defaults
+                        "database_engine":"postgresql_psycopg2",
+                        "database_name":"yabiadmin_db",
+                        "database_user":"yabi",
+                        "database_password":"password",
+                        "database_host":"db.localdomain",
+                        "database_port":None,
                     },
         'frontend': {
                         "port":"0.0.0.0:8000",
@@ -169,8 +177,13 @@ class Configuration(object):
         if conf_parser.has_section(name):
             self.config[name]['backend'] = conf_parser.get(name,'backend')
             self.config[name]['store'] = conf_parser.get(name,'store')
-            self.config[name]['database'] = "dev" if conf_parser.has_option(name,'database') and conf_parser.get(name,'database').lower()=="dev" else "live"
+            self.config[name]['database'] = "custom" if conf_parser.has_option(name,'database') and conf_parser.get(name,'database').lower()=="custom" else "live" if conf_parser.has_option(name,'database') and conf_parser.get(name,'database').lower()=="live" else "dev"
             self.config[name]['debug'] = conf_parser.get(name,'debug') if conf_parser.has_option(name,'debug') else "false"
+            
+            # database settings
+            for parm in ['database_engine','database_host','database_name','database_password','database_port','database_user']:
+                if conf_parser.has_option(name,parm):
+                    self.config[name][parm] = conf_parser.get(name,parm)
 
         name = "store"
         if conf_parser.has_section(name):
