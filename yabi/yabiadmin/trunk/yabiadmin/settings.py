@@ -43,9 +43,32 @@ if "DJANGODEV" in os.environ:
     # debug site table
     SITE_ID = 1
 
+elif "CUSTOMDB" in os.environ:
+    DEBUG = True if os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug")) else ("DJANGODEBUG" in os.environ)
+    TEMPLATE_DEBUG = DEBUG
+    DATABASE_ENGINE = os.environ['DATABASE_ENGINE']
+    DATABASE_NAME = os.environ['DATABASE_NAME']
+    DATABASE_USER = os.environ['DATABASE_USER']
+    DATABASE_PASSWORD = os.environ['DATABASE_PASSWORD']
+    DATABASE_HOST = os.environ['DATABASE_HOST']
+    DATABASE_PORT = os.environ['DATABASE_PORT']
+    
+    SSL_ENABLED = False
+    DEV_SERVER = True
+    YABIBACKEND_SERVER, YABIBACKEND_BASE = YABIBACKEND.split("/",1)
+    YABIBACKEND_BASE = "/" + YABIBACKEND_BASE                                   # NOT USED PRESENTLY
+    assert YABIBACKEND_BASE=="/"
+    
+    YABISTORE_SERVER, YABISTORE_BASE = YABISTORE.split('/',1)
+    YABISTORE_BASE = "/" + YABISTORE_BASE
+    
+    # debug site table
+    SITE_ID = 1
+    
+
 # production deployment (probably using wsgi)
 else:
-    DEBUG = os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug"))
+    DEBUG = True if os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug")) else ("DJANGODEBUG" in os.environ)
     TEMPLATE_DEBUG = DEBUG
     DATABASE_ENGINE = 'postgresql_psycopg2'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
     DATABASE_NAME = 'dev_yabmin'            # Or path to database file if using sqlite3.
