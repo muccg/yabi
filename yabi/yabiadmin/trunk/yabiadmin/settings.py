@@ -87,6 +87,10 @@ else:
 
 print "DJANGODEV","DJANGODEV" in os.environ
 print "DJANGODEBUG",DEBUG
+for name in ['DATABASE_ENGINE','DATABASE_NAME','DATABASE_USER','DATABASE_PASSWORD','DATABASE_HOST','DATABASE_PORT']:
+    if name in locals():
+        print name,locals()[name]
+     
 print "YABISTORE",YABISTORE
 print "YABISTORE_SERVER",YABISTORE_SERVER
 print "YABISTORE_BASE",YABISTORE_BASE
