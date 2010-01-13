@@ -271,11 +271,11 @@ STATUS = {'pending':'pending',
 ## Logging setup
 ##
 NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL = 0, 10, 20, 30, 40, 50
-#import logging
+import logging
 LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
 LOGGING_LEVEL = DEBUG
 #LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
-LOGGING_FORMATTER = '%(asctime)s:%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s:%(message)s'
+LOGGING_FORMATTER = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s:%(message)s')
 LOGS = ['yabiengine','yabiadmin']
 
 
