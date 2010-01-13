@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.conf import settings
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog, StageIn
@@ -10,7 +11,7 @@ import datetime
 import os
 
 import logging
-import yabilogging
+#import yabilogging
 logger = logging.getLogger('yabiengine')
 
 

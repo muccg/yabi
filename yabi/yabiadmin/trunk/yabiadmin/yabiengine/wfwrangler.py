@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from os.path import splitext
 import os
 from django.core.exceptions import ObjectDoesNotExist
@@ -9,7 +10,7 @@ from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.yabiengine import backendhelper
 
 import logging
-import yabilogging
+#import yabilogging
 logger = logging.getLogger('yabiengine')
 
 import urlparse
