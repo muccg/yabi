@@ -3,8 +3,6 @@ from django.conf import settings
 import logging, logging.handlers
 
 def init_logging():
-    print "INIT_LOGGING"
-
     # yabiengine log
     fh = logging.handlers.TimedRotatingFileHandler(settings.LOG_DIRECTORY + '/yabiengine.log', 'midnight')
     fh.setFormatter(logging.Formatter(settings.LOGGING_FORMATTER))
