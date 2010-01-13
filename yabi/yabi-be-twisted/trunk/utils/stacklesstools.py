@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """A suite of tools for using twisted with stackless python. Turns the twisted callback methods into
 functions that block a stackless tasklet.
 """
@@ -163,7 +164,7 @@ def POST(path,**kws):
     def _doFailure(data):
         if isinstance(data,Failure):
             exc = data.value
-            get_failed[0] = -1, str(exc), None
+            get_failed[0] = -1, str(exc), "Tried to POST %s to %s"%(postdata,str("http://%s:%d%s"%(host,port,path)))
         else:
             get_failed[0] = int(factory.status), factory.message, "Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
     
