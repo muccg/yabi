@@ -270,7 +270,7 @@ STATUS = {'pending':'pending',
 ##
 ## Logging setup
 ##
-NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL
+NOTSET, DEBUG, INFO, WARNING, ERROR, CRITICAL = 0, 10, 20, 30, 40, 50
 #import logging
 LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
 LOGGING_LEVEL = DEBUG
