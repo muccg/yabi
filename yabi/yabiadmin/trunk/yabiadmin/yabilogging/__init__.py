@@ -4,12 +4,14 @@ import logging, logging.handlers
 
 def init_logging():
     # yabiengine log
+    print "1"
     fh = logging.handlers.TimedRotatingFileHandler(settings.LOG_DIRECTORY + '/yabiengine.log', 'midnight')
     fh.setFormatter(logging.Formatter(settings.LOGGING_FORMATTER))
     yabienginelogger = logging.getLogger('yabiengine')
     yabienginelogger.setLevel(settings.LOGGING_LEVEL)
     yabienginelogger.addHandler(fh)
 
+    print "2"
     # yabiadmin log
     fh = logging.handlers.TimedRotatingFileHandler(settings.LOG_DIRECTORY + '/yabiadmin.log', 'midnight')
     fh.setFormatter(logging.Formatter(settings.LOGGING_FORMATTER))
@@ -17,6 +19,7 @@ def init_logging():
     yabiadminlogger.setLevel(settings.LOGGING_LEVEL)
     yabiadminlogger.addHandler(fh)
 
+    print "done"
 
 logInitDone=False
 if not logInitDone:
