@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
+
+print "A"
+
 import logging, logging.handlers
+
+print "B"
 
 def init_logging():
     # yabiengine log
