@@ -76,7 +76,7 @@ def status(request, model, id):
         else:
 
             if "status" not in request.POST:
-                raise HttpResponseServerError("POST request to error service should contain 'message' parameter\n")
+                return HttpResponseServerError("POST request to error service should contain 'message' parameter\n")
 
             model = str(model).lower()
             id = int(id)
