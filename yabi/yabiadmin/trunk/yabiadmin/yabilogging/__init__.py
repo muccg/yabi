@@ -5,7 +5,7 @@ import logging, logging.handlers
 def init_logging():
     # yabiengine log
     fh = logging.handlers.TimedRotatingFileHandler(settings.LOG_DIRECTORY + '/yabiengine.log', 'midnight')
-    fh.setFormatter(logging.Formatter(settings.LOGGING_FORMATTER))
+    fh.setFormatter(logging.Formatter("%(asctime)s:%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s:%(message)s"))
     yabienginelogger = logging.getLogger('yabiengine')
     yabienginelogger.setLevel(settings.LOGGING_LEVEL)
     yabienginelogger.addHandler(fh)
