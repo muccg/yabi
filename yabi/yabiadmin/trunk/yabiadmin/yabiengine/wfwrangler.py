@@ -10,7 +10,6 @@ from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.yabiengine import backendhelper
 
 import logging
-#import yabilogging
 logger = logging.getLogger('yabiengine')
 
 import urlparse

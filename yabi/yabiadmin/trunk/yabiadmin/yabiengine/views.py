@@ -9,7 +9,6 @@ from django.conf import settings
 import wfwrangler
 
 import logging
-#import yabilogging
 logger = logging.getLogger('yabiengine')
 
 from conf import config

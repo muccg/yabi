@@ -11,7 +11,6 @@ import datetime
 import os
 
 import logging
-#import yabilogging
 logger = logging.getLogger('yabiengine')
 
 

@@ -30,7 +30,6 @@ def parse_url(uri):
 
 
 import logging
-#import yabilogging
 logger = logging.getLogger('yabiengine')
 
 
