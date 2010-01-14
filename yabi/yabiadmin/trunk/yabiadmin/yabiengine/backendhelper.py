@@ -45,7 +45,7 @@ def POST(resource, datadict, extraheaders={}, server=None):
     conn.request('POST', resource, data, headers)
     return conn.getresponse()
 
-def get_file_list(yabiusername, uri, recurse=True):
+def get_file_list(uri, recurse=True):
     """
     Return a list of file tuples
     """
