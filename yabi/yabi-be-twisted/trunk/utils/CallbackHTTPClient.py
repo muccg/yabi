@@ -7,6 +7,8 @@ from twisted.python import failure, log
 
 import os, types
 
+from stackless import tasklet
+
 class CallbackHTTPClient(client.HTTPPageGetter):
     def __init__(self, *args, **kwargs):
         self.callback = None
