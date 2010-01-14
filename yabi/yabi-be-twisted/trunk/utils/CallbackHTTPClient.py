@@ -38,10 +38,11 @@ class CallbackHTTPClient(client.HTTPPageGetter):
             # hook in here to process chunked updates
             lines=data.split("\r\n")
             print "LINES",[lines]
-            chunk_size = int(lines[0].split(';')[0],16)
-            chunk = lines[1]
+            #chunk_size = int(lines[0].split(';')[0],16)
+            #chunk = lines[1]
+            chunk = lines[0]
             
-            assert len(chunk)==chunk_size, "Chunked transfer decoding error. Chunk size mismatch"
+            #assert len(chunk)==chunk_size, "Chunked transfer decoding error. Chunk size mismatch"
             
             # run the callback in a tasklet!!! Stops scheduler getting into a looped blocking state
             reporter=tasklet(self.callback)
