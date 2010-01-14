@@ -54,6 +54,7 @@ def walk(workflow):
             raise
         except Exception,e:
             logger.critical("Error in workflow wrangler: %s" % e)
+            logger.debug(
             raise
         
 

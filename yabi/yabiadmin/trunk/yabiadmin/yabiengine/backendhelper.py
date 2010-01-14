@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.conf import settings
 from django.utils import simplejson as json
 import httplib
@@ -44,11 +45,12 @@ def POST(resource, datadict, extraheaders={}, server=None):
     conn.request('POST', resource, data, headers)
     return conn.getresponse()
 
-def get_file_list(uri, recurse=True):
+def get_file_list(yabiusername, uri, recurse=True):
     """
     Return a list of file tuples
     """
     logger.debug('')
+    logger.info("yabiusername: %s" % yabiusername)
     logger.info("Listing: %s" % uri)
 
     try:
