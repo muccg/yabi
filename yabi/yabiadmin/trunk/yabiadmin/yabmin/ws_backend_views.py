@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
@@ -11,7 +12,6 @@ from yabiadmin.yabiengine import wfbuilder
 from yabiadmin.yabiengine import backendhelper
 
 import logging
-import yabilogging
 logger = logging.getLogger('yabiadmin')
 
 def credential(request, yabiusername, scheme, username, hostname):
