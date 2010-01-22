@@ -27,7 +27,7 @@ def credential_uri(request, yabiusername):
     # parse the URI into chunks
     schema, rest = uriparse(uri)
 
-    
+    logger.debug('uriparse returned... yabiusername: %s schema:%s username:%s hostname:%s path:%s'%(yabiusername,schema,rest.username,rest.hostname,rest.path))
 
     # get our set of credential candidates
     bcs = BackendCredential.objects.filter(credential__user__name=yabiusername,
