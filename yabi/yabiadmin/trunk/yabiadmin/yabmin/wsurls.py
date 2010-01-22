@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.conf.urls.defaults import *
 
 # frontend webservices
@@ -14,6 +15,8 @@ urlpatterns = patterns('yabiadmin.yabmin.ws_frontend_views',
 
 # backend webservices
 urlpatterns += patterns('yabiadmin.yabmin.ws_backend_views',
-    url(r'^credential/(?P<yabiusername>\w+)/(?P<scheme>\w+)/(?P<username>\w+)/(?P<hostname>[\w\-.]+)[/]*$', 'credential', name='credential'),
+    url(r'^credential_uri/(?P<yabiusername>\w+)[/]*$', 'credential_uri', name='credential_uri'),
     url(r'^credential/(?P<yabiusername>\w+)/(?P<scheme>\w+)/(?P<username>\w+)/(?P<hostname>[\w\-.]+)/(?P<detail>\w+)[/]*$', 'credential_detail', name='credential_detail'),                       
+    url(r'^credential/(?P<yabiusername>\w+)/(?P<scheme>\w+)/(?P<username>\w+)/(?P<hostname>[\w\-.]+)[/]*$', 'credential', name='credential'),
 )
+

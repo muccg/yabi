@@ -10,11 +10,38 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from yabiadmin.yabiengine import wfbuilder
 from yabiadmin.yabiengine import backendhelper
+from yabiadmin.yabiengine.urihelper import uriparse
 
 import logging
 logger = logging.getLogger('yabiadmin')
 
+
+
+def credential_uri(request, yabiusername):
+    if 'uri' not in request.REQUEST:
+        return HttpResponse("Request must contain parameter 'uri' in the GET or POST parameters.")
+        
+    uri = request.REQUEST['uri']
+    logger.debug('credential request for yabiusername: %s uri: %s'%(yabiusername,uri))
+
+    # parse the URI into chunks
+    schema, rest = uriparse(uri)
+
+    
+
+    # get our set of credential candidates
+    bcs = BackendCredential.objects.filter(credential__user__name=yabiusername,
+                                           backend__scheme=schema,
+                                           credential__username=rest.username,
+                                           backend__hostname=rest.hostname)
+    logger.debug("bc search found... %s" % (",".join([str(x) for x in bcs])))
+    return HttpResponseNotFound("Object not found")
+
+
 def credential(request, yabiusername, scheme, username, hostname):
+    logger.critical("Deprecated credential call")
+    assert False, "Deprecated credential call"
+    
     logger.debug('Credential request for yabiusername: %s scheme: %s username: %s hostname: %s' % (yabiusername, scheme, username, hostname))
     
     try:
@@ -32,6 +59,9 @@ def credential(request, yabiusername, scheme, username, hostname):
 
 
 def credential_detail(request, yabiusername, scheme, username, hostname, detail):
+    logger.critical("Deprecated credential_detail call")
+    assert False, "Deprecated credential call"
+    
     logger.debug('')
     
     try:

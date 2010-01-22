@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from django.db import models
 from django import forms
 from django.contrib.auth.models import User as DjangoUser
@@ -289,10 +290,11 @@ class BackendCredential(Base):
     backend = models.ForeignKey(Backend)
     credential = models.ForeignKey(Credential)
     homedir = models.CharField(max_length=512, blank=True, null=True)
+    visible = models.BooleanField()                                                         # ALTER TABLE "yabmin_backendcredential" ADD "visible" boolean NOT NULL default False;
 
     def __unicode__(self):
         if DEBUG:
-            return "BackendCredential <%s backend.id=%s credential.id=%s homedir=%s>"%(self.id,self.backend.id,self.credential.id,self.homedir)
+            return "BackendCredential <%s backend.id=%s credential.id=%s homedir=%s visbile=%s>"%(self.id,self.backend.id,self.credential.id,self.homedir,str(self.visible))
         return "BackendCredential %s"%(self.id)
 
     def json(self):
