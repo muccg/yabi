@@ -49,8 +49,10 @@ def get_backendcredential_for_uri(yabiusername, uri):
         if path.startswith(checkpath):
             # valid. If homedir path is longer than the present stored one, replace the stored one with this one to user
             if cred==None:
+                logger.debug("setting cred to %s",str(bc))
                 cred = bc
             elif len(checkpath) > len(os.path.join(cred.backend.path,cred.homedir)):
+                logger.debug("resetting cred to %s",str(bc))
                 cred = bc
             
     # cred is now either None if there was no valid credential, or it is the credential for this URI
