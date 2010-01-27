@@ -42,11 +42,22 @@ def credential_uri(request, yabiusername):
     logger.debug("bc search found... >%s<" % (",".join([str(x) for x in bcs])))
     
     # lets look at the paths for these to find candidates
+    cred = None
     for bc in bcs:
         logger.debug("path:%s bcpath:%s"%(path,bc.homedir))
+        if path.startswith(bc.homedir):
+            # valid. If homedir path is longer than the present stored one, replace the stored one with this one to user
+            if cred==None:
+                cred = bc
+            elif len(bc.homedir) > len(cred.homedir):
+                cred = bc
+            
+    # cred is now either None if there was no valid credential, or it is the credential for this URI
+    if not cred:
+        return HttpResponseNotFound("Object not found")
     
-    
-    return HttpResponseNotFound("Object not found")
+    logger.debug("returning bc... %s" % cred)
+    return HttpResponse(cred.json())
 
 def credential_detail_uri(request, yabiusername, detail):
     logger.critical("Deprecated credential_detail call")
