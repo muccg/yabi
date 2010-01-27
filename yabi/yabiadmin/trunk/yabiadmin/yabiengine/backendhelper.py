@@ -53,7 +53,7 @@ def get_backendcredential_for_uri(yabiusername, uri):
             
     # cred is now either None if there was no valid credential, or it is the credential for this URI
     if not cred:
-        raise ObjectNotFound("Could not find backendcredential")
+        raise ObjectDoesNotExist("Could not find backendcredential")
     
     logger.debug("returning bc... %s" % cred)
     return cred
