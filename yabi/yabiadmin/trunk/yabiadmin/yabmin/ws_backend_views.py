@@ -31,7 +31,7 @@ def credential_uri(request, yabiusername):
     
     # TODO: fix the disparity between the backendcredential homedir path (which is missing the '/' prefix) with the parsed uri path (which has the '/' path prefix)
     # HACK: we will truncate the '/' off the start of the path so that the path will match with the backendcredential
-    path = path[1:] if len(path) and path[0]=='/' else path
+    path = rest.path[1:] if len(rest.path) and rest.path[0]=='/' else rest.path
 
     # get our set of credential candidates
     bcs = BackendCredential.objects.filter(credential__user__name=yabiusername,
