@@ -38,7 +38,7 @@ def get_backendcredential_for_uri(yabiusername, uri):
                                            credential__username=rest.username,
                                            backend__hostname=rest.hostname)
     
-    logger.debug("bc search found... >%s<" % (",".join([str(x) for x in bcs])))
+    logger.debug("bc search found... ->%s<-" % (",".join([str(x) for x in bcs])))
     
     # lets look at the paths for these to find candidates
     cred = None
