@@ -151,9 +151,11 @@ def get_listing(yabiusername, uri):
         raise
 
     logger.info("Status of return from yabi backend is: %s" % r.status)
+    data = r.read()
+    if r.status != 200:
+        logger.debug("Result from yabi backend is: %s" %data)
 
-    logger.debug("reading")
-    return r.read()
+    return data
 
 
 def mkdir(yabiusername, uri):
