@@ -34,7 +34,9 @@ def credential_uri(request, yabiusername):
                                            #backend__scheme=schema,
                                            #credential__username=rest.username,
                                            #backend__hostname=rest.hostname)
-    bcs = BackendCredential.objects.filter(credential__user__name=yabiusername)
+    bcs = BackendCredential.objects.filter( credential__user__name=yabiusername,
+                                            backend__hostname=rest.hostname
+    )
     logger.debug("bc search found... >%s<" % (",".join([str(x) for x in bcs])))
     return HttpResponseNotFound("Object not found")
 
