@@ -21,17 +21,42 @@ def get_backendcredential_for_uri(yabiusername, uri):
     Looks up a backend credential based on the supplied uri, which should include a username.
     Returns bc, will log and reraise ObjectDoesNotExist and MultipleObjectsReturned exceptions if more than one credential
     """
-    scheme, uriparts = uriparse(uri)
-    try:
-        bc = BackendCredential.objects.get(credential__user__name=yabiusername,
-                                           backend__hostname=uriparts.hostname,
-                                           backend__scheme=scheme,
-                                           credential__username=uriparts.username)
-        return bc
-    except (ObjectDoesNotExist,MultipleObjectsReturned), e:
-        logger.critical(e)
-        raise    
+    logger.debug('credential request for yabiusername: %s uri: %s'%(yabiusername,uri))
 
+    # parse the URI into chunks
+    schema, rest = uriparse(uri)
+
+    logger.debug('uriparse returned... yabiusername: %s schema:%s username:%s hostname:%s path:%s'%(yabiusername,schema,rest.username,rest.hostname,rest.path))
+    
+    # TODO: fix the disparity between the backendcredential homedir path (which is missing the '/' prefix) with the parsed uri path (which has the '/' path prefix)
+    # HACK: we will truncate the '/' off the start of the path so that the path will match with the backendcredential
+    path = rest.path[1:] if len(rest.path) and rest.path[0]=='/' else rest.path
+
+    # get our set of credential candidates
+    bcs = BackendCredential.objects.filter(credential__user__name=yabiusername,
+                                           backend__scheme=schema,
+                                           credential__username=rest.username,
+                                           backend__hostname=rest.hostname)
+    
+    logger.debug("bc search found... >%s<" % (",".join([str(x) for x in bcs])))
+    
+    # lets look at the paths for these to find candidates
+    cred = None
+    for bc in bcs:
+        logger.debug("path:%s bcpath:%s"%(path,bc.homedir))
+        if path.startswith(bc.homedir):
+            # valid. If homedir path is longer than the present stored one, replace the stored one with this one to user
+            if cred==None:
+                cred = bc
+            elif len(bc.homedir) > len(cred.homedir):
+                cred = bc
+            
+    # cred is now either None if there was no valid credential, or it is the credential for this URI
+    if not cred:
+        return HttpResponseNotFound("Object not found")
+    
+    logger.debug("returning bc... %s" % cred)
+    return HttpResponse(cred.json())
 
 def POST(resource, datadict, extraheaders={}, server=None):
     """Do a x-www-form-urlencoded style POST. That is NOT a file upload style"""
