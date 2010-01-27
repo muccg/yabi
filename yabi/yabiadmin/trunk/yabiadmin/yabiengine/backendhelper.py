@@ -28,9 +28,7 @@ def get_backendcredential_for_uri(yabiusername, uri):
 
     logger.debug('uriparse returned... yabiusername: %s schema:%s username:%s hostname:%s path:%s'%(yabiusername,schema,rest.username,rest.hostname,rest.path))
     
-    # TODO: fix the disparity between the backendcredential homedir path (which is missing the '/' prefix) with the parsed uri path (which has the '/' path prefix)
-    # HACK: we will truncate the '/' off the start of the path so that the path will match with the backendcredential
-    path = rest.path[1:] if len(rest.path) and rest.path[0]=='/' else rest.path
+    path = rest.path
 
     # get our set of credential candidates
     bcs = BackendCredential.objects.filter(credential__user__name=yabiusername,
