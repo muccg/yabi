@@ -28,16 +28,24 @@ def credential_uri(request, yabiusername):
     schema, rest = uriparse(uri)
 
     logger.debug('uriparse returned... yabiusername: %s schema:%s username:%s hostname:%s path:%s'%(yabiusername,schema,rest.username,rest.hostname,rest.path))
+    
+    # TODO: fix the disparity between the backendcredential homedir path (which is missing the '/' prefix) with the parsed uri path (which has the '/' path prefix)
+    # HACK: we will truncate the '/' off the start of the path so that the path will match with the backendcredential
+    path = path[1:] if len(path) and path[0]=='/' else path
 
     # get our set of credential candidates
     bcs = BackendCredential.objects.filter(credential__user__name=yabiusername,
                                            backend__scheme=schema,
                                            credential__username=rest.username,
                                            backend__hostname=rest.hostname)
-    #bcs = BackendCredential.objects.filter( credential__user__name=yabiusername,
-                                            #backend__hostname=rest.hostname
-    #)
+    
     logger.debug("bc search found... >%s<" % (",".join([str(x) for x in bcs])))
+    
+    # lets look at the paths for these to find candidates
+    for bc in bcs:
+        logger.debug("path:%s bcpath:%s"%(path,bc.homedir))
+    
+    
     return HttpResponseNotFound("Object not found")
 
 def credential_detail_uri(request, yabiusername, detail):
