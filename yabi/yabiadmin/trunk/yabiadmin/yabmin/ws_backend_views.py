@@ -37,6 +37,34 @@ def credential_uri(request, yabiusername):
     logger.debug("bc search found... %s" % (",".join([str(x) for x in bcs])))
     return HttpResponseNotFound("Object not found")
 
+def credential_detail_uri(request, yabiusername, detail):
+    logger.critical("Deprecated credential_detail call")
+    
+    uri = request.REQUEST['uri']
+    logger.debug('credential request for yabiusername: %s uri: %s'%(yabiusername,uri))
+    
+    try:
+        bc = BackendCredential.objects.get(credential__user__name=yabiusername,
+                                           backend__scheme=scheme,
+                                           credential__username=username,
+                                           backend__hostname=hostname)
+
+        if detail == 'cert':
+            return HttpResponse(bc.credential.cert)
+
+        elif detail == 'key':
+            return HttpResponse(bc.credential.key)
+
+        elif detail == 'username':
+            return HttpResponse(bc.credential.username)
+
+        else:
+            return HttpResponseNotFound("Object not found")            
+
+    except (ObjectDoesNotExist, MultipleObjectsReturned):
+        logger.critical('Invalid backend credential found for yabiusername: %s scheme: %s hostname: %s username: %s' % (yabiusername, scheme, hostname, username))
+        return HttpResponseNotFound("Object not found")
+
 
 def credential(request, yabiusername, scheme, username, hostname):
     logger.critical("Deprecated credential call")
