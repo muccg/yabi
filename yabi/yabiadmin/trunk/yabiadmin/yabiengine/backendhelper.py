@@ -43,7 +43,7 @@ def get_backendcredential_for_uri(yabiusername, uri):
     # lets look at the paths for these to find candidates
     cred = None
     for bc in bcs:
-        logger.debug("path:%s bcpath:%s bc.c.path:%s"%(path,bc.homedir,bc.credential.path))
+        logger.debug("path:%s bcpath:%s bc.be.path:%s"%(path,bc.homedir,bc.backend.path))
         if path.startswith(bc.homedir):
             # valid. If homedir path is longer than the present stored one, replace the stored one with this one to user
             if cred==None:
