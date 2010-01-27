@@ -53,10 +53,10 @@ def get_backendcredential_for_uri(yabiusername, uri):
             
     # cred is now either None if there was no valid credential, or it is the credential for this URI
     if not cred:
-        return HttpResponseNotFound("Object not found")
+        raise ObjectNotFound("Could not find backendcredential")
     
     logger.debug("returning bc... %s" % cred)
-    return HttpResponse(cred.json())
+    return cred
 
 def POST(resource, datadict, extraheaders={}, server=None):
     """Do a x-www-form-urlencoded style POST. That is NOT a file upload style"""
