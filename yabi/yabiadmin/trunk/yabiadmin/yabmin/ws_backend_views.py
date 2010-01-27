@@ -34,7 +34,7 @@ def credential_uri(request, yabiusername):
                                            backend__scheme=schema,
                                            credential__username=rest.username,
                                            backend__hostname=rest.hostname)
-    logger.debug("bc search found... %s" % (",".join([str(x) for x in bcs])))
+    logger.debug("bc search found... >%s<" % (",".join([str(x) for x in bcs])))
     return HttpResponseNotFound("Object not found")
 
 def credential_detail_uri(request, yabiusername, detail):
