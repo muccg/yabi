@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 """Encapsulation of globus Authentication proxies as a mixin"""
 
 from utils.stacklesstools import GET, GETFailure, sleep
 import json, os
 from globus.CertificateProxy import CertificateProxy
-from conf import config
+from conf import conf
 
 class NoCredentials(Exception):
     """User has no globus credentials for this server"""
