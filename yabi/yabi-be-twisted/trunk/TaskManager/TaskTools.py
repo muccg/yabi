@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """All these funcs are done in a blocking manner using a stackless aproach. Not your normal funcs"""
 
 from stackless import schedule, tasklet
@@ -117,11 +118,11 @@ def Exec(backend, command, callbackfunc=None, **kwargs):
     
     POST(EXEC_PATH, command=command, datacallback=callbackfunc, **kwargs )
     
-def UserCreds(yabiusername, scheme,username,hostname):
+def UserCreds(yabiusername, uri):
     """Get a users credentials"""
     # see if we can get the credentials
     #print "UserCreds",scheme,username,hostname
-    url = os.path.join(config.yabiadminpath,'ws/credential/%s/%s/%s/%s/'%(yabiusername,scheme,username,hostname))
+    url = os.path.join(config.yabiadminpath,'ws/credential/%s/'%(yabiusername))
     code, message, data = GET(url, host=config.yabiadminserver, port=config.yabiadminport)
     assert code==200
     return json.loads(data)

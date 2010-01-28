@@ -194,7 +194,7 @@ class TaskManager(object):
         # this comes from their credentials.
         
         scheme, address = parse_url(task['exec']['backend'])
-        usercreds = UserCreds(yabiusername, scheme, address.username, address.hostname)
+        usercreds = UserCreds(yabiusername, task['exec']['backend'])
         #homedir = usercreds['homedir']
         workingdir = task['exec']['workingdir']
         
