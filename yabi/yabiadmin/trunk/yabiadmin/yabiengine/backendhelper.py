@@ -221,7 +221,7 @@ def get_backend_list(yabiusername):
 
         results = { yabiusername: {'files':[], 'directories':[] }}
 
-        for bc in BackendCredential.objects.filter(credential__user__name=yabiusername):
+        for bc in BackendCredential.objects.filter(credential__user__name=yabiusername, visible=True):
             results[yabiusername]['directories'].append([bc.homedir_uri, 0, ''])
 
         return json.dumps(results)
