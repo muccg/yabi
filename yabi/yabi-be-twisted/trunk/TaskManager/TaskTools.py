@@ -122,7 +122,7 @@ def UserCreds(yabiusername, uri):
     """Get a users credentials"""
     # see if we can get the credentials
     #print "UserCreds",scheme,username,hostname
-    url = os.path.join(config.yabiadminpath,'ws/credential/%s/'%(yabiusername))
+    url = os.path.join(config.yabiadminpath,'ws/credential/%s/?uri=%s'%(yabiusername,uri))
     code, message, data = GET(url, host=config.yabiadminserver, port=config.yabiadminport)
     assert code==200
     print "JSON DATA:",data
