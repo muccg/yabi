@@ -30,7 +30,7 @@ class GlobusAuth(object):
         useragent = "YabiFS/0.1"
         
         try:
-            status, message, data = GET( path = os.path.join(config.yabiadminpath,"ws/credential/%s/%s/%s/%s/"%(yabiusername,scheme,username,hostname)),
+            status, message, data = GET( path = os.path.join(config.yabiadminpath,"ws/credential/%s/?uri=%s://%s@%s/"%(yabiusername,scheme,username,hostname)),
                                         host = config.yabiadminserver,
                                         port = config.yabiadminport )
             
