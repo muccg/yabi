@@ -125,4 +125,5 @@ def UserCreds(yabiusername, uri):
     url = os.path.join(config.yabiadminpath,'ws/credential/%s/'%(yabiusername))
     code, message, data = GET(url, host=config.yabiadminserver, port=config.yabiadminport)
     assert code==200
+    print "JSON DATA:",data
     return json.loads(data)
