@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Sun Grid Engine tools
 """
 from twisted.internet import protocol
@@ -13,6 +14,7 @@ QSUB_COMMAND = "/opt/sge/6.2u3/bin/lx24-amd64/qsub"             #-N job-101 /hom
 QSTAT_COMMAND = "/opt/sge/6.2u3/bin/lx24-amd64/qstat"
 
 SUDO = "/usr/bin/sudo"
+USE_SUDO = False                            # cant use sudo because SpawnProcess has no tty, according to sudo (get the error "sudo: sorry, you must have a tty to run sudo")
 
 class QsubProcessProtocol(protocol.ProcessProtocol):
     """ Job returns 'Your job 10 ("jobname") has been submitted'
@@ -59,10 +61,8 @@ def qsub_spawn(jobname, commandfile, user="yabi", workingdir="/home/yabi", stdou
     """Spawn a process to run an xml job. return the process handler"""
     subenv = os.environ.copy()
     pp = QsubProcessProtocol()
-    print [
-                                SUDO,
-                                "-u",
-                                user,
+    
+    command = [
                                 QSUB_COMMAND,
                                 "-N",
                                 jobname,
@@ -71,20 +71,18 @@ def qsub_spawn(jobname, commandfile, user="yabi", workingdir="/home/yabi", stdou
                                 "-wd",workingdir,
                                 commandfile
                             ]
-    reactor.spawnProcess(   pp,
-                            SUDO, 
-                            args=[
-                                SUDO,
+    
+    if USE_SUDO:
+        command = [             SUDO,
                                 "-u",
-                                user,
-                                QSUB_COMMAND,
-                                "-N",
-                                jobname,
-                                "-e",stderr,
-                                "-o",stdout,
-                                "-wd",workingdir,
-                                commandfile
-                            ],
+                                user
+                  ] + command
+                                
+    
+    print command
+    reactor.spawnProcess(   pp,
+                            command[0], 
+                            args=command,
                             env=subenv
                         )
 
