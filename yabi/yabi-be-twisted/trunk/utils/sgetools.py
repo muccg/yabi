@@ -14,7 +14,7 @@ QSUB_COMMAND = "/opt/sge/6.2u3/bin/lx24-amd64/qsub"             #-N job-101 /hom
 QSTAT_COMMAND = "/opt/sge/6.2u3/bin/lx24-amd64/qstat"
 
 SUDO = "/usr/bin/sudo"
-USE_SUDO = False                            # cant use sudo because SpawnProcess has no tty, according to sudo (get the error "sudo: sorry, you must have a tty to run sudo")
+USE_SUDO = True                            # cant use sudo because SpawnProcess has no tty, according to sudo (get the error "sudo: sorry, you must have a tty to run sudo")
 
 class QsubProcessProtocol(protocol.ProcessProtocol):
     """ Job returns 'Your job 10 ("jobname") has been submitted'
