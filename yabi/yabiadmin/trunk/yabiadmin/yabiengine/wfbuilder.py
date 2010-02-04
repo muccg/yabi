@@ -118,6 +118,12 @@ def addJob(workflow, job_dict, order):
     job.input_filetype_extensions = str(tool.input_filetype_extensions())
 
     try:
+        ebcs = BackendCredential.objects.filter(credential__user=workflow.user, backend=tool.backend)
+        
+        logger.debug("EBCS returned: %s"%(str(ebcs)))
+        
+        #exec_backendcredential = backendhelper.get_backendcredential_for_uri(yabiusername, uri)
+        
         exec_backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.backend)
     except (ObjectDoesNotExist, MultipleObjectsReturned):
         logger.critical('Invalid credentials for user: %s and backend: %s' % (workflow.user, tool.backend))
