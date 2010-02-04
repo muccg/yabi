@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
 from django.http import HttpResponse, HttpResponseForbidden
 from django.core.exceptions import ObjectDoesNotExist
 from urlparse import urlparse
 from yabiadmin.utils import json_error
 from yabiadmin.yabmin.models import BackendCredential
+
+from yabiadmin.yabiengine import backendhelper
 
 ##import logging
 ##import yabilogging
@@ -64,13 +67,16 @@ def validate_uri(f):
                 if not yabiusername:
                     raise ValueError
 
+                bc = backendhelper.get_backendcredential_for_uri(yabiusername, uri)
+                
+
                 scheme, rest = uri.split(":",1) # split required for non RFC uris ie gridftp, yabifs
                 u = urlparse(rest)
 
-                # find a matching credential based on uri
-                bc = BackendCredential.objects.get(backend__hostname=u.hostname,
-                                                   backend__scheme=scheme,
-                                                   credential__username=u.username)
+                ## find a matching credential based on uri
+                #bc = BackendCredential.objects.get(backend__hostname=u.hostname,
+                                                   #backend__scheme=scheme,
+                                                   #credential__username=u.username)
 
                 # check that credentials yabiusername matches that passed from front end
                 if bc.credential.user.name != yabiusername:
