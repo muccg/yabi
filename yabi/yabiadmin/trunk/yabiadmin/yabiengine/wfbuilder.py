@@ -120,7 +120,10 @@ def addJob(workflow, job_dict, order):
     try:
         ebcs = BackendCredential.objects.filter(credential__user=workflow.user, backend=tool.backend)
         
-        logger.debug("EBCS returned: %s"%(str(ebcs)))
+        logger.debug("EBCS returned: %s"%(ebcs))
+        
+        for bc in ebcs:
+            logger.debug("%s: Backend: %s Credential: %s"%(bc,bc.credential,bc.backend))
         
         #exec_backendcredential = backendhelper.get_backendcredential_for_uri(yabiusername, uri)
         
