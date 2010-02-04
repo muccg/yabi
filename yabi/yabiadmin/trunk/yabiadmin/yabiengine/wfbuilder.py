@@ -134,7 +134,11 @@ def addJob(workflow, job_dict, order):
     try:
         # TODO: select the correct fsbackend here...
         logger.debug("fetching fsbackends...")
-        logger.debug("found:%s"%(",".join([str(x) for x in BackendCredential.objects.filter(credential__user=workflow.user, backend=tool.fs_backend)])))
+        
+        ebcs = BackendCredential.objects.filter(credential__user=workflow.user, backend=tool.fs_backend)
+        for bc in ebcs:
+            logger.debug("%s: Backend: %s Credential: %s"%(bc,bc.credential,bc.backend))
+        
         fs_backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.fs_backend)
     except (ObjectDoesNotExist, MultipleObjectsReturned):
         logger.critical('Invalid credentials for user: %s and backend: %s' % (workflow.user, tool.fs_backend))
