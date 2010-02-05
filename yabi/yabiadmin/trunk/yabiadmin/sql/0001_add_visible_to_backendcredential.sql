@@ -1,0 +1,1 @@
+ALTER TABLE "yabmin_backendcredential" ADD "visible" boolean NOT NULL default False;
