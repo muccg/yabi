@@ -43,6 +43,8 @@ def build(username, workflow_json):
         raise
     except Exception, e:
         logger.critical(e)
+        import traceback
+        logger.debug(traceback.format_exc())
         raise
 
 
