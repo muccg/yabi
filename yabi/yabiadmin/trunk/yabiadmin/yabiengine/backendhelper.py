@@ -190,26 +190,6 @@ def mkdir(yabiusername, uri):
     logger.debug("reading")
     return r.read() 
 
-
-def get_backend_from_uri(uri):
-    """
-    Returns a Backend object given a uri
-    """
-    logger.debug('')
-    scheme, parts = uriparse(uri)
-
-    try:
-
-        return Backend.objects.get(scheme=scheme, hostname=parts.hostname)
-
-    except ObjectDoesNotExist, e:
-        logger.critical("ObjectDoesNotExist for uri: %s" % uri)
-        logger.critical("Scheme: %s" % scheme)
-        logger.critical("Hostname: %s" % parts.hostname)
-        raise
-
-
-
 def get_backend_list(yabiusername):
     """
     Returns a list of backends for user, returns in json as the plain list is passed to the
