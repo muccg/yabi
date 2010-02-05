@@ -52,7 +52,9 @@ def task(request):
         return HttpResponseNotFound("Object not found.")
     except Exception, e:
         logger.critical("Caught Exception:")
+        import traceback
         logger.critical(e)
+        logger.critical(traceback.format_exc())
         return HttpResponseServerError("Error requesting task.")
 
 def status(request, model, id):
