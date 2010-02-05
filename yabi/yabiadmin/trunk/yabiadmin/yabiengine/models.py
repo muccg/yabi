@@ -122,9 +122,9 @@ class Task(models.Model):
 
         stageins = self.stagein_set.all()
         for s in stageins:
-            src_backend = backendhelper.get_backend_for_uri(self.job.workflow.user.name,s.src).name
+            src_backend = backendhelper.get_backendcredential_for_uri(self.job.workflow.user.name,s.src).backend
             src_scheme, src_rest = uriparse(s.src)
-            dst_backend = backendhelper.get_backend_for_uri(self.job.workflow.user.name,s.dst).name
+            dst_backend = backendhelper.get_backendcredential_for_uri(self.job.workflow.user.name,s.dst).backend
             dst_scheme, dst_rest = uriparse(s.dst)
 
 
