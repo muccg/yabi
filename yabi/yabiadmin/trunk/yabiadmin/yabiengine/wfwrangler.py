@@ -51,6 +51,8 @@ def walk(workflow):
             continue
         except ObjectDoesNotExist,e:
             logger.critical("ObjectDoesNotExist at wfwrangler.walk: %s" % e)
+            import traceback
+            logger.debug(traceback.format_exc())
             raise
         except Exception,e:
             logger.critical("Error in workflow wrangler: %s" % e)
