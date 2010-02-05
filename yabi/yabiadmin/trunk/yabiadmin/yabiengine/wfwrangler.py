@@ -82,10 +82,15 @@ def prepare_tasks(job):
     input_files = []
 
     # get the backend for this job
-    exec_be = backendhelper.get_backend_for_uri(job.workflow.user.name,job.exec_backend)
-    exec_bc = BackendCredential.objects.get(credential__user__name=job.workflow.user.name, backend=exec_be, credential__user=job.workflow.user)
-    fs_be = backendhelper.get_backend_for_uri(job.workflow.user.name,job.fs_backend)
-    fs_bc = BackendCredential.objects.get(credential__user__name=job.workflow.user.name, backend=fs_be, credential__user=job.workflow.user)
+    #exec_be = backendhelper.get_backend_for_uri(job.workflow.user.name,job.exec_backend)
+    #exec_bc = BackendCredential.objects.get(credential__user__name=job.workflow.user.name, backend=exec_be, credential__user=job.workflow.user)
+    #fs_be = backendhelper.get_backend_for_uri(job.workflow.user.name,job.fs_backend)
+    #fs_bc = BackendCredential.objects.get(credential__user__name=job.workflow.user.name, backend=fs_be, credential__user=job.workflow.user)
+    exec_bc = backendhelper.get_backendcredential_for_uri(job.workflow.user.name,job.exec_backend)
+    exec_be = exec_bc.backend
+    fs_bc = backendhelper.get_backendcredential_for_uri(job.workflow.user.name,job.fs_backend)
+    fs_be = fs_bc.backend
+    
 
     logger.debug("wfwrangler::prepare_tasks() exec_be:%s exec_bc:%s fs_be:%s fs_bc:%s"%(exec_be,exec_bc,fs_be,fs_bc))
 
