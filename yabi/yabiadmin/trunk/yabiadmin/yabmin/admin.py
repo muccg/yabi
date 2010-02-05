@@ -73,16 +73,8 @@ class ToolRslInfoAdmin(AdminBase):
     list_display = ['tool_name', 'executable']
     inlines = [ToolRslArgumentOrderInline, ToolRslExtensionModuleInline]
 
-class ToolForm(ModelForm):
-    class Meta:
-        model = Tool
-        exclude = ('groups','output_filetypes')
-
-    def __init__(self, *args, **kwargs):
-        super(ToolForm, self).__init__(*args, **kwargs)
-        self.fields["batch_on_param"].queryset = ToolParameter.objects.filter(tool=self.instance)
-
 class ToolAdmin(AdminBase):
+    form = ToolForm
     list_display = ['name', 'path', 'enabled', 'backend', 'fs_backend', 'tool_groups_str', 'tool_link', 'created_by', 'created_on']
     inlines = [ToolOutputExtensionInline, ToolParameterInline] # need to add back in tool groupings and find out why it is not working with mango
     search_fields = ['name', 'path']

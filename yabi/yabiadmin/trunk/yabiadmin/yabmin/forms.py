@@ -39,3 +39,19 @@ class BackendCredentialForm(forms.ModelForm):
         if not homedir.endswith('/'):
             raise forms.ValidationError("Homedir must end with a /.")
         return homedir
+
+
+class ToolForm(forms.ModelForm):
+    class Meta:
+        model = Tool
+        exclude = ('groups','output_filetypes')
+
+    def __init__(self, *args, **kwargs):
+        super(ToolForm, self).__init__(*args, **kwargs)
+        self.fields["batch_on_param"].queryset = ToolParameter.objects.filter(tool=self.instance)
+
+    def clean_backend(self):
+        backend = self.cleaned_data['backend']
+        if backend.path != '/':
+            raise forms.ValidationError("Execution backends must only have / in the path field. (This is probably a file system backend.)")
+        return backend
