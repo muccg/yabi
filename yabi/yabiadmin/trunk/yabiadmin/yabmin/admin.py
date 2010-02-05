@@ -1,4 +1,5 @@
 from yabiadmin.yabmin.models import *
+from yabiadmin.yabmin.forms import *
 from django.contrib import admin
 from django.forms.models import BaseInlineFormSet
 from django.forms import ModelForm
@@ -107,6 +108,7 @@ class QueueAdmin(admin.ModelAdmin):
 
 
 class BackendInline(admin.TabularInline):
+    form = BackendCredentialForm
     model = BackendCredential
     extra = 3
 
@@ -116,7 +118,8 @@ class CredentialAdmin(AdminBase):
     inlines = [BackendInline]
 
 class BackendAdmin(AdminBase):
-    list_display = ['name', 'description', 'hostname', 'port']
+    form = BackendForm
+    list_display = ['name', 'description', 'scheme', 'hostname', 'port', 'path', 'uri']
 
 
 admin.site.register(FileExtension, AdminBase)

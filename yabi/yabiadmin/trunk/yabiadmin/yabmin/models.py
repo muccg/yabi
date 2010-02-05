@@ -268,10 +268,9 @@ class Backend(Base):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=512, blank=True)
     scheme = models.CharField(max_length=64)
-    hostname = models.CharField(max_length=512, blank=True, null=True)
+    hostname = models.CharField(max_length=512)
     port = models.IntegerField(null=True, blank=True)
-    path = models.CharField(max_length=512, blank=True, null=True)
-
+    path = models.CharField(max_length=512)
 
     @property
     def uri(self):
