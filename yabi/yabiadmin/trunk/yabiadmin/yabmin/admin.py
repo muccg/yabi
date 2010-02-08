@@ -111,7 +111,7 @@ class CredentialAdmin(AdminBase):
 
 class BackendAdmin(AdminBase):
     form = BackendForm
-    list_display = ['name', 'description', 'scheme', 'hostname', 'port', 'path', 'uri']
+    list_display = ['name', 'description', 'scheme', 'hostname', 'port', 'path', 'uri', 'backend_summary_link']
 
 
 admin.site.register(FileExtension, AdminBase)

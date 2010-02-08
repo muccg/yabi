@@ -285,6 +285,17 @@ class Backend(Base):
             return "Backend <%s name=%s scheme=%s hostname=%s port=%s path=%s>"%(self.id, self.name,self.scheme,self.hostname,self.port,self.path)
         return "Backend %s %s %s://%s:%s%s"%(self.name, self.description,self.scheme,self.hostname,self.port,self.path)
 
+    @models.permalink
+    def view_url(self):
+        return ('backend_view', (), {'backend_id': self.id})
+
+    def backend_summary_link(self):
+        return '<a href="%s">View</a>' % self.view_url()
+    backend_summary_link.short_description = 'Summary'
+    backend_summary_link.allow_tags = True
+
+
+
 class BackendCredential(Base):
     backend = models.ForeignKey(Backend)
     credential = models.ForeignKey(Credential)
@@ -336,3 +347,12 @@ class BackendCredential(Base):
         uri = urlunparse((self.backend.scheme, netloc, self.backend.path, '', '', ''))
 
         return uri
+
+    @models.permalink
+    def backend_test_cred_url(self):
+        return ('backend_test_cred_view', (), {'backend_cred_id': self.id})
+
+    def backend_test_cred_link(self):
+        return '<a href="%s">Test</a>' % self.backend_test_cred_url()
+    backend_test_cred_link.short_description = 'Test Credential'
+    backend_test_cred_link.allow_tags = True

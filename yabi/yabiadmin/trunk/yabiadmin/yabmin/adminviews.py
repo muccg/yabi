@@ -3,7 +3,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.db import connection
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import ObjectDoesNotExist
-from yabiadmin.yabmin.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter
+from yabiadmin.yabmin.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Backend
 from yabiadmin import ldaputils
 from django.utils import webhelpers
 from django.utils import simplejson as json
@@ -139,4 +139,28 @@ def ldap_users(request):
                 'existing_ldap_users': existing_ldap_users
             })
 
+@staff_member_required
+def backend(request, backend_id):
+    logger.debug('')
+    backend = get_object_or_404(Backend, pk=backend_id)
+    
+    return render_to_response('yabmin/backend.html', {
+                'backend': backend,
+                'user':request.user,
+                'title': 'Backend Details',
+                'root_path':webhelpers.url("/admin")
+                })
 
+
+@staff_member_required
+def backend_test_cred(request, backend_cred_id):
+    logger.debug('')
+    assert False
+    backend = get_object_or_404(Backend, pk=backend_id)
+    
+    return render_to_response('yabmin/backend.html', {
+                'backend': backend,
+                'user':request.user,
+                'title': 'Backend Details',
+                'root_path':webhelpers.url("/admin")
+                })
