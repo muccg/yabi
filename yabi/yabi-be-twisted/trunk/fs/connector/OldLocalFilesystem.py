@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import FSConnector
 import os, stat, time
 from fs.Exceptions import InvalidPath
@@ -11,7 +12,7 @@ ENV_CHILD_INHERIT = ['PATH']
 ENV_CHECK = []
 
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
-SCHEMA = "yabifs"
+SCHEMA = "oldyabifs"
 
 # the location of the directory we will serve out. This can be overridden in the constuctor if wanted
 DIRECTORY = "/"

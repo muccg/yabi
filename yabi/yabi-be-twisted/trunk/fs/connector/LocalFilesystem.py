@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import FSConnector
 import os, stat, time
 from fs.Exceptions import InvalidPath
@@ -20,6 +21,52 @@ DEBUG = True
 
 from twisted.internet import protocol
 from twisted.internet import reactor
+
+from globus.BaseShell import BaseShellProcessProtocol
+
+class SudoShellProcessProtocol(BaseShellProcessProtocol):
+    pass
+
+class SudoShell(object):
+    sudo = "/usr/bin/sudo"
+    
+    def __init__(self):
+        pass
+
+    def _make_env(self, certfile, environ=None):
+        """Return a custom environment for the specified cert file"""
+        return environ.copy() if environ!=None else os.environ.copy()
+
+    def execute(self, protocol, systemuser, command):
+        """execute a command using a process protocol and run it under sudo with the passed in system user"""
+
+        subenv = self._make_env(certfile)
+        pp = protocol()
+        fullcommand = [sudo, "-u", systemuser] + command
+        
+        if DEBUG:
+            print "env:",subenv
+            print "system user:",systemuser
+            print "exec:",command
+            print "full:",fullcommand
+            
+        reactor.spawnProcess(   pp,
+                                fullcommand[0],
+                                fullcommand,
+                                env=subenv,
+                                path=self._make_path()
+                            )
+        return pp
+        
+    def ls(self, user, directory, args="-alFR"):
+        return self.execute(SudoShellProcessProtocol, user, command=["ls",args,directory])
+      
+    def mkdir(self, user, directory, args="-p"):
+        return self.execute(SudoShellProcessProtocol, user, command=["mkdir",args,directory])
+      
+    def rm(self, user, directory, args=None):
+        return self.execute(SudoShellProcessProtocol, user, command=["rm",args,directory]) if args else self.execute(certfile,host,command=["rm",directory]) 
+
 
 class FSWriteProtocol(protocol.ProcessProtocol):
     def __init__(self):
@@ -56,7 +103,6 @@ class FSWriteProtocol(protocol.ProcessProtocol):
     def isStarted(self):
         return self.started
 
-
 class LocalFilesystem(FSConnector.FSConnector):
     """This is the resource that connects to the globus gridftp backends"""
     VERSION=0.1
@@ -74,82 +120,88 @@ class LocalFilesystem(FSConnector.FSConnector):
             
         return os.path.join(self.directory,path)
     
-    def rm(self, host, username, path, yabiusername=None, recurse=False, creds=None):
-        if recurse:
-            def del_tree(root):
-                for path, dirs, files in os.walk(root, False):
-                    for fn in files:
-                        os.unlink(os.path.join(path, fn))
-                    for dn in dirs:
-                        os.rmdir(os.path.join(path, dn))
-                os.rmdir(root)
-        else:
-            def del_tree(root):
-                os.unlink(root)
-        
-        fullpath = self._get_filename(path)
-        
-        del_tree(fullpath)
-        return True
-    
     def mkdir(self, host, username, path, creds, yabiusername=None ):
-        try:
-            os.makedirs(self._get_filename(path))
-        except OSError, ose:
-            if ose[0]==17:
-                #file exists
-                return True
-            raise ose
-        return True
+        assert yabiusername or creds, "You must pass in a credential or a yabiusername so I can go get a credential. Neither was passed in."
+        
+        # TODO: fix the insecure aassumption that the user has credentials for this!
+        pp = SudoShell().mkdir(username, path)
+        
+        while not pp.isDone():
+            stackless.schedule()
+            
+        err, mkdir_data = pp.err, pp.out
+        
+        if pp.exitcode != 0:
+            # an error occured
+            if "Permission denied" in err:
+                raise PermissionDenied(err)
+            else:
+                raise InvalidPath(err)
+            
+        if DEBUG:
+            print "mkdir_data=",mkdir_data
+            print "err", err
+        
+        return mkdir_data
+     
+    def rm(self, host, username, path, yabiusername=None, recurse=False, creds=None):
+        assert yabiusername or creds, "You must pass in a credential or a yabiusername so I can go get a credential. Neither was passed in."
+        
+        # TODO: fix the insecure aassumption that the user has credentials for this!
+        pp = SudoShell().rm(username, path, args="-r" if recurse else None)
+        
+        while not pp.isDone():
+            stackless.schedule()
+            
+        err, rm_data = pp.err, pp.out
+        
+        if pp.exitcode != 0:
+            # an error occured
+            if "Permission denied" in err:
+                raise PermissionDenied(err)
+            else:
+                raise InvalidPath(err)
+            
+        if DEBUG:
+            print "rm_data=",rm_data
+            print "err", err
+        
+        return rm_data
      
     def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}):
-        fullpath = self._get_filename(path)
-        if not os.path.exists(fullpath):
-            raise InvalidPath("Invalid path.")
-        if not os.path.isdir(fullpath):
-            raise InvalidPath("Path is not a directory")
+        assert yabiusername or creds, "You must pass in a credential or a yabiusername so I can go get a credential. Neither was passed in."
         
-        #print "FULLPATH:",fullpath
+        # TODO: fix the insecure aassumption that the user has credentials for this!
+        pp = SudoShell().ls(username, path, args="-alFR" if recurse else "-alF")
         
-        def walktree(top):
-            '''recursively descend the directory tree rooted at top,
-            calling the callback function for each regular file'''
-        
-            storage={'files':[],'directories':[]}
-            subtrees={}
+        while not pp.isDone():
+            stackless.schedule()
             
-            timeproc = lambda timestamp: time.strftime("%b %d %H:%M",time.localtime(timestamp))
-            
-            #add details for '.' and '..'
-            if not culldots:
-                for fname in [".",".."]:
-                    pathname=os.path.join(top,fname)
-                    storage['directories'].append( (fname,os.stat(pathname)[stat.ST_SIZE],timeproc(os.stat(pathname)[stat.ST_MTIME])) )
-            
-            for f in os.listdir(top):
-                pathname = os.path.join(top, f)
-                mode = os.stat(pathname)[stat.ST_MODE]
-                if stat.S_ISDIR(mode):
-                    # It's a directory, 
-                    storage['directories'].append( (f,os.stat(pathname)[stat.ST_SIZE],timeproc(os.stat(pathname)[stat.ST_MTIME])) )
-                    if recurse:
-                        #recurse into it
-                        stackless.schedule()            # schedule the tasklet to keep other tasklets running
-                        sub = walktree(pathname)
-                        subtrees.update(sub)
-                elif stat.S_ISREG(mode):
-                    # It's a file, call the callback function
-                    storage['files'].append( (f,os.stat(pathname)[stat.ST_SIZE],timeproc(os.stat(pathname)[stat.ST_MTIME])) )
-                else:
-                    # Unknown file type, print a message
-                    #print 'Skipping %s' % pathname
-                    pass
-                    
-            shortenedpath = "/"+top[len(self.directory):]              # munge the filename into its url part path
-            subtrees[shortenedpath]=storage
-            return subtrees
+        err, out = pp.err, pp.out
         
-        return walktree(fullpath)
+        if pp.exitcode != 0:
+            # an error occured
+            if "Permission denied" in err:
+                raise PermissionDenied(err)
+            else:
+                raise InvalidPath(err)
+            
+        ls_data = parse_ls(out, culldots=culldots)
+            
+        if DEBUG:
+            print "ls_data=",ls_data
+            print "out", out
+            print "err", err
+        
+        # are we non recursive
+        if not recurse:
+            # "None" path header is actually our path in this case
+            ls_data[path] = ls_data[None]
+            del ls_data[None]
+        
+        return ls_data
+        
+        return ls_data
 
     def _make_env(self):
         """Return a custom environment for the specified cert file"""
