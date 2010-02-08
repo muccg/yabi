@@ -42,7 +42,7 @@ class SudoShell(object):
 
         subenv = self._make_env()
         pp = protocol()
-        fullcommand = [sudo, "-u", systemuser] + command
+        fullcommand = [self.sudo, "-u", systemuser] + command
         
         if DEBUG:
             print "env:",subenv
