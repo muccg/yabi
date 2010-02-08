@@ -38,7 +38,7 @@ class SudoShell(object):
         return environ.copy() if environ!=None else os.environ.copy()
 
     def _make_path(self):
-        return "/usr/local/globus/bin:/usr/local/globus/sbin:/usr/kerberos/bin:/usr/local/bin:/bin:/usr/bin"
+        return "/tmp"
 
     def execute(self, protocol, systemuser, command):
         """execute a command using a process protocol and run it under sudo with the passed in system user"""
