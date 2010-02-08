@@ -33,14 +33,14 @@ class SudoShell(object):
     def __init__(self):
         pass
 
-    def _make_env(self, certfile, environ=None):
+    def _make_env(self, environ=None):
         """Return a custom environment for the specified cert file"""
         return environ.copy() if environ!=None else os.environ.copy()
 
     def execute(self, protocol, systemuser, command):
         """execute a command using a process protocol and run it under sudo with the passed in system user"""
 
-        subenv = self._make_env(certfile)
+        subenv = self._make_env()
         pp = protocol()
         fullcommand = [sudo, "-u", systemuser] + command
         
