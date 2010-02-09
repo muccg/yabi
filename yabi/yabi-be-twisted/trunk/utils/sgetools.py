@@ -9,6 +9,7 @@ import stackless
 import shlex
 from tempfile import mktemp
 import os
+import pwd
 
 QSUB_COMMAND = "/opt/sge/6.2u3/bin/lx24-amd64/qsub"             #-N job-101 /home/yabi/test-remote
 QSTAT_COMMAND = "/opt/sge/6.2u3/bin/lx24-amd64/qstat"
@@ -100,6 +101,9 @@ def qsub(jobname, command, user="yabi", workingdir="/home/yabi", stdout="STDOUT.
     temp.write(" ".join(arguments))
     temp.write("\n")
     temp.close()
+    
+    # make the temporary file owned by the user
+    os.chown( tempfile, pwd.getpwnam(user).pw_uid, pwd.getpwnam(user).pw_gid )
     
     # run the qsub process.
     pp = qsub_spawn(jobname,tempfile,user=user,workingdir=workingdir)
