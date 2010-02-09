@@ -10,7 +10,7 @@ urlpatterns = patterns('yabiadmin.yabmin.views',
     (r'^ws/', include('yabiadmin.yabmin.wsurls')),
     (r'^engine/', include('yabiadmin.yabiengine.urls')),
     (r'^admin/', include('yabiadmin.yabmin.adminurls')),
-    (r'^admin/(.*)', admin.site.root)
+    url(r'^admin/(.*)', admin.site.root, name='admin')
 )
 
 # pattern for serving statically

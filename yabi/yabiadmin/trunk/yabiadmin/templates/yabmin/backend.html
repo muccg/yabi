@@ -40,7 +40,6 @@ ${self.block_content()}<%def name="block_content()">
         <th>Description</th
         <th>Yabi Username</th>
         <th>Username</th>
-        <th>Password</th>
         <th>Certificate</th>
         <th>Key</th>
         <th>Home Dir</th>
@@ -54,14 +53,26 @@ ${self.block_content()}<%def name="block_content()">
     <td>${bec.credential.description}</td>
     <td>${bec.credential.user.name}</td>
     <td>${bec.credential.username}</td>
-    <td>${bec.credential.password}</td>
-    <td></td>
-    <td></td>
+    <td>
+    % if bec.credential.cert:
+    Yes
+    % else:
+    No
+    % endif
+    </td>
+    <td>
+    % if bec.credential.key:
+    Yes
+    % else:
+    No
+    % endif
+    </td>
     <td>${bec.homedir}</td>
     <td>${bec.visible}</td>
     <td>${bec.uri}</td>
     <td>${bec.homedir_uri}</td>
     <td>${bec.backend_cred_test_link()}</td>
+    <td>${bec.backend_cred_edit_link()}</td>
     </tr>
     % endfor
           

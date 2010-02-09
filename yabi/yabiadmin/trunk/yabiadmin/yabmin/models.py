@@ -285,14 +285,18 @@ class Backend(Base):
             return "Backend <%s name=%s scheme=%s hostname=%s port=%s path=%s>"%(self.id, self.name,self.scheme,self.hostname,self.port,self.path)
         return "Backend %s %s %s://%s:%s%s"%(self.name, self.description,self.scheme,self.hostname,self.port,self.path)
 
+
     @models.permalink
-    def view_url(self):
-        return ('backend_view', (), {'backend_id': self.id})
+    def get_absolute_url(self):
+        return ('backend_view', (), {'backend_id': str(self.id)})
+
 
     def backend_summary_link(self):
-        return '<a href="%s">View</a>' % self.view_url()
+        return '<a href="%s">View</a>' % self.get_absolute_url()
     backend_summary_link.short_description = 'Summary'
     backend_summary_link.allow_tags = True
+
+
 
 
 
@@ -348,11 +352,23 @@ class BackendCredential(Base):
 
         return uri
 
+
     @models.permalink
-    def backend_cred_test_url(self):
+    def test_url(self):
         return ('backend_cred_test_view', (), {'backend_cred_id': self.id})
 
+    @models.permalink
+    def edit_url(self):
+        return ('admin', ('yabmin/credential/%s' % self.credential.id,))
+
+
     def backend_cred_test_link(self):
-        return '<a href="%s">Test</a>' % self.backend_cred_test_url()
+        return '<a href="%s">Test</a>' % self.test_url()
+    backend_cred_test_link.short_description = 'Test Credential'
+    backend_cred_test_link.allow_tags = True
+
+
+    def backend_cred_edit_link(self):
+        return '<a href="%s">Edit</a>' % self.edit_url()
     backend_cred_test_link.short_description = 'Test Credential'
     backend_cred_test_link.allow_tags = True
