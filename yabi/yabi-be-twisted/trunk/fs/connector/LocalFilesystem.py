@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import FSConnector
 import os, stat, time
-from fs.Exceptions import InvalidPath
+from fs.Exceptions import InvalidPath, PermissionDenied
 from FifoPool import Fifos
 from utils.parsers import *
 import stackless
