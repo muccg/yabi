@@ -3,7 +3,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.db import connection
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import ObjectDoesNotExist
-from yabiadmin.yabmin.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Backend
+from yabiadmin.yabmin.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Backend, BackendCredential
 from yabiadmin import ldaputils
 from django.utils import webhelpers
 from django.utils import simplejson as json
@@ -143,7 +143,7 @@ def ldap_users(request):
 def backend(request, backend_id):
     logger.debug('')
     backend = get_object_or_404(Backend, pk=backend_id)
-    
+        
     return render_to_response('yabmin/backend.html', {
                 'backend': backend,
                 'user':request.user,
@@ -153,14 +153,26 @@ def backend(request, backend_id):
 
 
 @staff_member_required
-def backend_test_cred(request, backend_cred_id):
+def backend_cred_test(request, backend_cred_id):
     logger.debug('')
-    assert False
-    backend = get_object_or_404(Backend, pk=backend_id)
-    
-    return render_to_response('yabmin/backend.html', {
-                'backend': backend,
+
+    bec = get_object_or_404(BackendCredential, pk=backend_cred_id)
+
+    from yabiadmin.yabiengine import backendhelper
+
+    try:
+        rawdata = backendhelper.get_listing(bec.credential.user.name, bec.homedir_uri)
+        listing = json.loads(rawdata)
+        error = None
+    except ValueError, e:
+        listing = None
+        error = rawdata
+        
+    return render_to_response('yabmin/backend_cred_test.html', {
+                'bec': bec,
                 'user':request.user,
-                'title': 'Backend Details',
-                'root_path':webhelpers.url("/admin")
+                'title': 'Backend Credential Test',
+                'root_path':webhelpers.url("/admin"),
+                'listing':listing,
+                'error':error
                 })

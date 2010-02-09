@@ -349,10 +349,10 @@ class BackendCredential(Base):
         return uri
 
     @models.permalink
-    def backend_test_cred_url(self):
-        return ('backend_test_cred_view', (), {'backend_cred_id': self.id})
+    def backend_cred_test_url(self):
+        return ('backend_cred_test_view', (), {'backend_cred_id': self.id})
 
-    def backend_test_cred_link(self):
-        return '<a href="%s">Test</a>' % self.backend_test_cred_url()
-    backend_test_cred_link.short_description = 'Test Credential'
-    backend_test_cred_link.allow_tags = True
+    def backend_cred_test_link(self):
+        return '<a href="%s">Test</a>' % self.backend_cred_test_url()
+    backend_cred_test_link.short_description = 'Test Credential'
+    backend_cred_test_link.allow_tags = True
