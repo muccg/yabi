@@ -3,6 +3,7 @@ from django.db import models
 from django import forms
 from django.contrib.auth.models import User as DjangoUser
 from django.utils import simplejson as json
+from django.core import urlresolvers
 from urlparse import urlparse, urlunparse
 
 DEBUG = False
@@ -359,7 +360,7 @@ class BackendCredential(Base):
 
     @models.permalink
     def edit_url(self):
-        return ('admin', ('yabmin/credential/%s' % self.credential.id,))
+        return ('admin:yabmin_credential_change', (self.credential.id,))
 
 
     def backend_cred_test_link(self):

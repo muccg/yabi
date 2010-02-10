@@ -9,8 +9,8 @@ admin.autodiscover()
 urlpatterns = patterns('yabiadmin.yabmin.views',
     (r'^ws/', include('yabiadmin.yabmin.wsurls')),
     (r'^engine/', include('yabiadmin.yabiengine.urls')),
-    (r'^admin/', include('yabiadmin.yabmin.adminurls')),
-    url(r'^admin/(.*)', admin.site.root, name='admin')
+    (r'^admin/', include(admin.site.urls)),
+    (r'^admin/', include('yabiadmin.yabmin.adminurls'))
 )
 
 # pattern for serving statically
