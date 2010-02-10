@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from twisted.web2 import resource, http_headers, responsecode, http, server
 from twisted.internet import defer, reactor
 import weakref
@@ -76,6 +77,7 @@ class FileListResource(resource.PostableResource):
             #print "dolist() hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
             try:
                 lister=bend.ls(hostname,path=path, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds)
+                print "LISTER:",lister
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream=json.dumps(lister)))
             except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
                 #print "IP"
