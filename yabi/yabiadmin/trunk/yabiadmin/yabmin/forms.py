@@ -34,10 +34,11 @@ class BackendCredentialForm(forms.ModelForm):
 
     def clean_homedir(self):
         homedir = self.cleaned_data['homedir']
-        if homedir.startswith('/'):
-            raise forms.ValidationError("Homedir must not start with a /.")
-        if not homedir.endswith('/'):
-            raise forms.ValidationError("Homedir must end with a /.")
+        if homedir:
+            if homedir.startswith('/'):
+                raise forms.ValidationError("Homedir must not start with a /.")
+            if not homedir.endswith('/'):
+                raise forms.ValidationError("Homedir must end with a /.")
         return homedir
 
 
