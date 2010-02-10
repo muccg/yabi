@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """A suite of useful parsers for us"""
 
 import urlparse
@@ -75,6 +76,8 @@ def parse_ls(data, culldots=True):
     """Upper level ls parser."""
     output = {}
     for name,filelisting,dirlisting in parse_ls_directories(data, culldots):
+        if not name.endswith('/'):
+            name = name+"/"                 # add a slash to directories missing it
         output[name] = {
             "files":filelisting,
             "directories":dirlisting
