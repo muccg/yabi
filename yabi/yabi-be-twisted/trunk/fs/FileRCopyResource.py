@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from twisted.web2 import resource, http_headers, responsecode, http, server
 from twisted.internet import defer, reactor
 from utils.submit_helpers import parsePOSTDataRemoteWriter
@@ -108,12 +109,12 @@ class FileRCopyResource(resource.PostableResource):
                             created.append(dst+destpath)
                              
                         for file,size,date in fsystem[directory]['files']:
-                            #print "COPY",file,size,date
-                            #print "EXTRA",">",destpath,">",directory
+                            print "COPY",file,size,date
+                            print "EXTRA",">",destpath,">",directory
                             src_uri = src+destpath+file
                             dst_uri = dst+destpath+file
-                            #print "Copy(",src_uri,",",dst_uri,")"
-                            #print "Copy(",sbend+directory+"/"+file,",",dst+destpath+'/'+file,")"
+                            print "Copy(",src_uri,",",dst_uri,")"
+                            print "Copy(",sbend+directory+"/"+file,",",dst+destpath+'/'+file,")"
                             Copy(src_uri,dst_uri,retry=1,yabiusername=yabiusername)
                             Sleep(0.5)
                     
