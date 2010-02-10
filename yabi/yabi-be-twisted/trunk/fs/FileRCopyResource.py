@@ -114,7 +114,7 @@ class FileRCopyResource(resource.PostableResource):
                             src_uri = src+destpath+file
                             dst_uri = dst+destpath+file
                             print "Copy(",src_uri,",",dst_uri,")"
-                            print "Copy(",sbend+directory+"/"+file,",",dst+destpath+'/'+file,")"
+                            #print "Copy(",sbend+directory+"/"+file,",",dst+destpath+'/'+file,")"
                             Copy(src_uri,dst_uri,retry=1,yabiusername=yabiusername)
                             Sleep(0.5)
                     
