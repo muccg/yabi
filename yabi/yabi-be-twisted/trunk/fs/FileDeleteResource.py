@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from twisted.web2 import resource, http_headers, responsecode, http, server
 from twisted.internet import defer, reactor
 import weakref
@@ -71,7 +72,8 @@ class FileDeleteResource(resource.PostableResource):
         def do_rm():
             print "DO_RM hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
             try:
-                deleter=bend.rm(hostname,path=path, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds)
+                # temporarily disable delete
+                #deleter=bend.rm(hostname,path=path, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
             except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
                 #print "rm call failed...\n%s"%traceback.format_exc()
