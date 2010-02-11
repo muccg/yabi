@@ -14,6 +14,9 @@ from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Mkdir, Rm, List, Us
 # if debug is on, full tracebacks are logged into yabiadmin
 DEBUG = False
 
+# if this is true the backend constantly rants about when it collects the next task
+VERBOSE = False
+
 import traceback
 
 from conf import config
@@ -99,7 +102,8 @@ class TaskManager(object):
             agent = useragent
             )
         factory.noisy = False
-        print "reactor.connectTCP(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.TASK_URL),")"
+        if VERBOSE:
+            print "reactor.connectTCP(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.TASK_URL),")"
         reactor.connectTCP(config.yabiadminserver, config.yabiadminport, factory)
         
         
