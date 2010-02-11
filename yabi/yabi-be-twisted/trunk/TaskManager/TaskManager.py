@@ -295,7 +295,8 @@ class TaskManager(object):
             dst_url = fsbackend
             log("Deleting %s..."%(dst_url))
             try:
-                print "RM1:",dst_url
+                if DEBUG:
+                    print "RM1:",dst_url
                 Rm(dst_url, yabiusername=yabiusername, recurse=True)
             except GETFailure, error:
                 # error copying!
