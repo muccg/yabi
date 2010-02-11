@@ -266,7 +266,8 @@ class TaskManager(object):
         
         # make sure we have the stageout directory
         log("making stageout directory %s"%task['stageout'])
-        print "STAGEOUT:",task['stageout']
+        if DEBUG:
+            print "STAGEOUT:",task['stageout']
         try:
             Mkdir(task['stageout'], yabiusername=yabiusername)
         except GETFailure, error:
