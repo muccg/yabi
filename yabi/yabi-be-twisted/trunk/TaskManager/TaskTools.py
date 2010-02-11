@@ -19,6 +19,8 @@ RM_PATH = "/fs/rm"
 
 USER_AGENT = "YabiStackless/0.1"
 
+DEBUG = False
+
 from utils.stacklesstools import GET, POST, GETFailure, CloseConnections
 
 def Sleep(seconds):
@@ -37,7 +39,8 @@ def Copy(src,dst,retry=COPY_RETRY, **kwargs):
         #print "retry num=",num
         try:
             code,message,data = GET(COPY_PATH,src=src,dst=dst, **kwargs)
-            print "code=",repr(code)
+            if DEBUG:
+                print "code=",repr(code)
             if int(code)==200:
                 # success!
                 #print "SUCC"
@@ -47,7 +50,7 @@ def Copy(src,dst,retry=COPY_RETRY, **kwargs):
                 raise CopyError(data)
         except GETFailure, err:
             print "Post failed with error:",err
-            Sleep(5.0)
+            Sleep(5.0)              
     
     raise err
     
@@ -81,7 +84,8 @@ def Log(logpath,message):
     """Report an error to the webservice"""
     #print "Reporting error to %s"%(logpath)
     #print "Logging to %s"%(logpath)
-    print "log=",message
+    if DEBUG:
+        print "log=",message
     
     if "://" in logpath:
         from urlparse import urlparse
@@ -96,7 +100,8 @@ def Log(logpath,message):
 def Status(statuspath, message):
     """Report some status to the webservice"""
     #print "Reporting status to %s"%(statuspath)
-    print "status=",message
+    if DEBUG:
+        print "status=",message
     
     if "://" in statuspath:
         from urlparse import urlparse
@@ -125,5 +130,6 @@ def UserCreds(yabiusername, uri):
     url = os.path.join(config.yabiadminpath,'ws/credential/%s/?uri=%s'%(yabiusername,uri))
     code, message, data = GET(url, host=config.yabiadminserver, port=config.yabiadminport)
     assert code==200
-    print "JSON DATA:",data
+    if DEBUG:
+        print "JSON DATA:",data
     return json.loads(data)

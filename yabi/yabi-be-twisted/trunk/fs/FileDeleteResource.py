@@ -14,6 +14,12 @@ from utils.submit_helpers import parsePOSTData
 
 import traceback
 
+# print out extra debug information to the log
+DEBUG = False
+
+# diable the rm function (can be helpful during debug)
+DISABLED = False
+
 class FileDeleteResource(resource.PostableResource):
     VERSION=0.1
     maxMem = 100*1024
@@ -70,10 +76,12 @@ class FileDeleteResource(resource.PostableResource):
         client_channel = defer.Deferred()
         
         def do_rm():
-            print "DO_RM hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
+            if DEBUG:
+                print "DO_RM hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
             try:
-                # temporarily disable delete
-                #deleter=bend.rm(hostname,path=path, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds)
+                # if delete function is not disabled (for DEBUG purposes)
+                if not DISABLED:
+                    deleter=bend.rm(hostname,path=path, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
             except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
                 #print "rm call failed...\n%s"%traceback.format_exc()
@@ -93,7 +101,6 @@ class FileDeleteResource(resource.PostableResource):
         @param request: the request to process.
         @return: an object adaptable to L{iweb.IResponse}.
         """
-        print "A"
         deferred = parsePOSTData(request)
         
         def post_parsed(result):
@@ -105,6 +112,5 @@ class FileDeleteResource(resource.PostableResource):
         return deferred
 
     def http_GET(self, request):
-        print "B"
         return self.handle_delete(request)
 
