@@ -10,6 +10,8 @@ from TaskManager.TaskTools import Sleep, Copy, List, Mkdir, GETFailure
 
 from utils.parsers import parse_url
 
+DEBUG = False
+
 class FileRCopyResource(resource.PostableResource):
     VERSION=0.1
     maxMem = 100*1024
