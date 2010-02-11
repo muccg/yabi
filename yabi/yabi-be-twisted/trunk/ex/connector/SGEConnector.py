@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from ExecConnector import ExecConnector, ExecutionError
 
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
@@ -8,6 +9,8 @@ ENV_CHECK = ['SGE_ROOT']
 
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "sge"
+
+DEBUG = False
 
 from twisted.web2 import http, responsecode, http_headers, stream
 
@@ -35,9 +38,11 @@ class SGEConnector(ExecConnector):
     
     def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", **creds):
         try:
-            print "QSUB",command,"WORKING:",working
+            if DEBUG:
+                print "QSUB",command,"WORKING:",working
             jobid = qsub("jobname", command=command, user=username, workingdir=working)
-            print "JOB ID",jobid
+            if DEBUG:
+                print "JOB ID",jobid
         
         except ExecutionError, ee:
             channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = str(ee) ))
@@ -62,7 +67,8 @@ class SGEConnector(ExecConnector):
             else:
                 # job has finished
                 newstate = "Done"
-            print "Job summary:",jobsummary
+            if DEBUG:
+                print "Job summary:",jobsummary
                 
             
             if state!=newstate:

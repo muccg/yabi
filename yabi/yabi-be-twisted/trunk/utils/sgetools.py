@@ -15,7 +15,9 @@ QSUB_COMMAND = "/opt/sge/6.2u3/bin/lx24-amd64/qsub"             #-N job-101 /hom
 QSTAT_COMMAND = "/opt/sge/6.2u3/bin/lx24-amd64/qstat"
 
 SUDO = "/usr/bin/sudo"
-USE_SUDO = True                            # cant use sudo because SpawnProcess has no tty, according to sudo (get the error "sudo: sorry, you must have a tty to run sudo")
+USE_SUDO = True                          
+
+DEBUG = False
 
 class QsubProcessProtocol(protocol.ProcessProtocol):
     """ Job returns 'Your job 10 ("jobname") has been submitted'
@@ -80,7 +82,8 @@ def qsub_spawn(jobname, commandfile, user="yabi", workingdir="/home/yabi", stdou
                   ] + command
                                 
     
-    print command
+    if DEBUG:
+        print command
     reactor.spawnProcess(   pp,
                             command[0], 
                             args=command,
@@ -168,7 +171,8 @@ job-ID  prior   name       user         state submit/start at     queue         
                 jobid, prior, name, user, status, submit, at, host, rest = re_match.groups()
                 jobid=int(jobid)
                 self.jobs[jobid] = dict(name=name,user=user,status=status,submit=submit,at=at,rest=rest,host=host,prior=prior)
-                print self.jobs[jobid]
+                if DEBUG:
+                    print self.jobs[jobid]
                 #print "id",jobid
                 
         #print self.jobs
@@ -186,7 +190,8 @@ def qstat_spawn(user="yabi"):
     subenv = os.environ.copy()
     pp = QstatProcessProtocol()
     
-    print [
+    if DEBUG:
+        print [
                                 QSTAT_COMMAND,
                                 "-u",
                                 user

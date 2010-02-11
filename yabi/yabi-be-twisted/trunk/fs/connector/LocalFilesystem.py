@@ -18,7 +18,7 @@ SCHEMA = "yabifs"
 # the location of the directory we will serve out. This can be overridden in the constuctor if wanted
 DIRECTORY = "/"
 
-DEBUG = True
+DEBUG = False
 
 from twisted.internet import protocol
 from twisted.internet import reactor

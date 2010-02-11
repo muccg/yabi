@@ -12,7 +12,7 @@ from utils.parsers import parse_url
 from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Mkdir, Rm, List, UserCreds, GETFailure, CloseConnections
 
 # if debug is on, full tracebacks are logged into yabiadmin
-DEBUG = True
+DEBUG = False
 
 import traceback
 
