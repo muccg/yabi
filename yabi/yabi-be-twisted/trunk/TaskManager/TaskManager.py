@@ -163,13 +163,13 @@ class TaskManager(object):
             
             directory, file = os.path.split(address.path)
             remotedir = scheme+"://"+address.netloc+directory
-            print "CHECKING remote:",remotedir
+            if DEBUG:
+                print "CHECKING remote:",remotedir
             
             try:
-                print "CALLING LIST"
                 listing = List(remotedir, yabiusername=yabiusername)
-                print "RETURNING"
-                print "result:", listing
+                if DEBUG:
+                    print "list result:", listing
             except Exception, error:
                 # directory does not exist
                 print "Remote DIR does not exist"
@@ -200,7 +200,8 @@ class TaskManager(object):
         
         assert address.path=="/", "Error. JSON[exec][backend] has a path. Execution backend URI's must not have a path (path is %s)"%address.path 
         
-        print "USERCREDS",usercreds
+        if DEBUG:
+            print "USERCREDS",usercreds
                 
         # make our working directory
         status("mkdir")
@@ -232,7 +233,8 @@ class TaskManager(object):
                 def _task_status_change(line):
                     """Each line that comes back from the webservice gets passed into this callback"""
                     line = line.strip()
-                    print "_task_status_change(",line,")"
+                    if DEBUG:
+                        print "_task_status_change(",line,")"
                     log("Remote execution backend changed status to: %s"%(line))
                     status("exec:%s"%(line.lower()))
                 
