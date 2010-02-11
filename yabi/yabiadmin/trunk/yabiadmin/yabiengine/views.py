@@ -4,8 +4,9 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import webhelpers
 from django.utils import simplejson as json
-from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
+from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
+from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
 import wfwrangler
 
 import logging
@@ -137,3 +138,18 @@ def error(request, table, id):
     except Exception, e:
         logger.critical("Caught Exception: %s" % e.message)
         return HttpResponseNotFound("Object not found")
+
+
+@staff_member_required
+def workflow_summary(request, workflow_id):
+    logger.debug('')
+
+    workflow = get_object_or_404(Workflow, pk=workflow_id)
+        
+    return render_to_response('yabiengine/workflow_summary.html', {
+                'w': workflow,
+                'user':request.user,
+                'title': 'Workflow Summary',
+                'root_path':webhelpers.url("/admin"),
+                'settings':settings
+                })

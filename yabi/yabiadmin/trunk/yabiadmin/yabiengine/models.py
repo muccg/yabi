@@ -27,13 +27,37 @@ def parse_url(uri):
     assert re_url_schema.match(scheme)
     return scheme, urlparse.urlparse(rest)
 
+class Status(object):
+    def get_status_colour(obj, status):
+        if settings.STATUS['pending'] == status:
+            return 'grey'
+        elif settings.STATUS['ready'] == status:
+            return 'orange'
+        elif settings.STATUS['requested'] == status:
+            return 'green'
+        elif settings.STATUS['complete'] == status:
+            return 'green'
+        elif settings.STATUS['error'] == status:
+            return 'red'
+
+class Editable(object):
+    @models.permalink
+    def edit_url(obj):
+        admin_str = 'admin:%s_%s_change' % (obj._meta.app_label, obj._meta.object_name.lower())
+        return (admin_str, (obj.id,))
+
+    def edit_link(obj):
+        return '<a href="%s">Edit</a>' % obj.edit_url()
+    edit_link.short_description = 'Edit'
+    edit_link.allow_tags = True
+
 
 
 import logging
 logger = logging.getLogger('yabiengine')
 
 
-class Workflow(models.Model):
+class Workflow(models.Model, Editable, Status):
     name = models.CharField(max_length=255)
     user = models.ForeignKey(User)
     start_time = models.DateTimeField(null=True)
@@ -51,8 +75,18 @@ class Workflow(models.Model):
     @property
     def workflowid(self):
         return self.id
-    
-class Job(models.Model):
+
+    @models.permalink
+    def summary_url(self):
+        return ('workflow_summary', (), {'workflow_id': self.id})
+
+    def summary_link(self):
+        return '<a href="%s">Summary</a>' % self.summary_url()
+    summary_link.short_description = 'Summary'
+    summary_link.allow_tags = True
+
+
+class Job(models.Model, Editable, Status):
     workflow = models.ForeignKey(Workflow)
     order = models.PositiveIntegerField()
     start_time = models.DateTimeField()
@@ -80,7 +114,8 @@ class Job(models.Model):
     def workflowid(self):
         return self.workflow.id
 
-class Task(models.Model):
+
+class Task(models.Model, Editable, Status):
     job = models.ForeignKey(Job)
     start_time = models.DateTimeField(null=True, blank=True)
     end_time = models.DateTimeField(null=True, blank=True)
@@ -139,9 +174,15 @@ class Task(models.Model):
     def workflowid(self):
         return self.job.workflow.id
 
+    ## TODO fix link to use correct
+    def link_to_syslog(self):
+        return '<a href="%s?table_name=task&table_id=%d">%s</a>' % (url('/admin/yabiengine/syslog/'), self.id, "Syslog")
+    link_to_syslog.allow_tags = True
+    link_to_syslog.short_description = "Syslog"
 
 
-class StageIn(models.Model):
+
+class StageIn(models.Model, Editable):
     src = models.CharField(max_length=256)
     dst = models.CharField(max_length=256)
     order = models.IntegerField()

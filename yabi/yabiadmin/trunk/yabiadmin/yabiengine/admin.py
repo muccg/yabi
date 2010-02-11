@@ -26,7 +26,10 @@ link_to_syslog_from_task.short_description = "Syslog"
 
 
 class WorkflowAdmin(admin.ModelAdmin):
-    list_display = ['name', link_to_jobs, link_to_tasks, link_to_stageins]
+    list_display = ['name', 'status', link_to_jobs, link_to_tasks, link_to_stageins, 'summary_link']
+    list_filter = ['status', 'user']
+    search_fields = ['name']
+
 
 class QueuedWorkflowAdmin(admin.ModelAdmin):
     list_display = ['workflow', 'created_on']
