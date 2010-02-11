@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from twisted.web2 import resource, http_headers, responsecode, http, server, fileupload, stream
 from twisted.internet import defer, reactor
 
@@ -16,6 +17,8 @@ from twisted.internet.defer import Deferred
 from utils.FifoStream import FifoStream
 
 from utils.submit_helpers import parsePOSTData, parsePUTData, parsePOSTDataRemoteWriter
+
+DEBUG = False
 
 class ExecRunResource(resource.PostableResource):
     VERSION=0.1
@@ -45,7 +48,8 @@ class ExecRunResource(resource.PostableResource):
         if "uri" not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided\n")
 
-        print "RUN:",command
+        if DEBUG:
+            print "RUN:",command
 
         uri = request.args['uri'][0]
         scheme, address = parse_url(uri)
@@ -61,7 +65,8 @@ class ExecRunResource(resource.PostableResource):
         
         # get the backend
         fsresource = self.fsresource()
-        print "BACKENDS",fsresource.Backends()
+        if DEBUG:
+            print "BACKENDS",fsresource.Backends()
         if scheme not in fsresource.Backends():
             return http.Response( responsecode.NOT_FOUND, {'content-type': http_headers.MimeType('text', 'plain')}, "Backend '%s' not found\n"%scheme)
             

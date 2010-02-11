@@ -9,6 +9,8 @@ import os, types
 
 from stackless import tasklet
 
+DEBUG = False
+
 class CallbackHTTPClient(client.HTTPPageGetter):
     def __init__(self, *args, **kwargs):
         self.callback = None
@@ -39,7 +41,8 @@ class CallbackHTTPClient(client.HTTPPageGetter):
         elif self.callback:
             # hook in here to process chunked updates
             lines=data.split("\r\n")
-            print "LINES",[lines]
+            if DEBUG:
+                print "LINES",[lines]
             #chunk_size = int(lines[0].split(';')[0],16)
             #chunk = lines[1]
             chunk = lines[0]

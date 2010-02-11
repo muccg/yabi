@@ -68,7 +68,7 @@ def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,*
         agent = USER_AGENT,
         
         )
-    factory.noisy=True
+    factory.noisy=False
     
     if DEBUG:
         print "GETing",fullpath

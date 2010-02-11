@@ -98,7 +98,7 @@ class TaskManager(object):
             os.path.join(config.yabiadminpath,self.TASK_URL+"?origin=%s:%s"%tuple(config.config['backend']['port'])),
             agent = useragent
             )
-        factory.noisy = True
+        factory.noisy = False
         print "reactor.connectTCP(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.TASK_URL),")"
         reactor.connectTCP(config.yabiadminserver, config.yabiadminport, factory)
         
