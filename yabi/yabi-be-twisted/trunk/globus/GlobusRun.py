@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import subprocess
 import os
 
@@ -7,6 +8,8 @@ from BaseShell import BaseShell, BaseShellProcessProtocol
 from twisted.internet import protocol
 from twisted.internet import reactor
 import re
+
+DEBUG = False
 
 re_jobid = re.compile(r"Job ID: uuid:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")
 re_termtime = re.compile(r"Termination time: (\d{2}/\d{2}/\d{4} \d{2}:\d{2} \w+)")
@@ -35,7 +38,8 @@ class GlobusStatusWSProcessProtocol(BaseShellProcessProtocol):
         
     def outReceived(self, data):
         self.out += data
-        print "OUT:",data
+        if DEBUG:
+            print "OUT:",data
         
         if "job state" in self.out:
             result = re_currentjobstate.search(self.out)
