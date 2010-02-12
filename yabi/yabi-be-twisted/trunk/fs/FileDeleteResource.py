@@ -18,7 +18,7 @@ import traceback
 DEBUG = False
 
 # diable the rm function (can be helpful during debug)
-DISABLED = False
+DISABLED = True
 
 class FileDeleteResource(resource.PostableResource):
     VERSION=0.1
