@@ -56,7 +56,7 @@ class TaskManager(object):
     TASK_URL = "engine/task/"
     
     JOBLESS_PAUSE = 5.0                 # wait this long when theres no more jobs, to try to get another job
-    JOB_PAUSE = 10.0                     # wait this long when you successfully got a job, to get the next job
+    JOB_PAUSE = 0.0                     # wait this long when you successfully got a job, to get the next job
     
     def __init__(self):
         self.pausechannel = stackless.channel()

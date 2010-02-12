@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from twisted.web2 import resource, http_headers, responsecode, http, server
 from twisted.internet import defer, reactor
 import weakref
@@ -11,7 +12,7 @@ from utils.parsers import parse_url
 
 from utils.submit_helpers import parsePOSTData
 
-DEBUG = False
+DEBUG = True
 
 class FileCopyResource(resource.PostableResource):
     VERSION=0.1
