@@ -20,6 +20,8 @@ DIRECTORY = "/"
 
 DEBUG = False
 
+DEBUG_READ_FIFO = True
+
 from twisted.internet import protocol
 from twisted.internet import reactor
 
@@ -246,14 +248,26 @@ class LocalFilesystem(FSConnector.FSConnector):
         if not fifo:
             fifo = Fifos.Get()
         
-        dst = os.path.join(self._get_filename(path),filename)
+        src = os.path.join(self._get_filename(path),filename)
+        
+        # debug info about the source file
+        if DEBUG_READ_FIFO:
+            print "Info about the source file:"
+            print "path:",src
+            
+            import stat, os
+            
+            statinfo = os.stat(src)
+            
+            print "stat:",statinfo
+            print "st_size:",statinfo.st_size
         
         # the copy to remote command
         procproto = FSWriteProtocol()
         
         reactor.spawnProcess(   procproto,
                                 self.copy,
-                                [ self.copy, dst, fifo ],
+                                [ self.copy, src, fifo ],
                                 env=self._make_env(),
                                 path=self._make_path()
                             )
