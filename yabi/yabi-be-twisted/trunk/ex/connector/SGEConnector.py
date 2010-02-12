@@ -66,6 +66,7 @@ class SGEConnector(ExecConnector):
                 newstate = dict(qw="Unsubmitted", t="Pending",r="Running",hqw="Unsubmitted",ht="Pending",h="Pending",E="Error",Eqw="Error")[status]
             else:
                 # job has finished
+                sleep(5.0)                      # deal with SGE flush bizarreness (files dont flush from remote host immediately. Totally retarded)
                 newstate = "Done"
             if DEBUG:
                 print "Job summary:",jobsummary
