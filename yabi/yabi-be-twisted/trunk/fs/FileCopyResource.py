@@ -126,7 +126,14 @@ class FileCopyResource(resource.PostableResource):
             
             if readproto.exitcode==0 and writeproto.exitcode==0:
                 if DEBUG:
-                    print "Copy OK"
+                    print "Copy finished exit codes 0"
+                    print "readproto:"
+                    print "ERR:",readproto.err
+                    print "OUT:",readproto.out
+                    print "writeproto:"
+                    print "ERR:",writeproto.err
+                    print "OUT:",writeproto.out
+                    
                 channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Copy OK\n"))
             else:
                 rexit = "Killed" if readproto.exitcode==None else str(readproto.exitcode)
