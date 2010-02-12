@@ -255,8 +255,6 @@ class LocalFilesystem(FSConnector.FSConnector):
             print "Info about the source file:"
             print "path:",src
             
-            import stat, os
-            
             statinfo = os.stat(src)
             
             print "stat:",statinfo
