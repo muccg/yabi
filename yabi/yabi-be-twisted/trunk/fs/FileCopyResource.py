@@ -100,27 +100,33 @@ class FileCopyResource(resource.PostableResource):
                        
             # wait for one to finish
             while not readproto.isDone() and not writeproto.isDone():
-                #print "rp",readproto.exitcode,"wp",writeproto.exitcode
+                if DEBUG:
+                    print "rp",readproto.exitcode,"wp",writeproto.exitcode
                 stackless.schedule()
             
             # if one died and not the other, then kill the non dead one
             if readproto.isDone() and readproto.exitcode!=0 and not writeproto.isDone():
                 # readproto failed. write proto is still running. Kill it
-                #print "READ FAILED",readproto.exitcode,writeproto.exitcode
+                if DEBUG:
+                    print "READ FAILED",readproto.exitcode,writeproto.exitcode
                 os.kill(writeproto.transport.pid, signal.SIGKILL)
             else:
                 # wait for write to finish
-                #print "WFW",readproto.exitcode,writeproto.exitcode
+                if DEBUG:
+                    print "WFW",readproto.exitcode,writeproto.exitcode
                 while writeproto.exitcode == None:
                     stackless.schedule()
                     
                 # did write succeed?
                 if writeproto.exitcode == 0:
-                    #print "WFR",readproto.exitcode,writeproto.exitcode
+                    if DEBUG:
+                        print "WFR",readproto.exitcode,writeproto.exitcode
                     while readproto.exitcode == None:
                         stackless.schedule()
             
             if readproto.exitcode==0 and writeproto.exitcode==0:
+                if DEBUG:
+                    print "Copy OK"
                 channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Copy OK\n"))
             else:
                 rexit = "Killed" if readproto.exitcode==None else str(readproto.exitcode)
