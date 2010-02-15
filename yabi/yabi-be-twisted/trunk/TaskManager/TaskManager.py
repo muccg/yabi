@@ -12,7 +12,7 @@ from utils.parsers import parse_url
 from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Mkdir, Rm, List, UserCreds, GETFailure, CloseConnections
 
 # if debug is on, full tracebacks are logged into yabiadmin
-DEBUG = False
+DEBUG = True
 
 # if this is true the backend constantly rants about when it collects the next task
 VERBOSE = False
