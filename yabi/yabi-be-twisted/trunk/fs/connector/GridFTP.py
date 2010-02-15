@@ -151,7 +151,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
         else:
-            self.EnsureAuthed(yabiusername, SCHEMA,username,host)
+            self.EnsureAuthed(yabiusername, SCHEMA,username,host, path)
         usercert = self.GetAuthProxy(host).ProxyFile(username)
         
         pp, fifo = globus.Copy.WriteToRemote(usercert,dst,fifo=fifo)
@@ -175,7 +175,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
         else:
-            self.EnsureAuthed(yabiusername,SCHEMA,username,host)
+            self.EnsureAuthed(yabiusername,SCHEMA,username,host, path)
         usercert = self.GetAuthProxy(host).ProxyFile(username)
         
         pp, fifo = globus.Copy.ReadFromRemote(usercert,dst,fifo=fifo)
