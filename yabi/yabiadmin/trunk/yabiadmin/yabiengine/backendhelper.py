@@ -30,6 +30,8 @@ def get_backendcredential_for_uri(yabiusername, uri):
     
     path = rest.path
 
+    logger.debug('BackendCredential filter credential__user__name=%s, backend__scheme=%s, credential__username=%s, backend__hostname=%s'%(yabiusername,schema,rest.username,rest.hostname))
+
     # get our set of credential candidates
     bcs = BackendCredential.objects.filter(credential__user__name=yabiusername,
                                            backend__scheme=schema,
