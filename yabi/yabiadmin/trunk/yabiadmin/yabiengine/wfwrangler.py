@@ -236,7 +236,7 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
         fsscheme, fsbackend_parts = parse_url(job.fs_backend)
         execscheme, execbackend_parts = parse_url(job.exec_backend)
         
-        t.command = job.command.replace("%", url_join(fsbackend_parts.path,t.working_dir, "input", file))
+        t.command = job.command.replace("%", url_join(fsbackend_parts.path,t.working_dir, file))
         t.save()
 
         logger.info('Creating task for job id: %s using command: %s' % (job.id, t.command))
@@ -244,7 +244,7 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
 
         s = StageIn(task=t,
                     src="%s%s" % (param, file),
-                    dst="%s://%s@%s%s" % (fsscheme,fsbackend_parts.username,fsbackend_parts.hostname, os.path.join(fsbackend_parts.path, t.working_dir, "input", file)),
+                    dst="%s://%s@%s%s" % (fsscheme,fsbackend_parts.username,fsbackend_parts.hostname, os.path.join(fsbackend_parts.path, t.working_dir, file)),
                     order=0)
                     
         logger.debug("Stagein: %s <=> %s " % (s.src, s.dst))
