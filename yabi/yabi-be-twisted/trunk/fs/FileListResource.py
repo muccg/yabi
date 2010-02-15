@@ -14,6 +14,8 @@ from utils.parsers import parse_url
 
 from utils.submit_helpers import parsePOSTData
 
+DEBUG = True
+
 class FileListResource(resource.PostableResource):
     VERSION=0.1
     maxMem = 100*1024
@@ -60,8 +62,9 @@ class FileListResource(resource.PostableResource):
         
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
-        #print "URI",uri
-        #print "ADDRESS",address
+        if DEBUG:
+            print "URI",uri
+            print "ADDRESS",address
         
         # get the backend
         fsresource = self.fsresource()
@@ -74,7 +77,8 @@ class FileListResource(resource.PostableResource):
         client_channel = defer.Deferred()
         
         def do_list():
-            #print "dolist() hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
+            if DEBUG:
+                print "dolist() hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
             try:
                 lister=bend.ls(hostname,path=path, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream=json.dumps(lister)))
