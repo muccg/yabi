@@ -28,6 +28,16 @@ def build(username, workflow_json):
         workflow = Workflow(name=workflow_dict["name"], json=workflow_json, user=user)
         workflow.save()
 
+        # sort out the stageout directory
+        if 'default_stageout' in workflow_dict and workflow_dict['default_stageout']:
+            default_stageout = workflow_dict['default_stageout']
+        else:
+            default_stageout = user.default_stageout
+            
+        workflow.stageout = "%s%d/" % (default_stageout, workflow.id)
+        workflow.save()
+        backendhelper.mkdir(workflow.user.name, workflow.stageout)
+
         for i,job_dict in enumerate(workflow_dict["jobs"]):
             job = addJob(workflow, job_dict, i)
 
@@ -146,15 +156,15 @@ def addJob(workflow, job_dict, order):
         logger.critical('Invalid credentials for user: %s and backend: %s' % (workflow.user, tool.fs_backend))
         raise
 
+
     #TODO hardcoded
     if tool.backend.name == 'nullbackend':
         job.stageout = None
     else:
-        job.stageout = "%s%d/%d/" % (fs_backendcredential.homedir_uri, workflow.id, job.id)
+        job.stageout = "%s/%d/" % (workflow.stageout, job.id)
         
         # make that directory
         backendhelper.mkdir(workflow.user.name, job.stageout)
-
 
     job.exec_backend = exec_backendcredential.homedir_uri
     job.fs_backend = fs_backendcredential.homedir_uri

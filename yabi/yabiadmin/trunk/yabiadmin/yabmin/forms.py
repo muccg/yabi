@@ -41,6 +41,21 @@ class BackendCredentialForm(forms.ModelForm):
                 raise forms.ValidationError("Homedir must end with a /.")
         return homedir
 
+##    def clean_default_stageout(self):
+##        default_stageout = self.cleaned_data['default_stageout']
+
+##        if default_stageout:
+
+##            becs = BackendCredential.objects.filter(credential=self.cleaned_data['credential'])
+##            assert False
+##            stageout_count = 0
+##            for bec in becs:
+##                if bec.default_stageout:
+##                    stageout_count += 1
+##            if stageout_count > 1:
+##                raise forms.ValidationError("There is a backend credential flagged as the default stageout already.")                    
+##        return default_stageout
+
 
 class ToolForm(forms.ModelForm):
     class Meta:

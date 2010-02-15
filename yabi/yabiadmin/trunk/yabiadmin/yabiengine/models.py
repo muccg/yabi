@@ -68,6 +68,7 @@ class Workflow(models.Model, Editable, Status):
     created_on = models.DateTimeField(auto_now_add=True, editable=False)
     status = models.TextField(max_length=64, blank=True)
     yabistore_id = models.IntegerField(null=True)                           # ALTER TABLE yabiengine_workflow ADD COLUMN yabistore_id INTEGER;
+    stageout = models.CharField(max_length=1000)
 
     def __unicode__(self):
         return self.name
@@ -93,13 +94,14 @@ class Job(models.Model, Editable, Status):
     end_time = models.DateTimeField(null=True)
     cpus = models.CharField(max_length=64, null=True, blank=True)
     walltime = models.CharField(max_length=64, null=True, blank=True)
-    stageout = models.CharField(max_length=1000, null=True)
     status = models.CharField(max_length=64, blank=True)
     exec_backend = models.CharField(max_length=256)
     fs_backend = models.CharField(max_length=256)
     command = models.TextField()
     commandparams = models.TextField(blank=True)
     input_filetype_extensions = models.TextField(blank=True)
+    stageout = models.CharField(max_length=1000, null=True)
+
 
     def __unicode__(self):
         return "%s - %s" % (self.workflow.name, self.order)

@@ -250,6 +250,10 @@ class User(Base):
     def __unicode__(self):
         return self.name
 
+    @property
+    def default_stageout(self):
+        bec = BackendCredential.objects.get(credential__user=self, default_stageout=True) # will raise a MultipleObjectsReturned exception if default_stageout not unique
+        return bec.homedir_uri
 
 class Credential(Base):
     description = models.CharField(max_length=512, blank=True)
@@ -306,6 +310,7 @@ class BackendCredential(Base):
     credential = models.ForeignKey(Credential)
     homedir = models.CharField(max_length=512, blank=True, null=True)
     visible = models.BooleanField()                                                         # ALTER TABLE "yabmin_backendcredential" ADD "visible" boolean NOT NULL default False;
+    default_stageout = models.BooleanField()                                                         # ALTER TABLE "yabmin_backendcredential" ADD "visible" boolean NOT NULL default False;
 
     def __unicode__(self):
         if DEBUG:

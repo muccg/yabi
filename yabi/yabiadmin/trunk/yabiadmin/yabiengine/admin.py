@@ -24,9 +24,8 @@ link_to_syslog_from_task.allow_tags = True
 link_to_syslog_from_task.short_description = "Syslog"
 
 
-
 class WorkflowAdmin(admin.ModelAdmin):
-    list_display = ['name', 'status', link_to_jobs, link_to_tasks, link_to_stageins, 'summary_link']
+    list_display = ['name', 'status', 'stageout', link_to_jobs, link_to_tasks, link_to_stageins, 'summary_link']
     list_filter = ['status', 'user']
     search_fields = ['name']
 
@@ -39,7 +38,7 @@ class SyslogAdmin(admin.ModelAdmin):
     search_fields = ['table_name', 'table_id']
 
 class JobAdmin(admin.ModelAdmin):
-    list_display = ['order', 'status', 'command', 'commandparams', 'start_time', 'end_time', 'cpus', 'walltime', 'stageout', link_to_tasks]
+    list_display = ['order', 'status', 'command', 'commandparams', 'start_time', 'end_time', 'cpus', 'walltime', link_to_tasks]
     list_filter = ['workflow']
     ordering = ['order']
 
