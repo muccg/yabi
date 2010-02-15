@@ -44,7 +44,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
         else:
-            self.EnsureAuthed(yabiusername,SCHEMA,username,host)
+            self.EnsureAuthed(yabiusername,SCHEMA,username,host,path)
         
         usercert = self.GetAuthProxy(host).ProxyFile(username)
         pp = globus.Shell.mkdir(usercert,host,path)
@@ -73,7 +73,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
         else:
-            self.EnsureAuthed(yabiusername, SCHEMA,username,host)
+            self.EnsureAuthed(yabiusername, SCHEMA,username,host,path)
         
         usercert = self.GetAuthProxy(host).ProxyFile(username)
         pp = globus.Shell.rm(usercert,host,path,args="-r" if recurse else "")
@@ -102,7 +102,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
         else:
-            self.EnsureAuthed(yabiusername, SCHEMA,username,host)
+            self.EnsureAuthed(yabiusername, SCHEMA,username,host,path)
         
         usercert = self.GetAuthProxy(host).ProxyFile(username)
         pp = globus.Shell.ls(usercert,host,path, args="-alFR" if recurse else "-alF" )
