@@ -161,7 +161,7 @@ def addJob(workflow, job_dict, order):
     if tool.backend.name == 'nullbackend':
         job.stageout = None
     else:
-        job.stageout = "%s%s/" % (workflow.stageout, "%d-%s"%(job.order,tool.display_name) )
+        job.stageout = "%s%s/" % (workflow.stageout, "%d - %s"%(job.order+1,tool.display_name) )
         
         # make that directory
         backendhelper.mkdir(workflow.user.name, job.stageout)
