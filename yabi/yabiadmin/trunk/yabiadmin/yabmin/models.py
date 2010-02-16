@@ -303,9 +303,10 @@ class Backend(Base):
 
 
 
-
-
 class BackendCredential(Base):
+    class Meta:
+        verbose_name_plural = "Backend Credentials"
+
     backend = models.ForeignKey(Backend)
     credential = models.ForeignKey(Credential)
     homedir = models.CharField(max_length=512, blank=True, null=True)
