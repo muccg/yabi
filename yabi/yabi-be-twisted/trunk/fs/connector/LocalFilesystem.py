@@ -65,13 +65,13 @@ class SudoShell(object):
         return pp
         
     def ls(self, user, directory, args="-alFR"):
-        return self.execute(SudoShellProcessProtocol, user, command=["ls",args,'"'+directory+'"'])
+        return self.execute(SudoShellProcessProtocol, user, command=["ls",args,directory])
       
     def mkdir(self, user, directory, args="-p"):
-        return self.execute(SudoShellProcessProtocol, user, command=["mkdir",args,'"'+directory+'"'])
+        return self.execute(SudoShellProcessProtocol, user, command=["mkdir",args,directory])
       
     def rm(self, user, directory, args=None):
-        return self.execute(SudoShellProcessProtocol, user, command=["rm",args,'"'+directory+'"']) if args else self.execute(certfile,host,command=["rm",'"'+directory+'"']) 
+        return self.execute(SudoShellProcessProtocol, user, command=["rm",args,directory]) if args else self.execute(certfile,host,command=["rm",directory]) 
 
 
 class FSWriteProtocol(protocol.ProcessProtocol):
