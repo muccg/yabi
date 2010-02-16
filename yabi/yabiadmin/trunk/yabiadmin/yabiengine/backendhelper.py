@@ -88,7 +88,7 @@ def get_file_list(yabiusername, uri, recurse=True):
     logger.info("Listing: %s" % uri)
 
     try:
-        resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, uri)
+        resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, quote(uri))
         if recurse:
             resource += "&recurse"
         logger.debug('Resource: %s' % resource)
@@ -174,7 +174,7 @@ def mkdir(yabiusername, uri):
     logger.info("backendhelper::mkdir(%s %r)" % (yabiusername, uri))
     
     try:
-        resource = "%s?uri=%s" % (settings.YABIBACKEND_MKDIR, uri)
+        resource = "%s?uri=%s" % (settings.YABIBACKEND_MKDIR, quote(uri))
 
         logger.debug('Resource: %s' % resource)
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
@@ -260,7 +260,7 @@ def get_file(yabiusername, uri):
     logger.info("Getting: %s" % uri)
 
     try:
-        resource = "%s?uri=%s" % (settings.YABIBACKEND_GET, uri)
+        resource = "%s?uri=%s" % (settings.YABIBACKEND_GET, quote(uri))
         logger.debug('Resource: %s' % resource)
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
 
@@ -292,7 +292,7 @@ def rm_file(yabiusername, uri):
     recurse = '&recurse' if uri[-1]=='/' else ''
 
     try:
-        resource = "%s?uri=%s%s" % (settings.YABIBACKEND_RM, uri,recurse)
+        resource = "%s?uri=%s%s" % (settings.YABIBACKEND_RM, quote(uri),recurse)
         logger.debug('Resource: %s' % resource)
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
 
@@ -325,7 +325,7 @@ def copy_file(yabiusername, src, dst):
     recurse = '&recurse' if src[-1]=='/' else ''
     
     try:
-        resource = "%s?src=%s&dst=%s%s" % (settings.YABIBACKEND_COPY, src, dst,recurse)
+        resource = "%s?src=%s&dst=%s%s" % (settings.YABIBACKEND_COPY, quote(src), quote(dst),recurse)
         logger.debug('Resource: %s' % resource)
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
 
