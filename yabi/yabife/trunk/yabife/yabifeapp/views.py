@@ -45,11 +45,7 @@ def proxy(request, url, server, base):
     ## crafting a post and sending yabiusername as a get param as well
 
     if request.method == "GET":
-
-        get_params = copy.copy(request.GET)
-        get_params['yabiusername'] = request.user.username
-
-        resource = "%s?%s" % (os.path.join(base, url), urlencode( quote("&".join(["%s=%s"%(A,B) for (A,B) in get_params.items()]) ) ))
+        resource = "%s?%s" % (os.path.join(base, url), request.META['QUERY_STRING']+"&yabiusername=%s"%quote(request.user.username) )
         logger.debug('Resource: %s' % resource)
         #print "Connecting to:",server
         conn = httplib.HTTPConnection(server)
