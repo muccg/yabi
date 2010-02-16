@@ -18,7 +18,7 @@ SCHEMA = "yabifs"
 # the location of the directory we will serve out. This can be overridden in the constuctor if wanted
 DIRECTORY = "/"
 
-DEBUG = False
+DEBUG = True
 
 DEBUG_READ_FIFO = True
 
