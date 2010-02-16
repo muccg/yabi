@@ -89,30 +89,27 @@ class ToolGroupAdmin(AdminBase):
 class ToolSetAdmin(AdminBase):
     list_display = ['name', 'users_str']
 
-class UserAdmin(AdminBase):
-    list_display = ['name', 'toolsets_str', 'tools_link']
-
 class FileTypeAdmin(AdminBase):
     list_display = ['name']
 
 class QueueAdmin(admin.ModelAdmin):
     list_display = ['name', 'user_name', 'created_on']
 
-
-class BackendInline(admin.TabularInline):
-    form = BackendCredentialForm
-    model = BackendCredential
-    extra = 3
-
-
 class CredentialAdmin(AdminBase):
     list_display = ['description', 'user', 'username']
-    inlines = [BackendInline]
-
+    
 class BackendAdmin(AdminBase):
     form = BackendForm
     list_display = ['name', 'description', 'scheme', 'hostname', 'port', 'path', 'uri', 'backend_summary_link']
 
+class UserAdmin(AdminBase):
+    list_display = ['name', 'toolsets_str', 'tools_link']
+
+class BackendCredentialAdmin(AdminBase):
+    form = BackendCredentialForm
+    list_display = ['backend', 'credential', 'homedir', 'visible', 'default_stageout']
+    list_filter = ['credential__user']
+    
 
 admin.site.register(FileExtension, AdminBase)
 admin.site.register(ParameterFilter, AdminBase)
@@ -126,4 +123,5 @@ admin.site.register(ToolSet, ToolSetAdmin)
 admin.site.register(User, UserAdmin)
 admin.site.register(ToolRslInfo, ToolRslInfoAdmin)
 admin.site.register(Credential, CredentialAdmin)
+admin.site.register(BackendCredential, BackendCredentialAdmin)
 admin.site.register(Backend, BackendAdmin)
