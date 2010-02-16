@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # Create your views here.
 import httplib
-from urllib import urlencode, unquote
+from urllib import urlencode, unquote, quote
 from django.conf.urls.defaults import *
 from django.conf import settings
 from django.http import HttpResponse
@@ -49,7 +49,7 @@ def proxy(request, url, server, base):
         get_params = copy.copy(request.GET)
         get_params['yabiusername'] = request.user.username
 
-        resource = "%s?%s" % (os.path.join(base, url), urlencode(get_params))
+        resource = "%s?%s" % (os.path.join(base, url), urlencode( quote("&".join(["%s=%s"%(A,B) for (A,B) in get_params.items()]) ) ))
         logger.debug('Resource: %s' % resource)
         #print "Connecting to:",server
         conn = httplib.HTTPConnection(server)
