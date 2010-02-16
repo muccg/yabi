@@ -26,6 +26,11 @@ from yabifeapp.http_upload import *
 # proxy view to pass through all requests set up in urls.py
 def proxy(request, url, server, base):
     logger.debug('')
+    logger.debug("proxy=>")
+    logger.debug(request)
+    logger.debug(url)
+    logger.debug(server)
+    logger.debug(base)
     
     #print "PROXY",request.method,repr(url),repr(server),repr(base)
     
