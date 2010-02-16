@@ -4,7 +4,7 @@ from django.utils import simplejson as json
 import httplib
 import socket
 import os
-from urllib import urlencode
+from urllib import urlencode, quote
 from yabiadmin.yabiengine.urihelper import uriparse, get_backend_userdir
 from yabiadmin.yabmin.models import Backend, BackendCredential
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
@@ -138,7 +138,6 @@ def get_listing(yabiusername, uri):
     logger.info("Listing: %s" % uri)
 
     try:
-        from urllib import quote
         resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, quote(uri))
 
         logger.debug('Resource: %s' % resource)
