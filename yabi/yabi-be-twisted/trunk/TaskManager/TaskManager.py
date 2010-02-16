@@ -169,7 +169,6 @@ class TaskManager(object):
             remotedir = scheme+"://"+address.netloc+directory
             if DEBUG:
                 print "CHECKING remote:",remotedir
-            
             try:
                 listing = List(remotedir, yabiusername=yabiusername)
                 if DEBUG:
@@ -214,15 +213,18 @@ class TaskManager(object):
         #mkuri = fsscheme+"://"+fsaddress.username+"@"+fsaddress.hostname+workingdir
         fsbackend = task['exec']['fsbackend']
         
-        print "Making directory",fsbackend
+        outputuri = fsbackend + ("/" if not fsbackend.endswith('/') else "") + "output/"
+        outputdir = workingdir + ("/" if not workingdir.endswith('/') else "") + "output/"
+        
+        print "Making directory",outputuri
         #self._tasks[stackless.getcurrent()]=workingdir
         try:
-            Mkdir(fsbackend, yabiusername=yabiusername)
+            Mkdir(outputuri, yabiusername=yabiusername)
         except GETFailure, error:
             # error making directory
             print "TASK[%s]:Mkdir failed!"%(taskid)
             status("error")
-            log("Making working directory of %s failed: %s"%(fsbackend,error))
+            log("Making working directory of %s failed: %s"%(outputuri,error))
             return 
         
         # now we are going to run the job
@@ -246,7 +248,7 @@ class TaskManager(object):
                 log("Submitting to %s command: %s"%(task['exec']['backend'],task['exec']['command']))
                 
                 try:
-                    uri = task['exec']['backend']+workingdir
+                    uri = task['exec']['backend']+outputdir
                     Exec(uri, command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=yabiusername)                # this blocks untill the command is complete.
                     log("Execution finished")
                 except GETFailure, error:
@@ -266,7 +268,7 @@ class TaskManager(object):
         status('stageout')
         
         # recursively copy the working directory to our stageout area
-        log("Staging out remote %s to %s..."%(workingdir,task['stageout']))
+        log("Staging out remote %s to %s..."%(outputdir,task['stageout']))
         
         # make sure we have the stageout directory
         log("making stageout directory %s"%task['stageout'])
@@ -278,16 +280,16 @@ class TaskManager(object):
             pass
         
         try:
-            RCopy(fsbackend,task['stageout'], yabiusername=yabiusername)
+            RCopy(outputuri,task['stageout'], yabiusername=yabiusername)
             log("Files successfuly staged out")
         except GETFailure, error:
             # error executing
             print "TASK[%s]: Stageout failed!"%(taskid)
             status("error")
             if DEBUG:
-                log("Staging out remote %s to %s failed... \n%s"%(fsbackend,task['stageout'],traceback.format_exc()))
+                log("Staging out remote %s to %s failed... \n%s"%(outputuri,task['stageout'],traceback.format_exc()))
             else:
-                log("Staging out remote %s to %s failed... %s"%(fsbackend,task['stageout'],error))
+                log("Staging out remote %s to %s failed... %s"%(outputuri,task['stageout'],error))
             return              # finish task
         
         # cleanup
