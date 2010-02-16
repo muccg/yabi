@@ -34,7 +34,7 @@ def build(username, workflow_json):
         else:
             default_stageout = user.default_stageout
             
-        workflow.stageout = "%s%d/" % (default_stageout, workflow.id)
+        workflow.stageout = "%s%s/" % (default_stageout, workflow.name)
         workflow.save()
         backendhelper.mkdir(workflow.user.name, workflow.stageout)
 
