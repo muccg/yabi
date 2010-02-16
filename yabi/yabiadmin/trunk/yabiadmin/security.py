@@ -59,7 +59,7 @@ def validate_uri(f):
         if 'yabiusername' in request.GET:
             yabiusername = request.GET['yabiusername']
         elif 'yabiusername' in request.POST:
-                yabiusername = request.POST['yabiusername']
+            yabiusername = request.POST['yabiusername']
 
         try:
 

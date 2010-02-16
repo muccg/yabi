@@ -138,7 +138,8 @@ def get_listing(yabiusername, uri):
     logger.info("Listing: %s" % uri)
 
     try:
-        resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, uri)
+        from urllib import quote
+        resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, quote(uri))
 
         logger.debug('Resource: %s' % resource)
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
