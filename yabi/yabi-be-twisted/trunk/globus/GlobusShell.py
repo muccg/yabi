@@ -23,10 +23,10 @@ class GlobusShell(BaseShell):
             ] + list(command)
         )
     def ls(self, certfile, host, directory, args="-alFR"):
-        return self.execute(certfile,host,command=["ls",args,'"'+directory+'"'])
+        return self.execute(certfile,host,command=["ls",args,directory])
       
     def mkdir(self, certfile, host, directory, args="-p"):
-        return self.execute(certfile,host,command=["mkdir",args,'"'+directory+'"'])
+        return self.execute(certfile,host,command=["mkdir",args,directory])
       
     def rm(self, certfile, host, directory, args=None):
-        return self.execute(certfile,host,command=["rm",args,'"'+directory+'"']) if args else self.execute(certfile,host,command=["rm",'"'+directory+'"']) 
+        return self.execute(certfile,host,command=["rm",args,directory]) if args else self.execute(certfile,host,command=["rm",directory]) 
