@@ -25,10 +25,9 @@ def parse_ls_generate_items(lines):
     """A generator that is passed lines of a ls output, and generates an item for each line"""
     for line in lines:
         parts=line.split(None,8)
-        if len(parts)==1:
+        if line.startswith('/') and line.endswith(':'):
             # header
-            assert parts[0][-1]==":"
-            yield (parts[0][:-1],)
+            yield (line[:-1],)
         elif len(parts)==2:
             assert parts[0]=="total"
         elif len(parts)==9:
