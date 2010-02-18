@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from os.path import splitext
 import os
+from math import log10
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog, StageIn
@@ -109,8 +110,18 @@ def prepare_tasks(job):
         t = Task(job=job, command=job.command, status="ready")
         t.save()
         
+    # lets count up our paramlist to see how many 'real' (as in not yabi://) files there are to process
+    count = len([X for X in paramlist if not X.startswith('yabi://')])
     
-    for num,param in enumerate(paramlist):
+    # lets build a closure that will generate our names for us
+    if count>1:
+        # the 10 base logarithm will give us how many digits we need to pad
+        buildname = lambda n: (n+1,("0"*(int(log10(n))+1)+str(n))[-int(log10(n))+1:])
+    else:
+        buildname = lambda n: (n+1, "")
+    
+    num = 0
+    for param in paramlist:
 
         #TODO refactor each of these code blocks into handlers
         logger.debug("NUM: %d PARAM: %s" % (num,param))
@@ -147,7 +158,8 @@ def prepare_tasks(job):
             # get_file_list will return a list of file tuples
             for f in backendhelper.get_file_list(job.workflow.user.name, param):
                 logger.debug("FILELIST %s" % f)
-                create_task(job, param, f[0], exec_be, exec_bc, fs_be, fs_bc,name=("0000"+str(num))[-4:])
+                num,name = buildname(num)
+                create_task(job, param, f[0], exec_be, exec_bc, fs_be, fs_bc,name)
 
 
         ##################################################
@@ -156,7 +168,8 @@ def prepare_tasks(job):
         elif param.startswith("yabifs://"):
             logger.info('Processing uri %s' % param)            
             rest, filename = param.rsplit("/",1)
-            create_task(job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc,name=("0000"+str(num))[-4:])
+            num,name = buildname(num)
+            create_task(job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc,name)
             input_files.append(param)
 
 
@@ -173,7 +186,8 @@ def prepare_tasks(job):
 
             # get_file_list will return a list of file tuples
             for f in backendhelper.get_file_list(job.workflow.user.name, param):
-                create_task(job, param, f[0], exec_be, exec_bc, fs_be, fs_bc,name=("0000"+str(num))[-4:])
+                num,name = buildname(num)
+                create_task(job, param, f[0], exec_be, exec_bc, fs_be, fs_bc,name)
 
 
         ##################################################
@@ -185,7 +199,8 @@ def prepare_tasks(job):
             
             logger.debug("PROCESSING %s" % param)
             
-            create_task(job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc,name=("0000"+str(num))[-4:])
+            num,name = buildname(num)
+            create_task(job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc,name)
             input_files.append(param)
             
             
