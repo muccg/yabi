@@ -5,6 +5,8 @@ import urlparse
 import re
 re_url_schema = re.compile(r'\w+')
 
+DEBUG = True
+
 def parse_url(uri):
     """Parse a url via the inbuilt urlparse. But this is slightly different
     as it can handle non-standard schemas. returns the schema and then the
@@ -76,6 +78,10 @@ def parse_ls(data, culldots=True):
     """Upper level ls parser."""
     output = {}
     for name,filelisting,dirlisting in parse_ls_directories(data, culldots):
+        if DEBUG:
+            print "NAME",name
+            print "FILELISTING",filelisting
+            print "DIRLISTING",dirlisting
         if name and not name.endswith('/'):
             name = name+"/"                 # add a slash to directories missing it
         output[name] = {
