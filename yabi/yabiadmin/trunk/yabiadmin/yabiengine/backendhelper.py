@@ -114,6 +114,7 @@ def get_file_list(yabiusername, uri, recurse=True):
             shortpath=reduce(lambda x,y: x if len(x)<len(y) else y,results.keys())
             spl = len(shortpath)
             
+            logger.debug("results.keys: %s" % repr(results.keys()))
             logger.debug("SHORTPATH: %s" % shortpath)
             
             for key in results.keys():
