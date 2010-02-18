@@ -113,7 +113,7 @@ def prepare_tasks(job):
     for num,param in enumerate(paramlist):
 
         #TODO refactor each of these code blocks into handlers
-        logger.debug("PARAM: %s" % param)
+        logger.debug("NUM: %d PARAM: %s" % (num,param))
 
         ##################################################
         # handle yabi:// uris
