@@ -209,7 +209,7 @@ def prepare_job(job):
 
 
 
-def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
+def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
     logger.debug('')
     logger.debug("job %s" % job)
     logger.debug("file %s" % file)
@@ -237,6 +237,7 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc):
         execscheme, execbackend_parts = parse_url(job.exec_backend)
         
         t.command = job.command.replace("%", url_join(fsbackend_parts.path,t.working_dir, "input", file))
+        t.name = name
         t.save()
 
         logger.info('Creating task for job id: %s using command: %s' % (job.id, t.command))

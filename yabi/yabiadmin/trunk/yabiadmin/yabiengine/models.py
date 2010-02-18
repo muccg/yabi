@@ -128,8 +128,8 @@ class Task(models.Model, Editable, Status):
     error_msg = models.CharField(max_length=1000, null=True, blank=True)
     status = models.CharField(max_length=64, blank=True)
     working_dir = models.CharField(max_length=256, null=True, blank=True)
+    name = models.CharField(max_length=256, null=True, blank=True)                  # if we are null, we behave the old way and use our task.id
 
-    
     def json(self):
         # formulate our status url and our error url
         if 'YABIADMIN' in os.environ:                                                   # if we are forced to talk to a particular admin
@@ -154,7 +154,7 @@ class Task(models.Model, Editable, Status):
                     "fsbackend": url_join(self.job.fs_backend, self.working_dir),
                     "workingdir": os.path.join(fsbackend_parts.path,self.working_dir)
                     },
-            "stageout":self.job.stageout+"/"+str(self.id)+"/"
+            "stageout":self.job.stageout+"/"+(str(self.id) if not self.name else self.name)+"/"
             }
 
         stageins = self.stagein_set.all()
