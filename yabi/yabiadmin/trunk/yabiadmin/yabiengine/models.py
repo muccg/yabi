@@ -154,7 +154,7 @@ class Task(models.Model, Editable, Status):
                     "fsbackend": url_join(self.job.fs_backend, self.working_dir),
                     "workingdir": os.path.join(fsbackend_parts.path,self.working_dir)
                     },
-            "stageout":self.job.stageout+"/"+(str(self.id) if not self.name else self.name)+"/"
+            "stageout":self.job.stageout+"/"+(str(self.id)+"/" if not self.name else "")
             }
 
         stageins = self.stagein_set.all()
