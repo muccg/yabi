@@ -75,6 +75,8 @@ def addJob(workflow, job_dict, order):
     param_dict = {}
     for toolparam in job_dict["parameterList"]["parameter"]:
         param_dict[toolparam["switchName"]] = get_param_value(workflow, toolparam)
+        
+    logger.debug("param_dict = %s"%(param_dict))
 
     # now build up the command
     command = []
