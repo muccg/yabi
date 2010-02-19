@@ -114,15 +114,15 @@ def prepare_tasks(job):
     logger.debug("Prepare_task PARAMLIST: %s"%paramlist)
         
     # lets count up our paramlist to see how many 'real' (as in not yabi://) files there are to process
-    count = len(paramlist)
+    count = len([X for X in paramlist if not X.startswith('yabi://')])
     
     # lets build a closure that will generate our names for us
     if count>1:
         # the 10 base logarithm will give us how many digits we need to pad
         def buildname(n):
-            logger.debug( "N:%s"%n )
+            logger.debug( "N:%d COUNT:%d"%(n,count) )
             #return n+1,("00"+str(n))[-2:]
-            return (n+1,("0"*(int(log10(n))+1)+str(n))[-int(log10(n))+1:])
+            return (n+1,("0"*(int(log10(count))+1)+str(n))[-int(log10(count))+1:])
     else:
         buildname = lambda n: (n+1, "")
     
