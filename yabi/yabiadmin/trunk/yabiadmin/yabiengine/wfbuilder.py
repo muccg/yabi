@@ -74,7 +74,7 @@ def addJob(workflow, job_dict, order):
     # process the parameterList to get a useful dict
     param_dict = {}
     for toolparam in job_dict["parameterList"]["parameter"]:
-        param_dict[toolparam["switchName"]] = [X for X in get_param_values(workflow, toolparam)]
+        param_dict[toolparam["switchName"]] = get_param_value(workflow, toolparam)
 
     # now build up the command
     command = []
@@ -90,7 +90,7 @@ def addJob(workflow, job_dict, order):
 
         # if the switch is the batch on param switch put it in commandparams and add placeholder in command
         if tp == tool.batch_on_param:
-            commandparams.extend(param_dict[tp.switch])
+            commandparams.append(param_dict[tp.switch])
             param_dict[tp.switch] = '%' # use place holder now in command
 
         # run through all the possible switch uses
@@ -210,9 +210,9 @@ def get_param_values(workflow, tp):
                 
             elif type(item) == str or type(item) == unicode:
                 value += item
-                
-            logger.debug("get_param_value() yielding: %s"%value)
-            yield value
+
+    logger.debug("get_param_value() returning: %s"%value)
+    return value
 
 
 
