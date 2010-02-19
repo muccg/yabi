@@ -159,7 +159,6 @@ def prepare_tasks(job):
         elif param.startswith("yabifs://"):
             logger.info('Processing uri %s' % param)            
             rest, filename = param.rsplit("/",1)
-            num,name = buildname(num)
             tasks_to_create.append([job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc])
             input_files.append(param)
 
@@ -189,7 +188,6 @@ def prepare_tasks(job):
             
             logger.debug("PROCESSING %s" % param)
             
-            num,name = buildname(num)
             tasks_to_create([job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc])
             input_files.append(param)
             
