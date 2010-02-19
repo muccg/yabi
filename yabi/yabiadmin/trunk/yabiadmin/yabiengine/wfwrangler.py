@@ -116,8 +116,7 @@ def prepare_tasks(job):
     tasks_to_create = []
     for param in paramlist:
 
-        #TODO refactor each of these code blocks into handlers
-        logger.debug("NUM: %d PARAM: %s" % (num,param))
+        # TODO: fix all this voodoo
 
         ##################################################
         # handle yabi:// uris
