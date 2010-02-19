@@ -120,7 +120,7 @@ def prepare_tasks(job):
     if count>1:
         # the 10 base logarithm will give us how many digits we need to pad
         def buildname(n):
-            print "N:",n
+            logger.debug( "N:%s"%n )
             #return n+1,("00"+str(n))[-2:]
             return (n+1,("0"*(int(log10(n))+1)+str(n))[-int(log10(n))+1:])
     else:
