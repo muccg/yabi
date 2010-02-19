@@ -113,20 +113,7 @@ def prepare_tasks(job):
         
     logger.debug("Prepare_task PARAMLIST: %s"%paramlist)
         
-    # lets count up our paramlist to see how many 'real' (as in not yabi://) files there are to process
-    count = len([X for X in paramlist if not X.startswith('yabi://')])
-    
-    # lets build a closure that will generate our names for us
-    if count>1:
-        # the 10 base logarithm will give us how many digits we need to pad
-        def buildname(n):
-            logger.debug( "N:%d COUNT:%d"%(n,count) )
-            #return n+1,("00"+str(n))[-2:]
-            return (n+1,("0"*(int(log10(count))+1)+str(n))[-int(log10(count))+1:])
-    else:
-        buildname = lambda n: (n+1, "")
-    
-    num = 0
+    tasks_to_create = []
     for param in paramlist:
 
         #TODO refactor each of these code blocks into handlers
@@ -164,8 +151,7 @@ def prepare_tasks(job):
             # get_file_list will return a list of file tuples
             for f in backendhelper.get_file_list(job.workflow.user.name, param):
                 logger.debug("FILELIST %s" % f)
-                num,name = buildname(num)
-                create_task(job, param, f[0], exec_be, exec_bc, fs_be, fs_bc,name)
+                tasks_to_create.append([job, param, f[0], exec_be, exec_bc, fs_be, fs_bc])
 
 
         ##################################################
@@ -175,7 +161,7 @@ def prepare_tasks(job):
             logger.info('Processing uri %s' % param)            
             rest, filename = param.rsplit("/",1)
             num,name = buildname(num)
-            create_task(job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc,name)
+            tasks_to_create.append([job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc])
             input_files.append(param)
 
 
@@ -192,8 +178,7 @@ def prepare_tasks(job):
 
             # get_file_list will return a list of file tuples
             for f in backendhelper.get_file_list(job.workflow.user.name, param):
-                num,name = buildname(num)
-                create_task(job, param, f[0], exec_be, exec_bc, fs_be, fs_bc,name)
+                tasks_to_create.append([job, param, f[0], exec_be, exec_bc, fs_be, fs_bc,name])
 
 
         ##################################################
@@ -206,7 +191,7 @@ def prepare_tasks(job):
             logger.debug("PROCESSING %s" % param)
             
             num,name = buildname(num)
-            create_task(job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc,name)
+            tasks_to_create([job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc])
             input_files.append(param)
             
             
@@ -218,6 +203,26 @@ def prepare_tasks(job):
             logger.info('****************************************')
             logger.info('Unhandled type: ' + param)
             logger.info('****************************************')
+            
+    ##
+    ## now loop over these tasks and actually create them
+    ##
+    
+    num = 0
+    
+    # lets count up our paramlist to see how many 'real' (as in not yabi://) files there are to process
+    count = len(tasks_to_create)
+        
+     # lets build a closure that will generate our names for us
+    if count>1:
+        # the 10 base logarithm will give us how many digits we need to pad
+        buildname = lambda n: (n+1,("0"*(int(log10(count))+1)+str(n))[-int(log10(count))+1:])
+    else:
+        buildname = lambda n: (n+1, "")
+    
+    for task_data in tasks_to_create:
+        num,name = buildname(num)
+        create_task( *(task_data+[name]) )
 
 
 def prepare_job(job):
