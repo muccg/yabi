@@ -117,9 +117,10 @@ def addJob(workflow, job_dict, order):
 
     # add other attributes
     job.command = ' '.join(command)
-    job.commandparams = repr(commandparams) # save string repr of list
-
-
+    logger.debug("JOB PRE PARAMS: %s"%job.commandparams
+    job.commandparams = repr(eval(job.commandparams)+commandparams) # save string repr of list
+    logger.debug("JOB POST PARAMS: %s"%job.commandparams
+    
     # set status to complete if null backend
     if tool.backend.name == 'nullbackend':
         job.status = settings.STATUS['complete']
