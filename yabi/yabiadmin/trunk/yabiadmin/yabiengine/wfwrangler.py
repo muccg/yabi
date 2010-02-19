@@ -114,7 +114,7 @@ def prepare_tasks(job):
     logger.debug("Prepare_task PARAMLIST: %s"%paramlist)
         
     # lets count up our paramlist to see how many 'real' (as in not yabi://) files there are to process
-    count = len([X for X in paramlist if not X.startswith('yabi://')])
+    count = len(paramlist)
     
     # lets build a closure that will generate our names for us
     if count>1:
