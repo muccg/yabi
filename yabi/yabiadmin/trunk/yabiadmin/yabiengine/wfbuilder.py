@@ -175,7 +175,7 @@ def addJob(workflow, job_dict, order):
     job.save()
 
 
-def get_param_values(workflow, tp):
+def get_param_value(workflow, tp):
     logger.debug('')
 
     logger.debug("======= get_param_value =============: %s" % tp)
