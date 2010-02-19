@@ -92,7 +92,7 @@ def addJob(workflow, job_dict, order):
 
         # if the switch is the batch on param switch put it in commandparams and add placeholder in command
         if tp == tool.batch_on_param:
-            commandparams.append(param_dict[tp.switch])
+            commandparams.extend(param_dict[tp.switch])
             param_dict[tp.switch] = '%' # use place holder now in command
 
         # run through all the possible switch uses
@@ -102,13 +102,13 @@ def addJob(workflow, job_dict, order):
             command.append(tp.switch)
 
         elif switchuse == 'valueOnly':
-            command.append(param_dict[tp.switch])
+            command.append(param_dict[tp.switch][0])
 
         elif switchuse == 'both':
-            command.append("%s %s" % (tp.switch, param_dict[tp.switch]))
+            command.append("%s %s" % (tp.switch, param_dict[tp.switch][0]))
 
         elif switchuse == 'combined':
-            command.append("%s%s" % (tp.switch, param_dict[tp.switch]))
+            command.append("%s%s" % (tp.switch, param_dict[tp.switch][0]))
 
         elif switchuse == 'pair':
             pass # TODO figure out what to do with this one
@@ -182,7 +182,7 @@ def get_param_value(workflow, tp):
 
     logger.debug("======= get_param_value =============: %s" % tp)
     
-    value = ''
+    value = []
     if type(tp["value"]) == list:
         # parameter input is multiple input files. loop ofer these files
         for item in tp["value"]:
@@ -196,9 +196,9 @@ def get_param_value(workflow, tp):
                     previous_job = job_cache[item['jobId']]
 
                     if previous_job.stageout == None:
-                        value = eval(previous_job.commandparams)[0] # TODO this is a bit of a hack
+                        value = eval(previous_job.commandparams)
                     else:
-                        value = u"yabi://localhost.localdomain/%d/%d/" % (workflow.id, job_cache[item['jobId']].id)
+                        value = [u"yabi://localhost.localdomain/%d/%d/" % (workflow.id, job_cache[item['jobId']].id)]
 
                 # handle links to previous file selects
                 elif 'type' in item and 'filename' in item and 'root' in item:
@@ -207,11 +207,11 @@ def get_param_value(workflow, tp):
                         path = os.path.join(*item['path'])
                         if not path.endswith(os.sep):
                             path = path + os.sep
-                    value = '%s%s%s' % (item['root'], path, item['filename'])
+                    value.append( '%s%s%s' % (item['root'], path, item['filename']) )
 
                 
             elif type(item) == str or type(item) == unicode:
-                value += item
+                value.append( item )
 
     logger.debug("get_param_value() returning: %s"%value)
     return value
