@@ -80,6 +80,7 @@ def check_dependencies(job):
 
 def prepare_tasks(job):
     logger.debug('')
+    logger.debug('=================================================== prepare_tasks ===========================================================')
     logger.info('Preparing tasks for jobid: %s...' % job.id)
 
     input_files = []
