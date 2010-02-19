@@ -181,6 +181,7 @@ def get_param_value(workflow, tp):
     
     value = ''
     if type(tp["value"]) == list:
+        # parameter input is multiple input files. loop ofer these files
         for item in tp["value"]:
 
             if type(item) == dict:
@@ -209,7 +210,7 @@ def get_param_value(workflow, tp):
             elif type(item) == str or type(item) == unicode:
                 value += item
 
-    logger.debug(value)
+    logger.debug("get_param_value() returning: %s"%value)
     return value
 
 
