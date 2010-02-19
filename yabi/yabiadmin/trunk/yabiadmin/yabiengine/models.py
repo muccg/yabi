@@ -297,6 +297,8 @@ def job_save(sender, **kwargs):
     logger.debug('')
     job = kwargs['instance']
 
+    logger.debug("job.stageout=%s"%job.stageout)
+
     try:
         # if our job status is complete, force the annotation of this in the workflow
         if job.status==settings.STATUS['complete']:
