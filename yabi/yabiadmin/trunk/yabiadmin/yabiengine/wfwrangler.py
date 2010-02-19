@@ -111,6 +111,8 @@ def prepare_tasks(job):
         t = Task(job=job, command=job.command, status="ready")
         t.save()
         
+    logger.debug("Prepare_task PARAMLIST: %s"%paramlist)
+        
     # lets count up our paramlist to see how many 'real' (as in not yabi://) files there are to process
     count = len([X for X in paramlist if not X.startswith('yabi://')])
     
