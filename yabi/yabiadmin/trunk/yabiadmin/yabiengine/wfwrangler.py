@@ -213,7 +213,7 @@ def prepare_tasks(job):
      # lets build a closure that will generate our names for us
     if count>1:
         # the 10 base logarithm will give us how many digits we need to pad
-        buildname = lambda n: (n+1,("0"*(int(log10(count))+1)+str(n))[-int(log10(count))+1:])
+        buildname = lambda n: (n+1,("0"*(int(log10(count))+1)+str(n))[-(int(log10(count))+1):])
     else:
         buildname = lambda n: (n+1, "")
     
