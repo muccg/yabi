@@ -217,6 +217,9 @@ def prepare_tasks(job):
     else:
         buildname = lambda n: (n+1, "")
     
+    logger.debug("TASKS TO CREATE:")
+    logger.debug("%s"%(str(tasks_to_create)))
+    
     for task_data in tasks_to_create:
         num,name = buildname(num)
         logger.debug("NUM<%d> NAME<%s>"%(num,name))
