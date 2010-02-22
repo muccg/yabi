@@ -208,7 +208,7 @@ def prepare_tasks(job):
     num = 1
     
     # lets count up our paramlist to see how many 'real' (as in not yabi://) files there are to process
-    count = len(tasks_to_create)+1
+    count = len([X for X in tasks_to_create if is_task_file_valid(X[0],X[2])])+1
         
      # lets build a closure that will generate our names for us
     if count>1:
@@ -236,7 +236,9 @@ def prepare_job(job):
     job.save()
 
 
-
+def is_task_file_valid(job,file):
+    """returns a boolean shwoing if the file passed in is a valid file for the job. Only uses the file extension to tell"""
+    return splitext(file)[1].strip('.') in job.extensions
 
 
 def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
@@ -255,8 +257,8 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
     root, ext = splitext(file)
     
     # only make tasks for expected filetypes
-    if ext.strip('.') in job.extensions:
-
+    if is_task_file_valid(job,file):
+        
         t = Task(job=job, status=settings.STATUS['ready'])
         t.save() # so task has id
         logger.debug('saved========================================')
