@@ -222,7 +222,7 @@ def prepare_tasks(job):
     for task_data in tasks_to_create:
         num,name = buildname(num)
         logger.debug("NUM<%d> NAME<%s>"%(num,name))
-        logger.debug("%s"%(str(tasks_data)))
+        logger.debug("%s"%(str(task_data)))
         create_task( *(task_data+[name]) )
 
 
