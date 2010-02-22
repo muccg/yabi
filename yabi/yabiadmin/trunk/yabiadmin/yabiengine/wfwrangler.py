@@ -208,7 +208,7 @@ def prepare_tasks(job):
     num = 1
     
     # lets count up our paramlist to see how many 'real' (as in not yabi://) files there are to process
-    count = len([X for X in tasks_to_create if is_task_file_valid(X[0],X[2])])+1
+    count = len([X for X in tasks_to_create if is_task_file_valid(X[0],X[2])])
         
      # lets build a closure that will generate our names for us
     if count>1:
