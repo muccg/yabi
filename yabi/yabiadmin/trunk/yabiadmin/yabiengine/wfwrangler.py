@@ -219,11 +219,14 @@ def prepare_tasks(job):
     
     logger.debug("TASKS TO CREATE:")
     
+    # build the first name
+    num, name = buildname(num)
     for task_data in tasks_to_create:
-        num,name = buildname(num)
-        logger.debug("NUM<%d> NAME<%s>"%(num,name))
-        logger.debug("%s"%(str(task_data)))
-        create_task( *(task_data+[name]) )
+        if create_task( *(task_data+[name]) ):
+            # task created, bump task
+            num,name = buildname(num)
+        
+        
 
 
 def prepare_job(job):
@@ -290,6 +293,12 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
                     #order=0)
         
         s.save()
+        
+        # return true indicates that we actually made a task
+        return True 
+        
+    # return False to indicate we didn't make a task
+    return False
 
 def create_uniq_dirname(job, task):
     logger.debug('')
