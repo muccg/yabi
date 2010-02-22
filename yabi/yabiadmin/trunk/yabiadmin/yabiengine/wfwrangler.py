@@ -205,10 +205,10 @@ def prepare_tasks(job):
     ## now loop over these tasks and actually create them
     ##
     
-    num = 0
+    num = 1
     
     # lets count up our paramlist to see how many 'real' (as in not yabi://) files there are to process
-    count = len(tasks_to_create)
+    count = len(tasks_to_create)+1
         
      # lets build a closure that will generate our names for us
     if count>1:
