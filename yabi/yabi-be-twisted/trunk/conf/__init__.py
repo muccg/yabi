@@ -91,7 +91,7 @@ class Configuration(object):
                         "backend":None,
                         "store":None,
                         
-                        "database":"dev",           # 'dev' or 'live'. Can also be 'custom' to override with a different db
+                        "database":"custom",           
                         "debug": "false",           # run the app in debug mode
                         
                         # custom database setting defaults
@@ -110,6 +110,17 @@ class Configuration(object):
                         
                         "admin":None,
                         "store": None,
+                        
+                        "databse":"custom",
+                        "debug":"false",
+                        
+                        # custom database setting defaults
+                        "database_engine":"postgresql_psycopg2",
+                        "database_name":"yabife_db",
+                        "database_user":"yabi",
+                        "database_password":"password",
+                        "database_host":"db.localdomain",
+                        "database_port":None,
                     },
         'store':    {
                         "port":"0.0.0.0:8000",
