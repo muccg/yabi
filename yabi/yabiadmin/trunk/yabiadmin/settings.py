@@ -43,7 +43,7 @@ if "DJANGODEV" in os.environ:
     # debug site table
     SITE_ID = 1
 
-else "CUSTOMDB" in os.environ:
+else:
     DEBUG = True if os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug")) else ("DJANGODEBUG" in os.environ)
     TEMPLATE_DEBUG = DEBUG
     DATABASE_ENGINE = os.environ['DATABASE_ENGINE']
