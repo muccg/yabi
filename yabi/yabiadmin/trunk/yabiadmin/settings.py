@@ -43,7 +43,7 @@ if "DJANGODEV" in os.environ:
     # debug site table
     SITE_ID = 1
 
-elif "CUSTOMDB" in os.environ:
+else "CUSTOMDB" in os.environ:
     DEBUG = True if os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug")) else ("DJANGODEBUG" in os.environ)
     TEMPLATE_DEBUG = DEBUG
     DATABASE_ENGINE = os.environ['DATABASE_ENGINE']
@@ -65,38 +65,19 @@ elif "CUSTOMDB" in os.environ:
     # debug site table
     SITE_ID = 1
     
-
-# production deployment (probably using wsgi)
-else:
-    DEBUG = True if os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug")) else ("DJANGODEBUG" in os.environ)
-    TEMPLATE_DEBUG = DEBUG
-    DATABASE_ENGINE = 'postgresql_psycopg2'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-    DATABASE_NAME = 'dev_yabmin'            # Or path to database file if using sqlite3.
-    DATABASE_USER = 'yabminapp'             # Not used with sqlite3.
-    DATABASE_PASSWORD = 'yabminapp'         # Not used with sqlite3.
-    DATABASE_HOST = 'eowyn.localdomain'             # Set to empty string for localhost. Not used with sqlite3.
-    DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
-    SSL_ENABLED = False
-    DEV_SERVER = False
-    YABIBACKEND_SERVER = 'boromir.localdomain:8000'
-    YABISTORE_SERVER = "localhost.localdomain"
-    YABISTORE_BASE = "/yabistore/trunk"
-    
-    # development site id
-    SITE_ID = 1
-
-print "DJANGODEV","DJANGODEV" in os.environ
-print "DJANGODEBUG",DEBUG
-for name in [   'DATABASE_ENGINE','DATABASE_NAME','DATABASE_USER','DATABASE_PASSWORD','DATABASE_HOST','DATABASE_PORT',
-                'YABISTORE','YABISTORE_SERVER','YABISTORE_BASE','YABIBACKEND','YABIBACKEND_BASE']:
-    if name in locals():
-        print name,locals()[name]
-     
-print "YABISTORE",YABISTORE
-print "YABISTORE_SERVER",YABISTORE_SERVER
-print "YABISTORE_BASE",YABISTORE_BASE
-print "YABIBACKEND",YABIBACKEND
-print "YABIBACKEND_SERVER",YABIBACKEND_SERVER
+if DEBUG:
+    print "DJANGODEV","DJANGODEV" in os.environ
+    print "DJANGODEBUG",DEBUG
+    for name in [   'DATABASE_ENGINE','DATABASE_NAME','DATABASE_USER','DATABASE_PASSWORD','DATABASE_HOST','DATABASE_PORT',
+                    'YABISTORE','YABISTORE_SERVER','YABISTORE_BASE','YABIBACKEND','YABIBACKEND_BASE']:
+        if name in locals():
+            print name,locals()[name]
+        
+    print "YABISTORE",YABISTORE
+    print "YABISTORE_SERVER",YABISTORE_SERVER
+    print "YABISTORE_BASE",YABISTORE_BASE
+    print "YABIBACKEND",YABIBACKEND
+    print "YABIBACKEND_SERVER",YABIBACKEND_SERVER
 
 
 
