@@ -215,7 +215,7 @@ def get_param_value(workflow, tp, job):
                         fulluri = item['root']+item['filename']+'/'
                             
                         # get recursive directory listing
-                        filelist = backendhelper.get_file_list(job.wokflow.user.name, fulluri, recurse=True)
+                        filelist = backendhelper.get_file_list(job.workflow.user.name, fulluri, recurse=True)
                             
                         logger.debug("FILELIST returned:%s"%str(filelist))
                         
