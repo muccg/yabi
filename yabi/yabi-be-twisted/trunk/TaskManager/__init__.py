@@ -15,7 +15,7 @@ def startup():
     
     # load up saved tasklets
     print "Loading Tasks..."
-    tasklets.load()
+    tasklets.load(directory=config.config['backend']['tasklets'])
     
 def shutdown():
     """pickle tasks to disk"""
