@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Django settings for yabife project.
 import os
 
@@ -45,7 +46,7 @@ if "DJANGODEV" in os.environ:
     DEV_SERVER = True
 
     AUTH_LDAP_SERVER = ('ldaps://fdsdev.localdomain',)
-    AUTH_LDAP_USER_BASE = 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
+    AUTH_LDAP_BASE = 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
     AUTH_LDAP_GROUP_BASE = 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
     AUTH_LDAP_GROUP = 'yabi'
     DEFAULT_GROUP = "baseuser"
