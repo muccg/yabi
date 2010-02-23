@@ -30,6 +30,11 @@ application = service.Application(APPNAME)
 # Environment setup for your Django project files:
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
+# custom database settings
+os.environ['CUSTOMDB']='1'
+for setting in ['database_engine', 'database_name', 'database_user', 'database_password', 'database_host', 'database_port']:
+    os.environ[setting.upper()] = config.config[NAME][setting]
+
 if config.config[NAME]["debug"]:
     os.environ['DJANGODEBUG'] = '1'
 
