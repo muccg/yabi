@@ -76,7 +76,7 @@ def addJob(workflow, job_dict, order):
     param_dict = {}
     for toolparam in job_dict["parameterList"]["parameter"]:
         logger.debug('TOOLPARAM:%s'%(toolparam))
-        param_dict[toolparam["switchName"]] = get_param_value(workflow, toolparam)
+        param_dict[toolparam["switchName"]] = get_param_value(workflow, toolparam, job)
         
     logger.debug("param_dict = %s"%(param_dict))
 
@@ -179,7 +179,7 @@ def addJob(workflow, job_dict, order):
     job.save()
 
 
-def get_param_value(workflow, tp):
+def get_param_value(workflow, tp, job):
     logger.debug('')
 
     logger.debug("======= get_param_value =============: %s" % tp)
@@ -204,13 +204,22 @@ def get_param_value(workflow, tp):
 
                 # handle links to previous file selects
                 elif 'type' in item and 'filename' in item and 'root' in item:
-                    path = ''
-                    if item['path']:
-                        path = os.path.join(*item['path'])
-                        if not path.endswith(os.sep):
-                            path = path + os.sep
-                    value.append( '%s%s%s' % (item['root'], path, item['filename']) )
-
+                    if item['type'] == 'file':
+                        path = ''
+                        if item['path']:
+                            path = os.path.join(*item['path'])
+                            if not path.endswith(os.sep):
+                                path = path + os.sep
+                        value.append( '%s%s%s' % (item['root'], path, item['filename']) )
+                    elif item['type'] == 'directory':
+                        if item['path']:
+                            fulluri = item['root']+item['filename']+'/'
+                            
+                            # get recursive directory listing
+                            filelist = backendhelper.get_file_list(job.wokflow.user.name, fulluri, recurse=True)
+                            
+                            print "FILELIST returned:",filelist
+                        
                 
             elif type(item) == str or type(item) == unicode:
                 value.append( item )
