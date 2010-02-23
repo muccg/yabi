@@ -72,6 +72,7 @@ def addJob(workflow, job_dict, order):
     job_cache[job_id] = job
 
     # process the parameterList to get a useful dict
+    logger.debug("Process parameterList")
     param_dict = {}
     for toolparam in job_dict["parameterList"]["parameter"]:
         logger.debug('TOOLPARAM:%s'%(toolparam))
