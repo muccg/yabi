@@ -212,13 +212,12 @@ def get_param_value(workflow, tp, job):
                                 path = path + os.sep
                         value.append( '%s%s%s' % (item['root'], path, item['filename']) )
                     elif item['type'] == 'directory':
-                        if item['path']:
-                            fulluri = item['root']+item['filename']+'/'
+                        fulluri = item['root']+item['filename']+'/'
                             
-                            # get recursive directory listing
-                            filelist = backendhelper.get_file_list(job.wokflow.user.name, fulluri, recurse=True)
+                        # get recursive directory listing
+                        filelist = backendhelper.get_file_list(job.wokflow.user.name, fulluri, recurse=True)
                             
-                            logger.debug("FILELIST returned:%s"%str(filelist))
+                        logger.debug("FILELIST returned:%s"%str(filelist))
                         
                 
             elif type(item) == str or type(item) == unicode:
