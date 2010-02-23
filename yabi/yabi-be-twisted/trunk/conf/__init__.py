@@ -111,12 +111,9 @@ class Configuration(object):
                         "admin":None,
                         "store": None,
                         
-                        "databse":"custom",
-                        "debug":"false",
-                        
                         # custom database setting defaults
                         "database_engine":"postgresql_psycopg2",
-                        "database_name":"yabife_db",
+                        "database_name":"yabiadmin_db",
                         "database_user":"yabi",
                         "database_password":"password",
                         "database_host":"db.localdomain",
@@ -208,6 +205,11 @@ class Configuration(object):
             self.config[name]['debug'] = conf_parser.get(name,'debug') if conf_parser.has_option(name,'debug') else "false"
             self.config[name]['admin'] = conf_parser.get(name,'admin')
             self.config[name]['store'] = conf_parser.get(name,'store')
+            
+            # database settings
+            for parm in ['database_engine','database_host','database_name','database_password','database_port','database_user']:
+                if conf_parser.has_option(name,parm):
+                    self.config[name][parm] = conf_parser.get(name,parm)
         
 
     def read_config(self, search=SEARCH_PATH):
