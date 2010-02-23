@@ -50,27 +50,25 @@ if "DJANGODEV" in os.environ:
     AUTH_LDAP_GROUP_BASE = 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
     AUTH_LDAP_GROUP = 'yabi'
     DEFAULT_GROUP = "baseuser"
-
-    print "YABISTORE_SERVER =",YABISTORE_SERVER
-    print "YABISTORE_BASE =",YABISTORE_BASE
-    print "YABIADMIN_SERVER =",YABIADMIN_SERVER
-    print "YABIADMIN_BASE =",YABIADMIN_BASE
     
     # debug site table
     SITE_ID = 1
     
-# production deployment (probably using wsgi)
+# production deployment. These must come from the yabi.conf file.
 else:
     DEBUG = os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug"))
     TEMPLATE_DEBUG = DEBUG
-    DATABASE_ENGINE = 'postgresql_psycopg2'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
-    DATABASE_NAME = 'live_yabife'                # Or path to database file if using sqlite3.
-    DATABASE_USER = 'yabifeapp'                       # Not used with sqlite3.
-    DATABASE_PASSWORD = 'yabifeapp'                   # Not used with sqlite3.
-    DATABASE_HOST = 'iridium.localdomain'             # Set to empty string for localhost. Not used with sqlite3.
-    DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
-    YABIADMIN_SERVER = "127.0.0.1:8001"
-    YABISTORE_SERVER = "127.0.0.1:8002"
+    DATABASE_ENGINE = os.environ['DATABASE_ENGINE']
+    DATABASE_NAME = os.environ['DATABASE_NAME']
+    DATABASE_USER = os.environ['DATABASE_USER']
+    DATABASE_PASSWORD = os.environ['DATABASE_PASSWORD']
+    DATABASE_HOST = os.environ['DATABASE_HOST']
+    DATABASE_PORT = os.environ['DATABASE_PORT']
+    
+    YABIADMIN_SERVER, YABIADMIN_BASE = YABIADMIN.split('/',1)
+    YABIADMIN_BASE = "/" + YABIADMIN_BASE
+    YABISTORE_SERVER, YABISTORE_BASE = YABISTORE.split('/',1)
+    YABISTORE_BASE = "/" + YABISTORE_BASE
 
     AUTH_LDAP_SERVER = ('ldaps://fdsdev.localdomain',)
     AUTH_LDAP_USER_BASE = 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
@@ -78,11 +76,17 @@ else:
     AUTH_LDAP_GROUP = 'yabi'
     DEFAULT_GROUP = "baseuser"
 
-    SSL_ENABLED = True
+    SSL_ENABLED = os.environ['SSL_ENABLED'] if 'SSL_ENABLED' in os.environ else True
     DEV_SERVER = False
     
     # development site id
     SITE_ID = 1
+
+if DEBUG:
+    print "YABISTORE_SERVER =",YABISTORE_SERVER
+    print "YABISTORE_BASE =",YABISTORE_BASE
+    print "YABIADMIN_SERVER =",YABIADMIN_SERVER
+    print "YABIADMIN_BASE =",YABIADMIN_BASE
 
 
 # email server
@@ -194,17 +198,6 @@ CAPTCHA_ROOT = os.path.join(MEDIA_ROOT, 'captchas')
 
 # the URL base that points to that directory served out
 CAPTCHA_URL = os.path.join(MEDIA_URL, 'captchas')
-
-
-##
-## Auth settings
-##
-AUTH_LDAP_SERVER = 'ldaps://fds1.localdomain'
-AUTH_LDAP_BASE = 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
-AUTH_LDAP_GROUP_BASE = 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
-AUTH_LDAP_GROUP = 'yabi'
-DEFAULT_GROUP = "baseuser"
-
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.LDAPBackend',
