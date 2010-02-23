@@ -30,8 +30,6 @@ application = service.Application(APPNAME)
 # Environment setup for your Django project files:
 os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
-if config.config[NAME]["database"]=="dev":
-    os.environ['DJANGODEV']='1'
 if config.config[NAME]["debug"]:
     os.environ['DJANGODEBUG'] = '1'
 
