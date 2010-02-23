@@ -219,6 +219,8 @@ def get_param_value(workflow, tp, job):
                             
                         logger.debug("FILELIST returned:%s"%str(filelist))
                         
+                        value.extend( [ fulluri + X[0] for X in filelist ] )
+                        
                 
             elif type(item) == str or type(item) == unicode:
                 value.append( item )
