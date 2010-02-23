@@ -218,7 +218,7 @@ def get_param_value(workflow, tp, job):
                             # get recursive directory listing
                             filelist = backendhelper.get_file_list(job.wokflow.user.name, fulluri, recurse=True)
                             
-                            print "FILELIST returned:",filelist
+                            logger.debug("FILELIST returned:%s"%str(filelist))
                         
                 
             elif type(item) == str or type(item) == unicode:
