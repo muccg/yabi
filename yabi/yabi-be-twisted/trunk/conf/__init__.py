@@ -201,6 +201,8 @@ class Configuration(object):
             self.config[name]['store'] = conf_parser.get(name,'store')
             self.config[name]['database'] = "custom" if conf_parser.has_option(name,'database') and conf_parser.get(name,'database').lower()=="custom" else "live" if conf_parser.has_option(name,'database') and conf_parser.get(name,'database').lower()=="live" else "dev"
             self.config[name]['debug'] = conf_parser.get(name,'debug') if conf_parser.has_option(name,'debug') else "false"
+            if conf_parser.has_option(name,'certificates'):
+                self.config[name]['certificates'] = path_sanitise(conf_parser.get(name,'certificates'))
             
             # database settings
             for parm in ['database_engine','database_host','database_name','database_password','database_port','database_user','auth_ldap_server', 'auth_ldap_user_base','auth_ldap_group_base','auth_ldap_group','auth_ldap_default_group']:
@@ -212,6 +214,8 @@ class Configuration(object):
             self.config[name]['database'] = "dev" if conf_parser.has_option(name,'database') and conf_parser.get(name,'database').lower()=="dev" else "live"
             self.config[name]['debug'] = conf_parser.get(name,'debug') if conf_parser.has_option(name,'debug') else "false"
             self.config[name]['history'] = path_sanitise(conf_parser.get(name,'history'))
+            if conf_parser.has_option(name,'certificates'):
+                self.config[name]['certificates'] = path_sanitise(conf_parser.get(name,'certificates'))
 
         name = "frontend"
         if conf_parser.has_section(name):
@@ -219,6 +223,8 @@ class Configuration(object):
             self.config[name]['debug'] = conf_parser.get(name,'debug') if conf_parser.has_option(name,'debug') else "false"
             self.config[name]['admin'] = conf_parser.get(name,'admin')
             self.config[name]['store'] = conf_parser.get(name,'store')
+            if conf_parser.has_option(name,'certificates'):
+                self.config[name]['certificates'] = path_sanitise(conf_parser.get(name,'certificates'))
             
             # database settings
             for parm in ['database_engine','database_host','database_name','database_password','database_port','database_user','auth_ldap_server', 'auth_ldap_user_base','auth_ldap_group_base','auth_ldap_group','auth_ldap_default_group']:
