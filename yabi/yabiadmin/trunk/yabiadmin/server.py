@@ -104,8 +104,8 @@ class ServerContextFactory:
         This is a sample implementation that loads a certificate from a file
         called 'server.pem'."""
         ctx = SSL.Context(SSL.SSLv23_METHOD)
-        ctx.use_certificate_file(os.path.join(config.config[NAME]['certificates'],'servercert.pem'))
-        ctx.use_privatekey_file(os.path.join(config.config[NAME]['certificates'],'serverkey.pem'))
+        ctx.use_certificate_file(os.path.join(config.config[NAME]['certfile']))
+        ctx.use_privatekey_file(os.path.join(config.config[NAME]['keyfile']))
         return ctx
 
 from twisted.web2 import channel
