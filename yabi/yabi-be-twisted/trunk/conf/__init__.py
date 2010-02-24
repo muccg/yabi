@@ -203,7 +203,7 @@ class Configuration(object):
             self.config[name]['debug'] = conf_parser.get(name,'debug') if conf_parser.has_option(name,'debug') else "false"
             
             # database settings
-            for parm in ['database_engine','database_host','database_name','database_password','database_port','database_user']:
+            for parm in ['database_engine','database_host','database_name','database_password','database_port','database_user','auth_ldap_server', 'auth_ldap_user_base','auth_ldap_group_base','auth_ldap_group','auth_ldap_default_group']:
                 if conf_parser.has_option(name,parm):
                     self.config[name][parm] = conf_parser.get(name,parm)
 
@@ -221,7 +221,7 @@ class Configuration(object):
             self.config[name]['store'] = conf_parser.get(name,'store')
             
             # database settings
-            for parm in ['database_engine','database_host','database_name','database_password','database_port','database_user']:
+            for parm in ['database_engine','database_host','database_name','database_password','database_port','database_user','auth_ldap_server', 'auth_ldap_user_base','auth_ldap_group_base','auth_ldap_group','auth_ldap_default_group']:
                 if conf_parser.has_option(name,parm):
                     self.config[name][parm] = conf_parser.get(name,parm)
         
