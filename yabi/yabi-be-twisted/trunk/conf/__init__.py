@@ -80,6 +80,9 @@ class Configuration(object):
                         "tasklets":"/tmp/",
                         "certificates":"/tmp/",
                         
+                        "certfiles":"~/.yabi/servercert.pem",
+                        "keyfile":"~/.yabi/servercert.pem",
+                        
                         "admin":None                # none means "use the one provided here"
                     },
         'admin':    {
@@ -87,6 +90,9 @@ class Configuration(object):
                         "sslport":"0.0.0.0:8443",
                         "path":"/yabiadmin",
                         "startup":"true",
+                        
+                        "certfiles":"~/.yabi/servercert.pem",
+                        "keyfile":"~/.yabi/servercert.pem",
                         
                         "backend":None,
                         "store":None,
@@ -115,6 +121,9 @@ class Configuration(object):
                         "path":"/fe",
                         "startup":"true",
                         
+                        "certfiles":"~/.yabi/servercert.pem",
+                        "keyfile":"~/.yabi/servercert.pem",
+                        
                         "admin":None,
                         "store": None,
                         
@@ -138,7 +147,10 @@ class Configuration(object):
                         "sslport":"0.0.0.0:8443",
                         "path":"/store",
                         "startup":"true",
-                        
+
+                        "certfiles":"~/.yabi/servercert.pem",
+                        "keyfile":"~/.yabi/servercert.pem",
+
                         "history":"/tmp/",
                         
                         "debug": "true"             # run the app in debug mode
