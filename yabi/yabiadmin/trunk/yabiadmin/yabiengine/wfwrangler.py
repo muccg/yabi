@@ -176,7 +176,7 @@ def prepare_tasks(job):
 
             # get_file_list will return a list of file tuples
             for f in backendhelper.get_file_list(job.workflow.user.name, param):
-                tasks_to_create.append([job, param, f[0], exec_be, exec_bc, fs_be, fs_bc,name])
+                tasks_to_create.append([job, param, f[0], exec_be, exec_bc, fs_be, fs_bc])
 
 
         ##################################################
@@ -188,7 +188,7 @@ def prepare_tasks(job):
             
             logger.debug("PROCESSING %s" % param)
             
-            tasks_to_create([job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc])
+            tasks_to_create.append([job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc])
             input_files.append(param)
             
             
