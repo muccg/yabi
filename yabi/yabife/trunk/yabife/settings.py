@@ -70,7 +70,7 @@ else:
     YABISTORE_SERVER, YABISTORE_BASE = YABISTORE.split('/',1)
     YABISTORE_BASE = "/" + YABISTORE_BASE
 
-    AUTH_LDAP_SERVER = tuple(os.environ['AUTH_LDAP_SERVER'].split()) if 'AUTH_LDAP_SERVER' in os.environ else              ('ldaps://fdsdev.localdomain',)
+    AUTH_LDAP_SERVER = tuple( os.environ['AUTH_LDAP_SERVER'].split() ) if 'AUTH_LDAP_SERVER' in os.environ else              ('ldaps://fdsdev.localdomain',)
     AUTH_LDAP_USER_BASE = os.environ['AUTH_LDAP_USER_BASE'] if 'AUTH_LDAP_USER_BASE' in os.environ else     'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
     AUTH_LDAP_GROUP_BASE = os.environ['AUTH_LDAP_GROUP_BASE'] if 'AUTH_LDAP_GROUP_BASE' in os.environ else  'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
     AUTH_LDAP_GROUP = os.environ['AUTH_LDAP_GROUP'] if 'AUTH_LDAP_GROUP' in os.environ else                 'yabi'
