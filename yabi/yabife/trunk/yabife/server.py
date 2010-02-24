@@ -32,7 +32,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
 
 # custom database settings
 os.environ['CUSTOMDB']='1'
-for setting in ['database_engine', 'database_name', 'database_user', 'database_password', 'database_host', 'database_port', 'auth_ldap_server', 'auth_ldap_user_base','auth_ldap_group_base','auth_ldap_group','auth_ldap_default_group']:
+for setting in ['database_engine', 'database_name', 'database_user', 'database_password', 'database_host', 'database_port','auth_ldap_server', 'auth_ldap_user_base','auth_ldap_group_base','auth_ldap_group','auth_ldap_default_group']:
     os.environ[setting.upper()] = config.config[NAME][setting]
 
 if config.config[NAME]["debug"]:
@@ -104,8 +104,8 @@ class ServerContextFactory:
         This is a sample implementation that loads a certificate from a file
         called 'server.pem'."""
         ctx = SSL.Context(SSL.SSLv23_METHOD)
-        ctx.use_certificate_file('servercert.pem')
-        ctx.use_privatekey_file('serverkey.pem')
+        ctx.use_certificate_file(os.path.join(config.config[NAME]['certificates'],'servercert.pem'))
+        ctx.use_privatekey_file(os.path.join(config.config[NAME]['certificates'],'serverkey.pem'))
         return ctx
 
 from twisted.web2 import channel
