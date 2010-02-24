@@ -97,6 +97,8 @@ class QueueAdmin(admin.ModelAdmin):
 
 class CredentialAdmin(AdminBase):
     list_display = ['description', 'user', 'username']
+    list_filter = ['user']
+
     
 class BackendAdmin(AdminBase):
     form = BackendForm
