@@ -80,7 +80,7 @@ class Configuration(object):
                         "tasklets":"/tmp/",
                         "certificates":"/tmp/",
                         
-                        "certfiles":"~/.yabi/servercert.pem",
+                        "certfile":"~/.yabi/servercert.pem",
                         "keyfile":"~/.yabi/servercert.pem",
                         
                         "admin":None                # none means "use the one provided here"
@@ -91,7 +91,7 @@ class Configuration(object):
                         "path":"/yabiadmin",
                         "startup":"true",
                         
-                        "certfiles":"~/.yabi/servercert.pem",
+                        "certfile":"~/.yabi/servercert.pem",
                         "keyfile":"~/.yabi/servercert.pem",
                         
                         "backend":None,
@@ -121,7 +121,7 @@ class Configuration(object):
                         "path":"/fe",
                         "startup":"true",
                         
-                        "certfiles":"~/.yabi/servercert.pem",
+                        "certfile":"~/.yabi/servercert.pem",
                         "keyfile":"~/.yabi/servercert.pem",
                         
                         "admin":None,
@@ -148,7 +148,7 @@ class Configuration(object):
                         "path":"/store",
                         "startup":"true",
 
-                        "certfiles":"~/.yabi/servercert.pem",
+                        "certfile":"~/.yabi/servercert.pem",
                         "keyfile":"~/.yabi/servercert.pem",
 
                         "history":"/tmp/",
