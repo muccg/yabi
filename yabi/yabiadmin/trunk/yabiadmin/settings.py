@@ -33,6 +33,14 @@ if "DJANGODEV" in os.environ:
     DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
     SSL_ENABLED = False
     DEV_SERVER = True
+    
+    AUTH_LDAP_USER_BASE = 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
+    AUTH_LDAP_GROUP_BASE = 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
+    AUTH_LDAP_ADMIN_GROUP = 'admin'
+    AUTH_LDAP_GROUP = 'admin' # only admin users should be able to log in
+    AUTH_LDAP_USER_GROUP = 'yabi'
+
+    
     YABIBACKEND_SERVER, YABIBACKEND_BASE = YABIBACKEND.split("/",1)
     YABIBACKEND_BASE = "/" + YABIBACKEND_BASE                                   # NOT USED PRESENTLY
     assert YABIBACKEND_BASE=="/"
@@ -52,6 +60,13 @@ else:
     DATABASE_PASSWORD = os.environ['DATABASE_PASSWORD']
     DATABASE_HOST = os.environ['DATABASE_HOST']
     DATABASE_PORT = os.environ['DATABASE_PORT']
+    
+    AUTH_LDAP_SERVER = tuple(os.environ['AUTH_LDAP_SERVER'].split()) if 'AUTH_LDAP_SERVER' in os.environ else              ('ldaps://fdsdev.localdomain',)
+    AUTH_LDAP_USER_BASE = os.environ['AUTH_LDAP_USER_BASE'] if 'AUTH_LDAP_USER_BASE' in os.environ else     'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
+    AUTH_LDAP_GROUP_BASE = os.environ['AUTH_LDAP_GROUP_BASE'] if 'AUTH_LDAP_GROUP_BASE' in os.environ else  'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
+    AUTH_LDAP_GROUP = os.environ['AUTH_LDAP_GROUP'] if 'AUTH_LDAP_GROUP' in os.environ else                 'yabi'
+    DEFAULT_GROUP = os.environ['AUTH_LDAP_DEFAULT_GROUP'] if 'AUTH_LDAP_DEFAULT_GROUP' in os.environ else   "baseuser"
+
     
     SSL_ENABLED = False
     DEV_SERVER = True
@@ -188,11 +203,6 @@ AUTH_LDAP_SERVERS = (
     'ldaps://fds2.localdomain', 
     'ldaps://fds3.localdomain',
 )
-AUTH_LDAP_USER_BASE = 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
-AUTH_LDAP_GROUP_BASE = 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
-AUTH_LDAP_ADMIN_GROUP = 'admin'
-AUTH_LDAP_GROUP = 'admin' # only admin users should be able to log in
-AUTH_LDAP_USER_GROUP = 'yabi'
 
 DEFAULT_GROUP = "baseuser"
 
