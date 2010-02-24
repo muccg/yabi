@@ -101,6 +101,13 @@ class Configuration(object):
                         "database_password":"password",
                         "database_host":"db.localdomain",
                         "database_port":None,
+                        
+                        "auth_ldap_server":"ldaps://ldap.localdomain",
+                        "auth_ldap_user_base":"ou=Unit,dc=Domain",
+                        "auth_ldap_group_base":"ou=Unit,dc=Domain",
+                        "auth_ldap_group":"group",
+                        "auth_ldap_default_group":"user",
+                        
                     },
         'frontend': {
                         "port":"0.0.0.0:8000",
@@ -118,6 +125,13 @@ class Configuration(object):
                         "database_password":"password",
                         "database_host":"db.localdomain",
                         "database_port":None,
+                        
+                        "auth_ldap_server":"ldaps://ldap.localdomain",
+                        "auth_ldap_user_base":"ou=Unit,dc=Domain",
+                        "auth_ldap_group_base":"ou=Unit,dc=Domain",
+                        "auth_ldap_group":"group",
+                        "auth_ldap_default_group":"user",
+
                     },
         'store':    {
                         "port":"0.0.0.0:8000",
