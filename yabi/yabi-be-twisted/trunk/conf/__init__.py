@@ -76,9 +76,9 @@ class Configuration(object):
                         "telnet":"false",
                         "telnetport":"0.0.0.0:8021",
                         
-                        "fifos":"/bogus/",
-                        "tasklets":"/bogus/",
-                        "certificates":"/bogus/",
+                        "fifos":None,
+                        "tasklets":None,
+                        "certificates":None,
                         
                         "certfile":"~/.yabi/servercert.pem",
                         "keyfile":"~/.yabi/servercert.pem",
@@ -151,7 +151,7 @@ class Configuration(object):
                         "certfile":"~/.yabi/servercert.pem",
                         "keyfile":"~/.yabi/servercert.pem",
 
-                        "history":"/bogus/",
+                        "history":None,
                         
                         "debug": "true"             # run the app in debug mode
                     },
