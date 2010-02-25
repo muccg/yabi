@@ -76,7 +76,7 @@ class SudoShell(object):
         return self.execute(SudoShellProcessProtocol, user, command=["rm",args,directory]) if args else self.execute(SudoShellProcessProtocol, user,command=["rm",directory]) 
         
     def cp(self, proto, user, src, dst, args=None):
-        return self.execute(proto, user, command=["cp",args,src,dst]) if args else self.execute(proto,user,command=["cp",args,src,dst])
+        return self.execute(proto, user, command=["cp",args,src,dst]) if args else self.execute(proto,user,command=["cp",src,dst])
         
 
 
