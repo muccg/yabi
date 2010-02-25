@@ -30,6 +30,7 @@ class FifoPool(object):
         """make a fifo on the filesystem and return its path"""
         filename = tempfile.mktemp(suffix=suffix, prefix=prefix, dir=self.storage)                # insecure, but we dont care
         os.mkfifo(filename, FIFO_MOD)
+        os.chmod(filename, FIFO_MOD)
         return filename
     
     def Get(self):
