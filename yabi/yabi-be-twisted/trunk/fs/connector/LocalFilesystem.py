@@ -234,7 +234,7 @@ class LocalFilesystem(FSConnector.FSConnector):
         
         # change the permissions on the destination
         chmod = ["sudo","-u",username,"chmod","o+w",dst]
-        assert subprocess.call(chmod), "Chmod:"+str(chmod)+" failed"
+        assert not subprocess.call(chmod), "Chmod:"+str(chmod)+" failed"
                 
         # the copy to remote command
         procproto = FSWriteProtocol()
@@ -263,7 +263,7 @@ class LocalFilesystem(FSConnector.FSConnector):
         
         # change the permissions on the source
         chmod = ["sudo","-u",username,"chmod","o+r",src]
-        assert subprocess.call(chmod), "Chmod:"+str(chmod)+" failed"
+        assert not subprocess.call(chmod), "Chmod:"+str(chmod)+" failed"
         
         # debug info about the source file
         if DEBUG_READ_FIFO:
