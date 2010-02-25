@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+from conf import config
+config.read_config()
+config.sanitise()
+
 import sys, os
 
 from urlparse import urlparse
@@ -18,10 +22,6 @@ from twisted.python import util
 from OpenSSL import SSL
 
 from BaseResource import BaseResource
-
-from conf import config
-config.read_config()
-config.sanitise()
 
 # make sure our env is sane
 import os
