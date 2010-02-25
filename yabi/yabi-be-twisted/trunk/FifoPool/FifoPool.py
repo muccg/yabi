@@ -27,7 +27,7 @@ class FifoPool(object):
             self.storage = tempfile.mkdtemp(prefix="yabi-fifo-")
         else:
             self.storage = directory
-        print "=================> FifoPool created in",self.storage
+        #print "=================> FifoPool created in",self.storage
     
     def _make_fifo(self, prefix="fifo_",suffix=""):
         """make a fifo on the filesystem and return its path"""
