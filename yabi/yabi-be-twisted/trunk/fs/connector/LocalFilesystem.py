@@ -237,9 +237,9 @@ class LocalFilesystem(FSConnector.FSConnector):
         #subprocess.check_call(chmod)
                 
         # the copy to remote command
-        procproto = FSWriteProtocol()
+        #procproto = FSWriteProtocol()
         
-        SudoShell().cp(procproto,username,fifo,dst)
+        procproto=SudoShell().cp(FSWriteProtocol,username,fifo,dst)
         #reactor.spawnProcess(   procproto,
                                 #self.copy,
                                 #[ self.copy, fifo, dst ],
@@ -276,9 +276,9 @@ class LocalFilesystem(FSConnector.FSConnector):
             print "st_size:",statinfo.st_size
         
         # the copy to remote command
-        procproto = FSWriteProtocol()
+        #procproto = FSWriteProtocol()
         
-        SudoShell().cp(procproto,username,src,fifo)
+        procproto=SudoShell().cp(FSWriteProtocol,username,src,fifo)
         #reactor.spawnProcess(   procproto,
                                 #self.copy,
                                 #[ self.copy, src, fifo ],
