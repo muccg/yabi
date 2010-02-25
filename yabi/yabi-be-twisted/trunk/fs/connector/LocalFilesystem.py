@@ -71,7 +71,11 @@ class SudoShell(object):
         return self.execute(SudoShellProcessProtocol, user, command=["mkdir",args,directory])
       
     def rm(self, user, directory, args=None):
-        return self.execute(SudoShellProcessProtocol, user, command=["rm",args,directory]) if args else self.execute(certfile,host,command=["rm",directory]) 
+        return self.execute(SudoShellProcessProtocol, user, command=["rm",args,directory]) if args else self.execute(SudoShellProcessProtocol, user,command=["rm",directory]) 
+        
+    def cp(self, proto, user, src, dst, args=None):
+        return self.execute(proto, user, command=["cp",args,src,dst]) if args else self.execute(proto,user,command=["cp",args,src,dst])
+        
 
 
 class FSWriteProtocol(protocol.ProcessProtocol):
@@ -229,12 +233,13 @@ class LocalFilesystem(FSConnector.FSConnector):
         # the copy to remote command
         procproto = FSWriteProtocol()
         
-        reactor.spawnProcess(   procproto,
-                                self.copy,
-                                [ self.copy, fifo, dst ],
-                                env=self._make_env(),
-                                path=self._make_path()
-                            )
+        SudoShell().cp(procproto,username,fifo,dst)
+        #reactor.spawnProcess(   procproto,
+                                #self.copy,
+                                #[ self.copy, fifo, dst ],
+                                #env=self._make_env(),
+                                #path=self._make_path()
+                            #)
         
         # link our protocol processor to this fifo, so if we die, the fifo will be cleared up
         Fifos.WeakLink( fifo, procproto )
@@ -242,7 +247,7 @@ class LocalFilesystem(FSConnector.FSConnector):
         return procproto, fifo
             
     def GetReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}):
-        """sets up the chain needed to setup a write fifo to a remote path as a certain user.
+        """sets up the chain needed to setup a read fifo from a remote path as a certain user.
         """
         # make our source fifo to get our data from
         if not fifo:
@@ -263,12 +268,13 @@ class LocalFilesystem(FSConnector.FSConnector):
         # the copy to remote command
         procproto = FSWriteProtocol()
         
-        reactor.spawnProcess(   procproto,
-                                self.copy,
-                                [ self.copy, src, fifo ],
-                                env=self._make_env(),
-                                path=self._make_path()
-                            )
+        SudoShell().cp(procproto,username,src,fifo)
+        #reactor.spawnProcess(   procproto,
+                                #self.copy,
+                                #[ self.copy, src, fifo ],
+                                #env=self._make_env(),
+                                #path=self._make_path()
+                            #)
         
         # link our protocol processor to this fifo, so if we die, the fifo will be cleared up
         Fifos.WeakLink( fifo, procproto )
