@@ -5,6 +5,8 @@ import weakref
 
 from conf import config
 
+FIFO_MOD = 0666
+
 class FifoPool(object):
     """FifoPool is a pool of fifo objects. This allows us to quickly ascertain how many transfers are going on.
     This is where fifo's are created and allocated, and also where they are cleaned up."""
@@ -27,7 +29,7 @@ class FifoPool(object):
     def _make_fifo(self, prefix="fifo_",suffix=""):
         """make a fifo on the filesystem and return its path"""
         filename = tempfile.mktemp(suffix=suffix, prefix=prefix, dir=self.storage)                # insecure, but we dont care
-        os.mkfifo(filename, 0600)
+        os.mkfifo(filename, FIFO_MOD)
         return filename
     
     def Get(self):
