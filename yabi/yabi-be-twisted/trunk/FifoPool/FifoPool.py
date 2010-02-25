@@ -20,9 +20,9 @@ class FifoPool(object):
         
         self._fifos={}
         
-    def _make_fifo_storage(self, directory=None):
+    def _make_fifo_storage(self):
         """makes a directory for storing the fifos in"""
-        directory = directory or config.config['backend']['fifos']
+        directory = config.config['backend']['fifos']
         self.storage = tempfile.mkdtemp(prefix="yabi-fifo-", dir=directory)
         #print "FifoPool created in",self.storage
     
