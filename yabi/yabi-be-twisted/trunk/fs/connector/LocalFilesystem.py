@@ -239,13 +239,13 @@ class LocalFilesystem(FSConnector.FSConnector):
         # the copy to remote command
         procproto = FSWriteProtocol()
         
-        SudoShell().cp(procproto,username,fifo,dst)
-        #reactor.spawnProcess(   procproto,
-                                #self.copy,
-                                #[ self.copy, fifo, dst ],
-                                #env=self._make_env(),
-                                #path=self._make_path()
-                            #)
+        #SudoShell().cp(procproto,username,fifo,dst)
+        reactor.spawnProcess(   procproto,
+                                self.copy,
+                                [ self.copy, fifo, dst ],
+                                env=self._make_env(),
+                                path=self._make_path()
+                            )
         
         # link our protocol processor to this fifo, so if we die, the fifo will be cleared up
         Fifos.WeakLink( fifo, procproto )
@@ -278,13 +278,13 @@ class LocalFilesystem(FSConnector.FSConnector):
         # the copy to remote command
         procproto = FSWriteProtocol()
         
-        SudoShell().cp(procproto,username,src,fifo)
-        #reactor.spawnProcess(   procproto,
-                                #self.copy,
-                                #[ self.copy, src, fifo ],
-                                #env=self._make_env(),
-                                #path=self._make_path()
-                            #)
+        #SudoShell().cp(procproto,username,src,fifo)
+        reactor.spawnProcess(   procproto,
+                                self.copy,
+                                [ self.copy, src, fifo ],
+                                env=self._make_env(),
+                                path=self._make_path()
+                            )
         
         # link our protocol processor to this fifo, so if we die, the fifo will be cleared up
         Fifos.WeakLink( fifo, procproto )
