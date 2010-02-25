@@ -6,6 +6,8 @@ from FifoPool import Fifos
 from utils.parsers import *
 import stackless
 
+import subprocess
+
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
 ENV_CHILD_INHERIT = ['PATH']
 
@@ -230,6 +232,10 @@ class LocalFilesystem(FSConnector.FSConnector):
         
         dst = os.path.join(self._get_filename(path),filename)
         
+        # change the permissions on the destination
+        chmod = ["sudo","-u",username,"chmod","o+w",dst]
+        assert subprocess.call(chmod), "Chmod:"+str(chmod)+" failed"
+                
         # the copy to remote command
         procproto = FSWriteProtocol()
         
@@ -254,6 +260,10 @@ class LocalFilesystem(FSConnector.FSConnector):
             fifo = Fifos.Get()
         
         src = os.path.join(self._get_filename(path),filename)
+        
+        # change the permissions on the source
+        chmod = ["sudo","-u",username,"chmod","o+r",src]
+        assert subprocess.call(chmod), "Chmod:"+str(chmod)+" failed"
         
         # debug info about the source file
         if DEBUG_READ_FIFO:
