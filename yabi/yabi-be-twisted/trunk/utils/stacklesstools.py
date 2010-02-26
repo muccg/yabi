@@ -81,7 +81,8 @@ def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,*
     def _doFailure(data):
         if isinstance(data,Failure):
             exc = data.value
-            get_failed[0] = -1, str(exc), "Tried to GET %s"%(fullpath)
+            #get_failed[0] = -1, str(exc), "Tried to GET %s"%(fullpath)
+            get_failed[0] = -1, str(exc), "Tried to GET %s.\nRemote response was:\n%s"%(fullpath,factory.last_client.errordata)
         else:
             get_failed[0] = int(factory.status), factory.message, "Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
         
