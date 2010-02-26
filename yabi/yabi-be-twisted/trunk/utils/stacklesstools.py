@@ -164,7 +164,7 @@ def POST(path,**kws):
     def _doFailure(data):
         if isinstance(data,Failure):
             exc = data.value
-            get_failed[0] = -1, str(exc), "Tried to POST %s to %s"%(postdata,str("http://%s:%d%s"%(host,port,path)))
+            get_failed[0] = -1, str(exc), "Tried to POST %s to %s.\nRemote response was:\n%s"%(postdata,str("http://%s:%d%s"%(host,port,path)),factory.last_client.errordata)
         else:
             get_failed[0] = int(factory.status), factory.message, "Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
     
