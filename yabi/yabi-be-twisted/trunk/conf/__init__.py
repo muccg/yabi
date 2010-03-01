@@ -174,7 +174,7 @@ class Configuration(object):
         return self.reaf_from_fp(open(filename))
     
     def read_from_fp(self,fp):
-        conf_parser = ConfigParser.SafeConfigParser()
+        conf_parser = ConfigParser.ConfigParser()
         conf_parser.readfp(fp)
         
         # main sections
