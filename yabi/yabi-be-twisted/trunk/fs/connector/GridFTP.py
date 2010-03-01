@@ -109,7 +109,9 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
             self.EnsureAuthed(yabiusername, SCHEMA,username,host,path)
         
         usercert = self.GetAuthProxy(host).ProxyFile(username)
-        pp = globus.Shell.ls(usercert,host,path, args="-alFR" if recurse else "-alF" )
+        # we need to munge the path for transport over gsissh (cause it sucks)
+        mungedpath = '"' + path.replace('"',r'\"') + '"'
+        pp = globus.Shell.ls(usercert,host,mungedpath, args="-alFR" if recurse else "-alF" )
         
         while not pp.isDone():
             stackless.schedule()
