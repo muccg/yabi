@@ -12,6 +12,7 @@ import ConfigParser
 import os.path
 import re
 
+import StringIO
 
 import urlparse
 import re
@@ -167,7 +168,7 @@ class Configuration(object):
     }
     
     def read_from_data(self,dat):
-        return self.read_from_fp(stringIO.StringIO(dat))
+        return self.read_from_fp(StringIO.StringIO(dat))
     
     def read_from_file(self,filename):
         return self.reaf_from_fp(open(filename))
