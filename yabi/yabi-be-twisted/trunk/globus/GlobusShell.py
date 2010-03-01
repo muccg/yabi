@@ -5,6 +5,8 @@ from twisted.internet import reactor
 
 from BaseShell import BaseShell, BaseShellProcessProtocol
 
+DEBUG = True
+
 class GlobusShellProcessProtocol(BaseShellProcessProtocol):
     pass
 
@@ -16,6 +18,11 @@ class GlobusShell(BaseShell):
 
     def execute(self, certfile, host, command):
         """Run inside gsissh, this command line. Command parts are passed in as a list of parameters, not a string."""
+        if DEBUG:
+            print "GlobusShell running:",[ 
+                self.gsissh, 
+                host 
+            ] + list(command)
         return BaseShell.execute(self,GlobusShellProcessProtocol,certfile,
             [ 
                 self.gsissh, 
