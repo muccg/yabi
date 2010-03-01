@@ -74,7 +74,7 @@ def proxy(request, url, server, base):
         # in settings.py
         files = []
         in_file = request.FILES['file1']
-        files.append(('file1', in_file.name, in_file.temporary_file_path()))
+        files.append(('file1', in_file.name, open(in_file.temporary_file_path())))
         h = post_multipart(server, resource, [], files)
         logger.debug(in_file.temporary_file_path())
         r = h.getresponse()
