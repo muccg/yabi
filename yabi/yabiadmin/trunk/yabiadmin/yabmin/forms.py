@@ -45,15 +45,17 @@ class BackendCredentialForm(forms.ModelForm):
 
         default_stageout = self.cleaned_data['default_stageout']
 
-        stageout_count = 0
-
         if default_stageout:
+            stageout_count = 0
             becs = BackendCredential.objects.filter(credential__user=self.cleaned_data['credential'].user)
+
             for bec in becs:
-                if bec.default_stageout:
+                 # check for other credentials that have stageout on,
+                 # but don't include the one user is editing
+                if bec.default_stageout and bec != self.instance:
                     stageout_count += 1
 
-        if stageout_count > 0:
+            if stageout_count > 0:
                 raise forms.ValidationError("There is a backend credential flagged as the default stageout already.")
             
         return default_stageout
