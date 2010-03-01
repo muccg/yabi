@@ -67,7 +67,7 @@ def encode_multipart_formdata(stream,fields, files):
 		fh=open(fullpath,'rb')
 		while True:
 			dat=fh.read(CHUNKSIZE)
-            logger.debug("CHUNK:",dat)
+            logger.debug("CHUNK:%s"%(repr(dat)))
 			if len(dat)==0:
 				break
 			stream.send(dat)
