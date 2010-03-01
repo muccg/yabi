@@ -201,7 +201,7 @@ def put(request):
         uri = request.GET['uri']
         yabiusername = request.GET['yabiusername']
         
-        resource = "%s?uri=%s&yabiusername=%s" % (settings.YABIBACKEND_PUT, quote(uri),yabiusername)
+        resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))
 
         # TODO this only works with files written to disk by django
         # at the moment so the FILE_UPLOAD_MAX_MEMORY_SIZE must be set to 0
@@ -211,12 +211,14 @@ def put(request):
         files.append((in_file.name, in_file.name, in_file.temporary_file_path()))
         logger.debug(files)
         
-        #bc = get_backendcredential_for_uri(yabiusername, uri)
+        bc = get_backendcredential_for_uri(yabiusername, uri)
         #data = [('username', bc.credential.username),
                     #('password', bc.credential.password),
                     #('cert', bc.credential.cert),
                     #('key', bc.credential.key)]
         data=[]
+        
+        resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(bc.credential.username),quote(bc.credential.password),quote( bc.credential.cert),quote(bc.credential.key))
                     
         logger.debug("POSTing %s to %s -> %s"%(str(data),settings.YABIBACKEND_SERVER,resource))
 
