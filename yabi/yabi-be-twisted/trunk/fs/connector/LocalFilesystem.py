@@ -9,7 +9,7 @@ import stackless
 import subprocess
 
 # sudo parameters to pass into sudo command calls
-SUDO_EXTRA_PARMS = [ '-E' ]
+SUDO_EXTRA_PARMS = []
 
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
 ENV_CHILD_INHERIT = ['PATH']
