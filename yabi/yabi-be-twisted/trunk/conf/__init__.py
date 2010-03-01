@@ -165,10 +165,16 @@ class Configuration(object):
                         'startup':'true'
                     }
     }
-        
+    
+    def read_from_data(self,dat):
+        return self.read_from_fp(stringIO.StringIO(dat))
+    
     def read_from_file(self,filename):
+        return self.reaf_from_fp(open(filename))
+    
+    def read_from_fp(self,fp):
         conf_parser = ConfigParser.SafeConfigParser()
-        conf_parser.read(filename)
+        conf_parser.readfp(fp)
         
         # main sections
         for section in self.SECTIONS:
