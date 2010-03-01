@@ -69,7 +69,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         
         return mkdir_data
         
-    def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}):
+    def rm(self, host, username, path, yabiusername=None, recurse=True, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         # make sure we are authed
         if creds:
