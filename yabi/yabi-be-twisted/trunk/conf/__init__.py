@@ -171,7 +171,7 @@ class Configuration(object):
         return self.read_from_fp(StringIO.StringIO(dat))
     
     def read_from_file(self,filename):
-        return self.read_from_fp(open(filename))
+        return self.read_from_fp(open(filename)) if os.path.exists(filename) else None
     
     def read_from_fp(self,fp):
         conf_parser = ConfigParser.ConfigParser()
