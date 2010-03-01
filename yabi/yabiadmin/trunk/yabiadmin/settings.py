@@ -107,8 +107,7 @@ YABIBACKEND_GET = '/fs/get'
 
 # make sure that this is a tuple of tuples
 ADMINS = (
-    #('Tech Alerts', 'alerts@ccg.murdoch.edu.au'),
-    ('Andrew Macgregor', 'andrew@ccg.murdoch.edu.au'),    
+    ('Tech Alerts', 'alerts@ccg.murdoch.edu.au'),
 )
 
 LOGIN_URL = "/login"
