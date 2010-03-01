@@ -5,7 +5,7 @@ from twisted.internet import reactor
 
 from BaseShell import BaseShell, BaseShellProcessProtocol
 
-DEBUG = True
+DEBUG = False
 
 class GlobusShellProcessProtocol(BaseShellProcessProtocol):
     pass
