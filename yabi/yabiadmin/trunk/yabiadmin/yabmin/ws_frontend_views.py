@@ -160,7 +160,7 @@ def get(request):
         logger.debug(uri)
         logger.debug(filename)
 
-        response = HttpResponse(get_file(yabiusername, uri))
+        response = HttpResponse(get_file(yabiusername, quote(uri)))
 
         type, encoding = mimetypes.guess_type(filename)
         if type is not None:
@@ -201,7 +201,7 @@ def put(request):
         uri = request.GET['uri']
         yabiusername = request.GET['yabiusername']
         
-        resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, uri))
+        resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))
 
         # TODO this only works with files written to disk by django
         # at the moment so the FILE_UPLOAD_MAX_MEMORY_SIZE must be set to 0
