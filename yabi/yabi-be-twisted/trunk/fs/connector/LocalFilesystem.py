@@ -8,6 +8,9 @@ import stackless
 
 import subprocess
 
+# sudo parameters to pass into sudo command calls
+SUDE_EXTRA_PARMS = [ '-E' ]
+
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
 ENV_CHILD_INHERIT = ['PATH']
 
@@ -50,7 +53,7 @@ class SudoShell(object):
 
         subenv = self._make_env()
         pp = protocol()
-        fullcommand = [self.sudo, "-u", systemuser] + command
+        fullcommand = [self.sudo, "-u", systemuser] + SUDO_EXTRA_PARMS + command
         
         if DEBUG:
             print "env:",subenv
