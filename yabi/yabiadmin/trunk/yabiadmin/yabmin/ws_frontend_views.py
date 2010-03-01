@@ -13,6 +13,7 @@ from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, ge
 from yabiadmin.security import validate_user, validate_uri
 from yabiadmin.utils import json_error
 import mimetypes
+from urllib import quote
 
 
 from yabmin.file_upload import *
