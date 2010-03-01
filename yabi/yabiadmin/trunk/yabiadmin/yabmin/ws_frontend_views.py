@@ -160,7 +160,7 @@ def get(request):
         logger.debug(uri)
         logger.debug(filename)
 
-        response = HttpResponse(get_file(yabiusername, quote(uri)))
+        response = HttpResponse(get_file(yabiusername, uri))
 
         type, encoding = mimetypes.guess_type(filename)
         if type is not None:
