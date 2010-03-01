@@ -216,7 +216,7 @@ def put(request):
                     ('cert', bc.credential.cert),
                     ('key', bc.credential.key)]
                     
-        logger.debug("POSTing %s to %s"%(str(data),settings.YABIBACKEND_SERVER))
+        logger.debug("POSTing %s to %s -> %s"%(str(data),settings.YABIBACKEND_SERVER,resource))
 
         h = post_multipart(settings.YABIBACKEND_SERVER, resource, data, files)
         return HttpResponse('ok')
