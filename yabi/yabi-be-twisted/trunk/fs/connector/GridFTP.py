@@ -98,6 +98,10 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
     
     def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
+        
+        if DEBUG:
+            print "GridFTP::ls(",host,username,path,yabiusername,recurse,culldots,creds,")"
+        
         # make sure we are authed
         if creds:
             self.EnsureAuthedWithCredentials(host, **creds)
