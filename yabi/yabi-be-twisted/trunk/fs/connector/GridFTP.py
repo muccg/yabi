@@ -155,7 +155,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         and fifo being the filesystem location of the fifo.
         """
         if DEBUG:
-            print "GridFTP::GetWriteFifo( host:"+host,",",username,",path:",path,",filename:",filename,",fifo:",fifo,",yabiusername:",yabiusername,",creds:",creds,")"
+            print "GridFTP::GetWriteFifo( host:"+host,",username:",username,",path:",path,",filename:",filename,",fifo:",fifo,",yabiusername:",yabiusername,",creds:",creds,")"
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         dst = os.path.join(self._make_remote_url(host,path),filename)
         
