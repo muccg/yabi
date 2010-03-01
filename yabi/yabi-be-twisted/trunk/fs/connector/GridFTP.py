@@ -18,7 +18,7 @@ ENV_CHECK = []
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "gridftp"
 
-DEBUG = False
+DEBUG = True
 
 class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
     """This is the resource that connects to the globus gridftp backends"""
@@ -154,6 +154,8 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         when everything is setup and ready, deferred will be called with (proc, fifo), with proc being the python subprocess Popen object
         and fifo being the filesystem location of the fifo.
         """
+        if DEBUG:
+            print "GridFTP::GetWriteFifo(",host,username,path,filename,fifo,yabiusername,creds,")"
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         dst = os.path.join(self._make_remote_url(host,path),filename)
         
