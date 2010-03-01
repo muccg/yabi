@@ -209,12 +209,14 @@ def put(request):
         in_file = request.FILES['file1']
         files.append((in_file.name, in_file.name, in_file.temporary_file_path()))
         logger.debug(files)
-
+        
         bc = get_backendcredential_for_uri(yabiusername, uri)
         data = [('username', bc.credential.username),
                     ('password', bc.credential.password),
                     ('cert', bc.credential.cert),
                     ('key', bc.credential.key)]
+                    
+        logger.debug("POSTing %s to %s"%(str(data),settings.YABIBACKEND_SERVER))
 
         h = post_multipart(settings.YABIBACKEND_SERVER, resource, data, files)
         return HttpResponse('ok')
