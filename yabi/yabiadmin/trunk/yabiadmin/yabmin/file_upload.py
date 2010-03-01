@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import httplib
 import mimetypes
 import os 
@@ -66,6 +67,7 @@ def encode_multipart_formdata(stream,fields, files):
 		fh=open(fullpath,'rb')
 		while True:
 			dat=fh.read(CHUNKSIZE)
+            logger.debug("CHUNK:",dat)
 			if len(dat)==0:
 				break
 			stream.send(dat)
