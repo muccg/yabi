@@ -222,6 +222,8 @@ def put(request):
                     
         logger.debug("POSTing %s to %s -> %s"%(str(data),settings.YABIBACKEND_SERVER,resource))
 
+        logger.debug("files:%s"%repr(files))
+
         h = post_multipart(settings.YABIBACKEND_SERVER, resource, data, files)
         return HttpResponse('ok')
         
