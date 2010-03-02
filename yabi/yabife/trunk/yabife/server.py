@@ -59,8 +59,11 @@ def wsgiapp(environ, start):
 # lets build a test web proxy object
 from twisted.web import proxy
 
-#class OurProxy(proxy.ReverseProxyResource):
-    #def __init__(self, 
+class OurProxy(proxy.ReverseProxyResource):
+    def __init__(self, *args, **kwargs):
+        print "ARGS:",args
+        print "KWARGS:",kwargs
+        proxy.ReverseProxyResource.__init__(self,*args,**kwargs)
 
 # now we are either the base resource, or we need to create a base resource and then create
 # a child_ chain to the resource.
@@ -92,15 +95,13 @@ else:
             
             if len(adminpath):
                 # our request is not under the admin path
-                if segments[0]=="proxy":
-                    return proxy.ReverseProxyResource("faramir.localdomain",9002,"/admin/")
                 return resource.Resource.locateChild(self,request,segments)
             
             return wsgi.WSGIResource(wsgiapp), asksegments
     
     base = BaseResource()
     
-    base.child_proxy = proxy.ReverseProxyResource
+    base.child_proxy = OurProxy
 
 # Setup default common access logging
 res = log.LogWrapperResource(base)
