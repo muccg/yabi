@@ -204,6 +204,9 @@ class ReverseProxyResourceConnector(object):
 
     def renderHTTP(self,request):
         print "request:",dir(request)
+        for a in dir(request):
+            print a,"=>",getattr(request,a)
+        return server.NOT_DONE_YET
 
     def prender(self, request):
         print "RPRC::render()"
