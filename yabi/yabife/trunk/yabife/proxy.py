@@ -204,7 +204,8 @@ class ReverseProxyResourceConnector:
 
     def renderHTTP(self, request):
         print dir(request)
-        request.headers['host'] = self.connector.name
+        print self.connector.name
+        #request.headers['host'] = self.connector.name
         request.content.seek(0, 0)
         qs = urlparse.urlparse(request.uri)[4]
         path = self.path+'/'.join(request.postpath)
