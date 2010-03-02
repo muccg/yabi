@@ -193,7 +193,7 @@ class ReverseProxyResourceConnector:
     to a different server.
     """
     isLeaf = True
-    implements(resource.IResource)
+    implements(IResource)
 
     def __init__(self, connector, path):
         self.connector = connector
