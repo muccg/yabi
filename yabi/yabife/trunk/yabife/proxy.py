@@ -162,10 +162,9 @@ class ProxyClientFactory(protocol.ClientFactory):
         return ProxyClient(self.command, self.rest, self.version,
                            self.headers, self.stream, self.backchannel)
 
-    def connectionLost(self, reason=connectionDone):
+    def connectionLost(self, reason):
         print "connectionLost",reason
         
-
     def clientConnectionFailed(self, connector, reason):
         err = "<H1>Could not connect</H1>"
         self.backchannel.callback(http.Response( responsecode.BAD_GATEWAY,  {'content-type': http_headers.MimeType('text', 'html')}, err ))
