@@ -92,6 +92,7 @@ else:
             
             if len(adminpath):
                 # our request is not under the admin path
+                print "->",request,segments
                 return resource.Resource.locateChild(self,request,segments)
             
             return wsgi.WSGIResource(wsgiapp), asksegments
