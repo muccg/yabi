@@ -52,7 +52,7 @@ class ProxyStream(SimpleStream):
         
     def read(self):
         #print "read()",self.length,self.truncate
-        print "READ",len(self.buffer)
+        print "READ",len(self.buffer),self.deferred
         
         if self.buffer is None:
             return None
@@ -70,6 +70,7 @@ class ProxyStream(SimpleStream):
         print "WRITE:",len(data)
         
         if self.deferred:
+            print "Deferred"
             self.deferred.callback(data)
             self.deferred = None
             return
