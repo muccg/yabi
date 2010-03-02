@@ -95,8 +95,8 @@ else:
             return wsgi.WSGIResource(wsgiapp), asksegments
     
     base = BaseResource()
-
-internet.TCPServer(9999, channel.HTTPFactory(server.Site(log.LogWrapperResource(proxy.ReverseProxyResource))))
+    
+    base.child_proxy = proxy.ReverseProxyResource
 
 # Setup default common access logging
 res = log.LogWrapperResource(base)
