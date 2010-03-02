@@ -26,6 +26,7 @@ from twisted.web2.client.http import HTTPClientProtocol
 from twisted.internet import reactor, protocol
 from twisted.web2 import resource, server
 from zope.interface import implements, Interface
+from twisted.web2.client import HTTPChannel
 
 # system imports
 import urlparse
@@ -150,7 +151,7 @@ class ReverseProxyRequest(http.Request):
         reactor.connectTCP(self.factory.host, self.factory.port,
                            clientFactory)
 
-class ReverseProxy(http.HTTPChannel):
+class ReverseProxy(HTTPChannel):
     """Implements a simple reverse proxy.
 
     For details of usage, see the file examples/proxy.py"""
