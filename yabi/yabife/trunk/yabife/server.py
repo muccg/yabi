@@ -38,7 +38,7 @@ for setting in ['database_engine', 'database_name', 'database_user', 'database_p
 if config.config[NAME]["debug"]:
     os.environ['DJANGODEBUG'] = '1'
 
-from twisted.web2 import wsgi, resource
+from twisted.web2 import wsgi, resource, channel
 from django.conf import settings
 from django.core.management import setup_environ
 
@@ -61,6 +61,10 @@ from twisted.web import proxy
 
 class ProxyRequest(proxy.ProxyRequest):
     pass
+
+reactor.listenTCP(9999, proxy.ProxyFactory())
+
+
 
 # now we are either the base resource, or we need to create a base resource and then create
 # a child_ chain to the resource.
@@ -90,7 +94,6 @@ else:
             
             if len(adminpath):
                 # our request is not under the admin path
-                print "ADMIN PATH:",adminpath
                 return resource.Resource.locateChild(self,request,segments)
             
             return wsgi.WSGIResource(wsgiapp), asksegments
@@ -115,7 +118,6 @@ class ServerContextFactory:
         ctx.use_privatekey_file(os.path.join(config.config[NAME]['keyfile']))
         return ctx
 
-from twisted.web2 import channel
 internet.TCPServer(config.config[NAME]['port'][1], channel.HTTPFactory(site)).setServiceParent(application)
 if config.config[NAME]["ssl"]:
     internet.SSLServer(config.config[NAME]['sslport'][1], channel.HTTPFactory(site), ServerContextFactory()).setServiceParent(application)
