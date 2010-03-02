@@ -55,7 +55,13 @@ from django.core.handlers.wsgi import WSGIHandler
 
 def wsgiapp(environ, start):
     return WSGIHandler()(environ,start)
-    
+
+# lets build a test web proxy object
+from twisted.web import proxy
+
+class ProxyRequest(proxy.ProxyRequest):
+    pass
+
 # now we are either the base resource, or we need to create a base resource and then create
 # a child_ chain to the resource.
 if not config.config[NAME]["path"] or config.config[NAME]["path"]=="/":
@@ -84,6 +90,7 @@ else:
             
             if len(adminpath):
                 # our request is not under the admin path
+                print "ADMIN PATH:",adminpath
                 return resource.Resource.locateChild(self,request,segments)
             
             return wsgi.WSGIResource(wsgiapp), asksegments
