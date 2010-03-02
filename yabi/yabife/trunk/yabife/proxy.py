@@ -208,7 +208,9 @@ class ReverseProxyResourceConnector(object):
             print a,"=>",getattr(request,a)
         print "CONN:",self.connector.name
         
-        headers = request.headers
+        request.headers.setHeader('host',self.connector.name)
+        
+        
          
         print "HEADERS:",dir(headers)
          
