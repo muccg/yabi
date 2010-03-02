@@ -222,7 +222,7 @@ class ReverseProxyResourceConnector(object):
         
         clientFactory = ProxyClientFactory(request.method, rest, 
                                      request.clientproto, 
-                                     request.getAllHeaders(),
+                                     request.headers,
                                      request.stream.read(),
                                      request)
         self.connector.connect(clientFactory)
