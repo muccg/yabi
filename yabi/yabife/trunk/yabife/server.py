@@ -57,7 +57,7 @@ def wsgiapp(environ, start):
     return WSGIHandler()(environ,start)
 
 # lets build a test web proxy object
-from twisted.web import proxy
+from twisted.web2 import proxy
 
 class OurProxy(proxy.ReverseProxyResource):
     def __init__(self, *args, **kwargs):
