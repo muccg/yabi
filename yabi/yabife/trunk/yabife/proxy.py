@@ -98,7 +98,7 @@ class ProxyClientFactory(protocol.ClientFactory):
 
     def clientConnectionFailed(self, connector, reason):
         err = "<H1>Could not connect</H1>"
-        self.backchannel.callback(http.Response( responsecode.BAD_GATEWAY, err ))
+        self.backchannel.callback(http.Response( responsecode.BAD_GATEWAY,  {'content-type': http_headers.MimeType('text', 'html')}, err ))
 
 
 
