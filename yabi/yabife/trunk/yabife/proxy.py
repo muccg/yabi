@@ -62,21 +62,25 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
             self.sendHeader(header, value)
         self.endHeaders()
         
-        # pump the stream
-        def pump():
-            print "PUMP"
-            dat = self.data.read()
-            print "PUMPED",dat
-            self.transport.write(dat)
-            if dat:
-                reactor.callLater(0,pump)
+        ## pump the stream
+        #def pump():
+            #print "PUMP"
+            #dat = self.data.read()
+            #print "PUMPED",dat
+            #self.transport.write(dat)
+            #if dat:
+                #reactor.callLater(0,pump)
                 
-        reactor.callLater(0,pump)
-        #self.transport.write(self.data)
+        #reactor.callLater(0,pump)
+        ##self.transport.write(self.data)
+    def lineReceived(self, line):
+        print "LR:",line
+        return HTTPPageGetter.lineReceived(self,line)
 
+        
     def rawDataReceived(self, data):
         print "RDR:".data
-        return client.HTTPPageGetter.rawDataReceived(self,data)
+        return HTTPPageGetter.rawDataReceived(self,data)
 
         
         if int(self.status) != 200:
