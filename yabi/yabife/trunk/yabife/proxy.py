@@ -33,9 +33,12 @@ from twisted.internet import defer
 # system imports
 import urlparse
 
+# web1 imports
+from twisted.web.client import HTTPPageGetter
+
 CHUNKSIZE = 8192
 
-class ProxyClient(HTTPClientProtocol):
+class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
     """Used by ProxyClientFactory to implement a simple web proxy."""
 
     def __init__(self, command, rest, version, headers, data, father):
@@ -48,7 +51,7 @@ class ProxyClient(HTTPClientProtocol):
         self.headers = headers
         self.data = data
 
-    def no_connectionMade(self):
+    def connectionMade(self):
         print "CONNECTION MADE"
         print self.command
         print self.rest
