@@ -74,6 +74,37 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
         reactor.callLater(0,pump)
         #self.transport.write(self.data)
 
+    def rawDataReceived(self, data):
+        print "RDR:".data
+        return client.HTTPPageGetter.rawDataReceived(self,data)
+
+        
+        if int(self.status) != 200:
+            # we got an error. TODO: something graceful here
+            self.errordata=data
+            
+        elif self.callback:
+            # hook in here to process chunked updates
+            lines=data.split("\r\n")
+            if DEBUG:
+                print "LINES",[lines]
+            #chunk_size = int(lines[0].split(';')[0],16)
+            #chunk = lines[1]
+            chunk = lines[0]
+            
+            #assert len(chunk)==chunk_size, "Chunked transfer decoding error. Chunk size mismatch"
+            
+            # run the callback in a tasklet!!! Stops scheduler getting into a looped blocking state
+            reporter=tasklet(self.callback)
+            reporter.setup(chunk)
+            reporter.run()
+            
+        else:
+            pass
+        #print "RECV",data
+        return client.HTTPPageGetter.rawDataReceived(self,data)
+
+
     def handleStatus(self, version, code, message):
         self.father.transport.write("%s %s %s\r\n" % (version, code, message))
 
