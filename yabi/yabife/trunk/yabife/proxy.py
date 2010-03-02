@@ -57,7 +57,7 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
         print self.rest
         
         self.sendCommand(self.command, self.rest)
-        for header, value in self.headers.items():
+        for header, value in self.headers.getAllRawHeaders():
             self.sendHeader(header, value)
         self.endHeaders()
         
