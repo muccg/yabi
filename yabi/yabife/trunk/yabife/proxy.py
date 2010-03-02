@@ -206,7 +206,7 @@ class ReverseProxyResourceConnector(object):
         print "request:",dir(request)
         for a in dir(request):
             print a,"=>",getattr(request,a)
-        print "CONN:",self.connector
+        print "CONN:",self.connector.name
             
         return server.NOT_DONE_YET
 
