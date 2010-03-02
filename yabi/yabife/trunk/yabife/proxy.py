@@ -209,11 +209,9 @@ class ReverseProxyResourceConnector(object):
         print "CONN:",self.connector.name
         
         request.headers.setHeader('host',self.connector.name)
+        request.stream.seek(0,0)
         
         
-         
-        print "HEADERS:",dir(headers)
-         
         return server.NOT_DONE_YET
 
     def prender(self, request):
