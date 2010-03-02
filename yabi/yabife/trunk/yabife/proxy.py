@@ -26,7 +26,7 @@ from twisted.web2.client.http import HTTPClientProtocol
 from twisted.internet import reactor, protocol
 from twisted.web2 import resource, server
 from zope.interface import implements, Interface
-from twisted.web2.client import HTTPChannel
+from twisted.web2.client.http import HTTPChannel
 
 # system imports
 import urlparse
