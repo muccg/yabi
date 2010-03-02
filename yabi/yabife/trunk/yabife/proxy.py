@@ -56,6 +56,11 @@ class ProxyStream(SimpleStream):
         if self.buffer is None:
             return None
 
+        if self.buffer = "":
+            # no data... yet... not yet closed
+            d = defer.Deferred()
+            return d
+
         b = self.buffer
         self.buffer = ""
         return b
