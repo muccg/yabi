@@ -42,7 +42,6 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
     """Used by ProxyClientFactory to implement a simple web proxy."""
 
     def __init__(self, command, rest, version, headers, data, father):
-        HTTPPageGetter.__init__(self)
         HTTPClientProtocol.__init__(self)
         self.father = father
         self.command = command
