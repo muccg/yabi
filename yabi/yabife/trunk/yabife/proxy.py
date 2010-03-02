@@ -36,7 +36,40 @@ import urlparse
 # web1 imports
 from twisted.web.client import HTTPPageGetter
 
-CHUNKSIZE = 8192
+from twisted.web2.stream import SimpleStream, ISendfileableStream
+
+class ProxyStream(SimpleStream):
+    implements(ISendfileableStream)
+    """A stream that reads data from a fifo"""
+    CHUNK_SIZE = 2 ** 2 ** 2 ** 2 - 32
+
+    def __init__(self):
+        """
+        Create a buffer stream
+        """
+        self.buffer = None
+        
+    def read(self):
+        #print "read()",self.length,self.truncate
+        
+        if self.buffer is None:
+            return None
+
+        b = self.buffer
+        self.buffer = None
+        return b
+        
+    def write(self, data):
+        if self.buffer is None:
+            self.buffer = data
+        else:
+            self.buffer += data
+            
+
+    def close(self):
+        self.buffer = None
+        SimpleStream.close(self)
+        
 
 class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
     """Used by ProxyClientFactory to implement a simple web proxy."""
@@ -51,6 +84,12 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
         headers.setHeader("connection", "close")
         self.headers = headers
         self.data = data
+        
+        # for sending back to our caller
+        self.forward_headers = {}
+        self.status = None
+        self.backchannel = None
+        self.stream = ProxyStream()
 
     def connectionMade(self):
         print "CONNECTION MADE"
@@ -61,61 +100,28 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
         for header, value in self.headers.getAllRawHeaders():
             self.sendHeader(header, value)
         self.endHeaders()
-        
-        ## pump the stream
-        #def pump():
-            #print "PUMP"
-            #dat = self.data.read()
-            #print "PUMPED",dat
-            #self.transport.write(dat)
-            #if dat:
-                #reactor.callLater(0,pump)
-                
-        #reactor.callLater(0,pump)
-        ##self.transport.write(self.data)
+
     def lineReceived(self, line):
         print "LR:",line
         return HTTPPageGetter.lineReceived(self,line)
 
     def rawDataReceived(self, data):
         print "RDR:",data
+        self.stream.write(data)
         return HTTPPageGetter.rawDataReceived(self,data)
-
-        
-        if int(self.status) != 200:
-            # we got an error. TODO: something graceful here
-            self.errordata=data
-            
-        elif self.callback:
-            # hook in here to process chunked updates
-            lines=data.split("\r\n")
-            if DEBUG:
-                print "LINES",[lines]
-            #chunk_size = int(lines[0].split(';')[0],16)
-            #chunk = lines[1]
-            chunk = lines[0]
-            
-            #assert len(chunk)==chunk_size, "Chunked transfer decoding error. Chunk size mismatch"
-            
-            # run the callback in a tasklet!!! Stops scheduler getting into a looped blocking state
-            reporter=tasklet(self.callback)
-            reporter.setup(chunk)
-            reporter.run()
-            
-        else:
-            pass
-        #print "RECV",data
-        return client.HTTPPageGetter.rawDataReceived(self,data)
-
 
     def handleStatus(self, version, code, message):
         print "handleStatus",version,code,message
+        self.status = version,code,message
 
     def handleHeader(self, key, value):
         print "handleHeader",key,value
+        self.forward_headers = {}
 
     def handleEndHeaders(self):
         print "handleEndHeaders"
+        # start out back connection with our response
+        self.father.callback(http.Response( self.status[1],  self.forward_headers, self.stream ))
     
     def handleResponsePart(self, buffer):
         print "handleResponsePart",buffer
