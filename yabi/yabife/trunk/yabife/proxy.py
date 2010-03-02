@@ -112,7 +112,7 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
         print "handleStatus",version,code,message
 
     def handleHeader(self, key, value):
-        self.father.transport.write("%s: %s\r\n" % (key, value))
+        print "handleHeader",key,value
 
     def handleEndHeaders(self):
         self.father.transport.write("\r\n")
