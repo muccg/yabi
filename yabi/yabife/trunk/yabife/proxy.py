@@ -200,6 +200,7 @@ class ReverseProxyResourceConnector(resource.Resource):
         self.path = path
 
     def render(self, request):
+        print "RPRC::render()"
         request.received_headers['host'] = self.connector.name
         request.content.seek(0, 0)
         qs = urlparse.urlparse(request.uri)[4]
