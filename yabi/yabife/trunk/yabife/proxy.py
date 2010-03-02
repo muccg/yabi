@@ -21,7 +21,7 @@ ReverseProxy is used on the server end.
 """
 
 # twisted imports
-from twisted.web2.client import http
+from twisted.web2 import client, http
 from twisted.internet import reactor, protocol
 from twisted.web2 import resource, server
 from zope.interface import implements, Interface
@@ -30,7 +30,7 @@ from zope.interface import implements, Interface
 import urlparse
 
 
-class ProxyClient(http.HTTPClientProtocol):
+class ProxyClient(client.http.HTTPClientProtocol):
     """Used by ProxyClientFactory to implement a simple web proxy."""
 
     def __init__(self, command, rest, version, headers, data, father):
