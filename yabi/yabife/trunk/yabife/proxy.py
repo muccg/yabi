@@ -220,7 +220,15 @@ class ReverseProxyResourceConnector(object):
         print "path=",path
         print "rest=",rest
         
-        return server.NOT_DONE_YET
+        clientFactory = ProxyClientFactory(request.method, rest, 
+                                     request.clientproto, 
+                                     request.getAllHeaders(),
+                                     request.stream.read(),
+                                     request)
+        self.connector.connect(clientFactory)
+        
+        from twisted.web.server import NOT_DONE_YET
+        return NOT_DONE_YET
 
     def prender(self, request):
         print "RPRC::render()"
