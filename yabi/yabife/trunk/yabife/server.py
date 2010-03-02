@@ -101,7 +101,7 @@ else:
     
     base = BaseResource()
     
-    base.child_proxy = OurProxy
+    base.child_proxy = OurProxy("faramir.localdomain",9002,"/admin/")
 
 # Setup default common access logging
 res = log.LogWrapperResource(base)
