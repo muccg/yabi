@@ -21,7 +21,7 @@ ReverseProxy is used on the server end.
 """
 
 # twisted imports
-from twisted.web2 import http
+from twisted.web2.client import http
 from twisted.internet import reactor, protocol
 from twisted.web2 import resource, server
 from zope.interface import implements, Interface
