@@ -30,7 +30,7 @@ from zope.interface import implements, Interface
 import urlparse
 
 
-class ProxyClient(http.HTTPClient):
+class ProxyClient(http.HTTPClientProtocol):
     """Used by ProxyClientFactory to implement a simple web proxy."""
 
     def __init__(self, command, rest, version, headers, data, father):
