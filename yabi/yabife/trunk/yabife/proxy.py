@@ -77,7 +77,6 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
         print "LR:",line
         return HTTPPageGetter.lineReceived(self,line)
 
-        
     def rawDataReceived(self, data):
         print "RDR:".data
         return HTTPPageGetter.rawDataReceived(self,data)
@@ -110,7 +109,7 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
 
 
     def handleStatus(self, version, code, message):
-        self.father.transport.write("%s %s %s\r\n" % (version, code, message))
+        print "handleStatus",version,code,message
 
     def handleHeader(self, key, value):
         self.father.transport.write("%s: %s\r\n" % (key, value))
