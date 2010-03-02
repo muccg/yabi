@@ -96,7 +96,7 @@ else:
     
     base = BaseResource()
 
-internet.TCPServer(9999, channel.HTTPFactory(server.Site(proxy.ProxyResource)).setServiceParent(application))
+internet.TCPServer(9999, channel.HTTPFactory(server.Site(proxy.ReverseProxyResource)).setServiceParent(application))
 
 # Setup default common access logging
 res = log.LogWrapperResource(base)
