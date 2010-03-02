@@ -141,7 +141,6 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
     def handleResponsePart(self, buffer):
         print "handleResponsePart",len(buffer)
         self.stream.write(buffer)
-        self.stream.close()
 
     def handleResponseEnd(self):
         print "handleResponseEnd"
@@ -163,7 +162,9 @@ class ProxyClientFactory(protocol.ClientFactory):
         return ProxyClient(self.command, self.rest, self.version,
                            self.headers, self.stream, self.backchannel)
 
-    
+    def connectionLost(self, reason=connectionDone):
+        print "connectionLost",reason
+        
 
     def clientConnectionFailed(self, connector, reason):
         err = "<H1>Could not connect</H1>"
