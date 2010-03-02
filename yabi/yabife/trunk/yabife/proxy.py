@@ -28,6 +28,7 @@ from twisted.web2 import resource, server
 from zope.interface import implements, Interface
 from twisted.web2.channel.http import HTTPChannel
 from twisted.web2.iweb import IResource
+from twisted.internet import defer
 
 # system imports
 import urlparse
@@ -81,8 +82,8 @@ class ProxyClient(HTTPClientProtocol):
 class ProxyClientFactory(protocol.ClientFactory):
     """Used by ProxyRequest to implement a simple web proxy."""
 
-    def __init__(self, command, rest, version, headers, stream, father):
-        self.father = father
+    def __init__(self, command, rest, version, headers, stream, backchannel):
+        self.backchannel = backchannel
         self.command = command
         self.rest = rest
         self.headers = headers
@@ -92,14 +93,12 @@ class ProxyClientFactory(protocol.ClientFactory):
 
     def buildProtocol(self, addr):
         return ProxyClient(self.command, self.rest, self.version,
-                           self.headers, self.stream, self.father)
+                           self.headers, self.stream, self.backchannel)
 
 
     def clientConnectionFailed(self, connector, reason):
-        self.father.transport.write("HTTP/1.0 501 Gateway error\r\n")
-        self.father.transport.write("Content-Type: text/html\r\n")
-        self.father.transport.write("\r\n")
-        self.father.transport.write('''<H1>Could not connect</H1>''')
+        err = "<H1>Could not connect</H1>"
+        self.backchannel.callback(http.Response( responsecode.BAD_GATEWAY, err ))
 
 
 
@@ -228,15 +227,16 @@ class ReverseProxyResourceConnector(object):
         print "path=",path
         print "rest=",rest
         
+        backchannel = defer.Deferred()
+        
         clientFactory = ProxyClientFactory(request.method, rest, 
                                      request.clientproto, 
                                      request.headers,
                                      request.stream,
-                                     request)
+                                     backchannel)
         self.connector.connect(clientFactory)
         
-        from twisted.web.server import NOT_DONE_YET
-        return NOT_DONE_YET
+        return backchannel
 
     def prender(self, request):
         print "RPRC::render()"
