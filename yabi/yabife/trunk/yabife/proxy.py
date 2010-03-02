@@ -122,7 +122,7 @@ class ProxyRequest(http.Request):
         reactor.connectTCP(host, port, clientFactory)
 
 
-class Proxy(http.HTTPChannel):
+class Proxy(HTTPChannel):
     """This class implements a simple web proxy.
 
     Since it inherits from twisted.protocols.http.HTTPChannel, to use it you
