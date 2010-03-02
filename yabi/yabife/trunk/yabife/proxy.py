@@ -70,6 +70,8 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
             self.transport.write(dat)
             if dat:
                 reactor.callLater(0,pump)
+                
+        reactor.callLater(0,pump)
         #self.transport.write(self.data)
 
     def handleStatus(self, version, code, message):
