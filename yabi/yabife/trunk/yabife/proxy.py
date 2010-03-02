@@ -121,7 +121,7 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
         return HTTPPageGetter.lineReceived(self,line)
 
     def rawDataReceived(self, data):
-        print "RDR:",data
+        print "RDR:",len(data)
         self.stream.write(data)
         return HTTPPageGetter.rawDataReceived(self,data)
 
