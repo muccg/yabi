@@ -32,6 +32,7 @@ from twisted.web2.iweb import IResource
 # system imports
 import urlparse
 
+CHUNKSIZE = 8192
 
 class ProxyClient(HTTPClientProtocol):
     """Used by ProxyClientFactory to implement a simple web proxy."""
@@ -51,7 +52,14 @@ class ProxyClient(HTTPClientProtocol):
         for header, value in self.headers.items():
             self.sendHeader(header, value)
         self.endHeaders()
-        self.transport.write(self.data)
+        
+        # pump the stream
+        def pump():
+            dat = self.data.read(CHUNKSIZE)
+            self.transport.write(dat)
+            if dat:
+                reactor.callLater(0,pump)
+        #self.transport.write(self.data)
 
     def handleStatus(self, version, code, message):
         self.father.transport.write("%s %s %s\r\n" % (version, code, message))
@@ -73,18 +81,18 @@ class ProxyClient(HTTPClientProtocol):
 class ProxyClientFactory(protocol.ClientFactory):
     """Used by ProxyRequest to implement a simple web proxy."""
 
-    def __init__(self, command, rest, version, headers, data, father):
+    def __init__(self, command, rest, version, headers, stream, father):
         self.father = father
         self.command = command
         self.rest = rest
         self.headers = headers
-        self.data = data
+        self.stream = stream
         self.version = version
 
 
     def buildProtocol(self, addr):
         return ProxyClient(self.command, self.rest, self.version,
-                           self.headers, self.data, self.father)
+                           self.headers, self.stream, self.father)
 
 
     def clientConnectionFailed(self, connector, reason):
@@ -223,7 +231,7 @@ class ReverseProxyResourceConnector(object):
         clientFactory = ProxyClientFactory(request.method, rest, 
                                      request.clientproto, 
                                      request.headers,
-                                     request.stream.read(),
+                                     request.stream,
                                      request)
         self.connector.connect(clientFactory)
         
