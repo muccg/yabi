@@ -74,7 +74,6 @@ class ProxyStream(SimpleStream):
             self.deferred = None
             return
         
-        
         if self.buffer is None:
             self.buffer = data
         else:
@@ -82,6 +81,7 @@ class ProxyStream(SimpleStream):
             
 
     def close(self):
+        print "CLOSE"
         self.buffer = None
         SimpleStream.close(self)
         
