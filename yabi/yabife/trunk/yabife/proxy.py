@@ -47,7 +47,7 @@ class ProxyStream(SimpleStream):
         """
         Create a buffer stream
         """
-        self.buffer = None
+        self.buffer = ""
         
     def read(self):
         #print "read()",self.length,self.truncate
@@ -57,7 +57,7 @@ class ProxyStream(SimpleStream):
             return None
 
         b = self.buffer
-        self.buffer = None
+        self.buffer = ""
         return b
         
     def write(self, data):
