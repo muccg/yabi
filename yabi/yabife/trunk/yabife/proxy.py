@@ -48,6 +48,7 @@ class ProxyStream(SimpleStream):
         Create a buffer stream
         """
         self.buffer = ""
+        self.deferred = None
         
     def read(self):
         #print "read()",self.length,self.truncate
@@ -58,8 +59,8 @@ class ProxyStream(SimpleStream):
 
         if not len(self.buffer):
             # no data... yet... not yet closed
-            d = defer.Deferred()
-            return d
+            self.deferred = defer.Deferred()
+            return self.deferred
 
         b = self.buffer
         self.buffer = ""
@@ -67,6 +68,13 @@ class ProxyStream(SimpleStream):
         
     def write(self, data):
         print "WRITE:",data
+        
+        if self.deferred:
+            self.deferred.callback(data)
+            self.deferred = None
+            return
+        
+        
         if self.buffer is None:
             self.buffer = data
         else:
