@@ -128,8 +128,6 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
 
     def handleResponseEnd(self):
         print "handleResponseEnd"
-        self.transport.loseConnection()
-        self.father.channel.transport.loseConnection()
 
 
 class ProxyClientFactory(protocol.ClientFactory):
