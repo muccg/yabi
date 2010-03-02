@@ -209,8 +209,16 @@ class ReverseProxyResourceConnector(object):
         print "CONN:",self.connector.name
         
         request.headers.setHeader('host',self.connector.name)
-        request.stream.seek(0,0)
         
+        qs = urlparse.urlparse(request.uri)[4]
+        path = self.path+'/'.join(request.postpath)
+        if qs:
+            rest = path + '?' + qs
+        else:
+            rest = path
+            
+        print "path=",path
+        print "rest=",rest
         
         return server.NOT_DONE_YET
 
