@@ -186,7 +186,7 @@ class UNIXConnector:
 def ReverseProxyResource(host, port, path):
     return ReverseProxyResourceConnector(TCPConnector(host, port), path)
 
-class ReverseProxyResourceConnector:
+class ReverseProxyResourceConnector(resource.Resource):
     """Resource that renders the results gotten from another server
 
     Put this resource in the tree to cause everything below it to be relayed
@@ -198,9 +198,6 @@ class ReverseProxyResourceConnector:
     def __init__(self, connector, path):
         self.connector = connector
         self.path = path
-
-    def locateChild(self, request, segments):
-        return self, []
 
     def render(self, request):
         request.received_headers['host'] = self.connector.name
