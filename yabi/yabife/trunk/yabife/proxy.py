@@ -48,7 +48,7 @@ class ProxyClient(HTTPClientProtocol):
         self.headers = headers
         self.data = data
 
-    def connectionMade(self):
+    def no_connectionMade(self):
         print "CONNECTION MADE"
         print self.command
         print self.rest
