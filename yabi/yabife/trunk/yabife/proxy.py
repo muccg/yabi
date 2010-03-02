@@ -199,6 +199,9 @@ class ReverseProxyResourceConnector(resource.Resource):
         self.connector = connector
         self.path = path
 
+    def render_HTTP(self,request):
+        print "request:",dir(request)
+
     def render(self, request):
         print "RPRC::render()"
         request.received_headers['host'] = self.connector.name
