@@ -65,7 +65,7 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
         # pump the stream
         def pump():
             print "PUMP"
-            dat = self.data.read(CHUNKSIZE)
+            dat = self.data.read()
             print "PUMPED",dat
             self.transport.write(dat)
             if dat:
