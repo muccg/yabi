@@ -73,6 +73,8 @@ else:
         def locateChild(self, request, segments):
             # return our local file resource for these segments
             
+            print "REQ",request,segments
+            
             # strip trailing /'s (  [''] )
             adminpath = config.config[NAME]["path"].split("/")
             while adminpath and not adminpath[-1]:
