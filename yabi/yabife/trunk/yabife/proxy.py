@@ -202,7 +202,7 @@ class ReverseProxyResourceConnector(object):
     def locateChild(self,request,segments):
         return self,segments[1:]
 
-    def render_HTTP(self,request):
+    def renderHTTP(self,request):
         print "request:",dir(request)
 
     def prender(self, request):
