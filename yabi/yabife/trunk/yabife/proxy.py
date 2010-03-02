@@ -21,7 +21,7 @@ ReverseProxy is used on the server end.
 """
 
 # twisted imports
-from twisted.web2 import client, http, responsecode
+from twisted.web2 import client, http, responsecode, http_headers
 from twisted.web2.client.http import HTTPClientProtocol
 from twisted.internet import reactor, protocol
 from twisted.web2 import resource, server
