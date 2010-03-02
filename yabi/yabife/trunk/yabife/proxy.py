@@ -186,14 +186,14 @@ class UNIXConnector:
 def ReverseProxyResource(host, port, path):
     return ReverseProxyResourceConnector(TCPConnector(host, port), path)
 
-class ReverseProxyResourceConnector(resource.Resource):
+class ReverseProxyResourceConnector(object):
     """Resource that renders the results gotten from another server
 
     Put this resource in the tree to cause everything below it to be relayed
     to a different server.
     """
     isLeaf = True
-    #implements(IResource)
+    implements(IResource)
 
     def __init__(self, connector, path):
         self.connector = connector
@@ -205,7 +205,7 @@ class ReverseProxyResourceConnector(resource.Resource):
     def render_HTTP(self,request):
         print "request:",dir(request)
 
-    def render(self, request):
+    def prender(self, request):
         print "RPRC::render()"
         request.received_headers['host'] = self.connector.name
         request.content.seek(0, 0)
