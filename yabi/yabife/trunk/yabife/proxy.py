@@ -42,9 +42,9 @@ class ProxyClient(HTTPClientProtocol):
         self.father = father
         self.command = command
         self.rest = rest
-        if headers.has_key("proxy-connection"):
-            del headers["proxy-connection"]
-        headers["connection"] = "close"
+        if headers.hasHeader("proxy-connection"):
+            headers.removeHeader("proxy-connection")
+        headers.setHeader("connection", "close")
         self.headers = headers
         self.data = data
 
