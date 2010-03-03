@@ -134,27 +134,33 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
     def handleStatus(self, version, code, message):
         print "handleStatus",version,code,message
         self.status = version,code,message
+        return HTTPPageGetter.handleStatus(self,version,code,message)
 
     def handleHeader(self, key, value):
         print "handleHeader",key,value
         self.forward_headers.setRawHeaders(key,[value])
+        return HTTPPageGetter.handleHeader(self,key,value)
 
     def handleEndHeaders(self):
         print "handleEndHeaders",self.forward_headers
         # start out back connection with our response
         self.father.callback(http.Response( self.status[1],  self.forward_headers, self.stream ))
+        return HTTPPageGetter.handleEndHeaders(self)
     
     def handleResponsePart(self, buffer):
         print "handleResponsePart",len(buffer)
         self.stream.write(buffer)
+        return HTTPPageGetter.handleResponsePart(self,buffer)
 
     def handleResponseEnd(self):
         print "handleResponseEnd"
         self.stream.finish()
+        return HTTPPageGetter.handleResponseEnd(self)
 
     def connectionLost(self, reason):
         print "connectionLost",reason
         self.stream.close()
+        return HTTPPageGetter.connectionLost(self,reason)
 
 class ProxyClientFactory(protocol.ClientFactory):
     """Used by ProxyRequest to implement a simple web proxy."""
