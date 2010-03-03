@@ -146,7 +146,7 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
         print "handleEndHeaders",self.forward_headers
         # start out back connection with our response
         self.father.callback(http.Response( self.status[1],  self.forward_headers, self.stream ))
-        return HTTPPageGetter.handleEndHeaders(self)
+        #return HTTPPageGetter.handleEndHeaders(self)
     
     def handleResponsePart(self, buffer):
         print "handleResponsePart",len(buffer)
