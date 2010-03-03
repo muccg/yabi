@@ -34,7 +34,8 @@ from twisted.internet import defer
 import urlparse
 
 # web1 imports
-from twisted.web.http import HTTPClient, LineReceiver
+from twisted.web.http import HTTPClient
+from twisted.protocols.basic import LineReceiver
 
 from twisted.web2.stream import SimpleStream, ISendfileableStream, ProducerStream
 from twisted.web2.http_headers import Headers
