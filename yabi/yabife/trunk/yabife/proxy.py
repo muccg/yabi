@@ -54,13 +54,13 @@ class ProxyStream(SimpleStream):
         #print "read()",self.length,self.truncate
         print "READ",len(self.buffer),self.deferred
         
-        if self.buffer is None:
-            return None
-
         if not len(self.buffer):
             # no data... yet... not yet closed
             self.deferred = defer.Deferred()
             return self.deferred
+
+        if self.buffer is None:
+            return None
 
         b = self.buffer
         self.buffer = ""
@@ -148,7 +148,6 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
     def connectionLost(self, reason):
         print "connectionLost",reason
         self.stream.close()
-        self.father.close()
 
 class ProxyClientFactory(protocol.ClientFactory):
     """Used by ProxyRequest to implement a simple web proxy."""
