@@ -36,7 +36,7 @@ import urlparse
 # web1 imports
 from twisted.web.client import HTTPPageGetter
 
-from twisted.web2.stream import SimpleStream, ISendfileableStream
+from twisted.web2.stream import SimpleStream, ISendfileableStream, ProducerStream
 
 class ProxyStream(SimpleStream):
     implements(ISendfileableStream)
@@ -100,7 +100,7 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
         self.forward_headers = {}
         self.status = None
         self.backchannel = None
-        self.stream = ProxyStream()
+        self.stream = ProducerStream()          #ProxyStream()
 
     def connectionMade(self):
         print "CONNECTION MADE"
