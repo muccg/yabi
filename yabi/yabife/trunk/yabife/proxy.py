@@ -34,7 +34,7 @@ from twisted.internet import defer
 import urlparse
 
 # web1 imports
-from twisted.web.http import HTTPClient
+from twisted.web.http import HTTPClient, LineReceiver
 
 from twisted.web2.stream import SimpleStream, ISendfileableStream, ProducerStream
 from twisted.web2.http_headers import Headers
@@ -152,7 +152,10 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
         
         #stream.callback("this ")
         #stream.callback("is a test")
-
+    def dataReceived(self, data):
+        print "dataReceived",data
+        return LineReceiver.dataReceived(self,data)
+        
     def lineReceived(self, line):
         print "LR:",line
         return HTTPClient.lineReceived(self,line)
@@ -189,7 +192,7 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
             self.stream.finish()
             return HTTPClient.handleResponseEnd(self)
         else:
-            print "Continue?",self.transport.read()
+            print "Continue?"
             
         
         
