@@ -316,18 +316,22 @@ class ReverseProxyResourceConnector(object):
         
         print "method",request.method
         print "headers",request.headers
-        ctype = request.headers.getHeader('content-type')
-        print "content-type",ctype
         
-        reader = request.stream.read()
-        print "READER",reader
-        
-        clientFactory = ProxyClientFactory(request.method, rest, 
-                                     request.clientproto, 
-                                     request.headers,
-                                     request.stream,
-                                     backchannel)
-        self.connector.connect(clientFactory)
+        if request.method == 'POST':
+            ctype = request.headers.getHeader('content-type')
+            print "content-type",ctype
+            
+            reader = request.stream.read()
+            print "READER",reader
+            
+            print "STREAM",request.stream
+        else:
+            clientFactory = ProxyClientFactory(request.method, rest, 
+                                        request.clientproto, 
+                                        request.headers,
+                                        request.stream,
+                                        backchannel)
+            self.connector.connect(clientFactory)
         
         return backchannel
 
