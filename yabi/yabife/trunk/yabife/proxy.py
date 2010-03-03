@@ -284,7 +284,7 @@ class ReverseProxyResourceConnector(object):
 
     def locateChild(self,request,segments):
         print "locateChild",request,",",segments
-        return None,segments[1:]
+        return self, server.StopTraversal
 
     def renderHTTP(self,request):
         print "request:",dir(request)
