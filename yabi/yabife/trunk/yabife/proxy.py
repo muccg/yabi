@@ -131,8 +131,8 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
                 
                 if next:
                     next.addCallback(_data_in)
-                else:
-                    self.endHeaders()
+                #else:
+                    #self.endHeaders()
                 
             reader.addCallback(_data_in)
         else:
