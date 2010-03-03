@@ -187,10 +187,11 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
         print "handleResponseEnd"
         if not self.wait_for_continue:
             self.stream.finish()
+            return HTTPClient.handleResponseEnd(self)
         else:
             print "Continue?"
             
-        return HTTPClient.handleResponseEnd(self)
+        
         
     def handleResponse(self,buff):
         print "handleResponse()"
