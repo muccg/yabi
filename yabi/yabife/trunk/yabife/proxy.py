@@ -40,50 +40,31 @@ from twisted.web2.stream import SimpleStream, ISendfileableStream
 
 class ProxyStream(SimpleStream):
     implements(ISendfileableStream)
-    """A stream that reads data from a fifo"""
-    CHUNK_SIZE = 2 ** 2 ** 2 ** 2 - 32
-
+    """A stream that shuffles data"""
     def __init__(self):
-        """
-        Create a buffer stream
-        """
-        self.buffer = ""
-        self.deferred = None
+        self._closed = False
+        self._buff = ""
         
     def read(self):
         #print "read()",self.length,self.truncate
-        print "READ",len(self.buffer),self.deferred
+        print "READ"
         
-        if not len(self.buffer):
-            # no data... yet... not yet closed
-            self.deferred = defer.Deferred()
-            return self.deferred
-
-        if self.buffer is None:
+        if self._closed:
             return None
-
-        b = self.buffer
-        self.buffer = ""
+            
+        b = self._buff
+        self._buff = ""
         return b
         
     def write(self, data):
         print "WRITE:",len(data)
         
-        if self.deferred:
-            print "Deferred"
-            self.deferred.callback(data)
-            self.deferred = None
-            return
-        
-        if self.buffer is None:
-            self.buffer = data
-        else:
-            self.buffer += data
+        self._buff += data
             
 
     def close(self):
         print "CLOSE"
-        self.buffer = None
+        self._closed = True
         SimpleStream.close(self)
         
 
