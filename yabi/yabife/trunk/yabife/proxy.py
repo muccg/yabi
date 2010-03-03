@@ -125,12 +125,12 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
 
     def lineReceived(self, line):
         print "LR:",line
-        return HTTPPageGetter.lineReceived(self,line)
+        return HTTPClient.lineReceived(self,line)
 
     def rawDataReceived(self, data):
         print "RDR:",len(data)
         print data
-        return HTTPPageGetter.rawDataReceived(self,data)
+        return HTTPClient.rawDataReceived(self,data)
 
     def handleStatus(self, version, code, message):
         print "handleStatus",version,code,message
@@ -151,12 +151,12 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
     def handleResponsePart(self, buffer):
         print "handleResponsePart",len(buffer)
         self.stream.write(buffer)
-        return HTTPPageGetter.handleResponsePart(self,buffer)
+        return HTTPClient.handleResponsePart(self,buffer)
 
     def handleResponseEnd(self):
         print "handleResponseEnd"
         self.stream.finish()
-        return HTTPPageGetter.handleResponseEnd(self)
+        return HTTPClient.handleResponseEnd(self)
 
     def connectionLost(self, reason):
         print "connectionLost",reason
