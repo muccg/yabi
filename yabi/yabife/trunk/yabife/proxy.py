@@ -119,7 +119,7 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
             if value==['c, l, o, s, e']:
                 value = ['close']
             print "SEND HEADER",header,value
-            if header=="Expect" and value[0].contains('100') and value[0].contains('continue'):
+            if header=="Expect" and '100' in value[0] and 'continue' in value[0]:
                 self.wait_for_continue = True
             self.sendHeader(header, value)
         self.endHeaders()   
