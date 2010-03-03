@@ -37,6 +37,7 @@ import urlparse
 from twisted.web.client import HTTPPageGetter
 
 from twisted.web2.stream import SimpleStream, ISendfileableStream, ProducerStream
+from twisted.web2.http_headers import Headers
 
 class ProxyStream(SimpleStream):
     implements(ISendfileableStream)
@@ -97,7 +98,7 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
         self.data = data
         
         # for sending back to our caller
-        self.forward_headers = {}
+        self.forward_headers = Headers()
         self.status = None
         self.backchannel = None
         self.stream = ProducerStream()          #ProxyStream()
@@ -133,7 +134,7 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
 
     def handleHeader(self, key, value):
         print "handleHeader",key,value
-        self.forward_headers[key] = value
+        self.forward_headers.setHeaderRaw(key,value)
 
     def handleEndHeaders(self):
         print "handleEndHeaders",self.forward_headers
