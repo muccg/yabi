@@ -116,6 +116,8 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
         for header, value in self.headers.getAllRawHeaders():
             self.sendHeader(header, value)
         self.endHeaders()
+        
+        self.father.callback(http.Response( 200,  {}, "This is a test" ))
 
     def lineReceived(self, line):
         print "LR:",line
