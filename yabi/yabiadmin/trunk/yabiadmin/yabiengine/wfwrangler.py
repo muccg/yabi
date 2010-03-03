@@ -45,7 +45,11 @@ def walk(workflow):
                 prepare_job(job)
             else:
                 logger.info('Job id: %s is %s' % (job.id, job.status))
-
+                # check all the jobs are complete, if so, changes status on workflow
+                incomplete_jobs = Job.objects.filter(workflow=job.workflow).exclude(status=settings.STATUS['complete'])
+                if not len(incomplete_jobs):
+                    job.workflow.status = settings.STATUS['complete']
+                    job.workflow.save()
             
         except YabiJobException,e:
             logger.info("Caught YabiJobException with message: %s" % e)
