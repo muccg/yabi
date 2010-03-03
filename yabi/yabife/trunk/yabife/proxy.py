@@ -106,6 +106,8 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
         self.status = None
         self.backchannel = None
         self.stream = ProducerStream()          #ProxyStream()
+        
+        self.wait_for_continue = False          # for uploads, wait for "100 COntinue" flag
 
     def connectionMade(self):
         print "CONNECTION MADE"
@@ -117,6 +119,8 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
             if value==['c, l, o, s, e']:
                 value = ['close']
             print "SEND HEADER",header,value
+            if header=="Expect" and value[0].contains('100') and value[0].contains('continue'):
+                self.wait_for_continue = True
             self.sendHeader(header, value)
         self.endHeaders()   
         
@@ -181,7 +185,11 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
 
     def handleResponseEnd(self):
         print "handleResponseEnd"
-        self.stream.finish()
+        if not self.wait_for_continue:
+            self.stream.finish()
+        else:
+            print "Continue?"
+            
         return HTTPClient.handleResponseEnd(self)
         
     def handleResponse(self,buff):
