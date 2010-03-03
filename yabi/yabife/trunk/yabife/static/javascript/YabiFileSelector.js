@@ -523,7 +523,10 @@ YabiFileSelector.prototype.humanReadableSizeFromBytes = function(bytes) {
     
     //kB
     humanSize = bytes / (1024);
-    humanSize = humanSize.toFixed(0);
+    humanSize = humanSize.toFixed(1);
+    if (humanSize == 0.0 && bytes > 0) {
+        humanSize = 0.1;
+    }
     humanSize += " kB";
     return humanSize;
 };
