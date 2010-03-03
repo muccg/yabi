@@ -189,7 +189,7 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
             self.stream.finish()
             return HTTPClient.handleResponseEnd(self)
         else:
-            print "Continue?"
+            print "Continue?",self.transport.read()
             
         
         
