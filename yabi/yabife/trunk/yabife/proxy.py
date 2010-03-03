@@ -118,7 +118,10 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
                 value = ['close']
             print "SEND HEADER",header,value
             self.sendHeader(header, value)
-            
+        self.endHeaders()   
+        
+        
+    def dummy_(self):
         # now lets copy any instream down the pipola!
         reader = self.instream.read()
         print "Reader:",reader
