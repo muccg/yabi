@@ -316,6 +316,8 @@ class ReverseProxyResourceConnector(object):
         
         print "method",request.method
         print "headers",request.headers
+        ctype = request.headers.getHeader('content-type')
+        print "content-type",ctype
         
         clientFactory = ProxyClientFactory(request.method, rest, 
                                      request.clientproto, 
