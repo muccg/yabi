@@ -120,8 +120,14 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
         # now lets copy any instream down the pipola!
         reader = self.instream.read()
         print "Reader:",reader
+        
+        if reader:
+            def _data_in(data):
+                print "_data_in",data
             
-        self.endHeaders()
+            reader.addCallback(_data_in)
+        else:
+            self.endHeaders()
         
         #stream = defer.Deferred()
         #self.father.callback(http.Response( 200,  {}, stream ))
