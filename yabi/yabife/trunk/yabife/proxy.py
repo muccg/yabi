@@ -115,6 +115,8 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
         self.sendCommand(self.command, self.rest)
         for header, value in self.headers.getAllRawHeaders():
             print "SEND HEADER",header,value
+            if value==['c, l, o, s, e']:
+                value = ['close']
             self.sendHeader(header, value)
             
         # now lets copy any instream down the pipola!
