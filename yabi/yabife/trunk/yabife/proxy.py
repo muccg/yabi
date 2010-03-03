@@ -88,6 +88,9 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
 
     def __init__(self, command, rest, version, headers, data, father):
         HTTPClientProtocol.__init__(self)
+        
+        print "ProxyClient:",command,",",rest,",",version,",",data,",",father
+        
         self.father = father
         self.command = command
         self.rest = rest
