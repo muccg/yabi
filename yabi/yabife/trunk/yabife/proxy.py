@@ -319,7 +319,7 @@ class ReverseProxyResourceConnector(object):
         ctype = request.headers.getHeader('content-type')
         print "content-type",ctype
         
-        reader = req.stream.read()
+        reader = request.stream.read()
         print "READER",reader
         
         clientFactory = ProxyClientFactory(request.method, rest, 
