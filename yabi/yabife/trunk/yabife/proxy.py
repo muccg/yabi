@@ -124,6 +124,7 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
 
     def rawDataReceived(self, data):
         print "RDR:",len(data)
+        print data
         return HTTPPageGetter.rawDataReceived(self,data)
 
     def handleStatus(self, version, code, message):
