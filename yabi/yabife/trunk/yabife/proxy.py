@@ -34,7 +34,7 @@ from twisted.internet import defer
 import urlparse
 
 # web1 imports
-from twisted.web.client import HTTPPageGetter
+from twisted.web.http import HTTPClient
 
 from twisted.web2.stream import SimpleStream, ISendfileableStream, ProducerStream
 from twisted.web2.http_headers import Headers
@@ -83,7 +83,7 @@ class ProxyStream(SimpleStream):
         SimpleStream.close(self)
         
 
-class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
+class ProxyClient(HTTPClientProtocol,HTTPClient):
     """Used by ProxyClientFactory to implement a simple web proxy."""
 
     def __init__(self, command, rest, version, headers, data, father,factory):
