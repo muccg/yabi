@@ -146,7 +146,7 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
 
     def lineReceived(self, line):
         print "LR:",line
-        return HTTPClient.lineReceived(self,line)
+        #return HTTPClient.lineReceived(self,line)
 
     def rawDataReceived(self, data):
         print "RDR:",len(data)
