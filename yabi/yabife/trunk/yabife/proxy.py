@@ -135,7 +135,7 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
     def handleStatus(self, version, code, message):
         print "handleStatus",version,code,message
         self.status = version,code,message
-        return HTTPPageGetter.handleStatus(self,version,code,message)
+        #return HTTPPageGetter.handleStatus(self,version,code,message)
 
     def handleHeader(self, key, value):
         print "handleHeader",key,value
