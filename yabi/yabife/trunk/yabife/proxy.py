@@ -86,7 +86,7 @@ class ProxyStream(SimpleStream):
 class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
     """Used by ProxyClientFactory to implement a simple web proxy."""
 
-    def __init__(self, command, rest, version, headers, data, father):
+    def __init__(self, command, rest, version, headers, data, father,factory):
         HTTPClientProtocol.__init__(self)
         
         print "ProxyClient:",command,",",rest,",",version,",",data,",",father
@@ -99,6 +99,7 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
         headers.setHeader("connection", "close")
         self.headers = headers
         self.data = data
+        self.factory = factory
         
         # for sending back to our caller
         self.forward_headers = Headers()
@@ -175,7 +176,7 @@ class ProxyClientFactory(protocol.ClientFactory):
 
     def buildProtocol(self, addr):
         return ProxyClient(self.command, self.rest, self.version,
-                           self.headers, self.stream, self.backchannel)
+                           self.headers, self.stream, self.backchannel,self)
 
     def clientConnectionFailed(self, connector, reason):
         err = "<H1>Could not connect</H1>"
