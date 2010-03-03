@@ -106,9 +106,12 @@ def prepare_tasks(job):
 
     paramlist = eval(job.commandparams)
 
+    # if the job does not take any files the task is created here
     if not paramlist:
         # job operates without batchonparam
         t = Task(job=job, command=job.command, status="ready")
+        t.save() # to get id
+        t.working_dir = create_uniq_dirname(job, t)
         t.save()
         
     logger.debug("Prepare_task PARAMLIST: %s"%paramlist)
