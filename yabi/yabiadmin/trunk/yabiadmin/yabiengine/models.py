@@ -312,6 +312,14 @@ def job_save(sender, **kwargs):
             logger.debug(data)
             
             yabistore_update(resource, data)
+
+
+            # check all the jobs are complete, if so, changes status on workflow
+            incomplete_jobs = Job.objects.filter(workflow=job.workflow).exclude(status=settings.STATUS['complete'])
+            if not len(incomplete_jobs):
+                job.workflow.status = settings.STATUS['complete']
+                job.workflow.save()
+            
         elif job.status!="ready" and job.status!="complete":
             if job.stageout:
                 workflow_id = job.workflow.yabistore_id
