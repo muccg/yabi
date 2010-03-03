@@ -140,7 +140,7 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
     def handleHeader(self, key, value):
         print "handleHeader",key,value
         self.forward_headers.setRawHeaders(key,[value])
-        return HTTPPageGetter.handleHeader(self,key,value)
+        #return HTTPPageGetter.handleHeader(self,key,value)
 
     def handleEndHeaders(self):
         print "handleEndHeaders",self.forward_headers
