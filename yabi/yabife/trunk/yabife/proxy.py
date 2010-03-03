@@ -98,10 +98,10 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
             self.sendHeader(header, value)
         self.endHeaders()
         
-        stream = defer.Deferred()
-        self.father.callback(http.Response( 200,  {}, stream ))
+        #stream = defer.Deferred()
+        #self.father.callback(http.Response( 200,  {}, stream ))
         
-        stream.callback("this ")
+        #stream.callback("this ")
         #stream.callback("is a test")
 
     def lineReceived(self, line):
