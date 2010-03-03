@@ -46,6 +46,7 @@ class FilePutResource(resource.PostableResource):
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided in GET parameters\n")
 
         uri = request.args['uri'][0] if 'uri' in request.args else None             # None means we need to look in the mime 
+        yabiusername = request.args['yabiusername'][0] if 'yabiusername' in request.args else None
         scheme, address = parse_url(uri)
         
         # compile any credentials together to pass to backend
@@ -98,7 +99,7 @@ class FilePutResource(resource.PostableResource):
                     """Override this class and put in our own file open methods"""
                     def open_write_stream(self, filename):
                         #print "Uploading file:",filename
-                        self.procproto, fifo = bend.GetWriteFifo(hostname,username,path,filename, creds=creds)
+                        self.procproto, fifo = bend.GetWriteFifo(hostname,username,path,filename, yabiusername=yabiusername,creds=creds)
                         self.fileopen = no_intr(open,fifo,"wb")
                         
                     def close_write_stream(self):
