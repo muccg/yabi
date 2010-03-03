@@ -157,6 +157,9 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
         print "handleResponseEnd"
         self.stream.finish()
         return HTTPClient.handleResponseEnd(self)
+        
+    def handleResponse(self,buff):
+        print "handleResponse(",buff,")"
 
     def connectionLost(self, reason):
         return HTTPClient.connectionLost(self, reason)
