@@ -95,7 +95,7 @@ else:
     
     base = BaseResource()
     
-    base.child_proxy = proxy.ReverseProxyResource("www.google.com",80,"")
+    base.child_proxy = proxy.ReverseProxyResource("www.google.com",80,"/")
 
 # Setup default common access logging
 res = log.LogWrapperResource(base)
