@@ -95,7 +95,7 @@ else:
     
     base = BaseResource()
     
-    base.child_proxy = proxy.ReverseProxyResource("faramir.localdomain",9002,"/admin/")
+    base.child_proxy = proxy.ReverseProxyResource("faramir.localdomain",9002,"/")
 
 # Setup default common access logging
 res = log.LogWrapperResource(base)
