@@ -126,7 +126,11 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
                 print "_data_in",data
                 self.transport.write(data)
                 
-                print "reader is now",self.instream.read()
+                next = self.instream.read()
+                print "reader is now",next
+                
+                if next:
+                    next.addCallback(_data_in)
                 
             reader.addCallback(_data_in)
         else:
