@@ -118,7 +118,7 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
             self.sendHeader(header, value)
             
         # now lets copy any instream down the pipola!
-        reader = instream.read()
+        reader = self.instream.read()
         print "Reader:",reader
             
         self.endHeaders()
