@@ -35,6 +35,7 @@ def build(username, workflow_json):
             default_stageout = user.default_stageout
             
         workflow.stageout = "%s%s/" % (default_stageout, workflow.name)
+        workflow.status = settings.STATUS['ready']
         workflow.save()
         backendhelper.mkdir(workflow.user.name, workflow.stageout)
 

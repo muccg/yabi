@@ -25,7 +25,7 @@ ${self.block_content()}<%def name="block_content()">
         <td>${w.start_time}</td>
         <td>${w.end_time}</td>
         <td>${w.log_file_path}</td>
-        <td>${w.status}</td>
+        <td><font color="${w.get_status_colour(w.status)}">${w.status}</font></td>
         <td>${w.edit_link()}</td>
     </tr>
 </table>
