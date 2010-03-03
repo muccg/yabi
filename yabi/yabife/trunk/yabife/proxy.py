@@ -160,7 +160,6 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
     def connectionLost(self, reason):
         print "connectionLost",reason
         self.stream.close()
-        return HTTPPageGetter.connectionLost(self,reason)
 
 class ProxyClientFactory(protocol.ClientFactory):
     """Used by ProxyRequest to implement a simple web proxy."""
