@@ -314,6 +314,9 @@ class ReverseProxyResourceConnector(object):
         
         backchannel = defer.Deferred()
         
+        print "method",request.method
+        print "headers",request.headers
+        
         clientFactory = ProxyClientFactory(request.method, rest, 
                                      request.clientproto, 
                                      request.headers,
