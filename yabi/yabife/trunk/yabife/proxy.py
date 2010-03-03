@@ -54,6 +54,7 @@ class ProxyStream(SimpleStream):
             
         b = self._buff
         self._buff = ""
+        print "Returning: <",b,">"
         return b
         
     def write(self, data):
