@@ -26,7 +26,7 @@ if "DJANGODEV" in os.environ:
     DEBUG = True if os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug")) else ("DJANGODEBUG" in os.environ)
     TEMPLATE_DEBUG = DEBUG
     DATABASE_ENGINE = 'postgresql_psycopg2'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
-    DATABASE_NAME = 'dev_yabmin'            # Or path to database file if using sqlite3.
+    DATABASE_NAME = 'dev_yabi'            # Or path to database file if using sqlite3.
     DATABASE_USER = 'yabminapp'             # Not used with sqlite3.
     DATABASE_PASSWORD = 'yabminapp'         # Not used with sqlite3.
     DATABASE_HOST = 'eowyn.localdomain'             # Set to empty string for localhost. Not used with sqlite3.
