@@ -336,7 +336,7 @@ class ReverseProxyResourceConnector(object):
         backchannel = defer.Deferred()
         
         print "method",request.method
-        print "headers",request.headers
+        print "headers",request.headers.getAllRawHeaders()
         
         if request.method == 'POST':
             ctype = request.headers.getHeader('content-type')
