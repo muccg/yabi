@@ -117,7 +117,11 @@ class ProxyClient(HTTPClientProtocol,HTTPPageGetter):
             self.sendHeader(header, value)
         self.endHeaders()
         
-        self.father.callback(http.Response( 200,  {}, "This is a test" ))
+        stream = defer.Deferred()
+        self.father.callback(http.Response( 200,  {}, stream ))
+        
+        stream.callback("this ")
+        stream.callback("is a test")
 
     def lineReceived(self, line):
         print "LR:",line
