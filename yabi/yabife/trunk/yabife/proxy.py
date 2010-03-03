@@ -298,8 +298,6 @@ class ReverseProxyResourceConnector(object):
 
     def renderHTTP(self,request):
         print "request:",dir(request)
-        for a in dir(request):
-            print a,"=>",getattr(request,a)
         print "CONN:",self.connector.name
         
         request.headers.setHeader('host',self.connector.name)
