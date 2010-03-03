@@ -86,7 +86,7 @@ class ProxyStream(SimpleStream):
 class ProxyClient(HTTPClientProtocol,HTTPClient):
     """Used by ProxyClientFactory to implement a simple web proxy."""
 
-    def __init__(self, command, rest, version, headers, data, father,factory):
+    def __init__(self, command, rest, version, headers, instream, father,factory):
         HTTPClientProtocol.__init__(self)
         
         print "ProxyClient:",command,",",rest,",",version,",",data,",",father
@@ -98,7 +98,7 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
             headers.removeHeader("proxy-connection")
         headers.setHeader("connection", "close")
         self.headers = headers
-        self.data = data
+        self.instream = instream
         self.factory = factory
         
         # for sending back to our caller
@@ -114,6 +114,7 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
         
         self.sendCommand(self.command, self.rest)
         for header, value in self.headers.getAllRawHeaders():
+            print "SEND HEADER",header,value
             self.sendHeader(header, value)
         self.endHeaders()
         
@@ -325,6 +326,13 @@ class ReverseProxyResourceConnector(object):
             print "READER",reader
             
             print "STREAM",request.stream
+            
+            clientFactory = ProxyClientFactory(request.method, rest, 
+                                        request.clientproto, 
+                                        request.headers,
+                                        request.stream,
+                                        backchannel)
+            self.connector.connect(clientFactory)
         else:
             clientFactory = ProxyClientFactory(request.method, rest, 
                                         request.clientproto, 
