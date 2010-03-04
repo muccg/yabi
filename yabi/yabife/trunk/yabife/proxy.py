@@ -164,6 +164,7 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
         print "connectionLost",reason
         self.stream.close()
 
+@class_annotate
 class ProxyClientFactory(protocol.ClientFactory):
     """Used by ProxyRequest to implement a simple web proxy."""
 
