@@ -522,7 +522,7 @@ class UploadClient(LineReceiver):
     def dataReceived(self, data):
         print "dataReceived",data
 
-    def connectionLost(self, reason=connectionDone):
+    def connectionLost(self, reason=None):
         print "connectionLost",reason
 
 
