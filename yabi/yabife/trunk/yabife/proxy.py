@@ -40,50 +40,6 @@ from twisted.protocols.basic import LineReceiver
 from twisted.web2.stream import SimpleStream, ISendfileableStream, ProducerStream
 from twisted.web2.http_headers import Headers
 
-class ProxyStream(SimpleStream):
-    implements(ISendfileableStream)
-    """A stream that shuffles data"""
-    def __init__(self):
-        self._closed = False
-        self._buff = ""
-        self.deferred = None
-        
-    def read(self):
-        #print "read()",self.length,self.truncate
-        print "READ"
-        
-        if self._closed:
-            return None
-            
-        if self._buff:
-            b = self._buff
-            self._buff = ""
-            return b
-            
-        # no data ready yet...
-        deferred = self.deferred = defer.Deferred()
-        return deferred
-        
-    def write(self, data):
-        print "WRITE:",len(data)
-        
-        self._buff += data
-        
-        if self.deferred:
-            d = self.deferred
-            self.deferred = None
-            b = self._buff
-            self._buff = None
-            d.callback(b)
-            
-            
-
-    def close(self):
-        print "CLOSE"
-        self._closed = True
-        SimpleStream.close(self)
-        
-
 class ProxyClient(HTTPClientProtocol,HTTPClient):
     """Used by ProxyClientFactory to implement a simple web proxy."""
 
