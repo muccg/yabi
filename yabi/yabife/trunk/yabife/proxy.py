@@ -320,6 +320,7 @@ class UploadClient(LineReceiver):
         
         self.father = father
         self.command = command
+        self.version = version
         self.rest = rest
         if headers.hasHeader("proxy-connection"):
             headers.removeHeader("proxy-connection")
@@ -337,7 +338,7 @@ class UploadClient(LineReceiver):
     def connectionMade(self):
         print "connectionMade"
         # send the query
-        self.sendLine(command+" "+rest+" HTTP/%d.%d"%version)
+        self.sendLine(self.command+" "+self.rest+" HTTP/%d.%d"%self.version)
         for header, value in self.headers.getAllRawHeaders():
             print "SEND HEADER",header,value
             if header=="Expect" and '100' in value[0] and 'continue' in value[0]:
