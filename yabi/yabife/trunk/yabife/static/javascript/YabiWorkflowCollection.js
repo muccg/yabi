@@ -84,7 +84,7 @@ function YabiWorkflowCollection() {
     this.statusFilterContainer.className = "filterStatus";
     this.statusFilterContainer.appendChild( document.createTextNode("Status: ") );
     
-    var statuses = ['All', 'Running', 'Completed'];
+    var statuses = ['All', 'Ready', 'Complete'];
     this.statusEls = [];
     var tmpItem;
     for (var index in statuses) {
