@@ -599,7 +599,7 @@ class ReverseProxyResourceConnector(object):
             def upload_tasklet(req, channel):
                 """Tasklet to do file upload"""
                 ctype = req.headers.getHeader('content-type')
-                assert ctype.mediaType == 'multipart' and ctype.mediaSubtype == 'form-data')
+                assert ctype.mediaType == 'multipart' and ctype.mediaSubtype == 'form-data'
                 boundary = ctype.params.get('boundary')
                 if boundary is None:
                     return channel.callback( http.HTTPError( http.StatusResponse( responsecode.BAD_REQUEST, "Boundary not specified in Content-type.")))
