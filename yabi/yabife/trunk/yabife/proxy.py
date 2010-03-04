@@ -312,19 +312,120 @@ class UNIXConnector:
 def ReverseProxyResource(host, port, path):
     return ReverseProxyResourceConnector(TCPConnector(host, port), path)
 
+@class_annotate
+class UploadClient(HTTPClient):
+    """Used by ProxyClientFactory to implement a simple web proxy."""
+
+    _finished = False
+
+    def __init__(self, command, rest, version, headers, instream, father,factory):
+        print "UploadClient:",command,",",rest,",",version,",",instream,",",father
+        
+        self.father = father
+        self.command = command
+        self.rest = rest
+        if headers.hasHeader("proxy-connection"):
+            headers.removeHeader("proxy-connection")
+        headers.setHeader("connection", "close")
+        self.headers = headers
+        self.instream = instream
+        self.factory = factory
+        
+        # for sending back to our caller
+        self.forward_headers = Headers()
+        self.status = None
+        self.backchannel = None
+        self.stream = ProducerStream()          #ProxyStream()
+        
+        self.wait_for_continue = False          # for uploads, wait for "100 COntinue" flag
+
+    def connectionMade(self):
+        print "CONNECTION MADE"
+        print self.command
+        print self.rest
+        
+        self.sendCommand(self.command, self.rest)
+        for header, value in self.headers.getAllRawHeaders():
+            print "SEND HEADER",header,value
+            if header=="Expect" and '100' in value[0] and 'continue' in value[0]:
+                self.wait_for_continue = True
+            if header!="Connection":
+                self.sendHeader(header, value)
+        self.endHeaders()   
+    
+    def dataReceived(self, data):
+        print "dataReceived",data
+        return LineReceiver.dataReceived(self,data)
+        
+    def lineReceived(self, line):
+        print "LR:",line
+        return HTTPClient.lineReceived(self,line)
+
+    def rawDataReceived(self, data):
+        print "RDR:",data
+        print data
+        return HTTPClient.rawDataReceived(self,data)
+
+    def handleStatus(self, version, code, message):
+        print "handleStatus",version,code,message
+        self.status = version,code,message
+        #return HTTPPageGetter.handleStatus(self,version,code,message)
+
+    def handleHeader(self, key, value):
+        print "handleHeader",key,value
+        self.forward_headers.setRawHeaders(key,[value])
+        #return HTTPPageGetter.handleHeader(self,key,value)
+
+    def handleEndHeaders(self):
+        print "handleEndHeaders",self.forward_headers
+        # start out back connection with our response
+        self.father.callback(http.Response( self.status[1],  self.forward_headers, self.stream ))
+        #return HTTPPageGetter.handleEndHeaders(self)
+    
+    def handleResponsePart(self, buffer):
+        print "handleResponsePart",len(buffer)
+        self.stream.write(buffer)
+        return HTTPClient.handleResponsePart(self,buffer)
+
+    def handleResponseEnd(self):
+        print "handleResponseEnd"
+        if not self.wait_for_continue:
+            print "Stream Finish"
+            self.stream.finish()
+            return HTTPClient.handleResponseEnd(self)
+        else:
+            print "Continue?"
+            
+        
+        
+    def handleResponse(self,buff):
+        print "handleResponse()"
+
+    def connectionLost(self, reason):
+        return HTTPClient.connectionLost(self, reason)
+        print "connectionLost",reason
+        self.stream.close()
+
+
 class UploadClientFactory(protocol.ClientFactory):
     """Used by ProxyRequest to implement a simple web proxy."""
 
-    def __init__(self):
-        pass
+    def __init__(self, command, rest, version, headers, stream, backchannel):
+        self.backchannel = backchannel
+        self.command = command
+        self.rest = rest
+        self.headers = headers
+        self.stream = stream
+        self.version = version
 
 
     def buildProtocol(self, addr):
-        return ProxyClient(self.command, self.rest, self.version,
+        return UploadClient(self.command, self.rest, self.version,
                            self.headers, self.stream, self.backchannel,self)
 
     def clientConnectionFailed(self, connector, reason):
-        assert False
+        err = "<H1>Could not connect</H1>"
+        self.backchannel.callback(http.Response( responsecode.BAD_GATEWAY,  {'content-type': http_headers.MimeType('text', 'html')}, err ))
 
 
 class ReverseProxyResourceConnector(object):
@@ -376,16 +477,12 @@ class ReverseProxyResourceConnector(object):
             
             def tasklet():
                 # make an outgoing client connection for the proxy
-                print "!",self.connector.connect(UploadClientFactory)
-                
-                reader = request.stream.read()
-                print "READER:",reader
-                dat = WaitForDeferredData(reader)
-                print "DAT:",dat
-                reader = request.stream.read()
-                print "READER:",reader
-                dat = WaitForDeferredData(reader)
-                print "DAT:",dat
+                clientFactory = UploadClientFactory(request.method, rest, 
+                                        request.clientproto, 
+                                        request.headers,
+                                        request.stream,
+                                        backchannel)
+                self.connector.connect(clientFactory)
                 
                 
             tl = stackless.tasklet(tasklet)()
