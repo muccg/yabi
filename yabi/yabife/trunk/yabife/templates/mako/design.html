@@ -15,6 +15,7 @@ function initWorkflow() {
     workflow = new YabiWorkflow(true);
 % if reuseId:
     workflow.hydrate(${reuseId});
+    workflow.workflowId = undefined;
 % endif
     
     var updateFilter = function(job) {
