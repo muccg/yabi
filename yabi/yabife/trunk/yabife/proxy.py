@@ -69,7 +69,7 @@ def WaitForDeferredData(deferred):
     deferred.addCallback(_cont)     # trigger our callback on data
     
     while not cont[0]:
-        schedule()                  # sleep the thread until we are asked to continue
+        stackless.schedule()                  # sleep the thread until we are asked to continue
         
     if err[0]:
         raise DeferredError, err[0]
