@@ -354,6 +354,8 @@ class ReverseProxyResourceConnector(object):
             
             print "STREAM",request.stream
             print "request",dir(request)
+            print "method",request.method
+            print "headers",[str(x) for x in request.headers.getAllRawHeaders()]
             
             # start a stackless threadlet to pump upload proxy
             
