@@ -332,7 +332,9 @@ class UploadClient(LineReceiver):
         self.status = None
         self.backchannel = None
         
-        stackless.schedule()
+        while not self.transport:
+            print self.transport
+            stackless.schedule()
         
         # send the query
         self.sendLine(command+" "+rest+" HTTP/%d.%d"%version)
