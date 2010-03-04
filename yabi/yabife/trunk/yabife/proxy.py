@@ -170,7 +170,7 @@ class ProxyClient(HTTPClient):
         """
         if not self._finished:
             self._finished = True
-            self.father.finish()
+            self.factory.finish()
             self.transport.loseConnection()
 
 @class_annotate
