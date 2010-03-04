@@ -356,7 +356,7 @@ class UploadClient(LineReceiver):
         """
         print "lineReceived",line
 
-
+@class_annotate
 class UploadClientFactory(protocol.ClientFactory):
     """Used by ProxyRequest to implement a simple web proxy."""
 
@@ -433,6 +433,8 @@ class ReverseProxyResourceConnector(object):
                                         request.stream,
                                         backchannel)
                 self.connector.connect(clientFactory)
+                while True:
+                    stackless.schedule()
                 
                 
             tl = stackless.tasklet(tasklet)()
