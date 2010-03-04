@@ -42,6 +42,8 @@ from twisted.web2.http_headers import Headers
 
 from debug import class_annotate
 
+import stackless
+
 @class_annotate
 class ProxyClient(HTTPClient):
     """Used by ProxyClientFactory to implement a simple web proxy."""
