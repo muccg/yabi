@@ -332,7 +332,7 @@ class UploadClient(LineReceiver):
         self.status = None
         self.backchannel = None
    
-        
+        return
         # send the query
         self.sendLine(command+" "+rest+" HTTP/%d.%d"%version)
         for header, value in self.headers.getAllRawHeaders():
