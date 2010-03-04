@@ -49,7 +49,7 @@ def WaitForDeferredData(deferred):
     If an errback chain is called, it raises an DeferredError exception with the contents as the error 
     passthrough (probably a Failure intsance)
     """
-    if not isinstance(deferred,Deferred):
+    if not isinstance(deferred,defer.Deferred):
         return deferred
     
     cont = [False]                  # continue?
