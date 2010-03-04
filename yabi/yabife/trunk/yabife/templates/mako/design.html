@@ -1,39 +1,134 @@
-var a;
-function YabiWorkflow(b){this.payload={};this.isPropagating=false;this.tags=[];this.attachedProxies=[];function c(e){if(e<10)e="0"+e;return e}var d=new Date;if(b)this.prefillName=this.name="unnamed ("+d.getFullYear()+"-"+c(d.getMonth())+"-"+c(d.getDate())+" "+c(d.getHours())+":"+c(d.getMinutes())+")";this.status="Design";this.selectedJob=null;this.editable=true;if(b!==null&&b===false)this.editable=false;this.jobs=[];this.containerEl=document.createElement("div");this.containerEl.className="workflowContainer";this.mainEl=
-document.createElement("div");if(this.editable){this.submitEl=document.createElement("button");this.submitEl.appendChild(document.createTextNode("run"));this.submitEl.id="submitButton";this.submitEl.className="fakeButton largeButton";this.mainEl.appendChild(this.submitEl);this.nameEl=document.createElement("input");this.nameEl.className="workflowName";this.nameEl.id="titleDiv";this.nameEl.value=this.name;YAHOO.util.Event.addListener(this.nameEl,"blur",this.nameBlurCallback,this);YAHOO.util.Event.addListener(this.nameEl,
-"keyup",this.nameChangeCallback,this);YAHOO.util.Event.addListener(this.nameEl,"change",this.nameChangeCallback,this);YAHOO.util.Event.addListener(this.nameEl,"click",this.nameFocusCallback,this)}else{this.nameEl=document.createElement("div");this.nameEl.className="workflowName";this.nameEl.id="titleDiv"}this.mainEl.appendChild(this.nameEl);this.tagEl=document.createElement("div");this.tagEl.className="tagListContainer";this.tagEl.appendChild(document.createTextNode("Tags: "));this.tagListEl=document.createElement("span");
-this.tagListEl.className="tagList";this.tagEl.appendChild(this.tagListEl);this.tagInputEl=document.createElement("input");this.tagInputEl.className="displayNone";this.tagEl.appendChild(this.tagInputEl);this.tagAddLink=new Image;this.tagAddLink.className="tagAddLink";this.tagAddLink.src=appURL+"static/images/addtag.png";YAHOO.util.Event.addListener(this.tagAddLink,"click",this.addTagCallback,this);this.tagEl.appendChild(this.tagAddLink);this.tagHintDiv=document.createElement("div");this.tagHintDiv.className=
-"displayNone";this.tagCancelEl=document.createElement("span");this.tagCancelEl.className="fakeButton";this.tagCancelEl.appendChild(document.createTextNode("cancel"));YAHOO.util.Event.addListener(this.tagCancelEl,"click",this.cancelTagsCallback,this);this.tagSaveEl=document.createElement("span");this.tagSaveEl.className="fakeButton";this.tagSaveEl.appendChild(document.createTextNode("save"));YAHOO.util.Event.addListener(this.tagSaveEl,"click",this.saveTagsCallback,this);this.tagHintDiv.appendChild(this.tagCancelEl);
-this.tagHintDiv.appendChild(this.tagSaveEl);this.tagEl.appendChild(this.tagHintDiv);this.tagHelpEl=document.createElement("div");this.tagHelpEl.className="tagHelp";d=new Image;d.src=appURL+"static/images/tagHelp.png";this.tagHelpEl.appendChild(d);this.tagEl.appendChild(this.tagHelpEl);YAHOO.util.Event.addListener(this.tagHelpEl,"click",function(e,f){e=new YAHOO.util.Anim(f.tagHelpEl,{opacity:{to:0}},0.5,YAHOO.util.Easing.easeOut);e.onComplete.subscribe(function(){this.getEl().style.display="none"});
-e.animate()},this);this.mainEl.appendChild(this.tagEl);if(!this.editable){this.toolbarEl=document.createElement("div");this.toolbarEl.className="workflowToolbar";this.mainEl.appendChild(this.toolbarEl);this.reuseButtonEl=document.createElement("span");this.reuseButtonEl.className="fakeButton";this.reuseButtonEl.appendChild(document.createTextNode("re-use"));YAHOO.util.Event.addListener(this.reuseButtonEl,"click",this.reuseCallback,this);this.toolbarEl.appendChild(this.reuseButtonEl)}this.startEl=
-document.createElement("div");this.startEl.appendChild(document.createTextNode("start"));this.startEl.className="workflowStartBookend";this.mainEl.appendChild(this.startEl);this.hintEl=document.createElement("div");this.hintEl.className="workflowHint";this.editable&&this.mainEl.appendChild(this.hintEl);this.mainEl.appendChild(this.containerEl);this.endEl=document.createElement("div");this.endEl.appendChild(document.createTextNode("end"));this.endEl.className="workflowEndBookend";this.mainEl.appendChild(this.endEl);
-if(this.editable)this.dd=new YAHOO.util.DDTarget(this.containerEl);this.optionsEl=document.createElement("div");this.optionsEl.className="jobOptionsContainer";if(!b){this.fileOutputsEl=document.createElement("div");this.fileOutputsEl.className="fileOutputs";b=document.createElement("h1");b.appendChild(document.createTextNode("File outputs"));this.fileOutputsEl.appendChild(b);this.fileOutputsSelector=new YabiFileSelector(null,true);this.fileOutputsSelector.homeEl.style.display="none";this.fileOutputsSelector.uploadEl.style.display=
-"none";this.fileOutputsEl.appendChild(this.fileOutputsSelector.containerEl);this.fileOutputsEl.style.display="none";this.fileOutputsSelector.fileListEl.style.height="180px";this.fileOutputsSelector.containerEl.style.marginLeft="4px"}b=new YAHOO.util.KeyListener(this.tagInputEl,{ctrl:false,keys:13},{fn:this.saveTags,scope:this,correctScope:true});b.enable()}a=YabiWorkflow.prototype;
-a.setStatus=function(b){this.status=b;if(!this.editable)if(this.status!=="Completed"&&this.status!=="Error"){if(YAHOO.lang.isUndefined(this.loadingEl)||this.loadingEl===null){this.loadingEl=document.createElement("div");this.loadingEl.className="workflowLoading";b=new Image;b.src=appURL+"static/images/processing.gif";this.loadingEl.appendChild(b);this.loadingTextEl=document.createElement("span")}this.loadingTextEl.innerHTML="workflow running, waiting for completion...";this.loadingEl.appendChild(this.loadingTextEl);
-this.mainEl.appendChild(this.loadingEl)}else if(!(YAHOO.lang.isUndefined(this.loadingEl)||this.loadingEl===null)){this.mainEl.removeChild(this.loadingEl);this.loadingEl=null}};
-a.addJob=function(b,c,d){if(!this.processing){this.processing=true;this.hintEl.style.display="none";var e;b=new YabiJob(b,this.jobs.length+1,c);b.editable=this.editable;if(!this.editable){b.inputsEl.style.display="none";b.outputsEl.style.display="none"}b.workflow=this;this.jobs.push(b);b.hydrate();if(this.editable){c=document.createElement("div");c.setAttribute("class","destroyDiv");e=new Image;e.src=appURL+"static/images/delnode.png";c.appendChild(e);b.jobEl.appendChild(c);e={target:this,object:b};
-YAHOO.util.Event.addListener(c,"click",this.delJobCallback,e);YAHOO.util.Event.addListener(b.containerEl,"click",this.selectJobCallback,e);b.dd=new YAHOO.util.DDProxy(b.containerEl);b.dd.startDrag=this.startDragJobCallback;b.dd.endDrag=this.endDragJobCallback;b.dd.onDrag=this.onDragJobCallback;b.dd.onDragOver=this.onDragOverJobCallback;this.selectJob(b)}else{e={target:this,object:b};YAHOO.util.Event.addListener(b.containerEl,"click",this.selectJobCallback,e);this.selectJob(null)}if(YAHOO.lang.isUndefined(d))d=
-true;if(d)b.containerEl.style.opacity=0;this.containerEl.appendChild(b.containerEl);this.optionsEl.appendChild(b.optionsEl);if(d){d=new YAHOO.util.Anim(b.containerEl,{opacity:{from:0,to:1}},1,YAHOO.util.Easing.Linear);d.animate()}this.processing=false;return b}};
-a.deleteJob=function(b){if(!this.deleting){this.deleting=true;var c=1,d=-1;if(b==this.selectedJob){this.selectedJob=null;this.afterSelectJob(null)}for(var e in this.jobs)if(this.jobs[e]==b)d=e;else{this.jobs[e].jobId=c++;this.jobs[e].updateTitle()}this.jobs.splice(d,1);if(this.jobs.length===0)this.hintEl.style.display="block";b.destroy();this.containerEl.removeChild(b.containerEl);this.optionsEl.removeChild(b.optionsEl);YAHOO.util.Event.purgeElement(b.containerEl);this.propagateFiles();this.deleting=
-false}};a.attachProxy=function(b){this.attachedProxies.push(b)};
-a.propagateFiles=function(b){if(!this.isPropagating){var c;this.isPropagating=true;var d=[],e=[],f=false;if(YAHOO.lang.isUndefined(b))f=true;for(var g in this.jobs){f&&this.jobs[g].optionallyConsumeFiles(d,false);if(this.jobs[g]==b)f=true;c=this.jobs[g].emittedFiles().slice();if(c.length>0)for(var h in c)if(!e.hasOwnProperty(c[h])){d.push(c[h]);e[c[h]]=1}}this.isPropagating=false;!YAHOO.lang.isUndefined(this.afterPropagate)&&!YAHOO.lang.isUndefined(b)&&this.afterPropagate(b)}};
-a.selectJob=function(b){if(!this.editable)this.fileOutputsEl.style.display="none";for(var c in this.jobs)if(this.jobs[c]==b)if(b==this.selectedJob){this.jobs[c].deselectJob();this.selectedJob=null;!YAHOO.lang.isUndefined(this.afterSelectJob)&&b.loaded&&this.afterSelectJob(null)}else{this.jobs[c].selectJob();this.selectedJob=b;if(!this.editable&&!YAHOO.lang.isUndefined(this.payload.jobs[c].stageout)){this.fileOutputsEl.style.display="block";this.fileOutputsSelector.updateBrowser(new YabiSimpleFileValue([this.payload.jobs[c].stageout],
-""))}!YAHOO.lang.isUndefined(this.afterSelectJob)&&b.loaded&&this.afterSelectJob(b)}else this.jobs[c].deselectJob()};a.delayedSelectJob=function(b){this.afterSelectJob(b)};a.updateName=function(b){this.name=b;if(this.editable)this.nameEl.value=b;else{for(;this.nameEl.firstChild;)this.nameEl.removeChild(this.nameEl.firstChild);this.nameEl.appendChild(document.createTextNode(b))}};a.getName=function(){return this.editable?this.nameEl.value:this.name};
-a.getDisplayNameForJobId=function(b){b=parseInt(b,10);b-=1;return b<this.jobs.length?this.jobs[b].toString():"unknown"};a.isJobIdLoaded=function(b){b=parseInt(b,10);b-=1;return b<this.jobs.length?this.jobs[b].loaded:true};a.getJobForId=function(b){b=parseInt(b,10);b-=1;return b<this.jobs.length?this.jobs[b]:null};
-a.isValid=function(){if(this.jobs.length<1)return false;if(this.getName()===""){this.nameEl.className="invalidWorkflowName";return false}else this.nameEl.className="workflowName";for(var b in this.jobs)if(!this.jobs[b].valid)return false;return true};a.toJSON=function(){var b={name:this.name,tags:this.tags},c=[];for(var d in this.jobs)c.push(this.jobs[d].toJSON());b.jobs=c;return YAHOO.lang.JSON.stringify(b)};
-a.hydrate=function(b){var c;if(YAHOO.lang.isUndefined(this.workflowId)){this.hydrateDiv=document.createElement("div");this.hydrateDiv.className="workflowHydrating";c=new Image;c.src=appURL+"static/images/largeLoading.gif";this.hydrateDiv.appendChild(c);document.body.appendChild(this.hydrateDiv)}this.workflowId=b;b=b=appURL+"workflows/"+YAHOO.ccgyabi.username+"/"+b;c={success:this.hydrateCallback,failure:this.hydrateCallback,argument:[this]};this.jsTransaction=YAHOO.util.Connect.asyncRequest("GET",
-b,c,null)};a.fadeHydratingDiv=function(){var b=new YAHOO.util.Anim(this.hydrateDiv,{opacity:{to:0}},0.3,YAHOO.util.Easing.Linear);b.onComplete.subscribe(function(){document.body.removeChild(this.getEl())});b.animate()};a.reuse=function(){var b=appURL+"design/reuse/"+this.workflowId;window.location=b};
-a.saveTags=function(b){this.tagInputEl.blur();if(YAHOO.lang.isUndefined(this.workflowId))this.tagsFinishedSaving();else{var c=appURL+"workflows/"+YAHOO.ccgyabi.username+"/"+this.workflowId+"/tags";c=c;b={success:this.saveTagsResponseCallback,failure:this.saveTagsResponseCallback,argument:[this,b]};YAHOO.util.Connect.asyncRequest("POST",c,b,"taglist="+escape(this.tagInputEl.value))}};
-a.solidify=function(b){this.payload=b;var c=false,d,e,f;this.updateName(b.name);if(this.jobs.length>0)c=true;for(;this.tagListEl.firstChild;)this.tagListEl.removeChild(this.tagListEl.firstChild);this.tagListEl.appendChild(document.createTextNode(this.tags));for(e in b.jobs){d=c?this.jobs[e]:this.addJob(b.jobs[e].toolName,b.jobs[e].parameterList.parameter);if(!this.editable){f=d.status;d.renderProgress(b.jobs[e].status,b.jobs[e].tasksComplete,b.jobs[e].tasksTotal);this.selectedJob==d&&f!=d.status&&
-this.fileOutputsSelector.updateBrowser(new YabiSimpleFileValue([this.payload.jobs[e].stageout],""))}}for(e in this.attachedProxies){b=this.attachedProxies[e];b.badgeEl.className="badge"+this.payload.status;b.payload.status=this.payload.status}};a.fetchProgress=function(b){this.status.toLowerCase()!=="completed"&&this.status.toLowerCase()!=="error"&&this.hydrate(this.workflowId);b!==null&&b(this.status)};
-a.setTags=function(b){if(this.tagInputEl.style.display!="inline"){this.tags=b;this.tagInputEl.value=b}};a.cancelTagEditing=function(){this.tagInputEl.value=this.tags;this.tagHintDiv.className="displayNone";this.tagInputEl.style.display="none";this.tagListEl.style.display="inline";this.tagAddLink.style.display="block";var b=new YAHOO.util.Anim(this.tagHelpEl,{opacity:{to:0}},0.5,YAHOO.util.Easing.easeOut);b.onComplete.subscribe(function(){this.getEl().style.display="none"});b.animate()};
-a.tagsFinishedSaving=function(b){for(this.tags=this.tagInputEl.value.split(",");this.tagListEl.firstChild;)this.tagListEl.removeChild(this.tagListEl.firstChild);this.tagListEl.appendChild(document.createTextNode(""+this.tags));for(var c in this.attachedProxies)this.attachedProxies[c].setTags(this.tags);this.tagHintDiv.className="displayNone";this.tagInputEl.style.display="none";this.tagListEl.style.display="inline";this.tagAddLink.style.display="block";c=new YAHOO.util.Anim(this.tagHelpEl,{opacity:{to:0}},
-0.5,YAHOO.util.Easing.easeOut);c.onComplete.subscribe(function(){this.getEl().style.display="none"});c.animate();YAHOO.lang.isUndefined(b)||b(this.workflowId)};
-a.destroy=function(){YAHOO.util.Connect.isCallInProgress(this.jsTransaction)&&YAHOO.util.Connect.abort(this.jsTransaction,null,false);var b;for(var c in this.jobs){b=this.jobs[c];b.destroy();this.containerEl.removeChild(b.containerEl);this.optionsEl.removeChild(b.optionsEl);YAHOO.util.Event.purgeElement(b.containerEl)}YAHOO.util.Event.purgeElement(this.nameEl);this.mainEl.parentNode.removeChild(this.mainEl);YAHOO.lang.isUndefined(this.fileOutputsEl)||this.fileOutputsEl.parentNode.removeChild(this.fileOutputsEl);
-if(!YAHOO.lang.isUndefined(this.hydrateDiv))try{document.body.removeChild(this.hydrateDiv);this.hydrateDiv=null}catch(d){}};a.hydrateCallback=function(b){var c=b.responseText,d;b.argument[0].fadeHydratingDiv();try{target=b.argument[0];d=YAHOO.lang.JSON.parse(c);target.setTags(d.tags);target.setStatus(d.status);target.solidify(d.json)}catch(e){YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Error loading workflow")}};a.delJobCallback=function(b,c){c.target.deleteJob(c.object);YAHOO.util.Event.stopEvent(b)};
-a.selectJobCallback=function(b,c){var d=c.target;d.selectJob(c.object);YAHOO.util.Event.stopEvent(b)};a.startDragJobCallback=function(b,c){this.getEl().style.visibility="hidden";this.getDragEl().style.border="none";this.getDragEl().style.textAlign="left";this.getDragEl().innerHTML=this.getEl().innerHTML;this.dragType="job";this.lastY=c};
-a.endDragJobCallback=function(){var b;if(this.dragType=="job")this.getEl().style.visibility="";else{this.jobEl.style.visibility="";b=new YAHOO.util.Anim(this.jobEl,{opacity:{to:1}},0.3,YAHOO.util.Easing.Linear);b.animate();this.optionsEl.style.display="block"}this.getDragEl().style.visibility="hidden";b=[];var c=1,d;for(var e in workflow.containerEl.childNodes)for(var f in workflow.jobs)if(workflow.jobs[f].containerEl==workflow.containerEl.childNodes[e]){d=workflow.jobs[f];d.jobId=c++;d.updateTitle();
-b.push(d)}workflow.jobs=b;workflow.propagateFiles()};a.onDragJobCallback=function(b){b=YAHOO.util.Event.getPageY(b);if(b<this.lastY)this.goingUp=true;else if(b>this.lastY)this.goingUp=false;this.lastY=b};a.onDragOverJobCallback=function(b,c){b=YAHOO.util.Dom.get(c);c=this.dragType=="job"?this.getEl():this.jobEl;if(b.className=="jobSuperContainer")this.goingUp?c.parentNode.insertBefore(c,b):c.parentNode.insertBefore(c,b.nextSibling)};a.nameChangeCallback=function(b,c){c.name=c.nameEl.value};
-a.nameBlurCallback=function(b,c){if(c.nameEl.value==="")c.nameEl.value=c.prefillName;c.name=c.nameEl.value};a.nameFocusCallback=function(b,c){if(c.nameEl.value==c.prefillName)c.nameEl.value="";return true};
-a.addTagCallback=function(b,c){c.tagAddLink.style.display="none";c.tagListEl.style.display="none";c.tagInputEl.style.display="inline";c.tagHintDiv.className="tagHint";c.tagHelpEl.style.display="block";b=new YAHOO.util.Anim(c.tagHelpEl,{opacity:{to:1}},0.5,YAHOO.util.Easing.easeOut);b.animate();c.tagInputEl.focus()};a.cancelTagsCallback=function(b,c){c.cancelTagEditing()};a.saveTagsCallback=function(b,c){c.saveTags()};a.reuseCallback=function(b,c){c.reuse()};
-a.saveTagsResponseCallback=function(b){YAHOO.ccgyabi.YabiMessage.yabiMessageSuccess("tags saved");var c;try{c=b.argument[0];c.tagsFinishedSaving(b.argument[1])}catch(d){}};a.submitSuccessCallback=function(b,c){var d=b.responseText,e;try{target=b.argument[0];e=YAHOO.lang.JSON.parse(d);if(!YAHOO.lang.isUndefined(e.id)){target.workflowId=e.id;target.saveTags(c)}}catch(f){YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Error loading workflow")}};
+<%inherit file="base.html"/>
+<%def name="header()">
+
+<script language="javascript">
+YAHOO.util.Event.onAvailable("container", initWorkflow);
+
+var workflow;
+var tools;
+
+function initWorkflow() {
+    tools = new YabiToolCollection();
+    
+    document.getElementById("toolContainer").appendChild(tools.containerEl);
+    
+    workflow = new YabiWorkflow(true);
+% if reuseId:
+    workflow.hydrate(${reuseId});
+% endif
+    
+    var updateFilter = function(job) {
+        if (!tools.autofilter) {
+            return;
+        }
+
+        if (job === null) {
+            tools.searchEl.value = "";
+        } else {
+            tools.searchEl.value = "in:" + job.emittedFileTypes();
+        }
+        tools.filter();
+    };
+
+    workflow.afterSelectJob = updateFilter;
+    workflow.afterPropagate = updateFilter;
+    
+    document.getElementById("container").appendChild(workflow.mainEl);
+    document.getElementById("optionsDiv").appendChild(workflow.optionsEl);
+    
+    YAHOO.util.Event.addListener("submitButton", "click", submitCallback, workflow);
+}
+
+//this function is used after a workflow is submitted, 
+//and after the tags have been saved, 
+//to redirect the browser to view this particular workflow using a hashtag
+var summonJobsView = function(workflowId) {
+    window.location = appURL + 'jobs#' + workflowId;
+};
+
+function submitCallback(e, wf) {
+    
+    // TODO add decent callbacks
+    YAHOO.util.Event.stopEvent(e);
+    
+    if (!wf.isValid()) {
+        YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Workflow is missing required inputs. Please correct before submitting.");
+    } else {
+
+        var baseURL = appURL + "ws/submitworkflow/";
+        
+        jsCallback = {
+            success: function (obj) {YAHOO.ccgyabi.YabiMessage.yabiMessageSuccess("Success on submit!");workflow.submitSuccessCallback(obj, summonJobsView);},
+            failure: function (obj){YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Fail on submit!");},
+            argument: [wf] };
+        var data = "username=${request.user.username}&workflowjson=" + wf.toJSON();
+        jsTransaction = YAHOO.util.Connect.asyncRequest('POST', baseURL, jsCallback, data);
+        
+    }
+}
+
+
+function summonJob(toolName) {
+    workflow.addJob(toolName);
+}
+
+function destroyWorkflow() {
+    workflow.destroy();
+    return false;
+}
+</script>
+
+
+</%def>
+
+<%def name="body()">
+
+  <div id="doc3" class="yui-t1">
+    <div id="yabi-design-mode">
+      <div id="hd">
+        <p><img src="${h.url('/static/images/yabi-logo.png')}" alt="Yabi-logo" height="60" width="198" />  
+
+            <div id="yabi-message-ajax">
+            </div>
+
+            <div id="yabi-tabs">
+
+              <a href="${h.url('/jobs')}" id="yabi-tabs-jobs">jobs</a>
+              <a href="${h.url('/design')}" id="yabi-tabs-design">design</a>
+              <a href="${h.url('/files')}" id="yabi-tabs-files">files</a>
+            </div>
+
+            <div id="userinfo">
+              <a href="${h.url('/logout')}" class="fakeButton">log out ${request.user.username}</a>        
+            </div>
+
+      </div>
+
+      <script type="text/javascript">
+        //<![CDATA[
+
+        YAHOO.util.Event.onAvailable('yabi-message-success', YAHOO.ccgyabi.YabiMessage.fade, this);
+        YAHOO.util.Event.onAvailable('yabi-message-warn', YAHOO.ccgyabi.YabiMessage.fade, this);
+        YAHOO.util.Event.onAvailable('yabi-message-fail', YAHOO.ccgyabi.YabiMessage.fade, this);
+
+        //]]>
+      </script>
+
+      
+
+          <div style="position:absolute;left:0px;top:63px;width:260px;padding:5px;">
+                  <div id="toolContainer"></div>
+          </div>
+          <div class="yabiMiddleColumn">
+                  <div id="container"></div>
+          </div>
+          <div style="position:absolute;left:640px;top:63px;padding:5px;min-width:400px;">
+                <div id="optionsDiv"></div>
+          </div>
+      
+
+    </div>
+  </div>
+  
+  <div class="copyright">&copy; 2006, 2009 CCG, Murdoch University</div>
+</%def>
