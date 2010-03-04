@@ -179,6 +179,7 @@ class ProxyClientFactory(protocol.ClientFactory):
 
 
     def buildProtocol(self, addr):
+        return ProxyClient())
         return ProxyClient(self.command, self.rest, self.version,
                            self.headers, self.stream, self.backchannel,self)
 
