@@ -241,7 +241,7 @@ def submitworkflow(request):
     logger.debug("POST KEYS: %r"%request.POST.keys())
     
     # probably want to catch the type of exceptions we may get from this
-    wfbuilder.build(request.POST['username'], request.POST["workflowjson"])
+    yabistore_id = wfbuilder.build(request.POST['username'], request.POST["workflowjson"])
     
-    return HttpResponse(request.POST["workflowjson"])
+    return HttpResponse(json.dumps({"id":yabistore_id}))
 

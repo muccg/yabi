@@ -46,6 +46,9 @@ def build(username, workflow_json):
         logger.debug('-----Starting workflow id %d -----' % workflow.id)
         wfwrangler.walk(workflow)
 
+        return workflow.yabistore_id
+    
+
     except ObjectDoesNotExist, e:
         logger.critical(e)
         raise
