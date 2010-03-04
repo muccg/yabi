@@ -315,6 +315,23 @@ def ReverseProxyResource(host, port, path):
 @class_annotate
 class UploadClient(LineReceiver):
     """Used by UploadClientFactory to implement a simple upload web proxy."""
+    def __init__(self, command, rest, version, headers, instream, father,factory):
+        print "UploadClient:",command,",",rest,",",version,",",instream,",",father
+        
+        self.father = father
+        self.command = command
+        self.rest = rest
+        if headers.hasHeader("proxy-connection"):
+            headers.removeHeader("proxy-connection")
+        headers.setHeader("connection", "close")
+        self.headers = headers
+        self.instream = instream
+        self.factory = factory
+        
+        # for sending back to our caller
+        self.status = None
+        self.backchannel = None
+        
     def rawDataReceived(self, data):
         """Override this for when raw data is received.
         """
