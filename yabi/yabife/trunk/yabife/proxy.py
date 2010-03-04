@@ -364,6 +364,11 @@ class ReverseProxyResourceConnector(object):
                 print "READER:",reader
                 dat = WaitForDeferredData(reader)
                 print "DAT:",dat
+                reader = request.stream.read()
+                print "READER:",reader
+                dat = WaitForDeferredData(reader)
+                print "DAT:",dat
+                
                 
             tl = stackless.tasklet(tasklet)()
                 
