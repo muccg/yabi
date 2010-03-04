@@ -84,7 +84,7 @@ YabiWorkflowProxy.prototype.matchesFilters = function(needle, status) {
     status = status.toLowerCase();
     
     if (haystack.indexOf(needle) != -1) {
-        if (status == 'All' || this.payload.status == status) {        
+        if (status == 'all' || this.payload.status == status) {        
             return true;
         }
     }
