@@ -20,12 +20,14 @@ function YabiToolCollection() {
     this.filterEl.appendChild(this.searchLabelEl);
     
     this.searchEl = document.createElement("input");
+    this.searchEl.type = "search";
     this.searchEl.className = "toolSearchField";
     
     //attach key events for changes/keypresses
     YAHOO.util.Event.addListener(this.searchEl, "blur", this.filterCallback, this);
     YAHOO.util.Event.addListener(this.searchEl, "keyup", this.filterCallback, this);
     YAHOO.util.Event.addListener(this.searchEl, "change", this.filterCallback, this);
+    YAHOO.util.Event.addListener(this.searchEl, "search", this.filterCallback, this);
     
     this.filterEl.appendChild(this.searchEl);
     
