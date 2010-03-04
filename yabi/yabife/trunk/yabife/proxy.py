@@ -334,7 +334,13 @@ class UploadClient(LineReceiver):
         
         # send the query
         self.sendLine(command+" "+rest+" HTTP/%d.%d"%version)
-        print "HEADERS",headers
+        for header, value in self.headers.getAllRawHeaders():
+            print "SEND HEADER",header,value
+            if header=="Expect" and '100' in value[0] and 'continue' in value[0]:
+                self.wait_for_continue = True
+            if header!="Connection":
+                self.sendLine(header+": "+value)
+        self.sendLine("")
         
     def rawDataReceived(self, data):
         """Override this for when raw data is received.
