@@ -40,18 +40,9 @@ from twisted.protocols.basic import LineReceiver
 from twisted.web2.stream import SimpleStream, ISendfileableStream, ProducerStream
 from twisted.web2.http_headers import Headers
 
-def method_decorator(class_declaration):
-    class NewClass():
-        pass
-    for key in class_declaration.__dict__:
-        if hasattr(class_declaration.__dict__[key], '__call__'):
-            def new_method(*args, **kwargs):
-                print str(dir()) #Replace this with your code.
-                class_declaration.__dict__[key](*args, **kwargs)
-            setattr(NewClass, str(key), new_method)
-    return NewClass
- 
-@method_decorator
+from debug import class_annotate
+
+@class_annotate
 class ProxyClient(HTTPClientProtocol,HTTPClient):
     """Used by ProxyClientFactory to implement a simple web proxy."""
 
