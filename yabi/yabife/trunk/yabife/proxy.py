@@ -312,6 +312,21 @@ class UNIXConnector:
 def ReverseProxyResource(host, port, path):
     return ReverseProxyResourceConnector(TCPConnector(host, port), path)
 
+class UploadClientFactory(protocol.ClientFactory):
+    """Used by ProxyRequest to implement a simple web proxy."""
+
+    def __init__(self):
+        pass
+
+
+    def buildProtocol(self, addr):
+        return ProxyClient(self.command, self.rest, self.version,
+                           self.headers, self.stream, self.backchannel,self)
+
+    def clientConnectionFailed(self, connector, reason):
+        assert False
+
+
 class ReverseProxyResourceConnector(object):
     """Resource that renders the results gotten from another server
 
@@ -360,6 +375,9 @@ class ReverseProxyResourceConnector(object):
             # start a stackless threadlet to pump upload proxy
             
             def tasklet():
+                # make an outgoing client connection for the proxy
+                print "!",reactor.connector.connect(UploadClientFactory)
+                
                 reader = request.stream.read()
                 print "READER:",reader
                 dat = WaitForDeferredData(reader)
