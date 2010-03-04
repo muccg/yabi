@@ -44,6 +44,38 @@ from debug import class_annotate
 
 import stackless
 
+def WaitForDeferredData(deferred):
+    """Causes a stackless thread to wait until data is available on a deferred, then returns that data.
+    If an errback chain is called, it raises an DeferredError exception with the contents as the error 
+    passthrough (probably a Failure intsance)
+    """
+    if not isinstance(deferred,Deferred):
+        return deferred
+    
+    cont = [False]                  # continue?
+    data = [None]                   # data that we will be passed and will pass on
+    err = [None]                    # the failure if errbacks are called
+    
+    def _cont(dat):
+        cont[0] = True              # unblock
+        data[0] = dat               # pass out the data
+        return True
+        
+    def _err(dat):
+        cont[0] = True
+        err[0] = dat
+        return False
+        
+    deferred.addCallback(_cont)     # trigger our callback on data
+    
+    while not cont[0]:
+        schedule()                  # sleep the thread until we are asked to continue
+        
+    if err[0]:
+        raise DeferredError, err[0]
+    
+    return data[0]
+
 @class_annotate
 class ProxyClient(HTTPClient):
     """Used by ProxyClientFactory to implement a simple web proxy."""
