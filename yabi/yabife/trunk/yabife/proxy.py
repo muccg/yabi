@@ -376,7 +376,7 @@ class ReverseProxyResourceConnector(object):
             
             def tasklet():
                 # make an outgoing client connection for the proxy
-                print "!",reactor.connector.connect(UploadClientFactory)
+                print "!",self.connector.connect(UploadClientFactory)
                 
                 reader = request.stream.read()
                 print "READER:",reader
