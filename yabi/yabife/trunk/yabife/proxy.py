@@ -345,16 +345,15 @@ class ReverseProxyResourceConnector(object):
         print "path=",path
         print "rest=",rest
         
-        backchannel = defer.Deferred()
-        
-        print "method",request.method
-        print "headers",[str(x) for x in request.headers.getAllRawHeaders()]
-        
         if request.method == 'POST':
             ctype = request.headers.getHeader('content-type')
             print "content-type",ctype
             
+            #result = http.Response( self.status[1],  self.forward_headers, self.stream ))
+            backchannel = defer.Deferred()
+            
             print "STREAM",request.stream
+            print "request",dir(request)
             
             # start a stackless threadlet to pump upload proxy
             
@@ -368,13 +367,12 @@ class ReverseProxyResourceConnector(object):
                 
             return backchannel
             
-            clientFactory = ProxyClientFactory(request.method, rest, 
-                                        request.clientproto, 
-                                        request.headers,
-                                        request.stream,
-                                        backchannel)
-            self.connector.connect(clientFactory)
         else:
+            backchannel = defer.Deferred()
+        
+            print "method",request.method
+            print "headers",[str(x) for x in request.headers.getAllRawHeaders()]
+            
             clientFactory = ProxyClientFactory(request.method, rest, 
                                         request.clientproto, 
                                         request.headers,
@@ -382,7 +380,7 @@ class ReverseProxyResourceConnector(object):
                                         backchannel)
             self.connector.connect(clientFactory)
         
-        return backchannel
+            return backchannel
 
     def prender(self, request):
         print "RPRC::render()"
