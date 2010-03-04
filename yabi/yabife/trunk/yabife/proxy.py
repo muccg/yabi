@@ -56,11 +56,18 @@ def no_intr(func, *args, **kw):
 
 import StringIO
 
+
+
 @class_annotate
 class MimeStreamDecoder(object):
     """This is my super no memory usage streaming Mime upload decoder"""
-    
-    def __init__(self):
+    def __init__(self, remotehost, remoteport, remotepath):
+        """Mime sream decoder that pipes all the mime encoded data to a remote server as a HTTP upload"""
+        
+        self.remotehost = remotehost
+        self.remotepath = remotepath
+        self.remoteport = remoteport
+        
         self.line_ending=None                   # the EOL characters
         self._carry = ""                        # for subsequent iterations, this is our carry, our unprocessed data
         self.fileopen = None                    # if we are presently writing the data to a file, this is the file
@@ -140,6 +147,8 @@ class MimeStreamDecoder(object):
         self.content_type = ctype
     
     def feed(self,data):
+        print "feed",data
+        
         # try and guess the line ending if we don't know it yet
         if self.line_ending is None:
             self.guess_line_ending(data)
