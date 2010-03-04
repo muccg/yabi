@@ -76,12 +76,11 @@ class ProxyClient(HTTPClientProtocol,HTTPClient):
         
         self.sendCommand(self.command, self.rest)
         for header, value in self.headers.getAllRawHeaders():
-            if value==['c, l, o, s, e']:
-                value = ['keep-alive']
             print "SEND HEADER",header,value
             if header=="Expect" and '100' in value[0] and 'continue' in value[0]:
                 self.wait_for_continue = True
-            self.sendHeader(header, value)
+            if header!="Connection":
+                self.sendHeader(header, value)
         self.endHeaders()   
         
         
