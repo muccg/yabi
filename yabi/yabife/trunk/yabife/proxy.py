@@ -313,98 +313,17 @@ def ReverseProxyResource(host, port, path):
     return ReverseProxyResourceConnector(TCPConnector(host, port), path)
 
 @class_annotate
-class UploadClient(HTTPClient):
-    """Used by ProxyClientFactory to implement a simple web proxy."""
-
-    _finished = False
-
-    def __init__(self, command, rest, version, headers, instream, father,factory):
-        print "UploadClient:",command,",",rest,",",version,",",instream,",",father
-        
-        self.father = father
-        self.command = command
-        self.rest = rest
-        if headers.hasHeader("proxy-connection"):
-            headers.removeHeader("proxy-connection")
-        headers.setHeader("connection", "close")
-        self.headers = headers
-        self.instream = instream
-        self.factory = factory
-        
-        # for sending back to our caller
-        self.forward_headers = Headers()
-        self.status = None
-        self.backchannel = None
-        self.stream = ProducerStream()          #ProxyStream()
-        
-        self.wait_for_continue = False          # for uploads, wait for "100 COntinue" flag
-
-    def connectionMade(self):
-        print "CONNECTION MADE"
-        print self.command
-        print self.rest
-        
-        self.sendCommand(self.command, self.rest)
-        for header, value in self.headers.getAllRawHeaders():
-            print "SEND HEADER",header,value
-            if header=="Expect" and '100' in value[0] and 'continue' in value[0]:
-                self.wait_for_continue = True
-            if header!="Connection":
-                self.sendHeader(header, value)
-        self.endHeaders()   
-    
-    def dataReceived(self, data):
-        print "dataReceived",data
-        return LineReceiver.dataReceived(self,data)
-        
-    def lineReceived(self, line):
-        print "LR:",line
-        return HTTPClient.lineReceived(self,line)
-
+class UploadClient(LineReceiver):
+    """Used by UploadClientFactory to implement a simple upload web proxy."""
     def rawDataReceived(self, data):
-        print "RDR:",data
-        print data
-        return HTTPClient.rawDataReceived(self,data)
+        """Override this for when raw data is received.
+        """
+        print "rawDataReceived",data
 
-    def handleStatus(self, version, code, message):
-        print "handleStatus",version,code,message
-        self.status = version,code,message
-        #return HTTPPageGetter.handleStatus(self,version,code,message)
-
-    def handleHeader(self, key, value):
-        print "handleHeader",key,value
-        self.forward_headers.setRawHeaders(key,[value])
-        #return HTTPPageGetter.handleHeader(self,key,value)
-
-    def handleEndHeaders(self):
-        print "handleEndHeaders",self.forward_headers
-        # start out back connection with our response
-        self.father.callback(http.Response( self.status[1],  self.forward_headers, self.stream ))
-        #return HTTPPageGetter.handleEndHeaders(self)
-    
-    def handleResponsePart(self, buffer):
-        print "handleResponsePart",len(buffer)
-        self.stream.write(buffer)
-        return HTTPClient.handleResponsePart(self,buffer)
-
-    def handleResponseEnd(self):
-        print "handleResponseEnd"
-        if not self.wait_for_continue:
-            print "Stream Finish"
-            self.stream.finish()
-            return HTTPClient.handleResponseEnd(self)
-        else:
-            print "Continue?"
-            
-        
-        
-    def handleResponse(self,buff):
-        print "handleResponse()"
-
-    def connectionLost(self, reason):
-        return HTTPClient.connectionLost(self, reason)
-        print "connectionLost",reason
-        self.stream.close()
+    def lineReceived(self, line):
+        """Override this for when each line is received.
+        """
+        print "lineReceived",line
 
 
 class UploadClientFactory(protocol.ClientFactory):
