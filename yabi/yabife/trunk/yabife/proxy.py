@@ -322,6 +322,13 @@ class ReverseProxyResourceConnector(object):
             
             print "STREAM",request.stream
             
+            reader = req.stream.read()
+            print "READER:",reader
+            dat = WaitForDeferredData(reader)
+            print "DAT:",dat
+            
+            return backchannel
+            
             clientFactory = ProxyClientFactory(request.method, rest, 
                                         request.clientproto, 
                                         request.headers,
