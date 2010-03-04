@@ -110,7 +110,7 @@ def prepare_tasks(job):
     if not paramlist:
         # job operates without batchonparam
         t = Task(job=job, command=job.command, status="ready")
-        t.working_dir = uuid.uuid4() # random uuid
+        t.working_dir = str(uuid.uuid4()) # random uuid
         t.save()
         
     logger.debug("Prepare_task PARAMLIST: %s"%paramlist)
@@ -259,7 +259,7 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
     if is_task_file_valid(job,file):
         
         t = Task(job=job, status=settings.STATUS['ready'])
-        t.working_dir = uuid.uuid4() # random uuid
+        t.working_dir = str(uuid.uuid4()) # random uuid
         
         fsscheme, fsbackend_parts = parse_url(job.fs_backend)
         execscheme, execbackend_parts = parse_url(job.exec_backend)
