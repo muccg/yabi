@@ -47,8 +47,6 @@ class ProxyClient(HTTPClient):
     """Used by ProxyClientFactory to implement a simple web proxy."""
 
     def __init__(self, command, rest, version, headers, instream, father,factory):
-        HTTPClient.__init__(self)
-        
         print "ProxyClient:",command,",",rest,",",version,",",instream,",",father
         
         self.father = father
