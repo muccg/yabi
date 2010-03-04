@@ -617,7 +617,7 @@ class ReverseProxyResourceConnector(object):
                     """Override the readers and writers to do HTTP file uploads to the remote proxy"""
                     pass
                 
-                parser = MyMimeStreamDecoder()
+                parser = MyMimeStreamDecoder(self.connector.host,self.connector.port,self.path)
                 parser.set_boundary(boundary)
                 
                 reader = req.stream.read()
