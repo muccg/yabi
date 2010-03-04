@@ -79,11 +79,11 @@ class FilePutResource(resource.PostableResource):
             if (ctype.mediaType == 'application' and ctype.mediaSubtype == 'x-www-form-urlencoded'):
                 reader = req.stream.read()
                 
-                while True:
-                    #print "DATA:",WaitForDeferredData(reader)
-                    stackless.schedule()
+                #while True:
+                    ##print "DATA:",WaitForDeferredData(reader)
+                    #stackless.schedule()
                 
-                raise Exception
+                raise Exception, "Unallowed mediatype in POST upload file header"
             elif (ctype.mediaType == 'multipart' and ctype.mediaSubtype == 'form-data'):
                 boundary = ctype.params.get('boundary')
                 if boundary is None:
