@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from os.path import splitext
 import os
+import uuid
 from math import log10
 from django.core.exceptions import ObjectDoesNotExist
 from django.conf import settings
@@ -26,7 +27,7 @@ def parse_url(uri):
     return scheme, urlparse.urlparse(rest)
 
 
-# this is used to join subpaths to already cinstructed urls
+# this is used to join subpaths to already constructed urls
 def url_join(*args):
     return reduce(lambda a,b: a+b if a.endswith('/') else a+'/'+b, args)
 
@@ -114,8 +115,7 @@ def prepare_tasks(job):
     if not paramlist:
         # job operates without batchonparam
         t = Task(job=job, command=job.command, status="ready")
-        t.save() # to get id
-        t.working_dir = create_uniq_dirname(job, t)
+        t.working_dir = uuid.uuid4() # random uuid
         t.save()
         
     logger.debug("Prepare_task PARAMLIST: %s"%paramlist)
@@ -267,10 +267,7 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
     if is_task_file_valid(job,file):
         
         t = Task(job=job, status=settings.STATUS['ready'])
-        t.save() # so task has id
-        logger.debug('saved========================================')
-        
-        t.working_dir = create_uniq_dirname(job, t)
+        t.working_dir = uuid.uuid4() # random uuid
         
         fsscheme, fsbackend_parts = parse_url(job.fs_backend)
         execscheme, execbackend_parts = parse_url(job.exec_backend)
@@ -278,7 +275,7 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
         t.command = job.command.replace("%", url_join(fsbackend_parts.path,t.working_dir, "input", file))
         t.name = name
         t.save()
-
+        logger.debug('saved========================================')
         logger.info('Creating task for job id: %s using command: %s' % (job.id, t.command))
         logger.info('working dir is: %s' % (t.working_dir) )
 
@@ -308,7 +305,3 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
         
     # return False to indicate we didn't make a task
     return False
-
-def create_uniq_dirname(job, task):
-    logger.debug('')
-    return 'work-job%d-task%d/' % (job.id, task.id)
