@@ -18,6 +18,7 @@ import urlparse
 import re
 re_url_schema = re.compile(r'\w+')
 
+# TODO can this be removed - may be in backendhelper already
 def parse_url(uri):
     """Parse a url via the inbuilt urlparse. But this is slightly different
     as it can handle non-standard schemas. returns the schema and then the
@@ -26,7 +27,7 @@ def parse_url(uri):
     assert re_url_schema.match(scheme)
     return scheme, urlparse.urlparse(rest)
 
-
+# TODO can this be removed - may be in backendhelper already
 # this is used to join subpaths to already constructed urls
 def url_join(*args):
     return reduce(lambda a,b: a+b if a.endswith('/') else a+'/'+b, args)
@@ -63,7 +64,6 @@ def walk(workflow):
         except Exception,e:
             logger.critical("Error in workflow wrangler: %s" % e)
             raise
-        
 
 
 def check_dependencies(job):
@@ -83,6 +83,7 @@ def check_dependencies(job):
             if param_job.status != settings.STATUS["complete"]:
                 raise YabiJobException("Job command parameter not complete. Job:%s Param:%s" % (job.id, param))
 
+
 def prepare_tasks(job):
     logger.debug('')
     logger.debug('=================================================== prepare_tasks ===========================================================')
@@ -91,16 +92,10 @@ def prepare_tasks(job):
     input_files = []
 
     # get the backend for this job
-    #exec_be = backendhelper.get_backend_for_uri(job.workflow.user.name,job.exec_backend)
-    #exec_bc = BackendCredential.objects.get(credential__user__name=job.workflow.user.name, backend=exec_be, credential__user=job.workflow.user)
-    #fs_be = backendhelper.get_backend_for_uri(job.workflow.user.name,job.fs_backend)
-    #fs_bc = BackendCredential.objects.get(credential__user__name=job.workflow.user.name, backend=fs_be, credential__user=job.workflow.user)
     exec_bc = backendhelper.get_backendcredential_for_uri(job.workflow.user.name,job.exec_backend)
     exec_be = exec_bc.backend
     fs_bc = backendhelper.get_backendcredential_for_uri(job.workflow.user.name,job.fs_backend)
     fs_be = fs_bc.backend
-    
-
     logger.debug("wfwrangler::prepare_tasks() exec_be:%s exec_bc:%s fs_be:%s fs_bc:%s"%(exec_be,exec_bc,fs_be,fs_bc))
 
     # reconstitute the input filetype extension list so each create_task can use it
@@ -232,8 +227,6 @@ def prepare_tasks(job):
         if create_task( *(task_data+[name]) ):
             # task created, bump task
             num,name = buildname(num)
-        
-        
 
 
 def prepare_job(job):
@@ -260,7 +253,6 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
     
 
     param_scheme, param_uriparts = uriparse(param)
-#    backend_scheme, backend_uriparts = uriparse(backendcredential.homedir)
     root, ext = splitext(file)
     
     # only make tasks for expected filetypes
@@ -285,19 +277,6 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
                     order=0)
                     
         logger.debug("Stagein: %s <=> %s " % (s.src, s.dst))
-        # TODO: Fix this whole dual backend bullshit!
-        #destscheme = fs_bc.homedir_uri.split('//',1)[0]
-        #dest = exec_be.uri.split('//',1)[1]
-        
-        #destcomposite = destscheme+"//"+dest
-        
-        #logger.info('destcomposite is: %s' % (destcomposite) )
-        
-        #s = StageIn(task=t,
-                    #src=url_join(param, file),
-                    #dst=url_join(exec_be.uri,t.working_dir, file),
-                    #order=0)
-        
         s.save()
         
         # return true indicates that we actually made a task

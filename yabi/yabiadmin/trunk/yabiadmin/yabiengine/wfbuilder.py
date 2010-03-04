@@ -231,7 +231,7 @@ def get_param_value(workflow, tp, job):
     logger.debug("get_param_value() returning: %s"%value)
     return value
 
-
+#TODO remove this - is it used?
 def slugify(value):
     """
     Normalizes string, converts to lowercase, removes non-alpha characters,
