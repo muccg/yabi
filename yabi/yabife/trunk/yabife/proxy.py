@@ -43,8 +43,10 @@ from twisted.web2.http_headers import Headers
 from debug import class_annotate
 
 @class_annotate
-class ProxyClient2(HTTPClient):
+class ProxyClient(HTTPClient):
     """Used by ProxyClientFactory to implement a simple web proxy."""
+
+    _finished = False
 
     def __init__(self, command, rest, version, headers, instream, father,factory):
         print "ProxyClient:",command,",",rest,",",version,",",instream,",",father
@@ -160,10 +162,16 @@ class ProxyClient2(HTTPClient):
         return HTTPClient.connectionLost(self, reason)
         print "connectionLost",reason
         self.stream.close()
-
-@class_annotate
-class ProxyClient(HTTPClientProtocol):
-    pass
+        
+    def handleResponseEnd(self):
+        """
+        Finish the original request, indicating that the response has been
+        completely written to it, and disconnect the outgoing transport.
+        """
+        if not self._finished:
+            self._finished = True
+            self.father.finish()
+            self.transport.loseConnection()
 
 @class_annotate
 class ProxyClientFactory(protocol.ClientFactory):
@@ -179,7 +187,6 @@ class ProxyClientFactory(protocol.ClientFactory):
 
 
     def buildProtocol(self, addr):
-        return ProxyClient()
         return ProxyClient(self.command, self.rest, self.version,
                            self.headers, self.stream, self.backchannel,self)
 
