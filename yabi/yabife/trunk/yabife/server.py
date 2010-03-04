@@ -3,6 +3,10 @@ import sys, os
 
 from urlparse import urlparse
 
+import stacklessreactor
+stacklessreactor.install()
+import stackless
+
 from twisted.web2 import log
 from twisted.internet import reactor
 from twisted.application import strports, service, internet

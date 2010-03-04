@@ -322,11 +322,16 @@ class ReverseProxyResourceConnector(object):
             
             print "STREAM",request.stream
             
-            reader = req.stream.read()
-            print "READER:",reader
-            dat = WaitForDeferredData(reader)
-            print "DAT:",dat
+            # start a stackless threadlet to pump upload proxy
             
+            def tasklet():
+                reader = request.stream.read()
+                print "READER:",reader
+                dat = WaitForDeferredData(reader)
+                print "DAT:",dat
+                
+            tl = stackless.tasklet(tasklet)()
+                
             return backchannel
             
             clientFactory = ProxyClientFactory(request.method, rest, 
