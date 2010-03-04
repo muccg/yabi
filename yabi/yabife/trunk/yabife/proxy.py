@@ -333,6 +333,9 @@ class UploadClient(LineReceiver):
         self.backchannel = None
    
         return
+    
+    def connectionMade(self):
+        print "connectionMade"
         # send the query
         self.sendLine(command+" "+rest+" HTTP/%d.%d"%version)
         for header, value in self.headers.getAllRawHeaders():
@@ -342,9 +345,6 @@ class UploadClient(LineReceiver):
             if header!="Connection":
                 self.sendLine(header+": "+value)
         self.sendLine("")
-    
-    def connectionMade(self):
-        print "connectionMade"
         
     def rawDataReceived(self, data):
         """Override this for when raw data is received.
