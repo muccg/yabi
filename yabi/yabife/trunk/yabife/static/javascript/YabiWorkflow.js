@@ -635,7 +635,7 @@ YabiWorkflow.prototype.reuse = function() {
  *
  * save tags
  */
-YabiWorkflow.prototype.saveTags = function() {
+YabiWorkflow.prototype.saveTags = function(postRelocate) {
     this.tagInputEl.blur();
 
     if (YAHOO.lang.isUndefined(this.workflowId)) {
@@ -651,7 +651,7 @@ YabiWorkflow.prototype.saveTags = function() {
     jsCallback = {
     success: this.saveTagsResponseCallback,
     failure: this.saveTagsResponseCallback,
-        argument: [this] };
+        argument: [this, postRelocate] };
     jsTransaction = YAHOO.util.Connect.asyncRequest('POST', jsUrl, jsCallback, "taglist="+escape(this.tagInputEl.value));
 };
 
@@ -751,7 +751,7 @@ YabiWorkflow.prototype.cancelTagEditing = function() {
  *
  * hide editing fields, solidify tags editing field into an array
  */
-YabiWorkflow.prototype.tagsFinishedSaving = function() {
+YabiWorkflow.prototype.tagsFinishedSaving = function(postRelocate) {
     this.tags = this.tagInputEl.value.split(",");
     while (this.tagListEl.firstChild) {
         this.tagListEl.removeChild(this.tagListEl.firstChild);
@@ -770,6 +770,11 @@ YabiWorkflow.prototype.tagsFinishedSaving = function() {
     var myAnim = new YAHOO.util.Anim(this.tagHelpEl, { opacity: { to: 0 } }, 0.5, YAHOO.util.Easing.easeOut);
     myAnim.onComplete.subscribe(function() { this.getEl().style.display = "none"; });
     myAnim.animate();
+    
+    //if postRelocate != undefined then redirect user to the jobs tab
+    if (!YAHOO.lang.isUndefined(postRelocate)) {
+        postRelocate(this.workflowId);
+    }
 };
 
 /**
@@ -982,8 +987,30 @@ YabiWorkflow.prototype.saveTagsResponseCallback = function(o) {
     
     try {
         obj = o.argument[0];
-        obj.tagsFinishedSaving();
+        obj.tagsFinishedSaving(o.argument[1]);
     } catch (e) {
         //do nothing
+    }
+};
+
+YabiWorkflow.prototype.submitSuccessCallback = function(o, postRelocateCallback) {
+    var json = o.responseText;
+    var i;
+    var obj;
+ 
+    try {
+        target = o.argument[0];
+        
+        obj = YAHOO.lang.JSON.parse(json);
+        
+        //we should have received an id
+        if (!YAHOO.lang.isUndefined(obj.id)) { 
+            target.workflowId = obj.id;
+        
+            target.saveTags(postRelocateCallback);
+        }
+        
+    } catch (e) {
+        YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Error loading workflow");
     }
 };
