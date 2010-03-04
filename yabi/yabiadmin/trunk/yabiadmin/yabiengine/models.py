@@ -300,38 +300,32 @@ def job_save(sender, **kwargs):
     logger.debug("job.stageout=%s"%job.stageout)
 
     try:
+        json_object = json.loads(job.workflow.json)
+        job_id = int(job.order)
+        assert json_object['jobs'][job_id]['jobId'] == job_id + 1 # jobs are 1 indexed in json
+
         # if our job status is complete, force the annotation of this in the workflow
         if job.status==settings.STATUS['complete']:
-            
-            workflow_id = job.workflow.yabistore_id
-            resource = os.path.join(settings.YABISTORE_BASE,'workflows',job.workflow.user.name, str(workflow_id), str(job.order) )
-            data = dict( status="completed", tasksTotal=1.0, tasksComplete=1.0 )
-            
-            logger.debug("job_save::yabistoreupdate")
-            logger.debug(resource)
-            logger.debug(data)
-            
-            yabistore_update(resource, data)
+            json_object['jobs'][job_id]['status'] = job.status
+            json_object['jobs'][job_id]['tasksComplete'] = 1.0
+            json_object['jobs'][job_id]['tasksTotal'] = 1.0
 
-            
+        elif job.status==settings.STATUS['error']:
+            json_object['jobs'][job_id]['status'] = job.status
+
         elif job.status!="ready" and job.status!="complete":
             if job.stageout:
-                workflow_id = job.workflow.yabistore_id
-                resource = os.path.join(settings.YABISTORE_BASE,'workflows',job.workflow.user.name, str(workflow_id), str(job.order) )
-                data = dict( stageout=job.stageout )
-                
-                logger.debug("job_save::yabistoreupdate")
-                logger.debug(resource)
-                logger.debug(data)
-                
-                yabistore_update(resource, data)
+                json_object['jobs'][job_id]['stageout'] = job.stageout
+
+        job.workflow.json = json.dumps(json_object)
+        job.workflow.save() # this triggers an update on yabistore
 
     except Exception, e:
         logger.critical(e)
         raise
 
     
-
+## TODO task status update should be like job and not call yabistore_update directly
 def task_save(sender, **kwargs):
     logger.debug('')
     task = kwargs['instance']
