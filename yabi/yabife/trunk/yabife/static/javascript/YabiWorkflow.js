@@ -181,14 +181,22 @@ function YabiWorkflow(editable) {
 }
 
 YabiWorkflow.prototype.setStatus = function(statusText) {
-    this.status = statusText;
+    this.status = statusText.toLowerCase();
+    
+    //update proxies
+    var proxy;
+    for (index in this.attachedProxies) {
+        proxy = this.attachedProxies[index];
+        proxy.badgeEl.className = "badge"+this.status;
+        proxy.payload.status = this.status;
+    }
     
     if (this.editable) {
         return;
     }
     
     var loadImg;
-    if (this.status !== "Completed" && this.status !== "Error") {
+    if (this.status !== "complete" && this.status !== "error") {
         if (YAHOO.lang.isUndefined(this.loadingEl) || this.loadingEl === null) {
             this.loadingEl = document.createElement("div");
             this.loadingEl.className = "workflowLoading";
@@ -694,12 +702,6 @@ YabiWorkflow.prototype.solidify = function(obj) {
 		}
 	}
     
-    var proxy;
-    for (index in this.attachedProxies) {
-        proxy = this.attachedProxies[index];
-        proxy.badgeEl.className = "badge"+this.payload.status;
-        proxy.payload.status = this.payload.status;
-    }
 };
 
 /**
