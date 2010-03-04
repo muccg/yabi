@@ -344,7 +344,7 @@ class UploadClient(LineReceiver):
             if header=="Expect" and '100' in value[0] and 'continue' in value[0]:
                 self.wait_for_continue = True
             if header!="Connection":
-                self.sendLine(header+": "+value)
+                self.sendLine(header+": "+value[0])
         self.sendLine("")
         
     def rawDataReceived(self, data):
