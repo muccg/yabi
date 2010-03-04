@@ -46,7 +46,7 @@ def method_decorator(class_declaration):
     for key in class_declaration.__dict__:
         if hasattr(class_declaration.__dict__[key], '__call__'):
             def new_method(*args, **kwargs):
-                print("This is a decorator.") #Replace this with your code.
+                print str(dir()) #Replace this with your code.
                 class_declaration.__dict__[key](*args, **kwargs)
             setattr(NewClass, str(key), new_method)
     return NewClass
