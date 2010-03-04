@@ -148,6 +148,7 @@ class ProxyClient(HTTPClient):
     def handleResponseEnd(self):
         print "handleResponseEnd"
         if not self.wait_for_continue:
+            print "Stream Finish"
             self.stream.finish()
             return HTTPClient.handleResponseEnd(self)
         else:
@@ -162,16 +163,6 @@ class ProxyClient(HTTPClient):
         return HTTPClient.connectionLost(self, reason)
         print "connectionLost",reason
         self.stream.close()
-        
-    def handleResponseEnd(self):
-        """
-        Finish the original request, indicating that the response has been
-        completely written to it, and disconnect the outgoing transport.
-        """
-        if not self._finished:
-            self._finished = True
-            self.factory.finish()
-            self.transport.loseConnection()
 
 @class_annotate
 class ProxyClientFactory(protocol.ClientFactory):
