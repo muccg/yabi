@@ -93,7 +93,7 @@ YabiWorkflowProxy.prototype.matchesFilters = function(needle, status) {
     var tagUnified = '' + this.payload.tags;
     tagUnified = tagUnified.toLowerCase();
     if (tagUnified.indexOf(needle) != -1) {
-        if (status == 'All' || this.payload.status == status) {        
+        if (status == 'all' || this.payload.status == status) {        
             return true;
         }
     }
