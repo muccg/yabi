@@ -37,6 +37,11 @@ function initWorkflowListing() {
     document.getElementById("optionsDiv").appendChild(workflowListing.loadedWorkflowFileOutputsEl);
     
     document.getElementById("optionsDiv").appendChild(workflowListing.loadedWorkflowOptionsEl);
+    
+    //test for anchor tag, if it exists, load that workflow
+    if (window.location.hash.length > 1) {
+        workflowListing.select(window.location.hash.substr(1));
+    }
 }
 
 </script>
