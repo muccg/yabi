@@ -342,6 +342,9 @@ class UploadClient(LineReceiver):
             if header!="Connection":
                 self.sendLine(header+": "+value)
         self.sendLine("")
+    
+    def connectionMade(self):
+        print "connectionMade"
         
     def rawDataReceived(self, data):
         """Override this for when raw data is received.
