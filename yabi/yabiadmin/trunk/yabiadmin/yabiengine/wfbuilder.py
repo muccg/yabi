@@ -51,9 +51,13 @@ def build(username, workflow_json):
 
     except ObjectDoesNotExist, e:
         logger.critical(e)
+        import traceback
+        logger.debug(traceback.format_exc())        
         raise
     except KeyError, e:
         logger.critical(e)
+        import traceback
+        logger.debug(traceback.format_exc())        
         raise
     except Exception, e:
         logger.critical(e)

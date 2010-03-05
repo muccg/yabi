@@ -7,10 +7,6 @@ from yabiadmin.yabmin.models import BackendCredential
 
 from yabiadmin.yabiengine import backendhelper
 
-##import logging
-##import yabilogging
-##logger = logging.getLogger('yabiadmin')
-
 def validate_user(f):
     """
     Decorator that should be applied to all functions which take a username. It will check this username

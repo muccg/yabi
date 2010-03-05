@@ -92,8 +92,7 @@ def status(request, model, id):
             obj.status=status
             obj.save()
 
-            #TODO return something sensible here
-            return HttpResponse("Thanks!")
+            return HttpResponse("")
 
     except (ObjectDoesNotExist,ValueError):
         return HttpResponseNotFound("Object not found")

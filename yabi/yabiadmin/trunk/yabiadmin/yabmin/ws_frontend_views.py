@@ -22,8 +22,13 @@ from django.contrib import logging
 logger = logging.getLogger('yabiadmin')
 
 ## TODO do we want to limit tools to those the user can access?
-def tool(request, toolname):
+## will need to change call from front end to include username
+## then uncomment decorator
+#@validate_user
+def tool(request, *args, **kwargs):
     logger.debug('')
+
+    toolname = kwargs['toolname']
 
     try:
         tool = Tool.objects.get(name=toolname)
@@ -173,16 +178,6 @@ def get(request):
 
         return response
 
-    
-    #return HttpResponse(get_file(request.GET['uri']))
-#        return HttpResponse(open('/export/home/tech/macgregor/svn-devel/ccg/yabi/yabi-be-twisted/trunk/yabiadmin/alice.txt'))
-##         response = HttpResponse(FileIterWrapper(open('/export/home/tech/macgregor/svn-devel/ccg/yabi/yabi-be-twisted/trunk/yabiadmin/alice.txt')))
-##         response['Content-Disposition'] = 'attachment; filename=foo.xls'
-##         return response
-
-
-#        return HttpResponse(FileIterWrapper(open('/export/home/tech/macgregor/svn-devel/ccg/yabi/yabi-be-twisted/trunk/yabiadmin/alice.txt')))
-
     except Exception, e:
         return HttpResponseNotFound(json_error(e))
 
@@ -212,10 +207,6 @@ def put(request):
         logger.debug(files)
         
         bc = get_backendcredential_for_uri(yabiusername, uri)
-        #data = [('username', bc.credential.username),
-                    #('password', bc.credential.password),
-                    #('cert', bc.credential.cert),
-                    #('key', bc.credential.key)]
         data=[]
         
         resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(bc.credential.username),quote(bc.credential.password),quote( bc.credential.cert),quote(bc.credential.key))
@@ -239,9 +230,6 @@ def put(request):
 def submitworkflow(request):
     logger.debug('')
     logger.debug("POST KEYS: %r"%request.POST.keys())
-    
-    # probably want to catch the type of exceptions we may get from this
     yabistore_id = wfbuilder.build(request.POST['username'], request.POST["workflowjson"])
-    
     return HttpResponse(json.dumps({"id":yabistore_id}))
 
