@@ -20,6 +20,7 @@ TEMPLATE_DEBUG = DEBUG
 #
 YABIBACKEND = os.environ["YABIBACKEND"] if "YABIBACKEND" in os.environ else "localhost.localdomain:8000/"
 YABISTORE = os.environ["YABISTORE"] if "YABISTORE" in os.environ else "faramir.localdomain/yabistore/trunk"
+YABI_URL = "yabi://localhost.localdomain/" # this is used in builder for pointers to previous jobs
 
 # development deployment
 if "DJANGODEV" in os.environ:

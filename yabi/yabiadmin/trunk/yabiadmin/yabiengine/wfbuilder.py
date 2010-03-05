@@ -146,8 +146,6 @@ def addJob(workflow, job_dict, order):
         for bc in ebcs:
             logger.debug("%s: Backend: %s Credential: %s"%(bc,bc.credential,bc.backend))
         
-        #exec_backendcredential = backendhelper.get_backendcredential_for_uri(yabiusername, uri)
-        
         exec_backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.backend)
     except (ObjectDoesNotExist, MultipleObjectsReturned):
         logger.critical('Invalid credentials for user: %s and backend: %s' % (workflow.user, tool.backend))
@@ -197,15 +195,13 @@ def get_param_value(workflow, tp, job):
 
                 # handle links to previous nodes
                 if 'type' in item and 'jobId' in item:
-                    # TODO - adding localhost.localdomain to uri at the moment, should this be pulled in from somewhere
-
                     previous_job = job_cache[item['jobId']]
 
                     if previous_job.stageout == None:
                         value = eval(previous_job.commandparams)
                     else:
-                        value = [u"yabi://localhost.localdomain/%d/%d/" % (workflow.id, job_cache[item['jobId']].id)]
-
+                        value = [u"%s%d/%d/" % (settings.YABI_URL, workflow.id, job_cache[item['jobId']].id)]
+                        
                 # handle links to previous file selects
                 elif 'type' in item and 'filename' in item and 'root' in item:
                     if item['type'] == 'file':

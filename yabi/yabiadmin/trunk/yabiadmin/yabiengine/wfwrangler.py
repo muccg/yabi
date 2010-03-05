@@ -72,8 +72,6 @@ def prepare_tasks(job):
     logger.debug('=================================================== prepare_tasks ===========================================================')
     logger.info('Preparing tasks for jobid: %s...' % job.id)
 
-    input_files = []
-
     # get the backend for this job
     exec_bc = backendhelper.get_backendcredential_for_uri(job.workflow.user.name,job.exec_backend)
     exec_be = exec_bc.backend
@@ -105,12 +103,15 @@ def prepare_tasks(job):
 
         ##################################################
         # handle yabi:// uris
+        # fetches the stageout of previous job and
+        # adds that to paramlist to be processed
         ##################################################
         if param.startswith("yabi://"):
             logger.info('Processing uri %s' % param)
 
             # parse yabi uri
-            # TODO we may want to look at server later, but just getting path for now
+            # we may want to look up workflows and jobs on specific servers later,
+            # but just getting path for now as we have just one server
             scheme, uriparts = uriparse(param)
             workflowid, jobid = uriparts.path.strip('/').split('/')
             param_job = Job.objects.get(workflow__id=workflowid, id=jobid)
@@ -122,7 +123,7 @@ def prepare_tasks(job):
 
 
         ##################################################
-        # handle file:// uris that are directories
+        # handle yabifs:// uris that are directories
         ##################################################
 
         # uris ending with a / on the end of the path are directories
@@ -139,13 +140,12 @@ def prepare_tasks(job):
 
 
         ##################################################
-        # handle file:// uris
+        # handle yabifs:// uris
         ##################################################
         elif param.startswith("yabifs://"):
             logger.info('Processing uri %s' % param)            
             rest, filename = param.rsplit("/",1)
             tasks_to_create.append([job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc])
-            input_files.append(param)
 
 
         ##################################################
@@ -165,7 +165,7 @@ def prepare_tasks(job):
 
 
         ##################################################
-        # handle file:// uris
+        # handle gridftp:// uris
         ##################################################
         elif param.startswith("gridftp://"):
             logger.info('Processing uri %s' % param)            
@@ -174,8 +174,6 @@ def prepare_tasks(job):
             logger.debug("PROCESSING %s" % param)
             
             tasks_to_create.append([job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc])
-            input_files.append(param)
-            
             
 
         ##################################################
@@ -187,6 +185,7 @@ def prepare_tasks(job):
             logger.info('****************************************')
             raise Exception('Unknown file type.')
             
+
     ##
     ## now loop over these tasks and actually create them
     ##
