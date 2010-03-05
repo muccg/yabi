@@ -1,10 +1,15 @@
 from django.conf import settings
 import httplib
 from urllib import urlencode
-from django.core.exceptions import ObjectDoesNotExist
+from urlparse import urlparse
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib import logging
+
 logger = logging.getLogger('yabiengine')
+
+import re
+re_url_schema = re.compile(r'\w+')
 
 
 def uriparse(uri):
@@ -16,11 +21,11 @@ def uriparse(uri):
     and yabi:// is not one of them. The ParseResult object is read-only so
     we cannot inject the scheme back into it.
     """
-    from urlparse import urlparse
     logger.debug(uri)
 
     try:
         scheme, rest = uri.split(":",1)
+        assert re_url_schema.match(scheme)        
         return (scheme, urlparse(rest))
     except ValueError, e:
         logger.critical("%s - ValueError for uri: %s" % ("urihelper.uriparse", uri))
@@ -30,6 +35,11 @@ def uriparse(uri):
         logger.critical("%s - AttributeError for uri: %s" % ("urihelper.uriparse", uri))
         logger.critical("%s - %s" % ("urihelper.uriparse", e.message))
         raise
+
+
+def url_join(*args):
+    '''This is used to join subpaths to already constructed urls'''
+    return reduce(lambda a,b: a+b if a.endswith('/') else a+'/'+b, args)
 
     
 def get_backend_userdir(backendcredential, yabiusername):

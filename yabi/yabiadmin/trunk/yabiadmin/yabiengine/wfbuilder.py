@@ -117,8 +117,8 @@ def addJob(workflow, job_dict, order):
             command.append("%s%s" % (tp.switch, param_dict[tp.switch][0]))
 
         elif switchuse == 'pair':
-            pass # TODO figure out what to do with this one
-
+            raise Exception('Unimplemented switch type: pair')
+        
         elif switchuse == 'none':
             pass
 
@@ -231,19 +231,3 @@ def get_param_value(workflow, tp, job):
     logger.debug("get_param_value() returning: %s"%value)
     return value
 
-#TODO remove this - is it used?
-def slugify(value):
-    """
-    Normalizes string, converts to lowercase, removes non-alpha characters,
-    and converts spaces to hyphens.
-    TODO this function is from djangos defaultfilters.py which is not in mango
-    we should work on getting these back into mango and take advantage of all
-    of djangos safe string stuff
-    """
-    logger.debug('')
-
-    import unicodedata
-    import re
-    value = unicodedata.normalize('NFKD', value).encode('ascii', 'ignore')
-    value = unicode(re.sub('[^\w\s-]', '', value).strip().lower())
-    return re.sub('[-\s]+', '-', value)

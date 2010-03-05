@@ -9,24 +9,12 @@ from django.utils import simplejson as json, webhelpers
 from django.db.models.signals import post_save
 from django.utils.webhelpers import url
 import httplib, os
+from yabiadmin.yabiengine.urihelper import uriparse, url_join
 from urllib import urlencode
 
-# this is used to join subpaths to already cinstructed urls
-def url_join(*args):
-    return reduce(lambda a,b: a+b if a.endswith('/') else a+'/'+b, args)
+import logging
+logger = logging.getLogger('yabiengine')
 
-import urlparse
-import re
-re_url_schema = re.compile(r'\w+')
-
-# TODO can this be removed - may be in backendhelper already
-def parse_url(uri):
-    """Parse a url via the inbuilt urlparse. But this is slightly different
-    as it can handle non-standard schemas. returns the schema and then the
-    tuple from urlparse"""
-    scheme, rest = uri.split(":",1)
-    assert re_url_schema.match(scheme)
-    return scheme, urlparse.urlparse(rest)
 
 class Status(object):
     def get_status_colour(obj, status):
@@ -51,11 +39,6 @@ class Editable(object):
         return '<a href="%s">Edit</a>' % obj.edit_url()
     edit_link.short_description = 'Edit'
     edit_link.allow_tags = True
-
-
-
-import logging
-logger = logging.getLogger('yabiengine')
 
 
 class Workflow(models.Model, Editable, Status):
@@ -161,7 +144,7 @@ class Task(models.Model, Editable, Status):
             statusurl = webhelpers.url("/engine/status/task/%d" % self.id)
             errorurl = webhelpers.url("/engine/error/task/%d" % self.id)
 
-        fsscheme, fsbackend_parts = parse_url(self.job.fs_backend)
+        fsscheme, fsbackend_parts = uriparse(self.job.fs_backend)
 
         output = {
             "yabiusername":self.job.workflow.user.name,
@@ -197,7 +180,6 @@ class Task(models.Model, Editable, Status):
     def workflowid(self):
         return self.job.workflow.id
 
-    ## TODO fix link to use correct
     def link_to_syslog(self):
         return '<a href="%s?table_name=task&table_id=%d">%s</a>' % (url('/admin/yabiengine/syslog/'), self.id, "Syslog")
     link_to_syslog.allow_tags = True
@@ -249,8 +231,6 @@ class Syslog(models.Model):
                           )
 
 
-# TODO make this more robust.
-# add exceptions
 def yabistore_update(resource, data):
     logger.debug('')
     data = urlencode(data)
@@ -266,7 +246,7 @@ def yabistore_update(resource, data):
     
     status = r.status
     data = r.read()
-    
+    assert status == 200    
     logger.debug("result:")
     logger.debug(status)
     logger.debug(data)

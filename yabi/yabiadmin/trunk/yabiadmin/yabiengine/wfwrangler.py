@@ -8,29 +8,12 @@ from django.conf import settings
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog, StageIn
 from yabiadmin.yabmin.models import Backend, BackendCredential
 from yabiadmin.yabiengine.YabiJobException import YabiJobException
-from yabiadmin.yabiengine.urihelper import uriparse
+from yabiadmin.yabiengine.urihelper import uriparse, url_join
 from yabiadmin.yabiengine import backendhelper
 
 import logging
 logger = logging.getLogger('yabiengine')
 
-import urlparse
-import re
-re_url_schema = re.compile(r'\w+')
-
-# TODO can this be removed - may be in backendhelper already
-def parse_url(uri):
-    """Parse a url via the inbuilt urlparse. But this is slightly different
-    as it can handle non-standard schemas. returns the schema and then the
-    tuple from urlparse"""
-    scheme, rest = uri.split(":",1)
-    assert re_url_schema.match(scheme)
-    return scheme, urlparse.urlparse(rest)
-
-# TODO can this be removed - may be in backendhelper already
-# this is used to join subpaths to already constructed urls
-def url_join(*args):
-    return reduce(lambda a,b: a+b if a.endswith('/') else a+'/'+b, args)
 
 def walk(workflow):
     logger.debug('')
@@ -202,6 +185,7 @@ def prepare_tasks(job):
             logger.info('****************************************')
             logger.info('Unhandled type: ' + param)
             logger.info('****************************************')
+            raise Exception('Unknown file type.')
             
     ##
     ## now loop over these tasks and actually create them
@@ -261,8 +245,8 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
         t = Task(job=job, status=settings.STATUS['ready'])
         t.working_dir = str(uuid.uuid4()) # random uuid
         
-        fsscheme, fsbackend_parts = parse_url(job.fs_backend)
-        execscheme, execbackend_parts = parse_url(job.exec_backend)
+        fsscheme, fsbackend_parts = uriparse(job.fs_backend)
+        execscheme, execbackend_parts = uriparse(job.exec_backend)
         
         t.command = job.command.replace("%", url_join(fsbackend_parts.path,t.working_dir, "input", file))
         t.name = name
