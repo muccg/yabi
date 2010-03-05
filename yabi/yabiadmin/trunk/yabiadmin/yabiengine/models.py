@@ -118,6 +118,26 @@ class Job(models.Model, Editable, Status):
         return self.workflow.id
 
 
+    def update_json(self, data={}):
+        json_object = json.loads(self.workflow.json)
+        job_id = int(self.order)
+        assert json_object['jobs'][job_id]['jobId'] == job_id + 1 # jobs are 1 indexed in json
+
+        # status
+        json_object['jobs'][job_id]['status'] = self.status
+
+        # data
+        for key in data:
+            json_object['jobs'][job_id][key] = data[key]
+
+        #stageout
+        if self.stageout:
+            json_object['jobs'][job_id]['stageout'] = self.stageout
+
+        self.workflow.json = json.dumps(json_object)
+        self.workflow.save() # this triggers an update on yabistore
+
+
 class Task(models.Model, Editable, Status):
     job = models.ForeignKey(Job)
     start_time = models.DateTimeField(null=True, blank=True)
@@ -298,50 +318,24 @@ def job_save(sender, **kwargs):
     logger.debug('')
     job = kwargs['instance']
 
-    logger.debug("job.stageout=%s"%job.stageout)
-
     try:
-        json_object = json.loads(job.workflow.json)
-        job_id = int(job.order)
-        assert json_object['jobs'][job_id]['jobId'] == job_id + 1 # jobs are 1 indexed in json
 
-        # if our job status is complete, force the annotation of this in the workflow
-        if job.status==settings.STATUS['complete']:
-            json_object['jobs'][job_id]['status'] = job.status
-            json_object['jobs'][job_id]['tasksComplete'] = 1.0
-            json_object['jobs'][job_id]['tasksTotal'] = 1.0
-
-        elif job.status==settings.STATUS['error']:
-            json_object['jobs'][job_id]['status'] = job.status
-
-        elif job.status!="ready" and job.status!="complete":
-            if job.stageout:
-                json_object['jobs'][job_id]['stageout'] = job.stageout
-
-        job.workflow.json = json.dumps(json_object)
-        job.workflow.save() # this triggers an update on yabistore
+        if job.status == settings.STATUS['complete']:
+            data = {'tasksComplete':1.0,
+                    'tasksTotal':1.0
+                    }
+            job.update_json(data)
 
     except Exception, e:
         logger.critical(e)
         raise
 
     
-## TODO task status update should be like job and not call yabistore_update directly
 def task_save(sender, **kwargs):
     logger.debug('')
     task = kwargs['instance']
 
     try:
-        # update the yabistore
-        if kwargs['created']:
-            resource = os.path.join(settings.YABISTORE_BASE,'tasks',task.job.workflow.user.name)
-        else:
-            resource = os.path.join(settings.YABISTORE_BASE,'tasks',task.job.workflow.user.name, str(task.id) )
-
-        data = {'error_msg':task.error_msg,
-                'status':task.status
-                }
-        
         # get all the tasks for this job
         jobtasks = Task.objects.filter(job=task.job)
         running = False
@@ -366,64 +360,62 @@ def task_save(sender, **kwargs):
                 'complete':1.0,
                 'error':0.0
                 }[status]
-                
-            if status!='ready' and status!='requested':
-                running=True
-            
-            if status=='error':
-                error=True
-        
-        #from django.db.models import Count
+
         total = float(len(jobtasks))
-        done=score
+
+        if status != settings.STATUS['ready'] and status != settings.STATUS['requested']:
+            running = True
+
+        if status == settings.STATUS['error']:
+            error = True
 
         # work out if this job is in an error state
-        errored = [X.error_msg for X in jobtasks if X.status=='error']
-        
+        errored = [X.error_msg for X in jobtasks if X.status == settings.STATUS['error']]
+
         status = None
         if error:
-            status="error"
-        elif done==total:
-            status="completed"
+            status = settings.STATUS['error']
+        elif score == total:
+            status = settings.STATUS['complete']
         elif running:
-            status="running"
+            status = settings.STATUS['running']
         else:
-            status="pending"
-        
-        errorMessage = None if not error else errored[0]
-        
-        if error:
-            logger.debug("ERROR! message= %s" % errored[0])
-        
-            # if there are errors, and the relative job has a status that isn't 'error'
-            if task.job.status != 'error':
-                # set the job to error
-                task.job.status='error'
-                task.job.save()
-        
-        if not kwargs['created']:
-            resource = os.path.join(settings.YABISTORE_BASE,'workflows',task.job.workflow.user.name, str(task.job.workflow.yabistore_id), str(task.job.order) )
-            data = dict(    status=status,
-                            tasksComplete=float(done),
-                            tasksTotal=float(total)
-                        )
-            if errorMessage:
-                data['errorMessage']=errorMessage
-                            
-            #print "task_save::yabistoreupdate",resource,data
-            yabistore_update(resource, data)
-            
-            
+            status = settings.STATUS['pending']
 
-        #Checks all the tasks are complete, if so, changes status on job
-        #and triggers the workflow walk
+        errorMessage = None if not error else errored[0]
+
+        if error:
+            logger.debug("ERROR! message = %s" % errorMessage)
+
+            # if there are errors, and the relative job has a status that isn't 'error'
+            if task.job.status != settings.STATUS['error']:
+                # set the job to error
+                task.job.status = settings.STATUS['error']
+
+
+        # now update the json with the appropriate values
+        data = {'tasksComplete':float(score),
+                'tasksTotal':float(total)
+                }
+        if errorMessage:
+            data['errorMessage'] = errorMessage
+            
+        task.job.update_json(data)
+        task.job.status = status
+
+        # this save will trigger saves right up to the workflow level
+        task.job.save()
+
+
+        # now double check all the tasks are complete, if so, change status on job
+        # and trigger the workflow walk
         incomplete_tasks = Task.objects.filter(job=task.job).exclude(status=settings.STATUS['complete'])
         if not len(incomplete_tasks):
             task.job.status = settings.STATUS['complete']
             task.job.save()
             wfwrangler.walk(task.job.workflow)
 
-        # check for error status
+        # double check for error status
         # set the job status to error
         error_tasks = Task.objects.filter(job=task.job, status=settings.STATUS['error'])
         if error_tasks:
@@ -435,7 +427,6 @@ def task_save(sender, **kwargs):
         raise
 
 
-        
 
 # connect up django signals
 post_save.connect(workflow_save, sender=Workflow)
