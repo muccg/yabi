@@ -19,6 +19,7 @@ import urlparse
 import re
 re_url_schema = re.compile(r'\w+')
 
+# TODO can this be removed - may be in backendhelper already
 def parse_url(uri):
     """Parse a url via the inbuilt urlparse. But this is slightly different
     as it can handle non-standard schemas. returns the schema and then the
