@@ -138,29 +138,26 @@ def addJob(workflow, job_dict, order):
     # add a list of input file extensions as string, we will reconstitute this for use in the wfwrangler
     job.input_filetype_extensions = str(tool.input_filetype_extensions())
 
+
     try:
-        ebcs = BackendCredential.objects.filter(credential__user=workflow.user, backend=tool.backend)
-        
-        logger.debug("EBCS returned: %s"%(ebcs))
-        
-        for bc in ebcs:
-            logger.debug("%s: Backend: %s Credential: %s"%(bc,bc.credential,bc.backend))
-        
         exec_backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.backend)
     except (ObjectDoesNotExist, MultipleObjectsReturned):
-        logger.critical('Invalid credentials for user: %s and backend: %s' % (workflow.user, tool.backend))
-        raise
-    try:
-        # TODO: select the correct fsbackend here...
-        logger.debug("fetching fsbackends...")
-        
-        ebcs = BackendCredential.objects.filter(credential__user=workflow.user, backend=tool.fs_backend)
+        logger.critical('Invalid filesystem backend credentials for user: %s and backend: %s' % (workflow.user, tool.backend))
+        logger.debug("EBCS returned: %s"%(ebcs))
+        ebcs = BackendCredential.objects.filter(credential__user=workflow.user, backend=tool.backend)
         for bc in ebcs:
             logger.debug("%s: Backend: %s Credential: %s"%(bc,bc.credential,bc.backend))
-        
+        raise
+
+
+    try:
         fs_backendcredential = BackendCredential.objects.get(credential__user=workflow.user, backend=tool.fs_backend)
     except (ObjectDoesNotExist, MultipleObjectsReturned):
-        logger.critical('Invalid credentials for user: %s and backend: %s' % (workflow.user, tool.fs_backend))
+        logger.critical('Invalid filesystem backend credentials for user: %s and backend: %s' % (workflow.user, tool.fs_backend))
+        logger.debug("FS Backend Credentials returned: %s"%(ebcs))
+        fsbcs = BackendCredential.objects.filter(credential__user=workflow.user, backend=tool.fs_backend)
+        for bc in fsbcs:
+            logger.debug("%s: Backend: %s Credential: %s"%(bc,bc.credential,bc.backend))
         raise
 
 
