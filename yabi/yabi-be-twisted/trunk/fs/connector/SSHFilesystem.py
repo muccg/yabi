@@ -24,7 +24,7 @@ class SSHFilesystem(FSConnector.FSConnector, KeyStore.KeyStore):
     """This is the resource that connects to the globus gridftp backends"""
     VERSION=0.1
     NAME="SSH Filesystem"
-    copymode = "gsiftp"
+    copymode = "ssh"
     
     def __init__(self):
         FSConnector.FSConnector.__init__(self)
@@ -35,7 +35,7 @@ class SSHFilesystem(FSConnector.FSConnector, KeyStore.KeyStore):
         
         if not creds:
             # get the creds for this user/host
-            
+            pass
             
         # get cred filename
         credfile = self.save_identity(creds['key'])
