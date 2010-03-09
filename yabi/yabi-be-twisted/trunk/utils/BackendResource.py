@@ -25,7 +25,7 @@ class BackendResource(object):
         'brief' is just a short textual description for error reporting. should be 'exec' or 'fs'
         """
         connectors = [name for name in dir(connector) if not name.startswith('_') and name != skip]
-        print "Connectors:",connectors
+        print "Connectors:",dir(connector)
         for connector_name in connectors:
             conn = getattr(connector,connector_name)
             if hasattr(conn,'ENV_CHILD_INHERIT') and hasattr(conn,'ENV_CHECK') and hasattr(conn,'SCHEMA'):
