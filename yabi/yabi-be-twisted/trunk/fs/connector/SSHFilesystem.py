@@ -8,6 +8,7 @@ from FifoPool import Fifos
 from twisted.internet import protocol
 from twisted.internet import reactor
 import os
+from ssh import KeyStore
 
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
 ENV_CHILD_INHERIT = ['PATH']
