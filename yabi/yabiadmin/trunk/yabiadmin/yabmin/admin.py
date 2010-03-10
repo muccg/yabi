@@ -56,23 +56,6 @@ class ToolParameterInline(admin.TabularInline):
     formset = ToolParameterFormset
     extra = 3
 
-class ToolRslExtensionModuleInline(admin.TabularInline):
-    model = ToolRslExtensionModule
-    extra = 3
-
-class ToolRslArgumentOrderFormset(BaseInlineFormSet):
-    def get_queryset(self):
-        return super(ToolRslArgumentOrderFormset, self).get_queryset().order_by('rank')
-
-class ToolRslArgumentOrderInline(admin.TabularInline):
-    model = ToolRslArgumentOrder
-    formset = ToolRslArgumentOrderFormset
-    extra = 7
-
-class ToolRslInfoAdmin(AdminBase):
-    list_display = ['tool_name', 'executable']
-    inlines = [ToolRslArgumentOrderInline, ToolRslExtensionModuleInline]
-
 class ToolAdmin(AdminBase):
     form = ToolForm
     list_display = ['name', 'display_name', 'path', 'enabled', 'backend', 'fs_backend', 'tool_groups_str', 'tool_link', 'created_by', 'created_on']
@@ -123,7 +106,6 @@ admin.site.register(Tool, ToolAdmin)
 admin.site.register(ToolGroup, ToolGroupAdmin)
 admin.site.register(ToolSet, ToolSetAdmin)
 admin.site.register(User, UserAdmin)
-admin.site.register(ToolRslInfo, ToolRslInfoAdmin)
 admin.site.register(Credential, CredentialAdmin)
 admin.site.register(BackendCredential, BackendCredentialAdmin)
 admin.site.register(Backend, BackendAdmin)
