@@ -54,6 +54,8 @@ class Tool(Base):
     batch_on_param_bundle_files = models.NullBooleanField(null=True, blank=True)
     cpus = models.CharField(max_length=64, null=True, blank=True)
     walltime = models.CharField(max_length=64, null=True, blank=True)
+    module = models.TextField(null=True, blank=True)
+
 
     def tool_groups_str(self):
         return ",".join(
@@ -95,6 +97,9 @@ class Tool(Base):
             'enabled':self.enabled,
             'accepts_input':self.accepts_input,
             'batch_on_param':self.batch_on_param.switch if self.batch_on_param else '',
+            'cpus':self.cpus,
+            'walltime':self.walltime,
+            'module':self.module,
             'job_type': self.backend.name,
             'inputExtensions': self.input_filetype_extensions(),
             'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__extension")),            
