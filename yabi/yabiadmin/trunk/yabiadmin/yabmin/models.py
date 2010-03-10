@@ -55,6 +55,9 @@ class Tool(Base):
     cpus = models.CharField(max_length=64, null=True, blank=True)
     walltime = models.CharField(max_length=64, null=True, blank=True)
     module = models.TextField(null=True, blank=True)
+    queue = models.CharField(max_length=50, default='normal')
+    max_memory = models.PositiveIntegerField()
+    job_type = models.CharField(max_length=40, default='single')
 
 
     def tool_groups_str(self):
@@ -100,7 +103,9 @@ class Tool(Base):
             'cpus':self.cpus,
             'walltime':self.walltime,
             'module':self.module,
-            'job_type': self.backend.name,
+            'queue':self.queue,
+            'max_memory':self.max_memory,
+            'job_type': self.job_type,
             'inputExtensions': self.input_filetype_extensions(),
             'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__extension")),            
             'parameter_list': list(self.toolparameter_set.order_by('id').values("id", "rank", "mandatory", "input_file", "output_file",
@@ -173,28 +178,6 @@ class ToolParameter(Base):
         filetypes = self.accepted_filetypes.all()
         extensions = [ext.extension for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]
         return list(set(extensions)) # remove duplicates
-
-
-class ToolRslInfo(Base):
-    executable = models.CharField(max_length=50)
-    count = models.PositiveIntegerField()
-    queue = models.CharField(max_length=50, default='normal')
-    max_wall_time = models.PositiveIntegerField()
-    max_memory = models.PositiveIntegerField()
-    job_type = models.CharField(max_length=40, default='single')
-    tool = models.OneToOneField(Tool)
-
-    def tool_name(self):
-        return self.tool.name
-
-class ToolRslExtensionModule(Base):
-    tool_rsl = models.ForeignKey(ToolRslInfo)
-    name = models.CharField(max_length=50)
-
-class ToolRslArgumentOrder(Base):
-    tool_rsl = models.ForeignKey(ToolRslInfo)
-    name = models.CharField(max_length=50)
-    rank = models.PositiveIntegerField(null=True, blank=True)
 
 class ToolOutputExtension(Base):
     tool = models.ForeignKey(Tool)
