@@ -20,5 +20,7 @@ class KeyStore(object):
         fh.write( identity )
         fh.close()
         
-        return weakref.ref(filename, lambda r: os.unlink(r))
+        return filename
+        
+    
        

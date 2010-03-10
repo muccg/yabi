@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Web2 style resource that is gonna serve our children"""
 from twisted.web2 import resource, http_headers, responsecode, http
 import os, sys
@@ -64,6 +65,7 @@ from fs.resource import FSResource
 
 from fs.connector.LocalFilesystem import LocalFilesystem
 from fs.connector.GridFTP import GridFTP
+from fs.connector.SSHFilesystem import SSHFilesystem
 
 ##
 ## Execution resources
