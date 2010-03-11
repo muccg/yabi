@@ -179,6 +179,11 @@ def addJob(workflow, job_dict, order):
 
     job.cpus = tool.cpus
     job.walltime = tool.walltime
+    job.module = tool.module
+    job.queue = tool.queue
+    job.max_memory = tool.max_memory
+    job.job_type = tool.job_type
+
     job.save()
 
 

@@ -78,6 +78,10 @@ class Job(models.Model, Editable, Status):
     end_time = models.DateTimeField(null=True)
     cpus = models.CharField(max_length=64, null=True, blank=True)
     walltime = models.CharField(max_length=64, null=True, blank=True)
+    module = models.TextField(null=True, blank=True)
+    queue = models.CharField(max_length=50, default='normal', null=True, blank=True)
+    max_memory = models.PositiveIntegerField(null=True, blank=True)
+    job_type = models.CharField(max_length=40, default='single', null=True, blank=True)
     status = models.CharField(max_length=64, blank=True)
     exec_backend = models.CharField(max_length=256)
     fs_backend = models.CharField(max_length=256)
@@ -153,11 +157,17 @@ class Task(models.Model, Editable, Status):
             "errorurl":errorurl,
             "stagein":[],
             "exec":{
-                    "command":self.command,
-                    "backend": url_join(self.job.exec_backend),
-                    "fsbackend": url_join(self.job.fs_backend, self.working_dir),
-                    "workingdir": os.path.join(fsbackend_parts.path,self.working_dir)
-                    },
+                "command":self.command,
+                "backend": url_join(self.job.exec_backend),
+                "fsbackend": url_join(self.job.fs_backend, self.working_dir),
+                "workingdir": os.path.join(fsbackend_parts.path,self.working_dir),
+                "cpus": self.job.cpus,
+                "walltime": self.job.walltime,
+                "module": self.job.module,
+                "queue": self.job.queue,
+                "max_memory":self.job.max_memory,
+                "job_type":self.job.job_type
+                },
             "stageout":self.job.stageout+"/"+("" if not self.name else self.name+"/")
             }
 
