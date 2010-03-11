@@ -77,7 +77,7 @@ if direction == L2R:
     proc.stdin.close()
 
     if proc.wait() != 0:
-        print "ERROR:",proc.stdout.read()
+        print "ERROR:",proc.stdout.read(),proc.stderr.read()
         sys.exit(3)
     else:
         print proc.stdout.read()
@@ -105,7 +105,7 @@ elif direction == R2L:
     fh.close()
 
     if proc.wait() != 0:
-        print "ERROR:",proc.stdout.read()
+        print "ERROR:",proc.stdout.read(),proc.stderr.read()
         sys.exit(4)
     else:
         print proc.stdout.read()
