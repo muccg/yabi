@@ -1,8 +1,10 @@
+# -*- coding: utf-8 -*-
 
 PRINT_RSL = False
 
 def RSL( **kws ):
     kws['argument_block']="".join(["  <argument>%s</argument>\n"%ARG for ARG in kws['args']])
+    kws['module_block']="".join(["   <module>%s</module>\n"%ARG for ARG in kws['modules']])
     return """<?xml version="1.0"?>
 <job>
   <executable>%(command)s</executable>
@@ -15,7 +17,7 @@ def RSL( **kws ):
   <maxMemory>%(maxMemory)d</maxMemory>
   <jobType>%(jobType)s</jobType>
   <extensions>
-    <module>%(module)s</module>
+  (module_block)s
   </extensions>
 
 </job>
@@ -32,8 +34,9 @@ def ConstructRSL(
     maxMemory = 1024,
     cpus = 1,
     queue = "testing",
-    jobType = "single"):
-    return RSL(address=address, command=command, args=args, directory=directory, stdout=stdout, stderr=stderr, maxWallTime=maxWallTime, maxMemory=maxMemory, cpus=cpus, queue=queue, jobType=jobType, module="blast")
+    jobType = "single",
+    modules = []):
+    return RSL(address=address, command=command, args=args, directory=directory, stdout=stdout, stderr=stderr, maxWallTime=maxWallTime, maxMemory=maxMemory, cpus=cpus, queue=queue, jobType=jobType, modules=modules)
     
 import tempfile
 def writersltofile(rsl):

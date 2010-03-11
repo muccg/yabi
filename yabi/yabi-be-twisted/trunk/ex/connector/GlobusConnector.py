@@ -36,7 +36,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         globus.Auth.GlobusAuth.__init__(self)
         self.CreateAuthProxy()
     
-    def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", **creds):
+    def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, max_memory=1024, cpus=1, queue="testing", job_type="single", module=None, **creds):
         # use shlex to parse the command into executable and arguments
         lexer = shlex.shlex(command, posix=True)
         lexer.wordchars += r"-.:;/"
@@ -49,11 +49,12 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
             stdout = stdout,
             stderr = stderr,
             address = host,
-            maxWallTime = maxWallTime,
-            maxMemory = maxMemory,
+            maxWallTime = walltime,
+            maxMemory = max_memory,
             cpus = cpus,
             queue = queue,
-            jobType = jobType
+            jobType = job_type,
+            modules = [] if not module else [X.strip() for X in module.split(",")]
         )
         
         # store the rsl in a file
