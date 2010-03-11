@@ -24,7 +24,8 @@ class SCPError(Exception):
     pass
 
 class SSHCopy(BaseShell):
-    scp = "ssh-copy"
+    scp = os.path.join( os.path.dirname(os.path.realpath(__file__)), "ssh-copy.py" )
+    python = "/usr/bin/python"
     
     def WriteToRemote(self, certfile, remoteurl, fifo=None):
         subenv = self._make_env()
@@ -34,11 +35,10 @@ class SSHCopy(BaseShell):
             
         remotehost,remotepath = remoteurl.split(':',1)
             
-        command = [   self.scp,
+        command = [   self.python, self.scp,
                 "-C",                       # compress
                 "-i",certfile,              # keyfile
                 "-P","22",                  # port
-                "-q",                       # quiet
                 fifo,                       # localfile
                 remoteurl
             ]
@@ -65,11 +65,10 @@ class SSHCopy(BaseShell):
             fifo = Fifos.Get()
             
         return BaseShell.execute(self,SCPProcessProtocol,
-            [   self.scp,
+            [   self.python, self.scp,
                 "-C",
                 "-i",certfile,
                 "-P","22",
-                "-q",
                 remoteurl,
                 fifo
             ]

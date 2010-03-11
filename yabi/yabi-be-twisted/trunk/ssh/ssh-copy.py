@@ -16,12 +16,15 @@ direction = None
 
 parser = OptionParser()
 parser.add_option( "-i", "--identity", dest="identity", help="RSA keyfile" )
-parser.add_option( "-C", "--compress", dest="compress", help="use ssh stream compression" )
+parser.add_option( "-C", "--compress", dest="compress", help="use ssh stream compression", action="store_true", default=False )
 parser.add_option( "-P", "--port", dest="port", help="port to connect to ssh on" )
 parser.add_option( "-L", "--local-to-remote", dest="l2r", help="force local to remote" )
 parser.add_option( "-R", "--remote-to-local", dest="r2l", help="force remote to local" )
 
 (options, args) = parser.parse_args()
+
+print "options",options
+print "args",args
 
 if len(args)!=2:
     print "Error: Must have input and output file specified"
@@ -54,7 +57,7 @@ if options.identity:
 if options.compress:
     extra_args.extend(["-C"])
 if options.port:
-    extra_args.extend(["-P",options.port])
+    extra_args.extend(["-p",options.port])
     
 if direction == L2R:
     # 
@@ -63,6 +66,7 @@ if direction == L2R:
     hostpart, path = outfile.split(':',1)
     user, host = hostpart.split('@',1)
         
+    print [SSH] + extra_args + [ "%s@%s"%(user,host), "cat >'%s'"%path]
     proc = subprocess.Popen( [SSH] + extra_args + [ "%s@%s"%(user,host), "cat >'%s'"%path], stdin=subprocess.PIPE, stdout=subprocess.PIPE )
 
     # write input file in
