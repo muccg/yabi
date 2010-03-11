@@ -55,9 +55,9 @@ class Tool(Base):
     cpus = models.CharField(max_length=64, null=True, blank=True)
     walltime = models.CharField(max_length=64, null=True, blank=True)
     module = models.TextField(null=True, blank=True)
-    queue = models.CharField(max_length=50, default='normal')
-    max_memory = models.PositiveIntegerField()
-    job_type = models.CharField(max_length=40, default='single')
+    queue = models.CharField(max_length=50, default='normal', null=True, blank=True)
+    max_memory = models.PositiveIntegerField(null=True, blank=True)
+    job_type = models.CharField(max_length=40, default='single', null=True, blank=True)
 
 
     def tool_groups_str(self):
