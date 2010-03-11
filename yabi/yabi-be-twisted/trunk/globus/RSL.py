@@ -5,7 +5,7 @@ PRINT_RSL = False
 def RSL( **kws ):
     kws['argument_block']="".join(["  <argument>%s</argument>\n"%ARG for ARG in kws['args']])
     kws['module_block']="".join(["   <module>%s</module>\n"%ARG for ARG in kws['modules']])
-    rsl """<?xml version="1.0"?>
+    rsl = """<?xml version="1.0"?>
 <job>
   <executable>%(command)s</executable>
   <directory>%(directory)s</directory>
@@ -17,7 +17,7 @@ def RSL( **kws ):
   <maxMemory>%(maxMemory)d</maxMemory>
   <jobType>%(jobType)s</jobType>
   <extensions>
-  (module_block)s
+%(module_block)s
   </extensions>
 
 </job>
