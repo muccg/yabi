@@ -253,7 +253,7 @@ class TaskManager(object):
                     # create extra parameter list
                     extras = {}
                     for key in [ 'cpus', 'job_type', 'max_memory', 'module', 'queue', 'walltime' ]:
-                        if key in task['exec']:
+                        if key in task['exec'] and task['exec'][key]:
                             extras[key]=task['exec'][key]
                     
                     Exec(uri, command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=yabiusername, **extras)                # this blocks untill the command is complete.
