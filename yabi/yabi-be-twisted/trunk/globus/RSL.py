@@ -13,7 +13,7 @@ def RSL( **kws ):
   <stderr>%(stderr)s</stderr>
   <count>%(cpus)d</count>
   <queue>%(queue)s</queue>
-  <maxWallTime>%(maxWallTime)d</maxWallTime>
+  <maxWallTime>%(maxWallTime)s</maxWallTime>
   <maxMemory>%(maxMemory)d</maxMemory>
   <jobType>%(jobType)s</jobType>
   <extensions>
@@ -30,7 +30,7 @@ def ConstructRSL(
     directory = "/tmp",
     stdout = "/dev/null",
     stderr = "/dev/null",
-    maxWallTime = 60,
+    maxWallTime = "60:00:00",
     maxMemory = 1024,
     cpus = 1,
     queue = "testing",
