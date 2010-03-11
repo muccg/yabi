@@ -177,7 +177,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         and fifo being the filesystem location of the fifo.
         """
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
-        dst = os.path.join(self._make_remote_url(host,path),filename)
+        dst = "%s@%s:%s"%(username,host,os.path.join(path,filename))
         
         # make sure we are authed
         if not creds:
