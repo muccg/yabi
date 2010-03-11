@@ -119,6 +119,9 @@ def Exec(backend, command, callbackfunc=None, **kwargs):
     #print "callbackfunc:",[callbackfunc]
     #print "kwargs:",kwargs
     
+    print "EXEC:",backend,"command:",command,"kwargs:",kwargs
+    
+    
     kwargs['uri']=backend
     
     POST(EXEC_PATH, command=command, datacallback=callbackfunc, **kwargs )
