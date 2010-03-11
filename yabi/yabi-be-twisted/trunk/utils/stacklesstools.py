@@ -19,7 +19,7 @@ from stackless import schedule, tasklet
 from CallbackHTTPClient import CallbackHTTPClient, CallbackHTTPClientFactory, CallbackHTTPDownloader
 from RememberingHTTPClient import RememberingHTTPClient, RememberingHTTPClientFactory, RememberingHTTPDownloader
 
-DEBUG = True
+DEBUG = False
 
 from conf import config
 
