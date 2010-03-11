@@ -5,7 +5,7 @@ PRINT_RSL = False
 def RSL( **kws ):
     kws['argument_block']="".join(["  <argument>%s</argument>\n"%ARG for ARG in kws['args']])
     kws['module_block']="".join(["   <module>%s</module>\n"%ARG for ARG in kws['modules']])
-    return """<?xml version="1.0"?>
+    rsl """<?xml version="1.0"?>
 <job>
   <executable>%(command)s</executable>
   <directory>%(directory)s</directory>
@@ -22,6 +22,8 @@ def RSL( **kws ):
 
 </job>
 """%(kws)
+    print "RSL:",rsl
+    return rsl
 
 def ConstructRSL(
     address = 'https://xe-ng2.ivec.org:8443/wsrf/services/ManagedJobFactoryService',
