@@ -249,7 +249,14 @@ class TaskManager(object):
                 
                 try:
                     uri = task['exec']['backend']+outputdir
-                    Exec(uri, command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=yabiusername)                # this blocks untill the command is complete.
+                    
+                    # create extra parameter list
+                    extras = {}
+                    for key in [ 'cpus', 'job_type', 'max_memory', 'module', 'queue', 'walltime' ]:
+                        if key in task['exec']:
+                            extras[key]=task['exec'][key]
+                    
+                    Exec(uri, command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=yabiusername, **extras)                # this blocks untill the command is complete.
                     log("Execution finished")
                 except GETFailure, error:
                     # error executing
