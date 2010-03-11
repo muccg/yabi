@@ -61,7 +61,7 @@ def wsgiapp(environ, start):
     return WSGIHandler()(environ,start)
 
 # lets build a test web proxy object
-import proxy
+#import proxy
 
 # now we are either the base resource, or we need to create a base resource and then create
 # a child_ chain to the resource.
@@ -99,7 +99,7 @@ else:
     
     base = BaseResource()
     
-    base.child_proxy = proxy.ReverseProxyResource("faramir.localdomain",9001,"/")
+    #base.child_proxy = proxy.ReverseProxyResource("faramir.localdomain",9001,"/")
 
 # Setup default common access logging
 res = log.LogWrapperResource(base)

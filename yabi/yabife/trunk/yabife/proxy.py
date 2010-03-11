@@ -199,6 +199,58 @@ class UploadHTTPDownloader(UploadHTTPClientFactory):
         self.deferred.callback(self.value)
 
 
+def POST(host,port,path,postdata):
+    factory = UploadHTTPClientFactory(
+        str("http://%s:%d%s"%(host,port,path)),
+        agent = USER_AGENT,
+        method="POST",
+        postdata=postdata,
+        headers={
+            'Content-Type':"application/x-www-form-urlencoded",
+            'Accept':'*/*',
+            'Content-Length':"65"
+            },
+        )
+        
+    factory.noisy=False
+        
+    get_complete = [False]
+    get_failed = [False]
+    
+    # now if the get fails for some reason. deal with it
+    def _doFailure(data):
+        if isinstance(data,Failure):
+            exc = data.value
+            get_failed[0] = -1, str(exc), "Tried to POST %s to %s.\nRemote response was:\n%s"%(postdata,str("http://%s:%d%s"%(host,port,path)),factory.last_client.errordata)
+        else:
+            get_failed[0] = int(factory.status), factory.message, "Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
+    
+    def _doSuccess(data):
+        #print "Post success"
+        get_complete[0] = int(factory.status), factory.message, data
+        
+    factory.deferred.addCallback(_doSuccess).addErrback(_doFailure)
+
+    reactor.connectTCP(host, port, factory)
+    
+    # now we schedule this thread until the task is complete
+    while not get_complete[0] and not get_failed[0]:
+        #print "P"
+        schedule()
+        
+    if get_failed[0]:
+        if type(get_failed[0])==tuple and len(get_failed[0])==3:
+            # failed naturally
+            raise GETFailure(get_failed[0])
+        elif get_failed[0]:
+            # failed by tasklet serialisation and restoration
+            return POST(path, host=host, port=port, datacallback=datacallback, **kws)
+        else:
+            #print "POSTFailed=",get_failed
+            assert False, "got unknown POST failure response"
+    
+    return get_complete[0]
+
 @class_annotate
 class MimeStreamDecoder(object):
     """This is my super no memory usage streaming Mime upload decoder"""
@@ -210,6 +262,9 @@ class MimeStreamDecoder(object):
         self.remoteport = remoteport
         
         self.boundary = None                    # the mime boundary marker
+        
+        # open a connection to upload the files
+        
         
     def set_boundary(self, boundary):
         self.boundary = boundary
@@ -290,8 +345,7 @@ class ProxyClient(HTTPClient):
                 self.wait_for_continue = True
             if header!="Connection":
                 self.sendHeader(header, value)
-        self.endHeaders()   
-        
+        self.endHeaders()
         
     def dummy_(self):
         # now lets copy any instream down the pipola!
@@ -626,7 +680,7 @@ class ReverseProxyResourceConnector(object):
                     """Override the readers and writers to do HTTP file uploads to the remote proxy"""
                     pass
                 
-                parser = MyMimeStreamDecoder(self.connector.host,self.connector.port,self.path)
+                parser = MyMimeStreamDecoder(self.connector.host,self.connector.port,self.path, request)
                 parser.set_boundary(boundary)
                 
                 reader = req.stream.read()
