@@ -5,7 +5,7 @@ from twisted.internet import reactor
 
 from BaseShell import BaseShell, BaseShellProcessProtocol
 
-DEBUG = False
+DEBUG = True
 
 class SSHShellProcessProtocol(BaseShellProcessProtocol):
     pass
