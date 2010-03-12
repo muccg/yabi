@@ -20,6 +20,8 @@ class KeyStore(object):
         fh.write( identity )
         fh.close()
         
+        os.chmod( filename, 0600 )
+        
         return filename
         
     

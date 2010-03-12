@@ -16,7 +16,7 @@ class SCPProcessProtocol(BaseShellProcessProtocol):
     def connectionMade(self):
         self.transport.closeStdin()
         self.started = True
-        
+                
     def isStarted(self):
         return self.started
         
