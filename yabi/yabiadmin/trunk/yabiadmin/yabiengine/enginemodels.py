@@ -311,6 +311,7 @@ def task_save(sender, **kwargs):
 
     # TODO this code that works out how many tasks are done
     # should move to job model
+    # TODO REFACTOR move to job perhaps
     try:
         # get all the tasks for this job
         jobtasks = Task.objects.filter(job=task.job)

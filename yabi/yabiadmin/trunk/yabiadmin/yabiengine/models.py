@@ -105,6 +105,10 @@ class Job(models.Model, Editable, Status):
     def workflowid(self):
         return self.workflow.id
 
+
+    # TODO REFACTOR
+    # THis does not modify the job, should be moved to workflow, or maybe to 
+    # engine workflow
     def update_json(self, data={}):
         json_object = json.loads(self.workflow.json)
         job_id = int(self.order)
