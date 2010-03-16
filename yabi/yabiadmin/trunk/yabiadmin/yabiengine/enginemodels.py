@@ -32,6 +32,7 @@ class EngineJob(Job):
     class Meta:
         proxy = True
 
+    # TODO
     # Most of this method is building up the commend line, refactor into its own class,def
     def addJob(self, job_dict):
         logger.debug('')
@@ -109,6 +110,7 @@ class EngineJob(Job):
 
    
         # TODO HARDCODED
+        # if we need a null backend, then we should create one that just marks any jobs it gets as completed
         # set status to complete if null backend
         if tool.backend.name == 'nullbackend':
             self.status = settings.STATUS['complete']
@@ -143,17 +145,18 @@ class EngineJob(Job):
 
 
         #TODO hardcoded
+        # See above, we should delete this nullbackend specific stuff, does it matter if it has a stageout dir?
         if tool.backend.name == 'nullbackend':
             self.stageout = None
         else:
             self.stageout = "%s%s/" % (self.workflow.stageout, "%d - %s"%(self.order+1,tool.display_name) )
-        
+       
+            # TODO delete this, make it a job for the backends
             # make that directory
             backendhelper.mkdir(self.workflow.user.name, self.stageout)
 
         self.exec_backend = exec_backendcredential.homedir_uri
         self.fs_backend = fs_backendcredential.homedir_uri
-
         self.cpus = tool.cpus
         self.walltime = tool.walltime
         self.module = tool.module
@@ -162,6 +165,7 @@ class EngineJob(Job):
         self.job_type = tool.job_type
 
         self.save()
+
 
     # TODO used in job.save above, needs to be moved along with the command line code from job.save into its own class/def
     def get_param_value(self, tp):
