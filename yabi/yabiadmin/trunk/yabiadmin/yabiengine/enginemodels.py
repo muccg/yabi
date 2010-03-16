@@ -295,6 +295,10 @@ def job_save(sender, **kwargs):
                     }
             job.update_json(data)
 
+        elif job.status == settings.STATUS['error']:
+            job.workflow.status = settings.STATUS['error']
+            job.workflow.save()
+
     except Exception, e:
         logger.critical(e)
         raise
@@ -304,6 +308,9 @@ def task_save(sender, **kwargs):
     logger.debug('')
     task = kwargs['instance']
 
+
+    # TODO this code that works out how many tasks are done
+    # should move to job model
     try:
         # get all the tasks for this job
         jobtasks = Task.objects.filter(job=task.job)
