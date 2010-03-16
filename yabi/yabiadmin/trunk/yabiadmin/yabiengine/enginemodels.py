@@ -38,14 +38,12 @@ class EngineJob(Job):
 
         tool = Tool.objects.get(name=job_dict["toolName"])
 
-        #job = Job(workflow=workflow, order=order, start_time=datetime.datetime.now())
         # TODO Comment why this is needed or delete
         self.save()
-        #Job.save(self)
 
         # cache job for later reference
-        #job_id = job_dict["jobId"] # the id that is used in the json
-        #job_cache[job_id] = job
+        job_id = job_dict["jobId"] # the id that is used in the json
+        self.workflow.job_cache[job_id] = self
 
         # process the parameterList to get a useful dict
         logger.debug("Process parameterList")

@@ -44,15 +44,10 @@ def build(username, workflow_json):
         # TODO I dont this should be here, rather than calling backends, make the backends do it
         backendhelper.mkdir(workflow.user.name, workflow.stageout)
 
+        # save the jobs
         for i,job_dict in enumerate(workflow_dict["jobs"]):
-
-            # save the job
             job = EngineJob(workflow=workflow, order=i, start_time=datetime.datetime.now())
             job.addJob(job_dict)
-
-            # cache it
-            job_id = job_dict["jobId"] # the id that is used in the json
-            workflow.job_cache[job_id] = job
 
         # start processing
         logger.debug('-----Starting workflow id %d -----' % workflow.id)
