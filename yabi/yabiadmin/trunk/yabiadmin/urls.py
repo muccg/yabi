@@ -19,5 +19,8 @@ urlpatterns += patterns('',
     (r'^static/(?P<path>.*)$',
                         'django.views.static.serve', 
                         {'document_root': os.path.join(os.path.dirname(__file__),"static"), 'show_indexes': True}),
-
 )
+
+urlpatterns += patterns('django.views.generic.simple',
+    (r'^favicon\.ico', 'redirect_to', {'url': '/static/images/favicon.ico'}),
+    )
