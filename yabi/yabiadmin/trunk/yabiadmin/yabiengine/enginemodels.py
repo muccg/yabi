@@ -57,6 +57,7 @@ class EngineJob(Job):
         # now build up the command
         command = []
         commandparams = []
+        job_stageins = []
 
         command.append(tool.path)
 
@@ -71,6 +72,11 @@ class EngineJob(Job):
                 commandparams.extend(param_dict[tp.switch])
                 param_dict[tp.switch] = '%' # use place holder now in command
 
+
+            else:
+                # add to job level stagins, later at task level we'll check these and add a stagein if needed
+                job_stageins.extend(param_dict[tp.switch])
+                
             # run through all the possible switch uses
             switchuse = tp.switch_use.value
 
@@ -99,6 +105,8 @@ class EngineJob(Job):
         logger.debug("JOB PRE PARAMS: %s"%self.commandparams)
         self.commandparams = repr(commandparams) # save string repr of list
         logger.debug("JOB POST PARAMS: %s"%self.commandparams)
+        self.job_stageins = repr(job_stageins) # save string repr of list
+
    
         # TODO HARDCODED
         # set status to complete if null backend
@@ -305,6 +313,7 @@ def task_save(sender, **kwargs):
         for task in jobtasks:
             status = task.status
             score += { 
+                'pending':0.0,
                 'ready':0.0,
                 'requested':0.01,
                 'stagein':0.05,

@@ -129,7 +129,7 @@ def prepare_tasks(job):
         # uris ending with a / on the end of the path are directories
         elif param.startswith("yabifs://") and param.endswith("/"):
             logger.info('Processing uri %s' % param)
-    
+     
             logger.debug("PROCESSING")
             logger.debug("%s -> %s" % (param, backendhelper.get_file_list(job.workflow.user.name, param)))
 
@@ -233,7 +233,11 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
     logger.debug("exec_bc %s" % exec_bc)
     logger.debug("fs_be %s" % fs_be)
     logger.debug("fs_bc %s" % fs_bc)
-    
+
+
+    # TODO param is uri less filename gridftp://amacgregor@xe-ng2.ivec.org/scratch/bi01/amacgregor/
+    # rename it to something sensible
+
 
     param_scheme, param_uriparts = uriparse(param)
     root, ext = splitext(file)
@@ -241,29 +245,69 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
     # only make tasks for expected filetypes
     if is_task_file_valid(job,file):
         
-        t = Task(job=job, status=settings.STATUS['ready'])
+        t = Task(job=job, status=settings.STATUS['pending'])
         t.working_dir = str(uuid.uuid4()) # random uuid
-        
         fsscheme, fsbackend_parts = uriparse(job.fs_backend)
         execscheme, execbackend_parts = uriparse(job.exec_backend)
-        
-        t.command = job.command.replace("%", url_join(fsbackend_parts.path,t.working_dir, "input", file))
         t.name = name
+        t.command = job.command
         t.save()
+
         logger.debug('saved========================================')
         logger.info('Creating task for job id: %s using command: %s' % (job.id, t.command))
         logger.info('working dir is: %s' % (t.working_dir) )
 
-        s = StageIn(task=t,
-                    src="%s%s" % (param, file),
-                    dst="%s://%s@%s%s" % (fsscheme,fsbackend_parts.username,fsbackend_parts.hostname, os.path.join(fsbackend_parts.path, t.working_dir, "input", file)),
-                    order=0)
-                    
-        logger.debug("Stagein: %s <=> %s " % (s.src, s.dst))
-        s.save()
-        
+
+
+        # add the job_stageins by adding a StageIn and replacing them in command with relative path
+        for job_stagein in set(eval(job.job_stageins)): # use set to get unique files
+
+            if "/" not in job_stagein:
+                continue
+            
+            dirpath, filename = job_stagein.rsplit("/",1)
+            scheme, rest = uriparse(dirpath)
+
+            if scheme not in settings.VALID_SCHEMES:
+                continue
+
+            t.command = t.command.replace(job_stagein, url_join(fsbackend_parts.path,t.working_dir, "input", filename))
+
+            create_stagein(task=t, param=dirpath+'/', file=filename, scheme=fsscheme,
+                           hostname=fsbackend_parts.hostname,
+                           path=os.path.join(fsbackend_parts.path, t.working_dir, "input", filename),
+                           username=fsbackend_parts.username)
+
+
+            logger.debug('JOB STAGEIN')
+            logger.debug("dirpath %s" % dirpath )
+            logger.debug("filename %s" % filename)
+
+
+        # add the task specific file replacing the % in the command line
+        t.command = t.command.replace("%", url_join(fsbackend_parts.path,t.working_dir, "input", file))
+
+        create_stagein(task=t, param=param, file=file, scheme=fsscheme,
+                       hostname=fsbackend_parts.hostname,
+                       path=os.path.join(fsbackend_parts.path, t.working_dir, "input", file),
+                       username=fsbackend_parts.username)
+
+        t.status = settings.STATUS['ready']
+        t.save()
+                
         # return true indicates that we actually made a task
         return True 
         
     # return False to indicate we didn't make a task
     return False
+
+
+def create_stagein(task=None, param=None, file=None, scheme=None, hostname=None, path=None, username=None):
+    s = StageIn(task=task,
+                src="%s%s" % (param, file),
+                dst="%s://%s@%s%s" % (scheme, username, hostname, path),
+                order=0)
+
+    logger.debug("Stagein: %s <=> %s " % (s.src, s.dst))
+    s.save()
+        
