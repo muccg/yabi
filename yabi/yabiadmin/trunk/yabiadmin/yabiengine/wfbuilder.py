@@ -108,6 +108,9 @@ def addJob(workflow, job_dict, order):
         # run through all the possible switch uses
         switchuse = tp.switch_use.value
 
+        #TODO we need to parse param_dict[tp.switch][0] for yabi compatible paths and convert to relative paths to be passed
+        # to execution backends
+
         if switchuse == 'switchOnly':
             command.append(tp.switch)
 
