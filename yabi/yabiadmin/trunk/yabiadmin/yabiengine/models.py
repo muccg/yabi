@@ -67,8 +67,32 @@ class Workflow(models.Model, Editable, Status):
 
     def summary_link(self):
         return '<a href="%s">Summary</a>' % self.summary_url()
+
     summary_link.short_description = 'Summary'
     summary_link.allow_tags = True
+
+    # TODO REFACTOR
+    # moved this from job to the workflow level, would be nice to put it at the engine workflow
+    # level, but I am worried about the impact on the django signals which reference Job and Workflow
+    # and not EngineJob or EngineWorkflow
+    def update_json(self, job, data={}):
+        json_object = json.loads(self.json)
+        job_id = int(job.order)
+        assert json_object['jobs'][job_id]['jobId'] == job_id + 1 # jobs are 1 indexed in json
+
+        # status
+        json_object['jobs'][job_id]['status'] = job.status
+
+        # data
+        for key in data:
+            json_object['jobs'][job_id][key] = data[key]
+
+        #stageout
+        if job.stageout:
+            json_object['jobs'][job_id]['stageout'] = job.stageout
+
+        self.json = json.dumps(json_object)
+        self.save() # this triggers an update on yabistore
 
 
 class Job(models.Model, Editable, Status):
@@ -104,29 +128,6 @@ class Job(models.Model, Editable, Status):
     @property
     def workflowid(self):
         return self.workflow.id
-
-
-    # TODO REFACTOR
-    # THis does not modify the job, should be moved to workflow, or maybe to 
-    # engine workflow
-    def update_json(self, data={}):
-        json_object = json.loads(self.workflow.json)
-        job_id = int(self.order)
-        assert json_object['jobs'][job_id]['jobId'] == job_id + 1 # jobs are 1 indexed in json
-
-        # status
-        json_object['jobs'][job_id]['status'] = self.status
-
-        # data
-        for key in data:
-            json_object['jobs'][job_id][key] = data[key]
-
-        #stageout
-        if self.stageout:
-            json_object['jobs'][job_id]['stageout'] = self.stageout
-
-        self.workflow.json = json.dumps(json_object)
-        self.workflow.save() # this triggers an update on yabistore
 
 
 class Task(models.Model, Editable, Status):

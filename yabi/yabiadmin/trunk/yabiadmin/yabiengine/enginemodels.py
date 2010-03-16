@@ -25,7 +25,7 @@ class EngineWorkflow(Workflow):
 
     class Meta:
         proxy = True
-
+        
 
 class EngineJob(Job):
 
@@ -293,7 +293,7 @@ def job_save(sender, **kwargs):
             data = {'tasksComplete':1.0,
                     'tasksTotal':1.0
                     }
-            job.update_json(data)
+            job.workflow.update_json(job, data)
 
         elif job.status == settings.STATUS['error']:
             job.workflow.status = settings.STATUS['error']
@@ -378,7 +378,7 @@ def task_save(sender, **kwargs):
         if errorMessage:
             data['errorMessage'] = errorMessage
             
-        task.job.update_json(data)
+        task.job.workflow.update_json(task.job, data)
         task.job.status = status
 
         # this save will trigger saves right up to the workflow level
