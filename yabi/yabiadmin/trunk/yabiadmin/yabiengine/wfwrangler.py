@@ -72,6 +72,8 @@ def prepare_tasks(job):
     logger.debug('=================================================== prepare_tasks ===========================================================')
     logger.info('Preparing tasks for jobid: %s...' % job.id)
 
+    tasks_to_create = []
+
     # get the backend for this job
     exec_bc = backendhelper.get_backendcredential_for_uri(job.workflow.user.name,job.exec_backend)
     exec_be = exec_bc.backend
@@ -88,15 +90,14 @@ def prepare_tasks(job):
     paramlist = eval(job.commandparams)
 
     # if the job does not take any files the task is created here
+    # TODO REFACTOR make this call create_tasks as well
     if not paramlist:
-        # job operates without batchonparam
-        t = Task(job=job, command=job.command, status="ready")
-        t.working_dir = str(uuid.uuid4()) # random uuid
-        t.save()
+        tasks_to_create.append([job, None, None, exec_be, exec_bc, fs_be, fs_bc])
+        
         
     logger.debug("Prepare_task PARAMLIST: %s"%paramlist)
         
-    tasks_to_create = []
+
     for param in paramlist:
 
         # TODO: fix all this voodoo
@@ -193,7 +194,8 @@ def prepare_tasks(job):
     num = 1
     
     # lets count up our paramlist to see how many 'real' (as in not yabi://) files there are to process
-    count = len([X for X in tasks_to_create if is_task_file_valid(X[0],X[2])])
+    # won't count tasks with file == None as these are from not batch param jobs
+    count = len([X for X in tasks_to_create if X[2] and is_task_file_valid(X[0],X[2])])
         
      # lets build a closure that will generate our names for us
     if count>1:
@@ -234,55 +236,61 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
     logger.debug("fs_be %s" % fs_be)
     logger.debug("fs_bc %s" % fs_bc)
 
-
     # TODO param is uri less filename gridftp://amacgregor@xe-ng2.ivec.org/scratch/bi01/amacgregor/
     # rename it to something sensible
 
+    # create the task
+    t = Task(job=job, status=settings.STATUS['pending'])
+    t.working_dir = str(uuid.uuid4()) # random uuid
+    t.name = name
+    t.command = job.command
+    t.save()
 
-    param_scheme, param_uriparts = uriparse(param)
-    root, ext = splitext(file)
-    
-    # only make tasks for expected filetypes
-    if is_task_file_valid(job,file):
+    ##
+    ## JOB STAGEINS
+    ##
+    ## This section catches all non-batch param files which should appear in job_stageins on job in db
+    ##
+    ## Take each job stagein
+    ## Add a stagein in the database for it
+    ## Replace the filename in the command with relative path used in the stagein
+    for job_stagein in set(eval(job.job_stageins)): # use set to get unique files
+        logger.debug("CREATING JOB STAGEINS")
+
+        if "/" not in job_stagein:
+            continue
+
+        dirpath, filename = job_stagein.rsplit("/",1)
+        scheme, rest = uriparse(dirpath)
+
+        if scheme not in settings.VALID_SCHEMES:
+            continue
+
+        t.command = t.command.replace(job_stagein, url_join(fsbackend_parts.path,t.working_dir, "input", filename))
+
+        create_stagein(task=t, param=dirpath+'/', file=filename, scheme=fsscheme,
+                       hostname=fsbackend_parts.hostname,
+                       path=os.path.join(fsbackend_parts.path, t.working_dir, "input", filename),
+                       username=fsbackend_parts.username)
+
+        logger.debug('JOB STAGEIN')
+        logger.debug("dirpath %s" % dirpath )
+        logger.debug("filename %s" % filename)
+
+
+    ##
+    ## BATCH PARAM STAGEINS
+    ##
+    ## This section catches all batch-param files
         
-        t = Task(job=job, status=settings.STATUS['pending'])
-        t.working_dir = str(uuid.uuid4()) # random uuid
+    # only make tasks for expected filetypes
+    if file and is_task_file_valid(job,file):
+        logger.debug("CREATING BATCH PARAM STAGEINS")
+        
+        param_scheme, param_uriparts = uriparse(param)
+        root, ext = splitext(file)
         fsscheme, fsbackend_parts = uriparse(job.fs_backend)
         execscheme, execbackend_parts = uriparse(job.exec_backend)
-        t.name = name
-        t.command = job.command
-        t.save()
-
-        logger.debug('saved========================================')
-        logger.info('Creating task for job id: %s using command: %s' % (job.id, t.command))
-        logger.info('working dir is: %s' % (t.working_dir) )
-
-
-
-        # add the job_stageins by adding a StageIn and replacing them in command with relative path
-        for job_stagein in set(eval(job.job_stageins)): # use set to get unique files
-
-            if "/" not in job_stagein:
-                continue
-            
-            dirpath, filename = job_stagein.rsplit("/",1)
-            scheme, rest = uriparse(dirpath)
-
-            if scheme not in settings.VALID_SCHEMES:
-                continue
-
-            t.command = t.command.replace(job_stagein, url_join(fsbackend_parts.path,t.working_dir, "input", filename))
-
-            create_stagein(task=t, param=dirpath+'/', file=filename, scheme=fsscheme,
-                           hostname=fsbackend_parts.hostname,
-                           path=os.path.join(fsbackend_parts.path, t.working_dir, "input", filename),
-                           username=fsbackend_parts.username)
-
-
-            logger.debug('JOB STAGEIN')
-            logger.debug("dirpath %s" % dirpath )
-            logger.debug("filename %s" % filename)
-
 
         # add the task specific file replacing the % in the command line
         t.command = t.command.replace("%", url_join(fsbackend_parts.path,t.working_dir, "input", file))
@@ -292,14 +300,18 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
                        path=os.path.join(fsbackend_parts.path, t.working_dir, "input", file),
                        username=fsbackend_parts.username)
 
-        t.status = settings.STATUS['ready']
-        t.save()
+
+    
+    t.status = settings.STATUS['ready']
+    t.save()
+
+    logger.debug('saved========================================')
+    logger.info('Creating task for job id: %s using command: %s' % (job.id, t.command))
+    logger.info('working dir is: %s' % (t.working_dir) )
+
                 
-        # return true indicates that we actually made a task
-        return True 
-        
-    # return False to indicate we didn't make a task
-    return False
+    # return true indicates that we actually made a task
+    return True 
 
 
 def create_stagein(task=None, param=None, file=None, scheme=None, hostname=None, path=None, username=None):
