@@ -49,6 +49,8 @@ class CommandLineHelper():
         self.job_cache = job_cache
 
         self._job_stageins = []
+        self._commandparams= []
+        self.command = []
 
         logger.debug('')
 
