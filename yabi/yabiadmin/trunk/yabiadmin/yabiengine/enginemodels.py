@@ -12,6 +12,7 @@ from django.utils.webhelpers import url
 
 from yabiadmin.yabmin.models import Backend, BackendCredential, Tool, User
 from yabiadmin.yabiengine import backendhelper
+from yabiadmin.yabiengine.commandlinehelper import CommandLineHelper
 from yabiadmin.yabiengine.models import Workflow, Task, Job
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
 
@@ -46,68 +47,12 @@ class EngineJob(Job):
         job_id = job_dict["jobId"] # the id that is used in the json
         self.workflow.job_cache[job_id] = self
 
-        # process the parameterList to get a useful dict
-        logger.debug("Process parameterList")
-        param_dict = {}
-        for toolparam in job_dict["parameterList"]["parameter"]:
-            logger.debug('TOOLPARAM:%s'%(toolparam))
-            param_dict[toolparam["switchName"]] = self.get_param_value(toolparam)
-        
-        logger.debug("param_dict = %s"%(param_dict))
-
-        # now build up the command
-        command = []
-        commandparams = []
-        job_stageins = []
-
-        command.append(tool.path)
-
-        for tp in tool.toolparameter_set.order_by('rank').all():
-
-            # check the tool switch against the incoming params
-            if tp.switch not in param_dict:
-                continue
-
-            # if the switch is the batch on param switch put it in commandparams and add placeholder in command
-            if tp == tool.batch_on_param:
-                commandparams.extend(param_dict[tp.switch])
-                param_dict[tp.switch] = '%' # use place holder now in command
-
-
-            else:
-                # add to job level stagins, later at task level we'll check these and add a stagein if needed
-                job_stageins.extend(param_dict[tp.switch])
-                
-            # run through all the possible switch uses
-            switchuse = tp.switch_use.value
-
-            if switchuse == 'switchOnly':
-                command.append(tp.switch)
-
-            elif switchuse == 'valueOnly':
-                command.append(param_dict[tp.switch][0])
-
-            elif switchuse == 'both':
-                command.append("%s %s" % (tp.switch, param_dict[tp.switch][0]))
-
-            elif switchuse == 'combined':
-                command.append("%s%s" % (tp.switch, param_dict[tp.switch][0]))
-
-            elif switchuse == 'pair':
-                raise Exception('Unimplemented switch type: pair')
-        
-            elif switchuse == 'none':
-                pass
-
-            # TODO else throw
+        commandLine = CommandLineHelper(job_dict, self.workflow.job_cache)
 
         # add other attributes
-        self.command = ' '.join(command)
-        logger.debug("JOB PRE PARAMS: %s"%self.commandparams)
-        self.commandparams = repr(commandparams) # save string repr of list
-        logger.debug("JOB POST PARAMS: %s"%self.commandparams)
-        self.job_stageins = repr(job_stageins) # save string repr of list
-
+        self.command = ' '.join(commandLine.command)
+        self.commandparams = repr(commandLine.commandparams) # save string repr of list
+        self.job_stageins = repr(commandLine.job_stageins) # save string repr of list
    
         # TODO HARDCODED
         # if we need a null backend, then we should create one that just marks any jobs it gets as completed
@@ -165,55 +110,6 @@ class EngineJob(Job):
         self.job_type = tool.job_type
 
         self.save()
-
-
-    # TODO used in job.save above, needs to be moved along with the command line code from job.save into its own class/def
-    def get_param_value(self, tp):
-        logger.debug('')
-
-        logger.debug("======= get_param_value =============: %s" % tp)
-    
-        value = []
-        if type(tp["value"]) == list:
-            # parameter input is multiple input files. loop ofer these files
-            for item in tp["value"]:
-
-                if type(item) == dict:
-
-                    # handle links to previous nodes
-                    if 'type' in item and 'jobId' in item:
-                        previous_job = self.workflow.job_cache[item['jobId']]
-
-                        if previous_job.stageout == None:
-                            value = eval(previous_job.commandparams)
-                        else:
-                            value = [u"%s%d/%d/" % (settings.YABI_URL, self.workflow.id, self.workflow.job_cache[item['jobId']].id)]
-                        
-                    # handle links to previous file selects
-                    elif 'type' in item and 'filename' in item and 'root' in item:
-                        if item['type'] == 'file':
-                            path = ''
-                            if item['path']:
-                                path = os.path.join(*item['path'])
-                                if not path.endswith(os.sep):
-                                    path = path + os.sep
-                            value.append( '%s%s%s' % (item['root'], path, item['filename']) )
-                        elif item['type'] == 'directory':
-                            fulluri = item['root']+item['filename']+'/'
-                            
-                            # get recursive directory listing
-                            filelist = backendhelper.get_file_list(self.workflow.user.name, fulluri, recurse=True)
-                            
-                            logger.debug("FILELIST returned:%s"%str(filelist))
-                        
-                            value.extend( [ fulluri + X[0] for X in filelist ] )
-                
-                elif type(item) == str or type(item) == unicode:
-                    value.append( item )
-
-        logger.debug("get_param_value() returning: %s"%value)
-        return value
-
 
 
 class EngineTask(Task):
