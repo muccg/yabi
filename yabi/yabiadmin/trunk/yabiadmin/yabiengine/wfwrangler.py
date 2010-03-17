@@ -89,103 +89,104 @@ def prepare_tasks(job):
 
     paramlist = eval(job.commandparams)
 
-    # if the job does not take any files the task is created here
-    # TODO REFACTOR make this call create_tasks as well
-    if not paramlist:
+    if paramlist:
+        # this creates batch_on_param tasks
+        logger.debug("PROCESSING batch on param")
+        for param in paramlist:
+            logger.debug("Prepare_task PARAMLIST: %s"%paramlist)
+
+            # TODO: fix all this voodoo
+
+            ##################################################
+            # handle yabi:// uris
+            # fetches the stageout of previous job and
+            # adds that to paramlist to be processed
+            ##################################################
+            if param.startswith("yabi://"):
+                logger.info('Processing uri %s' % param)
+
+                # parse yabi uri
+                # we may want to look up workflows and jobs on specific servers later,
+                # but just getting path for now as we have just one server
+                scheme, uriparts = uriparse(param)
+                workflowid, jobid = uriparts.path.strip('/').split('/')
+                param_job = Job.objects.get(workflow__id=workflowid, id=jobid)
+
+                # get stage out directory of job
+                stageout = param_job.stageout
+
+                paramlist.append(stageout)
+
+
+            ##################################################
+            # handle yabifs:// uris that are directories
+            ##################################################
+
+            # uris ending with a / on the end of the path are directories
+            elif param.startswith("yabifs://") and param.endswith("/"):
+                logger.info('Processing uri %s' % param)
+
+                logger.debug("PROCESSING")
+                logger.debug("%s -> %s" % (param, backendhelper.get_file_list(job.workflow.user.name, param)))
+
+                # get_file_list will return a list of file tuples
+                for f in backendhelper.get_file_list(job.workflow.user.name, param):
+                    logger.debug("FILELIST %s" % f)
+                    tasks_to_create.append([job, param, f[0], exec_be, exec_bc, fs_be, fs_bc])
+
+
+            ##################################################
+            # handle yabifs:// uris
+            ##################################################
+            elif param.startswith("yabifs://"):
+                logger.info('Processing uri %s' % param)            
+                rest, filename = param.rsplit("/",1)
+                tasks_to_create.append([job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc])
+
+
+            ##################################################
+            # handle gridftp:// gridftp uris that are directories
+            ##################################################
+
+            # uris ending with a / on the end of the path are directories
+            elif param.startswith("gridftp://") and param.endswith("/"):
+                logger.info('Processing uri %s' % param)
+
+                logger.debug("PROCESSING")
+                logger.debug("%s -> %s" % (param, backendhelper.get_file_list(job.workflow.user.name, param)))
+
+                # get_file_list will return a list of file tuples
+                for f in backendhelper.get_file_list(job.workflow.user.name, param):
+                    tasks_to_create.append([job, param, f[0], exec_be, exec_bc, fs_be, fs_bc])
+
+
+            ##################################################
+            # handle gridftp:// uris
+            ##################################################
+            elif param.startswith("gridftp://"):
+                logger.info('Processing uri %s' % param)            
+                rest, filename = param.rsplit("/",1)
+
+                logger.debug("PROCESSING %s" % param)
+
+                tasks_to_create.append([job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc])
+
+
+            ##################################################
+            # handle unknown types
+            ##################################################
+            else:
+                logger.info('****************************************')
+                logger.info('Unhandled type: ' + param)
+                logger.info('****************************************')
+                raise Exception('Unknown file type.')
+            
+
+    else:
+        # This creates NON batch on param jobs
+        logger.debug("PROCESSING NON batch on param")
         tasks_to_create.append([job, None, None, exec_be, exec_bc, fs_be, fs_bc])
         
-        
-    logger.debug("Prepare_task PARAMLIST: %s"%paramlist)
-        
-
-    for param in paramlist:
-
-        # TODO: fix all this voodoo
-
-        ##################################################
-        # handle yabi:// uris
-        # fetches the stageout of previous job and
-        # adds that to paramlist to be processed
-        ##################################################
-        if param.startswith("yabi://"):
-            logger.info('Processing uri %s' % param)
-
-            # parse yabi uri
-            # we may want to look up workflows and jobs on specific servers later,
-            # but just getting path for now as we have just one server
-            scheme, uriparts = uriparse(param)
-            workflowid, jobid = uriparts.path.strip('/').split('/')
-            param_job = Job.objects.get(workflow__id=workflowid, id=jobid)
-            
-            # get stage out directory of job
-            stageout = param_job.stageout
-
-            paramlist.append(stageout)
-
-
-        ##################################################
-        # handle yabifs:// uris that are directories
-        ##################################################
-
-        # uris ending with a / on the end of the path are directories
-        elif param.startswith("yabifs://") and param.endswith("/"):
-            logger.info('Processing uri %s' % param)
-     
-            logger.debug("PROCESSING")
-            logger.debug("%s -> %s" % (param, backendhelper.get_file_list(job.workflow.user.name, param)))
-
-            # get_file_list will return a list of file tuples
-            for f in backendhelper.get_file_list(job.workflow.user.name, param):
-                logger.debug("FILELIST %s" % f)
-                tasks_to_create.append([job, param, f[0], exec_be, exec_bc, fs_be, fs_bc])
-
-
-        ##################################################
-        # handle yabifs:// uris
-        ##################################################
-        elif param.startswith("yabifs://"):
-            logger.info('Processing uri %s' % param)            
-            rest, filename = param.rsplit("/",1)
-            tasks_to_create.append([job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc])
-
-
-        ##################################################
-        # handle gridftp:// gridftp uris that are directories
-        ##################################################
-
-        # uris ending with a / on the end of the path are directories
-        elif param.startswith("gridftp://") and param.endswith("/"):
-            logger.info('Processing uri %s' % param)
-
-            logger.debug("PROCESSING")
-            logger.debug("%s -> %s" % (param, backendhelper.get_file_list(job.workflow.user.name, param)))
-
-            # get_file_list will return a list of file tuples
-            for f in backendhelper.get_file_list(job.workflow.user.name, param):
-                tasks_to_create.append([job, param, f[0], exec_be, exec_bc, fs_be, fs_bc])
-
-
-        ##################################################
-        # handle gridftp:// uris
-        ##################################################
-        elif param.startswith("gridftp://"):
-            logger.info('Processing uri %s' % param)            
-            rest, filename = param.rsplit("/",1)
-            
-            logger.debug("PROCESSING %s" % param)
-            
-            tasks_to_create.append([job, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc])
-            
-
-        ##################################################
-        # handle unknown types
-        ##################################################
-        else:
-            logger.info('****************************************')
-            logger.info('Unhandled type: ' + param)
-            logger.info('****************************************')
-            raise Exception('Unknown file type.')
-            
 
     ##
     ## now loop over these tasks and actually create them
@@ -204,14 +205,19 @@ def prepare_tasks(job):
     else:
         buildname = lambda n: (n+1, "")
     
-    logger.debug("TASKS TO CREATE:")
+    logger.debug("TASKS TO CREATE: %s" % tasks_to_create)
     
     # build the first name
     num, name = buildname(num)
     for task_data in tasks_to_create:
-        if create_task( *(task_data+[name]) ):
-            # task created, bump task
-            num,name = buildname(num)
+        job, file = task_data[0], task_data[2]
+        # we should only create a task file if job file is none ie it is a non batch_on_param task
+        # or if it is a valid filetype for the batch_on_param
+        # TODO REFACTOR - Adam can you look at how this is done
+        if file == None or is_task_file_valid(job, file):
+            if create_task( *(task_data+[name]) ):
+                # task created, bump task
+                num,name = buildname(num)
 
 
 def prepare_job(job):
@@ -227,7 +233,7 @@ def is_task_file_valid(job,file):
 
 
 def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
-    logger.debug('')
+    logger.debug('START TASK CREATION')
     logger.debug("job %s" % job)
     logger.debug("file %s" % file)
     logger.debug("param %s" % param)
@@ -290,7 +296,7 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
         
     # only make tasks for expected filetypes
     if file and is_task_file_valid(job,file):
-        logger.debug("CREATING BATCH PARAM STAGEINS")
+        logger.debug("CREATING BATCH PARAM STAGEINS for %s" % file)
         
         param_scheme, param_uriparts = uriparse(param)
         root, ext = splitext(file)

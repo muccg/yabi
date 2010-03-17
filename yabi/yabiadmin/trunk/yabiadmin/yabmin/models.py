@@ -91,8 +91,10 @@ class Tool(Base):
         '''
         This is used by the builder to determine the extensions than the batch_on_param parameter uses.
         '''
-        filetypes = self.batch_on_param.accepted_filetypes.all()
-        extensions = [ext.extension for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]
+        extensions = []
+        if self.batch_on_param:
+            filetypes = self.batch_on_param.accepted_filetypes.all()
+            extensions = [ext.extension for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]
         return list(set(extensions)) # remove duplicates
 
     def output_filetype_extensions(self):
