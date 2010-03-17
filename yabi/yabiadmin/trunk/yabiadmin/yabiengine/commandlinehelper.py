@@ -74,11 +74,15 @@ class CommandLineHelper():
             # if the switch is the batch on param switch put it in commandparams and add placeholder in command
             if tp == tool.batch_on_param:
                 self._commandparams.extend(self.param_dict[tp.switch])
-                self.param_dict[tp.switch] = '%' # use place holder now in self.command
+                self.param_dict[tp.switch] = ['%'] # use place holder now in self.command
 
             else:
                 # add to job level stagins, later at task level we'll check these and add a stagein if needed
                 self._job_stageins.extend(self.param_dict[tp.switch])
+
+            logger.debug('++++++++++++++++++++++++++++++++++++++++')
+            logger.debug(self.param_dict)
+            logger.debug(tp.switch)
                 
             # run through all the possible switch uses
             switchuse = tp.switch_use.value
@@ -108,7 +112,8 @@ class CommandLineHelper():
         logger.debug('')
 
         logger.debug("======= get_param_value =============: %s" % tp)
-    
+        # TODO see if we can unwind this a little and comment thoroughly
+        
         value = []
         if type(tp["value"]) == list:
             # parameter input is multiple input files. loop ofer these files
