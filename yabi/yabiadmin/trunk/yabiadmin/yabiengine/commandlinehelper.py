@@ -37,7 +37,8 @@ class CommandLineHelper():
 
     @property
     def jobstageins(self):
-        return repr(self._job_stageins)
+        return repr(list(set(self._job_stageins))) # using set to remove duplicates
+    
 
     # TODO this si a little evil, we have a direct reference into workflow.job_cache
     # Move job cache out of the workflow or give a ref to workflow instead
