@@ -64,7 +64,7 @@ class EngineJob(Job):
 
         # TODO this strips outs the per-switch file type extensions
         # add a list of input file extensions as string, we will reconstitute this for use in the wfwrangler
-        self.input_filetype_extensions = str(tool.input_filetype_extensions())
+        self.input_filetype_extensions = str(tool.input_filetype_extensions_for_batch_param())
 
         try:
             exec_backendcredential = BackendCredential.objects.get(credential__user=self.workflow.user, backend=tool.backend)

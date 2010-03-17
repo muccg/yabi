@@ -84,6 +84,11 @@ class Tool(Base):
         extensions = [ext.extension for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]
         return list(set(extensions)) # remove duplicates
 
+    def input_filetype_extensions_for_batch_param(self):
+        filetypes = reduce(lambda x, y: x+y, [list(x.accepted_filetypes.all()) for x in self.batch_on_param],[])
+        extensions = [ext.extension for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]
+        return list(set(extensions)) # remove duplicates
+
     def output_filetype_extensions(self):
         '''Work out output file extensions for this tool and return a a list of them all'''
         extensions = [fe.file_extension.extension for fe in self.tooloutputextension_set.all()]
