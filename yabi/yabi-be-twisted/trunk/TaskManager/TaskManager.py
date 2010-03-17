@@ -312,11 +312,11 @@ class TaskManager(object):
                     print "RM1:",dst_url
                 Rm(dst_url, yabiusername=yabiusername, recurse=True)
             except GETFailure, error:
-                # error copying!
+                # error deleting. This is logged but is non fatal
                 print "TASK[%s]: Delete %s Error!"%(taskid, dst_url)
-                status("error")
+                #status("error")
                 log("Deleting %s failed: %s"%(dst_url, error))
-                return              # finish task
+                #return              # finish task
         
         log("Job completed successfully")
         status("complete")
