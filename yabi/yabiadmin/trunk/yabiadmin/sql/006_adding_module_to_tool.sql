@@ -1,4 +1,3 @@
 BEGIN;
-ALTER TABLE yabmin_tool
-    ADD module text;
+ALTER TABLE yabmin_tool ADD module text;
 COMMIT;
