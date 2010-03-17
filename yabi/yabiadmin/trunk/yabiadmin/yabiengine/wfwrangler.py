@@ -246,6 +246,11 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
     t.command = job.command
     t.save()
 
+    # basic stuff used by both stagein types
+    fsscheme, fsbackend_parts = uriparse(job.fs_backend)
+    execscheme, execbackend_parts = uriparse(job.exec_backend)
+
+
     ##
     ## JOB STAGEINS
     ##
@@ -289,8 +294,6 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
         
         param_scheme, param_uriparts = uriparse(param)
         root, ext = splitext(file)
-        fsscheme, fsbackend_parts = uriparse(job.fs_backend)
-        execscheme, execbackend_parts = uriparse(job.exec_backend)
 
         # add the task specific file replacing the % in the command line
         t.command = t.command.replace("%", url_join(fsbackend_parts.path,t.working_dir, "input", file))
