@@ -78,14 +78,20 @@ class Tool(Base):
     tool_link.allow_tags = True
 
     def input_filetype_extensions(self):
-        '''Work out input file extensions for this tool and return a a list of them all'''
+        '''
+        Work out input file extensions for this tool and return a a list of them all.
+        This is used by the front end to determine all input types a tool will accept.
+        '''
         # empty list passed to reduce is initializer, see reduce docs
         filetypes = reduce(lambda x, y: x+y, [list(x.accepted_filetypes.all()) for x in self.toolparameter_set.all()],[])
         extensions = [ext.extension for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]
         return list(set(extensions)) # remove duplicates
 
     def input_filetype_extensions_for_batch_param(self):
-        filetypes = reduce(lambda x, y: x+y, [list(x.accepted_filetypes.all()) for x in self.batch_on_param],[])
+        '''
+        This is used by the builder to determine the extensions than the batch_on_param parameter uses.
+        '''
+        filetypes = self.batch_on_param.accepted_filetypes.all()
         extensions = [ext.extension for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]
         return list(set(extensions)) # remove duplicates
 
