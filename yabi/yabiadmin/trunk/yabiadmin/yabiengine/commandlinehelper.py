@@ -53,7 +53,6 @@ class CommandLineHelper():
         # now build up the command
         self.command = []
         self.commandparams = []
-        job_stageins = []
 
         self.command.append(tool.path)
 
@@ -71,7 +70,7 @@ class CommandLineHelper():
 
             else:
                 # add to job level stagins, later at task level we'll check these and add a stagein if needed
-                job_stageins.extend(self.param_dict[tp.switch])
+                self.job_stageins.extend(self.param_dict[tp.switch])
                 
             # run through all the possible switch uses
             switchuse = tp.switch_use.value
