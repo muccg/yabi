@@ -24,12 +24,20 @@ class CommandLineHelper():
 
     job_dict = []
     command = []
-    job_stageins = []
+    _job_stageins = []
     param_dict = {}
     job_cache = []
 
     # TODO should this be batch_list
-    commandparams = []
+    _commandparams = []
+
+    @property
+    def commandparams(self):
+        return repr(self._commandparams)
+
+    @property
+    def jobstageins(self):
+        return repr(self._job_stageins)
 
     # TODO this si a little evil, we have a direct reference into workflow.job_cache
     # Move job cache out of the workflow or give a ref to workflow instead
@@ -39,6 +47,8 @@ class CommandLineHelper():
     def __init__(self, job_dict=None, job_cache=None):
         self.job_dict = job_dict
         self.job_cache = job_cache
+
+        self._job_stageins = []
 
         logger.debug('')
 
@@ -50,10 +60,6 @@ class CommandLineHelper():
         for toolparam in self.job_dict["parameterList"]["parameter"]:
             self.param_dict[toolparam["switchName"]] = self.get_param_value(toolparam)
         
-        # now build up the command
-        self.command = []
-        self.commandparams = []
-
         self.command.append(tool.path)
 
         for tp in tool.toolparameter_set.order_by('rank').all():
@@ -64,13 +70,12 @@ class CommandLineHelper():
 
             # if the switch is the batch on param switch put it in commandparams and add placeholder in command
             if tp == tool.batch_on_param:
-                self.commandparams.extend(self.param_dict[tp.switch])
+                self._commandparams.extend(self.param_dict[tp.switch])
                 self.param_dict[tp.switch] = '%' # use place holder now in self.command
-
 
             else:
                 # add to job level stagins, later at task level we'll check these and add a stagein if needed
-                self.job_stageins.extend(self.param_dict[tp.switch])
+                self._job_stageins.extend(self.param_dict[tp.switch])
                 
             # run through all the possible switch uses
             switchuse = tp.switch_use.value

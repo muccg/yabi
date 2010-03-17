@@ -51,8 +51,8 @@ class EngineJob(Job):
 
         # add other attributes
         self.command = ' '.join(commandLine.command)
-        self.commandparams = repr(commandLine.commandparams) # save string repr of list
-        self.job_stageins = repr(commandLine.job_stageins) # save string repr of list
+        self.commandparams = commandLine.commandparams # save string repr of list
+        self.job_stageins = commandLine.jobstageins # save string repr of list
    
         # TODO HARDCODED
         # if we need a null backend, then we should create one that just marks any jobs it gets as completed
