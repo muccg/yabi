@@ -9,11 +9,13 @@ from FifoPool import Fifos
 from BaseShell import BaseShell, BaseShellProcessProtocol
 
 class SCPProcessProtocol(BaseShellProcessProtocol):
-    def __init__(self):
+    def __init__(self, password):
         BaseShellProcessProtocol.__init__(self)
         self.started = False
         
     def connectionMade(self):
+        self.transport.write(password)
+        self.transport.write("\r\n")
         self.transport.closeStdin()
         self.started = True
                 
@@ -24,7 +26,7 @@ class SCPError(Exception):
     pass
 
 class SSHCopy(BaseShell):
-    scp = os.path.join( os.path.dirname(os.path.realpath(__file__)), "ssh-copy.py" )
+    scp = os.path.join( os.path.dirname(os.path.realpath(__file__)), "sftp-copy.py" )
     python = "/usr/bin/python"
     
     def WriteToRemote(self, certfile, remoteurl, fifo=None):
@@ -36,7 +38,6 @@ class SSHCopy(BaseShell):
         remotehost,remotepath = remoteurl.split(':',1)
             
         command = [   self.python, self.scp,
-                "-C",                       # compress
                 "-i",certfile,              # keyfile
                 "-P","22",                  # port
                 fifo,                       # localfile
@@ -66,7 +67,6 @@ class SSHCopy(BaseShell):
             
         return BaseShell.execute(self,SCPProcessProtocol,
             [   self.python, self.scp,
-                "-C",
                 "-i",certfile,
                 "-P","22",
                 remoteurl,
