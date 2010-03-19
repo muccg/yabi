@@ -162,7 +162,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             
         usercert = self.save_identity(creds['key'])
         
-        pp, fifo = ssh.Copy.WriteToRemote(usercert,dst,fifo=fifo)
+        pp, fifo = ssh.Copy.WriteToRemote(usercert,dst,password=creds['password'],fifo=fifo)
         
         return pp, fifo
     
@@ -185,7 +185,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             
         usercert = self.save_identity(creds['key'])
         
-        pp, fifo = ssh.Copy.ReadFromRemote(usercert,dst,fifo=fifo)
+        pp, fifo = ssh.Copy.ReadFromRemote(usercert,dst,password=creds['password'],fifo=fifo)
         
         return pp, fifo
        
