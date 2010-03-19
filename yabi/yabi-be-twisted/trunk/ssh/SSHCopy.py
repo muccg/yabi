@@ -12,9 +12,10 @@ class SCPProcessProtocol(BaseShellProcessProtocol):
     def __init__(self, password):
         BaseShellProcessProtocol.__init__(self)
         self.started = False
+        self.password = password
         
     def connectionMade(self):
-        self.transport.write(password)
+        self.transport.write(self.password)
         self.transport.write("\r\n")
         self.transport.closeStdin()
         self.started = True
