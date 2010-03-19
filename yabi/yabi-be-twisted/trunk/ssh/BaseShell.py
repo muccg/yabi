@@ -70,6 +70,7 @@ class BaseShell(object):
         if DEBUG:
             print "env",subenv
             print "exec:",command
+        print "done..."
             
         reactor.spawnProcess(   pp,
                                 command[0],
