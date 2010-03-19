@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Use epoll() as our base reactor
 from twisted.internet.epollreactor import EPollReactor as StacklessBaseReactor
 
@@ -13,7 +14,10 @@ class StacklessReactor(StacklessBaseReactor):
         """Calls the base reactors doIteration, and then fires off all the stackless threads"""
         if timeout > STACKLESS_MAX_PUMP_RATE:
             timeout = STACKLESS_MAX_PUMP_RATE
-        stackless.schedule()
+        try:    
+            stackless.schedule()
+        except Exception, e:
+            print "BLAM",e
         return StacklessBaseReactor.doIteration(self,timeout)
 
 def install():
