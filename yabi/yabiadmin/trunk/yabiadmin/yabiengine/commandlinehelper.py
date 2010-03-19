@@ -22,6 +22,7 @@ logger = logging.getLogger('yabiengine')
 
 class CommandLineHelper():
 
+    job = None
     job_dict = []
     command = []
     _job_stageins = []
@@ -45,7 +46,8 @@ class CommandLineHelper():
     # Might be cleaner to give reference to the workflow, then we dont need to pass around
     # json, ORM, job caches and so on
 
-    def __init__(self, job_dict=None, job_cache=None):
+    def __init__(self, job, job_dict=None, job_cache=None):
+        self.job = job
         self.job_dict = job_dict
         self.job_cache = job_cache
 
@@ -128,7 +130,7 @@ class CommandLineHelper():
                         if previous_job.stageout == None:
                             value = eval(previous_job.commandparams)
                         else:
-                            value = [u"%s%d/%d/" % (settings.YABI_URL, self.workflow.id, self.job_cache[item['jobId']].id)]
+                            value = [u"%s%d/%d/" % (settings.YABI_URL, self.job.workflow.id, self.job_cache[item['jobId']].id)]
                         
                     # handle links to previous file selects
                     elif 'type' in item and 'filename' in item and 'root' in item:
@@ -143,7 +145,7 @@ class CommandLineHelper():
                             fulluri = item['root']+item['filename']+'/'
                             
                             # get recursive directory listing
-                            filelist = backendhelper.get_file_list(self.workflow.user.name, fulluri, recurse=True)
+                            filelist = backendhelper.get_file_list(self.job.workflow.user.name, fulluri, recurse=True)
                             
                             logger.debug("FILELIST returned:%s"%str(filelist))
                         

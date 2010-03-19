@@ -47,7 +47,7 @@ class EngineJob(Job):
         job_id = job_dict["jobId"] # the id that is used in the json
         self.workflow.job_cache[job_id] = self
 
-        commandLine = CommandLineHelper(job_dict, self.workflow.job_cache)
+        commandLine = CommandLineHelper(self, job_dict, self.workflow.job_cache)
 
         # add other attributes
         self.command = ' '.join(commandLine.command)
@@ -110,6 +110,7 @@ class EngineJob(Job):
         self.job_type = tool.job_type
 
         self.save()
+
 
 
 class EngineTask(Task):
