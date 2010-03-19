@@ -65,6 +65,7 @@ class BaseShell(object):
         """execute a command using a process protocol"""
 
         subenv = self._make_env()
+        print "Instantiating",protocol
         pp = protocol()
         if DEBUG:
             print "env",subenv
