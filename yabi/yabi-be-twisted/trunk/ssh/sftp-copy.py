@@ -13,10 +13,9 @@ for delkey in ['DISPLAY','SSH_AGENT_PID','SSH_AUTH_SOCK']:
     if delkey in os.environ:
         del os.environ[delkey]
 
-SSH = "/usr/bin/ssh"
+SFTP = "/usr/bin/sftp"
 BLOCK_SIZE = 1024
 TIMEOUT = 0.2
-FULL_TIMEOUT = 10.0
 
 L2R = 1
 R2L = 2
@@ -24,15 +23,11 @@ direction = None
 
 parser = OptionParser()
 parser.add_option( "-i", "--identity", dest="identity", help="RSA keyfile" )
-parser.add_option( "-C", "--compress", dest="compress", help="use ssh stream compression", action="store_true", default=False )
 parser.add_option( "-P", "--port", dest="port", help="port to connect to ssh on" )
 parser.add_option( "-L", "--local-to-remote", dest="l2r", help="force local to remote" )
 parser.add_option( "-R", "--remote-to-local", dest="r2l", help="force remote to local" )
 
 (options, args) = parser.parse_args()
-
-print "options",options
-print "args",args
 
 if len(args)!=2:
     print "Error: Must have input and output file specified"
@@ -62,14 +57,10 @@ elif options.r2l:
 extra_args = []
 if options.identity:
     extra_args.extend(["-oIdentityFile=%s"%options.identity])
-if options.compress:
-    extra_args.extend(["-C"])
 if options.port:
     extra_args.extend(["-oPort=%s"%options.port])
     
-#password = sys.stdin.readline().rstrip('\n')
-password = "lollipop"
-print "PASS<",password,">"
+password = sys.stdin.readline().rstrip('\n')
 
 if direction == L2R:
     # 
@@ -78,8 +69,7 @@ if direction == L2R:
     hostpart, path = outfile.split(':',1)
     user, host = hostpart.split('@',1)
         
-    command = "/usr/bin/sftp "+(" ".join(extra_args))+" %s@%s"%(user,host)
-    print command
+    command = SFTP+" "+(" ".join(extra_args))+" %s@%s"%(user,host)
     
     child = pexpect.spawn(command)
     child.setecho(False)
@@ -88,7 +78,6 @@ if direction == L2R:
         res = child.expect(["passphrase for key .+:","password:", "Permission denied","sftp>",pexpect.EOF,pexpect.TIMEOUT],timeout=TIMEOUT)
         if res<=1:
             # send password
-            print "sending",password
             child.sendline(password)
         elif res==2:
             # password failure
@@ -144,8 +133,7 @@ elif direction == R2L:
     hostpart, path = infile.split(':',1)
     user, host = hostpart.split('@',1)
     
-    command = "/usr/bin/sftp "+(" ".join(extra_args))+" %s@%s"%(user,host)
-    print command
+    command = SFTP+" "+(" ".join(extra_args))+" %s@%s"%(user,host)
     
     child = pexpect.spawn(command)
     child.setecho(False)
@@ -154,7 +142,6 @@ elif direction == R2L:
         res = child.expect(["passphrase for key .+:","password:", "Permission denied","sftp>",pexpect.EOF,pexpect.TIMEOUT],timeout=TIMEOUT)
         if res<=1:
             # send password
-            print "sending",password
             child.sendline(password)
         elif res==2:
             # password failure
