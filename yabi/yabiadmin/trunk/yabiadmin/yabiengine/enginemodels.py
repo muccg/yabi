@@ -23,6 +23,7 @@ logger = logging.getLogger('yabiengine')
 
 class EngineWorkflow(Workflow):
     job_cache = {}
+    job_dict = []
 
     class Meta:
         proxy = True
@@ -38,6 +39,8 @@ class EngineJob(Job):
     def addJob(self, job_dict):
         logger.debug('')
 
+        self.job_dict = job_dict
+
         tool = Tool.objects.get(name=job_dict["toolName"])
 
         # TODO Comment why this is needed or delete
@@ -47,7 +50,7 @@ class EngineJob(Job):
         job_id = job_dict["jobId"] # the id that is used in the json
         self.workflow.job_cache[job_id] = self
 
-        commandLine = CommandLineHelper(self, job_dict, self.workflow.job_cache)
+        commandLine = CommandLineHelper(self)
 
         # add other attributes
         self.command = ' '.join(commandLine.command)
