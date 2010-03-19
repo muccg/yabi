@@ -166,7 +166,7 @@ elif direction == R2L:
             res = 2
             while res==2:
                 res = child.expect( ['sftp>',pexpect.EOF,pexpect.TIMEOUT], timeout=TIMEOUT )
-                    print "RES:",res
+                eprint("RES:%s"%res)
             
             if res==1:
                 eprint("Error. Premature EOF in pty of sftp client")
