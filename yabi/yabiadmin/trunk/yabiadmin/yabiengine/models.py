@@ -142,6 +142,8 @@ class Task(models.Model, Editable, Status):
     status = models.CharField(max_length=64, blank=True)
     working_dir = models.CharField(max_length=256, null=True, blank=True)
     name = models.CharField(max_length=256, null=True, blank=True)                  # if we are null, we behave the old way and use our task.id
+    expected_ip = models.CharField(max_length=256, null=True, blank=True)           # if we are null, we behave the old way and use our task.id
+    expected_port = models.PositiveIntegerField(null=True, blank=True)
 
     def json(self):
         # formulate our status url and our error url

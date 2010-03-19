@@ -39,7 +39,7 @@ def task(request):
     #if config.config['backend']['ip'] != ip and 
     
     try:
-        tasks = Task.objects.filter(status=settings.STATUS["ready"])
+        tasks = Task.objects.filter(status=settings.STATUS["ready"], expected_ip=exp_ip, expected_port=exp_port)
 
         if tasks:
             task = tasks[0]

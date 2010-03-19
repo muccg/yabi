@@ -14,6 +14,8 @@ from yabiadmin.yabiengine import backendhelper
 import logging
 logger = logging.getLogger('yabiengine')
 
+from conf import config
+
 
 def walk(workflow):
     logger.debug('')
@@ -250,6 +252,8 @@ def create_task(job, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
     t.working_dir = str(uuid.uuid4()) # random uuid
     t.name = name
     t.command = job.command
+    t.expected_ip = config.config['backend']['port'][0]
+    t.expected_port = config.config['backend']['port'][1]
     t.save()
 
     # basic stuff used by both stagein types
