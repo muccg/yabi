@@ -29,14 +29,18 @@ parser.add_option( "-R", "--remote-to-local", dest="r2l", help="force remote to 
 
 (options, args) = parser.parse_args()
 
+def eprint(*args, **kwargs):
+    sys.stderr.write(*args,**kwargs)
+    sys.stderr.write("\r\n")
+
 if len(args)!=2:
-    print "Error: Must have input and output file specified"
+    eprint("Error: Must have input and output file specified")
     sys.exit(2)
     
 infile, outfile = args
 
 if options.l2r and options.r2l:
-    print "ERROR: copy can only be remote-to-local or local-to-remote, not both"
+    eprint("ERROR: copy can only be remote-to-local or local-to-remote, not both")
     sys.exit(1)
     
 if not options.l2r and not options.r2l:
@@ -47,7 +51,7 @@ if not options.l2r and not options.r2l:
     elif re_remote.search(outfile) and not re_remote.search(infile):
         direction = L2R
     else:
-        print "ERROR: cannot guess copy direction. please specify on command line"
+        eprint ("ERROR: cannot guess copy direction. please specify on command line")
         sys.exit(2)
 elif options.l2r:
     direction = L2R
@@ -81,7 +85,7 @@ if direction == L2R:
             child.sendline(password)
         elif res==2:
             # password failure
-            print "Access denied"
+            eprint("Access denied")
             sys.exit(1)
             
         elif res==3:
@@ -100,7 +104,7 @@ if direction == L2R:
                 res = child.expect( ['sftp>',pexpect.EOF,pexpect.TIMEOUT], timeout=TIMEOUT )
             
             if res==1:
-                print "Error. Premature EOF in pty of sftp client"
+                eprint("Error. Premature EOF in pty of sftp client")
                 sys.exit(1)
                 
             result = log.getvalue()
@@ -111,15 +115,15 @@ if direction == L2R:
             child.wait()
                        
             if "100%" in status and status.startswith(infile):
-                print "OK",status
+                eprint("OK %s"%status)
                 sys.exit(0)
             else:
-                print "ERROR",status
+                eprint("ERROR %s"%status)
                 sys.exit(1)
         
         elif res==4:
             # EOF
-            print "Error. Premature EOF in pty of sftp client"
+            eprint("Error. Premature EOF in pty of sftp client")
             sys.exit(1) 
         
         elif res==5:
@@ -145,7 +149,7 @@ elif direction == R2L:
             child.sendline(password)
         elif res==2:
             # password failure
-            print "Access denied"
+            eprint("Access denied")
             sys.exit(1)
             
         elif res==3:
@@ -164,7 +168,7 @@ elif direction == R2L:
                 res = child.expect( ['sftp>',pexpect.EOF,pexpect.TIMEOUT], timeout=TIMEOUT )
             
             if res==1:
-                print "Error. Premature EOF in pty of sftp client"
+                eprint("Error. Premature EOF in pty of sftp client")
                 sys.exit(1)
                 
             result = log.getvalue()
@@ -175,15 +179,15 @@ elif direction == R2L:
             child.wait()
                        
             if "100%" in status and status.startswith(path):
-                print "OK",status
+                eprint("OK %s"%status)
                 sys.exit(0)
             else:
-                print "ERROR",status
+                eprint("ERROR %s"%status)
                 sys.exit(1)
         
         elif res==4:
             # EOF
-            print "Error. Premature EOF in pty of sftp client"
+            eprint("Error. Premature EOF in pty of sftp client")
             sys.exit(1) 
         
         elif res==5:
