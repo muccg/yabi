@@ -29,7 +29,7 @@ class SSHCopy(BaseShell):
     scp = os.path.join( os.path.dirname(os.path.realpath(__file__)), "sftp-copy.py" )
     python = "/usr/bin/python"
     
-    def WriteToRemote(self, certfile, remoteurl, fifo=None):
+    def WriteToRemote(self, certfile, remoteurl, password="",fifo=None):
         subenv = self._make_env()
         
         if not fifo:
@@ -45,7 +45,7 @@ class SSHCopy(BaseShell):
             ]
         print "C:",command
             
-        return BaseShell.execute(self,SCPProcessProtocol,
+        return BaseShell.execute(self,SCPProcessProtocol(password),
             command
         ), fifo
         #return BaseShell.execute(self,SCPProcessProtocol,
@@ -59,13 +59,13 @@ class SSHCopy(BaseShell):
             #]
         #), fifo
         
-    def ReadFromRemote(self,certfile,remoteurl,fifo=None):
+    def ReadFromRemote(self,certfile,remoteurl,password="",fifo=None):
         subenv = self._make_env()
         
         if not fifo:
             fifo = Fifos.Get()
             
-        return BaseShell.execute(self,SCPProcessProtocol,
+        return BaseShell.execute(self,SCPProcessProtocol(password),
             [   self.python, self.scp,
                 "-i",certfile,
                 "-P","22",

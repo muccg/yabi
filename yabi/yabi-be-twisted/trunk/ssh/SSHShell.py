@@ -24,7 +24,7 @@ class SSHShell(BaseShell):
                 '-i',certfile,
                 host 
             ] + list(command)
-        return BaseShell.execute(self,SSHShellProcessProtocol,
+        return BaseShell.execute(self,SSHShellProcessProtocol(),
             [ 
                 self.ssh,
                 '-i',certfile,

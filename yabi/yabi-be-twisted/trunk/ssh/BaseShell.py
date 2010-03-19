@@ -61,16 +61,13 @@ class BaseShell(object):
         subenv = environ.copy() if environ!=None else os.environ.copy()
         return subenv    
 
-    def execute(self, protocol, command):
+    def execute(self, pp, command):
         """execute a command using a process protocol"""
 
         subenv = self._make_env()
-        print "Instantiating",protocol
-        pp = protocol()
         if DEBUG:
             print "env",subenv
             print "exec:",command
-        print "done..."
             
         reactor.spawnProcess(   pp,
                                 command[0],
