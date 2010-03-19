@@ -159,7 +159,7 @@ elif direction == R2L:
             log = StringIO.StringIO()
             child.logfile_read = log
             
-            # send put command
+            # send get command
             child.sendline("get '%s' '%s'"%(path,outfile))
             
             # now lets wait until the upload is finished, or the task fails.
@@ -173,6 +173,8 @@ elif direction == R2L:
                 sys.exit(1)
                 
             result = log.getvalue()
+            eprint("RESULT")
+            eprint(result)
             resultlines = [X.strip() for X in result.split("\r") if not 'sftp>' in X and len(X.strip())]
             status = resultlines[-1]
             
