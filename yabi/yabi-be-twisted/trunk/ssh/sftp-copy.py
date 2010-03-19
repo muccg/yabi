@@ -166,13 +166,13 @@ elif direction == R2L:
             res = 2
             while res==2:
                 res = child.expect( ['sftp>',pexpect.EOF,pexpect.TIMEOUT], timeout=TIMEOUT )
+                    print "RES:",res
             
             if res==1:
                 eprint("Error. Premature EOF in pty of sftp client")
                 sys.exit(1)
                 
             result = log.getvalue()
-            eprint("result: %s"%str(result))
             resultlines = [X.strip() for X in result.split("\r") if not 'sftp>' in X and len(X.strip())]
             status = resultlines[-1]
             
