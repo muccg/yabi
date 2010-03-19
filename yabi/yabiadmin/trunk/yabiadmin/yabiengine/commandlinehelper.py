@@ -73,7 +73,7 @@ class CommandLineHelper():
             # TODO Should this be the other way around, that is, make sure that the param in the
             # dict is in the db? (To prevent injection)
             if tp.switch not in self.param_dict:
-                logger.info("Switch ignored [%]" % tp.switch)
+                logger.info("Switch ignored [%s]" % tp.switch)
                 continue
 
             # if the switch is the batch on param switch put it in commandparams and add placeholder in command
