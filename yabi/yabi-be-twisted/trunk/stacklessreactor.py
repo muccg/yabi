@@ -17,7 +17,9 @@ class StacklessReactor(StacklessBaseReactor):
         try:    
             stackless.schedule()
         except Exception, e:
-            print "BLAM",e
+            print "Uncaught Exception in stackless threads"
+            import traceback
+            traceback.print_exc()
         return StacklessBaseReactor.doIteration(self,timeout)
 
 def install():
