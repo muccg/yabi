@@ -248,6 +248,4 @@ class Syslog(models.Model):
                           )
 
 
-# must import this here to avoid circular reference
-from yabiengine import wfwrangler
 

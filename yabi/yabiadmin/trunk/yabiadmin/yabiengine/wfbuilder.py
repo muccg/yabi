@@ -11,7 +11,6 @@ from yabiadmin.yabiengine.enginemodels import EngineTask, EngineJob, EngineWorkf
 from yabiadmin.yabmin.models import Backend, BackendCredential, Tool, User
 from yabiadmin.yabiengine.YabiJobException import YabiJobException
 from yabiadmin.yabiengine import backendhelper
-from yabiengine import wfwrangler
 
 
 import logging
@@ -51,7 +50,7 @@ def build(username, workflow_json):
 
         # start processing
         logger.debug('-----Starting workflow id %d -----' % workflow.id)
-        wfwrangler.walk(workflow)
+        workflow.walk()
 
         return workflow.yabistore_id
     

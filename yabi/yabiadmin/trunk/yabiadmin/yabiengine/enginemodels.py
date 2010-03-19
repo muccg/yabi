@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import httplib, os
+import uuid
 from urllib import urlencode
-
+from os.path import splitext
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import models
 from django.db.models import Q
@@ -13,9 +14,11 @@ from django.utils.webhelpers import url
 from yabiadmin.yabmin.models import Backend, BackendCredential, Tool, User
 from yabiadmin.yabiengine import backendhelper
 from yabiadmin.yabiengine.commandlinehelper import CommandLineHelper
-from yabiadmin.yabiengine.models import Workflow, Task, Job
+from yabiadmin.yabiengine.models import Workflow, Task, Job, StageIn
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
+from yabiadmin.yabiengine.YabiJobException import YabiJobException
 
+from conf import config
 
 import logging
 logger = logging.getLogger('yabiengine')
@@ -27,12 +30,90 @@ class EngineWorkflow(Workflow):
 
     class Meta:
         proxy = True
+
+
+
+    def walk(self):
+        logger.debug('')
+
+        #jobset = [EngineJob(X) for X in self.job_set.all().order_by("order")]
+        jobset = [X for X in self.job_set.all().order_by("order")]
+
+        for job in jobset:
+            logger.debug(job.id)
+            ej = EngineJob()
+            ej.transformer(job)
+            job = ej
+
+            logger.debug(job.id)
+            
+            logger.info('Walking job id: %s' % job.id)
+            try:
+
+                #check job status
+                if not job.status_complete() and not job.status_ready():
+                    job.check_dependencies()
+                    job.prepare_tasks()
+                    job.prepare_job()
+                else:
+                    logger.info('Job id: %s is %s' % (job.id, job.status))
+                    # check all the jobs are complete, if so, changes status on workflow
+                    incomplete_jobs = Job.objects.filter(workflow=job.workflow).exclude(status=settings.STATUS['complete'])
+                    if not len(incomplete_jobs):
+                        job.workflow.status = settings.STATUS['complete']
+                        job.workflow.save()
+
+            except YabiJobException,e:
+                logger.info("Caught YabiJobException with message: %s" % e)
+                continue
+            except ObjectDoesNotExist,e:
+                logger.critical("ObjectDoesNotExist at wfwrangler.walk: %s" % e)
+                import traceback
+                logger.debug(traceback.format_exc())
+                raise
+            except Exception,e:
+                logger.critical("Error in workflow wrangler: %s" % e)
+                raise
         
 
 class EngineJob(Job):
 
     class Meta:
         proxy = True
+
+
+    def transformer(self, job):
+        self.__dict__.update(job.__dict__)
+
+    @property
+    def extensions(self):
+        '''Reconstitute the input filetype extension list so each create_task can use it'''
+        extensions = []
+        if self.input_filetype_extensions:
+            extensions = (self.input_filetype_extensions)
+        return extensions
+
+
+    def check_dependencies(self):
+        """Check each of the dependencies in the jobs command params.
+        Start with a ready value of True and if any of the dependecies are not ready set ready to False.
+        """
+        logger.debug('')
+        logger.info('Check dependencies for jobid: %s...' % self.id)
+
+        logger.debug("++++++++++++++++++++ %s ++++++++++++++++++" % self.commandparams)
+
+
+        for param in eval(self.commandparams):
+
+            if param.startswith("yabi://"):
+                logger.info('Evaluating param: %s' % param)
+                scheme, uriparts = uriparse(param)
+                workflowid, jobid = uriparts.path.strip('/').split('/')
+                param_job = Job.objects.get(workflow__id=workflowid, id=jobid)
+                if param_job.status != settings.STATUS["complete"]:
+                    raise YabiJobException("Job command parameter not complete. Job:%s Param:%s" % (self.id, param))
+
 
     # TODO
     # Most of this method is building up the commend line, refactor into its own class,def
@@ -115,11 +196,280 @@ class EngineJob(Job):
         self.save()
 
 
+    def prepare_tasks(self):
+        logger.debug('')
+        logger.debug('=================================================== prepare_tasks ===========================================================')
+        logger.info('Preparing tasks for jobid: %s...' % self.id)
+
+        tasks_to_create = []
+
+        # get the backend for this job
+        exec_bc = backendhelper.get_backendcredential_for_uri(self.workflow.user.name, self.exec_backend)
+        exec_be = exec_bc.backend
+        fs_bc = backendhelper.get_backendcredential_for_uri(self.workflow.user.name, self.fs_backend)
+        fs_be = fs_bc.backend
+        logger.debug("wfwrangler::prepare_tasks() exec_be:%s exec_bc:%s fs_be:%s fs_bc:%s"%(exec_be,exec_bc,fs_be,fs_bc))
+
+        paramlist = eval(self.commandparams)
+
+        if paramlist:
+            # this creates batch_on_param tasks
+            logger.debug("PROCESSING batch on param")
+            for param in paramlist:
+                logger.debug("Prepare_task PARAMLIST: %s"%paramlist)
+
+                # TODO: fix all this voodoo
+
+                ##################################################
+                # handle yabi:// uris
+                # fetches the stageout of previous job and
+                # adds that to paramlist to be processed
+                ##################################################
+                if param.startswith("yabi://"):
+                    logger.info('Processing uri %s' % param)
+
+                    # parse yabi uri
+                    # we may want to look up workflows and jobs on specific servers later,
+                    # but just getting path for now as we have just one server
+                    scheme, uriparts = uriparse(param)
+                    workflowid, jobid = uriparts.path.strip('/').split('/')
+                    param_job = Job.objects.get(workflow__id=workflowid, id=jobid)
+
+                    # get stage out directory of job
+                    stageout = param_job.stageout
+
+                    paramlist.append(stageout)
+
+
+                ##################################################
+                # handle yabifs:// uris that are directories
+                ##################################################
+
+                # uris ending with a / on the end of the path are directories
+                elif param.startswith("yabifs://") and param.endswith("/"):
+                    logger.info('Processing uri %s' % param)
+
+                    logger.debug("PROCESSING")
+                    logger.debug("%s -> %s" % (param, backendhelper.get_file_list(self.workflow.user.name, param)))
+
+                    # get_file_list will return a list of file tuples
+                    for f in backendhelper.get_file_list(self.workflow.user.name, param):
+                        logger.debug("FILELIST %s" % f)
+                        tasks_to_create.append([self, param, f[0], exec_be, exec_bc, fs_be, fs_bc])
+
+
+                ##################################################
+                # handle yabifs:// uris
+                ##################################################
+                elif param.startswith("yabifs://"):
+                    logger.info('Processing uri %s' % param)            
+                    rest, filename = param.rsplit("/",1)
+                    tasks_to_create.append([self, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc])
+
+
+                ##################################################
+                # handle gridftp:// gridftp uris that are directories
+                ##################################################
+
+                # uris ending with a / on the end of the path are directories
+                elif param.startswith("gridftp://") and param.endswith("/"):
+                    logger.info('Processing uri %s' % param)
+
+                    logger.debug("PROCESSING")
+                    logger.debug("%s -> %s" % (param, backendhelper.get_file_list(self.workflow.user.name, param)))
+
+                    # get_file_list will return a list of file tuples
+                    for f in backendhelper.get_file_list(self.workflow.user.name, param):
+                        tasks_to_create.append([self, param, f[0], exec_be, exec_bc, fs_be, fs_bc])
+
+
+                ##################################################
+                # handle gridftp:// uris
+                ##################################################
+                elif param.startswith("gridftp://"):
+                    logger.info('Processing uri %s' % param)            
+                    rest, filename = param.rsplit("/",1)
+
+                    logger.debug("PROCESSING %s" % param)
+
+                    tasks_to_create.append([self, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc])
+
+
+                ##################################################
+                # handle unknown types
+                ##################################################
+                else:
+                    logger.info('****************************************')
+                    logger.info('Unhandled type: ' + param)
+                    logger.info('****************************************')
+                    raise Exception('Unknown file type.')
+
+
+        else:
+            # This creates NON batch on param jobs
+            logger.debug("PROCESSING NON batch on param")
+            tasks_to_create.append([self, None, None, exec_be, exec_bc, fs_be, fs_bc])
+
+
+        ##
+        ## now loop over these tasks and actually create them
+        ##
+
+        num = 1
+
+        # lets count up our paramlist to see how many 'real' (as in not yabi://) files there are to process
+        # won't count tasks with file == None as these are from not batch param jobs
+        count = len([X for X in tasks_to_create if X[2] and X[0].is_task_file_valid(X[2])])
+
+         # lets build a closure that will generate our names for us
+        if count>1:
+            # the 10 base logarithm will give us how many digits we need to pad
+            buildname = lambda n: (n+1,("0"*(int(log10(count))+1)+str(n))[-(int(log10(count))+1):])
+        else:
+            buildname = lambda n: (n+1, "")
+
+        logger.debug("TASKS TO CREATE: %s" % tasks_to_create)
+
+        # build the first name
+        num, name = buildname(num)
+        for task_data in tasks_to_create:
+            job, file = task_data[0], task_data[2]
+            del(task_data[0]) # remove job from task_data as we now are going to call method on job TODO maybe use pop(0) here
+            # we should only create a task file if job file is none ie it is a non batch_on_param task
+            # or if it is a valid filetype for the batch_on_param
+            # TODO REFACTOR - Adam can you look at how this is done
+            if file == None or self.is_task_file_valid(file):
+                if job.create_task( *(task_data+[name]) ):
+                    # task created, bump task
+                    num,name = buildname(num)
+
+    def prepare_job(self):
+        logger.debug('')
+        logger.info('Setting job id %s to ready' % self.id)                
+        self.status = settings.STATUS["ready"]
+        self.save()
+                    
+    def is_task_file_valid(self, file):
+        """Returns a boolean, true if the file passed in is a valid file for the job. Only uses the file extension to tell."""
+        return splitext(file)[1].strip('.') in self.extensions
+
+
+
+    def create_task(self, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
+        logger.debug('START TASK CREATION')
+        logger.debug("job %s" % self)
+        logger.debug("file %s" % file)
+        logger.debug("param %s" % param)
+        logger.debug("exec_be %s" % exec_be)
+        logger.debug("exec_bc %s" % exec_bc)
+        logger.debug("fs_be %s" % fs_be)
+        logger.debug("fs_bc %s" % fs_bc)
+
+        # TODO param is uri less filename gridftp://amacgregor@xe-ng2.ivec.org/scratch/bi01/amacgregor/
+        # rename it to something sensible
+
+        # create the task
+        t = EngineTask(job=self, status=settings.STATUS['pending'])
+        t.working_dir = str(uuid.uuid4()) # random uuid
+        t.name = name
+        t.command = self.command
+        t.expected_ip = config.config['backend']['port'][0]
+        t.expected_port = config.config['backend']['port'][1]
+        t.save()
+
+        # basic stuff used by both stagein types
+        fsscheme, fsbackend_parts = uriparse(self.fs_backend)
+        execscheme, execbackend_parts = uriparse(self.exec_backend)
+
+
+        ##
+        ## JOB STAGEINS
+        ##
+        ## This section catches all non-batch param files which should appear in job_stageins on job in db
+        ##
+        ## Take each job stagein
+        ## Add a stagein in the database for it
+        ## Replace the filename in the command with relative path used in the stagein
+        for job_stagein in set(eval(self.job_stageins)): # use set to get unique files
+            logger.debug("CREATING JOB STAGEINS")
+
+            if "/" not in job_stagein:
+                continue
+
+            dirpath, filename = job_stagein.rsplit("/",1)
+            scheme, rest = uriparse(dirpath)
+
+            if scheme not in settings.VALID_SCHEMES:
+                continue
+
+            t.command = t.command.replace(job_stagein, url_join(fsbackend_parts.path,t.working_dir, "input", filename))
+
+            t.create_stagein(param=dirpath+'/', file=filename, scheme=fsscheme,
+                           hostname=fsbackend_parts.hostname,
+                           path=os.path.join(fsbackend_parts.path, t.working_dir, "input", filename),
+                           username=fsbackend_parts.username)
+
+            logger.debug('JOB STAGEIN')
+            logger.debug("dirpath %s" % dirpath )
+            logger.debug("filename %s" % filename)
+
+
+        ##
+        ## BATCH PARAM STAGEINS
+        ##
+        ## This section catches all batch-param files
+
+        # only make tasks for expected filetypes
+        if file and self.is_task_file_valid(file):
+            logger.debug("CREATING BATCH PARAM STAGEINS for %s" % file)
+
+            param_scheme, param_uriparts = uriparse(param)
+            root, ext = splitext(file)
+
+            # add the task specific file replacing the % in the command line
+            t.command = t.command.replace("%", url_join(fsbackend_parts.path,t.working_dir, "input", file))
+
+            t.create_stagein(param=param, file=file, scheme=fsscheme,
+                           hostname=fsbackend_parts.hostname,
+                           path=os.path.join(fsbackend_parts.path, t.working_dir, "input", file),
+                           username=fsbackend_parts.username)
+
+
+
+        t.status = settings.STATUS['ready']
+        t.save()
+
+        logger.debug('saved========================================')
+        logger.info('Creating task for job id: %s using command: %s' % (self.id, t.command))
+        logger.info('working dir is: %s' % (t.working_dir) )
+
+
+        # return true indicates that we actually made a task
+        return True 
+
+
+
+
+
 
 class EngineTask(Task):
 
     class Meta:
         proxy = True
+
+
+    def create_stagein(self, param=None, file=None, scheme=None, hostname=None, path=None, username=None):
+        s = StageIn(task=self,
+                    src="%s%s" % (param, file),
+                    dst="%s://%s@%s%s" % (scheme, username, hostname, path),
+                    order=0)
+
+        logger.debug("Stagein: %s <=> %s " % (s.src, s.dst))
+        s.save()
+        
+
+
+
 
 
 # Django signals
@@ -295,7 +645,7 @@ def task_save(sender, **kwargs):
         if not len(incomplete_tasks):
             task.job.status = settings.STATUS['complete']
             task.job.save()
-            wfwrangler.walk(task.job.workflow)
+            task.job.workflow.walk() #TODO this needs to be an ENGINEWORKFLOW
 
         # double check for error status
         # set the job status to error
@@ -319,6 +669,4 @@ post_save.connect(workflow_save, sender=EngineWorkflow)
 post_save.connect(task_save, sender=EngineTask)
 post_save.connect(job_save, sender=EngineJob)
 
-# must import this here to avoid circular reference
-from yabiengine import wfwrangler
 
