@@ -39,6 +39,7 @@ def task(request):
     #if config.config['backend']['ip'] != ip and 
     
     try:
+        # only expose tasks that are ready and are intended for the expeceted backend
         tasks = Task.objects.filter(status=settings.STATUS["ready"], expected_ip=exp_ip, expected_port=exp_port)
 
         if tasks:
