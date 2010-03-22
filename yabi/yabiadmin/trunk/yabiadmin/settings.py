@@ -277,4 +277,4 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 ##
 ## Validation settings
 ##
-VALID_SCHEMES = ['http', 'https', 'gridftp', 'globus', 'sge', 'yabifs', 'ssh']
+VALID_SCHEMES = ['http', 'https', 'gridftp', 'globus', 'sge', 'yabifs', 'ssh', 'null']
