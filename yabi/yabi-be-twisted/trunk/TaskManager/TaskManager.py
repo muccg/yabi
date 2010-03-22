@@ -80,9 +80,15 @@ class TaskManager(object):
         
         print "starting task:",taskdescription['taskid']
         
+        runner = None
+       
+        if parse_url(taskdescritpion['exec']['backend'])[0].lower()=="null":
+            # null backend tasklet runner
+            runner = self.task_nullbe
+        
         # make the task and run it
         tasklet = CustomTasklet(self.task)
-        tasklet.setup(taskdescription)
+        tasklet.setup(taskdescription, runner)
         
         #add to save list
         tasklets.add(tasklet)
@@ -132,6 +138,89 @@ class TaskManager(object):
                 Log(task['errorurl'],"Raised uncaught exception: %s"%(exc))
             Status(task['statusurl'],"error")
         
+    def task_nullbe(self, task):
+        """ Our special copy case for null backend"""
+        """Our top down greenthread code"""
+        print "=========NULL============="
+        print json.dumps(task, sort_keys=True, indent=4)
+        print "=========================="
+        
+        # stage in file
+        taskid = task['taskid']
+        
+        statusurl = task['statusurl']
+        errorurl = task['errorurl']
+        yabiusername = task['yabiusername']
+        
+        # sanity check...
+        for key in ['errorurl','exec','stagein','stageout','statusurl','taskid','yabiusername']:
+            assert key in task, "Task JSON description is missing a vital key '%s'"%key
+        
+        # check the exec section
+        for key in ['backend', 'command', 'fsbackend', 'workingdir']:
+            assert key in task['exec'], "Task JSON description is missing a vital key inside the 'exec' section. Key name is '%s'"%key
+        
+        # shortcuts for our status and log calls
+        status = lambda x: Status(statusurl,x)
+        log = lambda x: Log(errorurl,x)
+        
+        # check if exec scheme is null backend. If this is the case, we need to run our special null backend tasklet
+        scheme, address = parse_url(task['exec']['backend'])
+        assert scheme.lower() == "null"
+           
+        log("null backend... skipping task and copying files")
+           
+        # make sure we have the stageout directory
+        log("making stageout directory %s"%task['stageout'])
+        if DEBUG:
+            print "STAGEOUT:",task['stageout']
+        try:
+            Mkdir(task['stageout'], yabiusername=yabiusername)
+        except GETFailure, error:
+            pass
+        
+        dst = task['stageout']
+              
+        # for each stagein, copy to stageout NOT the stagein destination
+        status("stagein")
+        for copy in task['stagein']:
+            src = copy['src']
+            
+            # check that destination directory exists.
+            scheme,address = parse_url(dst)
+            
+            directory, file = os.path.split(address.path)
+            remotedir = scheme+"://"+address.netloc+directory
+            if DEBUG:
+                print "CHECKING remote:",remotedir
+            try:
+                listing = List(remotedir, yabiusername=yabiusername)
+                if DEBUG:
+                    print "list result:", listing
+            except Exception, error:
+                # directory does not exist
+                print "Remote DIR does not exist"
+                
+                #make dir
+                Mkdir(remotedir, yabiusername=yabiusername)
+            
+            log("RCopying %s to %s..."%(src,dst))
+            try:
+                RCopy(src,dst, yabiusername=yabiusername)
+                log("Copying %s to %s Success"%(src,dst))
+            except GETFailure, error:
+                # error copying!
+                print "TASK[%s]: Copy %s to %s Error!"%(taskid,src,dst)
+                status("error")
+                log("Copying %s to %s failed: %s"%(src,dst, error))
+                return              # finish task
+           
+            print "TASK[%s]: Copy %s to %s Success!"%(taskid,src,dst)
+        
+        
+        status("complete")              # null backends are always marked complete
+        
+        
     def task_mainline(self, task):
         """Our top down greenthread code"""
         print "=========JSON============="
@@ -156,6 +245,14 @@ class TaskManager(object):
         # shortcuts for our status and log calls
         status = lambda x: Status(statusurl,x)
         log = lambda x: Log(errorurl,x)
+        
+        # check if exec scheme is null backend. If this is the case, we need to run our special null backend tasklet
+        scheme, address = parse_url(task['exec']['backend'])
+        if scheme.lower() == "null":
+            log("null backend... skipping task and copying files")
+            
+            status("complete")              # null backends are always marked complete
+            return                          # exit this task
         
         status("stagein")
         for copy in task['stagein']:
@@ -196,7 +293,7 @@ class TaskManager(object):
         # get our credential working directory. We lookup the execution backends auth proxy cache, and get the users home directory from that
         # this comes from their credentials.
         
-        execscheme, address = parse_url(task['exec']['backend'])
+        scheme, address = parse_url(task['exec']['backend'])
         usercreds = UserCreds(yabiusername, task['exec']['backend'])
         #homedir = usercreds['homedir']
         workingdir = task['exec']['workingdir']
@@ -256,12 +353,8 @@ class TaskManager(object):
                         if key in task['exec'] and task['exec'][key]:
                             extras[key]=task['exec'][key]
                     
-                    # check for null backend
-                    if execscheme.lower() != "null":
-                        Exec(uri, command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=yabiusername, **extras)                # this blocks untill the command is complete.
-                        log("Execution finished")
-                    else:
-                        log("null backend... skipping task execution")
+                    Exec(uri, command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=yabiusername, **extras)                # this blocks untill the command is complete.
+                    log("Execution finished")
                 except GETFailure, error:
                     # error executing
                     print "TASK[%s]: Execution failed!"%(taskid)
