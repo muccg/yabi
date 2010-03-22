@@ -140,7 +140,7 @@ class TaskManager(object):
         
     def task_nullbe(self, task):
         """ Our special copy case for null backend"""
-        """Our top down greenthread code"""
+
         print "=========NULL============="
         print json.dumps(task, sort_keys=True, indent=4)
         print "=========================="
