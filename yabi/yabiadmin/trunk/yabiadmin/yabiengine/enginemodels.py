@@ -31,22 +31,12 @@ class EngineWorkflow(Workflow):
     class Meta:
         proxy = True
 
-    def __init__(self, workflow=None, *args, **kwargs):
-        Workflow.__init__(self, *args, **kwargs)
-        if workflow:
-            self.__dict__.update(workflow.__dict__)
-
     def walk(self):
         logger.debug('')
 
-        #jobset = [EngineJob(X) for X in self.job_set.all().order_by("order")]
-        jobset = [X for X in self.job_set.all().order_by("order")]
+        jobset = [X for X in EngineJob.objects.filter(workflow=self).order_by("order")]
 
         for job in jobset:
-            logger.debug(job.id)
-            job = EngineJob(job)
-            logger.debug(job.id)
-            
             logger.info('Walking job id: %s' % job.id)
             try:
 
@@ -82,11 +72,6 @@ class EngineJob(Job):
 
     class Meta:
         proxy = True
-
-    def __init__(self, job=None, *args, **kwargs):
-        Job.__init__(self, *args, **kwargs)
-        if job:
-            self.__dict__.update(job.__dict__)
 
     @property
     def extensions(self):
@@ -649,7 +634,7 @@ def task_save(sender, **kwargs):
         if errorMessage:
             data['errorMessage'] = errorMessage
             
-        workflow = EngineWorkflow(task.job.workflow)
+        workflow = EngineWorkflow.objects.get(id=task.job.workflow.id)
         workflow.update_json(task.job, data)
         task.job.status = status
 
@@ -663,7 +648,7 @@ def task_save(sender, **kwargs):
         if not len(incomplete_tasks):
             task.job.status = settings.STATUS['complete']
             task.job.save()
-            workflow.walk() #TODO this needs to be an ENGINEWORKFLOW, update: it is now, but we may change how this is done
+            workflow.walk()
 
         # double check for error status
         # set the job status to error
