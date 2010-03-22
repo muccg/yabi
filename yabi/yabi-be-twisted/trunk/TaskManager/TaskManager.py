@@ -203,9 +203,9 @@ class TaskManager(object):
                 #make dir
                 Mkdir(remotedir, yabiusername=yabiusername)
             
-            log("RCopying %s to %s..."%(src,dst))
+            log("Copying %s to %s..."%(src,dst))
             try:
-                RCopy(src,dst, yabiusername=yabiusername)
+                Copy(src,dst, yabiusername=yabiusername)
                 log("Copying %s to %s Success"%(src,dst))
             except GETFailure, error:
                 # error copying!
