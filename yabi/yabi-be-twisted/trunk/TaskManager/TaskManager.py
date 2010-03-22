@@ -157,6 +157,13 @@ class TaskManager(object):
         status = lambda x: Status(statusurl,x)
         log = lambda x: Log(errorurl,x)
         
+        # check if exec scheme is
+        scheme, address = parse_url(task['exec']['backend'])
+        if scheme.lower() == "null":
+            log("null backend... skipping task")
+            status("complete")              # null backends are always marked complete
+            return                          # exit this task
+        
         status("stagein")
         for copy in task['stagein']:
             src = copy['src']
@@ -225,6 +232,17 @@ class TaskManager(object):
             print "TASK[%s]:Mkdir failed!"%(taskid)
             status("error")
             log("Making working directory of %s failed: %s"%(outputuri,error))
+            return 
+        
+        print "Making working directory",outputdir
+        #self._tasks[stackless.getcurrent()]=workingdir
+        try:
+            Mkdir(outputdir, yabiusername=yabiusername)
+        except GETFailure, error:
+            # error making directory
+            print "TASK[%s]:Mkdir failed!"%(taskid)
+            status("error")
+            log("Making working directory of %s failed: %s"%(outputdir,error))
             return 
         
         # now we are going to run the job
