@@ -234,17 +234,6 @@ class TaskManager(object):
             log("Making working directory of %s failed: %s"%(outputuri,error))
             return 
         
-        print "Making working directory",outputdir
-        #self._tasks[stackless.getcurrent()]=workingdir
-        try:
-            Mkdir(outputdir, yabiusername=yabiusername)
-        except GETFailure, error:
-            # error making directory
-            print "TASK[%s]:Mkdir failed!"%(taskid)
-            status("error")
-            log("Making working directory of %s failed: %s"%(outputdir,error))
-            return 
-        
         # now we are going to run the job
         status("exec")
         
