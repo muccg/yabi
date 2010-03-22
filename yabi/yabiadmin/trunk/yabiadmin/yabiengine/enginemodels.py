@@ -122,9 +122,9 @@ class EngineJob(Job):
         logger.debug('')
         logger.info('Check dependencies for jobid: %s...' % self.id)
 
-        logger.debug("++++++++++++++++++++ %s ++++++++++++++++++" % self.commandparams)
+        logger.debug("++++++++++++++++++++ %s ++++++++++++++++++" % self.batch_files)
 
-        for param in eval(self.commandparams):
+        for param in eval(self.batch_files):
 
             if param.startswith("yabi://"):
                 logger.info('Evaluating param: %s' % param)
@@ -156,7 +156,7 @@ class EngineJob(Job):
 
         # add other attributes
         self.command = ' '.join(commandLine.command)
-        self.commandparams = commandLine.commandparams # save string repr of list
+        self.batch_files = commandLine.batch_files # save string repr of list
         self.job_stageins = commandLine.jobstageins # save string repr of list
         self.status = settings.STATUS['pending']
 
@@ -192,8 +192,7 @@ class EngineJob(Job):
         fs_be = fs_bc.backend
         logger.debug("wfwrangler::prepare_tasks() exec_be:%s exec_bc:%s fs_be:%s fs_bc:%s"%(exec_be,exec_bc,fs_be,fs_bc))
 
-        # TODO - rename - commandparams is a misleading name, paramlist compunds things further
-        paramlist = eval(self.commandparams)
+        paramlist = eval(self.batch_files)
 
         if paramlist:
             # this creates batch_on_param tasks

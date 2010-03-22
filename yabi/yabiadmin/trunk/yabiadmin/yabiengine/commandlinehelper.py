@@ -30,11 +30,11 @@ class CommandLineHelper():
     job_cache = []
 
     # TODO should this be batch_list
-    _commandparams = []
+    _batch_files = []
 
     @property
-    def commandparams(self):
-        return repr(self._commandparams)
+    def batch_files(self):
+        return repr(self._batch_files)
 
     @property
     def jobstageins(self):
@@ -46,7 +46,7 @@ class CommandLineHelper():
         self.job_cache = job.workflow.job_cache
 
         self._job_stageins = []
-        self._commandparams= []
+        self._batch_files= []
         self.command = []
 
         logger.debug('')
@@ -70,9 +70,9 @@ class CommandLineHelper():
                 logger.info("Switch ignored [%s]" % tp.switch)
                 continue
 
-            # if the switch is the batch on param switch put it in commandparams and add placeholder in command
+            # if the switch is the batch on param switch put it in batch_files and add placeholder in command
             if tp == tool.batch_on_param:
-                self._commandparams.extend(self.param_dict[tp.switch])
+                self._batch_files.extend(self.param_dict[tp.switch])
                 self.param_dict[tp.switch] = ['%'] # use place holder now in self.command
 
             else:
