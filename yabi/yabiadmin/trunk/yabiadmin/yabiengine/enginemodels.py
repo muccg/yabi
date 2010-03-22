@@ -127,7 +127,7 @@ class EngineJob(Job):
         for bfile in eval(self.batch_files):
 
             if bfile.startswith("yabi://"):
-                logger.info('Evaluating bfile: %s' % param)
+                logger.info('Evaluating bfile: %s' % bfile)
                 scheme, uriparts = uriparse(bfile)
                 workflowid, jobid = uriparts.path.strip('/').split('/')
                 param_job = Job.objects.get(workflow__id=workflowid, id=jobid)
