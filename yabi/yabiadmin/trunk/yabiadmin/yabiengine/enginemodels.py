@@ -124,15 +124,15 @@ class EngineJob(Job):
 
         logger.debug("++++++++++++++++++++ %s ++++++++++++++++++" % self.batch_files)
 
-        for param in eval(self.batch_files):
+        for bfile in eval(self.batch_files):
 
-            if param.startswith("yabi://"):
-                logger.info('Evaluating param: %s' % param)
-                scheme, uriparts = uriparse(param)
+            if bfile.startswith("yabi://"):
+                logger.info('Evaluating bfile: %s' % param)
+                scheme, uriparts = uriparse(bfile)
                 workflowid, jobid = uriparts.path.strip('/').split('/')
                 param_job = Job.objects.get(workflow__id=workflowid, id=jobid)
                 if param_job.status != settings.STATUS["complete"]:
-                    raise YabiJobException("Job command parameter not complete. Job:%s Param:%s" % (self.id, param))
+                    raise YabiJobException("Job command parameter not complete. Job:%s bfile:%s" % (self.id, bfile))
 
 
     # TODO still lots of TODO in this method - mainly moving stuff out of it
@@ -192,35 +192,35 @@ class EngineJob(Job):
         fs_be = fs_bc.backend
         logger.debug("wfwrangler::prepare_tasks() exec_be:%s exec_bc:%s fs_be:%s fs_bc:%s"%(exec_be,exec_bc,fs_be,fs_bc))
 
-        paramlist = eval(self.batch_files)
+        batch_file_list = eval(self.batch_files)
 
-        if paramlist:
+        if batch_file_list:
             # this creates batch_on_param tasks
             logger.debug("PROCESSING batch on param")
-            for param in paramlist:
-                logger.debug("Prepare_task PARAMLIST: %s"%paramlist)
+            for bfile in batch_file_list:
+                logger.debug("Prepare_task batch file list: %s" % batch_file_list)
 
                 # TODO: fix all this voodoo
 
                 ##################################################
                 # handle yabi:// uris
                 # fetches the stageout of previous job and
-                # adds that to paramlist to be processed
+                # adds that to batch_file_list to be processed
                 ##################################################
-                if param.startswith("yabi://"):
-                    logger.info('Processing uri %s' % param)
+                if bfile.startswith("yabi://"):
+                    logger.info('Processing uri %s' % bfile)
 
                     # parse yabi uri
                     # we may want to look up workflows and jobs on specific servers later,
                     # but just getting path for now as we have just one server
-                    scheme, uriparts = uriparse(param)
+                    scheme, uriparts = uriparse(bfile)
                     workflowid, jobid = uriparts.path.strip('/').split('/')
                     param_job = Job.objects.get(workflow__id=workflowid, id=jobid)
 
                     # get stage out directory of job
                     stageout = param_job.stageout
 
-                    paramlist.append(stageout)
+                    batch_file_list.append(stageout)
 
 
                 ##################################################
@@ -228,24 +228,24 @@ class EngineJob(Job):
                 ##################################################
 
                 # uris ending with a / on the end of the path are directories
-                elif param.startswith("yabifs://") and param.endswith("/"):
-                    logger.info('Processing uri %s' % param)
+                elif bfile.startswith("yabifs://") and param.endswith("/"):
+                    logger.info('Processing uri %s' % bfile)
 
                     logger.debug("PROCESSING")
-                    logger.debug("%s -> %s" % (param, backendhelper.get_file_list(self.workflow.user.name, param)))
+                    logger.debug("%s -> %s" % (bfile, backendhelper.get_file_list(self.workflow.user.name, bfile)))
 
                     # get_file_list will return a list of file tuples
-                    for f in backendhelper.get_file_list(self.workflow.user.name, param):
+                    for f in backendhelper.get_file_list(self.workflow.user.name, bfile):
                         logger.debug("FILELIST %s" % f)
-                        tasks_to_create.append([self, param, f[0], exec_be, exec_bc, fs_be, fs_bc])
+                        tasks_to_create.append([self, bfile, f[0], exec_be, exec_bc, fs_be, fs_bc])
 
 
                 ##################################################
                 # handle yabifs:// uris
                 ##################################################
-                elif param.startswith("yabifs://"):
-                    logger.info('Processing uri %s' % param)            
-                    rest, filename = param.rsplit("/",1)
+                elif bfile.startswith("yabifs://"):
+                    logger.info('Processing uri %s' % bfile)            
+                    rest, filename = bfile.rsplit("/",1)
                     tasks_to_create.append([self, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc])
 
 
@@ -254,25 +254,25 @@ class EngineJob(Job):
                 ##################################################
 
                 # uris ending with a / on the end of the path are directories
-                elif param.startswith("gridftp://") and param.endswith("/"):
-                    logger.info('Processing uri %s' % param)
+                elif bfile.startswith("gridftp://") and bfile.endswith("/"):
+                    logger.info('Processing uri %s' % bfile)
 
                     logger.debug("PROCESSING")
-                    logger.debug("%s -> %s" % (param, backendhelper.get_file_list(self.workflow.user.name, param)))
+                    logger.debug("%s -> %s" % (bfile, backendhelper.get_file_list(self.workflow.user.name, bfile)))
 
                     # get_file_list will return a list of file tuples
-                    for f in backendhelper.get_file_list(self.workflow.user.name, param):
-                        tasks_to_create.append([self, param, f[0], exec_be, exec_bc, fs_be, fs_bc])
+                    for f in backendhelper.get_file_list(self.workflow.user.name, bfile):
+                        tasks_to_create.append([self, bfile, f[0], exec_be, exec_bc, fs_be, fs_bc])
 
 
                 ##################################################
                 # handle gridftp:// uris
                 ##################################################
-                elif param.startswith("gridftp://"):
-                    logger.info('Processing uri %s' % param)            
-                    rest, filename = param.rsplit("/",1)
+                elif bfile.startswith("gridftp://"):
+                    logger.info('Processing uri %s' % bfile)            
+                    rest, filename = bfile.rsplit("/",1)
 
-                    logger.debug("PROCESSING %s" % param)
+                    logger.debug("PROCESSING %s" % bfile)
 
                     tasks_to_create.append([self, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc])
 
@@ -282,7 +282,7 @@ class EngineJob(Job):
                 ##################################################
                 else:
                     logger.info('****************************************')
-                    logger.info('Unhandled type: ' + param)
+                    logger.info('Unhandled type: ' + bfile)
                     logger.info('****************************************')
                     raise Exception('Unknown file type.')
 
@@ -299,7 +299,7 @@ class EngineJob(Job):
 
         num = 1
 
-        # lets count up our paramlist to see how many 'real' (as in not yabi://) files there are to process
+        # lets count up our batch_file_list to see how many 'real' (as in not yabi://) files there are to process
         # won't count tasks with file == None as these are from not batch param jobs
         count = len([X for X in tasks_to_create if X[2] and X[0].is_task_file_valid(X[2])])
 
