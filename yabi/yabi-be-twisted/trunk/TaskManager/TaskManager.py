@@ -203,19 +203,33 @@ class TaskManager(object):
                 #make dir
                 Mkdir(remotedir, yabiusername=yabiusername)
             
-            log("Copying %s to %s..."%(src,dst))
-            try:
-                Copy(src,dst, yabiusername=yabiusername)
-                log("Copying %s to %s Success"%(src,dst))
-            except GETFailure, error:
-                # error copying!
-                print "TASK[%s]: Copy %s to %s Error!"%(taskid,src,dst)
-                status("error")
-                log("Copying %s to %s failed: %s"%(src,dst, error))
-                return              # finish task
-           
-            print "TASK[%s]: Copy %s to %s Success!"%(taskid,src,dst)
-        
+            if src.endswith("/"):
+                log("RCopying %s to %s..."%(src,dst))
+                try:
+                    RCopy(src,dst, yabiusername=yabiusername)
+                    log("RCopying %s to %s Success"%(src,dst))
+                except GETFailure, error:
+                    # error copying!
+                    print "TASK[%s]: RCopy %s to %s Error!"%(taskid,src,dst)
+                    status("error")
+                    log("RCopying %s to %s failed: %s"%(src,dst, error))
+                    return              # finish task
+            
+                print "TASK[%s]: RCopy %s to %s Success!"%(taskid,src,dst)
+            else:
+                log("Copying %s to %s..."%(src,dst))
+                try:
+                    Copy(src,dst, yabiusername=yabiusername)
+                    log("Copying %s to %s Success"%(src,dst))
+                except GETFailure, error:
+                    # error copying!
+                    print "TASK[%s]: Copy %s to %s Error!"%(taskid,src,dst)
+                    status("error")
+                    log("Copying %s to %s failed: %s"%(src,dst, error))
+                    return              # finish task
+            
+                print "TASK[%s]: Copy %s to %s Success!"%(taskid,src,dst)
+            
         
         status("complete")              # null backends are always marked complete
         
