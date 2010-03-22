@@ -78,12 +78,8 @@ if direction == L2R:
     hostpart, path = outfile.split(':',1)
     user, host = hostpart.split('@',1)
         
-    command = [SSH] + extra_args + [ "%s@%s"%(user,host), "cat >'%s'"%path]
-    print command
-    
-    command = "/usr/bin/ssh "+(" ".join(extra_args))+" %s@%s"%(user,host)+" \"echo -BEGIN- && base64 -w 0 -d > '%s' \""%path
-    #command = "/usr/bin/ssh "+(" ".join(extra_args))+" %s@%s"%(user,host)+" \"echo -BEGIN- ; cat>'%s' \""%path
-    #command = "/usr/bin/ssh "+(" ".join(extra_args))+" %s@%s"%(user,host)+" \"/bin/cat>/dev/null\""
+    ssh_command = ("cat %s | /usr/bin/ssh "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cat>\"%s\" '")%(infile,path)
+    command = '/bin/bash -c "'+ssh_command+'"'
     print command
     
     child = pexpect.spawn(command)
@@ -91,8 +87,7 @@ if direction == L2R:
     child.logfile_read = sys.stdout
     res = 0
     while res!=2:
-        res = child.expect(["passphrase for key .+:","password:", "Permission denied","-BEGIN-",pexpect.EOF,pexpect.TIMEOUT],timeout=TIMEOUT)
-        print "RES:",res
+        res = child.expect(["passphrase for key .+:","password:", "Permission denied",pexpect.EOF,pexpect.TIMEOUT],timeout=TIMEOUT)
         if res<=1:
             # send password
             print "sending",password
@@ -104,33 +99,12 @@ if direction == L2R:
             
         elif res==3:
             child.delaybeforesend=0
-            
-            # encode input file
-            proc = subprocess.Popen("base64 -w 0 '%s'"%infile, bufsize=BLOCK_SIZE, shell=True, stdout=subprocess.PIPE)
-            fh = proc.stdout
-            print "!!!"
-            print child.isalive()
-            
-            reading = True
-            while reading:
-                dat=fh.read(BLOCK_SIZE)
-                if len(dat):
-                    print "==="
-                    print dat
-                    print child.send(dat+"\r\n")
-                    #print child.isalive()
-                else:
-                    reading = False
-            
-            child.sendcontrol('d')
             child.sendeof()
-            fh.close()
+            if child.isalive():
+                child.wait()
             
-            child.wait()
-            
-                       
             print "RESULT",child.exitstatus
-            sys.exit(0)
+            sys.exit(child.exitstatus)
         
         elif res==4:
             # EOF
@@ -147,10 +121,8 @@ elif direction == R2L:
     hostpart, path = infile.split(':',1)
     user, host = hostpart.split('@',1)
     
-    command = [SSH] + extra_args + [ "%s@%s"%(user,host), "cat '%s'"%path]
-    print command
-    
-    command = "/usr/bin/ssh "+(" ".join(extra_args))+" %s@%s"%(user,host)+" \"echo -BEGIN- && base64 -w 0 '%s' && echo -END-\""%path
+    ssh_command = ("/usr/bin/ssh "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cat \"%s\"' > '%s'")%(path,outfile)
+    command = '/bin/bash -c "'+ssh_command+'"'
     print command
     
     child = pexpect.spawn(command)
@@ -159,7 +131,7 @@ elif direction == R2L:
     timeout_count = 0                           # how many times weve hit a timeout
     res = 0
     while res!=2:
-        res = child.expect(["passphrase for key .+:","password:","Permission denied","-BEGIN-",pexpect.EOF,pexpect.TIMEOUT],timeout=TIMEOUT)
+        res = child.expect(["passphrase for key .+:","password:","Permission denied",pexpect.EOF,pexpect.TIMEOUT],timeout=TIMEOUT)
         print "RES:",res
         if res<=1:
             # send password
@@ -170,35 +142,13 @@ elif direction == R2L:
             data_flow = True
             
         elif res==3:
-            # BEGIN
-            child.delaybeforesend=0             # switch off echo selay so we can stream the data fullspeed
+            child.delaybeforesend=0
+            child.sendeof()
+            if child.isalive():
+                child.wait()
             
-            # write input file in
-            #fh = open(outfile,'wb')
-            proc = subprocess.Popen("base64 -w 0 -d > '%s'"%outfile, bufsize=BLOCK_SIZE, shell=True, stdin=subprocess.PIPE)
-            fh = proc.stdin
-            
-            reading = True
-            dat=""
-            while reading:
-                dat+=child.read(BLOCK_SIZE)
-                if len(dat):
-                    if dat.count("-")==1:
-                        # half a tag! we have to join this with the next block to get the full tag
-                        continue
-                    print "writing:",len(dat)
-                    fh.write(dat.replace("\r\n","").replace(" ","").replace("-BEGIN-","").replace("-END-",""))
-                    dat=""
-                else:
-                    reading=False
-            child.sendeof()  
-            fh.close()
-            
-            if proc.wait()!=0:
-                print "There were ERRORS"
-                sys.exit(1)
-            
-            sys.exit(0)
+            print "RESULT",child.exitstatus
+            sys.exit(child.exitstatus)
             
         elif res==5:
             if data_flow:
