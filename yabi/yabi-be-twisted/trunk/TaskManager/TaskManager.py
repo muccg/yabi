@@ -82,7 +82,7 @@ class TaskManager(object):
         
         runner = None
        
-        if parse_url(taskdescritpion['exec']['backend'])[0].lower()=="null":
+        if parse_url(taskdescription['exec']['backend'])[0].lower()=="null":
             # null backend tasklet runner
             runner = self.task_nullbe
         
@@ -140,7 +140,6 @@ class TaskManager(object):
         
     def task_nullbe(self, task):
         """ Our special copy case for null backend"""
-
         print "=========NULL============="
         print json.dumps(task, sort_keys=True, indent=4)
         print "=========================="
