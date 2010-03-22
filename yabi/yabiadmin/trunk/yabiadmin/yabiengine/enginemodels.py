@@ -228,7 +228,7 @@ class EngineJob(Job):
                 ##################################################
 
                 # uris ending with a / on the end of the path are directories
-                elif bfile.startswith("yabifs://") and param.endswith("/"):
+                elif bfile.startswith("yabifs://") and bfile.endswith("/"):
                     logger.info('Processing uri %s' % bfile)
 
                     logger.debug("PROCESSING")
