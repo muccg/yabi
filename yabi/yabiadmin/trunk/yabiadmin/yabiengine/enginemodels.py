@@ -78,6 +78,8 @@ class EngineWorkflow(Workflow):
 
 class EngineJob(Job):
 
+    tool = None
+
     class Meta:
         proxy = True
 
@@ -94,6 +96,40 @@ class EngineJob(Job):
             extensions = (self.input_filetype_extensions)
         return extensions
 
+    
+    @property
+    def exec_credential(self):
+        rval = None
+
+        try:
+            rval = BackendCredential.objects.get(credential__user=self.workflow.user, backend=self.tool.backend)
+        except (ObjectDoesNotExist, MultipleObjectsReturned):
+            logger.critical('Invalid filesystem backend credentials for user: %s and backend: %s' % (self.workflow.user, self.tool.backend))
+            ebcs = BackendCredential.objects.filter(credential__user=self.workflow.user, backend=self.tool.backend)
+            logger.debug("EBCS returned: %s"%(ebcs))
+            for bc in ebcs:
+                logger.debug("%s: Backend: %s Credential: %s"%(bc,bc.credential,bc.backend))
+            raise
+
+        return rval 
+
+
+    @property
+    def fs_credential(self):
+        rval = None
+
+        try:
+            rval = BackendCredential.objects.get(credential__user=self.workflow.user, backend=self.tool.fs_backend)
+        except (ObjectDoesNotExist, MultipleObjectsReturned):
+            logger.critical('Invalid filesystem backend credentials for user: %s and backend: %s' % (self.workflow.user, self.tool.fs_backend))
+            fsbcs = BackendCredential.objects.filter(credential__user=self.workflow.user, backend=self.tool.fs_backend)
+            logger.debug("FS Backend Credentials returned: %s"%(fsbcs))
+            for bc in fsbcs:
+                logger.debug("%s: Backend: %s Credential: %s"%(bc,bc.credential,bc.backend))
+            raise
+
+        return rval
+
 
     def check_dependencies(self):
         """Check each of the dependencies in the jobs command params.
@@ -103,7 +139,6 @@ class EngineJob(Job):
         logger.info('Check dependencies for jobid: %s...' % self.id)
 
         logger.debug("++++++++++++++++++++ %s ++++++++++++++++++" % self.commandparams)
-
 
         for param in eval(self.commandparams):
 
@@ -116,14 +151,15 @@ class EngineJob(Job):
                     raise YabiJobException("Job command parameter not complete. Job:%s Param:%s" % (self.id, param))
 
 
-    # TODO
-    # Most of this method is building up the commend line, refactor into its own class,def
+    # TODO still lots of TODO in this method - mainly moving stuff out of it
+    # AH also, should this be a constuctor?
     def addJob(self, job_dict):
         logger.debug('')
 
         self.job_dict = job_dict
-
-        tool = Tool.objects.get(name=job_dict["toolName"])
+        # AH tool is intrinsic to job, so it would seem to me that this ref is useful,
+        # let me know if keep refs to ORM objects like this is not cool
+        self.tool = Tool.objects.get(name=job_dict["toolName"])
 
         # TODO Comment why this is needed or delete
         self.save()
@@ -142,57 +178,35 @@ class EngineJob(Job):
         # TODO HARDCODED
         # if we need a null backend, then we should create one that just marks any jobs it gets as completed
         # set status to complete if null backend
-        if tool.backend.name == 'nullbackend':
+        if self.tool.backend.name == 'nullbackend':
             self.status = settings.STATUS['complete']
         else:
             self.status = settings.STATUS['pending']
 
         # TODO this strips outs the per-switch file type extensions
         # add a list of input file extensions as string, we will reconstitute this for use in the wfwrangler
-        self.input_filetype_extensions = str(tool.input_filetype_extensions_for_batch_param())
-
-        try:
-            exec_backendcredential = BackendCredential.objects.get(credential__user=self.workflow.user, backend=tool.backend)
-        except (ObjectDoesNotExist, MultipleObjectsReturned):
-            logger.critical('Invalid filesystem backend credentials for user: %s and backend: %s' % (self.workflow.user, tool.backend))
-            ebcs = BackendCredential.objects.filter(credential__user=self.workflow.user, backend=tool.backend)
-            logger.debug("EBCS returned: %s"%(ebcs))
-            for bc in ebcs:
-                logger.debug("%s: Backend: %s Credential: %s"%(bc,bc.credential,bc.backend))
-            raise
-
-
-        try:
-            fs_backendcredential = BackendCredential.objects.get(credential__user=self.workflow.user, backend=tool.fs_backend)
-        except (ObjectDoesNotExist, MultipleObjectsReturned):
-            # TODO this was broiken (syntax errors) and does not currently log anything
-            logger.critical('Invalid filesystem backend credentials for user: %s and backend: %s' % (self.workflow.user, tool.fs_backend))
-            fsbcs = BackendCredential.objects.filter(credential__user=self.workflow.user, backend=tool.fs_backend)
-            logger.debug("FS Backend Credentials returned: %s"%(fsbcs))
-            for bc in fsbcs:
-                logger.debug("%s: Backend: %s Credential: %s"%(bc,bc.credential,bc.backend))
-            raise
-
+        self.input_filetype_extensions = str(self.tool.input_filetype_extensions_for_batch_param())
+        
 
         #TODO hardcoded
         # See above, we should delete this nullbackend specific stuff, does it matter if it has a stageout dir?
-        if tool.backend.name == 'nullbackend':
+        if self.tool.backend.name == 'nullbackend':
             self.stageout = None
         else:
-            self.stageout = "%s%s/" % (self.workflow.stageout, "%d - %s"%(self.order+1,tool.display_name) )
+            self.stageout = "%s%s/" % (self.workflow.stageout, "%d - %s"%(self.order+1,self.tool.display_name) )
        
             # TODO delete this, make it a job for the backends
             # make that directory
             backendhelper.mkdir(self.workflow.user.name, self.stageout)
 
-        self.exec_backend = exec_backendcredential.homedir_uri
-        self.fs_backend = fs_backendcredential.homedir_uri
-        self.cpus = tool.cpus
-        self.walltime = tool.walltime
-        self.module = tool.module
-        self.queue = tool.queue
-        self.max_memory = tool.max_memory
-        self.job_type = tool.job_type
+        self.exec_backend = self.exec_credential.homedir_uri
+        self.fs_backend = self.fs_credential.homedir_uri
+        self.cpus = self.tool.cpus
+        self.walltime = self.tool.walltime
+        self.module = self.tool.module
+        self.queue = self.tool.queue
+        self.max_memory = self.tool.max_memory
+        self.job_type = self.tool.job_type
 
         self.save()
 
@@ -205,12 +219,14 @@ class EngineJob(Job):
         tasks_to_create = []
 
         # get the backend for this job
+        # TODO Move this into constructor (addJob should be constructor)
         exec_bc = backendhelper.get_backendcredential_for_uri(self.workflow.user.name, self.exec_backend)
         exec_be = exec_bc.backend
         fs_bc = backendhelper.get_backendcredential_for_uri(self.workflow.user.name, self.fs_backend)
         fs_be = fs_bc.backend
         logger.debug("wfwrangler::prepare_tasks() exec_be:%s exec_bc:%s fs_be:%s fs_bc:%s"%(exec_be,exec_bc,fs_be,fs_bc))
 
+        # TODO - rename - commandparams is a misleading name, paramlist compunds things further
         paramlist = eval(self.commandparams)
 
         if paramlist:

@@ -104,7 +104,9 @@ class CommandLineHelper():
             elif switchuse == 'none':
                 pass
 
-            # TODO else throw
+            else:
+                logger.info("Unknown switch ignored [%s]" % tp.switch)
+                raise Exception("Unknown switch type:  %s" % tp.switch)
 
 
     def get_param_value(self, tp):
