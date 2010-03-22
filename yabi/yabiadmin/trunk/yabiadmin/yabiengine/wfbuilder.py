@@ -40,9 +40,6 @@ def build(username, workflow_json):
         workflow.status = settings.STATUS['ready']
         workflow.save()
 
-        # TODO I dont this should be here, rather than calling backends, make the backends do it
-        backendhelper.mkdir(workflow.user.name, workflow.stageout)
-
         # save the jobs
         for i,job_dict in enumerate(workflow_dict["jobs"]):
             job = EngineJob(workflow=workflow, order=i, start_time=datetime.datetime.now())

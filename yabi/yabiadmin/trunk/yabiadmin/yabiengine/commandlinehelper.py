@@ -125,11 +125,7 @@ class CommandLineHelper():
                     # handle links to previous nodes
                     if 'type' in item and 'jobId' in item:
                         previous_job = self.job_cache[item['jobId']]
-
-                        if previous_job.stageout == None:
-                            value = eval(previous_job.commandparams)
-                        else:
-                            value = [u"%s%d/%d/" % (settings.YABI_URL, self.job.workflow.id, self.job_cache[item['jobId']].id)]
+                        value = [u"%s%d/%d/" % (settings.YABI_URL, self.job.workflow.id, self.job_cache[item['jobId']].id)]
                         
                     # handle links to previous file selects
                     elif 'type' in item and 'filename' in item and 'root' in item:

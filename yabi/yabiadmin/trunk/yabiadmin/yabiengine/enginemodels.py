@@ -158,31 +158,13 @@ class EngineJob(Job):
         self.command = ' '.join(commandLine.command)
         self.commandparams = commandLine.commandparams # save string repr of list
         self.job_stageins = commandLine.jobstageins # save string repr of list
-   
-        # TODO HARDCODED
-        # if we need a null backend, then we should create one that just marks any jobs it gets as completed
-        # set status to complete if null backend
-        if self.tool.backend.name == 'nullbackend':
-            self.status = settings.STATUS['complete']
-        else:
-            self.status = settings.STATUS['pending']
+        self.status = settings.STATUS['pending']
 
         # TODO this strips outs the per-switch file type extensions
         # add a list of input file extensions as string, we will reconstitute this for use in the wfwrangler
         self.input_filetype_extensions = str(self.tool.input_filetype_extensions_for_batch_param())
-        
 
-        #TODO hardcoded
-        # See above, we should delete this nullbackend specific stuff, does it matter if it has a stageout dir?
-        if self.tool.backend.name == 'nullbackend':
-            self.stageout = None
-        else:
-            self.stageout = "%s%s/" % (self.workflow.stageout, "%d - %s"%(self.order+1,self.tool.display_name) )
-       
-            # TODO delete this, make it a job for the backends
-            # make that directory
-            backendhelper.mkdir(self.workflow.user.name, self.stageout)
-
+        self.stageout = "%s%s/" % (self.workflow.stageout, "%d - %s"%(self.order+1,self.tool.display_name) )
         self.exec_backend = self.exec_credential.homedir_uri
         self.fs_backend = self.fs_credential.homedir_uri
         self.cpus = self.tool.cpus
@@ -352,7 +334,7 @@ class EngineJob(Job):
                     
     def is_task_file_valid(self, file):
         """Returns a boolean, true if the file passed in is a valid file for the job. Only uses the file extension to tell."""
-        return splitext(file)[1].strip('.') in self.extensions
+        return (splitext(file)[1].strip('.') in self.extensions) or ('*' in self.extensions)
 
 
 
