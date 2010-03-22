@@ -31,7 +31,10 @@ class EngineWorkflow(Workflow):
     class Meta:
         proxy = True
 
-
+    def __init__(self, workflow=None, *args, **kwargs):
+        Workflow.__init__(self, *args, **kwargs)
+        if workflow:
+            self.__dict__.update(workflow.__dict__)
 
     def walk(self):
         logger.debug('')
@@ -41,10 +44,7 @@ class EngineWorkflow(Workflow):
 
         for job in jobset:
             logger.debug(job.id)
-            ej = EngineJob()
-            ej.transformer(job)
-            job = ej
-
+            job = EngineJob(job)
             logger.debug(job.id)
             
             logger.info('Walking job id: %s' % job.id)
@@ -81,9 +81,10 @@ class EngineJob(Job):
     class Meta:
         proxy = True
 
-
-    def transformer(self, job):
-        self.__dict__.update(job.__dict__)
+    def __init__(self, job=None, *args, **kwargs):
+        Job.__init__(self, *args, **kwargs)
+        if job:
+            self.__dict__.update(job.__dict__)
 
     @property
     def extensions(self):
@@ -632,7 +633,8 @@ def task_save(sender, **kwargs):
         if errorMessage:
             data['errorMessage'] = errorMessage
             
-        task.job.workflow.update_json(task.job, data)
+        workflow = EngineWorkflow(task.job.workflow)
+        workflow.update_json(task.job, data)
         task.job.status = status
 
         # this save will trigger saves right up to the workflow level
@@ -645,7 +647,7 @@ def task_save(sender, **kwargs):
         if not len(incomplete_tasks):
             task.job.status = settings.STATUS['complete']
             task.job.save()
-            task.job.workflow.walk() #TODO this needs to be an ENGINEWORKFLOW
+            workflow.walk() #TODO this needs to be an ENGINEWORKFLOW, update: it is now, but we may change how this is done
 
         # double check for error status
         # set the job status to error
