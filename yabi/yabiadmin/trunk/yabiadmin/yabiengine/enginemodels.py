@@ -56,12 +56,12 @@ class EngineWorkflow(Workflow):
                 logger.info("Caught YabiJobException with message: %s" % e)
                 continue
             except ObjectDoesNotExist,e:
-                logger.critical("ObjectDoesNotExist at wfwrangler.walk: %s" % e)
+                logger.critical("ObjectDoesNotExist at workflow.walk: %s" % e)
                 import traceback
                 logger.debug(traceback.format_exc())
                 raise
             except Exception,e:
-                logger.critical("Error in workflow wrangler: %s" % e)
+                logger.critical("Error in workflow: %s" % e)
                 raise
         
 
@@ -161,7 +161,7 @@ class EngineJob(Job):
         self.status = settings.STATUS['pending']
 
         # TODO this strips outs the per-switch file type extensions
-        # add a list of input file extensions as string, we will reconstitute this for use in the wfwrangler
+        # add a list of input file extensions as string, we will reconstitute this for use in the workflow walk
         self.input_filetype_extensions = str(self.tool.input_filetype_extensions_for_batch_param())
 
         self.stageout = "%s%s/" % (self.workflow.stageout, "%d - %s"%(self.order+1,self.tool.display_name) )
@@ -190,7 +190,7 @@ class EngineJob(Job):
         exec_be = exec_bc.backend
         fs_bc = backendhelper.get_backendcredential_for_uri(self.workflow.user.name, self.fs_backend)
         fs_be = fs_bc.backend
-        logger.debug("wfwrangler::prepare_tasks() exec_be:%s exec_bc:%s fs_be:%s fs_bc:%s"%(exec_be,exec_bc,fs_be,fs_bc))
+        logger.debug("prepare_tasks() exec_be:%s exec_bc:%s fs_be:%s fs_bc:%s"%(exec_be,exec_bc,fs_be,fs_bc))
 
         batch_file_list = eval(self.batch_files)
 
