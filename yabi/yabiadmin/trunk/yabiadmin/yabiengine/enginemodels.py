@@ -33,7 +33,6 @@ class EngineWorkflow(Workflow):
 
     def walk(self):
         logger.debug('')
-
         jobset = [X for X in EngineJob.objects.filter(workflow=self).order_by("order")]
 
         for job in jobset:
@@ -633,7 +632,8 @@ def task_save(sender, **kwargs):
                 }
         if errorMessage:
             data['errorMessage'] = errorMessage
-            
+
+        #TODO Is this the best way to get an engineworkflow rather than a workflow             
         workflow = EngineWorkflow.objects.get(id=task.job.workflow.id)
         workflow.update_json(task.job, data)
         task.job.status = status
