@@ -157,13 +157,6 @@ class TaskManager(object):
         status = lambda x: Status(statusurl,x)
         log = lambda x: Log(errorurl,x)
         
-        # check if exec scheme is
-        scheme, address = parse_url(task['exec']['backend'])
-        if scheme.lower() == "null":
-            log("null backend... skipping task")
-            status("complete")              # null backends are always marked complete
-            return                          # exit this task
-        
         status("stagein")
         for copy in task['stagein']:
             src = copy['src']
@@ -203,7 +196,7 @@ class TaskManager(object):
         # get our credential working directory. We lookup the execution backends auth proxy cache, and get the users home directory from that
         # this comes from their credentials.
         
-        scheme, address = parse_url(task['exec']['backend'])
+        execscheme, address = parse_url(task['exec']['backend'])
         usercreds = UserCreds(yabiusername, task['exec']['backend'])
         #homedir = usercreds['homedir']
         workingdir = task['exec']['workingdir']
@@ -263,8 +256,12 @@ class TaskManager(object):
                         if key in task['exec'] and task['exec'][key]:
                             extras[key]=task['exec'][key]
                     
-                    Exec(uri, command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=yabiusername, **extras)                # this blocks untill the command is complete.
-                    log("Execution finished")
+                    # check for null backend
+                    if execscheme.lower() != "null":
+                        Exec(uri, command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=yabiusername, **extras)                # this blocks untill the command is complete.
+                        log("Execution finished")
+                    else:
+                        log("null backend... skipping task execution")
                 except GETFailure, error:
                     # error executing
                     print "TASK[%s]: Execution failed!"%(taskid)
