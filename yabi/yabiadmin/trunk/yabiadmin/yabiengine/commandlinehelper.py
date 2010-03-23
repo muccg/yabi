@@ -25,11 +25,10 @@ class CommandLineHelper():
     job = None
     job_dict = []
     command = []
-    _job_stageins = []
     param_dict = {}
     job_cache = []
 
-    # TODO should this be batch_list
+    _job_stageins = []
     _batch_files = []
 
     @property
@@ -64,8 +63,6 @@ class CommandLineHelper():
         for tp in tool.toolparameter_set.order_by('rank').all():
 
             # check the tool switch against the incoming params
-            # TODO Should this be the other way around, that is, make sure that the param in the
-            # dict is in the db? (To prevent injection)
             if tp.switch not in self.param_dict:
                 logger.info("Switch ignored [%s]" % tp.switch)
                 continue

@@ -32,38 +32,43 @@ class EngineWorkflow(Workflow):
         proxy = True
 
     def walk(self):
+        '''Walk through the jobs for this workflow and prepare jobs and tasks,
+           check if the workflow has completed after each walk
+        '''
+
         logger.debug('')
         jobset = [X for X in EngineJob.objects.filter(workflow=self).order_by("order")]
 
-        for job in jobset:
-            logger.info('Walking job id: %s' % job.id)
-            try:
+        try:
+            for job in jobset:
+                logger.info('Walking job id: %s' % job.id)
 
-                #check job status
-                if not job.status_complete() and not job.status_ready():
-                    job.check_dependencies()
-                    job.prepare_tasks()
-                    job.prepare_job()
-                else:
-                    logger.info('Job id: %s is %s' % (job.id, job.status))
-                    # check all the jobs are complete, if so, changes status on workflow
-                    incomplete_jobs = Job.objects.filter(workflow=job.workflow).exclude(status=settings.STATUS['complete'])
-                    if not len(incomplete_jobs):
-                        job.workflow.status = settings.STATUS['complete']
-                        job.workflow.save()
+                # dont check complete or ready jobs
+                if job.status_complete() or job.status_ready():
+                    continue
 
-            except YabiJobException,e:
-                logger.info("Caught YabiJobException with message: %s" % e)
-                continue
-            except ObjectDoesNotExist,e:
-                logger.critical("ObjectDoesNotExist at workflow.walk: %s" % e)
-                import traceback
-                logger.debug(traceback.format_exc())
-                raise
-            except Exception,e:
-                logger.critical("Error in workflow: %s" % e)
-                raise
-        
+                # we cant proceed until all previous job dependencies are satisfied
+                if (job.has_incomplete_dependencies()):
+                    continue
+
+                job.prepare_tasks()
+                job.prepare_job()
+
+            # check all the jobs are complete, if so, changes status on workflow
+            incomplete_jobs = Job.objects.filter(workflow=job.workflow).exclude(status=settings.STATUS['complete'])
+            if not len(incomplete_jobs):
+                self.workflow.status = settings.STATUS['complete']
+                self.workflow.save()
+
+        except ObjectDoesNotExist,e:
+            logger.critical("ObjectDoesNotExist at workflow.walk: %s" % e)
+            import traceback
+            logger.debug(traceback.format_exc())
+            raise
+        except Exception,e:
+            logger.critical("Error in workflow: %s" % e)
+            raise
+
 
 class EngineJob(Job):
 
@@ -115,24 +120,25 @@ class EngineJob(Job):
         return rval
 
 
-    def check_dependencies(self):
-        """Check each of the dependencies in the jobs command params.
-        Start with a ready value of True and if any of the dependecies are not ready set ready to False.
+    def has_incomplete_dependencies(self):
+        """Check each of the dependencies (previous jobs that must be completed) in the jobs command params.
+           The only dependency we have are yabi:// style references in batch_files
         """
-        logger.debug('')
+        rval = False
+
         logger.info('Check dependencies for jobid: %s...' % self.id)
 
-        logger.debug("++++++++++++++++++++ %s ++++++++++++++++++" % self.batch_files)
-
         for bfile in eval(self.batch_files):
-
             if bfile.startswith("yabi://"):
                 logger.info('Evaluating bfile: %s' % bfile)
                 scheme, uriparts = uriparse(bfile)
                 workflowid, jobid = uriparts.path.strip('/').split('/')
                 param_job = Job.objects.get(workflow__id=workflowid, id=jobid)
                 if param_job.status != settings.STATUS["complete"]:
-                    raise YabiJobException("Job command parameter not complete. Job:%s bfile:%s" % (self.id, bfile))
+                    logger.debug("Job command parameter not complete. Job:%s bfile:%s" % (self.id, bfile))
+                    rval = True
+
+        return rval
 
 
     # TODO still lots of TODO in this method - mainly moving stuff out of it
