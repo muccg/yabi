@@ -128,6 +128,17 @@ class Job(models.Model, Editable, Status):
     def workflowid(self):
         return self.workflow.id
 
+    def update_status(self):
+        '''
+        Checks all the tasks for a job and sets the job status based on precedence of the task status.
+        The order of the list being checked is therefore important.
+        '''
+        for status in ['error', 'running', 'pending', 'requested', 'ready', 'complete']:
+            if Task.objects.filter(job=self, status=settings.STATUS[status]):
+                self.status = settings.STATUS[status]
+                self.save()
+                return
+
 
 class Task(models.Model, Editable, Status):
     job = models.ForeignKey(Job)

@@ -482,6 +482,45 @@ class EngineJob(Job):
         return True 
 
 
+    def progress_score(self):
+        tasks = Task.objects.filter(job=self)
+        score=0.0
+        for task in tasks:
+            status = task.status
+            score += { 
+                'pending':0.0,
+                'ready':0.0,
+                'requested':0.01,
+                'stagein':0.05,
+                'mkdir':0.1,
+                'exec':0.11,
+                'exec:unsubmitted':0.12,
+                'exec:pending':0.13,
+                'exec:active':0.2,
+                'exec:cleanup':0.7,
+                'exec:done':0.75,
+                'exec:error':0.0,
+                'stageout':0.8,
+                'cleaning':0.9,
+                'complete':1.0,
+                'error':0.0
+                }[status]
+        return score
+
+
+    def total_tasks(self):
+        return float(len(Task.objects.filter(job=self)))
+
+
+    def has_errored_tasks(self):
+        return [X.error_msg for X in Task.objects.filter(job=self) if X.status == settings.STATUS['error']] != []
+
+
+    def get_errored_tasks_messages(self):
+        return [X.error_msg for X in Task.objects.filter(job=self) if X.status == settings.STATUS['error']]
+
+
+
 class EngineTask(Task):
 
     class Meta:
@@ -539,100 +578,29 @@ def signal_task_post_save(sender, **kwargs):
     logger.debug('')
     task = kwargs['instance']
 
-
-    # TODO this code that works out how many tasks are done
-    # should move to job model
-    # TODO REFACTOR move to job perhaps
     try:
-        # get all the tasks for this job
-        jobtasks = Task.objects.filter(job=task.job)
-        running = False
-        error = False
-        score=0.0
-        for task in jobtasks:
-            status = task.status
-            score += { 
-                'pending':0.0,
-                'ready':0.0,
-                'requested':0.01,
-                'stagein':0.05,
-                'mkdir':0.1,
-                'exec':0.11,
-                'exec:unsubmitted':0.12,
-                'exec:pending':0.13,
-                'exec:active':0.2,
-                'exec:cleanup':0.7,
-                'exec:done':0.75,
-                'exec:error':0.0,
-                'stageout':0.8,
-                'cleaning':0.9,
-                'complete':1.0,
-                'error':0.0
-                }[status]
+        task.job.update_status()
 
-        total = float(len(jobtasks))
-
-        if status != settings.STATUS['ready'] and status != settings.STATUS['requested']:
-            running = True
-
-        if status == settings.STATUS['error']:
-            error = True
-
-        # work out if this job is in an error state
-        errored = [X.error_msg for X in jobtasks if X.status == settings.STATUS['error']]
-
-        status = None
-        if error:
-            status = settings.STATUS['error']
-        elif score == total:
-            status = settings.STATUS['complete']
-        elif running:
-            status = settings.STATUS['running']
-        else:
-            status = settings.STATUS['pending']
-
-        errorMessage = None if not error else errored[0]
-
-        if error:
-            logger.debug("ERROR! message = %s" % errorMessage)
-
-            # if there are errors, and the relative job has a status that isn't 'error'
-            if task.job.status != settings.STATUS['error']:
-                # set the job to error
-                task.job.status = settings.STATUS['error']
-
+        # we need and EngineJob so get that from the task.job.id
+        job = EngineJob.objects.get(id=task.job.id)
+        score = job.progress_score()
+        total = job.total_tasks()
 
         # now update the json with the appropriate values
         data = {'tasksComplete':float(score),
                 'tasksTotal':float(total)
                 }
-        if errorMessage:
-            data['errorMessage'] = errorMessage
 
-        #TODO Is this the best way to get an engineworkflow rather than a workflow             
+        if task.job.status == settings.STATUS['error']:
+            data['errorMessage'] = str(task.job.get_errored_tasks_messages())
+
+        # we need to grab an EngineWorkflow from task.job.workflow
         workflow = EngineWorkflow.objects.get(id=task.job.workflow.id)
         workflow.update_json(task.job, data)
         workflow.save()
-        task.job.status = status
 
-        # this save will trigger saves right up to the workflow level
-        task.job.save()
-
-
-        # now double check all the tasks are complete, if so, change status on job
-        # and trigger the workflow walk
-        incomplete_tasks = Task.objects.filter(job=task.job).exclude(status=settings.STATUS['complete'])
-        if not len(incomplete_tasks):
-            task.job.status = settings.STATUS['complete']
-            task.job.save()
+        if task.job.status == settings.STATUS['complete']:
             workflow.walk()
-
-        # double check for error status
-        # set the job status to error
-        error_tasks = Task.objects.filter(job=task.job, status=settings.STATUS['error'])
-        if error_tasks:
-            task.job.status = settings.STATUS['error']
-            task.job.save()
 
     except Exception, e:
         logger.critical(e)
