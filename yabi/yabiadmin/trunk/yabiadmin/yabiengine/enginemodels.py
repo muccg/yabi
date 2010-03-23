@@ -197,9 +197,6 @@ class EngineJob(Job):
         # let me know if keep refs to ORM objects like this is not cool
         self.tool = Tool.objects.get(name=job_dict["toolName"])
 
-        # TODO Comment why this is needed or delete
-        self.save()
-
         # cache job for later reference
         job_id = job_dict["jobId"] # the id that is used in the json
         self.workflow.job_cache[job_id] = self
