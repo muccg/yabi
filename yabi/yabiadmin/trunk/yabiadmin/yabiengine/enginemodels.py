@@ -57,12 +57,6 @@ class EngineWorkflow(Workflow):
                 job = EngineJob(workflow=self, order=i, start_time=datetime.datetime.now())
                 job.addJob(job_dict)
 
-            # start processing
-            #self.walk()
-
-            #return workflow.yabistore_id
-
-
         except ObjectDoesNotExist, e:
             logger.critical(e)
             import traceback

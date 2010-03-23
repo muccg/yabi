@@ -8,7 +8,6 @@ from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from yabiadmin.yabiengine import wfbuilder
 from yabiadmin.yabiengine import backendhelper
 from yabiadmin.yabiengine.urihelper import uriparse
 from django.core.exceptions import ObjectDoesNotExist
