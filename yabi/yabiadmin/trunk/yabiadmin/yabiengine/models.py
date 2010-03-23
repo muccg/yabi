@@ -74,6 +74,7 @@ class Workflow(models.Model, Editable, Status):
     # moved this from job to the workflow level, would be nice to put it at the engine workflow
     # level, but I am worried about the impact on the django signals which reference Job and Workflow
     # and not EngineJob or EngineWorkflow
+    #TODO change this to a @property type thing with setter also
     def update_json(self, job, data={}):
         json_object = json.loads(self.json)
         job_id = int(job.order)
@@ -91,7 +92,6 @@ class Workflow(models.Model, Editable, Status):
             json_object['jobs'][job_id]['stageout'] = job.stageout
 
         self.json = json.dumps(json_object)
-        self.save() # this triggers an update on yabistore
 
 
 class Job(models.Model, Editable, Status):

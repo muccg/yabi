@@ -512,7 +512,7 @@ def signal_workflow_post_save(sender, **kwargs):
         raise
 
 
-def job_save(sender, **kwargs):
+def signal_job_post_save(sender, **kwargs):
     logger.debug('')
     job = kwargs['instance']
 
@@ -523,6 +523,8 @@ def job_save(sender, **kwargs):
                     'tasksTotal':1.0
                     }
             job.workflow.update_json(job, data)
+            job.workflow.save()
+
 
         elif job.status == settings.STATUS['error']:
             job.workflow.status = settings.STATUS['error']
@@ -533,7 +535,7 @@ def job_save(sender, **kwargs):
         raise
 
     
-def task_save(sender, **kwargs):
+def signal_task_post_save(sender, **kwargs):
     logger.debug('')
     task = kwargs['instance']
 
@@ -610,6 +612,7 @@ def task_save(sender, **kwargs):
         #TODO Is this the best way to get an engineworkflow rather than a workflow             
         workflow = EngineWorkflow.objects.get(id=task.job.workflow.id)
         workflow.update_json(task.job, data)
+        workflow.save()
         task.job.status = status
 
         # this save will trigger saves right up to the workflow level
@@ -639,11 +642,13 @@ def task_save(sender, **kwargs):
 
 # connect up django signals
 post_save.connect(signal_workflow_post_save, sender=Workflow)
-post_save.connect(task_save, sender=Task)
-post_save.connect(job_save, sender=Job)
+post_save.connect(signal_job_post_save, sender=Job)
+post_save.connect(signal_task_post_save, sender=Task)
+
 
 post_save.connect(signal_workflow_post_save, sender=EngineWorkflow)
-post_save.connect(task_save, sender=EngineTask)
-post_save.connect(job_save, sender=EngineJob)
+post_save.connect(signal_job_post_save, sender=EngineJob)
+post_save.connect(signal_task_post_save, sender=EngineTask)
+
 
 
