@@ -502,39 +502,11 @@ class EngineTask(Task):
 
 def workflow_save(sender, **kwargs):
     logger.debug('')
-    workflow = kwargs['instance']
+    logger.debug("WORKFLOW post_save signal")
     
-    logger.debug("WORKFLOW SAVE")
-    logger.debug(workflow)
-
     try:
-        # update the yabistore
-        if kwargs['created']:
-            resource = os.path.join(settings.YABISTORE_BASE,"workflows", workflow.user.name)
-        else:
-            resource = os.path.join(settings.YABISTORE_BASE,"workflows", workflow.user.name, str(workflow.yabistore_id))
-
-        data = {'json':workflow.json,
-                'name':workflow.name,
-                'status':workflow.status
-                }
-
-        logger.debug("workflow_save::yabistoreupdate")
-        logger.debug(resource)
-        logger.debug(data)
-        
-        status, data = StoreHelper.update(resource, data)
-
-        logger.debug("STATUS: %s" % status)
-        logger.debug("DATA: %s" % data)
-        
-        # if this was created. save the returned id into yabistore_id
-        if kwargs['created']:
-            logger.debug("SAVING WFID")
-            assert status==200
-            workflow.yabistore_id = int(data)
-            workflow.save()
-        
+        workflow = kwargs['instance']
+        status, data = StoreHelper.update(workflow)
     except Exception, e:
         logger.critical(e)
         raise
