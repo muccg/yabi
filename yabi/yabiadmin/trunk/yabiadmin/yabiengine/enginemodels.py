@@ -3,6 +3,7 @@ import httplib, os
 import uuid
 from urllib import urlencode
 from os.path import splitext
+
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import models
 from django.db.models import Q
@@ -12,7 +13,8 @@ from django.db.models.signals import post_save
 from django.utils.webhelpers import url
 
 from yabiadmin.yabmin.models import Backend, BackendCredential, Tool, User
-from yabiadmin.yabiengine import backendhelper
+from yabiadmin.yabiengine import backendhelper 
+from yabiadmin.yabiengine.storehelper import StoreHelper
 from yabiadmin.yabiengine.commandlinehelper import CommandLineHelper
 from yabiadmin.yabiengine.models import Workflow, Task, Job, StageIn
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
@@ -436,10 +438,6 @@ class EngineJob(Job):
         return True 
 
 
-
-
-
-
 class EngineTask(Task):
 
     class Meta:
@@ -454,36 +452,9 @@ class EngineTask(Task):
 
         logger.debug("Stagein: %s <=> %s " % (s.src, s.dst))
         s.save()
-        
-
-
-
 
 
 # Django signals
-
-def yabistore_update(resource, data):
-    logger.debug('')
-    data = urlencode(data)
-    headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
-    conn = httplib.HTTPConnection(settings.YABISTORE_SERVER)
-    conn.request('POST', resource, data, headers)
-    logger.debug("YABISTORE POST:")
-    logger.debug(settings.YABISTORE_SERVER)
-    logger.debug(resource)
-    logger.debug(data)
-
-    r = conn.getresponse()
-    
-    status = r.status
-    data = r.read()
-    assert status == 200    
-    logger.debug("result:")
-    logger.debug(status)
-    logger.debug(data)
-    
-    return status,data
-
 
 def workflow_save(sender, **kwargs):
     logger.debug('')
@@ -508,7 +479,7 @@ def workflow_save(sender, **kwargs):
         logger.debug(resource)
         logger.debug(data)
         
-        status, data = yabistore_update(resource, data)
+        status, data = StoreHelper.update(resource, data)
 
         logger.debug("STATUS: %s" % status)
         logger.debug("DATA: %s" % data)
