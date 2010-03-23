@@ -341,8 +341,8 @@ class EngineJob(Job):
         """Returns a boolean, true if the file passed in is a valid file for the job. Only uses the file extension to tell."""
         return (splitext(file)[1].strip('.') in self.extensions) or ('*' in self.extensions)
 
-
-
+    # TODO In haste added the very similar named def 'create_tasks', which might cause confusion
+    # Havent looked to closely here yet, but can this move into EngineTask?
     def create_task(self, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
         logger.debug('START TASK CREATION')
         logger.debug("job %s" % self)
