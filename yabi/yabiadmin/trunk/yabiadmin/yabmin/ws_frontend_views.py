@@ -9,6 +9,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from yabiadmin.yabiengine import wfbuilder
+from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_backendcredential_for_uri, copy_file, rm_file
 from yabiadmin.security import validate_user, validate_uri
 from yabiadmin.utils import json_error
@@ -230,6 +231,15 @@ def put(request):
 def submitworkflow(request):
     logger.debug('')
     logger.debug("POST KEYS: %r"%request.POST.keys())
-    yabistore_id = wfbuilder.build(request.POST['username'], request.POST["workflowjson"])
-    return HttpResponse(json.dumps({"id":yabistore_id}))
+
+    workflow_json = request.POST["workflowjson"]
+    workflow_dict = json.loads(workflow_json)
+    user = User.objects.get(name=request.POST['username'])
+    
+    workflow = EngineWorkflow(name=workflow_dict["name"], json=workflow_json, user=user)
+    workflow.save()
+    workflow.build()
+    workflow.walk()
+
+    return HttpResponse(json.dumps({"id":workflow.yabistore_id}))
 

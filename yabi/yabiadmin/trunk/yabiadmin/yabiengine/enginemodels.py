@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-import httplib, os
-import uuid
+import httplib, os, datetime, uuid
 from urllib import urlencode
 from os.path import splitext
 
@@ -29,19 +28,70 @@ logger = logging.getLogger('yabiengine')
 class EngineWorkflow(Workflow):
     job_cache = {}
     job_dict = []
-
+    workflow_dict = None
+    
     class Meta:
         proxy = True
 
-    def walk(self):
-        '''Walk through the jobs for this workflow and prepare jobs and tasks,
-           check if the workflow has completed after each walk
-        '''
 
+    def build(self):
         logger.debug('')
-        jobset = [X for X in EngineJob.objects.filter(workflow=self).order_by("order")]
+        logger.debug('----- Building workflow id %d -----' % self.id)
 
         try:
+
+            workflow_dict = json.loads(self.json)
+
+            # sort out the stageout directory
+            if 'default_stageout' in workflow_dict and workflow_dict['default_stageout']:
+                default_stageout = workflow_dict['default_stageout']
+            else:
+                default_stageout = self.user.default_stageout
+
+            self.stageout = "%s%s/" % (default_stageout, self.name)
+            self.status = settings.STATUS['ready']
+            self.save()
+
+            # save the jobs
+            for i,job_dict in enumerate(workflow_dict["jobs"]):
+                job = EngineJob(workflow=self, order=i, start_time=datetime.datetime.now())
+                job.addJob(job_dict)
+
+            # start processing
+            #self.walk()
+
+            #return workflow.yabistore_id
+
+
+        except ObjectDoesNotExist, e:
+            logger.critical(e)
+            import traceback
+            logger.debug(traceback.format_exc())        
+            raise
+        except KeyError, e:
+            logger.critical(e)
+            import traceback
+            logger.debug(traceback.format_exc())        
+            raise
+        except Exception, e:
+            logger.critical(e)
+            import traceback
+            logger.debug(traceback.format_exc())
+            raise
+
+
+    def walk(self):
+        '''
+        Walk through the jobs for this workflow and prepare jobs and tasks,
+        check if the workflow has completed after each walk
+        '''
+        logger.debug('')
+        logger.debug('----- Walking workflow id %d -----' % self.id)
+
+        try:
+
+            jobset = [X for X in EngineJob.objects.filter(workflow=self).order_by("order")]
+
             for job in jobset:
                 logger.info('Walking job id: %s' % job.id)
 
@@ -49,7 +99,7 @@ class EngineWorkflow(Workflow):
                 if (job.status_complete() or job.status_ready()):
                     continue
 
-                # we cant proceed until all previous job dependencies are satisfied
+                # we can't proceed until all previous job dependencies are satisfied
                 if (job.has_incomplete_dependencies()):
                     logger.info('Incomplete dependencies for job: %s' % job.id)
                     continue
