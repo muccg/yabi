@@ -44,21 +44,23 @@ class EngineWorkflow(Workflow):
                 logger.info('Walking job id: %s' % job.id)
 
                 # dont check complete or ready jobs
-                if job.status_complete() or job.status_ready():
+                if (job.status_complete() or job.status_ready()):
                     continue
 
                 # we cant proceed until all previous job dependencies are satisfied
                 if (job.has_incomplete_dependencies()):
+                    logger.info('Incomplete dependencies for job: %s' % job.id)
                     continue
 
-                job.prepare_tasks()
+                tasks = job.prepare_tasks()
+                job.create_tasks(tasks)
                 job.prepare_job()
 
             # check all the jobs are complete, if so, changes status on workflow
-            incomplete_jobs = Job.objects.filter(workflow=job.workflow).exclude(status=settings.STATUS['complete'])
+            incomplete_jobs = Job.objects.filter(workflow=self).exclude(status=settings.STATUS['complete'])
             if not len(incomplete_jobs):
-                self.workflow.status = settings.STATUS['complete']
-                self.workflow.save()
+                self.status = settings.STATUS['complete']
+                self.save()
 
         except ObjectDoesNotExist,e:
             logger.critical("ObjectDoesNotExist at workflow.walk: %s" % e)
@@ -140,8 +142,6 @@ class EngineJob(Job):
 
         return rval
 
-
-    # TODO still lots of TODO in this method - mainly moving stuff out of it
     # AH also, should this be a constuctor?
     def addJob(self, job_dict):
         logger.debug('')
@@ -298,12 +298,11 @@ class EngineJob(Job):
             logger.debug("PROCESSING NON batch on param")
             tasks_to_create.append([self, None, None, exec_be, exec_bc, fs_be, fs_bc])
 
+        return tasks_to_create
 
-        ##
-        ## now loop over these tasks and actually create them
-        ##
 
-        num = 1
+    def create_tasks(self, tasks_to_create):
+        logger.debug('')
 
         # lets count up our batch_file_list to see how many 'real' (as in not yabi://) files there are to process
         # won't count tasks with file == None as these are from not batch param jobs
@@ -319,6 +318,7 @@ class EngineJob(Job):
         logger.debug("TASKS TO CREATE: %s" % tasks_to_create)
 
         # build the first name
+        num = 1
         num, name = buildname(num)
         for task_data in tasks_to_create:
             job, file = task_data[0], task_data[2]
