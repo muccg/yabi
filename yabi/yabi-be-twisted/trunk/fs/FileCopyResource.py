@@ -100,8 +100,6 @@ class FileCopyResource(resource.PostableResource):
                        
             # wait for one to finish
             while not readproto.isDone() and not writeproto.isDone():
-                if DEBUG:
-                    print "rp",readproto.exitcode,"wp",writeproto.exitcode
                 stackless.schedule()
             
             # if one died and not the other, then kill the non dead one
