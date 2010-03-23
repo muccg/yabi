@@ -240,5 +240,5 @@ def submitworkflow(request):
     workflow.build()
     workflow.walk()
 
-    return HttpResponse(json.dumps({"id":workflow.yabistore_id}))
+    return HttpResponse(json.dumps({"id":workflow.id}))
 

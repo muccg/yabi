@@ -51,7 +51,6 @@ class Workflow(models.Model, Editable, Status):
     last_modified_on = models.DateTimeField(null=True, auto_now=True, editable=False)
     created_on = models.DateTimeField(auto_now_add=True, editable=False)
     status = models.TextField(max_length=64, blank=True)
-    yabistore_id = models.IntegerField(null=True)                           # ALTER TABLE yabiengine_workflow ADD COLUMN yabistore_id INTEGER;
     stageout = models.CharField(max_length=1000)
 
     def __unicode__(self):

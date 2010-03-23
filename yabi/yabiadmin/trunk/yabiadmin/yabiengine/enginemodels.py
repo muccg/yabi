@@ -500,7 +500,7 @@ class EngineTask(Task):
 
 # Django signals
 
-def workflow_save(sender, **kwargs):
+def signal_workflow_post_save(sender, **kwargs):
     logger.debug('')
     logger.debug("WORKFLOW post_save signal")
     
@@ -638,11 +638,11 @@ def task_save(sender, **kwargs):
 
 
 # connect up django signals
-post_save.connect(workflow_save, sender=Workflow)
+post_save.connect(signal_workflow_post_save, sender=Workflow)
 post_save.connect(task_save, sender=Task)
 post_save.connect(job_save, sender=Job)
 
-post_save.connect(workflow_save, sender=EngineWorkflow)
+post_save.connect(signal_workflow_post_save, sender=EngineWorkflow)
 post_save.connect(task_save, sender=EngineTask)
 post_save.connect(job_save, sender=EngineJob)
 
