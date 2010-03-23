@@ -28,7 +28,7 @@ class SCPError(Exception):
     pass
 
 class SSHCopy(BaseShell):
-    scp = os.path.join( os.path.dirname(os.path.realpath(__file__)), "sftp-copy.py" )
+    scp = os.path.join( os.path.dirname(os.path.realpath(__file__)), "ssh-copy-2.py" )
     python = "/usr/bin/python"
     
     def WriteToRemote(self, certfile, remoteurl, password="",fifo=None):
