@@ -48,7 +48,7 @@ class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
         
             usercert = self.save_identity(creds['key'])
             
-            pp = ssh.Run.run(certfile,command,username,host,working,port="22",stdout=stdout,stderr=stderr)
+            pp = ssh.Run.run(usercert,command,username,host,working,port="22",stdout=stdout,stderr=stderr)
             client_stream.write("Running\n")
             stackless.schedule()
             
