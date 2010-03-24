@@ -425,7 +425,18 @@ YabiJob.prototype.getParam = function(switchName) {
  * render progress bar/badges
  */
 YabiJob.prototype.renderProgress = function(status, completed, total, message) {
-    if (YAHOO.lang.isUndefined(status) || YAHOO.lang.isUndefined(completed) || YAHOO.lang.isUndefined(total)) {
+    if (YAHOO.lang.isUndefined(status)) {
+        return;
+    }
+
+    //update status badge
+    if (this.jobEl.removeChild(this.statusEl)) {
+        this.statusEl = document.createElement("div");
+        this.statusEl.className = "badge"+status;
+        this.jobEl.appendChild(this.statusEl);
+    }
+
+    if (YAHOO.lang.isUndefined(completed) || YAHOO.lang.isUndefined(total)) {
         return;
     }
 
@@ -453,13 +464,6 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
         this.jobEl.appendChild(this.progressContainerEl);
         
         this.showingProgress = true;
-    }
-
-    //update status badge
-    if (this.jobEl.removeChild(this.statusEl)) {
-        this.statusEl = document.createElement("div");
-        this.statusEl.className = "badge"+status;
-        this.jobEl.appendChild(this.statusEl);
     }
 
     //update progress bar
