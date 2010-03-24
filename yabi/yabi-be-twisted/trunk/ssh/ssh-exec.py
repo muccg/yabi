@@ -32,14 +32,15 @@ parser.add_option( "-P", "--port", dest="port", help="port to connect to ssh on"
 parser.add_option( "-o", "--stdout", dest="stdout", help="filename for standard out", default="STDOUT.txt" )
 parser.add_option( "-e", "--stderr", dest="stderr", help="filename for standard error",default="STDERR.txt" )
 parser.add_option( "-x", "--execute", dest="execute", help="command to execute", default="hostname" )
+parser.add_option( "-w", "--working", dest="working", help="working directory", default="~" )
 
 (options, args) = parser.parse_args()
 
 #print "options",options
 #print "args",args
 
-if len(args)!=2:
-    eprint("Error: Must have input and output file specified")
+if len(args)!=1:
+    eprint("Error: Must specify user@host on command line")
     sys.exit(2)
     
 remote_command = options.execute
@@ -56,15 +57,18 @@ if options.port:
     
 password = sys.stdin.readline().rstrip('\n')
 
-# 
-# Local to Remote
-#
-hostpart, path = outfile.split(':',1)
-user, host = hostpart.split('@',1)
+user, host = args[0].split('@',1)
 
-ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" '%s 1>%s 2>%s'")%(SSH,remote_command,stdout,stderr)
+# sanity check out command. If there are quotes (that are unescaped) the outermost ones must be doubles
+quotes = [X for N,X in enumerate(remote_command) if (X=='"' or X=="'") and N>=1 and remote_command[N-1]!='\\']
+
+if len(quotes):
+    assert quotes[0]=='"' and quotes[-1]=='"', "Quotes in command must be doublequote outermost"
+
+ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cd \"%s\" && %s 1>%s 2>%s'")%(SSH,options.working,remote_command,stdout,stderr)
 
 child = pexpect.spawn(ssh_command)
+child.logfile_read = sys.stdout
 res = 0
 while res!=2:
     res = child.expect(["passphrase for key .+:","password:", "Permission denied",pexpect.EOF,pexpect.TIMEOUT],timeout=TIMEOUT)
