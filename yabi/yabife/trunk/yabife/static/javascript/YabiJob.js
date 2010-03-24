@@ -435,6 +435,22 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
         this.statusEl.className = "badge"+status;
         this.jobEl.appendChild(this.statusEl);
     }
+    
+    
+    //if error
+    if (status == 'error') {
+        if (YAHOO.lang.isUndefined(message)) {
+            message = '';
+        } else {
+            message = "\n" + message;
+        }
+        if (YAHOO.lang.isUndefined(this.errorEl)) {
+            this.errorEl = document.createElement("div");
+            this.errorEl.className = "jobErrorMsg";
+            this.errorEl.appendChild( document.createTextNode("error running job "+message) );
+            this.jobEl.appendChild(this.errorEl);
+        }
+    }
 
     if (YAHOO.lang.isUndefined(completed) || YAHOO.lang.isUndefined(total)) {
         return;
@@ -477,21 +493,6 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
     //and hide the progress bar if the progress is 100%
     if (this.progress >= 100) {
         this.progressContainerEl.style.display = "none";
-    }
-    
-    //if error
-    if (status == 'error') {
-        if (YAHOO.lang.isUndefined(message)) {
-            message = '';
-        } else {
-            message = "\n" + message;
-        }
-        if (YAHOO.lang.isUndefined(this.errorEl)) {
-            this.errorEl = document.createElement("div");
-            this.errorEl.className = "jobErrorMsg";
-            this.errorEl.appendChild( document.createTextNode("error running job "+message) );
-            this.jobEl.appendChild(this.errorEl);
-        }
     }
 
 };
