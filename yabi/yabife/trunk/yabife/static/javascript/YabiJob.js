@@ -429,6 +429,23 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
         return;
     }
 
+    if (!this.showingProgress) {
+        this.statusEl = document.createElement("div");
+        this.statusEl.className = "badge"+status;
+        this.jobEl.appendChild(this.statusEl);
+
+        this.progressContainerEl = document.createElement("div");
+        this.progressContainerEl.className = "progressBarContainer";
+        
+        this.progressEl = document.createElement("div");
+        this.progressEl.className = "progressBar";
+        this.progressContainerEl.appendChild(this.progressEl);
+        
+        this.jobEl.appendChild(this.progressContainerEl);
+        
+        this.showingProgress = true;
+    }
+    
     //update status badge
     if (this.jobEl.removeChild(this.statusEl)) {
         this.statusEl = document.createElement("div");
@@ -464,23 +481,6 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
     }
 
     this.progress = 100 * completed / total;
-
-    if (!this.showingProgress) {
-        this.statusEl = document.createElement("div");
-        this.statusEl.className = "badge"+status;
-        this.jobEl.appendChild(this.statusEl);
-
-        this.progressContainerEl = document.createElement("div");
-        this.progressContainerEl.className = "progressBarContainer";
-        
-        this.progressEl = document.createElement("div");
-        this.progressEl.className = "progressBar";
-        this.progressContainerEl.appendChild(this.progressEl);
-        
-        this.jobEl.appendChild(this.progressContainerEl);
-        
-        this.showingProgress = true;
-    }
 
     //update progress bar
     this.progressEl.style.width = this.progress + "%";
