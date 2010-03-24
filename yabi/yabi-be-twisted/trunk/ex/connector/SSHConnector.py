@@ -44,7 +44,7 @@ class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
             stackless.schedule()
             
             if not creds:
-                creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
+                creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, "/")
         
             usercert = self.save_identity(creds['key'])
             
