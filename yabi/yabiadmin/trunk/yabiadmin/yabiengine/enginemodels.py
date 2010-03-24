@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import httplib, os, datetime, uuid
+from math import log10
 from urllib import urlencode
 from os.path import splitext
 
