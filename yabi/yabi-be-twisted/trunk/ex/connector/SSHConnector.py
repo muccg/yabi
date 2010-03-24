@@ -53,7 +53,7 @@ class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
             print "username:",username
             print "host:",host
             print "working:",working
-            print "port:",port
+            print "port:","22"
             print "stdout:",stdout
             print "stderr:",stderr
             print "password:",creds['password']
