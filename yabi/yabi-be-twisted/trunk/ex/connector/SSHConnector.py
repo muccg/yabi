@@ -22,9 +22,12 @@ import tempfile
 from utils.stacklesstools import sleep
 import ssh
 
-class SSHConnector(ExecConnector):
+sshauth = ssh.SSHAuth.SSHAuth()
+
+class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
     def __init__(self):
         ExecConnector.__init__(self)
+        ssh.KeyStore.KeyStore.__init__(self)
     
     def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", **creds):
         client_stream = stream.ProducerStream()
@@ -40,7 +43,12 @@ class SSHConnector(ExecConnector):
             client_stream.write("Pending\n")
             stackless.schedule()
             
-            pp = ssh.Run.run()
+            if not creds:
+                creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
+        
+            usercert = self.save_identity(creds['key'])
+            
+            pp = ssh.Run.run(certfile,command,username,host,working,port="22",stdout=stdout,stderr=stderr)
             client_stream.write("Running\n")
             stackless.schedule()
             
