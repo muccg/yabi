@@ -41,7 +41,7 @@ class SSHRun(BaseShell):
             "-e", stderr,
             "-w", working,
             "-x", remote_command,
-            "%s@%s"%(user,host)
+            "%s@%s"%(username,host)
             ]
             
         return BaseShell.execute(self,SSHExecProcessProtocol(password),command)
