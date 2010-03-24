@@ -76,9 +76,6 @@ class CommandLineHelper():
                 # add to job level stagins, later at task level we'll check these and add a stagein if needed
                 self._job_stageins.extend(self.param_dict[tp.switch])
 
-            logger.debug('++++++++++++++++++++++++++++++++++++++++')
-            logger.debug(self.param_dict)
-            logger.debug(tp.switch)
                 
             # run through all the possible switch uses
             switchuse = tp.switch_use.value
@@ -106,44 +103,53 @@ class CommandLineHelper():
                 raise Exception("Unknown switch type:  %s" % tp.switch)
 
 
-    def get_param_value(self, tp):
-        logger.debug('')
-
-        logger.debug("======= get_param_value =============: %s" % tp)
+    def get_param_value(self, param):
+        '''
+        This method takes the dict associated with a single parameter
+        and returns a list of files for that parameter
+        '''
+        logger.debug("======= get_param_value =============: %s" % param)
         # TODO see if we can unwind this a little and comment thoroughly
         
+        assert(type(param["value"]) == list)
+
         value = []
-        if type(tp["value"]) == list:
-            # parameter input is multiple input files. loop ofer these files
-            for item in tp["value"]:
 
-                if type(item) == dict:
+        for item in param["value"]:
 
-                    # handle links to previous nodes
-                    if 'type' in item and 'jobId' in item:
-                        previous_job = self.job_cache[item['jobId']]
-                        value = [u"%s%d/%d/" % (settings.YABI_URL, self.job.workflow.id, self.job_cache[item['jobId']].id)]
-                        
-                    # handle links to previous file selects
-                    elif 'type' in item and 'filename' in item and 'root' in item:
-                        if item['type'] == 'file':
-                            path = ''
-                            if item['path']:
-                                path = os.path.join(*item['path'])
-                                if not path.endswith(os.sep):
-                                    path = path + os.sep
-                            value.append( '%s%s%s' % (item['root'], path, item['filename']) )
-                        elif item['type'] == 'directory':
-                            fulluri = item['root']+item['filename']+'/'
-                            
-                            # get recursive directory listing
-                            filelist = backendhelper.get_file_list(self.job.workflow.user.name, fulluri, recurse=True)
-                            
-                            logger.debug("FILELIST returned:%s"%str(filelist))
-                        
-                            value.extend( [ fulluri + X[0] for X in filelist ] )
-                
-                elif type(item) == str or type(item) == unicode:
-                    value.append( item )
+            # if the items a dict it is referring to a file
+            if type(item) == dict:
 
+                # handle links to previous nodes
+                if 'type' in item and 'jobId' in item:
+                    previous_job = self.job_cache[item['jobId']]
+                    filename = item.get('filename', '')
+                    value = [u"%s%d/%d/%s" % (settings.YABI_URL, self.job.workflow.id, previous_job.id, filename)]
+
+
+                # handle links to previous file selects
+                elif 'type' in item and 'filename' in item and 'root' in item:
+
+                    # files
+                    if item['type'] == 'file':
+                        path = ''
+                        if item['path']:
+                            path = os.path.join(*item['path'])
+                            if not path.endswith(os.sep):
+                                path = path + os.sep
+                        value.append( '%s%s%s' % (item['root'], path, item['filename']) )
+
+                    # directories
+                    elif item['type'] == 'directory':
+                        fulluri = item['root']+item['filename']+'/'
+
+                        # get recursive directory listing
+                        filelist = backendhelper.get_file_list(self.job.workflow.user.name, fulluri, recurse=True)
+                        value.extend( [ fulluri + X[0] for X in filelist ] )
+
+
+            # if item is not a dict then it is a plain parameter, not one referring to a file            
+            elif type(item) == str or type(item) == unicode:
+                value.append( item )
+        
         return value

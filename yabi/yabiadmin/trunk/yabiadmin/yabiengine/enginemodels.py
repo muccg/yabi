@@ -188,7 +188,8 @@ class EngineJob(Job):
             if bfile.startswith("yabi://"):
                 logger.info('Evaluating bfile: %s' % bfile)
                 scheme, uriparts = uriparse(bfile)
-                workflowid, jobid = uriparts.path.strip('/').split('/')
+                parts = uriparts.path.strip('/').split('/')
+                workflowid, jobid = parts[0], parts[1]
                 param_job = Job.objects.get(workflow__id=workflowid, id=jobid)
                 if param_job.status != settings.STATUS["complete"]:
                     logger.debug("Job dependencies not complete. Job:%s bfile:%s" % (self.id, bfile))
@@ -271,7 +272,8 @@ class EngineJob(Job):
                     # we may want to look up workflows and jobs on specific servers later,
                     # but just getting path for now as we have just one server
                     scheme, uriparts = uriparse(bfile)
-                    workflowid, jobid = uriparts.path.strip('/').split('/')
+                    parts = uriparts.path.strip('/').split('/')
+                    workflowid, jobid = parts[0], parts[1]
                     param_job = Job.objects.get(workflow__id=workflowid, id=jobid)
 
                     # get stage out directory of job
@@ -435,13 +437,29 @@ class EngineJob(Job):
             if "/" not in job_stagein:
                 continue
 
+            orig_stagein = job_stagein # we modify job_stagein along the way and want to refer back to orig
+
+            # yabi uris
+            if job_stagein.startswith('yabi://'):
+                yabiuri, filename = job_stagein.rsplit("/",1)
+                scheme, uriparts = uriparse(yabiuri)
+                parts = uriparts.path.strip('/').split('/')
+                workflowid, jobid = parts[0], parts[1]
+                prev_job = Job.objects.get(workflow__id=workflowid, id=jobid)
+
+                # get stage out directory of job
+                stageout = prev_job.stageout
+
+                # append the file name to that, then proceed
+                job_stagein = "%s%s" % (stageout, filename)
+            
             dirpath, filename = job_stagein.rsplit("/",1)
             scheme, rest = uriparse(dirpath)
 
             if scheme not in settings.VALID_SCHEMES:
                 continue
 
-            t.command = t.command.replace(job_stagein, url_join(fsbackend_parts.path,t.working_dir, "input", filename))
+            t.command = t.command.replace(orig_stagein, url_join(fsbackend_parts.path,t.working_dir, "input", filename))
 
             t.create_stagein(param=dirpath+'/', file=filename, scheme=fsscheme,
                            hostname=fsbackend_parts.hostname,
@@ -582,6 +600,10 @@ def signal_job_post_save(sender, **kwargs):
 
     
 def signal_task_post_save(sender, **kwargs):
+    '''
+    Note the different calls to job vs task.job in this method. job refers
+    to EngineJob but task.job is a plain job
+    '''
     logger.debug('')
     task = kwargs['instance']
 
@@ -599,7 +621,7 @@ def signal_task_post_save(sender, **kwargs):
                 }
 
         if task.job.status == settings.STATUS['error']:
-            data['errorMessage'] = str(task.job.get_errored_tasks_messages())
+            data['errorMessage'] = str(job.get_errored_tasks_messages())
 
         # we need to grab an EngineWorkflow from task.job.workflow
         workflow = EngineWorkflow.objects.get(id=task.job.workflow.id)
