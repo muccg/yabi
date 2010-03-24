@@ -61,7 +61,7 @@ class SSHConnector(ExecConnector):
             client_stream.finish()
             return
                     
-        except ExecutionError, ee:
+        except Exception, ee:
             import traceback
             traceback.print_exc()
             client_stream.write("Error\n")
