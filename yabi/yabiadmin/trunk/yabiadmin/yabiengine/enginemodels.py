@@ -259,6 +259,14 @@ class EngineJob(Job):
                 logger.debug("Prepare_task batch file list: %s" % batch_file_list)
 
                 # TODO: fix all this voodoo
+                # AH I Suggest we pull out the scheme from the URI (eg yabifs) and have a
+                # handler for each one, we can load the handlers dynamically by appending
+                # 'Handler' to the class name. So a scheme called 'yabifs' will have the code
+                # insantiate a class caled YabifsHandler, rinse repeat for the others.
+                # One possible deviation I see for this is something like 'StandardHandler'.
+                # Essentially if a dynamic class load fails, we fall back to the StandardHandler
+                # Perhaps all the other Handlers could exrtend the StandardHandler also, so it
+                # can expose commmon functionality.
 
                 ##################################################
                 # handle yabi:// uris
