@@ -100,6 +100,13 @@ class EngineWorkflow(Workflow):
 
                 tasks = job.prepare_tasks()
                 job.create_tasks(tasks)
+
+                # there must be at least one task for every job
+                if not job.task_set.all():
+                    job.status = settings.STATUS['error']
+                    job.save()
+                    continue
+                
                 job.prepare_job()
 
             # check all the jobs are complete, if so, changes status on workflow
@@ -183,7 +190,7 @@ class EngineJob(Job):
                 workflowid, jobid = uriparts.path.strip('/').split('/')
                 param_job = Job.objects.get(workflow__id=workflowid, id=jobid)
                 if param_job.status != settings.STATUS["complete"]:
-                    logger.debug("Job command parameter not complete. Job:%s bfile:%s" % (self.id, bfile))
+                    logger.debug("Job dependencies not complete. Job:%s bfile:%s" % (self.id, bfile))
                     rval = True
 
         return rval
@@ -564,6 +571,8 @@ def signal_job_post_save(sender, **kwargs):
 
         elif job.status == settings.STATUS['error']:
             job.workflow.status = settings.STATUS['error']
+            data = {}
+            job.workflow.update_json(job, data)            
             job.workflow.save()
 
     except Exception, e:
