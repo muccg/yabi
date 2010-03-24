@@ -75,6 +75,7 @@ from ex.resource import ExecResource
 # backends
 from ex.connector.GlobusConnector import GlobusConnector
 from ex.connector.SGEConnector import SGEConnector
+from ex.connector.SSHConnector import SSHConnector
 
 VERSION = 0.2
 class BaseResource(resource.PostableResource):
