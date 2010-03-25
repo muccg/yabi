@@ -40,6 +40,7 @@ class EngineWorkflow(Workflow):
         logger.debug('----- Building workflow id %d -----' % self.id)
 
         try:
+            status, data = StoreHelper.updateWorkflow(self, self.json)
 
             workflow_dict = json.loads(self.json)
 
@@ -139,8 +140,8 @@ class EngineJob(Job):
     def extensions(self):
         '''Reconstitute the input filetype extension list so each create_task can use it'''
         extensions = []
-        if self.input_filetype_extensions:
-            extensions = (self.input_filetype_extensions)
+        if self.other_files:
+            extensions = (self.other_files)
         return extensions
 
     
@@ -223,7 +224,7 @@ class EngineJob(Job):
 
         # TODO this strips outs the per-switch file type extensions
         # add a list of input file extensions as string, we will reconstitute this for use in the workflow walk
-        self.input_filetype_extensions = str(self.tool.input_filetype_extensions_for_batch_param())
+        self.other_files = str(self.tool.input_filetype_extensions_for_batch_param())
 
         self.stageout = "%s%s/" % (self.workflow.stageout, "%d - %s"%(self.order+1,self.tool.display_name) )
         self.exec_backend = self.exec_credential.homedir_uri
@@ -405,9 +406,6 @@ class EngineJob(Job):
         ## Take each job parameter file
         ## Add a stagein in the database for it
         ## Replace the filename in the command with relative path used in the stagein
-
-        ##[(u'yabi://localhost.localdomain/1620/3103/', [u'qual']), (u'yabi://localhost.localdomain/1620/3103/', [u'index'])]
-
         for parameter_file_tuple in eval(self.parameter_files):
             logger.debug("CREATING JOB STAGEINS")
 
@@ -529,7 +527,7 @@ def signal_workflow_post_save(sender, **kwargs):
     
     try:
         workflow = kwargs['instance']
-        status, data = StoreHelper.update(workflow)
+        status, data = StoreHelper.updateWorkflow(workflow)
     except Exception, e:
         logger.critical(e)
         raise
@@ -540,25 +538,23 @@ def signal_job_post_save(sender, **kwargs):
     job = kwargs['instance']
 
     try:
+        job = kwargs['instance']
 
+        data = {}
         if job.status == settings.STATUS['complete']:
             data = {'tasksComplete':1.0,
                     'tasksTotal':1.0
                     }
-            job.workflow.update_json(job, data)
-            job.workflow.save()
-
 
         elif job.status == settings.STATUS['error']:
             job.workflow.status = settings.STATUS['error']
-            data = {}
-            job.workflow.update_json(job, data)            
             job.workflow.save()
+
+        StoreHelper.updateJob(job, data)
 
     except Exception, e:
         logger.critical(e)
         raise
-
     
 def signal_task_post_save(sender, **kwargs):
     '''
@@ -580,22 +576,18 @@ def signal_task_post_save(sender, **kwargs):
         data = {'tasksComplete':float(score),
                 'tasksTotal':float(total)
                 }
-
         if task.job.status == settings.STATUS['error']:
             data['errorMessage'] = str(job.get_errored_tasks_messages())
-
-        # we need to grab an EngineWorkflow from task.job.workflow
-        workflow = EngineWorkflow.objects.get(id=task.job.workflow.id)
-        workflow.update_json(task.job, data)
-        workflow.save()
+        StoreHelper.updateJob(job, data)
 
         if task.job.status == settings.STATUS['complete']:
+            # we need to grab an EngineWorkflow from task.job.workflow
+            workflow = EngineWorkflow.objects.get(id=task.job.workflow.id)
             workflow.walk()
 
     except Exception, e:
         logger.critical(e)
         raise
-
 
 
 # connect up django signals
