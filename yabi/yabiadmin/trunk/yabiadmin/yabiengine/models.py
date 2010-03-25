@@ -109,9 +109,9 @@ class Job(models.Model, Editable, Status):
     exec_backend = models.CharField(max_length=256)
     fs_backend = models.CharField(max_length=256)
     command = models.TextField()
-    batch_files = models.TextField(blank=True)
-    job_stageins = models.TextField(blank=True)
-    input_filetype_extensions = models.TextField(blank=True)
+    batch_files = models.TextField(blank=True, null=True)
+    parameter_files = models.TextField(blank=True, null=True)
+    other_stageins = models.TextField(blank=True, null=True)
     stageout = models.CharField(max_length=1000, null=True)
 
 
