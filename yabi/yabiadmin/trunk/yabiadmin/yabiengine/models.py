@@ -138,7 +138,6 @@ class Job(models.Model, Editable, Status):
         for status in ['error', 'running', 'pending', 'requested', 'ready', 'complete']:
             if Task.objects.filter(job=self, status=settings.STATUS[status]):
                 self.status = settings.STATUS[status]
-                self.save()
                 return
 
 

@@ -566,6 +566,7 @@ def signal_task_post_save(sender, **kwargs):
 
     try:
         task.job.update_status()
+        task.job.save()
 
         # we need and EngineJob so get that from the task.job.id
         job = EngineJob.objects.get(id=task.job.id)
