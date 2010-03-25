@@ -111,7 +111,7 @@ class Job(models.Model, Editable, Status):
     command = models.TextField()
     batch_files = models.TextField(blank=True, null=True)
     parameter_files = models.TextField(blank=True, null=True)
-    other_stageins = models.TextField(blank=True, null=True)
+    other_files = models.TextField(blank=True, null=True)
     stageout = models.CharField(max_length=1000, null=True)
 
 
