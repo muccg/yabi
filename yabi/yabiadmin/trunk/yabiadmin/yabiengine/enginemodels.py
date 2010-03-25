@@ -123,6 +123,8 @@ class EngineWorkflow(Workflow):
             raise
         except Exception,e:
             logger.critical("Error in workflow: %s" % e)
+            import traceback
+            logger.debug(traceback.format_exc())
             raise
 
 
@@ -184,7 +186,7 @@ class EngineJob(Job):
 
         logger.info('Check dependencies for jobid: %s...' % self.id)
 
-        for bfile in eval(self.batch_files):
+        for bfile, extension_list in eval(self.batch_files):
             if bfile.startswith("yabi://"):
                 logger.info('Evaluating bfile: %s' % bfile)
                 scheme, uriparts = uriparse(bfile)
@@ -215,7 +217,8 @@ class EngineJob(Job):
         # add other attributes
         self.command = ' '.join(commandLine.command)
         self.batch_files = commandLine.batch_files # save string repr of list
-        self.job_stageins = commandLine.jobstageins # save string repr of list
+        self.parameter_files = commandLine.parameter_files # save string repr of list
+        self.other_files = commandLine.other_files # save string repr of list
         self.status = settings.STATUS['pending']
 
         # TODO this strips outs the per-switch file type extensions
@@ -253,10 +256,16 @@ class EngineJob(Job):
         batch_file_list = eval(self.batch_files)
 
         if batch_file_list:
-            # this creates batch_on_param tasks
-            logger.debug("PROCESSING batch on param")
-            for bfile in batch_file_list:
-                logger.debug("Prepare_task batch file list: %s" % batch_file_list)
+
+            logger.debug("Prepare_task batch file list: %s" % batch_file_list)
+
+            for batch_file in batch_file_list:
+
+                # this creates batch_on_param tasks
+                logger.debug("PROCESSING batch on param")
+                logger.debug(batch_file)
+                bfile, extension_list = batch_file[0], batch_file[1]
+
 
                 # handle yabi:// uris
                 # fetches the stageout of previous job and
@@ -275,8 +284,7 @@ class EngineJob(Job):
                     # get stage out directory of job
                     stageout = param_job.stageout
 
-                    batch_file_list.append(stageout)
-
+                    batch_file_list.append((stageout, extension_list))
 
                 # handle all non yabi:// uris
                 else:
@@ -288,7 +296,8 @@ class EngineJob(Job):
                     # get_file_list will return a list of file tuples
                     for f in backendhelper.get_file_list(self.workflow.user.name, bfile):
                         logger.debug("FILELIST %s" % f)
-                        tasks_to_create.append([self, bfile, f[0], exec_be, exec_bc, fs_be, fs_bc])
+                        if self.is_task_file_valid(f[0], extension_list):
+                            tasks_to_create.append([self, bfile, f[0], exec_be, exec_bc, fs_be, fs_bc])
 
         else:
             # This creates NON batch on param jobs
@@ -303,7 +312,7 @@ class EngineJob(Job):
 
         # lets count up our batch_file_list to see how many 'real' (as in not yabi://) files there are to process
         # won't count tasks with file == None as these are from not batch param jobs
-        count = len([X for X in tasks_to_create if X[2] and X[0].is_task_file_valid(X[2])])
+        count = len([X for X in tasks_to_create if X[2]])
 
          # lets build a closure that will generate our names for us
         if count>1:
@@ -321,12 +330,9 @@ class EngineJob(Job):
             job, file = task_data[0], task_data[2]
             del(task_data[0]) # remove job from task_data as we now are going to call method on job TODO maybe use pop(0) here
             # we should only create a task file if job file is none ie it is a non batch_on_param task
-            # or if it is a valid filetype for the batch_on_param
-            # TODO REFACTOR - Adam can you look at how this is done
-            if file == None or self.is_task_file_valid(file):
-                if job.create_task( *(task_data+[name]) ):
-                    # task created, bump task
-                    num,name = buildname(num)
+            if job.create_task( *(task_data+[name]) ):
+                # task created, bump task
+                num,name = buildname(num)
 
     def prepare_job(self):
         logger.debug('')
@@ -334,9 +340,11 @@ class EngineJob(Job):
         self.status = settings.STATUS["ready"]
         self.save()
                     
-    def is_task_file_valid(self, file):
+    def is_task_file_valid(self, file, extensions):
         """Returns a boolean, true if the file passed in is a valid file for the job. Only uses the file extension to tell."""
-        return (splitext(file)[1].strip('.') in self.extensions) or ('*' in self.extensions)
+        logger.debug(file)
+        logger.debug(extensions)
+        return (splitext(file)[1].strip('.') in extensions) or ('*' in extensions)
 
     # TODO In haste added the very similar named def 'create_tasks', which might cause confusion
     # Havent looked to closely here yet, but can this move into EngineTask?
@@ -367,61 +375,13 @@ class EngineJob(Job):
         execscheme, execbackend_parts = uriparse(self.exec_backend)
 
 
-        ##
-        ## JOB STAGEINS
-        ##
-        ## This section catches all non-batch param files which should appear in job_stageins on job in db
-        ##
-        ## Take each job stagein
-        ## Add a stagein in the database for it
-        ## Replace the filename in the command with relative path used in the stagein
-        for job_stagein in set(eval(self.job_stageins)): # use set to get unique files
-            logger.debug("CREATING JOB STAGEINS")
-
-            if "/" not in job_stagein:
-                continue
-
-            orig_stagein = job_stagein # we modify job_stagein along the way and want to refer back to orig
-
-            # yabi uris
-            if job_stagein.startswith('yabi://'):
-                yabiuri, filename = job_stagein.rsplit("/",1)
-                scheme, uriparts = uriparse(yabiuri)
-                parts = uriparts.path.strip('/').split('/')
-                workflowid, jobid = parts[0], parts[1]
-                prev_job = Job.objects.get(workflow__id=workflowid, id=jobid)
-
-                # get stage out directory of job
-                stageout = prev_job.stageout
-
-                # append the file name to that, then proceed
-                job_stagein = "%s%s" % (stageout, filename)
-            
-            dirpath, filename = job_stagein.rsplit("/",1)
-            scheme, rest = uriparse(dirpath)
-
-            if scheme not in settings.VALID_SCHEMES:
-                continue
-
-            t.command = t.command.replace(orig_stagein, url_join(fsbackend_parts.path,t.working_dir, "input", filename))
-
-            t.create_stagein(param=dirpath+'/', file=filename, scheme=fsscheme,
-                           hostname=fsbackend_parts.hostname,
-                           path=os.path.join(fsbackend_parts.path, t.working_dir, "input", filename),
-                           username=fsbackend_parts.username)
-
-            logger.debug('JOB STAGEIN')
-            logger.debug("dirpath %s" % dirpath )
-            logger.debug("filename %s" % filename)
 
 
         ##
         ## BATCH PARAM STAGEINS
         ##
         ## This section catches all batch-param files
-
-        # only make tasks for expected filetypes
-        if file and self.is_task_file_valid(file):
+        if file:
             logger.debug("CREATING BATCH PARAM STAGEINS for %s" % file)
 
             param_scheme, param_uriparts = uriparse(param)
@@ -435,6 +395,63 @@ class EngineJob(Job):
                            path=os.path.join(fsbackend_parts.path, t.working_dir, "input", file),
                            username=fsbackend_parts.username)
 
+
+
+        ##
+        ## PARAMETER STAGEINS
+        ##
+        ## This section catches all non-batch param files which should appear in parameter_files on job in db
+        ##
+        ## Take each job parameter file
+        ## Add a stagein in the database for it
+        ## Replace the filename in the command with relative path used in the stagein
+
+        ##[(u'yabi://localhost.localdomain/1620/3103/', [u'qual']), (u'yabi://localhost.localdomain/1620/3103/', [u'index'])]
+
+        for parameter_file_tuple in eval(self.parameter_files):
+            logger.debug("CREATING JOB STAGEINS")
+
+            parameter_file, extention_list = parameter_file_tuple
+
+            if "/" not in parameter_file: # it's one of the non file params
+                continue
+            
+            # yabi uris
+            if parameter_file.startswith('yabi://'):
+                yabiuri, filename = parameter_file.rsplit("/",1)
+                scheme, uriparts = uriparse(yabiuri)
+                parts = uriparts.path.strip('/').split('/')
+                workflowid, jobid = parts[0], parts[1]
+                prev_job = Job.objects.get(workflow__id=workflowid, id=jobid)
+
+                # get stage out directory of job
+                stageout = prev_job.stageout
+
+                if not filename:
+                    # we need to get the first file that matches
+                    filename = backendhelper.get_first_matching_file(stageout, extension_list)
+                    
+                # append the filename to stageout, then proceed
+                parameter_file = "%s%s" % (stageout, filename)
+
+            
+            dirpath, filename = parameter_file.rsplit("/",1)
+            scheme, rest = uriparse(dirpath)
+
+            if scheme not in settings.VALID_SCHEMES:
+                continue
+
+            # replace one instance of placeholder for this file
+            t.command = t.command.replace('$', url_join(fsbackend_parts.path,t.working_dir, "input", filename), 1)
+
+            t.create_stagein(param=dirpath+'/', file=filename, scheme=fsscheme,
+                           hostname=fsbackend_parts.hostname,
+                           path=os.path.join(fsbackend_parts.path, t.working_dir, "input", filename),
+                           username=fsbackend_parts.username)
+
+            logger.debug('JOB PARAMETER FILE')
+            logger.debug("dirpath %s" % dirpath )
+            logger.debug("filename %s" % filename)
 
 
         t.status = settings.STATUS['ready']

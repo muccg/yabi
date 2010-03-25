@@ -28,24 +28,31 @@ class CommandLineHelper():
     param_dict = {}
     job_cache = []
 
-    _job_stageins = []
     _batch_files = []
+    _parameter_files = []
+    _other_files = []
 
     @property
     def batch_files(self):
         return repr(self._batch_files)
 
     @property
-    def jobstageins(self):
-        return repr(list(set(self._job_stageins))) # using set to remove duplicates
+    def parameter_files(self):
+        return repr(self._parameter_files)
+
+    @property
+    def other_files(self):
+        return repr(self._other_files) # using set to remove duplicates
+
     
     def __init__(self, job):
         self.job = job
         self.job_dict = job.job_dict
         self.job_cache = job.workflow.job_cache
 
-        self._job_stageins = []
         self._batch_files= []
+        self._parameter_files = []
+        self._other_files = []
         self.command = []
 
         logger.debug('')
@@ -69,12 +76,22 @@ class CommandLineHelper():
 
             # if the switch is the batch on param switch put it in batch_files and add placeholder in command
             if tp == tool.batch_on_param:
-                self._batch_files.extend(self.param_dict[tp.switch])
+                for f in self.param_dict[tp.switch]:
+                    input_file = (f, tp.input_filetype_extensions(),) # NB it's a tuple
+                    self._batch_files.append(input_file)
                 self.param_dict[tp.switch] = ['%'] # use place holder now in self.command
 
             else:
                 # add to job level stagins, later at task level we'll check these and add a stagein if needed
-                self._job_stageins.extend(self.param_dict[tp.switch])
+                # only add if it is an input file parameter
+                if tp.input_file:
+                    filecount = len(self.param_dict[tp.switch])
+                    for f in self.param_dict[tp.switch]:
+                        input_file = (f, tp.input_filetype_extensions(),) # NB it's a tuple
+                        self._parameter_files.append(input_file)
+                    self.param_dict[tp.switch] = ['$ '* filecount] # use place holder now in self.command
+
+            #TODO is it here that we would set up other files to be staged in?
 
                 
             # run through all the possible switch uses
