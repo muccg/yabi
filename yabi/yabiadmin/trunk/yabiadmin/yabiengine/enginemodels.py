@@ -258,21 +258,9 @@ class EngineJob(Job):
             for bfile in batch_file_list:
                 logger.debug("Prepare_task batch file list: %s" % batch_file_list)
 
-                # TODO: fix all this voodoo
-                # AH I Suggest we pull out the scheme from the URI (eg yabifs) and have a
-                # handler for each one, we can load the handlers dynamically by appending
-                # 'Handler' to the class name. So a scheme called 'yabifs' will have the code
-                # insantiate a class caled YabifsHandler, rinse repeat for the others.
-                # One possible deviation I see for this is something like 'StandardHandler'.
-                # Essentially if a dynamic class load fails, we fall back to the StandardHandler
-                # Perhaps all the other Handlers could exrtend the StandardHandler also, so it
-                # can expose commmon functionality.
-
-                ##################################################
                 # handle yabi:// uris
                 # fetches the stageout of previous job and
                 # adds that to batch_file_list to be processed
-                ##################################################
                 if bfile.startswith("yabi://"):
                     logger.info('Processing uri %s' % bfile)
 
@@ -290,12 +278,8 @@ class EngineJob(Job):
                     batch_file_list.append(stageout)
 
 
-                ##################################################
-                # handle yabifs:// uris that are directories
-                ##################################################
-
-                # uris ending with a / on the end of the path are directories
-                elif bfile.startswith("yabifs://") and bfile.endswith("/"):
+                # handle all non yabi:// uris
+                else:
                     logger.info('Processing uri %s' % bfile)
 
                     logger.debug("PROCESSING")
@@ -305,54 +289,6 @@ class EngineJob(Job):
                     for f in backendhelper.get_file_list(self.workflow.user.name, bfile):
                         logger.debug("FILELIST %s" % f)
                         tasks_to_create.append([self, bfile, f[0], exec_be, exec_bc, fs_be, fs_bc])
-
-
-                ##################################################
-                # handle yabifs:// uris
-                ##################################################
-                elif bfile.startswith("yabifs://"):
-                    logger.info('Processing uri %s' % bfile)            
-                    rest, filename = bfile.rsplit("/",1)
-                    tasks_to_create.append([self, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc])
-
-
-                ##################################################
-                # handle gridftp:// gridftp uris that are directories
-                ##################################################
-
-                # uris ending with a / on the end of the path are directories
-                elif bfile.startswith("gridftp://") and bfile.endswith("/"):
-                    logger.info('Processing uri %s' % bfile)
-
-                    logger.debug("PROCESSING")
-                    logger.debug("%s -> %s" % (bfile, backendhelper.get_file_list(self.workflow.user.name, bfile)))
-
-                    # get_file_list will return a list of file tuples
-                    for f in backendhelper.get_file_list(self.workflow.user.name, bfile):
-                        tasks_to_create.append([self, bfile, f[0], exec_be, exec_bc, fs_be, fs_bc])
-
-
-                ##################################################
-                # handle gridftp:// uris
-                ##################################################
-                elif bfile.startswith("gridftp://"):
-                    logger.info('Processing uri %s' % bfile)            
-                    rest, filename = bfile.rsplit("/",1)
-
-                    logger.debug("PROCESSING %s" % bfile)
-
-                    tasks_to_create.append([self, rest + "/", filename, exec_be, exec_bc, fs_be, fs_bc])
-
-
-                ##################################################
-                # handle unknown types
-                ##################################################
-                else:
-                    logger.info('****************************************')
-                    logger.info('Unhandled type: ' + bfile)
-                    logger.info('****************************************')
-                    raise Exception('Unknown file type.')
-
 
         else:
             # This creates NON batch on param jobs
