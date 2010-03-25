@@ -540,46 +540,34 @@ def signal_job_post_save(sender, **kwargs):
     try:
         job = kwargs['instance']
 
-        data = {}
-        if job.status == settings.STATUS['complete']:
-            data = {'tasksComplete':1.0,
-                    'tasksTotal':1.0
-                    }
+        # we need an EngineJob so get that from the job.id
+        ejob = EngineJob.objects.get(id=job.id)
+        score = ejob.progress_score()
+        total = ejob.total_tasks()
 
-        elif job.status == settings.STATUS['error']:
-            job.workflow.status = settings.STATUS['error']
-            job.workflow.save()
+        # now update the json with the appropriate values
+        data = {'tasksComplete':float(score),
+                'tasksTotal':float(total)
+                }
+        if ejob.status == settings.STATUS['error']:
+            data['errorMessage'] = str(ejob.get_errored_tasks_messages())
+        StoreHelper.updateJob(ejob, data)
 
-        StoreHelper.updateJob(job, data)
+        if ejob.status == settings.STATUS['error']:
+            ejob.workflow.status = settings.STATUS['error']
+            ejob.workflow.save()
 
     except Exception, e:
         logger.critical(e)
         raise
     
 def signal_task_post_save(sender, **kwargs):
-    '''
-    Note the different calls to job vs task.job in this method. job refers
-    to EngineJob but task.job is a plain job
-    '''
     logger.debug('')
     task = kwargs['instance']
 
     try:
         task.job.update_status()
         task.job.save()
-
-        # we need and EngineJob so get that from the task.job.id
-        job = EngineJob.objects.get(id=task.job.id)
-        score = job.progress_score()
-        total = job.total_tasks()
-
-        # now update the json with the appropriate values
-        data = {'tasksComplete':float(score),
-                'tasksTotal':float(total)
-                }
-        if task.job.status == settings.STATUS['error']:
-            data['errorMessage'] = str(job.get_errored_tasks_messages())
-        StoreHelper.updateJob(job, data)
 
         if task.job.status == settings.STATUS['complete']:
             # we need to grab an EngineWorkflow from task.job.workflow
@@ -600,6 +588,3 @@ post_save.connect(signal_task_post_save, sender=Task)
 post_save.connect(signal_workflow_post_save, sender=EngineWorkflow)
 post_save.connect(signal_job_post_save, sender=EngineJob)
 post_save.connect(signal_task_post_save, sender=EngineTask)
-
-
-
