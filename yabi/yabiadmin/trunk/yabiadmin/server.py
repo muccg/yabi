@@ -39,9 +39,7 @@ if config.config[NAME]["debug"]:
     os.environ['DJANGODEBUG'] = '1'
     
 # admin email
-print "!"
 if config.config[NAME]["alert_email"]:
-    print "A",config.config[NAME]["alert_email"]
     os.environ['ADMIN_EMAIL_NAME'],os.environ['ADMIN_EMAIL'] = config.config[NAME]["alert_email"]
 
 from twisted.web2 import wsgi, resource
