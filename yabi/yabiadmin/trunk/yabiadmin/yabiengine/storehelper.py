@@ -43,7 +43,6 @@ class StoreHelper():
     
         status = r.status
         data = r.read()
-        #assert status == 200    
         logger.debug("store post: %s" % status)
     
         return status,data
@@ -59,7 +58,6 @@ class StoreHelper():
         r = conn.getresponse()
         status = r.status
         data = r.read()
-        #assert status == 200    
         logger.debug("store get: %s" % status)
         return status,data
 
