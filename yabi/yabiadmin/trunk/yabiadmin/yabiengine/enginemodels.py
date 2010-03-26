@@ -29,7 +29,6 @@ logger = logging.getLogger('yabiengine')
 class EngineWorkflow(Workflow):
     job_cache = {}
     job_dict = []
-    workflow_dict = None
     
     class Meta:
         proxy = True
