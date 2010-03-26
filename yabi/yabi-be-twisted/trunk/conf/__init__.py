@@ -46,7 +46,13 @@ def port_setting(port):
             return '0.0.0.0',int(port)
     except ValueError, ve:
         raise Exception, "malformed IP:port setting"
-    
+
+def email_setting(email):
+    """process an email of the form "First Last <email@server.com>" into name and email.
+    also handle just plain email address with no name
+    """
+    import rfc822
+    return rfc822.parseaddr(email)
 
 # process boolean string into python boolean type
 boolean_proc = lambda x: x.lower()=="true" or x.lower()=="t" or x.lower()=="yes" or x.lower()=="y"
@@ -84,6 +90,8 @@ class Configuration(object):
                         "certfile":"~/.yabi/servercert.pem",
                         "keyfile":"~/.yabi/servercert.pem",
                         
+                        "alert_email":"Tech Alerts <alerts@ccg.murdoch.edu.au>",
+                        
                         "admin":None                # none means "use the one provided here"
                     },
         'admin':    {
@@ -115,6 +123,8 @@ class Configuration(object):
                         "auth_ldap_group":"group",
                         "auth_ldap_default_group":"user",
                         
+                        "alert_email":"Tech Alerts <alerts@ccg.murdoch.edu.au>",
+                        
                     },
         'frontend': {
                         "port":"0.0.0.0:8000",
@@ -141,6 +151,8 @@ class Configuration(object):
                         "auth_ldap_group_base":"ou=Unit,dc=Domain",
                         "auth_ldap_group":"group",
                         "auth_ldap_default_group":"user",
+                        
+                        "alert_email":"Tech Alerts <alerts@ccg.murdoch.edu.au>",
 
                     },
         'store':    {
@@ -151,6 +163,8 @@ class Configuration(object):
 
                         "certfile":"~/.yabi/servercert.pem",
                         "keyfile":"~/.yabi/servercert.pem",
+                        
+                        "alert_email":"Tech Alerts <alerts@ccg.murdoch.edu.au>",
 
                         "history":None,
                         
@@ -277,6 +291,7 @@ class Configuration(object):
             self.config[section]['port'] = port_setting(self.config[section]['port'])
             self.config[section]['ssl'] = boolean_proc(self.config[section]['ssl'])
             self.config[section]['sslport'] = port_setting(self.config[section]['sslport'])
+            self.config[section]['admin_email'] = email_setting(self.config[section]['admin_email'])
             
             conversions = dict( 
                 telnet=boolean_proc,
