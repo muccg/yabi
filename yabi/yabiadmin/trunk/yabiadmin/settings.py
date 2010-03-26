@@ -15,6 +15,9 @@ from django.utils.webhelpers import url
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+def environ_or(key,default):
+    return os.environ[key] if key in os.environ else default
+
 #
 # if we are deploying a DJANGODEV development version, we can override settings with environment variables
 #
@@ -63,10 +66,10 @@ else:
     DATABASE_PORT = os.environ['DATABASE_PORT']
     
     AUTH_LDAP_SERVER = tuple(os.environ['AUTH_LDAP_SERVER'].split()) if 'AUTH_LDAP_SERVER' in os.environ else              ('ldaps://fdsdev.localdomain',)
-    AUTH_LDAP_USER_BASE = os.environ['AUTH_LDAP_USER_BASE'] if 'AUTH_LDAP_USER_BASE' in os.environ else     'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
-    AUTH_LDAP_GROUP_BASE = os.environ['AUTH_LDAP_GROUP_BASE'] if 'AUTH_LDAP_GROUP_BASE' in os.environ else  'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
-    AUTH_LDAP_GROUP = os.environ['AUTH_LDAP_GROUP'] if 'AUTH_LDAP_GROUP' in os.environ else                 'yabi'
-    DEFAULT_GROUP = os.environ['AUTH_LDAP_DEFAULT_GROUP'] if 'AUTH_LDAP_DEFAULT_GROUP' in os.environ else   "baseuser"
+    AUTH_LDAP_USER_BASE = environ_or('AUTH_LDAP_USER_BASE', 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au')
+    AUTH_LDAP_GROUP_BASE = environ_or('AUTH_LDAP_GROUP_BASE', 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au')
+    AUTH_LDAP_GROUP = environ_or('AUTH_LDAP_GROUP', 'yabi')
+    DEFAULT_GROUP = environ_or('AUTH_LDAP_DEFAULT_GROUP', "baseuser")
 
     
     SSL_ENABLED = False
@@ -108,7 +111,7 @@ YABIBACKEND_GET = '/fs/get'
 
 # make sure that this is a tuple of tuples
 ADMINS = (
-    ('Tech Alerts', 'alerts@ccg.murdoch.edu.au'),
+    (environ_or('ADMIN_EMAIL_NAME','Tech Alerts'), environ_or('ADMIN_EMAIL','alerts@ccg.murdoch.edu.au')),
 )
 
 LOGIN_URL = "/login"
@@ -249,7 +252,7 @@ AUTHENTICATION_BACKENDS = (
 # for local development, this is set to the static serving directory. For deployment use Apache Alias
 STATIC_SERVER_PATH = os.path.join(PROJECT_DIRECTORY,"static")
 
-# status settings that can be used on workflow, job and task
+# status settings that can be used on workflow, job and task.
 STATUS = {'pending':'pending',
           'ready':'ready',
           'requested':'requested',

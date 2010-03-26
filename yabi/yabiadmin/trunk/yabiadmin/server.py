@@ -37,6 +37,10 @@ for setting in ['database_engine', 'database_name', 'database_user', 'database_p
     
 if config.config[NAME]["debug"]:
     os.environ['DJANGODEBUG'] = '1'
+    
+# admin email
+if config.config[NAME]["admin_email"]:
+    os.environ['ADMIN_EMAIL_NAME'],os.environ['ADMIN_EMAIL'] = config.config[NAME]["admin_email"]
 
 from twisted.web2 import wsgi, resource
 from django.conf import settings
