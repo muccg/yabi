@@ -56,7 +56,7 @@ class EngineWorkflow(Workflow):
             # save the jobs
             for i,job_dict in enumerate(workflow_dict["jobs"]):
                 job = EngineJob(workflow=self, order=i, start_time=datetime.datetime.now())
-                job.addJob(job_dict)
+                job.add_job(job_dict)
 
         except ObjectDoesNotExist, e:
             logger.critical(e)
@@ -200,7 +200,7 @@ class EngineJob(Job):
         return rval
 
     # AH also, should this be a constuctor?
-    def addJob(self, job_dict):
+    def add_job(self, job_dict):
         logger.debug('')
 
         self.job_dict = job_dict
@@ -220,11 +220,6 @@ class EngineJob(Job):
         self.parameter_files = commandLine.parameter_files # save string repr of list
         self.other_files = commandLine.other_files # save string repr of list
         self.status = settings.STATUS['pending']
-
-        # TODO this strips outs the per-switch file type extensions
-        # add a list of input file extensions as string, we will reconstitute this for use in the workflow walk
-        self.other_files = str(self.tool.input_filetype_extensions_for_batch_param())
-
         self.stageout = "%s%s/" % (self.workflow.stageout, "%d - %s"%(self.order+1,self.tool.display_name) )
         self.exec_backend = self.exec_credential.homedir_uri
         self.fs_backend = self.fs_credential.homedir_uri
@@ -246,7 +241,7 @@ class EngineJob(Job):
         tasks_to_create = []
 
         # get the backend for this job
-        # TODO Move this into constructor (addJob should be constructor)
+        # TODO Move this into constructor (add_job should be constructor)
         exec_bc = backendhelper.get_backendcredential_for_uri(self.workflow.user.name, self.exec_backend)
         exec_be = exec_bc.backend
         fs_bc = backendhelper.get_backendcredential_for_uri(self.workflow.user.name, self.fs_backend)
