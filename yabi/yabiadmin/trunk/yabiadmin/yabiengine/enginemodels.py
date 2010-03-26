@@ -322,15 +322,11 @@ class EngineJob(Job):
         num = 1
         num, name = buildname(num)
         for task_data in tasks_to_create:
-            job, file = task_data[0], task_data[2]
+            job = task_data[0]
             # remove job from task_data as we now are going to call method on job TODO maybe use pop(0) here
             del(task_data[0]) 
-            # we should only create a task file if job file is none ie it is a non batch_on_param task
-            task = EngineTask(job=self, status=settings.STATUS['pending'])
+            task = EngineTask(job=job, status=settings.STATUS['pending'])
             task.add_task(*(task_data+[name]))
-            #if job.create_task( *(task_data+[name]) ):
-            #    # task created, bump task
-            #    num,name = buildname(num)
             num,name = buildname(num)
 
     def prepare_job(self):
@@ -391,9 +387,9 @@ class EngineTask(Task):
     class Meta:
         proxy = True
 
-    def add_task(self, param, file, exec_be, exec_bc, fs_be, fs_bc, name=""):
+    def add_task(self, param, batch_file, exec_be, exec_bc, fs_be, fs_bc, name=""):
         logger.debug('')
-        logger.debug("file %s" % file)
+        logger.debug("batch file %s" % batch_file)
         logger.debug("param %s" % param)
         logger.debug("exec_be %s" % exec_be)
         logger.debug("exec_bc %s" % exec_bc)
@@ -415,22 +411,17 @@ class EngineTask(Task):
         fsscheme, fsbackend_parts = uriparse(self.job.fs_backend)
         execscheme, execbackend_parts = uriparse(self.job.exec_backend)
 
-        ##
-        ## BATCH PARAM STAGEINS
-        ##
-        ## This section catches all batch-param files
-        if file:
-            logger.debug("CREATING BATCH PARAM STAGEINS for %s" % file)
-
+        ## BATCH PARAM STAGEIN
+        if batch_file:
             param_scheme, param_uriparts = uriparse(param)
-            root, ext = splitext(file)
+            root, ext = splitext(batch_file)
 
             # add the task specific file replacing the % in the command line
-            self.command = self.command.replace("%", url_join(fsbackend_parts.path,self.working_dir, "input", file))
+            self.command = self.command.replace("%", url_join(fsbackend_parts.path,self.working_dir, "input", batch_file))
 
-            self.create_stagein(param=param, file=file, scheme=fsscheme,
+            self.create_stagein(param=param, file=batch_file, scheme=fsscheme,
                            hostname=fsbackend_parts.hostname,
-                           path=os.path.join(fsbackend_parts.path, self.working_dir, "input", file),
+                           path=os.path.join(fsbackend_parts.path, self.working_dir, "input", batch_file),
                            username=fsbackend_parts.username)
 
         ##
