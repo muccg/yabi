@@ -39,8 +39,8 @@ if config.config[NAME]["debug"]:
     os.environ['DJANGODEBUG'] = '1'
     
 # admin email
-if config.config[NAME]["admin_email"]:
-    os.environ['ADMIN_EMAIL_NAME'],os.environ['ADMIN_EMAIL'] = config.config[NAME]["admin_email"]
+if config.config[NAME]["alert_email"]:
+    os.environ['ADMIN_EMAIL_NAME'],os.environ['ADMIN_EMAIL'] = config.config[NAME]["alert_email"]
 
 from twisted.web2 import wsgi, resource
 from django.conf import settings
