@@ -291,7 +291,7 @@ class Configuration(object):
             self.config[section]['port'] = port_setting(self.config[section]['port'])
             self.config[section]['ssl'] = boolean_proc(self.config[section]['ssl'])
             self.config[section]['sslport'] = port_setting(self.config[section]['sslport'])
-            self.config[section]['admin_email'] = email_setting(self.config[section]['admin_email'])
+            self.config[section]['alert_email'] = email_setting(self.config[section]['alert_email'])
             
             conversions = dict( 
                 telnet=boolean_proc,
