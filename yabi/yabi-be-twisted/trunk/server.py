@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import sys
-sys.path.append('.')
+import sys, os
+sys.path.append(os.path.dirname(__file__))                  # add our base directory to the pythonpath
 
 from conf import config
 config.read_config()
