@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import sys
+sys.path.append('.')
+
 from conf import config
 config.read_config()
 config.sanitise()
