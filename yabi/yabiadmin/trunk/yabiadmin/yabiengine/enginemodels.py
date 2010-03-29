@@ -384,20 +384,24 @@ class EngineJob(Job):
 
 class EngineTask(Task):
 
+    fsscheme = None
+    fsbackend_parts = None
+    execscheme = None
+    execbackend_parts = None
+
     class Meta:
         proxy = True
 
-    def add_task(self, param, batch_file, exec_be, exec_bc, fs_be, fs_bc, name=""):
+    def add_task(self, uri, batch_file, exec_be, exec_bc, fs_be, fs_bc, name=""):
         logger.debug('')
         logger.debug("batch file %s" % batch_file)
-        logger.debug("param %s" % param)
+        logger.debug("uri%s" % uri)
         logger.debug("exec_be %s" % exec_be)
         logger.debug("exec_bc %s" % exec_bc)
         logger.debug("fs_be %s" % fs_be)
         logger.debug("fs_bc %s" % fs_bc)
 
-        # TODO param is uri less filename gridftp://amacgregor@xe-ng2.ivec.org/scratch/bi01/amacgregor/
-        # rename it to something sensible
+        # uri is uri less filename gridftp://amacgregor@xe-ng2.ivec.org/scratch/bi01/amacgregor/
 
         # create the task
         self.working_dir = str(uuid.uuid4()) # random uuid
@@ -408,36 +412,32 @@ class EngineTask(Task):
         self.save()
 
         # basic stuff used by both stagein types
-        fsscheme, fsbackend_parts = uriparse(self.job.fs_backend)
-        execscheme, execbackend_parts = uriparse(self.job.exec_backend)
+        self.fsscheme, self.fsbackend_parts = uriparse(self.job.fs_backend)
+        self.execscheme, self.execbackend_parts = uriparse(self.job.exec_backend)
 
-        ## BATCH PARAM STAGEIN
-        if batch_file:
-            param_scheme, param_uriparts = uriparse(param)
-            root, ext = splitext(batch_file)
+        self.batch_files_stagein(uri, batch_file)
+        self.parameter_files_stagein()
 
-            # add the task specific file replacing the % in the command line
-            self.command = self.command.replace("%", url_join(fsbackend_parts.path,self.working_dir, "input", batch_file))
+        self.status = settings.STATUS['ready']
+        self.save()
 
-            self.create_stagein(param=param, file=batch_file, scheme=fsscheme,
-                           hostname=fsbackend_parts.hostname,
-                           path=os.path.join(fsbackend_parts.path, self.working_dir, "input", batch_file),
-                           username=fsbackend_parts.username)
+        logger.info('Created task for job id: %s using command: %s' % (self.job.id, self.command))
+        logger.info('working dir is: %s' % (self.working_dir) )
 
-        ##
-        ## PARAMETER STAGEINS
-        ##
-        ## This section catches all non-batch param files which should appear in job.parameter_files on job in db
-        ##
-        ## Take each job parameter file
-        ## Add a stagein in the database for it
-        ## Replace the filename in the command with relative path used in the stagein
+    def parameter_files_stagein(self):
+        ''' 
+        All non-batch param files which should appear in job.parameter_files on job in db
+       
+        Take each job parameter file
+        Add a stagein in the database for it
+        Replace the filename in the command with relative path used in the stagein
+        '''
         for parameter_file_tuple in eval(self.job.parameter_files):
-            logger.debug("CREATING JOB STAGEINS")
-
             parameter_file, extention_list = parameter_file_tuple
 
-            if "/" not in parameter_file: # it's one of the non file params
+            # it's one of the non file params
+            # TODO please comment why this happens
+            if "/" not in parameter_file: 
                 continue
             
             # yabi uris
@@ -457,7 +457,6 @@ class EngineTask(Task):
                     
                 # append the filename to stageout, then proceed
                 parameter_file = "%s%s" % (stageout, filename)
-
             
             dirpath, filename = parameter_file.rsplit("/",1)
             scheme, rest = uriparse(dirpath)
@@ -466,24 +465,23 @@ class EngineTask(Task):
                 continue
 
             # replace one instance of placeholder for this file
-            self.command = self.command.replace('$', url_join(fsbackend_parts.path,self.working_dir, "input", filename), 1)
+            self.command = self.command.replace('$', url_join(self.fsbackend_parts.path,self.working_dir, "input", filename), 1)
 
-            self.create_stagein(param=dirpath+'/', file=filename, scheme=fsscheme,
-                           hostname=fsbackend_parts.hostname,
-                           path=os.path.join(fsbackend_parts.path, self.working_dir, "input", filename),
-                           username=fsbackend_parts.username)
+            self.create_stagein(param=dirpath+'/', file=filename, scheme=self.fsscheme,
+                           hostname=self.fsbackend_parts.hostname,
+                           path=os.path.join(self.fsbackend_parts.path, self.working_dir, "input", filename),
+                           username=self.fsbackend_parts.username)
 
-            logger.debug('JOB PARAMETER FILE')
-            logger.debug("dirpath %s" % dirpath )
-            logger.debug("filename %s" % filename)
+    def batch_files_stagein(self, uri, batch_file):
+        ## BATCH PARAM STAGEIN
+        if batch_file:
+            # add the task specific file replacing the % in the command line
+            self.command = self.command.replace("%", url_join(self.fsbackend_parts.path,self.working_dir, "input", batch_file))
 
-
-        self.status = settings.STATUS['ready']
-        self.save()
-
-        logger.debug('saved========================================')
-        logger.info('Creating task for job id: %s using command: %s' % (self.job.id, self.command))
-        logger.info('working dir is: %s' % (self.working_dir) )
+            self.create_stagein(param=uri, file=batch_file, scheme=self.fsscheme,
+                           hostname=self.fsbackend_parts.hostname,
+                           path=os.path.join(self.fsbackend_parts.path, self.working_dir, "input", batch_file),
+                           username=self.fsbackend_parts.username)
 
     def create_stagein(self, param=None, file=None, scheme=None, hostname=None, path=None, username=None):
         s = StageIn(task=self,
