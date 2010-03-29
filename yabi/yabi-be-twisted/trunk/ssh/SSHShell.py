@@ -36,10 +36,10 @@ class SSHShell(BaseShell):
         return BaseShell.execute(self,SSHExecProcessProtocol(password),command)
       
     def ls(self, certfile, host, directory,username, password, args="-alFR"):
-        return self.execute(certfile,host,command=["ls",args,directory],username, password)
+        return self.execute(certfile,host,command=["ls",args,directory],username=username, password=password)
       
     def mkdir(self, certfile, host, directory,username, password, args="-p"):
-        return self.execute(certfile,host,command=["mkdir",args,directory],username, password)
+        return self.execute(certfile,host,command=["mkdir",args,directory],username=username, password=password)
       
     def rm(self, certfile, host, directory,username, password, args=None):
-        return self.execute(certfile,host,command=["rm",args,directory,username, password]) if args else self.execute(certfile,host,command=["rm",directory],username, password) 
+        return self.execute(certfile,host,command=["rm",args,directory],username=username, password=password) if args else self.execute(certfile,host,command=["rm",directory],username=username, password=password) 
