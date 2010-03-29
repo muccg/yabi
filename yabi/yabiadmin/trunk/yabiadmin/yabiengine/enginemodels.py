@@ -33,7 +33,6 @@ class EngineWorkflow(Workflow):
     class Meta:
         proxy = True
 
-
     def build(self):
         logger.debug('')
         logger.debug('----- Building workflow id %d -----' % self.id)
@@ -74,7 +73,6 @@ class EngineWorkflow(Workflow):
             logger.debug(traceback.format_exc())
             raise
 
-
     def walk(self):
         '''
         Walk through the jobs for this workflow and prepare jobs and tasks,
@@ -104,6 +102,7 @@ class EngineWorkflow(Workflow):
 
                 # there must be at least one task for every job
                 if not job.task_set.all():
+                    logger.critical('No tasks for job: %s' % job.id)
                     job.status = settings.STATUS['error']
                     job.save()
                     continue
@@ -142,7 +141,6 @@ class EngineJob(Job):
         if self.other_files:
             extensions = (self.other_files)
         return extensions
-
     
     @property
     def exec_credential(self):
@@ -160,7 +158,6 @@ class EngineJob(Job):
 
         return rval 
 
-
     @property
     def fs_credential(self):
         rval = None
@@ -176,7 +173,6 @@ class EngineJob(Job):
             raise
 
         return rval
-
 
     def has_incomplete_dependencies(self):
         """Check each of the dependencies (previous jobs that must be completed) in the jobs command params.
@@ -199,7 +195,6 @@ class EngineJob(Job):
 
         return rval
 
-    # AH also, should this be a constuctor?
     def add_job(self, job_dict):
         logger.debug('')
 
@@ -231,7 +226,6 @@ class EngineJob(Job):
         self.job_type = self.tool.job_type
 
         self.save()
-
 
     def prepare_tasks(self):
         logger.debug('')
@@ -301,7 +295,6 @@ class EngineJob(Job):
 
         return tasks_to_create
 
-
     def create_tasks(self, tasks_to_create):
         logger.debug('')
 
@@ -340,8 +333,6 @@ class EngineJob(Job):
         logger.debug(file)
         logger.debug(extensions)
         return (splitext(file)[1].strip('.') in extensions) or ('*' in extensions)
-
-
 
     def progress_score(self):
         tasks = Task.objects.filter(job=self)
@@ -395,7 +386,7 @@ class EngineTask(Task):
     def add_task(self, uri, batch_file, exec_be, exec_bc, fs_be, fs_bc, name=""):
         logger.debug('')
         logger.debug("batch file %s" % batch_file)
-        logger.debug("uri%s" % uri)
+        logger.debug("uri %s" % uri)
         logger.debug("exec_be %s" % exec_be)
         logger.debug("exec_bc %s" % exec_bc)
         logger.debug("fs_be %s" % fs_be)
@@ -496,8 +487,7 @@ class EngineTask(Task):
 # Django signals
 
 def signal_workflow_post_save(sender, **kwargs):
-    logger.debug('')
-    logger.debug("WORKFLOW post_save signal")
+    logger.debug("workflow post_save signal")
     
     try:
         workflow = kwargs['instance']
@@ -506,10 +496,8 @@ def signal_workflow_post_save(sender, **kwargs):
         logger.critical(e)
         raise
 
-
 def signal_job_post_save(sender, **kwargs):
-    logger.debug('')
-    job = kwargs['instance']
+    logger.debug("job post_save signal")
 
     try:
         job = kwargs['instance']
@@ -536,10 +524,10 @@ def signal_job_post_save(sender, **kwargs):
         raise
     
 def signal_task_post_save(sender, **kwargs):
-    logger.debug('')
-    task = kwargs['instance']
+    logger.debug("task post_save signal")
 
     try:
+        task = kwargs['instance']
         task.job.update_status()
         task.job.save()
 
@@ -557,7 +545,6 @@ def signal_task_post_save(sender, **kwargs):
 post_save.connect(signal_workflow_post_save, sender=Workflow)
 post_save.connect(signal_job_post_save, sender=Job)
 post_save.connect(signal_task_post_save, sender=Task)
-
 
 post_save.connect(signal_workflow_post_save, sender=EngineWorkflow)
 post_save.connect(signal_job_post_save, sender=EngineJob)
