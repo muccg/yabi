@@ -37,10 +37,7 @@ class StoreHelper():
         conn = httplib.HTTPConnection(settings.YABISTORE_SERVER)
         conn.request('POST', resource, data, headers)
         logger.debug("store post: %s" % resource)
-        logger.debug("store post: %s" % data)
-
         r = conn.getresponse()
-    
         status = r.status
         data = r.read()
         logger.debug("store post: %s" % status)
