@@ -9,8 +9,6 @@ from SSHRun import SSHExecProcessProtocol
 
 DEBUG = True
 
-
-
 class SSHShell(BaseShell):
     ssh_exec = os.path.join( os.path.dirname(os.path.realpath(__file__)), "ssh-exec.py" )
     python = "/usr/bin/python"
@@ -20,6 +18,7 @@ class SSHShell(BaseShell):
 
     def execute(self, certfile, host, command):
         """Run inside gsissh, this command line. Command parts are passed in as a list of parameters, not a string."""
+        print "!"
         subenv = self._make_env()
         
         command = [ self.python, self.ssh_exec,
