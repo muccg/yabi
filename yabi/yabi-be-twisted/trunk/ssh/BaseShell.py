@@ -68,6 +68,12 @@ class BaseShell(object):
         if DEBUG:
             print "env",subenv
             print "exec:",command
+            print  [pp,
+                                command[0],
+                                command,
+                                subenv,
+                                self._make_path()]
+            
             
         reactor.spawnProcess(   pp,
                                 command[0],
