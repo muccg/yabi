@@ -73,8 +73,6 @@ else:
     else:
         ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" '%s'")%(SSH,remote_command)
         
-print "SSH COMMAND:",ssh_command
-        
 child = pexpect.spawn(ssh_command)
 child.logfile_read = sys.stdout
 res = 0
