@@ -24,7 +24,7 @@ class SSHShell(BaseShell):
         
         command = [ self.python, self.ssh_exec,
             "-i", certfile,
-            "-P", port,
+            "-P", 22,
             "-x", remote_command,
             "%s@%s"%(username,host)
             ]
