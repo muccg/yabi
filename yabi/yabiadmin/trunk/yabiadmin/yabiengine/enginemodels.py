@@ -3,6 +3,7 @@ import httplib, os, datetime, uuid
 from math import log10
 from urllib import urlencode
 from os.path import splitext
+from conf import config
 
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import models
@@ -20,8 +21,6 @@ from yabiadmin.yabiengine.models import Workflow, Task, Job, StageIn
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
 from yabiadmin.yabiengine.YabiJobException import YabiJobException
 
-from conf import config
-
 import logging
 logger = logging.getLogger('yabiengine')
 
@@ -34,7 +33,6 @@ class EngineWorkflow(Workflow):
         proxy = True
 
     def build(self):
-        logger.debug('')
         logger.debug('----- Building workflow id %d -----' % self.id)
 
         try:
@@ -78,13 +76,10 @@ class EngineWorkflow(Workflow):
         Walk through the jobs for this workflow and prepare jobs and tasks,
         check if the workflow has completed after each walk
         '''
-        logger.debug('')
         logger.debug('----- Walking workflow id %d -----' % self.id)
 
         try:
-
             jobset = [X for X in EngineJob.objects.filter(workflow=self).order_by("order")]
-
             for job in jobset:
                 logger.info('Walking job id: %s' % job.id)
 
@@ -106,8 +101,10 @@ class EngineWorkflow(Workflow):
                     job.status = settings.STATUS['error']
                     job.save()
                     continue
-                
-                job.prepare_job()
+            
+                # mark job as ready so it can be requested by a backend
+                job.status = settings.STATUS["ready"]
+                job.save()
 
             # check all the jobs are complete, if so, changes status on workflow
             incomplete_jobs = Job.objects.filter(workflow=self).exclude(status=settings.STATUS['complete'])
@@ -228,8 +225,6 @@ class EngineJob(Job):
         self.save()
 
     def prepare_tasks(self):
-        logger.debug('')
-        logger.debug('=================================================== prepare_tasks ===========================================================')
         logger.info('Preparing tasks for jobid: %s...' % self.id)
 
         tasks_to_create = []
@@ -255,7 +250,6 @@ class EngineJob(Job):
                 logger.debug(batch_file)
                 bfile, extension_list = batch_file[0], batch_file[1]
 
-
                 # handle yabi:// uris
                 # fetches the stageout of previous job and
                 # adds that to batch_file_list to be processed
@@ -278,19 +272,17 @@ class EngineJob(Job):
                 # handle all non yabi:// uris
                 else:
                     logger.info('Processing uri %s' % bfile)
-
-                    logger.debug("PROCESSING")
                     logger.debug("%s -> %s" % (bfile, backendhelper.get_file_list(self.workflow.user.name, bfile)))
 
                     # get_file_list will return a list of file tuples
                     for f in backendhelper.get_file_list(self.workflow.user.name, bfile):
-                        logger.debug("FILELIST %s" % f)
                         if self.is_task_file_valid(f[0], extension_list):
+                            logger.debug("Preparing batch_file task for file %s" % f)
                             tasks_to_create.append([self, bfile, f[0], exec_be, exec_bc, fs_be, fs_bc])
 
         else:
             # This creates NON batch on param jobs
-            logger.debug("PROCESSING NON batch on param")
+            logger.debug("prepare_task for a task with no batch_files")
             tasks_to_create.append([self, None, None, exec_be, exec_bc, fs_be, fs_bc])
 
         return tasks_to_create
@@ -322,12 +314,6 @@ class EngineJob(Job):
             task.add_task(*(task_data+[name]))
             num,name = buildname(num)
 
-    def prepare_job(self):
-        logger.debug('')
-        logger.info('Setting job id %s to ready' % self.id)                
-        self.status = settings.STATUS["ready"]
-        self.save()
-                    
     def is_task_file_valid(self, file, extensions):
         """Returns a boolean, true if the file passed in is a valid file for the job. Only uses the file extension to tell."""
         logger.debug(file)
@@ -370,7 +356,6 @@ class EngineJob(Job):
 
     def get_errored_tasks_messages(self):
         return [X.error_msg for X in Task.objects.filter(job=self) if X.status == settings.STATUS['error']]
-
 
 
 class EngineTask(Task):
@@ -453,6 +438,7 @@ class EngineTask(Task):
             scheme, rest = uriparse(dirpath)
 
             if scheme not in settings.VALID_SCHEMES:
+                logger.critical('Invalid scheme [%s] in parameter_files, skipping' % scheme)
                 continue
 
             # replace one instance of placeholder for this file
