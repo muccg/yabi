@@ -29,8 +29,8 @@ parser = OptionParser()
 parser.add_option( "-i", "--identity", dest="identity", help="RSA keyfile" )
 parser.add_option( "-C", "--compress", dest="compress", help="use ssh stream compression", action="store_true", default=False )
 parser.add_option( "-P", "--port", dest="port", help="port to connect to ssh on" )
-parser.add_option( "-o", "--stdout", dest="stdout", help="filename for standard out", default="STDOUT.txt" )
-parser.add_option( "-e", "--stderr", dest="stderr", help="filename for standard error",default="STDERR.txt" )
+parser.add_option( "-o", "--stdout", dest="stdout", help="filename for standard out", default=None )
+parser.add_option( "-e", "--stderr", dest="stderr", help="filename for standard error",default=None )
 parser.add_option( "-x", "--execute", dest="execute", help="command to execute", default="hostname" )
 parser.add_option( "-w", "--working", dest="working", help="working directory", default="~" )
 
@@ -65,8 +65,11 @@ quotes = [X for N,X in enumerate(remote_command) if (X=='"' or X=="'") and N>=1 
 if len(quotes):
     assert quotes[0]=='"' and quotes[-1]=='"', "Quotes in command must be doublequote outermost"
 
-ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cd \"%s\" && %s 1>%s 2>%s'")%(SSH,options.working,remote_command,stdout,stderr)
-
+if stdout or stderr:
+    ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cd \"%s\" && %s 1>%s 2>%s'")%(SSH,options.working,remote_command,stdout,stderr)
+else:
+    ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cd \"%s\" && %s'")%(SSH,options.working,remote_command)
+    
 child = pexpect.spawn(ssh_command)
 child.logfile_read = sys.stdout
 res = 0

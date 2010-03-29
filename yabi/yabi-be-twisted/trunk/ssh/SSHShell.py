@@ -4,33 +4,37 @@ from twisted.internet import protocol
 from twisted.internet import reactor
 
 from BaseShell import BaseShell, BaseShellProcessProtocol
+from SSHRun import SSHExecProcessProtocol 
+
 
 DEBUG = True
 
-class SSHShellProcessProtocol(BaseShellProcessProtocol):
-    pass
+
 
 class SSHShell(BaseShell):
-    ssh = '/usr/bin/ssh'
+    ssh_exec = os.path.join( os.path.dirname(os.path.realpath(__file__)), "ssh-exec.py" )
+    python = "/usr/bin/python"
     
     def _make_path(self):
         return "/usr/bin"    
 
     def execute(self, certfile, host, command):
         """Run inside gsissh, this command line. Command parts are passed in as a list of parameters, not a string."""
+        subenv = self._make_env()
+        
+        command = [ self.python, self.ssh_exec,
+            "-i", certfile,
+            "-P", port,
+            "-w", working,
+            "-x", remote_command,
+            "%s@%s"%(username,host)
+            ]
+        
         if DEBUG:
-            print "SSHShell running:",[ 
-                self.ssh,
-                '-i',certfile,
-                host 
-            ] + list(command)
-        return BaseShell.execute(self,SSHShellProcessProtocol(),
-            [ 
-                self.ssh,
-                '-i',certfile,
-                host 
-            ] + list(command)
-        )
+            print "SSHShell Running:",command
+            
+        return BaseShell.execute(self,SSHExecProcessProtocol(password),command)
+      
     def ls(self, certfile, host, directory, args="-alFR"):
         return self.execute(certfile,host,command=["ls",args,directory])
       
