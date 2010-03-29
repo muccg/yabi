@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import httplib, os, datetime, uuid
+import httplib, os, datetime, uuid, traceback
 from math import log10
 from urllib import urlencode
 from os.path import splitext
@@ -57,18 +57,15 @@ class EngineWorkflow(Workflow):
 
         except ObjectDoesNotExist, e:
             logger.critical(e)
-            import traceback
-            logger.debug(traceback.format_exc())        
+            logger.critical(traceback.format_exc())        
             raise
         except KeyError, e:
             logger.critical(e)
-            import traceback
-            logger.debug(traceback.format_exc())        
+            logger.critical(traceback.format_exc())        
             raise
         except Exception, e:
             logger.critical(e)
-            import traceback
-            logger.debug(traceback.format_exc())
+            logger.critical(traceback.format_exc())
             raise
 
     def walk(self):
@@ -114,13 +111,11 @@ class EngineWorkflow(Workflow):
 
         except ObjectDoesNotExist,e:
             logger.critical("ObjectDoesNotExist at workflow.walk: %s" % e)
-            import traceback
-            logger.debug(traceback.format_exc())
+            logger.critical(traceback.format_exc())
             raise
         except Exception,e:
             logger.critical("Error in workflow: %s" % e)
-            import traceback
-            logger.debug(traceback.format_exc())
+            logger.critical(traceback.format_exc())
             raise
 
 
@@ -480,6 +475,7 @@ def signal_workflow_post_save(sender, **kwargs):
         status, data = StoreHelper.updateWorkflow(workflow)
     except Exception, e:
         logger.critical(e)
+        logger.critical(traceback.format_exc())
         raise
 
 def signal_job_post_save(sender, **kwargs):
@@ -507,6 +503,7 @@ def signal_job_post_save(sender, **kwargs):
 
     except Exception, e:
         logger.critical(e)
+        logger.critical(traceback.format_exc())
         raise
     
 def signal_task_post_save(sender, **kwargs):
@@ -524,6 +521,7 @@ def signal_task_post_save(sender, **kwargs):
 
     except Exception, e:
         logger.critical(e)
+        logger.critical(traceback.format_exc())
         raise
 
 
