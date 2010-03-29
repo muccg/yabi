@@ -68,8 +68,11 @@ if len(quotes):
 if stdout or stderr:
     ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cd \"%s\" && %s 1>%s 2>%s'")%(SSH,options.working,remote_command,stdout,stderr)
 else:
-    ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cd \"%s\" && %s'")%(SSH,options.working,remote_command)
-    
+    if options.working:
+        ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cd \"%s\" && %s'")%(SSH,options.working,remote_command)
+    else:
+        ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" '%s'")%(SSH,remote_command)
+        
 child = pexpect.spawn(ssh_command)
 child.logfile_read = sys.stdout
 res = 0
