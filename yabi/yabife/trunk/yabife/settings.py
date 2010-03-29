@@ -221,6 +221,24 @@ LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
 LOGGING_FORMATTER = logging.Formatter("%(asctime)s:%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s:%(message)s")
 LOGS = ['yabife']
 
+# TODO not using mango logging for now, can't add extra handlers to that
+from sys import stdout
+from logging.handlers import TimedRotatingFileHandler
+
+for logfile in LOGS:
+    logger = logging.getLogger(logfile)
+    logger.setLevel(LOGGING_LEVEL)
+    sh = logging.StreamHandler(stdout)
+    sh.setLevel(LOGGING_LEVEL)
+    sh.setFormatter(LOGGING_FORMATTER)
+    logger.addHandler(sh)
+    logfilename = "%s%s" % (logfile, ".log")
+    fh = TimedRotatingFileHandler(os.path.join(LOG_DIRECTORY, logfilename), 'midnight')
+    fh.setFormatter(LOGGING_FORMATTER)
+    fh.setLevel(LOGGING_LEVEL)
+    logger.addHandler(fh)
+
+
 # TODO the file upload only handles files that are written to disk at them moment
 # so this MUST be set to 0
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
