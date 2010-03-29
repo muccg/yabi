@@ -32,7 +32,7 @@ parser.add_option( "-P", "--port", dest="port", help="port to connect to ssh on"
 parser.add_option( "-o", "--stdout", dest="stdout", help="filename for standard out", default=None )
 parser.add_option( "-e", "--stderr", dest="stderr", help="filename for standard error",default=None )
 parser.add_option( "-x", "--execute", dest="execute", help="command to execute", default="hostname" )
-parser.add_option( "-w", "--working", dest="working", help="working directory", default="~" )
+parser.add_option( "-w", "--working", dest="working", help="working directory", default=None )
 
 (options, args) = parser.parse_args()
 
