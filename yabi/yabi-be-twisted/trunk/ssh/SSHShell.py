@@ -16,7 +16,7 @@ class SSHShell(BaseShell):
     def _make_path(self):
         return "/usr/bin"    
 
-    def execute(self, certfile, host, command, username, password):
+    def execute(self, certfile, host, command, username, password, port=22):
         """Run inside gsissh, this command line. Command parts are passed in as a list of parameters, not a string."""
         print "!"
         subenv = self._make_env()
@@ -24,7 +24,7 @@ class SSHShell(BaseShell):
         
         command = [ self.python, self.ssh_exec,
             "-i", certfile,
-            "-P", 22,
+            "-P", str(port),
             "-x", command,
             "%s@%s"%(username,host)
             ]
