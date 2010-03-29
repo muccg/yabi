@@ -20,6 +20,7 @@ class SSHShell(BaseShell):
         """Run inside gsissh, this command line. Command parts are passed in as a list of parameters, not a string."""
         print "!"
         subenv = self._make_env()
+        print "2"
         
         command = [ self.python, self.ssh_exec,
             "-i", certfile,
