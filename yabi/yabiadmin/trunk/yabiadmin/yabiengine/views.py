@@ -7,11 +7,10 @@ from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
+from conf import config
 
 import logging
 logger = logging.getLogger('yabiengine')
-
-from conf import config
 
 def task(request):
     logger.debug('')
