@@ -16,7 +16,7 @@ class SSHShell(BaseShell):
     def _make_path(self):
         return "/usr/bin"    
 
-    def execute(self, certfile, host, command):
+    def execute(self, certfile, host, command, username, password):
         """Run inside gsissh, this command line. Command parts are passed in as a list of parameters, not a string."""
         print "!"
         subenv = self._make_env()
@@ -35,11 +35,11 @@ class SSHShell(BaseShell):
             
         return BaseShell.execute(self,SSHExecProcessProtocol(password),command)
       
-    def ls(self, certfile, host, directory, args="-alFR"):
-        return self.execute(certfile,host,command=["ls",args,directory])
+    def ls(self, certfile, host, directory,username, password, args="-alFR"):
+        return self.execute(certfile,host,command=["ls",args,directory],username, password)
       
-    def mkdir(self, certfile, host, directory, args="-p"):
-        return self.execute(certfile,host,command=["mkdir",args,directory])
+    def mkdir(self, certfile, host, directory,username, password, args="-p"):
+        return self.execute(certfile,host,command=["mkdir",args,directory],username, password)
       
-    def rm(self, certfile, host, directory, args=None):
-        return self.execute(certfile,host,command=["rm",args,directory]) if args else self.execute(certfile,host,command=["rm",directory]) 
+    def rm(self, certfile, host, directory,username, password, args=None):
+        return self.execute(certfile,host,command=["rm",args,directory,username, password]) if args else self.execute(certfile,host,command=["rm",directory],username, password) 

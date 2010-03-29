@@ -44,7 +44,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         # we need to munge the path for transport over ssh (cause it sucks)
         mungedpath = '"' + path.replace('"',r'\"') + '"'
-        pp = ssh.Shell.mkdir(usercert,host,mungedpath)
+        pp = ssh.Shell.mkdir(usercert,host,mungedpath, username=creds['username'], password=creds['passsword'])
         
         while not pp.isDone():
             stackless.schedule()
@@ -75,7 +75,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         # we need to munge the path for transport over gsissh (cause it sucks)
         mungedpath = '"' + path.replace('"',r'\"') + '"'
-        pp = ssh.Shell.rm(usercert,host,mungedpath,args="-r" if recurse else "")
+        pp = ssh.Shell.rm(usercert,host,mungedpath,args="-r" if recurse else "", username=creds['username'], password=creds['passsword'])
         
         while not pp.isDone():
             stackless.schedule()
@@ -109,7 +109,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         # we need to munge the path for transport over gsissh (cause it sucks)
         mungedpath = '"' + path.replace('"',r'\"') + '"'
-        pp = ssh.Shell.ls(usercert,host,mungedpath, args="-alFR" if recurse else "-alF" )
+        pp = ssh.Shell.ls(usercert,host,mungedpath, args="-alFR" if recurse else "-alF", username=creds['username'], password=creds['passsword'] )
         
         while not pp.isDone():
             stackless.schedule()
