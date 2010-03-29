@@ -110,11 +110,11 @@ class EngineWorkflow(Workflow):
                 self.save()
 
         except ObjectDoesNotExist,e:
-            logger.critical("ObjectDoesNotExist at workflow.walk: %s" % e)
+            logger.critical("ObjectDoesNotExist at workflow.walk")
             logger.critical(traceback.format_exc())
             raise
         except Exception,e:
-            logger.critical("Error in workflow: %s" % e)
+            logger.critical("Error in workflow")
             logger.critical(traceback.format_exc())
             raise
 
@@ -221,6 +221,9 @@ class EngineJob(Job):
 
     def prepare_tasks(self):
         logger.info('Preparing tasks for jobid: %s...' % self.id)
+
+        if (self.total_tasks() > 0):
+            raise Exception("Job already has tasks")
 
         tasks_to_create = []
 

@@ -97,7 +97,7 @@ def status(request, model, id):
         return HttpResponseNotFound("Object not found")
     except Exception, e:
         import traceback
-        print "!!!!",traceback.format_exc()
+        logger.critical(traceback.format_exc())
         logger.critical("Caught Exception: %s" % e)
         return HttpResponseServerError(e)
 
