@@ -222,38 +222,6 @@ def get_backend_list(yabiusername):
         logger.critical("Hostname: %s" % parts.hostname)
         raise
 
-
-
-def put_file(uri, fh):
-    """
-    Upload a file to the backend
-    """
-    logger.debug('')
-
-    assert False, "Is this deprecated?"
-
-
-## curl -F file1=@index.html -F file2=@fish.csv
-## faramir:8100/fs/put?uri=gridftp://cwellington@xe-ng2.ivec.org/scratch/bi01/cwellington/
-
-    try:
-        resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, uri)
-        logger.debug('Resource: %s' % resource)
-        conn = httplib.HTTPConnection(settings.YABIBACKEND_SERVER)
-        logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
-
-        conn.request('GET', resource, fh)
-        r = conn.getresponse()
-        logger.info("Status of return from yabi backend is: %s" % r.status)
- 
-    except socket.error, e:
-        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
-        raise
-    except httplib.CannotSendRequest, e:
-        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
-        raise
-
-
 def get_file(yabiusername, uri):
     """
     Return a file at given uri
@@ -356,26 +324,3 @@ def copy_file(yabiusername, src, dst):
     except httplib.CannotSendRequest, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
         raise
-
-## this is not used, was from here
-##    http://metalinguist.wordpress.com/2008/02/12/django-file-and-stream-serving-performance-gotcha/
-## but there is a build in FileWrapper object here django.core.servers.basehttp import FileWrapper
-## that we use instead
-## remove eventually, left here for reference for now
-
-## class FileIterWrapper(object):
-##     def __init__(self, flo, chunk_size = 1024**2):
-##         self.flo = flo
-##         self.chunk_size = chunk_size
-
-##     def next(self):
-##         data = self.flo.read(self.chunk_size)
-##         if data:
-##             return data
-##         else:
-##             raise StopIteration
-
-##     def __iter__(self):
-##         return self
-
-
