@@ -269,34 +269,24 @@ LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
 LOGGING_LEVEL = logging.DEBUG
 #LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
 LOGGING_FORMATTER = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s:%(message)s')
-LOGS = ['yabiengine','yabiadmin'] # used by mango logging, not used at present here
+LOGS = ['yabiengine','yabiadmin']
 
 # TODO not using mango logging for now, can't add extra handlers to that
 from sys import stdout
 from logging.handlers import TimedRotatingFileHandler
 
-logger = logging.getLogger('yabiadmin')
-logger.setLevel(LOGGING_LEVEL)
-sh = logging.StreamHandler(stdout)
-sh.setLevel(logging.DEBUG)
-sh.setFormatter(LOGGING_FORMATTER)
-logger.addHandler(sh)
-fh = TimedRotatingFileHandler(os.path.join(LOG_DIRECTORY, 'yabiadmin'), 'midnight')
-fh.setFormatter(LOGGING_FORMATTER)
-fh.setLevel(LOGGING_LEVEL)
-logger.addHandler(fh)
-
-logger = logging.getLogger('yabiengine')
-logger.setLevel(LOGGING_LEVEL)
-sh = logging.StreamHandler(stdout)
-sh.setLevel(logging.DEBUG)
-sh.setFormatter(LOGGING_FORMATTER)
-logger.addHandler(sh)
-fh = TimedRotatingFileHandler(os.path.join(LOG_DIRECTORY, 'yabiengine'), 'midnight')
-fh.setFormatter(LOGGING_FORMATTER)
-fh.setLevel(LOGGING_LEVEL)
-logger.addHandler(fh)
-
+for logfile in LOGS:
+    logger = logging.getLogger(logfile)
+    logger.setLevel(LOGGING_LEVEL)
+    sh = logging.StreamHandler(stdout)
+    sh.setLevel(LOGGING_LEVEL)
+    sh.setFormatter(LOGGING_FORMATTER)
+    logger.addHandler(sh)
+    logfilename = "%s%s" % (logfile, ".log")
+    fh = TimedRotatingFileHandler(os.path.join(LOG_DIRECTORY, logfilename), 'midnight')
+    fh.setFormatter(LOGGING_FORMATTER)
+    fh.setLevel(LOGGING_LEVEL)
+    logger.addHandler(fh)
 
 
 # TODO the file upload only handles files that are written to disk at them moment
