@@ -32,19 +32,28 @@ class BaseShellProcessProtocol(protocol.ProcessProtocol):
         # stdout was closed. this will be our endpoint reference
         if DEBUG:
             print "Out lost"
+        self.unifyLineEndings()
         
     def inConenctionLost(self):
         if DEBUG:
             print "In lost"
+        self.unifyLineEndings()
         
     def errConnectionLost(self):
         if DEBUG:
             print "Err lost"
+        self.unifyLineEndings()
         
     def processEnded(self, status_object):
         self.exitcode = status_object.value.exitCode
         if DEBUG:
             print "proc ended",self.exitcode
+        self.unifyLineEndings()
+        
+    def unifyLineEndings(self):
+        # try to unify the line endings to \n
+        self.out = self.out.replace("\r\n","\n")
+        self.err = self.err.replace("\r\n","\n")
         
     def isDone(self):
         return self.exitcode != None
