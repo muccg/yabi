@@ -61,7 +61,6 @@ def task(request):
         logger.critical(traceback.format_exc())
         return HttpResponseServerError("Error requesting task.")
 
-#@transaction.commit_manually
 def status(request, model, id):
     logger.debug('')
     models = {'task':EngineTask, 'job':EngineJob, 'workflow':EngineWorkflow}
@@ -96,14 +95,8 @@ def status(request, model, id):
             obj.status=status
             obj.save()
 
-            #transaction.commit()
-
-            if status == 'complete':
-                logger.debug("=========== >>>>>>>>>>>  MARKED AS COMPLETE %s" % id)
-
             obj.walk()
 
-            
             return HttpResponse("")
 
     except (ObjectDoesNotExist,ValueError):
