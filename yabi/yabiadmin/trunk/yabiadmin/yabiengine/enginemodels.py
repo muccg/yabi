@@ -82,7 +82,7 @@ class EngineWorkflow(Workflow):
         try:
             count = 0
             waiting = True
-            while (waiting and count < 10):
+            while (waiting and count < 15):
                 count = count + 1
                 waiting = False
                 try: 
@@ -92,12 +92,15 @@ class EngineWorkflow(Workflow):
                     cursor.execute("LOCK TABLE %s IN ACCESS EXCLUSIVE MODE NOWAIT" % table)
                 except OperationalError, e:
                     logger.critical(traceback.format_exc())
+                    transaction.rollback()
                     waiting = True
                     from time import sleep
                     sleep(1)
                 except:
                     logger.critical(traceback.format_exc())
                     raise
+            if (count >= 15):
+                raise Exception("Timeout waiting for lock on table")
 
             jobset = [X for X in EngineJob.objects.filter(workflow=self).order_by("order")]
             for job in jobset:
@@ -510,6 +513,7 @@ class EngineTask(Task):
             self.create_stagein(param=uri, file=batch_file, scheme=self.fsscheme,
                            hostname=self.fsbackend_parts.hostname,
                            path=os.path.join(self.fsbackend_parts.path, self.working_dir, "input", batch_file),
+                           username=self.fsbackend_parts.username)
 
     def create_stagein(self, param=None, file=None, scheme=None, hostname=None, path=None, username=None):
         s = StageIn(task=self,
