@@ -12,7 +12,7 @@ from django.core.servers.basehttp import FileWrapper
 
 
 
-from django.contrib import logging
+import logging
 logger = logging.getLogger('yabiengine')
 
 

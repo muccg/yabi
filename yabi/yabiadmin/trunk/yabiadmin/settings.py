@@ -273,8 +273,6 @@ LOGS = ['yabiengine','yabiadmin']
 
 # TODO not using mango logging for now, can't add extra handlers to that
 from sys import stdout
-from logging.handlers import TimedRotatingFileHandler
-
 for logfile in LOGS:
     logger = logging.getLogger(logfile)
     logger.setLevel(LOGGING_LEVEL)
@@ -282,12 +280,6 @@ for logfile in LOGS:
     sh.setLevel(LOGGING_LEVEL)
     sh.setFormatter(LOGGING_FORMATTER)
     logger.addHandler(sh)
-    logfilename = "%s%s" % (logfile, ".log")
-    fh = TimedRotatingFileHandler(os.path.join(LOG_DIRECTORY, logfilename), 'midnight')
-    fh.setFormatter(LOGGING_FORMATTER)
-    fh.setLevel(LOGGING_LEVEL)
-    logger.addHandler(fh)
-
 
 # TODO the file upload only handles files that are written to disk at them moment
 # so this MUST be set to 0

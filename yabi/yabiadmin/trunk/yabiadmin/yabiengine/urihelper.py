@@ -4,8 +4,8 @@ from urllib import urlencode
 from urlparse import urlparse
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.contrib import logging
 
+import logging
 logger = logging.getLogger('yabiengine')
 
 import re
