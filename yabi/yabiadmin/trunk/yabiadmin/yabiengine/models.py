@@ -126,6 +126,9 @@ class Job(models.Model, Editable, Status):
     def status_complete(self):
         return self.status == settings.STATUS['complete']
 
+    def status_error(self):
+        return self.status == settings.STATUS['error']
+
     @property
     def workflowid(self):
         return self.workflow.id
