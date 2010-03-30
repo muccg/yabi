@@ -70,16 +70,12 @@ def status(request, model, id):
         raise ObjectDoesNotExist()
 
     try:
-
         if request.method == "GET":
-
             m = models[model.lower()]
             obj = m.objects.get(id=id)
-
             return HttpResponse(json.dumps({"status":obj.status}))
 
         else:
-
             if "status" not in request.POST:
                 return HttpResponseServerError("POST request to error service should contain 'status' parameter\n")
 
@@ -100,6 +96,7 @@ def status(request, model, id):
                 obj.job.update_status()
                 obj.job.save()
 
+            # this is the only place in the code that we trigger walk
             obj.walk()
 
             return HttpResponse("")
