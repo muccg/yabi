@@ -80,6 +80,9 @@ class EngineWorkflow(Workflow):
         logger.debug('----- Walking workflow id %d -----' % self.id)
 
         try:
+            # TODO ok this is fairly ugly at this point, the code has ovolved through butter experience
+            # with things not working rather than from intelligent design. Ideally we should
+            # be able to do a much simpler version without the NOWAIT.
             count = 0
             waiting = True
             while (waiting and count < 15):
