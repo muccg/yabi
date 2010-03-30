@@ -4,6 +4,7 @@ from django.utils import simplejson as json
 import httplib
 import socket
 import os
+from os.path import splitext
 from urllib import urlencode, quote
 from yabiadmin.yabiengine.urihelper import uriparse, get_backend_userdir
 from yabiadmin.yabmin.models import Backend, BackendCredential
@@ -132,6 +133,23 @@ def get_file_list(yabiusername, uri, recurse=True):
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
         raise
 
+
+
+def get_first_matching_file(yabiusername, uri, extension_list):
+
+    file_list = get_file_list(yabiusername, uri, recurse=False)
+    filename = None
+
+    # TODO similar code to is_task_file_valid on EngineJob, can we combine?
+    for f in file_list:
+        if (splitext(f[0])[1].strip('.') in extension_list) or ('*' in extension_list):
+            filename = f[0]
+            break
+
+    return filename
+        
+        
+    
 
 def get_listing(yabiusername, uri):
     """

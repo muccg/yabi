@@ -461,7 +461,7 @@ class EngineTask(Task):
         Replace the filename in the command with relative path used in the stagein
         '''
         for parameter_file_tuple in eval(self.job.parameter_files):
-            parameter_file, extention_list = parameter_file_tuple
+            parameter_file, extension_list = parameter_file_tuple
 
             # it's one of the non file params
             # TODO please comment why this happens
@@ -481,8 +481,11 @@ class EngineTask(Task):
 
                 if not filename:
                     # we need to get the first file that matches
-                    filename = backendhelper.get_first_matching_file(stageout, extension_list)
-                    
+                    yabiusername = uriparts.username
+                    filename = backendhelper.get_first_matching_file(self.job.workflow.user.name, stageout, extension_list)
+                    if not filename:
+                        raise Exception("No matching file found at: %s for %s" % (stageout, extension_list))
+                                        
                 # append the filename to stageout, then proceed
                 parameter_file = "%s%s" % (stageout, filename)
             
