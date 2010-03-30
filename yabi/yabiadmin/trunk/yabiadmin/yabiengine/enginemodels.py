@@ -70,7 +70,6 @@ class EngineWorkflow(Workflow):
             logger.critical(traceback.format_exc())
             raise
 
-    #@transaction.commit_manually
     @transaction.commit_on_success
     def walk(self):
         '''
@@ -146,18 +145,13 @@ class EngineWorkflow(Workflow):
                 self.save()
 
         except ObjectDoesNotExist,e:
-            #transaction.rollback()
             logger.critical("ObjectDoesNotExist at workflow.walk")
             logger.critical(traceback.format_exc())
             raise
         except Exception,e:
-            #transaction.rollback()
             logger.critical("Error in workflow")
             logger.critical(traceback.format_exc())
             raise
-        #finally:
-            #transaction.commit()
-
 
 class EngineJob(Job):
 
