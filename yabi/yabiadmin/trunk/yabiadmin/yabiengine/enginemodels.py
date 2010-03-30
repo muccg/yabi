@@ -79,7 +79,7 @@ class EngineWorkflow(Workflow):
         logger.debug('----- Walking workflow id %d -----' % self.id)
 
         try:
-            # TODO ok this is fairly ugly at this point, the code has ovolved through butter experience
+            # TODO ok this is fairly ugly at this point, the code has evolved through bitter experience
             # with things not working rather than from intelligent design. Ideally we should
             # be able to do a much simpler version without the NOWAIT.
             count = 0
@@ -97,7 +97,7 @@ class EngineWorkflow(Workflow):
                     transaction.rollback()
                     waiting = True
                     from time import sleep
-                    sleep(1)
+                    sleep(count)
                 except:
                     logger.critical(traceback.format_exc())
                     raise
