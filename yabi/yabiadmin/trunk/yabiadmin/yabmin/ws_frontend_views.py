@@ -18,7 +18,7 @@ from urllib import quote
 
 from yabmin.file_upload import *
 
-from django.contrib import logging
+import logging
 logger = logging.getLogger('yabiadmin')
 
 ## TODO do we want to limit tools to those the user can access?

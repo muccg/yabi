@@ -1,6 +1,6 @@
 import datetime
 
-from django.contrib import logging
+import logging
 logger = logging.getLogger('yabiadmin')
 
 def makeJsonFriendly(data):

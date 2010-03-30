@@ -9,7 +9,7 @@ import zipfile
 import StringIO
 from stat import *
 
-from django.contrib import logging
+import logging
 logger = logging.getLogger('yabiadmin')
 
 
