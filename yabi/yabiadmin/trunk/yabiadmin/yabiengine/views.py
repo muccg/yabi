@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
+from conf import config
+
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseServerError
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import webhelpers
+from django.db import transaction 
 from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
+
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
-from conf import config
+from yabiadmin.yabiengine.enginemodels import EngineTask, EngineJob, EngineWorkflow
 
 import logging
 logger = logging.getLogger('yabiengine')
@@ -57,9 +61,10 @@ def task(request):
         logger.critical(traceback.format_exc())
         return HttpResponseServerError("Error requesting task.")
 
+#@transaction.commit_manually
 def status(request, model, id):
     logger.debug('')
-    models = {'task':Task, 'job':Job, 'workflow':Workflow}
+    models = {'task':EngineTask, 'job':EngineJob, 'workflow':EngineWorkflow}
 
     # sanity checks
     if model.lower() not in models.keys():
@@ -91,6 +96,14 @@ def status(request, model, id):
             obj.status=status
             obj.save()
 
+            #transaction.commit()
+
+            if status == 'complete':
+                logger.debug("=========== >>>>>>>>>>>  MARKED AS COMPLETE %s" % id)
+
+            obj.walk()
+
+            
             return HttpResponse("")
 
     except (ObjectDoesNotExist,ValueError):

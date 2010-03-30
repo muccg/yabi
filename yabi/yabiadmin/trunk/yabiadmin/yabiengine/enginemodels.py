@@ -5,8 +5,10 @@ from urllib import urlencode
 from os.path import splitext
 from conf import config
 
+from psycopg2 import OperationalError
+
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from django.db import models
+from django.db import models, connection, transaction
 from django.db.models import Q
 from django.conf import settings
 from django.utils import simplejson as json, webhelpers
@@ -28,7 +30,7 @@ logger = logging.getLogger('yabiengine')
 class EngineWorkflow(Workflow):
     job_cache = {}
     job_dict = []
-    
+
     class Meta:
         proxy = True
 
@@ -68,6 +70,7 @@ class EngineWorkflow(Workflow):
             logger.critical(traceback.format_exc())
             raise
 
+    @transaction.commit_manually
     def walk(self):
         '''
         Walk through the jobs for this workflow and prepare jobs and tasks,
@@ -76,13 +79,33 @@ class EngineWorkflow(Workflow):
         logger.debug('----- Walking workflow id %d -----' % self.id)
 
         try:
+            count = 0
+            waiting = True
+            while (waiting and count < 10):
+                count = count + 1
+                waiting = False
+                try: 
+                    cursor = connection.cursor()
+                    table = self._meta.db_table
+                    logger.debug("Locking table %s" % table)
+                    cursor.execute("LOCK TABLE %s IN ACCESS EXCLUSIVE MODE NOWAIT" % table)
+                except OperationalError, e:
+                    logging.debug("=========== >>>>>>>>>>>>>>>>>   Hit a lock, waiting")
+                    waiting = True
+                    from time import sleep
+                    sleep(1)
+
             jobset = [X for X in EngineJob.objects.filter(workflow=self).order_by("order")]
             for job in jobset:
                 logger.info('Walking job id: %s' % job.id)
 
                 # dont check complete or ready jobs
+                job.update_status()
+                job.save()
                 if (job.status_complete() or job.status_ready()):
                     continue
+
+                logger.debug("============ >>>>>>>>>> JOB %s is not complete or ready, not diving in via walk" % job.id) 
 
                 # we can't proceed until all previous job dependencies are satisfied
                 if (job.has_incomplete_dependencies()):
@@ -110,13 +133,17 @@ class EngineWorkflow(Workflow):
                 self.save()
 
         except ObjectDoesNotExist,e:
+            transaction.rollback()
             logger.critical("ObjectDoesNotExist at workflow.walk")
             logger.critical(traceback.format_exc())
             raise
         except Exception,e:
+            transaction.rollback()
             logger.critical("Error in workflow")
             logger.critical(traceback.format_exc())
             raise
+        finally:
+            transaction.commit()
 
 
 class EngineJob(Job):
@@ -186,6 +213,10 @@ class EngineJob(Job):
                     rval = True
 
         return rval
+
+    def _walk(self):
+        eWorkflow = EngineWorkflow.objects.get(id=self.workflow_id)
+        eWorkflow.walk()
 
     def add_job(self, job_dict):
         logger.debug('')
@@ -366,6 +397,12 @@ class EngineTask(Task):
     class Meta:
         proxy = True
 
+
+    def walk(self):
+        if self.status == settings.STATUS['complete']:
+            eJob = EngineJob.objects.get(id=self.job_id)
+            eJob._walk()
+
     def add_task(self, uri, batch_file, exec_be, exec_bc, fs_be, fs_bc, name=""):
         logger.debug('')
         logger.debug("batch file %s" % batch_file)
@@ -517,10 +554,13 @@ def signal_task_post_save(sender, **kwargs):
         task.job.update_status()
         task.job.save()
 
-        if task.job.status == settings.STATUS['complete']:
-            # we need to grab an EngineWorkflow from task.job.workflow
-            workflow = EngineWorkflow.objects.get(id=task.job.workflow.id)
-            workflow.walk()
+#
+# If we walk here we end up with the same process having a nested walk, its nasty
+
+#        if task.job.status == settings.STATUS['complete']:
+#            # we need to grab an EngineWorkflow from task.job.workflow
+#            workflow = EngineWorkflow.objects.get(id=task.job.workflow.id)
+#            workflow.walk()
 
     except Exception, e:
         logger.critical(e)
@@ -536,3 +576,6 @@ post_save.connect(signal_task_post_save, sender=Task)
 post_save.connect(signal_workflow_post_save, sender=EngineWorkflow)
 post_save.connect(signal_job_post_save, sender=EngineJob)
 post_save.connect(signal_task_post_save, sender=EngineTask)
+
+
+
