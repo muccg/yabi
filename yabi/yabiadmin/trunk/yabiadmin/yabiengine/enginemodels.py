@@ -522,7 +522,8 @@ class EngineTask(Task):
         s.save()
 
 
-# Django signals
+# Django signals. These are only used to update the store. It should stay this way,
+# please refrain from adding anything here other than store updates.
 
 def signal_workflow_post_save(sender, **kwargs):
     logger.debug("workflow post_save signal")
