@@ -95,6 +95,11 @@ def status(request, model, id):
             obj.status=status
             obj.save()
 
+            # update the job status when the task status changes
+            if (model == 'task'):
+                obj.job.update_status()
+                obj.job.save()
+
             obj.walk()
 
             return HttpResponse("")

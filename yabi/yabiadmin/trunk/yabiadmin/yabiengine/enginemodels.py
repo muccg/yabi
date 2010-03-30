@@ -70,7 +70,8 @@ class EngineWorkflow(Workflow):
             logger.critical(traceback.format_exc())
             raise
 
-    @transaction.commit_manually
+    #@transaction.commit_manually
+    @transaction.commit_on_success
     def walk(self):
         '''
         Walk through the jobs for this workflow and prepare jobs and tasks,
@@ -90,10 +91,13 @@ class EngineWorkflow(Workflow):
                     logger.debug("Locking table %s" % table)
                     cursor.execute("LOCK TABLE %s IN ACCESS EXCLUSIVE MODE NOWAIT" % table)
                 except OperationalError, e:
-                    logging.debug("=========== >>>>>>>>>>>>>>>>>   Hit a lock, waiting")
+                    logger.critical(traceback.format_exc())
                     waiting = True
                     from time import sleep
                     sleep(1)
+                except:
+                    logger.critical(traceback.format_exc())
+                    raise
 
             jobset = [X for X in EngineJob.objects.filter(workflow=self).order_by("order")]
             for job in jobset:
@@ -102,15 +106,16 @@ class EngineWorkflow(Workflow):
                 # dont check complete or ready jobs
                 job.update_status()
                 job.save()
-                if (job.status_complete() or job.status_ready()):
+                if (job.status_complete() or job.status_ready() or job.status_error()):
+                    logger.debug("job %s is completed or ready, skipping walk" % job.id)
                     continue
-
-                logger.debug("============ >>>>>>>>>> JOB %s is not complete or ready, not diving in via walk" % job.id) 
 
                 # we can't proceed until all previous job dependencies are satisfied
                 if (job.has_incomplete_dependencies()):
                     logger.info('Incomplete dependencies for job: %s' % job.id)
                     continue
+
+                logger.debug("job %s is is being processed by walk" % job.id) 
 
                 tasks = job.prepare_tasks()
                 job.create_tasks(tasks)
@@ -126,6 +131,8 @@ class EngineWorkflow(Workflow):
                 job.status = settings.STATUS["ready"]
                 job.save()
 
+                job.make_tasks_ready()               
+
             # check all the jobs are complete, if so, changes status on workflow
             incomplete_jobs = Job.objects.filter(workflow=self).exclude(status=settings.STATUS['complete'])
             if not len(incomplete_jobs):
@@ -133,17 +140,17 @@ class EngineWorkflow(Workflow):
                 self.save()
 
         except ObjectDoesNotExist,e:
-            transaction.rollback()
+            #transaction.rollback()
             logger.critical("ObjectDoesNotExist at workflow.walk")
             logger.critical(traceback.format_exc())
             raise
         except Exception,e:
-            transaction.rollback()
+            #transaction.rollback()
             logger.critical("Error in workflow")
             logger.critical(traceback.format_exc())
             raise
-        finally:
-            transaction.commit()
+        #finally:
+            #transaction.commit()
 
 
 class EngineJob(Job):
@@ -213,6 +220,13 @@ class EngineJob(Job):
                     rval = True
 
         return rval
+
+    @transaction.commit_on_success
+    def make_tasks_ready(self): 
+        tasks = EngineTask.objects.filter(job=self)
+        for task in tasks:
+            task.status = settings.STATUS['ready']
+            task.save()
 
     def _walk(self):
         eWorkflow = EngineWorkflow.objects.get(id=self.workflow_id)
@@ -370,7 +384,10 @@ class EngineJob(Job):
                 'stageout':0.8,
                 'cleaning':0.9,
                 'complete':1.0,
-                'error':0.0
+                'error':0.0,
+               
+                # TODO Added to allow tasks to be created without a status
+                '':0.0
                 }[status]
         return score
 
@@ -429,7 +446,7 @@ class EngineTask(Task):
         self.batch_files_stagein(uri, batch_file)
         self.parameter_files_stagein()
 
-        self.status = settings.STATUS['ready']
+        self.status = ''
         self.save()
 
         logger.info('Created task for job id: %s using command: %s' % (self.job.id, self.command))
@@ -493,7 +510,6 @@ class EngineTask(Task):
             self.create_stagein(param=uri, file=batch_file, scheme=self.fsscheme,
                            hostname=self.fsbackend_parts.hostname,
                            path=os.path.join(self.fsbackend_parts.path, self.working_dir, "input", batch_file),
-                           username=self.fsbackend_parts.username)
 
     def create_stagein(self, param=None, file=None, scheme=None, hostname=None, path=None, username=None):
         s = StageIn(task=self,
@@ -537,45 +553,14 @@ def signal_job_post_save(sender, **kwargs):
             data['errorMessage'] = str(ejob.get_errored_tasks_messages())
         StoreHelper.updateJob(ejob, data)
 
-        if ejob.status == settings.STATUS['error']:
-            ejob.workflow.status = settings.STATUS['error']
-            ejob.workflow.save()
-
     except Exception, e:
         logger.critical(e)
         logger.critical(traceback.format_exc())
         raise
     
-def signal_task_post_save(sender, **kwargs):
-    logger.debug("task post_save signal")
-
-    try:
-        task = kwargs['instance']
-        task.job.update_status()
-        task.job.save()
-
-#
-# If we walk here we end up with the same process having a nested walk, its nasty
-
-#        if task.job.status == settings.STATUS['complete']:
-#            # we need to grab an EngineWorkflow from task.job.workflow
-#            workflow = EngineWorkflow.objects.get(id=task.job.workflow.id)
-#            workflow.walk()
-
-    except Exception, e:
-        logger.critical(e)
-        logger.critical(traceback.format_exc())
-        raise
-
-
 # connect up django signals
 post_save.connect(signal_workflow_post_save, sender=Workflow)
 post_save.connect(signal_job_post_save, sender=Job)
-post_save.connect(signal_task_post_save, sender=Task)
 
 post_save.connect(signal_workflow_post_save, sender=EngineWorkflow)
 post_save.connect(signal_job_post_save, sender=EngineJob)
-post_save.connect(signal_task_post_save, sender=EngineTask)
-
-
-
