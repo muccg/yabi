@@ -56,7 +56,7 @@ if "DJANGODEV" in os.environ:
     
 # production deployment. These must come from the yabi.conf file.
 else:
-    DEBUG = os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug"))
+    DEBUG = os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug")) else ("DJANGODEBUG" in os.environ)
     TEMPLATE_DEBUG = DEBUG
     DATABASE_ENGINE = os.environ['DATABASE_ENGINE']
     DATABASE_NAME = os.environ['DATABASE_NAME']
