@@ -105,8 +105,9 @@ def qsub(jobname, command, user="yabi", workingdir="/home/yabi", stdout="STDOUT.
     temp.write("\n")
     temp.close()
     
+    # This is breaking things on the live install, Mark O'shea found this
     # make the temporary file owned by the user
-    os.chown( tempfile, pwd.getpwnam(user).pw_uid, pwd.getpwnam(user).pw_gid )
+    #os.chown( tempfile, pwd.getpwnam(user).pw_uid, pwd.getpwnam(user).pw_gid )
     
     # run the qsub process.
     pp = qsub_spawn(jobname,tempfile,user=user,workingdir=workingdir)
