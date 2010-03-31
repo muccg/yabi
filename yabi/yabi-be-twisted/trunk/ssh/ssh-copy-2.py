@@ -89,6 +89,9 @@ if direction == L2R:
     ssh_command = ("cat %s | %s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cat>\"%s\" '")%(infile,SSH,path)
     command = '/bin/bash -c "'+ssh_command+'"'
     
+    if DEBUG:
+        print "SSH_COMMAND:",ssh_command
+    
     child = pexpect.spawn(command)
     res = 0
     while res!=2:
