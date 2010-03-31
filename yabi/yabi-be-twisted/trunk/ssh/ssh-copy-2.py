@@ -17,6 +17,8 @@ def eprint(text):
     sys.stderr.write(text)
     sys.stderr.write("\n")
 
+DEBUG = True
+
 SSH = "/usr/bin/ssh"
 BLOCK_SIZE = 1024
 TIMEOUT = 0.2
@@ -71,6 +73,11 @@ if options.port:
     extra_args.extend(["-p",options.port])
     
 password = sys.stdin.readline().rstrip('\n')
+
+if DEBUG:
+    print "DIR:",direction
+    print "IN:",infile
+    print "OUT:",outfile
 
 if direction == L2R:
     # 
