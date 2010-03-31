@@ -10,7 +10,7 @@ urlpatterns = patterns('yabife.yabifeapp.views',
 	(r'^jobs[/]*$', 'jobs'),
     (r'^files[/]*$', 'files'),
 	(r'^menu[/]*$', 'menu'),
-    (r'^login[/]*$', 'login'),
+    (r'^login[/]*$', 'login', {'SSL':True}),
     (r'^logout[/]*$', 'logout')
 )
 
