@@ -63,7 +63,7 @@ from fs.resource import FSResource
 
 # backends
 
-from fs.connector.LocalFilesystem import LocalFilesystem
+#from fs.connector.LocalFilesystem import LocalFilesystem
 from fs.connector.GridFTP import GridFTP
 from fs.connector.SSHFilesystem import SSHFilesystem
 
