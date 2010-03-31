@@ -57,9 +57,9 @@ def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,*
     getdata=urllib.urlencode(kws)
     
     if DEBUG:
-        print "=>",str("http://%s:%d%s"%(host,port,path+"?"+getdata))
+        print "=>",str("http://%s:%d%s"%(host,port,urllib.quote(path+"?"+getdata)))
         
-    fullpath=str("http://%s:%d%s"%(host,port,path))
+    fullpath=str("http://%s:%d%s"%(host,port,urllib.quote(path)))
     if getdata:
         fullpath += "?"+getdata
         
@@ -144,7 +144,7 @@ def POST(path,**kws):
     #print "POST DATA:",postdata
     
     factory = CallbackHTTPClientFactory(
-        str("http://%s:%d%s"%(host,port,path)),
+        str("http://%s:%d%s"%(host,port,urllib.quote(path))),
         agent = USER_AGENT,
         method="POST",
         postdata=postdata,
