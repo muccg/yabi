@@ -5,6 +5,7 @@ from utils.stacklesstools import GET, GETFailure, sleep
 import json, os
 from globus.Auth import NoCredentials, AuthException
 from conf import config
+import urllib
 
 DEBUG = True
 
@@ -16,7 +17,7 @@ class SSHAuth(object):
         useragent = "YabiFS/0.1"
         
         try:
-            path = os.path.join(config.yabiadminpath,"ws/credential/%s/?uri=%s://%s@%s%s"%(yabiusername,scheme,username,hostname,path))
+            path = os.path.join(config.yabiadminpath,"ws/credential/%s/?uri=%s://%s@%s%s"%(yabiusername,scheme,username,hostname,urllib.quote(path)))
             host = config.yabiadminserver
             port = config.yabiadminport
             
