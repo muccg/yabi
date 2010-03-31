@@ -6,6 +6,8 @@ import json, os
 from globus.Auth import NoCredentials, AuthException
 from conf import config
 
+DEBUG = True
+
 class SSHAuth(object):
     
     def AuthProxyUser(self, yabiusername, scheme, username, hostname, path, *args):
@@ -14,9 +16,16 @@ class SSHAuth(object):
         useragent = "YabiFS/0.1"
         
         try:
-            status, message, data = GET( path = os.path.join(config.yabiadminpath,"ws/credential/%s/?uri=%s://%s@%s%s"%(yabiusername,scheme,username,hostname,path)),
-                                        host = config.yabiadminserver,
-                                        port = config.yabiadminport )
+            path = os.path.join(config.yabiadminpath,"ws/credential/%s/?uri=%s://%s@%s%s"%(yabiusername,scheme,username,hostname,path))
+            host = config.yabiadminserver
+            port = config.yabiadminport
+            
+            if DEBUG:
+                print "SSHAuth getting credential. Doing GET on path:",path
+                print "host:",host
+                print "port:",port
+            
+            status, message, data = GET( path = path, host=host, port=port )
             
             assert status==200
             credentials = json.loads( data )
