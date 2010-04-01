@@ -26,6 +26,92 @@ from yabiadmin.yabiengine.YabiJobException import YabiJobException
 import logging
 logger = logging.getLogger('yabiengine')
 
+# First up we have two decorators for doing table level locking in postgres
+# @require_lock gets a lock on a table as you would expect,
+# @require_lock_nowait uses NOWAIT on the lock request. Hopefully this impementation isnt
+# required, but its here for completeness I guess (well testing is more accurate).
+#
+# The interplay of the way Django handles transactions by default, the transaction middleware
+# and the transaction controlling decorators caused me some issues (ie I didnt understand it).
+# So the usual caveats about locking apply (essentially dont use it if you can avoid it), in that
+# regard I should probably take that advice and do an implementation that doesnt need this nonsense.
+# That aside, the lock is larger than it needs to be (covers a large code block), is on a complete
+# table when the row of the given workflow would probably suffice and for good measure is 
+# ACCESS EXCLUSIVE. So the TODO for this section would be make it a row level lock over a smaller
+# code block. Possibly followed by an implementation that doesnt require locking.
+
+LOCK_MODES = (
+    'ACCESS SHARE',
+    'ROW SHARE',
+    'ROW EXCLUSIVE',
+    'SHARE UPDATE EXCLUSIVE',
+    'SHARE',
+    'SHARE ROW EXCLUSIVE',
+    'EXCLUSIVE',
+    'ACCESS EXCLUSIVE',
+)
+ 
+def require_lock(model, lock):
+    """
+    Decorator for PostgreSQL's table-level lock functionality
+ 
+    Example:
+        @transaction.commit_on_success
+        @require_lock(MyModel, 'ACCESS EXCLUSIVE')
+        def myview(request)
+            ...
+ 
+    PostgreSQL's LOCK Documentation:
+    http://www.postgresql.org/docs/8.3/interactive/sql-lock.html
+
+    Taken from:
+    http://www.caktusgroup.com/blog/2009/05/26/explicit-table-locking-with-postgresql-and-django/
+    """
+    def require_lock_decorator(view_func):
+        def wrapper(*args, **kwargs):
+            if lock not in LOCK_MODES:
+                raise ValueError('%s is not a PostgreSQL supported lock mode.')
+            from django.db import connection
+            # by default Django is running with an open transaction
+            transaction.commit()
+            cursor = connection.cursor()
+            cursor.execute('LOCK TABLE %s IN %s MODE' % (model._meta.db_table, lock))
+            return view_func(*args, **kwargs)
+        return wrapper
+    return require_lock_decorator
+
+def require_lock_nowait(model, lock):
+    def require_lock_nowait_decorator(view_func):
+        def wrapper(*args, **kwargs):
+            if lock not in LOCK_MODES:
+                raise ValueError('%s is not a PostgreSQL supported lock mode.')
+            from django.db import connection
+            count = 0
+            waiting = True
+            while (waiting and count < 15):
+                count = count + 1
+                waiting = False
+                try: 
+                    # by default Django is running with an open transaction
+                    transaction.commit()
+                    cursor = connection.cursor()
+                    cursor.execute("LOCK TABLE %s IN %s MODE NOWAIT" % (model._meta.db_table, lock))
+                except OperationalError, e:
+                    logger.critical(traceback.format_exc())
+                    transaction.rollback()
+                    waiting = True
+                    from time import sleep
+                    sleep(count)
+                except:
+                    logger.critical(traceback.format_exc())
+                    raise
+            if (count >= 15):
+                raise Exception("Timeout waiting for %s lock on table %s" % (model._meta.db_table, lock))
+
+            return view_func(*args, **kwargs)
+        return wrapper
+    return require_lock_nowait_decorator
+
 
 class EngineWorkflow(Workflow):
     job_cache = {}
@@ -71,6 +157,8 @@ class EngineWorkflow(Workflow):
             raise
 
     @transaction.commit_on_success
+    @require_lock(Workflow, 'ACCESS EXCLUSIVE')
+    #@require_lock_nowait(Workflow, 'ACCESS EXCLUSIVE')
     def walk(self):
         '''
         Walk through the jobs for this workflow and prepare jobs and tasks,
@@ -79,30 +167,6 @@ class EngineWorkflow(Workflow):
         logger.debug('----- Walking workflow id %d -----' % self.id)
 
         try:
-            # TODO ok this is fairly ugly at this point, the code has evolved through bitter experience
-            # with things not working rather than from intelligent design. Ideally we should
-            # be able to do a much simpler version without the NOWAIT.
-            count = 0
-            waiting = True
-            while (waiting and count < 15):
-                count = count + 1
-                waiting = False
-                try: 
-                    cursor = connection.cursor()
-                    table = self._meta.db_table
-                    logger.debug("Locking table %s" % table)
-                    cursor.execute("LOCK TABLE %s IN ACCESS EXCLUSIVE MODE NOWAIT" % table)
-                except OperationalError, e:
-                    logger.critical(traceback.format_exc())
-                    transaction.rollback()
-                    waiting = True
-                    from time import sleep
-                    sleep(count)
-                except:
-                    logger.critical(traceback.format_exc())
-                    raise
-            if (count >= 15):
-                raise Exception("Timeout waiting for lock on table")
 
             jobset = [X for X in EngineJob.objects.filter(workflow=self).order_by("order")]
             for job in jobset:
