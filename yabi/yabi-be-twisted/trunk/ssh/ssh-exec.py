@@ -66,14 +66,14 @@ if len(quotes):
     assert quotes[0]=='"' and quotes[-1]=='"', "Quotes in command must be doublequote outermost"
 
 if stdout or stderr:
-    ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cd \"%s\" && %s 1>%s 2>%s'")%(SSH,options.working,remote_command,stdout,stderr)
+    ssh_command = extra_args+["%s@%s"%(user,host),"cd \"%s\" && %s 1>%s 2>%s"%(options.working,remote_command,stdout,stderr)]
 else:
     if options.working:
-        ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cd \"%s\" && %s'")%(SSH,options.working,remote_command)
+        ssh_command = extra_args+["%s@%s"%(user,host),+"cd \"%s\" && %s"%(options.working,remote_command)]
     else:
-        ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" '%s'")%(SSH,remote_command)
+        ssh_command = extra_args+["%s@%s"%(user,host),remote_command]
         
-child = pexpect.spawn(ssh_command)
+child = pexpect.spawn(SSH, args=ssh_command)
 child.logfile_read = sys.stdout
 res = 0
 while res!=2:

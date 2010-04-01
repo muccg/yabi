@@ -17,7 +17,7 @@ def eprint(text):
     sys.stderr.write(text)
     sys.stderr.write("\n")
 
-DEBUG = True
+DEBUG = False
 
 SSH = "/usr/bin/ssh"
 BLOCK_SIZE = 1024
