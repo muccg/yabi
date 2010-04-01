@@ -93,6 +93,7 @@ if direction == L2R:
         print "SSH_COMMAND:",ssh_command
     
     child = pexpect.spawn(command)
+    child.logfile_read = StringIO.StringIO()
     res = 0
     while res!=2:
         res = child.expect(["passphrase for key .+:","password:", "Permission denied",pexpect.EOF,pexpect.TIMEOUT],timeout=TIMEOUT)
@@ -111,6 +112,7 @@ if direction == L2R:
             if child.isalive():
                 child.wait()
             
+            perror(child.logfile_read.getvalue())
             sys.exit(child.exitstatus)
         
         else:
@@ -128,6 +130,7 @@ elif direction == R2L:
     command = '/bin/bash -c "'+ssh_command+'"'
     
     child = pexpect.spawn(command)
+    child.logfile_read = StringIO.StringIO()
     res = 0
     while res!=2:
         res = child.expect(["passphrase for key .+:","password:","Permission denied",pexpect.EOF,pexpect.TIMEOUT],timeout=TIMEOUT)
@@ -140,7 +143,8 @@ elif direction == R2L:
             child.sendeof()
             if child.isalive():
                 child.wait()
-            
+                
+            perror(child.logfile_read.getvalue())
             sys.exit(child.exitstatus)
             
         elif res==2:
