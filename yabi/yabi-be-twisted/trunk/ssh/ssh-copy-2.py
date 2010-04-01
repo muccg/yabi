@@ -87,13 +87,14 @@ if direction == L2R:
     user, host = hostpart.split('@',1)
         
     ssh_command = ("cat %s | %s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cat>\"%s\" '")%(infile,SSH,path)
-    command = '/bin/bash -c "'+ssh_command.replace('"','\\"')+'"'
+    command = '/bin/bash' 
+    args = ['-c',ssh_command]
     
     if DEBUG:
         eprint("SSH_COMMAND: %s"%ssh_command)
-        eprint("fullcommand: %s"%command)
+        eprint("command: %s args: %s"%(command,str(args)))
     
-    child = pexpect.spawn(command)
+    child = pexpect.spawn(command,args=args)
     child.logfile_read = StringIO.StringIO()
     res = 0
     while res!=2:
@@ -128,9 +129,10 @@ elif direction == R2L:
     user, host = hostpart.split('@',1)
     
     ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cat \"%s\"' > '%s'")%(SSH,path,outfile)
-    command = '/bin/bash -c "'+ssh_command+'"'
+    command = '/bin/bash'
+    args = ['-c',ssh_command]
     
-    child = pexpect.spawn(command)
+    child = pexpect.spawn(command, args=args)
     child.logfile_read = StringIO.StringIO()
     res = 0
     while res!=2:
