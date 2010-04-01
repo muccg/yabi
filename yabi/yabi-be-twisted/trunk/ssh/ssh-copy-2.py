@@ -90,7 +90,7 @@ if direction == L2R:
     command = '/bin/bash -c "'+ssh_command+'"'
     
     if DEBUG:
-        print "SSH_COMMAND:",ssh_command
+        eprint("SSH_COMMAND:",ssh_command)
     
     child = pexpect.spawn(command)
     child.logfile_read = StringIO.StringIO()
