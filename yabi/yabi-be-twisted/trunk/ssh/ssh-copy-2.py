@@ -87,7 +87,7 @@ if direction == L2R:
     user, host = hostpart.split('@',1)
         
     ssh_command = ("cat %s | %s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cat>\"%s\" '")%(infile,SSH,path)
-    command = '/bin/bash -c "'+ssh_command+'"'
+    command = '/bin/bash -c "'+ssh_command.replace('"','\\"')+'"'
     
     if DEBUG:
         eprint("SSH_COMMAND: %s"%ssh_command)
