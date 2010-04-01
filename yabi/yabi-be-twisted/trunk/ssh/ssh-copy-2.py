@@ -112,7 +112,7 @@ if direction == L2R:
             if child.isalive():
                 child.wait()
             
-            perror(child.logfile_read.getvalue())
+            eprint(child.logfile_read.getvalue())
             sys.exit(child.exitstatus)
         
         else:
@@ -144,7 +144,7 @@ elif direction == R2L:
             if child.isalive():
                 child.wait()
                 
-            perror(child.logfile_read.getvalue())
+            eprint(child.logfile_read.getvalue())
             sys.exit(child.exitstatus)
             
         elif res==2:
