@@ -2,6 +2,9 @@
 # Create your views here.
 import httplib
 from urllib import urlencode, unquote, quote
+import copy
+import os
+
 from django.conf.urls.defaults import *
 from django.conf import settings
 from django.http import HttpResponse
@@ -14,30 +17,17 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate
 from django import forms
 from django.core.servers.basehttp import FileWrapper
-import copy
-import os
 
 from django.contrib import logging
 logger = logging.getLogger('yabife')
 
 from yabifeapp.http_upload import *
 
-
 # proxy view to pass through all requests set up in urls.py
 def proxy(request, url, server, base):
-    logger.debug('')
-    logger.debug("proxy=>")
-    logger.debug(request)
     logger.debug(url)
     logger.debug(server)
     logger.debug(base)
-    
-    #print "PROXY",request.method,repr(url),repr(server),repr(base)
-    
-    #if not url.startswith("/"):
-        #url = "/" + url
-
-    logger.debug(request.FILES)
     
     ## TODO CODEREVIEW
     ## Is is possible to post to a page and still send get params,
@@ -46,63 +36,41 @@ def proxy(request, url, server, base):
 
     if request.method == "GET":
         resource = "%s?%s" % (os.path.join(base, url), request.META['QUERY_STRING']+"&yabiusername=%s"%quote(request.user.username) )
-        logger.debug('Resource: %s' % resource)
-        #print "Connecting to:",server
+        logger.debug('Proxying get: %s%s' % (server, resource))
         conn = httplib.HTTPConnection(server)
-        logger.debug('Server: %s' % server)        
         conn.request(request.method, resource)
-        #print "%sing %r"%(request.method,resource)
         r = conn.getresponse()
-        
-
 
     elif request.FILES:
-        logger.debug('====================FILES====================')
-        logger.debug(request.GET)
-        logger.debug(request.FILES)
-        logger.debug(request.GET['uri'])
-
         get_params = copy.copy(request.GET)
         get_params['yabiusername'] = request.user.username
-
         resource = "%s?%s" % (os.path.join(base, url), urlencode(get_params))
-
-        logger.debug(resource)
 
         # TODO this only works with files written to disk by django
         # at the moment so the FILE_UPLOAD_MAX_MEMORY_SIZE must be set to 0
         # in settings.py
         files = []
         in_file = request.FILES['file1']
+        logger.debug('Proxying file: %s to %s%s' % (in_file.temporary_file_path(), server, resource))
         files.append(('file1', in_file.name, open(in_file.temporary_file_path())))
         h = post_multipart(server, resource, [], files)
-        logger.debug(in_file.temporary_file_path())
         r = h.getresponse()
-        
 
     elif request.method == "POST":
-
         resource = os.path.join(base, url)
-        logger.debug('Resource: %s' % resource)
-
         post_params = copy.copy(request.POST)
         post_params['yabiusername'] = request.user.username
-
+        logger.debug('Proxying post: %s%s' % (server, resource))
         data = urlencode(post_params)
-        logger.debug('Data: %s' % data)
         headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
         conn = httplib.HTTPConnection(server)
-        #print "Connecting to:",server
-        logger.debug('Server: %s' % server)
         conn.request(request.method, resource, data, headers)
-        #print "%sing %r with data %s and headers %s"%(request.method,resource,data,headers)
         r = conn.getresponse()
 
-    #print "returning response:",r.status
     data = r.read()
     response = HttpResponse(data, status=int(r.status))
 
-    logger.debug("Got %d bytes returned with status code %d. First part of data is: %s"%(len(data),r.status,data[:64 if len(data)<64 else len(data)]))
+    #logger.debug("Got %d bytes returned with status code %d. First part of data is: %s"%(len(data),r.status,data[:64 if len(data)<64 else len(data)]))
 
     if r.getheader('content-disposition', None):
         response['content-disposition'] = r.getheader('content-disposition')
