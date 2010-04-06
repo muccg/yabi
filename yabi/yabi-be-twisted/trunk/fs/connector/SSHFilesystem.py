@@ -40,7 +40,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         if not creds:
             creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
         
-        usercert = self.save_identity(creds['key'])
+        usercert = self.save_identity(creds['key'])                         #, tag=(yabiusername,username,host,path)
         
         # we need to munge the path for transport over ssh (cause it sucks)
         mungedpath = '"' + path.replace('"',r'\"') + '"'
