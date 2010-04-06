@@ -8,7 +8,7 @@ def no_intr(func, *args, **kw):
             return func(*args, **kw)
         except (OSError, IOError), e:
             if e.errno == errno.EINTR or e.errno == errno.EAGAIN:
-                print "EINTR" if e.errno=errno.EINTR else "EAGAIN"
+                print("EINTR" if e.errno=errno.EINTR else "EAGAIN")
                 stackless.schedule()
             else:
                 raise
