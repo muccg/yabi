@@ -85,6 +85,7 @@ class FileGetResource(resource.PostableResource):
                 print "."
                 stackless.schedule()
             
+            # once its started wait one engine cycle before opening fifo.
             stackless.schedule()
             
             file = no_intr(open,fifo,"rb")

@@ -100,8 +100,17 @@ class FilePutResource(resource.PostableResource):
                     def open_write_stream(self, filename):
                         #print "Uploading file:",filename
                         self.procproto, fifo = bend.GetWriteFifo(hostname,username,path,filename, yabiusername=yabiusername,creds=creds)
+                        
                         # give the engine a chance to fire up the process
                         stackless.schedule()
+                        
+                        while not self.procproto.isStarted():
+                            print "."
+                        stackless.schedule()
+                    
+                        # once its started wait one engine cycle before opening fifo.
+                        stackless.schedule()
+                        
                         self.fileopen = no_intr(open,fifo,"wb")
                         
                     def close_write_stream(self):
