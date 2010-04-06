@@ -15,7 +15,7 @@ class SCPProcessProtocol(BaseShellProcessProtocol):
         self.password = password
         
     def connectionMade(self):
-        print "Connection made"
+        #print "Connection made"
         self.transport.write(str(self.password))
         self.transport.write("\n")
         self.transport.closeStdin()

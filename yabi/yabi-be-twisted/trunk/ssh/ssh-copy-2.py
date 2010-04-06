@@ -17,7 +17,7 @@ def eprint(text):
     sys.stderr.write(text)
     sys.stderr.write("\n")
 
-DEBUG = True
+DEBUG = False
 
 SSH = "/usr/bin/ssh"
 BLOCK_SIZE = 1024
@@ -128,14 +128,11 @@ elif direction == R2L:
     hostpart, path = infile.split(':',1)
     user, host = hostpart.split('@',1)
     
-    eprint("remote to local: %s, %s, %s, %s"%(hostpart,path,user,host))
-    
     ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cat \"%s\"' > '%s'")%(SSH,path,outfile)
     command = '/bin/bash'
     args = ['-c',ssh_command]
     
     child = pexpect.spawn(command, args=args)
-    eprint("spawn")
     child.logfile_read = StringIO.StringIO()
     res = 0
     while res!=2:

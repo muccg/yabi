@@ -3,7 +3,7 @@ import os
 from twisted.internet import protocol
 from twisted.internet import reactor
     
-DEBUG = True
+DEBUG = False
     
 class BaseShellProcessProtocol(protocol.ProcessProtocol):
     def __init__(self, stdin=None):

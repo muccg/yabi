@@ -182,14 +182,14 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         # make sure we are authed
         if not creds:
-            print "get creds"
+            #print "get creds"
             creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
             
         usercert = self.save_identity(creds['key'])
         
-        print "read from remote"
+        #print "read from remote"
         pp, fifo = ssh.Copy.ReadFromRemote(usercert,dst,password=creds['password'],fifo=fifo)
-        print "read from remote returned"
+        #print "read from remote returned"
         
         return pp, fifo
        

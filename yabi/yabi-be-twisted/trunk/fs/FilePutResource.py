@@ -41,7 +41,7 @@ class FilePutResource(resource.PostableResource):
         return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be POST\n")
                         
     def http_POST(self, request):
-        print "FilePutResource::http_POST(",request,")"
+        #print "FilePutResource::http_POST(",request,")"
         if "uri" not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided in GET parameters\n")
 
@@ -100,6 +100,8 @@ class FilePutResource(resource.PostableResource):
                     def open_write_stream(self, filename):
                         #print "Uploading file:",filename
                         self.procproto, fifo = bend.GetWriteFifo(hostname,username,path,filename, yabiusername=yabiusername,creds=creds)
+                        # give the engine a chance to fire up the process
+                        stackless.schedule()
                         self.fileopen = no_intr(open,fifo,"wb")
                         
                     def close_write_stream(self):
