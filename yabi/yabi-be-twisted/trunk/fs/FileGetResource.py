@@ -78,6 +78,8 @@ class FileGetResource(resource.PostableResource):
             except NoCredentials, nc:
                 return channel.callback(http.Response( responsecode.UNAUTHORIZED, {'content-type': http_headers.MimeType('text', 'plain')}, str(nc) ))
             
+            stackless.schedule()
+            
             while not procproto.isStarted():
                 print "."
                 stackless.schedule()
