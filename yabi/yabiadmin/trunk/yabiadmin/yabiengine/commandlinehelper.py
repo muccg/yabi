@@ -71,7 +71,7 @@ class CommandLineHelper():
 
             # check the tool switch against the incoming params
             if tp.switch not in self.param_dict:
-                logger.info("Switch ignored [%s]" % tp.switch)
+                logger.debug("Switch ignored [%s]" % tp.switch)
                 continue
 
             # if the switch is the batch on param switch put it in batch_files and add placeholder in command
@@ -125,8 +125,6 @@ class CommandLineHelper():
         This method takes the dict associated with a single parameter
         and returns a list of files for that parameter
         '''
-        logger.debug("======= get_param_value =============: %s" % param)
-        # TODO see if we can unwind this a little and comment thoroughly
         
         assert(type(param["value"]) == list)
 
@@ -137,14 +135,16 @@ class CommandLineHelper():
             # if the items a dict it is referring to a file
             if type(item) == dict:
 
-                # handle links to previous nodes
+                # handle links to previous nodes, they look something like this:
+                # {u'type': u'job', u'jobId': 1}
                 if 'type' in item and 'jobId' in item:
                     previous_job = self.job_cache[item['jobId']]
                     filename = item.get('filename', '')
                     value = [u"%s%d/%d/%s" % (settings.YABI_URL, self.job.workflow.id, previous_job.id, filename)]
 
 
-                # handle links to previous file selects
+                # handle links to previous file selects, they look something like this:
+                # {u'path': [], u'type': u'file', u'filename': u'123456.fa', u'root': u'gridftp://ahunter@xe-ng2.ivec.org/scratch/bi01/ahunter/', u'pathComponents': [u'gridftp://ahunter@xe-ng2.ivec.org/scratch/bi01/ahunter/']}
                 elif 'type' in item and 'filename' in item and 'root' in item:
 
                     # files
