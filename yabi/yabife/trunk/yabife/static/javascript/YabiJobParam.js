@@ -522,7 +522,7 @@ YabiJobParam.prototype.validate = function() {
                 this.consumedFiles = this.consumableFiles.slice(this.inputEl.selectedIndex, this.inputEl.selectedIndex + 1);
             } else {
                 //non-mandatory values have a blank entry, so we need to account for that
-                if (this.inputEl.selectedIndex == 0) {
+                if (this.inputEl.selectedIndex === 0) {
                     this.consumedFiles = [];
                 } else {
                     this.consumedFiles = this.consumableFiles.slice(this.inputEl.selectedIndex - 1, this.inputEl.selectedIndex);
