@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from twisted.web2 import resource, http_headers, responsecode, http, server, fileupload
 from twisted.internet import defer, reactor
 
@@ -38,6 +39,7 @@ class FileGetResource(resource.PostableResource):
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided\n")
 
         uri = request.args['uri'][0]
+        yabiusername = request.args['yabiusername'][0] if 'yabiusername' in request.args else None
         scheme, address = parse_url(uri)
         
         # compile any credentials together to pass to backend
@@ -72,7 +74,7 @@ class FileGetResource(resource.PostableResource):
         def download_tasklet(req, channel):
             """Tasklet to do file download"""
             try:
-                procproto, fifo = bend.GetReadFifo(hostname,username,basepath,filename,creds=creds)
+                procproto, fifo = bend.GetReadFifo(hostname,username,basepath,filename,yabiusername=yabiusername,creds=creds)
             except NoCredentials, nc:
                 return channel.callback(http.Response( responsecode.UNAUTHORIZED, {'content-type': http_headers.MimeType('text', 'plain')}, str(nc) ))
             
