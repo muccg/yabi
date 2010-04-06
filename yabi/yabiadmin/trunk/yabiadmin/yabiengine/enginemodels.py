@@ -81,6 +81,10 @@ def require_lock(model, lock):
     return require_lock_decorator
 
 def require_lock_nowait(model, lock):
+    """
+    See above, plus uses NOWAIT with an arbitrary number of retries (15), sleeping for count
+    between retries.
+    """
     def require_lock_nowait_decorator(view_func):
         def wrapper(*args, **kwargs):
             if lock not in LOCK_MODES:
@@ -442,7 +446,7 @@ class EngineJob(Job):
                 'complete':1.0,
                 'error':0.0,
                
-                # TODO Added to allow tasks to be created without a status
+                # Added to allow tasks to be created without a status
                 '':0.0
                 }[status]
         return score
