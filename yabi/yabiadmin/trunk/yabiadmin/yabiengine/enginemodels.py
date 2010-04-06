@@ -336,14 +336,6 @@ class EngineJob(Job):
 
         tasks_to_create = []
 
-        # get the backend for this job
-        # TODO Move this into constructor (add_job should be constructor)
-        exec_bc = backendhelper.get_backendcredential_for_uri(self.workflow.user.name, self.exec_backend)
-        exec_be = exec_bc.backend
-        fs_bc = backendhelper.get_backendcredential_for_uri(self.workflow.user.name, self.fs_backend)
-        fs_be = fs_bc.backend
-        logger.debug("prepare_tasks() exec_be:%s exec_bc:%s fs_be:%s fs_bc:%s"%(exec_be,exec_bc,fs_be,fs_bc))
-
         batch_file_list = eval(self.batch_files)
 
         if batch_file_list:
@@ -385,12 +377,12 @@ class EngineJob(Job):
                     for f in backendhelper.get_file_list(self.workflow.user.name, bfile):
                         if self.is_task_file_valid(f[0], extension_list):
                             logger.debug("Preparing batch_file task for file %s" % f)
-                            tasks_to_create.append([self, bfile, f[0], exec_be, exec_bc, fs_be, fs_bc])
+                            tasks_to_create.append([self, bfile, f[0]])
 
         else:
             # This creates NON batch on param jobs
             logger.debug("prepare_task for a task with no batch_files")
-            tasks_to_create.append([self, None, None, exec_be, exec_bc, fs_be, fs_bc])
+            tasks_to_create.append([self, None, None])
 
         return tasks_to_create
 
@@ -484,14 +476,10 @@ class EngineTask(Task):
             eJob = EngineJob.objects.get(id=self.job_id)
             eJob._walk()
 
-    def add_task(self, uri, batch_file, exec_be, exec_bc, fs_be, fs_bc, name=""):
+    def add_task(self, uri, batch_file, name=""):
         logger.debug('')
         logger.debug("batch file %s" % batch_file)
         logger.debug("uri %s" % uri)
-        logger.debug("exec_be %s" % exec_be)
-        logger.debug("exec_bc %s" % exec_bc)
-        logger.debug("fs_be %s" % fs_be)
-        logger.debug("fs_bc %s" % fs_bc)
 
         # uri is uri less filename gridftp://amacgregor@xe-ng2.ivec.org/scratch/bi01/amacgregor/
 
