@@ -15,6 +15,7 @@ class SCPProcessProtocol(BaseShellProcessProtocol):
         self.password = password
         
     def connectionMade(self):
+        print "Connection made"
         self.transport.write(str(self.password))
         self.transport.write("\n")
         self.transport.closeStdin()
@@ -49,16 +50,6 @@ class SSHCopy(BaseShell):
         return BaseShell.execute(self,SCPProcessProtocol(password),
             command
         ), fifo
-        #return BaseShell.execute(self,SCPProcessProtocol,
-            #[   self.scp,
-                #"-C",                       # compress
-                #"-i",certfile,              # keyfile
-                #"-P","22",                  # port
-                #"-q",                       # quiet
-                #fifo,                       # localfile
-                #remoteurl
-            #]
-        #), fifo
         
     def ReadFromRemote(self,certfile,remoteurl,password="",fifo=None):
         subenv = self._make_env()
