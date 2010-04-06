@@ -82,6 +82,8 @@ class FileGetResource(resource.PostableResource):
                 print "."
                 stackless.schedule()
             
+            os.sleep(2)
+            
             print "opening fifo"
             file = no_intr(open,fifo,"rb")
             print "opened"    
