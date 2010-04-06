@@ -79,13 +79,18 @@ class FileGetResource(resource.PostableResource):
                 return channel.callback(http.Response( responsecode.UNAUTHORIZED, {'content-type': http_headers.MimeType('text', 'plain')}, str(nc) ))
             
             while not procproto.isStarted():
+                print "."
                 stackless.schedule()
             
+            print "opening fifo"
             file = no_intr(open,fifo,"rb")
-                
+            print "opened"    
+            
             # set file handle to be non blocking
             import fcntl, errno
+            print "Setting non blocking"
             fcntl.fcntl(file.fileno(), fcntl.F_SETFL, os.O_NONBLOCK) 
+            print "set"
             
             # datastream stores whether we have sent an ok response code yet
             datastream = False
