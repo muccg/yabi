@@ -8,6 +8,9 @@ from urlparse import urlparse, urlunparse
 
 DEBUG = False
 
+import logging
+logger = logging.getLogger('yabiadmin')
+
 class ManyToManyField_NoSyncdb(models.ManyToManyField):
     def __init__(self, *args, **kwargs):
         super(ManyToManyField_NoSyncdb, self).__init__(*args, **kwargs)
@@ -320,7 +323,7 @@ class BackendCredential(Base):
         return "BackendCredential %s"%(self.id)
 
     def json(self):
-        print "Running json"
+        logger.debug( "Running json" )
         output = {
             'name':self.backend.name,
             'scheme':self.backend.scheme,
@@ -331,7 +334,7 @@ class BackendCredential(Base):
             'cert':self.credential.cert,
             'key':self.credential.key
             }
-        print "BACKEND CREDENTIAL:",output
+        logger.debug( "BACKEND CREDENTIAL: %s"%(str(output)) )
         
         return json.dumps(output)
 
