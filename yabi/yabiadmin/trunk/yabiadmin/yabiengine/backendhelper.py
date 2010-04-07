@@ -88,6 +88,7 @@ def POST(resource, datadict, extraheaders={}, server=None):
     
     conn = httplib.HTTPConnection(server)
     conn.request('POST', resource, data, headers)
+    logger.debug("POST resource=%s data=%s headers=%s"%(resource,data,headers))
     return conn.getresponse()
 
 def get_file_list(yabiusername, uri, recurse=True):
