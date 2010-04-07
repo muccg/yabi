@@ -41,6 +41,7 @@ def get_backendcredential_for_uri(yabiusername, uri):
     
     logger.debug("bc search found... ->%s<-" % (",".join([str(x) for x in bcs])))
     
+    # TODO: fix this exec/fs credential problem expressed here
     # if there is only one in bcs, then we will assume its for us. This enables a request for uri = "gridftp://user@host/" to match the credential for "gridftp://user@host/scratch/bi01/" if there is only one cred
     # this keeps globus working on the gridftp credential
     if len(bcs)==1:

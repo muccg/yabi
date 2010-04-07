@@ -287,7 +287,14 @@ for logfile in LOGS:
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
 
+if 'HTTP_REDIRECT_TO_HTTPS' in os.environ:
+    HTTP_REDIRECT_TO_HTTPS = os.environ['HTTP_REDIRECT_TO_HTTPS']
+
+
+
 ##
 ## Validation settings
 ##
 VALID_SCHEMES = ['http', 'https', 'gridftp', 'globus', 'sge', 'yabifs', 'ssh', 'scp', 'null']
+
+
