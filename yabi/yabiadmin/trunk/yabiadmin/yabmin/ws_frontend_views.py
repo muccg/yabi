@@ -167,7 +167,7 @@ def get(request):
 
         response = HttpResponse(get_file(yabiusername, uri))
 
-        mimetypes.init([os.path.normpath(os.path.expanduser('~/.yabi/mime.types'))])
+        mimetypes.init([os.path.normpath(os.path.expanduser('~/.yabi/mime.types')), os.path.normpath('/etc/yabi/mime.types')])
         type, encoding = mimetypes.guess_type(filename, False)
         if type is not None:
             response['content-type'] = type
