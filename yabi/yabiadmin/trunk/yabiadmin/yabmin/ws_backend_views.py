@@ -30,7 +30,10 @@ def credential_uri(request, yabiusername):
     logger.debug('uriparse returned... yabiusername: %s schema:%s username:%s hostname:%s path:%s'%(yabiusername,schema,rest.username,rest.hostname,rest.path))
     
     try:
-        return HttpResponse(backendhelper.get_backendcredential_for_uri(yabiusername, uri).json())
+        bc = backendhelper.get_backendcredential_for_uri(yabiusername, uri)
+        logger.debug("FINAL backend credential: %s"%(str(bc)))
+        logger.debug("JSON:%s"%(bc.json()))
+        return HttpResponse(bc.json())
     except ObjectDoesNotExist, odne:
         return HttpResponseNotFound("Object not found")
 
