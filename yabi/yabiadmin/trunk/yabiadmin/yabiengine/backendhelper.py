@@ -174,10 +174,12 @@ def get_listing(yabiusername, uri):
         logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
 
         bc = get_backendcredential_for_uri(yabiusername, uri)
+        logger.debug('BC: %s'%(bc))
         data = dict([('username', bc.credential.username),
                     ('password', bc.credential.password),
                     ('cert', bc.credential.cert),
                     ('key', bc.credential.key)])
+        logger.debug('DATA: %s'%str(data)
         r = POST(resource,data)
 
     except socket.error, e:
