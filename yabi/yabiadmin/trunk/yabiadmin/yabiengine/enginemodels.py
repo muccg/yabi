@@ -276,7 +276,11 @@ class EngineJob(Job):
 
         logger.info('Check dependencies for jobid: %s...' % self.id)
 
-        for bfile, extension_list in eval(self.batch_files):
+        all_files = []
+        all_files.extend(eval(self.batch_files))
+        all_files.extend(eval(self.parameter_files))
+
+        for bfile, extension_list in all_files:
             if bfile.startswith("yabi://"):
                 logger.info('Evaluating bfile: %s' % bfile)
                 scheme, uriparts = uriparse(bfile)
