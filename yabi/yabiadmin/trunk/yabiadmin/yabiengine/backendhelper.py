@@ -179,7 +179,7 @@ def get_listing(yabiusername, uri):
                     ('password', bc.credential.password),
                     ('cert', bc.credential.cert),
                     ('key', bc.credential.key)])
-        logger.debug('DATA: %s'%str(data)
+        logger.debug('DATA: %s'%str(data))
         r = POST(resource,data)
 
     except socket.error, e:
