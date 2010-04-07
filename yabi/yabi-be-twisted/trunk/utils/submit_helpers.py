@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #
 # support functions TODO: put in seperate file
 #
@@ -97,6 +98,7 @@ def parsePOSTData(request, maxMem=100*1024, maxFields=1024,
         return defer.succeed(None)
 
     def updateArgs(data):
+        print "DEBUG: updateArgs",data
         args = data
         request.args.update(args)
 
