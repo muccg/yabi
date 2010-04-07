@@ -6,9 +6,9 @@ import os.path, tempfile
 from twisted.internet import defer
 from twisted.web2 import http, iweb, fileupload, responsecode
 from StringIO import StringIO
-        
+                
 TMP_DIRECTORY="/tmp"
-        
+   
 @defer.deferredGenerator
 def parseMultipartFormData(stream, boundary,
             maxMem=100*1024, maxFields=1024, maxSize=10*1024*1024,basepath=TMP_DIRECTORY):
@@ -114,7 +114,7 @@ def parsePOSTData(request, maxMem=100*1024, maxFields=1024,
 
     if (ctype.mediaType == 'application'
         and ctype.mediaSubtype == 'x-www-form-urlencoded'):
-        d = fileupload.parse_urlencoded(request.stream)
+        d = fileupload.parse_urlencoded(request.stream, keep_blank_values=True)
         d.addCallbacks(updateArgs, error)
         return d
     elif (ctype.mediaType == 'multipart'
