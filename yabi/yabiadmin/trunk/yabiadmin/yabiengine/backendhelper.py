@@ -50,9 +50,17 @@ def get_backendcredential_for_uri(yabiusername, uri):
     cred = None
     for bc in bcs:
         checkpath = os.path.join(bc.backend.path,bc.homedir)
-        logger.debug("path:%s bcpath:%s bc.be.path:%s checkpath:%s"%(path,bc.homedir,bc.backend.path,checkpath))
+
+        # allow path to make with and without trailing /
+        alternate_path = path
+        if alternate_path.endswith('/'):
+            alternate_path = alternate_path.rstrip('/')
+        else:
+            alternate_path += '/'
+
+        logger.debug("path: %s alternate: %s bc.homedir: %s bc.backend.path: %s checkpath: %s" % (path,alternate_path,bc.homedir,bc.backend.path,checkpath))
         
-        if path.startswith(checkpath):
+        if path.startswith(checkpath) or alternate_path.startswith(checkpath):
             # valid. If homedir path is longer than the present stored one, replace the stored one with this one to user
             if cred==None:
                 logger.debug("setting cred to %s",str(bc))
