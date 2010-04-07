@@ -55,9 +55,7 @@ class FileListResource(resource.PostableResource):
         creds={}
         for varname in ['key','password','username','cert']:
             if varname in request.args:
-                print "VARNAME:",varname
                 creds[varname] = request.args[varname][0]
-                print "=>",creds[varname]
                 del request.args[varname]
         
         yabiusername = request.args['yabiusername'][0] if "yabiusername" in request.args else None
