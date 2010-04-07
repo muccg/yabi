@@ -80,6 +80,7 @@ def get_backendcredential_for_uri(yabiusername, uri):
 def POST(resource, datadict, extraheaders={}, server=None):
     """Do a x-www-form-urlencoded style POST. That is NOT a file upload style"""
     data = urlencode(datadict)
+    logger.debug("ENCODED: %s"%data)
     headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
     headers.update(extraheaders)
     
