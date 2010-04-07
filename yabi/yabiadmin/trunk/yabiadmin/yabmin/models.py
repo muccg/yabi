@@ -320,6 +320,7 @@ class BackendCredential(Base):
         return "BackendCredential %s"%(self.id)
 
     def json(self):
+        print "Running json"
         output = {
             'name':self.backend.name,
             'scheme':self.backend.scheme,
