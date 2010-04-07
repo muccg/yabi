@@ -330,6 +330,7 @@ class BackendCredential(Base):
             'cert':self.credential.cert,
             'key':self.credential.key
             }
+        print "BACKEND CREDENTIAL:",output
         
         return json.dumps(output)
 
