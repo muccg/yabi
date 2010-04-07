@@ -1,6 +1,8 @@
 from yabiadmin.yabiengine.models import *
 
 from django.contrib import admin
+from django.contrib.admin.actions import delete_selected
+from yabiadmin.yabiengine.storehelper import StoreHelper
 
 
 def link_to_jobs(obj):
@@ -28,6 +30,29 @@ class WorkflowAdmin(admin.ModelAdmin):
     list_display = ['name', 'status', 'stageout', link_to_jobs, link_to_tasks, link_to_stageins, 'summary_link']
     list_filter = ['status', 'user']
     search_fields = ['name']
+    actions = ['purge_workflow']
+
+    def purge_workflow(self, request, queryset):
+        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+
+        purgeCount = 0
+        for id in selected:
+            wf = Workflow.objects.get(id=id)
+            status, data = StoreHelper.deleteWorkflow(wf)
+            if status == 200:
+                purgeCount += 1
+
+        if purgeCount:
+            if purgeCount == 1:
+                message_bit = "1 workflow purged from store."
+            else:
+                message_bit = "%s workflows were purged from store." % purgeCount
+            self.message_user(request, message_bit)
+
+        # pass on to delete action
+        return delete_selected(self, request, queryset)
+
+    purge_workflow.short_description = "Purge selected Workflows from Store."
 
 
 class QueuedWorkflowAdmin(admin.ModelAdmin):

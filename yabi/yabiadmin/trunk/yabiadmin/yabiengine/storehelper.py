@@ -86,3 +86,19 @@ class StoreHelper():
 
         # save the workflow json in the store
         StoreHelper.updateWorkflow(job.workflow, json.dumps(json_object['json']))
+
+
+    @staticmethod
+    def deleteWorkflow(workflow):
+        ''' Delete all references to a workflow from the store.
+        '''
+        logger.debug('')
+        resource = os.path.join(settings.YABISTORE_BASE,"workflows/delete", workflow.user.name, str(workflow.id))
+        conn = httplib.HTTPConnection(settings.YABISTORE_SERVER)
+        conn.request('GET', resource)
+        logger.debug("store get: %s" % resource)
+        r = conn.getresponse()
+        status = r.status
+        data = r.read()
+        logger.debug("store get: %s" % status)
+        return status,data
