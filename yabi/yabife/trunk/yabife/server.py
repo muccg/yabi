@@ -40,6 +40,11 @@ os.environ['CUSTOMDB']='1'
 for setting in ['database_engine', 'database_name', 'database_user', 'database_password', 'database_host', 'database_port','auth_ldap_server', 'auth_ldap_user_base','auth_ldap_group_base','auth_ldap_group','auth_ldap_default_group']:
     os.environ[setting.upper()] = config.config[NAME][setting]
 
+print "HTTP"
+if 'http_redirect_to_https' in config.config[NAME]:
+    print "setting http_redirect_to_https to",config.config[NAME]['http_redirect_to_https']
+    os.environ['HTTP_REDIRECT_TO_HTTPS'] = config.config[NAME]['http_redirect_to_https']
+
 if config.config[NAME]["debug"]:
     os.environ['DJANGODEBUG'] = '1'
     
