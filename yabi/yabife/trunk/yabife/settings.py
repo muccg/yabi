@@ -14,8 +14,13 @@ from django.utils.webhelpers import url
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
+# shortcut for overiding variables with environment settings
+def environ_or(key,default):
+    return os.environ[key] if key in os.environ else default
+
+# make sure that this is a tuple of tuples
 ADMINS = (
-    ('Tech Alerts', 'alerts@ccg.murdoch.edu.au')
+    (environ_or('ADMIN_EMAIL_NAME','Tech Alerts'), environ_or('ADMIN_EMAIL','alerts@ccg.murdoch.edu.au')),
 )
 
 MANAGERS = ADMINS
@@ -70,11 +75,11 @@ else:
     YABISTORE_SERVER, YABISTORE_BASE = YABISTORE.split('/',1)
     YABISTORE_BASE = "/" + YABISTORE_BASE
 
-    AUTH_LDAP_SERVER = tuple( os.environ['AUTH_LDAP_SERVER'].split() ) if 'AUTH_LDAP_SERVER' in os.environ else              ('ldaps://fdsdev.localdomain',)
-    AUTH_LDAP_USER_BASE = os.environ['AUTH_LDAP_USER_BASE'] if 'AUTH_LDAP_USER_BASE' in os.environ else     'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
-    AUTH_LDAP_GROUP_BASE = os.environ['AUTH_LDAP_GROUP_BASE'] if 'AUTH_LDAP_GROUP_BASE' in os.environ else  'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
-    AUTH_LDAP_GROUP = os.environ['AUTH_LDAP_GROUP'] if 'AUTH_LDAP_GROUP' in os.environ else                 'yabi'
-    DEFAULT_GROUP = os.environ['AUTH_LDAP_DEFAULT_GROUP'] if 'AUTH_LDAP_DEFAULT_GROUP' in os.environ else   "baseuser"
+    AUTH_LDAP_SERVER = tuple(os.environ['AUTH_LDAP_SERVER'].split()) if 'AUTH_LDAP_SERVER' in os.environ else              ('ldaps://fdsdev.localdomain',)
+    AUTH_LDAP_USER_BASE = environ_or('AUTH_LDAP_USER_BASE', 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au')
+    AUTH_LDAP_GROUP_BASE = environ_or('AUTH_LDAP_GROUP_BASE', 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au')
+    AUTH_LDAP_GROUP = environ_or('AUTH_LDAP_GROUP', 'yabi')
+    DEFAULT_GROUP = environ_or('AUTH_LDAP_DEFAULT_GROUP', "baseuser")
 
     SSL_ENABLED = os.environ['SSL_ENABLED'] if 'SSL_ENABLED' in os.environ else True
     DEV_SERVER = False
