@@ -1067,7 +1067,7 @@ input {
 	padding:0px;
 	margin:0px;
 	border:0px;
-	background:url(../images/pending.png) no-repeat;
+/*	background:url(../images/pending.png) no-repeat;*/
 	position:absolute;
     right: 7px;
     top: 2px;
