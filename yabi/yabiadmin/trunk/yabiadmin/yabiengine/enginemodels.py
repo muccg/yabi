@@ -179,8 +179,10 @@ class EngineWorkflow(Workflow):
                 # dont check complete or ready jobs
                 job.update_status()
                 job.save()
-                if (job.status_complete() or job.status_ready() or job.status_error()):
-                    logger.debug("job %s is completed or ready, skipping walk" % job.id)
+
+                if (job.total_tasks() > 0):
+                #if (job.status_complete() or job.status_ready() or job.status_error()):
+                    logger.debug("job %s has tasks, skipping walk" % job.id)
                     continue
 
                 # we can't proceed until all previous job dependencies are satisfied
