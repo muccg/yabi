@@ -60,7 +60,6 @@ class CommandLineHelper():
         tool = Tool.objects.get(name=self.job_dict["toolName"])
 
         # process the parameterList to get a useful dict
-        logger.debug("Process parameterList")
         self.param_dict = {}
         for toolparam in self.job_dict["parameterList"]["parameter"]:
             self.param_dict[toolparam["switchName"]] = self.get_param_value(toolparam)

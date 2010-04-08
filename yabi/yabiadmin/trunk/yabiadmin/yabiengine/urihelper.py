@@ -13,8 +13,6 @@ re_url_schema = re.compile(r'\w+')
 
 
 def uriparse(uri):
-    logger.debug('')
-
     """
     This function returns a tuple containing the scheme and the ParseResult object.
     It is done this way as urlparse only accepts a specific list of url schemes

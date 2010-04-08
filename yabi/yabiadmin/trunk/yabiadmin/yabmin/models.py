@@ -323,7 +323,6 @@ class BackendCredential(Base):
         return "BackendCredential %s"%(self.id)
 
     def json(self):
-        logger.debug( "Running json" )
         output = {
             'name':self.backend.name,
             'scheme':self.backend.scheme,
@@ -334,8 +333,6 @@ class BackendCredential(Base):
             'cert':self.credential.cert,
             'key':self.credential.key
             }
-        logger.debug( "BACKEND CREDENTIAL: %s"%(str(output)) )
-        
         return json.dumps(output)
 
 

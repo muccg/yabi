@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+import mimetypes
+from urllib import quote
+
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
@@ -8,14 +11,11 @@ from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_backendcredential_for_uri, copy_file, rm_file
 from yabiadmin.security import validate_user, validate_uri
 from yabiadmin.utils import json_error
-import mimetypes
-from urllib import quote
-
-
 from yabmin.file_upload import *
 
 import logging
@@ -26,9 +26,8 @@ logger = logging.getLogger('yabiadmin')
 ## then uncomment decorator
 #@validate_user
 def tool(request, *args, **kwargs):
-    logger.debug('')
-
     toolname = kwargs['toolname']
+    logger.debug(toolname)
 
     try:
         tool = Tool.objects.get(name=toolname)
@@ -39,9 +38,8 @@ def tool(request, *args, **kwargs):
 
 @validate_user
 def menu(request, *args, **kwargs):
-    logger.debug('')
-
     username = kwargs["username"]
+    logger.debug(username)
     
     try:
         toolsets = ToolSet.objects.filter(users__name=username)
@@ -96,12 +94,9 @@ def ls(request):
     This function will return a list of backends the user has access to IF the uri is empty. If the uri
     is not empty then it will pass on the call to the backend to get a listing of that uri
     """
-    logger.debug('')
-    
     try:
-        logger.debug("GET: %s " %request.GET['uri'])
+        logger.debug("yabiusername: %s uri: %s" %(request.GET['yabiusername'], request.GET['uri']))
         if request.GET['uri']:
-            logger.debug("get_listing")
             filelisting = get_listing(request.GET['yabiusername'], request.GET['uri'])
         else:
             filelisting = get_backend_list(request.GET['yabiusername'])
@@ -117,10 +112,8 @@ def copy(request):
     This function will return a list of backends the user has access to IF the uri is empty. If the uri
     is not empty then it will pass on the call to the backend to get a listing of that uri
     """
-    logger.debug('')
-    
     try:
-        logger.debug("Copy: %s -> %s " %(request.GET['src'],request.GET['dst']))
+        logger.debug("yabiusername: %s src: %s -> dst: %s" %(request.GET['yabiusername'], request.GET['src'],request.GET['dst']))
         status, data = copy_file(request.GET['yabiusername'],request.GET['src'],request.GET['dst'])
 
         return HttpResponse(content=data, status=status)
@@ -133,10 +126,8 @@ def rm(request):
     This function will return a list of backends the user has access to IF the uri is empty. If the uri
     is not empty then it will pass on the call to the backend to get a listing of that uri
     """
-    logger.debug('')
-    
     try:
-        logger.debug("Rm: %s" %(request.GET['uri']))
+        logger.debug("yabiusername: %s uri: %s" %(request.GET['yabiusername'], request.GET['uri']))
         status, data = rm_file(request.GET['yabiusername'],request.GET['uri'])
 
         return HttpResponse(content=data, status=status)
@@ -150,9 +141,8 @@ def get(request):
     Returns the requested uri. get_file returns an httplib response wrapped in a FileIterWrapper. This can then be read
     by HttpResponse
     """
-    logger.debug('')
-
     try:
+        logger.debug("yabiusername: %s uri: %s" %(request.GET['yabiusername'], request.GET['uri']))
         uri = request.GET['uri']
         yabiusername = request.GET['yabiusername']
         
@@ -161,9 +151,6 @@ def get(request):
         except IndexError, e:
             logger.critical('Unable to get filename from uri: %s' % uri)
             filename = 'default.txt'
-
-        logger.debug(uri)
-        logger.debug(filename)
 
         response = HttpResponse(get_file(yabiusername, uri))
 
@@ -188,12 +175,11 @@ def put(request):
     """
     Uploads a file to the supplied URI
     """
-    logger.debug('')
-
     import socket
     import httplib
 
     try:
+        logger.debug("yabiusername: %s uri: %s" %(request.GET['yabiusername'], request.GET['uri']))
         uri = request.GET['uri']
         yabiusername = request.GET['yabiusername']
         
@@ -205,17 +191,11 @@ def put(request):
         files = []
         in_file = request.FILES['file1']
         files.append((in_file.name, in_file.name, in_file.temporary_file_path()))
-        logger.debug(files)
-        
         bc = get_backendcredential_for_uri(yabiusername, uri)
+        logger.debug("files: %s"%repr(files))
+
         data=[]
-        
         resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(bc.credential.username),quote(bc.credential.password),quote( bc.credential.cert),quote(bc.credential.key))
-                    
-        logger.debug("POSTing %s to %s -> %s"%(str(data),settings.YABIBACKEND_SERVER,resource))
-
-        logger.debug("files:%s"%repr(files))
-
         h = post_multipart(settings.YABIBACKEND_SERVER, resource, data, files)
         return HttpResponse('ok')
         
@@ -229,8 +209,8 @@ def put(request):
 
 @validate_user
 def submitworkflow(request):
-    logger.debug('')
-    logger.debug("POST KEYS: %r"%request.POST.keys())
+    assert(request.POST['username'])
+    logger.debug(request.POST['username'])
 
     workflow_json = request.POST["workflowjson"]
     workflow_dict = json.loads(workflow_json)

@@ -20,7 +20,7 @@ def post_multipart(host, selector, fields, files):
     files is a sequence of (name, filename, value) elements for data to be uploaded as files
     Return the server's response page.
     """
-    logger.debug("post_multipart")
+    logger.debug('')
     content_type=encode_multipart_content_type()
     h = httplib.HTTP(host)
     h.putrequest('POST', selector)
@@ -48,6 +48,7 @@ def encode_multipart_formdata(stream,fields, files):
     files is a sequence of (name, filename, value) elements for data to be uploaded as files
     Return (content_type, body) ready for httplib.HTTP instance
     """
+    logger.debug('')
     #print "encode_multipart_formdata(",stream,",",fields,",",files,")"
     BOUNDARY = encode_multipart_make_boundary()
     CRLF = '\r\n'
@@ -67,7 +68,6 @@ def encode_multipart_formdata(stream,fields, files):
         fh=open(fullpath,'rb')
         while True:
             dat=fh.read(CHUNKSIZE)
-            logger.debug("CHUNK:%s"%(repr(dat)))
             if len(dat)==0:
                 break
             stream.send(dat)

@@ -174,7 +174,7 @@ class EngineWorkflow(Workflow):
 
             jobset = [X for X in EngineJob.objects.filter(workflow=self).order_by("order")]
             for job in jobset:
-                logger.info('Walking job id: %s' % job.id)
+                logger.debug('----- Walking workflow id %d job id %d -----' % (self.id, job.id))
 
                 # dont check complete or ready jobs
                 job.update_status()
@@ -190,7 +190,7 @@ class EngineWorkflow(Workflow):
                     logger.info('Incomplete dependencies for job: %s' % job.id)
                     continue
 
-                logger.debug("job %s is is being processed by walk" % job.id) 
+                logger.debug("job %s is being processed by walk" % job.id) 
 
                 tasks = job.prepare_tasks()
                 job.create_tasks(tasks)
@@ -307,7 +307,9 @@ class EngineJob(Job):
         eWorkflow.walk()
 
     def add_job(self, job_dict):
-        logger.debug('')
+        assert(job_dict)
+        assert(job_dict["toolName"])
+        logger.debug(job_dict["toolName"])
 
         self.job_dict = job_dict
         # AH tool is intrinsic to job, so it would seem to me that this ref is useful,
@@ -397,7 +399,7 @@ class EngineJob(Job):
         return tasks_to_create
 
     def create_tasks(self, tasks_to_create):
-        logger.debug('')
+        logger.debug("Tasks: %s" % tasks_to_create)
 
         # lets count up our batch_file_list to see how many 'real' (as in not yabi://) files there are to process
         # won't count tasks with file == None as these are from not batch param jobs
@@ -409,8 +411,6 @@ class EngineJob(Job):
             buildname = lambda n: (n+1,("0"*(int(log10(count))+1)+str(n))[-(int(log10(count))+1):])
         else:
             buildname = lambda n: (n+1, "")
-
-        logger.debug("TASKS TO CREATE: %s" % tasks_to_create)
 
         # build the first name
         num = 1
@@ -487,9 +487,7 @@ class EngineTask(Task):
             eJob._walk()
 
     def add_task(self, uri, batch_file, name=""):
-        logger.debug('')
-        logger.debug("batch file %s" % batch_file)
-        logger.debug("uri %s" % uri)
+        logger.debug("uri: %s batch file: %s" % (uri, batch_file))
 
         # uri is uri less filename gridftp://amacgregor@xe-ng2.ivec.org/scratch/bi01/amacgregor/
 

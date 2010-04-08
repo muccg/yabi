@@ -17,29 +17,18 @@ import logging
 logger = logging.getLogger('yabiengine')
 
 def task(request):
-    logger.debug('')
-    
-    # we need to see if the host requesting the task is the host that is allowed to request it (the one configured in our settings or config file)
-    ipaddress = request.META[ "HTTP_X_FORWARDED_FOR" if "HTTP_X_FORWARDED_FOR" in request.META else "REMOTE_ADDR" ]
-    logger.debug("Task request originating from: %s"%ipaddress)
-    
     if "origin" not in request.REQUEST:
-        logger.critical("IP %s requested task but had no origin identifier set."%ipaddress)
         return HttpResponseServerError("Error requesting task. No origin identifier set.")
     
-    # get sender id
-    origin = request.REQUEST["origin"]
-    
     # verify that the requesters origin is correct
+    origin = request.REQUEST["origin"]
     ip,port = origin.split(":")
     exp_ip, exp_port = config.config['backend']['port'][0],str(config.config['backend']['port'][1])
-    
     if ip != exp_ip or port != exp_port:
+        ipaddress = request.META[ "HTTP_X_FORWARDED_FOR" if "HTTP_X_FORWARDED_FOR" in request.META else "REMOTE_ADDR" ]
         logger.critical("IP %s requested task but had incorrect identifier set. Expected id %s:%s but got %s:%s instead."%(ipaddress,exp_ip,exp_port,ip,port))
         return HttpResponseServerError("Error requesting task. Origin incorrect. This is not the admin you are looking for")
        
-    #if config.config['backend']['ip'] != ip and 
-    
     try:
         # only expose tasks that are ready and are intended for the expeceted backend
         tasks = Task.objects.filter(status=settings.STATUS["ready"], expected_ip=exp_ip, expected_port=exp_port)
@@ -48,6 +37,7 @@ def task(request):
             task = tasks[0]
             task.status=settings.STATUS["requested"]
             task.save()
+            logger.debug('requested task id: %s command: %s' % (task.id, task.command))
             return HttpResponse(task.json())
         else:
             raise ObjectDoesNotExist("No more tasks")  
@@ -62,7 +52,7 @@ def task(request):
         return HttpResponseServerError("Error requesting task.")
 
 def status(request, model, id):
-    logger.debug('')
+    logger.debug('model: %s id: %s' % (model, id))
     models = {'task':EngineTask, 'job':EngineJob, 'workflow':EngineWorkflow}
 
     # sanity checks
@@ -111,7 +101,7 @@ def status(request, model, id):
 
 
 def error(request, table, id):
-    logger.debug('')
+    logger.debug('table: %s id: %s' % (table, id))
     
     try:
 

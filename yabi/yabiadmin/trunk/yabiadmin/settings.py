@@ -269,7 +269,7 @@ import logging
 LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
 LOGGING_LEVEL = logging.DEBUG
 #LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
-LOGGING_FORMATTER = logging.Formatter('%(asctime)s:%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s:%(message)s')
+LOGGING_FORMATTER = logging.Formatter('[%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
 LOGS = ['yabiengine','yabiadmin']
 
 # TODO not using mango logging for now, can't add extra handlers to that
