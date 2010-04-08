@@ -32,6 +32,8 @@ function YabiFileSelector(param, isBrowseMode, filePath) {
     //home el
     this.homeEl = document.createElement("span");
     var homeImg = new Image();
+    homeImg.alt = 'filesystem root';
+    homeImg.title = homeImg.alt;
     homeImg.src = appURL + "static/images/home.png";
     this.homeEl.appendChild(homeImg);
     YAHOO.util.Event.addListener(this.homeEl, "click", this.goToRoot, this);
@@ -201,6 +203,8 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
 		    deleteEl = document.createElement("div");
 		    deleteEl.className = "deleteFile";
 		    deleteImg = new Image();
+                    deleteImg.alt = 'delete';
+                    deleteImg.title = deleteImg.alt;
 		    deleteImg.src = appURL + "static/images/delete.png";
 		    deleteEl.appendChild( deleteImg );
 		    fileEl.appendChild( deleteEl );
@@ -239,7 +243,9 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             } else {
                 deleteEl = document.createElement("div");
                 deleteEl.className = "deleteFile";
-                deleteImg = new Image();
+                deleteImg = new Image(); 
+                deleteImg.alt = 'delete';
+                deleteImg.title = deleteImg.alt;
                 deleteImg.src = appURL + "static/images/delete.png";
                 deleteEl.appendChild( deleteImg );
                 fileEl.appendChild( deleteEl );
@@ -248,6 +254,8 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
                 downloadEl = document.createElement("div");
                 downloadEl.className = "download";
                 downloadImg = new Image();
+                downloadImg.alt = 'download';
+                downloadImg.title = 'download';
                 downloadImg.src = appURL + "static/images/download.png";
                 downloadEl.appendChild( downloadImg );
                 fileEl.appendChild( downloadEl );

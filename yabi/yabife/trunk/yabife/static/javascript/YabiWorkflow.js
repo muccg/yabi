@@ -260,6 +260,8 @@ YabiWorkflow.prototype.addJob = function(toolName, preloadValues, shouldFadeIn) 
         destroyEl = document.createElement("div");
         destroyEl.setAttribute("class", "destroyDiv");
         destroyImg = new Image();
+        destroyImg.title = 'delete tool';
+        destroyImg.alt = destroyImg.title;
         destroyImg.src = appURL + "static/images/delnode.png";
         destroyEl.appendChild( destroyImg );
         job.jobEl.appendChild(destroyEl);
