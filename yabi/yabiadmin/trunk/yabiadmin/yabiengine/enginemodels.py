@@ -160,9 +160,6 @@ class EngineWorkflow(Workflow):
             logger.critical(traceback.format_exc())
             raise
 
-    @transaction.commit_on_success
-    @require_lock(Workflow, 'ACCESS EXCLUSIVE')
-    #@require_lock_nowait(Workflow, 'ACCESS EXCLUSIVE')
     def walk(self):
         '''
         Walk through the jobs for this workflow and prepare jobs and tasks,
@@ -171,7 +168,6 @@ class EngineWorkflow(Workflow):
         logger.debug('----- Walking workflow id %d -----' % self.id)
 
         try:
-
             jobset = [X for X in EngineJob.objects.filter(workflow=self).order_by("order")]
             for job in jobset:
                 logger.debug('----- Walking workflow id %d job id %d -----' % (self.id, job.id))
@@ -190,10 +186,7 @@ class EngineWorkflow(Workflow):
                     logger.info('Incomplete dependencies for job: %s' % job.id)
                     continue
 
-                logger.debug("job %s is being processed by walk" % job.id) 
-
-                tasks = job.prepare_tasks()
-                job.create_tasks(tasks)
+                job.create_tasks()
 
                 # there must be at least one task for every job
                 if not job.task_set.all():
@@ -340,7 +333,19 @@ class EngineJob(Job):
 
         self.save()
 
-    def prepare_tasks(self):
+    @transaction.commit_on_success
+    @require_lock(Task, 'ACCESS EXCLUSIVE')
+    def create_tasks(self):
+        if (self.total_tasks() > 0):
+            logger.debug("job %s has tasks, skipping create_tasks" % self.id)
+            return
+
+        logger.debug("job %s is having tasks created" % self.id) 
+
+        tasks = self._prepare_tasks()
+        self._create_tasks(tasks)
+
+    def _prepare_tasks(self):
         logger.info('Preparing tasks for jobid: %s...' % self.id)
 
         if (self.total_tasks() > 0):
@@ -398,7 +403,7 @@ class EngineJob(Job):
 
         return tasks_to_create
 
-    def create_tasks(self, tasks_to_create):
+    def _create_tasks(self, tasks_to_create):
         logger.debug("Tasks: %s" % tasks_to_create)
 
         # lets count up our batch_file_list to see how many 'real' (as in not yabi://) files there are to process
