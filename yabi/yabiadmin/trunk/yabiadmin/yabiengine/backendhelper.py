@@ -97,9 +97,7 @@ def get_file_list(yabiusername, uri, recurse=True):
         resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, quote(uri))
         if recurse:
             resource += "&recurse"
-        logger.debug('Resource: %s' % resource)
-        logger.debug('Server: %s' % settings.YABIBACKEND_SERVER)
-
+        logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
 
         bc = get_backendcredential_for_uri(yabiusername, uri)
         data = dict([('username', bc.credential.username),
@@ -108,27 +106,23 @@ def get_file_list(yabiusername, uri, recurse=True):
                     ('key', bc.credential.key)])
         
         r = POST(resource,data)
+       
+        # TODO Code path relies on not always getting a 200 from the backend, so we cant assert 200
 
-        logger.info("Status of return from yabi backend is: %s" % r.status)
-        
         file_list = []
         if r.status == 200:
 
             results = json.loads(r.read())
             
-            logger.debug("FILELIST RESULTS: %s" % results)
+            logger.debug("json: %s" % results)
             shortpath=reduce(lambda x,y: x if len(x)<len(y) else y,results.keys())
             spl = len(shortpath)
             
-            logger.debug("results.keys: %s" % repr(results.keys()))
-            logger.debug("SHORTPATH: %s" % shortpath)
-            
             for key in results.keys():
                 for file in results[key]["files"]:
-                    logger.debug("KEY: %s FILE: %s" %(key,file))
                     file_list.append([os.path.join(key[spl:],file[0])]+file[1:])
 
-        logger.debug("RETURNING: %s" %file_list)
+        logger.debug("returning: %s" % file_list)
         return file_list
  
     except socket.error, e:
