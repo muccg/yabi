@@ -36,11 +36,11 @@ class SGEConnector(ExecConnector):
     def __init__(self):
         ExecConnector.__init__(self)
     
-    def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", **creds):
+    def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
         try:
             if DEBUG:
                 print "QSUB",command,"WORKING:",working
-            jobid = qsub("jobname", command=command, user=username, workingdir=working)
+            jobid = qsub("jobname", command=command, user=username, workingdir=working, modules = [] if not module else [X.strip() for X in module.split(",")])
             if DEBUG:
                 print "JOB ID",jobid
         

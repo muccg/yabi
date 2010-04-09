@@ -60,7 +60,7 @@ class QsubProcessProtocol(protocol.ProcessProtocol):
     def isDone(self):
         return self.exitcode != None
     
-def qsub_spawn(jobname, commandfile, user="yabi", workingdir="/home/yabi", stdout="STDOUT.txt", stderr="STDERR.txt"):
+def qsub_spawn(jobname, commandfile, user="yabi", workingdir="/home/yabi", stdout="STDOUT.txt", stderr="STDERR.txt", modulelist=[]):
     """Spawn a process to run an xml job. return the process handler"""
     subenv = os.environ.copy()
     pp = QsubProcessProtocol()
@@ -92,7 +92,7 @@ def qsub_spawn(jobname, commandfile, user="yabi", workingdir="/home/yabi", stdou
 
     return pp
 
-def qsub(jobname, command, user="yabi", workingdir="/home/yabi", stdout="STDOUT.txt", stderr="STDERR.txt"):
+def qsub(jobname, command, user="yabi", workingdir="/home/yabi", stdout="STDOUT.txt", stderr="STDERR.txt", modules=[]):
     # use shlex to parse the command into executable and arguments
     lexer = shlex.shlex(command, posix=True)
     lexer.wordchars += r"-.:;/"
@@ -101,6 +101,13 @@ def qsub(jobname, command, user="yabi", workingdir="/home/yabi", stdout="STDOUT.
      # make a temporary file to store the command in
     tempfile = mktemp()
     temp=open(tempfile,'w+b')
+    
+    # write module load lines
+    for module in modules:
+        # assert the module name is sanity
+        assert " " not in module
+        temp.write("module load %s\n"%(module))
+    
     temp.write(" ".join(arguments))
     temp.write("\n")
     temp.close()
