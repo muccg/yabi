@@ -69,7 +69,7 @@ class SudoShell(object):
                             )
         return pp
         
-    def ls(self, user, directory, args="-alFR"):
+    def ls(self, user, directory, args="-lFR"):
         return self.execute(SudoShellProcessProtocol, user, command=["ls",args,directory])
       
     def mkdir(self, user, directory, args="-p"):
@@ -187,7 +187,7 @@ class LocalFilesystem(FSConnector.FSConnector):
         assert yabiusername or creds, "You must pass in a credential or a yabiusername so I can go get a credential. Neither was passed in."
         
         # TODO: fix the insecure aassumption that the user has credentials for this!
-        pp = SudoShell().ls(username, path, args="-alFR" if recurse else "-alF")
+        pp = SudoShell().ls(username, path, args="-lFR" if recurse else "-lF")
         
         while not pp.isDone():
             stackless.schedule()

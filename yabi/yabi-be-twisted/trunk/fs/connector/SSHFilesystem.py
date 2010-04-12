@@ -109,7 +109,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         # we need to munge the path for transport over gsissh (cause it sucks)
         mungedpath = '"' + path.replace('"',r'\"') + '"'
-        pp = ssh.Shell.ls(usercert,host,mungedpath, args="-alFR" if recurse else "-alF", username=creds['username'], password=creds['password'] )
+        pp = ssh.Shell.ls(usercert,host,mungedpath, args="-lFR" if recurse else "-lF", username=creds['username'], password=creds['password'] )
         
         while not pp.isDone():
             stackless.schedule()

@@ -32,7 +32,7 @@ class SSHShell(BaseShell):
             
         return BaseShell.execute(self,SSHExecProcessProtocol(password),command)
       
-    def ls(self, certfile, host, directory,username, password, args="-alFR"):
+    def ls(self, certfile, host, directory,username, password, args="-lFR"):
         return self.execute(certfile,host,command=["ls",args,directory],username=username, password=password)
       
     def mkdir(self, certfile, host, directory,username, password, args="-p"):

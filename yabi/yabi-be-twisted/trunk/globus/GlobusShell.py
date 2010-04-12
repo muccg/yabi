@@ -29,7 +29,7 @@ class GlobusShell(BaseShell):
                 host 
             ] + list(command)
         )
-    def ls(self, certfile, host, directory, args="-alFR"):
+    def ls(self, certfile, host, directory, args="-lFR"):
         return self.execute(certfile,host,command=["ls",args,directory])
       
     def mkdir(self, certfile, host, directory, args="-p"):
