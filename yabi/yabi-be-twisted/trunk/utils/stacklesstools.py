@@ -239,7 +239,7 @@ def RetryCall(call, *args, **kwargs):
     delays = AdminBackoffSchedule()
     try:
         return call(*args, **kwargs)
-    except GetFailure, gf:
+    except GETFailure, gf:
         try:
             sleep(delays.next())
         except StopIteration:
