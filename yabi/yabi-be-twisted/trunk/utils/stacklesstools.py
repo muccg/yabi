@@ -227,4 +227,24 @@ def WaitForDeferredData(deferred):
         raise DeferredError, err[0]
     
     return data[0]
-    
+
+def AdminBackoffSchedule():
+    """Generator that generates the various delays to wait between retries when admin fails"""
+    delay = 1.0
+    while delay<1000.0:
+        yield delay
+        delay*=2
+        
+def RetryCall(call, *args, **kwargs):
+    delays = AdminBackoffSchedule()
+    try:
+        return call(*args, **kwargs)
+    except GetFailure, gf:
+        try:
+            sleep(delays.next())
+        except StopIteration:
+            raise gf
+        
+# two curried functions
+RetryPOST = lambda *a,**b: RetryCall(POST,*a,**b)
+RetryGET = lambda *a,**b: RetryCall(GET,*a,**b)

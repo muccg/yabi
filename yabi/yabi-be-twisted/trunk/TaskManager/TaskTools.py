@@ -21,7 +21,7 @@ USER_AGENT = "YabiStackless/0.1"
 
 DEBUG = False
 
-from utils.stacklesstools import GET, POST, GETFailure, CloseConnections
+from utils.stacklesstools import GET, POST, GETFailure, CloseConnections, RetryGET, RetryPOST
 
 def Sleep(seconds):
     """sleep tasklet for this many seconds. seconds is a float"""
@@ -29,27 +29,6 @@ def Sleep(seconds):
     then = now+seconds
     while time.time()<then:
         schedule()
-
-def AdminBackoffSchedule():
-    """Generator that generates the various delays to wait between retries when admin fails"""
-    delay = 1.0
-    while delay<1000.0:
-        yield delay
-        delay*=2
-        
-def RetryCall(call, *args, **kwargs):
-    delays = AdminBackoffSchedule()
-    try:
-        return call(*args, **kwargs)
-    except GetFailure, gf:
-        try:
-            Sleep(delays.next())
-        except StopIteration:
-            raise gf
-        
-# two curried functions
-RetryPOST = lambda *a,**b: RetryCall(POST,*a,**b)
-RetryGET = lambda *a,**b: RetryCall(GET,*a,**b)
 
 class CopyError(Exception): pass
 
