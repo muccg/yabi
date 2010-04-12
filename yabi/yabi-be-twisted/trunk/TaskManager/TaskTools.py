@@ -30,6 +30,27 @@ def Sleep(seconds):
     while time.time()<then:
         schedule()
 
+def AdminBackoffSchedule():
+    """Generator that generates the various delays to wait between retries when admin fails"""
+    delay = 1.0
+    while delay<1000.0:
+        yield delay
+        delay*=2
+        
+def RetryCall(call, *args, **kwargs):
+    delays = AdminBackoffSchedule()
+    try:
+        return call(*args, **kwargs)
+    except GetFailure, gf:
+        try:
+            Sleep(delays.next())
+        except StopIteration:
+            raise gf
+        
+# two curried functions
+RetryPOST = lambda *a,**b: RetryCall(POST,*a,**b)
+RetryGET = lambda *a,**b: RetryCall(GET,*a,**b)
+
 class CopyError(Exception): pass
 
 def Copy(src,dst,retry=COPY_RETRY, **kwargs):
@@ -91,9 +112,9 @@ def Log(logpath,message):
         from urlparse import urlparse
         parsed = urlparse(logpath)
         #print "LOG:",parsed.path, message,parsed.hostname,parsed.port
-        code,msg,data = POST(parsed.path, message=message,host=parsed.hostname,port=parsed.port)              # error exception should bubble up and be caught
+        code,msg,data = RetryPOST(parsed.path, message=message,host=parsed.hostname,port=parsed.port)              # error exception should bubble up and be caught
     else:
-        code,msg,data = POST(logpath, host=config.yabiadminserver,port=config.yabiadminport, message=message)              # error exception should bubble up and be caught
+        code,msg,data = RetryPOST(logpath, host=config.yabiadminserver,port=config.yabiadminport, message=message)              # error exception should bubble up and be caught
     assert code==200
 
     
@@ -107,9 +128,9 @@ def Status(statuspath, message):
         from urlparse import urlparse
         parsed = urlparse(statuspath)
         
-        code,msg,data = POST(parsed.path, status=message,host=parsed.hostname,port=parsed.port)              # error exception should bubble up and be caught
+        code,msg,data = RetryPOST(parsed.path, status=message,host=parsed.hostname,port=parsed.port)              # error exception should bubble up and be caught
     else:
-        code,msg,data = POST(statuspath, host=config.yabiadminserver,port=config.yabiadminport, status=message)              # error exception should bubble up and be caught
+        code,msg,data = RetryPOST(statuspath, host=config.yabiadminserver,port=config.yabiadminport, status=message)              # error exception should bubble up and be caught
     assert code==200
     
 def Exec(backend, command, callbackfunc=None, **kwargs):
@@ -131,7 +152,7 @@ def UserCreds(yabiusername, uri):
     # see if we can get the credentials
     #print "UserCreds",scheme,username,hostname
     url = os.path.join(config.yabiadminpath,'ws/credential/%s/?uri=%s'%(yabiusername,uri))
-    code, message, data = GET(url, host=config.yabiadminserver, port=config.yabiadminport)
+    code, message, data = RetryGET(url, host=config.yabiadminserver, port=config.yabiadminport)
     assert code==200
     if DEBUG:
         print "JSON DATA:",data

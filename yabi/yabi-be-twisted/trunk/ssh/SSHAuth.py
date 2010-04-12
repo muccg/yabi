@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Encapsulation of globus Authentication proxies as a mixin"""
 
-from utils.stacklesstools import GET, GETFailure, sleep
+from utils.stacklesstools import RetryGET, GETFailure, sleep
 import json, os
 from globus.Auth import NoCredentials, AuthException
 from conf import config
@@ -26,7 +26,7 @@ class SSHAuth(object):
                 print "host:",host
                 print "port:",port
             
-            status, message, data = GET( path = path, host=host, port=port )
+            status, message, data = RetryGET( path = path, host=host, port=port )
             
             assert status==200
             credentials = json.loads( data )

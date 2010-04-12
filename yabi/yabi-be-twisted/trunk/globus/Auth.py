@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Encapsulation of globus Authentication proxies as a mixin"""
 
-from utils.stacklesstools import GET, GETFailure, sleep
+from utils.stacklesstools import RetryGET, GETFailure, sleep
 import json, os
 from globus.CertificateProxy import CertificateProxy
 from conf import config
@@ -31,7 +31,7 @@ class GlobusAuth(object):
         useragent = "YabiFS/0.1"
         
         try:
-            status, message, data = GET( path = os.path.join(config.yabiadminpath,"ws/credential/%s/?uri=%s://%s@%s%s"%(yabiusername,scheme,username,hostname,urllib.quote(path))),
+            status, message, data = RetryGET( path = os.path.join(config.yabiadminpath,"ws/credential/%s/?uri=%s://%s@%s%s"%(yabiusername,scheme,username,hostname,urllib.quote(path))),
                                         host = config.yabiadminserver,
                                         port = config.yabiadminport )
             
