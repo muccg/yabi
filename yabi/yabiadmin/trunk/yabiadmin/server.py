@@ -37,7 +37,6 @@ for setting in ['database_engine', 'database_name', 'database_user', 'database_p
     os.environ[setting.upper()] = config.config[NAME][setting]
 
 if 'http_redirect_to_https' in config.config[NAME]:
-    print "setting http_redirect_to_https to",config.config[NAME]['http_redirect_to_https']
     os.environ['HTTP_REDIRECT_TO_HTTPS'] = config.config[NAME]['http_redirect_to_https']
 
 if config.config[NAME]["debug"]:
