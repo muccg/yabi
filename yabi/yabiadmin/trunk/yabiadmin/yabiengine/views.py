@@ -69,13 +69,6 @@ def status(request, model, id):
             if "status" not in request.POST:
                 return HttpResponseServerError("POST request to error service should contain 'status' parameter\n")
 
-            # TODO FIXME DELETEME
-            # Force some requests to fail, so we can test be retries
-            import random
-            if random.random() > 0.8:
-                logger.debug("Forcing exception")
-                return HttpResponseServerError("error")
-
             model = str(model).lower()
             id = int(id)
             status = str(request.POST["status"])
