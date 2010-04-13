@@ -120,7 +120,7 @@ class FileRCopyResource(resource.PostableResource):
                             if DEBUG:
                                 print "Copy(",src_uri,",",dst_uri,")"
                             #print "Copy(",sbend+directory+"/"+file,",",dst+destpath+'/'+file,")"
-                            Copy(src_uri,dst_uri,retry=1,yabiusername=yabiusername)
+                            Copy(src_uri,dst_uri,yabiusername=yabiusername)
                             Sleep(0.5)
                     
                     result_channel.callback(
@@ -130,7 +130,7 @@ class FileRCopyResource(resource.PostableResource):
                     result_channel.callback(
                                                     http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, str(e))
                                 )
-                    raise
+                    return
 
             copier = stackless.tasklet(rcopy_runner_thread)
             copier.setup()
