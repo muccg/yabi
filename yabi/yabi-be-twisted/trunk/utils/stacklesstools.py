@@ -237,16 +237,17 @@ def AdminBackoffSchedule():
         
 def RetryCall(call, *args, **kwargs):
     delays = AdminBackoffSchedule()
-    try:
-        result = call(*args, **kwargs)
-        print "<================",result
-        return result
-    except GETFailure, gf:
-        print "!!!!!!!!!!!!!!!!!",gf
+    while True:
         try:
-            sleep(delays.next())
-        except StopIteration:
-            raise gf
+            result = call(*args, **kwargs)
+            print "<================",result
+            return result
+        except GETFailure, gf:
+            print "!!!!!!!!!!!!!!!!!",gf
+            try:
+                sleep(delays.next())
+            except StopIteration:
+                raise gf
         
 # two curried functions
 RetryPOST = lambda *a,**b: RetryCall(POST,*a,**b)
