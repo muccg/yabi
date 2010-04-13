@@ -4,16 +4,15 @@ from django.conf.urls.defaults import *
 urlpatterns = patterns('yabife.yabifeapp.views',
     (r'^(?P<url>ws/.*)$', 'adminproxy'),
     (r'^(?P<url>workflows/.*)$', 'storeproxy'),                       
-	(r'^[/]*$', 'design'),
+    (r'^[/]*$', 'design'),
     (r'^design/reuse/(?P<id>.*)[/]*$', 'design'),
-	(r'^design[/]*$', 'design'),
-	(r'^jobs[/]*$', 'jobs'),
+    (r'^design[/]*$', 'design'),
+    (r'^jobs[/]*$', 'jobs'),
     (r'^files[/]*$', 'files'),
-	(r'^menu[/]*$', 'menu'),
-    (r'^login[/]*$', 'login', {'SSL':True}),
-    (r'^logout[/]*$', 'logout')
+    (r'^login[/]*$', 'login'),
+    (r'^logout[/]*$', 'logout'),
+    (r'^openid/.*$', include('djopenid.consumer.urls'))
 )
-
 
 # pattern for serving statically
 # will be overridden by apache alias under WSGI

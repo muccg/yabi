@@ -171,7 +171,8 @@ INSTALLED_APPS = (
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
-    'yabife.yabifeapp'
+    'yabife.yabifeapp',
+    'djopenid.consumer'
 )
 
 # a directory that will be writable by the webserver, for storing various files...
