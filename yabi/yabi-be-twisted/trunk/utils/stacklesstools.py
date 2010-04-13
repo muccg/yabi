@@ -239,11 +239,8 @@ def RetryCall(call, *args, **kwargs):
     delays = AdminBackoffSchedule()
     while True:
         try:
-            result = call(*args, **kwargs)
-            print "<================",result
-            return result
+            return call(*args, **kwargs)
         except GETFailure, gf:
-            print "!!!!!!!!!!!!!!!!!",gf
             try:
                 sleep(delays.next())
             except StopIteration:
