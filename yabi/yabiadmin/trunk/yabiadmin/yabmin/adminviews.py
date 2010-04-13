@@ -10,9 +10,15 @@ from django.utils import simplejson as json
 from json_util import makeJsonFriendly
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from django import forms
 
 import logging
 logger = logging.getLogger('yabiadmin')
+
+
+
+class AddToolForm(forms.Form):
+    json = forms.CharField()
 
 
 class ToolGroupView:
@@ -79,6 +85,19 @@ def tool(request, tool_id):
                 'root_path':webhelpers.url("/admin"),
                 'tool_params': format_params(tool.toolparameter_set.order_by('id')),
            })
+
+@staff_member_required
+def add_tool(request):
+    assert False
+    if request.method == 'GET':
+        return render_to_response('yabmin/tool.html',
+                                  {'form':AddToolForm(),
+                                   'user':request.user,
+                                   'title': 'Tool Details',
+                                   'root_path':webhelpers.url("/admin")
+                                   }
+                                  )
+
 
 @staff_member_required
 def user_tools(request, user_id):
