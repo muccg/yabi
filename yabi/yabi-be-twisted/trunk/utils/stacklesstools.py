@@ -242,6 +242,7 @@ def RetryCall(call, *args, **kwargs):
         print "<================",result
         return result
     except GETFailure, gf:
+        print "!!!!!!!!!!!!!!!!!",gf
         try:
             sleep(delays.next())
         except StopIteration:
