@@ -226,102 +226,136 @@ def add_tool(request):
 
             tool_dict = json.loads(f.cleaned_data["tool_json"])
             tool_dict = tool_dict["tool"]
+            tool = create_tool(request, tool_dict)
             
-            # try and get the backends
-            try:
-                backend = Backend.objects.get(name=tool_dict['backend'])
-            except ObjectDoesNotExist,e:
-                backend = Backend.objects.get(name='nullbackend')
-
-            try:
-                fs_backend = Backend.objects.get(name=tool_dict['fs_backend'])
-            except ObjectDoesNotExist,e:
-                fs_backend = Backend.objects.get(name='nullbackend')
-
-            # create the tool
-            tool = Tool(name=tool_dict["name"],
-                        display_name=tool_dict["display_name"],
-                        path=tool_dict["path"],
-                        description=tool_dict["description"],
-                        enabled=tool_dict["enabled"],
-                        backend=backend,
-                        fs_backend=fs_backend,
-                        accepts_input=tool_dict["accepts_input"],
-                        batch_on_param_bundle_files=tool_dict["batch_on_param_bundle_files"],
-                        cpus=tool_dict["cpus"],
-                        walltime=tool_dict["walltime"],
-                        module=tool_dict["module"],
-                        queue=tool_dict["queue"],
-                        max_memory=tool_dict["max_memory"],
-                        job_type=tool_dict["job_type"]
-                        )
-            tool.save()
-
-
-            # add the output extensions
-            for output_ext in tool_dict["outputExtensions"]:
-                extension, created = FileExtension.objects.get_or_create(extension=output_ext["file_extension__extension"])
-                tooloutputextension, created = ToolOutputExtension.objects.get_or_create(tool=tool,
-                                                                                file_extension=extension,
-                                                                                must_exist=output_ext["must_exist"],
-                                                                                must_be_larger_than=output_ext["must_be_larger_than"])
-
-
-            # add the tool parameters
-            for parameter in tool_dict["parameter_list"]:
-
-                print parameter
-
-
-                switch_use, created = ParameterSwitchUse.objects.get_or_create(display_text=parameter["switch_use__display_text"],
-                                                                               value=parameter["switch_use__value"],
-                                                                               description=parameter["switch_use__description"])
-                
-                toolparameter = ToolParameter(tool=tool,
-                                              rank=parameter["rank"],
-                                              mandatory=parameter["mandatory"],
-                                              input_file=parameter["input_file"],
-                                              output_file=parameter["output_file"],
-                                              filter_value=parameter["filter_value"],
-                                              default_value=parameter["default_value"],
-                                              switch=parameter["switch"]                                                                             
-                                              )
-                                                                             
-                # accepted filetypes
-                
-                # input extensions
-
-
-                if parameter["possible_values"]:
-                    toolparameter.possible_values=json.dumps(parameter["possible_values"])
-
-
-                if parameter["switch_use__display_text"] and parameter["switch_use__value"] and parameter["switch_use__description"]:
-                    switch_use, created = ParameterSwitchUse.objects.get_or_create(display_text=parameter["switch_use__display_text"],
-                                                                                   value=parameter["switch_use__value"],
-                                                                                   description=parameter["switch_use__description"])
-                                                                                   
-                    toolparameter.switch_use=switch_use
-
-                     
-
-                    
-                if parameter["filter__description"] and parameter["filter__display_text"] and parameter["filter_value"]:
-                    parameter_filter, created = ParameterFilter.objects.get_or_create(display_text=parameter["filter__display_text"],
-                                                                                      value=parameter["filter__value"],
-                                                                                      description=parameter["filter__description"])
-                    toolparameter.filter = parameter_filter
-
-
-                toolparameter.save()
-
-
-            if tool_dict["batch_on_param"]:
-                try:
-                    batch_toolparameter = ToolParameter.objects.get(tool=tool, switch=tool_dict["batch_on_param"])
-                    tool.batch_on_param=batch_toolparameter
-                except ObjectDoesNotExist,e:
-                    logger.critical("Unable to add batch on parameter field %s" % e)
-
-            tool.save()
             return HttpResponseRedirect(webhelpers.url("/admin/tool/%s/" % tool.id))
+
+
+@staff_member_required
+def create_tool(request, tool_dict):
+    # try and get the backends
+    try:
+        backend = Backend.objects.get(name=tool_dict['backend'])
+    except ObjectDoesNotExist,e:
+        backend = Backend.objects.get(name='nullbackend')
+
+    try:
+        fs_backend = Backend.objects.get(name=tool_dict['fs_backend'])
+    except ObjectDoesNotExist,e:
+        fs_backend = Backend.objects.get(name='nullbackend')
+
+    # create the tool
+    tool = Tool(name=tool_dict["name"],
+                display_name=tool_dict["display_name"],
+                path=tool_dict["path"],
+                description=tool_dict["description"],
+                enabled=tool_dict["enabled"],
+                backend=backend,
+                fs_backend=fs_backend,
+                accepts_input=tool_dict["accepts_input"],
+                batch_on_param_bundle_files=tool_dict["batch_on_param_bundle_files"],
+                cpus=tool_dict["cpus"],
+                walltime=tool_dict["walltime"],
+                module=tool_dict["module"],
+                queue=tool_dict["queue"],
+                max_memory=tool_dict["max_memory"],
+                job_type=tool_dict["job_type"]
+                )
+    tool.save()
+
+
+    # add the output extensions
+    for output_ext in tool_dict["outputExtensions"]:
+        extension, created = FileExtension.objects.get_or_create(extension=output_ext["file_extension__extension"])
+        tooloutputextension, created = ToolOutputExtension.objects.get_or_create(tool=tool,
+                                                                        file_extension=extension,
+                                                                        must_exist=output_ext["must_exist"],
+                                                                        must_be_larger_than=output_ext["must_be_larger_than"])
+
+
+    # add the tool parameters
+    for parameter in tool_dict["parameter_list"]:
+
+        switch_use, created = ParameterSwitchUse.objects.get_or_create(display_text=parameter["switch_use__display_text"],
+                                                                       value=parameter["switch_use__value"],
+                                                                       description=parameter["switch_use__description"])
+
+        toolparameter = ToolParameter(tool=tool,
+                                      rank=parameter["rank"],
+                                      mandatory=parameter["mandatory"],
+                                      input_file=parameter["input_file"],
+                                      output_file=parameter["output_file"],
+                                      filter_value=parameter["filter_value"],
+                                      default_value=parameter["default_value"],
+                                      switch=parameter["switch"]                                                                             
+                                      )
+
+        toolparameter.save() # so we can add many-to-many on accepted_filetypes
+
+        # for each of the accepted filetype extensions get all associated filetypes and add them to tool parameter
+        for ext in parameter["acceptedExtensionList"]:
+            fileextensions = FileExtension.objects.filter(extension=ext)
+            for fe in fileextensions:
+                filetypes = fe.filetype_set.all()
+                for ft in filetypes:
+                    toolparameter.accepted_filetypes.add(ft)
+
+        # input extensions
+        # TODO need to decide how to handle these, they are not in the tool json
+
+        if parameter["possible_values"]:
+            toolparameter.possible_values=json.dumps(parameter["possible_values"])
+
+
+        if parameter["switch_use__display_text"] and parameter["switch_use__value"] and parameter["switch_use__description"]:
+            switch_use, created = ParameterSwitchUse.objects.get_or_create(display_text=parameter["switch_use__display_text"],
+                                                                           value=parameter["switch_use__value"],
+                                                                           description=parameter["switch_use__description"])
+
+            toolparameter.switch_use=switch_use
+
+
+
+
+        if parameter["filter__description"] and parameter["filter__display_text"] and parameter["filter_value"]:
+            parameter_filter, created = ParameterFilter.objects.get_or_create(display_text=parameter["filter__display_text"],
+                                                                              value=parameter["filter__value"],
+                                                                              description=parameter["filter__description"])
+            toolparameter.filter = parameter_filter
+
+
+        toolparameter.save()
+
+
+    # TODO take it from here - need to get the correct tool parameter to add these to
+    # we need to do this in a separate loop otherwise the param we want to refer to doesn't exist yet
+    for parameter in tool_dict["parameter_list"]:
+        # add source param
+        if "source_param" in parameter:
+            try:
+                source_toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["source_param"])
+                toolparameter.source_param=source_toolparameter
+            except ObjectDoesNotExist,e:
+                logger.critical("Unable to add source parameter on parameter field: %s" % e)
+
+        # add extension param
+        if "extension_param" in parameter:
+            try:
+                extension_toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["extension_param"])
+                toolparameter.source_param=source_toolparameter
+            except ObjectDoesNotExist,e:
+                logger.critical("Unable to add extension parameter on parameter field: %s" % e)
+
+
+
+    # add batch on param
+    if tool_dict["batch_on_param"]:
+        try:
+            batch_toolparameter = ToolParameter.objects.get(tool=tool, switch=tool_dict["batch_on_param"])
+            tool.batch_on_param=batch_toolparameter
+        except ObjectDoesNotExist,e:
+            logger.critical("Unable to add batch on parameter field %s" % e)
+
+    tool.save()
+    return tool
+

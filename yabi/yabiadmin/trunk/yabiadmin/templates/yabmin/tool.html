@@ -24,12 +24,14 @@ ${self.block_content()}<%def name="block_content()">
         <th>Display Name</th>
         <th>Job Type</th>
         <th>Path</th>
+        <th></th>
     </tr>
     <tr>
         <td>${tool.name}</td>
         <td>${tool.display_name}</td>
         <td>${tool.backend}</td>
         <td>${tool.path}</td>
+        <td><a href="${root_path}/yabmin/tool/${tool.id}/">Edit</a></td>
     </tr>
 </table>
 
