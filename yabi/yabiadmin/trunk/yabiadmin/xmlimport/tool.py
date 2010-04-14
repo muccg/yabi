@@ -33,10 +33,13 @@ def import_tool(filename):
 
 def populate_simple_fields(tool, job_element):
     props_from_attrs(tool, job_element, 
-            name='toolName', path='toolPath', 
-            display_name='displayName', description='description')
-    job_type_name = attribute_value(job_element, 'jobType')
-    tool.backend = get_or_create_refdata(Backend, job_type_name)
+                     name='toolName', path='toolPath', 
+                     display_name='displayName', description='description')
+
+    # add all tools with null backend by default, user can then select backend from admin
+    backend = Backend.objects.get(name="nullbackend")
+    tool.backend = backend
+    tool.fs_backend = backend
 
 def validate_simple_fields(tool, tool_name):
     assert tool_name == tool.name, ("Inconsistent tool name. " 

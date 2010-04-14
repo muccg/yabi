@@ -151,6 +151,18 @@ class Tool(Base):
 
         return json.dumps({'tool':output})
 
+    def json_pretty(self):
+
+        # the possible_values field has json in it so we need to make it decode
+        # or it will be double encoded
+        output = self.tool_dict()
+
+        for plist in output["parameter_list"]:
+            if "possible_values" in plist and plist["possible_values"]:
+                plist["possible_values"] = json.loads(plist["possible_values"])
+
+        return json.dumps({'tool':output}, indent=4)
+
 
     def __unicode__(self):
         return self.name

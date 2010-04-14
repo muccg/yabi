@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.db import connection
 from django.contrib.admin.views.decorators import staff_member_required
@@ -27,6 +27,11 @@ class AddToolForm(forms.Form):
             tool_dict = json.loads(data)
         except Exception, e:
             raise forms.ValidationError("Unable to load json. Please check it is valid.")
+
+
+        if Tool.objects.filter(name=tool_dict["tool"]["name"]):
+            raise forms.ValidationError("A tool named %s already exists." % tool_dict["tool"]["name"])
+        
         return data
 
 
@@ -235,7 +240,7 @@ def add_tool(request):
 
             # create the tool
             tool = Tool(name=tool_dict["name"],
-                        display_name=tool_dict["name"],
+                        display_name=tool_dict["display_name"],
                         path=tool_dict["path"],
                         description=tool_dict["description"],
                         enabled=tool_dict["enabled"],
@@ -265,28 +270,30 @@ def add_tool(request):
             # add the tool parameters
             for parameter in tool_dict["parameter_list"]:
 
+                print parameter
+
+
                 switch_use, created = ParameterSwitchUse.objects.get_or_create(display_text=parameter["switch_use__display_text"],
                                                                                value=parameter["switch_use__value"],
                                                                                description=parameter["switch_use__description"])
                 
-                toolparameter, created = ToolParameter.objects.get_or_create(tool=tool,
-                                                                             rank=parameter["rank"],
-                                                                             mandatory=parameter["mandatory"],
-                                                                             input_file=parameter["input_file"],
-                                                                             output_file=parameter["output_file"],
-                                                                             filter_value=parameter["filter_value"],
-                                                                             possible_values=parameter["possible_values"])
+                toolparameter = ToolParameter(tool=tool,
+                                              rank=parameter["rank"],
+                                              mandatory=parameter["mandatory"],
+                                              input_file=parameter["input_file"],
+                                              output_file=parameter["output_file"],
+                                              filter_value=parameter["filter_value"],
+                                              default_value=parameter["default_value"],
+                                              switch=parameter["switch"]                                                                             
+                                              )
                                                                              
-                #default_value=parameter["default_value"]
-
-                        
-
-
-
-
                 # accepted filetypes
                 
                 # input extensions
+
+
+                if parameter["possible_values"]:
+                    toolparameter.possible_values=json.dumps(parameter["possible_values"])
 
 
                 if parameter["switch_use__display_text"] and parameter["switch_use__value"] and parameter["switch_use__description"]:
@@ -295,7 +302,7 @@ def add_tool(request):
                                                                                    description=parameter["switch_use__description"])
                                                                                    
                     toolparameter.switch_use=switch_use
-                    toolparameter.switch=parameter["switch"]
+
                      
 
                     
@@ -317,4 +324,4 @@ def add_tool(request):
                     logger.critical("Unable to add batch on parameter field %s" % e)
 
             tool.save()
-                
+            return HttpResponseRedirect(webhelpers.url("/admin/tool/%s/" % tool.id))
