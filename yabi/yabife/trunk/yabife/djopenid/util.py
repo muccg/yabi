@@ -55,7 +55,7 @@ def getOpenIDStore(filestore_path, table_prefix):
         }
 
     types = {
-        'postgresql': sqlstore.PostgreSQLStore,
+        'postgresql_psycopg2': sqlstore.PostgreSQLStore,
         'mysql': sqlstore.MySQLStore,
         'sqlite3': sqlstore.SQLiteStore,
         }

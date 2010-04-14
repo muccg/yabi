@@ -30,74 +30,73 @@
   <body>
 
   <div class="box">
-
   <p>
     This is an example consumer built for the Django framework.  Enter
     an OpenID in the box below.
   </p>
 
-  {% if error %}
-    <div class="error">{{ error|escape }}</div>
-  {% endif %}
+  % if error:
+    <div class="error">${ error|escape }</div>
+  % endif
 
-  {% if url %}
+  % if url is not None and url is not '':
     <div class="message">
       OpenID authentication succeeded; you authenticated as
-        <a href="{{ url }}">{{ url|escape }}</a>.
+        <a href="${ url }">${ url|escape }</a>.
 
       <p>
-      {% if sreg %}
+      % if sreg:
         Simple Registration data returned:
 
         <ul>
-        {% for pair in sreg %}
-          <li>{{ pair.0 }}: {{ pair.1 }}</li>
-        {% endfor %}
+        % for pair in sreg:
+          <li>${ pair[0] }: ${ pair[1] }</li>
+        % endfor 
         </ul>
-      {% else %}
+      % else:
         The server returned no Simple Registration data.
-      {% endif %}
+      % endif
 
-      {% if ax %}
+      % if ax:
         Attribute Exchange data returned:
 
         <ul>
-        {% for pair in ax %}
-        <li>{{ pair.0 }}: {{ pair.1|join:", " }}</li>
-        {% endfor %}
+        % for pair in ax:
+        <li>${ pair[0] }: ${ pair[1]|join(pair,", ") }</li>
+        % endfor
         </ul>
-      {% else %}
+      % else:
         The server returned no Attribute Exchange data.
-      {% endif %}
+      % endif
 
-      {% if pape %}
+      % if pape:
         An authentication policy response contained these policies:
 
         <ul>
-          {% for uri in pape.auth_policies %}
-            <li><tt>{{ uri }}</tt></li>
-          {% endfor %}
+          % for uri in pape.auth_policies:
+            <li><tt>${ uri }</tt></li>
+          % endfor
         </ul>
-      {% else %}
+      % else:
         The server returned no authentication policy data (PAPE).
-      {% endif %}
+      % endif
       </p>
     </div>
-  {% endif %}
+  % endif
 
-  {% if message %}
+  % if message:
     <div class="message">
-      {{ message|escape }}
+      ${ message|escape }
     </div>
-  {% endif %}
+  % endif
 
-  {% if failure_reason %}
+  % if failure_reason:
     <div class="error">
-      {{ failure_reason|escape }}
+      ${ failure_reason|escape }
     </div>
-  {% endif %}
+  % endif
 
-  <form method="post" action="{{ consumer_url }}">
+  <form method="post" action="${ consumer_url }">
     <input type="text" size="40" name="openid_identifier" />
 
     <p>
@@ -105,16 +104,16 @@
       (<a href="http://openid.net/specs/openid-provider-authentication-policy-extension-1_0-02.html">PAPE</a>):
 
     <table>
-      {% for pair in pape_policies %}
+      % for pair in pape_policies:
       <tr>
-        <td><input type="checkbox" name="policy_{{ pair.0 }}" id="id_policy_{{ pair.0 }}" /></td>
+        <td><input type="checkbox" name="policy_${ pair[0] }" id="id_policy_${ pair[0] }" /></td>
         <td>
-          <label for="id_policy_{{ pair.0 }}"><tt>
-            {{ pair.1 }}
+          <label for="id_policy_${ pair[0] }"><tt>
+            ${ pair[1] }
           </tt></label>
         </td>
       </tr>
-      {% endfor %}
+      % endfor
     </table>
     </p>
 

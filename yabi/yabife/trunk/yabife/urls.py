@@ -11,7 +11,7 @@ urlpatterns = patterns('yabife.yabifeapp.views',
     (r'^files[/]*$', 'files'),
     (r'^login[/]*$', 'login'),
     (r'^logout[/]*$', 'logout'),
-    (r'^openid/.*$', include('djopenid.consumer.urls'))
+    (r'^openid/', include('djopenid.consumer.urls'))
 )
 
 # pattern for serving statically

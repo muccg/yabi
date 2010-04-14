@@ -2,6 +2,9 @@
 from django import http
 from django.http import HttpResponseRedirect
 from django.views.generic.simple import direct_to_template
+from django.utils import webhelpers
+
+from django.shortcuts import render_to_response, get_object_or_404, render_mako
 
 from openid.consumer import consumer
 from openid.consumer.discover import DiscoveryFailure
@@ -38,10 +41,14 @@ def renderIndexPage(request, **template_args):
     template_args['consumer_url'] = util.getViewURL(request, startOpenID)
     template_args['pape_policies'] = POLICY_PAIRS
 
-    response =  direct_to_template(
-        request, 'consumer/index.html', template_args)
-    response[YADIS_HEADER_NAME] = util.getViewURL(request, rpXRDS)
+    template_args['h'] = webhelpers
+    template_args['request'] = request
+
+    response = render_to_response('consumer/index.html', template_args)
+
+    response[YADIS_HEADER_NAME] = 'http://faramir.localdomain:64080/openid/consumer/' #util.getViewURL(request, rpXRDS)
     return response
+
 
 def startOpenID(request):
     """
@@ -113,7 +120,7 @@ def startOpenID(request):
         # Compute the trust root and return URL values to build the
         # redirect information.
         trust_root = util.getViewURL(request, startOpenID)
-        return_to = util.getViewURL(request, finishOpenID)
+        return_to = 'http://faramir.localdomain:64080/openid/finish/'
 
         # Send the browser to the server either by sending a redirect
         # URL or by generating a POST form.
@@ -131,7 +138,7 @@ def startOpenID(request):
             return direct_to_template(
                 request, 'consumer/request_form.html', {'html': form_html})
 
-    return renderIndexPage(request)
+    return renderIndexPage(request, url=None)
 
 def finishOpenID(request):
     """
@@ -150,6 +157,8 @@ def finishOpenID(request):
     request_args = util.normalDict(request.GET)
     if request.method == 'POST':
         request_args.update(util.normalDict(request.POST))
+
+    request_args = request.GET
 
     if request_args:
         c = getConsumer(request)
@@ -207,6 +216,7 @@ def finishOpenID(request):
             # authentication failures. In general, the messages are
             # not user-friendly, but intended for developers.
             result['failure_reason'] = response.message
+
 
     return renderIndexPage(request, **result)
 
