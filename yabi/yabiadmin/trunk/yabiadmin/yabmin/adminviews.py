@@ -3,7 +3,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.db import connection
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import ObjectDoesNotExist
-from yabiadmin.yabmin.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Backend, BackendCredential
+from yabiadmin.yabmin.models import *
 from yabiadmin import ldaputils
 from django.utils import webhelpers
 from django.utils import simplejson as json
@@ -11,6 +11,7 @@ from json_util import makeJsonFriendly
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django import forms
+from django.forms.util import ErrorList
 
 import logging
 logger = logging.getLogger('yabiadmin')
@@ -18,7 +19,15 @@ logger = logging.getLogger('yabiadmin')
 
 
 class AddToolForm(forms.Form):
-    json = forms.CharField()
+    tool_json = forms.CharField(widget=forms.Textarea)
+
+    def clean_tool_json(self):
+        data = self.cleaned_data['tool_json']
+        try:
+            tool_dict = json.loads(data)
+        except Exception, e:
+            raise forms.ValidationError("Unable to load json. Please check it is valid.")
+        return data
 
 
 class ToolGroupView:
@@ -85,18 +94,6 @@ def tool(request, tool_id):
                 'root_path':webhelpers.url("/admin"),
                 'tool_params': format_params(tool.toolparameter_set.order_by('id')),
            })
-
-@staff_member_required
-def add_tool(request):
-    assert False
-    if request.method == 'GET':
-        return render_to_response('yabmin/tool.html',
-                                  {'form':AddToolForm(),
-                                   'user':request.user,
-                                   'title': 'Tool Details',
-                                   'root_path':webhelpers.url("/admin")
-                                   }
-                                  )
 
 
 @staff_member_required
@@ -195,3 +192,129 @@ def backend_cred_test(request, backend_cred_id):
                 'listing':listing,
                 'error':error
                 })
+
+
+@staff_member_required
+def add_tool(request):
+
+    if request.method == 'GET':
+        return render_to_response('yabmin/addtool.html',
+                                  {'form':AddToolForm(),
+                                   'user':request.user,
+                                   'title': 'Add Tool',
+                                   'root_path':webhelpers.url("/admin/addtool/")
+                                   }
+                                  )
+    else:
+
+        f = AddToolForm(request.POST)
+        if not f.is_valid():
+            return render_to_response('yabmin/addtool.html',
+                                      {'form': f,
+                                       'user':request.user,
+                                       'title': 'Add Tool',
+                                       'root_path':webhelpers.url("/admin/addtool/")
+                                       }
+                                      )
+    
+        else:
+
+            tool_dict = json.loads(f.cleaned_data["tool_json"])
+            tool_dict = tool_dict["tool"]
+            
+            # try and get the backends
+            try:
+                backend = Backend.objects.get(name=tool_dict['backend'])
+            except ObjectDoesNotExist,e:
+                backend = Backend.objects.get(name='nullbackend')
+
+            try:
+                fs_backend = Backend.objects.get(name=tool_dict['fs_backend'])
+            except ObjectDoesNotExist,e:
+                fs_backend = Backend.objects.get(name='nullbackend')
+
+            # create the tool
+            tool = Tool(name=tool_dict["name"],
+                        display_name=tool_dict["name"],
+                        path=tool_dict["path"],
+                        description=tool_dict["description"],
+                        enabled=tool_dict["enabled"],
+                        backend=backend,
+                        fs_backend=fs_backend,
+                        accepts_input=tool_dict["accepts_input"],
+                        batch_on_param_bundle_files=tool_dict["batch_on_param_bundle_files"],
+                        cpus=tool_dict["cpus"],
+                        walltime=tool_dict["walltime"],
+                        module=tool_dict["module"],
+                        queue=tool_dict["queue"],
+                        max_memory=tool_dict["max_memory"],
+                        job_type=tool_dict["job_type"]
+                        )
+            tool.save()
+
+
+            # add the output extensions
+            for output_ext in tool_dict["outputExtensions"]:
+                extension, created = FileExtension.objects.get_or_create(extension=output_ext["file_extension__extension"])
+                tooloutputextension, created = ToolOutputExtension.objects.get_or_create(tool=tool,
+                                                                                file_extension=extension,
+                                                                                must_exist=output_ext["must_exist"],
+                                                                                must_be_larger_than=output_ext["must_be_larger_than"])
+
+
+            # add the tool parameters
+            for parameter in tool_dict["parameter_list"]:
+
+                switch_use, created = ParameterSwitchUse.objects.get_or_create(display_text=parameter["switch_use__display_text"],
+                                                                               value=parameter["switch_use__value"],
+                                                                               description=parameter["switch_use__description"])
+                
+                toolparameter, created = ToolParameter.objects.get_or_create(tool=tool,
+                                                                             rank=parameter["rank"],
+                                                                             mandatory=parameter["mandatory"],
+                                                                             input_file=parameter["input_file"],
+                                                                             output_file=parameter["output_file"],
+                                                                             filter_value=parameter["filter_value"],
+                                                                             possible_values=parameter["possible_values"])
+                                                                             
+                #default_value=parameter["default_value"]
+
+                        
+
+
+
+
+                # accepted filetypes
+                
+                # input extensions
+
+
+                if parameter["switch_use__display_text"] and parameter["switch_use__value"] and parameter["switch_use__description"]:
+                    switch_use, created = ParameterSwitchUse.objects.get_or_create(display_text=parameter["switch_use__display_text"],
+                                                                                   value=parameter["switch_use__value"],
+                                                                                   description=parameter["switch_use__description"])
+                                                                                   
+                    toolparameter.switch_use=switch_use
+                    toolparameter.switch=parameter["switch"]
+                     
+
+                    
+                if parameter["filter__description"] and parameter["filter__display_text"] and parameter["filter_value"]:
+                    parameter_filter, created = ParameterFilter.objects.get_or_create(display_text=parameter["filter__display_text"],
+                                                                                      value=parameter["filter__value"],
+                                                                                      description=parameter["filter__description"])
+                    toolparameter.filter = parameter_filter
+
+
+                toolparameter.save()
+
+
+            if tool_dict["batch_on_param"]:
+                try:
+                    batch_toolparameter = ToolParameter.objects.get(tool=tool, switch=tool_dict["batch_on_param"])
+                    tool.batch_on_param=batch_toolparameter
+                except ObjectDoesNotExist,e:
+                    logger.critical("Unable to add batch on parameter field %s" % e)
+
+            tool.save()
+                
