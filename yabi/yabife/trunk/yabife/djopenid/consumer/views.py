@@ -95,10 +95,10 @@ def startOpenID(request):
         # XXX - uses myOpenID-compatible schema values, which are
         # not those listed at axschema.org.
         ax_request.add(
-            ax.AttrInfo('http://schema.openid.net/namePerson',
+            ax.AttrInfo('http://axschema.org/namePerson',
                         required=True))
         ax_request.add(
-            ax.AttrInfo('http://schema.openid.net/contact/web/default',
+            ax.AttrInfo('http://axschema.org/contact/email',
                         required=False, count=ax.UNLIMITED_VALUES))
         auth_request.addExtension(ax_request)
 
@@ -175,13 +175,13 @@ def finishOpenID(request):
         if response.status == consumer.SUCCESS:
             sreg_response = sreg.SRegResponse.fromSuccessResponse(response)
 
-            ax_response = ax.FetchResponse.fromSuccessResponse(response)
+            ax_response = ax.FetchResponse.fromSuccessResponse(response, False)
             if ax_response:
                 ax_items = {
                     'fullname': ax_response.get(
-                        'http://schema.openid.net/namePerson'),
-                    'web': ax_response.get(
-                        'http://schema.openid.net/contact/web/default'),
+                        'http://axschema.org/namePerson'),
+                    'email': ax_response.get(
+                        'http://axschema.org/contact/email'),
                     }
 
         # Get a PAPE response object if response information was
