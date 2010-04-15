@@ -195,13 +195,13 @@ class ToolParameter(Base):
     switch = models.CharField(max_length=25, null=True, blank=True)
     switch_use = models.ForeignKey(ParameterSwitchUse, null=True, blank=True)
     accepted_filetypes = models.ManyToManyField(FileType, blank=True)
-    input_extensions = models.ManyToManyField(FileExtension, blank=True, related_name='input_params')
     filter = models.ForeignKey(ParameterFilter, null=True, blank=True)
     filter_value = models.CharField(max_length=50, null=True, blank=True)
     source_param = models.ForeignKey('self', related_name='source_parent', null=True, blank=True)
     extension_param = models.ForeignKey('self', related_name='extension_parent', null=True, blank=True)
     possible_values = models.TextField(null=True, blank=True)
     default_value = models.TextField(null=True, blank=True)
+    helptext = models.TextField(null=True, blank=True)    
     
     def __unicode__(self):
         return self.switch or ''
