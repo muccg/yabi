@@ -12,6 +12,8 @@ from openid.extensions import ax, pape, sreg
 from openid.yadis.constants import YADIS_HEADER_NAME, YADIS_CONTENT_TYPE
 from openid.server.trustroot import RP_RETURN_TO_URL_TYPE
 
+from yabifeapp.views import LoginForm
+
 from djopenid import util
 
 PAPE_POLICIES = [
@@ -98,6 +100,9 @@ def startOpenID(request):
             ax.AttrInfo('http://axschema.org/namePerson',
                         required=True))
         ax_request.add(
+            ax.AttrInfo('http://axschema.org/namePerson/friendly',
+                        required=True))
+        ax_request.add(
             ax.AttrInfo('http://axschema.org/contact/email',
                         required=False, count=ax.UNLIMITED_VALUES))
         auth_request.addExtension(ax_request)
@@ -182,6 +187,8 @@ def finishOpenID(request):
                         'http://axschema.org/namePerson'),
                     'email': ax_response.get(
                         'http://axschema.org/contact/email'),
+                    'username': ax_response.get(
+                        'http://axschema.org/namePerson/friendly')
                     }
 
         # Get a PAPE response object if response information was
@@ -217,8 +224,13 @@ def finishOpenID(request):
             # not user-friendly, but intended for developers.
             result['failure_reason'] = response.message
 
+    form = LoginForm()
+    result['h'] = webhelpers
+    result['form'] = form
 
-    return renderIndexPage(request, **result)
+    return render_to_response('login.html', result)
+
+    #return renderIndexPage(request, **result)
 
 def rpXRDS(request):
     """

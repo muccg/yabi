@@ -9,31 +9,10 @@
 <br/>
 
 <div style="position:relative;">
-<form enctype="multipart/form-data" method="post" action="${ h.url("/login") }">
-<div class="loginForm">
-${form.as_p()}
-<br/>
-</div>
-<input type="submit" value="Log In" class="loginFormButton"/>
-</form>
-<br/><br/> 
-% for key, error_list in form.errors.iteritems():
-    % for err in error_list:
-        <span class="error">${key.title()}: ${ err }</span><br/>
-    % endfor
-% endfor
 %if error:
     <span class="error">${error}</span><br/>
 %endif
 <br/>
-  <form method="post" action="/openid/">
-    <div class="loginForm">
-      <label>OpenID provider</label>
-      <input type="text" size="40" name="openid_identifier" />
-    <br/><br/>
-    </div>  
-    <input type="submit" value="OpenID Log In" class="loginFormButton"/>
-  </form>
 <br/><br/>
   % if error:
     <div class="error">${ error|escape }</div>
@@ -99,32 +78,6 @@ ${form.as_p()}
 
 <p>
 <br/>
-<center>
-<table width="600px" style="background-color:#eee;padding:10px;-moz-border-radius:4px;-webkit-border-radius:4px;">
-
-<tr>
-    <td width="80px">&nbsp;</td>
-    <td valign="top" style="font-weight:bold;padding:10px;">Work In Progress</td>
-    <td valign="top" style="padding:10px;"><ul><li>Yabi is currently under construction. Please watch your HEAD.<li></ul></td>
-</tr>
-
-</table>
-</center>
-<p>
-
-
-<p>
-<br/>
-<center>
-<table width="400px" style="margin-top:20px">
-
-<tr>
-    <td valign="middle" style="padding-bottom:4px;padding-right:10px;">YABI is best viewed in standards compliant browsers: </td>
-    <td valign="top" ><a href="http://apple.com/safari/"><img src="${h.url('/static/images/safari.png')}" alt="Safari"></a> <a href="http://getfirefox.com/"><img src="${h.url('/static/images/firefox.png')}" alt="Firefox"></a></td>
-</tr>
-
-</table>
-</center>
 <p>
 
 <br />
