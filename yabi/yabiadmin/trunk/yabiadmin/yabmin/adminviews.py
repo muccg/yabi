@@ -65,9 +65,6 @@ class ToolParamView:
         if tp.input_file:
             props.append('Input File (%s)' % ",".join(
                 ['"%s"' % af.name for af in tp.accepted_filetypes.all()]))
-        if tp.input_extensions.all():
-            props.append('Input extensions: ' + ",".join(
-                ['"%s"' % ie.extension for ie in tp.input_extensions.all()]))
         if tp.output_file:
             props.append('Output File')
         if tp.filter:
@@ -287,7 +284,8 @@ def create_tool(request, tool_dict):
                                       output_file=parameter["output_file"],
                                       filter_value=parameter["filter_value"],
                                       default_value=parameter["default_value"],
-                                      switch=parameter["switch"]                                                                             
+                                      helptext=parameter["helptext"],
+                                      switch=parameter["switch"]
                                       )
 
         toolparameter.save() # so we can add many-to-many on accepted_filetypes

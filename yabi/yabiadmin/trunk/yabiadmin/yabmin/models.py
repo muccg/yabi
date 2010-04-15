@@ -130,7 +130,7 @@ class Tool(Base):
             'parameter_list': list(self.toolparameter_set.order_by('id').values("id", "rank", "mandatory", "input_file", "output_file",
                                                                                 "switch", "switch_use__display_text", "switch_use__value","switch_use__description",
                                                                                 "filter_value", "filter__display_text", "filter__value","filter__description", "possible_values",
-                                                                                "default_value"))
+                                                                                "default_value", "helptext"))
             }
 
         for p in tool_dict["parameter_list"]:
