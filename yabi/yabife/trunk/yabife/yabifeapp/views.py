@@ -137,7 +137,7 @@ def login(request):
 
     else:
         form = LoginForm()
-        return render_to_response('login.html', {'h':webhelpers, 'form':form})
+        return render_to_response('login.html', {'h':webhelpers, 'form':form, 'url':None})
 
 
 def logout(request):

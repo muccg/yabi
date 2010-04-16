@@ -82,7 +82,13 @@ def startOpenID(request):
 
         if error:
             # Render the page with an error.
-            return renderIndexPage(request, error=error)
+            form = LoginForm()
+            result = {}
+            result['h'] = webhelpers
+            result['form'] = form
+
+            return render_to_response('login.html', result)
+
 
         # Add Simple Registration request information.  Some fields
         # are optional, some are required.  It's possible that the
@@ -138,12 +144,19 @@ def startOpenID(request):
             # users will have to click the form submit button to
             # initiate OpenID authentication.
             form_id = 'openid_message'
+            auth_request.addExtensionArg('','type.email','http://axschema.org/contact/email')
             form_html = auth_request.formMarkup(trust_root, return_to,
                                                 False, {'id': form_id})
             return direct_to_template(
                 request, 'consumer/request_form.html', {'html': form_html})
 
-    return renderIndexPage(request, url=None)
+    form = LoginForm()
+    result = {}
+    result['h'] = webhelpers
+    result['form'] = form
+
+    return render_to_response('login.html', result)
+
 
 def finishOpenID(request):
     """
@@ -228,9 +241,10 @@ def finishOpenID(request):
     result['h'] = webhelpers
     result['form'] = form
 
-    return render_to_response('login.html', result)
-
-    #return renderIndexPage(request, **result)
+    if response.status == consumer.SUCCESS:
+        return render_to_response('consumer/registration.html', result)
+    else:
+        return render_to_response('login.html', result)
 
 def rpXRDS(request):
     """
