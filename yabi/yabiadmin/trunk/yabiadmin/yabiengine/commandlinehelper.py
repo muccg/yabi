@@ -92,31 +92,8 @@ class CommandLineHelper():
 
             #TODO is it here that we would set up other files to be staged in?
 
-                
-            # run through all the possible switch uses
-            switchuse = tp.switch_use.value
 
-            if switchuse == 'switchOnly':
-                self.command.append(tp.switch)
-
-            elif switchuse == 'valueOnly':
-                self.command.append(self.param_dict[tp.switch][0])
-
-            elif switchuse == 'both':
-                self.command.append("%s %s" % (tp.switch, self.param_dict[tp.switch][0]))
-
-            elif switchuse == 'combined':
-                self.command.append("%s%s" % (tp.switch, self.param_dict[tp.switch][0]))
-
-            elif switchuse == 'pair':
-                raise Exception('Unimplemented switch type: pair')
-        
-            elif switchuse == 'none':
-                pass
-
-            else:
-                logger.info("Unknown switch ignored [%s]" % tp.switch)
-                raise Exception("Unknown switch type:  %s" % tp.switch)
+            self.command.append(tp.switch_use.formatstring % {"switch":tp.switch, "value":self.param_dict[tp.switch][0]})
 
 
     def get_param_value(self, param):

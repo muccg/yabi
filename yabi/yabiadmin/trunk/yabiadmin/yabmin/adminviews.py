@@ -274,7 +274,7 @@ def create_tool(request, tool_dict):
     for parameter in tool_dict["parameter_list"]:
 
         switch_use, created = ParameterSwitchUse.objects.get_or_create(display_text=parameter["switch_use__display_text"],
-                                                                       value=parameter["switch_use__value"],
+                                                                       value=parameter["switch_use__formatstring"],
                                                                        description=parameter["switch_use__description"])
 
         toolparameter = ToolParameter(tool=tool,
@@ -305,9 +305,9 @@ def create_tool(request, tool_dict):
             toolparameter.possible_values=json.dumps(parameter["possible_values"])
 
 
-        if parameter["switch_use__display_text"] and parameter["switch_use__value"] and parameter["switch_use__description"]:
+        if parameter["switch_use__display_text"] and parameter["switch_use__formatstring"] and parameter["switch_use__description"]:
             switch_use, created = ParameterSwitchUse.objects.get_or_create(display_text=parameter["switch_use__display_text"],
-                                                                           value=parameter["switch_use__value"],
+                                                                           value=parameter["switch_use__formatstring"],
                                                                            description=parameter["switch_use__description"])
 
             toolparameter.switch_use=switch_use

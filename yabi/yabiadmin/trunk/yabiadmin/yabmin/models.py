@@ -128,7 +128,7 @@ class Tool(Base):
             'inputExtensions': self.input_filetype_extensions(),
             'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__extension")),            
             'parameter_list': list(self.toolparameter_set.order_by('id').values("id", "rank", "mandatory", "input_file", "output_file",
-                                                                                "switch", "switch_use__display_text", "switch_use__value","switch_use__description",
+                                                                                "switch", "switch_use__display_text", "switch_use__formatstring","switch_use__description",
                                                                                 "filter_value", "filter__display_text", "filter__value","filter__description", "possible_values",
                                                                                 "default_value", "helptext"))
             }
@@ -172,7 +172,7 @@ class Tool(Base):
 
 class ParameterSwitchUse(Base):
     display_text = models.CharField(max_length=30)
-    value = models.CharField(max_length=20)
+    formatstring = models.CharField(max_length=20, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
     def __unicode__(self):
