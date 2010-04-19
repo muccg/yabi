@@ -97,7 +97,6 @@ class BackendCredentialAdmin(AdminBase):
     
 
 admin.site.register(FileExtension, AdminBase)
-admin.site.register(ParameterFilter, AdminBase)
 admin.site.register(ParameterSwitchUse, AdminBase)
 #admin.site.register(QueuedWorkflow, QueueAdmin)
 #admin.site.register(InProgressWorkflow, QueueAdmin)

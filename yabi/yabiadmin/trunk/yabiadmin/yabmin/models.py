@@ -129,8 +129,7 @@ class Tool(Base):
             'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__extension")),            
             'parameter_list': list(self.toolparameter_set.order_by('id').values("id", "rank", "mandatory", "input_file", "output_file",
                                                                                 "switch", "switch_use__display_text", "switch_use__formatstring","switch_use__description",
-                                                                                "filter_value", "filter__display_text", "filter__value","filter__description", "possible_values",
-                                                                                "default_value", "helptext"))
+                                                                                "possible_values","default_value","helptext"))
             }
 
         for p in tool_dict["parameter_list"]:
@@ -178,14 +177,6 @@ class ParameterSwitchUse(Base):
     def __unicode__(self):
         return self.display_text
 
-class ParameterFilter(Base):
-    display_text = models.CharField(max_length=30)
-    value = models.CharField(max_length=20)
-    description = models.TextField(null=True, blank=True)
-
-    def __unicode__(self):
-        return self.display_text
-
 class ToolParameter(Base):
     tool = models.ForeignKey(Tool)
     rank = models.IntegerField(null=True, blank=True)
@@ -195,8 +186,6 @@ class ToolParameter(Base):
     switch = models.CharField(max_length=25, null=True, blank=True)
     switch_use = models.ForeignKey(ParameterSwitchUse, null=True, blank=True)
     accepted_filetypes = models.ManyToManyField(FileType, blank=True)
-    filter = models.ForeignKey(ParameterFilter, null=True, blank=True)
-    filter_value = models.CharField(max_length=50, null=True, blank=True)
     source_param = models.ForeignKey('self', related_name='source_parent', null=True, blank=True)
     extension_param = models.ForeignKey('self', related_name='extension_parent', null=True, blank=True)
     possible_values = models.TextField(null=True, blank=True)
