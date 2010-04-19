@@ -4,7 +4,9 @@ from django import forms
 from django.contrib.auth.models import User as DjangoUser
 from django.utils import simplejson as json
 from django.core import urlresolvers
+from django.conf import settings
 from urlparse import urlparse, urlunparse
+
 
 DEBUG = False
 
@@ -63,6 +65,11 @@ class Tool(Base):
     job_type = models.CharField(max_length=40, default='single', null=True, blank=True)
 
 
+    name.help_text="Unique toolname for internal use."
+    display_name.help_text="Tool name visible to users."
+    batch_on_param.help_text="Specify switch that will be fed files in batch mode. i.e. -i in blast."
+    module.help_text="Comma separated list of modules to load."
+    
     def tool_groups_str(self):
         return ",".join(
             ["%s (%s)" % (tg.tool_group,tg.tool_set) 
@@ -174,6 +181,8 @@ class ParameterSwitchUse(Base):
     formatstring = models.CharField(max_length=20, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
+    formatstring.help_text="Example: %(switch)s %(value)s"
+
     def __unicode__(self):
         return self.display_text
 
@@ -191,6 +200,8 @@ class ToolParameter(Base):
     possible_values = models.TextField(null=True, blank=True)
     default_value = models.TextField(null=True, blank=True)
     helptext = models.TextField(null=True, blank=True)    
+
+    possible_values.help_text="Json snippet for html select. See blast tool for examples."
     
     def __unicode__(self):
         return self.switch or ''
@@ -275,6 +286,9 @@ class Credential(Base):
     user = models.ForeignKey(User)
     backends = models.ManyToManyField('Backend', through='BackendCredential', null=True, blank=True)
 
+    username.help_text="The username on the backend this credential is for."
+    user.help_text="Yabi username."
+
     def __unicode__(self):
         if DEBUG:
             return "Credential <id=%s description=%s username=%s user=%s backends=%s>" % (self.id, self.description if len(self.description)<20 else self.description[:20], self.username, self.user.name, self.backends.all())
@@ -287,6 +301,13 @@ class Backend(Base):
     hostname = models.CharField(max_length=512)
     port = models.IntegerField(null=True, blank=True)
     path = models.CharField(max_length=512)
+
+    scheme.help_text="Must be one of %s." % ", ".join(settings.VALID_SCHEMES)
+    hostname.help_text="Hostname must not end with a /."
+    path.help_text="Path must start and end with a /.<br/>Execution backends must only have / in the path field."
+
+
+
 
     @property
     def uri(self):
@@ -324,6 +345,9 @@ class BackendCredential(Base):
     visible = models.BooleanField()                                                         # ALTER TABLE "yabmin_backendcredential" ADD "visible" boolean NOT NULL default False;
     default_stageout = models.BooleanField()                                                         # ALTER TABLE "yabmin_backendcredential" ADD "visible" boolean NOT NULL default False;
 
+    homedir.help_text="Homedir must not start with a / but must end with a /."
+    default_stageout.help_text="There must be only one default_stageout per yabi user."
+    
     def __unicode__(self):
         if DEBUG:
             return "BackendCredential <%s backend.id=%s credential.id=%s homedir=%s visbile=%s>"%(self.id,self.backend.id,self.credential.id,self.homedir,str(self.visible))

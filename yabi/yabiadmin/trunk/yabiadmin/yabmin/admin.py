@@ -39,7 +39,7 @@ class ToolGroupingInline(admin.TabularInline):
 
 class ToolOutputExtensionInline(admin.TabularInline):
     model = ToolOutputExtension
-    extra = 3
+    extra = 1
 
 class ToolParameterFormset(BaseInlineFormSet):
     def get_queryset(self):
@@ -95,9 +95,12 @@ class BackendCredentialAdmin(AdminBase):
     list_display = ['backend', 'credential', 'homedir', 'visible', 'default_stageout']
     list_filter = ['credential__user']
     
+class ParameterSwitchUseAdmin(AdminBase):
+    list_display = ['display_text', 'formatstring', 'description']
+    search_fields = ['display_text', 'description']
 
 admin.site.register(FileExtension, AdminBase)
-admin.site.register(ParameterSwitchUse, AdminBase)
+admin.site.register(ParameterSwitchUse, ParameterSwitchUseAdmin)
 #admin.site.register(QueuedWorkflow, QueueAdmin)
 #admin.site.register(InProgressWorkflow, QueueAdmin)
 admin.site.register(FileType, FileTypeAdmin)
