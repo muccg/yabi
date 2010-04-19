@@ -76,4 +76,3 @@ class ToolForm(forms.ModelForm):
             raise forms.ValidationError("Execution backends must only have / in the path field. (This is probably a file system backend.)")
         return backend
 
-

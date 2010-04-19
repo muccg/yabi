@@ -67,6 +67,12 @@ class Tool(Base):
 
     name.help_text="Unique toolname for internal use."
     display_name.help_text="Tool name visible to users."
+    path.help_text="The path to the binary for this file. Will normally just be binary name."
+    description.help_text="The description that will be sent to the frontend for the user."
+    enabled.help_text="Enable tool in frontend."
+    backend.help_text="The execution backend for this tool."
+    fs_backend.help_text="The filesystem backend for this tool."
+    accepts_input.help_text="Check the effect of this."
     batch_on_param.help_text="Specify switch that will be fed files in batch mode. i.e. -i in blast."
     module.help_text="Comma separated list of modules to load."
     
@@ -188,12 +194,12 @@ class ParameterSwitchUse(Base):
 
 class ToolParameter(Base):
     tool = models.ForeignKey(Tool)
+    switch = models.CharField(max_length=25, null=True, blank=True)
+    switch_use = models.ForeignKey(ParameterSwitchUse, null=True, blank=True)
     rank = models.IntegerField(null=True, blank=True)
     mandatory = models.BooleanField(blank=True, default=False)
     input_file = models.BooleanField(blank=True, default=False)
     output_file = models.BooleanField(blank=True, default=False)
-    switch = models.CharField(max_length=25, null=True, blank=True)
-    switch_use = models.ForeignKey(ParameterSwitchUse, null=True, blank=True)
     accepted_filetypes = models.ManyToManyField(FileType, blank=True)
     source_param = models.ForeignKey('self', related_name='source_parent', null=True, blank=True)
     extension_param = models.ForeignKey('self', related_name='extension_parent', null=True, blank=True)
@@ -201,7 +207,18 @@ class ToolParameter(Base):
     default_value = models.TextField(null=True, blank=True)
     helptext = models.TextField(null=True, blank=True)    
 
+    switch.help_text="The actual command line switch that should be passed to the tool i.e. -i or --input-file"
+    switch_use.help_text="The way the switch should be combined with the value."
+    rank.help_text="The order in which the switches should appear. Leave blank if order is unimportant."
+    mandatory.help_text="Select if the switch is required as input."
+    input_file.help_text="Select if the switch takes a file as input from another tool."
+    output_file.help_text="Select if the switch is specifying an output file."
+    accepted_filetypes.help_text="The extensions of accepted filetypes for this switch."
+    source_param.help_text="Unused. Could be used again for appending and extension to the end of a input file. This switch would then refer to a file specified at another switch."
+    extension_param.help_text="Unused. Need to find what this is for."
     possible_values.help_text="Json snippet for html select. See blast tool for examples."
+    default_value.help_text="Value that will appear in field. If possible values is populated this should match one of the values so the select widget defaults to that option."
+    helptext.help_text="Help text that is passed to the frontend for display to the user."
     
     def __unicode__(self):
         return self.switch or ''

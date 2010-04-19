@@ -41,7 +41,10 @@ class ToolOutputExtensionInline(admin.TabularInline):
     model = ToolOutputExtension
     extra = 1
 
+
+
 class ToolParameterFormset(BaseInlineFormSet):
+
     def get_queryset(self):
         return super(ToolParameterFormset, self).get_queryset().order_by('id')
 
@@ -51,7 +54,8 @@ class ToolParameterFormset(BaseInlineFormSet):
         form.fields["source_param"].queryset = tool_only_queryset
         form.fields["extension_param"].queryset = tool_only_queryset
 
-class ToolParameterInline(admin.TabularInline):
+
+class ToolParameterInline(admin.StackedInline):
     model = ToolParameter
     formset = ToolParameterFormset
     extra = 3
