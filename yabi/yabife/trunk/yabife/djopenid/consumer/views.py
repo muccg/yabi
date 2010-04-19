@@ -86,6 +86,7 @@ def startOpenID(request):
             result = {}
             result['h'] = webhelpers
             result['form'] = form
+            result['error'] = error
 
             return render_to_response('login.html', result)
 

@@ -7,64 +7,327 @@
 document.body.style.background = 'white';
 </script>
 
-<a href="${h.url('/')}"><img src="${h.url('/static/images/yabi-logo.png')}" alt="Yabi-logo" height="60" width="198" /></a><p>
-<br/>
+  <div id="doc3" class="yui-t1">
+    <div id="yabi-design-mode">
+      <div id="hd">
+        <p><img src="${h.url('/static/images/yabi-logo.png')}" alt="Yabi-logo" height="60" width="198" />  
 
-<br/><br/> 
-% for key, error_list in form.errors.iteritems():
-    % for err in error_list:
-        <span class="error">${key.title()}: ${ err }</span><br/>
-    % endfor
-% endfor
-%if error:
-    <span class="error">${error}</span><br/>
-%endif
-<br/><br/>
-  % if error:
+        <div style="position:absolute;left:220px;top:30px;font-size:18px;color:#3879e5;">Registration</div>
+
+            <div id="yabi-message-ajax">
+    % if error:
     <div class="error">${ error|escape }</div>
-  % endif
+    % endif
+            </div>
 
+      </div>
+          <div style="position:absolute;left:0px;top:63px;width:760px;padding:5px;padding-left:30px;padding-top:20px;">
+
+
+Applicants must read and agree to the iVEC conditions of use and policies: 
+
+<ul style="margin-left:80px;margin-top:10px;margin-bottom:10px;"><li>- <a href="http://ccg.murdoch.edu.au/index.php/IVEC_Conditions_of_Use" target="_blank" title="IVEC Conditions of Use">Conditions of Use</a>
+</li><li>- <a href="http://ccg.murdoch.edu.au/index.php/IVEC_Network_Policy" target="_blank" title="IVEC Network Policy">Network policy</a>
+</li><li>- <a href="http://ccg.murdoch.edu.au/index.php/IVEC_Security_Policy" target="_blank" title="IVEC Security Policy">Security policy</a> 
+</li><li>- <a href="http://ccg.murdoch.edu.au/index.php/IVEC_Password_Policy" target="_blank" title="IVEC Password Policy">Password policy</a> 
+</li></ul>
+
+<p>Once you have read the iVEC Policies and agree to abide by them and the conditions above, you are ready to fill out the online application form:
+
+<div style="margin:10px;border:2px solid #3879e5;padding:15px;-moz-border-radius:5px;-webkit-border-radius:5px;">
   % if url is not None and url is not '':
     <div class="message">
-      OpenID authentication succeeded; you authenticated as
-        <a href="${ url }">${ url|escape }</a>.
+      <div style="background-color:#00da00;color:#fff;-moz-border-radius:3px;-webkit-border-radius:3px;margin-bottom:10px;padding:3px;">
+      OpenID authentication succeeded, OpenID is:
+        <a href="${ url }" style="color:#fff;">${ url|escape }</a>
+      </div>
 
+      <form>
       <p>
-      % if sreg:
-        Simple Registration data returned:
+    <table>
+    % if ax:
+      % for pair in ax:
+      <tr>
+        <td width="200"><label>${ pair[0] }</label></td>
+        <td><input value="${ ','.join(pair[1]) }"></td>
+      </tr>
+      % endfor
+    % endif
 
-        <ul>
-        % for pair in sreg:
-          <li>${ pair[0] }: ${ pair[1] }</li>
-        % endfor
-        </ul>
-      % else:
-        The server returned no Simple Registration data.
-      % endif
+<!--  PASTED FORM CODE HERE -->
+<tr>
+<td valign=top>
+	<span class=bold>Name:</span><br/>
+<span class=backend_smallprint></span>
 
-      % if ax:
-        Attribute Exchange data returned:
+</td>
 
-        <ul>
-        % for pair in ax:
-        <li>${ pair[0] }: ${ pair[1] }</li>
-        % endfor
-        </ul>
-      % else:
-        The server returned no Attribute Exchange data.
-      % endif
+<td valign=top>
+<input type=text name="form_form_section_1_question_1_value" value="" size=30 maxlength=300 >					</td>
+</tr>
+		<tr>
+<td valign=top>
+	<span class=bold>Organisation/Institution:</span><br/>
+		<span class=backend_smallprint></span>
+</td>
+<td valign=top>
+<input type=text name="form_form_section_1_question_2_value" value="" size=30 maxlength=300 >					</td>
+</tr>
+		<tr>
+<td valign=top>
+	<span class=bold>Faculty/Discipline:</span><br/>
+<span class=backend_smallprint></span>
+</td>
+<td valign=top>
+<input type=text name="form_form_section_1_question_7_value" value="" size=30 maxlength=300 >					</td>
+</tr>
+		<tr>
 
-      % if pape:
-        An authentication policy response contained these policies:
+<td valign=top>
+<span class=bold>User Type:</span><br/>
+<span class=backend_smallprint></span>
+</td>
+<td valign=top>
+<select name="form_form_section_1_question_5_value"  ><option value="Student" >Student<option value="Visitor" >Visitor<option value="Staff" selected>Staff</select>					</td>
 
-        <ul>
-          % for uri in pape.auth_policies:
-            <li><tt>${ uri }</tt></li>
-          % endfor
-        </ul>
-      % else:
-        The server returned no authentication policy data (PAPE).
-      % endif
+</tr>
+		<tr>
+<td valign=top>
+	<span class=bold>ID:</span><br/>
+<span class=backend_smallprint></span>
+</td>
+
+<td valign=top>
+<input type=text name="form_form_section_1_question_6_value" value="" size=30 maxlength=300 >					</td>
+</tr>
+		<tr>
+<td valign=top>
+	<span class=bold>Email:</span><br/>
+	<span class=backend_smallprint></span>
+</td>
+<td valign=top>
+<input type=text name="form_form_section_1_question_3_value" value="" size=30 maxlength=300 >					</td>
+</tr>
+		<tr>
+
+<td valign=top>
+	<span class=bold>Contact Number:</span><br/>
+<span class=backend_smallprint></span>
+</td>
+<td valign=top>
+<input type=text name="form_form_section_1_question_4_value" value="" size=30 maxlength=300 >					</td>
+</tr>
+		<tr><td colspan=2><hr noshade size=0></td></tr>
+	<tr>
+<td colspan=2 valign=top>
+CSIRO users please use your ident				</td>
+</tr>
+	<tr>
+<td valign=top>
+<p>						<span class=bold>1st Preferred UserID:</span><br/>
+<span class=backend_smallprint></span>
+</p>
+</td>
+<td valign=top>
+<input type=text name="form_form_section_4_question_1_value" value="" size=30 maxlength=300 >					</td>
+</tr>
+
+		<tr>
+<td valign=top>
+<p>						<span class=bold>2nd Preferred UserID&nbsp;:</span><br/>
+<span class=backend_smallprint></span>
+</p>
+</td>
+<td valign=top>
+<input type=text name="form_form_section_4_question_2_value" value="" size=30 maxlength=300 >					</td>
+</tr>
+		<tr><td colspan=2><hr noshade size=0></td></tr>
+	<tr>
+<td colspan=2 valign=top>
+<p><span class=subheading>Project Supervisor (if not you)</span><br/>				</td>
+
+</tr>
+	<tr>
+<td valign=top>
+<p>						<span class=bold>Name:</span><br/>
+<span class=backend_smallprint></span>
+</p>
+</td>
+
+<td valign=top>
+<input type=text name="form_form_section_2_question_1_value" value="" size=30 maxlength=300 >					</td>
+</tr>
+		<tr>
+<td valign=top>
+<p>						<span class=bold>Contact Number:</span><br/>
+</p><p>						<span class=backend_smallprint></span>
+</p>
+</td>
+<td valign=top>
+<input type=text name="form_form_section_2_question_2_value" value="" size=30 maxlength=300 >					</td>
+</tr>
+		<tr>
+<td valign=top>
+<p>						<span class=bold>Email:</span><br/>
+<span class=backend_smallprint></span>
+</p>
+</td>
+<td valign=top>
+<input type=text name="form_form_section_2_question_3_value" value="" size=30 maxlength=300 >					</td>
+</tr>
+		<tr><td colspan=2><hr noshade size=0></td></tr>
+	<tr>
+<td colspan=2 valign=top>
+<p><span class=subheading>If you wish to be part of an exisiting project, please skip to the last section.</span><br/>				</td>
+</tr>
+	<tr>
+<td valign=top>
+<p>						<span class=bold>Project Title:</span><br/>
+<span class=backend_smallprint></span>
+</p>
+</td>
+<td valign=top>
+<input type=text name="form_form_section_3_question_1_value" value="" size=30 maxlength=300 >					</td>
+</tr>
+
+		<tr>
+<td valign=top>
+<p>						<span class=bold>Project Description:</span><br/>
+<span class=backend_smallprint></span>
+</p>
+</td>
+<td valign=top>
+<textarea wrap=on name="form_form_section_3_question_2_value" cols=30 rows=3 onchange="if (value.length > 300){value=value.substr(0,300); alert('form_form_section_3_question_2_value may be no more than 300 characters long.');focus()}" ></textarea>					</td>
+</tr>
+		<tr>
+<td valign=top>
+<p>						<span class=bold>RFCD Code 1:</span><br/>
+</p><p>						<span class=backend_smallprint></span>
+</p>
+</td>
+<td valign=top>
+<input type=text name="form_form_section_3_question_3_value" value="" size=6 >					</td>
+</tr>
+		<tr>
+<td valign=top>
+<p>						<span class=bold>Code 1 Weight:</span><br/>
+<span class=backend_smallprint></span>
+</p>
+</td>
+<td valign=top>
+<input type=text name="form_form_section_3_question_6_value" value="" size=6 >					</td>
+</tr>
+		<tr>
+<td valign=top>
+<p>						<span class=bold>RFCD Code 2:</span><br/>
+<span class=backend_smallprint></span>
+</p>
+</td>
+<td valign=top>
+<input type=text name="form_form_section_3_question_4_value" value="" size=6 >					</td>
+
+</tr>
+		<tr>
+<td valign=top>
+<p>						<span class=bold>Code 2 Weight:</span><br/>
+<span class=backend_smallprint></span>
+</p>
+</td>
+
+<td valign=top>
+<input type=text name="form_form_section_3_question_7_value" value="" size=6 >					</td>
+</tr>
+		<tr>
+<td valign=top>
+<p>						<span class=bold>RFCD Code 3:</span><br/>
+</p><p>						<span class=backend_smallprint></span>
+</p>
+</td>
+<td valign=top>
+<input type=text name="form_form_section_3_question_5_value" value="" size=6 >					</td>
+</tr>
+		<tr>
+<td valign=top>
+<p>						<span class=bold>Code 3 Weight:</span><br/>
+<span class=backend_smallprint></span>
+</p>
+</td>
+<td valign=top>
+<input type=text name="form_form_section_3_question_8_value" value="" size=6 >					</td>
+</tr>
+		<tr><td colspan=2><hr noshade size=0></td></tr>
+	<tr>
+<td colspan=2 valign=top>
+			</td>
+</tr>
+	<tr>
+<td valign=top>
+<p>						<span class=bold>Resources:</span><br/>
+<span class=backend_smallprint></span>
+</p>
+</td>
+<td valign=top>
+<table cellpadding=0 cellspacing=0 border=0><tr><td valign=middle>&nbsp;<input type=checkbox name="form_form_section_7_question_1_value[0]" value="Compute - HPC" ></td><td valign=middle>Compute - HPC</td></tr><tr><td valign=middle>&nbsp;<input type=checkbox name="form_form_section_7_question_1_value[1]" value="Data - Petabyte Storage" ></td><td valign=middle>Data - Petabyte Storage</td></tr><tr><td valign=middle>&nbsp;<input type=checkbox name="form_form_section_7_question_1_value[2]" value="Network" ></td><td valign=middle>Network</td></tr><tr><td></td></tr></table>					</td>
+</tr>
+		<tr>
+<td valign=top>
+<p>						<span class=bold>Estimate:</span><br/>
+<span class=backend_smallprint></span>
+</p>
+</td>
+
+<td valign=top>
+<textarea wrap=on name="form_form_section_7_question_2_value" cols=50 rows=9 onchange="if (value.length > 1000){value=value.substr(0,1000); alert('form_form_section_7_question_2_value may be no more than 1000 characters long.');focus()}" >Number of CPUs / Amount of Storage required&nbsp;?</textarea>					</td>
+</tr>
+		<tr><td colspan=2><hr noshade size=0></td></tr>
+	<tr>
+<td colspan=2 valign=top>
+<p><span class=subheading>Justify your requirements</span><br/>Why do you require the resources indicated above?				</td>
+</tr>
+	<tr>
+<td valign=top>
+<p>						<span class=bold>Describe:</span><br/>
+</p><p>						<span class=backend_smallprint></span>
+</p>
+</td>
+<td valign=top>
+<textarea wrap=on name="form_form_section_6_question_1_value" cols=50 rows=9 onchange="if (value.length > 1000){value=value.substr(0,1000); alert('form_form_section_6_question_1_value may be no more than 1000 characters long.');focus()}" ></textarea>					</td>
+</tr>
+		<tr>
+<td valign=top>
+<p>						<span class=bold>Software Needs:</span><br/>
+<span class=backend_smallprint></span>
+</p>
+</td>
+<td valign=top>
+<textarea wrap=on name="form_form_section_6_question_2_value" cols=30 rows=3 onchange="if (value.length > 300){value=value.substr(0,300); alert('form_form_section_6_question_2_value may be no more than 300 characters long.');focus()}" ></textarea>					</td>
+</tr>
+
+		<tr><td colspan=2><hr noshade size=0></td></tr>
+	<tr>
+<td colspan=2 valign=top>
+<p><span class=subheading>I agree to the iVEC Conditions of Use:</span><br/>				</td>
+</tr>
+	<tr>
+<td valign=top>
+<p>						<span class=bold>Select</span><br/>
+<span class=backend_smallprint></span>
+</p>
+</td>
+<td valign=top>
+<table cellpadding=0 cellspacing=0 border=0><tr><td valign=middle>&nbsp;<input type=radio name="form_form_section_5_question_1_value" value="Yes" ></td><td valign=middle>Yes</td></tr><tr><td valign=middle>&nbsp;<input type=radio name="form_form_section_5_question_1_value" value="No"  checked></td><td valign=middle>No</td></tr><tr><td></td></tr></table>					</td>
+	</tr>
+				<tr>
+<td></td>
+<td>
+                       <input type="submit" name="form_form_action" value="Submit Form">
+</td>
+</tr>
+<!-- END PASTED FORM -->
+
+    </table>
+    </form>
+
     </div>
   % endif
 
@@ -80,21 +343,11 @@ document.body.style.background = 'white';
     </div>
   % endif
 
-
-<p>
-<br/>
-<p>
-
-<br />
-
-
-<div style="float:centre;font-size:80%">
-<p>Authorised by: <a href="mailto:mbellgard@ccg.murdoch.edu.au"> Prof Matthew Bellgard</a>; Director, <a href="http://ccg.murdoch.edu.au/">Centre for Comparative Genomics</a><br />
-
-<a href="http://www.murdoch.edu.au/copy/copy.html" >Disclaimer &amp; Copyright Notice</a> &copy; 2006, 2009 <a href="http://www.murdoch.edu.au/about/murdoch.html">Murdoch University</a><br/>
-Contact: <a href="mailto:web@ccg.murdoch.edu.au">Site administrator.</a>
-<br />
-Logo font 'effortless' by Tup Wanders
-</p>
 </div>
+          </div>
+
+    </div>
+  </div>
+  
+  <div class="copyright">&copy; 2006, 2009 CCG, Murdoch University</div>
 </%def>
