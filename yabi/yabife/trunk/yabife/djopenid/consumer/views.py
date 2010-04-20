@@ -148,8 +148,12 @@ def startOpenID(request):
             auth_request.addExtensionArg('','type.email','http://axschema.org/contact/email')
             form_html = auth_request.formMarkup(trust_root, return_to,
                                                 False, {'id': form_id})
-            return direct_to_template(
-                request, 'consumer/request_form.html', {'html': form_html})
+            if openid_url.find('google') >= 0:
+                return direct_to_template(
+                    request, 'consumer/request_form.html', {'html': form_html, 'is_google': True})
+            else:
+                return direct_to_template(
+                    request, 'consumer/request_form.html', {'html': form_html})
 
     form = LoginForm()
     result = {}
