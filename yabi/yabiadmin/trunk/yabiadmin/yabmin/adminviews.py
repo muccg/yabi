@@ -67,11 +67,6 @@ class ToolParamView:
                 ['"%s"' % af.name for af in tp.accepted_filetypes.all()]))
         if tp.output_file:
             props.append('Output File')
-        if tp.filter:
-            filter_text = tp.filter.display_text
-            if tp.filter_value:
-                filter_text += ' "%s"' % tp.filter_value
-            props.append(filter_text)
         if tp.source_param:
             props.append('Source parameter: ' + tp.source_param.switch)
         if tp.extension_param:
