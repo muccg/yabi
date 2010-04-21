@@ -89,6 +89,7 @@ def parse_ls(data, culldots=True):
         }
 	
 	# deal with totally empty directory when -a flag is absent
+	print "OUTPUT:",output
 	if not output:
 		output[None] = {
 			"files":[],
