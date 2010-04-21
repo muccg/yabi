@@ -269,7 +269,7 @@ def create_tool(request, tool_dict):
     for parameter in tool_dict["parameter_list"]:
 
         switch_use, created = ParameterSwitchUse.objects.get_or_create(display_text=parameter["switch_use__display_text"],
-                                                                       value=parameter["switch_use__formatstring"],
+                                                                       formatstring=parameter["switch_use__formatstring"],
                                                                        description=parameter["switch_use__description"])
 
         toolparameter = ToolParameter(tool=tool,
@@ -277,7 +277,6 @@ def create_tool(request, tool_dict):
                                       mandatory=parameter["mandatory"],
                                       input_file=parameter["input_file"],
                                       output_file=parameter["output_file"],
-                                      filter_value=parameter["filter_value"],
                                       default_value=parameter["default_value"],
                                       helptext=parameter["helptext"],
                                       switch=parameter["switch"]
@@ -302,20 +301,10 @@ def create_tool(request, tool_dict):
 
         if parameter["switch_use__display_text"] and parameter["switch_use__formatstring"] and parameter["switch_use__description"]:
             switch_use, created = ParameterSwitchUse.objects.get_or_create(display_text=parameter["switch_use__display_text"],
-                                                                           value=parameter["switch_use__formatstring"],
+                                                                           formatstring=parameter["switch_use__formatstring"],
                                                                            description=parameter["switch_use__description"])
 
             toolparameter.switch_use=switch_use
-
-
-
-
-        if parameter["filter__description"] and parameter["filter__display_text"] and parameter["filter_value"]:
-            parameter_filter, created = ParameterFilter.objects.get_or_create(display_text=parameter["filter__display_text"],
-                                                                              value=parameter["filter__value"],
-                                                                              description=parameter["filter__description"])
-            toolparameter.filter = parameter_filter
-
 
         toolparameter.save()
 
