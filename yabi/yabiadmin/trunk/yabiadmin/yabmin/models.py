@@ -184,7 +184,7 @@ class Tool(Base):
 
 class ParameterSwitchUse(Base):
     display_text = models.CharField(max_length=30)
-    formatstring = models.CharField(max_length=20, null=True, blank=True)
+    formatstring = models.CharField(max_length=256, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
 
     formatstring.help_text="Example: %(switch)s %(value)s"
