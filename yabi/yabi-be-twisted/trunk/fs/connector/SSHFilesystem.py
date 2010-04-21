@@ -130,8 +130,8 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             print "out", out
             print "err", err
         
-		print "BING"
-		
+        print "BING"
+        
         # are we non recursive?
         if not recurse:
             # "None" path header is actually our path

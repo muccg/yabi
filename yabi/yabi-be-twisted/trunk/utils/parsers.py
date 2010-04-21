@@ -75,7 +75,7 @@ def parse_ls_directories(data, culldots=True):
             
 def parse_ls(data, culldots=True):
     """Upper level ls parser."""
-	print "PARSE LS"
+    print "PARSE LS"
     output = {}
     for name,filelisting,dirlisting in parse_ls_directories(data, culldots):
         if DEBUG:
@@ -88,13 +88,13 @@ def parse_ls(data, culldots=True):
             "files":filelisting,
             "directories":dirlisting
         }
-	
-	# deal with totally empty directory when -a flag is absent
-	print "OUTPUT:",output
-	if not output:
-		output[None] = {
-			"files":[],
-			"directories":[]
-		}
-	
+
+    # deal with totally empty directory when -a flag is absent
+    print "OUTPUT:",output
+    if not output:
+        output[None] = {
+            "files":[],
+            "directories":[]
+        }
+
     return output
