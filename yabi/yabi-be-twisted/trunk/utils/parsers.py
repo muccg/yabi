@@ -87,4 +87,12 @@ def parse_ls(data, culldots=True):
             "files":filelisting,
             "directories":dirlisting
         }
+	
+	# deal with totally empty directory when -a flag is absent
+	if not output:
+		output[None] = {
+			"files":[],
+			"directories":[]
+		}
+	
     return output
