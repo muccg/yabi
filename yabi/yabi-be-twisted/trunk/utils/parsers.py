@@ -75,6 +75,7 @@ def parse_ls_directories(data, culldots=True):
             
 def parse_ls(data, culldots=True):
     """Upper level ls parser."""
+	print "PARSE LS"
     output = {}
     for name,filelisting,dirlisting in parse_ls_directories(data, culldots):
         if DEBUG:
