@@ -29,7 +29,6 @@ YAHOO.util.Event.onDOMReady(function() {
       </div>
           <div style="position:absolute;left:0px;top:63px;width:760px;padding:5px;padding-left:30px;padding-top:20px;">
 
-
 Applicants must read and agree to the iVEC conditions of use and policies: 
 
 <ul style="margin-left:80px;margin-top:10px;margin-bottom:10px;"><li>- <a href="http://ccg.murdoch.edu.au/index.php/IVEC_Conditions_of_Use" target="_blank" title="IVEC Conditions of Use">Conditions of Use</a>
@@ -44,8 +43,12 @@ Applicants must read and agree to the iVEC conditions of use and policies:
   % if url is not None and url is not '':
     <div class="message">
       <div style="background-color:#00da00;color:#fff;-moz-border-radius:3px;-webkit-border-radius:3px;margin-bottom:10px;padding:3px;">
-      OpenID authentication succeeded, OpenID is:
-        <a href="${ url }" style="color:#fff;">${ url|escape }</a>
+      OpenID authentication succeeded. <p>
+      </div>
+      <div style="background-color:#eefaee;color:#000;-moz-border-radius:3px;-webkit-border-radius:3px;margin-bottom:20px;padding:3px;">
+      Your OpenID URL is:
+        <a href="${ url }" style="color:#006;">${ url|escape }</a><p>
+      When your registration is processed you will be able to login to YABI directly using OpenID.
       </div>
 
       <form>

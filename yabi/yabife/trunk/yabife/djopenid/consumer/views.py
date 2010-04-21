@@ -247,7 +247,15 @@ def finishOpenID(request):
     result['form'] = form
 
     if response.status == consumer.SUCCESS:
-        return render_to_response('consumer/registration.html', result)
+        from django.contrib.auth import authenticate, login
+
+        user = authenticate(openid_url = response.getDisplayIdentifier())
+
+        if user is None:
+            return render_to_response('consumer/registration.html', result)
+        else:
+            login(request, user)
+            return HttpResponseRedirect('/')
     else:
         return render_to_response('login.html', result)
 
