@@ -212,6 +212,7 @@ CAPTCHA_ROOT = os.path.join(MEDIA_ROOT, 'captchas')
 CAPTCHA_URL = os.path.join(MEDIA_URL, 'captchas')
 
 AUTHENTICATION_BACKENDS = (
+    'djopenid.consumer.models.OpenIDBackend',
     'django.contrib.auth.backends.LDAPBackend',
     'django.contrib.auth.backends.NoAuthModelBackend',
 )
