@@ -16,6 +16,9 @@ for delkey in ['DISPLAY','SSH_AGENT_PID','SSH_AUTH_SOCK']:
 def eprint(text):
     sys.stderr.write(text)
     sys.stderr.write("\n")
+    
+def escapequotes(filename):
+    return filename.replace("'","\\'").replace('"','\\"')
 
 DEBUG = False
 
@@ -86,7 +89,7 @@ if direction == L2R:
     hostpart, path = outfile.split(':',1)
     user, host = hostpart.split('@',1)
         
-    ssh_command = ("cat %s | %s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cat>\"%s\" '")%(infile,SSH,subprocess.list2cmdline(path))
+    ssh_command = ("cat %s | %s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cat>\"%s\" '")%(infile,SSH,escapequotes(path))
     command = '/bin/bash' 
     args = ['-c',ssh_command]
     
@@ -128,7 +131,7 @@ elif direction == R2L:
     hostpart, path = infile.split(':',1)
     user, host = hostpart.split('@',1)
     
-    ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cat \"%s\"' > '%s'")%(SSH,path,subprocess.list2cmdline(outfile))
+    ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cat \"%s\"' > '%s'")%(SSH,path,escapequotes(outfile))
     command = '/bin/bash'
     args = ['-c',ssh_command]
     
