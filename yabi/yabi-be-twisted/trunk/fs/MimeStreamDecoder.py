@@ -10,6 +10,7 @@ def no_intr(func, *args, **kw):
             if e.errno == errno.EINTR or e.errno == errno.EAGAIN:
                 print "schedule"
                 stackless.schedule()
+                print "post sched"
             else:
                 raise
 
