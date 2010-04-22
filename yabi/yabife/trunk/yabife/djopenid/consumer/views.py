@@ -267,3 +267,36 @@ def rpXRDS(request):
         request,
         [RP_RETURN_TO_URL_TYPE],
         [util.getViewURL(request, finishOpenID)])
+
+# forms
+class RegistrationForm(forms.Form):
+    name = forms.CharField()
+    openid_url = forms.CharField()
+    organisation = forms.CharField()
+    faculty = forms.CharField()
+    user_type = forms.CharField()
+    org_user_id = forms.CharField()
+    email = forms.CharField()
+    contact_number = forms.CharField()
+    supervisor_name = forms.CharField()
+    supervisor_number = forms.CharField()
+    supervisor_email = forms.CharField()
+    project_title = forms.CharField()
+    project_description = forms.CharField()
+    rfcd_code_1 = forms.CharField()
+    rfcd_code_1_weight = forms.CharField()
+    rfcd_code_2 = forms.CharField()
+    rfcd_code_2_weight = forms.CharField()
+    rfcd_code_3 = forms.CharField()
+    rfcd_code_3_weight = forms.CharField()
+    resources_compute = forms.CharField()
+    resources_data = forms.CharField()
+    resources_network = forms.CharField()
+    estimate = forms.CharField()
+    describe = forms.CharField()
+    software_needs = forms.CharField()
+    agreement = forms.CharField()
+    
+def registration(request):
+    response = render_to_response('consumer/registration_complete.html', {}})
+    return response
