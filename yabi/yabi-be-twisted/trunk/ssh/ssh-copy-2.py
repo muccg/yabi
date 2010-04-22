@@ -86,7 +86,7 @@ if direction == L2R:
     hostpart, path = outfile.split(':',1)
     user, host = hostpart.split('@',1)
         
-    ssh_command = ("cat %s | %s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cat>\"%s\" '")%(infile,SSH,path)
+    ssh_command = ("cat %s | %s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cat>\"%s\" '")%(infile,SSH,subprocess.list2cmdline(path))
     command = '/bin/bash' 
     args = ['-c',ssh_command]
     
@@ -128,7 +128,7 @@ elif direction == R2L:
     hostpart, path = infile.split(':',1)
     user, host = hostpart.split('@',1)
     
-    ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cat \"%s\"' > '%s'")%(SSH,path,outfile)
+    ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+" 'cat \"%s\"' > '%s'")%(SSH,path,subprocess.list2cmdline(outfile))
     command = '/bin/bash'
     args = ['-c',ssh_command]
     
