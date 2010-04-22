@@ -56,6 +56,9 @@ class FilePutResource(resource.PostableResource):
                 creds[varname] = request.args[varname][0]
                 del request.args[varname]
         
+        if not (yabiusername or creds):
+            return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in.\n")
+        
         if not hasattr(address,"username") or address.username==None:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No username provided in uri\n")
         
