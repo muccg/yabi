@@ -4,6 +4,7 @@ import errno
 
 def no_intr(func, *args, **kw):
     while True:
+        print "!"
         try:
             return func(*args, **kw)
         except (OSError, IOError), e:
