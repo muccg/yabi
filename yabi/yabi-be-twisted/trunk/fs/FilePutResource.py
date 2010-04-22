@@ -165,6 +165,8 @@ class FilePutResource(resource.PostableResource):
                     while not parser.procproto.isDone():
                         stackless.schedule()
                     return channel.callback(http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "File upload failed: %s\n"%parser.procproto.err))
+                except Exception, ex:
+                    return channel.callback(http.Response( responsecode.SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "File upload failed: %s\n"%(ex)))
 
                 return channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
             else:
