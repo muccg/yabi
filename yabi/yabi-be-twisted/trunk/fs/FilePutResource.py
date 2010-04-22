@@ -109,7 +109,7 @@ class FilePutResource(resource.PostableResource):
                         
                         while not self.procproto.isStarted():
                             print "."
-                        stackless.schedule()
+                            stackless.schedule()
                     
                         # once its started wait one engine cycle before opening fifo.
                         stackless.schedule()
