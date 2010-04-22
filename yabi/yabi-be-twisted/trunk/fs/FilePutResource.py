@@ -168,6 +168,7 @@ class FilePutResource(resource.PostableResource):
                 except Exception, ex:
                     import traceback
                     channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "File upload failed: %s\n"%(traceback.format_exc())))
+                    print dir(channel)
                     parser.close_data_stream()
                     parser.close_write_stream()
                     raise
