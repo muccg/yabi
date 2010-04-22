@@ -6,13 +6,16 @@ def no_intr(func, *args, **kw):
     while True:
         print "!"
         try:
+            print "a"
             return func(*args, **kw)
         except (OSError, IOError), e:
+            print "B"
             if e.errno == errno.EINTR or e.errno == errno.EAGAIN:
                 print "schedule"
                 stackless.schedule()
                 print "post sched"
             else:
+                print "c"
                 raise
 
 import StringIO
