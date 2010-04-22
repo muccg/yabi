@@ -6,6 +6,8 @@ from django.utils import webhelpers
 
 from django.shortcuts import render_to_response, get_object_or_404, render_mako
 
+from django import forms
+
 from openid.consumer import consumer
 from openid.consumer.discover import DiscoveryFailure
 from openid.extensions import ax, pape, sreg
@@ -298,5 +300,5 @@ class RegistrationForm(forms.Form):
     agreement = forms.CharField()
     
 def registration(request):
-    response = render_to_response('consumer/registration_complete.html', {}})
+    response = render_to_response('consumer/registration_complete.html',None)
     return response
