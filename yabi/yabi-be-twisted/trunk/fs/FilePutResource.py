@@ -112,7 +112,8 @@ class FilePutResource(resource.PostableResource):
                             stackless.schedule()
                     
                         # once its started wait one engine cycle before opening fifo.
-                        stackless.schedule()
+                        for i in range(100):
+                            stackless.schedule()
                         
                         print "Pre OPEN"
                         self.fileopen = no_intr(open,fifo,"wb")
