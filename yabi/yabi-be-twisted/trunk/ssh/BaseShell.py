@@ -57,6 +57,9 @@ class BaseShellProcessProtocol(protocol.ProcessProtocol):
         
     def isDone(self):
         return self.exitcode != None
+        
+    def isFailed(self):
+        return isDone() and self.exitcode != 0
 
 class BaseShell(object):
     def __init__(self):
