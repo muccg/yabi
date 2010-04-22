@@ -114,7 +114,9 @@ class FilePutResource(resource.PostableResource):
                         # once its started wait one engine cycle before opening fifo.
                         stackless.schedule()
                         
+                        print "Pre OPEN"
                         self.fileopen = no_intr(open,fifo,"wb")
+                        print "Post OPEN"
                         
                     def close_write_stream(self):
                         """do the close, but also check the process result"""
