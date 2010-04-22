@@ -3,7 +3,7 @@ from twisted.web2 import resource, http_headers, responsecode, http, server, fil
 from twisted.internet import defer, reactor
 
 import weakref
-import sys, os
+import sys, os, errno
 import stackless
 import json
 from MimeStreamDecoder import MimeStreamDecoder, no_intr
