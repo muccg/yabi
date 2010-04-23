@@ -90,7 +90,7 @@ if direction == L2R:
     user, host = hostpart.split('@',1)
         
     ssh_command = ("cat %s | %s "+(" ".join(extra_args))+" %s@%s"%(user,host)+' "cat>\\"%s\\""')%(infile,SSH,escapequotes(path))
-    ssh_command = ("cat %s | %s "+(" ".join(extra_args))+" %s@%s"%(user,host)+' "cat>`echo -e \\"%s\\"`"')%(infile,SSH,escapequotes(path))
+    ssh_command = ("cat %s | %s "+(" ".join(extra_args))+" %s@%s"%(user,host)+' "cat > `echo -e '%s'`"')%(infile,SSH,escapequotes(path))
     command = '/bin/bash' 
     args = ['-c',ssh_command]
     
