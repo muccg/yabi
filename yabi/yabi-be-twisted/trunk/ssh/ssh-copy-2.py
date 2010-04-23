@@ -18,7 +18,10 @@ def eprint(text):
     sys.stderr.write("\n")
     
 def escapequotes(filename):
-    return filename.replace("\\",'\\x5c').replace('"','\\x22').replace("'",'\\x27')
+    CHARS_TO_REPLACE = '\\' + "'" + '"' + "$@!~|<>#;*[]{}?%^&()="
+    for char in CHARS_TO_REPLACE:
+        filename.replace(char,"\\x%x"%(ord(chard)))
+    return filename
 
 DEBUG = True
 
