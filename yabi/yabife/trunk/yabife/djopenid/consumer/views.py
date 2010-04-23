@@ -302,6 +302,38 @@ class RegistrationForm(forms.Form):
 def registration(request):
     result = {}
     result['h'] = webhelpers
+    
+    form = RegistrationForm(request)
+    
+    name = form.cleaned_data['name']
+    openid_url = form.cleaned_data['openid_url']
+    organisation = form.cleaned_data['organisation']
+    faculty = form.cleaned_data['faculty']
+    user_type = form.cleaned_data['user_type']
+    org_user_id = form.cleaned_data['org_user_id']
+    email = form.cleaned_data['email']
+    contact_number = form.cleaned_data['contact_number']
+    supervisor_name = form.cleaned_data['supervisor_name']
+    supervisor_number = form.cleaned_data['supervisor_number']
+    supervisor_email = form.cleaned_data['supervisor_email']
+    project_title = form.cleaned_data['project_title']
+    project_description = form.cleaned_data['project_description']
+    rfcd_code_1 = form.cleaned_data['rfcd_code_1']
+    rfcd_code_1_weight = form.cleaned_data['rfcd_code_1_weight']
+    rfcd_code_2 = form.cleaned_data['rfcd_code_2']
+    rfcd_code_2_weight = form.cleaned_data['rfcd_code_2_weight']
+    rfcd_code_3 = form.cleaned_data['rfcd_code_3']
+    rfcd_code_3_weight = form.cleaned_data['rfcd_code_3_weight']
+    resources_compute = form.cleaned_data['resources_compute']
+    resources_data = form.cleaned_data['resources_data']
+    resources_network = form.cleaned_data['resources_network']
+    estimate = form.cleaned_data['estimate']
+    describe = form.cleaned_data['describe']
+    software_needs = form.cleaned_data['software_needs']
+    agreement = form.cleaned_data['agreement']
+    
+    form.save()
+    
 
     response = render_to_response('consumer/registration_complete.html',result)
     return response
