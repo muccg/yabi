@@ -324,9 +324,12 @@ def registration(request):
     rfcd_code_2_weight = form.cleaned_data['rfcd_code_2_weight']
     rfcd_code_3 = form.cleaned_data['rfcd_code_3']
     rfcd_code_3_weight = form.cleaned_data['rfcd_code_3_weight']
-    resources_compute = form.cleaned_data['resources_compute']
-    resources_data = form.cleaned_data['resources_data']
-    resources_network = form.cleaned_data['resources_network']
+    if form.cleaned_data.has_key('resources_compute'):
+        resources_compute = form.cleaned_data['resources_compute']
+    if form.cleaned_data.has_key('resources_data'):
+        resources_data = form.cleaned_data['resources_data']
+    if form.cleaned_data.has_key('resources_network'):
+        resources_network = form.cleaned_data['resources_network']
     estimate = form.cleaned_data['estimate']
     describe = form.cleaned_data['describe']
     software_needs = form.cleaned_data['software_needs']
