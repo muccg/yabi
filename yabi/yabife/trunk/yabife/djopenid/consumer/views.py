@@ -8,6 +8,8 @@ from django.shortcuts import render_to_response, get_object_or_404, render_mako
 
 from django import forms
 
+from djopenid.consumer.models import OpenIDRegistration
+
 from openid.consumer import consumer
 from openid.consumer.discover import DiscoveryFailure
 from openid.extensions import ax, pape, sreg
@@ -303,41 +305,42 @@ def registration(request):
     result = {}
     result['h'] = webhelpers
     
-    form = RegistrationForm(request)
+    form = RegistrationForm(request.POST)
+    reg = OpenIDRegistration()
+    if form.is_valid():
     
-    name = form.cleaned_data['name']
-    openid_url = form.cleaned_data['openid_url']
-    organisation = form.cleaned_data['organisation']
-    faculty = form.cleaned_data['faculty']
-    user_type = form.cleaned_data['user_type']
-    org_user_id = form.cleaned_data['org_user_id']
-    email = form.cleaned_data['email']
-    contact_number = form.cleaned_data['contact_number']
-    supervisor_name = form.cleaned_data['supervisor_name']
-    supervisor_number = form.cleaned_data['supervisor_number']
-    supervisor_email = form.cleaned_data['supervisor_email']
-    project_title = form.cleaned_data['project_title']
-    project_description = form.cleaned_data['project_description']
-    rfcd_code_1 = form.cleaned_data['rfcd_code_1']
-    rfcd_code_1_weight = form.cleaned_data['rfcd_code_1_weight']
-    rfcd_code_2 = form.cleaned_data['rfcd_code_2']
-    rfcd_code_2_weight = form.cleaned_data['rfcd_code_2_weight']
-    rfcd_code_3 = form.cleaned_data['rfcd_code_3']
-    rfcd_code_3_weight = form.cleaned_data['rfcd_code_3_weight']
-    if form.cleaned_data.has_key('resources_compute'):
-        resources_compute = form.cleaned_data['resources_compute']
-    if form.cleaned_data.has_key('resources_data'):
-        resources_data = form.cleaned_data['resources_data']
-    if form.cleaned_data.has_key('resources_network'):
-        resources_network = form.cleaned_data['resources_network']
-    estimate = form.cleaned_data['estimate']
-    describe = form.cleaned_data['describe']
-    software_needs = form.cleaned_data['software_needs']
-    agreement = form.cleaned_data['agreement']
+        reg.name = form.cleaned_data['name']
+        reg.openid_url = form.cleaned_data['openid_url']
+        reg.organisation = form.cleaned_data['organisation']
+        reg.faculty = form.cleaned_data['faculty']
+        reg.user_type = form.cleaned_data['user_type']
+        reg.org_user_id = form.cleaned_data['org_user_id']
+        reg.email = form.cleaned_data['email']
+        reg.contact_number = form.cleaned_data['contact_number']
+        reg.supervisor_name = form.cleaned_data['supervisor_name']
+        reg.supervisor_number = form.cleaned_data['supervisor_number']
+        reg.supervisor_email = form.cleaned_data['supervisor_email']
+        reg.project_title = form.cleaned_data['project_title']
+        reg.project_description = form.cleaned_data['project_description']
+        reg.rfcd_code_1 = form.cleaned_data['rfcd_code_1']
+        reg.rfcd_code_1_weight = form.cleaned_data['rfcd_code_1_weight']
+        reg.rfcd_code_2 = form.cleaned_data['rfcd_code_2']
+        reg.rfcd_code_2_weight = form.cleaned_data['rfcd_code_2_weight']
+        reg.rfcd_code_3 = form.cleaned_data['rfcd_code_3']
+        reg.rfcd_code_3_weight = form.cleaned_data['rfcd_code_3_weight']
+        if form.cleaned_data.has_key('resources_compute'):
+            reg.resources_compute = form.cleaned_data['resources_compute']
+        if form.cleaned_data.has_key('resources_data'):
+            reg.resources_data = form.cleaned_data['resources_data']
+        if form.cleaned_data.has_key('resources_network'):
+            reg.resources_network = form.cleaned_data['resources_network']
+        reg.estimate = form.cleaned_data['estimate']
+        reg.describe = form.cleaned_data['describe']
+        reg.software_needs = form.cleaned_data['software_needs']
+        reg.agreement = form.cleaned_data['agreement']
+        
+        reg.save()
     
-    form.save()
-    
-
     response = render_to_response('consumer/registration_complete.html',result)
     return response
 
