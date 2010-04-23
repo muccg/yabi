@@ -50,7 +50,7 @@ def renderIndexPage(request, **template_args):
 
     response = render_to_response('consumer/index.html', template_args)
 
-    response[YADIS_HEADER_NAME] = 'http://faramir.localdomain:64080/openid/consumer/' #util.getViewURL(request, rpXRDS)
+    response[YADIS_HEADER_NAME] = siteurl(request) . webhelpers.url('/openid/consumer/') #util.getViewURL(request, rpXRDS)
     return response
 
 
@@ -134,7 +134,7 @@ def startOpenID(request):
         # Compute the trust root and return URL values to build the
         # redirect information.
         trust_root = util.getViewURL(request, startOpenID)
-        return_to = 'http://faramir.localdomain:64080/openid/finish/'
+        return_to = siteurl(request) + webhelpers.url('/openid/finish/')
 
         # Send the browser to the server either by sending a redirect
         # URL or by generating a POST form.
@@ -150,12 +150,12 @@ def startOpenID(request):
             auth_request.addExtensionArg('','type.email','http://axschema.org/contact/email')
             form_html = auth_request.formMarkup(trust_root, return_to,
                                                 False, {'id': form_id})
-            if openid_url.find('google') >= 0:
-                return direct_to_template(
-                    request, 'consumer/request_form.html', {'html': form_html, 'is_google': True})
-            else:
-                return direct_to_template(
-                    request, 'consumer/request_form.html', {'html': form_html})
+            #if openid_url.find('google') >= 0:
+            #    return direct_to_template(
+            #        request, 'consumer/request_form.html', {'html': form_html, 'is_google': True, 'h':webhelpers, 'return_to':return_to, 'realm':trust_root})
+            #else:
+            return direct_to_template(
+                    request, 'consumer/request_form.html', {'html': form_html, 'h':webhelpers, 'return_to':return_to})
 
     form = LoginForm()
     result = {}
@@ -300,5 +300,26 @@ class RegistrationForm(forms.Form):
     agreement = forms.CharField()
     
 def registration(request):
-    response = render_to_response('consumer/registration_complete.html',None)
+    result = {}
+    result['h'] = webhelpers
+
+    response = render_to_response('consumer/registration_complete.html',result)
     return response
+
+def siteurl(request):
+    import os
+    wsgibase=os.environ['SCRIPT_NAME']
+
+    d = request.__dict__
+    if d['META'].has_key('HTTP_X_FORWARDED_HOST'):
+        #The request has come from outside, so respect X_FORWARDED_HOST
+        u = d['META']['wsgi.url_scheme'] + '://' + d['META']['HTTP_X_FORWARDED_HOST'] + wsgibase
+    else:
+        #Otherwise, its an internal request
+        host = d['META'].get('HTTP_HOST')
+        if not host:
+            host = d['META'].get('SERVER_NAME')
+        u = d['META']['wsgi.url_scheme'] + '://' + host + wsgibase + '/' 
+
+    return u
+

@@ -3,7 +3,11 @@
 </%def>
 
 <%def name="body()">
-
+<script>
+YAHOO.util.Event.onDOMReady(function() {
+    document.body.style.background = 'white';
+});
+</script>
 
   <div id="doc3" class="yui-t1">
     <div id="yabi-design-mode">
@@ -12,35 +16,15 @@
 
         <div style="position:absolute;left:220px;top:30px;font-size:18px;color:#3879e5;">Registration</div>
 
-            <div id="yabi-message-ajax">
-    % if error:
-    <div class="error">${ error|escape }</div>
-    % endif
-            </div>
-
       </div>
           <div style="position:absolute;left:0px;top:63px;width:760px;padding:5px;padding-left:30px;padding-top:20px;">
 
-<div style="margin:10px;border:2px solid #3879e5;padding:15px;-moz-border-radius:5px;-webkit-border-radius:5px;">
     <div class="message">
       <div style="background-color:#00da00;color:#fff;-moz-border-radius:3px;-webkit-border-radius:3px;margin-bottom:10px;padding:3px;">
         Registration complete. <p>We will contact you when your request has been processed.
       </div>
 
-  % if message:
-    <div class="message">
-      ${ message|escape }
     </div>
-  % endif
-
-  % if failure_reason:
-    <div class="error">
-      ${ failure_reason|escape }
-    </div>
-  % endif
-
-</div>
-          </div>
 
     </div>
   </div>
