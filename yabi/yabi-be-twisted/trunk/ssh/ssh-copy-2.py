@@ -18,7 +18,7 @@ def eprint(text):
     sys.stderr.write("\n")
     
 def escapequotes(filename):
-    return filename.replace("'","\\'").replace('"','\\"')
+    return filename.replace("'","\\'").replace('"','\\"').replace('\\','\\\\')
 
 DEBUG = False
 
