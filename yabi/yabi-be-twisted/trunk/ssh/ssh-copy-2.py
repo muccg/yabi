@@ -18,7 +18,7 @@ def eprint(text):
     sys.stderr.write("\n")
     
 def escapequotes(filename):
-    return filename.replace('"','\\034')
+    return filename.replace('"','\\x034')
 
 DEBUG = True
 
