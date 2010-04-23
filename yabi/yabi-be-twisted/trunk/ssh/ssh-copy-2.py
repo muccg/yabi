@@ -97,6 +97,7 @@ if direction == L2R:
     if DEBUG:
         eprint("SSH_COMMAND: %s"%ssh_command)
         eprint("command: %s args: %s"%(command,str(args)))
+        eprint("[-1]: %s"%(args[-1]))
     
     child = pexpect.spawn(command,args=args)
     child.logfile_read = StringIO.StringIO()
