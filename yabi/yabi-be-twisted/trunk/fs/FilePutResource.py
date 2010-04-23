@@ -119,12 +119,16 @@ class FilePutResource(resource.PostableResource):
                         
                         while True:
                             try:
+                                print "done?",self.procproto.isDone()
+                                print "failed?",self.procproto.isFailed()
                                 if self.procproto.isFailed():
                                     #channel.callback(http.HTTPError(http.StatusResponse(responsecode.SERVER_ERROR,"Write FIFO process failed! %s"%(self.procproto.err))))
                                     raise IOError, "Write FIFO process failed! %s"%(self.procproto.err)
                                 self.fileopen = open(fifo,"wb")
                             except (OSError, IOError), e:
+                                print "!!!"
                                 if e.errno == errno.EINTR or e.errno == errno.EAGAIN:
+                                    print "sched"
                                     stackless.schedule()
                                 else:
                                     raise
