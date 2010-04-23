@@ -20,7 +20,7 @@ def eprint(text):
 def escapequotes(filename):
     CHARS_TO_REPLACE = '\\' + "'" + '"' + "$@!~|<>#;*[]{}?%^&()="
     for char in CHARS_TO_REPLACE:
-        filename.replace(char,"\\x%x"%(ord(char)))
+        filename=filename.replace(char,"\\x%x"%(ord(char)))
     return filename
 
 DEBUG = True
