@@ -124,7 +124,8 @@ class FilePutResource(resource.PostableResource):
                                 if self.procproto.isFailed():
                                     #channel.callback(http.HTTPError(http.StatusResponse(responsecode.SERVER_ERROR,"Write FIFO process failed! %s"%(self.procproto.err))))
                                     raise IOError, "Write FIFO process failed! %s"%(self.procproto.err)
-                                self.fileopen = os.fdopen(os.open(fifo,os.O_NONBLOCK|os.O_WRONLY),"wb")
+                                #self.fileopen = os.fdopen(os.open(fifo,os.O_NONBLOCK|os.O_WRONLY),"wb")
+                                self.fileopen=open(fifo,'wb')
                                 print "fileopen:",self.fileopen
                                 break
                             except (OSError, IOError), e:
