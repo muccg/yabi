@@ -126,6 +126,7 @@ class FilePutResource(resource.PostableResource):
                                     raise IOError, "Write FIFO process failed! %s"%(self.procproto.err)
                                 self.fileopen = os.fdopen(os.open(fifo,os.O_NONBLOCK|os.O_WRONLY),"wb")
                                 print "fileopen:",self.fileopen
+                                break
                             except (OSError, IOError), e:
                                 print "!!!"
                                 if e.errno == errno.EINTR or e.errno == errno.EAGAIN:
