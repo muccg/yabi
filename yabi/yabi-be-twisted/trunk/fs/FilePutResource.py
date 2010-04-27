@@ -101,7 +101,7 @@ class FilePutResource(resource.PostableResource):
                 class MyMimeStreamDecoder(MimeStreamDecoder):
                     """Override this class and put in our own file open methods"""
                     def open_write_stream(self, filename):
-                        #print "Uploading file:",filename
+                        print "Uploading file:",filename
                         self.procproto, fifo = bend.GetWriteFifo(hostname,username,path,filename, yabiusername=yabiusername,creds=creds)
                         
                         # give the engine a chance to fire up the process
