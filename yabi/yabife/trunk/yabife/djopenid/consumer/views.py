@@ -275,31 +275,31 @@ def rpXRDS(request):
 # forms
 class RegistrationForm(forms.Form):
     name = forms.CharField()
-    openid_url = forms.CharField()
-    organisation = forms.CharField()
-    faculty = forms.CharField()
-    user_type = forms.CharField()
-    org_user_id = forms.CharField()
+    openid_url = forms.CharField(required=False)
+    organisation = forms.CharField(required=False)
+    faculty = forms.CharField(required=False)
+    user_type = forms.CharField(required=False)
+    org_user_id = forms.CharField(required=False)
     email = forms.CharField()
-    contact_number = forms.CharField()
-    supervisor_name = forms.CharField()
-    supervisor_number = forms.CharField()
-    supervisor_email = forms.CharField()
-    project_title = forms.CharField()
-    project_description = forms.CharField()
-    rfcd_code_1 = forms.CharField()
-    rfcd_code_1_weight = forms.CharField()
-    rfcd_code_2 = forms.CharField()
-    rfcd_code_2_weight = forms.CharField()
-    rfcd_code_3 = forms.CharField()
-    rfcd_code_3_weight = forms.CharField()
-    resources_compute = forms.CharField()
-    resources_data = forms.CharField()
-    resources_network = forms.CharField()
-    estimate = forms.CharField()
-    describe = forms.CharField()
-    software_needs = forms.CharField()
-    agreement = forms.CharField()
+    contact_number = forms.CharField(required=False)
+    supervisor_name = forms.CharField(required=False)
+    supervisor_number = forms.CharField(required=False)
+    supervisor_email = forms.CharField(required=False)
+    project_title = forms.CharField(required=False)
+    project_description = forms.CharField(required=False)
+    rfcd_code_1 = forms.CharField(required=False)
+    rfcd_code_1_weight = forms.CharField(required=False)
+    rfcd_code_2 = forms.CharField(required=False)
+    rfcd_code_2_weight = forms.CharField(required=False)
+    rfcd_code_3 = forms.CharField(required=False)
+    rfcd_code_3_weight = forms.CharField(required=False)
+    resources_compute = forms.CharField(required=False)
+    resources_data = forms.CharField(required=False)
+    resources_network = forms.CharField(required=False)
+    estimate = forms.CharField(required=False)
+    describe = forms.CharField(required=False)
+    software_needs = forms.CharField(required=False)
+    agreement = forms.CharField(required=False)
     
 def registration(request):
     result = {}
@@ -340,8 +340,24 @@ def registration(request):
         reg.agreement = form.cleaned_data['agreement']
         
         reg.save()
+        result['message'] = None
+
+        from django.core.mail import mail_admins
+        
+        #mail_admins('New YABI registration', 'Somebody wants some YABI goodness. Go admin that.', fail_silently=False)
+        
+    else:
+        result['message'] = 'form failed to validate'
     
     response = render_to_response('consumer/registration_complete.html',result)
+    return response
+
+def simpleRegister(request):
+    result = {}
+    result['h'] = webhelpers
+    result['message'] = None
+    result['url'] = None
+    response = render_to_response('consumer/registration.html',result)
     return response
 
 def siteurl(request):
@@ -360,4 +376,3 @@ def siteurl(request):
         u = d['META']['wsgi.url_scheme'] + '://' + host + wsgibase + '/' 
 
     return u
-

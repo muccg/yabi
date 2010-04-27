@@ -20,10 +20,13 @@ YAHOO.util.Event.onDOMReady(function() {
           <div style="position:absolute;left:0px;top:63px;width:760px;padding:5px;padding-left:30px;padding-top:20px;">
 
     <div class="message">
+    %if message is not None:
+        ${ message }
+    %else:
       <div style="background-color:#00da00;color:#fff;-moz-border-radius:3px;-webkit-border-radius:3px;margin-bottom:10px;padding:3px;">
         Registration complete. <p>We will contact you when your request has been processed.
       </div>
-
+    %endif
     </div>
 
     </div>

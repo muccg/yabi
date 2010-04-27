@@ -6,5 +6,6 @@ urlpatterns = patterns(
     (r'^$', 'startOpenID'),
     (r'^finish/$', 'finishOpenID'),
     (r'^xrds/$', 'rpXRDS'),
-    (r'^registration$', 'registration')
+    (r'^registration$', 'registration'),
+    (r'^register$', 'simpleRegister')
 )

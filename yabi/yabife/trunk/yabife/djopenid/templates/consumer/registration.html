@@ -40,6 +40,9 @@ Applicants must read and agree to the iVEC conditions of use and policies:
 <p>Once you have read the iVEC Policies and agree to abide by them and the conditions above, you are ready to fill out the online application form:
 
 <div style="margin:10px;border:2px solid #3879e5;padding:15px;-moz-border-radius:5px;-webkit-border-radius:5px;">
+
+      <form method="POST" action="/openid/registration">
+
   % if url is not None and url is not '':
     <div class="message">
       <div style="background-color:#00da00;color:#fff;-moz-border-radius:3px;-webkit-border-radius:3px;margin-bottom:10px;padding:3px;">
@@ -51,7 +54,6 @@ Applicants must read and agree to the iVEC conditions of use and policies:
       When your registration is processed you will be able to login to YABI directly using OpenID.
       </div>
 
-      <form method="POST" action="/openid/registration">
       <p>
     % if ax:
       % for pair in ax:
@@ -60,6 +62,9 @@ Applicants must read and agree to the iVEC conditions of use and policies:
     % endif
 
     <input type="hidden" name="openid_url" value="${ url }">
+    
+  % endif
+  
 <!--  PASTED FORM CODE HERE -->
 <table>
 <tr>
@@ -294,7 +299,6 @@ CSIRO users please use your ident				</td>
     </form>
 
     </div>
-  % endif
 
   % if message:
     <div class="message">
