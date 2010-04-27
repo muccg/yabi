@@ -43,8 +43,8 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         usercert = self.save_identity(creds['key'])                         #, tag=(yabiusername,username,host,path)
         
         # we need to munge the path for transport over ssh (cause it sucks)
-        mungedpath = '"' + path.replace('"',r'\"') + '"'
-        pp = ssh.Shell.mkdir(usercert,host,mungedpath, username=creds['username'], password=creds['password'])
+        #mungedpath = '"' + path.replace('"',r'\"') + '"'
+        pp = ssh.Shell.mkdir(usercert,host,path, username=creds['username'], password=creds['password'])
         
         while not pp.isDone():
             stackless.schedule()
@@ -74,8 +74,8 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         usercert = self.save_identity(creds['key'])
         
         # we need to munge the path for transport over gsissh (cause it sucks)
-        mungedpath = '"' + path.replace('"',r'\"') + '"'
-        pp = ssh.Shell.rm(usercert,host,mungedpath,args="-r" if recurse else "", username=creds['username'], password=creds['password'])
+        #mungedpath = '"' + path.replace('"',r'\"') + '"'
+        pp = ssh.Shell.rm(usercert,host,path,args="-r" if recurse else "", username=creds['username'], password=creds['password'])
         
         while not pp.isDone():
             stackless.schedule()
