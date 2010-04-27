@@ -108,8 +108,8 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         usercert = self.save_identity(creds['key'])
         
         # we need to munge the path for transport over gsissh (cause it sucks)
-        mungedpath = '"' + path.replace('"',r'\"') + '"'
-        pp = ssh.Shell.ls(usercert,host,mungedpath, args="-lFR" if recurse else "-lF", username=creds['username'], password=creds['password'] )
+        #mungedpath = '"' + path.replace('"',r'\"') + '"'
+        pp = ssh.Shell.ls(usercert,host,path, args="-lFR" if recurse else "-lF", username=creds['username'], password=creds['password'] )
         
         while not pp.isDone():
             stackless.schedule()
