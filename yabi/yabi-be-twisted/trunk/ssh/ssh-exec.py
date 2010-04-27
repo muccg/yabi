@@ -62,8 +62,8 @@ user, host = args[0].split('@',1)
 # sanity check out command. If there are quotes (that are unescaped) the outermost ones must be doubles
 quotes = [X for N,X in enumerate(remote_command) if (X=='"' or X=="'") and N>=1 and remote_command[N-1]!='\\']
 
-if len(quotes):
-    assert quotes[0]=='"' and quotes[-1]=='"', "Quotes in command must be doublequote outermost"
+#if len(quotes):
+    #assert quotes[0]=='"' and quotes[-1]=='"', "Quotes in command must be doublequote outermost"
 
 if stdout or stderr:
     ssh_command = extra_args+["%s@%s"%(user,host),"cd \"%s\" && %s 1>%s 2>%s"%(options.working,remote_command,stdout,stderr)]
