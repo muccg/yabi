@@ -344,7 +344,7 @@ def registration(request):
 
         from django.core.mail import mail_admins
         
-        #mail_admins('New YABI registration', 'Somebody wants some YABI goodness. Go admin that.', fail_silently=False)
+        mail_admins('New YABI registration', 'YABI registration request from '+reg.email+' , details in YABI database', fail_silently=False)
         
     else:
         result['message'] = 'form failed to validate'
