@@ -16,6 +16,8 @@ for delkey in ['DISPLAY','SSH_AGENT_PID','SSH_AUTH_SOCK']:
 def eprint(text):
     sys.stderr.write(text)
     sys.stderr.write("\n")
+    sys.stdout.write(text)
+    sys.stdout.write("\n")
     
 def escapequotes(filename):
     CHARS_TO_REPLACE = '\\' + "'" + '"' + "$@!~|<>#;*[]{}?%^&()="
