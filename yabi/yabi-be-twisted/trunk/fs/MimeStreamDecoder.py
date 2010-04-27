@@ -73,6 +73,7 @@ class MimeStreamDecoder(object):
             self.line_ending = None
     
     def parse_content_disposition(self,line):
+        print line
         parts = [X.strip() for X in line.split(";")]
         extra = {}
         for part in parts:
@@ -81,7 +82,6 @@ class MimeStreamDecoder(object):
             else:
                 if len(part):
                     key,value = part.split('=')
-                    print "KEY",key,"VALUE",value
                     extra[key] = value if (value[0]!='"' and value[1]!='"') else value[1:-1]
         
         # open our file write handle
