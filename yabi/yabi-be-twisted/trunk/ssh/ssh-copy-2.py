@@ -138,7 +138,7 @@ elif direction == R2L:
     hostpart, path = infile.split(':',1)
     user, host = hostpart.split('@',1)
     
-    ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+' "cat \\"%s\\"" > "%s"')%(SSH,path,escapequotes(outfile))
+    ssh_command = ("%s "+(" ".join(extra_args))+" %s@%s"%(user,host)+' "cat \\"%s\\"" > %s')%(SSH,path,escapequotes(outfile))
     command = '/bin/bash'
     args = ['-c',ssh_command]
     
