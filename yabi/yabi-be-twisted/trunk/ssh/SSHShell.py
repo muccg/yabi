@@ -7,7 +7,7 @@ from BaseShell import BaseShell, BaseShellProcessProtocol
 from SSHRun import SSHExecProcessProtocol 
 
 
-DEBUG = True
+DEBUG = False
 
 def convert_filename_to_encoded_for_echo(filename):
     """This function takes a filename, and encodes the whole thing to a back ticked eval command.
