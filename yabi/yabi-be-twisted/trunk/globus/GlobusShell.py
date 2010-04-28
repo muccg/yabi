@@ -5,7 +5,7 @@ from twisted.internet import reactor
 
 from BaseShell import BaseShell, BaseShellProcessProtocol
 
-DEBUG = False
+DEBUG = True
 
 def convert_filename_to_encoded_for_echo(filename):
     """This function takes a filename, and encodes the whole thing to a back ticked eval command.
