@@ -94,9 +94,9 @@ def qsub_spawn(jobname, commandfile, user="yabi", workingdir="/home/yabi", stdou
 
 def qsub(jobname, command, user="yabi", workingdir="/home/yabi", stdout="STDOUT.txt", stderr="STDERR.txt", modules=[]):
     # use shlex to parse the command into executable and arguments
-    lexer = shlex.shlex(command, posix=True)
-    lexer.wordchars += r"-.:;/"
-    arguments = list(lexer)
+    #lexer = shlex.shlex(command, posix=True)
+    #lexer.wordchars += r"-.:;/"
+    #arguments = list(lexer)
      
      # make a temporary file to store the command in
     tempfile = mktemp()
@@ -108,7 +108,7 @@ def qsub(jobname, command, user="yabi", workingdir="/home/yabi", stdout="STDOUT.
         assert " " not in module
         temp.write("module load %s\n"%(module))
     
-    temp.write(" ".join(arguments))
+    temp.write(command)
     temp.write("\n")
     temp.close()
    
