@@ -19,8 +19,20 @@ class ManyToManyField_NoSyncdb(models.ManyToManyField):
         self.creates_table = False
 
 class Base(models.Model):
+    """
+    comment
+    """
+    
+    '''
+    comment
+    '''
+    
+    
     class Meta:
         abstract = True
+
+        # now do this
+        
 
     last_modified_by = models.ForeignKey(DjangoUser, editable=False, related_name="%(class)s_modifiers", null=True)
     last_modified_on = models.DateTimeField(null=True, auto_now=True, editable=False)
@@ -194,7 +206,7 @@ class ParameterSwitchUse(Base):
 
 class ToolParameter(Base):
     tool = models.ForeignKey(Tool)
-    switch = models.CharField(max_length=25, null=True, blank=True)
+    switch = models.CharField(max_length=64, null=True, blank=True)
     switch_use = models.ForeignKey(ParameterSwitchUse, null=True, blank=True)
     rank = models.IntegerField(null=True, blank=True)
     mandatory = models.BooleanField(blank=True, default=False)
