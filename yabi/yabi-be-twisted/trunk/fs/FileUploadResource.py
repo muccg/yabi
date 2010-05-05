@@ -119,7 +119,7 @@ class UploadTicket(resource.PostableResource):
         ticket_store_expiry[ expirytime ].append(uuid)
         
         # done. return a json encoded upload url
-        return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, '"http://urltouploadto/upload/%s"\n'%(uuid) )
+        return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, json.dumps("http://faramir.localdomain:9001/fs/upload/%s"%(uuid)) )
 
 class FileUploadResource(resource.PostableResource):
     VERSION=0.1
