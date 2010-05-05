@@ -46,7 +46,7 @@ def purge_expired_tickets():
         # delete this expiry info
         del ticket_store_id[t]
         
-class UploadStatus(resource.Resource):
+class UploadStatus(resource.PostableResource):
     """This is where the admin reports the ticket id that its set for a pending upload"""
     def __init__(self,request=None, path=None, fsresource=None):
         """Pass in the backends to be served out by this FSResource"""
@@ -61,7 +61,7 @@ class UploadStatus(resource.Resource):
         # break our request path into parts
         return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, json.dumps({"ticket_store":ticket_store,"ticket_store_expiry":ticket_store_expiry,"uploads_progress":uploads_progress}))   
 
-class UploadTicket(resource.Resource):
+class UploadTicket(resource.PostableResource):
     """This is where the admin reports the ticket id that its set for a pending upload"""
     def __init__(self,request=None, path=None, fsresource=None):
         """Pass in the backends to be served out by this FSResource"""
@@ -74,6 +74,10 @@ class UploadTicket(resource.Resource):
         
     def render(self, request):
         # break our request path into parts
+        return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be POST\n")
+        
+    def http_POST(self, request):
+        #print "FilePutResource::http_POST(",request,")"
         if "uri" not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided in GET parameters\n")
 
