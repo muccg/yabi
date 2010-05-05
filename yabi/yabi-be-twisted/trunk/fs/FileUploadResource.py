@@ -47,7 +47,7 @@ def purge_expired_tickets():
         del ticket_store_id[t]
         
 class UploadStatus(resource.PostableResource):
-"""This is where the admin reports the ticket id that its set for a pending upload"""
+    """This is where the admin reports the ticket id that its set for a pending upload"""
     def __init__(self,request=None, path=None, fsresource=None):
         """Pass in the backends to be served out by this FSResource"""
         self.path = path
