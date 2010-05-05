@@ -13,7 +13,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
-from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_backendcredential_for_uri, copy_file, rm_file
+from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_backendcredential_for_uri, copy_file, rm_file, send_upload_hash
 from yabiadmin.security import validate_user, validate_uri
 from yabiadmin.utils import json_error
 from yabmin.file_upload import *
@@ -238,7 +238,7 @@ def getuploadurl(request):
     uploadhash = str(uuid.uuid4())
         
     # now send this hash to the back end to inform it of the soon to be incomming upload
-    upoad_url = backendhelper.send_upload_hash(yabiusername,uri,uuid)
+    upoad_url = send_upload_hash(yabiusername,uri,uuid)
     
     # at the moment we can just return the URL for the backend upload. Todo. return a hash based URL
     #schema = "http"
