@@ -225,7 +225,7 @@ def submitworkflow(request):
 
     return HttpResponse(json.dumps({"id":workflow.id}))
 
-@validate_user
+#@validate_user
 def getuploadurl(request):
     yabiusername = request.REQUEST['yabiusername']
     uri = request.REQUEST['uri']
