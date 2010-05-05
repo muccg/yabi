@@ -74,6 +74,7 @@ class FSResource(resource.Resource, BackendResource):
         elif segments[0]=="ticket":
             return UploadTicket(request, segments, fsresource=self), []
         elif segments[0]=="upload":
+            print "SEGS",segments
             return FileUploadResource(request, segments, fsresource=self), segments[1:]
                 
         return resource.Resource.locateChild(self,request,segments)
