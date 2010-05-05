@@ -335,8 +335,8 @@ def send_upload_hash(yabiusername,uri,uuid):
                     'password'  : bc.credential.password,
                     'cert'      : bc.credential.cert,
                     'key'       : bc.credential.key,
-                    'uri'       : bc.credential.uri,
-                    'uuid'      : bc.credential.uuid,
+                    'uri'       : uri,
+                    'uuid'      : uuid,
                     'yabiusername' : yabiusername       }
                     
         r = POST(resource, data)
