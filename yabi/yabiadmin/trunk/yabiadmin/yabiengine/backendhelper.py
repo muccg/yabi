@@ -344,6 +344,8 @@ def send_upload_hash(yabiusername,uri,uuid):
                     
         r = POST(resource, data)
         result = r.read()
+        logger.debug("status:"+str(r.status))
+        logger.debug("data:"+str(r.data))
         assert(r.status == 200)
     
     except socket.error, e:
