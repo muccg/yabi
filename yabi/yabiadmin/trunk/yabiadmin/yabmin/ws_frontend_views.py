@@ -2,7 +2,7 @@
 import mimetypes
 from urllib import quote
 
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from yabiadmin.yabmin.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential
@@ -228,9 +228,9 @@ def submitworkflow(request):
 #@validate_user
 def getuploadurl(request):
     if 'uri' not in request.REQUEST:
-        return HttpResponse("uri needs to be passed in",status_code = 500)
+        return HttpResponseBadRequest("uri needs to be passed in")
     if 'yabiusername' not in request.REQUEST:
-        return HttpResponse("yabiusername needs to be passed in",status_code = 500)
+        return HttpResponseBadRequest("yabiusername needs to be passed in")
     
     yabiusername = request.REQUEST['yabiusername']
     uri = request.REQUEST['uri']
