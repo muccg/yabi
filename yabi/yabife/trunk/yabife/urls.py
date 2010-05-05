@@ -9,7 +9,7 @@ urlpatterns = patterns('yabife.yabifeapp.views',
     (r'^design[/]*$', 'design'),
     (r'^jobs[/]*$', 'jobs'),
     (r'^files[/]*$', 'files'),
-    (r'^login[/]*$', 'login'),
+    (r'^login[/]*$', 'login', {'SSL':True}),
     (r'^logout[/]*$', 'logout'),
     (r'^openid/', include('djopenid.consumer.urls'))
 )
