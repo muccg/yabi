@@ -18,6 +18,8 @@ from yabiadmin.security import validate_user, validate_uri
 from yabiadmin.utils import json_error
 from yabmin.file_upload import *
 
+import uuid
+
 import logging
 logger = logging.getLogger('yabiadmin')
 
@@ -223,3 +225,24 @@ def submitworkflow(request):
 
     return HttpResponse(json.dumps({"id":workflow.id}))
 
+@validate_user
+def getuploadurl(request):
+    yabiusername = request.REQUEST['yabiusername']
+    uri = request.REQUEST['uri']
+    
+    uploadhash = str(uuid.uuid4())
+        
+    # now send this hash to the back end to inform it of the soon to be incomming upload
+    upoad_url = backendhelper.send_upload_hash(yabiusername,uri,uuid)
+    
+    # at the moment we can just return the URL for the backend upload. Todo. return a hash based URL
+    #schema = "http"
+    #host = request.META['SERVER_NAME']
+    #port = int(request.META['SERVER_PORT'])
+    #path = "/fs/put?uri=%s&yabiusername=%s"%(request.REQUEST['uri'], request.REQUEST['yabiusername'])
+    
+    return HttpResponse(
+        json.dumps(
+            {"url":upload_url})
+    )
+    

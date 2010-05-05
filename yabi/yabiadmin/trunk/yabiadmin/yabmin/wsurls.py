@@ -10,7 +10,8 @@ urlpatterns = patterns('yabiadmin.yabmin.ws_frontend_views',
     url(r'^fs/put[/]*$', 'put', name='put'),
     url(r'^fs/copy[/]*$', 'copy', name='copy'),
     url(r'^fs/rm[/]*$', 'rm', name='rm'),
-    url(r'^submitworkflow[/]*$', 'submitworkflow', name='submitworkflow')
+    url(r'^submitworkflow[/]*$', 'submitworkflow', name='submitworkflow'),
+    url(r'^fs/getuploadurl/*$', 'getuploadurl', name='getuploadurl' ),
 )
 
 # backend webservices

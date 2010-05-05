@@ -20,7 +20,6 @@ def validate_user(f):
         elif 'username' in request.POST:
             username = request.POST['username']
 
-
         if request.method == 'GET':
             if 'yabiusername' not in request.GET or request.GET['yabiusername'] != username:
                 return HttpResponseForbidden(json_error("Trying to view resource for different user."))
@@ -90,8 +89,6 @@ def validate_uri(f):
         except ValueError, e:
             return HttpResponseForbidden(json_error("Invalid URI."))
         
-            
-
         return f(request, *args, **kwargs)
     return check_uri
 

@@ -318,3 +318,43 @@ def copy_file(yabiusername, src, dst):
     except httplib.CannotSendRequest, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
         raise
+    
+def send_upload_hash(yabiusername,uri,uuid):
+    """Send an upload has to the backend. Returns the url returned by the backend for uploading"""
+    logger.debug('yabiusername: %s uri: %s uuid: %s'%(yabiusername,uri,uuid))
+    
+    try:
+        resource = "%s?uri=%s&uuid=%s&yabiusername=%s"%(settings.YABIBACKEND_UPLOAD,uri,uuid,yabiusername)
+        logger.debug('server: %s resource: %s'%(settings.YABIBACKEND_SERVER, resource))
+        
+        # get credentials for uri destination backend
+        bc = get_backendcredential_for_uri(yabiusername, uri)
+        
+        # construct information to post to backend
+        data = {    'username'  : bc.credential.username,
+                    'password'  : bc.credential.password,
+                    'cert'      : bc.credential.cert,
+                    'key'       : bc.credential.key,
+                    'uri'       : bc.credential.uri,
+                    'uuid'      : bc.credential.uuid,
+                    'yabiusername' : yabiusername       }
+                    
+        r = POST(resource, data)
+        result = r.read()
+        assert(r.status == 200)
+    
+    except socket.error, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
+        raise
+    
+    except httplib.CannotSendRequest, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
+        raise
+    
+    decoded = json.loads(result)
+    return decoded['upload_url']
+    
+    # now we return to the client our upload url for client to POST to
+    upload_url = "http://%s/upload/%s"%(settings.YABIBACKEND_SERVER)
+    return upload_url
+
