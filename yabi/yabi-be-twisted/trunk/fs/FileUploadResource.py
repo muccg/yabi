@@ -118,6 +118,9 @@ class UploadTicket(resource.PostableResource):
             ticket_store_expiry[ expirytime ] = []
         ticket_store_expiry[ expirytime ].append(uuid)
         
+        # now while we are at it, purge any entries that have expired
+        purge_expired_tickets()
+        
         # done. return a json encoded upload url
         return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, json.dumps("http://faramir.localdomain:9001/fs/upload/%s"%(uuid)) )
 
