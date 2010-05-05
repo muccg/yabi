@@ -228,9 +228,9 @@ def submitworkflow(request):
 #@validate_user
 def getuploadurl(request):
     if 'uri' not in request.REQUEST:
-        return HttpResponse(status_code = 500, "uri needs to be passed in")
+        return HttpResponse("uri needs to be passed in",status_code = 500)
     if 'yabiusername' not in request.REQUEST:
-        return HttpResponse(status_code = 500, "yabiusername needs to be passed in")
+        return HttpResponse("yabiusername needs to be passed in",status_code = 500)
     
     yabiusername = request.REQUEST['yabiusername']
     uri = request.REQUEST['uri']
