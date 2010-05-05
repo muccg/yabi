@@ -44,7 +44,7 @@ def purge_expired_tickets():
                 print "purge ticket not found:",uuid
         
         # delete this expiry info
-        del ticket_store_id[t]
+        del ticket_store_expiry[t]
         
 class UploadStatus(resource.PostableResource):
     """This is where the admin reports the ticket id that its set for a pending upload"""
