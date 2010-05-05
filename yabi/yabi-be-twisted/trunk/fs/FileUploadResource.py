@@ -281,11 +281,5 @@ class FileUploadResource(resource.PostableResource):
         
     def locateChild(self, request, segments):
         # return our local file resource for these segments
-        print "B",segments
-        if segments[0]=="upload":
-            # wanting the file copy resource
-            print "SEG2:",segments
-            return FileUploadResource(request,segments,fsresource = self,uuid=segments[1]), []
+        return FileUploadResource(request,segments,fsresource = self,uuid=segments[0]), []
         
-        return resource.Resource.locateChild(self,request,segments)
-
