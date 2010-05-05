@@ -119,7 +119,8 @@ class FileUploadResource(resource.PostableResource):
         
         self.fsresource = weakref.ref(fsresource)
         
-        print "UPLOAD incoming for UUID:",uuid
+        if uuid:
+            print "UPLOAD incoming for UUID:",uuid
         self.uuid = uuid
         
     def render(self, request):
