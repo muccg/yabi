@@ -238,7 +238,7 @@ def getuploadurl(request):
     uploadhash = str(uuid.uuid4())
         
     # now send this hash to the back end to inform it of the soon to be incomming upload
-    upoad_url = send_upload_hash(yabiusername,uri,uploadhash)
+    upload_url = send_upload_hash(yabiusername,uri,uploadhash)
     
     # at the moment we can just return the URL for the backend upload. Todo. return a hash based URL
     #schema = "http"
