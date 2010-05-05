@@ -324,7 +324,7 @@ def send_upload_hash(yabiusername,uri,uuid):
     logger.debug('yabiusername: %s uri: %s uuid: %s'%(yabiusername,uri,uuid))
     
     try:
-        resource = settings.YABIBACKEND_UPLOAD
+        resource = "%s?uri=%s&uuid=%s&yabiusername=%s"%(settings.YABIBACKEND_UPLOAD,quote(uri),quote(uuid),quote(yabiusername))
         logger.debug('server: %s resource: %s'%(settings.YABIBACKEND_SERVER, resource))
         
         # get credentials for uri destination backend
@@ -334,10 +334,8 @@ def send_upload_hash(yabiusername,uri,uuid):
         data = {    'username'  : bc.credential.username,
                     'password'  : bc.credential.password,
                     'cert'      : bc.credential.cert,
-                    'key'       : bc.credential.key,
-                    'uri'       : uri,
-                    'uuid'      : uuid,
-                    'yabiusername' : yabiusername       }
+                    'key'       : bc.credential.key
+               }
                     
         logger.debug( "POST"+resource )
         logger.debug( "DATA"+str(data) )
