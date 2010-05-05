@@ -27,6 +27,9 @@ ticket_store = {}
 # ticket store expiry. keys are timestamps. values are uuids to expire after that timestamp.
 ticket_store_expiry = {}
 
+# list of uploads commenced. key = uuid. value = bytes transfered
+uploads_progress = {}
+
 # expiry window
 EXPIRE_UPLOAD_TICKET_TIME = 60.0
 
@@ -42,7 +45,21 @@ def purge_expired_tickets():
         
         # delete this expiry info
         del ticket_store_id[t]
-
+        
+class UploadStatus(resource.PostableResource):
+"""This is where the admin reports the ticket id that its set for a pending upload"""
+    def __init__(self,request=None, path=None, fsresource=None):
+        """Pass in the backends to be served out by this FSResource"""
+        self.path = path
+        
+        if not fsresource:
+            raise Exception, "FileListResource must be informed on construction as to which FSResource is its parent"
+        
+        self.fsresource = weakref.ref(fsresource)
+        
+    def render(self, request):
+        # break our request path into parts
+        return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, json.dumps({"ticket_store":ticket_store,"ticket_store_expiry":ticket_store_expiry,"uploads_progress":uploads_progress}))   
 
 class UploadTicket(resource.PostableResource):
     """This is where the admin reports the ticket id that its set for a pending upload"""
@@ -144,6 +161,9 @@ class FileUploadResource(resource.PostableResource):
         
         # ok. now we have details, purge this entry from the store
         del ticket_store[self.uuid]
+        
+        # add us to the presently uploading list
+        uploads_progress[self.uuid] = 0
         
         # now while we are at it, purge any entries that have expired
         purge_expired_tickets()
@@ -256,21 +276,29 @@ class FileUploadResource(resource.PostableResource):
                         parser.feed(dat)
                         
                         reader = req.stream.read()
+                        
+                        # save how many bytes we've written into internal store so status page can be kept
+                        uploads_progress[self.uuid] = parser.bytes_written
+                        
                         stackless.schedule()
                 except IOError, ioe:
                     #print "IOError!!!",ioe
                     # sleep until the task finished
                     while not parser.procproto.isDone():
                         stackless.schedule()
+                    del uploads_progress[self.uuid]
                     return channel.callback(http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "File upload failed: %s\n"%parser.procproto.err))
                 except Exception, ex:
                     import traceback
+                    del uploads_progress[self.uuid]
                     channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "File upload failed: %s\n"%(traceback.format_exc())))
                     #TODO: why does the client channel stay open here? How do we close it after returning this error message? We are inside a stackless threadlet. Is that why?
                     raise
 
+                del uploads_progress[self.uuid]
                 return channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
             else:
+                del uploads_progress[self.uuid]
                 return channel.callback(http.Response( responsecode.BAD_REQUEST, "Invalid content-type: %s/%s" % (ctype.mediaType, ctype.mediaSubtype)))
             
         

@@ -30,10 +30,13 @@ class MimeStreamDecoder(object):
         self.datakeyname = None                 # save the keyname
         self.datavalues = {}                    # storage 
         
+        self.bytes_written = 0                  # bytes written to file
+        
     def set_boundary(self, boundary):
         self.boundary = boundary
     
     def open_data_stream(self):
+        self.bytes_written = 0
         self.datastream = StringIO.StringIO()
     
     def close_data_stream(self):
@@ -43,6 +46,7 @@ class MimeStreamDecoder(object):
     
     def open_write_stream(self, filename):
         """Override this to return the file like object"""
+        self.bytes_written = 0
         self.fileopen = open(filename,'wb')
     
     def close_write_stream(self):
@@ -52,12 +56,14 @@ class MimeStreamDecoder(object):
         
     def write_line(self, line):
         no_intr(getattr(self.fileopen or self.datastream,"write"),line)
+        self.bytes_written += len(line)
         
     def write_line_ending(self):
         if self.fileopen:
             self.fileopen.write(self.line_ending)
         else:
             self.datastream.write(self.line_ending)
+        self.bytes_written += len(self.line_ending)
     
     def guess_line_ending(self, data):
         """from a section of data, try and guess the line ending"""

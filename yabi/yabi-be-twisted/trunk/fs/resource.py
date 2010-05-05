@@ -13,7 +13,7 @@ from FileListResource import FileListResource
 from FileMkdirResource import FileMkdirResource
 from FilePutResource import FilePutResource
 from FileGetResource import FileGetResource
-from FileUploadResource import UploadTicket, FileUploadResource
+from FileUploadResource import UploadTicket, FileUploadResource, UploadStatus
 
 from utils.BackendResource import BackendResource
 
@@ -71,9 +71,12 @@ class FSResource(resource.Resource, BackendResource):
             return FilePutResource(request,segments,fsresource=self), []
         elif segments[0]=="get":
             return FileGetResource(request,segments,fsresource=self), []
+        elif segments[0]=="uploadstatus":
+            return UploadStatus(request, segments, fsresource=self), []
         elif segments[0]=="ticket":
             return UploadTicket(request, segments, fsresource=self), []
         elif segments[0]=="upload":
             return FileUploadResource(request, segments, fsresource=self), segments[1:]
+        
                 
         return resource.Resource.locateChild(self,request,segments)
