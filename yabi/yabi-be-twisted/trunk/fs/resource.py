@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Our twisted filesystem server resource"""
 
 from twisted.web2 import resource, http_headers, responsecode, http, server
@@ -12,6 +13,7 @@ from FileListResource import FileListResource
 from FileMkdirResource import FileMkdirResource
 from FilePutResource import FilePutResource
 from FileGetResource import FileGetResource
+from FileUploadResource import UploadTicket, FileUploadResource
 
 from utils.BackendResource import BackendResource
 
@@ -69,6 +71,10 @@ class FSResource(resource.Resource, BackendResource):
             return FilePutResource(request,segments,fsresource=self), []
         elif segments[0]=="get":
             return FileGetResource(request,segments,fsresource=self), []
+        elif segments[0]=="ticket":
+            return UploadTicket(request, segments, fsresource=self), []
+        elif segments[0]=="upload":
+            return FileUploadResource(request, segments, fsresource=self), []
         
         
         return resource.Resource.locateChild(self,request,segments)
