@@ -59,6 +59,7 @@ class UploadStatus(resource.PostableResource):
         
     def render(self, request):
         # break our request path into parts
+        purge_expired_tickets()
         return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, json.dumps({"ticket_store":ticket_store,"ticket_store_expiry":ticket_store_expiry,"uploads_progress":uploads_progress}))   
 
 class UploadTicket(resource.PostableResource):
