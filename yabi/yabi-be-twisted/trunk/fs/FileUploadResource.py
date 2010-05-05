@@ -84,7 +84,7 @@ class UploadTicket(resource.PostableResource):
         uri = request.args['uri'][0] if 'uri' in request.args else None             # None means we need to look in the mime 
         yabiusername = request.args['yabiusername'][0] if 'yabiusername' in request.args else None
         uuid = request.args['uuid'][0]
-        #scheme, address = parse_url(uri)
+        scheme, address = parse_url(uri)
         
         # compile any credentials together to pass to backend
         creds={}
