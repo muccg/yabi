@@ -287,7 +287,7 @@ for logfile in LOGS:
 # TODO the file upload only handles files that are written to disk at them moment
 # so this MUST be set to 0
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
-YABIBACKEND_UPLOAD = 'http://'+YABIBACKEND+"/upload"
+YABIBACKEND_UPLOAD = 'http://'+YABIBACKEND+"fs/ticket"
 
 if 'HTTP_REDIRECT_TO_HTTPS' in os.environ:
     HTTP_REDIRECT_TO_HTTPS = os.environ['HTTP_REDIRECT_TO_HTTPS']
