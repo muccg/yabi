@@ -339,6 +339,9 @@ def send_upload_hash(yabiusername,uri,uuid):
                     'uuid'      : uuid,
                     'yabiusername' : yabiusername       }
                     
+        logger.debug( "POST"+resource )
+        logger.debug( "DATA"+str(data) )
+                    
         r = POST(resource, data)
         result = r.read()
         assert(r.status == 200)
