@@ -355,7 +355,7 @@ def send_upload_hash(yabiusername,uri,uuid):
         raise
     
     decoded = json.loads(result)
-    return decoded['upload_url']
+    return decoded
     
     # now we return to the client our upload url for client to POST to
     upload_url = "http://%s/upload/%s"%(settings.YABIBACKEND_SERVER)
