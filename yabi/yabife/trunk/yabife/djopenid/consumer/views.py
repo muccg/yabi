@@ -136,7 +136,7 @@ def startOpenID(request):
         # Compute the trust root and return URL values to build the
         # redirect information.
         trust_root = util.getViewURL(request, startOpenID)
-        return_to = siteurl(request) + 'openid/finish/'
+        return_to = siteurl(request) + webhelpers.url('/openid/finish/')
 
         # Send the browser to the server either by sending a redirect
         # URL or by generating a POST form.
