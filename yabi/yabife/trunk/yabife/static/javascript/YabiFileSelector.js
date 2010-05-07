@@ -616,7 +616,7 @@ YabiFileSelector.prototype.uploadClickCallback = function(e, target) {
 YabiFileSelector.prototype.uploadUrlResponse = function(o) {
     
     target = o.argument[0];
-    target.uploadFormEl.reset();
+    #target.uploadFormEl.reset();
     var jsUrl = YAHOO.lang.JSON.parse(o.responseText);
     
     alert("Got back: "+jsUrl);
@@ -630,11 +630,12 @@ YabiFileSelector.prototype.uploadUrlResponse = function(o) {
     YAHOO.util.Connect.setForm(target.uploadFormEl, true);
     jsTransaction = YAHOO.util.Connect.asyncRequest('POST', jsUrl, jsCallback);
     
-//     target.uploadEl.replaceChild(target.uploadMaskEl, target.uploadFormEl);  
+    target.uploadEl.replaceChild(target.uploadMaskEl, target.uploadFormEl);  
     
 };
 
 YabiFileSelector.prototype.uploadResponse = function(o) {
+    alert("uploadResponse");
     var json = o.responseText;
 
     target = o.argument[0];
