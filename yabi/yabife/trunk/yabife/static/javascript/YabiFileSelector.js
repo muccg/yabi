@@ -591,12 +591,7 @@ YabiFileSelector.prototype.expandCallback = function(e, invoker) {
 YabiFileSelector.prototype.uploadClickCallback = function(e, target) {
     YAHOO.util.Event.stopEvent(e);
     
-    /*var baseURL = appURL + "ws/fs/put";
-    var uri = target.currentPath().toString();
-    baseURL = baseURL + "?uri=" + escape(uri);
-    */
-    
-    var baseURL = appURL + "ws/fs/getuploadurl";
+    var baseURL = appURL + "ws/fs/put";
     var uri = target.currentPath().toString();
     baseURL = baseURL + "?uri=" + escape(uri);
     
@@ -604,65 +599,16 @@ YabiFileSelector.prototype.uploadClickCallback = function(e, target) {
     var jsUrl, jsCallback, jsTransaction;
     jsUrl =  baseURL;
     jsCallback = {
-            success: target.uploadUrlResponse,
+            upload: target.uploadResponse,
             failure: target.uploadResponse,
             argument: [target] };
-//     YAHOO.util.Connect.setForm(target.uploadFormEl, true);
-    jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback);
+    YAHOO.util.Connect.setForm(target.uploadFormEl, true);
+    jsTransaction = YAHOO.util.Connect.asyncRequest('POST', jsUrl, jsCallback);
     
     target.uploadEl.replaceChild(target.uploadMaskEl, target.uploadFormEl);
 };
 
-YabiFileSelector.prototype.uploadUrlResponse = function(o) {
-    
-    target = o.argument[0];
-    //target.uploadFormEl.reset();
-    var jsUrl = YAHOO.lang.JSON.parse(o.responseText);
-    
-    alert("Got back: "+jsUrl);
-    
-    //load json
-    var jsCallback, jsTransaction;
-    jsCallback = {
-            upload: target.uploadResponse,
-            failure: target.uploadFailResponse,
-            xdr: true,                                  // use flash so we can submit to different domain
-            argument: [target] };
-    YAHOO.util.Connect.setForm(target.uploadFormEl, true);
-    //jsTransaction2 = YAHOO.util.Connect.asyncRequest('POST', jsUrl, jsCallback);
-    
-    function makeRequest() {
-        // Send request to xml.weather.yahoo.com
-        request = YAHOO.util.Connect.asyncRequest('POST', jsUrl, jsCallback);
-    }
-    
-    // Initialize the Flash transport for XDR
-    YAHOO.util.Connect.transport('connection.swf');
-    
-    // Subscribe to xdrReadyEvent, which is fired
-    // when connection.swf's finishes loading, and
-    // call function request().
-    YAHOO.util.Connect.xdrReadyEvent.subscribe(makeRequest);
-
-        
-    //target.uploadEl.replaceChild(target.uploadMaskEl, target.uploadFormEl);  
-    
-};
-
-YabiFileSelector.prototype.uploadFailResponse = function(o) {
-    alert("uploadFailResponse");
-    var json = o.responseText;
-
-    target = o.argument[0];
-    target.uploadFormEl.reset();
-    
-    target.uploadEl.replaceChild(target.uploadFormEl, target.uploadMaskEl);
-    
-    target.updateBrowser(new YabiSimpleFileValue(target.pathComponents, ''));
-};
-
 YabiFileSelector.prototype.uploadResponse = function(o) {
-    alert("uploadResponse");
     var json = o.responseText;
 
     target = o.argument[0];
