@@ -228,7 +228,7 @@ def submitworkflow(request):
 #@validate_user
 def getuploadurl(request):
     if 'uri' not in request.REQUEST:
-        return HttpResponseBadRequest("uri needs to be passed in\n")
+        return HttpResponseBadRequest("uri needs to be passed in\n")`
     if 'yabiusername' not in request.REQUEST:
         return HttpResponseBadRequest("yabiusername needs to be passed in\n")
     
@@ -247,7 +247,6 @@ def getuploadurl(request):
     #path = "/fs/put?uri=%s&yabiusername=%s"%(request.REQUEST['uri'], request.REQUEST['yabiusername'])
     
     return HttpResponse(
-        json.dumps(
-            {"url":upload_url})
+        json.dumps(upload_url)
     )
     
