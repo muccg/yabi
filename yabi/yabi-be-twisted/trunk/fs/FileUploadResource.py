@@ -31,7 +31,7 @@ ticket_store_expiry = {}
 uploads_progress = {}
 
 # expiry window
-EXPIRE_UPLOAD_TICKET_TIME = 60.0
+EXPIRE_UPLOAD_TICKET_TIME = 600.0
 
 def purge_expired_tickets():
     now = time.time()
