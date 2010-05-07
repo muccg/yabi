@@ -599,13 +599,31 @@ YabiFileSelector.prototype.uploadClickCallback = function(e, target) {
     var jsUrl, jsCallback, jsTransaction;
     jsUrl =  baseURL;
     jsCallback = {
+            upload: target.uploadUrlResponse,
+            failure: target.uploadResponse,
+            argument: [target] };
+    YAHOO.util.Connect.setForm(target.uploadFormEl, true);
+    jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback);
+    
+    target.uploadEl.replaceChild(target.uploadMaskEl, target.uploadFormEl);
+};
+
+YabiFileSelector.prototype.uploadUrlResponse = function(o) {
+    var jsUrl = o.responseText;
+    
+    alert("Got back: "+jsUrl);
+    
+    //load json
+    var jsCallback, jsTransaction;
+    jsCallback = {
             upload: target.uploadResponse,
             failure: target.uploadResponse,
             argument: [target] };
     YAHOO.util.Connect.setForm(target.uploadFormEl, true);
-    jsTransaction = YAHOO.util.Connect.asyncRequest('POST', jsUrl, jsCallback);
+    jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback);
     
-    target.uploadEl.replaceChild(target.uploadMaskEl, target.uploadFormEl);
+    target.uploadEl.replaceChild(target.uploadMaskEl, target.uploadFormEl);  
+    
 };
 
 YabiFileSelector.prototype.uploadResponse = function(o) {
