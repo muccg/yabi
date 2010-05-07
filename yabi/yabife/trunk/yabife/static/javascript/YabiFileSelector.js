@@ -629,8 +629,22 @@ YabiFileSelector.prototype.uploadUrlResponse = function(o) {
             xdr: true,                                  // use flash so we can submit to different domain
             argument: [target] };
     YAHOO.util.Connect.setForm(target.uploadFormEl, true);
-    jsTransaction2 = YAHOO.util.Connect.asyncRequest('POST', jsUrl, jsCallback);
+    //jsTransaction2 = YAHOO.util.Connect.asyncRequest('POST', jsUrl, jsCallback);
     
+    function makeRequest() {
+        // Send request to xml.weather.yahoo.com
+        request = YAHOO.util.Connect.asyncRequest('POST', jsUrl, jsCallback);
+    }
+    
+    // Initialize the Flash transport for XDR
+    YAHOO.util.Connect.transport('connection.swf');
+    
+    // Subscribe to xdrReadyEvent, which is fired
+    // when connection.swf's finishes loading, and
+    // call function request().
+    YAHOO.util.Connect.xdrReadyEvent.subscribe(makeRequest);
+
+        
     //target.uploadEl.replaceChild(target.uploadMaskEl, target.uploadFormEl);  
     
 };
