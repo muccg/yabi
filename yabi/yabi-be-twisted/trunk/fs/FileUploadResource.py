@@ -316,5 +316,5 @@ class FileUploadResource(resource.PostableResource):
         
     def locateChild(self, request, segments):
         # return our local file resource for these segments
-        return FileUploadResource(request,segments,fsresource = self,uuid=segments[0]), []
+        return FileUploadResource(request,segments,fsresource = self.fsresource, uuid=segments[0]), []
         
