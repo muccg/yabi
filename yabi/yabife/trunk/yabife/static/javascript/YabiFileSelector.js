@@ -605,7 +605,7 @@ YabiFileSelector.prototype.uploadClickCallback = function(e, target) {
     jsUrl =  baseURL;
     jsCallback = {
             upload: target.uploadUrlResponse,
-            failure: target.uploadResponse,
+            failure: target.uploadUrlResponse,
             argument: [target] };
 //     YAHOO.util.Connect.setForm(target.uploadFormEl, true);
     jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback);
