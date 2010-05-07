@@ -631,7 +631,7 @@ YabiFileSelector.prototype.uploadUrlResponse = function(o) {
     YAHOO.util.Connect.setForm(target.uploadFormEl, true);
     jsTransaction = YAHOO.util.Connect.asyncRequest('POST', jsUrl, jsCallback);
     
-    target.uploadEl.replaceChild(target.uploadMaskEl, target.uploadFormEl);  
+//     target.uploadEl.replaceChild(target.uploadMaskEl, target.uploadFormEl);  
     
 };
 
