@@ -626,9 +626,10 @@ YabiFileSelector.prototype.uploadUrlResponse = function(o) {
     jsCallback = {
             upload: target.uploadResponse,
             failure: target.uploadFailResponse,
+            xdr: true,                                  // use flash so we can submit to different domain
             argument: [target] };
     YAHOO.util.Connect.setForm(target.uploadFormEl, true);
-    jsTransaction = YAHOO.util.Connect.asyncRequest('POST', jsUrl, jsCallback);
+    jsTransaction2 = YAHOO.util.Connect.asyncRequest('POST', jsUrl, jsCallback);
     
     //target.uploadEl.replaceChild(target.uploadMaskEl, target.uploadFormEl);  
     
