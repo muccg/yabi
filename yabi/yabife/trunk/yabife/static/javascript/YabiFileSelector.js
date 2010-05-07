@@ -591,7 +591,12 @@ YabiFileSelector.prototype.expandCallback = function(e, invoker) {
 YabiFileSelector.prototype.uploadClickCallback = function(e, target) {
     YAHOO.util.Event.stopEvent(e);
     
-    var baseURL = appURL + "ws/fs/put";
+    /*var baseURL = appURL + "ws/fs/put";
+    var uri = target.currentPath().toString();
+    baseURL = baseURL + "?uri=" + escape(uri);
+    */
+    
+    var baseURL = appURL + "ws/fs/getuploadurl";
     var uri = target.currentPath().toString();
     baseURL = baseURL + "?uri=" + escape(uri);
     
