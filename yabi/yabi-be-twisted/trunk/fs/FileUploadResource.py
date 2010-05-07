@@ -66,6 +66,7 @@ class UploadTicket(resource.PostableResource):
     """This is where the admin reports the ticket id that its set for a pending upload"""
     def __init__(self,request=None, path=None, fsresource=None):
         """Pass in the backends to be served out by this FSResource"""
+        print "TICKET"
         self.path = path
         
         if not fsresource:
@@ -133,6 +134,7 @@ class FileUploadResource(resource.PostableResource):
     
     def __init__(self,request=None, path=None, fsresource=None, uuid=None):
         """If a uuid is passed in, we are an upload resource for a particular upload. Otherwise we are the parent."""
+        print "UPLOAD"
         self.path = path
         
         if not fsresource:
