@@ -11,8 +11,6 @@ config.sanitise()
 
 NAME = sys.argv[1]
 
-print "configuring for yabi.conf section:",NAME
-
 # configure up our YABISTORE and YABIADMIN env variables for the django application
 if 'store' in config.config[NAME]:
     os.environ['YABISTORE'] = config.config[NAME]['store']
@@ -49,4 +47,4 @@ for envname in [    'YABISTORE','YABIADMIN','YABIBE','DJANGO_SETTINGS_MODULE', '
                     'auth_ldap_server', 'auth_ldap_user_base','auth_ldap_group_base','auth_ldap_group','auth_ldap_default_group'
                ]:
     if envname.upper() in os.environ:
-        print 'declare -x %s="%s"'%(envname.upper(),os.environ[envname.upper()])
+        print '%s="%s"'%(envname.upper(),os.environ[envname.upper()])
