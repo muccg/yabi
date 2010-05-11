@@ -35,6 +35,9 @@ SEARCH_PATH = ["~/.yabi/yabi.conf","~/.yabi/backend/yabi.conf","~/yabi.conf","~/
 
 def port_setting(port):
     """returns ip,port or raises exception if error"""
+    if type(port) is tuple:
+	return port
+    
     re_port = re.compile(r'^(\d+\.\d+\.\d+\.\d+)(:\d+)?$')
     result = re_port.search(port)
     if result:
@@ -55,7 +58,7 @@ def email_setting(email):
     return rfc822.parseaddr(email)
 
 # process boolean string into python boolean type
-boolean_proc = lambda x: x.lower()=="true" or x.lower()=="t" or x.lower()=="yes" or x.lower()=="y"
+boolean_proc = lambda x: x if type(x) is bool else x.lower()=="true" or x.lower()=="t" or x.lower()=="yes" or x.lower()=="y"
 
 def path_sanitise(path):
     return os.path.normpath(os.path.expanduser(path))
