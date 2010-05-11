@@ -12,7 +12,7 @@ DEBUG = False
 def convert_filename_to_encoded_for_echo(filename):
     """This function takes a filename, and encodes the whole thing to a back ticked eval command.
     This enables us to completely encode a full filename across ssh without any nasty side effects from special characters"""
-    CHARS_TO_REPLACE = '\\' + "'" + '"' + "$@!~|<>#;*[]{}?%^&()="
+    CHARS_TO_REPLACE = '\\' + "'" + '"' + "$@!~|<>#;*[]{}?%^&()= "
     for char in CHARS_TO_REPLACE:
         filename=filename.replace(char,"\\x%x"%(ord(char)))
     return filename
