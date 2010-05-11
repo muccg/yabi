@@ -26,10 +26,7 @@ class SSHShell(BaseShell):
 
     def _make_echo(self,filename):
         """Turn a filename into the remote eval line"""
-        #filename = filename.replace('"','\\"')
-        print "FNAME:",filename
         result = '"`echo -e \'%s\'`"'%(convert_filename_to_encoded_for_echo(filename))
-        print "result",result
         return result
 
     def execute(self, certfile, host, command, username, password, port=22):
@@ -52,7 +49,7 @@ class SSHShell(BaseShell):
         return self.execute(certfile,host,command=["ls",args,self._make_echo(directory)],username=username, password=password)
       
     def mkdir(self, certfile, host, directory,username, password, args="-p"):
-        return self.execute(certfile,host,command=["~/mkdir",args,self._make_echo(directory)],username=username, password=password)
+        return self.execute(certfile,host,command=["mkdir",args,self._make_echo(directory)],username=username, password=password)
       
     def rm(self, certfile, host, directory,username, password, args=None):
         return self.execute(certfile,host,command=["rm",args,self._make_echo(directory)],username=username, password=password) if args else self.execute(certfile,host,command=["rm",self._make_echo(directory)],username=username, password=password) 
