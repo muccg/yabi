@@ -26,9 +26,9 @@ class SSHShell(BaseShell):
 
     def _make_echo(self,filename):
         """Turn a filename into the remote eval line"""
-        filename = '"'+filename.replace('"','\\"')+'"'
+        #filename = filename.replace('"','\\"')
         print "FNAME:",filename
-        result = '`echo -e \'%s\'`'%(convert_filename_to_encoded_for_echo(filename))
+        result = '`echo -e \'"%s"\'`'%(convert_filename_to_encoded_for_echo(filename))
         print "result",result
         return result
 
