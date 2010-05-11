@@ -26,6 +26,7 @@ class SSHShell(BaseShell):
 
     def _make_echo(self,filename):
         """Turn a filename into the remote eval line"""
+        filename = '"'+filename.replace('"','\\"')+'"'
         return '`echo -e \'%s\'`'%(convert_filename_to_encoded_for_echo(filename))
 
     def execute(self, certfile, host, command, username, password, port=22):
