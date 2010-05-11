@@ -52,7 +52,7 @@ class SSHShell(BaseShell):
         return self.execute(certfile,host,command=["ls",args,self._make_echo(directory)],username=username, password=password)
       
     def mkdir(self, certfile, host, directory,username, password, args="-p"):
-        return self.execute(certfile,host,command=["mkdir",args,self._make_echo(directory)],username=username, password=password)
+        return self.execute(certfile,host,command=["~/mkdir",args,self._make_echo(directory)],username=username, password=password)
       
     def rm(self, certfile, host, directory,username, password, args=None):
         return self.execute(certfile,host,command=["rm",args,self._make_echo(directory)],username=username, password=password) if args else self.execute(certfile,host,command=["rm",self._make_echo(directory)],username=username, password=password) 
