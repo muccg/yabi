@@ -28,7 +28,9 @@ class SSHShell(BaseShell):
         """Turn a filename into the remote eval line"""
         filename = '"'+filename.replace('"','\\"')+'"'
         print "FNAME:",filename
-        return '`echo -e \'%s\'`'%(convert_filename_to_encoded_for_echo(filename))
+        result = '`echo -e \'%s\'`'%(convert_filename_to_encoded_for_echo(filename))
+        print "result",result
+        return result
 
     def execute(self, certfile, host, command, username, password, port=22):
         """Run inside gsissh, this command line. Command parts are passed in as a list of parameters, not a string."""
