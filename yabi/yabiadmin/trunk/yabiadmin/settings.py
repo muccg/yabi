@@ -318,4 +318,9 @@ CARROT_BACKEND = "ghettoq.taproot.Database"
 CELERYD_LOG_LEVEL = "DEBUG"
 CELERY_RESULT_BACKEND = "database"
 CELERY_DISABLE_RATE_LIMITS = True
-
+CELERY_QUEUES = {
+    str(config.config['admin']['port']): {
+        "binding_key": "celery"},
+}
+CELERY_DEFAULT_QUEUE = str(config.config['admin']['port'])
+CELERY_DEFAULT_EXCHANGE = str(config.config['admin']['port'])
