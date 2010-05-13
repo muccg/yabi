@@ -82,7 +82,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
             stackless.schedule()
             
         if processprotocol.exitcode!=0:
-            channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = pp.err ))
+            channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = processprotocol.err ))
             return
         
         # send an OK message, but leave the stream open

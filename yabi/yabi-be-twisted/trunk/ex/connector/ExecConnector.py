@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Base class for FSConnector"""
 
 class NotImplemented(Exception):
@@ -13,7 +14,7 @@ class ExecConnector(object):
     def __init__(self):
         self.childenv = {}
     
-    def run(self, command, working, address, callback, **creds):
+    def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
         """Run a job on a backend. extra params can be passed in that are specific to a backend. They should all have defaults if ommitted
         
         command is the command to run

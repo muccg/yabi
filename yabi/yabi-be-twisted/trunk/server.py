@@ -6,13 +6,10 @@ from conf import config
 config.read_config()
 config.sanitise()
 
-import sys, os
-
 from urlparse import urlparse
 
 import stacklessreactor
 stacklessreactor.install()
-import stackless
 
 from twisted.web2 import log
 from twisted.internet import reactor
@@ -27,7 +24,6 @@ from OpenSSL import SSL
 from BaseResource import BaseResource
 
 # make sure our env is sane
-import os
 assert "GLOBUS_LOCATION" in os.environ
 #assert "SGE_ROOT" in os.environ
 
@@ -55,7 +51,6 @@ class ServerContextFactory:
         ctx.use_privatekey_file(os.path.join(config.config['backend']['keyfile']))
         return ctx
 
-from twisted.web2 import channel
 internet.TCPServer(config.config['backend']['port'][1], channel.HTTPFactory(site)).setServiceParent(application)
 internet.SSLServer(config.config['backend']['sslport'][1], channel.HTTPFactory(site), ServerContextFactory()).setServiceParent(application)
 

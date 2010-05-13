@@ -29,7 +29,10 @@ class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
         ExecConnector.__init__(self)
         ssh.KeyStore.KeyStore.__init__(self)
     
-    def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", **creds):
+    def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
+        # preprocess some stuff
+        modules = [] if not module else [X.strip() for X in module.split(",")]
+        
         client_stream = stream.ProducerStream()
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
         stackless.schedule()
@@ -56,8 +59,9 @@ class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
             print "port:","22"
             print "stdout:",stdout
             print "stderr:",stderr
+            print "modules",modules
             print "password:",creds['password']
-            pp = ssh.Run.run(usercert,command,username,host,working,port="22",stdout=stdout,stderr=stderr,password=creds['password'])
+            pp = ssh.Run.run(usercert,command,username,host,working,port="22",stdout=stdout,stderr=stderr,password=creds['password'], modules=modules)
             client_stream.write("Running\n")
             stackless.schedule()
             
