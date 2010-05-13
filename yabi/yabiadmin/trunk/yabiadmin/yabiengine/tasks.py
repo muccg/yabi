@@ -2,7 +2,7 @@ from celery.decorators import task
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 
 
-@task(ignore_result=True)
+@task
 def build(workflow_id):
     assert(workflow_id)
     eworkflow = EngineWorkflow.objects.get(id=workflow_id)
@@ -10,7 +10,7 @@ def build(workflow_id):
     eworkflow.walk()
     return workflow_id
 
-@task(ignore_result=True) 
+@task
 def walk(workflow_id):
     assert(workflow_id)
     eworkflow = EngineWorkflow.objects.get(id=workflow_id)
