@@ -17,7 +17,7 @@ if 'store' in config.config[NAME]:
 if 'admin' in config.config[NAME]:
     os.environ['YABIADMIN'] = config.config[NAME]['admin']
 if 'backend' in config.config[NAME]:
-    os.environ['YABIBE'] = config.config[NAME]['backend']
+    os.environ['YABIBACKEND'] = config.config[NAME]['backend']
 
 
 
@@ -41,7 +41,7 @@ if config.config[NAME]["debug"]:
 if config.config[NAME]["alert_email"]:
     os.environ['ADMIN_EMAIL_NAME'],os.environ['ADMIN_EMAIL'] = config.config[NAME]["alert_email"]
 
-for envname in [    'YABISTORE','YABIADMIN','YABIBE','DJANGO_SETTINGS_MODULE', 'CUSTOMDB', 
+for envname in [    'YABISTORE','YABIADMIN','YABIBACKEND','DJANGO_SETTINGS_MODULE', 'CUSTOMDB', 
                     'HTTP_REDIRECT_TO_HTTPS', 'HTTP_REDIRECT_TO_HTTPS_PORT', 'DJANGODEBUG', 'ADMIN_EMAIL_NAME', 'ADMIN_EMAIL',
                     'database_engine', 'database_name', 'database_user', 'database_password', 'database_host', 'database_port',
                     'auth_ldap_server', 'auth_ldap_user_base','auth_ldap_group_base','auth_ldap_group','auth_ldap_default_group'
