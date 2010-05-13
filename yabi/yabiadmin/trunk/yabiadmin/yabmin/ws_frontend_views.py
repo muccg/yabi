@@ -12,6 +12,8 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 
+from yabiadmin.yabiengine.storehelper import StoreHelper
+from yabiadmin.yabiengine.tasks import build
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_backendcredential_for_uri, copy_file, rm_file, send_upload_hash
 from yabiadmin.security import validate_user, validate_uri
@@ -220,8 +222,13 @@ def submitworkflow(request):
     
     workflow = EngineWorkflow(name=workflow_dict["name"], json=workflow_json, user=user)
     workflow.save()
-    workflow.build()
-    workflow.walk()
+
+    # put the workflow in the store
+    status, data = StoreHelper.updateWorkflow(workflow, workflow.json)
+    assert(status == 200)
+    
+    # trigger a build via celery
+    build.delay(workflow_id=workflow.id)
 
     return HttpResponse(json.dumps({"id":workflow.id}))
 

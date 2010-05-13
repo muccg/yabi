@@ -68,7 +68,10 @@ class StoreHelper():
             Also does status & stageout from the job
         '''
         # get the workflow that needs updating
-        json_object = json.loads(StoreHelper.getWorkflow(job.workflow)[1])
+        status, data = StoreHelper.getWorkflow(job.workflow)
+        assert(status == 200)
+        assert(data)
+        json_object = json.loads(data)
 
         job_id = int(job.order)
         assert json_object['json']['jobs'][job_id]['jobId'] == job_id + 1 # jobs are 1 indexed in json

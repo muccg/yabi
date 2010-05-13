@@ -124,12 +124,14 @@ class EngineWorkflow(Workflow):
     class Meta:
         proxy = True
 
+    @property
+    def workflow_id(self):
+        return self.id
+
     def build(self):
         logger.debug('----- Building workflow id %d -----' % self.id)
 
         try:
-            status, data = StoreHelper.updateWorkflow(self, self.json)
-
             workflow_dict = json.loads(self.json)
 
             # sort out the stageout directory
@@ -295,10 +297,7 @@ class EngineJob(Job):
             task.status = settings.STATUS['ready']
             task.save()
 
-    def _walk(self):
-        eWorkflow = EngineWorkflow.objects.get(id=self.workflow_id)
-        eWorkflow.walk()
-
+    @transaction.commit_on_success
     def add_job(self, job_dict):
         assert(job_dict)
         assert(job_dict["toolName"])
@@ -485,11 +484,9 @@ class EngineTask(Task):
     class Meta:
         proxy = True
 
-
-    def walk(self):
-        if self.status == settings.STATUS['complete']:
-            eJob = EngineJob.objects.get(id=self.job_id)
-            eJob._walk()
+    @property
+    def workflow_id(self):
+        return self.job.workflow.id
 
     def add_task(self, uri, batch_file, name=""):
         logger.debug("uri: %s batch file: %s" % (uri, batch_file))

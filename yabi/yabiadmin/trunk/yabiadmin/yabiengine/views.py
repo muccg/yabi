@@ -10,6 +10,7 @@ from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
 
+from yabiadmin.yabiengine.tasks import walk
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
 from yabiadmin.yabiengine.enginemodels import EngineTask, EngineJob, EngineWorkflow
 
@@ -86,8 +87,8 @@ def status(request, model, id):
                 obj.job.update_status()
                 obj.job.save()
 
-            # this is the only place in the code that we trigger walk
-            obj.walk()
+            # trigger a walk via celery 
+            walk.delay(workflow_id=obj.workflow_id)
 
             return HttpResponse("")
 

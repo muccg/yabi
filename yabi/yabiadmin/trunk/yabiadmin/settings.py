@@ -2,6 +2,14 @@
 # Django settings for yabi project.
 import os
 
+
+### Celery pulls in settings.py, we want our yabi.conf
+SEARCH_PATH = ["~/.yabi/yabi.conf","~/.yabi/backend/yabi.conf","~/yabi.conf","~/.yabi","/etc/yabi.conf","/etc/yabi/yabi.conf"]
+from conf import config
+config.read_config()
+config.sanitise()
+### Celery pulls in settings.py, we want our yabi.conf
+
 if not os.environ.has_key('PROJECT_DIRECTORY'):
 	os.environ['PROJECT_DIRECTORY']=os.path.dirname(__file__)
 if not os.environ.has_key('SCRIPT_NAME'):								# this will be missing if we are running on the internal server
@@ -197,7 +205,8 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     #'django_evolution',
     'yabiadmin.yabmin',
-    'yabiadmin.yabiengine'
+    'yabiadmin.yabiengine',
+    'ghettoq'
 )
 
 ##
@@ -301,4 +310,12 @@ if 'HTTP_REDIRECT_TO_HTTPS_PORT' in os.environ:
 ##
 VALID_SCHEMES = ['http', 'https', 'gridftp', 'globus', 'sge', 'yabifs', 'ssh', 'scp', 'null']
 
+##
+## Celery settings
+##
+## http://ask.github.com/celery/tutorials/otherqueues.html
+CARROT_BACKEND = "ghettoq.taproot.Database"
+CELERYD_LOG_LEVEL = "DEBUG"
+CELERY_RESULT_BACKEND = "database"
+CELERY_DISABLE_RATE_LIMITS = True
 
