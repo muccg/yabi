@@ -133,7 +133,7 @@ class SetQueue(Queue):
         self.queue.append(item)
 
     def _get(self):
-        self.queue.popleft()
+        return self.queue.popleft()
 
 
 class NoDuplicateController(WorkController):
