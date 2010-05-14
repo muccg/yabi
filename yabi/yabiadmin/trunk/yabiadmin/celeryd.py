@@ -62,7 +62,7 @@ from celery import platform
 from celery.log import emergency_error, setup_logger
 from celery.task import discard_all
 from celery.utils import info
-from celery.utils import get_full_cls_name, noop
+from celery.utils import get_full_cls_name, noop, instantiate
 from celery.worker import WorkController
 from celery.worker.buckets import TaskBucket
 from celery.worker.scheduler import Scheduler
