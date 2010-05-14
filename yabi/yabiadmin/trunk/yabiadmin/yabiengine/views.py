@@ -87,8 +87,11 @@ def status(request, model, id):
                 obj.job.update_status()
                 obj.job.save()
 
-            # trigger a walk via celery 
-            walk.delay(workflow_id=obj.workflow_id)
+            if status in ['ready', 'complete', 'error']:
+                # trigger a walk via celery 
+                walk.delay(workflow_id=obj.workflow_id)
+            else:
+                logger.debug("status %s not triggering walk"%(status))
 
             return HttpResponse("")
 
