@@ -7,7 +7,7 @@ class QueueAdmin(admin.ModelAdmin):
     
 class MessageAdmin(admin.ModelAdmin):
     list_display = ['visible','timestamp','payload','queue']
-    filter_by = ['queue']
+    list_filter = ['queue']
 
 admin.site.register(Queue, QueueAdmin)
 admin.site.register(Message, MessageAdmin)
