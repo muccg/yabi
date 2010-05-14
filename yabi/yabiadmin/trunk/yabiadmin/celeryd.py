@@ -57,7 +57,7 @@ import celery
 from celery import conf
 from celery import signals
 from celery import platform
-from celery.log import emergency_error
+from celery.log import emergency_error, setup_logger
 from celery.task import discard_all
 from celery.utils import info
 from celery.utils import get_full_cls_name, noop
