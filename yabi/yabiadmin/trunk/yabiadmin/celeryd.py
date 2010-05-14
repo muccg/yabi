@@ -115,69 +115,69 @@ OPTION_LIST = (
 
 class NoDuplicateController(WorkController):
     """Make a work controller that removes duplicates from the queue"""
-        def __init__(self, concurrency=None, logfile=None, loglevel=None,
-            send_events=conf.SEND_EVENTS, hostname=None,
-            ready_callback=noop, embed_clockservice=False,
-            pool_cls=conf.CELERYD_POOL, listener_cls=conf.CELERYD_LISTENER,
-            mediator_cls=conf.CELERYD_MEDIATOR,
-            eta_scheduler_cls=conf.CELERYD_ETA_SCHEDULER,
-            schedule_filename=conf.CELERYBEAT_SCHEDULE_FILENAME):
+    def __init__(self, concurrency=None, logfile=None, loglevel=None,
+        send_events=conf.SEND_EVENTS, hostname=None,
+        ready_callback=noop, embed_clockservice=False,
+        pool_cls=conf.CELERYD_POOL, listener_cls=conf.CELERYD_LISTENER,
+        mediator_cls=conf.CELERYD_MEDIATOR,
+        eta_scheduler_cls=conf.CELERYD_ETA_SCHEDULER,
+        schedule_filename=conf.CELERYBEAT_SCHEDULE_FILENAME):
 
-        # Options
-        self.loglevel = loglevel or self.loglevel
-        self.concurrency = concurrency or self.concurrency
-        self.logfile = logfile or self.logfile
-        self.logger = setup_logger(loglevel, logfile)
-        self.hostname = hostname or socket.gethostname()
-        self.embed_clockservice = embed_clockservice
-        self.ready_callback = ready_callback
-        self.send_events = send_events
-        self._finalize = Finalize(self, self.stop, exitpriority=20)
+    # Options
+    self.loglevel = loglevel or self.loglevel
+    self.concurrency = concurrency or self.concurrency
+    self.logfile = logfile or self.logfile
+    self.logger = setup_logger(loglevel, logfile)
+    self.hostname = hostname or socket.gethostname()
+    self.embed_clockservice = embed_clockservice
+    self.ready_callback = ready_callback
+    self.send_events = send_events
+    self._finalize = Finalize(self, self.stop, exitpriority=20)
 
-        # Queues
-        if conf.DISABLE_RATE_LIMITS:
-            print "QUEUE"
-            self.ready_queue = Queue()
-        else:
-            print "TASK BUCKET"
-            self.ready_queue = TaskBucket(task_registry=registry.tasks)
-        self.eta_schedule = Scheduler(self.ready_queue, logger=self.logger)
+    # Queues
+    if conf.DISABLE_RATE_LIMITS:
+        print "QUEUE"
+        self.ready_queue = Queue()
+    else:
+        print "TASK BUCKET"
+        self.ready_queue = TaskBucket(task_registry=registry.tasks)
+    self.eta_schedule = Scheduler(self.ready_queue, logger=self.logger)
 
-        self.logger.debug("Instantiating thread components...")
+    self.logger.debug("Instantiating thread components...")
 
-        # Threads + Pool + Consumer
-        self.pool = instantiate(pool_cls, self.concurrency,
+    # Threads + Pool + Consumer
+    self.pool = instantiate(pool_cls, self.concurrency,
+                            logger=self.logger,
+                            initializer=process_initializer)
+    self.mediator = instantiate(mediator_cls, self.ready_queue,
+                                callback=self.process_task,
+                                logger=self.logger)
+    self.scheduler = instantiate(eta_scheduler_cls,
+                                    self.eta_schedule, logger=self.logger)
+
+    self.clockservice = None
+    if self.embed_clockservice:
+        self.clockservice = EmbeddedClockService(logger=self.logger,
+                                schedule_filename=schedule_filename)
+
+    prefetch_count = self.concurrency * conf.CELERYD_PREFETCH_MULTIPLIER
+    self.listener = instantiate(listener_cls,
+                                self.ready_queue,
+                                self.eta_schedule,
                                 logger=self.logger,
-                                initializer=process_initializer)
-        self.mediator = instantiate(mediator_cls, self.ready_queue,
-                                    callback=self.process_task,
-                                    logger=self.logger)
-        self.scheduler = instantiate(eta_scheduler_cls,
-                                     self.eta_schedule, logger=self.logger)
+                                hostname=self.hostname,
+                                send_events=self.send_events,
+                                init_callback=self.ready_callback,
+                                initial_prefetch_count=prefetch_count)
 
-        self.clockservice = None
-        if self.embed_clockservice:
-            self.clockservice = EmbeddedClockService(logger=self.logger,
-                                    schedule_filename=schedule_filename)
-
-        prefetch_count = self.concurrency * conf.CELERYD_PREFETCH_MULTIPLIER
-        self.listener = instantiate(listener_cls,
-                                    self.ready_queue,
-                                    self.eta_schedule,
-                                    logger=self.logger,
-                                    hostname=self.hostname,
-                                    send_events=self.send_events,
-                                    init_callback=self.ready_callback,
-                                    initial_prefetch_count=prefetch_count)
-
-        # The order is important here;
-        #   the first in the list is the first to start,
-        # and they must be stopped in reverse order.
-        self.components = filter(None, (self.pool,
-                                        self.mediator,
-                                        self.scheduler,
-                                        self.clockservice,
-                                        self.listener))
+    # The order is important here;
+    #   the first in the list is the first to start,
+    # and they must be stopped in reverse order.
+    self.components = filter(None, (self.pool,
+                                    self.mediator,
+                                    self.scheduler,
+                                    self.clockservice,
+                                    self.listener))
 
 
 class Worker(object):
