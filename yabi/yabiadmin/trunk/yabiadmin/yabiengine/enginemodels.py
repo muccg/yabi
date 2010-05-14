@@ -26,6 +26,8 @@ from yabiadmin.yabiengine.YabiJobException import YabiJobException
 import logging
 logger = logging.getLogger('yabiengine')
 
+from constants import *
+
 # First up we have two decorators for doing table level locking in postgres
 # @require_lock gets a lock on a table as you would expect,
 # @require_lock_nowait uses NOWAIT on the lock request. Hopefully this impementation isnt
@@ -141,7 +143,7 @@ class EngineWorkflow(Workflow):
                 default_stageout = self.user.default_stageout
 
             self.stageout = "%s%s/" % (default_stageout, self.name)
-            self.status = settings.STATUS['ready']
+            self.status = STATUS_READY
             self.save()
 
             # save the jobs
@@ -193,20 +195,20 @@ class EngineWorkflow(Workflow):
                 # there must be at least one task for every job
                 if not job.task_set.all():
                     logger.critical('No tasks for job: %s' % job.id)
-                    job.status = settings.STATUS['error']
+                    job.status = STATUS_ERROR
                     job.save()
                     continue
             
                 # mark job as ready so it can be requested by a backend
-                job.status = settings.STATUS["ready"]
+                job.status = STATUS_READY
                 job.save()
 
                 job.make_tasks_ready()               
 
             # check all the jobs are complete, if so, changes status on workflow
-            incomplete_jobs = Job.objects.filter(workflow=self).exclude(status=settings.STATUS['complete'])
+            incomplete_jobs = Job.objects.filter(workflow=self).exclude(status=STATUS_COMPLETE)
             if not len(incomplete_jobs):
-                self.status = settings.STATUS['complete']
+                self.status = STATUS_COMPLETE
                 self.save()
 
         except ObjectDoesNotExist,e:
@@ -284,7 +286,7 @@ class EngineJob(Job):
                 parts = uriparts.path.strip('/').split('/')
                 workflowid, jobid = parts[0], parts[1]
                 param_job = Job.objects.get(workflow__id=workflowid, id=jobid)
-                if param_job.status != settings.STATUS["complete"]:
+                if param_job.status != settings.STATUS_COMPLETE:
                     logger.debug("Job dependencies not complete. Job:%s bfile:%s" % (self.id, bfile))
                     rval = True
 
@@ -294,7 +296,7 @@ class EngineJob(Job):
     def make_tasks_ready(self): 
         tasks = EngineTask.objects.filter(job=self)
         for task in tasks:
-            task.status = settings.STATUS['ready']
+            task.status = STATUS_READY
             task.save()
 
     @transaction.commit_on_success
@@ -319,7 +321,7 @@ class EngineJob(Job):
         self.batch_files = commandLine.batch_files # save string repr of list
         self.parameter_files = commandLine.parameter_files # save string repr of list
         self.other_files = commandLine.other_files # save string repr of list
-        self.status = settings.STATUS['pending']
+        self.status = STATUS_PENDING
         self.stageout = "%s%s/" % (self.workflow.stageout, "%d - %s"%(self.order+1,self.tool.display_name) )
         self.exec_backend = self.exec_credential.homedir_uri
         self.fs_backend = self.fs_credential.homedir_uri
@@ -423,7 +425,7 @@ class EngineJob(Job):
             job = task_data[0]
             # remove job from task_data as we now are going to call method on job TODO maybe use pop(0) here
             del(task_data[0]) 
-            task = EngineTask(job=job, status=settings.STATUS['pending'])
+            task = EngineTask(job=job, status=STATUS_PENDING)
             task.add_task(*(task_data+[name]))
             num,name = buildname(num)
 
@@ -467,11 +469,11 @@ class EngineJob(Job):
 
 
     def has_errored_tasks(self):
-        return [X.error_msg for X in Task.objects.filter(job=self) if X.status == settings.STATUS['error']] != []
+        return [X.error_msg for X in Task.objects.filter(job=self) if X.status == STATUS_ERROR] != []
 
 
     def get_errored_tasks_messages(self):
-        return [X.error_msg for X in Task.objects.filter(job=self) if X.status == settings.STATUS['error']]
+        return [X.error_msg for X in Task.objects.filter(job=self) if X.status == STATUS_ERROR]
 
 
 class EngineTask(Task):
@@ -616,7 +618,7 @@ def signal_job_post_save(sender, **kwargs):
         data = {'tasksComplete':float(score),
                 'tasksTotal':float(total)
                 }
-        if ejob.status == settings.STATUS['error']:
+        if ejob.status == STATUS_ERROR:
             data['errorMessage'] = str(ejob.get_errored_tasks_messages())
         StoreHelper.updateJob(ejob, data)
 
