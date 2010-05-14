@@ -52,6 +52,7 @@ import optparse
 import warnings
 import traceback
 import multiprocessing
+from multiprocessing.util import Finalize
 
 import celery
 from celery import conf
