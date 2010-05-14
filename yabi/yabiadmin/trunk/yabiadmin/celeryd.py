@@ -118,6 +118,10 @@ OPTION_LIST = (
             help="Send events so celery can be monitored by e.g. celerymon."),
 )
 
+class QueueStore(list):
+    def clear(self):
+        print "CLEAR"
+
 class SetQueue(Queue):
     def _init(self, maxsize):
         self.queue = []
