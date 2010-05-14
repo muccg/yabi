@@ -118,6 +118,20 @@ OPTION_LIST = (
             help="Send events so celery can be monitored by e.g. celerymon."),
 )
 
+class SetQueue(Queue):
+    def _init(self, maxsize):
+        self.queue = []
+
+    def _qsize(self, len=len):
+        return len(self.queue)
+
+    def _put(self, item):
+        print "PUT",item,"IN",self.queue,"ITS",(item in self.queue)
+        
+        self.queue.append(item)
+
+    def _get(self):
+        self.queue.popleft()
 
 
 class NoDuplicateController(WorkController):
@@ -144,7 +158,7 @@ class NoDuplicateController(WorkController):
         # Queues
         if conf.DISABLE_RATE_LIMITS:
             print "QUEUE"
-            self.ready_queue = Queue()
+            self.ready_queue = SetQueue()
         else:
             print "TASK BUCKET"
             self.ready_queue = TaskBucket(task_registry=registry.tasks)
