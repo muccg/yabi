@@ -118,9 +118,25 @@ OPTION_LIST = (
             help="Send events so celery can be monitored by e.g. celerymon."),
 )
 
-class QueueStore(list):
+class QueueStore(object):
+    def __init__(self):
+        self._store = []
+    
     def clear(self):
         print "CLEAR"
+        self._store = []
+        
+    def add(self, item):
+        print "ADD",item
+        self._store.append(item)
+        
+    def pop(self):
+        item = self._store.pop(0)
+        print "POP",item
+        return item
+        
+    def __len__(self):
+        return len(self._store)
 
 class SetQueue(Queue):
     def _init(self, maxsize):
@@ -132,10 +148,10 @@ class SetQueue(Queue):
     def _put(self, item):
         print "PUT",item,"IN",self.queue,"ITS",(item in self.queue)
         
-        self.queue.append(item)
+        self.queue.add(item)
 
     def _get(self):
-        self.queue.popleft()
+        self.queue.pop()
 
 
 class NoDuplicateController(WorkController):
