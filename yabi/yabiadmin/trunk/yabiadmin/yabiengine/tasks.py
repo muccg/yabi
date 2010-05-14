@@ -1,6 +1,6 @@
+# -*- coding: utf-8 -*-
 from celery.decorators import task
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
-
 
 @task
 def build(workflow_id):
