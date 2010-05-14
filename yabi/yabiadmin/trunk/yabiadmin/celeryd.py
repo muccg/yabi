@@ -64,6 +64,8 @@ from celery.task import discard_all
 from celery.utils import info
 from celery.utils import get_full_cls_name, noop
 from celery.worker import WorkController
+from celery.worker.buckets import TaskBucket
+from celery.worker.scheduler import Scheduler
 
 
 STARTUP_INFO_FMT = """
