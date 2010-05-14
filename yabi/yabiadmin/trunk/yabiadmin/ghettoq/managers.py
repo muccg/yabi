@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Partially stolen from Django Queue Service
 # (http://code.google.com/p/django-queue-service)
 from django.db import models
@@ -31,6 +32,7 @@ class MessageManager(models.Manager):
     def pop(self):
         try:
             resultset = self.filter(visible=True).order_by('timestamp', 'id')
+            print "AVAILABLE RESULT SET FOR MESSAGES",len(resultset),resultset
             result = resultset[0:1].get()
             result.visible = False
             result.save()
