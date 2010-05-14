@@ -121,13 +121,13 @@ class Job(models.Model, Editable, Status):
         return "%s - %s" % (self.workflow.name, self.order)
 
     def status_ready(self):
-        return self.status == settings.STATUS['ready']
+        return self.status == STATUS_READY
 
     def status_complete(self):
-        return self.status == settings.STATUS['complete']
+        return self.status == STATUS_COMPLETE
 
     def status_error(self):
-        return self.status == settings.STATUS['error']
+        return self.status == STATUS_ERROR
 
     @property
     def workflowid(self):
@@ -138,13 +138,15 @@ class Job(models.Model, Editable, Status):
         Checks all the tasks for a job and sets the job status based on precedence of the task status.
         The order of the list being checked is therefore important.
         '''
-        for status in ['error', 'stagein', 'mkdir', 'exec', 'exec:active', 'exec:pending', 'exec:unsubmitted', 'stageout', 'cleaning', 'ready', 'complete']:
+        for status in [STATUS_ERROR, 'stagein', 'mkdir', 'exec', 'exec:active', 'exec:pending', 'exec:unsubmitted', 'stageout', 'cleaning', STATUS_READY, STATUS_COMPLETE]:
             if Task.objects.filter(job=self, status=status):
                 # we need to map the task status values to valid job status values
                 if status.startswith('exec') or status in ['stageout', 'cleaning', 'stagein', 'mkdir']:
-                    self.status = settings.STATUS['running']
+                    self.status = STATUS_RUNNING
                 else:
-                    self.status = settings.STATUS[status]
+                    self.status = status
+                
+                assert(self.status in STATUS)
                 return
 
 
