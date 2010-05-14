@@ -164,6 +164,7 @@ class MultiBackend(BaseBackend):
 
     def prepare_message(self, message_data, delivery_mode, priority=0,
             content_type=None, content_encoding=None):
+        print "PREPARE:",message_data
         return {"body": message_data,
                 "delivery_tag": gen_unique_id(),
                 "priority": priority or 0,
