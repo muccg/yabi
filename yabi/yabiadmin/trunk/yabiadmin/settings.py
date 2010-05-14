@@ -265,13 +265,7 @@ AUTHENTICATION_BACKENDS = (
 STATIC_SERVER_PATH = os.path.join(PROJECT_DIRECTORY,"static")
 
 # status settings that can be used on workflow, job and task.
-STATUS = {'pending':'pending',
-          'ready':'ready',
-          'requested':'requested',
-          'running':'running',
-          'complete':'complete',
-          'error':'error'
-          }
+STATUS = ['pending','ready','requested','running','complete','error']
 
 ##
 ## Logging setup

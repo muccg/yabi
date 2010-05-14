@@ -17,17 +17,16 @@ logger = logging.getLogger('yabiengine')
 
 
 class Status(object):
+    COLOURS = {
+        'pending':  'grey',
+        'ready': 'orange',
+        'requested': 'orange',
+        'complete': 'green',
+        'error': 'red'
+    }
+    
     def get_status_colour(obj, status):
-        if settings.STATUS['pending'] == status:
-            return 'grey'
-        elif settings.STATUS['ready'] == status:
-            return 'orange'
-        elif settings.STATUS['requested'] == status:
-            return 'green'
-        elif settings.STATUS['complete'] == status:
-            return 'green'
-        elif settings.STATUS['error'] == status:
-            return 'red'
+        return self.COLOURS[status]
 
 class Editable(object):
     @models.permalink
