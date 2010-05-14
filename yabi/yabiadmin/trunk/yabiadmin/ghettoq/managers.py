@@ -31,9 +31,10 @@ class MessageManager(models.Manager):
 
     def pop(self):
         try:
-            resultset = self.filter(visible=True).order_by('timestamp', 'id')
+            resultset = self.filter(visible=True).order_by('timestamp', 'id').all()
             print "AVAILABLE RESULT SET FOR MESSAGES",len(resultset),resultset
-            result = resultset[0:1].get()
+            #result = resultset[0:1].get()
+            result = resultset[0]
             result.visible = False
             result.save()
             return result.payload
