@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from carrot.backends.base import BaseBackend, BaseMessage
 from anyjson import serialize, deserialize
 from ghettoq.backends import Connection
@@ -171,6 +172,7 @@ class MultiBackend(BaseBackend):
 
     def publish(self, message, exchange, routing_key, **kwargs):
         message["destination"] = exchange
+        print "PUBLISH:",message,"EXCHANGE:",exchange,"ROUTING:",routing_key
         self.channel.Queue(exchange).put(serialize(message))
 
     def cancel(self, consumer_tag):
