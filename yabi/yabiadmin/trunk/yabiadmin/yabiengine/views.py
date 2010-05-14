@@ -94,8 +94,7 @@ def status(request, model, id):
                 logger.debug("STATUS: %s triggering walk"%(status))
                 walk.delay(workflow_id=obj.workflow_id)
             else:
-                logger.debug("STATUS: %s IS triggering walk"%(status))
-                walk.delay(workflow_id=obj.workflow_id)
+                logger.debug("STATUS: %s NOT triggering walk"%(status))
 
             return HttpResponse("")
 
