@@ -307,6 +307,7 @@ VALID_SCHEMES = ['http', 'https', 'gridftp', 'globus', 'sge', 'yabifs', 'ssh', '
 ## http://ask.github.com/celery/tutorials/otherqueues.html
 CARROT_BACKEND = "ghettoq.taproot.Database"
 CELERYD_LOG_LEVEL = "DEBUG"
+CELERYD_CONCURRENCY = 1
 CELERY_RESULT_BACKEND = "database"
 CELERY_DISABLE_RATE_LIMITS = True
 CELERY_QUEUES = {
