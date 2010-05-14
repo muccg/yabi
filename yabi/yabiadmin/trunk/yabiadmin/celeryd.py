@@ -124,7 +124,7 @@ class QueueStore(list):
 
 class SetQueue(Queue):
     def _init(self, maxsize):
-        self.queue = []
+        self.queue = QueueStore()
 
     def _qsize(self, len=len):
         return len(self.queue)
