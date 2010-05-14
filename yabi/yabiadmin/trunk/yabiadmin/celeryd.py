@@ -128,7 +128,7 @@ class SetQueue(Queue):
         return len(self.queue)
 
     def _put(self, item):
-        print "PUT",item,"IN",self.queue,"ITS",(item in self.queue)
+        print self,"PUT",item,"IN",self.queue,"ITS",(item in self.queue)
         
         self.queue.append(item)
 
