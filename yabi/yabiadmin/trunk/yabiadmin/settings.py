@@ -315,3 +315,4 @@ CELERY_QUEUES = {
 }
 CELERY_DEFAULT_QUEUE = str(config.config['admin']['port'])
 CELERY_DEFAULT_EXCHANGE = str(config.config['admin']['port'])
+CELERY_IGNORE_RESULT = True
