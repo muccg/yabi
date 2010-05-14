@@ -60,8 +60,9 @@ from celery import platform
 from celery.log import emergency_error
 from celery.task import discard_all
 from celery.utils import info
-from celery.utils import get_full_cls_name
+from celery.utils import get_full_cls_name, noop
 from celery.worker import WorkController
+
 
 STARTUP_INFO_FMT = """
 Configuration ->
@@ -112,6 +113,8 @@ OPTION_LIST = (
             action="store_true", dest="events",
             help="Send events so celery can be monitored by e.g. celerymon."),
 )
+
+
 
 class NoDuplicateController(WorkController):
     """Make a work controller that removes duplicates from the queue"""
