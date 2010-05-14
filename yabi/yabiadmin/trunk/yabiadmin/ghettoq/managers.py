@@ -34,10 +34,11 @@ class MessageManager(models.Manager):
             resultset = self.filter(visible=True).order_by('timestamp', 'id').all()
             print "AVAILABLE RESULT SET FOR MESSAGES",len(resultset),resultset
             #result = resultset[0:1].get()
-            result = resultset[0]
-            result.visible = False
-            result.save()
-            return result.payload
+            if resultset:
+                result = resultset[0]
+                result.visible = False
+                result.save()
+                return result.payload
         except self.model.DoesNotExist:
             pass
 
