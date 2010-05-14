@@ -9,6 +9,9 @@ class Queue(models.Model):
 
     objects = QueueManager()
 
+    def __unicode__(self):
+        return "Queue %s"%self.name
+
     class Meta:
         verbose_name = _("queue")
         verbose_name_plural = _("queues")
