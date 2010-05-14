@@ -53,6 +53,7 @@ import warnings
 import traceback
 import multiprocessing
 from multiprocessing.util import Finalize
+from Queue import Queue
 
 import celery
 from celery import conf
