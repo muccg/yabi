@@ -15,14 +15,15 @@ from urllib import urlencode
 import logging
 logger = logging.getLogger('yabiengine')
 
+from constants import *
 
 class Status(object):
     COLOURS = {
-        'pending':  'grey',
-        'ready': 'orange',
-        'requested': 'orange',
-        'complete': 'green',
-        'error': 'red'
+        STATUS_PENDING:  'grey',
+        STATUS_READY: 'orange',
+        STATUS_REQUESTED: 'orange',
+        STATUS_COMPLETE: 'green',
+        STATUS_ERROR: 'red'
     }
     
     def get_status_colour(obj, status):

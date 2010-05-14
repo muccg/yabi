@@ -17,6 +17,8 @@ from yabiadmin.yabiengine.enginemodels import EngineTask, EngineJob, EngineWorkf
 import logging
 logger = logging.getLogger('yabiengine')
 
+from constants import *
+
 def task(request):
     if "origin" not in request.REQUEST:
         return HttpResponseServerError("Error requesting task. No origin identifier set.")
@@ -32,11 +34,11 @@ def task(request):
        
     try:
         # only expose tasks that are ready and are intended for the expeceted backend
-        tasks = Task.objects.filter(status=settings.STATUS["ready"], expected_ip=exp_ip, expected_port=exp_port)
+        tasks = Task.objects.filter(status=STATUS_READY, expected_ip=exp_ip, expected_port=exp_port)
 
         if tasks:
             task = tasks[0]
-            task.status=settings.STATUS["requested"]
+            task.status=STATUS_REQUESTED
             task.save()
             logger.debug('requested task id: %s command: %s' % (task.id, task.command))
             return HttpResponse(task.json())
@@ -87,7 +89,7 @@ def status(request, model, id):
                 obj.job.update_status()
                 obj.job.save()
 
-            if status in ['ready', 'complete', 'error']:
+            if status in [STATUS_READY, STATUS_COMPLETE, STATUS_ERROR]:
                 # trigger a walk via celery 
                 logger.debug("STATUS: %s triggering walk"%(status))
                 walk.delay(workflow_id=obj.workflow_id)
