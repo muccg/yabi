@@ -625,6 +625,7 @@ def signal_job_post_save(sender, **kwargs):
                 }
         if ejob.status == STATUS_ERROR:
             data['errorMessage'] = str(ejob.get_errored_tasks_messages())
+        logger.debug("Updating job "+str(ejob)+" with "+str(data))
         StoreHelper.updateJob(ejob, data)
 
     except Exception, e:
