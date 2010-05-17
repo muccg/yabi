@@ -468,7 +468,9 @@ class EngineJob(Job):
 
 
     def total_tasks(self):
-        return float(len(Task.objects.filter(job=self)))
+        tasknum = float(len(Task.objects.filter(job=self)))
+        print "TOTAL_TASKS:",tasknum
+        return tasknum
 
 
     def has_errored_tasks(self):
