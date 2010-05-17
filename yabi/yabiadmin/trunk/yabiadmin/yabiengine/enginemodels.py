@@ -177,11 +177,10 @@ class EngineWorkflow(Workflow):
                 logger.debug('----- Walking workflow id %d job id %d -----' % (self.id, job.id))
 
                 # dont check complete or ready jobs
-                from constants import *
-                if job.status != STATUS_READY and job.status != STATUS_COMPLETE:
-                    job.update_status()
-                    job.save()
-                    continue
+                #if job.status != STATUS_READY and job.status != STATUS_COMPLETE:
+                job.update_status()
+                    #job.save()
+                    #continue
 
                 if (job.total_tasks() > 0):
                 #if (job.status_complete() or job.status_ready() or job.status_error()):
@@ -196,7 +195,8 @@ class EngineWorkflow(Workflow):
                 job.create_tasks()
 
                 # there must be at least one task for every job
-                if not job.task_set.all():
+                if not job.total_tasks():
+                #if not job.task_set.all():
                     logger.critical('No tasks for job: %s' % job.id)
                     job.status = STATUS_ERROR
                     job.save()
