@@ -469,7 +469,7 @@ class EngineJob(Job):
 
     def total_tasks(self):
         tasknum = float(len(Task.objects.filter(job=self)))
-        print "TOTAL_TASKS:",tasknum
+        print "TOTAL_TASKS:",self,tasknum
         return tasknum
 
 
