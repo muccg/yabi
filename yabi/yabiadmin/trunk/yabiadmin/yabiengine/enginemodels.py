@@ -177,10 +177,8 @@ class EngineWorkflow(Workflow):
                 logger.debug('----- Walking workflow id %d job id %d -----' % (self.id, job.id))
 
                 # dont check complete or ready jobs
-                if job.status != STATUS_READY and job.status != STATUS_COMPLETE:
-                    job.update_status()
-                    job.save()
-                    continue
+                job.update_status()
+                #job.save()
 
                 if (job.total_tasks() > 0):
                 #if (job.status_complete() or job.status_ready() or job.status_error()):
