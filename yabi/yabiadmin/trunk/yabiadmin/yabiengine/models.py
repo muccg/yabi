@@ -26,7 +26,7 @@ class Status(object):
         STATUS_ERROR: 'red'
     }
     
-    def get_status_colour(obj, status):
+    def get_status_colour(self, status):
         return self.COLOURS[status]
 
 class Editable(object):
