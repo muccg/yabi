@@ -55,7 +55,7 @@ def task(request):
         return HttpResponseServerError("Error requesting task.")
 
 def status(request, model, id):
-    logger.debug('model: %s id: %s' % (model, id))
+    logger.debug('STATUS model: %s id: %s' % (model, id))
     models = {'task':EngineTask, 'job':EngineJob, 'workflow':EngineWorkflow}
 
     # sanity checks
@@ -75,6 +75,8 @@ def status(request, model, id):
             model = str(model).lower()
             id = int(id)
             status = str(request.POST["status"])
+
+            logger.debug("STATUS="+request.POST['status'])
 
             # truncate status to 64 chars to avoid any sql field length errors
             status = status[:64]
