@@ -31,12 +31,12 @@ class Status(object):
 
 class Editable(object):
     @models.permalink
-    def edit_url(obj):
-        admin_str = 'admin:%s_%s_change' % (obj._meta.app_label, obj._meta.object_name.lower())
-        return (admin_str, (obj.id,))
+    def edit_url(self):
+        admin_str = 'admin:%s_%s_change' % (self._meta.app_label, self._meta.object_name.lower())
+        return (admin_str, (self.id,))
 
-    def edit_link(obj):
-        return '<a href="%s">Edit</a>' % obj.edit_url()
+    def edit_link(self):
+        return '<a href="%s">Edit</a>' % self.edit_url()
     edit_link.short_description = 'Edit'
     edit_link.allow_tags = True
 
