@@ -177,10 +177,10 @@ class EngineWorkflow(Workflow):
                 logger.debug('----- Walking workflow id %d job id %d -----' % (self.id, job.id))
 
                 # dont check complete or ready jobs
-                #if job.status != STATUS_READY and job.status != STATUS_COMPLETE:
-                job.update_status()
-                    #job.save()
-                    #continue
+                if job.status != STATUS_READY and job.status != STATUS_COMPLETE:
+                    job.update_status()
+                    job.save()
+                    continue
 
                 if (job.total_tasks() > 0):
                 #if (job.status_complete() or job.status_ready() or job.status_error()):
@@ -213,6 +213,17 @@ class EngineWorkflow(Workflow):
             if not len(incomplete_jobs):
                 self.status = STATUS_COMPLETE
                 self.save()
+                
+                # we may get here, with no more tasks or jobs running, but only after a lengthy walk. 
+                # so all the jobs are marked as "STATUS_COMPLETE" in the database, but not necessarily in the json representation.
+                # so lets make sure the json fully reflects our new complete state
+                print "MARKING ALL JOBS COMPLETE"
+                
+                # TODO: make this happen in a minimal way. fo now, just recheck one more time
+                for job in jobset:
+                    job.update_status()
+                    job.save()
+                
 
         except ObjectDoesNotExist,e:
             logger.critical("ObjectDoesNotExist at workflow.walk")

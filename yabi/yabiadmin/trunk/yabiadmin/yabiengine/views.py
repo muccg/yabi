@@ -84,13 +84,11 @@ def status(request, model, id):
             m = models[model]
             obj = m.objects.get(id=id)
             obj.status=status
-            print "== SAVING 1 ==",obj,obj.id
             obj.save()
 
             # update the job status when the task status changes
             if (model == 'task'):
                 obj.job.update_status()
-                print "== SAVING 2 ==",obj.job,obj.job.id
                 obj.job.save()
 
             if status in [STATUS_READY, STATUS_COMPLETE, STATUS_ERROR]:
