@@ -22,6 +22,7 @@ class Status(object):
         STATUS_PENDING:  'grey',
         STATUS_READY: 'orange',
         STATUS_REQUESTED: 'orange',
+        STATUS_RUNNING: 'orange',
         STATUS_COMPLETE: 'green',
         STATUS_ERROR: 'red'
     }
