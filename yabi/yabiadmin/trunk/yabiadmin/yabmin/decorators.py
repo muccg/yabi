@@ -3,6 +3,12 @@
 # Memcache stuff for this set of webservices
 # lets help make the frontend more snappy
 #
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import HttpResponse, HttpResponseNotFound
+
+import logging
+logger = logging.getLogger('yabiadmin')
+
 from django.contrib.memcache import KeyspacedMemcacheClient
 mc = KeyspacedMemcacheClient()
 
