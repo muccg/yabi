@@ -28,7 +28,7 @@ class Status(object):
     }
     
     def get_status_colour(self, status):
-        return self.COLOURS[status]
+        return self.COLOURS.get(status, 'grey')
 
 class Editable(object):
     @models.permalink
