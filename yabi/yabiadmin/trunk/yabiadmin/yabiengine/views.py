@@ -55,7 +55,7 @@ def task(request):
         return HttpResponseServerError("Error requesting task.")
 
 def status(request, model, id):
-    logger.debug('STATUS model: %s id: %s' % (model, id))
+    logger.debug('model: %s id: %s' % (model, id))
     models = {'task':EngineTask, 'job':EngineJob, 'workflow':EngineWorkflow}
 
     # sanity checks
@@ -76,7 +76,7 @@ def status(request, model, id):
             id = int(id)
             status = str(request.POST["status"])
 
-            logger.debug("STATUS="+request.POST['status'])
+            logger.debug("status="+request.POST['status'])
 
             # truncate status to 64 chars to avoid any sql field length errors
             status = status[:64]
@@ -93,10 +93,7 @@ def status(request, model, id):
 
             if status in [STATUS_READY, STATUS_COMPLETE, STATUS_ERROR]:
                 # trigger a walk via celery 
-                logger.debug("STATUS: %s triggering walk"%(status))
                 walk.delay(workflow_id=obj.workflow_id)
-            else:
-                logger.debug("STATUS: %s NOT triggering walk"%(status))
 
             return HttpResponse("")
 
