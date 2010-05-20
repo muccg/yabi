@@ -25,73 +25,95 @@ import uuid
 import logging
 logger = logging.getLogger('yabiadmin')
 
+#
+# Memcache stuff for this set of webservices
+# lets help make the frontend more snappy
+#
+from django.contrib.memcache import KeyspacedMemcacheClient
+mc = KeyspacedMemcacheClient()
+
+def memcache(basekey,kwargkeylist,timout=120):
+    def memcache_decorator(func):
+        def memcache_decorated_func(request, *args, **kwargs):
+            keyname = "-".join([basekey]+[str(kwargs[X]) for X in kwargkeylist])
+            cached_result = mc.get(keyname)
+            if cached_result:
+                logger.debug("returning cached result for %s"%keyname)
+                return HttpResponse(cached_result)
+            
+            # not cached. get real result.
+            try:
+                result = func(request, *args, **kwargs)
+                mc.set(keyname,result,timeout)
+                return HttpResponse(result)
+            except ObjectDoesNotExist:
+                return HttpResponseNotFound(json_error("Object not found"))
+        return memcache_decorated_func
+    return memcache_decorator
+            
+
 ## TODO do we want to limit tools to those the user can access?
 ## will need to change call from front end to include username
 ## then uncomment decorator
+
 #@validate_user
+@memcache("tool",["toolname"],300)
 def tool(request, *args, **kwargs):
     toolname = kwargs['toolname']
     logger.debug(toolname)
 
-    try:
-        tool = Tool.objects.get(name=toolname)
-        return HttpResponse(tool.json())
-    except ObjectDoesNotExist:
-        return HttpResponseNotFound(json_error("Object not found"))
+    return Tool.objects.get(name=toolname).json()
 
 
 @validate_user
+@memcache("menu",["username"])
 def menu(request, *args, **kwargs):
     username = kwargs["username"]
     logger.debug(username)
     
-    try:
-        toolsets = ToolSet.objects.filter(users__name=username)
-        output = {"toolsets":[]}
+    toolsets = ToolSet.objects.filter(users__name=username)
+    output = {"toolsets":[]}
 
-        # add each toolset
-        for toolset in toolsets:
+    # add each toolset
+    for toolset in toolsets:
 
-            ts = {}
-            output["toolsets"].append(ts)
-            ts["name"] = toolset.name
-            ts["toolgroups"] = []
-
-
-            # make up a dict of toolgroups
-            toolgroups = {}
-
-            for toolgroup in ToolGrouping.objects.filter(tool_set=toolset):
-                if not toolgroup.tool_group.name in toolgroups:
-                    tg = {}
-                    toolgroups[toolgroup.tool_group.name] = tg
-                else:
-                    tg = toolgroups[toolgroup.tool_group.name]
-
-                if not "name" in tg:
-                    tg["name"] = toolgroup.tool_group.name
-                if not "tools" in tg:
-                    tg["tools"] = []
-
-                tool = {}
-                tool["name"] = toolgroup.tool.name
-                tool["displayName"] = toolgroup.tool.display_name
-                tool["description"] = toolgroup.tool.description                
-                tg["tools"].append(tool)
-                tool["outputExtensions"] = toolgroup.tool.output_filetype_extensions()
-                tool["inputExtensions"] = toolgroup.tool.input_filetype_extensions()
+        ts = {}
+        output["toolsets"].append(ts)
+        ts["name"] = toolset.name
+        ts["toolgroups"] = []
 
 
-            # now add the toolgroups to toolsets
-            for key, value in toolgroups.iteritems():
-                ts["toolgroups"].append(value)
+        # make up a dict of toolgroups
+        toolgroups = {}
+
+        for toolgroup in ToolGrouping.objects.filter(tool_set=toolset):
+            if not toolgroup.tool_group.name in toolgroups:
+                tg = {}
+                toolgroups[toolgroup.tool_group.name] = tg
+            else:
+                tg = toolgroups[toolgroup.tool_group.name]
+
+            if not "name" in tg:
+                tg["name"] = toolgroup.tool_group.name
+            if not "tools" in tg:
+                tg["tools"] = []
+
+            tool = {}
+            tool["name"] = toolgroup.tool.name
+            tool["displayName"] = toolgroup.tool.display_name
+            tool["description"] = toolgroup.tool.description                
+            tg["tools"].append(tool)
+            tool["outputExtensions"] = toolgroup.tool.output_filetype_extensions()
+            tool["inputExtensions"] = toolgroup.tool.input_filetype_extensions()
 
 
-        return HttpResponse(json.dumps({"menu":output}))
-    except ObjectDoesNotExist:
-        return HttpResponseNotFound(json_error("Object not found"))    
+        # now add the toolgroups to toolsets
+        for key, value in toolgroups.iteritems():
+            ts["toolgroups"].append(value)
 
 
+    return json.dumps({"menu":output})
+    
 @validate_uri
 def ls(request):
     """
