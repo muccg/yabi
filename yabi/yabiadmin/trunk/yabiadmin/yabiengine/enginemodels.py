@@ -215,7 +215,6 @@ class EngineWorkflow(Workflow):
                 # we may get here, with no more tasks or jobs running, but only after a lengthy walk. 
                 # so all the jobs are marked as "STATUS_COMPLETE" in the database, but not necessarily in the json representation.
                 # so lets make sure the json fully reflects our new complete state
-                print "MARKING ALL JOBS COMPLETE"
                 
                 # TODO: make this happen in a minimal way. fo now, just recheck one more time
                 for job in jobset:
@@ -478,7 +477,6 @@ class EngineJob(Job):
 
     def total_tasks(self):
         tasknum = float(len(Task.objects.filter(job=self)))
-        print "TOTAL_TASKS:",self,tasknum
         return tasknum
 
 
