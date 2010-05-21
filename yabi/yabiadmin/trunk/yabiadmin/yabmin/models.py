@@ -293,10 +293,20 @@ class User(Base):
     def tools_url(self):
         return ('user_tools_view', (), {'user_id': self.id})
 
+    @models.permalink
+    def backends_url(self):
+        return ('user_backends_view', (), {'user_id': self.id})
+
     def tools_link(self):
-        return '<a href="%s">See tools</a>' % self.tools_url()
-    tools_link.short_description = 'See tools'
+        return '<a href="%s">Tools</a>' % self.tools_url()
+    tools_link.short_description = 'Tools'
     tools_link.allow_tags = True
+
+    def backends_link(self):
+        return '<a href="%s">Backends</a>' % self.backends_url()
+    backends_link.short_description = 'Backends'
+    backends_link.allow_tags = True
+
 
     def __unicode__(self):
         return self.name

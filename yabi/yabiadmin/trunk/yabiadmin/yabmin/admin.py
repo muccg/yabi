@@ -92,7 +92,7 @@ class BackendAdmin(AdminBase):
     list_display = ['name', 'description', 'scheme', 'hostname', 'port', 'path', 'uri', 'backend_summary_link']
 
 class UserAdmin(AdminBase):
-    list_display = ['name', 'toolsets_str', 'tools_link']
+    list_display = ['name', 'toolsets_str', 'tools_link', 'backends_link']
 
 class BackendCredentialAdmin(AdminBase):
     form = BackendCredentialForm

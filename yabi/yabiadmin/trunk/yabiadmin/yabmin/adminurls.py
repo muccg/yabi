@@ -2,6 +2,7 @@ from django.conf.urls.defaults import *
 
 urlpatterns = patterns('yabiadmin.yabmin.adminviews',
     url(r'^user/(?P<user_id>\d+)/tools/$', 'user_tools', name='user_tools_view'),
+    url(r'^user/(?P<user_id>\d+)/backends/$', 'user_backends', name='user_backends_view'),
     url(r'^tool/(?P<tool_id>\d+)/$', 'tool', name='tool_view'),
     url(r'^addtool/$', 'add_tool', name='add_tool_view'),                       
     url(r'^backend/(?P<backend_id>\d+)/$', 'backend', name='backend_view'),

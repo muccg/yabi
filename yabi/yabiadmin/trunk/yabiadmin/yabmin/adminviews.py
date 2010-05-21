@@ -112,6 +112,21 @@ def user_tools(request, user_id):
         'root_path':webhelpers.url("/admin"),
         'tool_groups': sorted(unique_tool_groups.values(), key = lambda tgv: tgv.name)})
 
+@staff_member_required
+def user_backends(request, user_id):
+    logger.debug('')
+    backenduser = get_object_or_404(User, pk=user_id)
+
+    becs = BackendCredential.objects.filter(credential__user=backenduser)
+
+    return render_to_response("yabmin/user_backends.html", {
+        'user': request.user,
+        'backenduser': backenduser,
+        'title': 'Backend Listing',
+        'root_path':webhelpers.url("/admin"),
+        'backendcredentials': becs
+        })
+
 class LdapUser:
     def __init__(self, uid, dn, full_name):
         logger.debug('')
