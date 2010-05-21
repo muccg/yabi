@@ -185,6 +185,8 @@ MIDDLEWARE_CLASSES = (
 
 # our session cookie name (set to be different to admin)
 SESSION_COOKIE_NAME = "yabiadmincookie"
+SESSION_COOKIE_PATH = url('/')
+SESSION_SAVE_EVERY_REQUEST = True
 
 ROOT_URLCONF = 'yabiadmin.urls'
 
