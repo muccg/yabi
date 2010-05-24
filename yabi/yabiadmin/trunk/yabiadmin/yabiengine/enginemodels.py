@@ -10,6 +10,7 @@ from psycopg2 import OperationalError
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import models, connection, transaction
 from django.db.models import Q
+from django.db.transaction import enter_transaction_management, leave_transaction_management, managed
 from django.conf import settings
 from django.utils import simplejson as json, webhelpers
 from django.db.models.signals import post_save
@@ -73,12 +74,23 @@ def require_lock(model, lock):
         def wrapper(*args, **kwargs):
             if lock not in LOCK_MODES:
                 raise ValueError('%s is not a PostgreSQL supported lock mode.')
-            from django.db import connection
-            # by default Django is running with an open transaction
-            transaction.commit()
-            cursor = connection.cursor()
-            cursor.execute('LOCK TABLE %s IN %s MODE' % (model._meta.db_table, lock))
-            return view_func(*args, **kwargs)
+
+            try:
+                enter_transaction_management()
+                managed()
+
+                from django.db import connection
+                cursor = connection.cursor()
+                cursor.execute('LOCK TABLE %s IN %s MODE' % (model._meta.db_table, lock))
+                return view_func(*args, **kwargs)
+            except:
+                logger.critical(traceback.format_exc())
+                transaction.rollback()
+                raise
+            finally:
+                transaction.commit()
+                leave_transaction_management()
+
         return wrapper
     return require_lock_decorator
 
@@ -345,7 +357,6 @@ class EngineJob(Job):
 
         self.save()
 
-    @transaction.commit_on_success
     @require_lock(Task, 'ACCESS EXCLUSIVE')
     def create_tasks(self):
         if (self.total_tasks() > 0):
