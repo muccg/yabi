@@ -75,9 +75,13 @@ def require_lock(model, lock):
             if lock not in LOCK_MODES:
                 raise ValueError('%s is not a PostgreSQL supported lock mode.')
 
+            assert False
+            # Was working on putting manual commits in here, but instead have decided to unwind the code
+            # and do a version without the decorator. FWIW the commit below is in the wrong spot if you get back here.
+            
             try:
                 enter_transaction_management()
-                managed()
+                managed(True)
 
                 from django.db import connection
                 cursor = connection.cursor()
@@ -357,16 +361,33 @@ class EngineJob(Job):
 
         self.save()
 
-    @require_lock(Task, 'ACCESS EXCLUSIVE')
+    # AH: Unwind the locking so we can see whats going on
+    #@require_lock(Task, 'ACCESS EXCLUSIVE')
     def create_tasks(self):
-        if (self.total_tasks() > 0):
-            logger.debug("job %s has tasks, skipping create_tasks" % self.id)
-            return
+        try:
+            enter_transaction_management()
+            managed(True)
 
-        logger.debug("job %s is having tasks created" % self.id) 
+            from django.db import connection
+            cursor = connection.cursor()
+            cursor.execute('LOCK TABLE %s IN ACCESS EXCLUSIVE MODE' % Task._meta.db_table)
 
-        tasks = self._prepare_tasks()
-        self._create_tasks(tasks)
+            if (self.total_tasks() == 0):
+                logger.debug("job %s is having tasks created" % self.id) 
+                tasks = self._prepare_tasks()
+                self._create_tasks(tasks)
+            else:
+                logger.debug("job %s has tasks, skipping create_tasks" % self.id)
+
+            transaction.commit()
+            logger.debug('Committed, released lock')
+        except:
+            logger.critical(traceback.format_exc())
+            transaction.rollback()
+            logger.debug('Rollback, released lock')
+            raise
+        finally:
+            leave_transaction_management()
 
     def _prepare_tasks(self):
         logger.info('Preparing tasks for jobid: %s...' % self.id)
