@@ -365,6 +365,9 @@ class EngineJob(Job):
     #@require_lock(Task, 'ACCESS EXCLUSIVE')
     def create_tasks(self):
         try:
+            # by default Django is running with an open transaction
+            transaction.commit()
+
             enter_transaction_management()
             managed(True)
 
