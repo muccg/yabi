@@ -10,7 +10,7 @@ from psycopg2 import OperationalError
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import models, connection, transaction
 from django.db.models import Q
-from django.db.transaction import enter_transaction_management, leave_transaction_management, managed
+from django.db.transaction import enter_transaction_management, leave_transaction_management, managed, is_dirty, is_managed
 from django.conf import settings
 from django.utils import simplejson as json, webhelpers
 from django.db.models.signals import post_save
@@ -368,9 +368,15 @@ class EngineJob(Job):
         tasks = self._prepare_tasks()
         transaction.commit()
 
+        # see http://code.djangoproject.com/svn/django/trunk/django/db/transaction.py
+        assert is_dirty() == False
+        assert is_managed() == False
+
         try:
             enter_transaction_management()
             managed(True)
+
+            assert is_managed() == True
 
             from django.db import connection
             cursor = connection.cursor()
@@ -392,6 +398,8 @@ class EngineJob(Job):
             raise
         finally:
             leave_transaction_management()
+            assert is_dirty() == False
+            assert is_managed() == False
 
     def _prepare_tasks(self):
         logger.info('Preparing tasks for jobid: %s...' % self.id)
@@ -453,6 +461,7 @@ class EngineJob(Job):
 
     def _create_tasks(self, tasks_to_create):
         logger.debug("creating tasks: %s" % tasks_to_create)
+        assert is_managed() == True
 
         # lets count up our batch_file_list to see how many 'real' (as in not yabi://) files there are to process
         # won't count tasks with file == None as these are from not batch param jobs
