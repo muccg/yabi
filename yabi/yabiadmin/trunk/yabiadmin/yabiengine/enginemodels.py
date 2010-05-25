@@ -374,7 +374,7 @@ class EngineJob(Job):
 
             from django.db import connection
             cursor = connection.cursor()
-            logger.debug("Acquiring lock on %s for job %s" % self.id, Task._meta.db_table) 
+            logger.debug("Acquiring lock on %s for job %s" % (Task._meta.db_table, self.id)) 
             cursor.execute('LOCK TABLE %s IN ACCESS EXCLUSIVE MODE' % Task._meta.db_table)
 
             if (self.total_tasks() == 0):
