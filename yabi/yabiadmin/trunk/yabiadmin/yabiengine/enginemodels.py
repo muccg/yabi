@@ -364,20 +364,21 @@ class EngineJob(Job):
     # AH: Unwind the locking so we can see whats going on
     #@require_lock(Task, 'ACCESS EXCLUSIVE')
     def create_tasks(self):
-        try:
-            # by default Django is running with an open transaction
-            transaction.commit()
+        # by default Django is running with an open transaction
+        tasks = self._prepare_tasks()
+        transaction.commit()
 
+        try:
             enter_transaction_management()
             managed(True)
 
             from django.db import connection
             cursor = connection.cursor()
+            logger.debug("Acquiring lock on %s for job %s" % self.id, Task._meta.db_table) 
             cursor.execute('LOCK TABLE %s IN ACCESS EXCLUSIVE MODE' % Task._meta.db_table)
 
             if (self.total_tasks() == 0):
                 logger.debug("job %s is having tasks created" % self.id) 
-                tasks = self._prepare_tasks()
                 self._create_tasks(tasks)
             else:
                 logger.debug("job %s has tasks, skipping create_tasks" % self.id)
@@ -451,7 +452,7 @@ class EngineJob(Job):
         return tasks_to_create
 
     def _create_tasks(self, tasks_to_create):
-        logger.debug("Tasks: %s" % tasks_to_create)
+        logger.debug("creating tasks: %s" % tasks_to_create)
 
         # lets count up our batch_file_list to see how many 'real' (as in not yabi://) files there are to process
         # won't count tasks with file == None as these are from not batch param jobs
