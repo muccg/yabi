@@ -5,7 +5,7 @@ from urllib import quote
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
-from yabiadmin.yabmin.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential
+from yabiadmin.yabi.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential
 from django.utils import webhelpers
 from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
@@ -18,7 +18,7 @@ from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_backendcredential_for_uri, copy_file, rm_file, send_upload_hash
 from yabiadmin.security import validate_user, validate_uri
 from yabiadmin.utils import json_error
-from yabmin.file_upload import *
+from admin.file_upload import *
 
 import uuid
 

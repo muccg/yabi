@@ -1,6 +1,6 @@
 from django import forms
 from django.conf import settings
-from yabiadmin.yabmin.models import *
+from yabiadmin.yabi.models import *
 
 
 class BackendForm(forms.ModelForm):

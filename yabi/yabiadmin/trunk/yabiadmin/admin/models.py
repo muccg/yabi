@@ -272,7 +272,7 @@ class ToolGrouping(Base):
 
 class ToolSet(Base):
     name = models.CharField(max_length=50, unique=True)
-    users = ManyToManyField_NoSyncdb("User", related_name='users', db_table='yabmin_user_toolsets', blank=True)
+    users = ManyToManyField_NoSyncdb("User", related_name='users', db_table='admin_user_toolsets', blank=True)
 
     def users_str(self):
         return ",".join([str(user) for user in self.users.all()])
@@ -283,7 +283,7 @@ class ToolSet(Base):
 
 class User(Base):
     name = models.CharField(max_length=50, unique=True)
-    toolsets = models.ManyToManyField("ToolSet", related_name='toolsets', db_table='yabmin_user_toolsets', blank=True)
+    toolsets = models.ManyToManyField("ToolSet", related_name='toolsets', db_table='admin_user_toolsets', blank=True)
 
     def toolsets_str(self):
         return ",".join([str(role) for role in self.toolsets.all()])
@@ -381,8 +381,8 @@ class BackendCredential(Base):
     backend = models.ForeignKey(Backend)
     credential = models.ForeignKey(Credential)
     homedir = models.CharField(max_length=512, blank=True, null=True)
-    visible = models.BooleanField()                                                         # ALTER TABLE "yabmin_backendcredential" ADD "visible" boolean NOT NULL default False;
-    default_stageout = models.BooleanField()                                                         # ALTER TABLE "yabmin_backendcredential" ADD "visible" boolean NOT NULL default False;
+    visible = models.BooleanField()                                                         # ALTER TABLE "admin_backendcredential" ADD "visible" boolean NOT NULL default False;
+    default_stageout = models.BooleanField()                                                         # ALTER TABLE "admin_backendcredential" ADD "visible" boolean NOT NULL default False;
 
     homedir.help_text="Homedir must not start with a / but must end with a /."
     default_stageout.help_text="There must be only one default_stageout per yabi user."
@@ -439,7 +439,7 @@ class BackendCredential(Base):
 
     @models.permalink
     def edit_url(self):
-        return ('admin:yabmin_credential_change', (self.credential.id,))
+        return ('admin:yabi_credential_change', (self.credential.id,))
 
 
     def backend_cred_test_link(self):

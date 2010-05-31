@@ -1,7 +1,7 @@
 import unittest
 from django.test import TestCase
 from django.test.client import Client
-from yabiadmin.yabmin.models import *
+from yabiadmin.yabi.models import *
 from yabiadmin.yabiengine.models import *
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist

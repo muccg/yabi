@@ -1,5 +1,5 @@
-from yabiadmin.yabmin.models import *
-from yabiadmin.yabmin.forms import *
+from yabiadmin.yabi.models import *
+from yabiadmin.yabi.forms import *
 from django.contrib import admin
 from django.forms.models import BaseInlineFormSet
 from django.forms import ModelForm
