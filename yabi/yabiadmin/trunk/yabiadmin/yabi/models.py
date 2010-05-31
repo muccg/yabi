@@ -272,7 +272,7 @@ class ToolGrouping(Base):
 
 class ToolSet(Base):
     name = models.CharField(max_length=50, unique=True)
-    users = ManyToManyField_NoSyncdb("User", related_name='users', db_table='admin_user_toolsets', blank=True)
+    users = ManyToManyField_NoSyncdb("User", related_name='users', db_table='yabi_user_toolsets', blank=True)
 
     def users_str(self):
         return ",".join([str(user) for user in self.users.all()])
@@ -283,7 +283,7 @@ class ToolSet(Base):
 
 class User(Base):
     name = models.CharField(max_length=50, unique=True)
-    toolsets = models.ManyToManyField("ToolSet", related_name='toolsets', db_table='admin_user_toolsets', blank=True)
+    toolsets = models.ManyToManyField("ToolSet", related_name='toolsets', db_table='yabi_user_toolsets', blank=True)
 
     def toolsets_str(self):
         return ",".join([str(role) for role in self.toolsets.all()])

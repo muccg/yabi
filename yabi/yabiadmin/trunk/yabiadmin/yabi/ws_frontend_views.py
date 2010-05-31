@@ -18,7 +18,7 @@ from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_backendcredential_for_uri, copy_file, rm_file, send_upload_hash
 from yabiadmin.security import validate_user, validate_uri
 from yabiadmin.utils import json_error
-from admin.file_upload import *
+from yabi.file_upload import *
 
 import uuid
 
