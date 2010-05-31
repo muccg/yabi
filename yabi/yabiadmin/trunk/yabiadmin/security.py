@@ -3,7 +3,7 @@ from django.http import HttpResponse, HttpResponseForbidden
 from django.core.exceptions import ObjectDoesNotExist
 from urlparse import urlparse
 from yabiadmin.utils import json_error
-from yabiadmin.yabmin.models import BackendCredential
+from yabiadmin.admin.models import BackendCredential
 
 from yabiadmin.yabiengine import backendhelper
 

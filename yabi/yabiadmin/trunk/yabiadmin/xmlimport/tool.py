@@ -12,7 +12,7 @@ error the transaction is rolled back.
 """
 import glob, os, sys
 from xml.dom.minidom import parse
-from yabiadmin.yabmin.models import Tool, Backend, ToolParameter, ParameterSwitchUse, ParameterFilter, FileExtension, FileType, ToolOutputExtension
+from yabiadmin.admin.models import Tool, Backend, ToolParameter, ParameterSwitchUse, ParameterFilter, FileExtension, FileType, ToolOutputExtension
 from django.db import transaction
 
 def import_tool(filename):

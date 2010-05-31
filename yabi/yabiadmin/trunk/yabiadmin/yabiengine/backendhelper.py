@@ -7,7 +7,7 @@ import os
 from os.path import splitext
 from urllib import urlencode, quote
 from yabiadmin.yabiengine.urihelper import uriparse, get_backend_userdir
-from yabiadmin.yabmin.models import Backend, BackendCredential
+from yabiadmin.admin.models import Backend, BackendCredential
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.servers.basehttp import FileWrapper
 

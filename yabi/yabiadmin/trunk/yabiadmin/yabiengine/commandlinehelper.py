@@ -10,7 +10,7 @@ from django.utils import simplejson as json, webhelpers
 from django.db.models.signals import post_save
 from django.utils.webhelpers import url
 
-from yabiadmin.yabmin.models import Backend, BackendCredential, Tool, User
+from yabiadmin.admin.models import Backend, BackendCredential, Tool, User
 from yabiadmin.yabiengine import backendhelper
 from yabiadmin.yabiengine.models import Workflow, Task, Job
 from yabiadmin.yabiengine.urihelper import uriparse, url_join

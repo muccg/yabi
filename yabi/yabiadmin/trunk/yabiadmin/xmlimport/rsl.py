@@ -10,7 +10,7 @@ way to run the import is from a Django shell (ie. ./manage.py shell or
 """
 import os, sys
 from xml.dom.minidom import parse
-from yabiadmin.yabmin.models import Tool, ToolRslInfo
+from yabiadmin.admin.models import Tool, ToolRslInfo
 
 def import_rsl(filename):
     tool = find_associated_tool(filename)
