@@ -2,7 +2,7 @@
 from django.db import models
 from django.db.models import Q
 from django.conf import settings
-from yabiadmin.admin.models import User
+from yabiadmin.yabi.models import User
 from yabiadmin.yabiengine import backendhelper
 from yabiadmin.yabiengine.urihelper import uriparse
 from django.utils import simplejson as json, webhelpers

@@ -16,7 +16,7 @@ from django.utils import simplejson as json, webhelpers
 from django.db.models.signals import post_save
 from django.utils.webhelpers import url
 
-from yabiadmin.admin.models import Backend, BackendCredential, Tool, User
+from yabiadmin.yabi.models import Backend, BackendCredential, Tool, User
 from yabiadmin.yabiengine import backendhelper 
 from yabiadmin.yabiengine.storehelper import StoreHelper
 from yabiadmin.yabiengine.commandlinehelper import CommandLineHelper

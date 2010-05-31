@@ -46,7 +46,7 @@ def get_backend_userdir(backendcredential, yabiusername):
     """
     logger.debug('Backendcredential: %s' % backendcredential)
 
-    from yabiadmin.admin.models import BackendCredential
+    from yabiadmin.yabi.models import BackendCredential
     from urlparse import urlunparse
     assert isinstance(backendcredential, BackendCredential)
 
