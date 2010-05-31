@@ -206,7 +206,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     #'django_evolution',
-    'yabiadmin.admin',
+    'yabiadmin.yabi',
     'yabiadmin.yabiengine',
     'ghettoq'
 )

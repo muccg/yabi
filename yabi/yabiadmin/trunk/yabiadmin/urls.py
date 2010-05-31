@@ -5,10 +5,10 @@ import os
 admin.autodiscover()
 
 # dispatch to either webservice, admin or general
-urlpatterns = patterns('yabiadmin.admin.views',
-    (r'^ws/', include('yabiadmin.admin.wsurls')),
+urlpatterns = patterns('yabiadmin.yabi.views',
+    (r'^ws/', include('yabiadmin.yabi.wsurls')),
     (r'^engine/', include('yabiadmin.yabiengine.urls')),
-    (r'^admin/', include('yabiadmin.admin.adminurls')),
+    (r'^admin/', include('yabiadmin.yabi.adminurls')),
     (r'^admin/', include(admin.site.urls))
 )
 
