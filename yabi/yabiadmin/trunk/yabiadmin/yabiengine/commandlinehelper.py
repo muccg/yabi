@@ -120,7 +120,7 @@ class CommandLineHelper():
 
 
                 # handle links to previous file selects, they look something like this:
-                # {u'path': [], u'type': u'file', u'filename': u'123456.fa', u'root': u'gridftp://ahunter@xe-ng2.ivec.org/scratch/bi01/ahunter/', u'pathComponents': [u'gridftp://ahunter@xe-ng2.ivec.org/scratch/bi01/ahunter/']}
+                # {u'path': [], u'type': u'file', u'filename': u'123456.fa', u'root': u'gridftp://ahunter@xe-gt4.ivec.org/scratch/bi01/ahunter/', u'pathComponents': [u'gridftp://ahunter@xe-gt4.ivec.org/scratch/bi01/ahunter/']}
                 elif 'type' in item and 'filename' in item and 'root' in item:
 
                     # files

@@ -550,7 +550,7 @@ class EngineTask(Task):
     def add_task(self, uri, batch_file, name=""):
         logger.debug("uri: %s batch file: %s" % (uri, batch_file))
 
-        # uri is uri less filename gridftp://amacgregor@xe-ng2.ivec.org/scratch/bi01/amacgregor/
+        # uri is uri less filename gridftp://amacgregor@xe-gt4.ivec.org/scratch/bi01/amacgregor/
 
         # create the task
         self.working_dir = str(uuid.uuid4()) # random uuid
