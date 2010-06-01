@@ -6,8 +6,8 @@ You pass the backends in as parameters to FSResource constructor, eg:
         # our handlers
         self.child_fs = FSResource(
                 file=LocalFileResource(directory="/tmp/filesystem"),
-                gridftp1=GlobusFileResource(remoteserver="xe-ng2.ivec.org", remotepath="/scratch"),
-                gridftp2=GlobusFileResource(remoteserver="xe-ng2.ivec.org", remotepath="/scratch/bi01"),
+                gridftp1=GlobusFileResource(remoteserver="xe-gt4.ivec.org", remotepath="/scratch"),
+                gridftp2=GlobusFileResource(remoteserver="xe-gt4.ivec.org", remotepath="/scratch/bi01"),
             )
 
 this makes 3 backends. /fs/file, /fs/gridftp1 and /fs/gridftp2

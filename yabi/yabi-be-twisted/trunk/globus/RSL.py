@@ -26,7 +26,7 @@ def RSL( **kws ):
     return rsl
 
 def ConstructRSL(
-    address = 'https://xe-ng2.ivec.org:8443/wsrf/services/ManagedJobFactoryService',
+    address = 'https://xe-gt4.ivec.org:8443/wsrf/services/ManagedJobFactoryService',
     command = None,
     args = [],
     directory = "/tmp",

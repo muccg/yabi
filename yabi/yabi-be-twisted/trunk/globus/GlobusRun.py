@@ -55,7 +55,7 @@ class GlobusRun(BaseShell):
     def __init__(self):
         BaseShell.__init__(self)
 
-    def run(self, certfile, rslfile, host="xe-ng2.ivec.org", factorytype="PBS"):
+    def run(self, certfile, rslfile, host="xe-gt4.ivec.org", factorytype="PBS"):
         """Spawn a process to run an xml job. return the process handler"""
         return BaseShell.execute(self,GlobusRunWSProcessProtocol, certfile,
             [
@@ -69,7 +69,7 @@ class GlobusRun(BaseShell):
             ]
         )
     
-    def status(self, certfile, eprfile, host="xe-ng2.ivec.org", factorytype="PBS"):
+    def status(self, certfile, eprfile, host="xe-gt4.ivec.org", factorytype="PBS"):
         return BaseShell.execute(self, GlobusStatusWSProcessProtocol, certfile,
             [   self.globusrun_ws,
                 "-F", host, "-Ft", factorytype,
