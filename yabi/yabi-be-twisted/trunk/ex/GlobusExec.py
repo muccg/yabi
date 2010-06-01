@@ -38,7 +38,7 @@ class GlobusExec(BaseExecResource, globus.Auth):
     # self.XXXXX parameters we are allowed to override via POST parameters. These strings are followed by their type to cast to
     ALLOWED_OVERRIDE = [("maxWallTime",int), ("maxMemory",int), ("cpus",int), ("queue",str), ("jobType",str), ("directory",str), ("stdout",str), ("stderr",str)]
     
-    def __init__(self,request=None,path=None,host='xe-ng2.ivec.org', maxWallTime=60, maxMemory=1024, cpus=1, queue="normal", jobType="single", stdout="/dev/null", stderr="/dev/null", directory="/scratch/bi01/cwellington", dirprefix="/scratch", backend=None, authproxy=None, jobs=None):
+    def __init__(self,request=None,path=None,host='xe-gt4.ivec.org', maxWallTime=60, maxMemory=1024, cpus=1, queue="normal", jobType="single", stdout="/dev/null", stderr="/dev/null", directory="/scratch/bi01/cwellington", dirprefix="/scratch", backend=None, authproxy=None, jobs=None):
         """dirprefix is to be used to make the exec scratch dir and dir paths have the same "hidden root" as the filesystem backends. if
         we have /scratch mounted on a fs backend as /fs/gridftp1/, then we cant have working directories set with "/scratch/bi01/cwellington", 
         the prefix should be implied!
