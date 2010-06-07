@@ -106,8 +106,8 @@ fi
 case "$1" in
         start)
                 echo -n "Starting $NAME..."
-                export PYTHONPATH="${HOME}" 
-                echo "PYTHONPATH=${HOME}"
+                export PYTHONPATH="${source}" 
+                echo "PYTHONPATH=${source}"
                 ${CELERYD} 
                 status -p $PID_FILE $NAME
                 ;;
