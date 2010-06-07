@@ -62,9 +62,9 @@ find_conf
 
         
 #  check for required files
-if [ ! -x "${TWISTD}" ]
+if [ ! -x "${CELERYD}" ]
 then
-        echo "$0: Aborting, no $TWISTD found."
+        echo "$0: Aborting, no $CELERYD found."
         exit 0
 fi
 # if [ ! -r "${TAP}" ]
