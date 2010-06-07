@@ -16,15 +16,6 @@ CONFFILE="yabi.conf"
 # global settings
 export DJANGO_SETTINGS_MODULE="settings"
 export CUSTOMDB="1"
-export HTTP_REDIRECT_TO_HTTPS="faramir.localdomain:9432"
-export ADMIN_EMAIL_NAME="Crispin Wellington"
-export ADMIN_EMAIL="cwellington@ccg.murdoch.edu.au"
-export DATABASE_ENGINE="postgresql_psycopg2"
-export DATABASE_NAME="dev_yabi"
-export DATABASE_USER="yabminapp"
-export DATABASE_PASSWORD="yabminapp"
-export DATABASE_HOST="eowyn.localdomain"
-export DATABASE_PORT="5432"
 
 # This is an interactive program, we need the current locale
 [ -f /etc/profile.d/lang.sh ] && . /etc/profile.d/lang.sh
@@ -100,6 +91,27 @@ if [ "${runningdir}X" = "X" ]; then RUNNING_DIR="/var/run/yabi/backend"; else RU
 if [ "${logfile}X" = "X" ]; then LOG_FILE="/var/log/yabi/backend.log"; else LOG_FILE=$logfile; fi
 if [ "${pidfile}X" = "X" ]; then PID_FILE="/var/run/yabi/backend.pid"; else PID_FILE=$pidfile; fi
 if [ "${source}X" = "X" ]; then SOURCE="${HOME}/yabi/yabi-be-twisted/trunk"; else SOURCE=$source; fi
+
+# setup settings from config file
+export YABISTORE="${store}"
+export YABIBACKEND="${backend}"
+export DJANGO_SETTINGS_MODULE="settings"
+export CUSTOMDB="1"
+export HTTP_REDIRECT_TO_HTTPS="${http_redirect_to_https}"
+echo "EMAIL: ${admin_email}"
+export ADMIN_EMAIL_NAME="${}"
+export ADMIN_EMAIL="${}"
+export DATABASE_ENGINE="${database_engine}"
+export DATABASE_NAME="${database_name}"
+export DATABASE_USER="${database_user}"
+export DATABASE_PASSWORD="${database_password}"
+export DATABASE_HOST="${database_host}"
+export DATABASE_PORT="${database_port}"
+export AUTH_LDAP_SERVER="${auth_ldap_server}"
+export AUTH_LDAP_USER_BASE="${auth_ldap_base}"
+export AUTH_LDAP_GROUP_BASE="${auth_ldap_group_nase}"
+export AUTH_LDAP_GROUP="${auth_ldap_group}"
+export AUTH_LDAP_DEFAULT_GROUP="${auth_ldap_default_group}"
 
 TAP="${SOURCE}/server.py"
 
