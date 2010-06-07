@@ -13,6 +13,19 @@ NAME="celeryd"
 CELERYD="/usr/local/stackless/bin/celeryd"
 CONFFILE="yabi.conf"
 
+# global settings
+export DJANGO_SETTINGS_MODULE="settings"
+export CUSTOMDB="1"
+export HTTP_REDIRECT_TO_HTTPS="faramir.localdomain:9432"
+export ADMIN_EMAIL_NAME="Crispin Wellington"
+export ADMIN_EMAIL="cwellington@ccg.murdoch.edu.au"
+export DATABASE_ENGINE="postgresql_psycopg2"
+export DATABASE_NAME="dev_yabi"
+export DATABASE_USER="yabminapp"
+export DATABASE_PASSWORD="yabminapp"
+export DATABASE_HOST="eowyn.localdomain"
+export DATABASE_PORT="5432"
+
 # This is an interactive program, we need the current locale
 [ -f /etc/profile.d/lang.sh ] && . /etc/profile.d/lang.sh
 # We can't Japanese on normal console at boot time, so force LANG=C.
@@ -106,7 +119,7 @@ fi
 case "$1" in
         start)
                 echo -n "Starting $NAME..."
-                export PYTHONPATH="${source}" 
+                export PYTHONPATH="${source}"
                 echo "PYTHONPATH=${source}"
                 ${CELERYD} 
                 status -p $PID_FILE $NAME
