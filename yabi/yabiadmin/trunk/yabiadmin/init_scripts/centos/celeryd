@@ -106,7 +106,7 @@ fi
 case "$1" in
         start)
                 echo -n "Starting $NAME..."
-                ${CELERYD} --pidfile=$PID_FILE --rundir=$RUNNING_DIR --logfile=$LOG_FILE --python=${TAP}
+                PYTHONPATH="${RUNNING_DIR}" ${CELERYD} 
                 status -p $PID_FILE $NAME
                 ;;
 
