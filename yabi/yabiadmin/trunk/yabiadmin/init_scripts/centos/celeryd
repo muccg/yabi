@@ -98,9 +98,8 @@ export YABIBACKEND="${backend}"
 export DJANGO_SETTINGS_MODULE="settings"
 export CUSTOMDB="1"
 export HTTP_REDIRECT_TO_HTTPS="${http_redirect_to_https}"
-echo "EMAIL: ${alert_email}"
-export ADMIN_EMAIL_NAME="${}"
-export ADMIN_EMAIL="${}"
+export ADMIN_EMAIL_NAME=`echo $alert_email |  cut -d "<" -f 1`
+export ADMIN_EMAIL=`echo $alert_email |  cut -d "<" -f 2 | cut -d ">" -f 1`
 export DATABASE_ENGINE="${database_engine}"
 export DATABASE_NAME="${database_name}"
 export DATABASE_USER="${database_user}"
