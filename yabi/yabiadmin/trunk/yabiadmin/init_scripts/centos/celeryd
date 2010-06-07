@@ -85,6 +85,7 @@ fi
 # read configuration.
 cfg.parser $YABICONF
 cfg.section.admin
+cfg.section.celeryd
 
 # setup parameters
 if [ "${runningdir}X" = "X" ]; then RUNNING_DIR="/var/run/yabi/backend"; else RUNNING_DIR=$runningdir; fi
@@ -132,14 +133,19 @@ case "$1" in
                 echo -n "Starting $NAME..."
                 export PYTHONPATH="${source}:${source}/.."
                 echo "PYTHONPATH=${source}:${source}/.."
-                daemon --force "${CELERYD} &"
+                ${CELERYD} &> ${LOG_FILE} &
+                echo $! > ${PID_FILE}
+                status -p $PID_FILE $NAME
                 ;;
 
         stop)
                 echo -n "Stopping ${NAME}..."
-                killproc ${CELERYD}
+                kill `cat "${PID_FILE}"`
                 sleep 3
-                killproc ${CELERYD} -9
+                PID=`cat "${PID_FILE}" 2>/dev/null`
+                kill -9 $PID >& /dev/null
+                rm -f "${PID_FILE}" >& /dev/null
+                status -p $PID_FILE $NAME
                 ;;
 
         restart)
