@@ -107,7 +107,7 @@ case "$1" in
         start)
                 echo -n "Starting $NAME..."
                 export PYTHONPATH="${RUNNING_DIR}" 
-                echo "PYTHONPATH=${PYTHON_PATH}"
+                echo "PYTHONPATH=${RUNNING_DIR}"
                 ${CELERYD} 
                 status -p $PID_FILE $NAME
                 ;;
