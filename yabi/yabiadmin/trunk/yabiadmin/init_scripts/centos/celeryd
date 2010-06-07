@@ -132,7 +132,7 @@ case "$1" in
                 echo -n "Starting $NAME..."
                 export PYTHONPATH="${source}:${source}/.."
                 echo "PYTHONPATH=${source}:${source}/.."
-                daemon ${CELERYD} &
+                daemon --force ${CELERYD}
                 ;;
 
         stop)
