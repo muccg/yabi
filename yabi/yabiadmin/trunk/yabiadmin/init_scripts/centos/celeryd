@@ -132,7 +132,6 @@ case "$1" in
         start)
                 echo -n "Starting $NAME..."
                 export PYTHONPATH="${source}:${source}/.."
-                echo "PYTHONPATH=${source}:${source}/.."
                 ${CELERYD} &> ${LOG_FILE} &
                 echo $! > ${PID_FILE}
                 status -p $PID_FILE $NAME
@@ -141,7 +140,7 @@ case "$1" in
         stop)
                 echo -n "Stopping ${NAME}..."
                 kill `cat "${PID_FILE}"`
-                sleep 3
+                sleep 10                # celery can take some time to shutdown
                 PID=`cat "${PID_FILE}" 2>/dev/null`
                 kill -9 $PID >& /dev/null
                 rm -f "${PID_FILE}" >& /dev/null
