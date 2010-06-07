@@ -85,7 +85,7 @@ fi
 # read configuration.
 cfg.parser $YABICONF
 cfg.section.admin
-cfg.section.celeryd || exit "You must have a [celeryd] block in your yabi.conf"
+cfg.section.celeryd || echo "You must have a [celeryd] block in your yabi.conf" && exit 1
 
 # setup parameters
 if [ "${runningdir}X" = "X" ]; then RUNNING_DIR="/var/run/yabi/backend"; else RUNNING_DIR=$runningdir; fi
