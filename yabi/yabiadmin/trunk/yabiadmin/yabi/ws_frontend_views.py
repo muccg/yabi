@@ -26,7 +26,7 @@ import logging
 logger = logging.getLogger('yabiadmin')
 
 
-from decorators import memcache, memcache_full
+from decorators import memcache
 
 ## TODO do we want to limit tools to those the user can access?
 ## will need to change call from front end to include username
