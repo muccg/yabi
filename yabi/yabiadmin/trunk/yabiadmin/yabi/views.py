@@ -56,7 +56,9 @@ def proxy(request, url, server, base):
 
     return response
 
+from decorators import memcache
 
+@memcache("store",timeout=5)
 def storeproxy(request, url):
     logger.debug('')
     return proxy(request, url, settings.YABISTORE_SERVER, settings.YABISTORE_BASE)
