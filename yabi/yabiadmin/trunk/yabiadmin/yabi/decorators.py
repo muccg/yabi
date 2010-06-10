@@ -28,6 +28,7 @@ def memcache(basekey,kwargkeylist,timeout=120,refresh=False):
                 return pickle.loads(cached_result)
             
             # not cached. get real result.
+            logger.debug("result not cached... caching %s"%keyname)
             result = func(request, *args, **kwargs)
             mc.set(keyname,pickle.dumps(result),timeout)
             return result
