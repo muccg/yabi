@@ -12,33 +12,18 @@ logger = logging.getLogger('yabiadmin')
 from django.contrib.memcache import KeyspacedMemcacheClient
 mc = KeyspacedMemcacheClient()
 
-def memcache(basekey,kwargkeylist,timeout=120):
-    def memcache_decorator(func):
-        def memcache_decorated_func(request, *args, **kwargs):
-            keyname = "-".join([basekey]+[str(kwargs[X]) for X in kwargkeylist])
-            cached_result = mc.get(keyname)
-            if cached_result:
-                logger.debug("returning cached result for %s"%keyname)
-                return HttpResponse(cached_result)
-            
-            # not cached. get real result.
-            try:
-                result = func(request, *args, **kwargs)
-                mc.set(keyname,result,timeout)
-                return HttpResponse(result)
-            except ObjectDoesNotExist:
-                return HttpResponseNotFound(json_error("Object not found"))
-        return memcache_decorated_func
-    return memcache_decorator
-
 import pickle
 
-def memcache_full(basekey,kwargkeylist,timeout=120):
+def memcache(basekey,kwargkeylist,timeout=120,refresh=True):
+    """refresh is if you want to refresh memcache with a fresh timeout on cache hit, or if you want to leave it and let it expire as per before cache hit"""
     def memcache_decorator(func):
         def memcache_decorated_func(request, *args, **kwargs):
             keyname = "-".join([basekey]+[str(kwargs[X]) for X in kwargkeylist])
             cached_result = mc.get(keyname)
             if cached_result:
+                if refresh:
+                    logger.debug("updating cached timestamp")
+                    mc.set(keyname,cached_result,timeout)
                 logger.debug("returning cached result for %s"%keyname)
                 return pickle.loads(cached_result)
             

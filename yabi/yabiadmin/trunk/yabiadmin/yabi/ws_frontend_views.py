@@ -33,7 +33,7 @@ from decorators import memcache, memcache_full
 ## then uncomment decorator
 
 #@validate_user
-@memcache_full("tool",["toolname"],300)
+@memcache("tool",["toolname"],300)
 def tool(request, *args, **kwargs):
     toolname = kwargs['toolname']
     logger.debug(toolname)
