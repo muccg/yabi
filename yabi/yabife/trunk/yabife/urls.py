@@ -3,7 +3,7 @@ from django.conf.urls.defaults import *
 
 urlpatterns = patterns('yabife.yabifeapp.views',
     (r'^(?P<url>ws/.*)$', 'adminproxy'),
-    (r'^(?P<url>workflows/.*)$', 'storeproxy'),                       
+    (r'^(?P<url>workflows/.*)$', 'adminproxy'),                       
     (r'^[/]*$', 'design'),
     (r'^design/reuse/(?P<id>.*)[/]*$', 'design'),
     (r'^design[/]*$', 'design'),

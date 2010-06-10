@@ -86,11 +86,6 @@ def adminproxy(request, url):
     return proxy(request, url, settings.YABIADMIN_SERVER, settings.YABIADMIN_BASE)
     
 
-def storeproxy(request, url):
-    logger.debug('')
-    return proxy(request, url, settings.YABISTORE_SERVER, settings.YABISTORE_BASE)
-
-
 # forms
 class LoginForm(forms.Form):
     username = forms.CharField()
