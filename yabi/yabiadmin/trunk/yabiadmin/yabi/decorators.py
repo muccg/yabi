@@ -14,7 +14,7 @@ mc = KeyspacedMemcacheClient()
 
 import pickle
 
-def memcache(basekey,kwargkeylist,timeout=120,refresh=True):
+def memcache(basekey,kwargkeylist,timeout=120,refresh=False):
     """refresh is if you want to refresh memcache with a fresh timeout on cache hit, or if you want to leave it and let it expire as per before cache hit"""
     def memcache_decorator(func):
         def memcache_decorated_func(request, *args, **kwargs):
