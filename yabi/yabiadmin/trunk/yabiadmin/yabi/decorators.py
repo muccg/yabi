@@ -22,7 +22,7 @@ def memcache(basekey,kwargkeylist,timeout=120,refresh=False):
             cached_result = mc.get(keyname)
             if cached_result:
                 if refresh:
-                    logger.debug("updating cached timestamp")
+                    logger.debug("updating cached timestamp for %s"%keyname)
                     mc.set(keyname,cached_result,timeout)
                 logger.debug("returning cached result for %s"%keyname)
                 return pickle.loads(cached_result)
