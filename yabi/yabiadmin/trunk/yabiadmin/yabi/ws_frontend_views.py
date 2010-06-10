@@ -50,48 +50,51 @@ def menu(request, *args, **kwargs):
     username = kwargs["username"]
     logger.debug(username)
     
-    toolsets = ToolSet.objects.filter(users__name=username)
-    output = {"toolsets":[]}
+    try:
+        toolsets = ToolSet.objects.filter(users__name=username)
+        output = {"toolsets":[]}
 
-    # add each toolset
-    for toolset in toolsets:
+        # add each toolset
+        for toolset in toolsets:
 
-        ts = {}
-        output["toolsets"].append(ts)
-        ts["name"] = toolset.name
-        ts["toolgroups"] = []
-
-
-        # make up a dict of toolgroups
-        toolgroups = {}
-
-        for toolgroup in ToolGrouping.objects.filter(tool_set=toolset):
-            if not toolgroup.tool_group.name in toolgroups:
-                tg = {}
-                toolgroups[toolgroup.tool_group.name] = tg
-            else:
-                tg = toolgroups[toolgroup.tool_group.name]
-
-            if not "name" in tg:
-                tg["name"] = toolgroup.tool_group.name
-            if not "tools" in tg:
-                tg["tools"] = []
-
-            tool = {}
-            tool["name"] = toolgroup.tool.name
-            tool["displayName"] = toolgroup.tool.display_name
-            tool["description"] = toolgroup.tool.description                
-            tg["tools"].append(tool)
-            tool["outputExtensions"] = toolgroup.tool.output_filetype_extensions()
-            tool["inputExtensions"] = toolgroup.tool.input_filetype_extensions()
+            ts = {}
+            output["toolsets"].append(ts)
+            ts["name"] = toolset.name
+            ts["toolgroups"] = []
 
 
-        # now add the toolgroups to toolsets
-        for key, value in toolgroups.iteritems():
-            ts["toolgroups"].append(value)
+            # make up a dict of toolgroups
+            toolgroups = {}
+
+            for toolgroup in ToolGrouping.objects.filter(tool_set=toolset):
+                if not toolgroup.tool_group.name in toolgroups:
+                    tg = {}
+                    toolgroups[toolgroup.tool_group.name] = tg
+                else:
+                    tg = toolgroups[toolgroup.tool_group.name]
+
+                if not "name" in tg:
+                    tg["name"] = toolgroup.tool_group.name
+                if not "tools" in tg:
+                    tg["tools"] = []
+
+                tool = {}
+                tool["name"] = toolgroup.tool.name
+                tool["displayName"] = toolgroup.tool.display_name
+                tool["description"] = toolgroup.tool.description                
+                tg["tools"].append(tool)
+                tool["outputExtensions"] = toolgroup.tool.output_filetype_extensions()
+                tool["inputExtensions"] = toolgroup.tool.input_filetype_extensions()
 
 
-    return json.dumps({"menu":output})
+            # now add the toolgroups to toolsets
+            for key, value in toolgroups.iteritems():
+                ts["toolgroups"].append(value)
+
+
+        return HttpResponse(json.dumps({"menu":output}))
+    except ObjectDoesNotExist:
+        return HttpResponseNotFound(json_error("Object not found"))
     
 @validate_uri
 def ls(request):
