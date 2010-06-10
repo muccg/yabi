@@ -18,7 +18,7 @@ def memcache(basekey,kwargkeylist='*',timeout=120,refresh=False):
     """refresh is if you want to refresh memcache with a fresh timeout on cache hit, or if you want to leave it and let it expire as per before cache hit"""
     def memcache_decorator(func):
         def memcache_decorated_func(request, *args, **kwargs):
-            keylist = kwargs.keys() if kwargkeylist=='*' else kwargkeylist
+            keylist = sorted(kwargs.keys()) if kwargkeylist=='*' else kwargkeylist
             keyname = "-".join([basekey]+[str(kwargs[X]) for X in keylist])
             cached_result = mc.get(keyname)
             if cached_result:
