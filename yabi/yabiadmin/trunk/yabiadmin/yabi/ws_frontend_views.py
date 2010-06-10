@@ -33,7 +33,7 @@ from decorators import memcache
 ## then uncomment decorator
 
 #@validate_user
-@memcache("tool",["toolname"],5,True)
+@memcache("tool",timeout=5,refresh=True)
 def tool(request, *args, **kwargs):
     toolname = kwargs['toolname']
     logger.debug(toolname)
@@ -45,7 +45,7 @@ def tool(request, *args, **kwargs):
         return HttpResponseNotFound(json_error("Object not found"))
 
 @validate_user
-@memcache("menu",["username"],300)
+@memcache("menu",timeout=300)
 def menu(request, *args, **kwargs):
     username = kwargs["username"]
     logger.debug(username)
