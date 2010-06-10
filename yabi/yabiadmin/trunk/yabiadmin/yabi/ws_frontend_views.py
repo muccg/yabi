@@ -26,20 +26,23 @@ import logging
 logger = logging.getLogger('yabiadmin')
 
 
-from decorators import memcache
+from decorators import memcache, memcache_full
 
 ## TODO do we want to limit tools to those the user can access?
 ## will need to change call from front end to include username
 ## then uncomment decorator
 
 #@validate_user
-@memcache("tool",["toolname"],300)
+@memcache_full("tool",["toolname"],300)
 def tool(request, *args, **kwargs):
     toolname = kwargs['toolname']
     logger.debug(toolname)
 
-    return Tool.objects.get(name=toolname).json()
-
+    try:
+        tool = Tool.objects.get( name=toolname )
+        return HttpResponse(tool.json())
+    except ObjectDoesNotExist:
+        return HttpResponseNotFound(json_error("Object not found"))
 
 @validate_user
 @memcache("menu",["username"])
