@@ -12,8 +12,10 @@ error the transaction is rolled back.
 """
 import glob, os, sys
 from xml.dom.minidom import parse
-from yabiadmin.admin.models import Tool, Backend, ToolParameter, ParameterSwitchUse, ParameterFilter, FileExtension, FileType, ToolOutputExtension
+
+from yabiadmin.yabmin.models import *
 from django.db import transaction
+from django.core.exceptions import ObjectDoesNotExist
 
 def import_tool(filename):
     """Import a tool from the given baat XML file."""
@@ -135,15 +137,13 @@ def tool_param_from_xml(param_element):
     tool_param.input_file = to_bool(attribute_value(param_element, 'inputFile'))
     tool_param.output_file = to_bool(attribute_value(param_element, 'outputFile'), False)
     tool_param.switch = attribute_value(param_element, 'switch')
-    tool_param.filter_value = attribute_value(param_element, 'filterValue')
 
     switch_use_name = attribute_value(param_element, 'switchUse')
     if switch_use_name:
-        tool_param.switch_use = ParameterSwitchUse.objects.get(value=switch_use_name)
-
-    filter_name = attribute_value(param_element, 'filter')
-    if filter_name:
-        tool_param.filter = ParameterFilter.objects.get(value=filter_name)
+        try:
+            tool_param.switch_use = ParameterSwitchUse.objects.get(display_text=switch_use_name)
+        except ObjectDoesNotExist:
+            pass
 
     tool_param.default_value = attribute_value(param_element, 'value')
 
