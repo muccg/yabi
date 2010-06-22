@@ -313,7 +313,7 @@ class EngineJob(Job):
                 parts = uriparts.path.strip('/').split('/')
                 workflowid, jobid = parts[0], parts[1]
                 param_job = Job.objects.get(workflow__id=workflowid, id=jobid)
-                if param_job.status != settings.STATUS_COMPLETE:
+                if param_job.status != STATUS_COMPLETE:
                     logger.debug("Job dependencies not complete. Job:%s bfile:%s" % (self.id, bfile))
                     rval = True
 
