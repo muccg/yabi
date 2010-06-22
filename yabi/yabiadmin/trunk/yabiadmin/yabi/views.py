@@ -61,5 +61,4 @@ from decorators import memcache
 @memcache("store",timeout=30)
 def storeproxy(request, url):
     logger.debug('')
-    assert request.method=="GET"
     return proxy(request, url, settings.YABISTORE_SERVER, settings.YABISTORE_BASE)
