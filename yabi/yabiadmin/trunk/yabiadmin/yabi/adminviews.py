@@ -210,7 +210,7 @@ def backend_cred_test(request, backend_cred_id):
 def add_tool(request):
 
     if request.method == 'GET':
-        return render_to_response('admin/addtool.html',
+        return render_to_response('yabi/addtool.html',
                                   {'form':AddToolForm(),
                                    'user':request.user,
                                    'title': 'Add Tool',
@@ -221,7 +221,7 @@ def add_tool(request):
 
         f = AddToolForm(request.POST)
         if not f.is_valid():
-            return render_to_response('admin/addtool.html',
+            return render_to_response('yabi/addtool.html',
                                       {'form': f,
                                        'user':request.user,
                                        'title': 'Add Tool',
