@@ -192,25 +192,20 @@ class EngineWorkflow(Workflow):
             for job in jobset:
                 logger.debug('----- Walking workflow id %d job id %d -----' % (self.id, job.id))
 
-                # dont check complete or ready jobs
-                job.update_status()
-                #job.save()
-
+                # dont walk job if it already has tasks
                 if (job.total_tasks() > 0):
-                #if (job.status_complete() or job.status_ready() or job.status_error()):
-                    logger.debug("job %s has tasks, skipping walk" % job.id)
+                    logger.info("job %s has tasks, skipping walk" % job.id)
                     continue
 
                 # we can't proceed until all previous job dependencies are satisfied
                 if (job.has_incomplete_dependencies()):
-                    logger.info('Incomplete dependencies for job: %s' % job.id)
+                    logger.info('job %s has incomplete dependencies, skipping walk' % job.id)
                     continue
 
                 job.create_tasks()
 
                 # there must be at least one task for every job
                 if not job.total_tasks():
-                #if not job.task_set.all():
                     logger.critical('No tasks for job: %s' % job.id)
                     job.status = STATUS_ERROR
                     job.save()
@@ -228,15 +223,6 @@ class EngineWorkflow(Workflow):
                 self.status = STATUS_COMPLETE
                 self.save()
                 
-                # we may get here, with no more tasks or jobs running, but only after a lengthy walk. 
-                # so all the jobs are marked as "STATUS_COMPLETE" in the database, but not necessarily in the json representation.
-                # so lets make sure the json fully reflects our new complete state
-                
-                # TODO: make this happen in a minimal way. fo now, just recheck one more time
-                for job in jobset:
-                    job.update_status()
-                    job.save()
-
             # check for error jobs, if so, change status on workflow
             error_jobs = Job.objects.filter(workflow=self).filter(status=STATUS_ERROR)
             if len(error_jobs):
