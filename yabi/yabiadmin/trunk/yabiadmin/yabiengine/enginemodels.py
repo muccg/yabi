@@ -236,6 +236,12 @@ class EngineWorkflow(Workflow):
                 for job in jobset:
                     job.update_status()
                     job.save()
+
+            # check for error jobs, if so, change status on workflow
+            error_jobs = Job.objects.filter(workflow=self).filter(status=STATUS_ERROR)
+            if len(error_jobs):
+                self.status = STATUS_ERROR
+                self.save()
                 
 
         except ObjectDoesNotExist,e:
