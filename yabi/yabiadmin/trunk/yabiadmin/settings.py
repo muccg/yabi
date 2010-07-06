@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
 # Django settings for yabi project.
+
+### If you see this, ahunter accidently committed it, please abuse him for it ###
+SEARCH_PATH = ["~/.yabi/yabi.conf","~/.yabi/backend/yabi.conf","~/yabi.conf","~/.yabi","/etc/yabi.conf","/etc/yabi/yabi.conf"]
+from conf import config
+config.read_config()
+config.sanitise()
+### If you see this, ahunter accidently committed it, please abuse him for it ###
+
 import os
 
 
