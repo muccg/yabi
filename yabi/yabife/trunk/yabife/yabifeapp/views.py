@@ -14,6 +14,7 @@ from django.shortcuts import render_to_response, get_object_or_404, render_mako
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import webhelpers
 from django.contrib.auth.decorators import login_required
+from yabife.decorators import authentication_required
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate
 from django import forms
 from django.core.servers.basehttp import FileWrapper
@@ -81,6 +82,7 @@ def proxy(request, url, server, base):
     return response
 
 
+@authentication_required
 def adminproxy(request, url):
     logger.debug('')
     return proxy(request, url, settings.YABIADMIN_SERVER, settings.YABIADMIN_BASE)
