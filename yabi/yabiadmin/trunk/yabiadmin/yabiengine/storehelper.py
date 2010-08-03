@@ -34,7 +34,6 @@ def updateWorkflow(workflow, workflow_json=None):
     conn = httplib.HTTPConnection(settings.YABISTORE_SERVER)
     conn.request('POST', resource, data, headers)
     logger.debug("store post: %s" % resource)
-    logger.debug("posting data: %s" % data)
     r = conn.getresponse()
     status = r.status
     data = r.read()
@@ -53,7 +52,6 @@ def getWorkflow(workflow):
     status = r.status
     data = r.read()
     logger.debug("store get: %s" % status)
-    logger.debug("got data: %s" % data)
     return status,data
 
 def updateJob(job, snippet={}):
