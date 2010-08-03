@@ -17,7 +17,7 @@ def updateWorkflow(workflow, workflow_json=None):
     # if no json for workflow provided, pull down the existing one
     # TODO This is a real hack
     if not workflow_json:
-        get_status, get_data = StoreHelper.getWorkflow(workflow)
+        get_status, get_data = getWorkflow(workflow)
         if get_status != 200:
             return get_status, get_data
         json_object = json.loads(get_data)
@@ -63,7 +63,7 @@ def updateJob(job, snippet={}):
         Also does status & stageout from the job
     '''
     # get the workflow that needs updating
-    status, data = StoreHelper.getWorkflow(job.workflow)
+    status, data = getWorkflow(job.workflow)
     assert(status == 200)
     assert(data)
     json_object = json.loads(data)
@@ -83,7 +83,7 @@ def updateJob(job, snippet={}):
         json_object['json']['jobs'][job_id]['stageout'] = job.stageout
 
     # save the workflow json in the store
-    StoreHelper.updateWorkflow(job.workflow, json.dumps(json_object['json']))
+    updateWorkflow(job.workflow, json.dumps(json_object['json']))
 
 def deleteWorkflow(workflow):
     ''' Delete all references to a workflow from the store.
