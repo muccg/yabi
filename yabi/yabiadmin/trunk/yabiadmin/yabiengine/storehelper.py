@@ -53,6 +53,7 @@ def getWorkflow(workflow):
     status = r.status
     data = r.read()
     logger.debug("store get: %s" % status)
+    logger.debug("got data: %s" % data)
     return status,data
 
 def updateJob(job, snippet={}):
