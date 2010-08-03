@@ -223,6 +223,15 @@ class EngineWorkflow(Workflow):
                 self.status = STATUS_COMPLETE
                 self.save()
                 
+            # we may get here, with no more tasks or jobs running, but only after a lengthy walk.   
+            # so all the jobs are marked as "STATUS_COMPLETE" in the database, but not necessarily in the json representation.      
+            # so lets make sure the json fully reflects our new complete state      
+
+            # TODO: make this happen in a minimal way. fo now, just recheck one more time   
+            for job in jobset:      
+                job.update_status()     
+                job.save()
+                
             # check for error jobs, if so, change status on workflow
             error_jobs = Job.objects.filter(workflow=self).filter(status=STATUS_ERROR)
             if len(error_jobs):
