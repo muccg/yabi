@@ -172,6 +172,8 @@ def get(request):
 
         response['content-disposition'] = 'attachment; filename=%s' % filename
 
+        logger.debug("GET has got result: %s"%response)
+
         return response
 
     except Exception, e:
