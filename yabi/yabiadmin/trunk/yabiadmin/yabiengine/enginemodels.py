@@ -18,7 +18,7 @@ from django.utils.webhelpers import url
 
 from yabiadmin.yabi.models import Backend, BackendCredential, Tool, User
 from yabiadmin.yabiengine import backendhelper 
-from yabiadmin.yabiengine.storehelper import StoreHelper
+from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.yabiengine.commandlinehelper import CommandLineHelper
 from yabiadmin.yabiengine.models import Workflow, Task, Job, StageIn
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
