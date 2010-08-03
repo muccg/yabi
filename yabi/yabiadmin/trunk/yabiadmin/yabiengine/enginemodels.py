@@ -231,6 +231,7 @@ class EngineWorkflow(Workflow):
             for job in jobset:      
                 job.update_status()     
                 job.save()
+            self.save()
                 
             # check for error jobs, if so, change status on workflow
             error_jobs = Job.objects.filter(workflow=self).filter(status=STATUS_ERROR)
