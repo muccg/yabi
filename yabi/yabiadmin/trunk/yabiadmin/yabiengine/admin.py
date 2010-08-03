@@ -1,8 +1,9 @@
+# -*- coding: utf-8 -*-
 from yabiadmin.yabiengine.models import *
 
 from django.contrib import admin
 from django.contrib.admin.actions import delete_selected
-from yabiadmin.yabiengine.storehelper import StoreHelper
+from yabiadmin.yabiengine import storehelper as StoreHelper
 
 
 def link_to_jobs(obj):
