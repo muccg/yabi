@@ -33,7 +33,7 @@ class CookieParser(object):
         expires_on = None
         first_pair = values[0]
         cookie_name,cookie_value = first_pair.split('=')
-        for name, value in [(v[0].strip(),v[1].strip()) for v in [v.split('=')+[''] for v in values[1:]]]:
+        for name, value in [(v[0].strip().lower(),v[1].strip()) for v in [v.split('=')+[''] for v in values[1:]]]:
             if 'secure' == name:
                 secure = True
             if 'expires' == name:
@@ -160,7 +160,7 @@ class Cookie(object):
     def is_older_version_of(self, cookie):
         '''Is the passed in cookie an updated version of this cookie'''
         return (self.name == cookie.name and self.domain == cookie.domain
-                and self.path == self.path)
+                and self.path == cookie.path)
 
     @property
     def as_str(self):
