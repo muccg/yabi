@@ -6,9 +6,13 @@ import readline
 from transport import Transport, UnauthorizedError
 import actions
 
+# TODO env variable
+
+DEBUG = True
+
 def main():
-        yabi = Yabi()
-#    try:
+    yabi = Yabi()
+    try:
         args = CommandLineArguments(sys.argv)
 
         if args.no_arguments:
@@ -16,10 +20,12 @@ def main():
             return
         action = yabi.choose_action(args.first_argument)
         action.process(args.rest_of_arguments)
-#    except Exception, e:
-#        raise e
-#        print_error(e)
-#    finally:
+    except Exception, e:
+        print_error(e)
+        if DEBUG:
+            print '-' * 5 + ' DEBUG ' + '-' * 5
+            raise
+    finally:
         yabi.session_finished()
 
 class Yabi(object):
@@ -48,15 +54,12 @@ class Yabi(object):
             
 
     def choose_action(self, action_name):
-        # TODO - register them ? create dynamically ?
-        if 'ls' == action_name:
-            return actions.LS(self)
-        if 'cp' == action_name:
-            return actions.CP(self)
-        if 'ps' == action_name:
-            return actions.PS(self)
-        else:
+        class_name = action_name.upper()
+        try:
+            cls = getattr(sys.modules['actions'], action_name.upper())
+        except AttributeError:
             raise StandardError('Unsupported action: ' + action_name)
+        return cls(self)
 
     def session_finished(self):
         self.transport.finish_session()
