@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Implement scp connections"""
+"""Implement s3 copies"""
 
 import os
 import tempfile
