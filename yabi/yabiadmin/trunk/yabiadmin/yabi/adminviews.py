@@ -17,7 +17,6 @@ import logging
 logger = logging.getLogger('yabiadmin')
 
 
-
 class AddToolForm(forms.Form):
     tool_json = forms.CharField(widget=forms.Textarea)
 
@@ -84,7 +83,7 @@ def tool(request, tool_id):
     logger.debug('')
     tool = get_object_or_404(Tool, pk=tool_id)
     
-    return render_to_response('admin/tool.html', {
+    return render_to_response('yabi/tool.html', {
                 'tool': tool,
                 'user':request.user,
                 'title': 'Tool Details',
@@ -105,7 +104,7 @@ def user_tools(request, user_id):
         tgv = unique_tool_groups.setdefault(tool_group_name, ToolGroupView(tool_group_name))
         tgv.tools.add(tool_name)
 
-    return render_to_response("admin/user_tools.html", {
+    return render_to_response("yabi/user_tools.html", {
         'user': request.user,
         'tooluser': tooluser,
         'title': 'Tool Listing',
@@ -119,7 +118,7 @@ def user_backends(request, user_id):
 
     becs = BackendCredential.objects.filter(credential__user=backenduser)
 
-    return render_to_response("admin/user_backends.html", {
+    return render_to_response("yabi/user_backends.html", {
         'user': request.user,
         'backenduser': backenduser,
         'title': 'Backend Listing',
@@ -162,7 +161,7 @@ def ldap_users(request):
     existing_ldap_users = [user for user in ldap_yabi_users if user_in_db(user) ]
     unexisting_ldap_users = [user for user in ldap_yabi_users if not user_in_db(user) ]
  
-    return render_to_response("admin/ldap_users.html", {
+    return render_to_response("yabi/ldap_users.html", {
                 'unexisting_ldap_users': unexisting_ldap_users,
                 'existing_ldap_users': existing_ldap_users
             })
@@ -172,7 +171,7 @@ def backend(request, backend_id):
     logger.debug('')
     backend = get_object_or_404(Backend, pk=backend_id)
         
-    return render_to_response('admin/backend.html', {
+    return render_to_response('yabi/backend.html', {
                 'backend': backend,
                 'user':request.user,
                 'title': 'Backend Details',
@@ -196,7 +195,7 @@ def backend_cred_test(request, backend_cred_id):
         listing = None
         error = rawdata
         
-    return render_to_response('admin/backend_cred_test.html', {
+    return render_to_response('yabi/backend_cred_test.html', {
                 'bec': bec,
                 'user':request.user,
                 'title': 'Backend Credential Test',
