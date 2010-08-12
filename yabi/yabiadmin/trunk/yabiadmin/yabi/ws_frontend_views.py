@@ -172,8 +172,10 @@ def get(request):
 
         response['content-disposition'] = 'attachment; filename=%s' % filename
 
-        logger.debug("GET has got result: %s"%response)
-        logger.debug("GET has got conent: %s"%response.content)
+        logger.debug("get is returnin result: %s"%response)
+        logger.debug("get is returning content: %s"%response.content)
+        logger.debug("get is returning status: %s"%response.status)
+        
 
         return response
 
