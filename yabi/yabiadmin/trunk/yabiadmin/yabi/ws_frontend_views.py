@@ -167,11 +167,14 @@ def get(request):
         mtype, encoding = mimetypes.guess_type(filename, False)
         if mtype is not None:
             response['content-type'] = mtype
+        logger.debug("2: content: %s"%response.content)
 
         if encoding is not None:
             response['content-encoding'] = encoding
+        logger.debug("3: content: %s"%response.content)
 
         response['content-disposition'] = 'attachment; filename=%s' % filename
+        logger.debug("4: content: %s"%response.content)
 
         logger.debug("get is returnin result: %s"%response)
         logger.debug("get is returning content: %s"%response.content)
