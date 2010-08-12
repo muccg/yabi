@@ -161,6 +161,7 @@ def get(request):
             filename = 'default.txt'
 
         response = HttpResponse(get_file(yabiusername, uri))
+        logger.debug("1: content: %s"%response.content)
 
         mimetypes.init([os.path.normpath(os.path.expanduser('~/.yabi/mime.types')), os.path.normpath('/etc/yabi/mime.types')])
         mtype, encoding = mimetypes.guess_type(filename, False)
