@@ -166,7 +166,7 @@ def get(request):
         mimetypes.init([os.path.normpath(os.path.expanduser('~/.yabi/mime.types')), os.path.normpath('/etc/yabi/mime.types')])
         mtype, encoding = mimetypes.guess_type(filename, False)
         if mtype is not None:
-            logger.debug("resetting content-type")
+            logger.debug("resetting content-type to '%s'"%(mtype))
             response['content-type'] = mtype
         logger.debug("2: content: %s"%response.content)
 
