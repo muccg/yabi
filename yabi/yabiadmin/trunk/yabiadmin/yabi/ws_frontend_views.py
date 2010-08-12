@@ -170,8 +170,8 @@ def get(request):
             #response['content-type'] = mtype
         logger.debug("2: content: %s"%response.content)
 
-        if encoding is not None:
-            response['content-encoding'] = encoding
+        #if encoding is not None:
+            #response['content-encoding'] = encoding
         logger.debug("3: content: %s"%response.content)
 
         response['content-disposition'] = 'attachment; filename=%s' % filename
