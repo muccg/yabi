@@ -143,7 +143,7 @@ def rm(request):
         return HttpResponseNotFound(json_error(e))
 
 
-#@validate_uri
+@validate_uri
 def get(request):
     """
     Returns the requested uri. get_file returns an httplib response wrapped in a FileIterWrapper. This can then be read
@@ -161,26 +161,16 @@ def get(request):
             filename = 'default.txt'
 
         response = HttpResponse(get_file(yabiusername, uri))
-        logger.debug("1: content: %s"%type(response.content))
 
-        #mimetypes.init([os.path.normpath(os.path.expanduser('~/.yabi/mime.types')), os.path.normpath('/etc/yabi/mime.types')])
-        #mtype, encoding = mimetypes.guess_type(filename, False)
-        #if mtype is not None:
-            #logger.debug("resetting content-type to '%s'"%(mtype))
-            #response['content-type'] = mtype
-        logger.debug("2: content: %s"%response.content)
+        mimetypes.init([os.path.normpath(os.path.expanduser('~/.yabi/mime.types')), os.path.normpath('/etc/yabi/mime.types')])
+        mtype, encoding = mimetypes.guess_type(filename, False)
+        if mtype is not None:
+            response['content-type'] = mtype
 
-        #if encoding is not None:
-            #response['content-encoding'] = encoding
-        logger.debug("3: content: %s"%response.content)
+        if encoding is not None:
+            response['content-encoding'] = encoding
 
         response['content-disposition'] = 'attachment; filename=%s' % filename
-        logger.debug("4: content: %s"%response.content)
-
-        logger.debug("get is returnin result: %s"%response)
-        logger.debug("get is returning content: %s"%response.content)
-        logger.debug("get is returning status: %s"%response.status_code)
-        
 
         return response
 
