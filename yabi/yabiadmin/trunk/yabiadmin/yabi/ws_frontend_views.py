@@ -174,7 +174,7 @@ def get(request):
 
         logger.debug("get is returnin result: %s"%response)
         logger.debug("get is returning content: %s"%response.content)
-        logger.debug("get is returning status: %s"%response.status)
+        logger.debug("get is returning status: %s"%response.status_code)
         
 
         return response
