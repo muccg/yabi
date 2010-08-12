@@ -143,7 +143,7 @@ def rm(request):
         return HttpResponseNotFound(json_error(e))
 
 
-@validate_uri
+#@validate_uri
 def get(request):
     """
     Returns the requested uri. get_file returns an httplib response wrapped in a FileIterWrapper. This can then be read
@@ -163,9 +163,9 @@ def get(request):
         response = HttpResponse(get_file(yabiusername, uri))
 
         mimetypes.init([os.path.normpath(os.path.expanduser('~/.yabi/mime.types')), os.path.normpath('/etc/yabi/mime.types')])
-        type, encoding = mimetypes.guess_type(filename, False)
-        if type is not None:
-            response['content-type'] = type
+        mtype, encoding = mimetypes.guess_type(filename, False)
+        if mtype is not None:
+            response['content-type'] = mtype
 
         if encoding is not None:
             response['content-encoding'] = encoding
