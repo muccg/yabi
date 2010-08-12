@@ -13,7 +13,7 @@ error the transaction is rolled back.
 import glob, os, sys
 from xml.dom.minidom import parse
 
-from yabiadmin.yabmin.models import *
+from yabiadmin.yabi.models import *
 from django.db import transaction
 from django.core.exceptions import ObjectDoesNotExist
 
