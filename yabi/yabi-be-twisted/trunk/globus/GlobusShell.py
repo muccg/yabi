@@ -26,7 +26,7 @@ class GlobusShell(BaseShell):
     
     def _make_echo(self,filename):
         """Turn a filename into the remote eval line"""
-        return '`echo -e \'%s\'`'%(convert_filename_to_encoded_for_echo(filename))
+        return '"`echo -e \'%s\'`"'%(convert_filename_to_encoded_for_echo(filename))
 
     def execute(self, certfile, host, command):
         """Run inside gsissh, this command line. Command parts are passed in as a list of parameters, not a string."""
