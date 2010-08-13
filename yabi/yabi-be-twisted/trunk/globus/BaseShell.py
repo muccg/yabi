@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 from twisted.internet import protocol
 from twisted.internet import reactor
@@ -47,6 +48,9 @@ class BaseShellProcessProtocol(protocol.ProcessProtocol):
         
     def isDone(self):
         return self.exitcode != None
+        
+    def isFailed(self):
+        return self.isDone() and self.exitcode != 0
 
 class BaseShell(object):
     def __init__(self):
