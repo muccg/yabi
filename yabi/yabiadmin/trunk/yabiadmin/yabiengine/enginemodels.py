@@ -507,6 +507,7 @@ class EngineJob(Job):
                 'exec:unsubmitted':0.12,
                 'exec:pending':0.13,
                 'exec:active':0.2,
+                'exec:running':0.2,
                 'exec:cleanup':0.7,
                 'exec:done':0.75,
                 'exec:error':0.0,
