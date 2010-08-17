@@ -27,7 +27,7 @@ SCHEMA = "s3"
 DEBUG = True
 
 # helper utilities for s3
-import S3
+from s3 import S3
 
 class S3Error(Exception):
     pass
