@@ -147,7 +147,7 @@ job-ID  prior   name       user         state submit/start at     queue         
                             \s+(\w+)                    # state
                             \s+([\d/]+)                 # submit/start
                             \s+(\d+:\d+:\d+)            # at
-                            \s+([\w\d\-@.]*)             # submit host (optional)
+                            \s+([\w\d\-@.]*)            # submit host (optional)
                             \s+(\d+)\s+$                # everything else on the line
                         """, re.VERBOSE)
     
