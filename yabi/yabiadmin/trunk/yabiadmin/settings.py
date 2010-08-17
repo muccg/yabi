@@ -311,7 +311,7 @@ if 'HTTP_REDIRECT_TO_HTTPS_PORT' in os.environ:
 ##
 ## Validation settings
 ##
-VALID_SCHEMES = ['http', 'https', 'gridftp', 'globus', 'sge', 'yabifs', 'ssh', 'scp', 'null']
+VALID_SCHEMES = ['http', 'https', 'gridftp', 'globus', 'sge', 'yabifs', 'ssh', 'scp', 's3', 'null']
 
 ##
 ## Celery settings
