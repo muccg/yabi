@@ -6,7 +6,7 @@ import tempfile
 
 from FifoPool import Fifos
 
-from BaseShell import BaseShell, BaseShellProcessProtocol
+from ssh.BaseShell import BaseShell, BaseShellProcessProtocol
 
 class S3ProcessProtocol(BaseShellProcessProtocol):
     def __init__(self, password):
