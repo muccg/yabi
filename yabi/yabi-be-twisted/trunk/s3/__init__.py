@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
-import BaseShell
-import KeyStore
-import SSHAuth
-import SSHShell
-import SSHCopy
-import SSHRun
+import S3Copy
+import S3
 
 # module level "singletons"
-Copy = SSHCopy.SSHCopy()
-Run = SSHRun.SSHRun()
-Shell = SSHShell.SSHShell()
+Copy = S3Copy.S3Copy()
+#Run = SSHRun.SSHRun()
+#Shell = SSHShell.SSHShell()
 
