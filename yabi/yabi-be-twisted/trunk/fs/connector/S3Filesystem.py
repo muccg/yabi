@@ -110,6 +110,7 @@ class S3Filesystem(FSConnector.FSConnector, object):
         
         # If we don't have creds, get them
         if not creds:
+            assert False, "presently we NEED creds"
             creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
         
         files,folders = ls(BUCKET, path)
