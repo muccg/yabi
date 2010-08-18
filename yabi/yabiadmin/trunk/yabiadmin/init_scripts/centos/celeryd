@@ -112,6 +112,7 @@ export AUTH_LDAP_USER_BASE="${auth_ldap_base}"
 export AUTH_LDAP_GROUP_BASE="${auth_ldap_group_nase}"
 export AUTH_LDAP_GROUP="${auth_ldap_group}"
 export AUTH_LDAP_DEFAULT_GROUP="${auth_ldap_default_group}"
+export MEMCACHE_SERVERS="${memcache_servers}"
 
 TAP="${SOURCE}/server.py"
 
