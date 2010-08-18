@@ -116,7 +116,14 @@ class S3Filesystem(FSConnector.FSConnector, object):
             creds = s3auth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
         
         files,folders = ls(BUCKET, path)
-                        
+              
+        print "S3 issue",{
+            path : {
+                'files':files,
+                'directories':folders
+            }
+        }
+              
         return {
             path : {
                 'files':files,
