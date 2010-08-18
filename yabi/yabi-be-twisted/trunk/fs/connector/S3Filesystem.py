@@ -60,9 +60,9 @@ def ls(bucket, path):
     if response.http_response.status != 200:
         raise S3Error("Could not list bucket '%s': %s"%(bucket,response.message))
    
-    print "==>",dir(response.entries[0])
-    print response.entries[0].size
-    entries = [X.key.split(SEP) for X in response.entries]
+    #print "==>",dir(response.entries[0])
+    #print response.entries[0].size
+    entries = [(X.key.split(SEP),X.size) for X in response.entries]
     
     # we now filter the list down to just what we would see in this directory
     while path.endswith('/'):
@@ -83,7 +83,9 @@ def ls(bucket, path):
             
     folders = list(set([X[0] for X in paths if X[0] not in files]))
     
-    return [A for A in files if A],[B for B in folders if B]                # cull empty strings
+    return_data = [A for A in files if A],[B for B in folders if B]
+    print "RETURNING",return_data
+    return return_data
 
 
 
