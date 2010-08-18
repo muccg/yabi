@@ -8,7 +8,9 @@ from FifoPool import Fifos
 from twisted.internet import protocol
 from twisted.internet import reactor
 import os
-import ssh
+import s3
+
+s3auth = s3.S3Auth.S3Auth()
 
 #sshauth = ssh.SSHAuth.SSHAuth()
 ACCESSKEYID = 'AKIAJPCC7ZU6WWMU425A'
@@ -110,8 +112,8 @@ class S3Filesystem(FSConnector.FSConnector, object):
         
         # If we don't have creds, get them
         if not creds:
-            assert False, "presently we NEED creds"
-            creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
+            #assert False, "presently we NEED creds"
+            creds = s3auth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
         
         files,folders = ls(BUCKET, path)
                         
