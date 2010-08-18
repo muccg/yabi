@@ -198,7 +198,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.middleware.ssl.SSLRedirect'
+    'django.middleware.ssl.SSLRedirect',
     'django.middleware.transaction.TransactionMiddleware'
 )
 #MIDDLEWARE_CLASSES += ('yabmin.middleware.Logging',)
