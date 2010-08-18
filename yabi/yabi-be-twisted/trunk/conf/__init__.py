@@ -73,7 +73,7 @@ class ConfigError(Exception):
 class Configuration(object):
     """Holds the running configuration for the full yabi stack that is running under this twistd"""
     SECTIONS = ['backend','admin','frontend','store']       # sections of the config file
-    KEYS = ['port','path','startup','sslport','ssl','alert_email','http_redirect_to_https','http_redirect_to_https_port']
+    KEYS = ['port','path','startup','sslport','ssl','alert_email','http_redirect_to_https','http_redirect_to_https_port','memcache_servers']
     
     # defaults
     config = {
@@ -94,6 +94,8 @@ class Configuration(object):
                         "keyfile":"~/.yabi/servercert.pem",
                         
                         "alert_email":"Tech Alerts <alerts@ccg.murdoch.edu.au>",
+                        
+                        "memcache_servers":"memcache1.localdomain:11211 memcache2.localdomain:11211",
                         
                         "admin":None                # none means "use the one provided here"
                     },
@@ -126,6 +128,8 @@ class Configuration(object):
                         "auth_ldap_group":"group",
                         "auth_ldap_default_group":"user",
                         
+                        "memcache_servers":"memcache1.localdomain:11211 memcache2.localdomain:11211",
+                        
                         "alert_email":"Tech Alerts <alerts@ccg.murdoch.edu.au>",
                         
                     },
@@ -155,6 +159,8 @@ class Configuration(object):
                         "auth_ldap_group":"group",
                         "auth_ldap_default_group":"user",
                         
+                        "memcache_servers":"memcache1.localdomain:11211 memcache2.localdomain:11211",
+                                                
                         "alert_email":"Tech Alerts <alerts@ccg.murdoch.edu.au>",
 
                     },
@@ -169,6 +175,8 @@ class Configuration(object):
                         
                         "alert_email":"Tech Alerts <alerts@ccg.murdoch.edu.au>",
 
+                        "memcache_servers":"memcache1.localdomain:11211 memcache2.localdomain:11211",
+                        
                         "history":None,
                         
                         "debug": "true"             # run the app in debug mode
@@ -234,8 +242,9 @@ class Configuration(object):
             if conf_parser.has_option(name,'certfile'):
                 self.config[name]['certfile'] = path_sanitise(conf_parser.get(name,'certfile'))
             
-            
-            
+            # memcache
+            if conf_parser.has_option(name,'memcache_servers'):
+                self.config[name]['memcache_servers'] = conf_parse.get(name,'memcache_servers')
             
         name = "admin"
         if conf_parser.has_section(name):
@@ -252,6 +261,10 @@ class Configuration(object):
             for parm in ['database_engine','database_host','database_name','database_password','database_port','database_user','auth_ldap_server', 'auth_ldap_user_base','auth_ldap_group_base','auth_ldap_group','auth_ldap_default_group']:
                 if conf_parser.has_option(name,parm):
                     self.config[name][parm] = conf_parser.get(name,parm)
+                    
+            # memcache
+            if conf_parser.has_option(name,'memcache_servers'):
+                self.config[name]['memcache_servers'] = conf_parse.get(name,'memcache_servers')
 
         name = "store"
         if conf_parser.has_section(name):
@@ -262,7 +275,11 @@ class Configuration(object):
                 self.config[name]['keyfile'] = path_sanitise(conf_parser.get(name,'keyfile'))
             if conf_parser.has_option(name,'certfile'):
                 self.config[name]['certfile'] = path_sanitise(conf_parser.get(name,'certfile'))
-
+            
+            # memcache
+            if conf_parser.has_option(name,'memcache_servers'):
+                self.config[name]['memcache_servers'] = conf_parse.get(name,'memcache_servers')
+                
         name = "frontend"
         if conf_parser.has_section(name):
             self.config[name]['database'] = "dev" if conf_parser.has_option(name,'database') and conf_parser.get(name,'database').lower()=="dev" else "live"
@@ -278,6 +295,10 @@ class Configuration(object):
             for parm in ['database_engine','database_host','database_name','database_password','database_port','database_user','auth_ldap_server', 'auth_ldap_user_base','auth_ldap_group_base','auth_ldap_group','auth_ldap_default_group']:
                 if conf_parser.has_option(name,parm):
                     self.config[name][parm] = conf_parser.get(name,parm)
+                    
+            # memcache
+            if conf_parser.has_option(name,'memcache_servers'):
+                self.config[name]['memcache_servers'] = conf_parse.get(name,'memcache_servers')
         
 
     def read_config(self, search=SEARCH_PATH):
@@ -300,6 +321,7 @@ class Configuration(object):
                 telnet=boolean_proc,
                 telnetport=port_setting,
                 debug=boolean_proc
+                
             )
             
             for key, value in conversions.iteritems():
