@@ -199,8 +199,8 @@ MAKO_MODULENAME_CALLABLE = ''
 ##
 ## memcache server list
 ##
-MEMCACHE_SERVERS = ['memcache1.localdomain:11211','memcache2.localdomain:11211']
-MEMCACHE_KEYSPACE = ""
+MEMCACHE_SERVERS = os.environ['MEMCACHE_SERVERS'].split()
+MEMCACHE_KEYSPACE = "yabife-"
 
 ##
 ## CAPTCHA settings

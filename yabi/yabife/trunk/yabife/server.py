@@ -52,6 +52,9 @@ if config.config[NAME]["debug"]:
 if config.config[NAME]["alert_email"]:
     os.environ['ADMIN_EMAIL_NAME'],os.environ['ADMIN_EMAIL'] = config.config[NAME]["alert_email"]
 
+if config.config[NAME]["memcache_servers"]:
+    os.environ['MEMCACHE_SERVERS'] = config.config[NAME]["memcache_servers"]
+
 from twisted.web2 import wsgi, resource, channel
 from django.conf import settings
 from django.core.management import setup_environ
