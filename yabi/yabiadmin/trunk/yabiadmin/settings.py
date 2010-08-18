@@ -254,7 +254,7 @@ MAKO_MODULENAME_CALLABLE = ''
 ##
 ## memcache server list
 ##
-MEMCACHE_SERVERS = ['memcache1.localdomain:11211','memcache2.localdomain:11211']
+MEMCACHE_SERVERS = os.environ['MEMCACHE_SERVERS'].split()
 
 # TODO: which one of the following is right?
 MEMCACHE_PREFIX = MEMCACHE_KEYSPACE = "yabiadmin-%s"%YABIBACKEND

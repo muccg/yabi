@@ -345,9 +345,6 @@ class Backend(Base):
     hostname.help_text="Hostname must not end with a /."
     path.help_text="Path must start and end with a /.<br/>Execution backends must only have / in the path field."
 
-
-
-
     @property
     def uri(self):
         netloc = self.hostname
