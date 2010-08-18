@@ -181,13 +181,25 @@ TEMPLATE_LOADERS = (
 #     'django.template.loaders.eggs.load_template_source',
 )
 
+# http://docs.djangoproject.com/en/dev/topics/db/transactions/
+# The recommended way to handle transactions in Web requests is to tie them to the request and response
+# phases via Django’s TransactionMiddleware.
+#
+# It works like this: When a request starts, Django starts a transaction. If the response is produced
+# without problems, Django commits any pending transactions. If the view function produces an exception,
+# Django rolls back any pending transactions.
+#
+# To activate this feature, just add the TransactionMiddleware middleware to your MIDDLEWARE_CLASSES setting:
+# The order is quite important. The transaction middleware applies not only to view functions, but also for 
+# all middleware modules that come after it. So if you use the session middleware after the transaction
+# middleware, session creation will be part of the transaction.
 MIDDLEWARE_CLASSES = (
     'django.middleware.email.EmailExceptionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.ssl.SSLRedirect'
-    #'django.middleware.transaction.TransactionMiddleware'
+    'django.middleware.transaction.TransactionMiddleware'
 )
 #MIDDLEWARE_CLASSES += ('yabmin.middleware.Logging',)
 
