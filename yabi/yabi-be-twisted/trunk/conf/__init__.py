@@ -244,7 +244,7 @@ class Configuration(object):
             
             # memcache
             if conf_parser.has_option(name,'memcache_servers'):
-                self.config[name]['memcache_servers'] = conf_parse.get(name,'memcache_servers')
+                self.config[name]['memcache_servers'] = conf_parser.get(name,'memcache_servers')
             
         name = "admin"
         if conf_parser.has_section(name):
@@ -264,7 +264,7 @@ class Configuration(object):
                     
             # memcache
             if conf_parser.has_option(name,'memcache_servers'):
-                self.config[name]['memcache_servers'] = conf_parse.get(name,'memcache_servers')
+                self.config[name]['memcache_servers'] = conf_parser.get(name,'memcache_servers')
 
         name = "store"
         if conf_parser.has_section(name):
@@ -278,7 +278,7 @@ class Configuration(object):
             
             # memcache
             if conf_parser.has_option(name,'memcache_servers'):
-                self.config[name]['memcache_servers'] = conf_parse.get(name,'memcache_servers')
+                self.config[name]['memcache_servers'] = conf_parser.get(name,'memcache_servers')
                 
         name = "frontend"
         if conf_parser.has_section(name):
@@ -298,7 +298,7 @@ class Configuration(object):
                     
             # memcache
             if conf_parser.has_option(name,'memcache_servers'):
-                self.config[name]['memcache_servers'] = conf_parse.get(name,'memcache_servers')
+                self.config[name]['memcache_servers'] = conf_parser.get(name,'memcache_servers')
         
 
     def read_config(self, search=SEARCH_PATH):
