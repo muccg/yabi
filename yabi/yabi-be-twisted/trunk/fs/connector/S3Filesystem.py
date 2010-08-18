@@ -60,7 +60,7 @@ def ls(bucket, path):
     if response.http_response.status != 200:
         raise S3Error("Could not list bucket '%s': %s"%(bucket,response.message))
    
-    print dir(response.entries[0])
+    print "==>",dir(response.entries[0])
     entries = [X.key.split(SEP) for X in response.entries]
     
     # we now filter the list down to just what we would see in this directory
