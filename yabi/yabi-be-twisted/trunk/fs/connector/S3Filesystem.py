@@ -61,6 +61,7 @@ def ls(bucket, path):
         raise S3Error("Could not list bucket '%s': %s"%(bucket,response.message))
    
     print "==>",dir(response.entries[0])
+    print response.entries[0].size
     entries = [X.key.split(SEP) for X in response.entries]
     
     # we now filter the list down to just what we would see in this directory
