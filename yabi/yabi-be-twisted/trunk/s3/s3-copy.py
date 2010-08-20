@@ -13,6 +13,8 @@ def eprint(text):
 
 DEBUG = False
 
+CHUNKSIZE = 4096
+
 L2R = 1
 R2L = 2
 direction = None
@@ -103,12 +105,11 @@ elif direction == R2L:
     
     if response.http_response.status == 200:
         # success
-        print "response.body=",response.body
-        print "dest=",outfile
         fh = open(outfile,"wb")
-        print "fh=",fh
-        for chunk in response.body:
-            print "c=",chunk
+        data = response.body
+        while len(data):
+            chunk = data[:CHUNKSIZE if len(data)>CHUNKSIZE else len(data)]
+            data = data[len(chunk):]
             fh.write(chunk)
         fh.close()
         eprint("OK")
