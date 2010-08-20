@@ -162,7 +162,7 @@ class S3Filesystem(FSConnector.FSConnector, object):
         if not creds:
             creds = s3auth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
             
-        pp, fifo = s3.Copy.WriteToRemote(cert=creds['cert'],dst,password=creds['key'],fifo=fifo)
+        pp, fifo = s3.Copy.WriteToRemote(creds['cert'],dst,password=creds['key'],fifo=fifo)
         
         return pp, fifo
     
@@ -185,7 +185,7 @@ class S3Filesystem(FSConnector.FSConnector, object):
             #print "get creds"
             creds = s3auth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
             
-        pp, fifo = s3.Copy.ReadFromRemote(cert=creds['cert'],dst,password=creds['key'],fifo=fifo)
+        pp, fifo = s3.Copy.ReadFromRemote(creds['cert'],dst,password=creds['key'],fifo=fifo)
         #print "read from remote returned"
         
         return pp, fifo
