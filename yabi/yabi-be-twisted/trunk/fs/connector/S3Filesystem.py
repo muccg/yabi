@@ -162,7 +162,7 @@ class S3Filesystem(FSConnector.FSConnector, object):
         if not creds:
             creds = s3auth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
             
-        pp, fifo = ssh.Copy.WriteToRemote(cert=creds['cert'],dst,password=creds['key'],fifo=fifo)
+        pp, fifo = s3.Copy.WriteToRemote(cert=creds['cert'],dst,password=creds['key'],fifo=fifo)
         
         return pp, fifo
     
