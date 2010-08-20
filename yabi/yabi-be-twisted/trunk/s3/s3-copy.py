@@ -69,6 +69,9 @@ if direction == L2R:
     
     bucket = host.split('.')[0]
     
+    while len(path) and path[0]=='/':
+        path = path[1:]
+    
     # create a connection object
     conn = S3.AWSAuthConnection(accesskey, secretkey)
     response = conn.put(bucket,path,open(infile,"rb").read())
@@ -90,6 +93,9 @@ elif direction == R2L:
     username, host = hostpart.split('@',1)
     
     bucket = host.split('.')[0]
+    
+    while len(path) and path[0]=='/':
+        path = path[1:]
     
     # create connection
     conn = S3.AWSAuthConnection(accesskey,secretkey)
