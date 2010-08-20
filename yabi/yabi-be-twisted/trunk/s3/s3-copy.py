@@ -105,7 +105,7 @@ elif direction == R2L:
     
     if response.http_response.status == 200:
         # success
-        fh = open(outfile,"wb")
+        fh = os.open(outfile,os.O_WRONLY)
         data = response.body
         while len(data):
             if len(data)>CHUNKSIZE:
