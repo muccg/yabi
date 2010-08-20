@@ -42,7 +42,7 @@ class S3Copy(BaseShell):
             
         remotehost,remotepath = remoteurl.split(':',1)
             
-        command = [   self.python, self.scp,
+        command = [   self.python, self.s3cp,
                 fifo,                       # localfile
                 remoteurl
             ]

@@ -3,9 +3,11 @@
 
 # s3 copying script, that uses streams to copy a stream based file to an s3 bucket
 
-import sys, re, os
+import sys, re, os, time
 from optparse import OptionParser
 import S3
+
+time.sleep(1)
 
 def eprint(text):
     sys.stderr.write(text)
