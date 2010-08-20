@@ -98,6 +98,7 @@ class FileGetResource(resource.PostableResource):
             datastream = False
             
             data = True
+            print "0"
             while data:
                 # because this is nonblocking, it might raise IOError 11
                 data = no_intr(file.read,DOWNLOAD_BLOCK_SIZE)
