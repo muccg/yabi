@@ -128,9 +128,12 @@ class FileGetResource(resource.PostableResource):
                             return channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('application', 'data')}, stream=datastream ))
                     else:
                         # end of fifo OR empty file OR MAYBE the write process is slow and hasn't written into it yet.
+                        # if its an empty file or an unwritten yet file our task is the same... keep trying to read it
                         
                         # Did we error out? Wait until task is finished
                         while not procproto.isDone():
+                            data = file.read(DOWNLOAD_BLOCK_SIZE)
+                            print "!!!!!!",data
                             stackless.schedule()
                         
                         if procproto.exitcode:
