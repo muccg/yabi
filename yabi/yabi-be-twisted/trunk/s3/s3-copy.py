@@ -105,7 +105,10 @@ elif direction == R2L:
         # success
         print "response.body=",response.body
         print "dest=",outfile
-        open(outfile,"wb").write(response.body)
+        fh = open(outfile,"wb")
+        print "fh=",fh
+        fh.write(response.body)
+        fh.close()
         eprint("OK")
         sys.exit(0)
         
