@@ -92,7 +92,7 @@ class FileGetResource(resource.PostableResource):
             stackless.schedule()
             
             print "C"
-            fd = os.open(fifo,os.O_RDONLY )
+            fd = no_intr(os.open,fifo,os.O_RDONLY )
             file = os.fdopen(fd)
             #file = no_intr(open,fifo,"rb")
             print "D",file
