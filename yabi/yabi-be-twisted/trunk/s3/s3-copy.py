@@ -7,8 +7,6 @@ import sys, re, os, time
 from optparse import OptionParser
 import S3
 
-time.sleep(10)
-
 def eprint(text):
     sys.stderr.write(text)
     sys.stderr.write("\n")
