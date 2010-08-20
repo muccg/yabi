@@ -107,7 +107,8 @@ elif direction == R2L:
         print "dest=",outfile
         fh = open(outfile,"wb")
         print "fh=",fh
-        fh.write(response.body)
+        for chunk in response.body:
+            fh.write(chunk)
         fh.close()
         eprint("OK")
         sys.exit(0)
