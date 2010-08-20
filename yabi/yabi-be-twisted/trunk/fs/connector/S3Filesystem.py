@@ -114,7 +114,7 @@ class S3Filesystem(FSConnector.FSConnector, object):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         # remove prefixed '/'s from path
-        while path[0]=='/':
+        while len(path) and path[0]=='/':
             path = path[1:]
         
         if DEBUG:
