@@ -133,7 +133,10 @@ class FileGetResource(resource.PostableResource):
                         # Did we error out? Wait until task is finished
                         while not procproto.isDone():
                             data = file.read(DOWNLOAD_BLOCK_SIZE)
-                            print "!!!!!!",data
+                            if len(data):
+                                datastream = FifoStream(file, truncate=bytes_to_read)
+                                datastream.prepush(data)
+                                return channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('application', 'data')}, stream=datastream ))
                             stackless.schedule()
                         
                         if procproto.exitcode:
