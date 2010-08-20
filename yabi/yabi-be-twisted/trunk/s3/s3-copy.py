@@ -103,6 +103,7 @@ elif direction == R2L:
     
     if response.http_response.status == 200:
         # success
+        print "response.body=",response.body
         open(outfile,"wb").write(response.body)
         eprint("OK")
         sys.exit(0)
