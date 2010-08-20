@@ -108,7 +108,7 @@ elif direction == R2L:
         fh = open(outfile,"wb")
         data = response.body
         while len(data):
-            chunk = data[:CHUNKSIZE if len(data)>CHUNKSIZE else len(data)]
+            chunk = data[:(CHUNKSIZE if len(data)>CHUNKSIZE else len(data))]
             data = data[len(chunk):]
             fh.write(chunk)
         fh.close()
