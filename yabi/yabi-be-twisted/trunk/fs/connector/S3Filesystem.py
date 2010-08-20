@@ -160,12 +160,9 @@ class S3Filesystem(FSConnector.FSConnector, object):
         
         # make sure we are authed
         if not creds:
-            assert False, "creds not supported in S3"
-            #creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
+            creds = s3auth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
             
-        #usercert = self.save_identity(creds['key'])
-        
-        pp, fifo = ssh.Copy.WriteToRemote(usercert,dst,password=creds['password'],fifo=fifo)
+        pp, fifo = ssh.Copy.WriteToRemote(cert=creds['cert'],dst,password=creds['key'],fifo=fifo)
         
         return pp, fifo
     
@@ -186,13 +183,9 @@ class S3Filesystem(FSConnector.FSConnector, object):
         # make sure we are authed
         if not creds:
             #print "get creds"
-            assert False, "creds not supported in S3"
-            #creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
+            creds = s3auth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
             
-        #usercert = self.save_identity(creds['key'])
-        
-        #print "read from remote"
-        pp, fifo = ssh.Copy.ReadFromRemote(usercert,dst,password=creds['password'],fifo=fifo)
+        pp, fifo = s3.Copy.ReadFromRemote(cert=creds['cert'],dst,password=creds['key'],fifo=fifo)
         #print "read from remote returned"
         
         return pp, fifo
