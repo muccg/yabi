@@ -113,8 +113,8 @@ elif direction == R2L:
             else:
                 chunk = data
             data = data[len(chunk):]
-            fh.write(chunk)
-        fh.close()
+            os.write(fh,chunk)
+        os.close(fh)
         eprint("OK")
         sys.exit(0)
         

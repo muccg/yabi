@@ -6,7 +6,10 @@ def no_intr(func, *args, **kw):
     while True:
         print "..."
         try:
-            return func(*args, **kw)
+            print "...A"
+            res = func(*args, **kw)
+            print "...B"
+            return res
         except (OSError, IOError), e:
             if e.errno == errno.EINTR or e.errno == errno.EAGAIN:
                 print "AGAIN"
