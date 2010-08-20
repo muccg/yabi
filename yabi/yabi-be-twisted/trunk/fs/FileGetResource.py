@@ -81,6 +81,7 @@ class FileGetResource(resource.PostableResource):
             
             print "B"
             
+            import time
             # give the engine a chance to fire up the process
             for i in range(20):
                 time.sleep(1)
