@@ -52,6 +52,7 @@ def rm(bucket, path):
         raise S3Error("Could not delete key '%s' in bucket '%s': %s"%(path, bucket, response.message))
 
 def ls(bucket, path):
+    # path separator
     SEP = '/'
     
     conn = S3.AWSAuthConnection(ACCESSKEYID, SECRETKEYID)
@@ -60,9 +61,7 @@ def ls(bucket, path):
     if response.http_response.status != 200:
         raise S3Error("Could not list bucket '%s': %s"%(bucket,response.message))
    
-    #print "==>",dir(response.entries[0])
-    #print response.entries[0].size
-    entries = [(X.key.split(SEP),X.size) for X in response.entries]
+    entries = [(OBJ.key.split(SEP),OBJ) for OBJ in response.entries]
     
     # we now filter the list down to just what we would see in this directory
     while path.endswith('/'):
@@ -71,24 +70,29 @@ def ls(bucket, path):
     
     paths = entries
     if len(path):
-        print "F:",our_filter
         for part in our_filter:
-            print ":",paths
-            paths = [ X[1:] for X in paths if X[0]==part ]
+            paths = [ (KEY[1:],OBJ) for KEY,OBJ in paths if KEY[0]==part ]
     
-    # what are folders and what are entries. If there is any extra path parts, its a folder
-    files = [X[0] for X in paths if len(X)==1]
+    # what are folders and what are entries. If there is any extra path parts, its a folder. lets make a list of the files
+    files = [(KEY[0],OBJ) for KEY,OBJ in paths if len(KEY)==1]
     if paths==[[]] or paths==[]:
         raise S3Error("Path not a directory")
             
-    folders = list(set([X[0] for X in paths if X[0] not in files]))
+    # a folder is anything that is not a file
+    folders = [(KEY[0],OBJ) for KEY,OBJ in paths if KEY[0] not in [F[0] for F in files] and not KEY[1]]
     
-    return_data = [A for A in files if A],[B for B in folders if B]
-    print "RETURNING",return_data
-    return return_data
-
-
-
+    # change actual object into size and date entries to be returned
+    return  [
+                (FILE[0],FILE[1].size,FILE[1].last_modified) 
+                for FILE in files 
+                if FILE
+            ],
+            [
+                (FOLDER[0],FOLDER[1].size,FOLDER[1].last_modified) 
+                for FOLDER in folders 
+                if FOLDER
+            ]
+    
 class S3Filesystem(FSConnector.FSConnector, object):
     """This is the resource that connects to the globus gridftp backends"""
     VERSION=0.1
