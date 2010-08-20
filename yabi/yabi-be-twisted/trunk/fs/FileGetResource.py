@@ -82,7 +82,8 @@ class FileGetResource(resource.PostableResource):
             print "B"
             
             # give the engine a chance to fire up the process
-            stackless.schedule()
+            for i in range(20):
+                stackless.schedule()
             
             while not procproto.isStarted():
                 print "."
