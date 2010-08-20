@@ -73,10 +73,13 @@ class FileGetResource(resource.PostableResource):
         
         def download_tasklet(req, channel):
             """Tasklet to do file download"""
+            print "A"
             try:
                 procproto, fifo = bend.GetReadFifo(hostname,username,basepath,filename,yabiusername=yabiusername,creds=creds)
             except NoCredentials, nc:
                 return channel.callback(http.Response( responsecode.UNAUTHORIZED, {'content-type': http_headers.MimeType('text', 'plain')}, str(nc) ))
+            
+            print "B"
             
             # give the engine a chance to fire up the process
             stackless.schedule()
