@@ -117,7 +117,7 @@ class FileGetResource(resource.PostableResource):
                 # because this is nonblocking, it might raise IOError 11
                 #data = no_intr(file.read,DOWNLOAD_BLOCK_SIZE)
                 data = file.read(DOWNLOAD_BLOCK_SIZE)
-                print "!"
+                print "!",data,len(data)
                 
                 if data != True:
                     if len(data):
