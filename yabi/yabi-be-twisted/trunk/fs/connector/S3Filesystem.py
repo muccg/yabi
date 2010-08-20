@@ -85,11 +85,11 @@ def ls(bucket, path):
     return  [
                 (FILE[0],FILE[1].size,FILE[1].last_modified) 
                 for FILE in files 
-                if FILE
+                if FILE[0]
             ],[
                 (FOLDER[0],FOLDER[1].size,FOLDER[1].last_modified) 
                 for FOLDER in folders 
-                if FOLDER
+                if FOLDER[0]
             ]
     
 class S3Filesystem(FSConnector.FSConnector, object):
