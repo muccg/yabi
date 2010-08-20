@@ -115,7 +115,8 @@ class FileGetResource(resource.PostableResource):
             print "0"
             while data:
                 # because this is nonblocking, it might raise IOError 11
-                data = no_intr(file.read,DOWNLOAD_BLOCK_SIZE)
+                #data = no_intr(file.read,DOWNLOAD_BLOCK_SIZE)
+                data = file.read(DOWNLOAD_BLOCK_SIZE)
                 print "!"
                 
                 if data != True:
@@ -126,7 +127,8 @@ class FileGetResource(resource.PostableResource):
                             datastream.prepush(data)
                             return channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('application', 'data')}, stream=datastream ))
                     else:
-                        # end of fifo OR empty file.
+                        # end of fifo OR empty file OR MAYBE the write process is slow and hasn't written into it yet.
+                        
                         # Did we error out? Wait until task is finished
                         while not procproto.isDone():
                             stackless.schedule()
