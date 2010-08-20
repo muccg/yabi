@@ -190,5 +190,7 @@ class S3Filesystem(FSConnector.FSConnector, object):
         pp, fifo = s3.Copy.ReadFromRemote(creds['cert'],dst,password=creds['key'],fifo=fifo)
         #print "read from remote returned"
         
+        print "S3::GetReadFifo returning",pp,fifo
+        
         return pp, fifo
        
