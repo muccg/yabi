@@ -132,8 +132,8 @@ class S3Filesystem(FSConnector.FSConnector, object):
               
         return {
             path : {
-                'files':[(filename, 0, "unknown" ) for filename in files],
-                'directories':[(filename, 0, "unknown" ) for filename in folders]
+                'files':files,
+                'directories':folders,
             }
         }
         
