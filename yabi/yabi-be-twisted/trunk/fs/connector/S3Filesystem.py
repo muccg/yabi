@@ -103,10 +103,12 @@ class S3Filesystem(FSConnector.FSConnector, object):
         #ssh.KeyStore.KeyStore.__init__(self)
         
     def mkdir(self, host, username, path, yabiusername=None, creds={}):
+        BUCKET = host.split(".")[0]
         mkdir(BUCKET, path)
         return "OK"
         
     def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}):
+        BUCKET = host.split(".")[0]
         rm(BUCKET, path)
         return
     

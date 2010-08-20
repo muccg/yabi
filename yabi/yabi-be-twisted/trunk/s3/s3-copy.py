@@ -65,7 +65,9 @@ if direction == L2R:
     # Local to Remote
     #
     hostpart, path = outfile.split(':',1)
-    bucket, host = hostpart.split('@',1)
+    username, host = hostpart.split('@',1)
+    
+    bucket = host.split('.')[0]
     
     # create a connection object
     conn = S3.AWSAuthConnection(accesskey, secretkey)
@@ -85,7 +87,9 @@ elif direction == R2L:
     # Remote to Local
     #
     hostpart, path = infile.split(':',1)
-    bucket, host = hostpart.split('@',1)
+    username, host = hostpart.split('@',1)
+    
+    bucket = host.split('.')[0]
     
     # create connection
     conn = S3.AWSAuthConnection(accesskey,secretkey)
