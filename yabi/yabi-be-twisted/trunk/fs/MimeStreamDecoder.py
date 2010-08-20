@@ -6,7 +6,7 @@ def no_intr(func, *args, **kw):
     while True:
         print "..."
         try:
-            print "...A"
+            print "...A",func,"(",args,",",kw,")"
             res = func(*args, **kw)
             print "...B"
             return res
