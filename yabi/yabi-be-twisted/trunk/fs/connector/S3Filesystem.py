@@ -13,8 +13,8 @@ import s3
 s3auth = s3.S3Auth.S3Auth()
 
 #sshauth = ssh.SSHAuth.SSHAuth()
-ACCESSKEYID = 'AKIAJPCC7ZU6WWMU425A'
-SECRETKEYID = 's2DOLKdev8GFXHKnqUnB2zl8pDpvnITo1R+FJCby'
+#ACCESSKEYID = 'AKIAJPCC7ZU6WWMU425A'
+#SECRETKEYID = 's2DOLKdev8GFXHKnqUnB2zl8pDpvnITo1R+FJCby'
 BUCKET = 'yabi'
 
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
@@ -51,7 +51,7 @@ def rm(bucket, path):
     if response.http_response.status != 200:
         raise S3Error("Could not delete key '%s' in bucket '%s': %s"%(path, bucket, response.message))
 
-def ls(bucket, path):
+def ls(bucket, path, ACCESSKEYID, SECRETKEYID):
     # path separator
     SEP = '/'
     
@@ -125,7 +125,8 @@ class S3Filesystem(FSConnector.FSConnector, object):
             #assert False, "presently we NEED creds"
             creds = s3auth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
         
-        files,folders = ls(BUCKET, path)
+        BUCKET = host.split(".")[0]
+        files,folders = ls(BUCKET, path,creds['cert'],creds['key'])
               
         print "S3 issue",{
             path : {
