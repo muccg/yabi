@@ -105,7 +105,7 @@ class FileGetResource(resource.PostableResource):
             fcntl.fcntl(file.fileno(), fcntl.F_SETFL, os.O_NONBLOCK) 
             
             for i in range(20):
-                time.sleep(1)
+                #time.sleep(1)
                 stackless.schedule()
             
             # datastream stores whether we have sent an ok response code yet
