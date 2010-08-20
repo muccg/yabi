@@ -86,8 +86,7 @@ def ls(bucket, path):
                 (FILE[0],FILE[1].size,FILE[1].last_modified) 
                 for FILE in files 
                 if FILE
-            ],
-            [
+            ],[
                 (FOLDER[0],FOLDER[1].size,FOLDER[1].last_modified) 
                 for FOLDER in folders 
                 if FOLDER
