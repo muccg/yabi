@@ -108,6 +108,7 @@ elif direction == R2L:
         fh = open(outfile,"wb")
         print "fh=",fh
         for chunk in response.body:
+            print "c=",chunk
             fh.write(chunk)
         fh.close()
         eprint("OK")
