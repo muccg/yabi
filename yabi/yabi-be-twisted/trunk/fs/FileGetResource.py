@@ -91,7 +91,9 @@ class FileGetResource(resource.PostableResource):
             # once its started wait one engine cycle before opening fifo.
             stackless.schedule()
             
+            print "C"
             file = no_intr(open,fifo,"rb")
+            print "D",file
             
             # set file handle to be non blocking
             import fcntl, errno
