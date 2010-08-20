@@ -16,6 +16,8 @@ def no_intr(func, *args, **kw):
                 stackless.schedule()
             else:
                 raise
+        for i in range(20):
+            stackless.schedule()
 
 import StringIO
 

@@ -92,8 +92,8 @@ class FileGetResource(resource.PostableResource):
             stackless.schedule()
             
             print "C"
-            file = open(fifo,"rb")
-            #file = no_intr(open,fifo,"rb")
+            #file = open(fifo,"rb")
+            file = no_intr(open,fifo,"rb")
             print "D",file
             
             # set file handle to be non blocking
