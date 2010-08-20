@@ -84,7 +84,7 @@ class FileGetResource(resource.PostableResource):
             import time
             # give the engine a chance to fire up the process
             for i in range(20):
-                time.sleep(1)
+                #time.sleep(1)
                 stackless.schedule()
             
             while not procproto.isStarted():
@@ -95,7 +95,7 @@ class FileGetResource(resource.PostableResource):
             stackless.schedule()
             
             print "C"
-            fd = no_intr(os.open,fifo,os.O_RDONLY, os.O_NONBLOCK )
+            fd = no_intr(os.open,fifo,os.O_RDONLY | os.O_NONBLOCK )
             file = os.fdopen(fd)
             #file = no_intr(open,fifo,"rb")
             print "D",file
