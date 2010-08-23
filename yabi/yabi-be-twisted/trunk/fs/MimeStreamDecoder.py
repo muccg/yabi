@@ -4,20 +4,15 @@ import errno
 
 def no_intr(func, *args, **kw):
     while True:
-        print "..."
         try:
-            print "...A",func,"(",args,",",kw,")"
             res = func(*args, **kw)
-            print "...B"
             return res
         except (OSError, IOError), e:
             if e.errno == errno.EINTR or e.errno == errno.EAGAIN:
-                print "AGAIN"
                 stackless.schedule()
             else:
                 raise
-        for i in range(20):
-            stackless.schedule()
+        
 
 import StringIO
 
