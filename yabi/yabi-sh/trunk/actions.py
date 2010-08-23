@@ -1,6 +1,7 @@
 import time
 from transport import UnauthorizedError
 import json
+import os
 
 class Action(object):
     def __init__(self, yabi):
@@ -8,7 +9,7 @@ class Action(object):
 
     def process(self, args):
         params = self.map_args(args)
-        json_response = self.yabi.get(self.url, params)
+        resp, json_response = self.yabi.get(self.url, params)
         self.process_response(self.decode_json(json_response))
 
     def decode_json(self, resp):
@@ -66,18 +67,21 @@ class CP(Action):
 
     def download_file(self, uri, name):
         params = {'uri': uri}
-        response = self.yabi.get(self.get_url, params)
+        response, contents = self.yabi.get(self.get_url, params)
         with open(name, 'w') as f:
-            f.write(response)
+            f.write(contents)
 
     def process(self, args):
         src = args[0]
+        src_filename = src.split('/')[-1]
         if len(args) > 1 and args[1]:
             dst = args[1]
         else:
-            dst = src.split('/')[-1]
+            dst = src_filename
 
         if self.is_local_file(dst):
+            if os.path.isdir(dst):
+                dst = os.path.join(dst, src_filename)
             self.download_file(src, dst)
         else:
             params = {'src': src, 'dst': dst}

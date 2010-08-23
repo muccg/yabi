@@ -3,7 +3,7 @@
 import sys
 import readline
 
-from transport import Transport, UnauthorizedError
+from transport import Transport, UnauthorizedError, PostRequest, GetRequest
 import actions
 
 # TODO env variable
@@ -41,17 +41,20 @@ class Yabi(object):
             username = system_user
         password = getpass.getpass()
         login_url = "login"
-        self.transport.put(login_url, {'username': username, 'password': password})
+        request = PostRequest('login', params= {
+            'username': username, 'password': password})
+        # TODO change to call web service login and check result
+        self.transport.make_request(request)
         self.username = username
 
     def get(self, url, params):
         try:
-            resp = self.transport.get(url, params)
+            request = GetRequest(url, params)
+            resp, contents = self.transport.make_request(request)
         except UnauthorizedError:
             self.login()
-            resp = self.transport.get(url, params)
-        return resp
-            
+            resp, contents = self.transport.make_request(request)
+        return resp, contents
 
     def choose_action(self, action_name):
         class_name = action_name.upper()
