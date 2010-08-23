@@ -146,7 +146,7 @@ class Location:
 
 
 class AWSAuthConnection:
-    def __init__(self, aws_access_key_id, aws_secret_access_key, is_secure=False,
+    def __init__(self, aws_access_key_id, aws_secret_access_key, is_secure=True,
             server=DEFAULT_HOST, port=None, calling_format=CallingFormat.SUBDOMAIN):
 
         if not port:
@@ -175,7 +175,7 @@ class AWSAuthConnection:
         return self._make_request('HEAD', bucket, '', {}, {})
 
     def list_bucket(self, bucket, options={}, headers={}):
-        return ListBucketResponse(self._make_stackless_request('GET', bucket, '', options, headers))
+        return ListBucketResponse(self._make_request('GET', bucket, '', options, headers))
 
     def delete_bucket(self, bucket, headers={}):
         return Response(self._make_request('DELETE', bucket, '', {}, headers))
