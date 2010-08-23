@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 #  This software code is made available "AS IS" without warranties of any
 #  kind.  You may copy, display, modify and redistribute the software
@@ -82,9 +81,6 @@ def canonical_string(method, bucket="", key="", query_args={}, headers={}, expir
 # computes the base64'ed hmac-sha hash of the canonical string and the secret
 # access key, optionally urlencoding the result
 def encode(aws_secret_access_key, str, urlencode=False):
-    #print "1",aws_secret_access_key
-    #print "2",str
-    #print "3",sha
     b64_hmac = base64.encodestring(hmac.new(aws_secret_access_key, str, sha).digest()).strip()
     if urlencode:
         return urllib.quote_plus(b64_hmac)
@@ -272,7 +268,7 @@ class AWSAuthConnection:
             else:
                 connection = httplib.HTTPConnection(host)
 
-            final_headers = merge_meta(headers, metadata)
+            final_headers = merge_meta(headers, metadata);
             # add auth header
             self._add_aws_auth_header(final_headers, method, bucket, key, query_args)
 
@@ -294,74 +290,11 @@ class AWSAuthConnection:
             if query: path += "?" + query
             # retry with redirect
 
-    def _make_stackless_request(self, method, bucket='', key='', query_args={}, headers={}, data='', metadata={}):
-        """Do a _make_request but via stackless blocking calls"""
-        server = ''
-        if bucket == '':
-            server = self.server
-        elif self.calling_format == CallingFormat.SUBDOMAIN:
-            server = "%s.%s" % (bucket, self.server)
-        elif self.calling_format == CallingFormat.VANITY:
-            server = bucket
-        else:
-            server = self.server
-
-        path = ''
-
-        if (bucket != '') and (self.calling_format == CallingFormat.PATH):
-            path += "/%s" % bucket
-
-        # add the slash after the bucket regardless
-        # the key will be appended if it is non-empty
-        path += "/%s" % urllib.quote_plus(key)
-
-        # build the path_argument string
-        # add the ? in all cases since 
-        # signature and credentials follow path args
-        if len(query_args):
-            path += "?" + query_args_hash_to_string(query_args)
-
-        is_secure = self.is_secure
-        host = "%s:%d" % (server, self.port)
-        while True:
-            if (is_secure):
-                assert False, "Secure stackless GET not supported yet"
-
-            final_headers = merge_meta(headers, metadata)
-            # add auth header
-            self._add_aws_auth_header(final_headers, method, bucket, key, query_args)
-
-            #
-            #connection.request(method, path, data, final_headers)
-            #resp = connection.getresponse()
-            #
-            
-            status, message, data = stacklesstools.GET(path, server, self.port)
-            #print "STATUS:",status
-            #print "MESSAGE:",message
-            #print "DATA:",data
-            
-            if status < 300 or status >= 400:
-                class response_container(object):
-                    def __init__(self,body,status,message,reason):
-                        self.body = body
-                        self.status = status
-                        self.message = message
-                        self.reason = reason
-                        
-                resp = response_container(data, status, message, message)
-                return resp
-                
-            assert False, "redirect or error"
-
-
     def _add_aws_auth_header(self, headers, method, bucket, key, query_args):
         if not headers.has_key('Date'):
             headers['Date'] = time.strftime("%a, %d %b %Y %X GMT", time.gmtime())
 
         c_string = canonical_string(method, bucket, key, query_args, headers)
-        #print "SAK:",self.aws_secret_access_key
-        #print "CS:",c_string
         headers['Authorization'] = \
             "AWS %s:%s" % (self.aws_access_key_id, encode(self.aws_secret_access_key, c_string))
 
