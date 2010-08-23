@@ -339,7 +339,7 @@ class AWSAuthConnection:
             print "DATA:",data
             
             if status < 300 or status >= 400:
-                class response_container():
+                class response_container(object):
                     def __init__(self,body,status,message,reason):
                         self.body = body
                         self.status = status
