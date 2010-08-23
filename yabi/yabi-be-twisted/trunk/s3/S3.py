@@ -172,7 +172,7 @@ class AWSAuthConnection:
         return self._make_request('HEAD', bucket, '', {}, {})
 
     def list_bucket(self, bucket, options={}, headers={}):
-        return ListBucketResponse(self._make_request('GET', bucket, '', options, headers))
+        return ListBucketResponse(self._make_stackless_request('GET', bucket, '', options, headers))
 
     def delete_bucket(self, bucket, headers={}):
         return Response(self._make_request('DELETE', bucket, '', {}, headers))
@@ -269,7 +269,7 @@ class AWSAuthConnection:
             else:
                 connection = httplib.HTTPConnection(host)
 
-            final_headers = merge_meta(headers, metadata);
+            final_headers = merge_meta(headers, metadata)
             # add auth header
             self._add_aws_auth_header(final_headers, method, bucket, key, query_args)
 
@@ -290,6 +290,67 @@ class AWSAuthConnection:
             else: raise invalidURL("Not http/https: " + location)
             if query: path += "?" + query
             # retry with redirect
+
+    def _make_stackless_request(self, method, bucket='', key='', query_args={}, headers={}, data='', metadata={}):
+        """Do a _make_request but via stackless blocking calls"""
+        server = ''
+        if bucket == '':
+            server = self.server
+        elif self.calling_format == CallingFormat.SUBDOMAIN:
+            server = "%s.%s" % (bucket, self.server)
+        elif self.calling_format == CallingFormat.VANITY:
+            server = bucket
+        else:
+            server = self.server
+
+        path = ''
+
+        if (bucket != '') and (self.calling_format == CallingFormat.PATH):
+            path += "/%s" % bucket
+
+        # add the slash after the bucket regardless
+        # the key will be appended if it is non-empty
+        path += "/%s" % urllib.quote_plus(key)
+
+        # build the path_argument string
+        # add the ? in all cases since 
+        # signature and credentials follow path args
+        if len(query_args):
+            path += "?" + query_args_hash_to_string(query_args)
+
+        is_secure = self.is_secure
+        host = "%s:%d" % (server, self.port)
+        while True:
+            if (is_secure):
+                assert False, "Secure stackless GET not supported yet"
+
+            final_headers = merge_meta(headers, metadata)
+            # add auth header
+            self._add_aws_auth_header(final_headers, method, bucket, key, query_args)
+
+            #
+            #connection.request(method, path, data, final_headers)
+            #resp = connection.getresponse()
+            #
+            
+            status, message, data = stacklesstools.GET(path, server, self.port)
+            print "STATUS:",status
+            print "MESSAGE:",message
+            print "DATA:",data
+            
+            if status < 300 or status >= 400:
+                class response_container():
+                    def __init__(self,body,status,message,reason):
+                        self.body = body
+                        self.status = status
+                        self.message = message
+                        self.reason = reason
+                        
+                resp = response_container(data, status, message, message)
+                return resp
+                
+            assert False, "redirect or error"
+
 
     def _add_aws_auth_header(self, headers, method, bucket, key, query_args):
         if not headers.has_key('Date'):
