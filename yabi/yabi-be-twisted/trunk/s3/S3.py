@@ -337,9 +337,9 @@ class AWSAuthConnection:
             #
             
             status, message, data = stacklesstools.GET(path, server, self.port)
-            print "STATUS:",status
-            print "MESSAGE:",message
-            print "DATA:",data
+            #print "STATUS:",status
+            #print "MESSAGE:",message
+            #print "DATA:",data
             
             if status < 300 or status >= 400:
                 class response_container(object):
@@ -360,8 +360,8 @@ class AWSAuthConnection:
             headers['Date'] = time.strftime("%a, %d %b %Y %X GMT", time.gmtime())
 
         c_string = canonical_string(method, bucket, key, query_args, headers)
-        print "SAK:",self.aws_secret_access_key
-        print "CS:",c_string
+        #print "SAK:",self.aws_secret_access_key
+        #print "CS:",c_string
         headers['Authorization'] = \
             "AWS %s:%s" % (self.aws_access_key_id, encode(self.aws_secret_access_key, c_string))
 
