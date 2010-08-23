@@ -73,51 +73,31 @@ class FileGetResource(resource.PostableResource):
         
         def download_tasklet(req, channel):
             """Tasklet to do file download"""
-            print "A"
             try:
                 procproto, fifo = bend.GetReadFifo(hostname,username,basepath,filename,yabiusername=yabiusername,creds=creds)
             except NoCredentials, nc:
                 return channel.callback(http.Response( responsecode.UNAUTHORIZED, {'content-type': http_headers.MimeType('text', 'plain')}, str(nc) ))
             
-            print "B"
-            
-            import time
             # give the engine a chance to fire up the process
-            for i in range(20):
-                #time.sleep(1)
-                stackless.schedule()
-            
             while not procproto.isStarted():
-                print "."
                 stackless.schedule()
             
-            # once its started wait one engine cycle before opening fifo.
-            stackless.schedule()
-            
-            print "C"
+            # nonblocking open the fifo
             fd = no_intr(os.open,fifo,os.O_RDONLY | os.O_NONBLOCK )
             file = os.fdopen(fd)
-            #file = no_intr(open,fifo,"rb")
-            print "D",file
-            
-            # set file handle to be non blocking
+         
+            # make sure file handle is non blocking
             import fcntl, errno
             fcntl.fcntl(file.fileno(), fcntl.F_SETFL, os.O_NONBLOCK) 
-            
-            #for i in range(3):
-                #time.sleep(1)
-                #stackless.schedule()
             
             # datastream stores whether we have sent an ok response code yet
             datastream = False
             
             data = True
-            print "0"
             while data:
                 # because this is nonblocking, it might raise IOError 11
-                #data = no_intr(file.read,DOWNLOAD_BLOCK_SIZE)
-                data = file.read(DOWNLOAD_BLOCK_SIZE)
-                print "!",data,len(data)
+                data = no_intr(file.read,DOWNLOAD_BLOCK_SIZE)
+                #data = file.read(DOWNLOAD_BLOCK_SIZE)
                 
                 if data != True:
                     if len(data):
@@ -132,7 +112,7 @@ class FileGetResource(resource.PostableResource):
                         
                         # Did we error out? Wait until task is finished
                         while not procproto.isDone():
-                            data = file.read(DOWNLOAD_BLOCK_SIZE)
+                            data = no_intr(file.read,DOWNLOAD_BLOCK_SIZE)
                             if len(data):
                                 datastream = FifoStream(file, truncate=bytes_to_read)
                                 datastream.prepush(data)
