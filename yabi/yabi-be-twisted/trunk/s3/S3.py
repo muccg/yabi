@@ -293,7 +293,74 @@ class AWSAuthConnection:
             else: raise invalidURL("Not http/https: " + location)
             if query: path += "?" + query
             # retry with redirect
+            
+    def _make_stackless_request(self, method, bucket='', key='', query_args={}, headers={}, data='', metadata={}):
 
+        server = ''
+        if bucket == '':
+            server = self.server
+        elif self.calling_format == CallingFormat.SUBDOMAIN:
+            server = "%s.%s" % (bucket, self.server)
+        elif self.calling_format == CallingFormat.VANITY:
+            server = bucket
+        else:
+            server = self.server
+
+        path = ''
+
+        if (bucket != '') and (self.calling_format == CallingFormat.PATH):
+            path += "/%s" % bucket
+
+        # add the slash after the bucket regardless
+        # the key will be appended if it is non-empty
+        path += "/%s" % urllib.quote_plus(key)
+
+
+        # build the path_argument string
+        # add the ? in all cases since 
+        # signature and credentials follow path args
+        if len(query_args):
+            path += "?" + query_args_hash_to_string(query_args)
+
+        is_secure = self.is_secure
+        host = "%s:%d" % (server, self.port)
+        while True:
+            assert not is_secure, "Only insecure connections supported in stackless S3 module"
+
+            final_headers = merge_meta(headers, metadata);
+            # add auth header
+            self._add_aws_auth_header(final_headers, method, bucket, key, query_args)
+
+            status, message, data = stacklesstools.GET(path,server,**final_headers)
+
+            print "STATUS:",status
+            print "MESSAGE:",message
+            print "DATA:",data
+
+            class response(object):
+                def __init__(self,status,message,data):\
+                    self.status = status
+                    self.message = message
+                    self.data = data
+                    
+            resp = response(status,message,data)
+            
+            if resp.status < 300 or resp.status >= 400:
+                return resp
+            # handle redirect
+            location = resp.getheader('location')
+            if not location:
+                return resp
+            # (close connection)
+            resp.read()
+            scheme, host, path, params, query, fragment \
+                    = urlparse.urlparse(location)
+            if scheme == "http":    is_secure = True
+            elif scheme == "https": is_secure = False
+            else: raise invalidURL("Not http/https: " + location)
+            if query: path += "?" + query
+            # retry with redirect
+            
     def _add_aws_auth_header(self, headers, method, bucket, key, query_args):
         if not headers.has_key('Date'):
             headers['Date'] = time.strftime("%a, %d %b %Y %X GMT", time.gmtime())
