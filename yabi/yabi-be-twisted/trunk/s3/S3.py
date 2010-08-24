@@ -338,7 +338,7 @@ class AWSAuthConnection:
             print "DATA:",data
 
             class response(object):
-                def __init__(self,status,message,data):\
+                def __init__(self,status,message,data):
                     self.status = status
                     self.message = message
                     self.data = data
