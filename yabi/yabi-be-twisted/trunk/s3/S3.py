@@ -82,7 +82,9 @@ def canonical_string(method, bucket="", key="", query_args={}, headers={}, expir
 # computes the base64'ed hmac-sha hash of the canonical string and the secret
 # access key, optionally urlencoding the result
 def encode(aws_secret_access_key, str, urlencode=False):
-    print "encode types:",type(aws_secret_access_key),type(str),type(urlencode)
+    # having the aws secret key in unicode causes a HMAC encoding error. Make sure its string here
+    if type(aws_secret_access_key)==unicode:
+        print "encode types:",type(aws_secret_access_key),type(str),type(urlencode)
     b64_hmac = base64.encodestring(hmac.new(aws_secret_access_key, str, sha).digest()).strip()
     if urlencode:
         return urllib.quote_plus(b64_hmac)
