@@ -146,7 +146,7 @@ class Location:
 
 
 class AWSAuthConnection:
-    def __init__(self, aws_access_key_id, aws_secret_access_key, is_secure=True,
+    def __init__(self, aws_access_key_id, aws_secret_access_key, is_secure=False,
             server=DEFAULT_HOST, port=None, calling_format=CallingFormat.SUBDOMAIN):
 
         if not port:
