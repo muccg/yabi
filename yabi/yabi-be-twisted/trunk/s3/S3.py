@@ -21,6 +21,8 @@ import urllib
 import urlparse
 import xml.sax
 
+from utils import stacklesstools
+
 DEFAULT_HOST = 's3.amazonaws.com'
 PORTS_BY_SECURITY = { True: 443, False: 80 }
 METADATA_PREFIX = 'x-amz-meta-'
