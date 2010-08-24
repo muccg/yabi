@@ -175,7 +175,7 @@ class AWSAuthConnection:
         return self._make_request('HEAD', bucket, '', {}, {})
 
     def list_bucket(self, bucket, options={}, headers={}):
-        return ListBucketResponse(self._make_request('GET', bucket, '', options, headers))
+        return ListBucketResponse(self._make_stackless_request('GET', bucket, '', options, headers))
 
     def delete_bucket(self, bucket, headers={}):
         return Response(self._make_request('DELETE', bucket, '', {}, headers))
