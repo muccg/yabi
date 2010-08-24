@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 #  This software code is made available "AS IS" without warranties of any
 #  kind.  You may copy, display, modify and redistribute the software
@@ -81,6 +82,7 @@ def canonical_string(method, bucket="", key="", query_args={}, headers={}, expir
 # computes the base64'ed hmac-sha hash of the canonical string and the secret
 # access key, optionally urlencoding the result
 def encode(aws_secret_access_key, str, urlencode=False):
+    print "encode types:",type(aws_secret_access_key),type(str),type(urlencode)
     b64_hmac = base64.encodestring(hmac.new(aws_secret_access_key, str, sha).digest()).strip()
     if urlencode:
         return urllib.quote_plus(b64_hmac)
