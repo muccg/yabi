@@ -64,6 +64,8 @@ class HTTPConnection(object):
         """Issue the specified HTTP request"""
         fullpath = "http://%s:%d%s"%(self.host,self.port,url)
         
+        print "HEADERS",headers
+        
         factory = RememberingHTTPClientFactory( fullpath, agent=USER_AGENT, headers=headers)
         factory.noisy = noisy
         
