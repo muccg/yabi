@@ -60,6 +60,10 @@ class HTTPResponse(object):
         self._isread = True
         return self.data
         
+    @property
+    def reason(self):
+        return self.message
+        
 class HTTPConnection(object):
     def __init__(self, host, port=80):
         if ':' in host:
