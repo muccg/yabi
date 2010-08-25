@@ -97,7 +97,7 @@ class S3Filesystem(FSConnector.FSConnector, object):
         FSConnector.FSConnector.__init__(self)
         #ssh.KeyStore.KeyStore.__init__(self)
         
-    def _decode_bucket(self, host, path, yabiusername=None, creds={}):
+    def _decode_bucket(self, host, username, path, yabiusername=None, creds={}):
         """return the bucket and actual credentials for a request"""
         bucket = host.split(".")[0]
         
@@ -115,18 +115,18 @@ class S3Filesystem(FSConnector.FSConnector, object):
         
     def mkdir(self, host, username, path, yabiusername=None, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
-        mkdir(*self._decode_bucket(host, path, yabiusername, creds))
+        mkdir(*self._decode_bucket(host, username, path, yabiusername, creds))
         return "OK"
         
     def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
-        rm( *self._decode_bucket(host, path, yabiusername, creds) )
+        rm( *self._decode_bucket(host, username, path, yabiusername, creds) )
         return "OK"
     
     def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
-        files,folders = ls(*self._decode_bucket(host, path, yabiusername, creds))
+        files,folders = ls(*self._decode_bucket(host, username, path, yabiusername, creds))
               
         print "S3 issue",{
             path : {
