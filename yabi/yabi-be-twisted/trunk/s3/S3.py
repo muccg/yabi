@@ -333,7 +333,7 @@ class AWSAuthConnection:
             # add auth header
             self._add_aws_auth_header(final_headers, method, bucket, key, query_args)
 
-            print "Calling GET:",path,server,port,final_headers
+            print "Calling GET:",path,server,final_headers
 
             status, message, data = stacklesstools.GET(path,server,port=80,**final_headers)
 
