@@ -45,13 +45,13 @@ import urllib
 #
 # A more abstract set of base classes for the stackless tools
 #
-def HTTPResponse(object):
+class HTTPResponse(object):
     def __init__(self, status=None, message=None, data=None):
         self.status = status
         self.message = message
         self.data = data                # data could be the actual result, or a twisted web2 stream
         
-def HTTPConnection(object):
+class HTTPConnection(object):
     def __init__(self, host, port=80):
         self.host = host
         self.port = port
