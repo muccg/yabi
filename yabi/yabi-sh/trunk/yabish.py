@@ -9,6 +9,7 @@ import actions
 # TODO env variable
 
 DEBUG = True
+YABI_URL = 'https://faramir:19443/yabi/'
 
 def main():
     yabi = Yabi()
@@ -30,7 +31,7 @@ def main():
 
 class Yabi(object):
     def __init__(self):
-        self.transport = Transport()
+        self.transport = Transport(base_url=YABI_URL)
         self.username = None
        
     def login(self):

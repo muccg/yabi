@@ -12,13 +12,10 @@ import os
 class UnauthorizedError(StandardError):
     pass
 
-# TODO settings file
-
-YABI_URL = 'https://faramir:19443/yabi/'
-WORKDIR = 'httplib2_workdir'
+DEFAULT_WORKDIR = '.httplib2_workdir'
 
 class Transport(object):
-    def __init__(self, workdir=WORKDIR, base_url=YABI_URL):
+    def __init__(self, workdir=DEFAULT_WORKDIR, base_url=None):
         self.workdir = workdir
         cache_dir, jar_file = self.setup_workdir()
         self.h = httplib2.Http(cache_dir)
@@ -33,8 +30,6 @@ class Transport(object):
         if not os.path.isdir(cache_dir):
             os.makedirs(cache_dir)
         return (cache_dir, jar_file) 
-
-    # TODO get and put look very similar, extract duplication
 
     def is_relative(self, url):
         pr = urlparse.urlparse(url)
