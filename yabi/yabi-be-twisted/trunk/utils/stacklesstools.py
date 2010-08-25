@@ -326,9 +326,7 @@ def RetryCall(call, *args, **kwargs):
         try:
             return call(*args, **kwargs)
         except GETFailure, gf:
-            if gf[1]=='404 Not Found':
-                raise gf
-            
+            print "gf dir:",dir(gf)
             try:
                 sleep(delays.next())
             except StopIteration:
