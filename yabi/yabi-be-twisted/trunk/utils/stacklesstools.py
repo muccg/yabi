@@ -326,8 +326,10 @@ def RetryCall(call, *args, **kwargs):
         try:
             return call(*args, **kwargs)
         except GETFailure, gf:
-            print "gf dir:",dir(gf)
-            print gf.message[1]
+            if gf.message[0]==-1 and '404' in gf.message[1]:
+                # TODO: remove this hackiness
+                # this is admin responding, but returning a proper error code. We DONT want to retry here
+                raise gf
             try:
                 sleep(delays.next())
             except StopIteration:
