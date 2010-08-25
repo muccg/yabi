@@ -272,7 +272,7 @@ class AWSAuthConnection:
             if (is_secure):
                 connection = httplib.HTTPSConnection(host)
             else:
-                connection = httplib.HTTPConnection(host)
+                connection = HTTPConnection(host)
 
             final_headers = merge_meta(headers, metadata);
             # add auth header
