@@ -17,7 +17,8 @@ class S3Auth(object):
         useragent = "YabiFS/0.1"
         
         try:
-            path = os.path.join(config.yabiadminpath,"ws/credential/%s/?uri=%s://%s@%s%s"%(yabiusername,scheme,username,hostname,urllib.quote(path)))
+            uri = "%s://%s@%s%s"%(scheme,username,hostname,urllib.quote(path))
+            path = os.path.join(config.yabiadminpath,"ws/credential/%s/?uri=%s"%(yabiusername,uri))
             host = config.yabiadminserver
             port = config.yabiadminport
             
@@ -38,4 +39,4 @@ class S3Auth(object):
             #if gf_message[0]==-1:
                 ## connection problems
                 #raise AuthException( "Tried to get credentials from %s:%d and failed: %s"%(config.yabiadminserver,config.yabiadminport,gf_message[1]) )
-            raise NoCredentials( "User: %s does not have credentials for this backend %s on host %s\n"%(username,scheme,hostname) )
+            raise NoCredentials( "User: %s does not have credentials for uri: %s\n"%(yabiusername,uri) )
