@@ -34,6 +34,7 @@ class S3Auth(object):
             return credentials
         
         except GETFailure, gf:
+            print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             gf_message = gf.args[0]
             if gf_message[0]==-1:
                 # connection problems
