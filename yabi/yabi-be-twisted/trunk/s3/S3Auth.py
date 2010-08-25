@@ -17,7 +17,7 @@ class S3Auth(object):
         useragent = "YabiFS/0.1"
         
         try:
-            uri = "%s://%s@%s%s"%(scheme,username,hostname,urllib.quote(path))
+            uri = "%s://%s@%s/%s"%(scheme,username,hostname,urllib.quote(path))
             path = os.path.join(config.yabiadminpath,"ws/credential/%s/?uri=%s"%(yabiusername,uri))
             host = config.yabiadminserver
             port = config.yabiadminport
