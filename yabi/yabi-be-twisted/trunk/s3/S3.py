@@ -273,6 +273,7 @@ class AWSAuthConnection:
                 connection = httplib.HTTPSConnection(host)
             else:
                 connection = HTTPConnection(host)
+                print "connection set to",connection
 
             final_headers = merge_meta(headers, metadata);
             # add auth header
