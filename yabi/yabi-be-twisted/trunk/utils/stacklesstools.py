@@ -327,6 +327,7 @@ def RetryCall(call, *args, **kwargs):
             return call(*args, **kwargs)
         except GETFailure, gf:
             print "gf dir:",dir(gf)
+            print gf.message
             try:
                 sleep(delays.next())
             except StopIteration:
