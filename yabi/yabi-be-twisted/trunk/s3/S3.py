@@ -21,7 +21,11 @@ import urllib
 import urlparse
 import xml.sax
 
-from utils.stacklesstools import HTTPConnection
+try:
+    from utils.stacklesstools import HTTPConnection
+except ImportError:
+    #use httplibs instead
+    from httplib import HTTPConnection
 
 DEFAULT_HOST = 's3.amazonaws.com'
 PORTS_BY_SECURITY = { True: 443, False: 80 }
