@@ -63,10 +63,12 @@ class HTTPConnection(object):
     def request(self, method, url, body=None, headers={}, noisy=False):
         """Issue the specified HTTP request"""
         fullpath = "http://%s:%d%s"%(self.host,self.port,url)
+
+        ascii_headers = {}
+        for key,value in headers.iteritems():
+            ascii_headers[key]=str(value)
         
-        print "HEADERS",headers
-        
-        factory = RememberingHTTPClientFactory( fullpath, agent=USER_AGENT, headers=headers)
+        factory = RememberingHTTPClientFactory( fullpath, agent=USER_AGENT, headers=ascii_headers)
         factory.noisy = noisy
         
         # switches to trigger the unblocking of the stackless thread
