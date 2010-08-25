@@ -42,6 +42,70 @@ def sleep(seconds):
 
 import urllib
 
+#
+# A more abstract set of base classes for the stackless tools
+#
+def HTTPResponse(object):
+    def __init__(self, status=None, message=None, data=None):
+        self.status = status
+        self.message = message
+        self.data = data                # data could be the actual result, or a twisted web2 stream
+        
+def HTTPConnection(object):
+    def __init__(self, host, port=80):
+        self.host = host
+        self.port = port
+        
+    def request(self, method, url, body=None, headers={}, noisy=False):
+        """Issue the specified HTTP request"""
+        fullpath = "http://%s:%d%s"%(self.host,self.port,url)
+        
+        factory = RememberingHTTPClientFactory( fullpath, agent=USER_AGENT, headers=headers)
+        factory.noisy = noisy
+        
+        # switches to trigger the unblocking of the stackless thread
+        self.get_complete = [False]
+        self.get_failed = [False]
+        
+        # now if the get fails for some reason. deal with it
+        def _doFailure(data):
+            if isinstance(data,Failure):
+                exc = data.value
+                #get_failed[0] = -1, str(exc), "Tried to GET %s"%(fullpath)
+                self.get_failed[0] = -1, str(exc), "Tried to GET %s.\nRemote response was:\n%s"%(fullpath,factory.last_client.errordata)
+            else:
+                self.get_failed[0] = int(factory.status), factory.message, "Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
+            
+        def _doSuccess(data):
+            if DEBUG:
+                print "SUCCESS:",factory.status,factory.message, data
+            self.get_complete[0] = int(factory.status), factory.message, data
+        
+        # start the connection
+        factory.deferred.addCallback(_doSuccess).addErrback(_doFailure)
+        reactor.connectTCP(self.host, self.port, factory)
+
+    def getresponse(self):
+        # now we schedule this thread until the task is complete
+        while not self.get_complete[0] and not self.get_failed[0]:
+            schedule()
+            
+        if self.get_failed[0]:
+            if DEBUG:
+                print "get_failed=",self.get_failed
+            if type(self.get_failed[0])==tuple and len(self.get_failed[0])==3:
+                # failed naturally
+                raise GETFailure(self.get_failed[0])
+            elif self.get_failed[0]==True:
+                # failed by tasklet serialisation and restoration
+                raise GETFailed("Base stacklesstools HTTPConnection does not support tasklet deserialisation")
+            else:
+                #print "GETFailed=",get_failed
+                assert False, "got unknown GET failure response"
+        
+        # create response
+        return HTTPResponse( status=self.get_complete[0][0], message=self.get_complete[0][1], data=self.get_complete[0][2] )
+
 #def GET(path, host=WS_HOST, port=WS_PORT, factory_class=CallbackHTTPClientFactory,**kws):
 def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,**kws):
     """Stackless integrated twisted webclient GET
