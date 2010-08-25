@@ -53,8 +53,12 @@ class HTTPResponse(object):
         
 class HTTPConnection(object):
     def __init__(self, host, port=80):
-        self.host = host
-        self.port = port
+        if ':' in host:
+            self.host,self.port=host.split(':')
+            self.port=int(self.port)
+        else:
+            self.host = host
+            self.port = port
         
     def request(self, method, url, body=None, headers={}, noisy=False):
         """Issue the specified HTTP request"""
