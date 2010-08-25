@@ -12,11 +12,6 @@ import s3
 
 s3auth = s3.S3Auth.S3Auth()
 
-#sshauth = ssh.SSHAuth.SSHAuth()
-#ACCESSKEYID = 'AKIAJPCC7ZU6WWMU425A'
-#SECRETKEYID = 's2DOLKdev8GFXHKnqUnB2zl8pDpvnITo1R+FJCby'
-BUCKET = 'yabi'
-
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
 ENV_CHILD_INHERIT = []
 
@@ -34,7 +29,7 @@ from s3 import S3
 class S3Error(Exception):
     pass
 
-def mkdir(bucket, path):
+def mkdir(bucket, path, ACCESSKEYID, SECRETKEYID):
     assert path[-1]=='/', "Path needs to end in a slash"
     
     obj = S3.S3Object( data='', metadata={  's3-console-folder': 'true',
@@ -45,7 +40,7 @@ def mkdir(bucket, path):
     if response.http_response.status!=200:
         raise S3Error("Could not create directory '%s' in bucket '%s': %s"%(path, bucket, response.message))
 
-def rm(bucket, path):
+def rm(bucket, path, ACCESSKEYID, SECRETKEYID):
     conn = S3.AWSAuthConnection(ACCESSKEYID, SECRETKEYID)
     response = conn.delete(bucket,path)
     if response.http_response.status != 200:
@@ -102,33 +97,36 @@ class S3Filesystem(FSConnector.FSConnector, object):
         FSConnector.FSConnector.__init__(self)
         #ssh.KeyStore.KeyStore.__init__(self)
         
-    def mkdir(self, host, username, path, yabiusername=None, creds={}):
-        BUCKET = host.split(".")[0]
-        mkdir(BUCKET, path)
-        return "OK"
-        
-    def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}):
-        BUCKET = host.split(".")[0]
-        rm(BUCKET, path)
-        return
-    
-    def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}):
-        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
+    def _decode_bucket(self, host, path, yabiusername=None, creds={}):
+        """return the bucket and actual credentials for a request"""
+        bucket = host.split(".")[0]
         
         # remove prefixed '/'s from path
         while len(path) and path[0]=='/':
             path = path[1:]
-        
-        if DEBUG:
-            print "S3Filesystem::ls(",host,username,path,yabiusername,recurse,culldots,creds,")"
-        
+       
         # If we don't have creds, get them
         if not creds:
             #assert False, "presently we NEED creds"
             creds = s3auth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
         
-        BUCKET = host.split(".")[0]
-        files,folders = ls(BUCKET, path,creds['cert'],creds['key'])
+        # return everything
+        return bucket, path, creds['cert'],creds['key']
+        
+    def mkdir(self, host, username, path, yabiusername=None, creds={}):
+        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
+        mkdir(*self._decode_bucket(host, path, yabiusername, creds))
+        return "OK"
+        
+    def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}):
+        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
+        rm( *self._decode_bucket(host, path, yabiusername, creds) )
+        return "OK"
+    
+    def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}):
+        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
+        
+        files,folders = ls(*self._decode_bucket(host, path, yabiusername, creds))
               
         print "S3 issue",{
             path : {
