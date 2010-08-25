@@ -50,6 +50,15 @@ class HTTPResponse(object):
         self.status = status
         self.message = message
         self.data = data                # data could be the actual result, or a twisted web2 stream
+    
+        self._isread = False
+    
+    def read(self):
+        if self._isread:
+            return ""
+            
+        self._isread = True
+        return self.data
         
 class HTTPConnection(object):
     def __init__(self, host, port=80):
