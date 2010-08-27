@@ -48,6 +48,8 @@ if config.config[NAME]["alert_email"]:
 
 if config.config[NAME]["memcache_servers"]:
     os.environ['MEMCACHE_SERVERS'] = config.config[NAME]["memcache_servers"]
+if config.config[NAME]["memcache_prefix"]:
+    os.environ['MEMCACHE_PREFIX'] = config.config[NAME]["memcache_prefix"]
 
 from twisted.web2 import wsgi, resource
 from django.conf import settings
