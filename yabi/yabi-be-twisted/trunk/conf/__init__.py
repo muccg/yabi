@@ -96,6 +96,7 @@ class Configuration(object):
                         "alert_email":"Tech Alerts <alerts@ccg.murdoch.edu.au>",
                         
                         "memcache_servers":"memcache1.localdomain:11211 memcache2.localdomain:11211",
+                        "memcache_prefix":"yabibe",
                         
                         "admin":None                # none means "use the one provided here"
                     },
@@ -129,6 +130,7 @@ class Configuration(object):
                         "auth_ldap_default_group":"user",
                         
                         "memcache_servers":"memcache1.localdomain:11211 memcache2.localdomain:11211",
+                        "memcache_prefix":"yabiadmin",
                         
                         "alert_email":"Tech Alerts <alerts@ccg.murdoch.edu.au>",
                         
@@ -160,6 +162,7 @@ class Configuration(object):
                         "auth_ldap_default_group":"user",
                         
                         "memcache_servers":"memcache1.localdomain:11211 memcache2.localdomain:11211",
+                        "memcache_prefix":"yabife",
                                                 
                         "alert_email":"Tech Alerts <alerts@ccg.murdoch.edu.au>",
 
@@ -176,6 +179,7 @@ class Configuration(object):
                         "alert_email":"Tech Alerts <alerts@ccg.murdoch.edu.au>",
 
                         "memcache_servers":"memcache1.localdomain:11211 memcache2.localdomain:11211",
+                        "memcache_prefix":"yabistore",
                         
                         "history":None,
                         
@@ -245,6 +249,9 @@ class Configuration(object):
             # memcache
             if conf_parser.has_option(name,'memcache_servers'):
                 self.config[name]['memcache_servers'] = conf_parser.get(name,'memcache_servers')
+            if conf_parser.has_option(name,'memcache_prefix'):
+                self.config[name]['memcache_prefix'] = conf_parser.get(name,'memcache_prefix')
+            
             
         name = "admin"
         if conf_parser.has_section(name):
@@ -265,6 +272,8 @@ class Configuration(object):
             # memcache
             if conf_parser.has_option(name,'memcache_servers'):
                 self.config[name]['memcache_servers'] = conf_parser.get(name,'memcache_servers')
+            if conf_parser.has_option(name,'memcache_prefix'):
+                self.config[name]['memcache_prefix'] = conf_parser.get(name,'memcache_prefix')
 
         name = "store"
         if conf_parser.has_section(name):
@@ -279,6 +288,8 @@ class Configuration(object):
             # memcache
             if conf_parser.has_option(name,'memcache_servers'):
                 self.config[name]['memcache_servers'] = conf_parser.get(name,'memcache_servers')
+            if conf_parser.has_option(name,'memcache_prefix'):
+                self.config[name]['memcache_prefix'] = conf_parser.get(name,'memcache_prefix')
                 
         name = "frontend"
         if conf_parser.has_section(name):
@@ -299,7 +310,8 @@ class Configuration(object):
             # memcache
             if conf_parser.has_option(name,'memcache_servers'):
                 self.config[name]['memcache_servers'] = conf_parser.get(name,'memcache_servers')
-        
+            if conf_parser.has_option(name,'memcache_prefix'):
+                self.config[name]['memcache_prefix'] = conf_parser.get(name,'memcache_prefix')
 
     def read_config(self, search=SEARCH_PATH):
         for part in search:

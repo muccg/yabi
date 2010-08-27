@@ -44,7 +44,7 @@ if config.config[NAME]["alert_email"]:
 for envname in [    'YABISTORE','YABIADMIN','YABIBACKEND','DJANGO_SETTINGS_MODULE', 'CUSTOMDB', 
                     'HTTP_REDIRECT_TO_HTTPS', 'HTTP_REDIRECT_TO_HTTPS_PORT', 'DJANGODEBUG', 'ADMIN_EMAIL_NAME', 'ADMIN_EMAIL',
                     'database_engine', 'database_name', 'database_user', 'database_password', 'database_host', 'database_port',
-                    'auth_ldap_server', 'auth_ldap_user_base','auth_ldap_group_base','auth_ldap_group','auth_ldap_default_group', 'memcache_servers'
+                    'auth_ldap_server', 'auth_ldap_user_base','auth_ldap_group_base','auth_ldap_group','auth_ldap_default_group', 'memcache_servers', 'memcache_prefix'
                ]:
     if envname.upper() in os.environ:
         print '%s="%s"'%(envname.upper(),os.environ[envname.upper()])
