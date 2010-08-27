@@ -267,8 +267,6 @@ MAKO_MODULENAME_CALLABLE = ''
 ## memcache server list
 ##
 MEMCACHE_SERVERS = os.environ['MEMCACHE_SERVERS'].split()
-
-# TODO: which one of the following is right?
 MEMCACHE_KEYSPACE = "%s-%s"%(os.environ['MEMCACHE_PREFIX'],YABIBACKEND)
 
 ##
