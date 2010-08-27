@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 import pickle
 import os
@@ -18,7 +19,7 @@ class Tasklets(object):
         #print "ADD",tasklet
         self.tasks.append(tasklet)
         
-    def save(self, directory="/tmp/yabi-tasklets"):
+    def save(self, directory):
         #print "TASKS Save",self.tasks
         
         for task in self.tasks:
@@ -34,7 +35,7 @@ class Tasklets(object):
             with open(os.path.join(directory,str(id(task))), 'wb') as fh:
                 fh.write(pickled_task) 
             
-    def load(self,directory="/tmp/yabi-tasklets"):
+    def load(self,directory):
         self.tasks=[]
             
         for f in dircache.listdir(directory):
