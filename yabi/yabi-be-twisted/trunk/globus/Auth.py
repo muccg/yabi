@@ -2,7 +2,7 @@
 """Encapsulation of globus Authentication proxies as a mixin"""
 
 from utils.stacklesstools import RetryGET, GETFailure, sleep
-import json, os
+import json, os, time
 from globus.CertificateProxy import CertificateProxy
 from conf import config
 import urllib
@@ -70,7 +70,7 @@ class GlobusAuth(object):
         if hostname not in self.authproxy:
             self.authproxy[hostname]=CertificateProxy()
         expire_time = self.authproxy[hostname].CreateUserProxy(username,cert,key,password)
-        print "EXPIRES IN:",expire_time
+        print "EXPIRES IN:",time.time()-expire_time.mktime()
         
     def EnsureAuthedWithCredentials(self, hostname, username, cert, key, password):
         if hostname not in self.authproxy:
