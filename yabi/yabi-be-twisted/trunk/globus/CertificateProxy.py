@@ -27,6 +27,7 @@ class ProxyInvalidPassword(Exception):
 
 GLOBUS_TIME_FORMAT = "%a %b %d %H:%M:%S %Y"
 DEFAULT_CERTIFICATE_EXPIRY_MINUTES = 60*3                          # set this for how often we refresh
+DEFAULT_CERTIFICATE_EXPIRY_MINUTES = 2                          # set this for how often we refresh
 
 def _decode_time(timestring):
     """turn 'Tue Jun  9 04:02:41 2009' into a unix timestamp"""
