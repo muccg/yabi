@@ -108,8 +108,10 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         
         # make sure we are authed
         if creds:
+            print "AA"
             self.EnsureAuthedWithCredentials(host, **creds)
         else:
+            print "BB"
             self.EnsureAuthed(yabiusername, SCHEMA,username,host,path)
         
         usercert = self.GetAuthProxy(host).ProxyFile(username)
