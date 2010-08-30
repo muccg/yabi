@@ -27,7 +27,9 @@ sshauth = ssh.SSHAuth.SSHAuth()
 class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
     def __init__(self):
         ExecConnector.__init__(self)
-        ssh.KeyStore.KeyStore.__init__(self)
+        
+        configdir = config.config['backend']['certificates']
+        ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
     
     def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
         # preprocess some stuff
