@@ -22,6 +22,8 @@ import tempfile
 from utils.stacklesstools import sleep
 import ssh
 
+from conf import config
+
 sshauth = ssh.SSHAuth.SSHAuth()
 
 class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
