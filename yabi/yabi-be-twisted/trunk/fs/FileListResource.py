@@ -14,7 +14,7 @@ from utils.parsers import parse_url
 
 from utils.submit_helpers import parsePOSTData
 
-DEBUG = True
+DEBUG = False
 
 class FileListResource(resource.PostableResource):
     VERSION=0.1
