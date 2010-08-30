@@ -98,7 +98,6 @@ def parsePOSTData(request, maxMem=100*1024, maxFields=1024,
         return defer.succeed(None)
 
     def updateArgs(data):
-        print "DEBUG: updateArgs",data
         args = data
         request.args.update(args)
 
@@ -165,7 +164,7 @@ def parsePUTData(request, maxMem=100*1024, maxFields=1024,
     
     def _finishedReading(ignore):
         # do something with data
-        print "got",data
+        pass
         
     d.addCallback(_finishedReading)
     return d
@@ -207,22 +206,18 @@ def parseMultipartFormDataWriter(stream, boundary,
             #print "...->",fieldname, filename, ctype, stream 
             #outfile = tempfile.NamedTemporaryFile(prefix=basepath)
             outfile = writer(filename)
-            print "OUTFILE=",outfile
             if isinstance(outfile, defer.Deferred):
                 #writer not ready yet.
                 outfile = defer.waitForDeferred(outfile)
                 yield outfile
                 outfile = outfile.getResult()
-                print "OUTFILE IS NOW",outfile
             maxBuf = maxSize
-        print "calling fileupload.readIntoFile",outfile
         x = fileupload.readIntoFile(stream, outfile, maxBuf)
-        print "returned",x
         if isinstance(x, defer.Deferred):
             x = defer.waitForDeferred(x)
             yield x
             x = x.getResult()
-            print "now returned",x
+          
         if filename is None:
             # Is a normal form field
             #outfile.seek(0)
@@ -234,7 +229,6 @@ def parseMultipartFormDataWriter(stream, boundary,
             # Is a file upload
             #maxSize -= outfile.tell()
             #outfile.seek(0)
-            print "file upload finished..."
             outfile.close()
             files.setdefault(fieldname, []).append((filename, ctype, outfile))
         
