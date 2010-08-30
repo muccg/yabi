@@ -10,6 +10,8 @@ from twisted.internet import reactor
 import os
 import ssh
 
+from conf import config
+
 sshauth = ssh.SSHAuth.SSHAuth()
 
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
@@ -31,7 +33,10 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
     
     def __init__(self):
         FSConnector.FSConnector.__init__(self)
-        ssh.KeyStore.KeyStore.__init__(self)
+        
+        # make a path to store keys in
+        configdir = config.config['backend']['certificates']
+        ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
         
     def mkdir(self, host, username, path, yabiusername=None, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"

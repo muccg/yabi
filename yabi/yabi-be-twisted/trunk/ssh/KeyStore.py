@@ -11,12 +11,13 @@ def rm_rf(root):
     os.rmdir(root)
 
 class KeyStore(object):
-    def __init__(self, path=None, expiry=60):
+    def __init__(self, path=None, dir=None, expiry=60):
         if path:
+            assert dir==None, "Cannot set 'dir' AND 'path'. 'path' overides 'dir'."
             self.directory = path
         else:
             # make a temporary storage directory
-            self.directory = tempfile.mkdtemp(suffix=".ssh",prefix="",dir=None)
+            self.directory = tempfile.mkdtemp(suffix=".ssh",prefix="",dir=dir)
 
         self.keys = {}
         
