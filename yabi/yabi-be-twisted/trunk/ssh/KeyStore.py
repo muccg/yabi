@@ -12,6 +12,7 @@ def rm_rf(root):
 
 class KeyStore(object):
     def __init__(self, path=None, dir=None, expiry=60):
+        print "KeyStore::__init__(",path,",",dir,",",expiry,")"
         if path:
             assert dir==None, "Cannot set 'dir' AND 'path'. 'path' overides 'dir'."
             self.directory = path
