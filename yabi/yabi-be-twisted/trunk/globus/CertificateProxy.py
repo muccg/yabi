@@ -178,6 +178,10 @@ class CertificateProxy(object):
                 raise ProxyInvalidPassword, "Could not initialise proxy: Invalid password"
             raise ProxyInitError, "Could not initialise proxy: %s"%(pp.out.split("\n")[0])
         
+        # delete the key and cert files now we have proxy
+        os.unlink( certfile )
+        os.unlink( keyfile )
+        
         # decode the expiry time and return it as timestamp
         res = pp.out.split("\n")
         
