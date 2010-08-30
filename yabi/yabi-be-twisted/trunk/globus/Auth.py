@@ -70,7 +70,7 @@ class GlobusAuth(object):
         if hostname not in self.authproxy:
             self.authproxy[hostname]=CertificateProxy()
         expire_time = self.authproxy[hostname].CreateUserProxy(username,cert,key,password)
-        print "EXPIRES IN:",time.time()-expire_time.mktime()
+        print "EXPIRES IN:",time.time()-time.mktime(expire_time)
         
     def EnsureAuthedWithCredentials(self, hostname, username, cert, key, password):
         if hostname not in self.authproxy:
