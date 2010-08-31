@@ -76,13 +76,16 @@ class GlobusAuth(object):
         print "1 EXPIRES IN:",time.time()-time.mktime(expire_time)
         
     def EnsureAuthedWithCredentials(self, hostname, username, cert, key, password):
-        print "EnsureAuthedWithCredentials"
+        print "EnsureAuthedWithCredentials",
         if hostname not in self.authproxy:
             # no!
+            print "no"
             return self.AuthProxyUserWithCredentials(hostname,username,cert,key,password)
         else:
+            print "yes"
             # yes! lets see if we have a valid cert
             if not self.authproxy[hostname].IsProxyValid(username):
+                print "not valid"
                 return self.AuthProxyUserWithCredentials(hostname,username,cert,key,password)
             # else user is already authed
         
