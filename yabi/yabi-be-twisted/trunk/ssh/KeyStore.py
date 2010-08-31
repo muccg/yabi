@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
+SSH_KEY_FILE_EXPIRY_TIME = 60               # 60 seconds of validity
+
 import tempfile, os, weakref
+
+from twisted.internet import reactor
 
 def rm_rf(root):
     for path, dirs, files in os.walk(root, False):
@@ -21,6 +25,7 @@ class KeyStore(object):
             self.directory = tempfile.mkdtemp(suffix=".ssh",prefix="",dir=dir)
 
         self.keys = {}
+        self.files = []
         
     def __del__(self):
         self.clear_keystore()
@@ -41,12 +46,23 @@ class KeyStore(object):
         
         if tag:
             self.keys[tag] = filename
+            
+        self.files.append(filename)
+        
+        # lets try scheduling a deletion of this keyfile later
+        def del_key_file(fn):
+            print "DELETING",fn
+            os.unlink(fn)
+        
+        reactor.callLater(SSH_KEY_FILE_EXPIRY_TIME,del_key_file,path) 
         
         return filename
         
     def delete_identity(self, tag):
-        os.unlink(self.keys[tag])
+        fname = self.keys[tag]
+        os.unlink(fname)
         del self.keys[tag]
+        self.files.remove(fname)
         
         
     

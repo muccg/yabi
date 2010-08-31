@@ -127,7 +127,6 @@ class CertificateProxy(object):
         log.info("Certificate Proxy Store created in '%s'"%self.tempdir)
         
     def DestroyUserProxy(self, userid):
-        print "DELETING",userid,"...",self.ProxyFile(userid)
         os.unlink( self.ProxyFile(userid) )
         
     def CreateUserProxy(self, userid, cert, key, password):
