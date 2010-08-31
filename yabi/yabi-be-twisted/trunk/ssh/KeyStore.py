@@ -31,6 +31,7 @@ class KeyStore(object):
         self.clear_keystore()
         
     def clear_keystore(self):
+        print "clear_keystore"
         assert os.path.exists(self.directory), "Can't clear keystore that doesn't exist on disk"
         
         rm_rf(self.directory)
@@ -59,6 +60,7 @@ class KeyStore(object):
         return filename
         
     def delete_identity(self, tag):
+        print "delte_identity",tag
         fname = self.keys[tag]
         os.unlink(fname)
         del self.keys[tag]
