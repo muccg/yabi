@@ -126,6 +126,10 @@ class CertificateProxy(object):
         self.tempdir = tempfile.mkdtemp(prefix="yabi-credentials-", dir=directory)
         log.info("Certificate Proxy Store created in '%s'"%self.tempdir)
         
+    def DestroyUserProxy(self, userid):
+        print "DELETING",userid,"...",self.ProxyFile(userid)
+        os.unlink( self.ProxyFile(userid) )
+        
     def CreateUserProxy(self, userid, cert, key, password):
         """creates the proxy object for the specified user, using the passed in cert and key, decrypted by password
         returns a struct_time representing the expiry time of the proxy

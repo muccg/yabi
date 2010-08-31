@@ -6,6 +6,7 @@ import json, os, time
 from globus.CertificateProxy import CertificateProxy
 from conf import config
 import urllib
+from twisted.internet import reactor
 
 class NoCredentials(Exception):
     """User has no globus credentials for this server"""
@@ -73,7 +74,11 @@ class GlobusAuth(object):
         if hostname not in self.authproxy:
             self.authproxy[hostname]=CertificateProxy()
         expire_time = self.authproxy[hostname].CreateUserProxy(username,cert,key,password)
-        print "1 EXPIRES IN:",time.time()-time.mktime(expire_time)
+        expires_in = time.mktime(expire_time)-time.time()
+        print "1 EXPIRES IN:",expires_in
+        
+        #schedule a removal of the proxy file in this many seconds
+        reactor.callLater(expires_in,self.authproxy[hostname].DestroyUserProxy,username) 
         
     def EnsureAuthedWithCredentials(self, hostname, username, cert, key, password):
         print "EnsureAuthedWithCredentials",
