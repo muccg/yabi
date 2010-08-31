@@ -3,7 +3,7 @@ import sys
 import urllib, urlparse
 import httplib2
 import readline
-from cookies import CookieJar
+from cookies import CookieJar, FileCookiePersister
 import copy
 import os
 
@@ -15,21 +15,35 @@ class UnauthorizedError(StandardError):
 DEFAULT_WORKDIR = '.httplib2_workdir'
 
 class Transport(object):
-    def __init__(self, workdir=DEFAULT_WORKDIR, base_url=None):
+    def __init__(self, workdir=DEFAULT_WORKDIR, base_url='',cache=True, cookie_persister=None):
         self.workdir = workdir
-        cache_dir, jar_file = self.setup_workdir()
-        self.h = httplib2.Http(cache_dir)
-        self.cookie_jar = CookieJar(jar_file=jar_file)
+        if cache:
+            cache_dir = self.setup_cachedir()
+            self.h = httplib2.Http(cache_dir)
+        else:
+            self.h = httplib2.Http()
+
+        if cookie_persister is None:
+            jar_file = os.path.join(self.workdir, 'cookies.txt')
+            self.cookie_jar = CookieJar(persister=FileCookiePersister(jar_file))
+        else:
+            self.cookie_jar = CookieJar(persister=cookie_persister)
+
         self.base_url = base_url
         if not self.base_url.endswith('/'):
             self.base_url += '/'
 
-    def setup_workdir(self):
-        cache_dir = os.path.join(self.workdir, 'cache')
-        jar_file = os.path.join(self.workdir, 'cookies.txt')
-        if not os.path.isdir(cache_dir):
-            os.makedirs(cache_dir)
-        return (cache_dir, jar_file) 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, typ, value, traceback):
+        self.finish_session()
+
+    def setup_cachedir(self):
+        cachedir = os.path.join(self.workdir, 'cache')
+        if not os.path.exists(cachedir):
+            os.makedirs(cachedir)
+        return cachedir
 
     def is_relative(self, url):
         pr = urlparse.urlparse(url)
@@ -40,7 +54,10 @@ class Transport(object):
         if self.is_relative(req_url):
             req_url = self.base_url + req_url
         request.add_headers(self.cookie_jar.cookies_to_send_header(req_url))
+
         resp, content = self.h.request(req_url, request.method, body=request.body, headers=request.headers)
+
+        # TODO more error handling required here
 
         if resp.status == 401:
             raise UnauthorizedError()
@@ -50,7 +67,7 @@ class Transport(object):
         return resp, content
 
     def finish_session(self):
-        self.cookie_jar.save_to_file()
+        self.cookie_jar.save()
 
 class Request(object): 
     def __init__(self, method, url, params = None, headers = None):
@@ -102,7 +119,7 @@ class PostRequest(Request):
         self._headers.update(headers)
 
     def encode_form(self):
-        body = urllib.urlencode(self._params)
+        body = urllib.urlencode(self._params) if self._params else None
         headers = {
             "Content-Type":"application/x-www-form-urlencoded",
             "Accept":"text/plain"

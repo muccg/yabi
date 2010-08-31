@@ -56,13 +56,19 @@ class CookieParser(object):
         return [self.parse_cookie(cookie,default_domain, default_path) 
                     for cookie in self.split_cookies(header)]
 
+class NullPersister(object):
+    def load(self):
+         return []
+
+    def save(self, cookies):
+         pass
+
 class CookieJar(object):
-    def __init__(self, cookies = None, jar_file=None):
+    def __init__(self, cookies = None, persister=NullPersister()):
         self.parser = CookieParser()
         self._cookies = []
-        self.jar_file = jar_file
-        if self.jar_file is not None:
-            self.load_from_file()
+        self.persister = persister
+        self.load()
         if cookies:
             self._cookies.extend(cookies)
 
@@ -120,17 +126,34 @@ class CookieJar(object):
     def cookies(self):
         return tuple(self._cookies)
 
-    def save_to_file(self):
+    def save(self):
+        self.persister.save(self.cookies)
+
+    def load(self):
+        self._cookies = self.persister.load()
+
+
+class FileCookiePersister(object):
+    def __init__(self, filename):
+        self.jar_file = filename
+
+    def save(self, cookies):
+        if not os.path.isfile(self.jar_file):
+            parent_dir, file = os.path.split(self.jar_file)
+            if not os.path.exists(parent_dir):
+                os.makedirs(parent_dir)
         with open(self.jar_file, 'w') as f:
-            for cookie in [c for c in self._cookies if not c.is_session_cookie]:
+            for cookie in [c for c in cookies if not c.is_session_cookie]:
                 f.write(cookie.as_str + "\n")
 
-    def load_from_file(self):
+    def load(self):
         if not os.path.isfile(self.jar_file):
-            return
+            return []
+        cookies = []
         with open(self.jar_file, 'r') as f:
             for l in [l.strip() for l in f if l.strip() != '']:
-                self._cookies.append(Cookie.from_str(l))
+                cookies.append(Cookie.from_str(l))
+        return cookies
 
 class Cookie(object):
     def __init__(self, name, value, domain, path, expires_on=None, secure=False):
