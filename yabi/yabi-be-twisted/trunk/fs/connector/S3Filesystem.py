@@ -128,13 +128,6 @@ class S3Filesystem(FSConnector.FSConnector, object):
         
         files,folders = ls(*self._decode_bucket(host, username, path, yabiusername, creds))
               
-        print "S3 issue",{
-            path : {
-                'files':files,
-                'directories':folders
-            }
-        }
-              
         return {
             path : {
                 'files':files,
