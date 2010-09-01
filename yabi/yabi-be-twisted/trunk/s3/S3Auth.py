@@ -7,7 +7,7 @@ from globus.Auth import NoCredentials, AuthException
 from conf import config
 import urllib
 
-DEBUG = True
+DEBUG = False
 
 class S3Auth(object):
     
