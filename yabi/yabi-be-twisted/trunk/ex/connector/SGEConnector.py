@@ -12,7 +12,7 @@ SCHEMA = "sge"
 
 DEBUG = False
 
-print "MOTHERFUCKER!",DEBUG
+print "MOTHERFUCKER!",type(DEBUG)
 
 from twisted.web2 import http, responsecode, http_headers, stream
 
