@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#from ExecConnector import ExecConnector, ExecutionError
+from ExecConnector import ExecConnector, ExecutionError
 
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
 ENV_CHILD_INHERIT = ['SGE_ROOT','PATH']
@@ -10,10 +10,10 @@ ENV_CHECK = ['SGE_ROOT']
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "sge"
 
-DEBUG = False
+DEBUGG = False
 
-print "MOTHERFUCKER!",type(DEBUG),DEBUG
-print DEBUG
+print "MOTHERFUCKER!",type(DEBUGG),DEBUGG
+print DEBUGG
 
 from twisted.web2 import http, responsecode, http_headers, stream
 
