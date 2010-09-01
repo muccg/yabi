@@ -38,7 +38,7 @@ class KeyStore(object):
         
     def save_identity(self, identity, tag=None):
         filename = tempfile.mktemp(dir=self.directory)
-        fh = open( path, "w" )
+        fh = open( filename, "w" )
         fh.write( identity )
         fh.close()
         
