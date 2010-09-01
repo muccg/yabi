@@ -52,9 +52,6 @@ class KeyStore(object):
         print "d",self.directory
         print "f",filename
         
-        # lets try scheduling a deletion of this keyfile later
-        raise Exception, "*** break ***"
-        
         def del_key_file(fn):
             print "DELETING",fn
             os.unlink(fn)
