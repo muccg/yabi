@@ -10,7 +10,7 @@ ENV_CHECK = ['SGE_ROOT']
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "sge"
 
-DEBUGG = False
+DEBUGG=False
 
 print "MOTHERFUCKER!",type(DEBUGG),DEBUGG
 print DEBUGG
