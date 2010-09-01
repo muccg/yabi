@@ -34,7 +34,8 @@ class CopyError(Exception): pass
 
 def Copy(src,dst,retry=COPY_RETRY, **kwargs):
     """Copy src (url) to dst (url) using the fileservice"""
-    print "Copying %s to %s"%(src,dst)
+    if DEBUG:
+        print "Copying %s to %s"%(src,dst)
     for num in range(retry):
         #print "retry num=",num
         try:
@@ -49,7 +50,7 @@ def Copy(src,dst,retry=COPY_RETRY, **kwargs):
                 #print "FAIL"
                 raise CopyError(data)
         except GETFailure, err:
-            print "Post failed with error:",err
+            print "Warning: Post failed with error:",err
             Sleep(5.0)              
     
     raise err
@@ -61,7 +62,7 @@ def RCopy(src, dst, **kwargs):
         # success!
         return True
     except GETFailure, err:
-        print "Copy failed with error:",err
+        print "Warning: Copy failed with error:",err
         raise
     
 def List(path,recurse=False, **kwargs):
@@ -113,17 +114,10 @@ def Status(statuspath, message):
     assert code==200
     
 def Exec(backend, command, callbackfunc=None, **kwargs):
-    # setup the status callback
-    #print "backend:",[backend]
-    #print "command:",[command]
-    #print "callbackfunc:",[callbackfunc]
-    #print "kwargs:",kwargs
-    
-    print "EXEC:",backend,"command:",command,"kwargs:",kwargs
-    
-    
+    if DEBUG:
+        print "EXEC:",backend,"command:",command,"kwargs:",kwargs
+   
     kwargs['uri']=backend
-    
     POST(EXEC_PATH, command=command, datacallback=callbackfunc, **kwargs )
     
 def UserCreds(yabiusername, uri):
