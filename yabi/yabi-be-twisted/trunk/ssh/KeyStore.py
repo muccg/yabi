@@ -50,6 +50,9 @@ class KeyStore(object):
             
         self.files.append(filename)
         
+        print "d",self.directory
+        print "f",filename
+        
         # lets try scheduling a deletion of this keyfile later
         raise Exception, "*** break ***"
         
