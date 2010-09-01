@@ -26,7 +26,7 @@ def escapequotes(filename):
         filename=filename.replace(char,"\\x%x"%(ord(char)))
     return filename
 
-DEBUG = True
+DEBUG = False
 
 SSH = "/usr/bin/ssh"
 BLOCK_SIZE = 1024
