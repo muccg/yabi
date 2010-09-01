@@ -42,6 +42,7 @@ class SGEConnector(ExecConnector):
                 print "QSUB",command,"WORKING:",working
             jobid = qsub("jobname", command=command, user=username, workingdir=working, modules = [] if not module else [X.strip() for X in module.split(",")])
             if DEBUG:
+                print "DEBUG:",DEBUG
                 print "JOB ID",jobid
         
         except ExecutionError, ee:
