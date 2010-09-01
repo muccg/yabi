@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from ExecConnector import ExecConnector, ExecutionError
+#from ExecConnector import ExecConnector, ExecutionError
 
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
 ENV_CHILD_INHERIT = ['SGE_ROOT','PATH']
