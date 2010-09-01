@@ -37,8 +37,7 @@ class KeyStore(object):
         rm_rf(self.directory)
         
     def save_identity(self, identity, tag=None):
-        filename = tempfile.mktemp()
-        path = os.path.join( self.directory, filename )
+        filename = tempfile.mktemp(dir=self.directory)
         fh = open( path, "w" )
         fh.write( identity )
         fh.close()
@@ -60,7 +59,7 @@ class KeyStore(object):
             print "DELETING",fn
             os.unlink(fn)
         
-        reactor.callLater(SSH_KEY_FILE_EXPIRY_TIME,del_key_file,path) 
+        reactor.callLater(SSH_KEY_FILE_EXPIRY_TIME,del_key_file,filename) 
         
         return filename
         
