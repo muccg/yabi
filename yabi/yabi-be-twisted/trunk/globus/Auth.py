@@ -27,7 +27,6 @@ class GlobusAuth(object):
     def AuthProxyUser(self, yabiusername, scheme, username, hostname, path, *args):
         """Auth a user via getting the credentials from the json yabiadmin backend. When the credentials are gathered, successcallback is called with the deferred.
         The deferred should be the result channel your result will go back down"""
-        print "AuthProxyUser"
         assert hasattr(self,"authproxy"), "Class must have an authproxy parameter"
         
         useragent = "YabiFS/0.1"
@@ -45,8 +44,6 @@ class GlobusAuth(object):
                 self.authproxy[hostname]=CertificateProxy()
             expire_time = self.authproxy[hostname].CreateUserProxy(username,credentials['cert'],credentials['key'],credentials['password'])
             
-            print "EXPIRES IN:",expire_time
-            
             return credentials
         
         except GETFailure, gf:
@@ -58,7 +55,6 @@ class GlobusAuth(object):
         
     
     def EnsureAuthed(self, yabiusername, scheme, username, hostname, path):
-        print "EnsureAuthed"
         # do we have an authenticator for this host?
         if hostname not in self.authproxy:
             # no!
@@ -70,27 +66,22 @@ class GlobusAuth(object):
             # else user is already authed
                 
     def AuthProxyUserWithCredentials(self, hostname, username, cert, key, password):
-        print "AuthProxyUserWithCredentials"
+        #print "AuthProxyUserWithCredentials"
         if hostname not in self.authproxy:
             self.authproxy[hostname]=CertificateProxy()
         expire_time = self.authproxy[hostname].CreateUserProxy(username,cert,key,password)
         expires_in = time.mktime(expire_time)-time.time()
-        print "1 EXPIRES IN:",expires_in
         
         #schedule a removal of the proxy file in this many seconds
         reactor.callLater(expires_in,self.authproxy[hostname].DestroyUserProxy,username) 
         
     def EnsureAuthedWithCredentials(self, hostname, username, cert, key, password):
-        print "EnsureAuthedWithCredentials",
         if hostname not in self.authproxy:
             # no!
-            print "no"
             return self.AuthProxyUserWithCredentials(hostname,username,cert,key,password)
         else:
-            print "yes"
             # yes! lets see if we have a valid cert
             if not self.authproxy[hostname].IsProxyValid(username):
-                print "not valid"
                 return self.AuthProxyUserWithCredentials(hostname,username,cert,key,password)
             # else user is already authed
         
