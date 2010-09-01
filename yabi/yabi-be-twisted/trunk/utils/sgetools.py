@@ -181,8 +181,6 @@ job-ID  prior   name       user         state submit/start at     queue         
                 if DEBUG:
                     print self.jobs[jobid]
                 #print "id",jobid
-                
-        print "JOBS result:",self.jobs
         
     def processEnded(self, status_object):
         self.exitcode = status_object.value.exitCode
