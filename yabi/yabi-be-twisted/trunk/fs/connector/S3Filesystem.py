@@ -21,7 +21,7 @@ ENV_CHECK = []
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "s3"
 
-DEBUG = True
+DEBUG = False
 
 # helper utilities for s3
 from s3 import S3

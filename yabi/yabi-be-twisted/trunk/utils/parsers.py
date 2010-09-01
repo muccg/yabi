@@ -5,7 +5,7 @@ import urlparse
 import re
 re_url_schema = re.compile(r'\w+')
 
-DEBUG = True
+DEBUG = False
 
 def parse_url(uri):
     """Parse a url via the inbuilt urlparse. But this is slightly different
