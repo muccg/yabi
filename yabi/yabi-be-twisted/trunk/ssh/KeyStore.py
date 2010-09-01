@@ -51,7 +51,7 @@ class KeyStore(object):
         self.files.append(filename)
         
         # lets try scheduling a deletion of this keyfile later
-        assert False
+        raise Exception, "*** break ***"
         
         def del_key_file(fn):
             print "DELETING",fn
