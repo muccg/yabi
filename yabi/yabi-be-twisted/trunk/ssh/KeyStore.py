@@ -49,14 +49,12 @@ class KeyStore(object):
             
         self.files.append(filename)
         
-        print "d",self.directory
-        print "f",filename
+        # TODO: fix expiry period for cache
+        #def del_key_file(fn):
+            #print "DELETING",fn
+            #os.unlink(fn)
         
-        def del_key_file(fn):
-            print "DELETING",fn
-            os.unlink(fn)
-        
-        reactor.callLater(SSH_KEY_FILE_EXPIRY_TIME,del_key_file,filename) 
+        #reactor.callLater(SSH_KEY_FILE_EXPIRY_TIME,del_key_file,filename) 
         
         return filename
         
