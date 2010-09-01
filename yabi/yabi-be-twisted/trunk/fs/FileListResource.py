@@ -82,7 +82,7 @@ class FileListResource(resource.PostableResource):
             try:
                 lister=bend.ls(hostname,path=path, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream=json.dumps(lister)))
-            except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
+            except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError, AuthException), exception:
                 #print "IP"
                 client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
                 #print "POST CALLBACK"
