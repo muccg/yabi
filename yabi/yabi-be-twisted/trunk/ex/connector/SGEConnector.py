@@ -10,10 +10,7 @@ ENV_CHECK = ['SGE_ROOT']
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "sge"
 
-DUDE=False
-
-print "MOTHERFUCKER!",type(DEBUGG),DEBUGG
-print DEBUGG
+DEBUG = False
 
 from twisted.web2 import http, responsecode, http_headers, stream
 
@@ -46,7 +43,6 @@ class SGEConnector(ExecConnector):
                 print "QSUB",command,"WORKING:",working
             jobid = qsub("jobname", command=command, user=username, workingdir=working, modules = [] if not module else [X.strip() for X in module.split(",")])
             if DEBUG:
-                print "DEBUG:",DEBUG
                 print "JOB ID",jobid
         
         except ExecutionError, ee:
