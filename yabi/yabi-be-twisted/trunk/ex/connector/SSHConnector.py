@@ -55,16 +55,17 @@ class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
         
             usercert = self.save_identity(creds['key'])
             
-            print "usercert:",usercert
-            print "command:",command
-            print "username:",username
-            print "host:",host
-            print "working:",working
-            print "port:","22"
-            print "stdout:",stdout
-            print "stderr:",stderr
-            print "modules",modules
-            print "password:",creds['password']
+            if DEBUG:
+                print "usercert:",usercert
+                print "command:",command
+                print "username:",username
+                print "host:",host
+                print "working:",working
+                print "port:","22"
+                print "stdout:",stdout
+                print "stderr:",stderr
+                print "modules",modules
+                print "password:",creds['password']
             pp = ssh.Run.run(usercert,command,username,host,working,port="22",stdout=stdout,stderr=stderr,password=creds['password'], modules=modules)
             client_stream.write("Running\n")
             stackless.schedule()
@@ -79,9 +80,10 @@ class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
                 return
                 
             # error
-            print "SSH Job error:"
-            print "OUT:",pp.out
-            print "ERR:",pp.err
+            if DEBUG:
+                print "SSH Job error:"
+                print "OUT:",pp.out
+                print "ERR:",pp.err
             client_stream.write("Error\n")
             client_stream.finish()
             return
