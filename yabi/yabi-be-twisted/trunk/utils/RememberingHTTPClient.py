@@ -41,7 +41,7 @@ class RememberingHTTPClientFactory(client.HTTPClientFactory):
   
     def clientConnectionFailed(self, connector, reason):
         print "clientConnectionFailed",connector, reason
-        connect_failed[0]=reason
+        self.connect_failed[0]=reason
         return client.HTTPClientFactory.clientConnectionFailed(self, connector, reason)
 
 class RememberingHTTPPageGetter(client.HTTPPageGetter,RememberingHTTPClient):
