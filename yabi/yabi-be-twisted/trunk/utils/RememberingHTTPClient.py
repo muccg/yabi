@@ -21,6 +21,10 @@ class RememberingHTTPClient(client.HTTPPageGetter):
 class RememberingHTTPClientFactory(client.HTTPClientFactory):
     protocol = RememberingHTTPClient
     
+    def __init__(self, *args, **kwargs):
+        client.HTTPClientFactory.__init__(self,*args,**kwargs)
+        self.connect_failed = connect_failed
+    
     def buildProtocol(self, addr):
         self.last_client = client.HTTPClientFactory.buildProtocol(self, addr)
         return self.last_client
@@ -35,6 +39,7 @@ class RememberingHTTPClientFactory(client.HTTPClientFactory):
   
     def clientConnectionFailed(self, connector, reason):
         print "clientConnectionFailed",connector, reason
+        connect_failed[0]=reason
         return client.HTTPClientFactory.clientConnectionFailed(self, connector, reason)
 
 class RememberingHTTPPageGetter(client.HTTPPageGetter,RememberingHTTPClient):

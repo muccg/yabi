@@ -148,10 +148,15 @@ def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,*
     if getdata:
         fullpath += "?"+getdata
         
+    # switches to trigger the unblocking of the stackless thread
+    get_complete = [False]
+    get_failed = [False]
+    connect_failed = [False]
+        
     factory = factory_class(
         fullpath,
         agent = USER_AGENT,
-        
+        connect_failed = connect_failed
         )
     factory.noisy=False
     
@@ -161,6 +166,7 @@ def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,*
     # switches to trigger the unblocking of the stackless thread
     get_complete = [False]
     get_failed = [False]
+    connect_failed = [False]
     
     # now if the get fails for some reason. deal with it
     def _doFailure(data):
@@ -183,7 +189,7 @@ def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,*
     # now we schedule this thread until the task is complete
     while not get_complete[0] and not get_failed[0]:
         if DEBUG:
-            print "G",get_complete[0],"G2",get_failed[0]
+            print "G",get_complete[0],"G2",get_failed[0],"CF",connect_failed[0]
         schedule()
         
     if get_failed[0]:
