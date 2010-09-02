@@ -9,7 +9,7 @@ from django.conf.urls.defaults import *
 from django.conf import settings
 from django.http import HttpResponse
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, HttpResponseUnauthorized
 from django.shortcuts import render_to_response, get_object_or_404, render_mako
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import webhelpers
@@ -18,11 +18,13 @@ from yabife.decorators import authentication_required
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate
 from django import forms
 from django.core.servers.basehttp import FileWrapper
+from django.utils import simplejson as json
+
+from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
+from yaphc.memcache_persister import MemcacheCookiePersister
 
 from django.contrib import logging
 logger = logging.getLogger('yabife')
-
-from yabifeapp.http_upload import *
 
 # proxy view to pass through all requests set up in urls.py
 def proxy(request, url, server, base):
@@ -30,63 +32,14 @@ def proxy(request, url, server, base):
     logger.debug(server)
     logger.debug(base)
     
-    ## TODO CODEREVIEW
-    ## Is is possible to post to a page and still send get params,
-    ## are they dropped by this proxy. Would it be possible to override yabiusername by
-    ## crafting a post and sending yabiusername as a get param as well
-
-    if request.method == "GET":
-        resource = "%s?%s" % (os.path.join(base, url), request.META['QUERY_STRING']+"&yabiusername=%s"%quote(request.user.username) )
-        logger.debug('Proxying get: %s%s' % (server, resource))
-        conn = httplib.HTTPConnection(server)
-        conn.request(request.method, resource)
-        r = conn.getresponse()
-
-    elif request.FILES:
-        get_params = copy.copy(request.GET)
-        get_params['yabiusername'] = request.user.username
-        resource = "%s?%s" % (os.path.join(base, url), urlencode(get_params))
-
-        # TODO this only works with files written to disk by django
-        # at the moment so the FILE_UPLOAD_MAX_MEMORY_SIZE must be set to 0
-        # in settings.py
-        files = []
-        in_file = request.FILES['file1']
-        logger.debug('Proxying file: %s to %s%s' % (in_file.temporary_file_path(), server, resource))
-        files.append(('file1', in_file.name, open(in_file.temporary_file_path())))
-        h = post_multipart(server, resource, [], files)
-        r = h.getresponse()
-
-    elif request.method == "POST":
-        resource = os.path.join(base, url)
-        post_params = copy.copy(request.POST)
-        post_params['yabiusername'] = request.user.username
-        logger.debug('Proxying post: %s%s' % (server, resource))
-        data = urlencode(post_params)
-        headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
-        conn = httplib.HTTPConnection(server)
-        conn.request(request.method, resource, data, headers)
-        r = conn.getresponse()
-
-    data = r.read()
-    response = HttpResponse(data, status=int(r.status))
-
-    #logger.debug("Got %d bytes returned with status code %d. First part of data is: %s"%(len(data),r.status,data[:64 if len(data)<64 else len(data)]))
-
-    if r.getheader('content-disposition', None):
-        response['content-disposition'] = r.getheader('content-disposition')
-
-    if r.getheader('content-type', None):
-        response['content-type'] = r.getheader('content-type')
-
-    return response
-
+    target_url = os.path.join(server+base, url)
+    target_request = make_request_object(target_url, request)
+    return make_http_request(target_request, request.user.username, request.is_ajax())
 
 @authentication_required
 def adminproxy(request, url):
     logger.debug('')
     return proxy(request, url, settings.YABIADMIN_SERVER, settings.YABIADMIN_BASE)
-    
 
 # forms
 class LoginForm(forms.Form):
@@ -106,9 +59,8 @@ def design(request, id=None):
 def jobs(request):
     return render_to_response('jobs.html', {'h':webhelpers, 'request':request})
 
+
 def login(request):
-
-
     if request.method == 'POST':
         form = LoginForm(request.POST)
 
@@ -123,6 +75,9 @@ def login(request):
             if user is not None:
                 if user.is_active:
                     django_login(request, user)
+                    if not yabiadmin_login(username, password):
+                        return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':"System error"})
+
                     return HttpResponseRedirect(webhelpers.url("/"))
 
             else:
@@ -139,6 +94,73 @@ def login(request):
 
 def logout(request):
     django_logout(request)
+    yabiadmin_logout(request.user.username)
     return HttpResponseRedirect(webhelpers.url("/"))
+
+# Implementation methods
+
+def redirect_to_login():
+    from django.contrib.auth import REDIRECT_FIELD_NAME
+    from django.utils.http import urlquote
+    #tup = settings.LOGIN_URL, REDIRECT_FIELD_NAME, urlquote(request.get_full_path())
+    #return HttpResponseRedirect('%s?%s=%s' % tup)
+    return HttpResponseRedirect(settings.LOGIN_URL)
+
+def make_request_object(url, request):
+    params = {}
+    for k in request.REQUEST:
+        params[k] = request.REQUEST[k]
+    if request.method == 'GET':
+        return GetRequest(url, params)
+    elif request.method == 'POST':
+        files = [('file%d' % (i+1), f.name, f.temporary_file_path()) for i,f in enumerate(request.FILES.values())] 
+        return PostRequest(url, params, files=files)
+
+def make_http_request(request, user, ajax_call):
+    with memcache_http(user) as http:
+        try:
+            resp, contents = http.make_request(request)
+            our_resp = HttpResponse(contents, status=int(resp.status))
+            copy_non_empty_headers(resp, our_resp, ('content-disposition', 'content-type'))
+            return our_resp
+        except UnauthorizedError:
+            if ajax_call:
+                return HttpResponseUnauthorized() 
+            else:
+                return redirect_to_login()
+
+def copy_non_empty_headers(src, to, header_names):
+    for header_name in header_names:
+        header_value = src.get(header_name)
+        if header_value:
+            to[header_name] = header_value
+
+def memcache_http(username):
+    mp = MemcacheCookiePersister(settings.MEMCACHE_SERVERS,
+            key='%s-cookies-%s' %(settings.MEMCACHE_KEYSPACE, username))
+    yabiadmin = settings.YABIADMIN_SERVER + settings.YABIADMIN_BASE
+    return Http(base_url=yabiadmin, cookie_persister=mp)
+
+def yabiadmin_login(username, password):
+    # TODO get the url from somewhere
+    login_request = PostRequest('ws/login', params= {
+        'username': username, 'password': password})
+    http = memcache_http(username)
+    resp, contents = http.make_request(login_request)
+    if resp.status != 200: 
+        return False
+    json_resp = json.loads(contents)
+    http.finish_session()
+    return json_resp.get('success', False)
+
+def yabiadmin_logout(username):
+    # TODO get the url from somewhere
+    logout_request = PostRequest('ws/logout')
+    with memcache_http(username) as http:
+        resp, contents = http.make_request(logout_request)
+        if resp.status != 200: 
+            return False
+        json_resp = json.loads(contents)
+    return json_resp.get('success', False)
 
 

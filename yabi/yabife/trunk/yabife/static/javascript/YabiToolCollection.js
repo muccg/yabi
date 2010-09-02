@@ -128,7 +128,7 @@ YabiToolCollection.prototype.solidify = function(obj) {
  *
  */
 YabiToolCollection.prototype.hydrate = function() {
-    var baseURL = appURL + "ws/menu/" + YAHOO.ccgyabi.username + "/";
+    var baseURL = appURL + "ws/menu/";
     
     //load json
     var jsUrl, jsCallback, jsTransaction;
