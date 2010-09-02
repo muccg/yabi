@@ -40,7 +40,7 @@ class RememberingHTTPClientFactory(client.HTTPClientFactory):
         return client.HTTPClientFactory.clientConnectionLost(self, connector, reason)
   
     def clientConnectionFailed(self, connector, reason):
-        print "clientConnectionFailed",connector, reason
+        print "clientConnectionFailed",connector, reason, self.connect_failed
         self.connect_failed[0]=reason
         return client.HTTPClientFactory.clientConnectionFailed(self, connector, reason)
 
