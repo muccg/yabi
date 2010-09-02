@@ -27,6 +27,7 @@ USER_AGENT = "YabiStackless/0.1"
 
 ## errors
 class GETFailure(Exception): pass
+class ConnectionFailure(Exception): pass
 class DeferredError(Exception): pass
 class CloseConnections(Exception):
     """A special exception raised in tasklets by the engine shutdown.
@@ -182,10 +183,16 @@ def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,*
     reactor.connectTCP(host, port, factory)
 
     # now we schedule this thread until the task is complete
-    while not get_complete[0] and not get_failed[0]:
+    while not get_complete[0] and not get_failed[0] and not connect_failed[0]:
         if DEBUG:
             print "G",get_complete[0],"G2",get_failed[0],"CF",connect_failed[0]
+        # has out actual initial connection failed?
         schedule()
+        
+    if connect_failed[0]:
+        if DEBUG:
+            print "connect_failed=",connect_failed
+        raise ConnectionFailure(connect_failed[0])
         
     if get_failed[0]:
         if DEBUG:
