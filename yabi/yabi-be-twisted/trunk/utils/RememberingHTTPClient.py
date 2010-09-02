@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from twisted.web import client
 from twisted.web.client import HTTPPageDownloader
 from twisted.internet import reactor
@@ -23,6 +24,10 @@ class RememberingHTTPClientFactory(client.HTTPClientFactory):
     def buildProtocol(self, addr):
         self.last_client = client.HTTPClientFactory.buildProtocol(self, addr)
         return self.last_client
+        
+    def clientConnectionLost(self, connector, reason):
+        print "clientConnectionLost",connector, reason
+        client.HTTPClientFactory.clientConnectionLost(self, connector, reason)
 
 class RememberingHTTPPageGetter(client.HTTPPageGetter,RememberingHTTPClient):
     pass
