@@ -349,7 +349,9 @@ def RetryCall(call, *args, **kwargs):
             if DEBUG:
                 print "Connection attempt failed",cf[0],"retrying"
             try:
-                sleep(delays.next())
+                d = delays.next()
+                print "sleeping",d
+                sleep(d)
             except StopIteration:
                 raise cf
         
