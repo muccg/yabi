@@ -53,12 +53,14 @@ if "DJANGODEV" in os.environ:
     DATABASE_PORT = ''             # Set to empty string for default. Not used with sqlite3.
     SSL_ENABLED = False
     DEV_SERVER = True
-    
+   
+    AUTH_LDAP_SERVER = ('ldaps://fdsdev.localdomain',)
     AUTH_LDAP_USER_BASE = 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
     AUTH_LDAP_GROUP_BASE = 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
-    AUTH_LDAP_ADMIN_GROUP = 'admin'
-    AUTH_LDAP_GROUP = 'admin' # only admin users should be able to log in
-    AUTH_LDAP_USER_GROUP = 'yabi'
+    #AUTH_LDAP_ADMIN_GROUP = 'admin'
+    #AUTH_LDAP_GROUP = 'admin' # only admin users should be able to log in
+    AUTH_LDAP_GROUP = 'yabi'   # NOT!
+    #AUTH_LDAP_USER_GROUP = 'yabi'
 
     
     YABIBACKEND_SERVER, YABIBACKEND_BASE = YABIBACKEND.split("/",1)
@@ -280,6 +282,7 @@ CAPTCHA_URL = os.path.join(MEDIA_URL, 'captchas')
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.LDAPBackend',
+    'django.contrib.auth.backends.NoAuthModelBackend',
 #    'django.contrib.auth.backends.ModelBackend',
 )
 

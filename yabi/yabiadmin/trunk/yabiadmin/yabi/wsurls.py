@@ -4,7 +4,9 @@ from django.conf.urls.defaults import *
 # frontend webservices
 urlpatterns = patterns('yabiadmin.yabi.ws_frontend_views',
     url(r'^tool/(?P<toolname>[\w.-]+)[/]*$', 'tool', name='tool'),
-    url(r'^menu/(?P<username>\w+)[/]*$', 'menu', name='menu'),
+    url(r'^login[/]*$', 'login'),
+    url(r'^logout[/]*$', 'logout'),
+    url(r'^menu[/]*$', 'menu', name='menu'),
     url(r'^fs/ls[/]*$', 'ls', name='ls'),
     url(r'^fs/get[/]*$', 'get', name='get'),
     url(r'^fs/put[/]*$', 'put', name='put'),

@@ -1,11 +1,19 @@
 # -*- coding: utf-8 -*-
-from django.http import HttpResponse, HttpResponseForbidden
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseUnauthorized
 from django.core.exceptions import ObjectDoesNotExist
 from urlparse import urlparse
 from yabiadmin.utils import json_error
 from yabiadmin.yabi.models import BackendCredential
 
 from yabiadmin.yabiengine import backendhelper
+
+def authentication_required(f):
+    def new_function(*args, **kwargs):
+        request = args[0]
+        if not request.user.is_authenticated():
+            return HttpResponseUnauthorized()
+        return f(*args, **kwargs)
+    return new_function
 
 def validate_user(f):
     """

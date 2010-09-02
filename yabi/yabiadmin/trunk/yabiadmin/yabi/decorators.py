@@ -14,18 +14,20 @@ mc = KeyspacedMemcacheClient()
 
 import pickle
 
-def req_to_str(request):
+def req_to_str(request, user_specific):
     s = request.path
+    if user_specific:
+        s += '-' + request.user.username
     for k in sorted(request.REQUEST):
         s += '-' + request.REQUEST[k]
     return s
 
-def memcache(basekey,kwargkeylist=[],timeout=120,refresh=False):
+def memcache(basekey,kwargkeylist=[],timeout=120,refresh=False,user_specific=True):
     """refresh is if you want to refresh memcache with a fresh timeout on cache hit, or if you want to leave it and let it expire as per before cache hit"""
     def memcache_decorator(func):
         def memcache_decorated_func(request, *args, **kwargs):
             keylist = sorted(kwargs.keys()) if kwargkeylist=='*' else kwargkeylist
-            keyname = "-".join([basekey, req_to_str(request)] + [str(kwargs[X]) for X in keylist])
+            keyname = "-".join([basekey, req_to_str(request,user_specific)] + [str(kwargs[X]) for X in keylist])
             keyname = keyname.encode()
             cached_result = mc.get(keyname)
             if cached_result:

@@ -16,9 +16,10 @@ from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.yabiengine.tasks import build
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_backendcredential_for_uri, copy_file, rm_file, send_upload_hash
-from yabiadmin.security import validate_user, validate_uri
+from yabiadmin.security import validate_user, validate_uri, authentication_required
 from yabiadmin.utils import json_error
 from yabi.file_upload import *
+from django.contrib import auth
 
 import uuid
 
@@ -32,8 +33,40 @@ from decorators import memcache
 ## will need to change call from front end to include username
 ## then uncomment decorator
 
-#@validate_user
-@memcache("tool",timeout=30,refresh=True)
+def login(request):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    username = request.POST.get('username')
+    password = request.POST.get('password')
+    if not (username and password):
+        return HttpResponseBadRequest()
+    user = auth.authenticate(username=username, password=password)
+    if user is not None:
+        if user.is_active:
+            auth.login(request, user)
+            response = {
+                "success": True
+            }
+        else:
+            response = {
+                "success": False,
+                "message": "The account has been disabled.",
+            }
+    else:
+        response = {
+            "success": False,
+            "message": "The user name and password are incorrect.",
+        }
+    return HttpResponse(content=json.dumps(response))
+
+def logout(request):
+    auth.logout(request)
+    response = {
+        "success": True,
+    }
+
+@memcache("tool",timeout=30,refresh=True,user_specific=False)
+@authentication_required
 def tool(request, *args, **kwargs):
     toolname = kwargs['toolname']
     logger.debug(toolname)
@@ -44,12 +77,12 @@ def tool(request, *args, **kwargs):
     except ObjectDoesNotExist:
         return HttpResponseNotFound(json_error("Object not found"))
 
-@validate_user
 @memcache("menu",timeout=300)
-def menu(request, *args, **kwargs):
-    username = kwargs["username"]
-    logger.debug(username)
-    
+@authentication_required
+def menu(request):
+    username = request.user.username
+    logger.debug('Username: ' + username)
+
     try:
         toolsets = ToolSet.objects.filter(users__name=username)
         output = {"toolsets":[]}
@@ -96,63 +129,68 @@ def menu(request, *args, **kwargs):
     except ObjectDoesNotExist:
         return HttpResponseNotFound(json_error("Object not found"))
     
-@validate_uri
+@authentication_required
 def ls(request):
     """
     This function will return a list of backends the user has access to IF the uri is empty. If the uri
     is not empty then it will pass on the call to the backend to get a listing of that uri
     """
+    yabiusername = request.user.username
+
     try:
-        logger.debug("yabiusername: %s uri: %s" %(request.GET['yabiusername'], request.GET['uri']))
+        logger.debug("yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
         if request.GET['uri']:
-            filelisting = get_listing(request.GET['yabiusername'], request.GET['uri'])
+            filelisting = get_listing(yabiusername, request.GET['uri'])
         else:
-            filelisting = get_backend_list(request.GET['yabiusername'])
+            filelisting = get_backend_list(yabiusername)
 
         return HttpResponse(filelisting)
     except Exception, e:
         return HttpResponseNotFound(json_error(e))
 
 
-@validate_uri
+@authentication_required
 def copy(request):
     """
     This function will return a list of backends the user has access to IF the uri is empty. If the uri
     is not empty then it will pass on the call to the backend to get a listing of that uri
     """
+
+    yabiusername = request.user.username
     try:
-        logger.debug("yabiusername: %s src: %s -> dst: %s" %(request.GET['yabiusername'], request.GET['src'],request.GET['dst']))
-        status, data = copy_file(request.GET['yabiusername'],request.GET['src'],request.GET['dst'])
+        logger.debug("yabiusername: %s src: %s -> dst: %s" %(yabiusername, request.GET['src'],request.GET['dst']))
+        status, data = copy_file(yabiusername,request.GET['src'],request.GET['dst'])
 
         return HttpResponse(content=data, status=status)
     except Exception, e:
         return HttpResponseNotFound(json_error(e))
 
-@validate_uri
+@authentication_required
 def rm(request):
     """
     This function will return a list of backends the user has access to IF the uri is empty. If the uri
     is not empty then it will pass on the call to the backend to get a listing of that uri
     """
+    yabiusername = request.user.username
     try:
-        logger.debug("yabiusername: %s uri: %s" %(request.GET['yabiusername'], request.GET['uri']))
-        status, data = rm_file(request.GET['yabiusername'],request.GET['uri'])
+        logger.debug("yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
+        status, data = rm_file(yabiusername,request.GET['uri'])
 
         return HttpResponse(content=data, status=status)
     except Exception, e:
         return HttpResponseNotFound(json_error(e))
 
 
-@validate_uri
+@authentication_required
 def get(request):
     """
     Returns the requested uri. get_file returns an httplib response wrapped in a FileIterWrapper. This can then be read
     by HttpResponse
     """
+    yabiusername = request.user.username
     try:
-        logger.debug("yabiusername: %s uri: %s" %(request.GET['yabiusername'], request.GET['uri']))
+        logger.debug("yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
         uri = request.GET['uri']
-        yabiusername = request.GET['yabiusername']
         
         try:
             filename = uri.rsplit('/', 1)[1]
@@ -178,7 +216,7 @@ def get(request):
         return HttpResponseNotFound(json_error(e))
 
 
-@validate_uri
+@authentication_required
 def put(request):
     """
     Uploads a file to the supplied URI
@@ -186,10 +224,10 @@ def put(request):
     import socket
     import httplib
 
+    yabiusername = request.user.username
     try:
-        logger.debug("yabiusername: %s uri: %s" %(request.GET['yabiusername'], request.GET['uri']))
+        logger.debug("yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
         uri = request.GET['uri']
-        yabiusername = request.GET['yabiusername']
         
         resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))
 
@@ -216,13 +254,14 @@ def put(request):
 
 
 @validate_user
+@authentication_required
 def submitworkflow(request):
-    assert(request.POST['username'])
-    logger.debug(request.POST['username'])
+    yabiusername = request.user.username
+    logger.debug(yabiusername)
 
     workflow_json = request.POST["workflowjson"]
     workflow_dict = json.loads(workflow_json)
-    user = User.objects.get(name=request.POST['username'])
+    user = User.objects.get(name=yabiusername)
     
     workflow = EngineWorkflow(name=workflow_dict["name"], json=workflow_json, user=user)
     workflow.save()
@@ -236,14 +275,12 @@ def submitworkflow(request):
 
     return HttpResponse(json.dumps({"id":workflow.id}))
 
-#@validate_user
+@authentication_required
 def getuploadurl(request):
     if 'uri' not in request.REQUEST:
         return HttpResponseBadRequest("uri needs to be passed in\n")
-    if 'yabiusername' not in request.REQUEST:
-        return HttpResponseBadRequest("yabiusername needs to be passed in\n")
     
-    yabiusername = request.REQUEST['yabiusername']
+    yabiusername = request.user.username
     uri = request.REQUEST['uri']
     
     uploadhash = str(uuid.uuid4())
