@@ -163,11 +163,6 @@ def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,*
     if DEBUG:
         print "GETing",fullpath
     
-    # switches to trigger the unblocking of the stackless thread
-    get_complete = [False]
-    get_failed = [False]
-    connect_failed = [False]
-    
     # now if the get fails for some reason. deal with it
     def _doFailure(data):
         if isinstance(data,Failure):
