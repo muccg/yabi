@@ -24,10 +24,14 @@ class RememberingHTTPClientFactory(client.HTTPClientFactory):
     def buildProtocol(self, addr):
         self.last_client = client.HTTPClientFactory.buildProtocol(self, addr)
         return self.last_client
-        
+    
+    def connectionLost(self, reason):
+        print "connectionLost",reason
+        return client.HTTPClientFactory.connectionLost(self, reason)
+            
     def clientConnectionLost(self, connector, reason):
         print "clientConnectionLost",connector, reason
-        client.HTTPClientFactory.clientConnectionLost(self, connector, reason)
+        return client.HTTPClientFactory.clientConnectionLost(self, connector, reason)
 
 class RememberingHTTPPageGetter(client.HTTPPageGetter,RememberingHTTPClient):
     pass
