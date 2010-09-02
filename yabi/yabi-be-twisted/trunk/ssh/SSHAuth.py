@@ -26,7 +26,7 @@ class SSHAuth(object):
                 print "host:",host
                 print "port:",port
             
-            status, message, data = GET( path = path, host=host, port=port+1 )
+            status, message, data = RetryGET( path = path, host=host, port=port+1 )
             
             assert status==200
             credentials = json.loads( data )
