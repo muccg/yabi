@@ -344,6 +344,14 @@ def RetryCall(call, *args, **kwargs):
                 sleep(delays.next())
             except StopIteration:
                 raise gf
+        except ConnectionFailure, cf:
+            # the connection is refused. Definately retry
+            if DEBUG:
+                print "Connection attempt failed",cf[0],"retrying"
+            try:
+                sleep(delays.next())
+            except StopIteration:
+                raise cf
         
 # two curried functions
 RetryPOST = lambda *a,**b: RetryCall(POST,*a,**b)
