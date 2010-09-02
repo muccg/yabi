@@ -32,6 +32,10 @@ class RememberingHTTPClientFactory(client.HTTPClientFactory):
     def clientConnectionLost(self, connector, reason):
         print "clientConnectionLost",connector, reason
         return client.HTTPClientFactory.clientConnectionLost(self, connector, reason)
+  
+    def clientConnectionFailed(self, connector, reason):
+        print "clientConnectionFailed",connector, reason
+        return client.HTTPClientFactory.clientConnectionFailed(self, connector, reason)
 
 class RememberingHTTPPageGetter(client.HTTPPageGetter,RememberingHTTPClient):
     pass
@@ -143,4 +147,7 @@ class RememberingHTTPDownloader(RememberingHTTPClientFactory):
             self.deferred.errback(failure.Failure())
             return
         self.deferred.callback(self.value)
+        
+    def clientConnectionFailed(self, connector, reason):
+        print "BAM"
 
