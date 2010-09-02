@@ -335,23 +335,12 @@ def RetryCall(call, *args, **kwargs):
     while True:
         try:
             return call(*args, **kwargs)
-        except GETFailure, gf:
-            if gf.message[0]==-1 and '404' in gf.message[1]:
-                # TODO: remove this hackiness
-                # this is admin responding, but returning a proper error code. We DONT want to retry here
-                raise gf
-            try:
-                sleep(delays.next())
-            except StopIteration:
-                raise gf
         except ConnectionFailure, cf:
             # the connection is refused. Definately retry
             if DEBUG:
                 print "Connection attempt failed",cf[0],"retrying"
             try:
-                d = delays.next()
-                print "sleeping",d
-                sleep(d)
+                sleep(delays.next())
             except StopIteration:
                 raise cf
         
