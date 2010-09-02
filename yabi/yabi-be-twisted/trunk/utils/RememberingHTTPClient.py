@@ -22,8 +22,10 @@ class RememberingHTTPClientFactory(client.HTTPClientFactory):
     protocol = RememberingHTTPClient
     
     def __init__(self, *args, **kwargs):
+        self.connect_failed = kwargs['connect_failed']
+        del kwargs['connect_failed']
         client.HTTPClientFactory.__init__(self,*args,**kwargs)
-        self.connect_failed = connect_failed
+        
     
     def buildProtocol(self, addr):
         self.last_client = client.HTTPClientFactory.buildProtocol(self, addr)
