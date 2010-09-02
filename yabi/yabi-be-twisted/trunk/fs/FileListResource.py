@@ -7,7 +7,7 @@ import stackless
 import json
 
 from Exceptions import PermissionDenied, InvalidPath
-from globus.Auth import NoCredentials
+from globus.Auth import NoCredentials, AuthException
 from globus.CertificateProxy import ProxyInitError
 
 from utils.parsers import parse_url

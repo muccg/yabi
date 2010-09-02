@@ -33,7 +33,7 @@ class SSHAuth(object):
             
             return credentials
         
-        except GETFailure, gf:
+        except GETFailure, gf:`
             gf_message = gf.args[0]
             if gf_message[0]==-1:
                 # connection problems
