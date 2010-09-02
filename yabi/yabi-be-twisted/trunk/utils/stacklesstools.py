@@ -166,6 +166,8 @@ def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,*
     
     # now if the get fails for some reason. deal with it
     def _doFailure(data):
+        if connect_failed[0]:
+            return
         if isinstance(data,Failure):
             exc = data.value
             #get_failed[0] = -1, str(exc), "Tried to GET %s"%(fullpath)
