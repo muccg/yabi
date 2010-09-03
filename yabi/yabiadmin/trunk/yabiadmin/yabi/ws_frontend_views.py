@@ -253,7 +253,6 @@ def put(request):
         raise
 
 
-@validate_user
 @authentication_required
 def submitworkflow(request):
     yabiusername = request.user.username
