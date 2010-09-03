@@ -145,7 +145,7 @@ class Configuration(object):
                         "keyfile":"~/.yabi/servercert.pem",
                         
                         "admin":None,
-                        # AH admin should not need to know about store
+                        # AH front end should not need to know about store
                         #"store": None,
                         
                         # custom database setting defaults
@@ -297,7 +297,8 @@ class Configuration(object):
             self.config[name]['database'] = "dev" if conf_parser.has_option(name,'database') and conf_parser.get(name,'database').lower()=="dev" else "live"
             self.config[name]['debug'] = conf_parser.get(name,'debug') if conf_parser.has_option(name,'debug') else "false"
             self.config[name]['admin'] = conf_parser.get(name,'admin')
-            self.config[name]['store'] = conf_parser.get(name,'store')
+            # AH frontend should not need to know about store
+            #self.config[name]['store'] = conf_parser.get(name,'store')
             if conf_parser.has_option(name,'keyfile'):
                 self.config[name]['keyfile'] = path_sanitise(conf_parser.get(name,'keyfile'))
             if conf_parser.has_option(name,'certfile'):
