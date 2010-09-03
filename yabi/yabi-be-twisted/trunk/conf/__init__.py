@@ -110,7 +110,7 @@ class Configuration(object):
                         "keyfile":"~/.yabi/servercert.pem",
                         
                         "backend":None,
-                        "store":None,
+			"store":None,
                         
                         "database":"custom",           
                         "debug": "false",           # run the app in debug mode
@@ -145,7 +145,8 @@ class Configuration(object):
                         "keyfile":"~/.yabi/servercert.pem",
                         
                         "admin":None,
-                        "store": None,
+                        # AH admin should not need to know about store
+                        #"store": None,
                         
                         # custom database setting defaults
                         "database_engine":"postgresql_psycopg2",
