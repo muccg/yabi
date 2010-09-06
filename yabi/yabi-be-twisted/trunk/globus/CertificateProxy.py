@@ -140,7 +140,8 @@ class CertificateProxy(object):
 
         if userid in self.pp_info:
             # we are already decrypting the proxy cert elsewhere. Lets just wait until that job is done and then return it.
-            while not self.pp_info[userid].isDone():
+            while userid in self.pp_info and not self.pp_info[userid].isDone():
+                print "CLASH!!!!!!"
                 stackless.schedule()
                 
             # the other task is complete now. let the other tasklet delete stale files.
