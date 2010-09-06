@@ -190,6 +190,9 @@ class CertificateProxy(object):
         # WTF are we getting unlink errors here. Lets list this directory for debug
         print "PRE UNLINK:",self.tempdir,"->",os.listdir(self.tempdir)
         
+        with open(proxyfile) as fh:
+            print "DUMP FILE:",fh.read()
+        
         # delete the key and cert files now we have proxy
         os.unlink( certfile )
         os.unlink( keyfile )
