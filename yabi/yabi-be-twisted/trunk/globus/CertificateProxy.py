@@ -85,6 +85,8 @@ class CertificateProxy(object):
             assert os.path.exists(storage) and os.path.isdir(storage), "storage path needs to exist and be a directory"
             self.tempdir=storage
         self.SetExpiryTime(expiry)
+        
+        self.pp_info = {}                           # info about process protocol for a grid-proxy-init possibly running in another stackless thread
     
     def SetExpiryTime(self, expiry):
         self.CERTIFICATE_EXPIRY_MINUTES = expiry
@@ -135,9 +137,25 @@ class CertificateProxy(object):
         
         TODO: What happens if this task blocks? The whole server blocks with it!
         """
+
+        if userid in self.pp_info:
+            # we are already decrypting the proxy cert elsewhere. Lets just wait until that job is done and then return it.
+            while not self.pp_info[userid].isDone():
+                stackless.schedule()
+                
+            # the other task is complete now. let the other tasklet delete stale files.
+            # decode the expiry time and return it as timestamp
+            res = pp.out.split("\n")
+            
+            # get first line
+            res = [X.split(':',1)[1] for X in res if X.startswith('Your proxy is valid until:')][0]
+            
+            return _decode_time(res.strip())
+            
         # file locations
         certfile = os.path.join( self.tempdir, "%s.cert"%userid )
         keyfile = os.path.join( self.tempdir, "%s.key"%userid )
+  
 
         # write out the pems
         with open( certfile, 'wb' ) as fh:
@@ -157,7 +175,7 @@ class CertificateProxy(object):
         # run "/usr/local/globus/bin/grid-proxy-init -cert PEMFILE -key KEYFILE -pwstdin -out PROXYFILE"
         subenv = os.environ.copy()
         path="/usr/bin"
-        pp = GridProxyInitProcessProtocol("%s\n\n"%password)
+        pp = self.pp_info[userid] = GridProxyInitProcessProtocol("%s\n\n"%password)
         reactor.spawnProcess(   pp,
                                 self.grid_proxy_init,
                                 [  self.grid_proxy_init,
@@ -202,6 +220,8 @@ class CertificateProxy(object):
         
         # get first line
         res = [X.split(':',1)[1] for X in res if X.startswith('Your proxy is valid until:')][0]
+        
+        del self.pp_info[userid]
         
         return _decode_time(res.strip())
       
