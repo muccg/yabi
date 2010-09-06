@@ -134,15 +134,12 @@ class CertificateProxy(object):
     def CreateUserProxy(self, userid, cert, key, password):
         """creates the proxy object for the specified user, using the passed in cert and key, decrypted by password
         returns a struct_time representing the expiry time of the proxy
-        
-        TODO: What happens if this task blocks? The whole server blocks with it!
         """
 
         if userid in self.pp_info:
             pp = self.pp_info[userid]
             # we are already decrypting the proxy cert elsewhere. Lets just wait until that job is done and then return it.
             while not pp.isDone():
-                print "CLASH!!!!!!"
                 stackless.schedule()
                 
             # the other task is complete now. let the other tasklet delete stale files.
@@ -206,12 +203,6 @@ class CertificateProxy(object):
             print "ERR:"
             print pp.err
             raise ProxyInitError, "Could not initialise proxy: %s"%(pp.out.split("\n")[0])
-        
-        # WTF are we getting unlink errors here. Lets list this directory for debug
-        print "PRE UNLINK:",self.tempdir,"->",os.listdir(self.tempdir)
-        
-        with open(proxyfile) as fh:
-            print "DUMP FILE:",fh.read()
         
         # delete the key and cert files now we have proxy
         os.unlink( certfile )
