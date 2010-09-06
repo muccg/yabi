@@ -31,13 +31,13 @@ class RememberingHTTPClientFactory(client.HTTPClientFactory):
         self.last_client = client.HTTPClientFactory.buildProtocol(self, addr)
         return self.last_client
     
-    def connectionLost(self, reason):
-        print "connectionLost",reason
-        return client.HTTPClientFactory.connectionLost(self, reason)
+    #def connectionLost(self, reason):
+        #print "connectionLost",reason
+        #return client.HTTPClientFactory.connectionLost(self, reason)
             
-    def clientConnectionLost(self, connector, reason):
-        print "clientConnectionLost",connector, reason
-        return client.HTTPClientFactory.clientConnectionLost(self, connector, reason)
+    #def clientConnectionLost(self, connector, reason):
+        #print "clientConnectionLost",connector, reason
+        #return client.HTTPClientFactory.clientConnectionLost(self, connector, reason)
   
     def clientConnectionFailed(self, connector, reason):
         print "clientConnectionFailed",connector, reason, self.connect_failed
