@@ -180,6 +180,11 @@ class CertificateProxy(object):
             # error
             if "Bad passphrase for key" in pp.out:
                 raise ProxyInvalidPassword, "Could not initialise proxy: Invalid password"
+            print "ERROR WHILE INITIALISING PROXY:"
+            print "OUT:"
+            print pp.out
+            print "ERR:"
+            print pp.err
             raise ProxyInitError, "Could not initialise proxy: %s"%(pp.out.split("\n")[0])
         
         # delete the key and cert files now we have proxy
