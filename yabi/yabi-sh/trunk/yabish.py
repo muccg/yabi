@@ -3,7 +3,7 @@
 import sys
 import readline
 
-from transport import Transport, UnauthorizedError, PostRequest, GetRequest
+from yaphc import Http, UnauthorizedError, PostRequest, GetRequest
 import actions
 
 # TODO env variable
@@ -31,7 +31,7 @@ def main():
 
 class Yabi(object):
     def __init__(self):
-        self.transport = Transport(base_url=YABI_URL)
+        self.http = Http(base_url=YABI_URL)
         self.username = None
        
     def login(self):
@@ -45,16 +45,16 @@ class Yabi(object):
         request = PostRequest('login', params= {
             'username': username, 'password': password})
         # TODO change to call web service login and check result
-        self.transport.make_request(request)
+        self.http.make_request(request)
         self.username = username
 
     def get(self, url, params):
         try:
             request = GetRequest(url, params)
-            resp, contents = self.transport.make_request(request)
+            resp, contents = self.http.make_request(request)
         except UnauthorizedError:
             self.login()
-            resp, contents = self.transport.make_request(request)
+            resp, contents = self.http.make_request(request)
         return resp, contents
 
     def choose_action(self, action_name):
@@ -66,7 +66,7 @@ class Yabi(object):
         return cls(self)
 
     def session_finished(self):
-        self.transport.finish_session()
+        self.http.finish_session()
 
 def print_usage():
     print '''

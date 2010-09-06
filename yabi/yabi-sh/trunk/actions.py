@@ -1,5 +1,4 @@
 import time
-from transport import UnauthorizedError
 import json
 import os
 

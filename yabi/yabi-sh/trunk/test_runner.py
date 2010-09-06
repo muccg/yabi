@@ -19,18 +19,21 @@ def run_all_tests():
     #for test_file in glob.glob('*_test.py'):
     #    run_test(test_file)
 
-def anything_changed(since):
-    for f in glob.glob('*.py'):
+def any_files_changed_since(time):
+    for f in glob.glob('**/*.py'):
         modified_on = os.path.getmtime(f)
-        if modified_on >= since:
+        if modified_on >= time:
             return True
     return False
 
+def sleep_for(secs):
+    time.sleep(secs)
+
 def main():
-    sleep_for = 2 # seconds
     while (True):
-        time.sleep(sleep_for)
-        if anything_changed(time.time()-sleep_for*2): 
+        before_sleep = time.time()-1
+        sleep_for(2) # seconds
+        if any_files_changed_since(before_sleep): 
             run_all_tests()
 
 if __name__ == "__main__":
