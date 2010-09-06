@@ -187,6 +187,9 @@ class CertificateProxy(object):
             print pp.err
             raise ProxyInitError, "Could not initialise proxy: %s"%(pp.out.split("\n")[0])
         
+        # WTF are we getting unlink errors here. Lets list this directory for debug
+        print "PRE UNLINK:",self.tempdir,"->",os.listdir(self.tempdir)
+        
         # delete the key and cert files now we have proxy
         os.unlink( certfile )
         os.unlink( keyfile )
