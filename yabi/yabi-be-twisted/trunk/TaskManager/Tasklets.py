@@ -48,7 +48,8 @@ class Tasklets(object):
             
             try:
                 task.insert()
-                self.tasks.append(task) 
+                self.tasks.append(task)
+                print "task",task,"loaded"
             except RuntimeError, re:
                 print "TASK is a dead task. skipping...",re
     
