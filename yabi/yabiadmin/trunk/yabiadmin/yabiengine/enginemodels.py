@@ -360,7 +360,9 @@ class EngineJob(Job):
         self.max_memory = self.tool.max_memory
         self.job_type = self.tool.job_type
 
+        print "SAVE"
         self.save()
+        print "SAVED"
 
     # AH: Unwind the locking so we can see whats going on
     #@require_lock(Task, 'ACCESS EXCLUSIVE')
