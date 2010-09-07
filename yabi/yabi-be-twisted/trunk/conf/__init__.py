@@ -110,7 +110,7 @@ class Configuration(object):
                         "keyfile":"~/.yabi/servercert.pem",
                         
                         "backend":None,
-			"store":None,
+                        "store":None,
                         
                         "database":"custom",           
                         "debug": "false",           # run the app in debug mode
@@ -134,6 +134,7 @@ class Configuration(object):
                         
                         "alert_email":"Tech Alerts <alerts@ccg.murdoch.edu.au>",
                         
+                        "celery_queue_name":"default"
                     },
         'frontend': {
                         "port":"0.0.0.0:8000",
@@ -253,7 +254,6 @@ class Configuration(object):
             if conf_parser.has_option(name,'memcache_prefix'):
                 self.config[name]['memcache_prefix'] = conf_parser.get(name,'memcache_prefix')
             
-            
         name = "admin"
         if conf_parser.has_section(name):
             self.config[name]['backend'] = conf_parser.get(name,'backend')
@@ -275,6 +275,10 @@ class Configuration(object):
                 self.config[name]['memcache_servers'] = conf_parser.get(name,'memcache_servers')
             if conf_parser.has_option(name,'memcache_prefix'):
                 self.config[name]['memcache_prefix'] = conf_parser.get(name,'memcache_prefix')
+                
+            # celery queue name
+            if conf_parser.has_option(name,'celery_queue_name'):
+                self.config[name]['celery_queue_name'] = conf_parser.get(name,'celery_queue_name')
 
         name = "store"
         if conf_parser.has_section(name):
