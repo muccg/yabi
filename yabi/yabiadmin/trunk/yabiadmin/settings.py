@@ -341,7 +341,7 @@ CELERY_RESULT_BACKEND = "database"
 CELERY_DISABLE_RATE_LIMITS = True
 CELERY_QUEUES = {
     CELERY_QUEUE_NAME: {
-        "binding_key": CELERY_QUEUE_NAME,
+        "binding_key": "celery",
         "exchange": CELERY_QUEUE_NAME 
     },
 }
