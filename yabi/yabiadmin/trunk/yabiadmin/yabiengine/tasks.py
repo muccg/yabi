@@ -7,6 +7,7 @@ def build(workflow_id):
     print "BUILD:",workflow_id
     assert(workflow_id)
     eworkflow = EngineWorkflow.objects.get(id=workflow_id)
+    print "building...",eworkflow
     eworkflow.build()
     print "------------->"
     eworkflow.walk()
