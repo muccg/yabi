@@ -46,7 +46,7 @@ class Tasklets(object):
         
         for task in self.tasks:
             #print "pickling:",task
-            pickled_task = pickle.dumps(task)
+            pickled_task = pickle.dumps(task,1)
             with open(os.path.join(directory,str(id(task))), 'wb') as fh:
                 fh.write(pickled_task) 
             
