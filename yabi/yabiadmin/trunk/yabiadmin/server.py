@@ -50,6 +50,9 @@ if config.config[NAME]["memcache_servers"]:
     os.environ['MEMCACHE_SERVERS'] = config.config[NAME]["memcache_servers"]
 if config.config[NAME]["memcache_prefix"]:
     os.environ['MEMCACHE_PREFIX'] = config.config[NAME]["memcache_prefix"]
+    
+if config.config[NAME]["celery_queue_name"]:
+    os.environ['CELERY_QUEUE_NAME'] = config.config[NAME]["celery_queue_name"]
 
 from twisted.web2 import wsgi, resource
 from django.conf import settings

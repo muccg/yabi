@@ -331,6 +331,8 @@ VALID_SCHEMES = ['http', 'https', 'gridftp', 'globus', 'sge', 'yabifs', 'ssh', '
 ## Celery settings
 ##
 ## http://ask.github.com/celery/tutorials/otherqueues.html
+CELERY_QUEUE_NAME = os.environ['CELERY_QUEUE_NAME'] if 'CELERY_QUEUE_NAME' in os.environ else 'default'
+
 CARROT_BACKEND = "ghettoq.taproot.Database"
 CELERYD_LOG_LEVEL = "DEBUG"
 CELERYD_CONCURRENCY = 1
@@ -338,11 +340,11 @@ CELERYD_PREFETCH_MULTIPLIER = 1
 CELERY_RESULT_BACKEND = "database"
 CELERY_DISABLE_RATE_LIMITS = True
 CELERY_QUEUES = {
-    str(config.config['admin']['port']): {
+    CELERY_QUEUE_NAME: {
         "binding_key": "celery"},
 }
-CELERY_DEFAULT_QUEUE = str(config.config['admin']['port'])
-CELERY_DEFAULT_EXCHANGE = str(config.config['admin']['port'])
+CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
+CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
 CELERY_IGNORE_RESULT = True
 
 print "CELERY_DEFAULT_QUEUE",CELERY_DEFAULT_QUEUE
