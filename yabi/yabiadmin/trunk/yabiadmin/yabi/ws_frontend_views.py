@@ -226,8 +226,8 @@ def put(request):
 
     yabiusername = request.user.username
     try:
-        logger.debug("yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
-        uri = request.GET['uri']
+        logger.debug("yabiusername: %s uri: %s" %(yabiusername, request.REQUEST['uri']))
+        uri = request.REQUEST['uri']
         
         resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))
 
