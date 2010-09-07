@@ -26,6 +26,8 @@ class Tasklets(object):
             # before we pickle it, if we are waiting on a connection in our stack frame, then set it to have failed
             # so that when we are resurrected in the future, the connection will immediately be marked as failed
             task.remove()
+            print "task.frame=",task.frame
+            print "dir(task.frame)=",dir(task.frame)
             if hasattr(task,'frame') and task.frame and 'get_failed' in task.frame.f_locals:
                 task.frame.f_locals['get_failed'][0]=True
         
