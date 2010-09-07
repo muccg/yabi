@@ -46,8 +46,8 @@ class CustomTasklet(stackless.tasklet):
         # it the original list (removing our addition).
         return stackless.tasklet.__setstate__(self, l[:-1])
 
-class CustomTasklet(stackless.tasklet):
-    pass
+#class CustomTasklet(stackless.tasklet):
+    #pass
 
 
 class TaskManager(object):

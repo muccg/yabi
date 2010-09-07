@@ -42,7 +42,7 @@ class Tasklets(object):
                 frame.f_locals['get_failed'][0]=True
             print "---"
             
-            task.frame = frame
+            #task.frame = frame
         
         for task in self.tasks:
             #print "pickling:",task
