@@ -106,7 +106,7 @@ def require_lock_nowait(model, lock):
     def require_lock_nowait_decorator(view_func):
         def wrapper(*args, **kwargs):
             if lock not in LOCK_MODES:
-                raise ValueError('%s is not a PostgreSQL supported lock mode.')
+                raise ValueError('%s is not a PostgreSQL supported lock mode.'%lock)
             from django.db import connection
             count = 0
             waiting = True

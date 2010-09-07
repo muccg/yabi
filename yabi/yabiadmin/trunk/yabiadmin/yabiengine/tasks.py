@@ -8,6 +8,7 @@ def build(workflow_id):
     assert(workflow_id)
     eworkflow = EngineWorkflow.objects.get(id=workflow_id)
     eworkflow.build()
+    print "------------->"
     eworkflow.walk()
     return workflow_id
 
