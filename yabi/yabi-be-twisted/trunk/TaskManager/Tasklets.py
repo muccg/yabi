@@ -31,8 +31,14 @@ class Tasklets(object):
             if hasattr(task.frame,"f_back"):
                 print "task.frame.f_back=",task.frame.f_back
                 print "dir(task.frame.f_back)=",dir(task.frame.f_back)
-            if hasattr(task,'frame') and task.frame and 'get_failed' in task.frame.f_locals:
-                task.frame.f_locals['get_failed'][0]=True
+                
+            frame = task.frame 
+            while frame and not hasattr(frame,"f_locals"):
+                frame = frame.f_back
+            
+            if frame and 'get_failed' in frame.f_locals:
+                print frame.f_locals
+                frame.f_locals['get_failed'][0]=True
         
         for task in self.tasks:
             #print "pickling:",task
