@@ -114,6 +114,7 @@ export AUTH_LDAP_GROUP="${auth_ldap_group}"
 export AUTH_LDAP_DEFAULT_GROUP="${auth_ldap_default_group}"
 export MEMCACHE_SERVERS="${memcache_servers}"
 export MEMCACHE_PREFIX="${memcache_prefix}"
+export CELERY_QUEUE_NAME="${celery_queue_name}"
 
 TAP="${SOURCE}/server.py"
 
