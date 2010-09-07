@@ -28,6 +28,9 @@ class Tasklets(object):
             task.remove()
             print "task.frame=",task.frame
             print "dir(task.frame)=",dir(task.frame)
+            if hasattr(task.frame,"f_back"):
+                print "task.frame.f_back=",task.frame.f_back
+                print "dir(task.frame.f_back)=",dir(task.frame.f_back)
             if hasattr(task,'frame') and task.frame and 'get_failed' in task.frame.f_locals:
                 task.frame.f_locals['get_failed'][0]=True
         
