@@ -16,11 +16,11 @@ class Tasklets(object):
         self.tasks = []
         
     def add(self, tasklet):
-        #print "ADD",tasklet
+        print "ADD",tasklet
         self.tasks.append(tasklet)
         
     def save(self, directory):
-        #print "TASKS Save",self.tasks
+        print "TASKS Save",self.tasks
         
         for task in self.tasks:
             # before we pickle it, if we are waiting on a connection in our stack frame, then set it to have failed

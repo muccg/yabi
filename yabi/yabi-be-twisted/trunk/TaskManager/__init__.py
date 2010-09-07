@@ -19,4 +19,5 @@ def startup():
     
 def shutdown():
     """pickle tasks to disk"""
+    print "Saving tasklets..."
     tasklets.save(directory=config.config['backend']['tasklets'])
