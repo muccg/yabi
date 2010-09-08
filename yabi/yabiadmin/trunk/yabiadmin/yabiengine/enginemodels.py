@@ -376,6 +376,8 @@ class EngineJob(Job):
         assert is_dirty() == False
         assert is_managed() == False
 
+        task_ids = [X.id for X in tasks]
+
         try:
             enter_transaction_management()
             managed(True)
@@ -386,10 +388,12 @@ class EngineJob(Job):
             cursor = connection.cursor()
             logger.debug("Acquiring lock on %s for job %s" % (Task._meta.db_table, self.id)) 
             cursor.execute('LOCK TABLE %s IN ACCESS EXCLUSIVE MODE' % Task._meta.db_table)
+            logger.debug("lock aquired")
 
             if (self.total_tasks() == 0):
                 logger.debug("job %s is having tasks created" % self.id) 
-                self._create_tasks(tasks)
+                #self._create_tasks(tasks)
+                self._create_tasks(task_ids)
             else:
                 logger.debug("job %s has tasks, skipping create_tasks" % self.id)
 
@@ -471,7 +475,9 @@ class EngineJob(Job):
 
         # lets count up our batch_file_list to see how many 'real' (as in not yabi://) files there are to process
         # won't count tasks with file == None as these are from not batch param jobs
-        count = len([X for X in tasks_to_create if X[2]])
+        
+        #count = len([X for X in tasks_to_create if X[2]])
+        count = 1
 
          # lets build a closure that will generate our names for us
         if count>1:
@@ -486,10 +492,10 @@ class EngineJob(Job):
         print "Tasks:",tasks_to_create
         for task_data in tasks_to_create:
             job = task_data[0]
-            print "JOB=",job,"=>",job.id
+            print "JOB=",job
             # remove job from task_data as we now are going to call method on job TODO maybe use pop(0) here
             del(task_data[0]) 
-            task = EngineTask(job_id=job.id, status=STATUS_PENDING)
+            task = EngineTask(job_id=job, status=STATUS_PENDING)
             task.add_task(*(task_data+[name]))
             print "OUT"
             num,name = buildname(num)
