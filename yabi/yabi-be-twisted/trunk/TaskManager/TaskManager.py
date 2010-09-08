@@ -49,6 +49,7 @@ class CustomTasklet(stackless.tasklet):
 #class CustomTasklet(stackless.tasklet):
     #pass
 
+CustomTasklet = stackless.tasklet
 
 class TaskManager(object):
     TASK_HOST = "localhost"
