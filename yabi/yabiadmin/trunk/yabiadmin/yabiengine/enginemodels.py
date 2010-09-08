@@ -483,12 +483,13 @@ class EngineJob(Job):
         # build the first name
         num = 1
         num, name = buildname(num)
+        print "Tasks:",tasks_to_create
         for task_data in tasks_to_create:
             job = task_data[0]
             print "JOB=",job
             # remove job from task_data as we now are going to call method on job TODO maybe use pop(0) here
             del(task_data[0]) 
-            task = EngineTask(job=job, status=STATUS_PENDING)
+            task = EngineTask(job_id=job.id, status=STATUS_PENDING)
             task.add_task(*(task_data+[name]))
             print "OUT"
             num,name = buildname(num)
