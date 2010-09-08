@@ -367,6 +367,7 @@ class EngineJob(Job):
     # AH: Unwind the locking so we can see whats going on
     #@require_lock(Task, 'ACCESS EXCLUSIVE')
     def create_tasks(self):
+        print "!!!! CALLING create_tasks"
         # by default Django is running with an open transaction
         tasks = self._prepare_tasks()
         transaction.commit()
@@ -400,9 +401,11 @@ class EngineJob(Job):
             logger.debug('Rollback, released lock')
             raise
         finally:
+            print "!!!! END CALLING create_tasks"
             leave_transaction_management()
             assert is_dirty() == False
             assert is_managed() == False
+            print "!!!! ASSERTIONS PASSED create_tasks"
 
     def _prepare_tasks(self):
         logger.info('Preparing tasks for jobid: %s...' % self.id)
