@@ -240,6 +240,10 @@ class EngineWorkflow(Workflow):
                 self.status = STATUS_ERROR
                 self.save()
                 
+            try:
+                transaction.commit()
+            except TransactionManagementError, tme:
+                print "TME2:",tme
 
         except ObjectDoesNotExist,e:
             logger.critical("ObjectDoesNotExist at workflow.walk")
