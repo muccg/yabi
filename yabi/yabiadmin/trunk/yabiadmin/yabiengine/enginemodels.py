@@ -377,7 +377,7 @@ class EngineJob(Job):
         assert is_managed() == False
 
         print "tasks=",tasks
-        task_ids = [X[0].id for X in tasks]
+        task_ids = [[X[0].id]+X[1:] for X in tasks]
 
         try:
             enter_transaction_management()
