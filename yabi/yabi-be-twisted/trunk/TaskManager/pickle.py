@@ -311,7 +311,7 @@ class Pickler:
             # Check for a __reduce_ex__ method, fall back to __reduce__
             reduce = getattr(obj, "__reduce_ex__", None)
             if reduce:
-                print "PROTO:",type(self.proto)
+                print "PROTO:",type(self.proto),"reduce=",reduce
                 rv = reduce(self.proto)
             else:
                 reduce = getattr(obj, "__reduce__", None)
