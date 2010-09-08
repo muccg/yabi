@@ -327,7 +327,7 @@ class EngineJob(Job):
             task.status = STATUS_READY
             task.save()
 
-    @transaction.commit_on_success
+    #@transaction.commit_on_success
     def add_job(self, job_dict):
         assert(job_dict)
         assert(job_dict["toolName"])
