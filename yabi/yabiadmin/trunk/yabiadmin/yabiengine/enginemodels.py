@@ -388,7 +388,7 @@ class EngineJob(Job):
 
         # see http://code.djangoproject.com/svn/django/trunk/django/db/transaction.py
         assert is_dirty() == False
-        assert is_managed() == False
+        #assert is_managed() == False
 
         try:
             enter_transaction_management()
