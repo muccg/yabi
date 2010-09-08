@@ -378,8 +378,8 @@ class EngineJob(Job):
         # by default Django is running with an open transaction
         tasks = self._prepare_tasks()
         
-        print "tasks=",tasks
-        task_ids = [[X[0].id]+X[1:] for X in tasks]
+        #print "tasks=",tasks
+        #task_ids = [[X[0].id]+X[1:] for X in tasks]
         
         try:
             transaction.commit()
@@ -405,7 +405,7 @@ class EngineJob(Job):
             if (self.total_tasks() == 0):
                 logger.debug("job %s is having tasks created" % self.id) 
                 #self._create_tasks(tasks)
-                self._create_tasks(task_ids)
+                self._create_tasks(tasks)
             else:
                 logger.debug("job %s has tasks, skipping create_tasks" % self.id)
 
@@ -488,9 +488,8 @@ class EngineJob(Job):
         # lets count up our batch_file_list to see how many 'real' (as in not yabi://) files there are to process
         # won't count tasks with file == None as these are from not batch param jobs
         
-        #count = len([X for X in tasks_to_create if X[2]])
-        count = 1
-
+        count = len([X for X in tasks_to_create if X[2]])
+        
          # lets build a closure that will generate our names for us
         if count>1:
             # the 10 base logarithm will give us how many digits we need to pad
@@ -507,7 +506,7 @@ class EngineJob(Job):
             print "JOB=",job
             # remove job from task_data as we now are going to call method on job TODO maybe use pop(0) here
             del(task_data[0]) 
-            task = EngineTask(job_id=job, status=STATUS_PENDING)
+            task = EngineTask(job=job, status=STATUS_PENDING)
             task.add_task(*(task_data+[name]))
             print "OUT"
             num,name = buildname(num)
