@@ -182,6 +182,7 @@ class EngineWorkflow(Workflow):
             logger.critical(traceback.format_exc())
             raise
 
+    # NOTE: this is a load bearing decorator. Do not remove it or the roof will fall in. (it stops locking nightmares)
     @transaction.commit_on_success
     def walk(self):
         '''
@@ -240,11 +241,6 @@ class EngineWorkflow(Workflow):
             if len(error_jobs):
                 self.status = STATUS_ERROR
                 self.save()
-                
-            #try:
-                #transaction.commit()
-            #except TransactionManagementError, tme:
-                #print "TME2:",tme
 
         except ObjectDoesNotExist,e:
             logger.critical("ObjectDoesNotExist at workflow.walk")
@@ -367,29 +363,20 @@ class EngineJob(Job):
         self.max_memory = self.tool.max_memory
         self.job_type = self.tool.job_type
 
-        print "SAVE"
         self.save()
-        print "SAVED"
 
     # AH: Unwind the locking so we can see whats going on
     #@require_lock(Task, 'ACCESS EXCLUSIVE')
     def create_tasks(self):
-        print "!!!! CALLING create_tasks"
         # by default Django is running with an open transaction
         tasks = self._prepare_tasks()
         
-        #print "tasks=",tasks
-        #task_ids = [[X[0].id]+X[1:] for X in tasks]
-        
-        try:
-            transaction.commit()
-        except TransactionManagementError, tme:
-            print "TME:",tme
+        #TRY BLOCK WAS HERE
+        transaction.commit()
 
         # see http://code.djangoproject.com/svn/django/trunk/django/db/transaction.py
         assert is_dirty() == False
-        #assert is_managed() == False
-
+        
         try:
             enter_transaction_management()
             managed(True)
@@ -400,7 +387,6 @@ class EngineJob(Job):
             cursor = connection.cursor()
             logger.debug("Acquiring lock on %s for job %s" % (Task._meta.db_table, self.id)) 
             cursor.execute('LOCK TABLE %s IN ACCESS EXCLUSIVE MODE' % Task._meta.db_table)
-            logger.debug("lock aquired")
 
             if (self.total_tasks() == 0):
                 logger.debug("job %s is having tasks created" % self.id) 
@@ -417,11 +403,8 @@ class EngineJob(Job):
             logger.debug('Rollback, released lock')
             raise
         finally:
-            print "!!!! END CALLING create_tasks"
             leave_transaction_management()
             assert is_dirty() == False
-            #assert is_managed() == False
-            print "!!!! ASSERTIONS PASSED create_tasks"
 
     def _prepare_tasks(self):
         logger.info('Preparing tasks for jobid: %s...' % self.id)
@@ -500,15 +483,12 @@ class EngineJob(Job):
         # build the first name
         num = 1
         num, name = buildname(num)
-        print "Tasks:",tasks_to_create
         for task_data in tasks_to_create:
             job = task_data[0]
-            print "JOB=",job
             # remove job from task_data as we now are going to call method on job TODO maybe use pop(0) here
             del(task_data[0]) 
             task = EngineTask(job=job, status=STATUS_PENDING)
             task.add_task(*(task_data+[name]))
-            print "OUT"
             num,name = buildname(num)
 
     def is_task_file_valid(self, file, extensions):
