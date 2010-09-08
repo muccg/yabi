@@ -37,7 +37,9 @@ class CustomTasklet(stackless.tasklet):
         l = list(ret[2])
         l.append(self.__dict__)
         ret[2] = tuple(l)
-        return tuple(ret)
+        result = tuple(ret)
+        print "RETURNING",result
+        return result
 
     def __setstate__(self, l):
         # Update the instance dictionary with the value we added in.
@@ -49,7 +51,7 @@ class CustomTasklet(stackless.tasklet):
 #class CustomTasklet(stackless.tasklet):
     #pass
 
-CustomTasklet = stackless.tasklet
+#CustomTasklet = stackless.tasklet
 
 class TaskManager(object):
     TASK_HOST = "localhost"
