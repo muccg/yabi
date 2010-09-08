@@ -16,6 +16,8 @@ from django.utils import simplejson as json, webhelpers
 from django.db.models.signals import post_save
 from django.utils.webhelpers import url
 
+from django.db.transaction import TransactionManagementError
+
 from yabiadmin.yabi.models import Backend, BackendCredential, Tool, User
 from yabiadmin.yabiengine import backendhelper 
 from yabiadmin.yabiengine import storehelper as StoreHelper
@@ -371,7 +373,10 @@ class EngineJob(Job):
         # by default Django is running with an open transaction
         tasks = self._prepare_tasks()
         
-        transaction.commit()
+        try:
+            transaction.commit()
+        except TransactionManagementError, tme:
+            print "TME:",tme
 
         # see http://code.djangoproject.com/svn/django/trunk/django/db/transaction.py
         assert is_dirty() == False
