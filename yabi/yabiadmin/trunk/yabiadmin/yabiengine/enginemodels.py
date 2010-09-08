@@ -370,7 +370,7 @@ class EngineJob(Job):
         print "!!!! CALLING create_tasks"
         # by default Django is running with an open transaction
         tasks = self._prepare_tasks()
-        transaction.commit()
+        #transaction.commit()
 
         # see http://code.djangoproject.com/svn/django/trunk/django/db/transaction.py
         assert is_dirty() == False
