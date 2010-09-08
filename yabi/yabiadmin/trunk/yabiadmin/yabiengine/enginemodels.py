@@ -376,6 +376,7 @@ class EngineJob(Job):
         assert is_dirty() == False
         assert is_managed() == False
 
+        print "tasks=",tasks
         task_ids = [X.id for X in tasks]
 
         try:
