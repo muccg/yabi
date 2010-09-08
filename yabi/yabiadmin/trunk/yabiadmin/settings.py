@@ -331,7 +331,8 @@ VALID_SCHEMES = ['http', 'https', 'gridftp', 'globus', 'sge', 'yabifs', 'ssh', '
 ## Celery settings
 ##
 ## http://ask.github.com/celery/tutorials/otherqueues.html
-CELERY_QUEUE_NAME = os.environ['CELERY_QUEUE_NAME'] if 'CELERY_QUEUE_NAME' in os.environ else 'default'
+#CELERY_QUEUE_NAME = os.environ['CELERY_QUEUE_NAME'] if 'CELERY_QUEUE_NAME' in os.environ else 'default'
+CELERY_QUEUE_NAME = str(config.config['admin']['port'])
 
 CARROT_BACKEND = "ghettoq.taproot.Database"
 CELERYD_LOG_LEVEL = "DEBUG"
