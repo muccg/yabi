@@ -182,6 +182,7 @@ class EngineWorkflow(Workflow):
             logger.critical(traceback.format_exc())
             raise
 
+    @commit_on_success
     def walk(self):
         '''
         Walk through the jobs for this workflow and prepare jobs and tasks,
@@ -240,10 +241,10 @@ class EngineWorkflow(Workflow):
                 self.status = STATUS_ERROR
                 self.save()
                 
-            try:
-                transaction.commit()
-            except TransactionManagementError, tme:
-                print "TME2:",tme
+            #try:
+                #transaction.commit()
+            #except TransactionManagementError, tme:
+                #print "TME2:",tme
 
         except ObjectDoesNotExist,e:
             logger.critical("ObjectDoesNotExist at workflow.walk")
