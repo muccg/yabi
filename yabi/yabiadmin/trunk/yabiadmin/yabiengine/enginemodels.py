@@ -373,6 +373,9 @@ class EngineJob(Job):
         # by default Django is running with an open transaction
         tasks = self._prepare_tasks()
         
+        print "tasks=",tasks
+        task_ids = [[X[0].id]+X[1:] for X in tasks]
+        
         try:
             transaction.commit()
         except TransactionManagementError, tme:
@@ -381,9 +384,6 @@ class EngineJob(Job):
         # see http://code.djangoproject.com/svn/django/trunk/django/db/transaction.py
         assert is_dirty() == False
         assert is_managed() == False
-
-        print "tasks=",tasks
-        task_ids = [[X[0].id]+X[1:] for X in tasks]
 
         try:
             enter_transaction_management()
