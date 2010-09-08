@@ -486,7 +486,7 @@ class EngineJob(Job):
         print "Tasks:",tasks_to_create
         for task_data in tasks_to_create:
             job = task_data[0]
-            print "JOB=",job
+            print "JOB=",job,"=>",job.id
             # remove job from task_data as we now are going to call method on job TODO maybe use pop(0) here
             del(task_data[0]) 
             task = EngineTask(job_id=job.id, status=STATUS_PENDING)
