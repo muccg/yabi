@@ -182,7 +182,7 @@ class EngineWorkflow(Workflow):
             logger.critical(traceback.format_exc())
             raise
 
-    @commit_on_success
+    @transaction.commit_on_success
     def walk(self):
         '''
         Walk through the jobs for this workflow and prepare jobs and tasks,
