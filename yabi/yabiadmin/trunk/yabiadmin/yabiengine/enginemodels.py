@@ -485,10 +485,12 @@ class EngineJob(Job):
         num, name = buildname(num)
         for task_data in tasks_to_create:
             job = task_data[0]
+            print "JOB=",job
             # remove job from task_data as we now are going to call method on job TODO maybe use pop(0) here
             del(task_data[0]) 
             task = EngineTask(job=job, status=STATUS_PENDING)
             task.add_task(*(task_data+[name]))
+            print "OUT"
             num,name = buildname(num)
 
     def is_task_file_valid(self, file, extensions):
