@@ -26,7 +26,7 @@ from ex.connector.SGEConnector import SGEConnector
 from ex.connector.SSHConnector import SSHConnector
 
 # taskmanager debug
-from TaskManager import TaskManagerResource
+from TaskManager import TaskManagerResource, TaskManagerPickleResource
 
 VERSION = 0.2
 class BaseResource(resource.PostableResource):
@@ -45,6 +45,7 @@ class BaseResource(resource.PostableResource):
         
         #  debug for taskmanager
         self.child_debug = TaskManagerResource()
+        self.child_pickle = TaskManagerPickleResource()
         
     def LoadExecConnectors(self, quiet=False):
         self.child_exec.LoadConnectors(quiet)

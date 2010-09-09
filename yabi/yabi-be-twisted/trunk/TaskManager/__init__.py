@@ -38,4 +38,16 @@ class TaskManagerResource(resource.Resource):
     def render(self, request):
         tasklets.purge()
         return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, tasklets.debug())
+
+class TaskManagerPickleResource(resource.Resource):
+    """This is the resource that connects to all the filesystem backends"""
+    VERSION=0.2
+    addSlash = True
+    
+    def __init__(self,*args,**kwargs):
+        resource.Resource.__init__(self,*args,**kwargs)
+    
+    def render(self, request):
+        tasklets.purge()
+        return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, tasklets.pickle())
     

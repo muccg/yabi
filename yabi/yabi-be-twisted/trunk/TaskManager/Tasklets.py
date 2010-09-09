@@ -93,5 +93,9 @@ class Tasklets(object):
             
             output = "%s%s\n"%(output,section)
         return output
+        
+    def pickle(self):
+        """ just try and serialise the objects"""
+        self.save("/tmp")
     
 tasklets = Tasklets()
