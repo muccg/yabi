@@ -24,6 +24,7 @@ def shutdown():
     print "Saving tasklets..."
     
     stackless.schedule()
+    stackless.schedule()
     tasklets.save(directory=config.config['backend']['tasklets'])
 
 from twisted.web2 import resource, http_headers, responsecode, http, server
