@@ -87,5 +87,5 @@ def shutdown():
     import TaskManager
     TaskManager.shutdown()
     
-reactor.addSystemEventTrigger("before","shutdown",shutdown)
+reactor.addSystemEventTrigger("after","shutdown",shutdown)
 
