@@ -74,6 +74,7 @@ class Tasklets(object):
             out = ""
             keys = dir(obj)
             #for key in [K for K in keys if not K.startswith("_")]:
+            keys.remove("cstate")
             for key in keys:
                 out+=key+": "+str(getattr(obj,key))+"\n"
             return out    
