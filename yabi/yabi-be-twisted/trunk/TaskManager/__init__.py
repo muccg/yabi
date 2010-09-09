@@ -36,5 +36,5 @@ class TaskManagerResource(resource.Resource):
         resource.Resource.__init__(self,*args,**kwargs)
     
     def render(self, request):
-        return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, Tasks.tasklets.debug())
+        return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, tasklets.debug())
     
