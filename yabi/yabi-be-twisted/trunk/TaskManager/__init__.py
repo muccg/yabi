@@ -23,9 +23,6 @@ def shutdown():
     """pickle tasks to disk"""
     print "Saving tasklets..."
     
-    for i in range(20):
-        stackless.schedule()
-    
     tasklets.save(directory=config.config['backend']['tasklets'])
 
 from twisted.web2 import resource, http_headers, responsecode, http, server
