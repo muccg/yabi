@@ -69,10 +69,18 @@ class Tasklets(object):
                 print "TASK is a dead task. skipping...",re
                 
     def debug(self):
+        
+        def dump_obj(obj):
+            out = ""
+            keys = dir(obj)
+            for key in [K for K in keys if not K.startswith("_")]:
+                out+=key+": "+str(getattr(obj,key))
+            return out    
+        
         output=""
         for task in self.tasks:
             section=str(task)+"\n"+("="*len(str(task)))+"\n"
-            section+=str(dir(task))
+            section+=dump_obj(task)
             section+="\n"
             
             output = "%s%s\n"%(output,section)
