@@ -39,7 +39,6 @@ def sleep(seconds):
     """Sleep the tasklet for this many seconds"""
     wakeup = time.time()+seconds
     while time.time()<wakeup:
-        print "sleep(",seconds,")"
         schedule()
 
 import urllib

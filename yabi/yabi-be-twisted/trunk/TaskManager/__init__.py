@@ -8,6 +8,8 @@ from Tasklets import tasklets
 
 from conf import config
 
+import stackless
+
 def startup():
     """Start up the TaskManager, so it can go and get some jobs..."""
     print "Starting TaskManager..."
