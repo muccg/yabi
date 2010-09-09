@@ -27,17 +27,6 @@ from twisted.internet import defer, reactor
 import weakref
 import sys, os
 
-from FileCopyResource import FileCopyResource
-from FileRCopyResource import FileRCopyResource
-from FileDeleteResource import FileDeleteResource
-from FileListResource import FileListResource
-from FileMkdirResource import FileMkdirResource
-from FilePutResource import FilePutResource
-from FileGetResource import FileGetResource
-from FileUploadResource import UploadTicket, FileUploadResource, UploadStatus
-
-from utils.BackendResource import BackendResource
-
 class TaskManagerResource(resource.Resource):
     """This is the resource that connects to all the filesystem backends"""
     VERSION=0.2
