@@ -73,7 +73,8 @@ class Tasklets(object):
         def dump_obj(obj):
             out = ""
             keys = dir(obj)
-            for key in [K for K in keys if not K.startswith("_")]:
+            #for key in [K for K in keys if not K.startswith("_")]:
+            for key in keys:
                 out+=key+": "+str(getattr(obj,key))+"\n"
             return out    
         
