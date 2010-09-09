@@ -67,5 +67,11 @@ class Tasklets(object):
                 print "task",task,"loaded"
             except RuntimeError, re:
                 print "TASK is a dead task. skipping...",re
+                
+    def debug(self):
+        output=""
+        for task in self.tasks:
+            output = "%s%s"%(output,task)
+        return output
     
 tasklets = Tasklets()

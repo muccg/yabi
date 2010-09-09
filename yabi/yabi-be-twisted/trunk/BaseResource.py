@@ -25,6 +25,9 @@ from ex.connector.GlobusConnector import GlobusConnector
 from ex.connector.SGEConnector import SGEConnector
 from ex.connector.SSHConnector import SSHConnector
 
+# taskmanager debug
+from TaskManager import TaskManagerResource
+
 VERSION = 0.2
 class BaseResource(resource.PostableResource):
     """This is the baseclass for out "/" HTTP resource. It does nothing but defines the various children.
@@ -38,7 +41,10 @@ class BaseResource(resource.PostableResource):
         ## our handlers
         ##
         self.child_fs = FSResource()
-        self.child_exec = ExecResource() 
+        self.child_exec = ExecResource()
+        
+        #  debug for taskmanager
+        self.child_debug = TaskManagerResource()
         
     def LoadExecConnectors(self, quiet=False):
         self.child_exec.LoadConnectors(quiet)
