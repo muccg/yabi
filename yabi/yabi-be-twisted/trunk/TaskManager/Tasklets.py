@@ -19,6 +19,12 @@ class Tasklets(object):
         print "ADD",tasklet
         self.tasks.append(tasklet)
         
+    def purge(self):
+        """purge dead tasks from the list"""
+        for task in self.tasks:
+            if task.frame==None:
+                self.tasks.remove(task)
+        
     def save(self, directory):
         print "TASKS Save",self.tasks
         
