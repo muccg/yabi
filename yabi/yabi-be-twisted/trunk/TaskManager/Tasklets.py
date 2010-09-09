@@ -71,7 +71,11 @@ class Tasklets(object):
     def debug(self):
         output=""
         for task in self.tasks:
-            output = "%s%s\n"%(output,task)
+            section=str(task)+"\n"+("="*len(str(task)))+"\n"
+            section+=str(dir(task))
+            section+="\n"
+            
+            output = "%s%s\n"%(output,section)
         return output
     
 tasklets = Tasklets()
