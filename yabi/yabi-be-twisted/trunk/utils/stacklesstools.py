@@ -275,7 +275,6 @@ def POST(path,**kws):
     
     # now we schedule this thread until the task is complete
     while not get_complete[0] and not get_failed[0]:
-        print "P"
         schedule()
         
     if get_failed[0]:

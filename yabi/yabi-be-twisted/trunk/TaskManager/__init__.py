@@ -49,5 +49,6 @@ class TaskManagerPickleResource(resource.Resource):
     
     def render(self, request):
         tasklets.purge()
+        stackless.schedule()
         return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, tasklets.pickle())
     
