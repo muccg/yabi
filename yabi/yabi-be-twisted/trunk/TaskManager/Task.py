@@ -106,12 +106,12 @@ class NullBackendTask(Task):
                     log("RCopying %s to %s Success"%(src,dst))
                 except GETFailure, error:
                     # error copying!
-                    print "TASK[%s]: RCopy %s to %s Error!"%(taskid,src,dst)
+                    print "TASK[%s]: RCopy %s to %s Error!"%(self.taskid,src,dst)
                     status("error")
                     log("RCopying %s to %s failed: %s"%(src,dst, error))
                     return              # finish task
             
-                print "TASK[%s]: RCopy %s to %s Success!"%(taskid,src,dst)
+                print "TASK[%s]: RCopy %s to %s Success!"%(self.taskid,src,dst)
             else:
                 log("Copying %s to %s..."%(src,dst))
                 try:
@@ -119,12 +119,12 @@ class NullBackendTask(Task):
                     log("Copying %s to %s Success"%(src,dst))
                 except GETFailure, error:
                     # error copying!
-                    print "TASK[%s]: Copy %s to %s Error!"%(taskid,src,dst)
+                    print "TASK[%s]: Copy %s to %s Error!"%(self.taskid,src,dst)
                     status("error")
                     log("Copying %s to %s failed: %s"%(src,dst, error))
                     return              # finish task
             
-                print "TASK[%s]: Copy %s to %s Success!"%(taskid,src,dst)
+                print "TASK[%s]: Copy %s to %s Success!"%(self.taskid,src,dst)
             
 class MainTask(Task):
     def __init__(self, task):
