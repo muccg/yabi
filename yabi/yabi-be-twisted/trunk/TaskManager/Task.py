@@ -73,7 +73,7 @@ class NullBackendTask(Task):
             pass
         
     def stage_in_files(self):
-        dst = stageout
+        dst = self.json['stageout']
         status = self.status
         log = self.log
         
