@@ -167,7 +167,7 @@ class MainTask(Task):
         log("Job completed successfully")
         status("complete")
         
-    def stage_in_files(self)
+    def stage_in_files(self):
         task = self.json
         for copy in task['stagein']:
             src = copy['src']
