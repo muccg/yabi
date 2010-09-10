@@ -1,6 +1,20 @@
 # -*- coding: utf-8 -*-
+import json
+import stackless
+import random
+import os
+import pickle
+
+from utils.parsers import parse_url
+
+from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Mkdir, Rm, List, UserCreds, GETFailure, CloseConnections
+
+import traceback
 
 DEBUG = False
+
+class TaskFailed(Exception):
+    pass
 
 class Task(object):
     def __init__(self, task):
@@ -119,29 +133,18 @@ class MainTask(Task):
         # check if exec scheme is null backend. If this is the case, we need to run our special null backend tasklet
         scheme, address = parse_url(task['exec']['backend'])
         assert scheme.lower() != "null"   
-        
-    def norun(self):
-        self.log("null backend... skipping task and copying files")
-        self.log("making stageout directory %s"%self.json['stageout'])
-        
-        self.make_stageout()
-        
-        self.status("stagein")
-        self.stage_in_files()
-
-        self.status("complete")              # null backends are always marked complete
-        
+                
     def run(self):
         self.status("stagein")
         self.stage_in_files()
                 
         # make our working directory
         status("mkdir")
-        self.mkdir()
+        outuri, outdir = self.mkdir()                     # make the directories we are working in
         
         # now we are going to run the job
         status("exec")
-        self.execute()
+        self.execute(outdir)
         
         # stageout
         log("Staging out results")
@@ -153,7 +156,7 @@ class MainTask(Task):
         # make sure we have the stageout directory
         log("making stageout directory %s"%task['stageout'])
         
-        self.stageout()
+        self.stageout(outuri)
         
         # cleanup
         status("cleaning")
@@ -197,17 +200,18 @@ class MainTask(Task):
                 print "TASK[%s]: Copy %s to %s Error!"%(taskid,src,dst)
                 status("error")
                 log("Copying %s to %s failed: %s"%(src,dst, error))
-                return              # finish task
+                
+                raise TaskError("Stage In failed")
            
             print "TASK[%s]: Copy %s to %s Success!"%(taskid,src,dst)
         
      def mkdir(self):
+        task=self.json
+        
         # get our credential working directory. We lookup the execution backends auth proxy cache, and get the users home directory from that
         # this comes from their credentials.
-        
         scheme, address = parse_url(task['exec']['backend'])
         usercreds = UserCreds(yabiusername, task['exec']['backend'])
-        #homedir = usercreds['homedir']
         workingdir = task['exec']['workingdir']
         
         assert address.path=="/", "Error. JSON[exec][backend] has a path. Execution backend URI's must not have a path (path is %s)"%address.path 
@@ -215,8 +219,6 @@ class MainTask(Task):
         if DEBUG:
             print "USERCREDS",usercreds
         
-        #fsscheme, fsaddress = parse_url(task['exec']['fsbackend'])
-        #mkuri = fsscheme+"://"+fsaddress.username+"@"+fsaddress.hostname+workingdir
         fsbackend = task['exec']['fsbackend']
         
         outputuri = fsbackend + ("/" if not fsbackend.endswith('/') else "") + "output/"
@@ -228,12 +230,16 @@ class MainTask(Task):
             Mkdir(outputuri, yabiusername=yabiusername)
         except GETFailure, error:
             # error making directory
-            print "TASK[%s]:Mkdir failed!"%(taskid)
+            print "TASK[%s]:Mkdir failed!"%(self.taskid)
             status("error")
             log("Making working directory of %s failed: %s"%(outputuri,error))
-            return 
+            
+            raise TaskError("Mkdir failed")
         
-     def execute(self):
+        return outputuri,outputdir
+        
+     def execute(self, outputdir):
+        task=self.json
         retry=True
         while retry:
             retry=False
@@ -245,11 +251,11 @@ class MainTask(Task):
                     line = line.strip()
                     if DEBUG:
                         print "_task_status_change(",line,")"
-                    log("Remote execution backend changed status to: %s"%(line))
-                    status("exec:%s"%(line.lower()))
+                    self.log("Remote execution backend changed status to: %s"%(line))
+                    self.status("exec:%s"%(line.lower()))
                 
                 # submit the job to the execution middle ware
-                log("Submitting to %s command: %s"%(task['exec']['backend'],task['exec']['command']))
+                self.log("Submitting to %s command: %s"%(task['exec']['backend'],task['exec']['command']))
                 
                 try:
                     uri = task['exec']['backend']+outputdir
@@ -260,57 +266,64 @@ class MainTask(Task):
                         if key in task['exec'] and task['exec'][key]:
                             extras[key]=task['exec'][key]
                     
-                    Exec(uri, command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=yabiusername, **extras)                # this blocks untill the command is complete.
-                    log("Execution finished")
+                    Exec(uri, command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)                # this blocks untill the command is complete.
+                    self.log("Execution finished")
                 except GETFailure, error:
                     # error executing
-                    print "TASK[%s]: Execution failed!"%(taskid)
-                    status("error")
-                    log("Execution of %s on %s failed: %s"%(task['exec']['command'],task['exec']['backend'],error))
-                    return              # finish task
+                    print "TASK[%s]: Execution failed!"%(self.taskid)
+                    self.status("error")
+                    self.log("Execution of %s on %s failed: %s"%(task['exec']['command'],task['exec']['backend'],error))
+                    
+                    # finish task
+                    raise TaskError("Execution failed")
+                
             except CloseConnections, cc:
                 print "CLOSECONNECTIONS",cc
                 retry=True
                 
             stackless.schedule()
         
-     def stageout(self):
-
+     def stageout(self,outputuri):
+        task=self.json
         if DEBUG:
             print "STAGEOUT:",task['stageout']
         try:
-            Mkdir(task['stageout'], yabiusername=yabiusername)
+            Mkdir(task['stageout'], yabiusername=self.yabiusername)
         except GETFailure, error:
             pass
         
         try:
-            RCopy(outputuri,task['stageout'], yabiusername=yabiusername)
-            log("Files successfuly staged out")
+            RCopy(outputuri,task['stageout'], yabiusername=self.yabiusername)
+            self.log("Files successfuly staged out")
         except GETFailure, error:
             # error executing
             print "TASK[%s]: Stageout failed!"%(taskid)
-            status("error")
+            self.status("error")
             if DEBUG:
-                log("Staging out remote %s to %s failed... \n%s"%(outputuri,task['stageout'],traceback.format_exc()))
+                self.log("Staging out remote %s to %s failed... \n%s"%(outputuri,task['stageout'],traceback.format_exc()))
             else:
-                log("Staging out remote %s to %s failed... %s"%(outputuri,task['stageout'],error))
-            return              # finish task
+                self.log("Staging out remote %s to %s failed... %s"%(outputuri,task['stageout'],error))
+            
+            # finish task
+            raise TaskFailed("Stageout failed")
             
      def cleanup(self):
-        
+        task=self.json
         # cleanup working dir
         for copy in task['stagein']:
-            dst_url = fsbackend
+            dst_url = task['exec']['fsbackend']
             log("Deleting %s..."%(dst_url))
             try:
                 if DEBUG:
                     print "RM1:",dst_url
-                Rm(dst_url, yabiusername=yabiusername, recurse=True)
+                Rm(dst_url, yabiusername=self.yabiusername, recurse=True)
             except GETFailure, error:
                 # error deleting. This is logged but is non fatal
-                print "TASK[%s]: Delete %s Error!"%(taskid, dst_url)
+                print "TASK[%s]: Delete %s Error!"%(self.taskid, dst_url)
                 #status("error")
                 log("Deleting %s failed: %s"%(dst_url, error))
-                #return              # finish task
+                
+                # finish task
+                raise TaskFailed("Cleanup failed")
         
                 

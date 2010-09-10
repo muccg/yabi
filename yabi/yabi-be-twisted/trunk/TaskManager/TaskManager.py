@@ -147,6 +147,13 @@ class TaskManager(object):
         print json.dumps(task, sort_keys=True, indent=4)
         print "=========================="
         
+        from Task import NullBackendTask
+        
+        nbe = NullBackendTask(task)
+        nbe.run()
+        
+        return
+        
         # stage in file
         taskid = task['taskid']
         
