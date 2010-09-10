@@ -78,7 +78,7 @@ class NullBackendTask(Task):
         log = self.log
         
         # for each stagein, copy to stageout NOT the stagein destination
-        for copy in task['stagein']:
+        for copy in self.json['stagein']:
             src = copy['src']
             
             # check that destination directory exists.
