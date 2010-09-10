@@ -152,103 +152,18 @@ class TaskManager(object):
         nbe = NullBackendTask(task)
         nbe.run()
         
-        return
-        
-        # stage in file
-        taskid = task['taskid']
-        
-        statusurl = task['statusurl']
-        errorurl = task['errorurl']
-        yabiusername = task['yabiusername']
-        
-        # sanity check...
-        for key in ['errorurl','exec','stagein','stageout','statusurl','taskid','yabiusername']:
-            assert key in task, "Task JSON description is missing a vital key '%s'"%key
-        
-        # check the exec section
-        for key in ['backend', 'command', 'fsbackend', 'workingdir']:
-            assert key in task['exec'], "Task JSON description is missing a vital key inside the 'exec' section. Key name is '%s'"%key
-        
-        # shortcuts for our status and log calls
-        status = lambda x: Status(statusurl,x)
-        log = lambda x: Log(errorurl,x)
-        
-        # check if exec scheme is null backend. If this is the case, we need to run our special null backend tasklet
-        scheme, address = parse_url(task['exec']['backend'])
-        assert scheme.lower() == "null"
-           
-        log("null backend... skipping task and copying files")
-           
-        # make sure we have the stageout directory
-        log("making stageout directory %s"%task['stageout'])
-        if DEBUG:
-            print "STAGEOUT:",task['stageout']
-        try:
-            Mkdir(task['stageout'], yabiusername=yabiusername)
-        except GETFailure, error:
-            pass
-        
-        dst = task['stageout']
-              
-        # for each stagein, copy to stageout NOT the stagein destination
-        status("stagein")
-        for copy in task['stagein']:
-            src = copy['src']
-            
-            # check that destination directory exists.
-            scheme,address = parse_url(dst)
-            
-            directory, file = os.path.split(address.path)
-            remotedir = scheme+"://"+address.netloc+directory
-            if DEBUG:
-                print "CHECKING remote:",remotedir
-            try:
-                listing = List(remotedir, yabiusername=yabiusername)
-                if DEBUG:
-                    print "list result:", listing
-            except Exception, error:
-                # directory does not exist
-                print "Remote DIR does not exist"
-                
-                #make dir
-                Mkdir(remotedir, yabiusername=yabiusername)
-            
-            if src.endswith("/"):
-                log("RCopying %s to %s..."%(src,dst))
-                try:
-                    RCopy(src,dst, yabiusername=yabiusername)
-                    log("RCopying %s to %s Success"%(src,dst))
-                except GETFailure, error:
-                    # error copying!
-                    print "TASK[%s]: RCopy %s to %s Error!"%(taskid,src,dst)
-                    status("error")
-                    log("RCopying %s to %s failed: %s"%(src,dst, error))
-                    return              # finish task
-            
-                print "TASK[%s]: RCopy %s to %s Success!"%(taskid,src,dst)
-            else:
-                log("Copying %s to %s..."%(src,dst))
-                try:
-                    Copy(src,dst, yabiusername=yabiusername)
-                    log("Copying %s to %s Success"%(src,dst))
-                except GETFailure, error:
-                    # error copying!
-                    print "TASK[%s]: Copy %s to %s Error!"%(taskid,src,dst)
-                    status("error")
-                    log("Copying %s to %s failed: %s"%(src,dst, error))
-                    return              # finish task
-            
-                print "TASK[%s]: Copy %s to %s Success!"%(taskid,src,dst)
-            
-        
-        status("complete")              # null backends are always marked complete
-        
-        
     def task_mainline(self, task):
         """Our top down greenthread code"""
         print "=========JSON============="
         print json.dumps(task, sort_keys=True, indent=4)
         print "=========================="
+        
+        from Task import MainTask
+        
+        main = MainTask(task)
+        main.run()
+        
+        return
         
         # stage in file
         taskid = task['taskid']
