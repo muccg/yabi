@@ -139,11 +139,11 @@ class MainTask(Task):
         self.stage_in_files()
                 
         # make our working directory
-        status("mkdir")
+        self.status("mkdir")
         outuri, outdir = self.mkdir()                     # make the directories we are working in
         
         # now we are going to run the job
-        status("exec")
+        self.status("exec")
         self.execute(outdir)
         
         # stageout
