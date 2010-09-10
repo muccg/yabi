@@ -211,7 +211,7 @@ class MainTask(Task):
         # get our credential working directory. We lookup the execution backends auth proxy cache, and get the users home directory from that
         # this comes from their credentials.
         scheme, address = parse_url(task['exec']['backend'])
-        usercreds = UserCreds(yabiusername, task['exec']['backend'])
+        usercreds = UserCreds(self.yabiusername, task['exec']['backend'])
         workingdir = task['exec']['workingdir']
         
         assert address.path=="/", "Error. JSON[exec][backend] has a path. Execution backend URI's must not have a path (path is %s)"%address.path 
@@ -227,11 +227,11 @@ class MainTask(Task):
         print "Making directory",outputuri
         #self._tasks[stackless.getcurrent()]=workingdir
         try:
-            Mkdir(outputuri, yabiusername=yabiusername)
+            Mkdir(outputuri, yabiusername=self.yabiusername)
         except GETFailure, error:
             # error making directory
             print "TASK[%s]:Mkdir failed!"%(self.taskid)
-            status("error")
+            self.status("error")
             self.log("Making working directory of %s failed: %s"%(outputuri,error))
             
             raise TaskError("Mkdir failed")
