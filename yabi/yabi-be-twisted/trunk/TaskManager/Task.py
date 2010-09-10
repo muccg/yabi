@@ -202,10 +202,10 @@ class MainTask(Task):
                 log("Copying %s to %s failed: %s"%(src,dst, error))
                 
                 raise TaskError("Stage In failed")
-           
+        
             print "TASK[%s]: Copy %s to %s Success!"%(taskid,src,dst)
         
-     def mkdir(self):
+    def mkdir(self):
         task=self.json
         
         # get our credential working directory. We lookup the execution backends auth proxy cache, and get the users home directory from that
@@ -238,7 +238,7 @@ class MainTask(Task):
         
         return outputuri,outputdir
         
-     def execute(self, outputdir):
+    def execute(self, outputdir):
         task=self.json
         retry=True
         while retry:
@@ -283,7 +283,7 @@ class MainTask(Task):
                 
             stackless.schedule()
         
-     def stageout(self,outputuri):
+    def stageout(self,outputuri):
         task=self.json
         if DEBUG:
             print "STAGEOUT:",task['stageout']
@@ -307,7 +307,7 @@ class MainTask(Task):
             # finish task
             raise TaskFailed("Stageout failed")
             
-     def cleanup(self):
+    def cleanup(self):
         task=self.json
         # cleanup working dir
         for copy in task['stagein']:
