@@ -147,25 +147,25 @@ class MainTask(Task):
         self.execute(outdir)
         
         # stageout
-        log("Staging out results")
-        status('stageout')
+        self.log("Staging out results")
+        self.status('stageout')
         
         # recursively copy the working directory to our stageout area
-        log("Staging out remote %s to %s..."%(outputdir,task['stageout']))
+        self.log("Staging out remote %s to %s..."%(outdir,self.json['stageout']))
         
         # make sure we have the stageout directory
-        log("making stageout directory %s"%task['stageout'])
+        self.log("making stageout directory %s"%self.json['stageout'])
         
         self.stageout(outuri)
         
         # cleanup
-        status("cleaning")
-        log("Cleaning up job...")
+        self.status("cleaning")
+        self.log("Cleaning up job...")
         
         self.cleanup()
         
-        log("Job completed successfully")
-        status("complete")
+        self.log("Job completed successfully")
+        self.status("complete")
         
     def stage_in_files(self):
         task = self.json
@@ -191,19 +191,19 @@ class MainTask(Task):
                 #make dir
                 Mkdir(remotedir, yabiusername=self.yabiusername)
             
-            log("Copying %s to %s..."%(src,dst))
+            self.log("Copying %s to %s..."%(src,dst))
             try:
                 Copy(src,dst, yabiusername=self.yabiusername)
-                log("Copying %s to %s Success"%(src,dst))
+                self.log("Copying %s to %s Success"%(src,dst))
             except GETFailure, error:
                 # error copying!
-                print "TASK[%s]: Copy %s to %s Error!"%(taskid,src,dst)
-                status("error")
-                log("Copying %s to %s failed: %s"%(src,dst, error))
+                print "TASK[%s]: Copy %s to %s Error!"%(self.taskid,src,dst)
+                self.status("error")
+                self.log("Copying %s to %s failed: %s"%(src,dst, error))
                 
                 raise TaskError("Stage In failed")
         
-            print "TASK[%s]: Copy %s to %s Success!"%(taskid,src,dst)
+            print "TASK[%s]: Copy %s to %s Success!"%(self.taskid,src,dst)
         
     def mkdir(self):
         task=self.json
@@ -232,7 +232,7 @@ class MainTask(Task):
             # error making directory
             print "TASK[%s]:Mkdir failed!"%(self.taskid)
             status("error")
-            log("Making working directory of %s failed: %s"%(outputuri,error))
+            self.log("Making working directory of %s failed: %s"%(outputuri,error))
             
             raise TaskError("Mkdir failed")
         
@@ -312,7 +312,7 @@ class MainTask(Task):
         # cleanup working dir
         for copy in self.json['stagein']:
             dst_url = task['exec']['fsbackend']
-            log("Deleting %s..."%(dst_url))
+            self.log("Deleting %s..."%(dst_url))
             try:
                 if DEBUG:
                     print "RM1:",dst_url
@@ -321,7 +321,7 @@ class MainTask(Task):
                 # error deleting. This is logged but is non fatal
                 print "TASK[%s]: Delete %s Error!"%(self.taskid, dst_url)
                 #status("error")
-                log("Deleting %s failed: %s"%(dst_url, error))
+                self.log("Deleting %s failed: %s"%(dst_url, error))
                 
                 # finish task
                 raise TaskFailed("Cleanup failed")
