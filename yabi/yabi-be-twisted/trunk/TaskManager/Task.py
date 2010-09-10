@@ -310,7 +310,7 @@ class MainTask(Task):
     def cleanup(self):
         task=self.json
         # cleanup working dir
-        for copy in task['stagein']:
+        for copy in self.json['stagein']:
             dst_url = task['exec']['fsbackend']
             log("Deleting %s..."%(dst_url))
             try:
