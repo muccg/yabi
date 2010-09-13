@@ -35,7 +35,7 @@ class Tasklets(object):
             # so that when we are resurrected in the future, the connection will immediately be marked as failed
             fname = os.path.join(directory,str(id(task)))
             
-            self.save(task,fname)
+            self.save_task(task,fname)
             
     def save_task(self,task,filename):
         """Save the json and stage to a file"""
