@@ -22,6 +22,7 @@ import traceback
 from conf import config
 
 from Tasklets import tasklets
+from Task import NullBackendTask, MainTask
 
 class CustomTasklet(stackless.tasklet):
     # When this is present, it is called in lieu of __reduce__.
@@ -143,22 +144,20 @@ class TaskManager(object):
         
     def task_nullbe(self, task):
         """ Our special copy case for null backend"""
-        print "=========NULL============="
-        print json.dumps(task, sort_keys=True, indent=4)
-        print "=========================="
-        
-        from Task import NullBackendTask
-        
+        if DEBUG:
+            print "=========NULL============="
+            print json.dumps(task, sort_keys=True, indent=4)
+            print "=========================="
+                
         nbe = NullBackendTask(task)
         nbe.run()
         
     def task_mainline(self, task):
         """Our top down greenthread code"""
-        print "=========JSON============="
-        print json.dumps(task, sort_keys=True, indent=4)
-        print "=========================="
-        
-        from Task import MainTask
+        if DEBUG:
+            print "=========JSON============="
+            print json.dumps(task, sort_keys=True, indent=4)
+            print "=========================="
         
         main = MainTask(task)
         main.run()

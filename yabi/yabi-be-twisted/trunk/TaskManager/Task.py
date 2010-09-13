@@ -94,7 +94,7 @@ class NullBackendTask(Task):
 
             self._next_stage()
 
-        if self.stage == 3:
+        if self.stage == 2:
             self.status("complete")              # null backends are always marked complete
 
             self._next_stage()
