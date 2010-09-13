@@ -64,6 +64,8 @@ class TaskManager(object):
     
     def __init__(self):
         self.pausechannel = stackless.channel()
+        
+        self.tasks = []                 # store all the tasks currently being executed in a list
     
     def start(self):
         """Begin the task manager tasklet. This tasklet continually pops tasks from yabiadmin and sets them up for running"""
@@ -96,7 +98,6 @@ class TaskManager(object):
         
         #add to save list
         tasklets.add(tasklet)
-        
         tasklet.run()
         
         # task successfully started. Lets try and start anotherone.
@@ -116,8 +117,6 @@ class TaskManager(object):
             print "reactor.connectTCP(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.TASK_URL),")"
         reactor.connectTCP(config.yabiadminserver, config.yabiadminport, factory)
         
-        
-        
         # now if the page fails for some reason. deal with it
         def _doFailure(data):
             #print "No more jobs. Sleeping for",self.JOBLESS_PAUSE
@@ -126,39 +125,41 @@ class TaskManager(object):
             
         return factory.deferred.addCallback(self.start_task).addErrback(_doFailure)
         
-    def task(self,task, taskrunner=None):
-        """Entry point for Task tasklet"""
-        taskid = task['taskid']
-        if not taskrunner:
-            taskrunner=self.task_mainline
-        try:
-            return taskrunner(task)
-        except Exception, exc:
-            print "TASK[%s] raised uncaught exception: %s"%(taskid,exc)
-            traceback.print_exc()
-            if DEBUG:
-                Log(task['errorurl'],"Raised uncaught exception: %s"%(traceback.format_exc()))
-            else:
-                Log(task['errorurl'],"Raised uncaught exception: %s"%(exc))
-            Status(task['statusurl'],"error")
+    #def task(self,task, taskrunner=None):
+        #"""Entry point for Task tasklet"""
+        #taskid = task['taskid']
+        #if not taskrunner:
+            #taskrunner=self.task_mainline
+        #try:
+            #return taskrunner(task)
+        #except Exception, exc:
+            #print "TASK[%s] raised uncaught exception: %s"%(taskid,exc)
+            #traceback.print_exc()
+            #if DEBUG:
+                #Log(task['errorurl'],"Raised uncaught exception: %s"%(traceback.format_exc()))
+            #else:
+                #Log(task['errorurl'],"Raised uncaught exception: %s"%(exc))
+            #Status(task['statusurl'],"error")
         
-    def task_nullbe(self, task):
-        """ Our special copy case for null backend"""
-        if DEBUG:
-            print "=========NULL============="
-            print json.dumps(task, sort_keys=True, indent=4)
-            print "=========================="
+    #def task_nullbe(self, task):
+        #""" Our special copy case for null backend"""
+        #if DEBUG:
+            #print "=========NULL============="
+            #print json.dumps(task, sort_keys=True, indent=4)
+            #print "=========================="
                 
-        nbe = NullBackendTask(task)
-        nbe.run()
+        #nbe = NullBackendTask(task)
+        #self.tasks.append(nbe)
+        #nbe.run()
         
-    def task_mainline(self, task):
-        """Our top down greenthread code"""
-        if DEBUG:
-            print "=========JSON============="
-            print json.dumps(task, sort_keys=True, indent=4)
-            print "=========================="
+    #def task_mainline(self, task):
+        #"""Our top down greenthread code"""
+        #if DEBUG:
+            #print "=========JSON============="
+            #print json.dumps(task, sort_keys=True, indent=4)
+            #print "=========================="
         
-        main = MainTask(task)
-        main.run()
+        #main = MainTask(task)
+        #self.tasks.append(main)
+        #main.run()
        
