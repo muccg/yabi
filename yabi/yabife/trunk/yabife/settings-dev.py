@@ -11,9 +11,11 @@ from appsettings.default_dev import *
 from appsettings.yabife.dev import *
 
 # Defaults
-#LOGIN_URL
 #LOGIN_REDIRECT_URL
-#LOGOUT_URL
+
+# These are non standard
+LOGIN_URL = url('/login/')
+LOGOUT_URL = url('/logout/')
 
 ROOT_URLCONF = 'yabife.urls'
 
@@ -63,6 +65,12 @@ CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
+import logging
+LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
+LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
+LOGGING_FORMATTER = logging.Formatter('[%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
+LOGS = ['yabife']
+
 # Making this always point to the yabi users deployment
-YABIADMIN_SERVER = "https://faramir.localdomain:22443/"
+YABIADMIN_SERVER = "https://faramir.localdomain:22443"
 YABIADMIN_BASE = "/"
