@@ -59,10 +59,9 @@ class Tasklets(object):
         self.tasks=[]
             
         for f in dircache.listdir(directory):
-            
-            task = self.load_task(f)
-            #print "LOAD",f,task
-            os.unlink(os.path.join(directory,f))
+            path = os.path.join(directory,f)
+            task = self.load_task(path)
+            os.unlink(path)
             
             # lets try and start the task up
             runner = stackless.tasklet(task.run)
