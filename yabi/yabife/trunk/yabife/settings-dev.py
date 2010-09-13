@@ -49,14 +49,6 @@ STATUS_CHECKS = [check_default]
 APPEND_SLASH = True
 SITE_NAME = 'yabife'
 
-# these are standard
-#MEDIA_ROOT = os.path.join(PROJECT_DIRECTORY,"static","media")
-#MEDIA_URL = '/static/media/'
-#ADMIN_MEDIA_PREFIX = url('/static/admin-media/')
-
-# for local development, this is set to the static serving directory. For deployment use Apache Alias
-STATIC_SERVER_PATH = os.path.join(PROJECT_DIRECTORY,"static")
-
 ##
 ## CAPTCHA settings
 ##
