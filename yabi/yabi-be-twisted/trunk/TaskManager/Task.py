@@ -173,14 +173,14 @@ class MainTask(Task):
         if self.stage == 1:
             # make our working directory
             self.status("mkdir")
-            outuri, outdir = self.mkdir()                     # make the directories we are working in
+            self.outuri, self.outdir = self.mkdir()                     # make the directories we are working in
         
             self._next_stage()
         
         if self.stage == 2:
             # now we are going to run the job
             self.status("exec")
-            self.execute(outdir)                        # TODO. implement picking up on this exec task without re-running it??
+            self.execute(self.outdir)                        # TODO. implement picking up on this exec task without re-running it??
         
             self._next_stage()
         
@@ -190,12 +190,12 @@ class MainTask(Task):
             self.status('stageout')
         
             # recursively copy the working directory to our stageout area
-            self.log("Staging out remote %s to %s..."%(outdir,self.json['stageout']))
+            self.log("Staging out remote %s to %s..."%(self.outdir,self.json['stageout']))
         
             # make sure we have the stageout directory
             self.log("making stageout directory %s"%self.json['stageout'])
         
-            self.stageout(outuri)
+            self.stageout(self.outuri)
         
             self._next_stage()
             
