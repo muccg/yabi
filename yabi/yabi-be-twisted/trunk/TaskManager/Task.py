@@ -45,6 +45,13 @@ class Task(object):
         """Move to the next stage of the tasklet"""
         self.stage += 1
         
+    def _end_stage(self):
+        """Mark as ended"""
+        self.stage = -1
+        
+    def finished(self):
+        return self.stage == -1
+        
     def _sanity_check(self):
         # sanity check...
         for key in ['errorurl','exec','stagein','stageout','statusurl','taskid','yabiusername']:
@@ -53,23 +60,7 @@ class Task(object):
         # check the exec section
         for key in ['backend', 'command', 'fsbackend', 'workingdir']:
             assert key in self.json['exec'], "Task JSON description is missing a vital key inside the 'exec' section. Key name is '%s'"%key
-            
-    def save(self,filename):
-        """Save the json and stage to a file"""
-        with open(filename,"w") as fh:
-            fh.write(pickle.dumps(("V1",self.stage,self.json)))
-        
-    def load(self,filename):
-        """Load the json from a file"""
-        with open(filename,'r') as fh:
-            version, stage, json = pickle.loads(fh.read())
-        
-        if version!="V1":
-            raise FileVersionMismatch, "File Version Mismatch for %s"%(filename)
-        
-        # load the json and set the stage
-        self.load_json(json, stage=stage)
-
+           
 class NullBackendTask(Task):
     def __init__(self, task):
         Task.__init__(self, task)
@@ -97,7 +88,7 @@ class NullBackendTask(Task):
         if self.stage == 2:
             self.status("complete")              # null backends are always marked complete
 
-            self._next_stage()
+            self._end_stage()
 
     def make_stageout(self):
         stageout = self.json['stageout']
@@ -219,7 +210,7 @@ class MainTask(Task):
             self.log("Job completed successfully")
             self.status("complete")
             
-            self._next_stage()
+            self._end_stage()
         
     def stage_in_files(self):
         task = self.json

@@ -39,7 +39,6 @@ class CustomTasklet(stackless.tasklet):
         l.append(self.__dict__)
         ret[2] = tuple(l)
         result = tuple(ret)
-        print "RETURNING",result
         return result
 
     def __setstate__(self, l):
@@ -103,13 +102,13 @@ class TaskManager(object):
             tasklets.add(tasklet)
             tasklet.run()
             
-            # task successfully started. Lets try and start anotherone.
+            # Lets try and start anotherone.
             self.pausechannel.send(self.JOB_PAUSE)
+            
         except Exception, e:
             # log any exception
             traceback.print_exc()
             raise e
-         
          
     def get_next_task(self):
          
@@ -132,41 +131,3 @@ class TaskManager(object):
             
         return factory.deferred.addCallback(self.start_task).addErrback(_doFailure)
         
-    #def task(self,task, taskrunner=None):
-        #"""Entry point for Task tasklet"""
-        #taskid = task['taskid']
-        #if not taskrunner:
-            #taskrunner=self.task_mainline
-        #try:
-            #return taskrunner(task)
-        #except Exception, exc:
-            #print "TASK[%s] raised uncaught exception: %s"%(taskid,exc)
-            #traceback.print_exc()
-            #if DEBUG:
-                #Log(task['errorurl'],"Raised uncaught exception: %s"%(traceback.format_exc()))
-            #else:
-                #Log(task['errorurl'],"Raised uncaught exception: %s"%(exc))
-            #Status(task['statusurl'],"error")
-        
-    #def task_nullbe(self, task):
-        #""" Our special copy case for null backend"""
-        #if DEBUG:
-            #print "=========NULL============="
-            #print json.dumps(task, sort_keys=True, indent=4)
-            #print "=========================="
-                
-        #nbe = NullBackendTask(task)
-        #self.tasks.append(nbe)
-        #nbe.run()
-        
-    #def task_mainline(self, task):
-        #"""Our top down greenthread code"""
-        #if DEBUG:
-            #print "=========JSON============="
-            #print json.dumps(task, sort_keys=True, indent=4)
-            #print "=========================="
-        
-        #main = MainTask(task)
-        #self.tasks.append(main)
-        #main.run()
-       

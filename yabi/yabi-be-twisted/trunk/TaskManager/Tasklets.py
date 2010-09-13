@@ -6,6 +6,7 @@ import dircache
 import stackless
 
 from TaskTools import CloseConnections
+from Task import NullBackendTask, MainTask
 
 class Tasklets(object):
     """This is a store for all the tasklets running in back end system. 
@@ -15,14 +16,14 @@ class Tasklets(object):
     def __init__(self):
         self.tasks = []
         
-    def add(self, tasklet):
-        print "ADD",tasklet
-        self.tasks.append(tasklet)
+    def add(self, task):
+        print "ADD",task
+        self.tasks.append(task)
         
     def purge(self):
         """purge dead tasks from the list"""
         for task in self.tasks:
-            if task.frame==None:
+            if task.finished():
                 self.tasks.remove(task)
         
     def save(self, directory):
@@ -31,49 +32,46 @@ class Tasklets(object):
         for task in self.tasks:
             # before we pickle it, if we are waiting on a connection in our stack frame, then set it to have failed
             # so that when we are resurrected in the future, the connection will immediately be marked as failed
-            task.remove()
-            print "task.frame=",task.frame
-            print "dir(task.frame)=",dir(task.frame)
-            if hasattr(task.frame,"f_back"):
-                print "task.frame.f_back=",task.frame.f_back
-                print "dir(task.frame.f_back)=",dir(task.frame.f_back)
-            print "---"
-                
-            frame = task.frame 
-            while frame and not hasattr(frame,"f_locals"):
-                frame = frame.f_back
+            fname = os.path.join(directory,str(id(task)))
             
-            if frame and 'get_failed' in frame.f_locals:
-                print frame.f_locals
-                frame.f_locals['get_failed'][0]=True
-            print "---"
+            self.save(task,fname)
             
-            #task.frame = frame
+    def save_task(self,task,filename):
+        """Save the json and stage to a file"""
+        with open(filename,"w") as fh:
+            fh.write(pickle.dumps(("V1",task.__class__.__name__,task.stage,task.json)))
+  
+    def load_task(self,filename):
+        """Load the json from a file, create the right task object and return it"""
+        with open(filename,'r') as fh:
+            version, objname, stage, json = pickle.loads(fh.read())
         
-        for task in self.tasks:
-            #print "pickling:",task
-            pickled_task = pickle.dumps(task,1)
-            with open(os.path.join(directory,str(id(task))), 'wb') as fh:
-                fh.write(pickled_task) 
+        if version!="V1":
+            raise FileVersionMismatch, "File Version Mismatch for %s"%(filename)
+        
+        # instantiate the object
+        task = locals()[objname]()
+        task.load_json(json, stage=stage)
+        return task
             
     def load(self,directory):
         self.tasks=[]
             
         for f in dircache.listdir(directory):
-            with open(os.path.join(directory,f), 'rb') as fh:
-                data = fh.read()
-             
-            task = pickle.loads(data)
+            
+            task = self.load_task(f)
             #print "LOAD",f,task
             os.unlink(os.path.join(directory,f))
             
-            try:
-                task.insert()
-                self.tasks.append(task)
-                print "task",task,"loaded"
-            except RuntimeError, re:
-                print "TASK is a dead task. skipping...",re
-                
+            # lets try and start the task up
+            runner = stackless.tasklet(task.run)
+            runner.setup()
+            runner.run()
+            
+            self.tasks.append(task)
+            
+            print "task",task,"loaded"
+           
     def debug(self):
         
         def dump_obj(obj):
