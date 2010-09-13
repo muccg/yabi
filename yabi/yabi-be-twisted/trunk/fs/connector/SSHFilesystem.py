@@ -181,7 +181,8 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         when everything is setup and ready, deferred will be called with (proc, fifo), with proc being the python subprocess Popen object
         and fifo being the filesystem location of the fifo.
         """
-        print "SSH::GetReadFifo(",host,username,path,filename,fifo,yabiusername,creds,")"
+        if DEBUG:
+            print "SSH::GetReadFifo(",host,username,path,filename,fifo,yabiusername,creds,")"
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         dst = "%s@%s:%s"%(username,host,os.path.join(path,filename))
         
