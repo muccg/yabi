@@ -40,21 +40,23 @@ class Tasklets(object):
     def save_task(self,task,filename):
         """Save the json and stage to a file"""
         with open(filename,"w") as fh:
-            fh.write(pickle.dumps(("V1",task.__class__.__name__,task.stage,task.json)))
+            fh.write(pickle.dumps(("V1",task.__class__.__name__,task)))
   
     def load_task(self,filename):
         """Load the json from a file, create the right task object and return it"""
         from Task import NullBackendTask, MainTask
         
         with open(filename,'r') as fh:
-            version, objname, stage, json = pickle.loads(fh.read())
+            version, objname, task = pickle.loads(fh.read())
+        
+        print "L:",task
         
         if version!="V1":
             raise FileVersionMismatch, "File Version Mismatch for %s"%(filename)
         
         # instantiate the object
-        task = locals()[objname]()
-        task.load_json(json, stage=stage)
+        #task = locals()[objname]()
+        #task.load_json(json, stage=stage)
         return task
             
     def load(self,directory):
