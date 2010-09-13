@@ -62,11 +62,11 @@ class Task(object):
             assert key in self.json['exec'], "Task JSON description is missing a vital key inside the 'exec' section. Key name is '%s'"%key
            
 class NullBackendTask(Task):
-    def __init__(self, task=None):
-        Task.__init__(self, task)
+    def load_json(self, json, stage=0):
+        Task.load_json(self, json, stage)
         
         # check if exec scheme is null backend. If this is the case, we need to run our special null backend tasklet
-        scheme, address = parse_url(task['exec']['backend'])
+        scheme, address = parse_url(json['exec']['backend'])
         assert scheme.lower() == "null"
         
     def run(self):
@@ -155,12 +155,12 @@ class NullBackendTask(Task):
                 print "TASK[%s]: Copy %s to %s Success!"%(self.taskid,src,dst)
             
 class MainTask(Task):
-    def __init__(self, task=None):
-        Task.__init__(self, task)
+    def load_json(self, json, stage=0):
+        Task.load_json(self, json, stage)
         
         # check if exec scheme is null backend. If this is the case, we need to run our special null backend tasklet
-        scheme, address = parse_url(task['exec']['backend'])
-        assert scheme.lower() != "null"   
+        scheme, address = parse_url(json['exec']['backend'])
+        assert scheme.lower() != "null"
                 
     def run(self):
         
