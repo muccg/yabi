@@ -22,7 +22,6 @@ def RSL( **kws ):
 
 </job>
 """%(kws)
-    print "RSL:",rsl
     return rsl
 
 def ConstructRSL(
