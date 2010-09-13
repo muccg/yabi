@@ -97,6 +97,7 @@ class TaskManager(object):
             
             # make the task and run it
             tasklet = CustomTasklet(runner_object.run)
+            tasklet.setup()
             
             #add to save list
             tasklets.add(tasklet)
