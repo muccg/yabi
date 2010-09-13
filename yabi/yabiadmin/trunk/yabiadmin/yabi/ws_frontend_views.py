@@ -65,8 +65,8 @@ def logout(request):
         "success": True,
     }
 
-@memcache("tool",timeout=30,refresh=True,user_specific=False)
 @authentication_required
+@memcache("tool",timeout=30,refresh=True,user_specific=False)
 def tool(request, *args, **kwargs):
     toolname = kwargs['toolname']
     logger.debug(toolname)
@@ -77,8 +77,8 @@ def tool(request, *args, **kwargs):
     except ObjectDoesNotExist:
         return HttpResponseNotFound(json_error("Object not found"))
 
-@memcache("menu",timeout=300)
 @authentication_required
+@memcache("menu",timeout=300)
 def menu(request):
     username = request.user.username
     logger.debug('Username: ' + username)
