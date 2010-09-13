@@ -28,10 +28,10 @@ class Task(object):
         # check json is okish
         self._sanity_check()
                 
-        self.taskid = task['taskid']
-        self.statusurl = task['statusurl']
-        self.errorurl = task['errorurl']
-        self.yabiusername = task['yabiusername']
+        self.taskid = json['taskid']
+        self.statusurl = json['statusurl']
+        self.errorurl = json['errorurl']
+        self.yabiusername = json['yabiusername']
                 
         # shortcuts for our status and log calls
         self.status = lambda x: Status(self.statusurl,x)
