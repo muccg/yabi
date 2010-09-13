@@ -6,7 +6,6 @@ import dircache
 import stackless
 
 from TaskTools import CloseConnections
-from Task import NullBackendTask, MainTask
 
 class FileVersionMismatch(Exception): pass
 
@@ -44,6 +43,8 @@ class Tasklets(object):
   
     def load_task(self,filename):
         """Load the json from a file, create the right task object and return it"""
+        from Task import NullBackendTask, MainTask
+        
         with open(filename,'r') as fh:
             version, objname, stage, json = pickle.loads(fh.read())
         
