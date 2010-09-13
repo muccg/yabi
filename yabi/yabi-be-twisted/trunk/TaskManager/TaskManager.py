@@ -82,26 +82,31 @@ class TaskManager(object):
             Sleep(self.pausechannel.receive())
         
     def start_task(self, data):
-        taskdescription=json.loads(data)
+        try:
+            taskdescription=json.loads(data)
+            
+            print "starting task:",taskdescription['taskid']
+            
+            runner = None
         
-        print "starting task:",taskdescription['taskid']
-        
-        runner = None
-       
-        if parse_url(taskdescription['exec']['backend'])[0].lower()=="null":
-            # null backend tasklet runner
-            runner = self.task_nullbe
-        
-        # make the task and run it
-        tasklet = CustomTasklet(self.task)
-        tasklet.setup(taskdescription, runner)
-        
-        #add to save list
-        tasklets.add(tasklet)
-        tasklet.run()
-        
-        # task successfully started. Lets try and start anotherone.
-        self.pausechannel.send(self.JOB_PAUSE)
+            if parse_url(taskdescription['exec']['backend'])[0].lower()=="null":
+                # null backend tasklet runner
+                runner = self.task_nullbe
+            
+            # make the task and run it
+            tasklet = CustomTasklet(self.task)
+            tasklet.setup(taskdescription, runner)
+            
+            #add to save list
+            tasklets.add(tasklet)
+            tasklet.run()
+            
+            # task successfully started. Lets try and start anotherone.
+            self.pausechannel.send(self.JOB_PAUSE)
+        except Exception, e:
+            # log any exception
+            traceback.print_exc()
+            raise e
          
          
     def get_next_task(self):

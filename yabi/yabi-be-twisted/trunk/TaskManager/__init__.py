@@ -17,13 +17,13 @@ def startup():
     
     # load up saved tasklets
     print "Loading Tasks..."
-    tasklets.load(directory=config.config['backend']['tasklets'])
+    #tasklets.load(directory=config.config['backend']['tasklets'])
     
 def shutdown():
     """pickle tasks to disk"""
     print "Saving tasklets..."
     
-    tasklets.save(directory=config.config['backend']['tasklets'])
+    #tasklets.save(directory=config.config['backend']['tasklets'])
 
 from twisted.web2 import resource, http_headers, responsecode, http, server
 from twisted.internet import defer, reactor
