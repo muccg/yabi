@@ -17,9 +17,13 @@ class TaskFailed(Exception):
     pass
 
 class Task(object):
-    def __init__(self, task):
+    def __init__(self, json=None):
         # stage in file
-        self.json = task
+        if json:
+            self.load_json(json)
+        
+    def load_json(self, json, stage=0):
+        self.json = json
         
         # check json is okish
         self._sanity_check()
@@ -33,6 +37,14 @@ class Task(object):
         self.status = lambda x: Status(self.statusurl,x)
         self.log = lambda x: Log(self.errorurl,x)
         
+        # stage keeps track of where we are in completing the tasklet, so if we need to restart we can skip
+        # parts that are already completed
+        self.stage = stage
+        
+    def _next_stage(self):
+        """Move to the next stage of the tasklet"""
+        self.stage += 1
+        
     def _sanity_check(self):
         # sanity check...
         for key in ['errorurl','exec','stagein','stageout','statusurl','taskid','yabiusername']:
@@ -41,7 +53,22 @@ class Task(object):
         # check the exec section
         for key in ['backend', 'command', 'fsbackend', 'workingdir']:
             assert key in self.json['exec'], "Task JSON description is missing a vital key inside the 'exec' section. Key name is '%s'"%key
+            
+    def save(self,filename):
+        """Save the json and stage to a file"""
+        with open(filename,"w") as fh:
+            fh.write(pickle.dumps(("V1",self.stage,self.json)))
         
+    def load(self,filename):
+        """Load the json from a file"""
+        with open(filename,'r') as fh:
+            version, stage, json = pickle.loads(fh.read())
+        
+        if version!="V1":
+            raise FileVersionMismatch, "File Version Mismatch for %s"%(filename)
+        
+        # load the json and set the stage
+        self.load_json(json, stage=stage)
 
 class NullBackendTask(Task):
     def __init__(self, task):
@@ -52,15 +79,25 @@ class NullBackendTask(Task):
         assert scheme.lower() == "null"
         
     def run(self):
-        self.log("null backend... skipping task and copying files")
-        self.log("making stageout directory %s"%self.json['stageout'])
         
-        self.make_stageout()
+        if self.stage == 0:
+            self.log("null backend... skipping task and copying files")
+           
+            self.log("making stageout directory %s"%self.json['stageout'])
+            self.make_stageout()
         
-        self.status("stagein")
-        self.stage_in_files()
+            self._next_stage()
+        
+        if self.stage == 1:
+            self.status("stagein")
+            self.stage_in_files()
 
-        self.status("complete")              # null backends are always marked complete
+            self._next_stage()
+
+        if self.stage == 3:
+            self.status("complete")              # null backends are always marked complete
+
+            self._next_stage()
 
     def make_stageout(self):
         stageout = self.json['stageout']
@@ -135,37 +172,54 @@ class MainTask(Task):
         assert scheme.lower() != "null"   
                 
     def run(self):
-        self.status("stagein")
-        self.stage_in_files()
+        
+        if self.stage == 0:
+            self.status("stagein")
+            self.stage_in_files()
                 
-        # make our working directory
-        self.status("mkdir")
-        outuri, outdir = self.mkdir()                     # make the directories we are working in
+            self._next_stage()
+                
+        if self.stage == 1:
+            # make our working directory
+            self.status("mkdir")
+            outuri, outdir = self.mkdir()                     # make the directories we are working in
         
-        # now we are going to run the job
-        self.status("exec")
-        self.execute(outdir)
+            self._next_stage()
         
-        # stageout
-        self.log("Staging out results")
-        self.status('stageout')
+        if self.stage == 2:
+            # now we are going to run the job
+            self.status("exec")
+            self.execute(outdir)                        # TODO. implement picking up on this exec task without re-running it??
         
-        # recursively copy the working directory to our stageout area
-        self.log("Staging out remote %s to %s..."%(outdir,self.json['stageout']))
+            self._next_stage()
         
-        # make sure we have the stageout directory
-        self.log("making stageout directory %s"%self.json['stageout'])
+        if self.stage == 3:
+            # stageout
+            self.log("Staging out results")
+            self.status('stageout')
         
-        self.stageout(outuri)
+            # recursively copy the working directory to our stageout area
+            self.log("Staging out remote %s to %s..."%(outdir,self.json['stageout']))
         
-        # cleanup
-        self.status("cleaning")
-        self.log("Cleaning up job...")
+            # make sure we have the stageout directory
+            self.log("making stageout directory %s"%self.json['stageout'])
         
-        self.cleanup()
+            self.stageout(outuri)
         
-        self.log("Job completed successfully")
-        self.status("complete")
+            self._next_stage()
+            
+        if self.stage == 4:
+        
+            # cleanup
+            self.status("cleaning")
+            self.log("Cleaning up job...")
+        
+            self.cleanup()
+        
+            self.log("Job completed successfully")
+            self.status("complete")
+            
+            self._next_stage()
         
     def stage_in_files(self):
         task = self.json
