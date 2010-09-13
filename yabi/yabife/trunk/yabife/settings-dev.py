@@ -43,8 +43,8 @@ CSRF_COOKIE_NAME = "csrftoken_yabife"
 WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
 
 #functions to evaluate for status checking
-from status_checks import *
-STATUS_CHECKS = [check_default]
+#from status_checks import *
+#STATUS_CHECKS = [check_default]
 
 APPEND_SLASH = True
 SITE_NAME = 'yabife'
