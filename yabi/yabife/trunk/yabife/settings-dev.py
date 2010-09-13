@@ -63,6 +63,6 @@ CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
-
+# Making this always point to the yabi users deployment
 YABIADMIN_SERVER = "https://faramir.localdomain:22443/"
 YABIADMIN_BASE = "/"
