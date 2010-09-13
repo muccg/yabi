@@ -17,7 +17,6 @@ class Tasklets(object):
         self.tasks = []
         
     def add(self, task):
-        print "ADD",task
         self.tasks.append(task)
         
     def purge(self):

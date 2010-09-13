@@ -99,7 +99,7 @@ class TaskManager(object):
             tasklet.setup()
             
             #add to save list
-            tasklets.add(tasklet)
+            tasklets.add(runner_object)
             tasklet.run()
             
             # Lets try and start anotherone.
