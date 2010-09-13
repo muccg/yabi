@@ -87,15 +87,17 @@ class TaskManager(object):
             
             print "starting task:",taskdescription['taskid']
             
-            runner = None
+            runner_object = None
         
             if parse_url(taskdescription['exec']['backend'])[0].lower()=="null":
                 # null backend tasklet runner
-                runner = self.task_nullbe
+                runner_object = NullBackendTask(taskdescription)
+            else:
+                runner_object = MainTask(taskdescription)
             
             # make the task and run it
-            tasklet = CustomTasklet(self.task)
-            tasklet.setup(taskdescription, runner)
+            tasklet = CustomTasklet(runner_object.run)
+            tasklet.setup(taskdescription)
             
             #add to save list
             tasklets.add(tasklet)
