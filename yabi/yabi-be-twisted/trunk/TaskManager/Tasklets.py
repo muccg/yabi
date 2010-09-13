@@ -8,6 +8,8 @@ import stackless
 from TaskTools import CloseConnections
 from Task import NullBackendTask, MainTask
 
+class FileVersionMismatch(Exception): pass
+
 class Tasklets(object):
     """This is a store for all the tasklets running in back end system. 
     From here they can be saved to disk and reloaded when the server is restarted
