@@ -224,8 +224,6 @@ def put(request):
     import socket
     import httplib
 
-    raise Exception, "This is a test exception"
-
     yabiusername = request.user.username
     try:
         logger.debug("yabiusername: %s uri: %s" %(yabiusername, request.REQUEST['uri']))
@@ -278,6 +276,8 @@ def submitworkflow(request):
 
 @authentication_required
 def getuploadurl(request):
+    raise Exception, "test explostion"
+    
     if 'uri' not in request.REQUEST:
         return HttpResponseBadRequest("uri needs to be passed in\n")
     
