@@ -274,7 +274,7 @@ def submitworkflow(request):
 
     return HttpResponse(json.dumps({"id":workflow.id}))
 
-@authentication_required
+#@authentication_required
 def getuploadurl(request):
     raise Exception, "test explostion"
     
