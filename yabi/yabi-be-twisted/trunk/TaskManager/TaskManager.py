@@ -86,6 +86,10 @@ class TaskManager(object):
             
             print "starting task:",taskdescription['taskid']
             
+            print "=========JSON============="
+            print json.dumps(taskdescription, sort_keys=True, indent=4)
+            print "=========================="
+            
             runner_object = None
         
             if parse_url(taskdescription['exec']['backend'])[0].lower()=="null":

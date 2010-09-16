@@ -58,8 +58,14 @@ class Task(object):
         """Mark as ended"""
         self.stage = -1
         
+    def _errored(self):
+        self.stage = -2
+        
     def finished(self):
         return self.stage == -1
+        
+    def errored(self):
+        return self.stage == -2
         
     def _sanity_check(self):
         # sanity check...

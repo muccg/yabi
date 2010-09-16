@@ -25,6 +25,8 @@ class Tasklets(object):
         for task in self.tasks:
             if task.finished():
                 self.tasks.remove(task)
+            elif task.errored():
+                self.tasks.remove(task)
         
     def save(self, directory):
         print "TASKS Save",self.tasks
