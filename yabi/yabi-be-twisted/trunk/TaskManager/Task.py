@@ -68,8 +68,16 @@ class NullBackendTask(Task):
         # check if exec scheme is null backend. If this is the case, we need to run our special null backend tasklet
         scheme, address = parse_url(json['exec']['backend'])
         assert scheme.lower() == "null"
-        
+    
     def run(self):
+        try:
+            self.main()
+        except Exception, e:
+            taceback.print_exc()
+            self.log("Task raised exception: %s"%e)
+            self.status("error")
+    
+    def main(self):
         
         if self.stage == 0:
             self.log("null backend... skipping task and copying files")
@@ -161,8 +169,16 @@ class MainTask(Task):
         # check if exec scheme is null backend. If this is the case, we need to run our special null backend tasklet
         scheme, address = parse_url(json['exec']['backend'])
         assert scheme.lower() != "null"
-                
+           
     def run(self):
+        try:
+            self.main()
+        except Exception, e:
+            taceback.print_exc()
+            self.log("Task raised exception: %s"%e)
+            self.status("error")
+           
+    def main(self):
         
         if self.stage == 0:
             self.status("stagein")
