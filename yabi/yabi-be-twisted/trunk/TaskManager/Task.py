@@ -255,7 +255,7 @@ class MainTask(Task):
                 self.status("error")
                 self.log("Copying %s to %s failed: %s"%(src,dst, error))
                 
-                raise TaskError("Stage In failed")
+                raise TaskFailed("Stage In failed")
         
             print "TASK[%s]: Copy %s to %s Success!"%(self.taskid,src,dst)
         
@@ -288,7 +288,7 @@ class MainTask(Task):
             self.status("error")
             self.log("Making working directory of %s failed: %s"%(outputuri,error))
             
-            raise TaskError("Mkdir failed")
+            raise TaskFailed("Mkdir failed")
         
         return outputuri,outputdir
         
@@ -329,7 +329,7 @@ class MainTask(Task):
                     self.log("Execution of %s on %s failed: %s"%(task['exec']['command'],task['exec']['backend'],error))
                     
                     # finish task
-                    raise TaskError("Execution failed")
+                    raise TaskFailed("Execution failed")
                 
             except CloseConnections, cc:
                 print "CLOSECONNECTIONS",cc
