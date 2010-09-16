@@ -137,7 +137,7 @@ def get_file_list(yabiusername, uri, recurse=True):
 def get_first_matching_file(yabiusername, uri, extension_list):
     logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
 
-    file_list = get_file_list(yabiusername, uri, recurse=False)
+    file_list = get_file_list(yabiusername, uri, recurse=True)
     filename = None
 
     # TODO similar code to is_task_file_valid on EngineJob, can we combine?
