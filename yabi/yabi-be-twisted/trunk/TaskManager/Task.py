@@ -40,7 +40,16 @@ class Task(object):
         # stage keeps track of where we are in completing the tasklet, so if we need to restart we can skip
         # parts that are already completed
         self.stage = stage
-        
+    
+    def run(self):
+        try:
+            self.main()
+        except Exception, e:
+            traceback.print_exc()
+            self.log("Task raised exception: %s"%e)
+            self.status("error")
+    
+    
     def _next_stage(self):
         """Move to the next stage of the tasklet"""
         self.stage += 1
@@ -68,14 +77,6 @@ class NullBackendTask(Task):
         # check if exec scheme is null backend. If this is the case, we need to run our special null backend tasklet
         scheme, address = parse_url(json['exec']['backend'])
         assert scheme.lower() == "null"
-    
-    def run(self):
-        try:
-            self.main()
-        except Exception, e:
-            taceback.print_exc()
-            self.log("Task raised exception: %s"%e)
-            self.status("error")
     
     def main(self):
         
@@ -169,14 +170,6 @@ class MainTask(Task):
         # check if exec scheme is null backend. If this is the case, we need to run our special null backend tasklet
         scheme, address = parse_url(json['exec']['backend'])
         assert scheme.lower() != "null"
-           
-    def run(self):
-        try:
-            self.main()
-        except Exception, e:
-            taceback.print_exc()
-            self.log("Task raised exception: %s"%e)
-            self.status("error")
            
     def main(self):
         
