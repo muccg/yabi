@@ -371,7 +371,7 @@ class MainTask(Task):
         task=self.json
         # cleanup working dir
         for copy in self.json['stagein']:
-            dst_url = task['exec']['fsbackend']
+            dst_url = copy['dst']
             self.log("Deleting %s..."%(dst_url))
             try:
                 if DEBUG:
@@ -385,5 +385,19 @@ class MainTask(Task):
                 
                 # finish task
                 raise TaskFailed("Cleanup failed")
-        
+            
+        dst_url = task['exec']['fsbackend']
+        self.log("Deleting containing folder %s..."%(dst_url))
+        try:
+            if DEBUG:
+                print "RM2:",dst_url
+            Rm(dst_url, yabiusername=self.yabiusername, recurse=True)
+        except GETFailure, error:
+            # error deleting. This is logged but is non fatal
+            print "TASK[%s]: Delete %s Error!"%(self.taskid, dst_url)
+            #status("error")
+            self.log("Deleting %s failed: %s"%(dst_url, error))
+            
+            # finish task
+            raise TaskFailed("Cleanup failed")
                 
