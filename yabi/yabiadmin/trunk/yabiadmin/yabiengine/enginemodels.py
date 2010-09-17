@@ -573,12 +573,77 @@ class EngineTask(Task):
 
         self.batch_files_stagein(uri, batch_file)
         self.parameter_files_stagein()
+        self.other_files_stagein()
 
         self.status = ''
         self.save()
 
         logger.info('Created task for job id: %s using command: %s' % (self.job.id, self.command))
         logger.info('working dir is: %s' % (self.working_dir) )
+
+
+    def other_files_stagein(self):
+        ''' 
+        All other files which should be "bundled" with the job.
+        Take each job parameter file
+        Add a stagein in the database for it
+        '''
+        for parameter_file_tuple in eval(self.job.other_files):
+            parameter_file, extension_list = parameter_file_tuple
+            
+            # yabi uris
+            if parameter_file.startswith('yabi://'):
+                yabiuri, filename = parameter_file.rsplit("/",1)
+                scheme, uriparts = uriparse(yabiuri)
+                parts = uriparts.path.strip('/').split('/')
+                workflowid, jobid = parts[0], parts[1]
+                prev_job = Job.objects.get(workflow__id=workflowid, id=jobid)
+
+                # get stage out directory of job
+                stageout = prev_job.stageout
+
+                # single file
+                if filename:
+                    parameter_file = "%s%s" % (stageout, filename)
+                    dirpath, filename = parameter_file.rsplit("/",1)
+                    scheme, rest = uriparse(dirpath)
+
+                    if scheme not in settings.VALID_SCHEMES:
+                        logger.critical('Invalid scheme [%s] in parameter_files, skipping' % scheme)
+                        continue
+
+                    self.create_stagein(param=dirpath+'/', file=filename, scheme=self.fsscheme,
+                                        hostname=self.fsbackend_parts.hostname,
+                                        path=os.path.join(self.fsbackend_parts.path, self.working_dir, "input", filename),
+                                        username=self.fsbackend_parts.username)
+
+
+                # directory
+                else:
+                    file_list = backendhelper.get_file_list(self.job.workflow.user.name, stageout, recurse=True)
+
+                    for f in file_list:
+                        if (splitext(f[0])[1].strip('.') in extension_list) or ('*' in extension_list):
+                            filename = f[0]
+                            if not filename:
+                                logger.warn("File not bundled as it can't be found: %s" % filename)
+                                continue
+
+                            # append the filename to stageout, then proceed
+                            parameter_file = "%s%s" % (stageout, filename)
+            
+                            dirpath, filename = parameter_file.rsplit("/",1)
+                            scheme, rest = uriparse(dirpath)
+
+                            if scheme not in settings.VALID_SCHEMES:
+                                logger.critical('Invalid scheme [%s] in parameter_files, skipping' % scheme)
+                                continue
+
+                            self.create_stagein(param=dirpath+'/', file=filename, scheme=self.fsscheme,
+                                           hostname=self.fsbackend_parts.hostname,
+                                           path=os.path.join(self.fsbackend_parts.path, self.working_dir, "input", filename),
+                                           username=self.fsbackend_parts.username)
+
 
     def parameter_files_stagein(self):
         ''' 
@@ -644,12 +709,12 @@ class EngineTask(Task):
                            username=self.fsbackend_parts.username)
 
     def create_stagein(self, param=None, file=None, scheme=None, hostname=None, path=None, username=None):
-        s = StageIn(task=self,
+        s, created = StageIn.objects.get_or_create(task=self,
                     src="%s%s" % (param, file),
                     dst="%s://%s@%s%s" % (scheme, username, hostname, path),
                     order=0)
 
-        logger.debug("Stagein: %s <=> %s " % (s.src, s.dst))
+        logger.debug("Stagein: %s <=> %s: %s " % (s.src, s.dst, "created" if created else "reused"))
         s.save()
 
 

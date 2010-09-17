@@ -73,6 +73,13 @@ class CommandLineHelper():
                 logger.debug("Switch ignored [%s]" % tp.switch)
                 continue
 
+            # set up "other files" that should be bundled as stageins
+            if tool.batch_on_param_bundle_files:
+                if tp.input_file:
+                    for f in self.param_dict[tp.switch]:
+                        input_file = (f, tp.input_filetype_extensions(),) # NB it's a tuple
+                        self._other_files.append(input_file)
+
             # if the switch is the batch on param switch put it in batch_files and add placeholder in command
             if tp == tool.batch_on_param:
                 for f in self.param_dict[tp.switch]:
@@ -89,9 +96,6 @@ class CommandLineHelper():
                         input_file = (f, tp.input_filetype_extensions(),) # NB it's a tuple
                         self._parameter_files.append(input_file)
                     self.param_dict[tp.switch] = ['$ '* filecount] # use place holder now in self.command
-
-            #TODO is it here that we would set up other files to be staged in?
-
 
             self.command.append(tp.switch_use.formatstring % {"switch":tp.switch, "value":self.param_dict[tp.switch][0]})
 

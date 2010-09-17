@@ -122,7 +122,7 @@ def get_file_list(yabiusername, uri, recurse=True):
                 for file in results[key]["files"]:
                     file_list.append([os.path.join(key[spl:],file[0])]+file[1:])
 
-        logger.debug("returning: %s" % file_list)
+        logger.info("returning: %s" % file_list)
         return file_list
  
     except socket.error, e:
