@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Our twisted filesystem server resource"""
 
 from twisted.web2 import resource, http_headers, responsecode, http, server
@@ -7,6 +8,7 @@ import weakref
 import sys, os
 
 from ExecRunResource import ExecRunResource
+from ExecResumeResource import ExecResumeResource
 from utils.BackendResource import BackendResource
 
 class ExecResource(resource.Resource, BackendResource):
@@ -49,7 +51,9 @@ class ExecResource(resource.Resource, BackendResource):
     def locateChild(self, request, segments):
         # return our local file resource for these segments
         if segments[0]=="run":
-            # wanting the file copy resource
             return ExecRunResource(request,segments,fsresource = self), []
+        elif segments[0]=="resume":
+            return ExecResumeResource(request,segments,fsresource = self), []
+            
         
         return resource.Resource.locateChild(self,request,segments)
