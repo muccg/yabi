@@ -45,6 +45,7 @@ class Task(object):
         try:
             self.main()
         except Exception, e:
+            self._errored()
             traceback.print_exc()
             self.log("Task raised exception: %s"%e)
             self.status("error")
@@ -170,6 +171,12 @@ class NullBackendTask(Task):
                 print "TASK[%s]: Copy %s to %s Success!"%(self.taskid,src,dst)
             
 class MainTask(Task):
+    def __init__(self, json=None):
+        Task.__init__(self,json)
+        
+        # for resuming started backend execution jobs
+        self._jobid = None
+    
     def load_json(self, json, stage=0):
         Task.load_json(self, json, stage)
         
@@ -311,8 +318,17 @@ class MainTask(Task):
                     line = line.strip()
                     if DEBUG:
                         print "_task_status_change(",line,")"
-                    self.log("Remote execution backend changed status to: %s"%(line))
-                    self.status("exec:%s"%(line.lower()))
+                    self.log("Remote execution backend sent status message: %s"%(line))
+                    
+                    # check for job id number
+                    if line.startswith("id") and '=' in line:
+                        key,value = line.split("=")
+                        value = value.strip()
+                        
+                        print "execution job given ID:",value
+                        self._jobid = value
+                    else:
+                        self.status("exec:%s"%(line.lower()))
                 
                 # submit the job to the execution middle ware
                 self.log("Submitting to %s command: %s"%(task['exec']['backend'],task['exec']['command']))

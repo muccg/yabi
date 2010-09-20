@@ -36,6 +36,14 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         globus.Auth.GlobusAuth.__init__(self)
         self.CreateAuthProxy()
     
+        self._running = {}                               # keep a list of the running globus jobs
+    
+    def add_running(self, rid, details):
+        self._running[rid]=details[:]
+        
+    def del_running(self, rid):
+        del self._running[rid]
+    
     def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, max_memory=1024, cpus=1, queue="testing", job_type="single", module=None, **creds):
         # use shlex to parse the command into executable and arguments
         lexer = shlex.shlex(command, posix=True)
@@ -84,7 +92,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         if processprotocol.exitcode!=0:
             channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = processprotocol.err ))
             return
-        
+                
         # send an OK message, but leave the stream open
         client_stream = stream.ProducerStream()
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
@@ -92,6 +100,12 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         # now we want to continually check the status of the job
         job_id = processprotocol.job_id
         epr = processprotocol.epr
+        
+        # now the job is submitted, lets remember it
+        self.add_running(job_id, (host,username,epr))
+        
+        # lets report our id to the caller
+        client_stream.write("id=%s\n"%job_id)
         
         # save the epr to a tempfile so we can use it again and again
         temp = tempfile.NamedTemporaryFile(suffix=".epr",delete=False)
@@ -129,6 +143,8 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
                 state=newstate
                 client_stream.write("%s\n"%state)
             
-            
+        # job is finished, les forget about it
+        self.del_running(job_id)
+        
         client_stream.finish()
        
