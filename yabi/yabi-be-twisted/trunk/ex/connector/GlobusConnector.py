@@ -143,8 +143,60 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
                 state=newstate
                 client_stream.write("%s\n"%state)
             
-        # job is finished, les forget about it
+        client_stream.finish()
+        
+        # job is finished, lets forget about it
+        self.del_running(job_id)
+               
+    def resume(self, yabiusername, eprfile, scheme, username, host, **creds):
+        # first we need to auth the proxy
+        try:
+            if creds:
+                self.EnsureAuthedWithCredentials(host, **creds)
+            else:
+                # TODO: how to fix the globus credential gather if we dont have a path here?
+                self.EnsureAuthed(yabiusername,scheme,username,host,"/")
+        except globus.Auth.AuthException, ae:
+            # connection problems.
+            channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = "Could not get auth credentials for %s://%s@%s. %s\n"%(scheme,username,host,str(ae)) ))
+            return
+        
+        # now submit the job via globus
+        usercert = self.GetAuthProxy(host).ProxyFile(username)
+        
+        state = None
+        delay = JobPollGeneratorDefault()
+        while state!="Done":
+            # pause
+            sleep(delay.next())
+            
+            if creds:
+                self.EnsureAuthedWithCredentials(host, **creds)
+            else:
+                self.EnsureAuthed(yabiusername, scheme,username,host,"/")
+            processprotocol = globus.Run.status( usercert, eprfile, host )
+            
+            while not processprotocol.isDone():
+                stackless.schedule()
+                
+            #print "STATE:",processprotocol.jobstate, processprotocol.exitcode
+                
+            if processprotocol.exitcode and processprotocol.jobstate!="Done":
+                # error occured running statecheck... sometimes globus just fails cause its a fucktard.
+                print "Job status check for %s Failed (%d) - %s / %s\n"%(job_id,processprotocol.exitcode,processprotocol.out,processprotocol.err)
+                client_stream.write("Failed - %s\n"%(processprotocol.err))
+                client_stream.finish()
+                return
+            
+            newstate = processprotocol.jobstate
+            if state!=newstate:
+                state=newstate
+                client_stream.write("%s\n"%state)
+            
+        client_stream.finish()
+        
+        # job is finished, lets forget about it
         self.del_running(job_id)
         
-        client_stream.finish()
+        
        
