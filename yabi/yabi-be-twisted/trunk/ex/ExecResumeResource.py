@@ -34,7 +34,7 @@ class ExecResumeResource(resource.PostableResource):
         
         self.fsresource = weakref.ref(fsresource)
         
-    def handle_run(self,request):
+    def handle_resume(self,request):
         args = request.args
         
         if "yabiusername" not in args:
@@ -106,13 +106,13 @@ class ExecResumeResource(resource.PostableResource):
         deferred = parsePOSTDataRemoteWriter(request)
         
         def post_parsed(result):
-            return self.handle_run(request)
+            return self.handle_resume(request)
         
         deferred.addCallback(post_parsed)
-        deferred.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Job Submission Failed %s\n"%res) )
+        deferred.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Job Resumption Failed %s\n"%res) )
         
         return deferred
 
     def http_GET(self, request):
-        return self.handle_run(request)
+        return self.handle_resume(request)
     
