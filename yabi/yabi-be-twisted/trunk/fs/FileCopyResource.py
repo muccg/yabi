@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from twisted.web2 import resource, http_headers, responsecode, http, server
 from twisted.internet import defer, reactor
-import weakref
+import weakref, json
 import sys, os, signal
 import stackless
 
@@ -21,23 +21,21 @@ copies_in_progress = {}
 
 class FileCopyProgressResource(resource.Resource):
     def http_GET(self, request):
-        response = "FILE COPIES\n===========\n\n"
+        response = {}
         
         keys_to_del = []
         for key in copies_in_progress:
-            response+=str(key)+"\n"+('-'*len(str(key)))+"\n"
             for src,dst,read,write in copies_in_progress[key]:
                 if read()==None and write()==None:
                     keys_to_del.append(key)
                 else:
-                    response+="%s -> %s (%s,%s)\n"%(src,dst,read(),write())
-            response+="\n"
+                    response[str(key)]={"src":src, "dst":dst}
             
         # purge stale keys
         for key in keys_to_del:
             del copies_in_progress[key]
         
-        return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, response )
+        return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'json')}, json.dumps(response) )
 
 
 class FileCopyResource(resource.PostableResource):
