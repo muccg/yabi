@@ -45,7 +45,7 @@ class FileCopyProgressResource(resource.Resource):
         for key in keys_to_delete:
             del copies_in_progress[key]
         
-        return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'json')}, json.dumps(response) )
+        return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'json')}, json.dumps(response)+"\n" )
 
 
 class FileCopyResource(resource.PostableResource):
