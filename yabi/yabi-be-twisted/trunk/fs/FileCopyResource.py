@@ -44,13 +44,13 @@ class FileCopyProgressResource(resource.Resource):
                 # requested user has no copies or user is bogus. Either way return nothing
                 return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'json')}, json.dumps([])+"\n" )
             else:
-                return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'json')}, json.dumps(self._users_detail(yabiusername))+"\n" )
+                return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'json')}, json.dumps(self._users_details(yabiusername))+"\n" )
          
         users = copies_in_progress.keys()
         response = {}
         keys_to_delete = []
         for user in users:
-            response[str(user)] = self._users_detail(user)
+            response[str(user)] = self._users_details(user)
             
             if not len(copies_in_progress[user]):
                 keys_to_delete.append(user)
