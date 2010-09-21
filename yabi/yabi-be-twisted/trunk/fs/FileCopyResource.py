@@ -26,6 +26,7 @@ class FileCopyProgressResource(resource.Resource):
         if 'yabiusername' in request.args:
             keys = [request.args['yabiusername'][0]]
                
+        keys_to_delete = []
         for key in keys:
             stale_entries = []
             for src,dst,read,write in copies_in_progress[key]:
@@ -33,8 +34,12 @@ class FileCopyProgressResource(resource.Resource):
                     stale_entries.append((src,dst,read,write))
                 else:
                     response[str(key)]={"src":src, "dst":dst}
+                    
+            # purge stale entries for this user
             for tup in stale_entries:
                 copies_in_progress[key].remove(tup)
+            if not len(copies_in_progress[key]):
+                keys_to_delete.append(key)
             
         # purge stale keys
         for key in keys_to_del:
