@@ -32,11 +32,12 @@ class FileCopyProgressResource(resource.Resource):
         keys_to_delete = []
         for key in keys:
             stale_entries = []
+            response[str(key)] = []
             for src,dst,read,write in copies_in_progress[key]:
                 if read()==None and write()==None:
                     stale_entries.append((src,dst,read,write))
                 else:
-                    response[str(key)]={"src":src, "dst":dst}
+                    response[str(key)].append({"src":src, "dst":dst})
                     
             # purge stale entries for this user
             for tup in stale_entries:
