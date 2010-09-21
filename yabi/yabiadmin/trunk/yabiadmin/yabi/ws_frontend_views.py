@@ -2,7 +2,7 @@
 import mimetypes
 from urllib import quote
 
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotAllowed
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from yabiadmin.yabi.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential
@@ -65,8 +65,8 @@ def logout(request):
         "success": True,
     }
 
-@authentication_required
-@memcache("tool",timeout=30,refresh=True,user_specific=False)
+#@authentication_required
+#@memcache("tool",timeout=30,refresh=True,user_specific=False)
 def tool(request, *args, **kwargs):
     toolname = kwargs['toolname']
     logger.debug(toolname)
@@ -77,8 +77,8 @@ def tool(request, *args, **kwargs):
     except ObjectDoesNotExist:
         return HttpResponseNotFound(json_error("Object not found"))
 
-@authentication_required
-@memcache("menu",timeout=300)
+#@authentication_required
+#@memcache("menu",timeout=300)
 def menu(request):
     username = request.user.username
     logger.debug('Username: ' + username)
@@ -152,10 +152,8 @@ def ls(request):
 @authentication_required
 def copy(request):
     """
-    This function will return a list of backends the user has access to IF the uri is empty. If the uri
-    is not empty then it will pass on the call to the backend to get a listing of that uri
+    This function will instantiate a copy on the backend for this user
     """
-
     yabiusername = request.user.username
     try:
         logger.debug("yabiusername: %s src: %s -> dst: %s" %(yabiusername, request.GET['src'],request.GET['dst']))
@@ -276,7 +274,7 @@ def submitworkflow(request):
 
 #@authentication_required
 def getuploadurl(request):
-    raise Exception, "test explostion"
+    raise Exception, "test explosion"
     
     if 'uri' not in request.REQUEST:
         return HttpResponseBadRequest("uri needs to be passed in\n")

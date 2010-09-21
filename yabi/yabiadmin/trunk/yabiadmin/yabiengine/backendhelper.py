@@ -306,7 +306,8 @@ def copy_file(yabiusername, src, dst):
                     ('dst_username', dst_bc.credential.username),
                     ('dst_password', dst_bc.credential.password),
                     ('dst_cert', dst_bc.credential.cert),
-                    ('dst_key', dst_bc.credential.key)])
+                    ('dst_key', dst_bc.credential.key),
+                    ('yabiusername', yabiusername)])
         r = POST(resource,data)
         data=r.read()
         assert(r.status == 200)
