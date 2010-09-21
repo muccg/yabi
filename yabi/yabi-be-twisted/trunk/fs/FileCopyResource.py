@@ -20,30 +20,40 @@ DEBUG = False
 copies_in_progress = {}
 
 class FileCopyProgressResource(resource.Resource):
+    @staticmethod
+    def _users_details(username):
+        stale_entries = []
+        response=[]
+        for src,dst,read,write in copies_in_progress[username]:
+            if read()==None and write()==None:
+                stale_entries.append((src,dst,read,write))
+            else:
+                response.append({"src":src, "dst":dst})
+                
+        # purge stale entries for this user if there are any
+        for tup in stale_entries:
+            copies_in_progress[key].remove(tup)
+        
+        return response
+        
+    
     def http_GET(self, request):
-        response = {}
-        keys = copies_in_progress.keys()
         if 'yabiusername' in request.args:
-            keys = [request.args['yabiusername'][0]]
-            if keys[0] not in copies_in_progress:
+            yabiusername = request.args['yabiusername'][0]
+            if yabiusername not in copies_in_progress:
                 # requested user has no copies or user is bogus. Either way return nothing
-                return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'json')}, json.dumps({})+"\n" )
-               
+                return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'json')}, json.dumps([])+"\n" )
+            else:
+                return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'json')}, json.dumps(self._users_detail(yabiusername))+"\n" )
+         
+        users = copies_in_progress.keys()
+        response = {}
         keys_to_delete = []
-        for key in keys:
-            stale_entries = []
-            response[str(key)] = []
-            for src,dst,read,write in copies_in_progress[key]:
-                if read()==None and write()==None:
-                    stale_entries.append((src,dst,read,write))
-                else:
-                    response[str(key)].append({"src":src, "dst":dst})
-                    
-            # purge stale entries for this user
-            for tup in stale_entries:
-                copies_in_progress[key].remove(tup)
-            if not len(copies_in_progress[key]):
-                keys_to_delete.append(key)
+        for user in users:
+            response[str(user)] = self._users_detail(user)
+            
+            if not len(copies_in_progress[user]):
+                keys_to_delete.append(user)
             
         # purge stale keys
         for key in keys_to_delete:
