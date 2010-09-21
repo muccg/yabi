@@ -25,6 +25,9 @@ class FileCopyProgressResource(resource.Resource):
         keys = copies_in_progress.keys()
         if 'yabiusername' in request.args:
             keys = [request.args['yabiusername'][0]]
+            if keys[0] not in copies_in_progress:
+                # requested user has no copies or user is bogus. Either way return nothing
+                return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'json')}, json.dumps({})+"\n" )
                
         keys_to_delete = []
         for key in keys:
