@@ -14,6 +14,22 @@ from utils.submit_helpers import parsePOSTData
 
 DEBUG = False
 
+# module level storage for a summary of all the present copy jobs
+# key = yabiusername
+# value = (src,dst,readprocproto_weakref, writeprocproto_weakref)
+copies_in_progress = {}
+
+class FileCopyProgressResource(resource.Resource):
+    def http_GET(self, request):
+        response = ""
+        for key in copies_in_progress:
+            response+=key+"\n"+('='*len(key))+"\n"
+            for src,dst,read,write in copies_in_progress[key]:
+                response+="%s -> %s\n"%(src,dst)
+            response+="\n"
+        return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, response )
+
+
 class FileCopyResource(resource.PostableResource):
     VERSION=0.1
     maxMem = 100*1024
@@ -93,6 +109,11 @@ class FileCopyResource(resource.PostableResource):
         def copy(channel):
             writeproto, fifo = dbend.GetWriteFifo(dst_hostname, dst_username, dst_path, dst_filename,yabiusername=yabiusername,creds=creds['dst'] if 'dst' in creds else {})
             readproto, fifo2 = sbend.GetReadFifo(src_hostname, src_username, src_path, src_filename, fifo,yabiusername=yabiusername,creds=creds['src'] if 'src' in creds else {})
+            
+            # keep a weakref in the module level info store so we can get a profile of all copy operations
+            if yabiusername not in copies_in_progress:
+                copies_in_progress[yabiusername]=[]
+            copies_in_progress[yabiusername].append( (src,dst,weakref.ref(readproto),weakref.ref(writeproto)) )
             
             if DEBUG:
                 print "READ:",readproto,fifo2

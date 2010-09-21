@@ -6,7 +6,7 @@ from twisted.internet import defer, reactor
 import weakref
 import sys, os
 
-from FileCopyResource import FileCopyResource
+from FileCopyResource import FileCopyResource, FileCopyProgressResource
 from FileRCopyResource import FileRCopyResource
 from FileDeleteResource import FileDeleteResource
 from FileListResource import FileListResource
@@ -59,6 +59,9 @@ class FSResource(resource.Resource, BackendResource):
         if segments[0]=="copy":
             # wanting the file copy resource
             return FileCopyResource(request,segments,fsresource = self), []
+        elif segments[0]=="copyprogress":
+            # wanting the file copy resource
+            return FileCopyProgressResource(request,segments,fsresource = self), []
         elif segments[0]=="mkdir":
             return FileMkdirResource(request,segments,fsresource=self), []
         elif segments[0]=="ls":
