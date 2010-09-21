@@ -33,61 +33,31 @@ LOGIN_URL = url("/login")
 YABIADMIN = os.environ["YABIADMIN"] if "YABIADMIN" in os.environ else "faramir.localdomain/yabiadmin/trunk"
 YABISTORE = os.environ["YABISTORE"] if "YABISTORE" in os.environ else "faramir.localdomain/yabistore/trunk"
 
-# development deployment
-if "DJANGODEV" in os.environ:
-    DEBUG = True if os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug")) else ("DJANGODEBUG" in os.environ)
-    TEMPLATE_DEBUG = DEBUG
-    DATABASE_ENGINE = 'postgresql_psycopg2'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
-    DATABASE_NAME = 'dev_yabife'                 # Or path to database file if using sqlite3.
-    DATABASE_USER = 'yabifeapp'                       # Not used with sqlite3.
-    DATABASE_PASSWORD = 'yabifeapp'                   # Not used with sqlite3.
-    DATABASE_HOST = 'eowyn.localdomain'               # Set to empty string for localhost. Not used with sqlite3.
-    DATABASE_PORT = ''                                # Set to empty string for default. Not used with sqlite3.
-    YABIADMIN_SERVER, YABIADMIN_BASE = YABIADMIN.split('/',1)
-    YABIADMIN_BASE = "/" + YABIADMIN_BASE
-    YABISTORE_SERVER, YABISTORE_BASE = YABISTORE.split('/',1)
-    YABISTORE_BASE = "/" + YABISTORE_BASE
-    SSL_ENABLED = False
-    DEV_SERVER = True
+DEBUG = True if os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug")) else ("DJANGODEBUG" in os.environ)
+TEMPLATE_DEBUG = DEBUG
+DATABASE_ENGINE = os.environ['DATABASE_ENGINE']
+DATABASE_NAME = os.environ['DATABASE_NAME']
+DATABASE_USER = os.environ['DATABASE_USER']
+DATABASE_PASSWORD = os.environ['DATABASE_PASSWORD']
+DATABASE_HOST = os.environ['DATABASE_HOST']
+DATABASE_PORT = os.environ['DATABASE_PORT']
 
-    AUTH_LDAP_SERVER = ('ldaps://fdsdev.localdomain',)
-    AUTH_LDAP_USER_BASE = 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au'
-    AUTH_LDAP_GROUP_BASE = 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au'
-    AUTH_LDAP_GROUP = 'yabi'
-    DEFAULT_GROUP = "baseuser"
-    
-    # debug site table
-    SITE_ID = 1
-    
-# production deployment. These must come from the yabi.conf file.
-else:
-    DEBUG = True if os.path.exists(os.path.join(PROJECT_DIRECTORY,".debug")) else ("DJANGODEBUG" in os.environ)
-    TEMPLATE_DEBUG = DEBUG
-    DATABASE_ENGINE = os.environ['DATABASE_ENGINE']
-    DATABASE_NAME = os.environ['DATABASE_NAME']
-    DATABASE_USER = os.environ['DATABASE_USER']
-    DATABASE_PASSWORD = os.environ['DATABASE_PASSWORD']
-    DATABASE_HOST = os.environ['DATABASE_HOST']
-    DATABASE_PORT = os.environ['DATABASE_PORT']
-    
-    YABIADMIN_SERVER, YABIADMIN_BASE = YABIADMIN.split('/',1)
-    YABIADMIN_BASE = "/" + YABIADMIN_BASE
-    YABISTORE_SERVER, YABISTORE_BASE = YABISTORE.split('/',1)
-    YABISTORE_BASE = "/" + YABISTORE_BASE
+YABIADMIN_SERVER, YABIADMIN_BASE = YABIADMIN.split('/',1)
+YABIADMIN_BASE = "/" + YABIADMIN_BASE
+YABISTORE_SERVER, YABISTORE_BASE = YABISTORE.split('/',1)
+YABISTORE_BASE = "/" + YABISTORE_BASE
 
-    AUTH_LDAP_SERVER = tuple(os.environ['AUTH_LDAP_SERVER'].split()) if 'AUTH_LDAP_SERVER' in os.environ else              ('ldaps://fdsdev.localdomain',)
-    AUTH_LDAP_USER_BASE = environ_or('AUTH_LDAP_USER_BASE', 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au')
-    AUTH_LDAP_GROUP_BASE = environ_or('AUTH_LDAP_GROUP_BASE', 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au')
-    AUTH_LDAP_GROUP = environ_or('AUTH_LDAP_GROUP', 'yabi')
-    DEFAULT_GROUP = environ_or('AUTH_LDAP_DEFAULT_GROUP', "baseuser")
+AUTH_LDAP_SERVER = tuple(os.environ['AUTH_LDAP_SERVER'].split()) if 'AUTH_LDAP_SERVER' in os.environ else              ('ldaps://fdsdev.localdomain',)
+AUTH_LDAP_USER_BASE = environ_or('AUTH_LDAP_USER_BASE', 'ou=People,dc=ccg,dc=murdoch,dc=edu,dc=au')
+AUTH_LDAP_GROUP_BASE = environ_or('AUTH_LDAP_GROUP_BASE', 'ou=Yabi,ou=Web Groups,dc=ccg,dc=murdoch,dc=edu,dc=au')
+AUTH_LDAP_GROUP = environ_or('AUTH_LDAP_GROUP', 'yabi')
+DEFAULT_GROUP = environ_or('AUTH_LDAP_DEFAULT_GROUP', "baseuser")
 
-    SSL_ENABLED = os.environ['SSL_ENABLED'] if 'SSL_ENABLED' in os.environ else True
-    DEV_SERVER = False
-    
-    # development site id
-    SITE_ID = 1
+SSL_ENABLED = os.environ['SSL_ENABLED'] if 'SSL_ENABLED' in os.environ else True
+DEV_SERVER = False
 
-
+# development site id
+SITE_ID = 1
 
 print "YABISTORE_SERVER =",YABISTORE_SERVER
 print "YABISTORE_BASE =",YABISTORE_BASE
@@ -97,6 +67,9 @@ print "YABIADMIN_BASE =",YABIADMIN_BASE
 for key in [ 'DATABASE_ENGINE','DATABASE_NAME','DATABASE_USER','DATABASE_PASSWORD','DATABASE_HOST','DATABASE_PORT','AUTH_LDAP_SERVER','AUTH_LDAP_USER_BASE','AUTH_LDAP_GROUP_BASE','AUTH_LDAP_GROUP','DEFAULT_GROUP' ]:
     print key, locals()[key]
 
+
+if DEBUG:
+    LDAP_DONT_REQUIRE_CERT = True
 
 # email server
 EMAIL_HOST = 'ccg.murdoch.edu.au'
