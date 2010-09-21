@@ -42,7 +42,7 @@ class FileCopyProgressResource(resource.Resource):
                 keys_to_delete.append(key)
             
         # purge stale keys
-        for key in keys_to_del:
+        for key in keys_to_delete:
             del copies_in_progress[key]
         
         return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'json')}, json.dumps(response) )
