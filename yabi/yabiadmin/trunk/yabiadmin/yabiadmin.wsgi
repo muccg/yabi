@@ -17,6 +17,7 @@ import sys
 # the parent directory to search
 sys.path.append(projectdir)
 sys.path.append(parentdir)
+sys.path.append(os.path.join("/usr","local","etc","ccgapps"))
 
 # save the project dir in a environment variable
 os.environ['PROJECT_DIRECTORY']=projectdir
