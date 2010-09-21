@@ -25,7 +25,10 @@ class FileCopyProgressResource(resource.Resource):
         for key in copies_in_progress:
             response+=str(key)+"\n"+('-'*len(str(key)))+"\n"
             for src,dst,read,write in copies_in_progress[key]:
-                response+="%s -> %s (%s,%s)\n"%(src,dst,read(),write())
+                if read()==None and write()==None:
+                    del copies_in_progress[key]
+                else:
+                    response+="%s -> %s (%s,%s)\n"%(src,dst,read(),write())
             response+="\n"
         return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, response )
 
