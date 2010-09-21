@@ -61,7 +61,7 @@ class FSResource(resource.Resource, BackendResource):
             return FileCopyResource(request,segments,fsresource = self), []
         elif segments[0]=="copyprogress":
             # wanting the file copy resource
-            return FileCopyProgressResource(request,segments,fsresource = self), []
+            return FileCopyProgressResource(), []
         elif segments[0]=="mkdir":
             return FileMkdirResource(request,segments,fsresource=self), []
         elif segments[0]=="ls":
