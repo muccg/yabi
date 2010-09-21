@@ -22,14 +22,19 @@ copies_in_progress = {}
 class FileCopyProgressResource(resource.Resource):
     def http_GET(self, request):
         response = {}
-        
-        keys_to_del = []
-        for key in copies_in_progress:
+        keys = copies_in_progress.keys()
+        if 'yabiusername' in request.args:
+            keys = [request.args['yabiusername'][0]]
+               
+        for key in keys:
+            stale_entries = []
             for src,dst,read,write in copies_in_progress[key]:
                 if read()==None and write()==None:
-                    keys_to_del.append(key)
+                    stale_entries.append((src,dst,read,write))
                 else:
                     response[str(key)]={"src":src, "dst":dst}
+            for tup in stale_entries:
+                copies_in_progress[key].remove(tup)
             
         # purge stale keys
         for key in keys_to_del:
