@@ -23,7 +23,7 @@ class FileCopyProgressResource(resource.Resource):
     def http_GET(self, request):
         response = "FILE COPIES\n===========\n\n"
         for key in copies_in_progress:
-            response+=key+"\n"+('-'*len(key))+"\n"
+            response+=str(key)+"\n"+('-'*len(str(key)))+"\n"
             for src,dst,read,write in copies_in_progress[key]:
                 response+="%s -> %s\n"%(src,dst)
             response+="\n"
