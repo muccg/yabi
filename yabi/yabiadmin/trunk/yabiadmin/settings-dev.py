@@ -3,6 +3,11 @@
 import os
 from django.utils.webhelpers import url
 
+#TODO
+#
+# No SSL
+# Logout broken
+
 # PROJECT_DIRECTORY isnt set when not under wsgi
 if not os.environ.has_key('PROJECT_DIRECTORY'):
     os.environ['PROJECT_DIRECTORY']=os.path.dirname(__file__).split("/appsettings/")[0]
@@ -63,7 +68,10 @@ CAPTCHA_URL = os.path.join(MEDIA_URL, 'captchas')
 # Captcha image directory
 CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
 
-YABIBACKEND="faramir.localdomain:8000"
+# Making this always point to the yabi users deployment
+YABIBACKEND = os.environ["YABIBACKEND"] if "YABIBACKEND" in os.environ else "faramir.localdomain:21080/"
+YABISTORE = os.environ["YABISTORE"] if "YABISTORE" in os.environ else "faramir.localdomain:23080/yabistore"
+YABI_URL = "yabi://faramir.localdomain/" # this is used in builder for pointers to previous jobs
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 YABIBACKEND_UPLOAD = 'http://'+YABIBACKEND+"fs/ticket"
@@ -79,10 +87,6 @@ LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
 LOGGING_FORMATTER = logging.Formatter('[%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
 LOGS = ['yabiadmin']
 
-# Making this always point to the yabi users deployment
-YABIBACKEND = os.environ["YABIBACKEND"] if "YABIBACKEND" in os.environ else "localhost.localdomain:8000/"
-YABISTORE = os.environ["YABISTORE"] if "YABISTORE" in os.environ else "faramir.localdomain/yabistore/trunk"
-YABI_URL = "yabi://localhost.localdomain/" # this is used in builder for pointers to previous jobs
 
 YABIBACKEND_COPY = '/fs/copy'
 YABIBACKEND_RCOPY = '/fs/rcopy'
