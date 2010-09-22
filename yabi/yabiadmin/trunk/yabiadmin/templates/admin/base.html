@@ -5,6 +5,9 @@ dir="rtl"
 % endif
 >
 <%namespace name="admin" module="django.contrib.admin.templatetags.adminmedia" />
+<%!
+import django.core.urlresolvers as resolvers
+%>
 <head>
 <%def name="block_title()">Undefined</%def>
 <title>${self.block_title()}</title>
@@ -53,7 +56,7 @@ ${user.username}
 % if docsroot:
 <a href="${docsroot}">${trans('Documentation')}</a> / 
 % endif
-<a href="https://ccg.murdoch.edu.au/tools/passwd/">${trans('Change password')}</a> / <a href="/admin/logout/">${trans('Log out')}</a></%def></div>
+<a href="https://ccg.murdoch.edu.au/tools/passwd/">${trans('Change password')}</a> / <a href="${ (root_path+'logout/') if not resolvers.reverse('admin:logout') else resolvers.reverse('admin:logout') }">${trans('Log out')}</a></%def></div>
         
 % endif
 

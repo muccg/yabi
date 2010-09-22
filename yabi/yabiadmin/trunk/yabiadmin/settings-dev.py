@@ -15,13 +15,6 @@ if not os.environ.has_key('PROJECT_DIRECTORY'):
 from appsettings.default_dev import *
 from appsettings.yabiadmin.dev import *
 
-# Defaults
-#LOGIN_REDIRECT_URL
-
-# These are non standard
-LOGIN_URL = url('/login/')
-LOGOUT_URL = url('/logout/')
-
 SSL_FORCE = True
 if "LOCALDEV" in os.environ:
     SSL_ENABLED = False
