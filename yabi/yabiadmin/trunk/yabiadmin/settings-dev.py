@@ -72,6 +72,7 @@ YABISTORE_SERVER = os.environ["YABISTORE_SERVER"] if "YABISTORESERVER" in os.env
 YABISTORE_BASE = os.environ["YABISTORE_BASE"] if "YABISTORE_BASE" in os.environ else "/yabistore"
 YABI_URL = "yabi://faramir.localdomain/" # this is used in builder for pointers to previous jobs
 
+
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 YABIBACKEND_UPLOAD = 'http://'+YABIBACKEND_SERVER+YABIBACKEND_BASE+"fs/ticket"
 

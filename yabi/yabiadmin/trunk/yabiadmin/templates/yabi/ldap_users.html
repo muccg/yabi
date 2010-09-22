@@ -1,7 +1,7 @@
 {% extends "admin/base_site.html" %}
 {% load adminmedia admin_list i18n %}
 
-{% if not is_popup %}{% block breadcrumbs %}<div class="breadcrumbs"><a href="/admin/">{% trans "Home" %}</a> &rsaquo; LDAP Users</div>{% endblock %}{% endif %}
+{% if not is_popup %}{% block breadcrumbs %}<div class="breadcrumbs"><a href="${root_path}">{% trans "Home" %}</a> &rsaquo; LDAP Users</div>{% endblock %}{% endif %}
 
 {% block extrahead %}
 

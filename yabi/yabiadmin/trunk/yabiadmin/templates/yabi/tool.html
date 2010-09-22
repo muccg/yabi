@@ -3,7 +3,7 @@
 
 
 % if not is_popup:
-${self.block_breadcrumbs()}<%def name="block_breadcrumbs()"><div class="breadcrumbs"><a href="/admin/">${trans("Home")}</a> &rsaquo; Tool ${tool.display_name}</div></%def>
+${self.block_breadcrumbs()}<%def name="block_breadcrumbs()"><div class="breadcrumbs"><a href="${root_path}">${trans("Home")}</a> &rsaquo; Tool ${tool.display_name}</div></%def>
 % endif
 
 
@@ -31,7 +31,7 @@ ${self.block_content()}<%def name="block_content()">
         <td>${tool.display_name}</td>
         <td>${tool.backend}</td>
         <td>${tool.path}</td>
-        <td><a href="${root_path}/yabmin/tool/${tool.id}/">Edit</a></td>
+        <td><a href="${edit_url}">Edit</a></td>
     </tr>
 </table>
 

@@ -3,6 +3,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.db import connection
 from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import ObjectDoesNotExist
+from django.core import urlresolvers
 from yabiadmin.yabi.models import *
 from yabiadmin import ldaputils
 from django.utils import webhelpers
@@ -84,12 +85,13 @@ def tool(request, tool_id):
     tool = get_object_or_404(Tool, pk=tool_id)
     
     return render_to_response('yabi/tool.html', {
-                'tool': tool,
-                'user':request.user,
-                'title': 'Tool Details',
-                'root_path':webhelpers.url("/admin"),
-                'tool_params': format_params(tool.toolparameter_set.order_by('id')),
-           })
+        'tool': tool,
+        'user':request.user,
+        'title': 'Tool Details',
+        'root_path':urlresolvers.reverse('admin:index'),
+        'edit_url': urlresolvers.reverse('admin:yabi_tool_change', args=(tool.id,)),
+        'tool_params': format_params(tool.toolparameter_set.order_by('id')),
+        })
 
 
 @staff_member_required
@@ -108,7 +110,7 @@ def user_tools(request, user_id):
         'user': request.user,
         'tooluser': tooluser,
         'title': 'Tool Listing',
-        'root_path':webhelpers.url("/admin"),
+        'root_path':urlresolvers.reverse('admin:index'),
         'tool_groups': sorted(unique_tool_groups.values(), key = lambda tgv: tgv.name)})
 
 @staff_member_required
@@ -122,7 +124,7 @@ def user_backends(request, user_id):
         'user': request.user,
         'backenduser': backenduser,
         'title': 'Backend Listing',
-        'root_path':webhelpers.url("/admin"),
+        'root_path':urlresolvers.reverse('admin:index'),
         'backendcredentials': becs
         })
 
@@ -162,9 +164,10 @@ def ldap_users(request):
     unexisting_ldap_users = [user for user in ldap_yabi_users if not user_in_db(user) ]
  
     return render_to_response("yabi/ldap_users.html", {
-                'unexisting_ldap_users': unexisting_ldap_users,
-                'existing_ldap_users': existing_ldap_users
-            })
+        'unexisting_ldap_users': unexisting_ldap_users,
+        'existing_ldap_users': existing_ldap_users,
+        'root_path':urlresolvers.reverse('admin:index'),
+        })
 
 @staff_member_required
 def backend(request, backend_id):
@@ -172,11 +175,11 @@ def backend(request, backend_id):
     backend = get_object_or_404(Backend, pk=backend_id)
         
     return render_to_response('yabi/backend.html', {
-                'backend': backend,
-                'user':request.user,
-                'title': 'Backend Details',
-                'root_path':webhelpers.url("/admin")
-                })
+        'backend': backend,
+        'user':request.user,
+        'title': 'Backend Details',
+        'root_path':urlresolvers.reverse('admin:index'),
+        })
 
 
 @staff_member_required
@@ -196,13 +199,13 @@ def backend_cred_test(request, backend_cred_id):
         error = rawdata
         
     return render_to_response('yabi/backend_cred_test.html', {
-                'bec': bec,
-                'user':request.user,
-                'title': 'Backend Credential Test',
-                'root_path':webhelpers.url("/admin"),
-                'listing':listing,
-                'error':error
-                })
+        'bec': bec,
+        'user':request.user,
+        'title': 'Backend Credential Test',
+        'root_path':urlresolvers.reverse('admin:index'),
+        'listing':listing,
+        'error':error
+        })
 
 
 @staff_member_required
@@ -213,7 +216,8 @@ def add_tool(request):
                                   {'form':AddToolForm(),
                                    'user':request.user,
                                    'title': 'Add Tool',
-                                   'root_path':webhelpers.url("/admin/addtool/")
+                                   'root_path':urlresolvers.reverse('admin:index'),                                   
+                                   'tool_path': urlresolvers.reverse('add_tool_view')
                                    }
                                   )
     else:
@@ -224,7 +228,8 @@ def add_tool(request):
                                       {'form': f,
                                        'user':request.user,
                                        'title': 'Add Tool',
-                                       'root_path':webhelpers.url("/admin/addtool/")
+                                       'root_path':urlresolvers.reverse('admin:index'),                                       
+                                       'tool_path': urlresolvers.reverse('add_tool_view')
                                        }
                                       )
     
@@ -234,7 +239,7 @@ def add_tool(request):
             tool_dict = tool_dict["tool"]
             tool = create_tool(request, tool_dict)
             
-            return HttpResponseRedirect(webhelpers.url("/admin/tool/%s/" % tool.id))
+            return HttpResponseRedirect(urlresolvers.reverse('admin:yabi_tool_change', args=(tool.id,)))
 
 
 @staff_member_required
