@@ -37,14 +37,6 @@ class SGEConnector(ExecConnector):
         print "SGEConnector::__init__() debug setting is",DEBUG
         ExecConnector.__init__(self)
     
-        self._running = {}
-        
-    def add_running(self, rid, details):
-        self._running[rid]=details[:]
-        
-    def del_running(self, rid):
-        del self._running[rid]
-    
     def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
         try:
             if DEBUG:

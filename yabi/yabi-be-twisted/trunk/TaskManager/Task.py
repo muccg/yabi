@@ -7,7 +7,7 @@ import pickle
 
 from utils.parsers import parse_url
 
-from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Mkdir, Rm, List, UserCreds, GETFailure, CloseConnections
+from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Resume, Mkdir, Rm, List, UserCreds, GETFailure, CloseConnections
 
 import traceback
 
@@ -54,6 +54,9 @@ class Task(object):
     def _next_stage(self):
         """Move to the next stage of the tasklet"""
         self.stage += 1
+        
+    def _set_stage(self, stage):
+        self.stage = stage
         
     def _end_stage(self):
         """Mark as ended"""
@@ -171,6 +174,12 @@ class NullBackendTask(Task):
                 print "TASK[%s]: Copy %s to %s Success!"%(self.taskid,src,dst)
             
 class MainTask(Task):
+    STAGEIN = 0
+    MKDIR = 1
+    EXEC = 2
+    STAGEOUT = 3
+    CLEANUP = 4
+    
     def __init__(self, json=None):
         Task.__init__(self,json)
         
@@ -186,27 +195,33 @@ class MainTask(Task):
            
     def main(self):
         
-        if self.stage == 0:
+        if self.stage == self.STAGEIN:
             self.status("stagein")
             self.stage_in_files()
                 
             self._next_stage()
                 
-        if self.stage == 1:
+        if self.stage == self.MKDIR:
             # make our working directory
             self.status("mkdir")
             self.outuri, self.outdir = self.mkdir()                     # make the directories we are working in
         
             self._next_stage()
         
-        if self.stage == 2:
+        if self.stage == self.EXEC:
             # now we are going to run the job
             self.status("exec")
-            self.execute(self.outdir)                        # TODO. implement picking up on this exec task without re-running it??
+            if self._jobid is None:
+                # start a fresh taskjob
+                self.execute(self.outdir)                        # TODO. implement picking up on this exec task without re-running it??
         
-            self._next_stage()
+            else:
+                # reconnect with this taskjob
+                self.resume(self.outdir)
         
-        if self.stage == 3:
+            self._set_stage(self.STAGEOUT)
+        
+        if self.stage == self.STAGEOUT:
             # stageout
             self.log("Staging out results")
             self.status('stageout')
@@ -221,7 +236,7 @@ class MainTask(Task):
         
             self._next_stage()
             
-        if self.stage == 4:
+        if self.stage == self.CLEANUP:
         
             # cleanup
             self.status("cleaning")
@@ -306,6 +321,60 @@ class MainTask(Task):
         return outputuri,outputdir
         
     def execute(self, outputdir):
+        task=self.json
+        retry=True
+        while retry:
+            retry=False
+            
+            try:
+                # callback for job execution status change messages
+                def _task_status_change(line):
+                    """Each line that comes back from the webservice gets passed into this callback"""
+                    line = line.strip()
+                    if DEBUG:
+                        print "_task_status_change(",line,")"
+                    self.log("Remote execution backend sent status message: %s"%(line))
+                    
+                    # check for job id number
+                    if line.startswith("id") and '=' in line:
+                        key,value = line.split("=")
+                        value = value.strip()
+                        
+                        print "execution job given ID:",value
+                        self._jobid = value
+                    else:
+                        self.status("exec:%s"%(line.lower()))
+                
+                # submit the job to the execution middle ware
+                self.log("Submitting to %s command: %s"%(task['exec']['backend'],task['exec']['command']))
+                
+                try:
+                    uri = task['exec']['backend']+outputdir
+                    
+                    # create extra parameter list
+                    extras = {}
+                    for key in [ 'cpus', 'job_type', 'max_memory', 'module', 'queue', 'walltime' ]:
+                        if key in task['exec'] and task['exec'][key]:
+                            extras[key]=task['exec'][key]
+                    
+                    Exec(uri, command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)                # this blocks untill the command is complete.
+                    self.log("Execution finished")
+                except GETFailure, error:
+                    # error executing
+                    print "TASK[%s]: Execution failed!"%(self.taskid)
+                    self.status("error")
+                    self.log("Execution of %s on %s failed: %s"%(task['exec']['command'],task['exec']['backend'],error))
+                    
+                    # finish task
+                    raise TaskFailed("Execution failed")
+                
+            except CloseConnections, cc:
+                print "CLOSECONNECTIONS",cc
+                retry=True
+                
+            stackless.schedule()
+
+    def resume(self, outputdir):
         task=self.json
         retry=True
         while retry:

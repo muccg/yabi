@@ -81,11 +81,11 @@ def startup():
         print "NOT starting task manager"
         
 
-reactor.addSystemEventTrigger("before", "startup", startup)
+reactor.addSystemEventTrigger("after", "startup", startup)
 
 def shutdown():
     import TaskManager
     TaskManager.shutdown()
     
-reactor.addSystemEventTrigger("after","shutdown",shutdown)
+reactor.addSystemEventTrigger("before","shutdown",shutdown)
 

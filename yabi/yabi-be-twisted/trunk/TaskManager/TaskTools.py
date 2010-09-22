@@ -14,6 +14,7 @@ COPY_PATH = "/fs/copy"
 RCOPY_PATH = "/fs/rcopy"
 LIST_PATH = "/fs/ls"
 EXEC_PATH = "/exec/run"
+RESUME_PATH = "/exec/resume"
 MKDIR_PATH = "/fs/mkdir"
 RM_PATH = "/fs/rm"
 
@@ -119,6 +120,13 @@ def Exec(backend, command, callbackfunc=None, **kwargs):
    
     kwargs['uri']=backend
     POST(EXEC_PATH, command=command, datacallback=callbackfunc, **kwargs )
+
+def Resume(backend, command, callbackfunc=None, **kwargs):
+    if DEBUG:
+        print "RESUME:",backend,"command:",command,"kwargs:",kwargs
+    
+    kwargs['uri']=backend
+    POST(RESUME_PATH, command=command, datacallback=callbackfunc, **kwargs )
     
 def UserCreds(yabiusername, uri):
     """Get a users credentials"""

@@ -62,3 +62,9 @@ class BaseResource(resource.PostableResource):
         return http.Response(responsecode.OK,
                         {'content-type': http_headers.MimeType('text', 'plain')},
                          "Twisted Yabi Core: %s\n"%VERSION)
+                         
+    def shutdown(self):
+        """send signal to each backend that needs info to be written to disk on shutdown.
+        at the moment this is only execution backends that are capable of job resumption
+        """
+        self.child_exec.Shutdown()
