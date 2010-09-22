@@ -65,7 +65,7 @@ class SGEConnector(ExecConnector):
         self.add_running(jobid, (username,))
         
         # lets report our id to the caller
-        client_stream.write("id=%s\n"%job_id)
+        client_stream.write("id=%s\n"%jobid)
         
         state = None
         delay = JobPollGeneratorDefault()
