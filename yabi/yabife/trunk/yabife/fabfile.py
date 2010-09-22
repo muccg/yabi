@@ -1,5 +1,6 @@
-from fabric.api import env
+from fabric.api import env, local
 from ccgfab.base import *
+import os
 
 env.app_root = '/usr/local/python/ccgapps/'
 env.app_name = 'yabife'
@@ -13,17 +14,22 @@ env.writeable_dirs.extend([]) # add directories you wish to have created and mad
 env.content_excludes.extend([]) # add quoted patterns here for extra rsync excludes
 env.content_includes.extend([]) # add quoted patterns here for extra rsync includes
 
+
 def deploy():
     """
     Make a user deployment
     """
     _ccg_deploy_user()
+    env.settings_file = env.app_root + env.app_name + "/" + os.environ["USER"] + "/" + env.app_name + "/settings.py"
+    print local("sed -i.bak -r -e 's/<CCG_TARGET_NAME>/%s/g' %s"  % (os.environ["USER"], env.settings_file))
 
 def snapshot():
     """
     Make a snapshot deployment
     """
     _ccg_deploy_snapshot()
+    env.settings_file = env.app_root + env.app_name + "/snapshot/" + env.app_name + "/settings.py"
+    print local("sed -i.bak -r -e 's/<CCG_TARGET_NAME>/%s/g' %s"  % ("snapshot", env.settings_file))
 
 def release():
     """
