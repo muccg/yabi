@@ -6,7 +6,7 @@ from django.utils.webhelpers import url
 #TODO
 # May need to point to a users deployment rather than yabi user??
 # File does not exist: /usr/local/python/ccgapps/yabiadmin/ahunter/yabiadmin/static/admin-media/js/jquery.min.js, referer: https://faramir.localdomain/yabiadmin/ahunter/admin/yabi/toolset/
-# A log file is created but nothing is written to it
+# A log file is created but very little is written to it, stack traces are going to the apache logs
 
 # PROJECT_DIRECTORY isnt set when not under wsgi
 if not os.environ.has_key('PROJECT_DIRECTORY'):
@@ -67,7 +67,8 @@ CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
 
 # Making this always point to the yabi users deployment
 YABIBACKEND = os.environ["YABIBACKEND"] if "YABIBACKEND" in os.environ else "faramir.localdomain:21080/"
-YABISTORE = os.environ["YABISTORE"] if "YABISTORE" in os.environ else "faramir.localdomain:23080/yabistore"
+YABISTORE_SERVER = os.environ["YABISTORE_SERVER"] if "YABISTORESERVER" in os.environ else "faramir.localdomain:23080"
+YABISTORE_BASE = os.environ["YABISTORE_BASE"] if "YABISTORE_BASE" in os.environ else "/yabistore"
 YABI_URL = "yabi://faramir.localdomain/" # this is used in builder for pointers to previous jobs
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
@@ -82,7 +83,7 @@ import logging
 LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
 LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
 LOGGING_FORMATTER = logging.Formatter('[%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
-LOGS = ['yabiadmin']
+LOGS = ['yabiengine','yabiadmin']
 
 
 YABIBACKEND_COPY = '/fs/copy'
