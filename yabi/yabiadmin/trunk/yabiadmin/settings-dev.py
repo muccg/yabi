@@ -7,6 +7,7 @@ from django.utils.webhelpers import url
 #
 # No SSL
 # Logout broken
+# May need to point to a users deployment rather than yabi user??
 
 # PROJECT_DIRECTORY isnt set when not under wsgi
 if not os.environ.has_key('PROJECT_DIRECTORY'):
