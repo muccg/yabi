@@ -66,13 +66,14 @@ CAPTCHA_URL = os.path.join(MEDIA_URL, 'captchas')
 CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
 
 # Making this always point to the yabi users deployment
-YABIBACKEND = os.environ["YABIBACKEND"] if "YABIBACKEND" in os.environ else "faramir.localdomain:21080/"
+YABIBACKEND_SERVER = os.environ["YABIBACKEND_SERVER"] if "YABIBACKEND_SERVER" in os.environ else "faramir.localdomain:21080"
+YABIBACKEND_BASE = os.environ["YABIBACKEND_BASE"] if "YABIBACKEND_BASE" in os.environ else "/"
 YABISTORE_SERVER = os.environ["YABISTORE_SERVER"] if "YABISTORESERVER" in os.environ else "faramir.localdomain:23080"
 YABISTORE_BASE = os.environ["YABISTORE_BASE"] if "YABISTORE_BASE" in os.environ else "/yabistore"
 YABI_URL = "yabi://faramir.localdomain/" # this is used in builder for pointers to previous jobs
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
-YABIBACKEND_UPLOAD = 'http://'+YABIBACKEND+"fs/ticket"
+YABIBACKEND_UPLOAD = 'http://'+YABIBACKEND_SERVER+YABIBACKEND_BASE+"fs/ticket"
 
 ##
 ## Validation settings
