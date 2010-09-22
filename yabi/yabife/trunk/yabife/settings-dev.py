@@ -75,4 +75,4 @@ LOGS = ['yabife']
 YABIADMIN_SERVER = "https://faramir.localdomain:22443"
 YABIADMIN_BASE = "/"
 #YABIADMIN_SERVER = os.environ["YABIADMIN_SERVER"] if "YABIADMIN_SERVER" in os.environ else "https://faramir.localdomain:443" 
-#YABIADMIN_BASE = os.environ["YABIADMIN_BASE"] if "YABIADMIN_BASE" in os.environ else  "/yabiadmin/" + "<CCG_TARGET_NAME>" + "/admin/"
+#YABIADMIN_BASE = os.environ["YABIADMIN_BASE"] if "YABIADMIN_BASE" in os.environ else  "/yabiadmin/" + "<CCG_TARGET_NAME>" + "/"
