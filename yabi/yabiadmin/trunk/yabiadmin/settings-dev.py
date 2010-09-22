@@ -6,6 +6,7 @@ from django.utils.webhelpers import url
 #TODO
 # May need to point to a users deployment rather than yabi user??
 # File does not exist: /usr/local/python/ccgapps/yabiadmin/ahunter/yabiadmin/static/admin-media/js/jquery.min.js, referer: https://faramir.localdomain/yabiadmin/ahunter/admin/yabi/toolset/
+# A log file is created but nothing is written to it
 
 # PROJECT_DIRECTORY isnt set when not under wsgi
 if not os.environ.has_key('PROJECT_DIRECTORY'):
