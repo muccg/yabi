@@ -61,6 +61,12 @@ class SGEConnector(ExecConnector):
         client_stream = stream.ProducerStream()
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
         
+        # now the job is submitted, lets remember it
+        self.add_running(jobid, (username,))
+        
+        # lets report our id to the caller
+        client_stream.write("id=%s\n"%job_id)
+        
         state = None
         delay = JobPollGeneratorDefault()
         while state!="Done":
@@ -89,6 +95,8 @@ class SGEConnector(ExecConnector):
                 client_stream.finish()
                 return
             
+        # delete finished job
+        self.del_running(jobid)
             
         client_stream.finish()
      
