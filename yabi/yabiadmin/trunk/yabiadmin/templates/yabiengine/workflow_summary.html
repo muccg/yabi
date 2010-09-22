@@ -2,7 +2,7 @@
 <%namespace name="admin" module="django.contrib.admin.templatetags.adminmedia" />
 
 % if not is_popup:
-${self.block_breadcrumbs()}<%def name="block_breadcrumbs()"><div class="breadcrumbs"><a href="/admin/">${trans("Home")}</a> &rsaquo; Backend ${w.name}</div></%def>
+${self.block_breadcrumbs()}<%def name="block_breadcrumbs()"><div class="breadcrumbs"><a href="${root_path}">${trans("Home")}</a> &rsaquo; Backend ${w.name}</div></%def>
 % endif
 
 

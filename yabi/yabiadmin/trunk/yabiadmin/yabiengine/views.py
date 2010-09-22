@@ -4,6 +4,7 @@ from conf import config
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseServerError
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
+from django.core import urlresolvers
 from django.utils import webhelpers
 from django.db import transaction 
 from django.utils import simplejson as json
@@ -149,9 +150,9 @@ def workflow_summary(request, workflow_id):
     workflow = get_object_or_404(Workflow, pk=workflow_id)
         
     return render_to_response('yabiengine/workflow_summary.html', {
-                'w': workflow,
-                'user':request.user,
-                'title': 'Workflow Summary',
-                'root_path':webhelpers.url("/admin"),
-                'settings':settings
-                })
+        'w': workflow,
+        'user':request.user,
+        'title': 'Workflow Summary',
+        'root_path':urlresolvers.reverse('admin:index'),
+        'settings':settings
+        })
