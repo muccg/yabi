@@ -164,6 +164,10 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         # now submit the job via globus
         usercert = self.GetAuthProxy(host).ProxyFile(username)
         
+        # send an OK message, but leave the stream open
+        client_stream = stream.ProducerStream()
+        channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
+        
         state = None
         delay = JobPollGeneratorDefault()
         while state!="Done":

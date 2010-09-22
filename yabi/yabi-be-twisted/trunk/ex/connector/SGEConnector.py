@@ -99,4 +99,42 @@ class SGEConnector(ExecConnector):
         self.del_running(jobid)
             
         client_stream.finish()
-     
+
+    def resume(self,yabiusername, eprfile, scheme, username, host, **creds):
+        
+        # send an OK message, but leave the stream open
+        client_stream = stream.ProducerStream()
+        channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
+                
+        state = None
+        delay = JobPollGeneratorDefault()
+        while state!="Done":
+            # pause
+            sleep(delay.next())
+            
+            jobsummary = qstat(user=username)
+            
+            if jobid in jobsummary:
+                # job has not finished
+                status = jobsummary[jobid]['status']
+                newstate = dict(qw="Unsubmitted", t="Pending",r="Running",hqw="Unsubmitted",ht="Pending",h="Pending",E="Error",Eqw="Error")[status]
+            else:
+                # job has finished
+                sleep(15.0)                      # deal with SGE flush bizarreness (files dont flush from remote host immediately. Totally retarded)
+                newstate = "Done"
+            if DEBUG:
+                print "Job summary:",jobsummary
+                
+            
+            if state!=newstate:
+                state=newstate
+                client_stream.write("%s\n"%state)
+                
+            if state=="Error":
+                client_stream.finish()
+                return
+            
+        # delete finished job
+        self.del_running(jobid)
+            
+        client_stream.finish()
