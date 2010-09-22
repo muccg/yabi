@@ -4,8 +4,6 @@ import os
 from django.utils.webhelpers import url
 
 #TODO
-#
-# Logout broken
 # May need to point to a users deployment rather than yabi user??
 
 # PROJECT_DIRECTORY isnt set when not under wsgi
