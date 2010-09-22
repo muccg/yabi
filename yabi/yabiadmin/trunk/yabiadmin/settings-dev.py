@@ -5,7 +5,6 @@ from django.utils.webhelpers import url
 
 #TODO
 #
-# No SSL
 # Logout broken
 # May need to point to a users deployment rather than yabi user??
 
@@ -22,6 +21,10 @@ from appsettings.yabiadmin.dev import *
 # These are non standard
 LOGIN_URL = url('/login/')
 LOGOUT_URL = url('/logout/')
+
+SSL_FORCE = True
+if "LOCALDEV" in os.environ:
+    SSL_ENABLED = False
 
 ROOT_URLCONF = 'yabiadmin.urls'
 
