@@ -88,7 +88,7 @@ def shutdown():
     TaskManager.shutdown()
     
     # shutdown our connectors
-    res.shutdown()
+    base.shutdown()
     
 reactor.addSystemEventTrigger("before","shutdown",shutdown)
 
