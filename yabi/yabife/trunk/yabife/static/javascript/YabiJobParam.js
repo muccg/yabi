@@ -59,7 +59,9 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
         } else {
             this.renderMode = "fileselector";
         }
-    } 
+    } else if (this.payload.switch_use__display_text == "switchOnly") {
+        this.renderMode = "checkbox";
+    }
     
     var index;
     
@@ -182,6 +184,11 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
         this.inputEl = document.createElement('input');
         this.inputEl.value = this.defaultValue;
         this.inputEl.style.width = "180px";
+    } else if (this.renderMode == "checkbox") {
+        this.inputEl = document.createElement('input');
+        this.inputEl.type = "checkbox";
+        this.inputEl.value = "Yes";
+        this.inputEl.checked = (this.defaultValue.toString().length > 0);
     } else if (this.renderMode == "fileselector") {
         this.fileSelector = new YabiFileSelector(this, false);
         this.inputEl = this.fileSelector.containerEl;
@@ -418,6 +425,12 @@ YabiJobParam.prototype.getValue = function(useInternal) {
         }
         
         return this.inputEl.value;
+    } else if (this.renderMode == "checkbox") {
+        if (this.inputEl.checked) {
+            return "Yes";
+        }
+
+        return "";
     } else if (this.renderMode == "select") {
         if (this.inputEl.options.length === 0 || this.inputEl.selectedIndex < 0) {
             return "";
@@ -445,7 +458,7 @@ YabiJobParam.prototype.focus = function() {
         return;
     }
     
-    if (this.renderMode == "input") {
+    if (this.renderMode == "input" || this.renderMode == "checkbox") {
         this.inputEl.focus();
     }
 };
