@@ -65,8 +65,8 @@ def logout(request):
         "success": True,
     }
 
-#@authentication_required
-#@memcache("tool",timeout=30,refresh=True,user_specific=False)
+@authentication_required
+@memcache("tool",timeout=30,refresh=True,user_specific=False)
 def tool(request, *args, **kwargs):
     toolname = kwargs['toolname']
     logger.debug(toolname)
@@ -77,8 +77,8 @@ def tool(request, *args, **kwargs):
     except ObjectDoesNotExist:
         return HttpResponseNotFound(json_error("Object not found"))
 
-#@authentication_required
-#@memcache("menu",timeout=300)
+@authentication_required
+@memcache("menu",timeout=300)
 def menu(request):
     username = request.user.username
     logger.debug('Username: ' + username)
@@ -199,12 +199,9 @@ def get(request):
         response = HttpResponse(get_file(yabiusername, uri))
 
         mimetypes.init([os.path.normpath(os.path.expanduser('~/.yabi/mime.types')), os.path.normpath('/etc/yabi/mime.types')])
-        mtype, encoding = mimetypes.guess_type(filename, False)
+        mtype, file_encoding = mimetypes.guess_type(filename, False)
         if mtype is not None:
             response['content-type'] = mtype
-
-        if encoding is not None:
-            response['content-encoding'] = encoding
 
         response['content-disposition'] = 'attachment; filename=%s' % filename
 
