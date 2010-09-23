@@ -239,12 +239,13 @@ INSTALLED_APPS = (
 ##
 ## Auth settings
 ##
-AUTH_LDAP_SERVER = 'ldaps://fds2.localdomain'
-AUTH_LDAP_SERVERS = (
-    'ldaps://fds1.localdomain', 
-    'ldaps://fds2.localdomain', 
-    'ldaps://fds3.localdomain',
-)
+# TODO This is set in the conf file and here as well????
+#AUTH_LDAP_SERVER = 'ldaps://fds2.localdomain'
+#AUTH_LDAP_SERVERS = (
+#    'ldaps://fds1.localdomain', 
+#    'ldaps://fds2.localdomain', 
+#    'ldaps://fds3.localdomain',
+#)
 
 DEFAULT_GROUP = "baseuser"
 
