@@ -22,7 +22,7 @@ function YabiWorkflow(editable) {
     
     var date = new Date();
     if (editable) {
-        this.name = "unnamed (" + date.getFullYear() + "-" + dblzeropad(date.getMonth()) + "-" + dblzeropad(date.getDate()) + " " + dblzeropad(date.getHours()) + ":" + dblzeropad(date.getMinutes()) + ")";
+        this.name = "unnamed (" + date.getFullYear() + "-" + dblzeropad(date.getMonth() + 1) + "-" + dblzeropad(date.getDate()) + " " + dblzeropad(date.getHours()) + ":" + dblzeropad(date.getMinutes()) + ")";
         this.prefillName = this.name;
     }
     
