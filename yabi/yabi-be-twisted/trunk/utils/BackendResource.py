@@ -23,15 +23,15 @@ class BackendResource(object):
     def Shutdown(self):
         """tell each backend to shutdown its state onto disk"""
         for name, bend in self.backends.iteritems():
-            print "Shutting down %s..."%(name)
             if hasattr(bend, "shutdown"):
+                print "Shutting down %s..."%(name)
                 bend.shutdown()
                 
     def Startup(self):
         """tell each backend to bring up its state from disk"""
         for name, bend in self.backends.iteritems():
-            print "Starting up %s..."%(name)
             if hasattr(bend, "startup"):
+                print "Starting up %s..."%(name)
                 bend.startup()
     
     def LoadConnectors(self, connector, skip='BaseClass', brief='unknown', quiet=False):
