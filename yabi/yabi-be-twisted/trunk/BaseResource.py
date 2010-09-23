@@ -67,4 +67,8 @@ class BaseResource(resource.PostableResource):
         """send signal to each backend that needs info to be written to disk on shutdown.
         at the moment this is only execution backends that are capable of job resumption
         """
-        self.child_exec.Shutdown()
+        self.child_exec.shutdown()
+        
+    def startup(self):
+        """startup each backend that needs it"""
+        self.child_exec.startup()

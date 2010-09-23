@@ -80,6 +80,9 @@ def startup():
     else:
         print "NOT starting task manager"
         
+    print "Initialising connectors..."
+    base.startup()
+    
 
 reactor.addSystemEventTrigger("after", "startup", startup)
 

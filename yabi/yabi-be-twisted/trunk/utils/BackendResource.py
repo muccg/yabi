@@ -20,14 +20,14 @@ class BackendResource(object):
     def Backends(self):
         return self.backends.keys()
         
-    def Shutdown(self):
+    def shutdown(self):
         """tell each backend to shutdown its state onto disk"""
         for name, bend in self.backends.iteritems():
             if hasattr(bend, "shutdown"):
                 print "Shutting down %s..."%(name)
                 bend.shutdown()
                 
-    def Startup(self):
+    def startup(self):
         """tell each backend to bring up its state from disk"""
         for name, bend in self.backends.iteritems():
             if hasattr(bend, "startup"):
