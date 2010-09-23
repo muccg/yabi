@@ -64,6 +64,7 @@ def logout(request):
     response = {
         "success": True,
     }
+    return HttpResponse(content=json.dumps(response))
 
 @authentication_required
 @memcache("tool",timeout=30,refresh=True,user_specific=False)
@@ -76,6 +77,7 @@ def tool(request, *args, **kwargs):
         return HttpResponse(tool.json())
     except ObjectDoesNotExist:
         return HttpResponseNotFound(json_error("Object not found"))
+
 
 @authentication_required
 @memcache("menu",timeout=300)
