@@ -139,7 +139,7 @@ def memcache_http(username):
     mp = MemcacheCookiePersister(settings.MEMCACHE_SERVERS,
             key='%s-cookies-%s' %(settings.MEMCACHE_KEYSPACE, username))
     yabiadmin = settings.YABIADMIN_SERVER + settings.YABIADMIN_BASE
-    return Http(base_url=yabiadmin, cookie_persister=mp)
+    return Http(base_url=yabiadmin, cache=False, cookie_persister=mp)
 
 def yabiadmin_login(username, password):
     # TODO get the url from somewhere
