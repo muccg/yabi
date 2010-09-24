@@ -14,7 +14,6 @@ env.writeable_dirs.extend([]) # add directories you wish to have created and mad
 env.content_excludes.extend([]) # add quoted patterns here for extra rsync excludes
 env.content_includes.extend([]) # add quoted patterns here for extra rsync includes
 
-# /usr/local/python26/ccgapps/yabiadmin/ahunter/yabiadmin/virtualpython/bin/celeryd
 env.celeryd = env.app_root + 'yabiadmin/ahunter/yabiadmin/virtualpython/bin/celeryd'
 env.celeryd_options = " -l debug"
 #env.celeryd_options = " -h"
@@ -27,11 +26,6 @@ def deploy():
     Make a user deployment
     """
     _ccg_deploy_user()
-
-    print "**********************************************************"
-    print "* Dont forget your celeryd!"
-    print "* Usage: ./init_scripts/centos/celeryd {start|stop|restart|}"
-    print "**********************************************************"
 
 def snapshot():
     """
@@ -87,18 +81,4 @@ def _manage(opt=help):
     os.environ["PROJECT_DIRECTORY"] = "/usr/local/python/ccgapps/yabiadmin/ahunter/yabiadmin/"
 
     print local(env.virtual_python + " " + env.django_project_dir + "/manage.py " + opt, capture=False)
-
-
-
-"""
-export DJANGODEV=1
-export DJANGO_SETTINGS_MODULE="yabiadmin.settings"
-export DJANGO_PROJECT_DIR="/usr/local/python/ccgapps/yabiadmin/ahunter/"
-export PROJECT_DIRECTORY="/usr/local/python/ccgapps/yabiadmin/ahunter/"
-export CELERYD_CHDIR="/usr/local/python/ccgapps/yabiadmin/ahunter/"
-export PYTHONPATH="/usr/local/python/ccgapps/yabiadmin/ahunter/"
-export PYTHONPATH=$PYTHONPATH:/usr/local/etc/ccgapps/
-export CELERY_LOADER="django"
-
-"""
 
