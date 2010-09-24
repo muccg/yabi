@@ -16,6 +16,7 @@ from appsettings.default_dev import *
 from appsettings.yabiadmin.dev import *
 
 # THIS SHOULD NOT BE IN SVN
+# TODO update dev_yabi schema
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -27,8 +28,7 @@ DATABASES = {
     }
 }
 
-# THIS SHOULD NOT BE IN SVN
-# Make this per user
+# TODO Make this per user
 BACKEND_IP="0.0.0.0"
 BACKEND_PORT="50080"
 
