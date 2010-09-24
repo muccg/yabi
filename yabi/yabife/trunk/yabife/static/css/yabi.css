@@ -638,6 +638,11 @@ display:inline;
     width:290px;
 }
 
+.jobParam .help {
+    color: #999;
+    font-size: 90%;
+}
+
 input {
     height: 1.5em;
 }

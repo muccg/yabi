@@ -194,7 +194,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
         this.inputEl = this.fileSelector.containerEl;
     }
     this.containerEl.appendChild(this.inputEl);
-    
+
     //accepted extensions
     var ael = this.payload.acceptedExtensionList;
     
@@ -204,6 +204,13 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
     if (this.renderMode != "fileselector") {
         //dont show accepted extensions for a file selector (looks funny)
         this.containerEl.appendChild(this.acceptedExtensionList.containerEl);
+    }
+    
+    if (this.payload.helptext) {
+        var helpTextEl = document.createElement("div");
+        helpTextEl.className = "help";
+        helpTextEl.appendChild(document.createTextNode(this.payload.helptext));
+        this.containerEl.appendChild(helpTextEl);
     }
     
     //attach key events for changes/keypresses
