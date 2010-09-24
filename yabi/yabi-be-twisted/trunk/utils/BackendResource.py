@@ -3,6 +3,8 @@
 
 import os
 
+from conf import config
+
 class BackendResource(object):
     def __init__(self,*args,**kwargs):
         """Pass in the backends to be served out by this FSResource"""
@@ -25,14 +27,14 @@ class BackendResource(object):
         for name, bend in self.backends.iteritems():
             if hasattr(bend, "shutdown"):
                 print "Shutting down %s..."%(name)
-                bend.shutdown()
+                bend.shutdown(directory=config.config['backend']['tasklets'])
                 
     def startup(self):
         """tell each backend to bring up its state from disk"""
         for name, bend in self.backends.iteritems():
             if hasattr(bend, "startup"):
                 print "Starting up %s..."%(name)
-                bend.startup()
+                bend.startup(directory=config.config['backend']['tasklets'])
     
     def LoadConnectors(self, connector, skip='BaseClass', brief='unknown', quiet=False):
         """Load all the backend connectors into our backends. Use module passed in as connector, and skip the class named in skip

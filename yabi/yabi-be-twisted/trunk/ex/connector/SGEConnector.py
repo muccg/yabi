@@ -18,6 +18,7 @@ import shlex
 import globus
 import stackless
 import tempfile
+import os
 
 from utils.stacklesstools import sleep
 from utils.sgetools import qsub, qstat
@@ -37,11 +38,12 @@ class SGEConnector(ExecConnector):
         print "SGEConnector::__init__() debug setting is",DEBUG
         ExecConnector.__init__(self)
         
-    def shutdown(self):
-        print "SGEConnector::shutdown()"
+    def shutdown(self, directory):
+        print "SGEConnector::shutdown(",directory,")"
+        self.save_running(os.path.join(directroy,"exec-"+self.__class__.__name__))        
         
-    def startup(self):
-        print "SGEConnector::shutdown()"
+    def startup(self, directory):
+        print "SGEConnector::shutdown(,"directory,")"
     
     def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
         try:

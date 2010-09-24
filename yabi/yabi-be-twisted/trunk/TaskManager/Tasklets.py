@@ -13,6 +13,7 @@ class Tasklets(object):
     """This is a store for all the tasklets running in back end system. 
     From here they can be saved to disk and reloaded when the server is restarted
     """
+    TASK_FILENAME_PREFIX = "taskjson-"
     
     def __init__(self):
         self.tasks = []
@@ -34,7 +35,7 @@ class Tasklets(object):
         for task in self.tasks:
             # before we pickle it, if we are waiting on a connection in our stack frame, then set it to have failed
             # so that when we are resurrected in the future, the connection will immediately be marked as failed
-            fname = os.path.join(directory,str(id(task)))
+            fname = os.path.join(directory,self.TASK_FILENAME_PREFIX+str(id(task)))
             
             if not task.finished():
                 self.save_task(task,fname)
@@ -65,18 +66,19 @@ class Tasklets(object):
         self.tasks=[]
             
         for f in dircache.listdir(directory):
-            path = os.path.join(directory,f)
-            task = self.load_task(path)
-            os.unlink(path)
-            
-            # lets try and start the task up
-            runner = stackless.tasklet(task.run)
-            runner.setup()
-            runner.run()
-            
-            self.tasks.append(task)
-            
-            print "task",task,"loaded"
+            if f.startswith(self.TASK_FILENAME_PREFIX):
+                path = os.path.join(directory,f)
+                task = self.load_task(path)
+                os.unlink(path)
+                
+                # lets try and start the task up
+                runner = stackless.tasklet(task.run)
+                runner.setup()
+                runner.run()
+                
+                self.tasks.append(task)
+                
+                print "task",task,"loaded"
            
     def debug(self):
         

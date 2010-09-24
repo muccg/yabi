@@ -14,6 +14,7 @@ import shlex
 import globus
 import stackless
 import tempfile
+import os
 
 from utils.stacklesstools import sleep
 
@@ -36,11 +37,12 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         globus.Auth.GlobusAuth.__init__(self)
         self.CreateAuthProxy()
     
-    def shutdown(self):
-        print "GlobusConnector::shutdown()"
-        
-    def startup(self):
-        print "GlobusConnector::shutdown()"
+    def shutdown(self, directory):
+        print "GlobusConnector::shutdown(",directory,")"
+        self.save_running(os.path.join(directroy,"exec-"+self.__class__.__name__))        
+                
+    def startup(self, directory):
+        print "GlobusConnector::shutdown(",directory,")"
     
     def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, max_memory=1024, cpus=1, queue="testing", job_type="single", module=None, **creds):
         # use shlex to parse the command into executable and arguments
