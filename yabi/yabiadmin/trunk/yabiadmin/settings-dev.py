@@ -15,6 +15,23 @@ if not os.environ.has_key('PROJECT_DIRECTORY'):
 from appsettings.default_dev import *
 from appsettings.yabiadmin.dev import *
 
+# THIS SHOULD NOT BE IN SVN
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'USER': 'yabminapp',
+        'NAME': 'dev_yabi_ahunter',
+        'PASSWORD': 'yabminapp',
+        'HOST': 'eowyn.localdomain',
+        'PORT': '',
+    }
+}
+
+# THIS SHOULD NOT BE IN SVN
+# Make this per user
+BACKEND_IP="0.0.0.0"
+BACKEND_PORT="50080"
+
 SSL_FORCE = True
 if "LOCALDEV" in os.environ:
     SSL_ENABLED = False
@@ -24,7 +41,8 @@ ROOT_URLCONF = 'yabiadmin.urls'
 INSTALLED_APPS.extend( [
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
-    'ghettoq'
+    'ghettoq',
+    'djcelery'
 ] )
 
 MEMCACHE_KEYSPACE = "dev-yabiadmin-"
@@ -99,16 +117,38 @@ YABIBACKEND_GET = '/fs/get'
 ##
 ## Celery settings
 ##
+import djcelery
+djcelery.setup_loader()
+
+CELERY_IGNORE_RESULT = True
+
+#CELERY_RESULT_BACKEND = "database"
+#CELERY_RESULT_DBURI = "postgresql://scott:tiger@localhost/mydatabase"
+
+#BROKER_HOST = "localhost"
+#BROKER_PORT = 5672
+#BROKER_USER = "guest"
+#BROKER_PASSWORD = "guest"
+#BROKER_VHOST = "/"
+
+
+
+#CELERY_RESULT_BACKEND = "database"
+#CELERY_RESULT_DBURI = "postgresql://yabminapp:yabminapp@eowyn/dev_yabi"
+
+
+
 ## http://ask.github.com/celery/tutorials/otherqueues.html
 #CELERY_QUEUE_NAME = os.environ['CELERY_QUEUE_NAME'] if 'CELERY_QUEUE_NAME' in os.environ else 'default'
 CELERY_QUEUE_NAME = 'yabiadmin-dev'
-
+#
 CARROT_BACKEND = "ghettoq.taproot.Database"
 CELERYD_LOG_LEVEL = "DEBUG"
 CELERYD_CONCURRENCY = 1
 CELERYD_PREFETCH_MULTIPLIER = 1
-CELERY_RESULT_BACKEND = "database"
-CELERY_DISABLE_RATE_LIMITS = True
+
+#CELERY_RESULT_BACKEND = "database"
+#CELERY_DISABLE_RATE_LIMITS = True
 CELERY_QUEUES = {
     CELERY_QUEUE_NAME: {
         "binding_key": "celery",
@@ -117,8 +157,8 @@ CELERY_QUEUES = {
 }
 CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
 CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
-CELERY_IGNORE_RESULT = True
-
-print "CELERY_DEFAULT_QUEUE",CELERY_DEFAULT_QUEUE
-print "CELERY_QUEUES",CELERY_QUEUES
+#CELERY_IGNORE_RESULT = True
+#
+#print "CELERY_DEFAULT_QUEUE",CELERY_DEFAULT_QUEUE
+#print "CELERY_QUEUES",CELERY_QUEUES
 
