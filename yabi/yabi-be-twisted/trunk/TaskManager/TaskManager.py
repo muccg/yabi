@@ -126,8 +126,9 @@ class TaskManager(object):
         if VERBOSE:
             print "reactor.connectTCP(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.TASK_URL),")"
         print "reactor.connectTCP",config.yabiadminserver, type(config.yabiadminport), config.yabiadminpath, self.TASK_URL+"?origin=%s:%s"%tuple(config.config['backend']['port'])
-        reactor.connectTCP(config.yabiadminserver, config.yabiadminport, factory)
-        print "connected"
+        port = config.yabiadminport
+        reactor.connectTCP(config.yabiadminserver, port, factory)
+        print "connected",os.path.join(config.yabiadminpath,self.TASK_URL+"?origin=%s:%s"%tuple(config.config['backend']['port']))
         
         # now if the page fails for some reason. deal with it
         def _doFailure(data):
