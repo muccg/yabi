@@ -125,7 +125,7 @@ class TaskManager(object):
         factory.noisy = False
         if VERBOSE:
             print "reactor.connectTCP(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.TASK_URL),")"
-        print "reactor.connectTCP",config.yabiadminserver, config.yabiadminport, config.yabiadminpath, self.TASK_URL+"?origin=%s:%s"%tuple(config.config['backend']['port'])
+        print "reactor.connectTCP",config.yabiadminserver, type(config.yabiadminport), config.yabiadminpath, self.TASK_URL+"?origin=%s:%s"%tuple(config.config['backend']['port'])
         reactor.connectTCP(config.yabiadminserver, config.yabiadminport, factory)
         
         # now if the page fails for some reason. deal with it
