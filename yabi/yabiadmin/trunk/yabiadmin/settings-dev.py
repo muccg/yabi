@@ -106,7 +106,6 @@ LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
 LOGGING_FORMATTER = logging.Formatter('[%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
 LOGS = ['yabiengine','yabiadmin']
 
-
 YABIBACKEND_COPY = '/fs/copy'
 YABIBACKEND_RCOPY = '/fs/rcopy'
 YABIBACKEND_MKDIR = '/fs/mkdir'
@@ -122,14 +121,11 @@ import djcelery
 djcelery.setup_loader()
 
 CELERY_IGNORE_RESULT = True
-
-# TOOD Make this per user, or per deploy
 CELERY_QUEUE_NAME = 'yabiadmin-dev-<CCG_TARGET_NAME>'
 CARROT_BACKEND = "ghettoq.taproot.Database"
 CELERYD_LOG_LEVEL = "DEBUG"
 CELERYD_CONCURRENCY = 1
 CELERYD_PREFETCH_MULTIPLIER = 1
-
 #CELERY_DISABLE_RATE_LIMITS = True
 CELERY_QUEUES = {
     CELERY_QUEUE_NAME: {
