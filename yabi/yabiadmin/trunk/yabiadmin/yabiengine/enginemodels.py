@@ -3,7 +3,6 @@ import httplib, os, datetime, uuid, traceback
 from math import log10
 from urllib import urlencode
 from os.path import splitext
-from conf import config
 
 from psycopg2 import OperationalError
 

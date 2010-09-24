@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from conf import config
-
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseServerError
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
@@ -27,7 +25,8 @@ def task(request):
     # verify that the requesters origin is correct
     origin = request.REQUEST["origin"]
     ip,port = origin.split(":")
-    exp_ip, exp_port = config.config['backend']['port'][0],str(config.config['backend']['port'][1])
+    exp_ip = settings.BACKEND_IP
+    exp_port = settings.BACKEND_PORT
     if ip != exp_ip or port != exp_port:
         ipaddress = request.META[ "HTTP_X_FORWARDED_FOR" if "HTTP_X_FORWARDED_FOR" in request.META else "REMOTE_ADDR" ]
         logger.critical("IP %s requested task but had incorrect identifier set. Expected id %s:%s but got %s:%s instead."%(ipaddress,exp_ip,exp_port,ip,port))
