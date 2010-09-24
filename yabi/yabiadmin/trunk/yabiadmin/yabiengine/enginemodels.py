@@ -563,8 +563,8 @@ class EngineTask(Task):
         self.working_dir = str(uuid.uuid4()) # random uuid
         self.name = name
         self.command = self.job.command
-        self.expected_ip = config.config['backend']['port'][0]
-        self.expected_port = config.config['backend']['port'][1]
+        self.expected_ip = settings.BACKEND_IP
+        self.expected_port = settings.BACKEND_PORT
         self.save()
 
         # basic stuff used by both stagein types
