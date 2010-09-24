@@ -130,7 +130,7 @@ class TaskManager(object):
         
         # now if the page fails for some reason. deal with it
         def _doFailure(data):
-            #print "No more jobs. Sleeping for",self.JOBLESS_PAUSE
+            print "No more jobs. Sleeping for",self.JOBLESS_PAUSE
             # no more tasks. we should wait for the next task.
             self.pausechannel.send(self.JOBLESS_PAUSE)
             
