@@ -41,7 +41,9 @@ class ExecConnector(object):
         
     def startup(self, directory):
         print self.__class__.__name__+"::startup(",directory,")"
-        self.load_running(os.path.join(directory,"exec-"+self.__class__.__name__))        
+        filename = os.path.join(directory,"exec-"+self.__class__.__name__)
+        if os.path.exists(filename):
+            self.load_running(filename)        
     
     def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
         """Run a job on a backend. extra params can be passed in that are specific to a backend. They should all have defaults if ommitted
