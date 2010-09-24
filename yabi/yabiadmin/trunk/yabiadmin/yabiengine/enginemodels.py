@@ -30,111 +30,6 @@ logger = logging.getLogger('yabiengine')
 
 from constants import *
 
-# First up we have two decorators for doing table level locking in postgres
-# @require_lock gets a lock on a table as you would expect,
-# @require_lock_nowait uses NOWAIT on the lock request. Hopefully this impementation isnt
-# required, but its here for completeness I guess (well testing is more accurate).
-#
-# The interplay of the way Django handles transactions by default, the transaction middleware
-# and the transaction controlling decorators caused me some issues (ie I didnt understand it).
-# So the usual caveats about locking apply (essentially dont use it if you can avoid it), in that
-# regard I should probably take that advice and do an implementation that doesnt need this nonsense.
-# That aside, the lock is larger than it needs to be (covers a large code block), is on a complete
-# table when the row of the given workflow would probably suffice and for good measure is 
-# ACCESS EXCLUSIVE. So the TODO for this section would be make it a row level lock over a smaller
-# code block. Possibly followed by an implementation that doesnt require locking.
-
-LOCK_MODES = (
-    'ACCESS SHARE',
-    'ROW SHARE',
-    'ROW EXCLUSIVE',
-    'SHARE UPDATE EXCLUSIVE',
-    'SHARE',
-    'SHARE ROW EXCLUSIVE',
-    'EXCLUSIVE',
-    'ACCESS EXCLUSIVE',
-)
- 
-def require_lock(model, lock):
-    """
-    Decorator for PostgreSQL's table-level lock functionality
- 
-    Example:
-        @transaction.commit_on_success
-        @require_lock(MyModel, 'ACCESS EXCLUSIVE')
-        def myview(request)
-            ...
- 
-    PostgreSQL's LOCK Documentation:
-    http://www.postgresql.org/docs/8.3/interactive/sql-lock.html
-
-    Taken from:
-    http://www.caktusgroup.com/blog/2009/05/26/explicit-table-locking-with-postgresql-and-django/
-    """
-    def require_lock_decorator(view_func):
-        def wrapper(*args, **kwargs):
-            if lock not in LOCK_MODES:
-                raise ValueError('%s is not a PostgreSQL supported lock mode.')
-
-            assert False
-            # Was working on putting manual commits in here, but instead have decided to unwind the code
-            # and do a version without the decorator. FWIW the commit below is in the wrong spot if you get back here.
-            
-            try:
-                enter_transaction_management()
-                managed(True)
-
-                from django.db import connection
-                cursor = connection.cursor()
-                cursor.execute('LOCK TABLE %s IN %s MODE' % (model._meta.db_table, lock))
-                return view_func(*args, **kwargs)
-            except:
-                logger.critical(traceback.format_exc())
-                transaction.rollback()
-                raise
-            finally:
-                transaction.commit()
-                leave_transaction_management()
-
-        return wrapper
-    return require_lock_decorator
-
-def require_lock_nowait(model, lock):
-    """
-    See above, plus uses NOWAIT with an arbitrary number of retries (15), sleeping for count
-    between retries.
-    """
-    def require_lock_nowait_decorator(view_func):
-        def wrapper(*args, **kwargs):
-            if lock not in LOCK_MODES:
-                raise ValueError('%s is not a PostgreSQL supported lock mode.'%lock)
-            from django.db import connection
-            count = 0
-            waiting = True
-            while (waiting and count < 15):
-                count = count + 1
-                waiting = False
-                try: 
-                    # by default Django is running with an open transaction
-                    transaction.commit()
-                    cursor = connection.cursor()
-                    cursor.execute("LOCK TABLE %s IN %s MODE NOWAIT" % (model._meta.db_table, lock))
-                except OperationalError, e:
-                    logger.critical(traceback.format_exc())
-                    transaction.rollback()
-                    waiting = True
-                    from time import sleep
-                    sleep(count)
-                except:
-                    logger.critical(traceback.format_exc())
-                    raise
-            if (count >= 15):
-                raise Exception("Timeout waiting for %s lock on table %s" % (model._meta.db_table, lock))
-
-            return view_func(*args, **kwargs)
-        return wrapper
-    return require_lock_nowait_decorator
-
 
 class EngineWorkflow(Workflow):
     job_cache = {}
@@ -364,13 +259,11 @@ class EngineJob(Job):
 
         self.save()
 
-    # AH: Unwind the locking so we can see whats going on
-    #@require_lock(Task, 'ACCESS EXCLUSIVE')
+
     def create_tasks(self):
-        # by default Django is running with an open transaction
         tasks = self._prepare_tasks()
         
-        #TRY BLOCK WAS HERE
+        # by default Django is running with an open transaction
         transaction.commit()
 
         # see http://code.djangoproject.com/svn/django/trunk/django/db/transaction.py
