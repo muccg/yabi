@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Base class for FSConnector"""
 
-import pickle
+import pickle, os
 
 class NotImplemented(Exception):
     """Exception to mark methods that haven't been overridden... yet..."""
