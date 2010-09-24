@@ -124,7 +124,7 @@ djcelery.setup_loader()
 CELERY_IGNORE_RESULT = True
 
 # TOOD Make this per user, or per deploy
-CELERY_QUEUE_NAME = 'yabiadmin-dev'
+CELERY_QUEUE_NAME = 'yabiadmin-dev-<CCG_TARGET_NAME>'
 CARROT_BACKEND = "ghettoq.taproot.Database"
 CELERYD_LOG_LEVEL = "DEBUG"
 CELERYD_CONCURRENCY = 1
