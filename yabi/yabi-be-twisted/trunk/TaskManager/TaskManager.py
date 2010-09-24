@@ -127,6 +127,7 @@ class TaskManager(object):
             print "reactor.connectTCP(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.TASK_URL),")"
         print "reactor.connectTCP",config.yabiadminserver, type(config.yabiadminport), config.yabiadminpath, self.TASK_URL+"?origin=%s:%s"%tuple(config.config['backend']['port'])
         reactor.connectTCP(config.yabiadminserver, config.yabiadminport, factory)
+        print "connected"
         
         # now if the page fails for some reason. deal with it
         def _doFailure(data):
@@ -134,5 +135,8 @@ class TaskManager(object):
             # no more tasks. we should wait for the next task.
             self.pausechannel.send(self.JOBLESS_PAUSE)
             
-        return factory.deferred.addCallback(self.start_task).addErrback(_doFailure)
+        print "create deferred"
+        d = factory.deferred.addCallback(self.start_task).addErrback(_doFailure)
+        print "returning",d
+        return d
         
