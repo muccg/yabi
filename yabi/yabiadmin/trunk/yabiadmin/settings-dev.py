@@ -122,32 +122,13 @@ djcelery.setup_loader()
 
 CELERY_IGNORE_RESULT = True
 
-#CELERY_RESULT_BACKEND = "database"
-#CELERY_RESULT_DBURI = "postgresql://scott:tiger@localhost/mydatabase"
-
-#BROKER_HOST = "localhost"
-#BROKER_PORT = 5672
-#BROKER_USER = "guest"
-#BROKER_PASSWORD = "guest"
-#BROKER_VHOST = "/"
-
-
-
-#CELERY_RESULT_BACKEND = "database"
-#CELERY_RESULT_DBURI = "postgresql://yabminapp:yabminapp@eowyn/dev_yabi"
-
-
-
-## http://ask.github.com/celery/tutorials/otherqueues.html
-#CELERY_QUEUE_NAME = os.environ['CELERY_QUEUE_NAME'] if 'CELERY_QUEUE_NAME' in os.environ else 'default'
+# TOOD Make this per user, or per deploy
 CELERY_QUEUE_NAME = 'yabiadmin-dev'
-#
 CARROT_BACKEND = "ghettoq.taproot.Database"
 CELERYD_LOG_LEVEL = "DEBUG"
 CELERYD_CONCURRENCY = 1
 CELERYD_PREFETCH_MULTIPLIER = 1
 
-#CELERY_RESULT_BACKEND = "database"
 #CELERY_DISABLE_RATE_LIMITS = True
 CELERY_QUEUES = {
     CELERY_QUEUE_NAME: {
@@ -157,8 +138,3 @@ CELERY_QUEUES = {
 }
 CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
 CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
-#CELERY_IGNORE_RESULT = True
-#
-#print "CELERY_DEFAULT_QUEUE",CELERY_DEFAULT_QUEUE
-#print "CELERY_QUEUES",CELERY_QUEUES
-
