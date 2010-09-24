@@ -15,29 +15,45 @@ env.writeable_dirs.extend([]) # add directories you wish to have created and mad
 env.content_excludes.extend([]) # add quoted patterns here for extra rsync excludes
 env.content_includes.extend([]) # add quoted patterns here for extra rsync includes
 
-
-env.django_project_dir = os.path.join(env.app_root, env.app_install_names[0], env.username, env.app_name)
-env.django_parent_dir = os.path.join(env.app_root, env.app_install_names[0], env.username)
-
-env.celeryd = os.path.join(env.django_project_dir, 'virtualpython/bin/celeryd')
 env.celeryd_options = " -l debug"
-env.virtual_python=os.path.join(env.django_project_dir, 'virtualpython/bin/python')
+
+class LocalPaths():
+
+    target = env.username
+
+    def getSettings(self):
+        return os.path.join(env.app_root, env.app_install_names[0], self.target, env.app_name, "settings.py")
+
+    def getProjectDir(self):
+        return os.path.join(env.app_root, env.app_install_names[0], self.target, env.app_name)
+
+    def getParentDir(self):
+        return os.path.join(env.app_root, env.app_install_names[0], self.target)
+
+    def getCeleryd(self):
+        return os.path.join(self.getProjectDir(), 'virtualpython/bin/celeryd')
+
+    def getVirtualPython(self):
+        return os.path.join(self.getProjectDir(), 'virtualpython/bin/python')
+
+
+localPaths = LocalPaths()
+
 
 def deploy():
     """
     Make a user deployment
     """
     _ccg_deploy_user()
-    env.settings_file = env.app_root + env.app_name + "/" + os.environ["USER"] + "/" + env.app_name + "/settings.py"
-    print local("sed -i.bak -r -e 's/<CCG_TARGET_NAME>/%s/g' %s"  % (os.environ["USER"], env.settings_file))
+    _munge_settings()
 
 def snapshot():
     """
     Make a snapshot deployment
     """
     _ccg_deploy_snapshot()
-    env.settings_file = env.app_root + env.app_name + "/snapshot/" + env.app_name + "/settings.py"
-    print local("sed -i.bak -r -e 's/<CCG_TARGET_NAME>/%s/g' %s"  % ("snapshot", env.settings_file))
+    localPaths.target="snapshot"
+    _munge_settings()
 
 def release():
     """
@@ -64,24 +80,39 @@ def purge_snapshot():
     _ccg_purge_snapshot()
 
 def celeryd():
-    os.environ["DJANGO_SETTINGS_MODULE"]="settings"
-    os.environ["DJANGO_PROJECT_DIR"]=env.django_project_dir
-    os.environ["CELERY_LOADER"]="django"
-    os.environ["CELERY_CHDIR"]=env.django_project_dir
-    os.environ["PYTHONPATH"] = "/usr/local/etc/ccgapps/:" + env.django_project_dir + ":" + env.django_parent_dir
-    os.environ["PROJECT_DIRECTORY"] = env.django_project_dir
+    """
+    Foreground celeryd using your deployment of admin
+    """
+    _celeryd()
 
-    print local(env.virtual_python + " " + env.celeryd + env.celeryd_options, capture=False)
+def snapshot_celeryd():
+    """
+    Foreground celeryd using snapshot deployment of admin
+    """
+    localPaths.target = "snapshot"
+    _celeryd()
 
 def syncdb():
+    """
+    syncdb using your deployment of yabi admin
+    """
     _manage("syncdb")
 
 def _manage(opt=help):
-    os.environ["DJANGO_SETTINGS_MODULE"]="settings"
-    os.environ["DJANGO_PROJECT_DIR"]=env.django_project_dir
-    os.environ["CELERY_LOADER"]="django"
-    os.environ["CELERY_CHDIR"]=env.django_project_dir
-    os.environ["PYTHONPATH"] = "/usr/local/etc/ccgapps/:" + env.django_project_dir + ":" + env.django_parent_dir
-    os.environ["PROJECT_DIRECTORY"] = env.django_project_dir
+    _django_env()
+    print local(localPaths.getVirtualPython() + " " + localPaths.getProjectDir() + "/manage.py " + opt, capture=False)
 
-    print local(env.virtual_python + " " + env.django_project_dir + "/manage.py " + opt, capture=False)
+def _munge_settings():
+    print local("sed -i.bak -r -e 's/<CCG_TARGET_NAME>/%s/g' %s"  % (localPaths.target, localPaths.getSettings()))
+
+def _celeryd():
+    _django_env()
+    print local(localPaths.getVirtualPython() + " " + localPaths.getCeleryd() + env.celeryd_options, capture=False)
+
+def _django_env():
+    os.environ["DJANGO_SETTINGS_MODULE"]="settings"
+    os.environ["DJANGO_PROJECT_DIR"]=localPaths.getProjectDir()
+    os.environ["CELERY_LOADER"]="django"
+    os.environ["CELERY_CHDIR"]=localPaths.getProjectDir()
+    os.environ["PYTHONPATH"] = "/usr/local/etc/ccgapps/:" + localPaths.getProjectDir() + ":" + localPaths.getParentDir()
+    os.environ["PROJECT_DIRECTORY"] = localPaths.getProjectDir()
