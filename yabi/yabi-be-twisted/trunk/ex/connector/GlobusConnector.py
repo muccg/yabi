@@ -36,14 +36,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         ExecConnector.__init__(self)
         globus.Auth.GlobusAuth.__init__(self)
         self.CreateAuthProxy()
-    
-    def shutdown(self, directory):
-        print "GlobusConnector::shutdown(",directory,")"
-        self.save_running(os.path.join(directory,"exec-"+self.__class__.__name__))        
-                
-    def startup(self, directory):
-        print "GlobusConnector::startup(",directory,")"
-    
+
     def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, max_memory=1024, cpus=1, queue="testing", job_type="single", module=None, **creds):
         # use shlex to parse the command into executable and arguments
         lexer = shlex.shlex(command, posix=True)

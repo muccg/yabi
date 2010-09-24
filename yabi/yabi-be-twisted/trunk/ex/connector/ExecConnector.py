@@ -35,6 +35,14 @@ class ExecConnector(object):
         with open(filename,'rb') as fh:
             self._running = pickle.loads(fh.read())
     
+    def shutdown(self, directory):
+        print self.__class__.__name__+"::shutdown(",directory,")"
+        self.save_running(os.path.join(directory,"exec-"+self.__class__.__name__))        
+        
+    def startup(self, directory):
+        print self.__class__.__name__+"::startup(",directory,")"
+        self.load_running(os.path.join(directory,"exec-"+self.__class__.__name__))        
+    
     def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
         """Run a job on a backend. extra params can be passed in that are specific to a backend. They should all have defaults if ommitted
         
