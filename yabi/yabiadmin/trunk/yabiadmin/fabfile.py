@@ -17,14 +17,11 @@ env.content_includes.extend([]) # add quoted patterns here for extra rsync inclu
 
 
 env.django_project_dir = os.path.join(env.app_root, env.app_install_names[0], env.username, env.app_name)
-#env.django_project_dir = env.app_root + 'yabiadmin/ahunter/yabiadmin/'
 env.django_parent_dir = os.path.join(env.app_root, env.app_install_names[0], env.username)
-#env.django_parent_dir = env.app_root + 'yabiadmin/ahunter/'
 
 env.celeryd = os.path.join(env.django_project_dir, 'virtualpython/bin/celeryd')
 env.celeryd_options = " -l debug"
 env.virtual_python=os.path.join(env.django_project_dir, 'virtualpython/bin/python')
-#env.virtual_python="/usr/local/python26/ccgapps/yabiadmin/ahunter/yabiadmin/virtualpython/bin/python"
 
 def deploy():
     """
@@ -67,14 +64,12 @@ def purge_snapshot():
     _ccg_purge_snapshot()
 
 def celeryd():
-    #os.environ["DJANGO_SETTINGS_MODULE"]="yabiadmin.settings"
     os.environ["DJANGO_SETTINGS_MODULE"]="settings"
     os.environ["DJANGO_PROJECT_DIR"]=env.django_project_dir
     os.environ["CELERY_LOADER"]="django"
     os.environ["CELERY_CHDIR"]=env.django_project_dir
     os.environ["PYTHONPATH"] = "/usr/local/etc/ccgapps/:" + env.django_project_dir + ":" + env.django_parent_dir
     os.environ["PROJECT_DIRECTORY"] = env.django_project_dir
-#    os.environ["PROJECT_DIRECTORY"] = "/usr/local/python/ccgapps/yabiadmin/ahunter/yabiadmin/"
 
     print local(env.virtual_python + " " + env.celeryd + env.celeryd_options, capture=False)
 
@@ -82,14 +77,11 @@ def syncdb():
     _manage("syncdb")
 
 def _manage(opt=help):
-    #os.environ["DJANGO_SETTINGS_MODULE"]="yabiadmin.settings"
     os.environ["DJANGO_SETTINGS_MODULE"]="settings"
     os.environ["DJANGO_PROJECT_DIR"]=env.django_project_dir
     os.environ["CELERY_LOADER"]="django"
     os.environ["CELERY_CHDIR"]=env.django_project_dir
     os.environ["PYTHONPATH"] = "/usr/local/etc/ccgapps/:" + env.django_project_dir + ":" + env.django_parent_dir
     os.environ["PROJECT_DIRECTORY"] = env.django_project_dir
-#    os.environ["PROJECT_DIRECTORY"] = "/usr/local/python/ccgapps/yabiadmin/ahunter/yabiadmin/"
 
     print local(env.virtual_python + " " + env.django_project_dir + "/manage.py " + opt, capture=False)
-
