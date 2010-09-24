@@ -125,6 +125,7 @@ class TaskManager(object):
         factory.noisy = False
         if VERBOSE:
             print "reactor.connectTCP(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.TASK_URL),")"
+        print "reactor.connectTCP",config.yabiadminserver, config.yabiadminport, factory
         reactor.connectTCP(config.yabiadminserver, config.yabiadminport, factory)
         
         # now if the page fails for some reason. deal with it
