@@ -83,7 +83,8 @@ CAPTCHA_URL = os.path.join(MEDIA_URL, 'captchas')
 # Captcha image directory
 CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
 
-# Making this always point to the yabi users deployment
+# TODO make this point to users deployment
+# TODO Making this always point to the yabi users deployment
 YABIBACKEND_SERVER = os.environ["YABIBACKEND_SERVER"] if "YABIBACKEND_SERVER" in os.environ else "faramir.localdomain:21080"
 YABIBACKEND_BASE = os.environ["YABIBACKEND_BASE"] if "YABIBACKEND_BASE" in os.environ else "/"
 YABISTORE_SERVER = os.environ["YABISTORE_SERVER"] if "YABISTORESERVER" in os.environ else "faramir.localdomain:23080"
