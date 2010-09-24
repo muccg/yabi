@@ -3,6 +3,8 @@
 # WSGI bootstrapper for django
 import os
 
+os.environ["CELERY_LOADER"] = "django"
+
 # where are we installed
 projectdir=os.path.dirname(__file__)            # PROJECTDIR/nutrition
 parentdir=os.path.dirname(projectdir)           # PROJECTDIR/
