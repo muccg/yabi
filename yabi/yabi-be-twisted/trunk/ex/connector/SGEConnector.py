@@ -43,7 +43,7 @@ class SGEConnector(ExecConnector):
         self.save_running(os.path.join(directroy,"exec-"+self.__class__.__name__))        
         
     def startup(self, directory):
-        print "SGEConnector::shutdown(,"directory,")"
+        print "SGEConnector::shutdown(",directory,")"
     
     def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
         try:
