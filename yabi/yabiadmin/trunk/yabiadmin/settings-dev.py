@@ -30,31 +30,39 @@ TARGET = '<CCG_TARGET_NAME>'
 # TARGET is used to index into this hash, edit your own settings at will
 BACKEND = {
     'ahunter': {
-        'IP': '0.0.0.0',
-        'PORT': '50080',
-        'BASE': '/',
-        'YABI_URL': 'yabi://faramir.localdomain/'
+        'BACKEND_IP': '0.0.0.0',
+        'BACKEND_PORT': '50080',
+        'BACKEND_BASE': '/',
+        'YABI_URL': 'yabi://faramir.localdomain/',
+        'STORE_SERVER': 'localhost:40080',
+        'STORE_BASE': '/yabistore'
     },
     'andrew': {
-        'IP': '0.0.0.0',
-        'PORT': '7431',
-        'BASE': '/',
-        'YABI_URL': 'yabi://faramir.localdomain/'
+        'BACKEND_IP': '0.0.0.0',
+        'BACKEND_PORT': '7431',
+        'BACKEND_BASE': '/',
+        'YABI_URL': 'yabi://faramir.localdomain/',
+        'STORE_SERVER': 'localhost:7003',
+        'STORE_BASE': '/yabistore'
     },
     'snapshot': {
-        'IP': '0.0.0.0',
-        'PORT': '21443',
-        'BASE': '/',
-        'YABI_URL': 'yabi://faramir.localdomain/'
+        'BACKEND_IP': '0.0.0.0',
+        'BACKEND_PORT': '21443',
+        'BACKEND_BASE': '/',
+        'YABI_URL': 'yabi://faramir.localdomain/',
+        'STORE_SERVER': 'localhost:23080',
+        'STORE_BASE': '/yabistore'
     },
 }
 
 # uploads are currently written to disk and double handled, setting a limit will break things 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
-BACKEND_IP = BACKEND[TARGET]['IP']
-BACKEND_PORT = BACKEND[TARGET]['PORT']
-BACKEND_BASE = BACKEND[TARGET]['BASE']
+BACKEND_IP = BACKEND[TARGET]['BACKEND_IP']
+BACKEND_PORT = BACKEND[TARGET]['BACKEND_PORT']
+BACKEND_BASE = BACKEND[TARGET]['BACKEND_BASE']
+YABISTORE_SERVER = BACKEND[TARGET]['STORE_SERVER']
+YABISTORE_BASE = BACKEND[TARGET]['STORE_BASE']
 # this is used in builder for pointers to previous jobs
 YABI_URL = BACKEND[TARGET]['YABI_URL']
 BACKEND_UPLOAD = 'http://'+BACKEND_IP+':'+BACKEND_PORT+BACKEND_BASE+"fs/ticket"
