@@ -4,10 +4,8 @@ import os
 from django.utils.webhelpers import url
 
 #TODO
-# May need to point to a users deployment rather than yabi user??
 # File does not exist: /usr/local/python/ccgapps/yabiadmin/ahunter/yabiadmin/static/admin-media/js/jquery.min.js, referer: https://faramir.localdomain/yabiadmin/ahunter/admin/yabi/toolset/
 # A log file is created but very little is written to it, stack traces are going to the apache logs
-
 
 from appsettings.default_dev import *
 from appsettings.yabiadmin.dev import *
@@ -25,9 +23,10 @@ DATABASES = {
     }
 }
 
-# subsitution done by fab
+# subsitution done by fab, this will be your username or in the case of a snapshot, 'snapshot'
 TARGET = '<CCG_TARGET_NAME>'
 
+# The various
 # TARGET is used to index into this hash, edit your own settings at will
 BACKEND = {
     'ahunter': {
@@ -38,13 +37,13 @@ BACKEND = {
     },
     'andrew': {
         'IP': '0.0.0.0',
-        'PORT': '50080',
+        'PORT': '7431',
         'BASE': '/',
         'YABI_URL': 'yabi://faramir.localdomain/'
     },
     'snapshot': {
         'IP': '0.0.0.0',
-        'PORT': '50080',
+        'PORT': '21443',
         'BASE': '/',
         'YABI_URL': 'yabi://faramir.localdomain/'
     },
