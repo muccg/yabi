@@ -7,8 +7,6 @@ from os.path import splitext
 from django.conf import settings
 from django.utils import simplejson as json
 
-from conf import config
-
 import logging
 logger = logging.getLogger('yabiengine')
 
