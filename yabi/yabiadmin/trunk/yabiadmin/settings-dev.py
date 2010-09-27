@@ -8,11 +8,6 @@ from django.utils.webhelpers import url
 # File does not exist: /usr/local/python/ccgapps/yabiadmin/ahunter/yabiadmin/static/admin-media/js/jquery.min.js, referer: https://faramir.localdomain/yabiadmin/ahunter/admin/yabi/toolset/
 # A log file is created but very little is written to it, stack traces are going to the apache logs
 
-# PROJECT_DIRECTORY isnt set when not under wsgi
-# TODO Is this still valid? Asserting
-assert os.environ.has_key('PROJECT_DIRECTORY')
-if not os.environ.has_key('PROJECT_DIRECTORY'):
-    os.environ['PROJECT_DIRECTORY']=os.path.dirname(__file__).split("/appsettings/")[0]
 
 from appsettings.default_dev import *
 from appsettings.yabiadmin.dev import *
@@ -30,16 +25,40 @@ DATABASES = {
     }
 }
 
+# subsitution done by fab
+TARGET = '<CCG_TARGET_NAME>'
+
+# TARGET is used to index into this hash, edit your own settings at will
+BACKEND = {
+    'ahunter': {
+        'IP': '0.0.0.0',
+        'PORT': '50080',
+        'BASE': '/',
+        'YABI_URL': 'yabi://faramir.localdomain/'
+    },
+    'andrew': {
+        'IP': '0.0.0.0',
+        'PORT': '50080',
+        'BASE': '/',
+        'YABI_URL': 'yabi://faramir.localdomain/'
+    },
+    'snapshot': {
+        'IP': '0.0.0.0',
+        'PORT': '50080',
+        'BASE': '/',
+        'YABI_URL': 'yabi://faramir.localdomain/'
+    },
+}
+
 # uploads are currently written to disk and double handled, setting a limit will break things 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
-# TODO Make this per user
-BACKEND_IP = os.environ["BACKEND_IP"] if "BACKEND_IP" in os.environ else "0.0.0.0"
-BACKEND_PORT = os.environ["BACKEND_PORT"] if "BACKEND_PORT" in os.environ else "50080"
-BACKEND_BASE = os.environ["BACKEND_BASE"] if "BACKEND_BASE" in os.environ else "/"
-BACKEND_UPLOAD = 'http://'+BACKEND_IP+':'+BACKEND_PORT+BACKEND_BASE+"fs/ticket"
+BACKEND_IP = BACKEND[TARGET]['IP']
+BACKEND_PORT = BACKEND[TARGET]['PORT']
+BACKEND_BASE = BACKEND[TARGET]['BASE']
 # this is used in builder for pointers to previous jobs
-YABI_URL = os.environ["YABI_URL"] if "YABI_URL" in os.environ else "yabi://faramir.localdomain/" 
+YABI_URL = BACKEND[TARGET]['YABI_URL']
+BACKEND_UPLOAD = 'http://'+BACKEND_IP+':'+BACKEND_PORT+BACKEND_BASE+"fs/ticket"
 
 YABIBACKEND_COPY = '/fs/copy'
 YABIBACKEND_RCOPY = '/fs/rcopy'
@@ -50,8 +69,11 @@ YABIBACKEND_PUT = '/fs/put'
 YABIBACKEND_GET = '/fs/get'
 
 SSL_FORCE = True
+
 if "LOCALDEV" in os.environ:
     SSL_ENABLED = False
+    os.environ['PROJECT_DIRECTORY'] = 'TODO'
+    assert 'TODO localdev testing'
 
 ROOT_URLCONF = 'yabiadmin.urls'
 
@@ -62,7 +84,7 @@ INSTALLED_APPS.extend( [
     'djcelery'
 ] )
 
-MEMCACHE_KEYSPACE = "dev-yabiadmin-<CCG_TARGET_NAME>"
+MEMCACHE_KEYSPACE = "dev-yabiadmin-"+TARGET
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.LDAPBackend',
@@ -112,7 +134,7 @@ import djcelery
 djcelery.setup_loader()
 
 CELERY_IGNORE_RESULT = True
-CELERY_QUEUE_NAME = 'yabiadmin-dev-<CCG_TARGET_NAME>'
+CELERY_QUEUE_NAME = 'yabiadmin-dev-'+TARGET
 CARROT_BACKEND = "ghettoq.taproot.Database"
 CELERYD_LOG_LEVEL = "DEBUG"
 CELERYD_CONCURRENCY = 1
