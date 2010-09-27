@@ -65,8 +65,6 @@ YABIBACKEND_LIST = '/fs/ls'
 YABIBACKEND_PUT = '/fs/put'
 YABIBACKEND_GET = '/fs/get'
 
-SSL_FORCE = True
-
 if "LOCALDEV" in os.environ:
     SSL_ENABLED = False
     os.environ['PROJECT_DIRECTORY'] = 'TODO'
