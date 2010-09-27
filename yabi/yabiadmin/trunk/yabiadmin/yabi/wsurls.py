@@ -20,7 +20,7 @@ urlpatterns = patterns('yabiadmin.yabi.ws_frontend_views',
 # TODO this is the only backend webservice and now needs to be non-SSL where
 # all the frontend ws urls are SSL. We should move this.
 urlpatterns += patterns('yabiadmin.yabi.ws_backend_views',
-    url(r'^credential/(?P<yabiusername>\w+)[/]*$', 'credential_uri', name='credential_uri', {'SSL':False}),
+    url(r'^credential/(?P<yabiusername>\w+)[/]*$', 'credential_uri', {'SSL':False}, name='credential_uri'),
     #url(r'^credential_deprecated/(?P<yabiusername>\w+)/(?P<scheme>\w+)/(?P<username>\w+)/(?P<hostname>[\w\-.]+)/(?P<detail>\w+)[/]*$', 'credential_detail', name='credential_detail'),                       
     #url(r'^credential/(?P<yabiusername>\w+)/(?P<scheme>\w+)/(?P<username>\w+)/(?P<hostname>[\w\-.]+)[/]*$', 'credential', name='credential'),
 )
