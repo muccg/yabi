@@ -9,6 +9,8 @@ from django.utils.webhelpers import url
 # A log file is created but very little is written to it, stack traces are going to the apache logs
 
 # PROJECT_DIRECTORY isnt set when not under wsgi
+# TODO Is this still valid? Asserting
+assert os.environ.has_key('PROJECT_DIRECTORY')
 if not os.environ.has_key('PROJECT_DIRECTORY'):
     os.environ['PROJECT_DIRECTORY']=os.path.dirname(__file__).split("/appsettings/")[0]
 
