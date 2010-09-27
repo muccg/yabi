@@ -58,12 +58,6 @@ SESSION_COOKIE_PATH = url('/')
 SESSION_SAVE_EVERY_REQUEST = True
 CSRF_COOKIE_NAME = "csrftoken_yabiadmin"
 
-#PERSISTENT_FILESTORE = os.path.normpath(os.path.join(PROJECT_DIRECTORY, '..', '..', 'files'))
-
-#Ensure the persistent storage dir exits. If it doesn't, exit noisily.
-#assert os.path.exists(PERSISTENT_FILESTORE), "This application cannot start: It expects a writeable directory at %s to use as a persistent filestore" % (PERSISTENT_FILESTORE) 
-# a directory that will be writable by the webserver, for storing various files...
-
 WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
 
 #functions to evaluate for status checking
