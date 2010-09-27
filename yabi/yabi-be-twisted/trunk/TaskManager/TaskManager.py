@@ -117,9 +117,11 @@ class TaskManager(object):
     def get_next_task(self):
          
         useragent = "YabiExec/0.1"
+        task_url = "https://" + config.yabiadminserver + ":" + str(config.yabiadminport) + os.path.join(config.yabiadminpath,self.TASK_URL+"?origin=%s:%s"%tuple(config.config['backend']['port']))
+        print "task_url", task_url
         
         factory = client.HTTPClientFactory(
-            os.path.join(config.yabiadminpath,self.TASK_URL+"?origin=%s:%s"%tuple(config.config['backend']['port'])),
+            url = task_url,
             agent = useragent
             )
         factory.noisy = False
