@@ -47,7 +47,7 @@ INSTALLED_APPS.extend( [
     'djcelery'
 ] )
 
-MEMCACHE_KEYSPACE = "dev-yabiadmin-"
+MEMCACHE_KEYSPACE = "dev-yabiadmin-<CCG_TARGET_NAME>"
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.LDAPBackend',
