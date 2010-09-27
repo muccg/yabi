@@ -30,9 +30,24 @@ DATABASES = {
     }
 }
 
+# uploads are currently written to disk and double handled, setting a limit will break things 
+FILE_UPLOAD_MAX_MEMORY_SIZE = 0
+
 # TODO Make this per user
-BACKEND_IP="0.0.0.0"
-BACKEND_PORT="50080"
+BACKEND_IP = os.environ["BACKEND_IP"] if "BACKEND_IP" in os.environ else "0.0.0.0"
+BACKEND_PORT = os.environ["BACKEND_PORT"] if "BACKEND_PORT" in os.environ else "50080"
+BACKEND_BASE = os.environ["BACKEND_BASE"] if "BACKEND_BASE" in os.environ else "/"
+BACKEND_UPLOAD = 'http://'+BACKEND_IP+':'+BACKEND_PORT+BACKEND_BASE+"fs/ticket"
+# this is used in builder for pointers to previous jobs
+YABI_URL = os.environ["YABI_URL"] if "YABI_URL" in os.environ else "yabi://faramir.localdomain/" 
+
+YABIBACKEND_COPY = '/fs/copy'
+YABIBACKEND_RCOPY = '/fs/rcopy'
+YABIBACKEND_MKDIR = '/fs/mkdir'
+YABIBACKEND_RM = '/fs/rm'
+YABIBACKEND_LIST = '/fs/ls'
+YABIBACKEND_PUT = '/fs/put'
+YABIBACKEND_GET = '/fs/get'
 
 SSL_FORCE = True
 if "LOCALDEV" in os.environ:
@@ -79,18 +94,6 @@ CAPTCHA_URL = os.path.join(MEDIA_URL, 'captchas')
 # Captcha image directory
 CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
 
-# TODO make this point to users deployment
-# TODO Making this always point to the yabi users deployment
-YABIBACKEND_SERVER = os.environ["YABIBACKEND_SERVER"] if "YABIBACKEND_SERVER" in os.environ else "faramir.localdomain:21080"
-YABIBACKEND_BASE = os.environ["YABIBACKEND_BASE"] if "YABIBACKEND_BASE" in os.environ else "/"
-YABISTORE_SERVER = os.environ["YABISTORE_SERVER"] if "YABISTORESERVER" in os.environ else "faramir.localdomain:23080"
-YABISTORE_BASE = os.environ["YABISTORE_BASE"] if "YABISTORE_BASE" in os.environ else "/yabistore"
-YABI_URL = "yabi://faramir.localdomain/" # this is used in builder for pointers to previous jobs
-
-
-FILE_UPLOAD_MAX_MEMORY_SIZE = 0
-YABIBACKEND_UPLOAD = 'http://'+YABIBACKEND_SERVER+YABIBACKEND_BASE+"fs/ticket"
-
 ##
 ## Validation settings
 ##
@@ -101,14 +104,6 @@ LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
 LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
 LOGGING_FORMATTER = logging.Formatter('[%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
 LOGS = ['yabiengine','yabiadmin']
-
-YABIBACKEND_COPY = '/fs/copy'
-YABIBACKEND_RCOPY = '/fs/rcopy'
-YABIBACKEND_MKDIR = '/fs/mkdir'
-YABIBACKEND_RM = '/fs/rm'
-YABIBACKEND_LIST = '/fs/ls'
-YABIBACKEND_PUT = '/fs/put'
-YABIBACKEND_GET = '/fs/get'
 
 ##
 ## Celery settings
