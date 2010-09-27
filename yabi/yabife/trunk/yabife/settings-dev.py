@@ -10,6 +10,9 @@ if not os.environ.has_key('PROJECT_DIRECTORY'):
 from appsettings.default_dev import *
 from appsettings.yabife.dev import *
 
+# subsitution done by fab, this will be your username or in the case of a snapshot, 'snapshot'
+TARGET = '<CCG_TARGET_NAME>'
+
 # Defaults
 #LOGIN_REDIRECT_URL
 
@@ -24,7 +27,7 @@ INSTALLED_APPS.extend( [
     'djopenid.consumer'
 ] )
 
-MEMCACHE_KEYSPACE = "dev-yabife-"
+MEMCACHE_KEYSPACE = "dev-yabife-"+TARGET
 
 AUTHENTICATION_BACKENDS = [
  'djopenid.consumer.models.OpenIDBackend',
@@ -35,12 +38,6 @@ AUTHENTICATION_BACKENDS = [
 SESSION_COOKIE_PATH = url('/')
 SESSION_SAVE_EVERY_REQUEST = True
 CSRF_COOKIE_NAME = "csrftoken_yabife"
-
-#PERSISTENT_FILESTORE = os.path.normpath(os.path.join(PROJECT_DIRECTORY, '..', '..', 'files'))
-
-#Ensure the persistent storage dir exits. If it doesn't, exit noisily.
-#assert os.path.exists(PERSISTENT_FILESTORE), "This application cannot start: It expects a writeable directory at %s to use as a persistent filestore" % (PERSISTENT_FILESTORE) 
-# a directory that will be writable by the webserver, for storing various files...
 
 WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
 
@@ -72,7 +69,7 @@ LOGGING_FORMATTER = logging.Formatter('[%(name)s:%(levelname)s:%(filename)s:%(li
 LOGS = ['yabife']
 
 # Making this always point to the yabi users deployment
-YABIADMIN_SERVER = "https://faramir.localdomain:22443"
-YABIADMIN_BASE = "/"
-#YABIADMIN_SERVER = os.environ["YABIADMIN_SERVER"] if "YABIADMIN_SERVER" in os.environ else "https://faramir.localdomain:443" 
-#YABIADMIN_BASE = os.environ["YABIADMIN_BASE"] if "YABIADMIN_BASE" in os.environ else  "/yabiadmin/" + "<CCG_TARGET_NAME>" + "/"
+#YABIADMIN_SERVER = "https://faramir.localdomain:22443"
+#YABIADMIN_BASE = "/"
+YABIADMIN_SERVER = os.environ["YABIADMIN_SERVER"] if "YABIADMIN_SERVER" in os.environ else "https://faramir.localdomain:443" 
+YABIADMIN_BASE = os.environ["YABIADMIN_BASE"] if "YABIADMIN_BASE" in os.environ else  "/yabiadmin/" + TARGET + "/"
