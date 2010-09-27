@@ -4,7 +4,7 @@
 # lets help make the frontend more snappy
 #
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseUnauthorized
 
 import logging
 logger = logging.getLogger('yabiadmin')
@@ -45,3 +45,16 @@ def memcache(basekey,kwargkeylist=[],timeout=120,refresh=False,user_specific=Tru
         return memcache_decorated_func
     return memcache_decorator
             
+
+def authentication_required(f):
+    """
+    This decorator is used instead of the django login_required decorator
+    because we return HttpResponseUnauthorized while Django's redirects to
+    the login page.
+    """
+    def new_function(*args, **kwargs):
+        request = args[0]
+        if not request.user.is_authenticated():
+            return HttpResponseUnauthorized()
+        return f(*args, **kwargs)
+    return new_function
