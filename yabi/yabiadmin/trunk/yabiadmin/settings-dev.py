@@ -47,7 +47,7 @@ BACKEND = {
     },
     'snapshot': {
         'BACKEND_IP': '0.0.0.0',
-        'BACKEND_PORT': '21443',
+        'BACKEND_PORT': '21080',
         'BACKEND_BASE': '/',
         'YABI_URL': 'yabi://faramir.localdomain/',
         'STORE_SERVER': 'localhost:23080',
