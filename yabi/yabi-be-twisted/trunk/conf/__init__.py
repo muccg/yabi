@@ -355,6 +355,10 @@ class Configuration(object):
         return "%s:%d%s"%(rest.hostname,rest.port,rest.path)
         
     @property
+    def yabiadminscheme(self):
+        return parse_url(self.config['backend']['admin'])[0]
+
+    @property
     def yabiadminserver(self):
         return parse_url(self.config['backend']['admin'])[1].hostname
         
