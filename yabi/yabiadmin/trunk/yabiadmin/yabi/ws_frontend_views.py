@@ -16,7 +16,7 @@ from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.yabiengine.tasks import build
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_backendcredential_for_uri, copy_file, rm_file, send_upload_hash
-from yabiadmin.security import validate_user, validate_uri, authentication_required
+from yabiadmin.security import authentication_required
 from yabiadmin.utils import json_error
 from yabi.file_upload import *
 from django.contrib import auth
