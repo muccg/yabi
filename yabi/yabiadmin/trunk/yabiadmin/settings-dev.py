@@ -28,7 +28,7 @@ BACKEND = {
     },
     'andrew': {
         'BACKEND_IP': '0.0.0.0',
-        'BACKEND_PORT': '7431',
+        'BACKEND_PORT': '7001',
         'BACKEND_BASE': '/',
         'YABI_URL': 'yabi://faramir.localdomain/',
         'STORE_SERVER': 'localhost:7003',
