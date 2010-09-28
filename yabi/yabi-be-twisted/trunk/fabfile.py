@@ -43,7 +43,7 @@ def backend():
     """
     run the twisted backend on the terminal without forking
     """
-    print local("/usr/local/stackless/bin/twistd -noy server.py")
+    print local("/usr/local/stackless/bin/twistd -noy server.py", capture=False)
 
 def start():
     """
