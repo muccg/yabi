@@ -88,7 +88,7 @@ class ExecResumeResource(resource.PostableResource):
         #client_stream = stream.ProducerStream()
         client_deferred = defer.Deferred()
         
-        task = stackless.tasklet(bend.run)
+        task = stackless.tasklet(bend.resume)
         task.setup(yabiusername, command, basepath, scheme, username, hostname, client_deferred, **kwargs)
         task.run()
         
