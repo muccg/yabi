@@ -18,7 +18,7 @@ from utils.FifoStream import FifoStream
 
 from utils.submit_helpers import parsePOSTData, parsePUTData, parsePOSTDataRemoteWriter
 
-DEBUG = False
+DEBUG = True
 
 class ExecResumeResource(resource.PostableResource):
     VERSION=0.1
@@ -49,7 +49,7 @@ class ExecResumeResource(resource.PostableResource):
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided\n")
 
         if DEBUG:
-            print "RUN:",command
+            print "RESUME:",command
 
         uri = request.args['uri'][0]
         scheme, address = parse_url(uri)
