@@ -34,6 +34,14 @@ BACKEND = {
         'STORE_SERVER': 'localhost:7003',
         'STORE_BASE': '/yabistore'
     },
+    'aharvey': {
+        'BACKEND_IP': '0.0.0.0',
+        'BACKEND_PORT': '42080',
+        'BACKEND_BASE': '/',
+        'YABI_URL': 'yabi://faramir.localdomain/',
+        'STORE_SERVER': 'localhost:43080',
+        'STORE_BASE': '/yabistore'
+    },
     'snapshot': {
         'BACKEND_IP': '0.0.0.0',
         'BACKEND_PORT': '21080',
