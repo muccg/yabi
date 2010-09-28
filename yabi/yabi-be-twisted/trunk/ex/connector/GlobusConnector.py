@@ -141,7 +141,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         # job is finished, lets forget about it
         self.del_running(job_id)
                
-    def resume(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, max_memory=1024, cpus=1, queue="testing", job_type="single", module=None, **creds):
+    def resume(self, jobid, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, max_memory=1024, cpus=1, queue="testing", job_type="single", module=None, **creds):
         # first we need to auth the proxy
         try:
             if creds:
@@ -160,7 +160,17 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         # send an OK message, but leave the stream open
         client_stream = stream.ProducerStream()
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
-        
+
+        # TODO: cleanup so unused variables aren't passed in
+        (host,username,epr) = self.get_running(rid)
+
+        # save the epr to a tempfile so we can use it again and again
+        temp = tempfile.NamedTemporaryFile(suffix=".epr",delete=False)
+        temp.write(epr)
+        temp.close()
+
+        eprfile = temp.name
+
         state = None
         delay = JobPollGeneratorDefault()
         while state!="Done":

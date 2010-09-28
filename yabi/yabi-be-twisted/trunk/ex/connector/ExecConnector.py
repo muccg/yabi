@@ -21,6 +21,9 @@ class ExecConnector(object):
         
     def add_running(self, rid, details):
         self._running[rid]=details[:]
+
+    def get_running(self, rid):
+        return self._running[rid]
         
     def del_running(self, rid):
         del self._running[rid]

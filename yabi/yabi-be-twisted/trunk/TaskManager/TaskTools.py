@@ -121,12 +121,12 @@ def Exec(backend, command, callbackfunc=None, **kwargs):
     kwargs['uri']=backend
     POST(EXEC_PATH, command=command, datacallback=callbackfunc, **kwargs )
 
-def Resume(backend, command, callbackfunc=None, **kwargs):
+def Resume(jobid, backend, command, callbackfunc=None, **kwargs):
     if DEBUG:
-        print "RESUME:",backend,"command:",command,"kwargs:",kwargs
+        print "RESUME:",backend,"jobid:",jobid,"command:",command,"kwargs:",kwargs
     
     kwargs['uri']=backend
-    POST(RESUME_PATH, command=command, datacallback=callbackfunc, **kwargs )
+    POST(RESUME_PATH, jobid=jobid, command=command, datacallback=callbackfunc, **kwargs )
     
 def UserCreds(yabiusername, uri):
     """Get a users credentials"""

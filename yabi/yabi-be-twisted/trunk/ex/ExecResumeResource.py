@@ -38,11 +38,15 @@ class ExecResumeResource(resource.PostableResource):
         args = request.args
         
         if "yabiusername" not in args:
-            return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "Job submission must have a yabiusername set (so we can get credentials)!\n")
+            return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "Job resumption must have a yabiusername set (so we can get credentials)!\n")
         yabiusername = args['yabiusername'][0]
-        
+
+        if "jobid" not in args:
+            return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "Job resumption must have a jobid set!\n")
+        jobid = args['jobid'][0]
+
         if "command" not in args:
-            return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "Job submission must have a command!\n")
+            return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "Job resumption must have a command!\n")
         command = args['command'][0]
         
         if "uri" not in request.args:
@@ -89,7 +93,7 @@ class ExecResumeResource(resource.PostableResource):
         client_deferred = defer.Deferred()
         
         task = stackless.tasklet(bend.resume)
-        task.setup(yabiusername, command, basepath, scheme, username, hostname, client_deferred, **kwargs)
+        task.setup(jobid, yabiusername, command, basepath, scheme, username, hostname, client_deferred, **kwargs)
         task.run()
         
         return client_deferred
