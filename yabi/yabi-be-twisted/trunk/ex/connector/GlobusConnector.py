@@ -162,7 +162,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
 
         # TODO: cleanup so unused variables aren't passed in
-        (host,username,epr) = self.get_running(rid)
+        (host,username,epr) = self.get_running(jobid)
 
         # save the epr to a tempfile so we can use it again and again
         temp = tempfile.NamedTemporaryFile(suffix=".epr",delete=False)
