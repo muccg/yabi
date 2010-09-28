@@ -213,10 +213,12 @@ class MainTask(Task):
             self.status("exec")
             if self._jobid is None:
                 # start a fresh taskjob
+                print "Executing fresh:",self._jobid
                 self.execute(self.outdir)                        # TODO. implement picking up on this exec task without re-running it??
         
             else:
                 # reconnect with this taskjob
+                print "Reconnecting with taskjob:",self._jobid
                 self.resume(self.outdir)
         
             self._set_stage(self.STAGEOUT)
