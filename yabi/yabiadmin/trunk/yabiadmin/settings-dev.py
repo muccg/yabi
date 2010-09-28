@@ -4,7 +4,6 @@ import os
 from django.utils.webhelpers import url
 
 #TODO
-# File does not exist: /usr/local/python/ccgapps/yabiadmin/ahunter/yabiadmin/static/admin-media/js/jquery.min.js, referer: https://faramir.localdomain/yabiadmin/ahunter/admin/yabi/toolset/
 # A log file is created but very little is written to it, stack traces are going to the apache logs
 # Session is in db, move to memcache
 # favicon filling logs with 404
