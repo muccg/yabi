@@ -255,6 +255,7 @@ def POST(path,**kws):
         
     get_complete = [False]
     get_failed = [False]
+    connect_failed = [False]
     
     # now if the get fails for some reason. deal with it
     def _doFailure(data):
@@ -273,8 +274,13 @@ def POST(path,**kws):
     reactor.connectTCP(host, port, factory)
     
     # now we schedule this thread until the task is complete
-    while not get_complete[0] and not get_failed[0]:
+    while not get_complete[0] and not get_failed[0] and not connect_failed[0]:
         schedule()
+
+    if connect_failed[0]:
+        if DEBUG:
+            print "connect_failed=",connect_failed
+        raise ConnectionFailure(connect_failed[0])
         
     if get_failed[0]:
         if type(get_failed[0])==tuple and len(get_failed[0])==3:

@@ -406,7 +406,7 @@ class MainTask(Task):
                 
                 try:
                     uri = task['exec']['backend']+outputdir
-                    
+
                     # create extra parameter list
                     extras = {}
                     for key in [ 'cpus', 'job_type', 'max_memory', 'module', 'queue', 'walltime' ]:
