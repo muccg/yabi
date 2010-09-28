@@ -98,9 +98,9 @@ def syncdb():
     """
     manage("syncdb")
 
-def manage(opt="help"):
+def manage(*args):
     _django_env()
-    print local(localPaths.getVirtualPython() + " " + localPaths.getProjectDir() + "/manage.py " + opt, capture=False)
+    print local(localPaths.getVirtualPython() + " " + localPaths.getProjectDir() + "/manage.py " + " ".join(args), capture=False)
 
 def _munge_settings():
     print local("sed -i.bak -r -e 's/<CCG_TARGET_NAME>/%s/g' %s"  % (localPaths.target, localPaths.getSettings()))
