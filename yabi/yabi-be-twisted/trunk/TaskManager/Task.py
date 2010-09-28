@@ -444,7 +444,7 @@ class MainTask(Task):
             self.log("Files successfuly staged out")
         except GETFailure, error:
             # error executing
-            print "TASK[%s]: Stageout failed!"%(taskid)
+            print "TASK[%s]: Stageout failed!"%(self.taskid)
             self.status("error")
             if DEBUG:
                 self.log("Staging out remote %s to %s failed... \n%s"%(outputuri,task['stageout'],traceback.format_exc()))
