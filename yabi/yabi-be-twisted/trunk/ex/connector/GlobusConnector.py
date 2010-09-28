@@ -141,7 +141,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         # job is finished, lets forget about it
         self.del_running(job_id)
                
-    def resume(self, yabiusername, eprfile, scheme, username, host, **creds):
+    def resume(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, max_memory=1024, cpus=1, queue="testing", job_type="single", module=None, **creds):
         # first we need to auth the proxy
         try:
             if creds:
