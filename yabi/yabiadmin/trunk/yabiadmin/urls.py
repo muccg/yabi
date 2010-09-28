@@ -1,5 +1,6 @@
 from django.conf.urls.defaults import *
 from django.contrib import admin
+from django.core import urlresolvers
 
 import os
 admin.autodiscover()
@@ -11,6 +12,11 @@ urlpatterns = patterns('yabiadmin.yabi.views',
     (r'^engine/', include('yabiadmin.yabiengine.urls')),
     (r'^admin/', include('yabiadmin.yabi.adminurls'), {'SSL':True}),
     (r'^admin/', include(admin.site.urls), {'SSL':True})
+)
+
+# redirect / to /admin
+urlpatterns += patterns('django.views.generic.simple',
+    ('^$', 'redirect_to', {'url': urlresolvers.reverse('admin:index')}),
 )
 
 # pattern for serving statically
