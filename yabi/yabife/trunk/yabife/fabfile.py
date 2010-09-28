@@ -2,6 +2,7 @@ from fabric.api import env, local
 from ccgfab.base import *
 import os
 
+env.username = os.environ["USER"]
 env.app_root = '/usr/local/python/ccgapps/'
 env.app_name = 'yabife'
 env.app_install_names = ['yabife'] # use app_name or list of names for each install
@@ -13,6 +14,28 @@ env.svn_tags_url = "svn+ssh://store.localdomain/store/techsvn/ccg/yabi/yabife/ta
 env.writeable_dirs.extend([]) # add directories you wish to have created and made writeable
 env.content_excludes.extend([]) # add quoted patterns here for extra rsync excludes
 env.content_includes.extend([]) # add quoted patterns here for extra rsync includes
+
+class LocalPaths():
+
+    target = env.username
+
+    def getSettings(self):
+        return os.path.join(env.app_root, env.app_install_names[0], self.target, env.app_name, "settings.py")
+
+    def getProjectDir(self):
+        return os.path.join(env.app_root, env.app_install_names[0], self.target, env.app_name)
+
+    def getParentDir(self):
+        return os.path.join(env.app_root, env.app_install_names[0], self.target)
+
+    def getCeleryd(self):
+        return os.path.join(self.getProjectDir(), 'virtualpython/bin/celeryd')
+
+    def getVirtualPython(self):
+        return os.path.join(self.getProjectDir(), 'virtualpython/bin/python')
+
+
+localPaths = LocalPaths()
 
 
 def deploy():
@@ -54,3 +77,23 @@ def purge_snapshot():
     Remove the snapshot deployment
     """
     _ccg_purge_snapshot()
+
+def syncdb():
+    """
+    syncdb using your deployment of yabi admin
+    """
+    manage("syncdb")
+
+def manage(opt="help"):
+    _django_env()
+    print local(localPaths.getVirtualPython() + " " + localPaths.getProjectDir() + "/manage.py " + opt, capture=False)
+
+
+def _django_env():
+    os.environ["DJANGO_SETTINGS_MODULE"]="settings"
+    os.environ["DJANGO_PROJECT_DIR"]=localPaths.getProjectDir()
+    os.environ["CELERY_LOADER"]="django"
+    os.environ["CELERY_CHDIR"]=localPaths.getProjectDir()
+    os.environ["PYTHONPATH"] = "/usr/local/etc/ccgapps/:" + localPaths.getProjectDir() + ":" + localPaths.getParentDir()
+    os.environ["PROJECT_DIRECTORY"] = localPaths.getProjectDir()
+
