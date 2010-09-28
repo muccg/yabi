@@ -96,9 +96,9 @@ def syncdb():
     """
     syncdb using your deployment of yabi admin
     """
-    _manage("syncdb")
+    manage("syncdb")
 
-def _manage(opt=help):
+def manage(opt="help"):
     _django_env()
     print local(localPaths.getVirtualPython() + " " + localPaths.getProjectDir() + "/manage.py " + opt, capture=False)
 
