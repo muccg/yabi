@@ -396,7 +396,7 @@ class MainTask(Task):
                         key,value = line.split("=")
                         value = value.strip()
                         
-                        print "execution job given ID:",value
+                        print "execution job RE-given ID:",value
                         self._jobid = value
                     else:
                         self.status("exec:%s"%(line.lower()))
@@ -413,7 +413,7 @@ class MainTask(Task):
                         if key in task['exec'] and task['exec'][key]:
                             extras[key]=task['exec'][key]
                     
-                    Exec(uri, command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)                # this blocks untill the command is complete.
+                    Resume(uri, command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)                # this blocks untill the command is complete.
                     self.log("Execution finished")
                 except GETFailure, error:
                     # error executing
