@@ -121,8 +121,7 @@ class TaskManager(object):
         task_path = os.path.join(config.yabiadminpath, self.TASK_URL)
         task_origin = "?origin=%s:%s" % tuple(config.config['backend']['port'])
         task_url = task_server + task_path + task_origin
-        print "task_url", task_url
-        
+
         factory = client.HTTPClientFactory(
             url = task_url,
             agent = useragent
