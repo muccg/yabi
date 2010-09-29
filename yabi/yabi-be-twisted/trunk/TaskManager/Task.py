@@ -422,8 +422,8 @@ class MainTask(Task):
                     self.log("Resumption of %s on %s failed: %s"%(task['exec']['command'],task['exec']['backend'],error))
                     
                     # finish task
-                    raise TaskFailed("Execution failed")
-                
+                    raise TaskFailed("Execution failed: %s"%(error))
+
             except CloseConnections, cc:
                 print "CLOSECONNECTIONS",cc
                 retry=True
