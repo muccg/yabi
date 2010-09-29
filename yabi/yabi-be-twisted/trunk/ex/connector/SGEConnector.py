@@ -95,7 +95,8 @@ class SGEConnector(ExecConnector):
 
     def resume(self, jobid, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, max_memory=1024, cpus=1, queue="testing", job_type="single", module=None, **creds):
     #def resume(self,yabiusername, eprfile, scheme, username, host, **creds):
-        
+        jobid = int(jobid)
+
         # send an OK message, but leave the stream open
         client_stream = stream.ProducerStream()
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
