@@ -91,7 +91,9 @@ class ExecResumeResource(resource.PostableResource):
         # we are gonna try submitting the job. We will need to make a deferred to return, because this could take a while
         #client_stream = stream.ProducerStream()
         client_deferred = defer.Deferred()
-        
+
+        print "resume func:",bend.resume
+
         task = stackless.tasklet(bend.resume)
         task.setup(jobid, yabiusername, command, basepath, scheme, username, hostname, client_deferred, **kwargs)
         task.run()
