@@ -24,7 +24,8 @@ ROOT_URLCONF = 'yabife.urls'
 
 INSTALLED_APPS.extend( [
     'yabife.yabifeapp',
-    'djopenid.consumer'
+    'djopenid.consumer',
+    'sentry.client'    
 ] )
 
 MEMCACHE_KEYSPACE = "dev-yabife-"+TARGET
@@ -73,3 +74,29 @@ LOGS = ['yabife']
 #YABIADMIN_BASE = "/"
 YABIADMIN_SERVER = os.environ["YABIADMIN_SERVER"] if "YABIADMIN_SERVER" in os.environ else "https://faramir.localdomain:443" 
 YABIADMIN_BASE = os.environ["YABIADMIN_BASE"] if "YABIADMIN_BASE" in os.environ else  "/yabiadmin/" + TARGET + "/"
+
+
+# TODO - remove this, it was moved here to overide the entry in ccg-appsettings so we could remove EmailExceptionMiddleware
+MIDDLEWARE_CLASSES = [
+    'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.doc.XViewMiddleware',
+    'django.middleware.ssl.SSLRedirect',
+#    'django.middleware.email.EmailExceptionMiddleware'    
+]
+
+
+try:
+    SENTRY_REMOTE_URL = 'http://faramir.localdomain/sentryserver/%s/store/' % TARGET
+    SENTRY_KEY = 'lrHEULXanJMB5zygOLUUcCRvCxYrcWVZJZ0fzsMzx'
+    SENTRY_TESTING = True
+
+    from sentry.client.handlers import SentryHandler
+    logging.getLogger().addHandler(SentryHandler())
+
+    # Add StreamHandler to sentry's default so you can catch missed exceptions
+    logging.getLogger('sentry.errors').addHandler(logging.StreamHandler())
+
+except ImportError, e:
+    MIDDLEWARE_CLASSES.extend(['django.middleware.email.EmailExceptionMiddleware'])
