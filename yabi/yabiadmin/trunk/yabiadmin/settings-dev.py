@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # Django settings for project.
-import os
+import os, sys
 from django.utils.webhelpers import url
 
 #TODO
@@ -91,7 +91,8 @@ INSTALLED_APPS.extend( [
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
     'ghettoq',
-    'djcelery'
+    'djcelery',
+    'sentry.client'
 ] )
 
 MEMCACHE_KEYSPACE = "dev-yabiadmin-"+TARGET
@@ -158,3 +159,29 @@ CELERY_QUEUES = {
 }
 CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
 CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
+
+
+
+# TODO - remove this, it was moved here to overide the entry in ccg-appsettings so we could remove EmailExceptionMiddleware
+MIDDLEWARE_CLASSES = [
+    'django.middleware.common.CommonMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.doc.XViewMiddleware',
+    'django.middleware.ssl.SSLRedirect',
+#    'django.middleware.email.EmailExceptionMiddleware'    
+]
+
+
+
+### SENTRY SETTINGS ###
+# This should be the absolute URI of sentries store view
+SENTRY_REMOTE_URL = 'http://faramir.localdomain/sentryserver/%s/store/' % TARGET
+SENTRY_KEY = 'lrHEULXanJMB5zygOLUUcCRvCxYrcWVZJZ0fzsMzx'
+SENTRY_TESTING = True
+
+from sentry.client.handlers import SentryHandler
+logging.getLogger().addHandler(SentryHandler())
+
+# Add StreamHandler to sentry's default so you can catch missed exceptions
+logging.getLogger('sentry.errors').addHandler(logging.StreamHandler())

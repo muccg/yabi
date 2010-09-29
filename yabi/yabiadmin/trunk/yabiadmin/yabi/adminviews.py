@@ -1,3 +1,4 @@
+import sys
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.db import connection
@@ -81,7 +82,8 @@ def format_params(tool_parameters):
 
 @staff_member_required
 def tool(request, tool_id):
-    logger.debug('')
+    logging.error('There was some really crazy error', exc_info=None, extra={'url': request.build_absolute_uri(), 'data': {'username': request.user.username}})
+
     tool = get_object_or_404(Tool, pk=tool_id)
     
     return render_to_response('yabi/tool.html', {
