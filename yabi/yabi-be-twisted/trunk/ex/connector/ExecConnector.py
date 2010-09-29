@@ -27,6 +27,9 @@ class ExecConnector(object):
         
     def del_running(self, rid):
         del self._running[rid]
+
+    def get_all_running(self):
+        return self._running
         
     def save_running(self, filename):
         """save the running job details to a file so we can restore the details we need on startup to resume connections to tasks"""

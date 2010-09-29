@@ -100,6 +100,8 @@ class SGEConnector(ExecConnector):
         client_stream = stream.ProducerStream()
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
 
+        print "running=",self.get_all_running()
+        print "jobid=",jobid
         (username,) = self.get_running(jobid)
 
         state = None
