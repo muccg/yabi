@@ -45,7 +45,7 @@ def deploy():
     Make a user deployment
     """
     _ccg_deploy_user()
-    _munge_settings(sentry=False)
+    _munge_settings()
 
 def snapshot():
     """
@@ -53,7 +53,7 @@ def snapshot():
     """
     _ccg_deploy_snapshot()
     localPaths.target="snapshot"
-    _munge_settings(sentry=True)
+    _munge_settings(debug_logging='logging.WARNING', sentry=True) #pass string for warning, not actual logging.WARNING
 
 def release():
     """
@@ -102,10 +102,12 @@ def manage(*args):
     _django_env()
     print local(localPaths.getVirtualPython() + " " + localPaths.getProjectDir() + "/manage.py " + " ".join(args), capture=False)
 
-def _munge_settings(sentry=False):
+def _munge_settings(**kwargs):
     print local("sed -i -r -e 's/<CCG_TARGET_NAME>/%s/g' %s"  % (localPaths.target, localPaths.getSettings()))
-    if sentry:
+    if kwargs.get('sentry'):
         print local("sed -i -r -e 's/SENTRY_TESTING = False/SENTRY_TESTING = True/g' %s"  % (localPaths.getSettings()))
+    if kwargs.get('debug_logging'):
+        print local("sed -i -r -e 's/LOGGING_LEVEL = logging.DEBUG/LOGGING_LEVEL = %s/g' %s"  % (kwargs.get('debug_logging'),localPaths.getSettings()))
         
 def _celeryd():
     _django_env()
