@@ -14,14 +14,9 @@ DEBUG = False
 
 from twisted.web2 import http, responsecode, http_headers, stream
 
-import shlex
-import globus
-import stackless
-import tempfile
-import os
-
 from utils.stacklesstools import sleep
 from utils.sgetools import qsub, qstat
+
 # for Job status updates, poll this often
 def JobPollGeneratorDefault():
     """Generator for these MUST be infinite. Cause you don't know how long the job will take. Default is to hit it pretty hard."""

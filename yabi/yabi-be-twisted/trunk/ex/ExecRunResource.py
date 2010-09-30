@@ -1,22 +1,14 @@
 # -*- coding: utf-8 -*-
-from twisted.web2 import resource, http_headers, responsecode, http, server, fileupload, stream
-from twisted.internet import defer, reactor
+from twisted.web2 import resource, http_headers, responsecode, http
+from twisted.internet import defer
 
 import weakref
-import sys, os
+import os
 import stackless
-import json
 
-from globus.Auth import NoCredentials
-from globus.CertificateProxy import ProxyInitError
-
-from utils.stacklesstools import WaitForDeferredData, sleep
 from utils.parsers import parse_url
 
-from twisted.internet.defer import Deferred
-from utils.FifoStream import FifoStream
-
-from utils.submit_helpers import parsePOSTData, parsePUTData, parsePOSTDataRemoteWriter
+from utils.submit_helpers import parsePOSTDataRemoteWriter
 
 DEBUG = False
 

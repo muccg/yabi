@@ -1,22 +1,14 @@
 # -*- coding: utf-8 -*-
-from twisted.web2 import resource, http_headers, responsecode, http, server, fileupload, stream
-from twisted.internet import defer, reactor
+from twisted.web2 import resource, http_headers, responsecode, http
+from twisted.internet import defer
 
 import weakref
-import sys, os
+import os
 import stackless
-import json
 
-from globus.Auth import NoCredentials
-from globus.CertificateProxy import ProxyInitError
-
-from utils.stacklesstools import WaitForDeferredData, sleep
 from utils.parsers import parse_url
 
-from twisted.internet.defer import Deferred
-from utils.FifoStream import FifoStream
-
-from utils.submit_helpers import parsePOSTData, parsePUTData, parsePOSTDataRemoteWriter
+from utils.submit_helpers import parsePOSTDataRemoteWriter
 
 DEBUG = True
 
@@ -84,9 +76,9 @@ class ExecResumeResource(resource.PostableResource):
                 try:
                     val = cast(args[key][0])
                 except ValueError, ve:
-                    return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "Cannot convert parameter '%s' to %s\n"%(key,cast))
+                    return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "Cannot convert parameter '%s' to %s: %s\n"%(key,cast,ve))
                 #print "setting",key,"to",cast(args[key][0])
-                kwargs[key]=cast(args[key][0])
+                kwargs[key]=val
         
         # we are gonna try submitting the job. We will need to make a deferred to return, because this could take a while
         #client_stream = stream.ProducerStream()

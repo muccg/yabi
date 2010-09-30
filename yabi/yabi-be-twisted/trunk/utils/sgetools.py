@@ -6,10 +6,8 @@ from twisted.internet import reactor
 
 import re
 import stackless
-import shlex
 from tempfile import mktemp
 import os
-import pwd
 
 QSUB_COMMAND = "/opt/sge/6.2u3/bin/lx24-amd64/qsub"             #-N job-101 /home/yabi/test-remote
 QSTAT_COMMAND = "/opt/sge/6.2u3/bin/lx24-amd64/qstat"

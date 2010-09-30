@@ -14,7 +14,6 @@ import shlex
 import globus
 import stackless
 import tempfile
-import os
 
 from utils.stacklesstools import sleep
 
