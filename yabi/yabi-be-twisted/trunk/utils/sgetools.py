@@ -50,7 +50,7 @@ class QsubProcessProtocol(protocol.ProcessProtocol):
         if re_match:
             #print "Group",re_match.groups()
             jobid, jobname = re_match.groups()
-            self.jobid = int(jobid)
+            self.jobid = jobid
             self.jobname = jobname
             #print "jobid=",jobid
         
@@ -176,7 +176,7 @@ job-ID  prior   name       user         state submit/start at     queue         
             #print "RE_MATCH:",re_match
             if re_match:
                 jobid, prior, name, user, status, submit, at, host, rest = re_match.groups()
-                jobid=int(jobid)
+                jobid=jobid
                 self.jobs[jobid] = dict(name=name,user=user,status=status,submit=submit,at=at,rest=rest,host=host,prior=prior)
                 if DEBUG:
                     print self.jobs[jobid]
@@ -266,7 +266,7 @@ def qstat_verbose_spawn(jobs,user,jobid):
                                 user,
                                 "-f",
                                 "-j",
-                                str(jobid)
+                                jobid
                             ]
 
     reactor.spawnProcess(   pp,
@@ -277,7 +277,7 @@ def qstat_verbose_spawn(jobs,user,jobid):
                                 user,
                                 "-f",
                                 "-j",
-                                str(jobid)
+                                jobid
                             ],
                             env=subenv
                         )
@@ -299,7 +299,7 @@ def qstat(user="yabi"):
 
     # now we annotate our jobs with qstat -u username -f -j jobnum
     for jobnum in pp.jobs.keys():
-        pp = qstat_verbose_spawn(pp.jobs,user,str(jobnum))
+        pp = qstat_verbose_spawn(pp.jobs,user,jobnum)
 
         while not pp.isDone():
             stackless.schedule()
