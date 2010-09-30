@@ -53,6 +53,7 @@ def snapshot():
     _ccg_deploy_snapshot()
     env.settings_file = env.app_root + env.app_name + "/snapshot/" + env.app_name + "/settings.py"
     print local("sed -i.bak -r -e 's/<CCG_TARGET_NAME>/%s/g' %s"  % ("snapshot", env.settings_file))
+    print local("sed -i -r -e 's/SENTRY_TESTING = False/SENTRY_TESTING = True/g' %s"  % env.settings_file)
 
 def release():
     """
