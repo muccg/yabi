@@ -174,7 +174,7 @@ LOGS = ['yabiengine','yabiadmin']
 try:
     SENTRY_REMOTE_URL = 'http://faramir.localdomain/sentryserver/%s/store/' % TARGET
     SENTRY_KEY = 'lrHEULXanJMB5zygOLUUcCRvCxYrcWVZJZ0fzsMzx'
-    SENTRY_TEST = False
+    SENTRY_TESTING = False
 
     INSTALLED_APPS.extend(['sentry.client'])
     

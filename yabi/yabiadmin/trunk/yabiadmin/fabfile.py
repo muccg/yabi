@@ -105,7 +105,7 @@ def manage(*args):
 def _munge_settings(sentry=False):
     print local("sed -i -r -e 's/<CCG_TARGET_NAME>/%s/g' %s"  % (localPaths.target, localPaths.getSettings()))
     if sentry:
-        print local("sed -i -r -e 's/SENTRY_TEST = False/SENTRY_TEST = True/g' %s"  % (localPaths.getSettings()))
+        print local("sed -i -r -e 's/SENTRY_TESTING = False/SENTRY_TESTING = True/g' %s"  % (localPaths.getSettings()))
         
 def _celeryd():
     _django_env()
