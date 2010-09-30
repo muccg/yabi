@@ -298,7 +298,7 @@ def qstat(user="yabi"):
         raise ExecutionError(err)
 
     # now we annotate our jobs with qstat -u username -f -j jobnum
-    for jobnum in job_summary.keys():
+    for jobnum in pp.jobs.keys():
         pp = qstat_verbose_spawn(pp.jobs,user,str(jobnum))
 
         while not pp.isDone():
