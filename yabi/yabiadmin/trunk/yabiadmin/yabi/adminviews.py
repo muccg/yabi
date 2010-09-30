@@ -365,3 +365,9 @@ def create_tool(request, tool_dict):
     tool.save()
     return tool
 
+
+
+@staff_member_required
+def test_exception(request):
+    raise Exception('Test exception')
+

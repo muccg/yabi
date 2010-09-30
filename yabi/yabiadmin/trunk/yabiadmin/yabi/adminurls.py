@@ -8,4 +8,5 @@ urlpatterns = patterns('yabiadmin.yabi.adminviews',
     url(r'^backend/(?P<backend_id>\d+)/$', 'backend', name='backend_view'),
     url(r'^backend_cred_test/(?P<backend_cred_id>\d+)/$', 'backend_cred_test', name='backend_cred_test_view'),                       
     url(r'^ldap_users/$', 'ldap_users', name='ldap_users_view'),
+    url(r'^test_exception/$', 'test_exception', name='test_exception_view'),                       
 )

@@ -173,15 +173,17 @@ MIDDLEWARE_CLASSES = [
 ]
 
 
+try:
+    SENTRY_REMOTE_URL = 'http://faramir.localdomain/sentryserver/%s/store/' % TARGET
+    SENTRY_KEY = 'lrHEULXanJMB5zygOLUUcCRvCxYrcWVZJZ0fzsMzx'
+    SENTRY_TESTING = True
 
-### SENTRY SETTINGS ###
-# This should be the absolute URI of sentries store view
-SENTRY_REMOTE_URL = 'http://faramir.localdomain/sentryserver/%s/store/' % TARGET
-SENTRY_KEY = 'lrHEULXanJMB5zygOLUUcCRvCxYrcWVZJZ0fzsMzx'
-SENTRY_TESTING = True
+    from sentry.client.handlers import SentryHandler
+    logging.getLogger().addHandler(SentryHandler())
 
-from sentry.client.handlers import SentryHandler
-logging.getLogger().addHandler(SentryHandler())
+    # Add StreamHandler to sentry's default so you can catch missed exceptions
+    logging.getLogger('sentry.errors').addHandler(logging.StreamHandler())
 
-# Add StreamHandler to sentry's default so you can catch missed exceptions
-logging.getLogger('sentry.errors').addHandler(logging.StreamHandler())
+except ImportError, e:
+    MIDDLEWARE_CLASSES.extend(['django.middleware.email.EmailExceptionMiddleware'])
+
