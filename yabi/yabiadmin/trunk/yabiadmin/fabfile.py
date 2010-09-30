@@ -45,7 +45,7 @@ def deploy():
     Make a user deployment
     """
     _ccg_deploy_user()
-    _munge_settings()
+    _munge_settings(sentry=False)
 
 def snapshot():
     """
@@ -53,7 +53,7 @@ def snapshot():
     """
     _ccg_deploy_snapshot()
     localPaths.target="snapshot"
-    _munge_settings()
+    _munge_settings(sentry=True)
 
 def release():
     """
@@ -102,9 +102,11 @@ def manage(*args):
     _django_env()
     print local(localPaths.getVirtualPython() + " " + localPaths.getProjectDir() + "/manage.py " + " ".join(args), capture=False)
 
-def _munge_settings():
-    print local("sed -i.bak -r -e 's/<CCG_TARGET_NAME>/%s/g' %s"  % (localPaths.target, localPaths.getSettings()))
-
+def _munge_settings(sentry=False):
+    print local("sed -i -r -e 's/<CCG_TARGET_NAME>/%s/g' %s"  % (localPaths.target, localPaths.getSettings()))
+    if sentry:
+        print local("sed -i -r -e 's/SENTRY_TEST = False/SENTRY_TEST = True/g' %s"  % (localPaths.getSettings()))
+        
 def _celeryd():
     _django_env()
     print local(localPaths.getVirtualPython() + " " + localPaths.getCeleryd() + env.celeryd_options, capture=False)

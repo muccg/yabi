@@ -91,8 +91,7 @@ INSTALLED_APPS.extend( [
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
     'ghettoq',
-    'djcelery',
-    'sentry.client'
+    'djcelery'
 ] )
 
 MEMCACHE_KEYSPACE = "dev-yabiadmin-"+TARGET
@@ -132,12 +131,6 @@ CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
 ##
 VALID_SCHEMES = ['http', 'https', 'gridftp', 'globus', 'sge', 'yabifs', 'ssh', 'scp', 's3', 'null']
 
-import logging
-LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
-LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
-LOGGING_FORMATTER = logging.Formatter('[%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
-LOGS = ['yabiengine','yabiadmin']
-
 ##
 ## Celery settings
 ##
@@ -161,29 +154,42 @@ CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
 CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
 
 
-
-# TODO - remove this, it was moved here to overide the entry in ccg-appsettings so we could remove EmailExceptionMiddleware
-MIDDLEWARE_CLASSES = [
-    'django.middleware.common.CommonMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.middleware.doc.XViewMiddleware',
-    'django.middleware.ssl.SSLRedirect',
-#    'django.middleware.email.EmailExceptionMiddleware'    
-]
+##
+## LOGGING
+##
+import logging
+LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
+LOGGING_LEVEL = logging.DEBUG
+LOGGING_FORMATTER = logging.Formatter('[%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
+LOGS = ['yabiengine','yabiadmin']
 
 
+##
+## SENTRY
+##
+
+# Use sentry if we can, otherwise use EmailExceptionMiddleware
+# sentry_test is set to true by snapshot deploy, so we can use sentry
+# even though debug=True
 try:
     SENTRY_REMOTE_URL = 'http://faramir.localdomain/sentryserver/%s/store/' % TARGET
     SENTRY_KEY = 'lrHEULXanJMB5zygOLUUcCRvCxYrcWVZJZ0fzsMzx'
-    SENTRY_TESTING = True
+    SENTRY_TEST = False
 
+    INSTALLED_APPS.extend(['sentry.client'])
+    
     from sentry.client.handlers import SentryHandler
     logging.getLogger().addHandler(SentryHandler())
 
     # Add StreamHandler to sentry's default so you can catch missed exceptions
     logging.getLogger('sentry.errors').addHandler(logging.StreamHandler())
 
-except ImportError, e:
-    MIDDLEWARE_CLASSES.extend(['django.middleware.email.EmailExceptionMiddleware'])
+    # remove the EmailExceptionMiddleware so
+    # exceptions are handled and mailed by sentry
+    try:
+        MIDDLEWARE_CLASSES.remove('django.middleware.email.EmailExceptionMiddleware')
+    except ValueError,e:
+        pass
 
+except ImportError, e:
+    pass
