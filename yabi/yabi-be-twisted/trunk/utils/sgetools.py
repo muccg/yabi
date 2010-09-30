@@ -214,6 +214,78 @@ def qstat_spawn(user="yabi"):
 
     return pp
 
+class QstatVerboseProcessProtocol(protocol.ProcessProtocol):
+    """handle the qstat -u user -f -j jobid"""
+
+    def __init__(self, jobs, jobid):
+        self.err = ""
+        self.out = ""
+        self.exitcode = None
+
+        # where we store the data gathered from the process
+        self.jobs = jobs
+        self.jobid = jobid
+
+    def connectionMade(self):
+        # when the process finally spawns, close stdin, to indicate we have nothing to say to it
+        self.transport.closeStdin()
+
+    def outReceived(self, data):
+        self.out += data
+
+    def errReceived(self, data):
+        self.err += data
+
+    def outConnectionLost(self):
+        # stdout was closed. this will be our endpoint reference
+        for line in self.out.split("\n"):
+            if ':' in line:
+                key,val = line.split(':',1)
+                val = val.strip()
+                key = key.strip()
+
+                self.jobs[self.jobid][key] = val
+
+    def processEnded(self, status_object):
+        self.exitcode = status_object.value.exitCode
+
+    def isDone(self):
+        return self.exitcode != None
+
+def qstat_verbose_spawn(jobs,user,jobid):
+    """return the status of a running job via qstat
+    /opt/sge/6.2u3/bin/lx24-amd64/qstat -u yabi
+    """
+    subenv = os.environ.copy()
+    pp = QstatVerboseProcessProtocol(jobs,jobid)
+
+    if DEBUG:
+        print [
+                                QSTAT_COMMAND,
+                                "-u",
+                                user,
+                                "-f",
+                                "-j",
+                                str(jobid)
+                            ]
+
+    reactor.spawnProcess(   pp,
+                            QSTAT_COMMAND,
+                            args=[
+                                QSTAT_COMMAND,
+                                "-u",
+                                user,
+                                "-f",
+                                "-j",
+                                str(jobid)
+                            ],
+                            env=subenv
+                        )
+
+    return pp
+
+
+from ex.connector.ExecConnector import ExecutionError
 def qstat(user="yabi"):
     # run the qsub process.
     pp = qstat_spawn(user)
@@ -223,8 +295,19 @@ def qstat(user="yabi"):
         
     if pp.exitcode!=0:
         err = pp.err
-        from ex.connector.ExecConnector import ExecutionError
         raise ExecutionError(err)
-    
+
+    # now we annotate our jobs with qstat -u username -f -j jobnum
+    for jobnum in job_summary.keys():
+        pp = qstat_verbose_spawn(pp.jobs,user,str(jobnum))
+
+        while not pp.isDone():
+            stackless.schedule()
+
+        if pp.exitcode!=0:
+            err = pp.err
+            raise ExecutionError(err)
+
     return pp.jobs
-    
+
+

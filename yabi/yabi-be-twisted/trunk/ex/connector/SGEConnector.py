@@ -67,6 +67,7 @@ class SGEConnector(ExecConnector):
             sleep(delay.next())
             
             jobsummary = qstat(user=username)
+            print "JOBSUMMARY:", jobsummary
             
             if jobid in jobsummary:
                 # job has not finished
