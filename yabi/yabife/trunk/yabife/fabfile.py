@@ -44,7 +44,7 @@ def deploy():
     """
     _ccg_deploy_user()
     env.settings_file = env.app_root + env.app_name + "/" + os.environ["USER"] + "/" + env.app_name + "/settings.py"
-    print local("sed -i.bak -r -e 's/<CCG_TARGET_NAME>/%s/g' %s"  % (os.environ["USER"], env.settings_file))
+    print local("sed -i -r -e 's/<CCG_TARGET_NAME>/%s/g' %s"  % (os.environ["USER"], env.settings_file))
 
 def snapshot():
     """
@@ -52,8 +52,9 @@ def snapshot():
     """
     _ccg_deploy_snapshot()
     env.settings_file = env.app_root + env.app_name + "/snapshot/" + env.app_name + "/settings.py"
-    print local("sed -i.bak -r -e 's/<CCG_TARGET_NAME>/%s/g' %s"  % ("snapshot", env.settings_file))
+    print local("sed -i -r -e 's/<CCG_TARGET_NAME>/%s/g' %s"  % ("snapshot", env.settings_file))
     print local("sed -i -r -e 's/SENTRY_TESTING = False/SENTRY_TESTING = True/g' %s"  % env.settings_file)
+    print local("sed -i -r -e 's/LOGGING_LEVEL = logging.DEBUG/LOGGING_LEVEL = logging.WARNING/g' %s"  % env.settings_file)
 
 def release():
     """
