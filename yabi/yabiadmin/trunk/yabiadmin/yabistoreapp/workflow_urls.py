@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import *
 
-urlpatterns = patterns('yabistore.yabistoreapp.workflow_views',
+urlpatterns = patterns('yabiadmin.yabistoreapp.workflow_views',
 
     (r'^(?P<username>\w+)[/]*$', 'workflows_for_user'),
     (r'^(?P<username>\w+)/(?P<workflow_id>\d+)[/]*$', 'get_add_or_update_workflow'),

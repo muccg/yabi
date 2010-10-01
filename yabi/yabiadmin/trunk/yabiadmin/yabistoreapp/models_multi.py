@@ -7,10 +7,10 @@ from django.db.models.query import QuerySet
 from django.db.models.sql import BaseQuery
 from django.db.transaction import savepoint_state
 from django.core import signals
-from yabistore.yabistoreapp.json_util import *
+from yabiadmin.yabistoreapp.json_util import *
 
 import logging
-logger = logging.getLogger('yabistore')
+logger = logging.getLogger('yabiadmin')
 
 options.DEFAULT_NAMES += ('db_name',)
 

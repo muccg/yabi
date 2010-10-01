@@ -1,4 +1,4 @@
-from yabistore.yabistoreapp.models import *
+from yabiadmin.yabistoreapp.models import *
 from django.contrib import admin
 
 class WorkflowAdmin(admin.ModelAdmin):
