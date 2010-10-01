@@ -90,6 +90,7 @@ ROOT_URLCONF = 'yabiadmin.urls'
 INSTALLED_APPS.extend( [
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
+    'yabiadmin.yabistoreapp',
     'ghettoq',
     'djcelery'
 ] )
