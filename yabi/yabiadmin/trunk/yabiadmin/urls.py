@@ -7,7 +7,7 @@ admin.autodiscover()
 
 # dispatch to either webservice, admin or general
 urlpatterns = patterns('yabiadmin.yabi.views',
-    (r'^(?P<url>workflows/.*)$', 'storeproxy', {'SSL':True}),
+    (r'^(?P<url>workflows/.*)$', include('yabiadmin.yabistoreapp.workflow_urls'), {'SSL':True}),
     (r'^ws/', include('yabiadmin.yabi.wsurls'), {'SSL':True}),
     (r'^engine/', include('yabiadmin.yabiengine.urls')),
     (r'^admin/', include('yabiadmin.yabi.adminurls'), {'SSL':True}),
