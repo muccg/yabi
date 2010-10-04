@@ -21,5 +21,5 @@ urlpatterns = patterns('yabiadmin.yabistoreapp.workflow_views',
     (r'^(?P<username>\w+)/search[/]*$', 'workflow_search'),
 
     ## job state webservices
-    (r'^(?P<username>\w+)/status/?(P<workflow_host>[\w\d\-@]+)/?(P<workflow_id>[\w\d\-@]+)/?(P<job_id>[\w\d\-@]+)[/]*$'),
+    #(r'^(?P<username>\w+)/status/?(P<workflow_host>[\w\d\-@]+)/?(P<workflow_id>[\w\d\-@]+)/?(P<job_id>[\w\d\-@]+)[/]*$'),
 )
