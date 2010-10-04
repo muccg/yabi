@@ -26,7 +26,7 @@ def updateWorkflow(workflow, workflow_json=None):
         workflow_json = json.dumps(json_object['json'])
 
     if not workflow:
-        return 200,db.save_workflow(username, workflow_id, workflow_json, workflow.name, workflow.status, taglist)
+        return 200,db.save_workflow(workflow.user.name, workflow_id, workflow_json, workflow.name, workflow.status, taglist)
 
     updateset = {'json':workflow_json,
                  'name':workflow.name,
@@ -34,7 +34,7 @@ def updateWorkflow(workflow, workflow_json=None):
                  }
 
     #dont update the taglist with this set
-    return 200,db.update_workflow(username,workflow_id,updateset)
+    return 200,db.update_workflow(workflow.user.name,workflow_id,updateset)
 
 def getWorkflow(workflow):
     ''' Get the JSON for the given workflow
