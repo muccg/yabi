@@ -13,13 +13,13 @@ urlpatterns = patterns('yabiadmin.yabistoreapp.workflow_views',
     (r'^(?P<username>\w+)/tags/search[/]*$', 'workflow_id_tags_search'),
     (r'^(?P<username>\w+)/tag/(?P<tag>[a-zA-Z0-9_ %\-*]+)[/]*$', 'workflow_tag'),           # all workflows for a tag
     (r'^(?P<username>\w+)/tag[/]*$', 'workflow_all_tags'),                                  # all tags
-#
-#    ## date search
-#    (r'^(?P<username>\w+)/datesearch[/]*$', 'workflow_date_search'),
-#
-#    ## keyword search
-#    (r'^(?P<username>\w+)/search[/]*$', 'workflow_search'),
-#
-#    ## job state webservices
-#    (r'^(?P<username>\w+)/status/?(P<workflow_host>[\w\d\-@]+)/?(P<workflow_id>[\w\d\-@]+)/?(P<job_id>[\w\d\-@]+)[/]*$'),
+
+    ## date search
+    (r'^(?P<username>\w+)/datesearch[/]*$', 'workflow_date_search'),
+
+    ## keyword search
+    (r'^(?P<username>\w+)/search[/]*$', 'workflow_search'),
+
+    ## job state webservices
+    (r'^(?P<username>\w+)/status/?(P<workflow_host>[\w\d\-@]+)/?(P<workflow_id>[\w\d\-@]+)/?(P<job_id>[\w\d\-@]+)[/]*$'),
 )
