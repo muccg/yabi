@@ -21,7 +21,7 @@ def updateWorkflow(workflow, workflow_json=None):
         try:
             get_status, get_data = getWorkflow(workflow)
         except db.NoSuchWorkflow, nsw:
-            return 404, get_data
+            return 404, str(nsw)
         json_object = json.loads(get_data)
         workflow_json = json.dumps(json_object['json'])
 
