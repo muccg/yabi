@@ -7,8 +7,11 @@ from os.path import splitext
 from django.conf import settings
 from django.utils import simplejson as json
 
+from yabiadmin.yabistoreapp import db
+
 import logging
 logger = logging.getLogger('yabiengine')
+
 
 def updateWorkflow(workflow, workflow_json=None):
 
@@ -21,36 +24,21 @@ def updateWorkflow(workflow, workflow_json=None):
         json_object = json.loads(get_data)
         workflow_json = json.dumps(json_object['json'])
 
-    resource = os.path.join(settings.YABISTORE_BASE,"workflows", workflow.user.name, str(workflow.id))
-    data = {'json':workflow_json,
-            'name':workflow.name,
-            'status':workflow.status
-            }
+    if not workflow:
+        return 200,db.save_workflow(username, int(workflow_id), workflow_json, workflow.name, workflow.status, taglist)
 
-    data = urlencode(data)
-    headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
-    conn = httplib.HTTPConnection(settings.YABISTORE_SERVER)
-    conn.request('POST', resource, data, headers)
-    logger.debug("store post: %s" % resource)
-    r = conn.getresponse()
-    status = r.status
-    data = r.read()
-    logger.debug("store post: %s" % status)
+    updateset = {'json':workflow_json,
+                 'name':workflow.name,
+                 'status':workflow.status
+                 }
 
-    return status,data
+    #dont update the taglist with this set
+    return 200,db.update_workflow(username,int(workflow_id),updateset)
 
 def getWorkflow(workflow):
     ''' Get the JSON for the given workflow
     '''
-    resource = os.path.join(settings.YABISTORE_BASE,"workflows", workflow.user.name, str(workflow.id))
-    conn = httplib.HTTPConnection(settings.YABISTORE_SERVER)
-    conn.request('GET', resource)
-    logger.debug("store get: %s" % resource)
-    r = conn.getresponse()
-    status = r.status
-    data = r.read()
-    logger.debug("store get: %s" % status)
-    return status,data
+    return (200, db.get_workflow(workflow.user.name,str(workflow.id)))
 
 def updateJob(job, snippet={}):
     ''' Within a workflow, update a job snippet of the form:
