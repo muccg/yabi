@@ -18,9 +18,10 @@ def updateWorkflow(workflow, workflow_json=None):
     # if no json for workflow provided, pull down the existing one
     # TODO This is a real hack
     if not workflow_json:
-        get_status, get_data = getWorkflow(workflow)
-        if get_status != 200:
-            return get_status, get_data
+        try:
+            get_status, get_data = getWorkflow(workflow)
+        except db.NoSuchWorkflow, nsw:
+            return 404, get_data
         json_object = json.loads(get_data)
         workflow_json = json.dumps(json_object['json'])
 
