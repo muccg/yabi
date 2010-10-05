@@ -173,7 +173,7 @@ LOGS = ['yabiengine','yabiadmin']
 # sentry_test is set to true by snapshot deploy, so we can use sentry
 # even though debug=True
 try:
-    assert settings.DEBUG != True
+    assert DEBUG != True
     SENTRY_REMOTE_URL = 'http://faramir.localdomain/sentryserver/%s/store/' % TARGET
     SENTRY_KEY = 'lrHEULXanJMB5zygOLUUcCRvCxYrcWVZJZ0fzsMzx'
     SENTRY_TESTING = False
