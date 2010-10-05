@@ -620,7 +620,7 @@ def signal_workflow_post_save(sender, **kwargs):
     
     try:
         workflow = kwargs['instance']
-        updateset = {'json':workflow_json,
+        updateset = {'json':workflow.json,
                  'name':workflow.name,
                  'status':workflow.status
                  }
