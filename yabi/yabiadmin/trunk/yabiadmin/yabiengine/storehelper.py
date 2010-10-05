@@ -14,6 +14,8 @@ logger = logging.getLogger('yabiengine')
 
 
 def updateWorkflow(workflow, workflow_json=None):
+    print "updateWorkflow",workflow,workflow_json
+
     if workflow_json is None:
         return 200,db.get_workflow( workflow.user.name, workflow.id )
 
@@ -28,6 +30,7 @@ def updateWorkflow(workflow, workflow_json=None):
 def getWorkflow(workflow):
     ''' Get the JSON for the given workflow
     '''
+    print "getWorkflow",workflow
     return (200, db.get_workflow(workflow.user.name,workflow.id))
 
 def updateJob(job, snippet={}):
@@ -38,6 +41,7 @@ def updateJob(job, snippet={}):
 
         Also does status & stageout from the job
     '''
+    print "updateJob",job,snippet
     # get the workflow that needs updating
     status, data = getWorkflow(job.workflow)
     assert(status == 200)
@@ -64,6 +68,7 @@ def updateJob(job, snippet={}):
 def deleteWorkflow(workflow):
     ''' Delete all references to a workflow from the store.
     '''
+    print "deleteWorkflow",workflow
     logger.debug('')
     resource = os.path.join(settings.YABISTORE_BASE,"workflows/delete", workflow.user.name, str(workflow.id))
     conn = httplib.HTTPConnection(settings.YABISTORE_SERVER)
