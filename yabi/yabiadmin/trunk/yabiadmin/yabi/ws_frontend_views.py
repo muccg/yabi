@@ -263,8 +263,9 @@ def submitworkflow(request):
     workflow.save()
 
     # put the workflow in the store
-    status, data = StoreHelper.updateWorkflow(workflow, workflow.json)
-    assert(status == 200)
+    from yabiadmin.yabistoreapp import db
+    db.save_workflow(user.name, workflow.workflow_id, json, workflow.status, workflow.name)
+    logger.debug("db.save_workflow(%s,%s,%s,%s,%s)"%(user.name,workflow.workflow_id, json, workflow.status, workflow.name))
     
     # trigger a build via celery
     build.delay(workflow_id=workflow.id)
