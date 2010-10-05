@@ -15,7 +15,7 @@ urlpatterns = patterns('yabiadmin.yabistoreapp.workflow_views',
     (r'^(?P<username>\w+)/tag[/]*$', 'workflow_all_tags'),                                  # all tags
 
     ## date search
-    #(r'^(?P<username>\w+)/datesearch[/]*$', 'workflow_date_search'),
+    (r'^(?P<username>\w+)/datesearch[/]*$', 'workflow_date_search'),
 
     ## keyword search
     (r'^(?P<username>\w+)/search[/]*$', 'workflow_search'),
