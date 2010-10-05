@@ -77,6 +77,9 @@ def create_user_db(username):
         c.execute(command)
     conn.commit()
     c.close()
+
+    # now chmod the file to makie it writable by celeryd
+    os.chmod(db,0777)
     
 def ensure_user_db(username):
     """if the users db doesn't exist, create it"""
