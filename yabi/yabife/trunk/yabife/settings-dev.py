@@ -87,6 +87,7 @@ LOGS = ['yabife']
 # sentry_test is set to true by snapshot deploy, so we can use sentry
 # even though debug=True
 try:
+    assert DEBUG == False
     SENTRY_REMOTE_URL = 'http://faramir.localdomain/sentryserver/%s/store/' % TARGET
     SENTRY_KEY = 'lrHEULXanJMB5zygOLUUcCRvCxYrcWVZJZ0fzsMzx'
     SENTRY_TESTING = False
@@ -106,5 +107,5 @@ try:
     except ValueError,e:
         pass
 
-except ImportError, e:
+except (ImportError, AssertionError), e:
     pass
