@@ -14,19 +14,8 @@ logger = logging.getLogger('yabiengine')
 
 
 def updateWorkflow(workflow, workflow_json=None):
-
-    # if no json for workflow provided, pull down the existing one
-    # TODO This is a real hack
-    if not workflow_json:
-        try:
-            get_status, get_data = getWorkflow(workflow)
-        except db.NoSuchWorkflow, nsw:
-            return 404, str(nsw)
-        json_object = json.loads(get_data)
-        workflow_json = json.dumps(json_object['json'])
-
-    if not workflow:
-        return 200,db.save_workflow(workflow.user.name, workflow.id, workflow_json, workflow.name, workflow.status, taglist)
+    if workflow_json is None:
+        return 200,db.get_workflow( workflow.user.name, workflow.id )
 
     updateset = {'json':workflow_json,
                  'name':workflow.name,
@@ -34,7 +23,7 @@ def updateWorkflow(workflow, workflow_json=None):
                  }
 
     #dont update the taglist with this set
-    return 200,db.update_workflow(workflow.user.name,workflow.id,updateset)
+    return 200,db.update_workflow( workflow.user.name, workflow.id, updateset )
 
 def getWorkflow(workflow):
     ''' Get the JSON for the given workflow
