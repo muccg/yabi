@@ -99,7 +99,7 @@ def does_db_exist(username):
     
     return True
 
-def save_workflow(username, workflow_id, json, status, name, taglist=[]):
+def save_workflow(username, workflow_id, workflow_json, status, name, taglist=[]):
     """place a row in the workflow table"""
     home = user_fs_home(username)
     db = os.path.join(home, HISTORY_FILE)
@@ -107,7 +107,7 @@ def save_workflow(username, workflow_id, json, status, name, taglist=[]):
     conn = sqlite3.connect(db)
     
     c = conn.cursor()
-    c.execute('INSERT INTO "yabistoreapp_workflow" (id, name, json, status, created_on, last_modified_on) VALUES (?, ?,?,?,julianday("now"),julianday("now"))',(workflow_id, name, json,status))
+    c.execute('INSERT INTO "yabistoreapp_workflow" (id, name, json, status, created_on, last_modified_on) VALUES (?, ?,?,?,julianday("now"),julianday("now"))',(workflow_id, name, workflow_json,status))
         
     for tag in taglist:
         # see if the tag already exists
