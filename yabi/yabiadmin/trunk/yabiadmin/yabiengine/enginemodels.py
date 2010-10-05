@@ -25,6 +25,8 @@ from yabiadmin.yabiengine.models import Workflow, Task, Job, StageIn
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
 from yabiadmin.yabiengine.YabiJobException import YabiJobException
 
+from yabiadmin.yabistoreapp import db
+
 import logging
 logger = logging.getLogger('yabiengine')
 
@@ -618,7 +620,14 @@ def signal_workflow_post_save(sender, **kwargs):
     
     try:
         workflow = kwargs['instance']
-        status, data = StoreHelper.updateWorkflow(workflow)
+        updateset = {'json':workflow_json,
+                 'name':workflow.name,
+                 'status':workflow.status
+                 }
+
+        #dont update the taglist with this set
+        return db.update_workflow( workflow.user.name, workflow.id, updateset )
+
     except Exception, e:
         logger.critical(e)
         logger.critical(traceback.format_exc())
