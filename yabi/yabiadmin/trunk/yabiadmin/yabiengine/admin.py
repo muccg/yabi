@@ -39,12 +39,10 @@ class WorkflowAdmin(admin.ModelAdmin):
         purgeCount = 0
         for id in selected:
             wf = Workflow.objects.get(id=id)
-            status, data = StoreHelper.deleteWorkflow(wf)
-            if status == 200:
-                purgeCount += 1
+            StoreHelper.deleteWorkflow(wf)
 
-        if purgeCount:
-            if purgeCount == 1:
+        if len(selected):
+            if len(selected) == 1:
                 message_bit = "1 workflow purged from store."
             else:
                 message_bit = "%s workflows were purged from store." % purgeCount
