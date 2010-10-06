@@ -22,40 +22,35 @@ BACKEND = {
         'BACKEND_PORT': '50080',
         'BACKEND_BASE': '/',
         'YABI_URL': 'yabi://faramir.localdomain/',
-        'STORE_SERVER': 'localhost:40080',
-        'STORE_BASE': '/yabistore'
+        'STORE_HOME': '/export/home/yabi/.yabi/run/store/',
     },
     'andrew': {
         'BACKEND_IP': '0.0.0.0',
         'BACKEND_PORT': '7001',
         'BACKEND_BASE': '/',
         'YABI_URL': 'yabi://faramir.localdomain/',
-        'STORE_SERVER': 'localhost:7003',
-        'STORE_BASE': '/yabistore'
+        'STORE_HOME': '/export/home/yabi/.yabi/run/store/',
     },
     'aharvey': {
         'BACKEND_IP': '0.0.0.0',
         'BACKEND_PORT': '42080',
         'BACKEND_BASE': '/',
         'YABI_URL': 'yabi://faramir.localdomain/',
-        'STORE_SERVER': 'localhost:43080',
-        'STORE_BASE': '/yabistore'
+        'STORE_HOME': '/export/home/yabi/.yabi/run/store/',
     },
     'cwellington': {
-	'BACKEND_IP': '0.0.0.0',
-	'BACKEND_PORT': '9001',
-	'BACKEND_BASE': '/',
-	'YABI_URL': 'yabi://faramir.localdomain/',
-	'STORE_SERVER': 'localhost:9003',
-	'STORE_BASE': '/yabistore',
+	    'BACKEND_IP': '0.0.0.0',
+	    'BACKEND_PORT': '9001',
+	    'BACKEND_BASE': '/',
+	    'YABI_URL': 'yabi://faramir.localdomain/',
+        'STORE_HOME': '/export/home/yabi/.yabi/run/store/',
     },
     'snapshot': {
         'BACKEND_IP': '0.0.0.0',
         'BACKEND_PORT': '21080',
         'BACKEND_BASE': '/',
         'YABI_URL': 'yabi://faramir.localdomain/',
-        'STORE_SERVER': 'localhost:23080',
-        'STORE_BASE': '/yabistore'
+        'STORE_HOME': '/export/home/yabi/.yabi/run/store/',
     },
 }
 
@@ -66,8 +61,7 @@ BACKEND_IP = BACKEND[TARGET]['BACKEND_IP']
 BACKEND_PORT = BACKEND[TARGET]['BACKEND_PORT']
 BACKEND_BASE = BACKEND[TARGET]['BACKEND_BASE']
 YABIBACKEND_SERVER = BACKEND_IP + ':' +  BACKEND_PORT
-YABISTORE_SERVER = BACKEND[TARGET]['STORE_SERVER']
-YABISTORE_BASE = BACKEND[TARGET]['STORE_BASE']
+YABISTORE_HOME = BACKEND[TARGET]['STORE_HOME']
 # this is used in builder for pointers to previous jobs
 YABI_URL = BACKEND[TARGET]['YABI_URL']
 BACKEND_UPLOAD = 'http://'+BACKEND_IP+':'+BACKEND_PORT+BACKEND_BASE+"fs/ticket"
@@ -95,6 +89,9 @@ INSTALLED_APPS.extend( [
     'djcelery'
 ] )
 
+# TODO memcache session settings kill app
+#SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+#CACHE_BACKEND = 'memcache'
 MEMCACHE_KEYSPACE = "dev-yabiadmin-"+TARGET
 
 AUTHENTICATION_BACKENDS = [
