@@ -243,6 +243,8 @@ class Configuration(object):
                 self.config[name]['tasklets'] = path_sanitise(conf_parser.get(name,'tasklets'))
             if conf_parser.has_option(name,'certificates'):
                 self.config[name]['certificates'] = path_sanitise(conf_parser.get(name,'certificates'))
+            if conf_parser.has_option(name,'temp'):
+                self.config[name]['temp'] = path_sanitise(conf_parser.get(name,'temp'))
             if conf_parser.has_option(name,'keyfile'):
                 self.config[name]['keyfile'] = path_sanitise(conf_parser.get(name,'keyfile'))
             if conf_parser.has_option(name,'certfile'):
