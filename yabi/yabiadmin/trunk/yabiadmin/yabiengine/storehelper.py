@@ -31,7 +31,7 @@ def getWorkflow(workflow):
     ''' Get the JSON for the given workflow
     '''
     print "getWorkflow",workflow
-    return (200, db.get_workflow(workflow.user.name,workflow.id))
+    return db.get_workflow(workflow.user.name,workflow.id)
 
 def updateJob(job, snippet={}):
     ''' Within a workflow, update a job snippet of the form:
@@ -43,11 +43,7 @@ def updateJob(job, snippet={}):
     '''
     print "updateJob",job,snippet
     # get the workflow that needs updating
-    status, data = getWorkflow(job.workflow)
-    assert(status == 200)
-    assert(data)
-    print "Data:",type(data),"is",data
-    json_object = json.loads(data)
+    json_object = getWorkflow(job.workflow)
 
     job_id = int(job.order)
     assert json_object['json']['jobs'][job_id]['jobId'] == job_id + 1 # jobs are 1 indexed in json
