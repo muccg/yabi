@@ -14,8 +14,6 @@ logger = logging.getLogger('yabiengine')
 
 
 def updateWorkflow(workflow, workflow_json=None):
-    logger.log("updateWorkflow: %s"%workflow,workflow_json)
-
     if workflow_json is None:
         return 200,db.get_workflow( workflow.user.name, workflow.id )
 
