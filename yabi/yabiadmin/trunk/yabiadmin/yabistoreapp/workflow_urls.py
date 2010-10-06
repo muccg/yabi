@@ -4,7 +4,6 @@ urlpatterns = patterns('yabiadmin.yabistoreapp.workflow_views',
 
     (r'^(?P<username>\w+)[/]*$', 'workflows_for_user'),
     (r'^(?P<username>\w+)/(?P<workflow_id>\d+)[/]*$', 'get_add_or_update_workflow'),
-    (r'^delete/(?P<username>\w+)/(?P<workflow_id>\d+)[/]*$', 'delete_workflow'),
 
     # tags
     (r'^(?P<username>\w+)/(?P<id>\d+)/tags[/]*$', 'workflow_id_tags'),

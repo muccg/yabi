@@ -15,7 +15,7 @@ logger = logging.getLogger('yabiengine')
 
 def updateWorkflow(workflow, workflow_json=None):
     if workflow_json is None:
-        return 200,db.get_workflow( workflow.user.name, workflow.id )
+        return db.get_workflow( workflow.user.name, workflow.id )
 
     updateset = {'json':workflow_json,
                  'name':workflow.name,
@@ -23,12 +23,11 @@ def updateWorkflow(workflow, workflow_json=None):
                  }
 
     #dont update the taglist with this set
-    return 200,db.update_workflow( workflow.user.name, workflow.id, updateset )
+    return db.update_workflow( workflow.user.name, workflow.id, updateset )
 
 def getWorkflow(workflow):
     ''' Get the JSON for the given workflow
     '''
-    print "getWorkflow",workflow
     return db.get_workflow(workflow.user.name,workflow.id)
 
 def updateJob(job, snippet={}):
@@ -39,7 +38,6 @@ def updateJob(job, snippet={}):
 
         Also does status & stageout from the job
     '''
-    print "updateJob",job,snippet
     # get the workflow that needs updating
     json_object = getWorkflow(job.workflow)
 
@@ -58,19 +56,11 @@ def updateJob(job, snippet={}):
         json_object['json']['jobs'][job_id]['stageout'] = job.stageout
 
     # save the workflow json in the store
-    updateWorkflow(job.workflow, json.dumps(json_object['json']))
+    return updateWorkflow(job.workflow, json.dumps(json_object['json']))
 
 def deleteWorkflow(workflow):
     ''' Delete all references to a workflow from the store.
     '''
-    print "deleteWorkflow",workflow
     logger.debug('')
-    resource = os.path.join(settings.YABISTORE_BASE,"workflows/delete", workflow.user.name, str(workflow.id))
-    conn = httplib.HTTPConnection(settings.YABISTORE_SERVER)
-    conn.request('GET', resource)
-    logger.debug("store get: %s" % resource)
-    r = conn.getresponse()
-    status = r.status
-    data = r.read()
-    logger.debug("store get: %s" % status)
-    return status,data
+    db.ensure_user_db(workflow.user.name)
+    db.delete_workflow(workflow.user.name, int(workflow.id))

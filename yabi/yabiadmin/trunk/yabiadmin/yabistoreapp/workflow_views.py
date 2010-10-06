@@ -98,21 +98,6 @@ def get_add_or_update_workflow(request, username, workflow_id):
     return HttpResponseServerError('Unsupported request method\n')
 
 
-
-def delete_workflow(request, username, workflow_id):
-    logger.debug('')
-    db.ensure_user_db(username)
-
-    if not workflow_id or not username:
-        return HttpResponseNotFound('No workflow_id or no username supplied.\n')
-
-    try:
-        db.delete_workflow(username, int(workflow_id))
-        return HttpResponse("Success")
-    except:
-        return HttpResponseServerError('Unable to delete workflow.\n')
-
-
 def workflow_id_tags(request, username, id=None):
     logger.debug('')
     db.ensure_user_db(username)
