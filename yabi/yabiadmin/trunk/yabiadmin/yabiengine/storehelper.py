@@ -46,6 +46,7 @@ def updateJob(job, snippet={}):
     status, data = getWorkflow(job.workflow)
     assert(status == 200)
     assert(data)
+    print "Data:",type(data),"is",data
     json_object = json.loads(data)
 
     job_id = int(job.order)
