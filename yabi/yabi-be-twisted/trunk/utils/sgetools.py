@@ -9,6 +9,8 @@ import stackless
 from tempfile import mktemp
 import os
 
+from conf import config
+
 QSUB_COMMAND = "/opt/sge/6.2u3/bin/lx24-amd64/qsub"             #-N job-101 /home/yabi/test-remote
 QSTAT_COMMAND = "/opt/sge/6.2u3/bin/lx24-amd64/qstat"
 
@@ -97,7 +99,7 @@ def qsub(jobname, command, user="yabi", workingdir="/home/yabi", stdout="STDOUT.
     #arguments = list(lexer)
      
      # make a temporary file to store the command in
-    tempfile = mktemp()
+    tempfile = mktemp(dir=config['backend']['temp'])
     temp=open(tempfile,'w+b')
     
     # write module load lines

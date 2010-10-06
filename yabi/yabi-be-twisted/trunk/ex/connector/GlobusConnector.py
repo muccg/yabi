@@ -19,6 +19,9 @@ from utils.stacklesstools import sleep
 
 from twisted.web2 import stream, http, responsecode, http_headers
 
+# import conf so we can get the location our tempfiles should be stored in
+from conf import config
+
 # for Job status updates, poll this often
 def JobPollGeneratorDefault():
     """Generator for these MUST be infinite. Cause you don't know how long the job will take. Default is to hit it pretty hard."""
@@ -100,7 +103,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         client_stream.write("id=%s\n"%job_id)
         
         # save the epr to a tempfile so we can use it again and again
-        temp = tempfile.NamedTemporaryFile(suffix=".epr",delete=False)
+        temp = tempfile.NamedTemporaryFile(suffix=".epr",dir=config['backend']['temp'],delete=False)
         temp.write(epr)
         temp.close()
             
@@ -139,6 +142,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         
         # job is finished, lets forget about it
         self.del_running(job_id)
+        os.unlink(eprfile)
                
     def resume(self, job_id, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, max_memory=1024, cpus=1, queue="testing", job_type="single", module=None, **creds):
         # first we need to auth the proxy
@@ -164,7 +168,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         (host,username,epr) = self.get_running(job_id)
 
         # save the epr to a tempfile so we can use it again and again
-        temp = tempfile.NamedTemporaryFile(suffix=".epr",delete=False)
+        temp = tempfile.NamedTemporaryFile(suffix=".epr",,dir=config['backend']['temp'],delete=False)
         temp.write(epr)
         temp.close()
 
@@ -200,9 +204,9 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
                 client_stream.write("%s\n"%state)
             
         client_stream.finish()
-        
+
         # job is finished, lets forget about it
         self.del_running(job_id)
-        
+        os.unlink(eprfile)
         
        
