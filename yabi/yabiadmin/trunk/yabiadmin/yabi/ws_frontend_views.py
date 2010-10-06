@@ -79,6 +79,7 @@ def tool(request, *args, **kwargs):
         return HttpResponseNotFound(json_error("Object not found"))
 
 
+
 @authentication_required
 @memcache("menu",timeout=300)
 def menu(request):
@@ -86,50 +87,51 @@ def menu(request):
     logger.debug('Username: ' + username)
 
     try:
+        all_tools = {}
         toolsets = ToolSet.objects.filter(users__name=username)
-        output = {"toolsets":[]}
-
-        # add each toolset
         for toolset in toolsets:
-
-            ts = {}
-            output["toolsets"].append(ts)
-            ts["name"] = toolset.name
-            ts["toolgroups"] = []
-
-
-            # make up a dict of toolgroups
-            toolgroups = {}
-
             for toolgroup in ToolGrouping.objects.filter(tool_set=toolset):
-                if not toolgroup.tool_group.name in toolgroups:
-                    tg = {}
-                    toolgroups[toolgroup.tool_group.name] = tg
-                else:
-                    tg = toolgroups[toolgroup.tool_group.name]
-
-                if not "name" in tg:
-                    tg["name"] = toolgroup.tool_group.name
-                if not "tools" in tg:
-                    tg["tools"] = []
-
-                tool = {}
-                tool["name"] = toolgroup.tool.name
-                tool["displayName"] = toolgroup.tool.display_name
-                tool["description"] = toolgroup.tool.description                
-                tg["tools"].append(tool)
-                tool["outputExtensions"] = toolgroup.tool.output_filetype_extensions()
-                tool["inputExtensions"] = toolgroup.tool.input_filetype_extensions()
+                tg = all_tools.setdefault(toolgroup.tool_group.name, {})
+                tool = tg.setdefault(toolgroup.tool.name, {})
+                if not tool:
+                    tool["name"] = toolgroup.tool.name
+                    tool["displayName"] = toolgroup.tool.display_name
+                    tool["description"] = toolgroup.tool.description                
+                    tool["outputExtensions"] = toolgroup.tool.output_filetype_extensions()
+                    tool["inputExtensions"] = toolgroup.tool.input_filetype_extensions()
 
 
-            # now add the toolgroups to toolsets
-            for key, value in toolgroups.iteritems():
-                ts["toolgroups"].append(value)
+        # from here down is getting the tools into a form
+        # used by the front end so no changes are needed there
+        # toolsets are dev, marine science, ccg etc, not used on the front end
+        # toolgroups are for example genomics, select data, mapreduce        
+
+        output = {}
+        output['menu'] = {}
+        output['menu']['toolsets'] = []
+
+        all_tools_toolset = {}
+        output['menu']['toolsets'].append(all_tools_toolset)
+
+        all_tools_toolset["name"] = 'all_tools'
+        all_tools_toolset["toolgroups"] = []
 
 
-        return HttpResponse(json.dumps({"menu":output}))
+        for key, toolgroup in all_tools.iteritems():
+            tg = {}
+            tg['name'] = key
+            tg['tools'] = []
+
+            for toolname, tool in toolgroup.iteritems():
+                tg['tools'].append(tool)
+
+            all_tools_toolset["toolgroups"].append(tg)
+
+        return HttpResponse(json.dumps(output))
     except ObjectDoesNotExist:
         return HttpResponseNotFound(json_error("Object not found"))
+
+    
     
 @authentication_required
 def ls(request):
