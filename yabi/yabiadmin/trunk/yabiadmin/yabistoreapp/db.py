@@ -78,8 +78,10 @@ def create_user_db(username):
     conn.commit()
     c.close()
 
-    # now chmod the file to makie it writable by celeryd
-    os.chmod(db,0777)
+    # now chmod the file to make it writable by celeryd
+    # TODO: Fix this permissions issue. Celeryd is running as user and yabiadmin is running as 'apache' and both need to write to this database
+    os.chmod(db,0777)                   # we need to write to the file as another user
+    os.chmod(home,0777)                 # AND we need to write to the directory as another user for the -journal sqlite file
     
 def ensure_user_db(username):
     """if the users db doesn't exist, create it"""
