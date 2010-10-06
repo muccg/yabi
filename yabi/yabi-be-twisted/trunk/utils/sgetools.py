@@ -99,7 +99,7 @@ def qsub(jobname, command, user="yabi", workingdir="/home/yabi", stdout="STDOUT.
     #arguments = list(lexer)
      
      # make a temporary file to store the command in
-    tempfile = mktemp(dir=config['backend']['temp'])
+    tempfile = mktemp(dir=config.config['backend']['temp'])
     temp=open(tempfile,'w+b')
     
     # write module load lines

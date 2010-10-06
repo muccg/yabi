@@ -103,7 +103,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         client_stream.write("id=%s\n"%job_id)
         
         # save the epr to a tempfile so we can use it again and again
-        temp = tempfile.NamedTemporaryFile(suffix=".epr",dir=config['backend']['temp'],delete=False)
+        temp = tempfile.NamedTemporaryFile(suffix=".epr",dir=config.config['backend']['temp'],delete=False)
         temp.write(epr)
         temp.close()
             
@@ -168,7 +168,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         (host,username,epr) = self.get_running(job_id)
 
         # save the epr to a tempfile so we can use it again and again
-        temp = tempfile.NamedTemporaryFile(suffix=".epr",dir=config['backend']['temp'],delete=False)
+        temp = tempfile.NamedTemporaryFile(suffix=".epr",dir=config.config['backend']['temp'],delete=False)
         temp.write(epr)
         temp.close()
 
