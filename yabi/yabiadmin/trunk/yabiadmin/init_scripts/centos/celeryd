@@ -12,9 +12,11 @@
 # Source networking configuration.
 . /etc/sysconfig/network
 
+# Default params, override in /etc/sysconfig/celeryd
 SOURCE="/usr/local/python/ccgapps/yabiadmin/release/yabiadmin"
 VIRTUAL_PYTHON="$SOURCE/virtualpython"
 CELERYD="$VIRTUAL_PYTHON/bin/celeyrd"
+USER=apache
 
 # required by celeryd
 DJANGO_SETTINGS_MODULE="settings"
@@ -38,7 +40,7 @@ start() {
 
         # Start daemons.
         echo -n $"Starting $prog: "
-        daemon $CELERYD
+        daemon --user $USER $CELERYD
 	RETVAL=$?
         echo
         [ $RETVAL -eq 0 ] && touch /var/lock/subsys/celeryd
