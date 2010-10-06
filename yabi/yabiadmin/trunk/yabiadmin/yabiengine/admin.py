@@ -36,7 +36,6 @@ class WorkflowAdmin(admin.ModelAdmin):
     def purge_workflow(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
 
-        purgeCount = 0
         for id in selected:
             wf = Workflow.objects.get(id=id)
             StoreHelper.deleteWorkflow(wf)
@@ -45,7 +44,7 @@ class WorkflowAdmin(admin.ModelAdmin):
             if len(selected) == 1:
                 message_bit = "1 workflow purged from store."
             else:
-                message_bit = "%s workflows were purged from store." % purgeCount
+                message_bit = "%s workflows were purged from store." % len(selected)
             self.message_user(request, message_bit)
 
         # pass on to delete action
