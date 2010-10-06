@@ -7,7 +7,7 @@ config.read_config()
 config.sanitise()
 
 # sanity check that temp directory is set
-assert config['backend'].has_key('temp'), "[backend] section of yabi.conf is missing 'temp' directory setting"
+assert cconfig.onfig['backend'].has_key('temp'), "[backend] section of yabi.conf is missing 'temp' directory setting"
 
 from urlparse import urlparse
 
