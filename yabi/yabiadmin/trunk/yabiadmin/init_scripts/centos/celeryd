@@ -1,164 +1,79 @@
-#! /bin/bash
+#!/bin/bash
 #
-# portmap       Start/Stop RPC portmapper
+# celeryd	This shell script takes care of starting and stopping
+#		celeryd for BioFlow.
 #
-# chkconfig: 345 13 87
-# description: The portmapper manages RPC connections, which are used by \
-#              protocols such as NFS and NIS. The portmap server must be \
-#              running on machines which act as servers for protocols which \
-#              make use of the RPC mechanism.
-# processname: portmap
-
-NAME="celeryd"
-CELERYD="/usr/local/stackless/bin/celeryd"
-CONFFILE="yabi.conf"
-
-# global settings
-export DJANGO_SETTINGS_MODULE="settings"
-export CUSTOMDB="1"
-
-# This is an interactive program, we need the current locale
-[ -f /etc/profile.d/lang.sh ] && . /etc/profile.d/lang.sh
-# We can't Japanese on normal console at boot time, so force LANG=C.
-if [ "$LANG" = "ja" -o "$LANG" = "ja_JP.eucJP" ]; then
-    if [ "$TERM" = "linux" ] ; then
-        LANG=C
-    fi
-fi
+# chkconfig: - 58 74
+# description: celeryd
 
 # Source function library.
 . /etc/init.d/functions
 
-# INI file parser
-cfg.parser () {
-    IFS=$'\n' && ini=( $(<$1) )                 # convert to line-array
-    ini=( ${ini[*]//;*/} )                      # remove comments ‘;’
-    ini=( ${ini[*]//\#*/} )                     # remove comments ‘#’
-    ini=( ${ini[*]/:/ \=} )                     # convert : to =
-    ini=( ${ini[*]/\ =\ /=} )                   # remove anything with a space around ‘ = ‘
-    ini=( ${ini[*]/#[/\}$'\n'cfg.section.} )    # set section prefix
-    ini=( ${ini[*]/%]/ \(} )                    # convert text2function (1)
-    ini=( ${ini[*]/=/=\( } )                    # convert item to array
-    ini=( ${ini[*]/%/ \)} )                     # close array parenthesis
-    ini=( ${ini[*]/%\( \)/\(\) \{} )            # convert text2function (2)
-    ini=( ${ini[*]/%\} \)/\}} )                 # remove extra parenthesis
-    ini=( ${ini[*]/#\ */} )                     # remove blank lines
-    ini=( ${ini[*]/#\ */} )                     # remove blank lines with tabs
-    ini[0]=''                                   # remove first element
-    ini[${#ini[*]} + 1]='}'                     # add the last brace
-    eval "$(echo "${ini[*]}")"                  # eval the result
+# Source networking configuration.
+. /etc/sysconfig/network
+
+SOURCE="/usr/local/python/ccgapps/yabiadmin/release/yabiadmin"
+VIRTUAL_PYTHON="$SOURCE/virtualpython"
+CELERYD="$VIRTUAL_PYTHON/bin/celeyrd"
+
+# required by celeryd
+DJANGO_SETTINGS_MODULE="settings"
+DJANGO_PROJECT_DIR="$SOURCE"
+CELERY_LOADER="django"
+CELERY_CHDIR="$SOURCE"
+PYTHONPATH="/usr/local/etc/ccgapps:$SOURCE"
+PROJECT_DIRECTORY="$SOURCE"
+export DJANGO_SETTINGS_MODULE DJANGO_PROJECT_DIR CELERY_LOADER CELERY_CHDIR PYTHONPATH PROJECT_DIRECTORY
+
+if [ -f /etc/sysconfig/celeryd ];then
+        . /etc/sysconfig/celeryd
+fi
+
+RETVAL=0
+prog="celeryd"
+
+start() {
+	# Check that networking is up.
+	[ "$NETWORKING" = "no" ] && exit 1
+
+        # Start daemons.
+        echo -n $"Starting $prog: "
+        daemon $CELERYD
+	RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && touch /var/lock/subsys/celeryd
+	return $RETVAL
 }
-        
-# search a path for a file
-find_conf () {
-    for PART in "${HOME}/.yabi/${CONFFILE}" "${HOME}/.yabi/backend/${CONFFILE}" "${HOME}/${CONFFILE}" "${HOME}/.yabi" "/etc/${CONFFILE}" "/etc/yabi/${CONFFILE}" 
-    do
-        if [ -f $PART ]
-        then
-            YABICONF=$PART
-            return 0
-        fi
-    done
-    
+
+stop() {
+        echo -n $"Shutting down $prog: "
+	killproc celeryd
+	RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/celeryd
+	return $RETVAL
 }
-        
-find_conf
 
-        
-#  check for required files
-if [ ! -x "${CELERYD}" ]
-then
-        echo "$0: Aborting, no $CELERYD found."
-        exit 0
-fi
-# if [ ! -r "${TAP}" ]
-# then
-#         echo "$0: Aborting, no file $TAP found."
-#         exit 0
-# fi
-if [ "X$YABICONF" = "X" ]
-then
-        echo "$0: Aborting, no yabi.conf found"
-        exit 0
-fi
-
-# read configuration.
-cfg.parser $YABICONF
-cfg.section.admin
-cfg.section.celeryd || (echo "You must have a [celeryd] block in your yabi.conf" && exit 1)
-
-# setup parameters
-if [ "${runningdir}X" = "X" ]; then RUNNING_DIR="/var/run/yabi/backend"; else RUNNING_DIR=$runningdir; fi
-if [ "${logfile}X" = "X" ]; then LOG_FILE="/var/log/yabi/backend.log"; else LOG_FILE=$logfile; fi
-if [ "${pidfile}X" = "X" ]; then PID_FILE="/var/run/yabi/backend.pid"; else PID_FILE=$pidfile; fi
-if [ "${source}X" = "X" ]; then SOURCE="${HOME}/yabi/yabi-be-twisted/trunk"; else SOURCE=$source; fi
-
-# setup settings from config file
-export YABISTORE="${store}"
-export YABIBACKEND="${backend}"
-export DJANGO_SETTINGS_MODULE="settings"
-export CUSTOMDB="1"
-export HTTP_REDIRECT_TO_HTTPS="${http_redirect_to_https}"
-export ADMIN_EMAIL_NAME=`echo $alert_email |  cut -d "<" -f 1`
-export ADMIN_EMAIL=`echo $alert_email |  cut -d "<" -f 2 | cut -d ">" -f 1`
-export DATABASE_ENGINE="${database_engine}"
-export DATABASE_NAME="${database_name}"
-export DATABASE_USER="${database_user}"
-export DATABASE_PASSWORD="${database_password}"
-export DATABASE_HOST="${database_host}"
-export DATABASE_PORT="${database_port}"
-export AUTH_LDAP_SERVER="${auth_ldap_server}"
-export AUTH_LDAP_USER_BASE="${auth_ldap_base}"
-export AUTH_LDAP_GROUP_BASE="${auth_ldap_group_nase}"
-export AUTH_LDAP_GROUP="${auth_ldap_group}"
-export AUTH_LDAP_DEFAULT_GROUP="${auth_ldap_default_group}"
-export MEMCACHE_SERVERS="${memcache_servers}"
-export MEMCACHE_PREFIX="${memcache_prefix}"
-export CELERY_QUEUE_NAME="${celery_queue_name}"
-
-TAP="${SOURCE}/server.py"
-
-#  set up run directory if necessary
-if [ ! -d "${RUNNING_DIR}" ]
-then
-        echo "$0: Aborting, running directory $RUNNING_DIR does not exist."
-        exit 0
-fi
-
-if [ ! -f "${TAP}" ]
-then
-        echo "$0: Aborting, tap file ${TAP} not found."
-        exit 0
-fi
-
+# See how we were called.
 case "$1" in
-        start)
-                echo -n "Starting $NAME..."
-                export PYTHONPATH="${source}:${source}/.."
-                ${CELERYD} &> ${LOG_FILE} &
-                echo $! > ${PID_FILE}
-                status -p $PID_FILE $NAME
-                ;;
-
-        stop)
-                echo -n "Stopping ${NAME}..."
-                kill `cat "${PID_FILE}"`
-                sleep 10                # celery can take some time to shutdown
-                PID=`cat "${PID_FILE}" 2>/dev/null`
-                kill -9 $PID >& /dev/null
-                rm -f "${PID_FILE}" >& /dev/null
-                status -p $PID_FILE $NAME
-                ;;
-
-        restart)
-                "${0}" stop
-                "${0}" start
-                ;;
-
-    *)
-                echo "Usage: ${0} {start|stop|restart|}" >&2
-                exit 1
-                ;;
+  start)
+	start
+        ;;
+  stop)
+	stop
+        ;;
+  status)
+	status celeryd
+	RETVAL=$?
+	;;
+  restart)
+	stop
+	start
+	RETVAL=$?
+	;;
+  *)
+        echo $"Usage: $0 {start|stop|restart|status}"
+        RETVAL=3
 esac
 
-exit 0
+exit $RETVAL
