@@ -12,10 +12,7 @@ except ImportError, ie:
 
 import settings
 
-try:
-    USERS_HOME = settings.YABISTORE_HOME
-except AttributeError, ae:
-    USERS_HOME = "/tmp"
+USERS_HOME = settings.YABISTORE_HOME
     
 HISTORY_FILE = "history.sqlite3"
 
