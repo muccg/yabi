@@ -9,7 +9,6 @@ from appsettings.yabiadmin.prod import *
 # subsitution done by fab, this will be your username or in the case of a snapshot, 'snapshot'
 TARGET = 'live'
 
-# The various
 # TARGET is used to index into this hash, edit your own settings at will
 BACKEND = {
     'live': {
