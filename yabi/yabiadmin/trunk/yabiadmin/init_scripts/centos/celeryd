@@ -15,7 +15,7 @@
 # Default params, override in /etc/sysconfig/celeryd
 SOURCE="/usr/local/python/ccgapps/yabiadmin/release/yabiadmin"
 VIRTUAL_PYTHON="$SOURCE/virtualpython"
-CELERYD="$VIRTUAL_PYTHON/bin/celeyrd"
+CELERYD="$SOURCE/init_scripts/centos/celerydrun"
 USER=apache
 
 # required by celeryd
@@ -23,7 +23,7 @@ DJANGO_SETTINGS_MODULE="settings"
 DJANGO_PROJECT_DIR="$SOURCE"
 CELERY_LOADER="django"
 CELERY_CHDIR="$SOURCE"
-PYTHONPATH="/usr/local/etc/ccgapps:$SOURCE"
+PYTHONPATH="/usr/local/etc/ccgapps:$SOURCE:/usr/local/python/ccgapps/yabiadmin/release"
 PROJECT_DIRECTORY="$SOURCE"
 export DJANGO_SETTINGS_MODULE DJANGO_PROJECT_DIR CELERY_LOADER CELERY_CHDIR PYTHONPATH PROJECT_DIRECTORY
 
@@ -40,7 +40,8 @@ start() {
 
         # Start daemons.
         echo -n $"Starting $prog: "
-        daemon --user $USER $CELERYD
+        #daemon --user $USER $CELERYD
+        runuser -s /bin/bash -p -  $USER -c $CELERYD
 	RETVAL=$?
         echo
         [ $RETVAL -eq 0 ] && touch /var/lock/subsys/celeryd
