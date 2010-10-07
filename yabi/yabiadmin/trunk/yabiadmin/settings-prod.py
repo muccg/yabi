@@ -17,7 +17,7 @@ BACKEND = {
         'BACKEND_PORT': '9001',
         'BACKEND_BASE': '/',
         'YABI_URL': 'yabi://yabi.localdomain/',
-        'STORE_HOME': '/usr/local/python/ccgapps/yabiadmin/store/';
+        'STORE_HOME': '/usr/local/python/ccgapps/yabiadmin/store/'
     }
 }
 
