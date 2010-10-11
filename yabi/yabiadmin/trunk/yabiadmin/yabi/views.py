@@ -12,7 +12,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.utils import webhelpers
 from django import forms
 
-from django.contrib import logging
+import logging
 logger = logging.getLogger('yabiadmin')
 
 # proxy view to pass through all requests set up in urls.py
