@@ -71,6 +71,10 @@ LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
 LOGGING_FORMATTER = logging.Formatter('[%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
 LOGS = ['yabife']
 
+# kick off mango initialisation of logging
+from django.contrib import logging as mangologging
+
+
 # Making this always point to the yabi users deployment
 YABIADMIN_SERVER = "https://yabi.localdomain:9432"
 YABIADMIN_BASE = "/yabiadmin/"

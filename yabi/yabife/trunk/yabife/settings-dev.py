@@ -78,6 +78,8 @@ LOGGING_LEVEL = logging.DEBUG
 LOGGING_FORMATTER = logging.Formatter('[%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
 LOGS = ['yabife']
 
+# kick off mango initialisation of logging
+from django.contrib import logging as mangologging
 
 ##
 ## SENTRY
