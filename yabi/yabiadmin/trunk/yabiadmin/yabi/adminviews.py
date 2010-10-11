@@ -82,7 +82,7 @@ def format_params(tool_parameters):
 
 @staff_member_required
 def tool(request, tool_id):
-    logging.error('There was some really crazy error', exc_info=None, extra={'url': request.build_absolute_uri(), 'data': {'username': request.user.username}})
+    logger.error('There was some really crazy error', exc_info=None, extra={'url': request.build_absolute_uri(), 'data': {'username': request.user.username}})
 
     tool = get_object_or_404(Tool, pk=tool_id)
     
