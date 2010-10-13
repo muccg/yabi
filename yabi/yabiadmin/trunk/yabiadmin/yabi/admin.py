@@ -1,11 +1,12 @@
 from yabiadmin.yabi.models import *
 from yabiadmin.yabi.forms import *
 from django.contrib import admin
+from django.contrib.webservices.ext import ExtJsonInterface
 from django.forms.models import BaseInlineFormSet
 from django.forms import ModelForm
 from django import forms
 
-class AdminBase(admin.ModelAdmin):
+class AdminBase(ExtJsonInterface, admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
         if not isinstance(obj, Base): 
             return form.save()
