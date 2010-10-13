@@ -18,7 +18,7 @@ ENV_CHECK = []
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "gridftp"
 
-DEBUG = False
+DEBUG = True
 
 class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
     """This is the resource that connects to the globus gridftp backends"""

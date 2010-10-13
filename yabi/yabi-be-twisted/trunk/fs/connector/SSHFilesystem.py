@@ -23,7 +23,7 @@ ENV_CHECK = []
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "scp"
 
-DEBUG = False
+DEBUG = True
 
 class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
     """This is the resource that connects to the globus gridftp backends"""
