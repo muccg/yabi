@@ -162,7 +162,12 @@ LOGGING_FORMATTER = logging.Formatter('[%(name)s:%(levelname)s:%(filename)s:%(li
 LOGS = ['yabiengine','yabiadmin']
 
 # kick off mango initialisation of logging
-from django.contrib import logging as mangologging
+try:
+
+    from django.contrib import logging as mangologging
+except IOError, ioe:
+    print "WARNING: inside settings.py I failed to import mangologging because I got the following exception"
+    print ioe
 
 
 ##
