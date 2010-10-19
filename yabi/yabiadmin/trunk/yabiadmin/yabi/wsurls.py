@@ -13,7 +13,7 @@ urlpatterns = patterns('yabiadmin.yabi.ws_frontend_views',
     url(r'^fs/copy[/]*$', 'copy', name='copy'),
     url(r'^fs/rm[/]*$', 'rm', name='rm'),
     url(r'^submitworkflow[/]*$', 'submitworkflow', name='submitworkflow'),
-    url(r'^fs/getuploadurl/*$', 'getuploadurl', name='getuploadurl' ),
+    url(r'^fs/getuploadurl/*$', 'getuploadurl', name='getuploadurl'),
 )
 
 # backend webservices
@@ -25,3 +25,7 @@ urlpatterns += patterns('yabiadmin.yabi.ws_backend_views',
     #url(r'^credential/(?P<yabiusername>\w+)/(?P<scheme>\w+)/(?P<username>\w+)/(?P<hostname>[\w\-.]+)[/]*$', 'credential', name='credential'),
 )
 
+# yabish webservices
+urlpatterns += patterns('yabiadmin.yabi.ws_yabish_views',
+    url(r'^yabish/submitjob/?$', 'submitjob', name='submitjob'),  
+)

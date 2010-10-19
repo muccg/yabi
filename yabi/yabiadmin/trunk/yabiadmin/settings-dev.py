@@ -45,6 +45,13 @@ BACKEND = {
 	    'YABI_URL': 'yabi://faramir.localdomain/',
         'STORE_HOME': '/home/yabi/.yabi/run/store/',
     },
+    'tszabo': {
+        'BACKEND_IP': '0.0.0.0',
+        'BACKEND_PORT': '19001',
+        'BACKEND_BASE': '/',
+        'YABI_URL': 'yabi://faramir.localdomain/',
+        'STORE_HOME': '/home/yabi/.yabi/run/store/',
+    },
     'snapshot': {
         'BACKEND_IP': '0.0.0.0',
         'BACKEND_PORT': '21080',
