@@ -607,7 +607,7 @@ YabiWorkflow.prototype.hydrate = function(workflowId) {
     }
 
     this.workflowId = workflowId;
-    var baseURL = appURL + "workflows/" + YAHOO.ccgyabi.username + "/" + workflowId;
+    var baseURL = appURL + "workflows/" + workflowId;
     
     //load json
     var jsUrl, jsCallback, jsTransaction;
@@ -653,7 +653,7 @@ YabiWorkflow.prototype.saveTags = function(postRelocate) {
         return;
     }
     
-    var baseURL = appURL + "workflows/" + YAHOO.ccgyabi.username + "/" + this.workflowId + "/tags";
+    var baseURL = appURL + "workflows/" + this.workflowId + "/tags";
     
     //load json
     var jsUrl, jsCallback, jsTransaction;

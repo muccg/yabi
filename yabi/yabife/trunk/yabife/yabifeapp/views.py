@@ -26,6 +26,9 @@ from yaphc.memcache_persister import MemcacheCookiePersister
 from django.contrib import logging
 logger = logging.getLogger('yabife')
 
+
+
+
 # proxy view to pass through all requests set up in urls.py
 def proxy(request, url, server, base):
     logger.debug(url)
@@ -58,7 +61,6 @@ def design(request, id=None):
 @login_required
 def jobs(request):
     return render_to_response('jobs.html', {'h':webhelpers, 'request':request})
-
 
 def login(request):
     if request.method == 'POST':
@@ -96,6 +98,45 @@ def logout(request):
     django_logout(request)
     yabiadmin_logout(request.user.username)
     return HttpResponseRedirect(webhelpers.url("/"))
+
+def wslogin(request):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    username = request.POST.get('username')
+    password = request.POST.get('password')
+    if not (username and password):
+        return HttpResponseBadRequest()
+    user = authenticate(username=username, password=password)
+    if user is not None: 
+        if user.is_active:
+            django_login(request, user)
+            if yabiadmin_login(username, password):
+                response = {
+                    "success": True
+                }
+            else:
+               response = {
+                    "success": False,
+                    "message": "System Error (can't log in admin)",
+               }
+        else:
+            response = {
+                "success": False,
+                "message": "The account has been disabled.",
+            }
+    else:
+        response = {
+            "success": False,
+            "message": "The user name and password are incorrect.",
+        }
+    return HttpResponse(content=json.dumps(response))
+
+def wslogout(request):
+    django_logout(request)
+    yabiadmin_logout(request.user.username)
+    response = {
+        "success": True,
+    }
 
 # Implementation methods
 

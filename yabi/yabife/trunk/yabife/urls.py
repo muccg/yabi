@@ -11,6 +11,8 @@ urlpatterns = patterns('yabife.yabifeapp.views',
     (r'^files[/]*$', 'files'),
     (r'^login[/]*$', 'login', {'SSL':True}),
     (r'^logout[/]*$', 'logout'),
+    (r'^wslogin[/]*$', 'wslogin', {'SSL':True}),
+    (r'^wslogout[/]*$', 'wslogout'),
     (r'^openid/', include('djopenid.consumer.urls'))
 )
 
