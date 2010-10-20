@@ -21,7 +21,7 @@ from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, ge
 from yabiadmin.utils import json_error
 from yabi.file_upload import *
 from django.contrib import auth
-from decorators import memcache, authentication_required
+from yabiadmin.decorators import memcache, authentication_required
 
 
 import logging

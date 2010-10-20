@@ -14,6 +14,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate
 #from models import *
 
+from decorators import memcache, authentication_required
+
 # our storage
 import db
 
@@ -26,8 +28,10 @@ def index(request):
     return HttpResponse("yabistore V0.1")
 
 
-def workflows_for_user(request, username):
+@authentication_required
+def workflows_for_user(request):
     logger.debug('')
+    username = request.user.username
     db.ensure_user_db(username)
 
     if request.method == 'GET':
@@ -37,9 +41,10 @@ def workflows_for_user(request, username):
 
     return HttpResponseServerError('Unsupported request method\n')
 
-
-def get_add_or_update_workflow(request, username, workflow_id):
+@authentication_required
+def get_add_or_update_workflow(request, workflow_id):
     logger.debug('')
+    username = request.user.username
     db.ensure_user_db(username)
 
     if not workflow_id or not username:
@@ -97,9 +102,10 @@ def get_add_or_update_workflow(request, username, workflow_id):
                                         
     return HttpResponseServerError('Unsupported request method\n')
 
-
-def workflow_id_tags(request, username, id=None):
+@authentication_required
+def workflow_id_tags(request, id=None):
     logger.debug('')
+    username = request.user.username
     db.ensure_user_db(username)
     
     if not id or not username:
@@ -132,8 +138,10 @@ def workflow_id_tags(request, username, id=None):
     return HttpResponseServerError('Unsupported request method\n')
 
 
-def workflow_id_tags_add(request, username, id=None):
+@authentication_required
+def workflow_id_tags_add(request, id=None):
     logger.debug('')
+    username = request.user.username
     db.ensure_user_db(username)
     
     if not id or not username:
@@ -155,8 +163,10 @@ def workflow_id_tags_add(request, username, id=None):
     return HttpResponseServerError('Unsupported request method\n')
 
 
-def workflow_id_tags_remove(request, username, id=None):
+@authentication_required
+def workflow_id_tags_remove(request, id=None):
     logger.debug('')
+    username = request.user.username
     db.ensure_user_db(username)
     
     if not id or not username:
@@ -176,8 +186,10 @@ def workflow_id_tags_remove(request, username, id=None):
     return HttpResponseServerError('Unsupported request method\n')
 
 
-def workflow_id_tags_search(request, username):
+@authentication_required
+def workflow_id_tags_search(request):
     logger.debug('')
+    username = request.user.username
     db.ensure_user_db(username)
     
     if not username:
@@ -194,8 +206,10 @@ def workflow_id_tags_search(request, username):
     return HttpResponseServerError('Unsupported request method\n')
 
 
-def workflow_tag(request, username, tag):
+@authentication_required
+def workflow_tag(request, tag):
     logger.debug('')
+    username = request.user.username
     db.ensure_user_db(username)
     
     if not tag or not username:
@@ -207,8 +221,10 @@ def workflow_tag(request, username, tag):
     return HttpResponseServerError('Unsupported request method\n')
 
 
-def workflow_all_tags(request, username):
+@authentication_required
+def workflow_all_tags(request):
     logger.debug('')
+    username = request.user.username
     db.ensure_user_db(username)
     
     if not username:
@@ -220,8 +236,10 @@ def workflow_all_tags(request, username):
     return HttpResponseServerError('Unsupported request method\n')
 
 
-def workflow_date_search(request, username):
+@authentication_required
+def workflow_date_search(request):
     logger.debug('')
+    username = request.user.username
     db.ensure_user_db(username)
     if request.method == 'GET':
         start = request.GET['start']
@@ -235,8 +253,10 @@ def workflow_date_search(request, username):
     return HttpResponseServerError('Unsupported request method\n')
     
     
-def workflow_search(request, username):
+@authentication_required
+def workflow_search(request):
     logger.debug('')
+    username = request.user.username
     db.ensure_user_db(username)
     if request.method == 'GET':
         search = request.GET['keyword']

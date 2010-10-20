@@ -8,7 +8,7 @@ from yabiadmin.yabistoreapp import db
 from yabiadmin.yabiengine.tasks import build
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 
-from decorators import memcache, authentication_required
+from yabiadmin.decorators import memcache, authentication_required
 
 import logging
 logger = logging.getLogger('yabiadmin')
