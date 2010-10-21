@@ -206,8 +206,8 @@ class ParameterSwitchUse(Base):
 
 class ToolParameter(Base):
     tool = models.ForeignKey(Tool)
-    switch = models.CharField(max_length=64, null=True, blank=True)
-    switch_use = models.ForeignKey(ParameterSwitchUse, null=True, blank=True)
+    switch = models.CharField(max_length=64)
+    switch_use = models.ForeignKey(ParameterSwitchUse)
     rank = models.IntegerField(null=True, blank=True)
     mandatory = models.BooleanField(blank=True, default=False)
     input_file = models.BooleanField(blank=True, default=False)
