@@ -1,0 +1,112 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="${LANGUAGE_CODE}" xml:lang="${LANGUAGE_CODE}" 
+% if LANGUAGE_BIDI:
+dir="rtl"
+% endif
+>
+<%namespace name="admin" module="django.contrib.admin.templatetags.adminmedia" />
+<%!
+import django.core.urlresolvers as resolvers
+from django.utils.webhelpers import url
+%>
+<head>
+<%def name="block_title()">Undefined</%def>
+<title>${self.block_title()}</title>
+<%def name="block_stylesheet()">${admin.admin_media_prefix()}css/base.css</%def>
+<%def name="block_stylesheet_rtl()">${admin.admin_media_prefix()}css/rtl.css</%def>
+<link rel="stylesheet" type="text/css" href="${self.block_stylesheet()}" />
+<link rel="stylesheet" type="text/css" href="${next.block_stylesheet()}" />
+<link rel="stylesheet" type="text/css" href="${url('/static/css/admin.css')}" />
+  
+<!--[if lte IE 7]><link rel="stylesheet" type="text/css" href="{% block stylesheet_ie %}{% load adminmedia %}{% admin_media_prefix %}css/ie.css{% endblock %}" /><![endif]--> 
+% if LANGUAGE_BIDI:
+<link rel="stylesheet" type="text/css" href="${self.block_stylesheet_rtl()}<%def name="block_stylesheet_rtl()">${admin.admin_media_prefix()}css/rtl.css</%def>" />
+% endif
+<script type="text/javascript">window.__admin_media_prefix__ = "${ escapejs( admin.admin_media_prefix() ) }";</script>
+<!-- STYLES -->
+${self.block_extrastyle()}<%def name="block_extrastyle()"></%def>
+${self.block_extrahead()}<%def name="block_extrahead()"></%def>
+${self.block_blockbots()}<%def name="block_blockbots()"><meta name="bang" content="pop"/><meta name="robots" content="NONE,NOARCHIVE" /></%def>
+</head>
+
+
+<body class="
+% if is_popup:
+popup 
+% endif
+${self.block_bodyclass()}<%def name="block_bodyclass()"></%def>">
+
+<!-- Container -->
+<div id="container">
+
+    
+% if not is_popup:
+
+    <!-- Header -->
+    <div id="header">
+        <div id="branding">
+        ${self.block_branding()}<%def name="block_branding()"></%def>
+        </div>
+        
+% if user.is_active and user.is_staff:
+
+        <div id="user-tools">${ trans('Welcome,') }
+% if user.first_name:
+<strong>${ force_escape(user.first_name)}</strong>.
+% else:
+<strong>${ force_escape(user.username)}</strong>.
+% endif
+${self.block_userlinks()}<%def name="block_userlinks()"><% docsroot = url(django_admindocs_docroot) %>
+% if docsroot:
+<a href="${docsroot}">${trans('Documentation')}</a> / 
+% endif
+<a href="${ (root_path+'logout/') if not resolvers.reverse('admin:logout') else resolvers.reverse('admin:logout') }">${trans('Log out')}</a></%def></div>
+        
+% endif
+
+        ${self.block_nav_global()}<%def name="block_nav_global()"></%def>
+    </div>
+    <!-- END Header -->
+    ${self.block_breadcrumbs()}<%def name="block_breadcrumbs()"><div class="breadcrumbs"><a href="/">${trans('Home')}</a>
+% if title:
+ &rsaquo; ${title}
+% endif
+</div></%def>
+    
+% endif
+
+
+        
+% if messages:
+
+        <ul class="messagelist">
+% for message in messages:
+<li>${message}</li>
+% endfor
+</ul>
+        
+% endif
+
+
+    <!-- Content -->
+    <div id="content" class="${self.block_coltype()}<%def name="block_coltype()">colM</%def>">
+        ${self.block_pretitle()}<%def name="block_pretitle()"></%def>
+        ${self.block_content_title()}<%def name="block_content_title()">
+% if title:
+<h1>${title}</h1>
+% endif
+</%def>
+        <%def name="block_content()">
+        <%def name="block_object_tools()"></%def>${block_object_tools()}
+        </%def>${self.block_content()}
+        <%def name="block_sidebar()"></%def>${self.block_sidebar()}
+        <br class="clear" />
+    </div>
+    <!-- END Content -->
+
+    ${self.block_footer()}<%def name="block_footer()"><div id="footer"></div></%def>
+</div>
+<!-- END Container -->
+
+</body>
+</html>

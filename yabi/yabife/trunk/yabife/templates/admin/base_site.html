@@ -1,0 +1,10 @@
+<%inherit file="admin/base.html"/>
+<%! from django.utils.webhelpers import url %>
+
+${self.block_title()}<%def name="block_title()">${title} | ${trans('Yabi Frontend Administration')}</%def>
+
+${self.block_branding()}<%def name="block_branding()">
+<h1 id="site-name">${trans('Frontend Administration')}</h1>
+</%def>
+
+${self.block_nav_global()}<%def name="block_nav_global()"></%def>

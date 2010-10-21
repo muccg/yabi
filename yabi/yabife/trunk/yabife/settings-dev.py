@@ -35,6 +35,8 @@ AUTHENTICATION_BACKENDS = [
  'django.contrib.auth.backends.NoAuthModelBackend',
 ]
 
+AUTH_PROFILE_MODULE = 'yabifeapp.User'
+
 SESSION_COOKIE_PATH = url('/')
 SESSION_SAVE_EVERY_REQUEST = True
 CSRF_COOKIE_NAME = "csrftoken_yabife"

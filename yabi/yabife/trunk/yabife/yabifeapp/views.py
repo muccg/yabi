@@ -16,12 +16,15 @@ from django.utils import webhelpers
 from django.contrib.auth.decorators import login_required
 from yabife.decorators import authentication_required
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate
+from django.contrib.auth.models import SiteProfileNotAvailable, User as DjangoUser
 from django import forms
 from django.core.servers.basehttp import FileWrapper
 from django.utils import simplejson as json
 
 from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
 from yaphc.memcache_persister import MemcacheCookiePersister
+
+from yabife.yabifeapp.models import User
 
 from django.contrib import logging
 logger = logging.getLogger('yabife')
@@ -30,19 +33,18 @@ logger = logging.getLogger('yabife')
 
 
 # proxy view to pass through all requests set up in urls.py
-def proxy(request, url, server, base):
+def proxy(request, url, base):
     logger.debug(url)
-    logger.debug(server)
     logger.debug(base)
     
-    target_url = os.path.join(server+base, url)
+    target_url = os.path.join(base, url)
     target_request = make_request_object(target_url, request)
     return make_http_request(target_request, request.user.username, request.is_ajax())
 
 @authentication_required
 def adminproxy(request, url):
     logger.debug('')
-    return proxy(request, url, settings.YABIADMIN_SERVER, settings.YABIADMIN_BASE)
+    return proxy(request, url, request.user.get_profile().appliance.url)
 
 # forms
 class LoginForm(forms.Form):
@@ -77,6 +79,15 @@ def login(request):
             if user is not None:
                 if user.is_active:
                     django_login(request, user)
+
+                    # Look up the user's profile -- if they don't have one,
+                    # then they don't have an appliance, and hence can't log in
+                    # as such.
+                    try:
+                        user.get_profile()
+                    except (SiteProfileNotAvailable, User.DoesNotExist):
+                        return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':"User is not associated with an appliance"})
+
                     if not yabiadmin_login(username, password):
                         return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':"System error"})
 
@@ -95,8 +106,9 @@ def login(request):
 
 
 def logout(request):
+    username = request.user.username
     django_logout(request)
-    yabiadmin_logout(request.user.username)
+    yabiadmin_logout(username)
     return HttpResponseRedirect(webhelpers.url("/"))
 
 def wslogin(request):
@@ -110,6 +122,17 @@ def wslogin(request):
     if user is not None: 
         if user.is_active:
             django_login(request, user)
+
+            # Look up the user's profile -- if they don't have one, then they
+            # don't have an appliance, and hence can't log in as such.
+            try:
+                user.get_profile()
+            except (SiteProfileNotAvailable, User.DoesNotExist):
+                response = {
+                    "success": False,
+                    "message": "User is not associated with an appliance",
+                }
+
             if yabiadmin_login(username, password):
                 response = {
                     "success": True
@@ -132,8 +155,9 @@ def wslogin(request):
     return HttpResponse(content=json.dumps(response))
 
 def wslogout(request):
+    username = request.user.username
     django_logout(request)
-    yabiadmin_logout(request.user.username)
+    yabiadmin_logout(username)
     response = {
         "success": True,
     }
@@ -176,10 +200,13 @@ def copy_non_empty_headers(src, to, header_names):
         if header_value:
             to[header_name] = header_value
 
-def memcache_http(username):
+def memcache_http(user):
+    if not isinstance(user, DjangoUser):
+        user = DjangoUser.objects.get(username=user)
+
     mp = MemcacheCookiePersister(settings.MEMCACHE_SERVERS,
-            key='%s-cookies-%s' %(settings.MEMCACHE_KEYSPACE, username))
-    yabiadmin = settings.YABIADMIN_SERVER + settings.YABIADMIN_BASE
+            key='%s-cookies-%s' %(settings.MEMCACHE_KEYSPACE, user.username))
+    yabiadmin = user.get_profile().appliance.url
     return Http(base_url=yabiadmin, cache=False, cookie_persister=mp)
 
 def yabiadmin_login(username, password):
