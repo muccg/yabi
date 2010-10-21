@@ -21,7 +21,9 @@ function YabiWorkflowProxy(obj, collection) {
     
     //parse a better name
     try {
-        this.detailsPayload = YAHOO.lang.JSON.parse(this.payload.json);
+        if (this.payload.json instanceof String) {
+            this.detailsPayload = YAHOO.lang.JSON.parse(this.payload.json);
+        }
     } catch (e) {}
     
     this.proxyEl.appendChild(document.createTextNode(this.detailsPayload.name));
