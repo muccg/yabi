@@ -56,10 +56,7 @@ ${self.block_bodyclass()}<%def name="block_bodyclass()"></%def>">
 % else:
 <strong>${ force_escape(user.username)}</strong>.
 % endif
-${self.block_userlinks()}<%def name="block_userlinks()"><% docsroot = url(django_admindocs_docroot) %>
-% if docsroot:
-<a href="${docsroot}">${trans('Documentation')}</a> / 
-% endif
+${self.block_userlinks()}<%def name="block_userlinks()">
 <a href="${ (root_path+'logout/') if not resolvers.reverse('admin:logout') else resolvers.reverse('admin:logout') }">${trans('Log out')}</a></%def></div>
         
 % endif
