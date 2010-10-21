@@ -139,104 +139,6 @@ def workflow_id_tags(request, id=None):
 
 
 @authentication_required
-def workflow_id_tags_add(request, id=None):
-    logger.debug('')
-    username = request.user.username
-    db.ensure_user_db(username)
-    
-    if not id or not username:
-        return HttpResponseNotFound('No id or no username supplied.\n')
-
-    if request.method == 'POST': 
-        try:
-            #the taglist
-            if 'taglist' in request.POST:
-                taglist = request.POST['taglist'].split(',')
-                db.tag_workflow(username,int(id),taglist)
-    
-        except db.NoSuchWorkflow, e:
-            logger.critical('%s' % e)
-            return HttpResponseNotFound(e)
-            
-        return HttpResponse("Success")
-                                        
-    return HttpResponseServerError('Unsupported request method\n')
-
-
-@authentication_required
-def workflow_id_tags_remove(request, id=None):
-    logger.debug('')
-    username = request.user.username
-    db.ensure_user_db(username)
-    
-    if not id or not username:
-        return HttpResponseNotFound('No id or no username supplied.\n')
-    
-    if request.method == 'POST': 
-        try:
-            #the taglist
-            if 'taglist' in request.POST:
-                taglist = request.POST['taglist'].split(',')
-                db.detag_workflow(username,int(id),taglist)
-        except db.NoSuchWorkflow, e:
-            logger.critical('%s' % e)
-            return HttpResponseNotFound(e)
-        return HttpResponse("Success")
-                                        
-    return HttpResponseServerError('Unsupported request method\n')
-
-
-@authentication_required
-def workflow_id_tags_search(request):
-    logger.debug('')
-    username = request.user.username
-    db.ensure_user_db(username)
-    
-    if not username:
-        return HttpResponseNotFound('No username supplied.\n')
-    
-    if request.method == 'GET': 
-        search = request.GET['keyword']
-        operator = request.GET['operator'] if 'operator' in request.GET else 'LIKE'
-        
-        tags = db.find_tag_by_search(username,search,operator)
-        
-        return HttpResponse(json.dumps(tags), mimetype='application/json')
-
-    return HttpResponseServerError('Unsupported request method\n')
-
-
-@authentication_required
-def workflow_tag(request, tag):
-    logger.debug('')
-    username = request.user.username
-    db.ensure_user_db(username)
-    
-    if not tag or not username:
-        return HttpResponseNotFound('No id or no username supplied.\n')
-    
-    if request.method == 'GET': 
-        return HttpResponse(json.dumps(db.find_workflow_by_tag(username,tag)),mimetype='application/json')
-    
-    return HttpResponseServerError('Unsupported request method\n')
-
-
-@authentication_required
-def workflow_all_tags(request):
-    logger.debug('')
-    username = request.user.username
-    db.ensure_user_db(username)
-    
-    if not username:
-        return HttpResponseNotFound('No id or no username supplied.\n')
-    
-    if request.method == 'GET': 
-        return HttpResponse(json.dumps(db.get_tags(username)),mimetype='application/json')
-    
-    return HttpResponseServerError('Unsupported request method\n')
-
-
-@authentication_required
 def workflow_date_search(request):
     logger.debug('')
     username = request.user.username
@@ -247,24 +149,6 @@ def workflow_date_search(request):
         sort = request.GET['sort'] if 'sort' in request.GET else 'created_on'
         
         workflows = db.find_workflow_by_date(username,start,end,sort)
-        
-        return HttpResponse(json.dumps(workflows), mimetype='application/json')
-    
-    return HttpResponseServerError('Unsupported request method\n')
-    
-    
-@authentication_required
-def workflow_search(request):
-    logger.debug('')
-    username = request.user.username
-    db.ensure_user_db(username)
-    if request.method == 'GET':
-        search = request.GET['keyword']
-        field = request.GET['field'] if 'field' in request.GET else 'name'
-        sort = request.GET['sort'] if 'sort' in request.GET else 'created_on'
-        operator = request.GET['operator'] if 'operator' in request.GET else 'LIKE'
-        
-        workflows = db.find_workflow_by_search(username,search,field,sort,operator)
         
         return HttpResponse(json.dumps(workflows), mimetype='application/json')
     
