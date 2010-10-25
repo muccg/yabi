@@ -64,12 +64,6 @@ CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
-# Making this always point to the yabi users deployment
-#YABIADMIN_SERVER = "https://faramir.localdomain:22443"
-#YABIADMIN_BASE = "/"
-YABIADMIN_SERVER = os.environ["YABIADMIN_SERVER"] if "YABIADMIN_SERVER" in os.environ else "https://faramir.localdomain:443" 
-YABIADMIN_BASE = os.environ["YABIADMIN_BASE"] if "YABIADMIN_BASE" in os.environ else  "/yabiadmin/" + TARGET + "/"
-
 
 ##
 ## LOGGING

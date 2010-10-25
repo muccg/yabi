@@ -75,8 +75,3 @@ LOGS = ['yabife']
 
 # kick off mango initialisation of logging
 from django.contrib import logging as mangologging
-
-
-# Making this always point to the yabi users deployment
-YABIADMIN_SERVER = "https://yabi.localdomain:9432"
-YABIADMIN_BASE = "/yabiadmin/"
