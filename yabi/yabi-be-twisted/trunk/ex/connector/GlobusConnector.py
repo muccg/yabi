@@ -145,7 +145,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
                 state=newstate
                 client_stream.write("%s\n"%state)
                 
-                if remote_url and job_id in jobsummary:
+                if remote_url and job_id in self.get_all_running():
                     RemoteInfo(remote_url,json.dumps(self.get_running(job_id)))
             
         client_stream.finish()
