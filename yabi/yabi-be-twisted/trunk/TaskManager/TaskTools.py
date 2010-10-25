@@ -113,6 +113,21 @@ def Status(statuspath, message):
     else:
         code,msg,data = RetryPOST(statuspath, host=config.yabiadminserver,port=config.yabiadminport, status=message)              # error exception should bubble up and be caught
     assert code==200
+
+def RemoteInfo(statuspath, message):
+    """Report some status to the webservice"""
+    #print "Reporting status to %s"%(statuspath)
+    if DEBUG:
+        print "remote_info=",message
+    
+    if "://" in statuspath:
+        from urlparse import urlparse
+        parsed = urlparse(statuspath)
+        
+        code,msg,data = RetryPOST(parsed.path, remote_info=message,host=parsed.hostname,port=parsed.port)              # error exception should bubble up and be caught
+    else:
+        code,msg,data = RetryPOST(statuspath, host=config.yabiadminserver,port=config.yabiadminport, remote_info=message)              # error exception should bubble up and be caught
+    assert code==200
     
 def Exec(backend, command, callbackfunc=None, **kwargs):
     if DEBUG:

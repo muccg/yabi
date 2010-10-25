@@ -9,6 +9,7 @@ import sys, os
 
 from ExecRunResource import ExecRunResource
 from ExecResumeResource import ExecResumeResource
+from ExecInfoResource import ExecInfoResource
 from utils.BackendResource import BackendResource
 
 class ExecResource(resource.Resource, BackendResource):
@@ -54,6 +55,8 @@ class ExecResource(resource.Resource, BackendResource):
             return ExecRunResource(request,segments,fsresource = self), []
         elif segments[0]=="resume":
             return ExecResumeResource(request,segments,fsresource = self), []
+        elif segments[0]=="info":
+            return ExecInfoResource(request,segments,fsresource = self), []
             
         
         return resource.Resource.locateChild(self,request,segments)

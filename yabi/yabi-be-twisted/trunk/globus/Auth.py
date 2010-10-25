@@ -7,12 +7,13 @@ from globus.CertificateProxy import CertificateProxy
 from conf import config
 import urllib
 from twisted.internet import reactor
+from Exceptions import BlockingException
 
-class NoCredentials(Exception):
+class NoCredentials(BlockingException):
     """User has no globus credentials for this server"""
     pass
 
-class AuthException(Exception):
+class AuthException(BlockingException):
     pass
 
 class GlobusAuth(object):

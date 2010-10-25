@@ -10,6 +10,7 @@ from utils.parsers import parse_url
 from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Resume, Mkdir, Rm, List, UserCreds, GETFailure, CloseConnections
 
 import traceback
+from Exceptions import BlockingException
 
 DEBUG = False
 
@@ -44,6 +45,12 @@ class Task(object):
     def run(self):
         try:
             self.main()
+        except BlockingException, be:
+            # this is to deal with a problem that is temporary and leads to a blocked status
+            self._blocked()
+            traceback.print_exc()
+            self.log("Task moved into blocking state: %s"%be)
+            self.status("blocked")
         except Exception, e:
             self._errored()
             traceback.print_exc()
@@ -64,13 +71,19 @@ class Task(object):
         
     def _errored(self):
         self.stage = -2
+
+    def _blocked(self):
+        self.stage = -3
         
     def finished(self):
         return self.stage == -1
         
     def errored(self):
         return self.stage == -2
-        
+
+    def blocked(self):
+        return self.stage == -3
+
     def _sanity_check(self):
         # sanity check...
         for key in ['errorurl','exec','stagein','stageout','statusurl','taskid','yabiusername']:
@@ -144,7 +157,11 @@ class NullBackendTask(Task):
                 print "Remote DIR does not exist"
                 
                 #make dir
-                Mkdir(remotedir, yabiusername=self.yabiusername)
+                try:
+                    Mkdir(remotedir, yabiusername=self.yabiusername)
+                except GETFailure, gf:
+                    print "GF_",dir(gf),gf.args,"=====",gf.message
+                    raise BlockingException("Make directory failed: %s"%gf.message[2])
             
             if src.endswith("/"):
                 log("RCopying %s to %s..."%(src,dst))
@@ -344,6 +361,7 @@ class MainTask(Task):
                         
                         print "execution job given ID:",value
                         self._jobid = value
+                        #self.remote_id(value)                           # TODO:send this id back to the middleware
                     else:
                         self.status("exec:%s"%(line.lower()))
                 
@@ -359,7 +377,7 @@ class MainTask(Task):
                         if key in task['exec'] and task['exec'][key]:
                             extras[key]=task['exec'][key]
                     
-                    Exec(uri, command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)                # this blocks untill the command is complete.
+                    Exec(uri, command=task['exec']['command'], remote_info=task['remoteinfourl'],stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)                # this blocks untill the command is complete.
                     self.log("Execution finished")
                 except GETFailure, error:
                     # error executing

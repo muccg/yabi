@@ -14,8 +14,12 @@ DEBUG = False
 
 from twisted.web2 import http, responsecode, http_headers, stream
 
-from utils.stacklesstools import sleep
+from utils.stacklesstools import sleep, POST
 from utils.sgetools import qsub, qstat
+
+import json
+
+from TaskManager.TaskTools import RemoteInfo
 
 # for Job status updates, poll this often
 def JobPollGeneratorDefault():
@@ -33,7 +37,7 @@ class SGEConnector(ExecConnector):
         print "SGEConnector::__init__() debug setting is",DEBUG
         ExecConnector.__init__(self)
     
-    def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
+    def run(self, yabiusername, command, working, scheme, username, host, remote_url, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
         try:
             if DEBUG:
                 print "QSUB",command,"WORKING:",working
@@ -50,7 +54,7 @@ class SGEConnector(ExecConnector):
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
         
         # now the job is submitted, lets remember it
-        self.add_running(jobid, (username,))
+        self.add_running(jobid, {'username':username})
         
         # lets report our id to the caller
         client_stream.write("id=%s\n"%jobid)
@@ -62,6 +66,7 @@ class SGEConnector(ExecConnector):
             sleep(delay.next())
             
             jobsummary = qstat(user=username)
+            self.update_running(jobid,jobsummary)
             print "JOBSUMMARY:", jobsummary
             
             if jobid in jobsummary:
@@ -80,6 +85,10 @@ class SGEConnector(ExecConnector):
                 state=newstate
                 client_stream.write("%s\n"%state)
                 
+                # report the full status to the remote_url
+                if remote_url and jobid in jobsummary:
+                    RemoteInfo(remote_url,json.dumps(jobsummary[jobid]))
+                
             if state=="Error":
                 client_stream.finish()
                 return
@@ -97,7 +106,7 @@ class SGEConnector(ExecConnector):
 
         print "running=",self.get_all_running()
         print "jobid=",jobid
-        (username,) = self.get_running(jobid)
+        username = self.get_running(jobid)['username']
 
         state = None
         delay = JobPollGeneratorDefault()
@@ -106,6 +115,7 @@ class SGEConnector(ExecConnector):
             sleep(delay.next())
             
             jobsummary = qstat(user=username)
+            self.update_running(jobid,jobsummary)
             
             if jobid in jobsummary:
                 # job has not finished
@@ -131,3 +141,8 @@ class SGEConnector(ExecConnector):
         self.del_running(jobid)
             
         client_stream.finish()
+        
+    def info(self, jobid, username):
+        jobsummary = qstat(user=username)
+        print jobsummary
+        

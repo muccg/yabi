@@ -141,13 +141,18 @@ class CertificateProxy(object):
             # we are already decrypting the proxy cert elsewhere. Lets just wait until that job is done and then return it.
             while not pp.isDone():
                 stackless.schedule()
-                
+
+            if pp.exitcode:
+                # cert generation errored out
+                raise ProxyInitError("Creation of proxy failed: %s"%pp.err)
+
             # the other task is complete now. let the other tasklet delete stale files.
             # decode the expiry time and return it as timestamp
             res = pp.out.split("\n")
             
             # get first line
-            res = [X.split(':',1)[1] for X in res if X.startswith('Your proxy is valid until:')][0]
+            if 'Your proxy is valid until:' in res:
+                res = [X.split(':',1)[1] for X in res if X.startswith('Your proxy is valid until:')][0]
             
             return _decode_time(res.strip())
             

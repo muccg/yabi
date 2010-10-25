@@ -16,12 +16,16 @@ import stackless
 import tempfile
 import os
 
-from utils.stacklesstools import sleep
+from utils.stacklesstools import sleep, POST
+
+import json
 
 from twisted.web2 import stream, http, responsecode, http_headers
 
 # import conf so we can get the location our tempfiles should be stored in
 from conf import config
+
+from TaskManager.TaskTools import RemoteInfo
 
 # for Job status updates, poll this often
 def JobPollGeneratorDefault():
@@ -35,12 +39,14 @@ def JobPollGeneratorDefault():
         yield 10.0
 
 class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
+    task_info = {}                                                  # here is where we store information about the executing task for inquiries from yabiengine. Keys are taskids
+    
     def __init__(self):
         ExecConnector.__init__(self)
         globus.Auth.GlobusAuth.__init__(self)
         self.CreateAuthProxy()
 
-    def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, max_memory=1024, cpus=1, queue="testing", job_type="single", module=None, **creds):
+    def run(self, yabiusername, command, working, scheme, username, host, remote_url, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, max_memory=1024, cpus=1, queue="testing", job_type="single", module=None, **creds):
         # use shlex to parse the command into executable and arguments
         lexer = shlex.shlex(command, posix=True)
         lexer.wordchars += r"-.:;/="
@@ -98,7 +104,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         epr = processprotocol.epr
         
         # now the job is submitted, lets remember it
-        self.add_running(job_id, (host,username,epr))
+        self.add_running(job_id, {'host':host,'username':username,'epr':epr})
         
         # lets report our id to the caller
         client_stream.write("id=%s\n"%job_id)
@@ -138,6 +144,9 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
             if state!=newstate:
                 state=newstate
                 client_stream.write("%s\n"%state)
+                
+                if remote_url and job_id in jobsummary:
+                    RemoteInfo(remote_url,json.dumps(self.get_running(job_id)))
             
         client_stream.finish()
         
@@ -166,7 +175,8 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
 
         # TODO: cleanup so unused variables aren't passed in
-        (host,username,epr) = self.get_running(job_id)
+        info = self.get_running(job_id)
+        (host,username,epr) = [info[X] for X in ('host','username','epr')]
 
         # save the epr to a tempfile so we can use it again and again
         temp = tempfile.NamedTemporaryFile(suffix=".epr",dir=config.config['backend']['temp'],delete=False)
@@ -209,5 +219,3 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         # job is finished, lets forget about it
         self.del_running(job_id)
         os.unlink(eprfile)
-        
-       

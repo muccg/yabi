@@ -39,6 +39,10 @@ class ExecRunResource(resource.PostableResource):
         
         if "uri" not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided\n")
+            
+        # an optional remote info url can be submitted. If it is submitted with a job, then everytime the status of this job changes,
+        # this sends a POST to the url with a json key/value set with info on the backend task
+        remote_info_url = args['remote_info'][0] if 'remote_info' in args else None
 
         if DEBUG:
             print "RUN:",command
@@ -81,7 +85,7 @@ class ExecRunResource(resource.PostableResource):
         client_deferred = defer.Deferred()
         
         task = stackless.tasklet(bend.run)
-        task.setup(yabiusername, command, basepath, scheme, username, hostname, client_deferred, **kwargs)
+        task.setup(yabiusername, command, basepath, scheme, username, hostname, remote_info_url, client_deferred, **kwargs)
         task.run()
         
         return client_deferred

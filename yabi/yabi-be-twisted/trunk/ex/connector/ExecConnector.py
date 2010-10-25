@@ -20,10 +20,13 @@ class ExecConnector(object):
         self._running = {}
         
     def add_running(self, rid, details):
-        self._running[rid]=details[:]
+        self._running[rid]=details.copy()
 
     def get_running(self, rid):
         return self._running[rid]
+        
+    def update_running(self, rid, updatehash):
+        self._running[rid].update(updatehash)
         
     def del_running(self, rid):
         del self._running[rid]
