@@ -160,7 +160,12 @@ class Task(models.Model, Editable, Status):
     exec_backend = models.CharField(max_length=256, blank=True)
     fs_backend = models.CharField(max_length=256, blank=True)
     error_msg = models.CharField(max_length=1000, null=True, blank=True)
+
     status = models.CharField(max_length=64, blank=True)
+    percent_complete = models.FloatField(blank=True, null=True)                     # This is between 0.0 and 1.0. if we are null, then the task has not begun at all
+    remote_id = models.CharField(max_length=256, blank=True, null=True)             # when the backend actually starts the task, this will be set to the task id
+    remote_info = models.CharField(max_length=2048, blank=True, null=True)          # this will contain json describing the remote task information
+
     working_dir = models.CharField(max_length=256, null=True, blank=True)
     name = models.CharField(max_length=256, null=True, blank=True)                  # if we are null, we behave the old way and use our task.id
     expected_ip = models.CharField(max_length=256, null=True, blank=True)           # if we are null, we behave the old way and use our task.id
@@ -171,10 +176,14 @@ class Task(models.Model, Editable, Status):
         if 'YABIADMIN' in os.environ:                                                   # if we are forced to talk to a particular admin
             statusurl = "http://%sengine/status/task/%d"%(os.environ['YABIADMIN'],self.id)
             errorurl = "http://%sengine/error/task/%d"%(os.environ['YABIADMIN'],self.id)
+            remoteidurl = "http://%sengine/remote_id/%d"%(os.environ['YABIADMIN'],self.id)
+            remoteinfourl = "http://%sengine/remote_info/%d"%(os.environ['YABIADMIN'],self.id)
         else:
             # use the yabiadmin embedded in this server
             statusurl = webhelpers.url("/engine/status/task/%d" % self.id)
             errorurl = webhelpers.url("/engine/error/task/%d" % self.id)
+            remoteidurl = webhelpers.url("/engine/remote_id/%d" % self.id)
+            remoteinfourl = webhelpers.url("/engine/remote_info/%d" % self.id)
 
         fsscheme, fsbackend_parts = uriparse(self.job.fs_backend)
 
@@ -183,6 +192,8 @@ class Task(models.Model, Editable, Status):
             "taskid":self.id,
             "statusurl":statusurl,
             "errorurl":errorurl,
+            "remoteidurl":remoteidurl,
+            "remoteinfourl":remoteinfourl,
             "stagein":[],
             "exec":{
                 "command":self.command,

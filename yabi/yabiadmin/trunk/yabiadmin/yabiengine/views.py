@@ -70,7 +70,7 @@ def status(request, model, id):
 
         else:
             if "status" not in request.POST:
-                return HttpResponseServerError("POST request to error service should contain 'status' parameter\n")
+                return HttpResponseServerError("POST request to status service should contain 'status' parameter\n")
 
             model = str(model).lower()
             id = int(id)
@@ -84,6 +84,8 @@ def status(request, model, id):
             m = models[model]
             obj = m.objects.get(id=id)
             obj.status=status
+            if status != STATUS_BLOCKED:
+                obj.percent_complete = STATUS_PROGRESS_MAP[status]
             obj.save()
 
             # update the job status when the task status changes
@@ -105,6 +107,59 @@ def status(request, model, id):
         logger.critical("Caught Exception: %s" % e)
         return HttpResponseServerError(e)
 
+def remote_id(request,id):
+    logger.debug('remote_task_id> %s'%id)
+    try:
+        if "remote_id" not in request.POST:
+            return HttpResponseServerError("POST request to remote_id service should contain 'remote_id' parameter\n")
+
+        id = int(id)
+        remote_id = str(request.POST["remote_id"])
+
+        logger.debug("remote_id="+request.POST['remote_id'])
+
+        # truncate status to 256 chars to avoid any sql field length errors
+        remote_id = remote_id[:256]
+
+        obj = EngineTask.objects.get(id=id)
+        obj.remote_id = remote_id
+        obj.save()
+
+        return HttpResponse("")
+    except (ObjectDoesNotExist,ValueError):
+        return HttpResponseNotFound("Object not found")
+    except Exception, e:
+        import traceback
+        logger.critical(traceback.format_exc())
+        logger.critical("Caught Exception: %s" % e)
+        return HttpResponseServerError(e)
+
+def remote_info(request,id):
+    logger.debug('remote_task_info> %s'%id)
+    try:
+        if "remote_info" not in request.POST:
+            return HttpResponseServerError("POST request to remote_info service should contain 'remote_info' parameter\n")
+
+        id = int(id)
+        remote_info = str(request.POST["remote_info"])
+
+        logger.debug("remote_info="+request.POST['remote_info'])
+
+        # truncate status to 2048 chars to avoid any sql field length errors
+        remote_info = remote_info[:2048]
+
+        obj = EngineTask.objects.get(id=id)
+        obj.remote_info = remote_info
+        obj.save()
+
+        return HttpResponse("")
+    except (ObjectDoesNotExist,ValueError):
+        return HttpResponseNotFound("Object not found")
+    except Exception, e:
+        import traceback
+        logger.critical(traceback.format_exc())
+        logger.critical("Caught Exception: %s" % e)
+        return HttpResponseServerError(e)
 
 def error(request, table, id):
     logger.debug('table: %s id: %s' % (table, id))

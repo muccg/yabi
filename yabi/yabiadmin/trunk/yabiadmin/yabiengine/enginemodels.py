@@ -395,29 +395,8 @@ class EngineJob(Job):
         tasks = Task.objects.filter(job=self)
         score=0.0
         for task in tasks:
-            status = task.status
-            score += { 
-                'pending':0.0,
-                'ready':0.0,
-                'requested':0.01,
-                'stagein':0.05,
-                'mkdir':0.1,
-                'exec':0.11,
-                'exec:unsubmitted':0.12,
-                'exec:pending':0.13,
-                'exec:active':0.2,
-                'exec:running':0.2,
-                'exec:cleanup':0.7,
-                'exec:done':0.75,
-                'exec:error':0.0,
-                'stageout':0.8,
-                'cleaning':0.9,
-                'complete':1.0,
-                'error':0.0,
-               
-                # Added to allow tasks to be created without a status
-                '':0.0
-                }[status]
+            score += task.percent_complete if task.percent_complete is not None else 0.0
+
         return score
 
 

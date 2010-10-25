@@ -66,8 +66,10 @@ class JobAdmin(admin.ModelAdmin):
     ordering = ['order']
 
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ['job', 'status', 'start_time', 'end_time', 'job_identifier', 'command', 'error_msg', link_to_stageins, link_to_syslog_from_task]
+    list_display = ['job', 'status', 'remote_id', 'remote_info', 'start_time', 'end_time', 'job_identifier', 'command', 'error_msg', link_to_stageins, link_to_syslog_from_task]
     list_filter = ['status', 'job__workflow__user']
+    #readonly_fields = ['remote_id']
+
     
 class StageInAdmin(admin.ModelAdmin):
     list_display = ['src', 'dst', 'order']
