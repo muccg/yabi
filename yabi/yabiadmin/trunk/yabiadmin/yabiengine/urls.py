@@ -7,5 +7,6 @@ urlpatterns = patterns('yabiadmin.yabiengine.views',
     (r'^remote_id/(?P<id>\d+)[/]*$', 'remote_id'),
     (r'^remote_info/(?P<id>\d+)[/]*$', 'remote_info'),
     (r'^error/(?P<table>\w+)/(?P<id>\d+)[/]*$', 'error'),
+    (r'^job/(?P<workflow>\d+)/(?P<order>\d+)[/]*$', 'job'),
     url(r'^workflow_summary/(?P<workflow_id>\d+)/$', 'workflow_summary', name='workflow_summary'),
 )

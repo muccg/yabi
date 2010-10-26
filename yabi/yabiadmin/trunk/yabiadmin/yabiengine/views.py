@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseServerError
 from django.shortcuts import render_to_response, get_object_or_404
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.core import urlresolvers
 from django.utils import webhelpers
 from django.db import transaction 
@@ -191,6 +191,40 @@ def error(request, table, id):
             return HttpResponse("Thanks!")
 
     except (ObjectDoesNotExist,ValueError):
+        return HttpResponseNotFound("Object not found")
+    except Exception, e:
+        logger.critical("Caught Exception: %s" % e.message)
+        return HttpResponseNotFound("Object not found")
+
+
+def job(request, workflow, order):
+    try:
+        workflow = EngineWorkflow.objects.get(id=int(workflow))
+        job = EngineJob.objects.get(workflow=workflow, order=int(order))
+
+        # Put some fields of general interest in.
+        output = {
+            "id": job.id,
+            "status": job.status,
+            "tasks": [],
+        }
+
+        for task in job.task_set.all():
+            try:
+                remote_info = json.loads(task.remote_info)
+            except (TypeError, ValueError):
+                # JSON failed to decode or was null.
+                remote_info = None
+
+            output["tasks"].append({
+                "id": task.id,
+                "percent_complete": task.percent_complete,
+                "remote_id": task.remote_id,
+                "remote_info": remote_info,
+            })
+
+        return HttpResponse(json.dumps(output), mimetype="application/json")
+    except (MultipleObjectsReturned, ObjectDoesNotExist, ValueError):
         return HttpResponseNotFound("Object not found")
     except Exception, e:
         logger.critical("Caught Exception: %s" % e.message)
