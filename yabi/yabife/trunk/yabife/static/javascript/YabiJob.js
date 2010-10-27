@@ -430,9 +430,7 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
     }
 
     if (!this.showingProgress) {
-        this.statusEl = document.createElement("div");
-        this.statusEl.className = "badge"+status;
-        this.jobEl.appendChild(this.statusEl);
+        this.renderStatus(status);
 
         this.progressContainerEl = document.createElement("div");
         this.progressContainerEl.className = "progressBarContainer";
@@ -448,9 +446,7 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
     
     //update status badge
     if (this.jobEl.removeChild(this.statusEl)) {
-        this.statusEl = document.createElement("div");
-        this.statusEl.className = "badge"+status;
-        this.jobEl.appendChild(this.statusEl);
+        this.renderStatus(status);
     }
     
     
@@ -495,6 +491,36 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
         this.progressContainerEl.style.display = "none";
     }
 
+};
+
+/**
+ * renderStatus
+ *
+ * Render the current status as a badge.
+ */
+YabiJob.prototype.renderStatus = function(status) {
+    this.statusEl = document.createElement("div");
+    this.statusEl.className = "badge" + status;
+    this.jobEl.appendChild(this.statusEl);
+
+    this.statusTooltip = new YAHOO.widget.Tooltip("status-" + this.workflow.workflowId + "-" + this.jobId, {
+        context: this.statusEl,
+        text: "job status (click for more information)"
+    });
+
+    YAHOO.util.Event.addListener(this.statusEl, "click", this.showStatusCallback, this);
+};
+
+/**
+ * showStatus
+ *
+ * Shows the current job status in a popover element.
+ */
+YabiJob.prototype.showStatus = function() {
+    var jobStatus = new YabiJobStatus(this);
+    jobStatus.show();
+
+    return false;
 };
 
 /**
@@ -704,4 +730,13 @@ YabiJob.prototype.hydrateResponse = function(o) {
  */
 YabiJob.prototype.toggleOptionsCallback = function(e, job) {
     job.toggleOptions();
+};
+
+/**
+ * showStatusCallback
+ *
+ * Pop up a panel showing the current remote status of the selected job.
+ */
+YabiJob.prototype.showStatusCallback = function(e, job) {
+    job.showStatus();
 };

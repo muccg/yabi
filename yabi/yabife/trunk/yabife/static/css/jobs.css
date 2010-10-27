@@ -1,0 +1,30 @@
+.status-overlay {
+}
+
+.status-overlay .bd {
+    overflow: auto;
+}
+
+.status-overlay dl, .status-overlay dt, .status-overlay dd {
+    list-style: none;
+    text-align: left;
+}
+
+.status-overlay dt {
+    clear: left;
+    float: left;
+    display: block;
+    width: 15em;
+    font-weight: bold;
+}
+
+.status-overlay dd {
+    display: block;
+    margin: 0.1em 0 0.1em 15em;
+    border-top: solid 1px #f7f7f7;
+    min-height: 1.2em;
+}
+
+.status-overlay dd:first-child {
+    border-top: none;
+}
