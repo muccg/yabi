@@ -503,12 +503,14 @@ YabiJob.prototype.renderStatus = function(status) {
     this.statusEl.className = "badge" + status;
     this.jobEl.appendChild(this.statusEl);
 
-    this.statusTooltip = new YAHOO.widget.Tooltip("status-" + this.workflow.workflowId + "-" + this.jobId, {
-        context: this.statusEl,
-        text: "job status (click for more information)"
-    });
+    if (status != "pending") {
+        this.statusTooltip = new YAHOO.widget.Tooltip("status-" + this.workflow.workflowId + "-" + this.jobId, {
+            context: this.statusEl,
+            text: "job status (click for more information)"
+        });
 
-    YAHOO.util.Event.addListener(this.statusEl, "click", this.showStatusCallback, this);
+        YAHOO.util.Event.addListener(this.statusEl, "click", this.showStatusCallback, this);
+    }
 };
 
 /**
@@ -519,8 +521,6 @@ YabiJob.prototype.renderStatus = function(status) {
 YabiJob.prototype.showStatus = function() {
     var jobStatus = new YabiJobStatus(this);
     jobStatus.show();
-
-    return false;
 };
 
 /**
@@ -739,4 +739,5 @@ YabiJob.prototype.toggleOptionsCallback = function(e, job) {
  */
 YabiJob.prototype.showStatusCallback = function(e, job) {
     job.showStatus();
+    e.stopEvent();
 };
