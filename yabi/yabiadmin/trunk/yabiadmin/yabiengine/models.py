@@ -47,7 +47,6 @@ class Workflow(models.Model, Editable, Status):
     user = models.ForeignKey(User)
     start_time = models.DateTimeField(null=True)
     end_time = models.DateTimeField(null=True)
-    json = models.TextField(blank=True)
     log_file_path = models.CharField(max_length=1000,null=True)
     last_modified_on = models.DateTimeField(null=True, auto_now=True, editable=False)
     created_on = models.DateTimeField(auto_now_add=True, editable=False)

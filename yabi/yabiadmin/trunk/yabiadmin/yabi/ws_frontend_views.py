@@ -261,7 +261,7 @@ def submitworkflow(request):
     workflow_dict = json.loads(workflow_json)
     user = User.objects.get(name=yabiusername)
     
-    workflow = EngineWorkflow(name=workflow_dict["name"], json=workflow_json, user=user)
+    workflow = EngineWorkflow(name=workflow_dict["name"], user=user)
     workflow.save()
 
     # put the workflow in the store

@@ -31,7 +31,7 @@ import logging
 logger = logging.getLogger('yabiengine')
 
 from constants import *
-
+from yabistoreapp import db
 
 class EngineWorkflow(Workflow):
     job_cache = {}
@@ -48,8 +48,8 @@ class EngineWorkflow(Workflow):
         logger.debug('----- Building workflow id %d -----' % self.id)
 
         try:
-            workflow_dict = json.loads(self.json)
-
+            workflow_dict = db.get_workflow(self.user.name,self.id)['json']
+            
             # sort out the stageout directory
             if 'default_stageout' in workflow_dict and workflow_dict['default_stageout']:
                 default_stageout = workflow_dict['default_stageout']
