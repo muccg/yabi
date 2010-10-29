@@ -32,6 +32,11 @@ class WorkflowAdmin(admin.ModelAdmin):
     list_filter = ['status', 'user']
     search_fields = ['name']
     actions = ['purge_workflow']
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'user', 'start_time', 'end_time', 'log_file_path','status','stageout')
+        }),
+    )
 
     def purge_workflow(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)

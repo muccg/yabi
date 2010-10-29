@@ -236,7 +236,7 @@ def workflow_summary(request, workflow_id):
     logger.debug('')
 
     workflow = get_object_or_404(Workflow, pk=workflow_id)
-        
+   
     return render_to_response('yabiengine/workflow_summary.html', {
         'w': workflow,
         'user':request.user,

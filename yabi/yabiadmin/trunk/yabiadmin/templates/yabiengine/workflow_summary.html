@@ -91,7 +91,13 @@ ${self.block_content()}<%def name="block_content()">
 %endfor
 </table>
 
-
+<h3>Workflow Json</h3>
+<%
+    import json
+%>
+<pre>
+${json.dumps(w.json, indent=2)}
+</pre>
 
 </div>
 </%def>

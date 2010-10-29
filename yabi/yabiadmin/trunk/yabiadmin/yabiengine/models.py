@@ -59,12 +59,12 @@ class Workflow(models.Model, Editable, Status):
     def get_json(self):
         # get from yabistore db
         from yabiadmin.yabistoreapp import db
-        return db.get_workflow(self.user.name, self.workflow_id)
+        return db.get_workflow(self.user.name, self.id)
     
     def set_json(self,json):
         # put the workflow json in the store
         from yabiadmin.yabistoreapp import db
-        db.save_workflow(self.user.name, self.workflow_id, json, self.status, self.name)
+        db.save_workflow(self.user.name, self.id, json, self.status, self.name)
         
     json = property(get_json,set_json)
         
