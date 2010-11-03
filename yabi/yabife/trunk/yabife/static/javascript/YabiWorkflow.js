@@ -556,7 +556,7 @@ YabiWorkflow.prototype.isValid = function() {
         return false;
     }
     
-    if (this.getName() === "") {
+    if (this.getName() === "" || this.getName().indexOf("?") != -1) {
         this.nameEl.className = "invalidWorkflowName";
         return false;
     } else {

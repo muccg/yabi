@@ -53,7 +53,7 @@ function submitCallback(e, wf) {
     YAHOO.util.Event.stopEvent(e);
     
     if (!wf.isValid()) {
-        YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Workflow is missing required inputs. Please correct before submitting.");
+        YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Workflow is missing required inputs or has an invalid name. Please correct before submitting.");
     } else {
 
         var baseURL = appURL + "ws/submitworkflow/";
