@@ -739,5 +739,5 @@ YabiJob.prototype.toggleOptionsCallback = function(e, job) {
  */
 YabiJob.prototype.showStatusCallback = function(e, job) {
     job.showStatus();
-    e.stopEvent();
+    YAHOO.util.Event.stopEvent(e);
 };
