@@ -26,47 +26,7 @@ ${form.as_p()}
     <span class="error">${error}</span><br/>
 %endif
 <br/>
-<!--
-  <form method="post" action="/openid/">
-    <div class="loginForm">
-      <label>OpenID provider</label>
-      <select id="provider_select" onchange="javascript:document.getElementById('openid_identifier').value = document.getElementById('provider_select').value;">
-          <option value=""></option>
-          <option value="yahoo.com">Yahoo!</option>
-          <option value="https://www.google.com/accounts/o8/id">Google</option>
-          <option value="http://username.wordpress.com">Wordpress</option>
-          <option value="http://www.flickr.com/username">flickr</option>
-          <option value="http://username.livejournal.com">livejournal</option>
-          <option value="http://openid.aol.com/screenname">AOL</option>
-          <option value="http://blogname.blogspot.com">blogger</option>
-          <option value="http://username.myopenid.com">myOpenID</option> 
-      </select>
-      <p>
-      <label>OpenID Identifier</label>
-      <input id="openid_identifier" name="openid_identifier" class="openid_field">
-    <br/><br/>
-    </div>  
-    <input type="submit" value="OpenID Log In" class="loginFormButton"/>
-  </form>
 
-<br/><br/>
-  % if error:
-    <div class="error">${ error|escape }</div>
-  % endif
-</div>
-
-<br/>
-<center>
-<table width="600px" style="background-color:#eee;padding:10px;-moz-border-radius:4px;-webkit-border-radius:4px;">
-
-<tr>
-    <td width="80px">&nbsp;</td>
-    <td valign="top" style="font-weight:bold;padding:10px;">Register for an account</td>
-    <td valign="top" style="padding:10px;"><ul><li>You can register for an account either by entering your OpenID details above, or by <a href="${h.url('/openid/register')}">clicking here</a><li></ul></td>
-</tr>
-</table>
-</center>
--->
 
 <p>
 
@@ -76,23 +36,29 @@ ${form.as_p()}
 
 <tr>
     <td width="80px">&nbsp;</td>
-    <td valign="top" style="font-weight:bold;padding:10px;">Work In Progress</td>
-    <td valign="top" style="padding:10px;"><ul><li>Yabi is currently under construction. Please watch your HEAD.<li></ul></td>
+    <td valign="top" style="font-weight:bold;padding:10px;">Help/Support</td>
+    <td valign="top" style="padding:10px;"><ul><li>Please direct all enquiries to <a href="mailto:yabi@ccg.murdoch.edu.au">yabi@ccg.murdoch.edu.au</a><li></ul></td>
+</tr>
+
+<tr>
+    <td width="80px">&nbsp;</td>
+    <td valign="top" style="font-weight:bold;padding:10px;">Demonstration Account</td>
+    <td valign="top" style="padding:10px;"><ul><li>A minimal demo account may be accessed with username "yabidemo" and password "yabidemo". All files and workflows will be periodically removed from the demo account.<li></ul></td>
 </tr>
 
 <tr>
     <td></td>
     <td valign="top" style="font-weight:bold;padding:10px;">Screencasts<br></td>
     <td valign="top" style="padding:10px;">
-    click a link below to watch the screencast. Quicktime is required.
+    Click a link below to watch the screencast via YouTube.
     <p><br>
     <ul>
-        <li>* <a href="http://ccg.murdoch.edu.au/private/yabi_movies/yabi.mov" title="">Marine Science workflow</a></li>
-        <li>* <a href="http://ccg.murdoch.edu.au/private/yabi_movies/blastandclustalw.mov" title="">Blast and ClustalW</a></li>
-        <li>* <a href="http://ccg.murdoch.edu.au/private/yabi_movies/getorfandgpcrhmm.mov" title="">GetORF and gpchrmm</a></li>
-        <li>* <a href="http://ccg.murdoch.edu.au/private/yabi_movies/yabi_chipseq.mov" title="">Chipseq</a></li>
-        <li>* <a href="http://ccg.murdoch.edu.au/private/yabi_movies/yabi_chipseq2.mov" title="">Chipseq 2</a></li>
-	<li>* <a href="http://ccg.murdoch.edu.au/private/yabi_movies/peptideprophet.mov" title="">Trans Proteomic Pipeline (Peptide Prophet)</a></li>
+        <li>* <a href="http://www.youtube.com/watch?v=y3Ar7okGuzU" title="">Marine Science workflow</a></li>
+        <li>* <a href="http://www.youtube.com/watch?v=7AEJ6eocy7Y" title="">Blast and ClustalW</a></li>
+        <li>* <a href="http://www.youtube.com/watch?v=XCIRFDZ9bJQ" title="">GetORF and gpchrmm</a></li>
+        <li>* <a href="http://www.youtube.com/watch?v=yqdFieaVUuY" title="">Chipseq</a></li>
+        <li>* <a href="http://www.youtube.com/watch?v=pesZlq6IeHc" title="">Chipseq 2</a></li>
+	<li>* <a href="http://www.youtube.com/watch?v=8_gD7rwBsJM" title="">Trans Proteomic Pipeline (Peptide Prophet)</a></li>
     </ul>
  </td>
 </tr>
@@ -105,11 +71,11 @@ ${form.as_p()}
 <p>
 <br/>
 <center>
-<table width="400px" style="margin-top:20px">
+<table width="600px" style="margin-top:20px">
 
 <tr>
     <td valign="middle" style="padding-bottom:4px;padding-right:10px;">YABI is best viewed in standards compliant browsers: </td>
-    <td valign="top" ><a href="http://apple.com/safari/"><img src="${h.url('/static/images/safari.png')}" alt="Safari"></a> <a href="http://getfirefox.com/"><img src="${h.url('/static/images/firefox.png')}" alt="Firefox"></a></td>
+    <td valign="top" ><a href="http://apple.com/safari/"><img src="${h.url('/static/images/safari.png')}" alt="Safari"></a> <a href="http://getfirefox.com/"><img src="${h.url('/static/images/firefox.png')}" alt="Firefox"></a> <a href="http://www.google.com/chrome"><img src="${h.url('/static/images/chrome.png')}" alt="Chrome"></a></td>
 </tr>
 
 </table>
