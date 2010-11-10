@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from twisted.web2 import resource, http_headers, responsecode, http, server
 from twisted.internet import defer, reactor
 import weakref
@@ -5,7 +6,7 @@ import sys, os, json
 
 import stackless
 from Exceptions import PermissionDenied, InvalidPath
-from globus.Auth import NoCredentials
+from globus.Auth import NoCredentials, AuthException
 from globus.CertificateProxy import ProxyInitError
 
 from utils.parsers import parse_url
@@ -63,8 +64,10 @@ class FileMkdirResource(resource.PostableResource):
             try:
                 mkdirer=bend.mkdir(hostname,path=path, username=username, yabiusername=yabiusername, creds=creds)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
-            except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
+            except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError,AuthException), exception:
                 client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
+            except Exception, e:
+                client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
             
         tasklet = stackless.tasklet(do_mkdir)
         tasklet.setup()

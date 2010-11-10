@@ -130,7 +130,7 @@ class NullBackendTask(Task):
         try:
             Mkdir(stageout, yabiusername=self.yabiusername)
         except GETFailure, error:
-            pass
+            raise BlockingException("Make directory failed: %s"%error.message[2])
         
     def stage_in_files(self):
         dst = self.json['stageout']

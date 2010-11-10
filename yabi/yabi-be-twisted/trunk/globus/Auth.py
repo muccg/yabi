@@ -53,7 +53,7 @@ class GlobusAuth(object):
                 # connection problems
                 raise NoCredentials( "User: %s does not have credentials for this user: %s backend: %s on host: %s\n"%(yabiusername,username,scheme,hostname) )
             
-            raise AuthException( "Tried to get credentials from %s:%d and failed: %s"%(config.yabiadminserver,config.yabiadminport,gf_message[1]) )
+            raise AuthException( "Tried to get credentials from %s:%d and failed: %s %s"%(config.yabiadminserver,config.yabiadminport,gf_message[1],gf_message[2]) )
             
         
     
