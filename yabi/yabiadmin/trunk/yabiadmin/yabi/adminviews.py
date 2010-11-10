@@ -303,6 +303,15 @@ def create_tool(request, tool_dict):
                                       switch=parameter["switch"]
                                       )
 
+
+        if parameter["switch_use__display_text"] and parameter["switch_use__formatstring"] and parameter["switch_use__description"]:
+            switch_use, created = ParameterSwitchUse.objects.get_or_create(display_text=parameter["switch_use__display_text"],
+                                                                           formatstring=parameter["switch_use__formatstring"],
+                                                                           description=parameter["switch_use__description"])
+
+            toolparameter.switch_use=switch_use
+
+
         toolparameter.save() # so we can add many-to-many on accepted_filetypes
 
         # for each of the accepted filetype extensions get all associated filetypes and add them to tool parameter
@@ -320,12 +329,6 @@ def create_tool(request, tool_dict):
             toolparameter.possible_values=json.dumps(parameter["possible_values"])
 
 
-        if parameter["switch_use__display_text"] and parameter["switch_use__formatstring"] and parameter["switch_use__description"]:
-            switch_use, created = ParameterSwitchUse.objects.get_or_create(display_text=parameter["switch_use__display_text"],
-                                                                           formatstring=parameter["switch_use__formatstring"],
-                                                                           description=parameter["switch_use__description"])
-
-            toolparameter.switch_use=switch_use
 
         toolparameter.save()
 
