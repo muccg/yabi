@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from yabiadmin.yabi.models import *
 from yabiadmin.yabi.forms import *
 from django.contrib import admin
@@ -5,6 +6,8 @@ from django.contrib.webservices.ext import ExtJsonInterface
 from django.forms.models import BaseInlineFormSet
 from django.forms import ModelForm
 from django import forms
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError 
+from django.utils import webhelpers 
 
 class AdminBase(ExtJsonInterface, admin.ModelAdmin):
     def save_model(self, request, obj, form, change):
@@ -85,9 +88,44 @@ class QueueAdmin(admin.ModelAdmin):
     list_display = ['name', 'user_name', 'created_on']
 
 class CredentialAdmin(AdminBase):
-    list_display = ['description', 'user', 'username']
+    list_display = ['description', 'user', 'username', 'encrypted', 'is_cached']
     list_filter = ['user']
+    actions = ['encrypt_credential','decrypt_credential','cache_credential','decache_credential']
 
+    def encrypt_credential(self, request, queryset):
+        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+        return HttpResponseRedirect(webhelpers.url("/ws/password_collection/?ids=%s&action=encrypt" % (",".join(selected)))) 
+        
+    encrypt_credential.short_description = "Encrypt selected credentials."
+
+    def decrypt_credential(self, request, queryset):
+        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)        
+        return HttpResponseRedirect(webhelpers.url("/ws/password_collection/?ids=%s&action=decrypt" % (",".join(selected)))) 
+        
+    decrypt_credential.short_description = "Decrypt selected credentials."
+    
+    def cache_credential(self, request, queryset):
+        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)        
+        return HttpResponseRedirect(webhelpers.url("/ws/password_collection/?ids=%s&action=cache" % (",".join(selected)))) 
+    
+    cache_credential.short_description = "Cache selected credentials in decrypted form."
+    
+    def decache_credential(self, request, queryset):
+        success,fail = 0,0
+        for credential in queryset:
+            if credential.is_memcached():
+                credential.clear_memcache()
+                success += 1
+            else:
+                fail += 1
+                
+        self.message_user(request, "%d credential%s successfully purged from cache." % (success,"s" if success!=1 else "") )
+        if fail:
+            self.message_user(request, "%d credential%s failed purge." % (fail,"s" if fail!=1 else "") )
+        
+    
+    decache_credential.short_description = "Purge selected credentials from cache."
+    
     
 class BackendAdmin(AdminBase):
     form = BackendForm

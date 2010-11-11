@@ -207,3 +207,7 @@ try:
 
 except (ImportError, AssertionError), e:
     pass
+
+
+# How long to cache decypted credentials for
+DEFAULT_CRED_CACHE_TIME = 60*60*24                   # 1 day default

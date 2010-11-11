@@ -16,6 +16,11 @@ urlpatterns = patterns('yabiadmin.yabi.ws_frontend_views',
     url(r'^fs/getuploadurl/*$', 'getuploadurl', name='getuploadurl'),
 )
 
+# admin support pages
+urlpatterns += patterns('yabiadmin.yabi.adminviews',
+    url(r'^password_collection[/]*$', 'password_collection')
+)
+
 # backend webservices
 # TODO this is the only backend webservice and now needs to be non-SSL where
 # all the frontend ws urls are SSL. We should move this.

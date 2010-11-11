@@ -73,8 +73,11 @@ def get_backendcredential_for_uri(yabiusername, uri):
     if not cred:
         raise ObjectDoesNotExist("Could not find backendcredential")
     
-    logger.debug("using credential: %s" % cred)
+    logger.debug("using backendcredential: %s" % cred)
     return cred
+    
+def get_credential_for_uri(yabiusername, uri):
+    return get_backendcredential_for_uri(yabiusername,uri).credential
 
 def POST(resource, datadict, extraheaders={}, server=None):
     """Do a x-www-form-urlencoded style POST. That is NOT a file upload style"""
@@ -100,10 +103,7 @@ def get_file_list(yabiusername, uri, recurse=True):
         logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
 
         bc = get_backendcredential_for_uri(yabiusername, uri)
-        data = dict([('username', bc.credential.username),
-                    ('password', bc.credential.password),
-                    ('cert', bc.credential.cert),
-                    ('key', bc.credential.key)])
+        data = bc.credential.get()
         
         r = POST(resource,data)
        
@@ -160,12 +160,10 @@ def get_listing(yabiusername, uri):
     try:
         resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, quote(uri))
         logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-
+        
         bc = get_backendcredential_for_uri(yabiusername, uri)
-        data = dict([('username', bc.credential.username),
-                    ('password', bc.credential.password),
-                    ('cert', bc.credential.cert),
-                    ('key', bc.credential.key)])
+        data = bc.credential.get()
+        
         r = POST(resource,data)
 
     except socket.error, e:
@@ -174,9 +172,12 @@ def get_listing(yabiusername, uri):
     except httplib.CannotSendRequest, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
         raise
-
+    print "CRED",data
+    print "STATUS",r.status
+    read = r.read()
+    print "READ",read
     assert(r.status == 200)
-    return r.read()
+    return read
 
 
 def mkdir(yabiusername, uri):
@@ -188,14 +189,7 @@ def mkdir(yabiusername, uri):
     try:
         resource = "%s?uri=%s" % (settings.YABIBACKEND_MKDIR, quote(uri))
         logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-
-        bc = get_backendcredential_for_uri(yabiusername, uri)
-        data = dict([('username', bc.credential.username),
-                    ('password', bc.credential.password),
-                    ('cert', bc.credential.cert),
-                    ('key', bc.credential.key)])
-        r = POST(resource,data)
-
+        r = POST(resource, get_credential_for_uri(yabiusername, uri).get())
     except socket.error, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
         raise
@@ -237,13 +231,7 @@ def get_file(yabiusername, uri):
     try:
         resource = "%s?uri=%s" % (settings.YABIBACKEND_GET, quote(uri))
         logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-
-        bc = get_backendcredential_for_uri(yabiusername, uri)
-        data = dict([('username', bc.credential.username),
-                    ('password', bc.credential.password),
-                    ('cert', bc.credential.cert),
-                    ('key', bc.credential.key)])
-        r = POST(resource,data)
+        r = POST(resource,get_credential_for_uri(yabiusername, uri).get())
         
         assert(r.status == 200)
         return FileWrapper(r, blksize=1024**2)
@@ -266,13 +254,7 @@ def rm_file(yabiusername, uri):
     try:
         resource = "%s?uri=%s%s" % (settings.YABIBACKEND_RM, quote(uri),recurse)
         logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-
-        bc = get_backendcredential_for_uri(yabiusername, uri)
-        data = dict([('username', bc.credential.username),
-                    ('password', bc.credential.password),
-                    ('cert', bc.credential.cert),
-                    ('key', bc.credential.key)])
-        r = POST(resource,data)
+        r = POST(resource,get_credential_for_uri(yabiusername, uri).get())
         data=r.read()
 
         assert(r.status == 200)
@@ -297,17 +279,11 @@ def copy_file(yabiusername, src, dst):
         logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
 
         # get credentials for src and destination backend
-        src_bc = get_backendcredential_for_uri(yabiusername, src)
-        dst_bc = get_backendcredential_for_uri(yabiusername, dst)
-        data = dict([('src_username', src_bc.credential.username),
-                    ('src_password', src_bc.credential.password),
-                    ('src_cert', src_bc.credential.cert),
-                    ('src_key', src_bc.credential.key),
-                    ('dst_username', dst_bc.credential.username),
-                    ('dst_password', dst_bc.credential.password),
-                    ('dst_cert', dst_bc.credential.cert),
-                    ('dst_key', dst_bc.credential.key),
-                    ('yabiusername', yabiusername)])
+        src = get_credential_for_uri(yabiusername, src).get()
+        dst = get_credential_for_uri(yabiusername, dst).get()
+        data = {'yabiusername':yabiusername}
+        data.update( dict( [("src_"+K,V) for K,V in src.iteritems()] ))
+        data.update( dict( [("dst_"+K,V) for K,V in dst.iteritems()] ))
         r = POST(resource,data)
         data=r.read()
         assert(r.status == 200)
@@ -328,17 +304,10 @@ def send_upload_hash(yabiusername,uri,uuid):
         resource = "%s?uri=%s&uuid=%s&yabiusername=%s"%(settings.YABIBACKEND_UPLOAD,quote(uri),quote(uuid),quote(yabiusername))
         
         # get credentials for uri destination backend
-        bc = get_backendcredential_for_uri(yabiusername, uri)
+        data = get_credential_for_uri(yabiusername, uri).get()
                 
-        resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(bc.credential.username),quote(bc.credential.password),quote(bc.credential.cert),quote(bc.credential.key))
+        resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(cred['username']),quote(cred['password']),quote(cred['cert']),quote(cred['key']))
         logger.debug('server: %s resource: %s'%(settings.YABIBACKEND_SERVER, resource))
-                
-        # construct information to post to backend
-        data = {    'username'  : bc.credential.username,
-                    'password'  : bc.credential.password,
-                    'cert'      : bc.credential.cert,
-                    'key'       : bc.credential.key
-               }
                     
         logger.debug( "POST"+resource )
         logger.debug( "DATA"+str(data) )

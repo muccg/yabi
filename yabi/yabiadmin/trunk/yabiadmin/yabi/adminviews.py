@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import sys
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
@@ -367,6 +368,92 @@ def create_tool(request, tool_dict):
 
     tool.save()
     return tool
+
+from crypto import DecryptException
+
+@login_required
+def password_collection(request):
+
+    if request.method == 'POST':
+        # bail early if canceled
+        if 'button' in request.POST and request.POST['button'] == "Cancel":
+            message = "No changes made."
+            request.user.message_set.create(message=message)
+            return HttpResponseRedirect(webhelpers.url("/admin/yabi/credential/?ids=%s" % (request.POST['ids'])))
+        else:
+            ids = [int(X) for X in request.POST.get('ids', '').split(',')]     
+            action = request.POST.get('action',None)
+            assert action=="encrypt" or action=="decrypt" or action=="cache", "action should be encrypt, decrypt or cache. Instead it is '%s'"%action
+            
+            # just check we have the correct verify if its there
+            if action=="encrypt":
+                if request.POST["password"] != request.POST["checkpassword"]:
+                    request.user.message_set.create(message="Passwords entered did not match!")
+                    return HttpResponseRedirect(webhelpers.url("/admin/yabi/credential/?ids=%s" % (request.POST['ids'])))
+                        
+            success, fail = 0,0
+            for id in ids:
+                cred = Credential.objects.get(id=id)
+                if action=='decrypt' or action=='cache':
+                    if not cred.encrypted:
+                        fail += 1
+                    else:
+                        try:
+                            if action=="decrypt":
+                                cred.decrypt(key=request.POST["password"])
+                                cred.save()
+                                success += 1
+                            else:                   # action == "cache"
+                                cred.send_to_memcache(key=request.POST["password"])
+                                success += 1
+                                
+                        except DecryptException, de:
+                            # failed decrypt. not saved.
+                            fail += 1
+                else:
+                    cred.encrypt(key=request.POST["password"])
+                    cred.save()
+
+            if success:
+                if success == 1:
+                    message_bit = "1 credential %sed. " % action
+                else:
+                    message_bit = "%d credentials %sed. " % (success, action)
+            else:
+                message_bit = ""
+                
+            if fail:
+                if fail == 1:
+                    message_bit += "1 credential <b>failed</b> %sion." % action
+                else:
+                    message_bit += "%d credentials <b>failed</b> %sion." % (fail, action)
+            
+            if success or fail:
+                request.user.message_set.create(message=message_bit)
+            
+            return HttpResponseRedirect(webhelpers.url("/admin/yabi/credential/?ids=%s" % (request.POST['ids'])))
+
+    else:
+        action = request.GET.get('action',None)
+        assert action=="encrypt" or action=="decrypt" or action=="cache"
+        ids = request.GET.get('ids', [])
+
+        render_data = {'h':webhelpers,
+                       #'ct': request.GET['ct'],
+                       'return_url': '/varietydetail/',
+                       'ids':ids,
+                       'request':request,
+                       'LANGUAGE_CODE':"en",
+                       'title': "%s Credential"%(action.capitalize()),
+                       'user':request.user,
+                       'root_path':webhelpers.url("/"),
+                       'action':action,
+                       'plural':'s',
+                       'checkpassword': action=="encrypt"
+                       }
+
+        return render_to_response('yabi/crypt_password.html', render_data)
+    
 
 
 

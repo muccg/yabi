@@ -8,6 +8,7 @@ from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidde
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from yabiadmin.yabi.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential
+from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from django.utils import webhelpers
 from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
@@ -131,8 +132,6 @@ def menu(request):
     except ObjectDoesNotExist:
         return HttpResponseNotFound(json_error("Object not found"))
 
-    
-    
 @authentication_required
 def ls(request):
     """
@@ -149,6 +148,8 @@ def ls(request):
             filelisting = get_backend_list(yabiusername)
 
         return HttpResponse(filelisting)
+    except DecryptedCredentialNotAvailable, dcna:
+        return HttpResponse(json_error(dcna),status=500)
     except Exception, e:
         return HttpResponseNotFound(json_error(e))
 

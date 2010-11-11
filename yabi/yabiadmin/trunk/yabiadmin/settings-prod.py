@@ -123,5 +123,10 @@ LOGGING_LEVEL = logging.WARNING
 LOGGING_FORMATTER = logging.Formatter('[%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
 LOGS = ['yabiengine','yabiadmin']
 
+
+# How long to cache decypted credentials for
+DEFAULT_CRED_CACHE_TIME = 60*60*24                   # 1 day default
+
 # kick off mango initialisation of logging
 from django.contrib import logging as mangologging
+

@@ -6,9 +6,13 @@ from django.utils import simplejson as json
 from django.core import urlresolvers
 from django.conf import settings
 from urlparse import urlparse, urlunparse
+from crypto import aes_enc_hex, aes_dec_hex
 
+from django.contrib.memcache import KeyspacedMemcacheClient
 
 DEBUG = False
+
+class DecryptedCredentialNotAvailable(Exception): pass
 
 import logging
 logger = logging.getLogger('yabiadmin')
@@ -325,6 +329,9 @@ class Credential(Base):
     user = models.ForeignKey(User)
     backends = models.ManyToManyField('Backend', through='BackendCredential', null=True, blank=True)
 
+    expires_on = models.DateTimeField( null=True )                      # null mean never expire this
+    encrypted = models.BooleanField( null=False )
+    
     username.help_text="The username on the backend this credential is for."
     user.help_text="Yabi username."
 
@@ -332,7 +339,99 @@ class Credential(Base):
         if DEBUG:
             return "Credential <id=%s description=%s username=%s user=%s backends=%s>" % (self.id, self.description if len(self.description)<20 else self.description[:20], self.username, self.user.name, self.backends.all())
         return "Credential %s username:%s for yabiuser:%s"%(self.description,self.username,self.user.name)
-
+    
+    def encrypt(self, key):
+        """Turn this unencrypted cred into an encrypted one using the supplied password"""
+        assert self.encrypted == False
+        
+        self.password = aes_enc_hex(self.password,key)
+        self.cert = aes_enc_hex(self.cert,key,linelength=80)
+        self.key = aes_enc_hex(self.key,key,linelength=80)
+        
+        self.encrypted = True
+        
+    def decrypt(self, key):
+        assert self.encrypted == True
+        
+        self.password = aes_dec_hex(self.password,key)
+        self.cert = aes_dec_hex(self.cert,key)
+        self.key = aes_dec_hex(self.key,key)
+        
+        self.encrypted = False
+        
+    def memcache_keyname(self):
+        """return the memcache key for this credential"""
+        return "-cred-%s-%d"%(self.user.name.encode("utf-8"),self.id)              # TODO: memcache keys dont support unicode. user.name may contain unicode
+        
+    def send_to_memcache(self, key="encryption key", memcache=None, time_to_cache=None ):
+        """This method temporarily decypts the key and stores the decrypted key in memcache"""
+        # set up defaults if they aren't set
+        memcache = memcache or "localhost.localdomain"
+        time_to_cache = time_to_cache or settings.DEFAULT_CRED_CACHE_TIME
+        
+        # make sure this is an encrypted cred, otherwise theres no point
+        assert self.encrypted == True
+        
+        # decrypt the credential using the passed in password
+        credential = {
+            'password': aes_dec_hex(self.password,key),
+            'cert': aes_dec_hex(self.cert,key),
+            'key': aes_dec_hex(self.key,key)
+        }
+        
+        mckey = self.memcache_keyname()
+        mcval = json.dumps(credential)
+        
+        # push the credential to memcache server
+        ksc = KeyspacedMemcacheClient()
+        ksc.add(key=mckey, val=mcval, time=time_to_cache)
+        
+    def get(self):
+        """return the decrypted cert if available. Otherwise raise exception"""
+        if not self.encrypted:
+            return dict([('username', self.username),
+                    ('password', self.password),
+                    ('cert', self.cert),
+                    ('key', self.key)])
+        
+        if self.is_memcached():
+            result = self.get_memcache()
+            result['username']=self.username
+            return result
+            
+        # encrypted but not cached. ERROR!
+        raise DecryptedCredentialNotAvailable("Credential for yabiuser: %s id: %d is not available in a decrypted form"%(self.user.name, self.id))
+        
+    def is_memcached(self):
+        """return true if there is a decypted cert in memcache"""
+        return bool(KeyspacedMemcacheClient().get(self.memcache_keyname()))
+        
+    def get_memcache_json(self):
+        """return the memcached credential"""
+        return KeyspacedMemcacheClient().get(self.memcache_keyname())
+        
+    def get_memcache(self):
+        """return the decoded memcached credentials"""
+        return json.loads(self.get_memcache_json())
+        
+    def refresh_memcache(self, time_to_cache=None):
+        """refresh the memcache version with a new timeout"""
+        time_to_cache = time_to_cache or settings.DEFAULT_CRED_CACHE_TIME
+        mc = KeyspacedMemcacheClient()
+        name = self.memcache_keyname()
+        cred = mc.get( name )
+        assert cred, "tried to refresh a non-cached credential"
+        mc.set(name, cred, time=time_to_cache)
+        
+    def clear_memcache(self):
+        mc = KeyspacedMemcacheClient()
+        name = self.memcache_keyname()
+        mc.delete( name )
+        
+    @property
+    def is_cached(self):
+        return self.is_memcached()
+        
 class Backend(Base):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=512, blank=True)
@@ -369,8 +468,6 @@ class Backend(Base):
     backend_summary_link.short_description = 'Summary'
     backend_summary_link.allow_tags = True
 
-
-
 class BackendCredential(Base):
     class Meta:
         verbose_name_plural = "Backend Credentials"
@@ -394,14 +491,38 @@ class BackendCredential(Base):
             'name':self.backend.name,
             'scheme':self.backend.scheme,
             'homedir':self.homedir_uri,
-            'credential':self.credential.description,
-            'username':self.credential.username,
-            'password':self.credential.password,
-            'cert':self.credential.cert,
-            'key':self.credential.key
             }
+        
+        cred = self.credential                                  # TODO: check for expiry or non existence
+        output.update( {
+            'credential':cred.description,
+            'username':cred.username,
+        })
+        if cred.encrypted:
+            # encrypted credential. Lets try and get the cached decrypted version
+            
+            if cred.is_memcached():
+                # there is a plain credential available
+                parts = cred.get_memcache()
+                
+                # refresh its time stamp
+                cred.refresh_memcache()
+                
+                # add in the decrypted cred parts
+                output.update(parts)
+                
+            else:
+                # there is no plain credential available!
+                raise DecryptedCredentialNotAvailable("Credential for yabiuser: %s id: %d is not available in a decrypted form"%(cred.user.name, cred.id))
+        else:
+            # credential is decrypted already. we can just return it
+            output.update( {
+                'password':self.credential.password,
+                'cert':self.credential.cert,
+                'key':self.credential.key
+            } )
+            
         return json.dumps(output)
-
 
     @property
     def homedir_uri(self):

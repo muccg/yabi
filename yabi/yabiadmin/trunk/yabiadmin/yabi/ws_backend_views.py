@@ -10,6 +10,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 
 from yabiadmin.yabi.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential
+from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from yabiadmin.yabiengine import backendhelper
 from yabiadmin.yabiengine.urihelper import uriparse
 
@@ -33,3 +34,5 @@ def credential_uri(request, yabiusername):
         return HttpResponse(bc.json())
     except ObjectDoesNotExist, odne:
         return HttpResponseNotFound("Object not found")
+    except DecryptedCredentialNotAvailable, dcna:
+        return HttpResponse("Decrypted Credential Not Available: %s"%dcna, status=500)
