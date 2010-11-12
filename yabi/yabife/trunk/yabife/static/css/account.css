@@ -149,3 +149,15 @@
 .yabiRightColumn form .placeholder {
     color: silver;
 }
+
+.badgelocked {
+	width:16px;
+	height:16px;
+	padding:0px;
+	margin:0px;
+	border:0px;
+	background:url(../images/lock.png) no-repeat;
+	position:absolute;
+    right: 9px;
+    top: 4px;
+}

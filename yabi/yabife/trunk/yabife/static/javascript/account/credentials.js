@@ -183,6 +183,13 @@ YabiCredential.prototype.createLabel = function () {
 
     label.appendChild(div);
 
+    if (this.credential.encrypted) {
+        var div = document.createElement("div");
+        div.className = "badgelocked";
+        div.title = "encrypted credential";
+        label.appendChild(div);
+    }
+
     return label;
 };
 
