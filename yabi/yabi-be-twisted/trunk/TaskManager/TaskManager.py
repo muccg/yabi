@@ -57,6 +57,7 @@ class TaskManager(object):
     TASK_HOST = "localhost"
     TASK_PORT = int(os.environ['PORT']) if 'PORT' in os.environ else 8000
     TASK_URL = "engine/task/"
+    BLOCKED_URL = "engine/blockedtask/"
     
     JOBLESS_PAUSE = 5.0                 # wait this long when theres no more jobs, to try to get another job
     JOB_PAUSE = 0.0                     # wait this long when you successfully got a job, to get the next job
@@ -113,7 +114,16 @@ class TaskManager(object):
             # log any exception
             traceback.print_exc()
             raise e
-         
+
+    def start_unblock(self, data):
+        try:
+            print "unblocking task:",data
+            
+        except Exception, e:
+            # log any exception
+            traceback.print_exc()
+            raise e
+                  
     def get_next_task(self):
          
         useragent = "YabiExec/0.1"
@@ -139,5 +149,31 @@ class TaskManager(object):
             self.pausechannel.send(self.JOBLESS_PAUSE)
             
         d = factory.deferred.addCallback(self.start_task).addErrback(_doFailure)
+        return d
+        
+    def get_next_blocked(self):
+        useragent = "YabiExec/0.1"
+        task_server = "%s://%s:%s" % (config.yabiadminscheme, config.yabiadminserver, config.yabiadminport)
+        task_path = os.path.join(config.yabiadminpath, self.BLOCKED_URL)
+        task_origin = "?origin=%s:%s" % tuple(config.config['backend']['port'])
+        task_url = task_server + task_path + task_origin
+
+        factory = client.HTTPClientFactory(
+            url = task_url,
+            agent = useragent
+            )
+        factory.noisy = False
+        if VERBOSE:
+            print "reactor.connectTCP(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.TASK_URL),")"
+        port = config.yabiadminport
+        reactor.connectTCP(config.yabiadminserver, port, factory)
+
+        # now if the page fails for some reason. deal with it
+        def _doFailure(data):
+            print "No more jobs. Sleeping for",self.JOBLESS_PAUSE
+            # no more tasks. we should wait for the next task.
+            self.pausechannel.send(self.JOBLESS_PAUSE)
+            
+        d = factory.deferred.addCallback(self.start_unblock).addErrback(_doFailure)
         return d
         
