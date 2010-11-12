@@ -184,7 +184,11 @@ YabiCredential.prototype.createLabel = function () {
 };
 
 YabiCredential.prototype.getExpiry = function() {
-    if (this.credential.expires_in) {
+    if (this.credential.expires_in !== null) {
+        if (this.credential.expires_in < 0) {
+            return "expired";
+        }
+
         try {
             return "expires " + YAHOO.ccgyabi.widget.EnglishTime(this.credential.expires_in);
         }
