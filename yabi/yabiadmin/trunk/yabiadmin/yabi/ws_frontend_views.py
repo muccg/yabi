@@ -2,9 +2,10 @@
 import mimetypes
 import uuid
 
+from datetime import datetime, timedelta
 from urllib import quote
 
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotAllowed
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from yabiadmin.yabi.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential
@@ -13,6 +14,7 @@ from django.utils import webhelpers
 from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.ldap_helper import LDAPSearchResult, LDAPHandler
 from django.conf import settings
 
 from yabiadmin.yabiengine import storehelper as StoreHelper
@@ -297,4 +299,112 @@ def getuploadurl(request):
     return HttpResponse(
         json.dumps(upload_url)
     )
+
+
+@authentication_required
+def credential(request):
+    if request.method != "GET":
+        return HttpResponseNotAllowed(["GET"])
+
+    yabiuser = User.objects.get(name=request.user.username)
+    creds = Credential.objects.filter(user=yabiuser)
+
+    exists = lambda value: value is not None and len(value) > 0
+
+    def expires_in(expires_on):
+        if expires_on is not None:
+            # Unfortunately, Python's timedelta class doesn't provide a simple way
+            # to get the number of seconds total out of it.
+            delta = expires_on - datetime.now()
+            return (delta.days * 86400) + delta.seconds
+        
+        return None
+
+    return HttpResponse(json.dumps([{
+        "id": c.id,
+        "description": c.description,
+        "password": exists(c.password),
+        "certificate": exists(c.cert),
+        "key": exists(c.key),
+        "backends": [b.uri for b in c.backends.all()],
+        "expires_in": expires_in(c.expires_on),
+        "encrypted": c.encrypted,
+    } for c in creds]), content_type="application/json; charset=UTF-8")
+
+
+@authentication_required
+def password(request):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    required = ("currentPassword", "newPassword", "confirmPassword")
+    for key in required:
+        if key not in request.POST:
+            return HttpResponseBadRequest(json_error("Expected key '%s' not found in request" % key))
+
+    # Check the current password.
+    if not auth.authenticate(username=request.user.username, password=request.POST["currentPassword"]):
+        return HttpResponseForbidden(json_error("Current password is incorrect"))
+
+    # The new passwords should at least match and meet whatever rules we decide
+    # to impose (currently a minimum six character length).
+    if request.POST["newPassword"] != request.POST["confirmPassword"]:
+        return HttpResponseBadRequest(json_error("The new passwords must match"))
+
+    if len(request.POST["newPassword"]) < 6:
+        return HttpResponseBadRequest(json_error("The new password must be at least 6 characters in length"))
+
+    # OK, let's actually try to change the password.
+    request.user.set_password(request.POST["newPassword"])
     
+    # And, more importantly, in LDAP if we can.
+    try:
+        adminld = LDAPHandler(userdn=settings.LDAPADMINUSERNAME, password=settings.LDAPADMINPASSWORD)
+        adminld.ldap_update_user(request.user.username, None, request.POST["newPassword"], {}, "md5")
+    except AttributeError:
+        return HttpResponseServerError(json_error("Unable to connect to LDAP server"))
+
+    request.user.save()
+
+    return HttpResponse(json.dumps("Password changed successfully"))
+
+
+@authentication_required
+def save_credential(request, id):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    try:
+        credential = Credential.objects.get(id=id)
+        yabiuser = User.objects.get(name=request.user.username)
+    except Credential.DoesNotExist:
+        return HttpResponseNotFound(json_error("Credential ID not found"))
+    except User.DoesNotExist:
+        return HttpResponseNotFound(json_error("User not found"))
+
+    if credential.user != yabiuser:
+        return HttpResponseForbidden(json_error("User does not have access to the given credential"))
+
+    # Special case: if we're only updating the expiry, we should do that first,
+    # since we can do that without unencrypting encrypted credentials.
+    if "expiry" in request.POST:
+        if request.POST["expiry"] == "never":
+            credential.expires_on = None
+        else:
+            try:
+                credential.expires_on = datetime.now() + timedelta(seconds=int(request.POST["expiry"]))
+            except TypeError:
+                return HttpResponseBadRequest(json_error("Invalid expiry"))
+
+    # OK, let's see if we have any of password, key or certificate. If so, we
+    # replace all of the fields and clear the encrypted flag, since this
+    # service can only create unencrypted credentials at present.
+    if "password" in request.POST or "key" in request.POST or "certificate" in request.POST:
+        credential.encrypted = False
+        credential.password = request.POST.get("password", "")
+        credential.key = request.POST.get("key", None)
+        credential.cert = request.POST.get("certificate", None)
+
+    credential.save()
+
+    return HttpResponse(json.dumps("Credential updated successfully"))

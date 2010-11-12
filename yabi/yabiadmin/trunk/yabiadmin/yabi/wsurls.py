@@ -14,6 +14,9 @@ urlpatterns = patterns('yabiadmin.yabi.ws_frontend_views',
     url(r'^fs/rm[/]*$', 'rm', name='rm'),
     url(r'^submitworkflow[/]*$', 'submitworkflow', name='submitworkflow'),
     url(r'^fs/getuploadurl/*$', 'getuploadurl', name='getuploadurl'),
+    url(r'^account/credential[/]*$', 'credential', name='credential'),
+    url(r'^account/credential/([0-9]+)[/]*$', 'save_credential', name='save_credential'),
+    url(r'^account/password[/]*$', 'password', name='password'),
 )
 
 # admin support pages
