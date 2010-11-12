@@ -98,20 +98,21 @@ YabiCredential.prototype.createForm = function () {
     this.container.id = null;
     this.form = this.container.querySelector("form");
 
-    var isOnRecord = function (value, container, placeholder) {
+    var isOnRecord = function (value, container, setPlaceholder, unsetPlaceholder) {
         var record = container.querySelector(".record");
         var input = container.querySelector("input, textarea");
         var recordDisplay = "none";
 
+        input.className = "placeholder";
+        input.value = value ? setPlaceholder : unsetPlaceholder;
+
+        YAHOO.util.Event.addListener(input, "focus", function (e) {
+            input.className = "";
+            input.value = "";
+        });
+
         if (value) {
             recordDisplay = "block";
-            input.className = "placeholder";
-            input.value = placeholder;
-
-            YAHOO.util.Event.addListener(input, "focus", function (e) {
-                input.className = "";
-                input.value = "";
-            });
         }
 
         if (record) {
@@ -128,13 +129,15 @@ YabiCredential.prototype.createForm = function () {
     isOnRecord(
         this.credential.certificate,
         this.form.querySelector(".certificate-container"),
-        "to replace the certificate, paste the new certificate here"
+        "to replace the certificate, paste the new certificate here",
+        ""
     );
 
     isOnRecord(
         this.credential.key,
         this.form.querySelector(".key-container"),
-        "to replace the key, paste the new key here"
+        "to replace the key, paste the new key here",
+        ""
     );
 
     var expiry = this.form.querySelector("select[name='expiry']")
