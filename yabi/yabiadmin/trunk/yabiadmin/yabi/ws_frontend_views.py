@@ -311,6 +311,18 @@ def credential(request):
 
     exists = lambda value: value is not None and len(value) > 0
 
+    def backends(credential):
+        backend_credentials = BackendCredential.objects.filter(credential=credential)
+        backends = []
+
+        for bc in backend_credentials:
+            if bc.homedir:
+                backends.append(bc.backend.uri + bc.homedir)
+            else:
+                backends.append(bc.backend.uri)
+
+        return backends
+
     def expires_in(expires_on):
         if expires_on is not None:
             # Unfortunately, Python's timedelta class doesn't provide a simple way
@@ -326,7 +338,7 @@ def credential(request):
         "password": exists(c.password),
         "certificate": exists(c.cert),
         "key": exists(c.key),
-        "backends": [b.uri for b in c.backends.all()],
+        "backends": backends(c),
         "expires_in": expires_in(c.expires_on),
         "encrypted": c.encrypted,
     } for c in creds]), content_type="application/json; charset=UTF-8")
