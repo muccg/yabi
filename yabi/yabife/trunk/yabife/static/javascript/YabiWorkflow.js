@@ -842,7 +842,7 @@ YabiWorkflow.prototype.hydrateCallback = function(o) {
         
         target.solidify(obj.json);
     } catch (e) {
-        YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Error loading workflow");
+        YAHOO.ccgyabi.widget.YabiMessage.fail("Error loading workflow");
     }
 };
 
@@ -986,7 +986,7 @@ YabiWorkflow.prototype.reuseCallback = function(e, obj) {
 
 YabiWorkflow.prototype.saveTagsResponseCallback = function(o) {
     //do stuff
-    YAHOO.ccgyabi.YabiMessage.yabiMessageSuccess("tags saved");
+    YAHOO.ccgyabi.widget.YabiMessage.success("tags saved");
     var obj;
     
     try {
@@ -1015,6 +1015,6 @@ YabiWorkflow.prototype.submitSuccessCallback = function(o, postRelocateCallback)
         }
         
     } catch (e) {
-        YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Error loading workflow");
+        YAHOO.ccgyabi.widget.YabiMessage.fail("Error loading workflow");
     }
 };

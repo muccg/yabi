@@ -20,7 +20,7 @@ function YabiToolCollection() {
     this.filterEl.appendChild(this.searchLabelEl);
     
     this.searchEl = document.createElement("input");
-    this.searchEl.type = "search";
+    this.searchEl.setAttribute("type", "search");
     this.searchEl.className = "toolSearchField";
     
     //attach key events for changes/keypresses
@@ -64,12 +64,8 @@ function YabiToolCollection() {
     this.listingEl = document.createElement("div");
     this.listingEl.className = "toolListing";
     
-    this.loadingEl = document.createElement("div");
-    this.loadingEl.className = "listingLoading";
-    var loadImg = new Image();
-    loadImg.src = appURL + "static/images/largeLoading.gif";
-    this.loadingEl.appendChild( loadImg );
-    this.listingEl.appendChild(this.loadingEl);
+    this.loading = new YAHOO.ccgyabi.widget.Loading(this.listingEl);
+    this.loading.show();
     
     this.containerEl.appendChild(this.listingEl);
 
@@ -85,7 +81,7 @@ YabiToolCollection.prototype.solidify = function(obj) {
     
     this.payload = obj;
     
-    this.loadingEl.style.display = "none";
+    this.loading.hide();
 
     for (var toolsetindex in obj.menu.toolsets) {
 
@@ -257,7 +253,7 @@ YabiToolCollection.prototype.hydrateResponse = function(o) {
         
         target.solidify(YAHOO.lang.JSON.parse(json));
     } catch (e) {
-        YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Error fetching tools listing");
+        YAHOO.ccgyabi.widget.YabiMessage.fail("Error fetching tools listing");
         target.solidify({'menu':{'toolsets':[]}});
     }
 };
@@ -275,7 +271,7 @@ YabiToolCollection.prototype.startDragToolCallback = function(x, y) {
     }
     
     if (YAHOO.lang.isUndefined(tool)) {
-        YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Failed to find tool");
+        YAHOO.ccgyabi.widget.YabiMessage.fail("Failed to find tool");
         return false;
     }
 

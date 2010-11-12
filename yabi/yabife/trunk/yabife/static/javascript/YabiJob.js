@@ -719,7 +719,7 @@ YabiJob.prototype.hydrateResponse = function(o) {
         target.updateTitle();
         target.renderLoadFailJob();
         
-        YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Error loading tool details");
+        YAHOO.ccgyabi.widget.YabiMessage.fail("Error loading tool details");
     }
 };
 

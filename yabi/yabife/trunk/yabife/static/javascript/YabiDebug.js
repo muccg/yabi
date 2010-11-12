@@ -1,0 +1,1 @@
+YAHOO.widget.Logger.enableBrowserConsole();

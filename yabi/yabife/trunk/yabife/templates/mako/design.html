@@ -1,135 +1,105 @@
 <%inherit file="base.html"/>
+
 <%def name="header()">
+    <script type="text/javascript">
+        YAHOO.util.Event.onDOMReady(initWorkflow);
 
-<script language="javascript">
-YAHOO.util.Event.onAvailable("container", initWorkflow);
+        var workflow;
+        var tools;
 
-var workflow;
-var tools;
-
-function initWorkflow() {
-    tools = new YabiToolCollection();
-    
-    document.getElementById("toolContainer").appendChild(tools.containerEl);
-    
-    workflow = new YabiWorkflow(true);
+        function initWorkflow() {
+            tools = new YabiToolCollection();
+            
+            document.getElementById("toolContainer").appendChild(tools.containerEl);
+            
+            workflow = new YabiWorkflow(true);
 % if reuseId:
-    workflow.hydrate(${reuseId});
-    workflow.workflowId = undefined;
+            workflow.hydrate(${reuseId});
+            workflow.workflowId = undefined;
 % endif
-    
-    var updateFilter = function(job) {
-        if (!tools.autofilter) {
-            return;
+            
+            var updateFilter = function(job) {
+                if (!tools.autofilter) {
+                    return;
+                }
+
+                if (job === null) {
+                    tools.searchEl.value = "";
+                } else {
+                    tools.searchEl.value = "in:" + job.emittedFileTypes();
+                }
+                tools.filter();
+            };
+
+            workflow.afterSelectJob = updateFilter;
+            workflow.afterPropagate = updateFilter;
+            
+            document.getElementById("container").appendChild(workflow.mainEl);
+            document.getElementById("optionsDiv").appendChild(workflow.optionsEl);
+            
+            YAHOO.util.Event.addListener("submitButton", "click", submitCallback, workflow);
         }
 
-        if (job === null) {
-            tools.searchEl.value = "";
-        } else {
-            tools.searchEl.value = "in:" + job.emittedFileTypes();
+        //this function is used after a workflow is submitted, 
+        //and after the tags have been saved, 
+        //to redirect the browser to view this particular workflow using a hashtag
+        var summonJobsView = function(workflowId) {
+            window.location = appURL + 'jobs#' + workflowId;
+        };
+
+        function submitCallback(e, wf) {
+            
+            // TODO add decent callbacks
+            YAHOO.util.Event.stopEvent(e);
+            
+            if (!wf.isValid()) {
+                YAHOO.ccgyabi.widget.YabiMessage.fail("Workflow is missing required inputs. Please correct before submitting.");
+            } else {
+
+                var baseURL = appURL + "ws/submitworkflow/";
+                
+                jsCallback = {
+                    success: function (obj) {
+                        YAHOO.ccgyabi.widget.YabiMessage.success("Success on submit!");
+                        workflow.submitSuccessCallback(obj, summonJobsView);
+                    },
+                    failure: function (obj) {
+                        YAHOO.ccgyabi.widget.YabiMessage.fail("Fail on submit!");
+                    },
+                    argument: [wf] };
+                var data = "username=${request.user.username}&workflowjson=" + encodeURIComponent(wf.toJSON());
+                jsTransaction = YAHOO.util.Connect.asyncRequest('POST', baseURL, jsCallback, data);
+                
+            }
         }
-        tools.filter();
-    };
 
-    workflow.afterSelectJob = updateFilter;
-    workflow.afterPropagate = updateFilter;
-    
-    document.getElementById("container").appendChild(workflow.mainEl);
-    document.getElementById("optionsDiv").appendChild(workflow.optionsEl);
-    
-    YAHOO.util.Event.addListener("submitButton", "click", submitCallback, workflow);
-}
+        function summonJob(toolName) {
+            workflow.addJob(toolName);
+        }
 
-//this function is used after a workflow is submitted, 
-//and after the tags have been saved, 
-//to redirect the browser to view this particular workflow using a hashtag
-var summonJobsView = function(workflowId) {
-    window.location = appURL + 'jobs#' + workflowId;
-};
-
-function submitCallback(e, wf) {
-    
-    // TODO add decent callbacks
-    YAHOO.util.Event.stopEvent(e);
-    
-    if (!wf.isValid()) {
-        YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Workflow is missing required inputs or has an invalid name. Please correct before submitting.");
-    } else {
-
-        var baseURL = appURL + "ws/submitworkflow/";
-        
-        jsCallback = {
-            success: function (obj) {YAHOO.ccgyabi.YabiMessage.yabiMessageSuccess("Success on submit!");workflow.submitSuccessCallback(obj, summonJobsView);},
-            failure: function (obj){YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Fail on submit!");},
-            argument: [wf] };
-        var data = "username=${request.user.username}&workflowjson=" + encodeURIComponent(wf.toJSON());
-        jsTransaction = YAHOO.util.Connect.asyncRequest('POST', baseURL, jsCallback, data);
-        
-    }
-}
-
-
-function summonJob(toolName) {
-    workflow.addJob(toolName);
-}
-
-function destroyWorkflow() {
-    workflow.destroy();
-    return false;
-}
-</script>
-
-
+        function destroyWorkflow() {
+            workflow.destroy();
+            return false;
+        }
+    </script>
 </%def>
 
 <%def name="body()">
+    <div id="doc3" class="yui-t1">
+        <div id="yabi-design-mode">
+            ${self.bodyhd()}
 
-  <div id="doc3" class="yui-t1">
-    <div id="yabi-design-mode">
-      <div id="hd">
-        <p><img src="${h.url('/static/images/yabi-logo.png')}" alt="Yabi-logo" height="60" width="198" />  
-
-            <div id="yabi-message-ajax">
+            <div class="yabiLeftColumn">
+                <div id="toolContainer"></div>
             </div>
-
-            <div id="yabi-tabs">
-
-              <a href="${h.url('/jobs')}" id="yabi-tabs-jobs">jobs</a>
-              <a href="${h.url('/design')}" id="yabi-tabs-design">design</a>
-              <a href="${h.url('/files')}" id="yabi-tabs-files">files</a>
+            <div class="yabiMiddleColumn">
+                <div id="container"></div>
             </div>
-
-            <div id="userinfo">
-              <a href="${h.url('/logout')}" class="fakeButton">log out ${request.user.username}</a>        
-            </div>
-
-      </div>
-
-      <script type="text/javascript">
-        //<![CDATA[
-
-        YAHOO.util.Event.onAvailable('yabi-message-success', YAHOO.ccgyabi.YabiMessage.fade, this);
-        YAHOO.util.Event.onAvailable('yabi-message-warn', YAHOO.ccgyabi.YabiMessage.fade, this);
-        YAHOO.util.Event.onAvailable('yabi-message-fail', YAHOO.ccgyabi.YabiMessage.fade, this);
-
-        //]]>
-      </script>
-
-      
-
-          <div style="position:absolute;left:0px;top:63px;width:260px;padding:5px;">
-                  <div id="toolContainer"></div>
-          </div>
-          <div class="yabiMiddleColumn">
-                  <div id="container"></div>
-          </div>
-          <div style="position:absolute;left:640px;top:63px;padding:5px;min-width:400px;">
+            <div class="yabiRightColumn">
                 <div id="optionsDiv"></div>
-          </div>
-      
-
+            </div>
+        </div>
     </div>
-  </div>
   
-  <div class="copyright">&copy; 2006, 2009 CCG, Murdoch University</div>
+    ${self.copyright()}
 </%def>

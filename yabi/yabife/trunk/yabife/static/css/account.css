@@ -1,0 +1,151 @@
+.yabiLeftColumn ul {
+    list-style: none;
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+
+.yabiLeftColumn li {
+	position: relative;
+    list-style: none;
+    display: block;
+    margin: 0;
+	border-bottom: 1px solid #ddd;
+	padding: 4px 10px 4px 12px;
+
+    background: #eee url(../images/job_bg.png);
+	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#f6f6f6));
+    background: -moz-linear-gradient(top, white, #f6f6f6);
+
+    font-size: 95%;
+    color: #666;
+    text-shadow: 0px 1px 1px #fff;
+    min-height: 26px;
+}
+
+.yabiLeftColumn li.selected {
+	border-bottom:1px solid #3879e6;
+	background: #ccf;
+
+    background:#3879e5 url(../images/selectedWFbg.png) repeat-x;
+	background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
+    background: -moz-linear-gradient(top, #5aa4fb, #3879e5);
+
+    color: #fff;
+    text-shadow: 0px -1px 1px #666;
+}
+
+
+.yabiMiddleColumn ul {
+    list-style: none;
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+
+.yabiMiddleColumn li {
+    position: relative;
+    list-style: none;
+    display: block;
+    margin: 0 0 6px 0;
+    padding: 4px 12px;
+    color: #666;
+    font-weight: bold;
+    text-shadow: 0px 1px 1px white;
+    min-height: 26px;
+	border:1px solid #ccc;
+
+    background: #eee url(../images/job_bg.png) repeat-x;
+	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#f6f6f6));
+    background: -moz-linear-gradient(top, white, #f6f6f6);
+
+    box-shadow: 0px 1px 2px #ccc;
+    -moz-box-shadow: 0px 1px 2px #ccc;
+    -webkit-box-shadow: 0px 1px 2px #ccc;
+
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+}
+
+.yabiMiddleColumn li.selected {
+    border: solid 1px #3879e6;
+
+    background: #3879e5 url(../images/selectedWFbg.png) repeat-x;
+	background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
+    background: -moz-linear-gradient(top, #5aa4fb, #3879e5);
+
+    box-shadow: 0px 1px 2px #3879e6;
+    -moz-box-shadow: 0px 1px 2px #3879e6;
+    -webkit-box-shadow: 0px 1px 2px #3879e6;
+
+    color: white;
+    text-shadow: 0px -1px 1px #666;
+}
+
+
+.credentials .expiry {
+    border-top: solid 1px #eee;
+    font-size: 80%;
+    font-weight: 500;
+    margin-top: 4px;
+    padding-top: 4px;
+}
+
+.credentials .selected .expiry {
+    border-top: solid 1px #5aa4fb;
+}
+
+
+
+.yabiRightColumn > div {
+    position: relative;
+    padding: 10px;
+}
+
+.yabiRightColumn > div.template {
+    display: none;
+}
+
+.yabiRightColumn > div > form > div {
+    margin-bottom: 0.7em;
+    display: block;
+    position: relative;
+    width: 200px;
+    padding: 0.2em 300px 0.2em 0;
+}
+
+.yabiRightColumn form input, .yabiRightColumn form select, .yabiRightColumn form textarea {
+    display: block;
+    position: absolute;
+    left: 210px;
+    top: 0;
+    max-width: 290px;
+}
+
+.yabiRightColumn textarea {
+    height: 5em;
+    width: 20em;
+    font-family: Monospace;
+}
+
+.textarea-container {
+    height: 6em;
+}
+
+.certificate-container > label > div, .key-container > label > div {
+    position: absolute;
+    left: 210px;
+    top: 0;
+    max-width: 290px;
+    height: 6em;
+}
+
+.certificate-container > label > div > textarea, .key-container > label > div > textarea {
+    position: static;
+    height: 4.5em;
+}
+
+.yabiRightColumn form .placeholder {
+    color: silver;
+}

@@ -19,6 +19,7 @@ from django.contrib.auth import login as django_login, logout as django_logout, 
 from django.contrib.auth.models import SiteProfileNotAvailable, User as DjangoUser
 from django import forms
 from django.core.servers.basehttp import FileWrapper
+from django.template.loader import get_template
 from django.utils import simplejson as json
 
 from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
@@ -52,18 +53,47 @@ class LoginForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput(render_value=False))
 
 # views
+def render_page(template, request, **kwargs):
+    response = HttpResponse()
+
+    # Check for the debug cookie or GET variable.
+    debug = False
+
+    if request.COOKIES.get("yabife-debug"):
+        debug = True
+    elif request.GET.get("yabife-debug"):
+        debug = True
+        response.set_cookie("yabife-debug", "1", path=webhelpers.url("/"))
+
+    # Actually render the template.
+    context = {
+        "h": webhelpers,
+        "request": request,
+        "debug": debug,
+    }
+    context.update(kwargs)
+
+    template = get_template(template)
+    response.write(template.render(**context))
+
+    return response
+
 @login_required
 def files(request):
-    return render_to_response('files.html', {'h':webhelpers, 'request':request})
+    return render_page("files.html", request)
 
 @login_required
 def design(request, id=None):
-    return render_to_response('design.html', {'h':webhelpers, 'request':request, 'reuseId':id})
+    return render_page("design.html", request, reuseId=id)
     
 @login_required
 def jobs(request):
-    return render_to_response('jobs.html', {'h':webhelpers, 'request':request})
+    return render_page("jobs.html", request)
 
+@login_required
+def account(request):
+    return render_page("account.html", request)
+    
 def login(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -182,17 +212,23 @@ def make_request_object(url, request):
         return PostRequest(url, params, files=files)
 
 def make_http_request(request, user, ajax_call):
-    with memcache_http(user) as http:
-        try:
-            resp, contents = http.make_request(request)
-            our_resp = HttpResponse(contents, status=int(resp.status))
-            copy_non_empty_headers(resp, our_resp, ('content-disposition', 'content-type'))
-            return our_resp
-        except UnauthorizedError:
-            if ajax_call:
-                return HttpResponseUnauthorized() 
-            else:
-                return redirect_to_login()
+    try:
+        with memcache_http(user) as http:
+            try:
+                resp, contents = http.make_request(request)
+                our_resp = HttpResponse(contents, status=int(resp.status))
+                copy_non_empty_headers(resp, our_resp, ('content-disposition', 'content-type'))
+                return our_resp
+            except UnauthorizedError:
+                if ajax_call:
+                    return HttpResponseUnauthorized() 
+                else:
+                    return redirect_to_login()
+    except ObjectDoesNotExist:
+        if ajax_call:
+            return HttpResponseUnauthorized() 
+        else:
+            return redirect_to_login()
 
 def copy_non_empty_headers(src, to, header_names):
     for header_name in header_names:
@@ -224,11 +260,14 @@ def yabiadmin_login(username, password):
 def yabiadmin_logout(username):
     # TODO get the url from somewhere
     logout_request = PostRequest('ws/logout')
-    with memcache_http(username) as http:
-        resp, contents = http.make_request(logout_request)
-        if resp.status != 200: 
-            return False
-        json_resp = json.loads(contents)
-    return json_resp.get('success', False)
+    try:
+        with memcache_http(username) as http:
+            resp, contents = http.make_request(logout_request)
+            if resp.status != 200: 
+                return False
+            json_resp = json.loads(contents)
+        return json_resp.get('success', False)
+    except ObjectDoesNotExist:
+        pass
 
 

@@ -1,112 +1,79 @@
 <%inherit file="base.html"/>
+
 <%def name="header()">
+    ${self.yui("container/container")}
 
-<script src="${h.url('/static/javascript/yui-2.4.1/container/container-min.js')}" language="JavaScript" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/javascript/yui-2.8.2r1/container/assets/container.css')}" />
+    <link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/jobs.css')}" />
 
-<link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/javascript/yui-2.4.1/container/assets/container.css')}" />
-<link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/jobs.css')}" />
+    <script type="text/javascript">
+        YAHOO.util.Event.onDOMReady(initWorkflowListing);
 
-<script language="javascript">
-YAHOO.util.Event.onAvailable("container", initWorkflowListing);
+        var workflowListing, refreshInterval, listingRefreshInterval;
 
-var workflowListing, refreshInterval, listingRefreshInterval;
+        var examineProgress = function(status) {
+            if (status == "completed") {
+                window.clearInterval(refreshInterval);
+            }
+        };
 
-var examineProgress = function(status) {
-    if (status == "completed") {
-        window.clearInterval(refreshInterval);
-    }
-};
+        var fetchProgress = function() {
+            workflowListing.loadedWorkflow.fetchProgress( examineProgress );
+        };
 
-var fetchProgress = function() {
-    workflowListing.loadedWorkflow.fetchProgress( examineProgress );
-};
+        var reloadListing = function() {
+            workflowListing.hydrate();
+        };
 
-var reloadListing = function() {
-    workflowListing.hydrate();
-};
-
-function initWorkflowListing() {
-    workflowListing = new YabiWorkflowCollection();
-    document.getElementById("workflowListingContainer").appendChild(workflowListing.containerEl);
-    
-    workflowListing.slider.subscribe("change", function() { workflowListing.changeDateRange(); });
-    
-    workflowListing.onSelectionCallback = function() {
-        if (refreshInterval !== null) {
-            window.clearInterval(refreshInterval);
+        function initWorkflowListing() {
+            workflowListing = new YabiWorkflowCollection();
+            document.getElementById("workflowListingContainer").appendChild(workflowListing.containerEl);
+            
+            workflowListing.slider.subscribe("change", function() { workflowListing.changeDateRange(); });
+            
+            workflowListing.onSelectionCallback = function() {
+                if (refreshInterval !== null) {
+                    window.clearInterval(refreshInterval);
+                }
+                
+                refreshInterval = window.setInterval( fetchProgress , 5000 );
+            }
+            
+            listingRefreshInterval = window.setInterval( reloadListing, 60000 );
+            
+            document.getElementById("container").appendChild(workflowListing.noSelectionDiv);
+            
+            document.getElementById("container").appendChild(workflowListing.loadedWorkflowEl);
+            
+            document.getElementById("optionsDiv").appendChild(workflowListing.loadedWorkflowFileOutputsEl);
+            
+            document.getElementById("optionsDiv").appendChild(workflowListing.loadedWorkflowOptionsEl);
+            
+            //test for anchor tag, if it exists, load that workflow
+            if (window.location.hash.length > 1) {
+                workflowListing.select(window.location.hash.substr(1));
+            }
         }
-        
-        refreshInterval = window.setInterval( fetchProgress , 5000 );
-    }
-    
-    listingRefreshInterval = window.setInterval( reloadListing, 60000 );
-    
-    document.getElementById("container").appendChild(workflowListing.noSelectionDiv);
-    
-    document.getElementById("container").appendChild(workflowListing.loadedWorkflowEl);
-    
-    document.getElementById("optionsDiv").appendChild(workflowListing.loadedWorkflowFileOutputsEl);
-    
-    document.getElementById("optionsDiv").appendChild(workflowListing.loadedWorkflowOptionsEl);
-    
-    //test for anchor tag, if it exists, load that workflow
-    if (window.location.hash.length > 1) {
-        workflowListing.select(window.location.hash.substr(1));
-    }
-}
-
-</script>
-
-
+    </script>
 </%def>
 
 <%def name="body()">
+    <div id="doc3" class="yui-t1">
+        <div id="yabi-jobs-mode">
+            ${self.bodyhd()}
 
-  <div id="doc3" class="yui-t1">
-    <div id="yabi-jobs-mode">
-      <div id="hd">
-        <p><img src="${h.url('/static/images/yabi-logo.png')}" alt="Yabi-logo" height="60" width="198" />  
-
-            <div id="yabi-message-ajax">
+            <div class="yabiLeftColumn">
+                <div id="workflowListingContainer"></div>
             </div>
-
-            <div id="yabi-tabs">
-
-              <a href="${h.url('/jobs')}" id="yabi-tabs-jobs">jobs</a>
-              <a href="${h.url('/design')}" id="yabi-tabs-design">design</a>
-              <a href="${h.url('/files')}" id="yabi-tabs-files">files</a>
+            <div class="yabiMiddleColumn">
+                <div id="container"></div>
             </div>
-
-            <div id="userinfo">
-              <a href="${h.url('/logout')}" class="fakeButton">log out ${request.user.username}</a>        
-            </div>
-
-      </div>
-
-      <script type="text/javascript">
-        //<![CDATA[
-
-        YAHOO.util.Event.onAvailable('yabi-message-success', YAHOO.ccgyabi.YabiMessage.fade, this);
-        YAHOO.util.Event.onAvailable('yabi-message-warn', YAHOO.ccgyabi.YabiMessage.fade, this);
-        YAHOO.util.Event.onAvailable('yabi-message-fail', YAHOO.ccgyabi.YabiMessage.fade, this);
-
-        //]]>
-      </script>
-      
-
-          <div style="position:absolute;left:0px;top:63px;width:260px;padding:5px;">
-                  <div id="workflowListingContainer"></div>
-          </div>
-          <div class="yabiMiddleColumn">
-                  <div id="container"></div>
-          </div>
-          <div style="position:absolute;left:640px;top:63px;padding:5px;min-width:400px;">
+            <div class="yabiRightColumn">
+            <div style="position:absolute;left:640px;top:63px;padding:5px;min-width:400px;">
                 <div id="optionsDiv"></div>
-          </div>
-
+            </div>
+        </div>
     </div>
-  </div>
   
-  <div class="copyright">&copy; 2006, 2009 CCG, Murdoch University</div>
-  
+    ${self.copyright()}
 </%def>

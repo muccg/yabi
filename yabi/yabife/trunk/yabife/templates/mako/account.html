@@ -1,0 +1,122 @@
+<%inherit file="base.html"/>
+<%! from json import dumps %>
+
+<%def name="header()">
+    <link rel="stylesheet" href="${h.url('/static/css/account.css')}" />
+
+    <script type="text/javascript" src="${h.url('/static/javascript/widget/radiolist.js')}"></script>
+    <script type="text/javascript" src="${h.url('/static/javascript/widget/time.js')}"></script>
+
+    <script type="text/javascript" src="${h.url('/static/javascript/account/account.js')}"></script>
+    <script type="text/javascript" src="${h.url('/static/javascript/account/credentials.js')}"></script>
+    <script type="text/javascript" src="${h.url('/static/javascript/account/options.js')}"></script>
+
+    <script type="text/javascript">
+        var account;
+
+        YAHOO.util.Event.onDOMReady(function() {
+            account = new YabiAccount(${dumps(request.user.username)});
+        });
+    </script>
+</%def>
+
+<%def name="body()">
+    <div id="doc3" class="yui-t1">
+        <div id="yabi-account-mode">
+            ${self.bodyhd()}
+
+            <div class="yabiLeftColumn"></div>
+
+            <div class="yabiMiddleColumn"></div>
+
+            <div class="yabiRightColumn">
+                <div class="template" id="optionsPassword">
+                    <h1>change password</h1>
+
+                    <form>
+                        <div>
+                            <label>
+                                current password:
+                                <input type="password" name="currentPassword" required="required" />
+                            </label>
+                        </div>
+
+                        <div>
+                            <label>
+                                new password:
+                                <input type="password" name="newPassword" required="required" />
+                            </label>
+                        </div>
+
+                        <div>
+                            <label>
+                                confirm new password:
+                                <input type="password" name="confirmPassword" required="required" />
+                            </label>
+                        </div>
+
+                        <div>
+                            <input type="submit" value="save" />
+                        </div>
+                    </form>
+                </div>
+
+                <div class="template" id="credential">
+                    <h1>edit credential</h1>
+
+                    <form>
+                        <input type="hidden" name="id" value="" />
+
+                        <div class="password-container">
+                            <label>
+                                password:
+                                <input type="password" name="password" autocomplete="off" />
+                            </label>
+                        </div>
+
+                        <div class="certificate-container textarea-container">
+                            <label>
+                                certificate:
+                                <div>
+                                    <div class="record">A certificate is on record.</div>
+                                    <textarea name="certificate"></textarea>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="key-container textarea-container">
+                            <label>
+                                key:
+                                <div>
+                                    <div class="record">A key is on record.</div>
+                                    <textarea name="key"></textarea>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="expiry-container">
+                            <label>
+                                expiry:
+                                <select name="expiry">
+                                    <option value="never" selected="selected">never</option>
+                                    <option value="3600">in 1 hour</option>
+                                    <option value="86400">in 1 day</option>
+                                    <option value="604800">in 1 week</option>
+                                    <option value="2592000">in 1 month</option>
+                                    <option value="31536000">in 1 year</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <div>
+                            <span></span>
+                            <input type="submit" value="save" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+  
+    ${self.copyright()}
+</%def>

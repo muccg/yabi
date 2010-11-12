@@ -59,7 +59,7 @@ YabiJobStatus.prototype.show = function() {
     var callbacks = {
         success: function(o) { self.showCallback(o); },
         failure: function() {
-            YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Error loading job status");
+            YAHOO.ccgyabi.widget.YabiMessage.fail("Error loading job status");
         }
     };
 
@@ -111,7 +111,7 @@ YabiJobStatus.prototype.showCallback = function(o) {
             }
         }
         else {
-            YAHOO.ccgyabi.YabiMessage.yabiMessageWarn("No status information is available for this job");
+            YAHOO.ccgyabi.widget.YabiMessage.warn("No status information is available for this job");
             return;
         }
 
@@ -119,6 +119,6 @@ YabiJobStatus.prototype.showCallback = function(o) {
         panel.render(document.body);
     }
     catch (e) {
-        YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Error loading job status");
+        YAHOO.ccgyabi.widget.YabiMessage.fail("Error loading job status");
     }
 };

@@ -1,89 +1,58 @@
 <%inherit file="base.html"/>
+
 <%def name="header()">
+    <script language="javascript">
+        YAHOO.util.Event.onDOMReady(function() {
+            initFileSelector();
+            initMessageManager();
+        });
 
-<script language="javascript">
-YAHOO.util.Event.onAvailable("rightContainer", initFileSelector);
-YAHOO.util.Event.onAvailable("fileOperationStatus", initMessageManager);
+        var leftfileselector, rightfileselector, messageManager;
 
-var leftfileselector, rightfileselector, messageManager;
+        function initFileSelector() {
+            leftfileselector = new YabiFileSelector(null, true);
+            rightfileselector = new YabiFileSelector(null, true);
+            
+            document.getElementById("leftContainer").appendChild(leftfileselector.containerEl);
+            document.getElementById("rightContainer").appendChild(rightfileselector.containerEl);
+        }
 
-function initFileSelector() {
-    leftfileselector = new YabiFileSelector(null, true);
-    rightfileselector = new YabiFileSelector(null, true);
-    
-    document.getElementById("leftContainer").appendChild(leftfileselector.containerEl);
-    document.getElementById("rightContainer").appendChild(rightfileselector.containerEl);
-}
-
-function initMessageManager() {
-    messageManager = new YabiMessageManager("fileOperationStatus");
-}
-
-</script>
-
-
+        function initMessageManager() {
+            messageManager = new YabiMessageManager("fileOperationStatus");
+        }
+    </script>
 </%def>
 
 <%def name="body()">
+    <div id="doc3" class="yui-t1" style="height:100%;background-color:#fff;">
+        <div id="yabi-files-mode">
+            ${self.bodyhd()}
 
-  <div id="doc3" class="yui-t1" style="height:100%;background-color:#fff;">
-    <div id="yabi-files-mode">
-      <div id="hd">
-        <p><img src="${h.url('/static/images/yabi-logo.png')}" alt="Yabi-logo" height="60" width="198" />  
+            <div style="position:absolute;left:60px;top:450px;padding:10px;width:700px;font-size:90%;color:#666;">
+                <div id="fileOperationStatus">
+                </div>
 
-            <div id="yabi-message-ajax">
+                <div>
+                    This is the file management tab. The following actions are available:
+                    <ul style="margin-top:15px;margin-left:15px;">
+                        <li>- Use one or both panels to navigate the file systems you have access to</li>
+                        <li>- Drag and drop files from one panel to another, or onto folders in either panel</li>
+                        <li>- Click the <img src="${h.url('/static/images/download.png')}"> icon to download a file</li>
+                        <li>- Upload files into either panel (file will upload to the current folder viewed in that panel)</li>
+                        <li>- Delete files by clicking the <img src="${h.url('/static/images/delete.png')}"> icon</li>
+                    </ul>
+                </div>
             </div>
 
-            <div id="yabi-tabs">
-
-              <a href="${h.url('/jobs')}" id="yabi-tabs-jobs">jobs</a>
-              <a href="${h.url('/design')}" id="yabi-tabs-design">design</a>
-              <a href="${h.url('/files')}" id="yabi-tabs-files">files</a>
-            </div>
-
-            <div id="userinfo">
-              <a href="${h.url('/logout')}" class="fakeButton">log out ${request.user.username}</a>        
-            </div>
-
-      </div>
-
-      <script type="text/javascript">
-        //<![CDATA[
-
-        YAHOO.util.Event.onAvailable('yabi-message-success', YAHOO.ccgyabi.YabiMessage.fade, this);
-        YAHOO.util.Event.onAvailable('yabi-message-warn', YAHOO.ccgyabi.YabiMessage.fade, this);
-        YAHOO.util.Event.onAvailable('yabi-message-fail', YAHOO.ccgyabi.YabiMessage.fade, this);
-
-        //]]>
-      </script>
-
-          <div style="position:absolute;left:60px;top:450px;padding:10px;width:700px;font-size:90%;color:#666;">
-              <div id="fileOperationStatus">
-              </div>
-              <div>
-                  This is the file management tab. The following actions are available:
-                  <ul style="margin-top:15px;margin-left:15px;">
-                      <li>- Use one or both panels to navigate the file systems you have access to
-                      <li>- Drag and drop files from one panel to another, or onto folders in either panel
-                      <li>- Click the <img src="${h.url('/static/images/download.png')}"> icon to download a file
-                      <li>- Upload files into either panel (file will upload to the current folder viewed in that panel)
-                      <li>- Delete files by clicking the <img src="${h.url('/static/images/delete.png')}"> icon
-                  </ul>
-              </div>
-          </div>
-
-          <div style="position:absolute;left:10px;top:63px;padding:5px;width:400px;">
+            <div style="position:absolute;left:10px;top:63px;padding:5px;width:400px;">
                 <div id="leftContainer"></div>
-          </div>
-          
-          <div style="position:absolute;left:420px;top:63px;padding:5px;width:400px;">
+            </div>
+
+            <div style="position:absolute;left:420px;top:63px;padding:5px;width:400px;">
                 <div id="rightContainer"></div>
-          </div>
-      
-
+            </div>
+        </div>
     </div>
-  </div>
-  
-  <div class="copyright">&copy; 2006, 2009 CCG, Murdoch University</div>
 
+    ${self.copyright()}
 </%def>

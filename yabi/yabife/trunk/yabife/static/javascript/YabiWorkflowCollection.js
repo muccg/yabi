@@ -35,7 +35,7 @@ function YabiWorkflowCollection() {
     this.filterEl.appendChild(this.searchLabelEl);
     
     this.searchEl = document.createElement("input");
-    this.searchEl.type = "search";
+    this.searchEl.setAttribute("type", "search");
     this.searchEl.className = "toolSearchField";
     
     //attach key events for changes/keypresses
@@ -120,12 +120,8 @@ function YabiWorkflowCollection() {
     this.listingEl = document.createElement("div");
     this.listingEl.className = "workflowListing";
     
-    this.loadingEl = document.createElement("div");
-    this.loadingEl.className = "listingLoading";
-    var loadImg = new Image();
-    loadImg.src = appURL + "static/images/largeLoading.gif";
-    this.loadingEl.appendChild( loadImg );
-    this.listingEl.appendChild(this.loadingEl);
+    this.loading = new YAHOO.ccgyabi.widget.Loading(this.listingEl);
+    this.loading.show();
     
     this.containerEl.appendChild(this.listingEl);
     
@@ -180,7 +176,7 @@ YabiWorkflowCollection.prototype.solidify = function(obj) {
     
     this.payload = obj;
     
-    this.loadingEl.style.display = "none";
+    this.loading.hide();
     
     var tmpWf;
     
@@ -370,7 +366,7 @@ YabiWorkflowCollection.prototype.hydrateResponse = function(o) {
         
         target.solidify(YAHOO.lang.JSON.parse(json));
     } catch (e) {
-        YAHOO.ccgyabi.YabiMessage.yabiMessageFail("Error fetching workflow listing");
+        YAHOO.ccgyabi.widget.YabiMessage.fail("Error fetching workflow listing");
         target.solidify([]);
     }
 };
