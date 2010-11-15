@@ -63,23 +63,36 @@ class TaskManager(object):
     JOB_PAUSE = 0.0                     # wait this long when you successfully got a job, to get the next job
     
     def __init__(self):
-        self.pausechannel = stackless.channel()
+        self.pausechannel_task = stackless.channel()
+        self.pausechannel_unblock = stackless.channel()
         
         self.tasks = []                 # store all the tasks currently being executed in a list
     
     def start(self):
         """Begin the task manager tasklet. This tasklet continually pops tasks from yabiadmin and sets them up for running"""
-        self.runner_thread = stackless.tasklet(self.runner)
-        self.runner_thread.setup()
-        self.runner_thread.run()
+        self.runner_thread_task = stackless.tasklet(self.runner)
+        self.runner_thread_task.setup()
+        self.runner_thread_task.run()
         
+        self.runner_thread_unblock = stackless.tasklet(self.unblocker)
+        self.runner_thread_unblock.setup()
+        self.runner_thread_unblock.run()
+                
     def runner(self):
         """The green task that starts up jobs"""
         while True:                 # do forever.
             self.get_next_task()
             
             # wait for this task to start or fail
-            Sleep(self.pausechannel.receive())
+            Sleep(self.pausechannel_task.receive())
+            
+    def unblocker(self):
+        """green task that checks for blocked jobs that need unblocking"""
+        while True:
+            self.get_next_unblocked()
+            
+            # wait for this task to start or fail
+            Sleep(self.pausechannel_unblock.receive())
         
     def start_task(self, data):
         try:
@@ -146,12 +159,12 @@ class TaskManager(object):
         def _doFailure(data):
             print "No more jobs. Sleeping for",self.JOBLESS_PAUSE
             # no more tasks. we should wait for the next task.
-            self.pausechannel.send(self.JOBLESS_PAUSE)
+            self.pausechannel_task.send(self.JOBLESS_PAUSE)
             
         d = factory.deferred.addCallback(self.start_task).addErrback(_doFailure)
         return d
         
-    def get_next_blocked(self):
+    def get_next_unblocked(self):
         useragent = "YabiExec/0.1"
         task_server = "%s://%s:%s" % (config.yabiadminscheme, config.yabiadminserver, config.yabiadminport)
         task_path = os.path.join(config.yabiadminpath, self.BLOCKED_URL)
@@ -170,9 +183,9 @@ class TaskManager(object):
 
         # now if the page fails for some reason. deal with it
         def _doFailure(data):
-            print "No more jobs. Sleeping for",self.JOBLESS_PAUSE
+            print "No more unblock requests. Sleeping for",self.JOBLESS_PAUSE
             # no more tasks. we should wait for the next task.
-            self.pausechannel.send(self.JOBLESS_PAUSE)
+            self.pausechannel_unblock.send(self.JOBLESS_PAUSE)
             
         d = factory.deferred.addCallback(self.start_unblock).addErrback(_doFailure)
         return d
