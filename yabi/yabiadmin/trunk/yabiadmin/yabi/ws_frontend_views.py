@@ -345,43 +345,6 @@ def credential(request):
 
 
 @authentication_required
-def password(request):
-    if request.method != "POST":
-        return HttpResponseNotAllowed(["POST"])
-
-    required = ("currentPassword", "newPassword", "confirmPassword")
-    for key in required:
-        if key not in request.POST:
-            return HttpResponseBadRequest(json_error("Expected key '%s' not found in request" % key))
-
-    # Check the current password.
-    if not auth.authenticate(username=request.user.username, password=request.POST["currentPassword"]):
-        return HttpResponseForbidden(json_error("Current password is incorrect"))
-
-    # The new passwords should at least match and meet whatever rules we decide
-    # to impose (currently a minimum six character length).
-    if request.POST["newPassword"] != request.POST["confirmPassword"]:
-        return HttpResponseBadRequest(json_error("The new passwords must match"))
-
-    if len(request.POST["newPassword"]) < 6:
-        return HttpResponseBadRequest(json_error("The new password must be at least 6 characters in length"))
-
-    # OK, let's actually try to change the password.
-    request.user.set_password(request.POST["newPassword"])
-    
-    # And, more importantly, in LDAP if we can.
-    try:
-        adminld = LDAPHandler(userdn=settings.LDAPADMINUSERNAME, password=settings.LDAPADMINPASSWORD)
-        adminld.ldap_update_user(request.user.username, None, request.POST["newPassword"], {}, "md5")
-    except AttributeError:
-        return HttpResponseServerError(json_error("Unable to connect to LDAP server"))
-
-    request.user.save()
-
-    return HttpResponse(json.dumps("Password changed successfully"))
-
-
-@authentication_required
 def save_credential(request, id):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
