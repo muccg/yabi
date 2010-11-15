@@ -84,7 +84,7 @@ var YabiAccountPassword = function (options) {
                     };
 
                     YAHOO.util.Connect.setForm(self.container.querySelector("form"));
-                    YAHOO.util.Connect.asyncRequest("POST", appURL + "ws/account/password", callback);
+                    YAHOO.util.Connect.asyncRequest("POST", appURL + "account/password", callback);
 
                     self.disableForm();
                 }

@@ -2,14 +2,16 @@
 # Create your views here.
 import httplib
 from urllib import urlencode, unquote, quote
+import base64
 import copy
+import hashlib
 import os
 
 from django.conf.urls.defaults import *
 from django.conf import settings
 from django.http import HttpResponse
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, HttpResponseUnauthorized
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError, HttpResponseUnauthorized
 from django.shortcuts import render_to_response, get_object_or_404, render_mako
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import webhelpers
@@ -26,6 +28,10 @@ from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
 from yaphc.memcache_persister import MemcacheCookiePersister
 
 from yabife.yabifeapp.models import User
+
+from ldap import LDAPError, MOD_REPLACE
+from yabife.ldapclient import LDAPClient
+from yabife.ldaputils import get_userdn_of
 
 from django.contrib import logging
 logger = logging.getLogger('yabife')
@@ -93,7 +99,7 @@ def jobs(request):
 @login_required
 def account(request):
     return render_page("account.html", request)
-    
+
 def login(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -192,6 +198,54 @@ def wslogout(request):
         "success": True,
     }
 
+@login_required
+def password(request):
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+
+    required = ("currentPassword", "newPassword", "confirmPassword")
+    for key in required:
+        if key not in request.POST:
+            return HttpResponseBadRequest(json_error("Expected key '%s' not found in request" % key))
+
+    # Check the current password.
+    if not authenticate(username=request.user.username, password=request.POST["currentPassword"]):
+        return HttpResponseForbidden(json_error("Current password is incorrect"))
+
+    # The new passwords should at least match and meet whatever rules we decide
+    # to impose (currently a minimum six character length).
+    if request.POST["newPassword"] != request.POST["confirmPassword"]:
+        return HttpResponseBadRequest(json_error("The new passwords must match"))
+
+    if len(request.POST["newPassword"]) < 6:
+        return HttpResponseBadRequest(json_error("The new password must be at least 6 characters in length"))
+
+    # OK, let's actually try to change the password.
+    request.user.set_password(request.POST["newPassword"])
+    
+    # And, more importantly, in LDAP if we can.
+    try:
+        userdn = get_userdn_of(request.user.username)
+        client = LDAPClient(settings.AUTH_LDAP_SERVER)
+        client.bind_as(userdn, request.POST["currentPassword"])
+
+        md5 = hashlib.md5(request.POST["newPassword"]).digest()
+        modlist = (
+            (MOD_REPLACE, "userPassword", "{MD5}%s" % (base64.encodestring(md5).strip(), )),
+        )
+        client.modify(userdn, modlist)
+
+        client.unbind()
+    except (AttributeError, LDAPError), e:
+        # Send back something fairly generic.
+        logger.debug("Error connecting to server: %s" % str(e))
+        return HttpResponseServerError(json_error("Error changing password"))
+
+    request.user.save()
+
+    return HttpResponse(json.dumps("Password changed successfully"))
+
+    
 # Implementation methods
 
 def redirect_to_login():
@@ -269,5 +323,12 @@ def yabiadmin_logout(username):
         return json_resp.get('success', False)
     except ObjectDoesNotExist:
         pass
+
+def json_error(message):
+    if type(message) is str:
+        return json.dumps({'error':message})
+    
+    import traceback
+    return json.dumps({'error':traceback.format_exc()})
 
 
