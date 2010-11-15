@@ -13,18 +13,16 @@ YAHOO.ccgyabi.widget.Loading = function(container) {
 
     this.element.appendChild(this.image);
     this.container.appendChild(this.element);
-
-    YAHOO.ccgyabi.widget.Loading.superclass.constructor.call(this, this.element);
 };
 
-YAHOO.lang.extend(YAHOO.ccgyabi.widget.Loading, YAHOO.util.Element, {
-    destroy: function() {
-        this.container.removeChild(this.element);
-    },
-    hide: function() {
-        this.setStyle("display", "none");
-    },
-    show: function() {
-        this.setStyle("display", "block");
-    }
-});
+YAHOO.ccgyabi.widget.Loading.prototype.destroy = function () {
+    this.container.removeChild(this.element);
+};
+
+YAHOO.ccgyabi.widget.Loading.prototype.hide = function () {
+    this.element.style.display = "none";
+};
+
+YAHOO.ccgyabi.widget.Loading.prototype.show = function () {
+    this.element.style.display = "block";
+};

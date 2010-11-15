@@ -1,8 +1,8 @@
 <%def name="yui(name)">
 % if debug:
-    <script src="${h.url('/static/javascript/yui-2.8.2r1/' + name + '-debug.js')}" type="text/javascript"></script>
+    <script src="${h.url('/static/javascript/yui-2.4.1/' + name + '-debug.js')}" type="text/javascript"></script>
 % else:
-    <script src="${h.url('/static/javascript/yui-2.8.2r1/' + name + '-min.js')}" type="text/javascript"></script>
+    <script src="${h.url('/static/javascript/yui-2.4.1/' + name + '-min.js')}" type="text/javascript"></script>
 % endif
 </%def>
 
@@ -58,8 +58,8 @@ ${self.yui("dom/dom")}
 ${self.yui("dragdrop/dragdrop")}
 ${self.yui("animation/animation")}
 ${self.yui("slider/slider")}
-${self.yui("json/json")}
-${self.yui("element/element")}
+${self.yui("json/json-beta")}
+${self.yui("element/element-beta")}
 
 % if debug:
     ${self.yui("logger/logger")}
