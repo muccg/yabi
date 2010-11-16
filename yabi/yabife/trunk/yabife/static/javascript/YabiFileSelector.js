@@ -54,8 +54,6 @@ function YabiFileSelector(param, isBrowseMode, filePath) {
     this.fileListEl.className = "fileSelectorListing";
     this.browseEl.appendChild(this.fileListEl);
     
-    this.loading = new YAHOO.ccgyabi.widget.Loading(this.fileListEl);
-
     this.containerEl.appendChild(this.browseEl);
     
     //file upload component
@@ -126,6 +124,7 @@ YabiFileSelector.prototype.updateBrowser = function(location) {
     }
 
     //add loading el
+    this.loading = new YAHOO.ccgyabi.widget.Loading(this.fileListEl);
     this.loading.show();
     
     //disable drop target if location is empty (ie. the root)
@@ -633,7 +632,7 @@ YabiFileSelector.prototype.hydrateResponse = function(o) {
     } catch (e) {
         YAHOO.ccgyabi.widget.YabiMessage.fail('Error loading file listing');
         
-        this.loading.hide();
+        target.loading.hide();
     } finally {
         this.jsTransaction = null;
     }
