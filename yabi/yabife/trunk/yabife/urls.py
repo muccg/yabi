@@ -1,4 +1,5 @@
 import os
+from django.conf import settings
 from django.conf.urls.defaults import *
 from yabife import admin
 
@@ -23,12 +24,13 @@ urlpatterns = patterns('yabife.yabifeapp.views',
 
 # pattern for serving statically
 # will be overridden by apache alias under WSGI
-urlpatterns += patterns('',
-    (r'^static/(?P<path>.*)$',
-                        'django.views.static.serve', 
-                        {'document_root': os.path.join(os.path.dirname(__file__),"static"), 'show_indexes': True}),
+if settings.DEBUG:
+    urlpatterns += patterns('',
+        (r'^static/(?P<path>.*)$',
+                            'django.views.static.serve', 
+                            {'document_root': os.path.join(os.path.dirname(__file__),"static"), 'show_indexes': True}),
 
-)
+    )
 
 urlpatterns += patterns('django.views.generic.simple',
     (r'^favicon\.ico', 'redirect_to', {'url': '/static/images/favicon.ico'}),
