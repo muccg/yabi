@@ -96,6 +96,10 @@
     border-top: solid 1px #5aa4fb;
 }
 
+.credentials .label:first-child {
+    padding-right: 16px;
+}
+
 .credentials .label {
     padding-left: 1ex;
     text-indent: -1ex;
@@ -167,7 +171,19 @@
 	padding:0px;
 	margin:0px;
 	border:0px;
-	background:url(../images/lock.png) no-repeat;
+	background:url(../images/locked.png) no-repeat;
+	position:absolute;
+    right: 9px;
+    top: 4px;
+}
+
+.badgeunlocked {
+	width:16px;
+	height:16px;
+	padding:0px;
+	margin:0px;
+	border:0px;
+	background:url(../images/unlocked.png) no-repeat;
 	position:absolute;
     right: 9px;
     top: 4px;

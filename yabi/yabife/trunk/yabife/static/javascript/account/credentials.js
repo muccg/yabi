@@ -215,12 +215,17 @@ YabiCredential.prototype.createLabel = function () {
 
     label.appendChild(div);
 
+    // Create the encryption badge.
+    var badge = document.createElement("div");
     if (this.credential.encrypted) {
-        var div = document.createElement("div");
-        div.className = "badgelocked";
-        div.title = "encrypted credential";
-        label.appendChild(div);
+        badge.className = "badgelocked";
+        badge.title = "encrypted credential";
     }
+    else {
+        badge.className = "badgeunlocked";
+        badge.title = "unencrypted credential";
+    }
+    label.appendChild(badge);
 
     return label;
 };
