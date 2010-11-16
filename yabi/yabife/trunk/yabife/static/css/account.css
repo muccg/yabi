@@ -112,6 +112,11 @@
     padding: 10px;
 }
 
+.yabiRightColumn .help {
+    margin-bottom: 1em;
+    max-width: 500px;
+}
+
 .yabiRightColumn > div.template {
     display: none;
 }
@@ -122,6 +127,18 @@
     position: relative;
     width: 200px;
     padding: 0.2em 300px 0.2em 0;
+}
+
+.yabiRightColumn > div > form > div > label {
+    display: inline-block;
+    min-height: 1.5em;
+}
+
+.yabiRightColumn > div > form > div > div.help {
+    width: 500px;
+    margin-bottom: 0;
+    padding: 0.5em 0 0 0;
+    padding-right: 0;
 }
 
 .yabiRightColumn form input, .yabiRightColumn form select, .yabiRightColumn form textarea {
@@ -139,6 +156,11 @@
 }
 
 .textarea-container {
+    height: 8em;
+}
+
+.certificate-container > label, .key-container > label {
+    display: inline-block;
     height: 6em;
 }
 

@@ -156,14 +156,14 @@ YabiCredential.prototype.createForm = function () {
     isOnRecord(
         this.credential.certificate,
         this.form.querySelector(".certificate-container"),
-        "to replace the certificate, paste the new certificate here",
+        "To replace the certificate, paste the new certificate here.",
         ""
     );
 
     isOnRecord(
         this.credential.key,
         this.form.querySelector(".key-container"),
-        "to replace the key, paste the new key here",
+        "To replace the key, paste the new key here.",
         ""
     );
 

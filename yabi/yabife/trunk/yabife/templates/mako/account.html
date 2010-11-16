@@ -33,6 +33,10 @@
                 <div class="template" id="optionsPassword">
                     <h1>change password</h1>
 
+                    <div class="help">
+                        This form is used to change the password you use to log into YABI itself. It does not have any effect on your backend credentials.
+                    </div>
+
                     <form>
                         <div>
                             <label>
@@ -46,6 +50,10 @@
                                 new password:
                                 <input type="password" name="newPassword" required="required" />
                             </label>
+                            <div class="help">
+                                The new password must be at least six
+                                characters in length.
+                            </div>
                         </div>
 
                         <div>
@@ -72,6 +80,10 @@
                                 user name:
                                 <input type="text" name="username" autocomplete="off" />
                             </label>
+                            <div class="help">
+                                The user name used to log into the backend(s)
+                                the credential is used for.
+                            </div>
                         </div>
 
                         <div class="password-container">
@@ -79,6 +91,10 @@
                                 password:
                                 <input type="password" name="password" autocomplete="off" />
                             </label>
+                            <div class="help">
+                                The password used to log into the backend(s)
+                                the credential is used for.
+                            </div>
                         </div>
 
                         <div class="confirm-password-container">
@@ -96,6 +112,10 @@
                                     <textarea name="certificate"></textarea>
                                 </div>
                             </label>
+                            <div class="help">
+                                The certificate used to log into the backend(s)
+                                the credential is used for.
+                            </div>
                         </div>
 
                         <div class="key-container textarea-container">
@@ -106,6 +126,10 @@
                                     <textarea name="key"></textarea>
                                 </div>
                             </label>
+                            <div class="help">
+                                The key used to log into the backend(s) the
+                                credential is used for.
+                            </div>
                         </div>
 
                         <div class="expiry-container">
