@@ -240,6 +240,11 @@ class Task(models.Model, Editable, Status):
     def workflowid(self):
         return self.job.workflow.id
 
+    def link_to_json(self):
+        return '<a href="%s%d">%s</a>' % (url('/engine/task_json/'), self.id, "JSON")
+    link_to_json.allow_tags = True
+    link_to_json.short_description = "JSON"
+
     def link_to_syslog(self):
         return '<a href="%s?table_name=task&table_id=%d">%s</a>' % (url('/admin/yabiengine/syslog/'), self.id, "Syslog")
     link_to_syslog.allow_tags = True

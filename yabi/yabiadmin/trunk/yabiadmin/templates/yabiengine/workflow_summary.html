@@ -59,8 +59,12 @@ ${self.block_content()}<%def name="block_content()">
           <td colspan="3">
             Task: ${task.command}
           </td>
-          <td>${task.edit_link()}<br/>
+          <td>
+              ${task.edit_link()}
+              <br/>
               ${task.link_to_syslog()}
+              <br/>
+              ${task.link_to_json()}
           </td>
           
 

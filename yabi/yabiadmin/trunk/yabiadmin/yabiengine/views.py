@@ -232,6 +232,17 @@ def job(request, workflow, order):
 
 
 @staff_member_required
+def task_json(request, task):
+    logger.debug("task_json> %s" % task)
+
+    try:
+        task = Task.objects.get(id=int(task))
+        return HttpResponse(content=task.json(), content_type="application/json; charset=UTF-8")
+    except (ObjectDoesNotExist, ValueError):
+        return HttpResponseNotFound("Task not found")
+
+
+@staff_member_required
 def workflow_summary(request, workflow_id):
     logger.debug('')
 
