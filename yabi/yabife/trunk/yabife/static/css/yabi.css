@@ -1250,14 +1250,14 @@ input {
 }
 
 .listingLoading {
-    padding:135px;
-    padding-top:90px;
-    padding-left:110px;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    padding-top: 90px;
 }
 
 .fileSelectorListing .listingLoading {
-    padding:70px;
-    padding-left:180px;
+    padding-top: 124px;
 }
 
 .sliderValue {
