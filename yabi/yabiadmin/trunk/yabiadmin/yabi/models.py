@@ -324,8 +324,8 @@ class Credential(Base):
     description = models.CharField(max_length=512, blank=True)
     username = models.CharField(max_length=512)
     password = models.CharField(max_length=512, blank=True)
-    cert = models.TextField(null=True, blank=True)
-    key = models.TextField(null=True, blank=True)
+    cert = models.TextField(blank=True)
+    key = models.TextField(blank=True)
     user = models.ForeignKey(User)
     backends = models.ManyToManyField('Backend', through='BackendCredential', null=True, blank=True)
 
