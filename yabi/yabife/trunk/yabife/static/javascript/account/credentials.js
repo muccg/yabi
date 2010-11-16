@@ -128,6 +128,31 @@ YabiCredential.prototype.createForm = function () {
         "placeholder"
     );
 
+    // Hide the confirm password box until the password is actually changed.
+    var confirmPasswordContainer = this.form.querySelector(".confirm-password-container");
+    var confirmPasswordInput = this.form.querySelector(".password-container input");
+    confirmPasswordContainer.style.display = "none";
+
+    var showConfirmPassword = function (e) {
+        /* Animate displaying the confirm password box so the form doesn't jump
+         * unexpectedly. */
+        confirmPasswordContainer.style.overflow = "hidden";
+        confirmPasswordContainer.style.height = 0;
+        confirmPasswordContainer.style.marginBottom = 0;
+        confirmPasswordContainer.style.display = "block";
+
+        var anim = new YAHOO.util.Anim(confirmPasswordContainer, {
+            height: { to: 20 },
+            marginBottom: { to: 9 }
+        }, 0.4, YAHOO.util.Easing.easeOut);
+
+        anim.animate();
+
+        YAHOO.util.Event.removeListener(confirmPasswordInput, "focus", showConfirmPassword);
+    };
+
+    YAHOO.util.Event.addListener(confirmPasswordInput, "focus", showConfirmPassword);
+
     isOnRecord(
         this.credential.certificate,
         this.form.querySelector(".certificate-container"),
@@ -269,6 +294,11 @@ YabiCredential.prototype.validate = function () {
 
     var password = getValue("password");
     if (password !== null) {
+        if (password != getValue("confirm-password")) {
+            YAHOO.ccgyabi.widget.YabiMessage.fail("Passwords do not match");
+            return null;
+        }
+
         data.password = password;
         update++;
     }
