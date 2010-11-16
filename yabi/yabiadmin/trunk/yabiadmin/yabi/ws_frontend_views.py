@@ -4,6 +4,7 @@ import uuid
 
 from datetime import datetime, timedelta
 from urllib import quote
+from urlparse import urlparse, urlunparse
 
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError
 from django.shortcuts import render_to_response, get_object_or_404
@@ -316,10 +317,22 @@ def credential(request):
         backends = []
 
         for bc in backend_credentials:
+            # Build up the display URI for the backend, which may include the
+            # home directory and username in addition to the backend URI
+            # proper.
             if bc.homedir:
-                backends.append(bc.backend.uri + bc.homedir)
+                uri = bc.backend.uri + bc.homedir
             else:
-                backends.append(bc.backend.uri)
+                uri = bc.backend.uri
+
+            scheme, netloc, path, params, query, fragment = urlparse(uri)
+
+            # Add the credential username if the backend URI doesn't already
+            # include one.
+            if "@" not in netloc:
+                netloc = "%s@%s" % (credential.username, netloc)
+
+            backends.append(urlunparse((scheme, netloc, path, params, query, fragment)))
 
         return backends
 
@@ -335,6 +348,7 @@ def credential(request):
     return HttpResponse(json.dumps([{
         "id": c.id,
         "description": c.description,
+        "username": c.username,
         "password": exists(c.password),
         "certificate": exists(c.cert),
         "key": exists(c.key),
@@ -379,6 +393,9 @@ def save_credential(request, id):
         credential.password = request.POST.get("password", "")
         credential.key = request.POST.get("key", None)
         credential.cert = request.POST.get("certificate", None)
+
+    if "username" in request.POST:
+        credential.username = request.POST["username"]
 
     credential.save()
 
