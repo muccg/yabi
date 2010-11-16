@@ -117,11 +117,11 @@ class TaskManager(object):
             tasklet.setup()
             
             #add to save list
-            tasklets.add(runner_object)
+            tasklets.add(runner_object, taskdescription['taskid'])
             tasklet.run()
             
             # Lets try and start anotherone.
-            self.pausechannel.send(self.JOB_PAUSE)
+            self.pausechannel_task.send(self.JOB_PAUSE)
             
         except Exception, e:
             # log any exception
@@ -130,7 +130,19 @@ class TaskManager(object):
 
     def start_unblock(self, data):
         try:
-            print "unblocking task:",data
+            taskdescription=json.loads(data)
+            
+            print "resuming task:",taskdescription['taskid']
+            
+            print "=========RESUME==========="
+            print json.dumps(taskdescription, sort_keys=True, indent=4)
+            print "=========================="
+            
+            runner_object = tasklets.get(taskdescription['taskid'])
+            print "RUNNER OBJ",runner_object
+            
+            # Lets try and start anotherone.
+            self.pausechannel_task.send(self.JOB_PAUSE)
             
         except Exception, e:
             # log any exception

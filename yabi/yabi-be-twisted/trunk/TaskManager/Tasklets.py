@@ -16,26 +16,29 @@ class Tasklets(object):
     TASK_FILENAME_PREFIX = "taskjson-"
     
     def __init__(self):
-        self.tasks = []
+        self.tasks = {}
         
-    def add(self, task):
-        self.tasks.append(task)
+    def add(self, task, taskid):
+        self.tasks[taskid]=task
+        
+    def get(self, taskid):
+        return self.tasks[taskid]
         
     def purge(self):
         """purge dead tasks from the list"""
-        for task in self.tasks:
+        for id,task in self.tasks.iteritems():
             if task.finished():
-                self.tasks.remove(task)
+                del self.tasks[id]
             elif task.errored():
-                self.tasks.remove(task)
+                del self.tasks[id]
         
     def save(self, directory):
         print "TASKS Save",self.tasks
         
-        for task in self.tasks:
+        for id,task in self.tasks.iteritems():
             # before we pickle it, if we are waiting on a connection in our stack frame, then set it to have failed
             # so that when we are resurrected in the future, the connection will immediately be marked as failed
-            fname = os.path.join(directory,self.TASK_FILENAME_PREFIX+str(id(task)))
+            fname = os.path.join(directory,self.TASK_FILENAME_PREFIX+str(id))
             
             if not task.finished():
                 self.save_task(task,fname)
@@ -63,10 +66,11 @@ class Tasklets(object):
         return task
             
     def load(self,directory):
-        self.tasks=[]
+        self.tasks={}
             
         for f in dircache.listdir(directory):
             if f.startswith(self.TASK_FILENAME_PREFIX):
+                id = int(f[len(self.TASK_FILENAME_PREFIX):])
                 path = os.path.join(directory,f)
                 task = self.load_task(path)
                 os.unlink(path)
@@ -76,7 +80,7 @@ class Tasklets(object):
                 runner.setup()
                 runner.run()
                 
-                self.tasks.append(task)
+                self.tasks[id]=task
                 
                 print "task",task,"loaded"
            

@@ -151,9 +151,9 @@ class CertificateProxy(object):
             res = pp.out.split("\n")
             
             # get first line
-            if 'Your proxy is valid until:' in res:
-                res = [X.split(':',1)[1] for X in res if X.startswith('Your proxy is valid until:')][0]
+            res = [X.split(':',1)[1] for X in res if X.startswith('Your proxy is valid until:')][0]
             
+            print "RES is",res
             return _decode_time(res.strip())
             
         # file locations
