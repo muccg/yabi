@@ -1,9 +1,9 @@
 from django.conf.urls.defaults import *
-from django.contrib import admin
 from django.core import urlresolvers
 
+from yabiadmin import admin
+
 import os
-admin.autodiscover()
 
 # dispatch to either webservice, admin or general
 urlpatterns = patterns('yabiadmin.yabi.views',

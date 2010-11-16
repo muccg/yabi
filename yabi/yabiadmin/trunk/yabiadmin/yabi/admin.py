@@ -143,15 +143,16 @@ class ParameterSwitchUseAdmin(AdminBase):
     list_display = ['display_text', 'formatstring', 'description']
     search_fields = ['display_text', 'description']
 
-admin.site.register(FileExtension, AdminBase)
-admin.site.register(ParameterSwitchUse, ParameterSwitchUseAdmin)
-#admin.site.register(QueuedWorkflow, QueueAdmin)
-#admin.site.register(InProgressWorkflow, QueueAdmin)
-admin.site.register(FileType, FileTypeAdmin)
-admin.site.register(Tool, ToolAdmin)
-admin.site.register(ToolGroup, ToolGroupAdmin)
-admin.site.register(ToolSet, ToolSetAdmin)
-admin.site.register(User, UserAdmin)
-admin.site.register(Credential, CredentialAdmin)
-admin.site.register(BackendCredential, BackendCredentialAdmin)
-admin.site.register(Backend, BackendAdmin)
+def register(site):
+    site.register(FileExtension, AdminBase)
+    site.register(ParameterSwitchUse, ParameterSwitchUseAdmin)
+    #site.register(QueuedWorkflow, QueueAdmin)
+    #site.register(InProgressWorkflow, QueueAdmin)
+    site.register(FileType, FileTypeAdmin)
+    site.register(Tool, ToolAdmin)
+    site.register(ToolGroup, ToolGroupAdmin)
+    site.register(ToolSet, ToolSetAdmin)
+    site.register(User, UserAdmin)
+    site.register(Credential, CredentialAdmin)
+    site.register(BackendCredential, BackendCredentialAdmin)
+    site.register(Backend, BackendAdmin)

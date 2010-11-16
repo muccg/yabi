@@ -80,9 +80,10 @@ class StageInAdmin(admin.ModelAdmin):
     list_display = ['src', 'dst', 'order']
 
 
-admin.site.register(Workflow, WorkflowAdmin)
-admin.site.register(QueuedWorkflow, QueuedWorkflowAdmin)
-admin.site.register(Syslog, SyslogAdmin)
-admin.site.register(Job, JobAdmin)
-admin.site.register(Task, TaskAdmin)
-admin.site.register(StageIn, StageInAdmin)
+def register(site):
+    site.register(Workflow, WorkflowAdmin)
+    site.register(QueuedWorkflow, QueuedWorkflowAdmin)
+    site.register(Syslog, SyslogAdmin)
+    site.register(Job, JobAdmin)
+    site.register(Task, TaskAdmin)
+    site.register(StageIn, StageInAdmin)
