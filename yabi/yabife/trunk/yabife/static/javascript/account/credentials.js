@@ -164,8 +164,13 @@ YabiCredential.prototype.createLabel = function () {
     if (this.credential.backends.length > 0) {
         this.credential.backends.sort();
         for (var i = 0; i < this.credential.backends.length; i++) {
+            /* Add zero-width spaces to ensure line wrapping occurs where
+             * appropriate. */
+            var name = this.credential.backends[i].replace(/\//g, "/\u200b");
+
             var div = document.createElement("div");
-            div.appendChild(document.createTextNode(this.credential.backends[i]));
+            div.className = "label";
+            div.appendChild(document.createTextNode(name));
 
             label.appendChild(div);
         }

@@ -96,6 +96,11 @@
     border-top: solid 1px #5aa4fb;
 }
 
+.credentials .label {
+    padding-left: 1ex;
+    text-indent: -1ex;
+}
+
 
 
 .yabiRightColumn > div {
