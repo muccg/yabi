@@ -173,7 +173,7 @@ YabiCredential.prototype.createForm = function () {
         option.value = "no";
         option.appendChild(document.createTextNode("current setting"));
 
-        expiry.add(option, expiry.options.item(0));
+        expiry.insertBefore(option, expiry.options.item(1));
         option.selected = true;
     }
 

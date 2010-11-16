@@ -56,14 +56,14 @@ RadioList.prototype.createItem = function (label) {
     this.items.push(item);
     this.list.appendChild(item.element);
 
-    item.element.addEventListener("click", function () {
+    YAHOO.util.Event.addListener(item.element, "click", function () {
         if (item.selected) {
             item.deselect();
         }
         else {
             self.selectItem(item);
         }
-    }, false);
+    });
 
     return item;
 };
