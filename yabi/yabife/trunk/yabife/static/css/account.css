@@ -146,12 +146,17 @@
     position: absolute;
     left: 210px;
     top: 0;
+    min-width: 200px;
     max-width: 290px;
+}
+
+.yabiRightColumn select {
+    min-height: 20px;
 }
 
 .yabiRightColumn textarea {
     height: 5em;
-    width: 20em;
+    width: 290px;
     font-family: Monospace;
 }
 
@@ -183,6 +188,8 @@
 
 .yabiRightColumn form .fakeButton.largeButton {
     height: auto;
+    min-width: 0;
+    width: auto;
     padding-left: 2em;
     padding-right: 2em;
 }
