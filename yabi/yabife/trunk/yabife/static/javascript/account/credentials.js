@@ -120,6 +120,8 @@ YabiCredential.prototype.createForm = function () {
         }
     };
 
+    this.form.querySelector(".username-container input").value = this.credential.username;
+
     isOnRecord(
         this.credential.password,
         this.form.querySelector(".password-container"),
@@ -258,6 +260,12 @@ YabiCredential.prototype.validate = function () {
 
         return null;
     };
+
+    var username = getValue("username");
+    if (username !== null && username !== this.credential.username) {
+        data.username = username;
+        update++;
+    }
 
     var password = getValue("password");
     if (password !== null) {
