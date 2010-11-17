@@ -5,7 +5,7 @@ import weakref
 import sys, os, json
 
 import stackless
-from Exceptions import PermissionDenied, InvalidPath
+from Exceptions import PermissionDenied, InvalidPath, BlockingException
 from globus.Auth import NoCredentials, AuthException
 from globus.CertificateProxy import ProxyInitError
 
@@ -64,7 +64,9 @@ class FileMkdirResource(resource.PostableResource):
             try:
                 mkdirer=bend.mkdir(hostname,path=path, username=username, yabiusername=yabiusername, creds=creds)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
-            except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError,AuthException), exception:
+            except BlockingException, be:
+                client_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(be)))
+            except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
                 client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
             except Exception, e:
                 client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))

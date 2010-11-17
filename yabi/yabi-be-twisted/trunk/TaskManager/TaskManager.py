@@ -141,8 +141,15 @@ class TaskManager(object):
             runner_object = tasklets.get(taskdescription['taskid'])
             print "RUNNER OBJ",runner_object
             
+            runner_object.unblock()
+           
+            # make the task and run it
+            tasklet = CustomTasklet(runner_object.run)
+            tasklet.setup()
+            tasklet.run()
+            
             # Lets try and start anotherone.
-            self.pausechannel_task.send(self.JOB_PAUSE)
+            self.pausechannel_unblock.send(self.JOB_PAUSE)
             
         except Exception, e:
             # log any exception

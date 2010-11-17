@@ -4,6 +4,7 @@ from twisted.internet import defer, reactor
 import weakref, json
 import sys, os, signal
 import stackless
+from Exceptions import BlockingException
 
 # how often to check back on a process. 
 PROCESS_CHECK_TIME = 0.01
@@ -139,8 +140,12 @@ class FileCopyResource(resource.PostableResource):
         dst_filename = src_filename if not len(dst_filename) else dst_filename
         
         def copy(channel):
-            writeproto, fifo = dbend.GetWriteFifo(dst_hostname, dst_username, dst_path, dst_filename,yabiusername=yabiusername,creds=creds['dst'] if 'dst' in creds else {})
-            readproto, fifo2 = sbend.GetReadFifo(src_hostname, src_username, src_path, src_filename, fifo,yabiusername=yabiusername,creds=creds['src'] if 'src' in creds else {})
+            try:
+                writeproto, fifo = dbend.GetWriteFifo(dst_hostname, dst_username, dst_path, dst_filename,yabiusername=yabiusername,creds=creds['dst'] if 'dst' in creds else {})
+                readproto, fifo2 = sbend.GetReadFifo(src_hostname, src_username, src_path, src_filename, fifo,yabiusername=yabiusername,creds=creds['src'] if 'src' in creds else {})
+            except BlockingException, be:
+                channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(be)))
+                return
             
             # keep a weakref in the module level info store so we can get a profile of all copy operations
             if yabiusername not in copies_in_progress:

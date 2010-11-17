@@ -3,7 +3,7 @@ import FSConnector
 import globus
 import stackless
 from utils.parsers import *
-from fs.Exceptions import PermissionDenied, InvalidPath
+from Exceptions import PermissionDenied, InvalidPath
 from FifoPool import Fifos
 from twisted.internet import protocol
 from twisted.internet import reactor

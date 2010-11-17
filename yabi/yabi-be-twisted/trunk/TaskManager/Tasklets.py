@@ -107,5 +107,9 @@ class Tasklets(object):
     def pickle(self):
         """ just try and serialise the objects"""
         self.save("/tmp")
+        
+    def get_all_blocked(self):
+        """return a generator that iterates over all the tasks that are blocked"""
+        return (self.tasks[X] for X in self.tasks.keys() if self.tasks.blocked())
     
 tasklets = Tasklets()

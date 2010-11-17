@@ -54,6 +54,22 @@ class Task(object):
             self.log("Task moved into blocking state: %s"%be)
             self.status("blocked")
             
+        except GETFailure, gf:
+            print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            if '503' in gf.message[1]:
+                # blocked!
+                print "BLOCKED"
+                self._blocked()
+                traceback.print_exc()
+                self.log("Task moved into blocking state: %s"%gf)
+                self.status("blocked")
+            else:
+                print "ERROR"
+                self._errored()
+                traceback.print_exc()
+                self.log("Task raised GETFailure: %s"%gf)
+                self.status("error")
+            
         except Exception, e:
             self._errored()
             traceback.print_exc()
@@ -80,7 +96,7 @@ class Task(object):
         self.blocked_stage = self.stage
         self.stage = -3
         
-    def _unblocked(self):
+    def unblock(self):
         # for a job that is sitting in blocking, move it back out and into its last execution stage
         assert self.blocked_stage != None, "Trying to unblock a task that was never blocked"
         self.stage = self.blocked_stage

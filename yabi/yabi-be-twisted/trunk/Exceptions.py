@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 A set of exceptions for use throughout the backend
 """
@@ -8,3 +9,10 @@ class BlockingException(Exception):
     """
     pass
 
+class PermissionDenied(Exception):
+    """Permission denied error"""
+    pass
+
+class InvalidPath(Exception):
+    """The path passed is an invalid path for this connector"""
+    pass

@@ -10,6 +10,8 @@ from TaskManager.TaskTools import Sleep, Copy, List, Mkdir, GETFailure
 
 from utils.parsers import parse_url
 
+from Exceptions import BlockingException
+
 DEBUG = False
 
 class FileRCopyResource(resource.PostableResource):
@@ -90,7 +92,10 @@ class FileRCopyResource(resource.PostableResource):
             def rcopy_runner_thread():
                 try:
                     # get a recursive listing of the source
-                    fsystem = List(path=src,recurse=True,yabiusername=yabiusername)
+                    try:
+                        fsystem = List(path=src,recurse=True,yabiusername=yabiusername)
+                    except BlockingException, be:
+                        result_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(be)) )
                     
                     #print "Fsystem:",fsystem
                     
@@ -105,6 +110,8 @@ class FileRCopyResource(resource.PostableResource):
                             #print dst+destpath,"not in",created
                             try:
                                 Mkdir(dst+destpath,yabiusername=yabiusername)
+                            except BlockingException, be:
+                                result_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(be)) )    
                             except GETFailure, gf:
                                 # ignore. directory probably already exists
                                 pass
@@ -121,7 +128,7 @@ class FileRCopyResource(resource.PostableResource):
                                 print "Copy(",src_uri,",",dst_uri,")"
                             #print "Copy(",sbend+directory+"/"+file,",",dst+destpath+'/'+file,")"
                             Copy(src_uri,dst_uri,yabiusername=yabiusername)
-                            Sleep(0.5)
+                            Sleep(0.1)
                     
                     result_channel.callback(
                                                     http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Copied successfuly\n")
