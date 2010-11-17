@@ -20,7 +20,7 @@ from django.db.transaction import TransactionManagementError
 from yabiadmin.yabi.models import Backend, BackendCredential, Tool, User
 from yabiadmin.yabiengine import backendhelper 
 from yabiadmin.yabiengine import storehelper as StoreHelper
-from yabiadmin.yabiengine.commandlinehelper import CommandLineHelper
+from yabiadmin.yabiengine.commandlinehelper import CommandLineHelper, quote_argument
 from yabiadmin.yabiengine.models import Workflow, Task, Job, StageIn
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
 from yabiadmin.yabiengine.YabiJobException import YabiJobException
@@ -563,7 +563,8 @@ class EngineTask(Task):
                 continue
 
             # replace one instance of placeholder for this file
-            self.command = self.command.replace('$', url_join(self.fsbackend_parts.path,self.working_dir, "input", filename), 1)
+            quoted_filename = quote_argument(url_join(self.fsbackend_parts.path, self.working_dir, "input", filename))
+            self.command = self.command.replace('$', quoted_filename, 1)
 
             self.create_stagein(param=dirpath+'/', file=filename, scheme=self.fsscheme,
                            hostname=self.fsbackend_parts.hostname,
@@ -574,7 +575,8 @@ class EngineTask(Task):
         ## BATCH PARAM STAGEIN
         if batch_file:
             # add the task specific file replacing the % in the command line
-            self.command = self.command.replace("%", url_join(self.fsbackend_parts.path,self.working_dir, "input", batch_file))
+            quoted_filename = quote_argument(url_join(self.fsbackend_parts.path, self.working_dir, "input", batch_file))
+            self.command = self.command.replace("%", quoted_filename)
 
             self.create_stagein(param=uri, file=batch_file, scheme=self.fsscheme,
                            hostname=self.fsbackend_parts.hostname,

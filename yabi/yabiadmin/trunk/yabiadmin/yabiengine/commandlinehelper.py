@@ -86,16 +86,18 @@ class CommandLineHelper():
                     input_file = (f, tp.input_filetype_extensions(),) # NB it's a tuple
                     self._batch_files.append(input_file)
                 self.param_dict[tp.switch] = ['%'] # use place holder now in self.command
-
-            else:
+            elif tp.input_file:
                 # add to job level stagins, later at task level we'll check these and add a stagein if needed
                 # only add if it is an input file parameter
-                if tp.input_file:
-                    filecount = len(self.param_dict[tp.switch])
-                    for f in self.param_dict[tp.switch]:
-                        input_file = (f, tp.input_filetype_extensions(),) # NB it's a tuple
-                        self._parameter_files.append(input_file)
-                    self.param_dict[tp.switch] = ['$ '* filecount] # use place holder now in self.command
+                filecount = len(self.param_dict[tp.switch])
+                for f in self.param_dict[tp.switch]:
+                    input_file = (f, tp.input_filetype_extensions(),) # NB it's a tuple
+                    self._parameter_files.append(input_file)
+                self.param_dict[tp.switch] = ['$ '* filecount] # use place holder now in self.command
+            else:
+                # Since argument quoting won't be done when the task is built,
+                # unlike file parameters, we should do it here.
+                self.param_dict[tp.switch] = map(quote_argument, self.param_dict[tp.switch])
 
             self.command.append(tp.switch_use.formatstring % {"switch":tp.switch, "value":self.param_dict[tp.switch][0]})
 
@@ -150,3 +152,11 @@ class CommandLineHelper():
                 value.append( item )
         
         return value
+
+
+# Helper function to do basic command argument quoting.
+def quote_argument(s):
+    ESCAPE_CHARS = r'\"'
+    for c in ESCAPE_CHARS:
+        s = s.replace(c, "\\" + c)
+    return '"' + s + '"'
