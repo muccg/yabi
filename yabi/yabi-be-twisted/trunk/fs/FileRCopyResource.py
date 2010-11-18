@@ -93,7 +93,9 @@ class FileRCopyResource(resource.PostableResource):
                 try:
                     # get a recursive listing of the source
                     try:
+                        print "PRE"
                         fsystem = List(path=src,recurse=True,yabiusername=yabiusername)
+                        print "POST"
                     except BlockingException, be:
                         result_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(be)) )
                     
@@ -133,6 +135,8 @@ class FileRCopyResource(resource.PostableResource):
                     result_channel.callback(
                                                     http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Copied successfuly\n")
                                 )
+                except BlockingException, be:
+                    result_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(be)) )    
                 except Exception, e:
                     result_channel.callback(
                                                     http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, str(e))

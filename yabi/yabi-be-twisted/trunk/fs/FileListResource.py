@@ -6,7 +6,7 @@ import sys, os
 import stackless
 import json
 
-from Exceptions import PermissionDenied, InvalidPath
+from Exceptions import PermissionDenied, InvalidPath, BlockingException
 from globus.Auth import NoCredentials, AuthException
 from globus.CertificateProxy import ProxyInitError
 
@@ -82,10 +82,14 @@ class FileListResource(resource.PostableResource):
             try:
                 lister=bend.ls(hostname,path=path, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream=json.dumps(lister)))
-            except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError, AuthException), exception:
+            except BlockingException, be:
+                client_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(be)))
+            except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
                 #print "IP"
                 client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
                 #print "POST CALLBACK"
+            except Exception, e:
+                client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
             
         tasklet = stackless.tasklet(do_list)
         tasklet.setup()
