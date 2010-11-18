@@ -125,7 +125,8 @@ YabiCredential.prototype.createForm = function () {
     isOnRecord(
         this.credential.password,
         this.form.querySelector(".password-container"),
-        "placeholder"
+        "placeholder",
+        ""
     );
 
     // Hide the confirm password box until the password is actually changed.
