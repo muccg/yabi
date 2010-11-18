@@ -280,6 +280,14 @@ YabiCredential.prototype.validate = function () {
 
     var data = {};
     var update = 0;
+    
+    var checkDelete = function (value, prompt) {
+        if (value === "") {
+            return window.confirm(prompt);
+        }
+
+        return true;
+    };
 
     var getValue = function (name) {
         var element = self.form.querySelector("input[name='" + name + "'], select[name='" + name + "'], textarea[name='" + name +"']");
@@ -293,6 +301,10 @@ YabiCredential.prototype.validate = function () {
 
     var username = getValue("username");
     if (username !== null && username !== this.credential.username) {
+        if (!checkDelete(username, "You have chosen to delete your username. Are you sure you want to continue?")) {
+            return null;
+        }
+
         data.username = username;
         update++;
     }
@@ -304,18 +316,30 @@ YabiCredential.prototype.validate = function () {
             return null;
         }
 
+        if (!checkDelete(password, "You have chosen to delete your password. Are you sure you want to continue?")) {
+            return null;
+        }
+
         data.password = password;
         update++;
     }
 
     var certificate = getValue("certificate");
     if (certificate !== null) {
+        if (!checkDelete(certificate, "You have chosen to delete your certificate. Are you sure you want to continue?")) {
+            return null;
+        }
+
         data.certificate = certificate;
         update++;
     }
 
     var key = getValue("key");
     if (key !== null) {
+        if (!checkDelete(key, "You have chosen to delete your key. Are you sure you want to continue?")) {
+            return null;
+        }
+
         data.key = key;
         update++;
     }
