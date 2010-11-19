@@ -12,7 +12,7 @@ from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Resume, Mkdir, Rm, 
 import traceback
 from Exceptions import BlockingException
 
-DEBUG = True
+DEBUG = False
 
 class TaskFailed(Exception):
     pass
