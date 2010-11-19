@@ -27,6 +27,8 @@ from conf import config
 
 from TaskManager.TaskTools import RemoteInfo
 
+from globus.Auth import NoCredentials, AuthException
+
 # for Job status updates, poll this often
 def JobPollGeneratorDefault():
     """Generator for these MUST be infinite. Cause you don't know how long the job will take. Default is to hit it pretty hard."""
@@ -125,7 +127,12 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
             if creds:
                 self.EnsureAuthedWithCredentials(host, **creds)
             else:
-                self.EnsureAuthed(yabiusername, scheme,username,host,"/")
+                try:
+                    self.EnsureAuthed(yabiusername, scheme,username,host,"/")
+                except AuthException, ae:
+                    # auth exception while looking for status. We should wait and try again.
+                    # TODO: turn this into resume???? or not?
+                    Sleep(30.0)
             processprotocol = globus.Run.status( usercert, eprfile, host )
             
             while not processprotocol.isDone():

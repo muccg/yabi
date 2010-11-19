@@ -12,7 +12,7 @@ from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Resume, Mkdir, Rm, 
 import traceback
 from Exceptions import BlockingException
 
-DEBUG = False
+DEBUG = True
 
 class TaskFailed(Exception):
     pass
@@ -324,6 +324,8 @@ class MainTask(Task):
                 Copy(src,dst, yabiusername=self.yabiusername)
                 self.log("Copying %s to %s Success"%(src,dst))
             except GETFailure, error:
+                if "503" in error.message[1]:
+                    raise                               # reraise a blocking error so our top level catcher will catch it and block the task
                 # error copying!
                 print "TASK[%s]: Copy %s to %s Error!"%(self.taskid,src,dst)
                 self.status("error")
@@ -357,6 +359,8 @@ class MainTask(Task):
         try:
             Mkdir(outputuri, yabiusername=self.yabiusername)
         except GETFailure, error:
+            if "503" in error.message[1]:
+                    raise                               # reraise a blocking error so our top level catcher will catch it and block the task
             # error making directory
             print "TASK[%s]:Mkdir failed!"%(self.taskid)
             self.status("error")
@@ -407,6 +411,8 @@ class MainTask(Task):
                     Exec(uri, command=task['exec']['command'], remote_info=task['remoteinfourl'],stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)                # this blocks untill the command is complete.
                     self.log("Execution finished")
                 except GETFailure, error:
+                    if "503" in error.message[1]:
+                        raise                               # reraise a blocking error so our top level catcher will catch it and block the task
                     # error executing
                     print "TASK[%s]: Execution failed!"%(self.taskid)
                     self.status("error")
@@ -461,6 +467,8 @@ class MainTask(Task):
                     Resume(self._jobid, uri, command=task['exec']['command'], stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)                # this blocks untill the command is complete.
                     self.log("Execution finished")
                 except GETFailure, error:
+                    if "503" in error.message[1]:
+                        raise                               # reraise a blocking error so our top level catcher will catch it and block the task
                     # error executing
                     print "TASK[%s]: Execution failed!"%(self.taskid)
                     self.status("error")
@@ -488,6 +496,8 @@ class MainTask(Task):
             RCopy(outputuri,task['stageout'], yabiusername=self.yabiusername)
             self.log("Files successfuly staged out")
         except GETFailure, error:
+            if "503" in error.message[1]:
+                    raise                               # reraise a blocking error so our top level catcher will catch it and block the task
             # error executing
             print "TASK[%s]: Stageout failed!"%(self.taskid)
             self.status("error")
@@ -510,6 +520,8 @@ class MainTask(Task):
                     print "RM1:",dst_url
                 Rm(dst_url, yabiusername=self.yabiusername, recurse=True)
             except GETFailure, error:
+                if "503" in error.message[1]:
+                    raise                               # reraise a blocking error so our top level catcher will catch it and block the task
                 # error deleting. This is logged but is non fatal
                 print "TASK[%s]: Delete %s Error!"%(self.taskid, dst_url)
                 #status("error")
@@ -525,6 +537,8 @@ class MainTask(Task):
                 print "RM2:",dst_url
             Rm(dst_url, yabiusername=self.yabiusername, recurse=True)
         except GETFailure, error:
+            if "503" in error.message[1]:
+                    raise                               # reraise a blocking error so our top level catcher will catch it and block the task
             # error deleting. This is logged but is non fatal
             print "TASK[%s]: Delete %s Error!"%(self.taskid, dst_url)
             #status("error")

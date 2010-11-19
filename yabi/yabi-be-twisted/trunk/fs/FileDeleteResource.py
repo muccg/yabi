@@ -4,7 +4,7 @@ from twisted.internet import defer, reactor
 import weakref
 import sys, os, json, stackless
 
-from Exceptions import PermissionDenied, InvalidPath
+from Exceptions import PermissionDenied, InvalidPath, BlockingException
 from globus.Auth import NoCredentials
 from globus.CertificateProxy import ProxyInitError
 
@@ -86,6 +86,10 @@ class FileDeleteResource(resource.PostableResource):
             except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
                 #print "rm call failed...\n%s"%traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
+            except BlockingException, be:
+                client_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(be)))
+            except Exception, e:
+                client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))    
             
         tasklet = stackless.tasklet(do_rm)
         tasklet.setup()

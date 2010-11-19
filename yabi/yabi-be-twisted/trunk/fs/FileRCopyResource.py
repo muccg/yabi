@@ -9,6 +9,7 @@ import stackless
 from TaskManager.TaskTools import Sleep, Copy, List, Mkdir, GETFailure
 
 from utils.parsers import parse_url
+from utils.stacklesstools import GETFailure
 
 from Exceptions import BlockingException
 
@@ -136,7 +137,12 @@ class FileRCopyResource(resource.PostableResource):
                                                     http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Copied successfuly\n")
                                 )
                 except BlockingException, be:
-                    result_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(be)) )    
+                    result_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(be)) )
+                except GETFailure, gf:
+                    if "503" in gf.message[1]:
+                        result_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(gf)) )
+                    else:
+                        result_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, str(e)) )
                 except Exception, e:
                     result_channel.callback(
                                                     http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, str(e))
