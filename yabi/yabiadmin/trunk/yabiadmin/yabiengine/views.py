@@ -54,6 +54,44 @@ def task(request):
         logger.critical(traceback.format_exc())
         return HttpResponseServerError("Error requesting task.")
 
+def blockedtask(request):
+    if "origin" not in request.REQUEST:
+        return HttpResponseServerError("Error requesting task. No origin identifier set.")
+    
+    # verify that the requesters origin is correct
+    origin = request.REQUEST["origin"]
+    ip,port = origin.split(":")
+    exp_ip = settings.BACKEND_IP
+    exp_port = settings.BACKEND_PORT
+    if ip != exp_ip or port != exp_port:
+        ipaddress = request.META[ "HTTP_X_FORWARDED_FOR" if "HTTP_X_FORWARDED_FOR" in request.META else "REMOTE_ADDR" ]
+        logger.critical("IP %s requested blocked task but had incorrect identifier set. Expected id %s:%s but got %s:%s instead."%(ipaddress,exp_ip,exp_port,ip,port))
+        return HttpResponseServerError("Error requesting task. Origin incorrect. This is not the admin you are looking for")
+       
+    try:
+        # only expose tasks that are ready and are intended for the expeceted backend
+        tasks = Task.objects.filter(status=STATUS_RESUME, expected_ip=exp_ip, expected_port=exp_port)
+
+        print "TASKS",tasks
+
+        if tasks:
+            task = tasks[0]
+            task.status=STATUS_REQUESTED
+            task.save()
+            logger.debug('requested resumption task id: %s command: %s' % (task.id, task.command))
+            return HttpResponse(task.json())
+        else:
+            raise ObjectDoesNotExist("No more tasks")  
+        
+    except ObjectDoesNotExist:
+        return HttpResponseNotFound("Object not found. Bleck!")
+    except Exception, e:
+        logger.critical("Caught Exception:")
+        import traceback
+        logger.critical(e)
+        logger.critical(traceback.format_exc())
+        return HttpResponseServerError("Error requesting task.")
+
 def status(request, model, id):
     logger.debug('model: %s id: %s' % (model, id))
     models = {'task':EngineTask, 'job':EngineJob, 'workflow':EngineWorkflow}
@@ -84,7 +122,7 @@ def status(request, model, id):
             m = models[model]
             obj = m.objects.get(id=id)
             obj.status=status
-            if status != STATUS_BLOCKED:
+            if status != STATUS_BLOCKED and status!= STATUS_RESUME:
                 obj.percent_complete = STATUS_PROGRESS_MAP[status]
             obj.save()
 

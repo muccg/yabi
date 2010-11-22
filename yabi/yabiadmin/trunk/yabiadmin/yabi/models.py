@@ -10,6 +10,8 @@ from crypto import aes_enc_hex, aes_dec_hex
 
 from django.contrib.memcache import KeyspacedMemcacheClient
 
+from constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK
+
 DEBUG = False
 
 class DecryptedCredentialNotAvailable(Exception): pass
@@ -386,6 +388,18 @@ class Credential(Base):
         ksc = KeyspacedMemcacheClient()
         ksc.add(key=mckey, val=mcval, time=time_to_cache)
         
+        # unblock our blocked tasks
+        self.unblock_all_blocked_tasks()
+        
+        # rewalk any of this users workflows that are marked for rewalking
+        from yabiadmin.yabiengine.tasks import walk
+        wfs=self.rewalk_workflows()
+        ids = [W.id for W in wfs]
+        wfs.update(status=STATUS_READY)
+        for id in ids:
+            print "WALK----------->",id
+            walk.delay(workflow_id=id)
+       
     def get(self):
         """return the decrypted cert if available. Otherwise raise exception"""
         if not self.encrypted:
@@ -431,6 +445,20 @@ class Credential(Base):
     @property
     def is_cached(self):
         return self.is_memcached()
+        
+    def blocked_tasks(self):
+        """This looks at all the blocked tasks for the user this credential belongs to
+        and returns a queryset of all the tasks in a blocked status for that user"""
+        from yabiengine.models import Task
+        return Task.objects.filter(job__workflow__user=self.user).filter(status=STATUS_BLOCKED)
+        
+    def rewalk_workflows(self):
+        from yabiengine.models import Workflow
+        return Workflow.objects.filter(user=self.user).filter(status=STATUS_REWALK)
+                
+    def unblock_all_blocked_tasks(self):
+        """Set the status on all tasks blocked for this user to 'resume' so they can resume"""
+        self.blocked_tasks().update(status=STATUS_RESUME)     
         
 class Backend(Base):
     name = models.CharField(max_length=255)

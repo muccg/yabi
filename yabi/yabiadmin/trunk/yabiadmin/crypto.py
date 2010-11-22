@@ -84,7 +84,7 @@ def aes_dec_base64(data,key, check=False):
 
 def aes_dec_hex(data,key, check=False):
     """decrypt a base64 encoded encrypted block"""
-    ciphertext = binascii.unhexlify("".join(data.split("\n")))
+    ciphertext = binascii.unhexlify("".join("".join(data.split("\n")).split("\r")))
     return aes_dec(ciphertext, key, check)
     
 def contains_binary(data):

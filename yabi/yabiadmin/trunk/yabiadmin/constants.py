@@ -5,7 +5,7 @@ Things that don't really belong in settings because they never change, you know!
 """
 
 # status settings that can be used on workflow, job and task.
-STATUS = ['pending','ready','requested','running','complete','error','blocked']
+STATUS = ['pending','ready','requested','running','complete','error','blocked','resume','rewalk']
 
 # constants
 STATUS_PENDING = 'pending'
@@ -15,6 +15,8 @@ STATUS_RUNNING = 'running'
 STATUS_COMPLETE = 'complete'
 STATUS_ERROR = 'error'
 STATUS_BLOCKED = 'blocked'
+STATUS_RESUME = 'resume'
+STATUS_REWALK = 'rewalk'
 
 STATUS_PROGRESS_MAP = {
     'pending':0.0,

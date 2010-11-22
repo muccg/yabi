@@ -35,4 +35,4 @@ def credential_uri(request, yabiusername):
     except ObjectDoesNotExist, odne:
         return HttpResponseNotFound("Object not found")
     except DecryptedCredentialNotAvailable, dcna:
-        return HttpResponse("Decrypted Credential Not Available: %s"%dcna, status=500)
+        return HttpResponse("Decrypted Credential Not Available: %s"%dcna, status=503)
