@@ -25,7 +25,7 @@ from twisted.web2 import stream, http, responsecode, http_headers
 # import conf so we can get the location our tempfiles should be stored in
 from conf import config
 
-from TaskManager.TaskTools import RemoteInfo
+from TaskManager.TaskTools import RemoteInfo, Sleep
 
 from globus.Auth import NoCredentials, AuthException
 
@@ -168,7 +168,12 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
                 self.EnsureAuthedWithCredentials(host, **creds)
             else:
                 # TODO: how to fix the globus credential gather if we dont have a path here?
-                self.EnsureAuthed(yabiusername,scheme,username,host,"/")
+                try:
+                    self.EnsureAuthed(yabiusername, scheme,username,host,"/")
+                except AuthException, ae:
+                    # auth exception while looking for status. We should wait and try again.
+                    # TODO: turn this into resume???? or not?
+                    Sleep(30.0)
         except globus.Auth.AuthException, ae:
             # connection problems.
             channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = "Could not get auth credentials for %s://%s@%s. %s\n"%(scheme,username,host,str(ae)) ))
