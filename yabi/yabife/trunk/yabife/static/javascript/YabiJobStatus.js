@@ -42,8 +42,15 @@ YabiJobStatus.prototype.createPanel = function(headerText, bodyEl) {
         zIndex: 999
     });
 
-    bodyEl.style.maxHeight = (YAHOO.util.Dom.getViewportHeight() * 0.75) + "px";
-    bodyEl.style.maxWidth = (YAHOO.util.Dom.getViewportWidth() * 0.75) + "px";
+    var listener = new YAHOO.util.KeyListener(document, {
+        keys: 27
+    },
+    function (e) {
+        YAHOO.util.Event.stopEvent(e);
+        panel.hide();
+    });
+
+    panel.cfg.queueProperty("keylisteners", listener);
 
     return panel;
 };

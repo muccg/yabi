@@ -1,10 +1,114 @@
-.status-overlay {
+/* The overlay mask YUI provides. */
+.mask {
+    background: rgb(0, 0, 0);
+    filter: alpha(opacity=70);
+    opacity: 0.7;
 }
 
-.status-overlay .bd {
+
+/* The container element for the panel. */
+.yui-panel-container {
+    position: fixed;
+    top: 20%;
+    bottom: 20%;
+    left: 20%;
+    right: 20%;
+    overflow: hidden;
+}
+
+
+/* The panel proper. This set of style rules doesn't currently support panels
+ * with footers. */
+.yui-panel {
+    background: white;
+    margin-left: auto;
+    margin-right: auto;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border: solid 3px black;
+    border: solid 3px rgba(0, 0, 0, 0.85);
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+}
+
+.yui-panel .hd {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 133%;
+    font-weight: bold;
+    height: 21px;
+    color: white;
+    text-shadow: 0px -1px 1px #666;
+    background-color: #3879e5;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#5aa4fb', EndColorStr='#3879e5');
+    background: -moz-linear-gradient(top, #5aa4fb, #3879e5);
+    background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
+    text-align: left;
+    padding: 4px 16px;
+    margin: 4px 0 0 4px;
+    -moz-border-radius-topleft: 5px; 
+    -webkit-border-top-left-radius: 5px;
+    -moz-border-radius-topright: 5px;
+    -webkit-border-top-right-radius: 5px;
+}
+
+.yui-panel .bd {
+    padding: 4px;
+    position: absolute;
+    border-top: solid 3px #3879e5;
+    top: 33px;
+    bottom: 0;
+    left: 0;
+    right: 0;
     overflow: auto;
 }
 
+
+/* Style up a fake close button. */
+.yui-panel .container-close {
+    position: absolute;
+    display: block;
+    top: 0;
+    right: 4px;
+    height: 12px;
+    width: 12px;
+
+    padding: 4px;
+    text-indent: -10000px;
+    cursor: pointer;
+
+    background-color: white;
+    background-image: url(../images/close.png);
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+
+    border-left: solid 1px #ccc;
+    border-right: solid 1px #ccc;
+    border-bottom: solid 1px #ccc;
+    -moz-border-radius-bottomleft: 5px; 
+    -webkit-border-bottom-left-radius: 5px;
+    -moz-border-radius-bottomright: 5px;
+    -webkit-border-bottom-right-radius: 5px;
+}
+
+.yui-panel .container-close:hover {
+    background-color: #3879e5;
+    background-color: -moz-linear-gradient(bottom, #5aa4fb, #3879e5);
+    background-color: -webkit-gradient(linear, left bottom, left top, from(#5aa4fb), to(#3879e5));
+    background-image: url(../images/close-hover.png);
+
+    border-left: solid 1px #3879e5;
+    border-right: solid 1px #3879e5;
+    border-bottom: solid 1px #3879e5;
+}
+
+
+/* Rules specific to the job status panel. */
 .status-overlay dl, .status-overlay dt, .status-overlay dd {
     list-style: none;
     text-align: left;

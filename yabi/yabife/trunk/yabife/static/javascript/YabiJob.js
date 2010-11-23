@@ -504,11 +504,7 @@ YabiJob.prototype.renderStatus = function(status) {
     this.jobEl.appendChild(this.statusEl);
 
     if (status != "pending") {
-        this.statusTooltip = new YAHOO.widget.Tooltip("status-" + this.workflow.workflowId + "-" + this.jobId, {
-            context: this.statusEl,
-            text: "job status (click for more information)"
-        });
-
+        this.statusEl.title = "job status (click for more information)";
         YAHOO.util.Event.addListener(this.statusEl, "click", this.showStatusCallback, this);
     }
 };
