@@ -15,6 +15,7 @@ from django.contrib.auth import login as django_login, logout as django_logout, 
 #from models import *
 
 from decorators import memcache, authentication_required
+from yabiadmin.responses import *
 
 # our storage
 import db
@@ -39,7 +40,7 @@ def workflows_for_user(request):
         result = db.get_workflows( username )
         return HttpResponse(json.dumps(db.get_workflows( username )),mimetype='application/json')
 
-    return HttpResponseServerError('Unsupported request method\n')
+    return JsonMessageResponseNotAllowed(["GET"])
 
 @authentication_required
 def get_add_or_update_workflow(request, workflow_id):
@@ -48,7 +49,7 @@ def get_add_or_update_workflow(request, workflow_id):
     db.ensure_user_db(username)
 
     if not workflow_id or not username:
-        return HttpResponseNotFound('No workflow_id or no username supplied.\n')
+        return JsonMessageResponseNotFound('No workflow_id or no username supplied')
 
     if request.method == 'POST': 
         try:
@@ -85,7 +86,7 @@ def get_add_or_update_workflow(request, workflow_id):
     
         except db.NoSuchWorkflow, e:
             logger.critical('%s' % e)
-            return HttpResponseNotFound(e)
+            return JsonMessageResponseNotFound(e)
             
         return HttpResponse("Success")
                                         
@@ -95,12 +96,12 @@ def get_add_or_update_workflow(request, workflow_id):
     
         except (ObjectDoesNotExist, Exception), e:
             logger.critical('%s' % e)
-            return HttpResponseNotFound(e)
+            return JsonMessageResponseNotFound(e)
             
         return HttpResponse(json.dumps(workflow),
                                         mimetype='application/json')
                                         
-    return HttpResponseServerError('Unsupported request method\n')
+    return JsonMessageResponseNotAllowed(["POST"])
 
 @authentication_required
 def workflow_id_tags(request, id=None):
@@ -109,7 +110,7 @@ def workflow_id_tags(request, id=None):
     db.ensure_user_db(username)
     
     if not id or not username:
-        return HttpResponseNotFound('No id or no username supplied.\n')
+        return JsonMessageResponseNotFound('No id or no username supplied')
 
     if request.method == 'POST': 
         try:
@@ -120,7 +121,7 @@ def workflow_id_tags(request, id=None):
     
         except db.NoSuchWorkflow, e:
             logger.critical('%s' % e)
-            return HttpResponseNotFound(e)
+            return JsonMessageResponseNotFound(e)
             
         return HttpResponse("Success")
                                         
@@ -130,12 +131,12 @@ def workflow_id_tags(request, id=None):
     
         except (ObjectDoesNotExist, Exception), e:
             logger.critical('%s' % e)
-            return HttpResponseNotFound(e)
+            return JsonMessageResponseNotFound(e)
             
         return HttpResponse(json.dumps(tags),
                                         mimetype='application/json')
                                         
-    return HttpResponseServerError('Unsupported request method\n')
+    return JsonMessageResponseNotAllowed(["POST"])
 
 
 @authentication_required
@@ -152,5 +153,5 @@ def workflow_date_search(request):
         
         return HttpResponse(json.dumps(workflows), mimetype='application/json')
     
-    return HttpResponseServerError('Unsupported request method\n')
+    return JsonMessageResponseNotAllowed(["GET"])
     

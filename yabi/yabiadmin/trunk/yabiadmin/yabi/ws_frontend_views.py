@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from urllib import quote
 from urlparse import urlparse, urlunparse
 
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError, Http404
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from yabiadmin.yabi.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential
@@ -22,7 +22,7 @@ from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.yabiengine.tasks import build
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_backendcredential_for_uri, copy_file, rm_file, send_upload_hash
-from yabiadmin.utils import json_error
+from yabiadmin.responses import *
 from yabi.file_upload import *
 from django.contrib import auth
 from yabiadmin.decorators import memcache, authentication_required
@@ -80,7 +80,7 @@ def tool(request, *args, **kwargs):
         tool = Tool.objects.get( name=toolname )
         return HttpResponse(tool.json())
     except ObjectDoesNotExist:
-        return HttpResponseNotFound(json_error("Object not found"))
+        return JsonMessageResponseNotFound("Object not found")
 
 
 
@@ -133,7 +133,7 @@ def menu(request):
 
         return HttpResponse(json.dumps(output))
     except ObjectDoesNotExist:
-        return HttpResponseNotFound(json_error("Object not found"))
+        return JsonMessageResponseNotFound("Object not found")
 
 @authentication_required
 def ls(request):
@@ -152,9 +152,16 @@ def ls(request):
 
         return HttpResponse(filelisting)
     except DecryptedCredentialNotAvailable, dcna:
-        return HttpResponse(json_error(dcna),status=500)
+        return JsonMessageResponseServerError(dcna)
+    except AssertionError, e:
+        # The file handling functions in the backendhelper module throw
+        # assertion errors when they receive an unexpected HTTP status code
+        # from the backend. Since failed assertions don't result in the
+        # exception having a useful message, we'll intercept it here and return
+        # a response with something a little more useful for the user.
+        return JsonMessageResponseNotFound("The requested directory either doesn't exist or is inaccessible")
     except Exception, e:
-        return HttpResponseNotFound(json_error(e))
+        return JsonMessageResponseNotFound(e)
 
 
 @authentication_required
@@ -168,8 +175,15 @@ def copy(request):
         status, data = copy_file(yabiusername,request.GET['src'],request.GET['dst'])
 
         return HttpResponse(content=data, status=status)
+    except AssertionError, e:
+        # The file handling functions in the backendhelper module throw
+        # assertion errors when they receive an unexpected HTTP status code
+        # from the backend. Since failed assertions don't result in the
+        # exception having a useful message, we'll intercept it here and return
+        # a response with something a little more useful for the user.
+        return JsonMessageResponseNotFound("The requested copy operation failed: please check that both the source file and destination exist and are accessible")
     except Exception, e:
-        return HttpResponseNotFound(json_error(e))
+        return JsonMessageResponseNotFound(e)
 
 @authentication_required
 def rm(request):
@@ -183,8 +197,15 @@ def rm(request):
         status, data = rm_file(yabiusername,request.GET['uri'])
 
         return HttpResponse(content=data, status=status)
+    except AssertionError, e:
+        # The file handling functions in the backendhelper module throw
+        # assertion errors when they receive an unexpected HTTP status code
+        # from the backend. Since failed assertions don't result in the
+        # exception having a useful message, we'll intercept it here and return
+        # a response with something a little more useful for the user.
+        return JsonMessageResponseNotFound("The requested file or directory is inaccessible and cannot be deleted")
     except Exception, e:
-        return HttpResponseNotFound(json_error(e))
+        return JsonMessageResponseNotFound(e)
 
 
 @authentication_required
@@ -216,7 +237,9 @@ def get(request):
         return response
 
     except Exception, e:
-        return HttpResponseNotFound(json_error(e))
+        # The response from this view is displayed directly to the user, so
+        # we'll send a normal response rather than a JSON message.
+        raise Http404
 
 
 @authentication_required
@@ -254,6 +277,8 @@ def put(request):
     except httplib.CannotSendRequest, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
         raise
+    except KeyError, e:
+        return JsonMessageResponseBadRequest("No files uploaded")
 
 
 @authentication_required
@@ -367,12 +392,12 @@ def save_credential(request, id):
         credential = Credential.objects.get(id=id)
         yabiuser = User.objects.get(name=request.user.username)
     except Credential.DoesNotExist:
-        return HttpResponseNotFound(json_error("Credential ID not found"))
+        return JsonMessageResponseNotFound("Credential ID not found")
     except User.DoesNotExist:
-        return HttpResponseNotFound(json_error("User not found"))
+        return JsonMessageResponseNotFound("User not found")
 
     if credential.user != yabiuser:
-        return HttpResponseForbidden(json_error("User does not have access to the given credential"))
+        return JsonMessageResponseForbidden("User does not have access to the given credential")
 
     # Special case: if we're only updating the expiry, we should do that first,
     # since we can do that without unencrypting encrypted credentials.
@@ -383,7 +408,7 @@ def save_credential(request, id):
             try:
                 credential.expires_on = datetime.now() + timedelta(seconds=int(request.POST["expiry"]))
             except TypeError:
-                return HttpResponseBadRequest(json_error("Invalid expiry"))
+                return JsonMessageResponseBadRequest("Invalid expiry")
 
     # OK, let's see if we have any of password, key or certificate. If so, we
     # replace all of the fields and clear the encrypted flag, since this
@@ -399,4 +424,4 @@ def save_credential(request, id):
 
     credential.save()
 
-    return HttpResponse(json.dumps("Credential updated successfully"))
+    return JsonMessageResponse("Credential updated successfully")

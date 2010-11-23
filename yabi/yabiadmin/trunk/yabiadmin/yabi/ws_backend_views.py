@@ -13,6 +13,7 @@ from yabiadmin.yabi.models import User, ToolGrouping, ToolGroup, Tool, ToolParam
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from yabiadmin.yabiengine import backendhelper
 from yabiadmin.yabiengine.urihelper import uriparse
+from yabiadmin.responses import *
 
 import logging
 logger = logging.getLogger('yabiadmin')
@@ -33,6 +34,6 @@ def credential_uri(request, yabiusername):
         bc = backendhelper.get_backendcredential_for_uri(yabiusername, uri)
         return HttpResponse(bc.json())
     except ObjectDoesNotExist, odne:
-        return HttpResponseNotFound("Object not found")
+        return JsonMessageResponseNotFound("Object not found")
     except DecryptedCredentialNotAvailable, dcna:
-        return HttpResponse("Decrypted Credential Not Available: %s"%dcna, status=503)
+        return JsonMessageResponseServerError("Decrypted Credential Not Available: %s" % dcna, status=503)
