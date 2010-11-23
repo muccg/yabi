@@ -202,6 +202,13 @@ def wslogout(request):
         "success": True,
     }
 
+@authentication_required
+def credentialproxy(request, url):
+    if request.user.get_profile().credential_access:
+        return adminproxy(request, url)
+
+    return HttpResponseForbidden(json_error("You do not have access to this Web service"))
+
 @login_required
 def password(request):
     if request.method != "POST":
