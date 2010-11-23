@@ -15,6 +15,9 @@ class Appliance(models.Model):
 class User(models.Model):
     user = models.OneToOneField(DjangoUser)
     appliance = models.ForeignKey(Appliance)
+    account_tab_access = models.BooleanField(default=True, help_text="Controls whether the user can access the account tab. If disabled, the user options and credentials flags will have no effect.")
+    user_option_access = models.BooleanField(default=True)
+    credential_access = models.BooleanField(default=True)
 
     def __unicode__(self):
         return "%s: %s" % (self.user.username, self.appliance.url)
