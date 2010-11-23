@@ -21,7 +21,7 @@ class UserAdmin(ExtJsonInterface, SuperuserOnlyModelAdmin):
             "fields": ("user", "appliance"),
         }),
         ("Permissions", {
-            "fields": ("account_tab_access", "user_option_access", "credential_access"),
+            "fields": ("user_option_access", "credential_access"),
         }),
     )
     list_display = ("user", "appliance")

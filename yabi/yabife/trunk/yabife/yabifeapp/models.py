@@ -15,7 +15,6 @@ class Appliance(models.Model):
 class User(models.Model):
     user = models.OneToOneField(DjangoUser)
     appliance = models.ForeignKey(Appliance)
-    account_tab_access = models.BooleanField(default=True, help_text="Controls whether the user can access the account tab. If disabled, the user options and credentials flags will have no effect.")
     user_option_access = models.BooleanField(default=True)
     credential_access = models.BooleanField(default=True)
 
@@ -24,3 +23,6 @@ class User(models.Model):
 
     class Meta:
         ordering = ["user__username"]
+
+    def has_account_tab(self):
+        return self.user_option_access or self.credential_access
