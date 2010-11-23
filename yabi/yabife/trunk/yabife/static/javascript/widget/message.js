@@ -17,6 +17,19 @@ YAHOO.util.Event.onDOMReady(function() {
         close.href = "#";
         el.appendChild(close);
 
+        /* Helper function to turn a HTTP response code into a YabiMessage
+         * error level. */
+        var guessErrorLevel = function(status) {
+            // IE handles 204 No Content as status code 1223. Yes, really.
+            if ((status >= 200 && status <= 299) || status == 1223) {
+                return "success";
+            }
+
+            /* There's no point trying to distinguish warnings and errors: if
+             * we're at this point, they're all errors. */
+            return "fail";
+        };
+
         // Internal function to actually show a message with a given CSS class.
         var show = function(cls, message) {
             el.className = cls;
@@ -42,6 +55,34 @@ YAHOO.util.Event.onDOMReady(function() {
             close: function() {
                 var anim = new YAHOO.util.Anim(el, { opacity: { to: 0 } }, 0.25, YAHOO.util.Easing.easeOut);
                 anim.animate();
+            },
+            handleResponse: function(response) {
+                var message, level = guessErrorLevel(response.status);
+
+                try {
+                    // Handle a valid JSON structure.
+                    var data = YAHOO.lang.JSON.parse(response.responseText);
+
+                    if ("message" in data) {
+                        message = data.message;
+                    }
+
+                    if ("level" in data) {
+                        level = data.level;
+                    }
+                }
+                catch (e) {
+                    /* No valid JSON returned, so we'll check the error level
+                     * based on the status code: if it appears to be a failure,
+                     * then we'll display a generic error message. */
+                    if (level == "fail") {
+                        message = "An error occurred within YABI. No further information is available.";
+                    }
+                }
+
+                if (message) {
+                    show(level, message);
+                }
             },
             fail: function(message) { show("fail", message); },
             success: function(message) { show("success", message); },

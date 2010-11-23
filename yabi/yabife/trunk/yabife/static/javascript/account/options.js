@@ -69,16 +69,13 @@ var YabiAccountPassword = function (options) {
                 if (newPassword.length >= 6) {
                     var callback = {
                         success: function(o) {
-                            var message = YAHOO.lang.JSON.parse(o.responseText);
-                            YAHOO.ccgyabi.widget.YabiMessage.success(message);
+                            YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
 
                             self.enableForm();
                             self.form.reset();
                         },
                         failure: function(o) {
-                            var error = YAHOO.lang.JSON.parse(o.responseText);
-                            YAHOO.ccgyabi.widget.YabiMessage.fail(error.error);
-
+                            YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
                             self.enableForm();
                         }
                     };

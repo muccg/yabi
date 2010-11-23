@@ -614,7 +614,7 @@ YabiWorkflow.prototype.hydrate = function(workflowId) {
     jsUrl =  baseURL;
     jsCallback = {
             success: this.hydrateCallback,
-            failure: this.hydrateCallback,
+            failure: YAHOO.ccgyabi.widget.YabiMessage.handleResponse,
             argument: [this] };
     this.jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
 
@@ -830,20 +830,16 @@ YabiWorkflow.prototype.hydrateCallback = function(o) {
  
     o.argument[0].fadeHydratingDiv();
 
-    try {
-        target = o.argument[0];
-        
-        obj = YAHOO.lang.JSON.parse(json);
-        
-        //preprocess wrapper meta data
-        target.setTags(obj.tags);
-        
-        target.setStatus(obj.status);
-        
-        target.solidify(obj.json);
-    } catch (e) {
-        YAHOO.ccgyabi.widget.YabiMessage.fail("Error loading workflow");
-    }
+    target = o.argument[0];
+    
+    obj = YAHOO.lang.JSON.parse(json);
+    
+    //preprocess wrapper meta data
+    target.setTags(obj.tags);
+    
+    target.setStatus(obj.status);
+    
+    target.solidify(obj.json);
 };
 
 YabiWorkflow.prototype.delJobCallback = function(e, invoke) {

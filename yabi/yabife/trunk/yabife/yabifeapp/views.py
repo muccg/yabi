@@ -32,6 +32,7 @@ from yabife.yabifeapp.models import User
 from ldap import LDAPError, MOD_REPLACE
 from yabife.ldapclient import LDAPClient
 from yabife.ldaputils import get_userdn_of
+from yabife.responses import *
 
 from django.contrib import logging
 logger = logging.getLogger('yabife')
@@ -207,33 +208,33 @@ def credentialproxy(request, url):
     if request.user.get_profile().credential_access:
         return adminproxy(request, url)
 
-    return HttpResponseForbidden(json_error("You do not have access to this Web service"))
+    return JsonMessageResponseForbidden("You do not have access to this Web service")
 
 @login_required
 def password(request):
     if request.method != "POST":
-        return HttpResponseNotAllowed(["POST"])
+        return JsonMessageResponseNotAllowed(["POST"])
 
     profile = request.user.get_profile()
     if not profile.user_option_access:
-        return HttpResponseForbidden(json_error("You do not have access to this Web service"))
+        return JsonMessageResponseForbidden("You do not have access to this Web service")
 
     required = ("currentPassword", "newPassword", "confirmPassword")
     for key in required:
         if key not in request.POST:
-            return HttpResponseBadRequest(json_error("Expected key '%s' not found in request" % key))
+            return JsonMessageResponseBadRequest("Expected key '%s' not found in request" % key)
 
     # Check the current password.
     if not authenticate(username=request.user.username, password=request.POST["currentPassword"]):
-        return HttpResponseForbidden(json_error("Current password is incorrect"))
+        return JsonMessageResponseForbidden("Current password is incorrect")
 
     # The new passwords should at least match and meet whatever rules we decide
     # to impose (currently a minimum six character length).
     if request.POST["newPassword"] != request.POST["confirmPassword"]:
-        return HttpResponseBadRequest(json_error("The new passwords must match"))
+        return JsonMessageResponseBadRequest("The new passwords must match")
 
     if len(request.POST["newPassword"]) < 6:
-        return HttpResponseBadRequest(json_error("The new password must be at least 6 characters in length"))
+        return JsonMessageResponseBadRequest("The new password must be at least 6 characters in length")
 
     # OK, let's actually try to change the password.
     request.user.set_password(request.POST["newPassword"])
@@ -254,11 +255,11 @@ def password(request):
     except (AttributeError, LDAPError), e:
         # Send back something fairly generic.
         logger.debug("Error connecting to server: %s" % str(e))
-        return HttpResponseServerError(json_error("Error changing password"))
+        return JsonMessageResponseServerError("Error changing password")
 
     request.user.save()
 
-    return HttpResponse(json.dumps("Password changed successfully"))
+    return JsonMessageResponse("Password changed successfully")
 
     
 # Implementation methods
@@ -338,12 +339,3 @@ def yabiadmin_logout(username):
         return json_resp.get('success', False)
     except ObjectDoesNotExist:
         pass
-
-def json_error(message):
-    if type(message) is str:
-        return json.dumps({'error':message})
-    
-    import traceback
-    return json.dumps({'error':traceback.format_exc()})
-
-

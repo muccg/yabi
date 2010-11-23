@@ -126,6 +126,7 @@ YabiFileSelector.prototype.updateBrowser = function(location) {
     //add loading el
     this.loading = new YAHOO.ccgyabi.widget.Loading(this.fileListEl);
     this.loading.show();
+    this.fileListEl.scrollTop = 0;
     
     //disable drop target if location is empty (ie. the root)
     //disable uploader as well
@@ -281,7 +282,13 @@ YabiFileSelector.prototype.handleDrop = function(src, dest, srcFileSelector, des
     jsUrl =  baseURL + "?src=" + escape(src) + "&dst=" + escape(dest);
     jsCallback = {
             success: this.copyResponse,
-            failure: this.copyResponse,
+            failure: function (o) {
+                YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
+
+                if (!YAHOO.lang.isUndefined(messageManager)) {
+                    messageManager.removeMessage(o);
+                }
+            },
             argument: [destFileselector] };
     jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
 
@@ -425,7 +432,7 @@ YabiFileSelector.prototype.deleteRemoteFile = function(file) {
     jsUrl =  baseURL + "?uri=" + escape(file.toString());
     jsCallback = {
     success: this.deleteRemoteResponse,
-    failure: this.deleteRemoteResponse,
+    failure: YAHOO.ccgyabi.widget.YabiMessage.handleResponse,
         argument: [this] };
     jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
 };
@@ -495,7 +502,10 @@ YabiFileSelector.prototype.hydrate = function(path) {
     jsUrl =  baseURL + "?uri=" + escape(path);
     jsCallback = {
             success: this.hydrateResponse,
-            failure: this.hydrateResponse,
+            failure: function (o) {
+                YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
+                o.argument[0].loading.hide();
+            },
             argument: [this] };
     this.jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
 };
@@ -595,7 +605,7 @@ YabiFileSelector.prototype.uploadClickCallback = function(e, target) {
     jsUrl =  baseURL;
     jsCallback = {
             upload: target.uploadResponse,
-            failure: target.uploadResponse,
+            failure: YAHOO.ccgyabi.widget.YabiMessage.handleResponse,
             argument: [target] };
     YAHOO.util.Connect.setForm(target.uploadFormEl, true);
     jsTransaction = YAHOO.util.Connect.asyncRequest('POST', jsUrl, jsCallback);

@@ -366,7 +366,7 @@ YabiWorkflowCollection.prototype.hydrateResponse = function(o) {
         
         target.solidify(YAHOO.lang.JSON.parse(json));
     } catch (e) {
-        YAHOO.ccgyabi.widget.YabiMessage.fail("Error fetching workflow listing");
+        YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
         target.solidify([]);
     }
 };

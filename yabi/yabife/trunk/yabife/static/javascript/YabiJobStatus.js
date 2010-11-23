@@ -58,9 +58,7 @@ YabiJobStatus.prototype.show = function() {
 
     var callbacks = {
         success: function(o) { self.showCallback(o); },
-        failure: function() {
-            YAHOO.ccgyabi.widget.YabiMessage.fail("Error loading job status");
-        }
+        failure: YAHOO.ccgyabi.widget.YabiMessage.handleResponse
     };
 
     var url = "engine/job/" + this.workflow.workflowId + "/" + (this.job.jobId - 1);

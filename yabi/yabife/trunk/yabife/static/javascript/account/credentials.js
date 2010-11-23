@@ -46,9 +46,7 @@ YabiAccountCredentials.prototype.createList = function (id) {
             loading.hide();
         },
         failure: function(o) {
-            var error = YAHOO.lang.JSON.parse(o.responseText);
-            YAHOO.ccgyabi.widget.YabiMessage.fail(error.error);
-
+            YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
             loading.hide();
         }
     };
@@ -256,16 +254,13 @@ YabiCredential.prototype.save = function () {
     if (data) {
         var callback = {
             success: function (o) {
-                var message = YAHOO.lang.JSON.parse(o.responseText);
-                YAHOO.ccgyabi.widget.YabiMessage.success(message);
+                YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
 
                 document.querySelector(".yabiRightColumn").removeChild(self.container);
                 self.credentials.createList(self.credential.id);
             },
             failure: function (o) {
-                var error = YAHOO.lang.JSON.parse(o.responseText);
-                YAHOO.ccgyabi.widget.YabiMessage.fail(error.error);
-
+                YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
                 self.enableForm();
             }
         };
