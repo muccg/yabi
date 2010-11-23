@@ -11,7 +11,9 @@
         <a href="${h.url('/jobs')}" id="yabi-tabs-jobs">jobs</a>
         <a href="${h.url('/design')}" id="yabi-tabs-design">design</a>
         <a href="${h.url('/files')}" id="yabi-tabs-files">files</a>
+% if request.user.get_profile().has_account_tab():
         <a href="${h.url('/account')}" id="yabi-tabs-account">account</a>
+% endif
     </div>
 </%def>
 

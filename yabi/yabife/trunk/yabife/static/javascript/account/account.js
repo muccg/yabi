@@ -1,4 +1,6 @@
-function YabiAccount(username) {
+function YabiAccount(username, showUserOptions, showCredentials) {
+    this.showUserOptions = showUserOptions;
+    this.showCredentials = showCredentials;
     this.username = username;
 
     this.paneContainer = document.querySelector(".yabiLeftColumn");
@@ -15,19 +17,17 @@ YabiAccount.prototype.hydrate = function() {
 
     this.loading.show();
 
-    // TODO: AJAX call to determine if the credentials button should be shown.
-
-    this.solidify({
-        showCredentials: true
-    });
+    this.solidify();
 };
 
-YabiAccount.prototype.solidify = function(obj) {
+YabiAccount.prototype.solidify = function() {
     this.list = new RadioList(this.paneContainer);
 
-    this.options = new YabiAccountOptions(this);
+    if (this.showUserOptions) {
+        this.options = new YabiAccountOptions(this);
+    }
 
-    if (obj.showCredentials) {
+    if (this.showCredentials) {
         this.credentials = new YabiAccountCredentials(this);
     }
 

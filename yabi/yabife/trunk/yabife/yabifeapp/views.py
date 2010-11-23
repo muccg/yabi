@@ -59,8 +59,9 @@ class LoginForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput(render_value=False))
 
 # views
-def render_page(template, request, **kwargs):
-    response = HttpResponse()
+def render_page(template, request, response=None, **kwargs):
+    if not response:
+        response = HttpResponse()
 
     # Check for the debug cookie or GET variable.
     debug = False
@@ -98,7 +99,10 @@ def jobs(request):
 
 @login_required
 def account(request):
-    return render_page("account.html", request)
+    if request.user.get_profile().has_account_tab():
+        return render_page("account.html", request)
+
+    return render_page("403.html", request, response=HttpResponseForbidden())
 
 def login(request):
     if request.method == 'POST':
@@ -202,6 +206,10 @@ def wslogout(request):
 def password(request):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
+
+    profile = request.user.get_profile()
+    if not profile.user_option_access:
+        return HttpResponseForbidden(json_error("You do not have access to this Web service"))
 
     required = ("currentPassword", "newPassword", "confirmPassword")
     for key in required:

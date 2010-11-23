@@ -2,6 +2,7 @@
 <%! from json import dumps %>
 
 <%def name="header()">
+    <% profile = request.user.get_profile() %>
     <link rel="stylesheet" href="${h.url('/static/css/account.css')}" />
 
     <script type="text/javascript" src="${h.url('/static/javascript/widget/radiolist.js')}"></script>
@@ -15,12 +16,25 @@
         var account;
 
         YAHOO.util.Event.onDOMReady(function() {
-            account = new YabiAccount(${dumps(request.user.username)});
+% if profile.user_option_access:
+            var userOption = true;
+% else:
+            var userOption = false;
+% endif
+
+% if profile.credential_access:
+            var credential = true;
+% else:
+            var credential = false;
+% endif
+
+            account = new YabiAccount(${dumps(request.user.username)}, userOption, credential);
         });
     </script>
 </%def>
 
 <%def name="body()">
+    <% profile = request.user.get_profile() %>
     <div id="doc3" class="yui-t1">
         <div id="yabi-account-mode">
             ${self.bodyhd()}
@@ -30,6 +44,7 @@
             <div class="yabiMiddleColumn"></div>
 
             <div class="yabiRightColumn">
+% if profile.user_option_access:
                 <div class="template" id="optionsPassword">
                     <h1>Change Password</h1>
 
@@ -70,7 +85,9 @@
                         </div>
                     </form>
                 </div>
+% endif
 
+% if profile.credential_access:
                 <div class="template" id="credential">
                     <h1>Edit Credential</h1>
 
@@ -162,6 +179,7 @@
                         </div>
                     </form>
                 </div>
+% endif
             </div>
         </div>
     </div>
