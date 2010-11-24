@@ -222,7 +222,7 @@ def get_backend_list(yabiusername):
         logger.critical("Hostname: %s" % parts.hostname)
         raise
 
-def get_file(yabiusername, uri):
+def get_file(yabiusername, uri, bytes=None):
     """
     Return a file at given uri
     """
@@ -230,6 +230,10 @@ def get_file(yabiusername, uri):
 
     try:
         resource = "%s?uri=%s" % (settings.YABIBACKEND_GET, quote(uri))
+
+        if bytes is not None:
+            resource += "&bytes=%d" % int(bytes)
+
         logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
         r = POST(resource,get_credential_for_uri(yabiusername, uri).get())
         

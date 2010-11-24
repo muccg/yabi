@@ -225,7 +225,14 @@ def get(request):
             logger.critical('Unable to get filename from uri: %s' % uri)
             filename = 'default.txt'
 
-        response = HttpResponse(get_file(yabiusername, uri))
+        bytes = request.GET.get("bytes", None)
+        if bytes is not None:
+            try:
+                bytes = int(bytes)
+            except ValueError:
+                bytes = None
+
+        response = HttpResponse(get_file(yabiusername, uri, bytes=bytes))
 
         mimetypes.init([os.path.normpath('/usr/local/etc/mime.types')])
         mtype, file_encoding = mimetypes.guess_type(filename, False)
