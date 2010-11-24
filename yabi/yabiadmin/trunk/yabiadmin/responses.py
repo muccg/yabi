@@ -15,11 +15,14 @@ class JsonMessageResponse(HttpResponse):
     to be displayed to the user.
     """
 
-    def __init__(self, message="", level=SUCCESS, status=200):
-        json = dumps({
+    def __init__(self, message="", level=SUCCESS, status=200, **kwargs):
+        data = {
             "message": str(message),
             "level": level,
-        })
+        }
+
+        data.update(kwargs)
+        json = dumps(data)
 
         super(JsonMessageResponse, self).__init__(content=json, content_type="application/json; charset=UTF-8", status=status)
 

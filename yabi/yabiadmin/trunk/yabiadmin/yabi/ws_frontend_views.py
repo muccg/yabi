@@ -269,7 +269,7 @@ def put(request):
         data=[]
         resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(bc.credential.username),quote(bc.credential.password),quote( bc.credential.cert),quote(bc.credential.key))
         h = post_multipart(settings.YABIBACKEND_SERVER, resource, data, files)
-        return HttpResponse('ok')
+        return JsonMessageResponse(message="Upload successful", uri=uri)
         
     except socket.error, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
