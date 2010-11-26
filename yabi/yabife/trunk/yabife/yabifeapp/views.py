@@ -2,16 +2,14 @@
 # Create your views here.
 import httplib
 from urllib import urlencode, unquote, quote
-import base64
 import copy
-import hashlib
 import os
 
 from django.conf.urls.defaults import *
 from django.conf import settings
 from django.http import HttpResponse
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError, HttpResponseUnauthorized
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, HttpResponseUnauthorized
 from django.shortcuts import render_to_response, get_object_or_404, render_mako
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import webhelpers
@@ -21,19 +19,14 @@ from django.contrib.auth import login as django_login, logout as django_logout, 
 from django.contrib.auth.models import SiteProfileNotAvailable, User as DjangoUser
 from django import forms
 from django.core.servers.basehttp import FileWrapper
-from django.template.loader import get_template
 from django.utils import simplejson as json
 
 from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
 from yaphc.memcache_persister import MemcacheCookiePersister
 
 from yabife.yabifeapp.models import User
-
-from ldap import LDAPError, MOD_REPLACE
-from yabife.ldapclient import LDAPClient
-from yabife.ldaputils import get_userdn_of
-from yabife.responses import *
-
+from django.views.decorators.csrf import csrf_exempt
+from django.core.files.uploadhandler import FileUploadHandler
 from django.contrib import logging
 logger = logging.getLogger('yabife')
 
@@ -53,6 +46,15 @@ def proxy(request, url, base):
 def adminproxy(request, url):
     logger.debug('')
     return proxy(request, url, request.user.get_profile().appliance.url)
+    
+class FileUploadStreamer(from django.views.decorators.csrf import csrf_exempt
+
+@authentication_required
+@csrf_exempt
+def fileupload(request, url):
+    logger.debug()
+    
+    
 
 # forms
 class LoginForm(forms.Form):
@@ -60,50 +62,17 @@ class LoginForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput(render_value=False))
 
 # views
-def render_page(template, request, response=None, **kwargs):
-    if not response:
-        response = HttpResponse()
-
-    # Check for the debug cookie or GET variable.
-    debug = False
-
-    if request.COOKIES.get("yabife-debug"):
-        debug = True
-    elif request.GET.get("yabife-debug"):
-        debug = True
-        response.set_cookie("yabife-debug", "1", path=webhelpers.url("/"))
-
-    # Actually render the template.
-    context = {
-        "h": webhelpers,
-        "request": request,
-        "debug": debug,
-    }
-    context.update(kwargs)
-
-    template = get_template(template)
-    response.write(template.render(**context))
-
-    return response
-
 @login_required
 def files(request):
-    return render_page("files.html", request)
+    return render_to_response('files.html', {'h':webhelpers, 'request':request})
 
 @login_required
 def design(request, id=None):
-    return render_page("design.html", request, reuseId=id)
+    return render_to_response('design.html', {'h':webhelpers, 'request':request, 'reuseId':id})
     
 @login_required
 def jobs(request):
-    return render_page("jobs.html", request)
-
-@login_required
-def account(request):
-    if request.user.get_profile().has_account_tab():
-        return render_page("account.html", request)
-
-    return render_page("403.html", request, response=HttpResponseForbidden())
+    return render_to_response('jobs.html', {'h':webhelpers, 'request':request})
 
 def login(request):
     if request.method == 'POST':
@@ -203,65 +172,6 @@ def wslogout(request):
         "success": True,
     }
 
-@authentication_required
-def credentialproxy(request, url):
-    if request.user.get_profile().credential_access:
-        return adminproxy(request, url)
-
-    return JsonMessageResponseForbidden("You do not have access to this Web service")
-
-@login_required
-def password(request):
-    if request.method != "POST":
-        return JsonMessageResponseNotAllowed(["POST"])
-
-    profile = request.user.get_profile()
-    if not profile.user_option_access:
-        return JsonMessageResponseForbidden("You do not have access to this Web service")
-
-    required = ("currentPassword", "newPassword", "confirmPassword")
-    for key in required:
-        if key not in request.POST:
-            return JsonMessageResponseBadRequest("Expected key '%s' not found in request" % key)
-
-    # Check the current password.
-    if not authenticate(username=request.user.username, password=request.POST["currentPassword"]):
-        return JsonMessageResponseForbidden("Current password is incorrect")
-
-    # The new passwords should at least match and meet whatever rules we decide
-    # to impose (currently a minimum six character length).
-    if request.POST["newPassword"] != request.POST["confirmPassword"]:
-        return JsonMessageResponseBadRequest("The new passwords must match")
-
-    if len(request.POST["newPassword"]) < 6:
-        return JsonMessageResponseBadRequest("The new password must be at least 6 characters in length")
-
-    # OK, let's actually try to change the password.
-    request.user.set_password(request.POST["newPassword"])
-    
-    # And, more importantly, in LDAP if we can.
-    try:
-        userdn = get_userdn_of(request.user.username)
-        client = LDAPClient(settings.AUTH_LDAP_SERVER)
-        client.bind_as(userdn, request.POST["currentPassword"])
-
-        md5 = hashlib.md5(request.POST["newPassword"]).digest()
-        modlist = (
-            (MOD_REPLACE, "userPassword", "{MD5}%s" % (base64.encodestring(md5).strip(), )),
-        )
-        client.modify(userdn, modlist)
-
-        client.unbind()
-    except (AttributeError, LDAPError), e:
-        # Send back something fairly generic.
-        logger.debug("Error connecting to server: %s" % str(e))
-        return JsonMessageResponseServerError("Error changing password")
-
-    request.user.save()
-
-    return JsonMessageResponse("Password changed successfully")
-
-    
 # Implementation methods
 
 def redirect_to_login():
@@ -282,23 +192,17 @@ def make_request_object(url, request):
         return PostRequest(url, params, files=files)
 
 def make_http_request(request, user, ajax_call):
-    try:
-        with memcache_http(user) as http:
-            try:
-                resp, contents = http.make_request(request)
-                our_resp = HttpResponse(contents, status=int(resp.status))
-                copy_non_empty_headers(resp, our_resp, ('content-disposition', 'content-type'))
-                return our_resp
-            except UnauthorizedError:
-                if ajax_call:
-                    return HttpResponseUnauthorized() 
-                else:
-                    return redirect_to_login()
-    except ObjectDoesNotExist:
-        if ajax_call:
-            return HttpResponseUnauthorized() 
-        else:
-            return redirect_to_login()
+    with memcache_http(user) as http:
+        try:
+            resp, contents = http.make_request(request)
+            our_resp = HttpResponse(contents, status=int(resp.status))
+            copy_non_empty_headers(resp, our_resp, ('content-disposition', 'content-type'))
+            return our_resp
+        except UnauthorizedError:
+            if ajax_call:
+                return HttpResponseUnauthorized() 
+            else:
+                return redirect_to_login()
 
 def copy_non_empty_headers(src, to, header_names):
     for header_name in header_names:
@@ -330,12 +234,11 @@ def yabiadmin_login(username, password):
 def yabiadmin_logout(username):
     # TODO get the url from somewhere
     logout_request = PostRequest('ws/logout')
-    try:
-        with memcache_http(username) as http:
-            resp, contents = http.make_request(logout_request)
-            if resp.status != 200: 
-                return False
-            json_resp = json.loads(contents)
-        return json_resp.get('success', False)
-    except ObjectDoesNotExist:
-        pass
+    with memcache_http(username) as http:
+        resp, contents = http.make_request(logout_request)
+        if resp.status != 200: 
+            return False
+        json_resp = json.loads(contents)
+    return json_resp.get('success', False)
+
+
