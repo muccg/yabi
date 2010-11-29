@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 from django.conf import settings
 from django.conf.urls.defaults import *
@@ -6,6 +7,7 @@ from yabife import admin
 urlpatterns = patterns('yabife.yabifeapp.views',
     (r'^(?P<url>engine/job/.*)$', 'adminproxy'),
     (r'^(?P<url>ws/account/credential.*)$', 'credentialproxy'),
+    (r'^(?P<url>ws/fs/put.*)$', 'fileupload'),
     (r'^(?P<url>ws/.*)$', 'adminproxy'),
     (r'^(?P<url>workflows/.*)$', 'adminproxy'),                       
     (r'^[/]*$', 'design'),

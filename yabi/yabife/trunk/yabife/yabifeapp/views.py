@@ -46,8 +46,8 @@ def proxy(request, url, base):
 def adminproxy(request, url):
     logger.debug('')
     return proxy(request, url, request.user.get_profile().appliance.url)
-    
-class FileUploadStreamer(from django.views.decorators.csrf import csrf_exempt
+
+from django.views.decorators.csrf import csrf_exempt
 
 @authentication_required
 @csrf_exempt
