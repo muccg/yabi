@@ -90,7 +90,7 @@ class Tool(Base):
     enabled.help_text="Enable tool in frontend."
     backend.help_text="The execution backend for this tool."
     fs_backend.help_text="The filesystem backend for this tool."
-    accepts_input.help_text="Check the effect of this."
+    accepts_input.help_text="If checked, this tool will accept inputs from prior tools rather than presenting file select widgets."
     batch_on_param.help_text="Specify switch that will be fed files in batch mode. i.e. -i in blast."
     module.help_text="Comma separated list of modules to load."
     
