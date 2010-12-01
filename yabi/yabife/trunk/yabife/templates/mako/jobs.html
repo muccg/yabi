@@ -140,6 +140,9 @@
                 // Reset the default pane to a known state.
                 list.selectItem(outputs);
 
+                // Remove any preview pane that might be open.
+                this.workflow.fileOutputsSelector.purgePreviewElements();
+
                 /* The event isn't resent if the item is already selected, but
                  * we want the height calculation to be redone anyway. */
                 outputs.sendEvent("select");
