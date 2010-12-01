@@ -239,9 +239,24 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             };
             
             fileEl.href = appURL + "preview?uri=" + escape(invoker.object.toString());
+
+            /* Both browse and non-browse mode use the preview button, but they
+             * need to add them at different points in the tree, so we'll build
+             * them here but not append them to the document or hook up the
+             * event handler. */
+            previewEl = document.createElement("div");
+            previewEl.className = "preview";
+            previewImg = new Image();
+            previewImg.alt = 'preview';
+            previewImg.title = 'preview';
+            previewImg.src = appURL + "static/images/preview.png";
+            previewEl.appendChild( previewImg );
             
             if (!this.isBrowseMode) {
                 YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
+
+                fileEl.appendChild( previewEl );
+                YAHOO.util.Event.addListener(previewEl, "click", this.previewFileCallback, invoker);
             } else {
                 YAHOO.util.Event.addListener(fileEl, "click", this.previewFileCallback, invoker);
 
@@ -255,13 +270,6 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
                 fileEl.appendChild( deleteEl );
                 YAHOO.util.Event.addListener(deleteEl, "click", this.deleteRemoteFileCallback, invoker);
                 
-                previewEl = document.createElement("div");
-                previewEl.className = "preview";
-                previewImg = new Image();
-                previewImg.alt = 'preview';
-                previewImg.title = 'preview';
-                previewImg.src = appURL + "static/images/preview.png";
-                previewEl.appendChild( previewImg );
                 fileEl.appendChild( previewEl );
                 YAHOO.util.Event.addListener(previewEl, "click", this.previewFileCallback, invoker);
                 
