@@ -3,6 +3,8 @@ YAHOO.namespace("ccgyabi.widget");
 YAHOO.util.Event.onDOMReady(function() {
     /**
      * Faux-singleton to implement simple message display.
+     *
+     * @constructor
      */
     YAHOO.ccgyabi.widget.YabiMessage = (function() {
         // Grab the containing element.

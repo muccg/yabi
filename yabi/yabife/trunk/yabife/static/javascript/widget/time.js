@@ -1,5 +1,13 @@
 YAHOO.namespace("ccgyabi.widget");
 
+
+/**
+ * Parses a string in ISO 8601 date/time format.
+ *
+ * @param {String} s The string to parse.
+ * @throws String
+ * @type Date
+ */
 var parseISODate = function (s) {
     var re = /^([0-9]{2}|[0-9]{4})-([0-9]{2})-([0-9]{2})\s+([0-9]{2}):([0-9]{2}):([0-9]{2})/;
     var matches = s.match(re);
@@ -11,6 +19,14 @@ var parseISODate = function (s) {
     return new Date(matches[1], matches[2] - 1, matches[3], matches[4], matches[5], matches[6]);
 };
 
+/**
+ * Converts a given interval in seconds to an approximate, human friendly
+ * English representation of that interval.
+ *
+ * @param {Number} seconds The interval in seconds. This must be a non-negative
+ *                         number.
+ * @type String
+ */
 YAHOO.ccgyabi.widget.EnglishTime = function(seconds) {
     var units = [
         {

@@ -1,9 +1,26 @@
 YAHOO.namespace("ccgyabi.widget");
 
+
+/**
+ * A very, very basic object allowing simple events to be sent and handled by
+ * arbitrary objects extending from this one.
+ *
+ * @constructor
+ */
 var EventEmitter = function () {
     this.events = {};
 };
 
+/**
+ * Adds an event listener.
+ *
+ * @param {String} type The event type (defined by the object extending from
+ *                      EventEmitter).
+ * @param {Function} callback The function called when the event occurs. This
+ *                            function will receive at least one parameter
+ *                            (a simple event object supporting a
+ *                            stopPropagation method).
+ */
 EventEmitter.prototype.addEventListener = function (type, callback) {
     if (type in this.events) {
         this.events[type].push(callback);
@@ -13,6 +30,15 @@ EventEmitter.prototype.addEventListener = function (type, callback) {
     }
 };
 
+/**
+ * Sends an event to any registered callbacks. Generally, this would only be
+ * called from within the object extending EventEmitter, although there's
+ * nothing stopping this method being called from external contexts.
+ *
+ * @param {String} type The event type.
+ * @param ... Additional arguments will be sent to the callback functions as
+ *            additional arguments.
+ */
 EventEmitter.prototype.sendEvent = function (type) {
     var event = {
         stop: false,
@@ -35,7 +61,19 @@ EventEmitter.prototype.sendEvent = function (type) {
 };
 
 
-
+/**
+ * A basic radio list element: this constructs an unordered list with the
+ * appropriate event handlers to ensure that only one list item is selected at
+ * a time.
+ *
+ * No styling is performed within this object. The top-level ul element will
+ * have a "radio-list" class attached, and the selected list item will have a
+ * "selected" class (guaranteed to be only one element at most).
+ *
+ * @constructor
+ * @extends EventEmitter
+ * @param {Element} container The containing element.
+ */
 var RadioList = function (container) {
     this.container = container;
     this.items = [];
@@ -49,6 +87,12 @@ var RadioList = function (container) {
 
 RadioList.prototype = new EventEmitter();
 
+/**
+ * Creates an item within the radio list.
+ *
+ * @param label Either a string or an element to use as the label.
+ * @type RadioListItem
+ */
 RadioList.prototype.createItem = function (label) {
     var self = this;
     var item = new RadioListItem(this, label);
@@ -68,6 +112,9 @@ RadioList.prototype.createItem = function (label) {
     return item;
 };
 
+/**
+ * Destroys the radio list and removes it from the DOM.
+ */
 RadioList.prototype.destroy = function () {
     try {
         this.container.removeChild(this.list);
@@ -79,6 +126,12 @@ RadioList.prototype.destroy = function () {
     this.list = null;
 };
 
+/**
+ * Selects the given item. Note that the "change" event is only sent if the
+ * item given isn't already selected.
+ *
+ * @param {RadioListItem} The item to select.
+ */
 RadioList.prototype.selectItem = function (item) {
     // Deselect anything that's already selected.
     for (var i = 0; i < this.items.length; i++) {
@@ -100,6 +153,14 @@ RadioList.prototype.selectItem = function (item) {
 };
 
 
+/**
+ * An item within a {@see RadioList} object.
+ *
+ * @constructor
+ * @extends EventEmitter
+ * @param {RadioList} The list to attach the item to.
+ * @param label Either a string or Element to use as the label.
+ */
 var RadioListItem = function (list, label) {
     this.list = list;
     this.label = label;
@@ -118,12 +179,18 @@ var RadioListItem = function (list, label) {
 
 RadioListItem.prototype = new EventEmitter();
 
+/**
+ * Deselects the item and sends a "deselect" event.
+ */
 RadioListItem.prototype.deselect = function () {
     this.element.className = this.element.className.replace(/\bselected\b/, " ");
     this.selected = false;
     this.sendEvent("deselect");
 };
 
+/**
+ * Selects the item and sends a "select" event.
+ */
 RadioListItem.prototype.select = function () {
     this.element.className = this.element.className.replace(/\s*$/, " selected");
     this.selected = true;

@@ -453,6 +453,10 @@ YabiWorkflow.prototype.selectJob = function(object) {
         }
     }
 
+    /* Firing selectJob() used to occur within the for loop, but it's more
+     * logically sensible (and makes it easier to write code handling
+     * deselection and selection) to make all the deselectJob() calls above and
+     * then fire selectJob() last. */
     if (selectedIndex !== null) {
         this.jobs[selectedIndex].selectJob();
         this.selectedJob = object;
