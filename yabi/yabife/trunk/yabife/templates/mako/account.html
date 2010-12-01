@@ -3,14 +3,14 @@
 
 <%def name="header()">
     <% profile = request.user.get_profile() %>
-    <link rel="stylesheet" href="${h.url('/static/css/account.css')}" />
+    <link rel="stylesheet" href="${h.url('/static/css/account.css?20101201')}" />
 
-    <script type="text/javascript" src="${h.url('/static/javascript/widget/radiolist.js')}"></script>
-    <script type="text/javascript" src="${h.url('/static/javascript/widget/time.js')}"></script>
+    <script type="text/javascript" src="${h.url('/static/javascript/widget/radiolist.js?20101201')}"></script>
+    <script type="text/javascript" src="${h.url('/static/javascript/widget/time.js?20101201')}"></script>
 
-    <script type="text/javascript" src="${h.url('/static/javascript/account/account.js')}"></script>
-    <script type="text/javascript" src="${h.url('/static/javascript/account/credentials.js')}"></script>
-    <script type="text/javascript" src="${h.url('/static/javascript/account/options.js')}"></script>
+    <script type="text/javascript" src="${h.url('/static/javascript/account/account.js?20101201')}"></script>
+    <script type="text/javascript" src="${h.url('/static/javascript/account/credentials.js?20101201')}"></script>
+    <script type="text/javascript" src="${h.url('/static/javascript/account/options.js?20101201')}"></script>
 
     <script type="text/javascript">
         var account;
