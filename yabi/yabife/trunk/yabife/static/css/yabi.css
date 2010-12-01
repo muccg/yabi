@@ -4,20 +4,21 @@
     border:1px solid #ccc;
     padding:3px;
     font-weight:bold;
+    border-radius: 5px;
     -moz-border-radius: 5px;        
     -webkit-border-radius: 5px;
 }
 
 
 h1 {
-	margin-bottom:8px;
-	font-weight:bold;
+    margin-bottom:8px;
+    font-weight:bold;
     color:#666;
 }
 
 h2 {
-	margin-top:6px;
-	font-weight:bold;
+    margin-top:6px;
+    font-weight:bold;
     color:#f60;
 }
 
@@ -28,18 +29,15 @@ a, a.visited, a:visited {
 
 
 td {
-	background-color:transparent;
+    background-color:transparent;
 }
 
-#yabi-files-mode h1 {
-	color:#af239d;
-}
 #yabi-grid-mode h1 {
-	color:#af9d23;
+    color:#af9d23;
     padding:2px;
 }
 #yabi-help-mode h1 {
-	color:#529847;
+    color:#529847;
 }
 
 .runningWhere {
@@ -48,12 +46,12 @@ td {
 }
 
 .flowStatus {
-	width:15px;
-	height:15px;
-	padding:0px;
-	margin:0px;
-	border:0px;
-	position:absolute;
+    width:15px;
+    height:15px;
+    padding:0px;
+    margin:0px;
+    border:0px;
+    position:absolute;
     right: 1%;
     top: 5px;
     z-index:99;
@@ -68,23 +66,23 @@ html, body {
     padding-right:0px;
 }
 body {
-	position:relative;
+    position:relative;
     background:url(../images/yabi_bg.png) repeat-y;
 }
 #doc3 {
-//	height:99%;
-//	margin-bottom:5em;
-//	overflow:auto;
-	margin-right:0px;
-	padding-right:0px;
-	margin-left:0px;
-	padding-left:0px;
-	position:relative;
+/*    height:99%;*/
+/*    margin-bottom:5em;*/
+/*    overflow:auto;*/
+    margin-right:0px;
+    padding-right:0px;
+    margin-left:0px;
+    padding-left:0px;
+    position:relative;
 }
 #hd {
-	position:relative;
-	height:60px;
-	width:100%;
+    position:relative;
+    height:60px;
+    width:100%;
     border-bottom: 3px solid #3879e5;
     background-color:white;
 }
@@ -127,10 +125,10 @@ body {
 
 
 #hd #userinfo {
-	position:absolute;
-	top:24px;
-	right:4px;
-	font-size:80%;
+    position:absolute;
+    top:24px;
+    right:4px;
+    font-size:80%;
 }
 
 .addLink {
@@ -144,175 +142,89 @@ body {
 }
 
 #yui-main {
-	margin:0px;
-	overflow:hidden;
+    margin:0px;
+    overflow:hidden;
 }
 #yabi-col1 {
-	width:49.5%;
+    width:49.5%;
 }
 .yabi-column-contents {
-	padding:6px;
-	min-height:800px;
+    padding:6px;
+    min-height:800px;
 }
 #yabi-overlay {
-	display:none;
-	position:absolute;
-	opacity:0.6;
-	z-index:999;
-	top:63px;
-	left:0px;
-	background:#777;
-	border: 1px solid black;
+    display:none;
+    position:absolute;
+    opacity:0.6;
+    z-index:999;
+    top:63px;
+    left:0px;
+    background:#777;
+    border: 1px solid black;
 }
 #yabi-saving {
-	background-color:#fff;
-	font-size:120%;
-	padding:5px;
-	position:absolute;
-	top:120px;
-	left:30%;
-	border:3px solid #ccc;
-	z-index:1000;
+    background-color:#fff;
+    font-size:120%;
+    padding:5px;
+    position:absolute;
+    top:120px;
+    left:30%;
+    border:3px solid #ccc;
+    z-index:1000;
 }
 
 #yabi-loading {
-	background-color:#fff;
-	color: #FF6600;
-	font-size:120%;
-	padding:5px;
-	position:absolute;
-	top:120px;
-	left:30%;
-	border:3px solid #ccc;
-	z-index:1000;
+    background-color:#fff;
+    color: #FF6600;
+    font-size:120%;
+    padding:5px;
+    position:absolute;
+    top:120px;
+    left:30%;
+    border:3px solid #ccc;
+    z-index:1000;
 }
 
 
 #yabi-tabs {
-	position:absolute;
-	left:250px;
-	bottom:2px;
-	color:#fff;
+    position:absolute;
+    left:250px;
+    bottom:2px;
+    color:#fff;
 }
+
 #yabi-tabs a {
-	color:#ccc;
-	text-decoration:none;
-}
-#yabi-tabs-jobs {
-	padding:4px 16px 4px 16px;
-	background-color:#fff;
-	border-top:1px solid #eee;
-	border-left:1px solid #eee;
-	border-right:1px solid #eee;
-	font-weight:bold;
-    -moz-border-radius-topleft: 5px; 
-    -webkit-border-top-left-radius: 5px;
-    -moz-border-radius-topright: 5px;
-    -webkit-border-top-right-radius: 5px;
-}
-#yabi-jobs-mode #yabi-tabs-jobs, #yabi-tabs-jobs.hover, #yabi-tabs-jobs:hover {
-    background:#3879e5 url(../images/selectedWFbg.png) repeat-x;
-	background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
-    border-top:1px solid #3879e5;
-	border-left:1px solid #3879e5;
-	border-right:1px solid #3879e5;
-	color:white;
-    text-shadow:0px -1px 1px #666;    
-}
+    background-color: #fff;
+    color: #ccc;
+    font-weight: bold;
+    text-decoration: none;
 
-#yabi-jobs-mode #yabi-tabs-jobs, #yabi-design-mode #yabi-tabs-design, #yabi-files-mode #yabi-tabs-files, #yabi-account-mode #yabi-tabs-account {
-	font-size:133%;
-}
+    padding: 4px 16px 4px 16px;
 
-#yabi-tabs-design {
-	padding:4px 16px 4px 16px;
-	background-color:#fff;
-	border-top:1px solid #eee;
-	border-left:1px solid #eee;
-	border-right:1px solid #eee;
-	font-weight:bold;
-    -moz-border-radius-topleft: 5px; 
-    -webkit-border-top-left-radius: 5px;
-    -moz-border-radius-topright: 5px;
-    -webkit-border-top-right-radius: 5px;
-}
-#yabi-design-mode #yabi-tabs-design, #yabi-tabs-design.hover, #yabi-tabs-design:hover {
-    background:#3879e5 url(../images/selectedWFbg.png) repeat-x;
-	background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
-    border-top:1px solid #3879e5;
-	border-left:1px solid #3879e5;
-	border-right:1px solid #3879e5;
-	color:white;
-    text-shadow:0px -1px 1px #666;
-}
-#yabi-tabs-files {
-	padding:4px 16px 4px 16px;
-	background-color:#fff;
-	border-top:1px solid #eee;
-	border-left:1px solid #eee;
-	border-right:1px solid #eee;
-	font-weight:bold;
+    border-top: 1px solid #eee;
+    border-left: 1px solid #eee;
+    border-right: 1px solid #eee;
+
+    border-radius-top-left: 5px;
+    border-radius-top-right: 5px;
     -moz-border-radius-topleft: 5px; 
     -webkit-border-top-left-radius: 5px;
     -moz-border-radius-topright: 5px;
     -webkit-border-top-right-radius: 5px;
 }
 
-#yabi-tabs-help {
-	padding:4px 16px 4px 16px;
-	background-color:#fff;
-	border-top:1px solid #eee;
-	border-left:1px solid #eee;
-	border-right:1px solid #eee;
-	font-weight:bold;
-    -moz-border-radius-topleft: 5px; 
-    -webkit-border-top-left-radius: 5px;
-    -moz-border-radius-topright: 5px;
-    -webkit-border-top-right-radius: 5px;
-}
+#yabi-tabs a:hover {
+    color: white;
+    text-shadow: 0px -1px 1px #666;
 
-#yabi-help-mode #yabi-tabs-help, #yabi-tabs-help.hover, #yabi-tabs-help:hover {
-    background:#3879e5 url(../images/selectedWFbg.png) repeat-x;
-	background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
-    border-top:1px solid #3879e5;
-	border-left:1px solid #3879e5;
-	border-right:1px solid #3879e5;
-	color:white;
-    text-shadow:0px -1px 1px #666;
-}
+    background: #3879e5 url(../images/selectedWFbg.png) repeat-x;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#5aa4fb', EndColorStr='#3879e5');
+    background: -moz-linear-gradient(top, #5aa4fb, #3879e5);
+    background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
 
-
-#yabi-files-mode #yabi-tabs-files, #yabi-tabs-files.hover, #yabi-tabs-files:hover {
-    background:#3879e5 url(../images/selectedWFbg.png) repeat-x;
-	background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
-    border-top:1px solid #3879e5;
-	border-left:1px solid #3879e5;
-	border-right:1px solid #3879e5;
-	color:white;
-    text-shadow:0px -1px 1px #666;
-}
-
-#yabi-tabs-account {
-	padding:4px 16px 4px 16px;
-	background-color:#fff;
-	border-top:1px solid #eee;
-	border-left:1px solid #eee;
-	border-right:1px solid #eee;
-	font-weight:bold;
-    -moz-border-radius-topleft: 5px; 
-    -webkit-border-top-left-radius: 5px;
-    -moz-border-radius-topright: 5px;
-    -webkit-border-top-right-radius: 5px;
-}
-
-#yabi-tabs-account:hover, #yabi-tabs-account.hover, #yabi-account-mode #yabi-tabs-account {
-    background:#3879e5 url(../images/selectedWFbg.png) repeat-x;
-	background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
-    border-top:1px solid #3879e5;
-	border-left:1px solid #3879e5;
-	border-right:1px solid #3879e5;
-	color:white;
-    text-shadow:0px -1px 1px #666;
+    border-top: 1px solid #3879e5;
+    border-left: 1px solid #3879e5;
+    border-right: 1px solid #3879e5;
 }
 
 
@@ -332,9 +244,9 @@ body {
     font-size:85%;
 }
 #yabi-thumbnail a img {
-	border:1px solid silver;
-	margin:10px;
-	vertical-align: top;
+    border:1px solid silver;
+    margin:10px;
+    vertical-align: top;
 }
 
 
@@ -346,65 +258,60 @@ display:inline;
 
 
 
-//new json design objects ===================================
+/* new json design objects */
 
-#titleDiv {
-	width: 70%;
-	position: relative;
-	float: left;
-}
+/*#titleDiv {
+    width: 70%;
+    position: relative;
+    float: left;
+}*/
 
 #submitButton {
-	width: 25%;
-	float: right;
+    width: 25%;
+    float: right;
 }
 
 #container {
-	position: relative;
+    position: relative;
 }
 
 .workflowName {
-	color:#666;
-	font-size: 110%;
-	font-weight: bold;
+    color:#666;
+    font-size: 110%;
+    font-weight: bold;
     padding:6px;
     padding-left:14px;
     background:#fff;
     width:210px;
     height:1.2em;
     border:1px solid #eee;
+    border-radius: 5px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
+    box-shadow: 0px 1px 2px #eee;
     -moz-box-shadow: 0px 1px 2px #eee;
     -webkit-box-shadow: 0px 1px 2px #eee;
 }
 
 .invalidWorkflowName {
-	color:#666;
-	font-size: 110%;
-	font-weight: bold;
+    color:#666;
+    font-size: 110%;
+    font-weight: bold;
     padding:6px;
     padding-left:14px;
     background:#fff;
     width:210px;
     border:2px solid #f00;
+    border-radius: 5px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
+    box-shadow: 0px 1px 2px #eee;
     -moz-box-shadow: 0px 1px 2px #eee;
     -webkit-box-shadow: 0px 1px 2px #eee;
 }
 
-#yabi-design-mode .workflowName {
-    width:200px;
-    padding-left:6px;
-}
-
-#yabi-jobs-mode .workflowName {
-    width:310px;
-}
-
 .tagListContainer {
-	color:#b7c9e6;
+    color:#b7c9e6;
     margin-top:8px;
     padding:3px;
     padding-left:14px;
@@ -412,8 +319,10 @@ display:inline;
     background:#ebf0f3;
     width:310px;
     border:1px solid #b7c9e6;
+    border-radius: 5px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
+    box-shadow: 0px 1px 2px #eee;
     -moz-box-shadow: 0px 1px 2px #eee;
     -webkit-box-shadow: 0px 1px 2px #eee;
     position:relative;
@@ -421,6 +330,7 @@ display:inline;
 
 .tagListContainer input {
     background:white;
+    border-radius: 4px;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     width:250px;
@@ -460,14 +370,14 @@ display:inline;
 }
 
 .workflowContainer {
-//	background-color: #dbe5f6;
-	display: block;
-//	min-height: 80px;
-	position: relative;
-	top: 0px;
-	left: 0px;
-	width: 100%;
-	padding: 1px;
+/*    background-color: #dbe5f6;*/
+    display: block;
+/*    min-height: 80px;*/
+    position: relative;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    padding: 1px;
     margin-top:10px;
     margin-bottom:10px;
     margin-right: 15px;
@@ -477,8 +387,8 @@ display:inline;
     color:#8ba9dc;
     text-shadow:0px 1px 1px #fff;
     border-bottom:2px solid white;
-//    margin-left:15px;
-//    margin-right:15px;
+/*    margin-left:15px;*/
+/*    margin-right:15px;*/
     margin-top:20px;
     padding-left:30px;
 }
@@ -509,26 +419,30 @@ display:inline;
     color:#8ba9dc;
     text-shadow:0px 1px 1px #fff;
     border-top:2px solid white;
-//    margin-left:15px;
-//    margin-right:15px;
+/*    margin-left:15px;*/
+/*    margin-right:15px;*/
     padding-left:30px;
 }
 
 .jobSuperContainer {
     position: relative;
-	z-index: 0;
+    z-index: 0;
 }
 
 .jobContainer {
-	border:1px solid #ccc;
-	background: #eee url(../images/job_bg.png);
-	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#f6f6f6));
+    /* IE gradient filter omitted intentionally. */
+    border:1px solid #ccc;
+    background: #eee url(../images/job_bg.png);
+    background: -moz-linear-gradient(top, #fff, #f6f6f6);
+    background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#f6f6f6));
+    box-shadow: 0px 1px 2px #ccc;
     -moz-box-shadow: 0px 1px 2px #ccc;
     -webkit-box-shadow: 0px 1px 2px #ccc;
-	padding:4px;
-	padding-left: 12px;
+    padding:4px;
+    padding-left: 12px;
     padding-right: 10px;
-	position:relative;
+    position:relative;
+    border-radius: 4px;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     font-size: 95%;
@@ -539,15 +453,19 @@ display:inline;
 }
 
 .selectedJobContainer {
-	border:1px solid #3879e6;
-	background-color: #3879e5;
+    /* IE gradient filter omitted intentionally. */
+    border:1px solid #3879e6;
+    background-color: #3879e5;
     background:#3879e5 url(../images/selectedWFbg.png) repeat-x;
-	background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
+    background: -moz-linear-gradient(top, #5aa4fb, #3879e5);
+    background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
+    box-shadow: 0px 0px 3px #3879e6;
     -moz-box-shadow: 0px 0px 3px #3879e6;
     -webkit-box-shadow: 0px 0px 3px #3879e6;
-	padding:4px;
-	padding-left: 12px;
-	position:relative;
+    padding:4px;
+    padding-left: 12px;
+    position:relative;
+    border-radius: 4px;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     font-size: 95%;
@@ -558,14 +476,18 @@ display:inline;
 }
 
 .loadFailJobContainer {
-	border:1px solid #f77;
-	background: #fcc url(../images/job_loadfail_bg.png);
-	background: -webkit-gradient(linear, left top, left bottom, from(#fee), to(#fdd));
+    border:1px solid #f77;
+    background: #fcc url(../images/job_loadfail_bg.png);
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffeeee', EndColorStr='#ffdddd');
+    background: -moz-linear-gradient(top, #ffeeee, #ffdddd);
+    background: -webkit-gradient(linear, left top, left bottom, from(#fee), to(#fdd));
+    box-shadow: 0px 0px 3px #f77;
     -moz-box-shadow: 0px 0px 3px #f77;
     -webkit-box-shadow: 0px 0px 3px #f77;
-	padding:4px;
-	padding-left: 12px;
-	position:relative;
+    padding:4px;
+    padding-left: 12px;
+    position:relative;
+    border-radius: 4px;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     font-size: 95%;
@@ -576,7 +498,7 @@ display:inline;
 .jobContainer h1 {
     font-size:105%;
     color: #666;
-	margin-bottom: 0px;
+    margin-bottom: 0px;
     padding-bottom: 4px;
     border-bottom: 1px solid #eee;
     width:298px;
@@ -592,7 +514,7 @@ display:inline;
 
 .selectedJobContainer h1 {
     font-size:105%;
-	margin-bottom: 0px;
+    margin-bottom: 0px;
     color:#fff;
     padding-bottom: 4px;
     border-bottom: 1px solid #5aa4fb;
@@ -632,6 +554,8 @@ display:inline;
 
 .mandatoryParamLabel {
     background-color:#ebf0f3;
+    border-radius-top-left: 6px;
+    border-radius-bottom-left: 6px;
     -webkit-border-top-left-radius:6px;
     -webkit-border-bottom-left-radius:6px;
     -moz-border-radius-topleft:6px;
@@ -659,11 +583,11 @@ input {
 }
 
 .jobInputs {
-	padding: 3px;
-	padding-bottom:0px;
-	font-size: 90%;
-	width: 95%;
-	line-height: 1.3em;
+    padding: 3px;
+    padding-bottom:0px;
+    font-size: 90%;
+    width: 95%;
+    line-height: 1.3em;
     position:relative;
 }
 
@@ -682,10 +606,10 @@ input {
 }
 
 .jobOutputs {
-	padding: 3px;
-	font-size: 90%;
+    padding: 3px;
+    font-size: 90%;
     position:relative;
-	margin-top:-3px;
+    margin-top:-3px;
 }
 
 .jobOutputs label {
@@ -704,15 +628,17 @@ input {
 
 
 .validInput {
-	background: transparent;
-	color: black;
-	padding: 4px;
+    background: transparent;
+    color: black;
+    padding: 4px;
     margin-bottom: 4px;
 }
 
 .invalidInput {
-	background: red;
-	background: -webkit-gradient(linear, left top, left bottom, from(#fcc), to(#f66));
+    background: red;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffcccc', EndColorStr='#ff6666');
+    background: -moz-linear-gradient(top, #ffcccc, #ff6666);
+    background: -webkit-gradient(linear, left top, left bottom, from(#fcc), to(#f66));
     color: white;
     padding: 4px;
     margin-bottom: 4px;
@@ -733,8 +659,8 @@ input {
 }
 
 .acceptedExtensionList {
-	color: #999;
-	padding: 2px;
+    color: #999;
+    padding: 2px;
     min-height:1.2em;
 }
 
@@ -745,62 +671,67 @@ input {
 }
 
 .invalidAcceptedExtensionList {
-	color: #f00;
-	padding: 2px;
+    color: #f00;
+    padding: 2px;
 }
 
 .acceptedExtension {
     display: inline;
-	-webkit-border-radius: 8px;
-	-moz-border-radius: 8px;
-	background-color: #ebf0f3;
+    border-radius: 8px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    background-color: #ebf0f3;
     border: 1px solid #b7c9e6;
-	padding: 0px;
-	padding-left: 7px;
-	padding-right: 7px;
-	//margin-right: 4px;
-	color: #666;
-	position: relative;
-	line-height: 1.6em;
+    padding: 0px;
+    padding-left: 7px;
+    padding-right: 7px;
+/*    margin-right: 4px;*/
+    color: #666;
+    position: relative;
+    line-height: 1.6em;
 }
 
 .invalidAcceptedExtensionList .acceptedExtension {
-	background: #f66;
-	border: 1px solid #f66;
-	color: #fff;
+    background: #f66;
+    border: 1px solid #f66;
+    color: #fff;
 }
 
 .statusFilter {
     display: inline;
-	-webkit-border-radius: 8px;
-	-moz-border-radius: 8px;
-	background-color: #ebf0f3;
+    border-radius: 8px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    background-color: #ebf0f3;
     border: 1px solid #b7c9e6;
-	padding: 1px;
-	padding-left: 8px;
-	padding-right: 8px;
-	margin-right: 4px;
-	color: #666;
-	position: relative;
-	line-height: 1.6em;
+    padding: 1px;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin-right: 4px;
+    color: #666;
+    position: relative;
+    line-height: 1.6em;
     cursor: pointer;
 }
 
 .selectedStatusFilter {
     display: inline;
-	-webkit-border-radius: 8px;
-	-moz-border-radius: 8px;
+    border-radius: 8px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
     background-color: #3879e5;
     background:#3879e5 url(../images/selectedWFbg.png) repeat-x;
-	background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
-	border: 1px solid #3879e5;
-	padding: 1px;
-	padding-left: 8px;
-	padding-right: 8px;
-	margin-right: 4px;
-	color: #fff;
-	position: relative;
-	line-height: 1.6em;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#5aa4fb', EndColorStr='#3879e5');
+    background: -moz-linear-gradient(top, #5aa4fb, #3879e5);
+    background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
+    border: 1px solid #3879e5;
+    padding: 1px;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin-right: 4px;
+    color: #fff;
+    position: relative;
+    line-height: 1.6em;
     cursor: pointer;
 }
 
@@ -810,48 +741,52 @@ input {
 
 .virtualCheckbox {
     display: inline;
-	-webkit-border-radius: 8px;
-	-moz-border-radius: 8px;
-	background-color: #ebf0f3;
+    border-radius: 8px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+    background-color: #ebf0f3;
     border: 1px solid #b7c9e6;
-	padding: 1px;
-	padding-left: 8px;
-	padding-right: 8px;
-	margin-right: 4px;
+    padding: 1px;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin-right: 4px;
     margin-left: 6px;
-	color: #666;
-	position: relative;
-	line-height: 1.6em;
+    color: #666;
+    position: relative;
+    line-height: 1.6em;
     cursor: pointer;
     width:26px;
 }
 
 .virtualCheckboxOn {
     display: inline;
-	-webkit-border-radius: 8px;
-	-moz-border-radius: 8px;
+    border-radius: 8px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
     background-color: #3879e5;
     background:#3879e5 url(../images/selectedWFbg.png) repeat-x;
-	background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
-	border: 1px solid #3879e5;
-	padding: 1px;
-	padding-left: 8px;
-	padding-right: 8px;
-	margin-right: 4px;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#5aa4fb', EndColorStr='#3879e5');
+    background: -moz-linear-gradient(top, #5aa4fb, #3879e5);
+    background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
+    border: 1px solid #3879e5;
+    padding: 1px;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin-right: 4px;
     margin-left:6px;
-	color: #fff;
-	position: relative;
-	line-height: 1.6em;
+    color: #fff;
+    position: relative;
+    line-height: 1.6em;
     cursor: pointer;
     width:26px;
 }
 
 .destroyDiv {
-	position:absolute;
-	top:2px;
-	right:1px;
-	font-size:80%;
-	color:#333;
+    position:absolute;
+    top:2px;
+    right:1px;
+    font-size:80%;
+    color:#333;
     background:url(../images/delnode.png) no-repeat;
     width:17px;
     height:17px;
@@ -859,171 +794,36 @@ input {
 }
 
 .optionsToggle {
-	position: absolute;
+    position: absolute;
     top: 0px;
     right: 0px;
 }
 
-.fileSelector {
-	margin-left: 114px;
-}
-
-#yabi-files-mode .fileSelector {
-    margin-left:5px;
-}
-
-.selectedFile {
-	-webkit-border-radius: 8px;
-	-moz-border-radius: 8px;
-	background-color: #ebf0f3;
-	border: 1px solid #b7c9e6;
-	padding: 1px;
-	padding-left: 8px;
-	padding-right: 20px;
-	margin-right: 4px;
-	color: #666;
-	position: relative;
-}
-
-.filePadding {
-	padding-bottom: 10px;
-}
-
-.fileSelectorBreadcrumb {
-    color: #000;
-	background: #eee url(../images/breadcrumb_bg.png) repeat-x;
-	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
-	vertical-align: baseline;
-	padding-top: 3px;
-	padding-bottom: 3px;
-    min-height:1.2em;
-    -webkit-border-top-left-radius:4px;
-    -webkit-border-top-right-radius:4px;
-    -moz-border-radius-topleft:4px;
-    -moz-border-radius-topright:4px;
-    overflow:hidden;
-    text-overflow:ellipsis;
-}
-
-.fileSelectorBreadcrumb span {
-	padding: 3px;
-    padding-top:4px;
-    padding-bottom:2px;
-	cursor: pointer;
-    font-size:90%;
-    background:url(../images/bc_left.png) no-repeat;
-    padding-left:12px;
-    position:relative;
-}
-
-.fileSelectorListing {
-	background-color: #f6f6f6;
-	height: 280px;
-	overflow: auto;
-    font-size:90%;
-    border:1px solid white;
-    padding-bottom:20px;
-}
-
-.fileSelectorListing .fileItem {
-    color: #666;
-    padding: 3px;
-    padding-left: 22px;
-	border: 1px solid white;
-	cursor: pointer;
-    background:#fff url(../images/file.png) 2px 2px no-repeat;
-    position:relative;
-}
-
-.fileSelectorListing .fileItem .download {
-    position:absolute;
-    right:0px;
-    top: 4px;
-}
-
-.fileSelectorListing .fileItem .deleteFile {
-    position:absolute;
-    right:72px;
-    top: 4px;
-}
-
-.fileSelectorListing .fileItem .fileSize {
-    position:absolute;
-    right:16px;
-    top: 4px;
-    color: #999;
-    font-size:90%;
-}
-
-.fileSelectorListing .dirItem {
-    color: #666;
-    padding: 3px;
-    padding-left: 22px;
-	border: 1px solid white;
-	cursor: pointer;
-    background:#fff url(../images/folder.png) 2px 2px no-repeat;
-    position:relative;
-}
-
-.fileSelectorListing .dirItem.hover, .fileSelectorListing .dirItem:hover {
-    background:#fff url(../images/folder_open.png) 2px 2px no-repeat;
-}
-
-.fileSelectorListing .dirItem a {
-    position:absolute;
-    top:1px;
-    right:1px;
-}
-
-.fileSelectorListing .dirItem .deleteFile {
-    position:absolute;
-    right:72px;
-    top: 4px;
-}
-
-.fileSelectorBrowse {
-	background-color: #eee;
-    border: 1px solid #eee;
-    -webkit-border-radius: 4px;
-    -moz-border-radius: 4px;
-}
-
-.fileSelectorUpload {
-    position:relative;
-    border-top: 1px solid #eee;
-    color: #000;
-	background-color: #eee;
-	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
-	padding: 4px;
-    height:1.5em;
-}
-
-.fileSelectorUpload input {
-    left:1px;
-    top:3px;
-}
-
 .uploadingMask {
-	width: 100%;
-	height: 100%;
+    width: 100%;
+    height: 100%;
 }
 
 .fakeButton {
+    border-radius: 4px;
     -webkit-border-radius: 4px;
-	-moz-border-radius: 4px;
-	background-color: #eee;
-	padding: 1px;
-	padding-left: 8px;
-	padding-right: 8px;
-	margin-right: 4px;
-	margin-bottom: 4px;
-	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
-	border: 1px solid #ccc;
-	color: #666;	
-	//width: 180px;
+    -moz-border-radius: 4px;
+    background-color: #eee;
+    padding: 1px;
+    padding-left: 8px;
+    padding-right: 8px;
+    margin-right: 4px;
+    margin-bottom: 4px;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#eeeeee');
+    background: -moz-linear-gradient(top, #ffffff, #eeeeee);
+    background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+    border: 1px solid #ccc;
+    color: #666;    
+/*    width: 180px;*/
+    box-shadow: 0px 1px 1px #ddd;
     -moz-box-shadow: 0px 1px 1px #ddd;
     -webkit-box-shadow: 0px 1px 1px #ddd;
-	cursor: pointer;
+    cursor: pointer;
 }
 
 .largeButton {
@@ -1032,82 +832,90 @@ input {
     text-shadow: 0px 1px 1px #fff;
 }
 
-//.fakeButton.hover, .fakeButton:hover {
-//	border:1px solid #3879e6;
-//	background: #ccf url(../images/job_selected_bg.png);
-//	background: -webkit-gradient(linear, left top, left bottom, from(#eceff3), to(#dbe5f6));
-//}
+/*
+.fakeButton.hover, .fakeButton:hover {
+    border:1px solid #3879e6;
+    background: #ccf url(../images/job_selected_bg.png);
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#eceff3', EndColorStr='#dbe5f6');
+    background: -moz-linear-gradient(top, #eceff3, #dbe5f6);
+    background: -webkit-gradient(linear, left top, left bottom, from(#eceff3), to(#dbe5f6));
+}
+*/
 
 .progressBarContainer {
-	width: 298px;
-	height: 5px;
-	border: 1px solid #d8d8d8;
-	background: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#fff));
-	padding: 0px;
-	position: relative;
+    width: 298px;
+    height: 5px;
+    border: 1px solid #d8d8d8;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#eeeeee', EndColorStr='#ffffff');
+    background: -moz-linear-gradient(top, #eeeeee, #ffffff);
+    background: -webkit-gradient(linear, left top, left bottom, from(#eee), to(#fff));
+    padding: 0px;
+    position: relative;
 }
 
 .progressBar {
     position: absolute;
-	width: 0%;
-	left: 0px;
-	height: 5px;
-	padding: 0px;
-	margin: 0px;
-	background-color: #6f6;
-/*	background: -webkit-gradient(linear, left top, left bottom, from(#6f6), to(#9c9));*/
+    width: 0%;
+    left: 0px;
+    height: 5px;
+    padding: 0px;
+    margin: 0px;
+    background-color: #6f6;
+/*    background: -webkit-gradient(linear, left top, left bottom, from(#6f6), to(#9c9));*/
 }
 
 .errorBar {
     background-color: red;
-	background: -webkit-gradient(linear, left top, left bottom, from(red), to(#f66));
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ff0000', EndColorStr='#ff6666');
+    background: -moz-linear-gradient(top, red, #f66);
+    background: -webkit-gradient(linear, left top, left bottom, from(red), to(#f66));
 }
 
 .badgecompleted, .badgecomplete {
 
-	width:16px;
-	height:16px;
-	padding:0px;
-	margin:0px;
-	border:0px;
-	background:url(../images/ok.png) no-repeat;
-	position:absolute;
+    width:16px;
+    height:16px;
+    padding:0px;
+    margin:0px;
+    border:0px;
+    background:url(../images/ok.png) no-repeat;
+    position:absolute;
     right: 9px;
     top: 4px;
 }
 
 .badgepending {
-	width:18px;
-	height:18px;
-	padding:0px;
-	margin:0px;
-	border:0px;
-/*	background:url(../images/pending.png) no-repeat;*/
-	position:absolute;
+    width:18px;
+    height:18px;
+    padding:0px;
+    margin:0px;
+    border:0px;
+/*    background:url(../images/pending.png) no-repeat;*/
+    position:absolute;
     right: 7px;
     top: 2px;
 }
 
 .badgeerror {
-	width:16px;
-	height:16px;
-	padding:0px;
-	margin:0px;
-	border:0px;
-	background:url(../images/error.png) no-repeat;
-	position:absolute;
+    width:16px;
+    height:16px;
+    padding:0px;
+    margin:0px;
+    border:0px;
+    background:url(../images/error.png) no-repeat;
+    position:absolute;
     right: 9px;
     top: 4px;
 }
 
 .badgerunning, .badgeready {
-	width:18px;
-	height:18px;
-	padding:0px;
-	margin:0px;
-	border:0px;
-	background:url(../images/processing.gif) no-repeat;
-	position:absolute;
+    width:18px;
+    height:18px;
+    padding:0px;
+    margin:0px;
+    border:0px;
+    background:url(../images/processing.gif) no-repeat;
+    position:absolute;
     right: 9px;
     top: 2px;
 }
@@ -1145,9 +953,9 @@ input {
 }
 
 .toolSearchField {
-	width:40%;
-	border:1px solid #ccc;
-	margin-right:6px;
+    width:40%;
+    border:1px solid #ccc;
+    margin-right:6px;
 }
 
 .toolListing {
@@ -1155,27 +963,31 @@ input {
 }
 
 .toolGroup {
-	color: #999;
-	padding:3px;
-	margin-top:2px;
+    color: #999;
+    padding:3px;
+    margin-top:2px;
     border-bottom:2px solid #eee;
     margin-bottom:4px;
     font-size:90%;
 }
 
 .tool {
-	border:1px solid #ddd;
-	background: #eee url(../images/job_bg.png);
-	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+    border:1px solid #ddd;
+    background: #eee url(../images/job_bg.png);
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#eeeeee');
+    background: -moz-linear-gradient(top, #ffffff, #eeeeee);
+    background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+    box-shadow: 0px 1px 2px #eee;
     -moz-box-shadow: 0px 1px 2px #eee;
     -webkit-box-shadow: 0px 1px 2px #eee;
-	padding:4px;
-	padding-left: 12px;
+    padding:4px;
+    padding-left: 12px;
     padding-right: 10px;
-	margin:4px;
-	margin-left: 6px;
+    margin:4px;
+    margin-left: 6px;
     margin-right: 4px;
-	position:relative;
+    position:relative;
+    border-radius: 4px;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     font-size: 95%;
@@ -1184,13 +996,15 @@ input {
 }
 
 .workflowProxy {
-	border-bottom:1px solid #ddd;
-	padding:4px;
-	padding-left: 12px;
+    border-bottom:1px solid #ddd;
+    padding:4px;
+    padding-left: 12px;
     padding-right: 10px;
-	position:relative;
+    position:relative;
     background: #eee url(../images/job_bg.png);
-	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#f6f6f6));
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#f6f6f6');
+    background: -moz-linear-gradient(top, #ffffff, #f6f6f6);
+    background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#f6f6f6));
     font-size: 95%;
     color: #666;
     text-shadow: 0px 1px 1px #fff;
@@ -1198,13 +1012,15 @@ input {
 }
 
 .selectedWorkflowProxy {
-	border-bottom:1px solid #3879e6;
-	background: #ccf;
-	padding:4px;
-	padding-left: 12px;
-	position:relative;
+    border-bottom:1px solid #3879e6;
+    background: #ccf;
+    padding:4px;
+    padding-left: 12px;
+    position:relative;
     background:#3879e5 url(../images/selectedWFbg.png) repeat-x;
-	background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#5aa4fb', EndColorStr='#3879e5');
+    background: -moz-linear-gradient(top, #5aa4fb, #3879e5);
+    background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
     font-size: 95%;
     color: #fff;
     min-height: 26px;
@@ -1254,10 +1070,6 @@ input {
     height: 100%;
     text-align: center;
     padding-top: 90px;
-}
-
-.fileSelectorListing .listingLoading {
-    padding-top: 124px;
 }
 
 .sliderValue {
@@ -1333,6 +1145,7 @@ input {
     margin-top:15px;
     text-align:center;
     background: #fefefe;
+    border-radius: 4px;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     padding:6px;
@@ -1345,11 +1158,13 @@ input {
 }
 
 .loginFormButton {
-	color:white;
-	font-size: 110%;
-	font-weight: bold;
+    color:white;
+    font-size: 110%;
+    font-weight: bold;
+    border-radius: 5px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
+    box-shadow: 0px 1px 2px #eee;
     -moz-box-shadow: 0px 1px 2px #eee;
     -webkit-box-shadow: 0px 1px 2px #eee;
     margin:4px;
@@ -1362,8 +1177,10 @@ input {
     text-shadow:0px -1px 1px #666;
     border:1px solid #3879e6;
 
-	background: #3879e6 url(../images/selectedWFbg.png);
-        background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
+    background: #3879e6 url(../images/selectedWFbg.png);
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#5aa4fb', EndColorStr='#3879e5');
+    background: -moz-linear-gradient(top, #5aa4fb, #3879e5);
+    background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
 
     height:1.9em;
 
@@ -1374,32 +1191,36 @@ input {
 }
 
 .loginForm input {
-	color:#666;
-	font-size: 110%;
-	font-weight: bold;
+    color:#666;
+    font-size: 110%;
+    font-weight: bold;
     padding:6px;
     padding-left:14px;
     background:#fff;
     width:210px;
     border:2px solid #3879e6;
+    border-radius: 5px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
+    box-shadow: 0px 1px 2px #eee;
     -moz-box-shadow: 0px 1px 2px #eee;
     -webkit-box-shadow: 0px 1px 2px #eee;
     margin:4px;
 }
 
 .loginForm .openid_field {
-        color:#666;
-        font-size: 12px;
-        font-weight: bold;
+    color:#666;
+    font-size: 12px;
+    font-weight: bold;
     padding:6px;
     padding-left:14px;
     background:#fff;
     width:310px;
     border:2px solid #3879e6;
+    border-radius: 5px;
     -moz-border-radius: 5px;
     -webkit-border-radius: 5px;
+    box-shadow: 0px 1px 2px #eee;
     -moz-box-shadow: 0px 1px 2px #eee;
     -webkit-box-shadow: 0px 1px 2px #eee;
     margin:4px;
@@ -1430,6 +1251,7 @@ input {
     padding:6px;
     padding-left:30px;
     background: #f6f6f6 url(../images/processing.gif) no-repeat 4px 4px;
+    border-radius: 3px;
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
     color:black;

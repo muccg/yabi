@@ -1,0 +1,43 @@
+<%def name="title()">YABI</%def>
+
+<%def name="message()">
+    <h1>Oops!</h1>
+
+    There was an error processing your request. Please try again later, or send
+    an email to
+    <a href="mailto:web@ccg.murdoch.edu.au">web@ccg.murdoch.edu.au</a>.
+</%def>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <title>${self.title()}</title>
+
+        <style type="text/css">
+            body {
+                background-color:#eee;
+                font-family: Sans-serif, Helvetica, Arial;
+            }
+
+            .message {
+                margin:50px;
+                border:4px solid #ccc;
+                -moz-border-radius: 10px;
+                -webkit-border-radius: 10px;
+                padding:40px;
+
+                font-size:18px;
+                background-color:white;
+            }
+
+            h1 {
+                margin-top:0px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="message">
+            ${self.message()}
+        </div>
+    </body>
+</html>

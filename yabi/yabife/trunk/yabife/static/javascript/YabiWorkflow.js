@@ -155,6 +155,9 @@ function YabiWorkflow(editable) {
     this.optionsEl = document.createElement('div');
     this.optionsEl.className = "jobOptionsContainer";
     
+    this.statusEl = document.createElement("div");
+    this.statusEl.className = "jobStatusContainer";
+
     if (!editable) {
         this.fileOutputsEl = document.createElement('div');
         this.fileOutputsEl.className = "fileOutputs";
@@ -168,7 +171,6 @@ function YabiWorkflow(editable) {
         this.fileOutputsSelector.uploadEl.style.display = 'none';
         this.fileOutputsEl.appendChild( this.fileOutputsSelector.containerEl );
         this.fileOutputsEl.style.display = 'none';
-        this.fileOutputsSelector.fileListEl.style.height = "180px";
         this.fileOutputsSelector.containerEl.style.marginLeft = "4px";
     }
 
@@ -294,6 +296,7 @@ YabiWorkflow.prototype.addJob = function(toolName, preloadValues, shouldFadeIn) 
     //add into the DOM    
     this.containerEl.appendChild(job.containerEl);
     this.optionsEl.appendChild(job.optionsEl);
+    this.statusEl.appendChild(job.statusEl);
     
     var anim;
     if (shouldFadeIn) {
@@ -348,6 +351,7 @@ YabiWorkflow.prototype.deleteJob = function(job) {
 
     this.containerEl.removeChild(job.containerEl);
     this.optionsEl.removeChild(job.optionsEl);
+    this.statusEl.removeChild(job.statusEl);
     
     YAHOO.util.Event.purgeElement(job.containerEl);
     
@@ -430,6 +434,7 @@ YabiWorkflow.prototype.selectJob = function(object) {
     }
 
     //iterate
+    var selectedIndex = null;
     for (var index in this.jobs) {
         if (this.jobs[index] == object) {
             if (object == this.selectedJob) {
@@ -441,21 +446,25 @@ YabiWorkflow.prototype.selectJob = function(object) {
                     this.afterSelectJob(null);
                 }
             } else {
-                this.jobs[index].selectJob();
-                this.selectedJob = object;
-                
-                if (!this.editable && !YAHOO.lang.isUndefined(this.payload.jobs[index].stageout)) {
-                    this.fileOutputsEl.style.display = "block";
-                    this.fileOutputsSelector.updateBrowser(new YabiSimpleFileValue([this.payload.jobs[index].stageout], ''));
-                }
-
-                //callback hook to allow other elements to hook in when jobs are selected/deselected
-                if (!YAHOO.lang.isUndefined(this.afterSelectJob) && object.loaded) {
-                    this.afterSelectJob(object);
-                }
+                selectedIndex = index;
             }
         } else {
             this.jobs[index].deselectJob();
+        }
+    }
+
+    if (selectedIndex !== null) {
+        this.jobs[selectedIndex].selectJob();
+        this.selectedJob = object;
+        
+        if (!this.editable && !YAHOO.lang.isUndefined(this.payload.jobs[selectedIndex].stageout)) {
+            this.fileOutputsEl.style.display = "block";
+            this.fileOutputsSelector.updateBrowser(new YabiSimpleFileValue([this.payload.jobs[selectedIndex].stageout], ''));
+        }
+
+        //callback hook to allow other elements to hook in when jobs are selected/deselected
+        if (!YAHOO.lang.isUndefined(this.afterSelectJob) && object.loaded) {
+            this.afterSelectJob(object);
         }
     }
 };
@@ -800,6 +809,7 @@ YabiWorkflow.prototype.destroy = function() {
         
         this.containerEl.removeChild(job.containerEl);
         this.optionsEl.removeChild(job.optionsEl);
+        this.statusEl.removeChild(job.statusEl);
     
         YAHOO.util.Event.purgeElement(job.containerEl);
     }

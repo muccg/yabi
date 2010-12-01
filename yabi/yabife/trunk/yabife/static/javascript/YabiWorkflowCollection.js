@@ -23,6 +23,7 @@ function YabiWorkflowCollection() {
     this.loadedWorkflowEl = document.createElement("div");
     this.loadedWorkflowOptionsEl = document.createElement("div");
     this.loadedWorkflowFileOutputsEl = document.createElement("div");
+    this.loadedWorkflowStatusEl = document.createElement("div");
     
     this.containerEl = document.createElement("div");
     this.containerEl.className = "workflowCollection";
@@ -300,6 +301,7 @@ YabiWorkflowCollection.prototype.select = function(id) {
     this.loadedWorkflowEl.appendChild(this.loadedWorkflow.mainEl);
     this.loadedWorkflowOptionsEl.appendChild(this.loadedWorkflow.optionsEl);
     this.loadedWorkflowFileOutputsEl.appendChild(this.loadedWorkflow.fileOutputsEl);
+    this.loadedWorkflowStatusEl.appendChild(this.loadedWorkflow.statusEl);
     
     for (var i in this.workflows) {
         if (this.workflows[i].id == id) {

@@ -1,3 +1,22 @@
+#yabi-tabs #yabi-tabs-jobs {
+    color: white;
+    font-size: 133%;
+    text-shadow: 0px -1px 1px #666;
+
+    background: #3879e5 url(../images/selectedWFbg.png) repeat-x;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#5aa4fb', EndColorStr='#3879e5');
+    background: -moz-linear-gradient(top, #5aa4fb, #3879e5);
+    background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
+
+    border-top: 1px solid #3879e5;
+    border-left: 1px solid #3879e5;
+    border-right: 1px solid #3879e5;
+}
+
+.workflowName {
+    width:310px;
+}
+
 /* The overlay mask YUI provides. */
 .mask {
     background: rgb(0, 0, 0);
@@ -51,6 +70,8 @@
     text-align: left;
     padding: 4px 16px;
     margin: 4px 0 0 4px;
+    border-radius-top-left: 5px;
+    border-radius-top-right: 5px;
     -moz-border-radius-topleft: 5px; 
     -webkit-border-top-left-radius: 5px;
     -moz-border-radius-topright: 5px;
@@ -90,6 +111,9 @@
     border-left: solid 1px #ccc;
     border-right: solid 1px #ccc;
     border-bottom: solid 1px #ccc;
+
+    border-radius-bottom-left: 5px;
+    border-radius-bottom-right: 5px;
     -moz-border-radius-bottomleft: 5px; 
     -webkit-border-bottom-left-radius: 5px;
     -moz-border-radius-bottomright: 5px;
@@ -98,6 +122,7 @@
 
 .yui-panel .container-close:hover {
     background-color: #3879e5;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#3879e5', EndColorStr='#5aa4fb');
     background-color: -moz-linear-gradient(bottom, #5aa4fb, #3879e5);
     background-color: -webkit-gradient(linear, left bottom, left top, from(#5aa4fb), to(#3879e5));
     background-image: url(../images/close-hover.png);
@@ -109,12 +134,12 @@
 
 
 /* Rules specific to the job status panel. */
-.status-overlay dl, .status-overlay dt, .status-overlay dd {
+.jobStatus dl, .jobStatus dt, .jobStatus dd {
     list-style: none;
     text-align: left;
 }
 
-.status-overlay dt {
+.jobStatus dt {
     clear: left;
     float: left;
     display: block;
@@ -122,13 +147,91 @@
     font-weight: bold;
 }
 
-.status-overlay dd {
+.jobStatus dd {
     display: block;
     margin: 0.1em 0 0.1em 15em;
     border-top: solid 1px #f7f7f7;
     min-height: 1.2em;
 }
 
-.status-overlay dd:first-child {
+.jobStatus dd:first-child {
     border-top: none;
+}
+
+
+/* Job pane handling. */
+.yabiRightColumn {
+    right: 0;
+    min-width: 0;
+    padding: 10px 10px 0 10px;
+}
+
+#jobPaneSelector, .fileOutputs, .jobOptionsContainer > .jobOptionsContainer, .jobStatus {
+    display: none;
+}
+
+.fileOutputs h1, .jobOptionsContainer h1, .jobStatus h1 {
+    display: none;
+}
+
+.optionsToggle {
+    z-index: 1;
+}
+
+#jobPaneSelector li {
+    list-style: none;
+    display: block;
+    width: 32%;
+    margin-left: 0.5%;
+    margin-right: 0.5%;
+    float: left;
+    padding: 6px 0;
+    cursor: pointer;
+    height: 1.32em;
+
+    color: #666;
+    font-weight: bold;
+    text-align: center;
+
+    border: solid 1px #ccc;
+
+    background: #f6f6f6;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#f6f6f6');
+    background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#f6f6f6));
+    background: -moz-linear-gradient(top, white, #f6f6f6);
+
+    box-shadow: 0px 1px 2px #ccc;
+    -moz-box-shadow: 0px 1px 2px #ccc;
+    -webkit-box-shadow: 0px 1px 2px #ccc;
+
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+}
+
+#jobPaneSelector li.selected {
+    border: solid 1px #3879e6;
+    color: white;
+    text-shadow: 0px -1px 1px #666;
+
+    background: #3879e5;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#5aa4fb', EndColorStr='#3879e5');
+    background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
+    background: -moz-linear-gradient(top, #5aa4fb, #3879e5);
+}
+
+#optionsContainer {
+    clear: both;
+    position: relative;
+    padding: 0;
+}
+
+#optionsDiv {
+    width: auto;
+    margin-right: 0.8%;
+    padding: 10px 0 0 0;
+}
+
+.validInput {
+    display: none;
 }

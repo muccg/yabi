@@ -6,6 +6,8 @@
     <link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/javascript/yui-2.4.1/container/assets/container-core.css')}" />
     <link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/jobs.css')}" />
 
+    <script type="text/javascript" src="${h.url('/static/javascript/widget/radiolist.js')}"></script>
+
     <script type="text/javascript">
         YAHOO.util.Event.onDOMReady(initWorkflowListing);
 
@@ -23,6 +25,81 @@
 
         var reloadListing = function() {
             workflowListing.hydrate();
+        };
+
+        var initJobPaneSelector = function() {
+            var column = document.querySelector(".yabiRightColumn");
+            var selector = document.getElementById("jobPaneSelector");
+            var list = new RadioList(selector);
+
+            var outputs = list.createItem("file outputs");
+            var options = list.createItem("options");
+            var remote = list.createItem("remote status");
+
+            var hideNodeList = function(nodeList) {
+                for (var i = 0; i < nodeList.length; i++) {
+                    // TODO: Animate.
+                    nodeList[i].style.display = "none";
+                }
+            };
+
+            var showNodeList = function(nodeList) {
+                for (var i = 0; i < nodeList.length; i++) {
+                    // TODO: Animate.
+                    nodeList[i].style.display = "block";
+                }
+            };
+
+            var hideAll = function() {
+                hideNodeList(column.querySelectorAll(".fileOutputs"));
+                hideNodeList(column.querySelectorAll(".jobOptionsContainer > .jobOptionsContainer"));
+                hideNodeList(column.querySelectorAll(".jobStatus"));
+            };
+
+            var showOnly = function(selector) {
+                hideAll();
+                showNodeList(column.querySelectorAll(selector));
+            };
+
+            outputs.addEventListener("select", function() {
+                showOnly(".fileOutputs");
+
+                var height = getViewportHeight();
+                if (height) {
+                    var fs = column.querySelector(".fileSelectorBrowse");
+                    var top = getElementOffset(fs).top;
+                    
+                    // The 20 pixels is pure, unadulterated fudge factor.
+                    var height = height - top - 20;
+
+                    fs.style.height = height + "px";
+                }
+            });
+
+            options.addEventListener("select", function() {
+                showOnly(".active.jobOptionsContainer");
+            });
+
+            remote.addEventListener("select", function() {
+                showOnly(".active.jobStatus");
+            });
+
+            var originalJobSelect = YabiJob.prototype.selectJob;
+            YabiJob.prototype.selectJob = function() {
+                originalJobSelect.call(this);
+                selector.style.display = "block";
+                list.selectItem(outputs);
+
+                /* The event isn't resent if the item is already selected, but
+                 * we want the height calculation to be redone anyway. */
+                outputs.sendEvent("select");
+            };
+
+            var originalJobDeselect = YabiJob.prototype.deselectJob;
+            YabiJob.prototype.deselectJob = function() {
+                originalJobDeselect.call(this);
+                selector.style.display = "none";
+            };
         };
 
         function initWorkflowListing() {
@@ -48,11 +125,15 @@
             document.getElementById("optionsDiv").appendChild(workflowListing.loadedWorkflowFileOutputsEl);
             
             document.getElementById("optionsDiv").appendChild(workflowListing.loadedWorkflowOptionsEl);
+
+            document.getElementById("optionsDiv").appendChild(workflowListing.loadedWorkflowStatusEl);
             
             //test for anchor tag, if it exists, load that workflow
             if (window.location.hash.length > 1) {
                 workflowListing.select(window.location.hash.substr(1));
             }
+
+            initJobPaneSelector();
         }
     </script>
 </%def>
@@ -65,12 +146,16 @@
             <div class="yabiLeftColumn">
                 <div id="workflowListingContainer"></div>
             </div>
+
             <div class="yabiMiddleColumn">
                 <div id="container"></div>
             </div>
+
             <div class="yabiRightColumn">
-            <div style="position:absolute;left:10px;top:63px;padding:5px;min-width:400px;">
-                <div id="optionsDiv"></div>
+                <div id="jobPaneSelector"></div>
+                <div id="optionsContainer">
+                    <div id="optionsDiv"></div>
+                </div>
             </div>
         </div>
     </div>

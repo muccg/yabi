@@ -26,7 +26,7 @@ function YabiFileSelector(param, isBrowseMode, filePath) {
     
     //toplevel
     this.toplevelEl = document.createElement("div");
-    this.toplevelEl.className = "fileSelectorBreadcrumb";
+    this.toplevelEl.className = "fileSelectorBreadcrumb fileSelectorRoot";
     this.browseEl.appendChild(this.toplevelEl);
 
     //home el
@@ -46,7 +46,7 @@ function YabiFileSelector(param, isBrowseMode, filePath) {
     
     // the breadcrumb div
     this.breadcrumbContainerEl = document.createElement("div");
-    this.breadcrumbContainerEl.className = "fileSelectorBreadcrumb";
+    this.breadcrumbContainerEl.className = "fileSelectorBreadcrumb fileSelectorPath";
     this.browseEl.appendChild(this.breadcrumbContainerEl);
 
     //the file list div
@@ -196,15 +196,15 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
                 YAHOO.util.Event.addListener(selectEl, "click", this.selectFileCallback, invoker);
             } else if (this.isBrowseMode) {
                 if (this.pathComponents.length > 0) {
-		    deleteEl = document.createElement("div");
-		    deleteEl.className = "deleteFile";
-		    deleteImg = new Image();
+                    deleteEl = document.createElement("div");
+                    deleteEl.className = "deleteFile";
+                    deleteImg = new Image();
                     deleteImg.alt = 'delete';
                     deleteImg.title = deleteImg.alt;
-		    deleteImg.src = appURL + "static/images/delete.png";
-		    deleteEl.appendChild( deleteImg );
-		    fileEl.appendChild( deleteEl );
-		    YAHOO.util.Event.addListener(deleteEl, "click", this.deleteRemoteFileCallback, invoker);
+                    deleteImg.src = appURL + "static/images/delete.png";
+                    deleteEl.appendChild( deleteImg );
+                    fileEl.appendChild( deleteEl );
+                    YAHOO.util.Event.addListener(deleteEl, "click", this.deleteRemoteFileCallback, invoker);
                 }
                 
                 tempDD = new YAHOO.util.DDProxy(fileEl, 'files', {isTarget:true});
@@ -217,7 +217,7 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             }
         }
         for (index in this.browseListing[toplevelindex].files) {
-            fileEl = document.createElement("div");
+            fileEl = document.createElement("a");
             fileEl.className = "fileItem";
             fileEl.appendChild(document.createTextNode(this.browseListing[toplevelindex].files[index][0]));
             this.fileListEl.appendChild(fileEl);
@@ -231,12 +231,20 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             sizeEl.className = "fileSize";
             sizeEl.appendChild( document.createTextNode( fileSize ) );
             fileEl.appendChild( sizeEl );
+
+            invoker = {
+                target: this,
+                object: new YabiSimpleFileValue(this.pathComponents, this.browseListing[toplevelindex].files[index][0]),
+                topLevelIndex: toplevelindex
+            };
             
-            invoker = {"target":this, "object":new YabiSimpleFileValue(this.pathComponents, this.browseListing[toplevelindex].files[index][0])};
+            fileEl.href = appURL + "preview?uri=" + escape(invoker.object.toString());
             
             if (!this.isBrowseMode) {
                 YAHOO.util.Event.addListener(fileEl, "click", this.selectFileCallback, invoker);
             } else {
+                YAHOO.util.Event.addListener(fileEl, "click", this.previewFileCallback, invoker);
+
                 deleteEl = document.createElement("div");
                 deleteEl.className = "deleteFile";
                 deleteImg = new Image(); 
@@ -246,6 +254,16 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
                 deleteEl.appendChild( deleteImg );
                 fileEl.appendChild( deleteEl );
                 YAHOO.util.Event.addListener(deleteEl, "click", this.deleteRemoteFileCallback, invoker);
+                
+                previewEl = document.createElement("div");
+                previewEl.className = "preview";
+                previewImg = new Image();
+                previewImg.alt = 'preview';
+                previewImg.title = 'preview';
+                previewImg.src = appURL + "static/images/preview.png";
+                previewEl.appendChild( previewImg );
+                fileEl.appendChild( previewEl );
+                YAHOO.util.Event.addListener(previewEl, "click", this.previewFileCallback, invoker);
                 
                 downloadEl = document.createElement("div");
                 downloadEl.className = "download";
@@ -264,6 +282,7 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
                 tempDD.onDragEnter = function(e, id) { this.overCount += 1; document.getElementById(id).style.borderColor = "#3879e6"; } ;
                 tempDD.onDragOut = function(e, id) { this.overCount -= 1; document.getElementById(id).style.borderColor = "white"; } ;
                 tempDD.invoker = invoker;
+                tempDD.clickValidator = function (e) { return true; };
             }
         }
     }
@@ -341,6 +360,26 @@ YabiFileSelector.prototype.updateBreadcrumbs = function() {
 };
 
 /**
+ * getFileIndex
+ *
+ * Returns the index of the given file in the files array. If it doesn't exist,
+ * returns null.
+ */
+YabiFileSelector.prototype.getFileIndex = function(filename, topLevelIndex) {
+    var files = this.browseListing[topLevelIndex].files;
+    var index = null;
+
+    for (var i in files) {
+        if (files.hasOwnProperty(i) && files[i][0] == filename) {
+            index = i;
+            break;
+        }
+    }
+
+    return index;
+};
+
+/**
  * getValues
  *
  * returns YabiJobFileValue objects, unless useInternal is true, when it returns YabiSimpleFileValue objects
@@ -364,6 +403,19 @@ YabiFileSelector.prototype.getValues = function(useInternal) {
     }
     
     return sanitizedValues;
+};
+
+/**
+ * purgePreviewElements
+ *
+ * Removes all preview elements from the selector.
+ */
+YabiFileSelector.prototype.purgePreviewElements = function() {
+    var previews = this.browseEl.querySelectorAll(".fileSelectorPreview");
+    for (var i = 0; i < previews.length; i++) {
+        var previewParent = previews[i].parentNode;
+        previewParent.removeChild(previews[i]);
+    }
 };
 
 /**
@@ -449,6 +501,15 @@ YabiFileSelector.prototype.deleteFileAtIndex = function(index) {
 };
 
 /**
+ * previewFile
+ *
+ * Previews the selected file, if possible.
+ */
+YabiFileSelector.prototype.previewFile = function(file, topLevelIndex) {
+    this.preview = new YabiFileSelectorPreview(this, file, topLevelIndex);
+};
+
+/**
  * renderSelectedFiles
  *
  * renders the list of selected files
@@ -467,6 +528,7 @@ YabiFileSelector.prototype.renderSelectedFiles = function() {
         fileEl = document.createElement("span");
         fileEl.className = "selectedFile";
         fileEl.appendChild(document.createTextNode(this.selectedFiles[index].filename));
+        fileEl.title = this.selectedFiles[index].filename;
         
         delEl = document.createElement("div");
         delEl.className = "destroyDiv";
@@ -593,6 +655,13 @@ YabiFileSelector.prototype.expandCallback = function(e, invoker) {
     YAHOO.util.Event.stopEvent(e);
 };
 
+YabiFileSelector.prototype.previewFileCallback = function(e, invoker) {
+    var target = invoker.target;
+    target.previewFile(invoker.object, invoker.topLevelIndex);
+
+    YAHOO.util.Event.stopEvent(e);
+};
+
 YabiFileSelector.prototype.uploadClickCallback = function(e, target) {
     YAHOO.util.Event.stopEvent(e);
     
@@ -681,4 +750,185 @@ YabiFileSelector.prototype.movelessDrop = function(e) {
     DOM.setStyle(del, "visibility", "hidden");
     //lel.style.visibility = "";
     DOM.setStyle(lel, "visibility", "");
+};
+
+
+/**
+ * YabiFileSelectorPreview
+ *
+ * An object that provides an overlay over a given YabiFileSelector that
+ * securely previews the given file.
+ */
+var YabiFileSelectorPreview = function (fs, file, topLevelIndex) {
+    this.fs = fs;
+    this.file = file;
+    this.topLevelIndex = topLevelIndex;
+    this.uri = appURL + "preview?uri=" + escape(file.toString());
+
+    this.previous = this.getPrevious();
+    this.next = this.getNext();
+
+    // THERE CAN BE ONLY ONE.
+    this.fs.purgePreviewElements();
+
+    this.previewEl = document.createElement("div");
+    this.previewEl.className = "fileSelectorPreview";
+
+    this.createControls();
+    this.createIFrame();
+
+    this.fs.browseEl.appendChild(this.previewEl);
+};
+
+/**
+ * createControlButton
+ *
+ * Internal method to create a fake button in the preview control bar.
+ */
+YabiFileSelectorPreview.prototype.createControlButton = function (className, onClick, title) {
+    var button = document.createElement("div");
+    button.className = "controlButton " + className;
+
+    if (onClick) {
+        button.className += " enabled";
+        
+        YAHOO.util.Event.addListener(button, "click", onClick);
+    }
+    else {
+        button.className += " disabled";
+    }
+
+    if (title) {
+        button.title = title;
+    }
+
+    return button;
+};
+
+/**
+ * createControls
+ *
+ * Internal method to create the various controls we want for the file.
+ */
+YabiFileSelectorPreview.prototype.createControls = function () {
+    var self = this;
+
+    var controls = document.createElement("div");
+    controls.className = "fileSelectorPreviewControls";
+
+    var title = document.createElement("h3");
+    title.className = "fileSelectorPreviewTitle";
+    title.appendChild(document.createTextNode(this.file.filename));
+
+    controls.appendChild(title);
+
+    // Add buttons.
+    controls.appendChild(this.createControlButton("fileSelectorPreviewClose", function (e) {
+        self.closeCallback();
+    }, "close preview"));
+
+    var previousCallback = null;
+    var title = null;
+    if (this.previous) {
+        previousCallback = function (e) {
+            self.fs.previewFile(self.previous, self.topLevelIndex);
+        };
+
+        title = this.previous.filename;
+    }
+    controls.appendChild(this.createControlButton("fileSelectorPreviewPrevious", previousCallback, title));
+
+    var nextCallback = null;
+    title = null;
+    if (this.next) {
+        nextCallback = function (e) {
+            self.fs.previewFile(self.next, self.topLevelIndex);
+        };
+
+        title = this.next.filename;
+    }
+    controls.appendChild(this.createControlButton("fileSelectorPreviewNext", nextCallback, title));
+
+    this.previewEl.appendChild(controls);
+};
+
+/**
+ * createIFrame
+ *
+ * Internal method to create the iframe for the previewed file.
+ */
+YabiFileSelectorPreview.prototype.createIFrame = function () {
+    var self = this;
+
+    var container = document.createElement("div");
+    container.className = "fileSelectorPreviewFrameContainer";
+
+    this.iframeEl = document.createElement("iframe");
+    this.iframeEl.className = "loading";
+    this.iframeEl.frameBorder = 0;
+    this.iframeEl.src = this.uri;
+
+    YAHOO.util.Event.addListener(this.iframeEl, "load", function (e) {
+        self.loadCallback();
+    });
+
+    container.appendChild(this.iframeEl);
+    this.previewEl.appendChild(container);
+};
+
+/**
+ * closeCallback
+ *
+ * Handler for clicks on the close button.
+ */
+YabiFileSelectorPreview.prototype.closeCallback = function () {
+    this.fs.purgePreviewElements();
+};
+
+
+/**
+ * loadCallback
+ *
+ * Handler called when the iframe has loaded.
+ */
+YabiFileSelectorPreview.prototype.loadCallback = function () {
+    this.iframeEl.className = "";
+};
+
+/**
+ * getPrevious
+ *
+ * Returns the previous file in the file selector's file array or null if the
+ * file is the first one.
+ */
+YabiFileSelectorPreview.prototype.getPrevious = function () {
+    var files = this.fs.browseListing[this.topLevelIndex].files;
+    var index = this.fs.getFileIndex(this.file.filename, this.topLevelIndex);
+
+    if (index !== null && index > 0) {
+        if (--index in files) {
+            return new YabiSimpleFileValue(this.fs.pathComponents, files[index][0]);
+        }
+    }
+
+    return null;
+};
+
+/**
+ * getNext
+ *
+ * Returns the next file in the file selector's file array or null if the file
+ * is the last one.
+ */
+YabiFileSelectorPreview.prototype.getNext = function () {
+    var files = this.fs.browseListing[this.topLevelIndex].files;
+    var index = this.fs.getFileIndex(this.file.filename, this.topLevelIndex);
+
+    if (index !== null) {
+        if (++index in files) {
+            return new YabiSimpleFileValue(this.fs.pathComponents, files[index][0]);
+        }
+    }
+
+    return null;
 };

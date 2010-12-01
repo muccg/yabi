@@ -9,8 +9,6 @@ import os
 
 from django.conf.urls.defaults import *
 from django.conf import settings
-from django.http import HttpResponse
-from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError, HttpResponseUnauthorized
 from django.shortcuts import render_to_response, get_object_or_404, render_mako
 from django.core.exceptions import ObjectDoesNotExist
@@ -33,6 +31,7 @@ from ldap import LDAPError, MOD_REPLACE
 from yabife.ldapclient import LDAPClient
 from yabife.ldaputils import get_userdn_of
 from yabife.responses import *
+from yabife.yabifeapp.preview import html as sanitise_html
 
 from django.contrib import logging
 logger = logging.getLogger('yabife')
@@ -103,7 +102,7 @@ def account(request):
     if request.user.get_profile().has_account_tab():
         return render_page("account.html", request)
 
-    return render_page("403.html", request, response=HttpResponseForbidden())
+    return render_page("errors/403.html", request, response=HttpResponseForbidden())
 
 def login(request):
     if request.method == 'POST':
@@ -260,6 +259,93 @@ def password(request):
     request.user.save()
 
     return JsonMessageResponse("Password changed successfully")
+
+@login_required
+def preview(request):
+    # The standard response upon error.
+    def unavailable():
+        return render_page("errors/preview-unavailable.html", request, response=HttpResponseServerError())
+
+    try:
+        uri = request.GET["uri"]
+    except KeyError:
+        # This is the one case where we won't return the generic preview
+        # unavailable response, since the request URI itself is malformed.
+        logger.error("Malformed request: 'uri' not found in GET variables")
+        return render_page("errors/404.html", request, response=HttpResponseNotFound())
+
+    logger.debug("Attempting to preview URI '%s'", uri)
+
+    # Get the actual file size.
+    ls_request = GetRequest("ws/fs/ls", { "uri": uri })
+    http = memcache_http(request.user)
+    resp, content = http.make_request(ls_request)
+
+    if resp.status != 200:
+        logger.warning("Attempted to preview inaccessible URI '%s'", uri)
+        return unavailable()
+
+    result = json.loads(content)
+
+    if len(result) != 1 or len(result.values()[0]["files"]) != 1:
+        logger.warning("Unexpected number of ls results for URI '%s'", uri)
+        return unavailable()
+
+    size = result.values()[0]["files"][0][1]
+
+    # Now get the file contents, assuming it's small enough or we want to
+    # truncate.
+    if size > settings.PREVIEW_SIZE_LIMIT:
+        logger.debug("URI '%s' is too large: size %d > limit %d", uri, size, settings.PREVIEW_SIZE_LIMIT)
+        return unavailable()
+
+    params = {
+        "uri": uri,
+        "bytes": min(size, settings.PREVIEW_SIZE_LIMIT),
+    }
+
+    get_request = GetRequest("ws/fs/get", params)
+    resp, content = http.make_request(get_request)
+
+    if resp.status != 200:
+        logger.warning("Attempted to preview inaccessible URI '%s'", uri)
+        return unavailable()
+
+    # Check the content type.
+    if ";" in resp["content-type"]:
+        content_type, charset = resp["content-type"].split(";", 1)
+    else:
+        content_type = resp["content-type"]
+        charset = None
+
+    if content_type not in settings.PREVIEW_SETTINGS:
+        logger.debug("Preview of URI '%s' unsuccessful due to unknown MIME type '%s'", uri, content_type)
+        return unavailable()
+
+    type_settings = settings.PREVIEW_SETTINGS[content_type]
+    content_type = type_settings.get("override_mime_type", content_type)
+
+    # Set up our response.
+    if charset:
+        content_type += ";" + charset
+
+    response = HttpResponse(content_type=content_type)
+
+    # This disables content type sniffing in IE, which could otherwise be used
+    # to enable XSS attacks.
+    response["X-Content-Type-Options"] = "nosniff"
+
+    logger.debug("Preview of URI '%s' successful; sending response", uri)
+
+    # The original plan was to verify the MIME type that we get back from
+    # Admin, but honestly, it's pretty useless in many cases. Let's just do the
+    # best we can with the extension.
+    if type_settings.get("sanitise"):
+        response.write(sanitise_html(content))
+    else:
+        response.write(content)
+
+    return response
 
     
 # Implementation methods

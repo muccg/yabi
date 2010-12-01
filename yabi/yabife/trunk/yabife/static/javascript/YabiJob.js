@@ -67,6 +67,20 @@ function YabiJob(toolName, jobId, preloadValues) {
     this.optionsTitleEl.appendChild(this.optionsTitlePlaceholderEl);
     this.optionsEl.appendChild(this.optionsTitleEl);
 
+    //___STATUS EL___
+    this.statusEl = document.createElement("div");
+    this.statusEl.className = "jobStatus";
+
+    this.statusTitleEl = document.createElement("h1");
+    this.statusTitleEl.appendChild(document.createTextNode("Remote status"));
+    this.statusEl.appendChild(this.statusTitleEl);
+
+    this.statusErrorEl = document.createElement("div");
+    this.statusErrorEl.appendChild(document.createTextNode("No status information is available for this job."));
+    this.statusEl.appendChild(this.statusErrorEl);
+
+    this.statusListEl = document.createElement("dl");
+    this.statusEl.appendChild(this.statusListEl);
 }
 
 /**
@@ -253,7 +267,14 @@ YabiJob.prototype.selectJob = function() {
     this.jobEl = newEl;
     
     //show the options panel
-    this.optionsEl.style.display = "block";
+    if (this.editable) {
+        this.optionsEl.style.display = "block";
+        this.statusEl.style.display = "none";
+    }
+    else {
+        (new YAHOO.util.Element(this.optionsEl)).addClass("active");
+        (new YAHOO.util.Element(this.statusEl)).addClass("active");
+    }
     
     //put focus on the first invalid param
     if (!this.valid) {
@@ -290,7 +311,14 @@ YabiJob.prototype.deselectJob = function() {
     this.jobEl = newEl;
     
     //hide the options panel
-    this.optionsEl.style.display = "none";
+    if (this.editable) {
+        this.optionsEl.style.display = "none";
+        this.statusEl.style.display = "none";
+    }
+    else {
+        (new YAHOO.util.Element(this.optionsEl)).removeClass("active");
+        (new YAHOO.util.Element(this.statusEl)).removeClass("active");
+    }
 };
 
 /**
@@ -318,6 +346,7 @@ YabiJob.prototype.renderLoadFailJob = function() {
     
     //hide the options panel
     this.optionsEl.style.display = "none";
+    this.statusEl.style.display = "none";
 };
 
 /**
@@ -420,6 +449,65 @@ YabiJob.prototype.getParam = function(switchName) {
 };
 
 /**
+ * renderJobStatusError
+ *
+ * Render the job status error message.
+ */
+YabiJob.prototype.renderJobStatusError = function() {
+    this.statusListEl.style.display = "none";
+    this.statusErrorEl.style.display = "block";
+};
+
+/**
+ * renderJobStatus
+ *
+ * Render job status.
+ */
+YabiJob.prototype.renderJobStatus = function(obj) {
+    var self = this;
+    var task = obj.tasks[0];
+
+    while (this.statusListEl.childNodes.length) {
+        this.statusListEl.removeChild(this.statusListEl.firstChild);
+    }
+
+    if (task.remote_info) {
+        var keys = [];
+
+        for (var key in task.remote_info) {
+            if (YAHOO.lang.hasOwnProperty(task.remote_info, key)) {
+                keys.push(key);
+            }
+        }
+
+        keys.sort();
+
+        for (var i in keys) {
+            if (YAHOO.lang.hasOwnProperty(keys, i)) {
+                (function() {
+                    var key = keys[i];
+
+                    var title = document.createElement("dt");
+                    title.appendChild(document.createTextNode(key));
+
+                    var data = document.createElement("dd");
+                    data.appendChild(document.createTextNode(task.remote_info[key]));
+
+                    self.statusListEl.appendChild(title);
+                    self.statusListEl.appendChild(data);
+                })();
+            }
+        }
+
+        this.statusListEl.style.display = "block";
+        this.statusErrorEl.style.display = "none";
+    }
+    else {
+        this.renderJobStatusError();
+    }
+};
+
+/**
  * renderProgress
  *
  * render progress bar/badges
@@ -430,7 +518,7 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
     }
 
     if (!this.showingProgress) {
-        this.renderStatus(status);
+        this.renderStatusBadge(status);
 
         this.progressContainerEl = document.createElement("div");
         this.progressContainerEl.className = "progressBarContainer";
@@ -445,8 +533,8 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
     }
     
     //update status badge
-    if (this.jobEl.removeChild(this.statusEl)) {
-        this.renderStatus(status);
+    if (this.jobEl.removeChild(this.badgeEl)) {
+        this.renderStatusBadge(status);
     }
     
     
@@ -494,29 +582,14 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
 };
 
 /**
- * renderStatus
+ * renderStatusBadge
  *
  * Render the current status as a badge.
  */
-YabiJob.prototype.renderStatus = function(status) {
-    this.statusEl = document.createElement("div");
-    this.statusEl.className = "badge" + status;
-    this.jobEl.appendChild(this.statusEl);
-
-    if (status != "pending") {
-        this.statusEl.title = "job status (click for more information)";
-        YAHOO.util.Event.addListener(this.statusEl, "click", this.showStatusCallback, this);
-    }
-};
-
-/**
- * showStatus
- *
- * Shows the current job status in a popover element.
- */
-YabiJob.prototype.showStatus = function() {
-    var jobStatus = new YabiJobStatus(this);
-    jobStatus.show();
+YabiJob.prototype.renderStatusBadge = function(status) {
+    this.badgeEl = document.createElement("div");
+    this.badgeEl.className = "badge" + status;
+    this.jobEl.appendChild(this.badgeEl);
 };
 
 /**
@@ -655,6 +728,23 @@ YabiJob.prototype.solidify = function(obj) {
         //workflow delayed selectjob callback to allow propagation after this job is loaded
         this.workflow.delayedSelectJob(this);
     } 
+    else {
+        // Get job status, if we can.
+        var self = this;
+
+        var callbacks = {
+            success: function(o) {
+                var obj = YAHOO.lang.JSON.parse(o.responseText);
+                self.renderJobStatus(obj);
+            },
+            failure: function(o) {
+                self.renderJobStatusError();
+            }
+        };
+
+        var url = "engine/job/" + this.workflow.workflowId + "/" + (this.jobId - 1);
+        var req = YAHOO.util.Connect.asyncRequest("GET", url, callbacks);
+    }
     
     //now we are finished loading
     this.loaded = true;
@@ -726,14 +816,4 @@ YabiJob.prototype.hydrateResponse = function(o) {
  */
 YabiJob.prototype.toggleOptionsCallback = function(e, job) {
     job.toggleOptions();
-};
-
-/**
- * showStatusCallback
- *
- * Pop up a panel showing the current remote status of the selected job.
- */
-YabiJob.prototype.showStatusCallback = function(e, job) {
-    job.showStatus();
-    YAHOO.util.Event.stopEvent(e);
 };

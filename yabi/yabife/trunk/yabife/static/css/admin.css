@@ -1,115 +1,116 @@
 body, td, th, input, textarea, select, .form-row p, button {
-	font-family: Arial, Helvetica, Clean, Sans-Serif;
-	font-size: 13px;
+    font-family: Arial, Helvetica, Clean, Sans-Serif;
+    font-size: 13px;
 }
 
 
 #header {
-	height: 60px;
+    height: 60px;
 
-	color: #999999;
+    color: #999999;
 
-	background-color: white;
-	background-image: url(../images/yabi-logo.png);
-	background-position: left top;
-	background-repeat: no-repeat;
+    background-color: white;
+    background-image: url(../images/yabi-logo.png);
+    background-position: left top;
+    background-repeat: no-repeat;
 
-	border-bottom: solid 3px #3879e5;
-	padding-left: 250px;
+    border-bottom: solid 3px #3879e5;
+    padding-left: 250px;
 }
 
 #header h1 {
-	color: #3879e5;
-	font-size: 17.2px;
-	font-weight: bold;
-	height: 25px;
-	line-height: 25px;
-	vertical-align: bottom;
-	margin: 35px 0 0 0;
-	padding: 0;
+    color: #3879e5;
+    font-size: 17.2px;
+    font-weight: bold;
+    height: 25px;
+    line-height: 25px;
+    vertical-align: bottom;
+    margin: 35px 0 0 0;
+    padding: 0;
 }
 
 #header a:link, #header a:visited, .object-tools li {
-	background: #eeeeee;
-	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(white), to(#EEE));
-	background: -moz-linear-gradient(top, white, #eee);
-	border: 1px solid #cccccc;
-	border-radius: 4px 4px 4px 4px;
-	color: #666666;
-	padding: 1px 8px;
-	-moz-box-shadow: #ddd 0 1px 1px;
-	-webkit-box-shadow: #ddd 0 1px 1px;
-	box-shadow: #ddd 0 1px 1px;
+    background: #eeeeee;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#eeeeee');
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(white), to(#EEE));
+    background: -moz-linear-gradient(top, white, #eee);
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    color: #666666;
+    padding: 1px 8px;
+    -moz-box-shadow: #ddd 0 1px 1px;
+    -webkit-box-shadow: #ddd 0 1px 1px;
+    box-shadow: #ddd 0 1px 1px;
 }
 
 #user-tools {
-	padding: 5px;
+    padding: 5px;
 }
 
 
 .object-tools li {
-	height: auto;
+    height: auto;
 }
 
 .object-tools li:hover, .object-tools li:hover a, .object-tools a:hover, .object-tools a.addlink:hover {
-	background: #eeeeee;
-	background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(white), to(#EEE));
-	background: -moz-linear-gradient(top, white, #eee);
-	-moz-box-shadow: #ddd 0 1px 1px;
-	-webkit-box-shadow: #ddd 0 1px 1px;
-	box-shadow: #ddd 0 1px 1px;
-	text-decoration: underline;
+    background: #eeeeee;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#eeeeee');
+    background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(white), to(#EEE));
+    background: -moz-linear-gradient(top, white, #eee);
+    -moz-box-shadow: #ddd 0 1px 1px;
+    -webkit-box-shadow: #ddd 0 1px 1px;
+    box-shadow: #ddd 0 1px 1px;
+    text-decoration: underline;
 }
 
 .object-tools a:link, .object-tools a:visited {
-	background: transparent;
-	color: #666666;
-	height: auto;
-	padding: 0;
+    background: transparent;
+    color: #666666;
+    height: auto;
+    padding: 0;
 }
 
 
 h1 {
-	padding-bottom: 8px;
+    padding-bottom: 8px;
 }
 
 
 .module h2, .module caption, .inline-group h2 {
-	background: #dbe5f6;
-	border-bottom: solid 1px #b7c9e6;
-	color: black;
-	font-size: 13px;
+    background: #dbe5f6;
+    border-bottom: solid 1px #b7c9e6;
+    color: black;
+    font-size: 13px;
 }
 
 a.section:link, a.section:visited {
-	color: black;
+    color: black;
 }
 
 #content-related .module h2 {
-	background: #f6f6f6;
-	border-bottom: solid 1px #eeeeee;
+    background: #f6f6f6;
+    border-bottom: solid 1px #eeeeee;
 }
 
 
 .dashboard #content h1 {
-	display: none;
+    display: none;
 }
 
 
 .login #header {
-	padding-left: 0;
-	white-space: nowrap;
-	text-indent: -10000px;
-	background-position: 45% top;
+    padding-left: 0;
+    white-space: nowrap;
+    text-indent: -10000px;
+    background-position: 45% top;
 }
 
 .login .form-row label {
-	width: 7.3em;
+    width: 7.3em;
 }
 
 .login .submit-row {
-	padding-left: 7.5em;
+    padding-left: 7.5em;
 }
-
-
-/* vim: set noet nocin ai ts=4 sw=4: */

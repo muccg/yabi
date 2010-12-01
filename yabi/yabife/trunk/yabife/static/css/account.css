@@ -1,3 +1,18 @@
+#yabi-tabs #yabi-tabs-account {
+    color: white;
+    font-size: 133%;
+    text-shadow: 0px -1px 1px #666;
+
+    background: #3879e5 url(../images/selectedWFbg.png) repeat-x;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#5aa4fb', EndColorStr='#3879e5');
+    background: -moz-linear-gradient(top, #5aa4fb, #3879e5);
+    background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
+
+    border-top: 1px solid #3879e5;
+    border-left: 1px solid #3879e5;
+    border-right: 1px solid #3879e5;
+}
+
 .yabiLeftColumn ul {
     list-style: none;
     display: block;
@@ -6,15 +21,16 @@
 }
 
 .yabiLeftColumn li {
-	position: relative;
+    position: relative;
     list-style: none;
     display: block;
     margin: 0;
-	border-bottom: 1px solid #ddd;
-	padding: 4px 10px 4px 12px;
+    border-bottom: 1px solid #ddd;
+    padding: 4px 10px 4px 12px;
 
     background: #eee url(../images/job_bg.png);
-	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#f6f6f6));
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#f6f6f6');
+    background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#f6f6f6));
     background: -moz-linear-gradient(top, white, #f6f6f6);
 
     font-size: 95%;
@@ -24,11 +40,12 @@
 }
 
 .yabiLeftColumn li.selected {
-	border-bottom:1px solid #3879e6;
-	background: #ccf;
+    border-bottom:1px solid #3879e6;
+    background: #ccf;
 
     background:#3879e5 url(../images/selectedWFbg.png) repeat-x;
-	background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#5aa4fb', EndColorStr='#3879e5');
+    background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
     background: -moz-linear-gradient(top, #5aa4fb, #3879e5);
 
     color: #fff;
@@ -53,10 +70,11 @@
     font-weight: bold;
     text-shadow: 0px 1px 1px white;
     min-height: 26px;
-	border:1px solid #ccc;
+    border:1px solid #ccc;
 
     background: #eee url(../images/job_bg.png) repeat-x;
-	background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#f6f6f6));
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#f6f6f6');
+    background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#f6f6f6));
     background: -moz-linear-gradient(top, white, #f6f6f6);
 
     box-shadow: 0px 1px 2px #ccc;
@@ -72,7 +90,8 @@
     border: solid 1px #3879e6;
 
     background: #3879e5 url(../images/selectedWFbg.png) repeat-x;
-	background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#5aa4fb', EndColorStr='#3879e5');
+    background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
     background: -moz-linear-gradient(top, #5aa4fb, #3879e5);
 
     box-shadow: 0px 1px 2px #3879e6;
@@ -195,25 +214,25 @@
 }
 
 .badgelocked {
-	width:16px;
-	height:16px;
-	padding:0px;
-	margin:0px;
-	border:0px;
-	background:url(../images/locked.png) no-repeat;
-	position:absolute;
+    width:16px;
+    height:16px;
+    padding:0px;
+    margin:0px;
+    border:0px;
+    background:url(../images/locked.png) no-repeat;
+    position:absolute;
     right: 9px;
     top: 4px;
 }
 
 .badgeunlocked {
-	width:16px;
-	height:16px;
-	padding:0px;
-	margin:0px;
-	border:0px;
-	background:url(../images/unlocked.png) no-repeat;
-	position:absolute;
+    width:16px;
+    height:16px;
+    padding:0px;
+    margin:0px;
+    border:0px;
+    background:url(../images/unlocked.png) no-repeat;
+    position:absolute;
     right: 9px;
     top: 4px;
 }
