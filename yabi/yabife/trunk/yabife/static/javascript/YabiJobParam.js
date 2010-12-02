@@ -477,14 +477,15 @@ YabiJobParam.prototype.focus = function() {
  * ie file paths are YabiSimpleFileValues, not YabiJobFileValues
  */
 YabiJobParam.prototype.toJSON = function() {
-    if (!this.hasChanged() && !this.isMandatory) {
-        return null;
-    }
-    
     var values = [];
     var val;
     
     var value = this.getValue(true);
+
+    if (!value && !this.isMandatory) {
+        return null;
+    }
+    
     if (!YAHOO.lang.isArray(value)) {
         value = [value];
     }
