@@ -75,6 +75,7 @@ PREVIEW_SETTINGS = {
     "application/xhtml+xml": { "truncate": False, "sanitise": True },
     "text/svg+xml": { "truncate": True, "override_mime_type": "text/plain" },
     "text/xml": { "truncate": True, "override_mime_type": "text/plain" },
+    "application/xml": { "truncate": True, "override_mime_type": "text/plain" },
 
     # Image formats.
     "image/gif": { "truncate": False },
