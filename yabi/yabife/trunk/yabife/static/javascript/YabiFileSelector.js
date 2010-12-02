@@ -682,7 +682,6 @@ YabiFileSelector.prototype.uploadClickCallback = function(e, target) {
     jsUrl =  baseURL;
     jsCallback = {
             upload: target.uploadResponse,
-            failure: YAHOO.ccgyabi.widget.YabiMessage.handleResponse,
             argument: [target] };
     YAHOO.util.Connect.setForm(target.uploadFormEl, true);
     jsTransaction = YAHOO.util.Connect.asyncRequest('POST', jsUrl, jsCallback);
@@ -691,14 +690,49 @@ YabiFileSelector.prototype.uploadClickCallback = function(e, target) {
 };
 
 YabiFileSelector.prototype.uploadResponse = function(o) {
-    var json = o.responseText;
-
     target = o.argument[0];
     target.uploadFormEl.reset();
     
     target.uploadEl.replaceChild(target.uploadFormEl, target.uploadMaskEl);
     
+    /* YUI will call this callback even when the upload has failed (lovely
+     * piece of design, that). Since we don't have the status code (or any
+     * other headers) available, we'll have to try to decode the JSON that was
+     * (hopefully) received and go from there. */
+    try {
+        /* Because the upload is performed to a hidden iframe, the response is
+         * actually processed as plain text by whatever browser specific
+         * mechanism occurs. Here's the hilarious bit: browsers will generally
+         * wrap the text in a skeleton HTML document, and that's what we
+         * actually get in o.responseText rather than the raw response.
+         *
+         * Yes, really.
+         *
+         * Given that, we have to dig around in the iframe's DOM tree to
+         * actually find the JSON to parse. IE 8, Firefox, Chrome, Opera and
+         * Safari are at least all consistent on this: they all wrap the plain
+         * text content in a single <pre> element (albeit with different
+         * styles), so we can simply look for that and use it.
+         */
+        var pre = o.responseXML.querySelector("pre");
+        var json = pre.innerText || pre.textContent;
+
+        json = YAHOO.lang.JSON.parse(json);
+
+        if (json.level != "success") {
+            /* It's not a real response object, it's simply something
+             * masquerading as such. As a result, we'll just call the error
+             * display function directly. */
+            return YAHOO.ccgyabi.widget.YabiMessage.fail(json.message);
+        }
+    }
+    catch (e) {
+        // Bad JSON.
+        return YAHOO.ccgyabi.widget.YabiMessage.fail("Error uploading file");
+    }
+
     target.updateBrowser(new YabiSimpleFileValue(target.pathComponents, ''));
+    YAHOO.ccgyabi.widget.YabiMessage.success("File uploaded successfully");
 };
 
 YabiFileSelector.prototype.deleteRemoteResponse = function(o) {
