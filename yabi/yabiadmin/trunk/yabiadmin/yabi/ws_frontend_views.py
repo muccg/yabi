@@ -292,6 +292,14 @@ def put(request):
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
         raise
     except KeyError, e:
+        data = {
+            "message": "No files uploaded",
+            "level": "fail",
+            "uri": uri,
+        }
+
+        return HttpResponse(content=json.dumps(data), content_type="text/plain; charset=UTF-8")
+        
         return JsonMessageResponseBadRequest("No files uploaded")
 
 
