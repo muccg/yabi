@@ -293,12 +293,7 @@ def preview(request):
 
     size = result.values()[0]["files"][0][1]
 
-    # Now get the file contents, assuming it's small enough or we want to
-    # truncate.
-    if size > settings.PREVIEW_SIZE_LIMIT:
-        logger.debug("URI '%s' is too large: size %d > limit %d", uri, size, settings.PREVIEW_SIZE_LIMIT)
-        return unavailable()
-
+    # Now get the file contents.
     params = {
         "uri": uri,
         "bytes": min(size, settings.PREVIEW_SIZE_LIMIT),
@@ -324,6 +319,25 @@ def preview(request):
 
     type_settings = settings.PREVIEW_SETTINGS[content_type]
     content_type = type_settings.get("override_mime_type", content_type)
+
+
+    # If the file is beyond the size limit, we'll need to check whether to
+    # truncate it or not.
+    if size > settings.PREVIEW_SIZE_LIMIT:
+        if type_settings.get("truncate", False):
+            logger.debug("URI '%s' is too large: size %d > limit %d; truncating", uri, size, settings.PREVIEW_SIZE_LIMIT)
+            content = content[0:settings.PREVIEW_SIZE_LIMIT]
+            content += """
+
+============================================================
+
+The file is beyond the size limit for previews. To access further data, please download the file.
+
+============================================================
+"""
+        else:
+            logger.debug("URI '%s' is too large: size %d > limit %d", uri, size, settings.PREVIEW_SIZE_LIMIT)
+            return unavailable()
 
     # Set up our response.
     if charset:
