@@ -576,6 +576,7 @@ display:inline;
 .help {
     color: #999;
     font-size: 90%;
+    margin-top: 0.3em;
 }
 
 input {
