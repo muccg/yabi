@@ -209,7 +209,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
     if (this.payload.helptext) {
         var helpTextEl = document.createElement("div");
         helpTextEl.className = "help";
-        helpTextEl.appendChild(document.createTextNode(this.payload.helptext));
+        helpTextEl.innerHTML = this.payload.helptext;
         this.containerEl.appendChild(helpTextEl);
     }
     
