@@ -78,7 +78,7 @@ def tool(request, *args, **kwargs):
 
     try:
         tool = Tool.objects.get( name=toolname )
-        return HttpResponse(tool.json())
+        return HttpResponse(tool.json_pretty(), content_type="text/plain; charset=UTF-8")
     except ObjectDoesNotExist:
         return JsonMessageResponseNotFound("Object not found")
 

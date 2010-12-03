@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
+from urllib import quote
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.db import connection
@@ -93,6 +94,7 @@ def tool(request, tool_id):
         'title': 'Tool Details',
         'root_path':urlresolvers.reverse('admin:index'),
         'edit_url': urlresolvers.reverse('admin:yabi_tool_change', args=(tool.id,)),
+        'json_url': webhelpers.url('/ws/tool/' + quote(tool.name)),
         'tool_params': format_params(tool.toolparameter_set.order_by('id')),
         })
 

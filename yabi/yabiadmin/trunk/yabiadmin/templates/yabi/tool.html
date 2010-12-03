@@ -24,7 +24,7 @@ ${self.block_content()}<%def name="block_content()">
         <th>Display Name</th>
         <th>Job Type</th>
         <th>Path</th>
-        <th></th>
+        <th colspan="2"></th>
     </tr>
     <tr>
         <td>${tool.name}</td>
@@ -32,6 +32,7 @@ ${self.block_content()}<%def name="block_content()">
         <td>${tool.backend}</td>
         <td>${tool.path}</td>
         <td><a href="${edit_url}">Edit</a></td>
+        <td><a href="${json_url}">View JSON</a></td>
     </tr>
 </table>
 
@@ -138,10 +139,6 @@ must be larger than ${outext.must_be_larger_than}
 
 % endfor
 </table>
-
-
-<h2>Json</h2>
-<pre>${tool.json_pretty()}</pre>
 
 </div>
 </%def>
