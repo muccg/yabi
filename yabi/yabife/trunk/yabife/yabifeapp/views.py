@@ -51,7 +51,7 @@ def proxy(request, url, base):
 @authentication_required
 def adminproxy(request, url):
     logger.debug('')
-    return proxy(request, url, request.user.get_profile().appliance.url)
+    return proxy(request, quote(url), request.user.get_profile().appliance.url)
 
 # forms
 class LoginForm(forms.Form):

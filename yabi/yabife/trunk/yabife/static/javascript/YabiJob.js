@@ -154,7 +154,7 @@ YabiJob.prototype.hydrate = function() {
     
     //load json
     var jsUrl, jsCallback, jsTransaction;
-    jsUrl =  baseURL + this.toolName;
+    jsUrl =  baseURL + escape(this.toolName);
     jsCallback = {
             success: this.hydrateResponse,
             failure: this.hydrateResponse,
