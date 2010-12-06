@@ -226,6 +226,20 @@
     content: "Preview: ";
 }
 
+.fileSelectorPreviewSize {
+    color: #666;
+}
+
+.fileSelectorPreviewSize:before {
+    color: #666;
+    content: " (";
+}
+
+.fileSelectorPreviewSize:after {
+    color: #666;
+    content: ")";
+}
+
 .fileSelectorPreviewControls .controlButton {
     position: absolute;
     width: 16px;

@@ -235,6 +235,7 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             invoker = {
                 target: this,
                 object: new YabiSimpleFileValue(this.pathComponents, this.browseListing[toplevelindex].files[index][0]),
+                fileSize: fileSize,
                 topLevelIndex: toplevelindex
             };
             
@@ -513,8 +514,8 @@ YabiFileSelector.prototype.deleteFileAtIndex = function(index) {
  *
  * Previews the selected file, if possible.
  */
-YabiFileSelector.prototype.previewFile = function(file, topLevelIndex) {
-    this.preview = new YabiFileSelectorPreview(this, file, topLevelIndex);
+YabiFileSelector.prototype.previewFile = function(file, topLevelIndex, fileSize) {
+    this.preview = new YabiFileSelectorPreview(this, file, topLevelIndex, fileSize);
 };
 
 /**
@@ -665,7 +666,7 @@ YabiFileSelector.prototype.expandCallback = function(e, invoker) {
 
 YabiFileSelector.prototype.previewFileCallback = function(e, invoker) {
     var target = invoker.target;
-    target.previewFile(invoker.object, invoker.topLevelIndex);
+    target.previewFile(invoker.object, invoker.topLevelIndex, invoker.fileSize);
 
     YAHOO.util.Event.stopEvent(e);
 };
@@ -801,9 +802,10 @@ YabiFileSelector.prototype.movelessDrop = function(e) {
  * An object that provides an overlay over a given YabiFileSelector that
  * securely previews the given file.
  */
-var YabiFileSelectorPreview = function (fs, file, topLevelIndex) {
+var YabiFileSelectorPreview = function (fs, file, topLevelIndex, fileSize) {
     this.fs = fs;
     this.file = file;
+    this.fileSize = fileSize;
     this.topLevelIndex = topLevelIndex;
     this.uri = appURL + "preview?uri=" + escape(file.toString());
 
@@ -861,6 +863,11 @@ YabiFileSelectorPreview.prototype.createControls = function () {
     var title = document.createElement("h3");
     title.className = "fileSelectorPreviewTitle";
     title.appendChild(document.createTextNode(this.file.filename));
+
+    var size = document.createElement("span");
+    size.className = "fileSelectorPreviewSize";
+    size.appendChild(document.createTextNode(this.fileSize));
+    title.appendChild(size);
 
     controls.appendChild(title);
 
