@@ -876,6 +876,10 @@ YabiFileSelectorPreview.prototype.createControls = function () {
         self.closeCallback();
     }, "close preview"));
 
+    controls.appendChild(this.createControlButton("fileSelectorPreviewDownload", function (e) {
+        self.fs.downloadFile(self.file);
+    }, "download file"));
+
     var previousCallback = null;
     var title = null;
     if (this.previous) {

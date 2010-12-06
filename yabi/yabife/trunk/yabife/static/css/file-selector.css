@@ -277,6 +277,16 @@
     background-image: url(../images/close-hover.png);
 }
 
+.fileSelectorPreviewDownload {
+    top: 3px;
+    right: 63px;
+    background-image: url(../images/preview-download.png);
+}
+
+.fileSelectorPreviewDownload.enabled:hover {
+    background-image: url(../images/preview-download-hover.png);
+}
+
 .fileSelectorPreviewPrevious {
     top: 3px;
     right: 43px;
