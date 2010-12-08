@@ -19,50 +19,6 @@
   % endif
 </div>
 
-  % if url is not None and url is not '':
-    <div class="message">
-      OpenID authentication succeeded; you authenticated as
-        <a href="${ url }">${ url|escape }</a>.
-
-      <p>
-      % if sreg:
-        Simple Registration data returned:
-
-        <ul>
-        % for pair in sreg:
-          <li>${ pair[0] }: ${ pair[1] }</li>
-        % endfor
-        </ul>
-      % else:
-        The server returned no Simple Registration data.
-      % endif
-
-      % if ax:
-        Attribute Exchange data returned:
-
-        <ul>
-        % for pair in ax:
-        <li>${ pair[0] }: ${ pair[1] }</li>
-        % endfor
-        </ul>
-      % else:
-        The server returned no Attribute Exchange data.
-      % endif
-
-      % if pape:
-        An authentication policy response contained these policies:
-
-        <ul>
-          % for uri in pape.auth_policies:
-            <li><tt>${ uri }</tt></li>
-          % endfor
-        </ul>
-      % else:
-        The server returned no authentication policy data (PAPE).
-      % endif
-    </div>
-  % endif
-
   % if message:
     <div class="message">
       ${ message|escape }

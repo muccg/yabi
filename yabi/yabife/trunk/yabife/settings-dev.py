@@ -24,13 +24,11 @@ ROOT_URLCONF = 'yabife.urls'
 
 INSTALLED_APPS.extend( [
     'yabife.yabifeapp',
-    'djopenid.consumer'
 ] )
 
 MEMCACHE_KEYSPACE = "dev-yabife-"+TARGET
 
 AUTHENTICATION_BACKENDS = [
- 'djopenid.consumer.models.OpenIDBackend',
  'django.contrib.auth.backends.LDAPBackend',
  'django.contrib.auth.backends.NoAuthModelBackend',
 ]
