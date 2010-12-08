@@ -41,6 +41,8 @@ YABIBACKEND_LIST = '/fs/ls'
 YABIBACKEND_PUT = '/fs/put'
 YABIBACKEND_GET = '/fs/get'
 
+DEFAULT_STAGEIN_DIRNAME = 'stagein/'
+
 ROOT_URLCONF = 'yabiadmin.urls'
 
 INSTALLED_APPS.extend( [

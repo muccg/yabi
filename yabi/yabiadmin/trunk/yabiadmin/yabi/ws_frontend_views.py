@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import mimetypes
 import uuid
+import os
 
 from datetime import datetime, timedelta
 from urllib import quote
@@ -248,7 +249,6 @@ def get(request):
         # we'll send a normal response rather than a JSON message.
         raise Http404
 
-
 @authentication_required
 def put(request):
     """
@@ -259,10 +259,8 @@ def put(request):
 
     yabiusername = request.user.username
     try:
-        logger.debug("yabiusername: %s uri: %s" %(yabiusername, request.REQUEST['uri']))
         uri = request.REQUEST['uri']
-        
-        resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))
+        logger.debug("yabiusername: %s uri: %s" %(yabiusername, uri))
 
         # TODO this only works with files written to disk by django
         # at the moment so the FILE_UPLOAD_MAX_MEMORY_SIZE must be set to 0
@@ -274,13 +272,16 @@ def put(request):
         logger.debug("files: %s"%repr(files))
 
         data=[]
+        resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))
         resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(bc.credential.username),quote(bc.credential.password),quote( bc.credential.cert),quote(bc.credential.key))
         h = post_multipart(settings.YABIBACKEND_SERVER, resource, data, files)
 
+        if not uri.endswith('/'):
+            uri += '/'
         data = {
             "message": "Upload successful",
             "level": "success",
-            "uri": uri,
+            "uri": uri + in_file.name,
         }
 
         return HttpResponse(content=json.dumps(data), content_type="text/plain; charset=UTF-8")

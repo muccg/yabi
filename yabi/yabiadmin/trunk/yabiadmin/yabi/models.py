@@ -322,6 +322,10 @@ class User(Base):
         bec = BackendCredential.objects.get(credential__user=self, default_stageout=True) # will raise a MultipleObjectsReturned exception if default_stageout not unique
         return bec.homedir_uri
 
+    @property
+    def default_stagein(self):
+        return self.default_stageout + settings.DEFAULT_STAGEIN_DIRNAME
+
 class Credential(Base):
     description = models.CharField(max_length=512, blank=True)
     username = models.CharField(max_length=512)

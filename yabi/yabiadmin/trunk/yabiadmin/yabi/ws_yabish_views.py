@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import uuid
 import copy
+import os
+from datetime import datetime
 
 from django.http import HttpResponse
 from yabiadmin.yabi import models
@@ -9,6 +12,7 @@ from django.utils import simplejson as json
 from yabiadmin.yabistoreapp import db
 from yabiadmin.yabiengine.tasks import build
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
+from yabiadmin.yabiengine import backendhelper
 
 from yabiadmin.decorators import memcache, authentication_required
 
@@ -28,8 +32,10 @@ def submitjob(request):
     # TODO extract common code from here and submitworkflow
 
     try:
+        toolname = request.POST.get('name')
         job = create_job(request)
-        workflow_dict = create_wrapper_workflow(job)
+        selectfile_job, job = split_job(job)
+        workflow_dict = create_wrapper_workflow(selectfile_job, job, toolname)
         workflow_json = json.dumps(workflow_dict)
         user = models.User.objects.get(name=request.user.username)
 
@@ -48,13 +54,73 @@ def submitjob(request):
 
     return HttpResponse(json.dumps(resp))
 
+def split_job(job):
+    '''Creates a selectfile job for any job that has input files'''
+    files = []
+    changed_job = copy.copy(job)
+    params = []
+    for param in job['parameterList']['parameter']:
+        if type(param['value'][0]) == dict and param['value'][0].get('type') == 'file':
+            params.append({
+                "valid": True, 
+                "value": [{
+                    "type": "job", 
+                    "jobId": 1
+                }], 
+                "switchName": param['switchName']
+            })
+            files.append(param['value'][0])
+        else:
+            params.append(param)
+            
+    changed_job['parameterList']['parameter'] = params
+    
+    if not files: 
+        selectfile_job = None 
+    else:
+        selectfile_job = {
+            'valid': True,
+            'toolName': 'fileselector',
+            'parameterList': {
+               'parameter': [{
+                    'valid': True,
+                    'value': files,
+                    'switchName': 'files'
+                }]
+            }
+        }
+    return selectfile_job, changed_job
+
+@authentication_required
+def createstageindir(request):
+    logger.debug(request.user.username)
+    try:
+        guid = request.REQUEST['uuid']    
+        dirs_to_create = [p[1] for p in request.REQUEST.items() if p[0].startswith('dir_')]
+        uuid.UUID(guid) # validation
+        user = models.User.objects.get(name=request.user.username) 
+  
+        stageindir = '%s%s/' % (user.default_stagein,guid)
+       
+        backendhelper.mkdir(user.name, stageindir)
+        for d in dirs_to_create:
+            backendhelper.mkdir(user.name, stageindir + '/' + d)
+         
+        resp = {'success': True, 'uri':stageindir}
+    except StandardError, e:
+        resp = {'success': False, 'msg': str(e)}
+
+    return HttpResponse(json.dumps(resp))
+   
+
 # Implementation
 
 class ParamDef(object):
-    def __init__(self, name, switch_use, mandatory):
+    def __init__(self, name, switch_use, mandatory, is_input_file):
         self.name = name
         self.switch_use = switch_use
         self.mandatory = mandatory
+        self.input_file = is_input_file
         self.value = None
 
     def matches(self, argument):
@@ -92,7 +158,19 @@ class ParamDef(object):
             self.value = [v]
  
     def switch_and_value(self):
-        return [self.name, self.value] 
+        value = self.value
+        if self.input_file:
+            root, filename = os.path.split(self.value[0])
+            if not root.endswith('/'):
+                root += '/'
+            value = [{
+                'path': [],
+                'type': 'file',
+                'root': root,
+                'filename': filename,
+                'pathComponents': [root]
+            }]
+        return [self.name, value] 
 
 class YabiArgumentParser(object):
     def __init__(self, tool):
@@ -124,7 +202,7 @@ class YabiArgumentParser(object):
     # Implementation
 
     def init_paramdefs(self, tool):
-        return [ParamDef(param.switch, param.switch_use.display_text, param.mandatory) 
+        return [ParamDef(param.switch, param.switch_use.display_text, param.mandatory, param.input_file) 
                     for param in tool.toolparameter_set.all()]
 
     def parse_options(self, arguments):
@@ -177,25 +255,28 @@ class YabiArgumentParser(object):
 
 def create_job(request):
     toolname = request.POST.get('name')
-    tools = models.Tool.objects.filter(name=toolname)
+    tools = models.Tool.objects.filter(display_name=toolname, toolgrouping__tool_set__users__name=request.user.username)
     if len(tools) == 0:
         raise YabiError('Unknown tool name "%s"' % toolname)
     tool = tools[0]    
     argparser = YabiArgumentParser(tool)
     params = create_params(request, argparser)
-    logger.debug('PARAMETER: ' + str(params))
-    return {'toolName': tool.name, 'jobId': 1, 'valid': True, 
+    return {'toolName': tool.name, 'valid': True, 
             'parameterList': {'parameter': params}}
 
-def create_wrapper_workflow(job):
-    def generate_name(job):
-        return job['toolName']
+def create_wrapper_workflow(selectfile_job, job, toolname):
+    def generate_name(toolname):
+        return '%s (%s)' % (toolname, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+
+    jobs = filter(lambda x: x is not None,[selectfile_job, job])
+    for i, job in enumerate(jobs):
+        job['jobId'] = i+1
 
     workflow = {
-        'name': generate_name(job),
+        'name': generate_name(toolname),
         # TODO this doesn't seem to be picked up
         'tags': ['yabish'],
-        'jobs': [job]
+        'jobs': jobs
     }
     
     return workflow    
