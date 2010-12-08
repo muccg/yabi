@@ -2,8 +2,9 @@ import time
 import json
 import os
 import sys
+import uuid
 
-from yabish import RemoteError
+import errors
 
 class Action(object):
     def __init__(self, yabi, name=None):
@@ -24,14 +25,23 @@ class FileDownload(object):
     '''Mix into an Action that requires downloading files'''
     get_url = 'ws/fs/get'
 
-    def download_file(self, uri, dest):
+    def download_file(self, uri, dest, ignore_404=False):
         params = {'uri': uri}
-        response, contents = self.yabi.get(self.get_url, params)
-        if hasattr(dest, 'write'):
-            dest.write(contents)
-        else:
-            with open(dest, 'w') as f:
-                f.write(contents)
+        try:
+            response, contents = self.yabi.get(self.get_url, params)
+            if hasattr(dest, 'write'):
+                dest.write(contents)
+            else:
+                with open(dest, 'w') as f:
+                    f.write(contents)
+        except errors.CommunicationError, e:
+            if e.status_code == 404:
+                if ignore_404:
+                   return
+                else:
+                   raise errors.RemoteError("File % doesn't exist." % uri)
+            else:
+                raise
 
 class RemoteAction(Action):
     def __init__(self, *args, **kwargs):
@@ -42,10 +52,11 @@ class RemoteAction(Action):
         params = {'name': self.name}
         for i,arg in enumerate(args):
             params['arg' + str(i)] = arg
+        print 'Running your job on the server.'
         resp, json_response = self.yabi.post(self.url, params)
         decoded_resp = self.decode_json(json_response)
         if not decoded_resp['success']:
-            raise RemoteError(decoded_resp['msg'])
+            raise errors.RemoteError(decoded_resp['msg'])
         return decoded_resp['workflow_id']
 
 class Attach(Action, FileDownload):
@@ -72,7 +83,7 @@ class Attach(Action, FileDownload):
         workflow_id = args[0]
         resp = {}
         status = ''
-        while status.lower() != 'complete':
+        while status.lower() not in ('complete', 'error'):
             try:
                 resp = self.get_workflow(workflow_id)
                 status = resp.get('status', '')
@@ -81,11 +92,22 @@ class Attach(Action, FileDownload):
                 print
                 print "Job %s current status is '%s'" % (workflow_id, status)
                 sys.exit()
-        stageout_dir = resp['json']['jobs'][0]['stageout']
-        stdout = os.path.join(stageout_dir,'STDOUT.txt')
+        if status.lower() == 'error':
+            raise errors.RemoteError('Error running workflow')
+            return
+
+        stageout_dir = resp['json']['jobs'][-1]['stageout']
+
+        self.recursive_download(stageout_dir)
+
+        stdout = os.path.join(stageout_dir,'STDOUTT.txt')
         stderr = os.path.join(stageout_dir,'STDERR.txt')
-        self.download_file(stdout, sys.stdout)
-        self.download_file(stderr, sys.stderr)
+        self.download_file(stdout, sys.stdout, ignore_404=True)
+        self.download_file(stderr, sys.stderr, ignore_404=True)
+
+    def recursive_download(self, uri):
+        pass
+
 
 class ForegroundRemoteAction(object):
     def __init__(self, *args, **kwargs):
@@ -157,7 +179,6 @@ class Jobs(Action):
         return {'start': start}
 
     def process_response(self, response):
-        #for job in [j for j in response if j['status'].lower() in ('', 'running')]:
         for job in response:
             print '%7d  %s  %10s  %s' % (job['id'], job['created_on'], job['status'].upper(), job['name'])
 

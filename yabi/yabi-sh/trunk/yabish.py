@@ -7,21 +7,14 @@ from argparse import ArgumentParser
 
 from yaphc import Http, UnauthorizedError, PostRequest, GetRequest
 import actions
+import os
+import uuid
+from collections import namedtuple
+
+import errors
 
 # TODO config file
 YABI_URL = 'https://faramir/yabife/tszabo/'
-
-class CommunicationError(StandardError):
-    def __init__(self, status_code, url, response):
-        self.status_code = status_code
-        self.url = url
-        self.response = response
-
-    def __str__(self):
-        return "%s - %s" % (self.status_code, self.url)
-
-class RemoteError(StandardError):
-    pass
 
 def main():
     debug = False
@@ -38,15 +31,100 @@ def main():
             print_usage()
             return
 
+        debug = options.yabi_debug
         yabi = Yabi(bg=options.yabi_bg, debug=options.yabi_debug)
+        stagein = (len(args.local_files) > 0)
+        if stagein:
+            stageindir_uri, files_uris = yabi.stage_in(args.local_files)
+            args.substitute_file_urls(files_uris)
         action = yabi.choose_action(args.first_argument)
         action.process(args.rest_of_arguments)
+        if stagein:
+            yabi.delete_dir(stageindir_uri)
 
     except Exception, e:
         print_error(e, debug)
     finally:
         if yabi is not None:
             yabi.session_finished()
+
+def human_readable_size(num):
+    for x in ['bytes','KB','MB','GB','TB']:
+        if num < 1024.0:
+            return "%3.1f %s" % (num, x)
+        num /= 1024.0
+
+class StageIn(object):
+    def __init__(self, yabi, files):
+        self.yabi = yabi
+        self.files = files
+   
+    @property
+    def debug(self):
+        return self.yabi.debug
+ 
+    def do(self):
+        files_to_uris = {}
+        alldirs, allfiles, total_size = self.collect_files()
+        stagein_dir, dir_uris = self.create_stagein_dir(alldirs)
+        print "Staging in %s in %i directories and %i files." % (
+                human_readable_size(total_size), len(alldirs), len(allfiles))
+        files_to_uris.update(dir_uris)
+        for f in allfiles:
+            rel_path, fname = os.path.split(f.relpath)
+            file_uri = self.stagein_file(f, stagein_dir + rel_path)
+            files_to_uris[f.relpath] = file_uri
+        print "Staging in finished."
+        return stagein_dir, files_to_uris
+
+    def collect_files(self):
+        allfiles = []
+        alldirs = []
+        total_size = 0
+        RelativeFile = namedtuple('RelativeFile', 'relpath fullpath')
+        for f in self.files:
+            if os.path.isfile(f):
+                allfiles.append(RelativeFile(os.path.basename(f), f))
+                total_size += os.path.getsize(f)
+            if os.path.isdir(f):
+                path, dirname = os.path.split(f)
+                alldirs.append(RelativeFile(dirname, f))
+                for root, dirs, files in os.walk(f):
+                    for adir in dirs:
+                        dpath = os.path.join(root, adir)
+                        rel_dir = dpath[len(f)-1:] 
+                        alldirs.append(RelativeFile(rel_dir, dpath))
+                    for afile in files:
+                        fpath = os.path.join(root, afile)
+                        rpath = fpath[len(f)-1:]
+                        allfiles.append(RelativeFile(rpath, fpath))
+                        total_size += os.path.getsize(fpath)
+        return alldirs, allfiles, total_size
+
+    def create_stagein_dir(self, dir_structure):
+        uri = 'ws/yabish/createstageindir'
+        params = {'uuid': uuid.uuid1()}
+        for i,d in enumerate(dir_structure):
+            params['dir_%i' % i] = d.relpath
+        resp, json_response = self.yabi.post(uri, params)
+        stageindir_uri = json.loads(json_response)['uri']
+        dir_uri_mapping = {}
+        for d in dir_structure:
+            dir_uri = stageindir_uri + d.relpath
+            if not dir_uri.endswith('/'):
+                dir_uri += '/'
+            dir_uri_mapping[d.relpath] = dir_uri
+        return stageindir_uri, dir_uri_mapping
+
+    def stagein_file(self, f, stagein_dir):
+        uri = 'ws/fs/put'
+        fname = os.path.basename(f.relpath)
+        finfo = (fname, fname, f.fullpath)
+        params = {'uri': stagein_dir}
+        print '  Staging in file: %s (%s).' % (
+                f.relpath,human_readable_size(os.path.getsize(f.fullpath)))
+        resp, json_response = self.yabi.post(uri, params, files=[finfo])
+        return json.loads(json_response)['uri']
 
 class Yabi(object):
     def __init__(self, bg=False, debug=False):
@@ -57,7 +135,15 @@ class Yabi(object):
         if self.debug:
             import httplib2
             httplib2.debuglevel = 1
- 
+
+    def delete_dir(self, stageindir):
+        rmdir = actions.Rm(self)
+        rmdir.process([stageindir])
+
+    def stage_in(self, files):
+        stagein = StageIn(self, files)
+        return stagein.do()
+
     def login(self):
         import getpass
         system_user = getpass.getuser()
@@ -68,14 +154,14 @@ class Yabi(object):
         login_action = actions.Login(self)
         return login_action.process([username, password])
 
-    def request(self, method, url, params=None):
+    def request(self, method, url, params=None, files=None):
         if params is None:
             params = {}
         try:
             if method == 'GET':
                 request = GetRequest(url, params)
             elif method == 'POST':
-                request = PostRequest(url, params)
+                request = PostRequest(url, params, files=files)
             else:
                 assert False, "Method should be GET or POST"
             if self.debug:
@@ -87,15 +173,15 @@ class Yabi(object):
             if not self.login():
                 raise StandardError("Invalid username/password")
             resp, contents = self.http.make_request(request)
-        if resp.status >= 400:
-            raise CommunicationError(resp.status, url, contents)
+        if int(resp.status) >= 400:
+            raise errors.CommunicationError(int(resp.status), url, contents)
         return resp, contents
 
     def get(self, url, params=None):
         return self.request('GET', url, params)
 
-    def post(self, url, params=None):
-        return self.request('POST', url, params)
+    def post(self, url, params=None, files=None):
+        return self.request('POST', url, params=params, files=files)
 
     def choose_action(self, action_name):
         class_name = action_name.capitalize()
@@ -140,6 +226,18 @@ class CommandLineArguments(object):
     @property
     def rest_of_arguments(self):
         return [] if len(self.args) <= 1 else self.args[1:]
+
+    @property
+    def local_files(self):
+        return filter(lambda arg: os.path.isfile(arg) or os.path.isdir(arg), self.args)
+
+    def substitute_file_urls(self, urls):
+        def file_to_url(arg):
+            new_arg = arg
+            if os.path.isfile(arg) or os.path.isdir(arg):
+                new_arg = urls.get(os.path.basename(arg), arg)
+            return new_arg 
+        self.args = map(file_to_url, self.args)
 
 if __name__ == "__main__":
     main()
