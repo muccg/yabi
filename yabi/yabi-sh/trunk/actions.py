@@ -3,6 +3,9 @@ import json
 import os
 import sys
 import uuid
+import urlparse
+import errno
+import itertools
 
 import errors
 
@@ -66,6 +69,8 @@ class Attach(Action, FileDownload):
 
     def sleepgenerator(self):
         t = 1
+        while True:
+            yield 3
         while t < 30:
             yield t
             t *= 2
@@ -106,7 +111,23 @@ class Attach(Action, FileDownload):
         self.download_file(stderr, sys.stderr, ignore_404=True)
 
     def recursive_download(self, uri):
-        pass
+        if not uri.endswith('/'):
+            uri += '/'
+        ls_url = 'ws/fs/ls'
+        params = {'uri': uri, 'recurse': True}
+        resp, json_response = self.yabi.get(ls_url, params)
+        response = self.decode_json(json_response)
+        base_path = urlparse.urlparse(uri).path
+        rel_dirs = map(lambda x: x[len(base_path):], response)
+        rel_dirs = filter(lambda x: x != '', rel_dirs)
+        rel_files = [[d[len(base_path):] + f[0] for f in listing['files']] for d,listing in response.items()]
+        # flatten the file list
+        rel_files = [f for f in itertools.chain.from_iterable(rel_files)]
+        rel_files = filter(lambda x: x not in ('STDERR.txt', 'STDOUT.txt'), rel_files)
+        for d in rel_dirs:
+            mkdir_p(d)
+        for f in rel_files:
+            self.download_file(uri+f, f)
 
 
 class ForegroundRemoteAction(object):
@@ -220,4 +241,12 @@ class Rm(Action):
 
     def decode_json(self, response):
         return None
+
+
+def mkdir_p(path):
+    try:
+        os.makedirs(path)
+    except OSError, e: 
+        if e.errno != errno.EEXIST:
+            raise
 
