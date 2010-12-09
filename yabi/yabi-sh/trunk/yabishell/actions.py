@@ -7,7 +7,7 @@ import urlparse
 import errno
 import itertools
 
-import errors
+from yabishell import errors
 
 class Action(object):
     def __init__(self, yabi, name=None):

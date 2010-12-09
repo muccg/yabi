@@ -1,0 +1,5 @@
+#!/usr/bin/env python
+
+import yabishell.yabish
+
+yabishell.yabish.main()

@@ -1,17 +1,15 @@
-#!/usr/bin/env python
-
 import sys
 import readline
 import json
 from argparse import ArgumentParser
 
 from yaphc import Http, UnauthorizedError, PostRequest, GetRequest
-import actions
 import os
 import uuid
 from collections import namedtuple
 
-import errors
+from yabishell import errors
+from yabishell import actions
 
 # TODO config file
 YABI_URL = 'https://faramir/yabife/tszabo/'
@@ -186,7 +184,7 @@ class Yabi(object):
     def choose_action(self, action_name):
         class_name = action_name.capitalize()
         try:
-            cls = getattr(sys.modules['actions'], class_name)
+            cls = getattr(sys.modules['yabishell.actions'], class_name)
         except AttributeError:
             if self.run_in_background:
                 cls = actions.BackgroundRemoteAction
@@ -238,7 +236,4 @@ class CommandLineArguments(object):
                 new_arg = urls.get(os.path.basename(arg), arg)
             return new_arg 
         self.args = map(file_to_url, self.args)
-
-if __name__ == "__main__":
-    main()
 
