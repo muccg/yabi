@@ -197,7 +197,7 @@ class Yabi(object):
 
 def print_usage():
     print '''
-BLA BLA BLA
+Welcome to Yabish!
 
 Command should be used like BLA BLA BLA
 '''
