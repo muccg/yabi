@@ -126,7 +126,7 @@ class StageIn(object):
 
 class Yabi(object):
     def __init__(self, url, bg=False, debug=False):
-        self.http = Http(base_url=url)
+        self.http = Http(workdir=os.path.expanduser('~/.yabish'), base_url=url)
         self.username = None
         self.run_in_background = bg
         self.debug = debug
