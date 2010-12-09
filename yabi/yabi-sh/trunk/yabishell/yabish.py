@@ -196,7 +196,7 @@ class Yabi(object):
         self.http.finish_session()
 
 def print_usage():
-    print '''
+    print >> sys.stderr, '''
 Welcome to Yabish!
 
 Command should be used like BLA BLA BLA

@@ -105,7 +105,7 @@ class Attach(Action, FileDownload):
 
         self.recursive_download(stageout_dir)
 
-        stdout = os.path.join(stageout_dir,'STDOUTT.txt')
+        stdout = os.path.join(stageout_dir,'STDOUT.txt')
         stderr = os.path.join(stageout_dir,'STDERR.txt')
         self.download_file(stdout, sys.stdout, ignore_404=True)
         self.download_file(stderr, sys.stderr, ignore_404=True)
@@ -161,7 +161,11 @@ class Login(Action):
         return self.process_response(self.decode_json(json_response))
 
     def process_response(self, response):
-        return response.get('success', False)
+        if response.get('success', False):
+            return True
+        else:
+            print >> sys.stderr, 'Login unsuccessful'
+            return False
 
 class Ls(Action):
     def __init__(self, *args, **kwargs):
