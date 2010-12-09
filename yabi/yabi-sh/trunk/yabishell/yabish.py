@@ -1,18 +1,17 @@
-import sys
-import readline
-import json
 from argparse import ArgumentParser
+from collections import namedtuple
+import json
+import os
+import readline
+import sys
+import uuid
 
 from yaphc import Http, UnauthorizedError, PostRequest, GetRequest
-import os
-import uuid
-from collections import namedtuple
-
 from yabishell import errors
 from yabishell import actions
 
 # TODO config file
-YABI_URL = 'https://faramir/yabife/tszabo/'
+YABI_DEFAULT_URL = 'https://faramir/yabife/snapshot/'
 
 def main():
     debug = False
@@ -21,6 +20,7 @@ def main():
         argparser = ArgumentParser(description='YABI shell', add_help=False)
         argparser.add_argument("--yabi-debug", action='store_true', help="Run in debug mode")
         argparser.add_argument("--yabi-bg", action='store_true', help="Run in background")
+        argparser.add_argument("--yabi-url", help="The URL of the YABI server", default=YABI_DEFAULT_URL)
         options, args = argparser.parse_known_args()        
 
         args = CommandLineArguments(args)
@@ -30,7 +30,7 @@ def main():
             return
 
         debug = options.yabi_debug
-        yabi = Yabi(bg=options.yabi_bg, debug=options.yabi_debug)
+        yabi = Yabi(url=options.yabi_url, bg=options.yabi_bg, debug=options.yabi_debug)
         stagein = (len(args.local_files) > 0)
         if stagein:
             stageindir_uri, files_uris = yabi.stage_in(args.local_files)
@@ -125,8 +125,8 @@ class StageIn(object):
         return json.loads(json_response)['uri']
 
 class Yabi(object):
-    def __init__(self, bg=False, debug=False):
-        self.http = Http(base_url=YABI_URL)
+    def __init__(self, url, bg=False, debug=False):
+        self.http = Http(base_url=url)
         self.username = None
         self.run_in_background = bg
         self.debug = debug
