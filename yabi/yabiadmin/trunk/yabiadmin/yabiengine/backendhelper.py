@@ -151,7 +151,7 @@ def get_first_matching_file(yabiusername, uri, extension_list):
         
     
 
-def get_listing(yabiusername, uri):
+def get_listing(yabiusername, uri, recurse=False):
     """
     Return a listing from backend
     """
@@ -159,6 +159,8 @@ def get_listing(yabiusername, uri):
 
     try:
         resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, quote(uri))
+        if recurse:
+            resource += '&recurse=true'
         logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
         
         bc = get_backendcredential_for_uri(yabiusername, uri)

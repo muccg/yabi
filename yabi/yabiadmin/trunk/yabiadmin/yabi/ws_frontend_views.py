@@ -147,7 +147,8 @@ def ls(request):
     try:
         logger.debug("yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
         if request.GET['uri']:
-            filelisting = get_listing(yabiusername, request.GET['uri'])
+            recurse = request.GET.get('recurse')
+            filelisting = get_listing(yabiusername, request.GET['uri'], recurse is not None)
         else:
             filelisting = get_backend_list(yabiusername)
 
