@@ -106,6 +106,9 @@ class MimeStreamDecoder(object):
         self.content_type = ctype
     
     def feed(self,data):
+        if data is None:
+            return
+            
         # try and guess the line ending if we don't know it yet
         if self.line_ending is None:
             self.guess_line_ending(data)

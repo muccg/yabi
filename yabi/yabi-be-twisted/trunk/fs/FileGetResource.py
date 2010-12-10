@@ -30,7 +30,7 @@ class FileGetResource(resource.PostableResource):
         self.path = path
         
         if not fsresource:
-            raise Exception, "FileListResource must be informed on construction as to which FSResource is its parent"
+            raise Exception, "FileGetResource must be informed on construction as to which FSResource is its parent"
         
         self.fsresource = weakref.ref(fsresource)
         
