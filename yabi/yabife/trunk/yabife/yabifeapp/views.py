@@ -36,9 +36,80 @@ from yabife.yabifeapp.preview import html as sanitise_html
 from django.contrib import logging
 logger = logging.getLogger('yabife')
 
+from UploadStreamer import UploadStreamer
+from django.views.decorators.csrf import csrf_exempt
 
-
-
+class FileUploadStreamer(UploadStreamer):
+    def __init__(self, host, port, selector, cookies, fields):
+        UploadStreamer.__init__(self)
+        self._host = host
+        self._port = port
+        self._selector = selector
+        self._fields = fields
+        self._cookies = cookies
+    
+    def receive_data_chunk(self, raw_data, start):
+        #print "receive_data_chunk", len(raw_data), start
+        return self.file_data(raw_data)
+    
+    def file_complete(self, file_size):
+        """individual file upload complete"""
+        #print "file_complete",file_size
+        return self.end_file()
+    
+    def new_file(self, field_name, file_name, content_type, content_length, charset):
+        """beginning of new file in upload"""
+        #print "new_file",field_name, file_name, content_type, content_length, charset
+        return UploadStreamer.new_file(self,file_name)
+    
+    def upload_complete(self):
+        """all files completely uploaded"""
+        #print "upload_complete"
+        return self.end_connection()
+    
+    def handle_raw_input(self, input_data, META, content_length, boundary, encoding, chunked):
+        """raw input"""
+        # this is called right at the beginning. So we grab the uri detail here and initialise the outgoing POST
+        self.post_multipart(host=self._host, port=self._port, selector=self._selector, cookies=self._cookies )
+        
+@authentication_required
+def fileupload(request, url):
+    logger.debug('')
+    
+    appliance = request.user.get_profile().appliance
+   
+    upload_path = appliance.path
+    while len(upload_path) and upload_path[-1]=='/':
+        upload_path = upload_path[:-1]
+        
+    # we parse the GET portion of the request to find the passed in URI before we access the request object more deeply and trigger the processing
+    upload_uri = request.GET['uri']
+    
+    # examine cookie jar for our admin session cookie
+    http = memcache_http(request.user)
+    jar = http.cookie_jar
+    cookie_string = jar.cookies_to_send_header(request.user.get_profile().appliance.url)['Cookie']
+    
+    streamer = FileUploadStreamer(host=appliance.host, port=appliance.port or 80, selector=upload_path+"/ws/fs/put?uri=%s"%quote(upload_uri), cookies=[cookie_string], fields=[])
+    request.upload_handlers = [ streamer ]
+    
+    # evaluating POST triggers the processing of the request body
+    request.POST
+    
+    result=streamer.stream.getresponse()
+    
+    content=result.read()
+    status=int(result.status)
+    reason = result.reason
+    
+    #print "passing back",status,reason,"in json snippet"
+    
+    response = {
+        "level":"success" if status==200 else "failure",
+        "message":content
+        }
+    return HttpResponse(content=json.dumps(response))
+    
 # proxy view to pass through all requests set up in urls.py
 def proxy(request, url, base):
     logger.debug(url)
@@ -412,6 +483,7 @@ def memcache_http(user):
 
     mp = MemcacheCookiePersister(settings.MEMCACHE_SERVERS,
             key='%s-cookies-%s' %(settings.MEMCACHE_KEYSPACE, user.username))
+          
     yabiadmin = user.get_profile().appliance.url
     return Http(base_url=yabiadmin, cache=False, cookie_persister=mp)
 

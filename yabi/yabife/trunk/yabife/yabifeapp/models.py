@@ -1,12 +1,25 @@
+# -*- coding: utf-8 -*-
 from django.contrib.auth.models import User as DjangoUser
 from django.db import models
-
+from urlparse import urlparse
 
 class Appliance(models.Model):
     url = models.CharField(max_length=200, verbose_name="URL")
 
     def __unicode__(self):
         return self.url
+
+    @property
+    def host(self):
+        return urlparse(self.url).hostname
+        
+    @property
+    def port(self):
+        return urlparse(self.url).port
+
+    @property
+    def path(self):
+        return urlparse(self.url).path
 
     class Meta:
         ordering = ["url"]

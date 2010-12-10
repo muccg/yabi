@@ -7,7 +7,7 @@ from yabife import admin
 urlpatterns = patterns('yabife.yabifeapp.views',
     (r'^(?P<url>engine/job/.*)$', 'adminproxy'),
     (r'^(?P<url>ws/account/credential.*)$', 'credentialproxy'),
-    #(r'^(?P<url>ws/fs/put.*)$', 'fileupload'),
+    (r'^(?P<url>ws/fs/put.*)$', 'fileupload'),
     (r'^(?P<url>ws/.*)$', 'adminproxy'),
     (r'^(?P<url>workflows/.*)$', 'adminproxy'),                       
     (r'^preview[/]*$', 'preview'),
