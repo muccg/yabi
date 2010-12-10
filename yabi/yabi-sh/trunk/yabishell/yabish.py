@@ -9,6 +9,7 @@ import uuid
 from yaphc import Http, UnauthorizedError, PostRequest, GetRequest
 from yabishell import errors
 from yabishell import actions
+from yabishell.utils import human_readable_size
 
 # TODO config file
 YABI_DEFAULT_URL = 'https://faramir/yabife/snapshot/'
@@ -45,12 +46,6 @@ def main():
     finally:
         if yabi is not None:
             yabi.session_finished()
-
-def human_readable_size(num):
-    for x in ['bytes','KB','MB','GB','TB']:
-        if num < 1024.0:
-            return "%3.1f %s" % (num, x)
-        num /= 1024.0
 
 class StageIn(object):
     def __init__(self, yabi, files):

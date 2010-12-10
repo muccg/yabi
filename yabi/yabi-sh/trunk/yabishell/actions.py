@@ -4,10 +4,10 @@ import os
 import sys
 import uuid
 import urlparse
-import errno
 import itertools
 
 from yabishell import errors
+from yabishell.utils import mkdir_p
 
 class Action(object):
     def __init__(self, yabi, name=None):
@@ -245,12 +245,4 @@ class Rm(Action):
 
     def decode_json(self, response):
         return None
-
-
-def mkdir_p(path):
-    try:
-        os.makedirs(path)
-    except OSError, e: 
-        if e.errno != errno.EEXIST:
-            raise
 
