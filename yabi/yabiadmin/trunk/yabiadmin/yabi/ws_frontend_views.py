@@ -32,7 +32,41 @@ from yabiadmin.decorators import memcache, authentication_required
 import logging
 logger = logging.getLogger('yabiadmin')
 
+from UploadStreamer import UploadStreamer
 
+class FileUploadStreamer(UploadStreamer):
+    def __init__(self, host, port, selector, cookies, fields):
+        UploadStreamer.__init__(self)
+        self._host = host
+        self._port = port
+        self._selector = selector
+        self._fields = fields
+        self._cookies = cookies
+    
+    def receive_data_chunk(self, raw_data, start):
+        #print "receive_data_chunk", len(raw_data), start
+        return self.file_data(raw_data)
+    
+    def file_complete(self, file_size):
+        """individual file upload complete"""
+        #print "file_complete",file_size
+        return self.end_file()
+    
+    def new_file(self, field_name, file_name, content_type, content_length, charset):
+        """beginning of new file in upload"""
+        #print "new_file",field_name, file_name, content_type, content_length, charset
+        return UploadStreamer.new_file(self,file_name)
+    
+    def upload_complete(self):
+        """all files completely uploaded"""
+        #print "upload_complete"
+        return self.end_connection()
+    
+    def handle_raw_input(self, input_data, META, content_length, boundary, encoding, chunked):
+        """raw input"""
+        # this is called right at the beginning. So we grab the uri detail here and initialise the outgoing POST
+        self.post_multipart(host=self._host, port=self._port, selector=self._selector, cookies=self._cookies )
+   
 
 ## TODO do we want to limit tools to those the user can access?
 ## will need to change call from front end to include username
@@ -259,33 +293,31 @@ def put(request):
     import httplib
 
     yabiusername = request.user.username
+
     try:
-        uri = request.REQUEST['uri']
-        logger.debug("yabiusername: %s uri: %s" %(yabiusername, uri))
+        logger.debug("uri: %s" %(request.GET['uri']))
+        uri = request.GET['uri']
 
-        # TODO this only works with files written to disk by django
-        # at the moment so the FILE_UPLOAD_MAX_MEMORY_SIZE must be set to 0
-        # in settings.py
-        files = []
-        in_file = request.FILES['file1']
-        files.append((in_file.name, in_file.name, in_file.temporary_file_path()))
         bc = get_backendcredential_for_uri(yabiusername, uri)
-        logger.debug("files: %s"%repr(files))
-
-        data=[]
         resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))
         resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(bc.credential.username),quote(bc.credential.password),quote( bc.credential.cert),quote(bc.credential.key))
-        h = post_multipart(settings.YABIBACKEND_SERVER, resource, data, files)
 
-        if not uri.endswith('/'):
-            uri += '/'
-        data = {
-            "message": "Upload successful",
-            "level": "success",
-            "uri": uri + in_file.name,
-        }
+        print "forwarding to backend resource:",settings.BACKEND_IP, settings.BACKEND_PORT, resource
 
-        return HttpResponse(content=json.dumps(data), content_type="text/plain; charset=UTF-8")
+        streamer = FileUploadStreamer(host=settings.BACKEND_IP, port=settings.BACKEND_PORT, selector=resource, cookies=[], fields=[])
+        request.upload_handlers = [ streamer ]
+        
+        # evaluating POST triggers the processing of the request body
+        request.POST
+
+        result = streamer.stream.getresponse()
+        content=result.read()
+        status=int(result.status)
+        reason = result.reason
+        
+        print "passing back from backend to frontend upload result",status,reason
+        
+        return HttpResponse(content=content,status=status)
         
     except socket.error, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
@@ -293,17 +325,6 @@ def put(request):
     except httplib.CannotSendRequest, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
         raise
-    except KeyError, e:
-        data = {
-            "message": "No files uploaded",
-            "level": "fail",
-            "uri": uri,
-        }
-
-        return HttpResponse(content=json.dumps(data), content_type="text/plain; charset=UTF-8")
-        
-        return JsonMessageResponseBadRequest("No files uploaded")
-
 
 @authentication_required
 def submitworkflow(request):
