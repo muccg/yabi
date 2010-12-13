@@ -56,6 +56,11 @@ YAHOO.util.Event.onDOMReady(function() {
         var publicMethods = {
             close: function() {
                 var anim = new YAHOO.util.Anim(el, { opacity: { to: 0 } }, 0.25, YAHOO.util.Easing.easeOut);
+
+                anim.onComplete.subscribe(function() {
+                    el.style.display = "none";
+                });
+
                 anim.animate();
             },
             handleResponse: function(response) {
