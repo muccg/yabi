@@ -338,7 +338,7 @@ def preview(request):
     # The standard response upon error.
     def unavailable():
         # Cache some metadata about the preview so we can retrieve it later.
-        key = str("%s-preview-%s" % (settings.MEMCACHE_KEYSPACE, uri))
+        key = preview_key(uri)
         memcache_client().set(key, json.dumps({
             "error": True,
             "size": size,
@@ -420,7 +420,7 @@ def preview(request):
             return unavailable()
 
     # Cache some metadata about the preview so we can retrieve it later.
-    key = str("%s-preview-%s" % (settings.MEMCACHE_KEYSPACE, uri))
+    key = preview_key(uri)
     memcache_client().set(key, json.dumps({
         "error": False,
         "size": size,
@@ -460,7 +460,7 @@ def preview_metadata(request):
     except KeyError:
         return JsonMessageResponseBadRequest("No URI parameter given")
 
-    key = str("%s-preview-%s" % (settings.MEMCACHE_KEYSPACE, uri))
+    key = preview_key(uri)
     metadata = memcache_client().get(key)
 
     if metadata:
@@ -525,6 +525,12 @@ def memcache_http(user):
           
     yabiadmin = user.get_profile().appliance.url
     return Http(base_url=yabiadmin, cache=False, cookie_persister=mp)
+
+def preview_key(uri):
+    # File names are generally in UTF-8, but memcache doesn't really like keys
+    # with "control characters". We'll encode the URI in Base64 to avoid
+    # potential problems.
+    return str("%s-preview-%s" % (settings.MEMCACHE_KEYSPACE, base64.b64encode(uri)))
 
 def yabiadmin_login(username, password):
     # TODO get the url from somewhere
