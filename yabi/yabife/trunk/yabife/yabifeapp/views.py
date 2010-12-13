@@ -358,6 +358,11 @@ def preview(request):
 
     logger.debug("Attempting to preview URI '%s'", uri)
 
+    # Set initial values for the size and content_type variables so we can call
+    # unavailable() immediately.
+    size = 0
+    content_type = "application/octet-stream"
+
     # Get the actual file size.
     ls_request = GetRequest("ws/fs/ls", { "uri": uri })
     http = memcache_http(request.user)
