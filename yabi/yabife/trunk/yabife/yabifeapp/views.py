@@ -33,6 +33,8 @@ from yabife.ldaputils import get_userdn_of
 from yabife.responses import *
 from yabife.yabifeapp.preview import html as sanitise_html
 
+import memcache
+
 from django.contrib import logging
 logger = logging.getLogger('yabife')
 
@@ -335,6 +337,15 @@ def password(request):
 def preview(request):
     # The standard response upon error.
     def unavailable():
+        # Cache some metadata about the preview so we can retrieve it later.
+        key = str("%s-preview-%s" % (settings.MEMCACHE_KEYSPACE, uri))
+        memcache_client().set(key, json.dumps({
+            "error": True,
+            "size": size,
+            "truncated": False,
+            "type": content_type,
+        }), time=settings.PREVIEW_METADATA_EXPIRY)
+
         return render_page("errors/preview-unavailable.html", request, response=HttpResponseServerError())
 
     try:
@@ -391,24 +402,26 @@ def preview(request):
     type_settings = settings.PREVIEW_SETTINGS[content_type]
     content_type = type_settings.get("override_mime_type", content_type)
 
-
     # If the file is beyond the size limit, we'll need to check whether to
     # truncate it or not.
+    truncated = False
     if size > settings.PREVIEW_SIZE_LIMIT:
         if type_settings.get("truncate", False):
             logger.debug("URI '%s' is too large: size %d > limit %d; truncating", uri, size, settings.PREVIEW_SIZE_LIMIT)
             content = content[0:settings.PREVIEW_SIZE_LIMIT]
-            content += """
-
-============================================================
-
-The file is beyond the size limit for previews. To access further data, please download the file.
-
-============================================================
-"""
+            truncated = True
         else:
             logger.debug("URI '%s' is too large: size %d > limit %d", uri, size, settings.PREVIEW_SIZE_LIMIT)
             return unavailable()
+
+    # Cache some metadata about the preview so we can retrieve it later.
+    key = str("%s-preview-%s" % (settings.MEMCACHE_KEYSPACE, uri))
+    memcache_client().set(key, json.dumps({
+        "error": False,
+        "size": size,
+        "truncated": settings.PREVIEW_SIZE_LIMIT if truncated else False,
+        "type": content_type,
+    }), time=settings.PREVIEW_METADATA_EXPIRY)
 
     # Set up our response.
     if charset:
@@ -431,6 +444,24 @@ The file is beyond the size limit for previews. To access further data, please d
         response.write(content)
 
     return response
+
+@login_required
+def preview_metadata(request):
+    if request.method != "GET":
+        return JsonMessageResponseNotAllowed(["GET"])
+
+    try:
+        uri = request.GET["uri"]
+    except KeyError:
+        return JsonMessageResponseBadRequest("No URI parameter given")
+
+    key = str("%s-preview-%s" % (settings.MEMCACHE_KEYSPACE, uri))
+    metadata = memcache_client().get(key)
+
+    if metadata:
+        return HttpResponse(metadata, content_type="application/json; charset=UTF-8")
+
+    return JsonMessageResponseNotFound("Metadata not in cache")
 
     
 # Implementation methods
@@ -476,6 +507,9 @@ def copy_non_empty_headers(src, to, header_names):
         header_value = src.get(header_name)
         if header_value:
             to[header_name] = header_value
+
+def memcache_client():
+    return memcache.Client(settings.MEMCACHE_SERVERS)
 
 def memcache_http(user):
     if not isinstance(user, DjangoUser):

@@ -211,6 +211,20 @@
     -moz-border-radius-topright:4px;
 }
 
+.fileSelectorPreviewMetadata {
+    color: #666;
+}
+
+.fileSelectorPreviewMetadata:before {
+    color: #666;
+    content: " (";
+}
+
+.fileSelectorPreviewMetadata:after {
+    color: #666;
+    content: ")";
+}
+
 .fileSelectorPreviewTitle {
     position: absolute;
     overflow: hidden;
@@ -226,18 +240,9 @@
     content: "Preview: ";
 }
 
-.fileSelectorPreviewSize {
-    color: #666;
-}
-
-.fileSelectorPreviewSize:before {
-    color: #666;
-    content: " (";
-}
-
-.fileSelectorPreviewSize:after {
-    color: #666;
-    content: ")";
+.fileSelectorPreviewTruncated {
+    color: #3879e5;
+    border-bottom: dotted 1px #3879e5;
 }
 
 .fileSelectorPreviewControls .controlButton {

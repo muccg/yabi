@@ -81,6 +81,9 @@ PREVIEW_SETTINGS = {
     "image/png": { "truncate": False },
 }
 
+# The length of time preview metadata will be cached, in seconds.
+PREVIEW_METADATA_EXPIRY = 60
+
 # The maximum file size that can be previewed.
 PREVIEW_SIZE_LIMIT = 1048576
 

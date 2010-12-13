@@ -235,7 +235,6 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
             invoker = {
                 target: this,
                 object: new YabiSimpleFileValue(this.pathComponents, this.browseListing[toplevelindex].files[index][0]),
-                fileSize: fileSize,
                 topLevelIndex: toplevelindex
             };
             
@@ -514,8 +513,8 @@ YabiFileSelector.prototype.deleteFileAtIndex = function(index) {
  *
  * Previews the selected file, if possible.
  */
-YabiFileSelector.prototype.previewFile = function(file, topLevelIndex, fileSize) {
-    this.preview = new YabiFileSelectorPreview(this, file, topLevelIndex, fileSize);
+YabiFileSelector.prototype.previewFile = function(file, topLevelIndex) {
+    this.preview = new YabiFileSelectorPreview(this, file, topLevelIndex);
 };
 
 /**
@@ -666,7 +665,7 @@ YabiFileSelector.prototype.expandCallback = function(e, invoker) {
 
 YabiFileSelector.prototype.previewFileCallback = function(e, invoker) {
     var target = invoker.target;
-    target.previewFile(invoker.object, invoker.topLevelIndex, invoker.fileSize);
+    target.previewFile(invoker.object, invoker.topLevelIndex);
 
     YAHOO.util.Event.stopEvent(e);
 };
@@ -804,10 +803,9 @@ YabiFileSelector.prototype.movelessDrop = function(e) {
  * An object that provides an overlay over a given YabiFileSelector that
  * securely previews the given file.
  */
-var YabiFileSelectorPreview = function (fs, file, topLevelIndex, fileSize) {
+var YabiFileSelectorPreview = function (fs, file, topLevelIndex) {
     this.fs = fs;
     this.file = file;
-    this.fileSize = fileSize;
     this.topLevelIndex = topLevelIndex;
     this.uri = appURL + "preview?uri=" + escape(file.toString());
 
@@ -862,16 +860,11 @@ YabiFileSelectorPreview.prototype.createControls = function () {
     var controls = document.createElement("div");
     controls.className = "fileSelectorPreviewControls";
 
-    var title = document.createElement("h3");
-    title.className = "fileSelectorPreviewTitle";
-    title.appendChild(document.createTextNode(this.file.filename));
+    this.title = document.createElement("h3");
+    this.title.className = "fileSelectorPreviewTitle";
+    this.title.appendChild(document.createTextNode(this.file.filename));
 
-    var size = document.createElement("span");
-    size.className = "fileSelectorPreviewSize";
-    size.appendChild(document.createTextNode(this.fileSize));
-    title.appendChild(size);
-
-    controls.appendChild(title);
+    controls.appendChild(this.title);
 
     // Add buttons.
     controls.appendChild(this.createControlButton("fileSelectorPreviewClose", function (e) {
@@ -947,8 +940,64 @@ YabiFileSelectorPreview.prototype.closeCallback = function () {
  * Handler called when the iframe has loaded.
  */
 YabiFileSelectorPreview.prototype.loadCallback = function () {
+    var self = this;
+
     this.iframeEl.className = "";
+
+    var callbacks = {
+        success: function (o) {
+            self.metadataCallback(o);
+        },
+        failure: YAHOO.ccgyabi.widget.YabiMessage.handleResponse
+    };
+
+    var url = appURL + "preview/metadata?uri=" + escape(this.file.toString());
+    YAHOO.util.Connect.asyncRequest("GET", url, callbacks);
 };
+
+/**
+ * metadataCallback
+ *
+ * Handler called when preview metadata is available.
+ */
+YabiFileSelectorPreview.prototype.metadataCallback = function (o) {
+    var metadata = YAHOO.lang.JSON.parse(o.responseText);
+
+    var span = document.createElement("span");
+    span.className = "fileSelectorPreviewMetadata";
+
+    var size = document.createElement("span");
+    size.className = "fileSelectorPreviewSize";
+    size.appendChild(document.createTextNode(this.fs.humanReadableSizeFromBytes(metadata.size)));
+    span.appendChild(size);
+
+    if (metadata.truncated) {
+        var truncatedLength = this.fs.humanReadableSizeFromBytes(metadata.truncated);
+
+        // Oh, English.
+        var verb = "are";
+        if (truncatedLength.slice(0, 4) == "1.00") {
+            verb = "is";
+        }
+
+        var truncated = document.createElement("span");
+        truncated.className = "fileSelectorPreviewTruncated";
+        truncated.title = "This file is too long to be previewed in full. " +
+                          "The first " + truncatedLength + " " + verb + " shown below. " +
+                          "To view the complete file, please download it.";
+        truncated.appendChild(document.createTextNode("truncated"));
+
+        /* This would be better done in CSS with a generated content block, but
+         * the border style can't be overridden in a :before style, which is
+         * ugly. */
+        span.appendChild(document.createTextNode("; "));
+
+        span.appendChild(truncated);
+    }
+
+    this.title.appendChild(span);
+};
+
 
 /**
  * getPrevious
