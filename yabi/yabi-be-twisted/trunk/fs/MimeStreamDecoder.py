@@ -57,6 +57,8 @@ class MimeStreamDecoder(object):
         self.fileopen = None
         
     def write_line(self, line):
+        if not line:
+            return
         no_intr(getattr(self.fileopen or self.datastream,"write"),line)
         self.bytes_written += len(line)
         
