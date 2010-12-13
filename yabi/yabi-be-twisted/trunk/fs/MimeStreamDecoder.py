@@ -16,6 +16,8 @@ def no_intr(func, *args, **kw):
 
 import StringIO
 
+BLOCK_FLUSH_SIZE = 65536                            # 64 kb
+
 class MimeStreamDecoder(object):
     """This is my super no memory usage streaming Mime upload decoder"""
     
@@ -58,6 +60,7 @@ class MimeStreamDecoder(object):
         
     def write_line(self, line):
         if not line:
+            print "."
             return
         no_intr(getattr(self.fileopen or self.datastream,"write"),line)
         self.bytes_written += len(line)
@@ -110,7 +113,7 @@ class MimeStreamDecoder(object):
     def feed(self,data):
         if data is None:
             return
-            
+        
         # try and guess the line ending if we don't know it yet
         if self.line_ending is None:
             self.guess_line_ending(data)
@@ -167,5 +170,13 @@ class MimeStreamDecoder(object):
                         self.write_line(line)
                         if num<len(lines)-1:
                             self.bodyline = True
-                        
-            self._carry = lines[-1]
+            
+            self._carry = lines[-1]       
+            
+            if len(self._carry) > BLOCK_FLUSH_SIZE and not self._is_header:
+                if self.bodyline:
+                    self.write_line_ending()
+                    self.bodyline = False
+                self.write_line(self._carry[:BLOCK_FLUSH_SIZE])
+                self._carry = self._carry[BLOCK_FLUSH_SIZE:]
+            
