@@ -131,7 +131,7 @@ default_parser = CSSParser(fetcher=default_fetcher)
 default_ruleset = Ruleset(DEFAULT_ALLOWED_PROPERTIES)
 
 
-def _sanitise(content, parser=default_parser, ruleset=default_ruleset, url_sanitiser=default_url_sanitiser):
+def _sanitise(content, parser=default_parser, ruleset=default_ruleset):
     """
     The actual implementation of the CSS sanitiser.
     """
@@ -189,13 +189,13 @@ def _sanitise(content, parser=default_parser, ruleset=default_ruleset, url_sanit
     return output
 
 
-def sanitise(content, parser=default_parser, ruleset=default_ruleset, url_sanitiser=default_url_sanitiser):
+def sanitise(content, parser=default_parser, ruleset=default_ruleset):
     """Sanitises the given CSS stylesheet content."""
 
-    return _sanitise(content, parser=parser, ruleset=ruleset, url_sanitiser=url_sanitiser).cssText
+    return _sanitise(content, parser=parser, ruleset=ruleset).cssText
 
 
-def sanitise_inline(content, parser=default_parser, ruleset=default_ruleset, url_sanitiser=default_url_sanitiser):
+def sanitise_inline(content, parser=default_parser, ruleset=default_ruleset):
     """Sanitises the given CSS inline style."""
 
     # Quick, dirty, but effective: the cssutils parser can only parse
@@ -203,7 +203,7 @@ def sanitise_inline(content, parser=default_parser, ruleset=default_ruleset, url
     # in a fake rule and parse that.
     wrapped_content = "_inline_sanitise { " + content + " }"
 
-    sheet = _sanitise(wrapped_content, parser=parser, ruleset=ruleset, url_sanitiser=url_sanitiser)
+    sheet = _sanitise(wrapped_content, parser=parser, ruleset=ruleset)
 
     # Pluck out the rule we actually care about.
     for rule in sheet:
