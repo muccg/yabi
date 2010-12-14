@@ -44,22 +44,22 @@ class FileUploadStreamer(UploadStreamer):
         self._cookies = cookies
     
     def receive_data_chunk(self, raw_data, start):
-        print "receive_data_chunk", len(raw_data), start
+        #print "receive_data_chunk", len(raw_data), start
         return self.file_data(raw_data)
     
     def file_complete(self, file_size):
         """individual file upload complete"""
-        print "file_complete",file_size
+        #print "file_complete",file_size
         return self.end_file()
     
     def new_file(self, field_name, file_name, content_type, content_length, charset):
         """beginning of new file in upload"""
-        print "new_file",field_name, file_name, content_type, content_length, charset
+        #print "new_file",field_name, file_name, content_type, content_length, charset
         return UploadStreamer.new_file(self,file_name)
     
     def upload_complete(self):
         """all files completely uploaded"""
-        print "upload_complete"
+        #print "upload_complete"
         return self.end_connection()
     
     def handle_raw_input(self, input_data, META, content_length, boundary, encoding, chunked):
