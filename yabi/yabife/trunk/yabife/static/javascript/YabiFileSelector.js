@@ -806,6 +806,7 @@ YabiFileSelector.prototype.movelessDrop = function(e) {
 var YabiFileSelectorPreview = function (fs, file, topLevelIndex) {
     this.fs = fs;
     this.file = file;
+    this.loadCallbackFired = false;
     this.topLevelIndex = topLevelIndex;
     this.uri = appURL + "preview?uri=" + escape(file.toString());
 
@@ -941,6 +942,11 @@ YabiFileSelectorPreview.prototype.closeCallback = function () {
  */
 YabiFileSelectorPreview.prototype.loadCallback = function () {
     var self = this;
+
+    if (this.loadCallbackFired) {
+        return;
+    }
+    this.loadCallbackFired = true;
 
     this.iframeEl.className = "";
 

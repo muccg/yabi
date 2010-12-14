@@ -31,7 +31,7 @@ from ldap import LDAPError, MOD_REPLACE
 from yabife.ldapclient import LDAPClient
 from yabife.ldaputils import get_userdn_of
 from yabife.responses import *
-from yabife.yabifeapp.preview import html as sanitise_html
+from yabife.preview import html
 
 import memcache
 
@@ -444,7 +444,7 @@ def preview(request):
     # Admin, but honestly, it's pretty useless in many cases. Let's just do the
     # best we can with the extension.
     if type_settings.get("sanitise"):
-        response.write(sanitise_html(content))
+        response.write(html.sanitise(content))
     else:
         response.write(content)
 
