@@ -54,8 +54,8 @@ INSTALLED_APPS.extend( [
 ] )
 
 # TODO memcache session settings kill app
-#SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-#CACHE_BACKEND = 'memcache'
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+CACHE_BACKEND = 'memcached://'+(';'.join(MEMCACHE_SERVERS))+"/"
 MEMCACHE_KEYSPACE = "yabiadmin-"+TARGET
 
 AUTHENTICATION_BACKENDS = [
