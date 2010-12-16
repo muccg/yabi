@@ -715,10 +715,6 @@ YabiFileSelector.prototype.uploadResponse = function(o) {
          * styles), so we can simply look for that and use it.
          */
 
-//         var pre = o.responseXML.querySelector("pre");
-//         var json = pre.innerText || pre.textContent;
-
-        /* Why not just use responseText? Or am I missing something? -- crispin */
         var json = YAHOO.lang.JSON.parse(o.responseText)
 
         if (json.level != "success") {
