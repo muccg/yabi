@@ -336,7 +336,7 @@ def password(request):
 @login_required
 def preview(request):
     # The standard response upon error.
-    def unavailable():
+    def unavailable(reason="No preview is available for the requested file."):
         # Cache some metadata about the preview so we can retrieve it later.
         key = preview_key(uri)
         memcache_client().set(key, json.dumps({
@@ -346,7 +346,7 @@ def preview(request):
             "type": content_type,
         }), time=settings.PREVIEW_METADATA_EXPIRY)
 
-        return render_page("errors/preview-unavailable.html", request, response=HttpResponseServerError())
+        return render_page("errors/preview-unavailable.html", request, reason=reason, response=HttpResponseServerError())
 
     try:
         uri = request.GET["uri"]
@@ -370,7 +370,7 @@ def preview(request):
 
     if resp.status != 200:
         logger.warning("Attempted to preview inaccessible URI '%s'", uri)
-        return unavailable()
+        return unavailable("No preview is available as the requested file is inaccessible.")
 
     result = json.loads(content)
 
@@ -391,7 +391,7 @@ def preview(request):
 
     if resp.status != 200:
         logger.warning("Attempted to preview inaccessible URI '%s'", uri)
-        return unavailable()
+        return unavailable("No preview is available as the requested file is inaccessible.")
 
     # Check the content type.
     if ";" in resp["content-type"]:
@@ -402,7 +402,7 @@ def preview(request):
 
     if content_type not in settings.PREVIEW_SETTINGS:
         logger.debug("Preview of URI '%s' unsuccessful due to unknown MIME type '%s'", uri, content_type)
-        return unavailable()
+        return unavailable("Files of this type cannot be previewed.")
 
     type_settings = settings.PREVIEW_SETTINGS[content_type]
     content_type = type_settings.get("override_mime_type", content_type)
@@ -417,7 +417,7 @@ def preview(request):
             truncated = True
         else:
             logger.debug("URI '%s' is too large: size %d > limit %d", uri, size, settings.PREVIEW_SIZE_LIMIT)
-            return unavailable()
+            return unavailable("This file is too large to be previewed.")
 
     # Cache some metadata about the preview so we can retrieve it later.
     key = preview_key(uri)
