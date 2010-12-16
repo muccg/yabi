@@ -725,7 +725,19 @@ YabiFileSelector.prototype.uploadResponse = function(o) {
         }
     }
     catch (e) {
-        // Bad JSON.
+        // Bad JSON. Firstly, we'll check for a 413 from nginx.
+        try {
+            var titles = o.responseXML.getElementsByTagName("title");
+
+            if (titles.length) {
+                var title = titles[0].innerText || titles[0].textContent;
+                if (title.indexOf("413 ") != -1) {
+                    return YAHOO.ccgyabi.widget.YabiMessage.fail("File too large to be uploaded");
+                }
+            }
+        }
+        catch (e) {}
+
         return YAHOO.ccgyabi.widget.YabiMessage.fail("Error uploading file");
     }
 
