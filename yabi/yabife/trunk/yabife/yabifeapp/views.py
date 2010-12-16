@@ -444,7 +444,12 @@ def preview(request):
     # Admin, but honestly, it's pretty useless in many cases. Let's just do the
     # best we can with the extension.
     if type_settings.get("sanitise"):
-        response.write(html.sanitise(content))
+        try:
+            response.write(html.sanitise(content))
+        except RuntimeError:
+            return unavailable("This HTML file is too deeply nested to be previewed.")
+        except UnicodeEncodeError:
+            return unavailable("This HTML file includes malformed Unicode, and hence can't be previewed.")
     else:
         response.write(content)
 
