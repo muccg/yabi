@@ -689,22 +689,29 @@ YabiJob.prototype.solidify = function(obj) {
     var allMandatory = true;
     if (YAHOO.lang.isArray(params)) {
         for (paramIndex in params) {
-            
-            paramObj = new YabiJobParam(target, params[paramIndex], (params[paramIndex]["switch"] == this.batchParameter), this.editable, this.preloadValueFor(params[paramIndex]["switch"]));
+            var preloadValue = this.preloadValueFor(params[paramIndex]["switch"]);
 
-            this.params.push(paramObj);
-            this.optionsEl.appendChild(paramObj.containerEl);
+            if (this.editable || preloadValue !== null) {
+                paramObj = new YabiJobParam(target, params[paramIndex], (params[paramIndex]["switch"] == this.batchParameter), this.editable, preloadValue);
 
-            if (paramObj.payload.mandatory !== true) {
-                allMandatory = false;
+                this.params.push(paramObj);
+                this.optionsEl.appendChild(paramObj.containerEl);
+
+                if (paramObj.payload.mandatory !== true) {
+                    allMandatory = false;
+                }
             }
         }
     } else {
-        paramObj = new YabiJobParam(target, params, (params["switch"] == this.batchParameter), this.editable, this.preloadValueFor(params["switch"]));
-        this.params.push(paramObj);
-        this.optionsEl.appendChild(paramObj.containerEl);
-        if (paramObj.payload.mandatory !== true) {
-            allMandatory = false;
+        var preloadValue = this.preloadValueFor(params["switch"]);
+
+        if (this.editable || preloadValue !== null) {
+            paramObj = new YabiJobParam(target, params, (params["switch"] == this.batchParameter), this.editable, this.preloadValueFor(params["switch"]));
+            this.params.push(paramObj);
+            this.optionsEl.appendChild(paramObj.containerEl);
+            if (paramObj.payload.mandatory !== true) {
+                allMandatory = false;
+            }
         }
     }
     
