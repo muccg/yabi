@@ -251,12 +251,7 @@ YabiJobParam.prototype.setHelpText = function(text) {
     text = text || this.payload.helptext;
 
     if (text) {
-        if (this.helpTextEl) {
-            while (this.helpTextEl.childNodes.length > 0) {
-                this.helpTextEl.removeChild(this.helpTextEl.firstChild);
-            }
-        }
-        else {
+        if (!this.helpTextEl) {
             this.helpTextEl = document.createElement("div");
             this.helpTextEl.className = "help";
             this.containerEl.appendChild(this.helpTextEl);
