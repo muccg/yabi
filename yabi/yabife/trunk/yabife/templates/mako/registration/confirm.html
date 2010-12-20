@@ -1,0 +1,17 @@
+<%inherit file="base.html"/>
+
+<%def name="header()">
+    <link rel="stylesheet" type="text/css" href="${h.url('/static/css/registration/registration.css')}" />
+</%def>
+
+<%def name="body()">
+    <h1>Request an Account</h1>
+
+    <p>
+        Your request has been confirmed, and passed onto the YABI appliance
+        administrator(s) for further action. You will receive an e-mail once
+        your request has been actioned.
+    </p>
+
+    ${self.copyright()}
+</%def>

@@ -1,0 +1,12 @@
+Hi ${user.first_name},
+
+We're sorry, but your YABI account has been denied. If you feel this is
+in error, please contact one of the following appliance administrators:
+
+% for admin in appliance.applianceadministrator_set.all():
+* ${admin.name} <${admin.email}>
+% endfor
+
+Thanks,
+
+YABI Administrators

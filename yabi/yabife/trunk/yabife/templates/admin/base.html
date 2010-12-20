@@ -75,13 +75,15 @@ ${self.block_userlinks()}<%def name="block_userlinks()">
 
         
 % if messages:
-
         <ul class="messagelist">
-% for message in messages:
-<li>${message}</li>
-% endfor
+%    for message in messages:
+%        if message.tags:
+            <li class="${message.tags}">${message}</li>
+%        else:
+            <li>${message}</li>
+%        endif
+%    endfor
 </ul>
-        
 % endif
 
 

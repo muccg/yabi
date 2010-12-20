@@ -313,17 +313,7 @@ def password(request):
     
     # And, more importantly, in LDAP if we can.
     try:
-        userdn = get_userdn_of(request.user.username)
-        client = LDAPClient(settings.AUTH_LDAP_SERVER)
-        client.bind_as(userdn, request.POST["currentPassword"])
-
-        md5 = hashlib.md5(request.POST["newPassword"]).digest()
-        modlist = (
-            (MOD_REPLACE, "userPassword", "{MD5}%s" % (base64.encodestring(md5).strip(), )),
-        )
-        client.modify(userdn, modlist)
-
-        client.unbind()
+        profile.set_ldap_password(request.POST["currentPassword"], request.POST["newPassword"])
     except (AttributeError, LDAPError), e:
         # Send back something fairly generic.
         logger.debug("Error connecting to server: %s" % str(e))

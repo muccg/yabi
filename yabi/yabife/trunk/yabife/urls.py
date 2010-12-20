@@ -24,6 +24,7 @@ urlpatterns = patterns('yabife.yabifeapp.views',
     (r'^wslogin[/]*$', 'wslogin', {'SSL':True}),
     (r'^wslogout[/]*$', 'wslogout'),
     (r'^admin/', include(admin.site.urls)),
+    (r'^registration/', include('yabife.registration.urls')),
 )
 
 # pattern for serving statically

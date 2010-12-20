@@ -1,6 +1,6 @@
-from django.contrib.admin import ModelAdmin
+from django.contrib.admin import ModelAdmin, TabularInline
 from django.contrib.webservices.ext import ExtJsonInterface
-from yabife.yabifeapp.models import Appliance, User
+from yabife.yabifeapp.models import Appliance, ApplianceAdministrator, User
 
 
 class SuperuserOnlyModelAdmin(ModelAdmin):
@@ -11,10 +11,14 @@ class SuperuserOnlyModelAdmin(ModelAdmin):
         return self.model.objects.none()
 
 
-class ApplianceAdmin(ExtJsonInterface, SuperuserOnlyModelAdmin):
-    pass
-
+class ApplianceAdministratorAdmin(TabularInline):
+    model = ApplianceAdministrator
  
+class ApplianceAdmin(ExtJsonInterface, SuperuserOnlyModelAdmin):
+    inlines = [ApplianceAdministratorAdmin]
+    list_display = ("name", "url")
+
+
 class UserAdmin(ExtJsonInterface, SuperuserOnlyModelAdmin):
     fieldsets = (
         (None, {

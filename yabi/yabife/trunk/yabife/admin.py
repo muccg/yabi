@@ -1,11 +1,13 @@
 from django.contrib import admin
 from django.contrib.webservices.ext import ExtJsonInterface
-from yabife.yabifeapp.admin import register
 
 import django.contrib.auth.admin
 import django.contrib.auth.models
 import django.contrib.sites.admin
 import django.contrib.sites.models
+
+import yabife.registration.admin
+import yabife.yabifeapp.admin
 
 
 # Overrides for the default django.contrib.auth ModelAdmin subclasses that
@@ -31,4 +33,5 @@ site = admin.AdminSite(name="Yabi Frontend Administration")
 site.register(django.contrib.auth.models.Group, GroupAdmin)
 site.register(django.contrib.auth.models.User, UserAdmin)
 
-register(site)
+yabife.registration.admin.register(site)
+yabife.yabifeapp.admin.register(site)

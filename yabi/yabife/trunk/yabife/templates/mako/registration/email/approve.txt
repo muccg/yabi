@@ -1,0 +1,19 @@
+Hi,
+
+A request has been received for a YABI user account. The details are:
+
+Appliance: ${appliance}
+User name: ${user.username}
+Name:      ${user.first_name} ${user.last_name}
+E-mail:    ${user.email}
+
+You can approve or deny this request by using the links below, or via
+the YABI Frontend Administration interface.
+
+Approve:       ${base}approve/${request.id}
+Deny:          ${base}deny/${request.id}
+Request Admin: ${base}
+
+Share and enjoy,
+
+YABI

@@ -20,7 +20,13 @@ LOGOUT_URL = url('/logout/')
 ROOT_URLCONF = 'yabife.urls'
 
 INSTALLED_APPS.extend( [
+    'django.contrib.messages',
+    'yabife.registration',
     'yabife.yabifeapp',
+] )
+
+MIDDLEWARE_CLASSES.extend( [
+    'django.contrib.messages.middleware.MessageMiddleware',
 ] )
 
 MEMCACHE_KEYSPACE = "prod-yabife-"
