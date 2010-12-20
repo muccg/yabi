@@ -121,6 +121,8 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
             }
         }
         
+        this.setHelpText();
+    
         return;
     }
     
@@ -206,12 +208,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
         this.containerEl.appendChild(this.acceptedExtensionList.containerEl);
     }
     
-    if (this.payload.helptext) {
-        var helpTextEl = document.createElement("div");
-        helpTextEl.className = "help";
-        helpTextEl.innerHTML = this.payload.helptext;
-        this.containerEl.appendChild(helpTextEl);
-    }
+    this.setHelpText();
     
     //attach key events for changes/keypresses
     YAHOO.util.Event.addListener(this.inputEl, "blur", this.userValidate, this);
@@ -243,6 +240,30 @@ YabiJobParam.prototype.hasChanged = function() {
         return true;
     }
     return false;
+};
+
+/**
+ * setHelpText
+ *
+ * Sets the help text for the given parameter.
+ */
+YabiJobParam.prototype.setHelpText = function(text) {
+    text = text || this.payload.helptext;
+
+    if (text) {
+        if (this.helpTextEl) {
+            while (this.helpTextEl.childNodes.length > 0) {
+                this.helpTextEl.removeChild(this.helpTextEl.firstChild);
+            }
+        }
+        else {
+            this.helpTextEl = document.createElement("div");
+            this.helpTextEl.className = "help";
+            this.containerEl.appendChild(this.helpTextEl);
+        }
+
+        this.helpTextEl.innerHTML = text;
+    }
 };
 
 /**

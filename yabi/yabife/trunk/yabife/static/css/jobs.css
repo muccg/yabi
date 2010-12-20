@@ -235,3 +235,9 @@
 .validInput {
     display: none;
 }
+
+/* Miscellany. */
+.jobParam label {
+    position: static;
+    display: inline-block;
+}
