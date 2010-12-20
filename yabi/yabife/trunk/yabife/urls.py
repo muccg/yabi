@@ -39,3 +39,6 @@ if settings.DEBUG:
 urlpatterns += patterns('django.views.generic.simple',
     (r'^favicon\.ico', 'redirect_to', {'url': '/static/images/favicon.ico'}),
 )
+
+handler404 = "yabife.yabifeapp.views.error_404"
+handler500 = "yabife.yabifeapp.views.error_500"

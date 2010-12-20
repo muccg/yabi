@@ -473,6 +473,14 @@ def preview_metadata(request):
 
     return JsonMessageResponseNotFound("Metadata not in cache")
 
+
+# Error page views.
+def error_404(request):
+    return render_page("errors/404.html", request, response=HttpResponseNotFound())
+
+def error_500(request):
+    return render_page("errors/500.html", request, response=HttpResponseServerError())
+
     
 # Implementation methods
 
