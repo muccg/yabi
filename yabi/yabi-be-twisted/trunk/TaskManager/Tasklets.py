@@ -55,7 +55,7 @@ class Tasklets(object):
         with open(filename,'r') as fh:
             version, objname, task = pickle.loads(fh.read())
         
-        print "L:",task
+        #print "L:",task
         
         if version!="V1":
             raise FileVersionMismatch, "File Version Mismatch for %s"%(filename)
@@ -82,7 +82,7 @@ class Tasklets(object):
                 
                 self.tasks[id]=task
                 
-                print "task",task,"loaded"
+                #print "task",task,"loaded"
            
     def debug(self):
         
