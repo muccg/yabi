@@ -61,13 +61,18 @@ class SGEConnector(ExecConnector):
         
         newstate = state = None
         delay = JobPollGeneratorDefault()
+        warningcount = 0
         while state!="Done":
             # pause
             sleep(delay.next())
             
             try:
-                jobsummary = qstat(user=username)
+                if warningcount < 10:
+                    jobsummary = qstat(user=username)
+                else:
+                    jobsummary = {}
                 self.update_running(jobid,jobsummary)
+                warningcount = 0
             
                 if jobid in jobsummary:
                     # job has not finished
@@ -99,6 +104,7 @@ class SGEConnector(ExecConnector):
                     client_stream.finish()
                     return
             except ExecutionError, ee:
+                warningcount += 1
                 print "WARNING: retyring after qstat failed with error:",ee
             
         # delete finished job
