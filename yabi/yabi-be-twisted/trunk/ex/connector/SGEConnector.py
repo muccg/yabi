@@ -15,7 +15,7 @@ DEBUG = False
 from twisted.web2 import http, responsecode, http_headers, stream
 
 from utils.stacklesstools import sleep, POST
-from utils.sgetools import qsub, qstat
+from utils.sgetools import qsub, qstat, qacct
 
 import json
 
@@ -59,39 +59,47 @@ class SGEConnector(ExecConnector):
         # lets report our id to the caller
         client_stream.write("id=%s\n"%jobid)
         
-        state = None
+        newstate = state = None
         delay = JobPollGeneratorDefault()
         while state!="Done":
             # pause
             sleep(delay.next())
             
-            jobsummary = qstat(user=username)
-            self.update_running(jobid,jobsummary)
-            print "JOBSUMMARY:", jobsummary
+            try:
+                jobsummary = qstat(user=username)
+                self.update_running(jobid,jobsummary)
             
-            if jobid in jobsummary:
-                # job has not finished
-                status = jobsummary[jobid]['status']
-                newstate = dict(qw="Unsubmitted", t="Pending",r="Running",hqw="Unsubmitted",ht="Pending",h="Pending",E="Error",Eqw="Error")[status]
-            else:
-                # job has finished
-                sleep(15.0)                      # deal with SGE flush bizarreness (files dont flush from remote host immediately. Totally retarded)
-                newstate = "Done"
-            if DEBUG:
-                print "Job summary:",jobsummary
+                if jobid in jobsummary:
+                    # job has not finished
+                    status = jobsummary[jobid]['status']
+                    newstate = dict(qw="Unsubmitted", t="Pending",r="Running",hqw="Unsubmitted",ht="Pending",h="Pending",E="Error",Eqw="Error")[status]
+                else:
+                    # job has finished
+                    sleep(15.0)                      # deal with SGE flush bizarreness (files dont flush from remote host immediately. Totally retarded)
+                    newstate = "Done"
+                if DEBUG:
+                    print "Job summary:",jobsummary
+                    
                 
-            
-            if state!=newstate:
-                state=newstate
-                client_stream.write("%s\n"%state)
-                
-                # report the full status to the remote_url
-                if remote_url and jobid in jobsummary:
-                    RemoteInfo(remote_url,json.dumps(jobsummary[jobid]))
-                
-            if state=="Error":
-                client_stream.finish()
-                return
+                if state!=newstate:
+                    state=newstate
+                    client_stream.write("%s\n"%state)
+                    
+                    # report the full status to the remote_url
+                    if remote_url:
+                        if jobid in jobsummary:
+                            RemoteInfo(remote_url,json.dumps(jobsummary[jobid]))
+                        else:
+                            try:
+                                RemoteInfo(remote_url,json.dumps(qacct(jobid)))
+                            except ExecutionError, ee:
+                                print "RemoteInfo call for job",jobid,"failed with:",ee
+                    
+                if state=="Error":
+                    client_stream.finish()
+                    return
+            except ExecutionError, ee:
+                print "WARNING: retyring after qstat failed with error:",ee
             
         # delete finished job
         self.del_running(jobid)
@@ -104,8 +112,6 @@ class SGEConnector(ExecConnector):
         client_stream = stream.ProducerStream()
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
 
-        print "running=",self.get_all_running()
-        print "jobid=",jobid
         username = self.get_running(jobid)['username']
 
         state = None

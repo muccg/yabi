@@ -344,8 +344,7 @@ def RetryCall(call, *args, **kwargs):
             return call(*args, **kwargs)
         except ConnectionFailure, cf:
             # the connection is refused. Definately retry
-            if DEBUG:
-                print "Connection attempt failed",cf[0],"retrying"
+            print "Connection attempt failed",cf[0],"retrying"
             try:
                 sleep(delays.next())
             except StopIteration:
