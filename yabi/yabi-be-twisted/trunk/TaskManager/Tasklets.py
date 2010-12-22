@@ -33,8 +33,6 @@ class Tasklets(object):
                 del self.tasks[id]
         
     def save(self, directory):
-        print "TASKS Save",self.tasks
-        
         for id,task in self.tasks.iteritems():
             # before we pickle it, if we are waiting on a connection in our stack frame, then set it to have failed
             # so that when we are resurrected in the future, the connection will immediately be marked as failed
