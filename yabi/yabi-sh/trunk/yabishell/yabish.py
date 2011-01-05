@@ -6,6 +6,7 @@ import readline
 import sys
 import uuid
 
+from urllib import quote
 from yaphc import Http, UnauthorizedError, PostRequest, GetRequest
 from yabishell import errors
 from yabishell import actions
@@ -110,14 +111,15 @@ class StageIn(object):
         return stageindir_uri, dir_uri_mapping
 
     def stagein_file(self, f, stagein_dir):
-        uri = 'ws/fs/put'
+        uri = 'ws/fs/put?uri=%s' % quote(stagein_dir)
         fname = os.path.basename(f.relpath)
         finfo = (fname, fname, f.fullpath)
         params = {'uri': stagein_dir}
         print '  Staging in file: %s (%s).' % (
                 f.relpath,human_readable_size(os.path.getsize(f.fullpath)))
         resp, json_response = self.yabi.post(uri, params, files=[finfo])
-        return json.loads(json_response)['uri']
+        assert resp.status == 200
+        return os.path.join(stagein_dir, fname)
 
 class Yabi(object):
     def __init__(self, url, bg=False, debug=False):
