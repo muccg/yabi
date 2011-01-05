@@ -114,7 +114,6 @@ class StageIn(object):
         uri = 'ws/fs/put?uri=%s' % quote(stagein_dir)
         fname = os.path.basename(f.relpath)
         finfo = (fname, fname, f.fullpath)
-        params = {'uri': stagein_dir}
         print '  Staging in file: %s (%s).' % (
                 f.relpath,human_readable_size(os.path.getsize(f.fullpath)))
         resp, json_response = self.yabi.post(uri, params, files=[finfo])
