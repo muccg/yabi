@@ -80,3 +80,4 @@ class GlobusRun(BaseShell):
         )
     
 
+Run = GlobusRun()

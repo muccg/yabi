@@ -9,8 +9,8 @@ import json
 from MimeStreamDecoder import MimeStreamDecoder, no_intr
 
 from Exceptions import PermissionDenied, InvalidPath
-from globus.Auth import NoCredentials
-from globus.CertificateProxy import ProxyInitError
+from utils.protocol.globus.Auth import NoCredentials
+from utils.protocol.globus.CertificateProxy import ProxyInitError
 
 from utils.stacklesstools import WaitForDeferredData
 from utils.parsers import parse_url

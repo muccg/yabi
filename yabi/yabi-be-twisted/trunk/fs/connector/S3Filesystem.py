@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import FSConnector
-import globus
+from utils.protocol import globus
 import stackless
 from utils.parsers import *
 from Exceptions import PermissionDenied, InvalidPath
@@ -8,7 +8,7 @@ from FifoPool import Fifos
 from twisted.internet import protocol
 from twisted.internet import reactor
 import os
-import s3
+from utils.protocol import s3
 
 s3auth = s3.S3Auth.S3Auth()
 
@@ -24,7 +24,7 @@ SCHEMA = "s3"
 DEBUG = False
 
 # helper utilities for s3
-from s3 import S3
+from utils.protocol.s3 import S3
 
 class S3Error(Exception):
     pass

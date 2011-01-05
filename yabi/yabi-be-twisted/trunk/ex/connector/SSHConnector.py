@@ -15,12 +15,12 @@ DEBUG = False
 from twisted.web2 import http, responsecode, http_headers, stream
 
 import shlex
-import globus
+from utils.protocol import globus
 import stackless
 import tempfile
 
 from utils.stacklesstools import sleep
-import ssh
+from utils.protocol import ssh
 
 from conf import config
 

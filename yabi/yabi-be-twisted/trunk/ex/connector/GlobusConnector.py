@@ -11,7 +11,7 @@ ENV_CHECK = ['GLOBUS_LOCATION']
 SCHEMA = "globus"
 
 import shlex
-import globus
+from utils.protocol import globus
 import stackless
 import tempfile
 import os
@@ -27,7 +27,7 @@ from conf import config
 
 from TaskManager.TaskTools import RemoteInfo, Sleep
 
-from globus.Auth import NoCredentials, AuthException
+from utils.protocol.globus.Auth import NoCredentials, AuthException
 
 # for Job status updates, poll this often
 def JobPollGeneratorDefault():

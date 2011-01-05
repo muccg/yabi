@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import FSConnector
-import globus
+from utils.protocol import globus
 import stackless
 from utils.parsers import *
 from Exceptions import PermissionDenied, InvalidPath

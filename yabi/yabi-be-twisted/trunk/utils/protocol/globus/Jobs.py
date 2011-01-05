@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Jobs
 ====
@@ -8,7 +9,7 @@ import tempfile
 from twisted.internet import reactor
 from twisted.internet.defer import Deferred
 from twisted.python.failure import Failure
-import globus 
+from GlobusRun import Run
 import os, json
 from twisted.web import client
 
@@ -106,7 +107,7 @@ class Jobs(object):
         # get the remote status.
         def check_job_status():
             usercert = self.authproxy.ProxyFile(username)
-            procproto = globus.Run.status(usercert,eprfile)
+            procproto = Run.status(usercert,eprfile)
             
             # when proc returns... we want to do the following
             def _status_returned(data):

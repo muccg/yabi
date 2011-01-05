@@ -5,8 +5,8 @@ import weakref
 import sys, os, json, stackless
 
 from Exceptions import PermissionDenied, InvalidPath, BlockingException
-from globus.Auth import NoCredentials
-from globus.CertificateProxy import ProxyInitError
+from utils.protocol.globus.Auth import NoCredentials
+from utils.protocol.globus.CertificateProxy import ProxyInitError
 
 from utils.parsers import parse_url
 

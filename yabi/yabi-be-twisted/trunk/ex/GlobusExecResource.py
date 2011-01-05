@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 from twisted.web2 import resource, http_headers, responsecode, http, server, stream
 from twisted.internet import defer, reactor
@@ -6,7 +7,7 @@ import os, json, sys
 from submit_helpers import parsePOSTData, parsePUTData, parsePOSTDataRemoteWriter
 from twisted.web2.auth.interfaces import IAuthenticatedRequest, IHTTPUser
 from twisted.python.failure import Failure
-import globus
+from utils.protocol import globus
 
 from twisted.web import client
 import json, shlex

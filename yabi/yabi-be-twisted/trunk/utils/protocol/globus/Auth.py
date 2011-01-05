@@ -3,7 +3,7 @@
 
 from utils.stacklesstools import RetryGET, GETFailure, sleep
 import json, os, time
-from globus.CertificateProxy import CertificateProxy
+from utils.protocol.globus.CertificateProxy import CertificateProxy
 from conf import config
 import urllib
 from twisted.internet import reactor

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import FSConnector
-import globus
 import stackless
 from utils.parsers import *
 from Exceptions import PermissionDenied, InvalidPath
@@ -8,7 +7,7 @@ from FifoPool import Fifos
 from twisted.internet import protocol
 from twisted.internet import reactor
 import os
-import ssh
+from utils.protocol import ssh
 
 from conf import config
 
@@ -26,7 +25,7 @@ SCHEMA = "scp"
 DEBUG = False
 
 class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
-    """This is the resource that connects to the globus gridftp backends"""
+    """This is the resource that connects to the ssh backends"""
     VERSION=0.1
     NAME="SSH Filesystem"
     copymode = "ssh"
