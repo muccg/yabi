@@ -3,7 +3,7 @@
 
 from utils.stacklesstools import RetryGET,GET, GETFailure, sleep, ConnectionFailure
 import json, os
-from utils.protocol.globus.Auth import NoCredentials, AuthException
+from Exceptions import NoCredentials, AuthException
 from conf import config
 import urllib
 

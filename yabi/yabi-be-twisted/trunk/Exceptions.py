@@ -16,3 +16,10 @@ class PermissionDenied(Exception):
 class InvalidPath(Exception):
     """The path passed is an invalid path for this connector"""
     pass
+
+class NoCredentials(BlockingException):
+    """User has no globus credentials for this server"""
+    pass
+
+class AuthException(BlockingException):
+    pass

@@ -7,14 +7,7 @@ from utils.protocol.globus.CertificateProxy import CertificateProxy
 from conf import config
 import urllib
 from twisted.internet import reactor
-from Exceptions import BlockingException
-
-class NoCredentials(BlockingException):
-    """User has no globus credentials for this server"""
-    pass
-
-class AuthException(BlockingException):
-    pass
+from Exceptions import BlockingException, NoCredentials, AuthException
 
 class GlobusAuth(object):
     
@@ -55,8 +48,6 @@ class GlobusAuth(object):
             
             raise AuthException( "Tried to get credentials from %s:%d and failed: %s %s"%(config.yabiadminserver,config.yabiadminport,gf_message[1],gf_message[2]) )
             
-        
-    
     def EnsureAuthed(self, yabiusername, scheme, username, hostname, path):
         # do we have an authenticator for this host?
         if hostname not in self.authproxy:
@@ -87,4 +78,3 @@ class GlobusAuth(object):
             if not self.authproxy[hostname].IsProxyValid(username):
                 return self.AuthProxyUserWithCredentials(hostname,username,cert,key,password)
             # else user is already authed
-        

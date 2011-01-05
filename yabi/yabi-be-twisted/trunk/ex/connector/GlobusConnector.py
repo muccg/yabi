@@ -27,7 +27,7 @@ from conf import config
 
 from TaskManager.TaskTools import RemoteInfo, Sleep
 
-from utils.protocol.globus.Auth import NoCredentials, AuthException
+from Exceptions import NoCredentials, AuthException
 
 # for Job status updates, poll this often
 def JobPollGeneratorDefault():
