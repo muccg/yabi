@@ -42,7 +42,7 @@ class FileDownload(object):
                 if ignore_404:
                    return
                 else:
-                   raise errors.RemoteError("File % doesn't exist." % uri)
+                   raise errors.RemoteError("File %s doesn't exist." % uri)
             else:
                 raise
 
