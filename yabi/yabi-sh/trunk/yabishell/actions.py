@@ -8,6 +8,7 @@ import itertools
 
 from yabishell import errors
 from yabishell.utils import mkdir_p
+from urihelper import uriparse
 
 class Action(object):
     def __init__(self, yabi, name=None):
@@ -117,7 +118,8 @@ class Attach(Action, FileDownload):
         params = {'uri': uri, 'recurse': True}
         resp, json_response = self.yabi.get(ls_url, params)
         response = self.decode_json(json_response)
-        base_path = urlparse.urlparse(uri).path
+        scheme, rest = uriparse(uri)
+        base_path = rest.path
         rel_dirs = map(lambda x: x[len(base_path):], response)
         rel_dirs = filter(lambda x: x != '', rel_dirs)
         rel_files = [[d[len(base_path):] + f[0] for f in listing['files']] for d,listing in response.items()]
