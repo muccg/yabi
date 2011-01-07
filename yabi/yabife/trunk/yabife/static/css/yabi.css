@@ -800,11 +800,6 @@ input {
     right: 0px;
 }
 
-.uploadingMask {
-    width: 100%;
-    height: 100%;
-}
-
 .fakeButton {
     border-radius: 4px;
     -webkit-border-radius: 4px;
@@ -1238,4 +1233,10 @@ input {
     -moz-border-radius: 3px;
     -webkit-border-radius: 3px;
     color:black;
+}
+
+/* Move the FlashBlockDetector embeds so they don't create an extraneous
+ * scrollbar. */
+body > embed {
+    top: 0;
 }

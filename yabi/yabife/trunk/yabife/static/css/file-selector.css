@@ -183,6 +183,14 @@
     height: auto;
 }
 
+.uploadingMask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
 .fileSelectorPreview {
     position: absolute;
     top: 0;
@@ -338,4 +346,36 @@
 
 .fileSelectorListing .listingLoading {
     padding-top: 124px;
+}
+
+/* Flash related rules. */
+.fileSelectorUpload .placeholder {
+    position: absolute;
+    top: 0.3em;
+    left: 0.3em;
+}
+
+.fileSelectorUpload .selectButton {
+    position: absolute;
+    top: 0.3em;
+    left: 0.3em;
+}
+
+.swfupload {
+    position: absolute;
+    z-index: 1;
+}
+
+.uploadProgress {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: #eee;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#eeeeee');
+    background: -moz-linear-gradient(top, #fff, #eee);
+    background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+    padding: 0.3em;
 }

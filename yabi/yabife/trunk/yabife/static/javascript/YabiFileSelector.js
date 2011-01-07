@@ -55,46 +55,8 @@ function YabiFileSelector(param, isBrowseMode, filePath) {
     this.browseEl.appendChild(this.fileListEl);
     
     this.containerEl.appendChild(this.browseEl);
-    
-    //file upload component
-    this.uploadEl = document.createElement("div");
-    this.uploadEl.className = "fileSelectorUpload";
 
-    this.uploadFormEl = document.createElement("form");
-    this.uploadFormEl.setAttribute("ENCTYPE", "multipart/form-data");
-    this.uploadFormEl.setAttribute("METHOD", "POST");
-    
-    //this.uploadLabelEl = document.createElement("label");
-//    this.uploadLabelEl.appendChild(document.createTextNode("upload a file to 'workspace': "));
-//    this.uploadFormEl.appendChild(this.uploadLabelEl);
-    
-    var msgEl = document.createElement("input");
-    msgEl.setAttribute("type", "hidden");
-    msgEl.setAttribute("name", "yabiMessage");
-    msgEl.value = "ajax";
-    this.uploadFormEl.appendChild(msgEl);
-    
-    this.formFileEl = document.createElement("input");
-    this.formFileEl.setAttribute("type", "file");
-    this.formFileEl.setAttribute("name", "file1");
-    this.uploadFormEl.appendChild(this.formFileEl);
-
-    //the uploading mask is only used to temporarily replace the uploadFormEl when submitted    
-    this.uploadMaskEl = document.createElement("div");
-    this.uploadMaskEl.className = "uploadingMask";
-    this.uploadMaskEl.appendChild(document.createTextNode(" ... uploading ... "));
-    
-    this.uploadButtonEl = document.createElement("span");
-    this.uploadButtonEl.className = "fakeButton fakeUploadButton";
-    this.uploadButtonEl.appendChild(document.createTextNode("Upload"));
-    this.uploadFormEl.appendChild(this.uploadButtonEl);
-    
-    YAHOO.util.Event.addListener(this.uploadButtonEl, "click", this.uploadClickCallback, this);
-    YAHOO.util.Event.addListener(this.uploadFormEl, "submit", this.uploadClickCallback, this);
-    
-    this.uploadEl.appendChild(this.uploadFormEl);
-
-    this.browseEl.appendChild(this.uploadEl);
+    this.upload = null;
     
     this.ddTarget = new YAHOO.util.DDTarget(this.fileListEl, 'files', {});
 
@@ -132,10 +94,10 @@ YabiFileSelector.prototype.updateBrowser = function(location) {
     //disable uploader as well
     if (location.toString() === "") {
         this.ddTarget.lock();
-        this.uploadEl.style.visibility = "hidden";
+        this.disableUpload();
     } else {
         this.ddTarget.unlock();
-        this.uploadEl.style.visibility = "visible";
+        this.enableUpload();
     }
 
     this.ddTarget.invoker = {'object':new YabiSimpleFileValue(this.pathComponents, ''), 'target':this};
@@ -151,6 +113,41 @@ YabiFileSelector.prototype.updateBrowser = function(location) {
  */
 YabiFileSelector.prototype.currentPath = function() {
     return new YabiSimpleFileValue(this.pathComponents, '');
+};
+
+/**
+ * disableUpload
+ *
+ * Disables the upload form.
+ */
+YabiFileSelector.prototype.disableUpload = function() {
+    if (this.upload) {
+        this.upload.destroy();
+        this.upload = null;
+    }
+};
+
+/**
+ * enableUpload
+ *
+ * Disables the upload form.
+ */
+YabiFileSelector.prototype.enableUpload = function() {
+    var self = this;
+
+    this.disableUpload();
+
+    this.upload = new YAHOO.ccgyabi.widget.Upload(this.browseEl);
+    this.upload.setURI(this.currentPath());
+
+    this.upload.addEventListener("fail", function(e, message) {
+        YAHOO.ccgyabi.widget.YabiMessage.fail(message);
+    });
+
+    this.upload.addEventListener("upload", function(e) {
+        YAHOO.ccgyabi.widget.YabiMessage.success("File uploaded successfully");
+        self.updateBrowser(self.currentPath());
+    });
 };
 
 /**
@@ -668,81 +665,6 @@ YabiFileSelector.prototype.previewFileCallback = function(e, invoker) {
     target.previewFile(invoker.object, invoker.topLevelIndex);
 
     YAHOO.util.Event.stopEvent(e);
-};
-
-YabiFileSelector.prototype.uploadClickCallback = function(e, target) {
-    YAHOO.util.Event.stopEvent(e);
-    
-    var baseURL = appURL + "ws/fs/put";
-    var uri = target.currentPath().toString();
-    baseURL = baseURL + "?uri=" + escape(uri);
-    
-    //load json
-    var jsUrl, jsCallback, jsTransaction;
-    jsUrl =  baseURL;
-    jsCallback = {
-            upload: target.uploadResponse,
-            argument: [target] };
-    YAHOO.util.Connect.setForm(target.uploadFormEl, true);
-    jsTransaction = YAHOO.util.Connect.asyncRequest('POST', jsUrl, jsCallback);
-    
-    target.uploadEl.replaceChild(target.uploadMaskEl, target.uploadFormEl);
-};
-
-YabiFileSelector.prototype.uploadResponse = function(o) {
-    target = o.argument[0];
-    target.uploadFormEl.reset();
-    
-    target.uploadEl.replaceChild(target.uploadFormEl, target.uploadMaskEl);
-    
-    /* YUI will call this callback even when the upload has failed (lovely
-     * piece of design, that). Since we don't have the status code (or any
-     * other headers) available, we'll have to try to decode the JSON that was
-     * (hopefully) received and go from there. */
-    try {
-        /* Because the upload is performed to a hidden iframe, the response is
-         * actually processed as plain text by whatever browser specific
-         * mechanism occurs. Here's the hilarious bit: browsers will generally
-         * wrap the text in a skeleton HTML document, and that's what we
-         * actually get in o.responseText rather than the raw response.
-         *
-         * Yes, really.
-         *
-         * Given that, we have to dig around in the iframe's DOM tree to
-         * actually find the JSON to parse. IE 8, Firefox, Chrome, Opera and
-         * Safari are at least all consistent on this: they all wrap the plain
-         * text content in a single <pre> element (albeit with different
-         * styles), so we can simply look for that and use it.
-         */
-
-        var json = YAHOO.lang.JSON.parse(o.responseText)
-
-        if (json.level != "success") {
-            /* It's not a real response object, it's simply something
-             * masquerading as such. As a result, we'll just call the error
-             * display function directly. */
-            return YAHOO.ccgyabi.widget.YabiMessage.fail(json.message);
-        }
-    }
-    catch (e) {
-        // Bad JSON. Firstly, we'll check for a 413 from nginx.
-        try {
-            var titles = o.responseXML.getElementsByTagName("title");
-
-            if (titles.length) {
-                var title = titles[0].innerText || titles[0].textContent;
-                if (title.indexOf("413 ") != -1) {
-                    return YAHOO.ccgyabi.widget.YabiMessage.fail("File too large to be uploaded");
-                }
-            }
-        }
-        catch (e) {}
-
-        return YAHOO.ccgyabi.widget.YabiMessage.fail("Error uploading file");
-    }
-
-    target.updateBrowser(new YabiSimpleFileValue(target.pathComponents, ''));
-    YAHOO.ccgyabi.widget.YabiMessage.success("File uploaded successfully");
 };
 
 YabiFileSelector.prototype.deleteRemoteResponse = function(o) {

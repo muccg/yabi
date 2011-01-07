@@ -4,6 +4,7 @@ import httplib
 from urllib import urlencode, unquote, quote
 import base64
 import copy
+import datetime
 import hashlib
 import os
 
@@ -17,6 +18,7 @@ from django.contrib.auth.decorators import login_required
 from yabife.decorators import authentication_required
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate
 from django.contrib.auth.models import SiteProfileNotAvailable, User as DjangoUser
+from django.contrib.sessions.models import Session
 from django import forms
 from django.core.servers.basehttp import FileWrapper
 from django.template.loader import get_template
@@ -76,41 +78,34 @@ class FileUploadStreamer(UploadStreamer):
         
 @authentication_required
 def fileupload(request, url):
-    logger.debug('')
-    
-    appliance = request.user.get_profile().appliance
-   
-    upload_path = appliance.path
-    while len(upload_path) and upload_path[-1]=='/':
-        upload_path = upload_path[:-1]
+    return upload_file(request, request.user)
+
+def fileupload_session(request, url, session):
+    def response(message, level=ERROR, status=500):
+        return HttpResponse(status=status, content=json.dumps({
+            "level": level,
+            "message": message,
+        }))
+
+    # Get the user out of the session. Annoyingly, we'll have to do our own
+    # session handling here.
+    try:
+        session = Session.objects.get(pk=session)
         
-    # we parse the GET portion of the request to find the passed in URI before we access the request object more deeply and trigger the processing
-    upload_uri = request.GET['uri']
-    
-    # examine cookie jar for our admin session cookie
-    http = memcache_http(request.user)
-    jar = http.cookie_jar
-    cookie_string = jar.cookies_to_send_header(request.user.get_profile().appliance.url)['Cookie']
-    
-    streamer = FileUploadStreamer(host=appliance.host, port=appliance.port or 80, selector=upload_path+"/ws/fs/put?uri=%s"%quote(upload_uri), cookies=[cookie_string], fields=[])
-    request.upload_handlers = [ streamer ]
-    
-    # evaluating POST triggers the processing of the request body
-    request.POST
-    
-    result=streamer.stream.getresponse()
-    
-    content=result.read()
-    status=int(result.status)
-    reason = result.reason
-    
-    #print "passing back",status,reason,"in json snippet"
-    
-    response = {
-        "level":"success" if status==200 else "failure",
-        "message":content
-        }
-    return HttpResponse(content=json.dumps(response))
+        # Check expiry date.
+        if session.expire_date < datetime.datetime.now():
+            return response("Session expired")
+
+        # Get the user, if set.
+        user = DjangoUser.objects.get(pk=session.get_decoded()["_auth_user_id"])
+    except DjangoUser.DoesNotExist:
+        return response("User not found", status=403)
+    except KeyError:
+        return response("User not logged in", status=403)
+    except Session.DoesNotExist:
+        return response("Unable to read session")
+
+    return upload_file(request, user)
     
 # proxy view to pass through all requests set up in urls.py
 def proxy(request, url, base):
@@ -534,6 +529,43 @@ def preview_key(uri):
     # with "control characters". We'll encode the URI in Base64 to avoid
     # potential problems.
     return str("%s-preview-%s" % (settings.MEMCACHE_KEYSPACE, base64.b64encode(uri)))
+
+def upload_file(request, user):
+    logger.debug('')
+    
+    appliance = user.get_profile().appliance
+   
+    upload_path = appliance.path
+    while len(upload_path) and upload_path[-1]=='/':
+        upload_path = upload_path[:-1]
+        
+    # we parse the GET portion of the request to find the passed in URI before we access the request object more deeply and trigger the processing
+    upload_uri = request.GET['uri']
+    
+    # examine cookie jar for our admin session cookie
+    http = memcache_http(user)
+    jar = http.cookie_jar
+    cookie_string = jar.cookies_to_send_header(user.get_profile().appliance.url)['Cookie']
+    
+    streamer = FileUploadStreamer(host=appliance.host, port=appliance.port or 80, selector=upload_path+"/ws/fs/put?uri=%s"%quote(upload_uri), cookies=[cookie_string], fields=[])
+    request.upload_handlers = [ streamer ]
+    
+    # evaluating POST triggers the processing of the request body
+    request.POST
+    
+    result=streamer.stream.getresponse()
+    
+    content=result.read()
+    status=int(result.status)
+    reason = result.reason
+    
+    #print "passing back",status,reason,"in json snippet"
+    
+    response = {
+        "level":"success" if status==200 else "failure",
+        "message":content
+        }
+    return HttpResponse(content=json.dumps(response))
 
 def yabiadmin_login(username, password):
     # TODO get the url from somewhere
