@@ -4,13 +4,14 @@
  * YabiFileSelector
  * create a new file selector object, to allow selection of files from yabi, or via upload
  */
-function YabiFileSelector(param, isBrowseMode, filePath) {
+function YabiFileSelector(param, isBrowseMode, filePath, readOnly) {
     this.selectedFiles = [];
     this.pathComponents = [];
     this.browseListing = [];
     this.param = param;
     this.isBrowseMode = isBrowseMode;
     this.jsTransaction = null;
+    this.readOnly = !!readOnly;
     
     this.containerEl = document.createElement("div");
     this.containerEl.className = "fileSelector";
@@ -136,6 +137,11 @@ YabiFileSelector.prototype.enableUpload = function() {
     var self = this;
 
     this.disableUpload();
+
+    if (this.readOnly) {
+        // No need for uploads in browse mode.
+        return;
+    }
 
     this.upload = new YAHOO.ccgyabi.widget.Upload(this.browseEl);
     this.upload.setURI(this.currentPath());

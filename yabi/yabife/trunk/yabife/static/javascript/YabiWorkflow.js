@@ -166,9 +166,8 @@ function YabiWorkflow(editable) {
         this.fileOutputsEl.appendChild( header );
 
         //not editable, create a file selector to point at the stageout directory if it exists
-        this.fileOutputsSelector = new YabiFileSelector(null, true);
+        this.fileOutputsSelector = new YabiFileSelector(null, true, null, true);
         this.fileOutputsSelector.homeEl.style.display = 'none';
-        this.fileOutputsSelector.uploadEl.style.display = 'none';
         this.fileOutputsEl.appendChild( this.fileOutputsSelector.containerEl );
         this.fileOutputsEl.style.display = 'none';
         this.fileOutputsSelector.containerEl.style.marginLeft = "4px";
