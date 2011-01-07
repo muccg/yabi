@@ -157,3 +157,33 @@ YabiTool.prototype.toggleDescription = function() {
 YabiTool.prototype.descriptionCallback = function(e, target) {
     target.toggleDescription();
 };
+
+
+/**
+ * A singleton object that exposes a get() method that implements asynchronous
+ * loading of tool information, including client side caching.
+ */
+var YabiToolCache = (function() {
+    var tools = {};
+
+    return {
+        get: function(name, success, failure) {
+            if (name in tools) {
+                success(tools[name]);
+            } else {
+                var url = appURL + "ws/tool/" + escape(name);
+                var callbacks = {
+                    success: function(o) {
+                        tools[name] = o;
+                        success(o);
+                    },
+                    failure: function(o) {
+                        failure(o);
+                    }
+                };
+
+                YAHOO.util.Connect.asyncRequest("GET", url, callbacks);
+            }
+        }
+    };
+})();

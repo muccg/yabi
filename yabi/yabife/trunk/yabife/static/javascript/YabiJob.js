@@ -149,17 +149,13 @@ YabiJob.prototype.emittedFileTypes = function() {
  * performs an AJAX json fetch of all the tool details and data
  */
 YabiJob.prototype.hydrate = function() {
+    var self = this;
 
-    var baseURL = appURL + "ws/tool/";
-    
-    //load json
-    var jsUrl, jsCallback, jsTransaction;
-    jsUrl =  baseURL + escape(this.toolName);
-    jsCallback = {
-            success: this.hydrateResponse,
-            failure: this.hydrateResponse,
-            argument: [this] };
-    this.jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
+    var callback = function(o) {
+        self.hydrateResponse(o);
+    };
+
+    YabiToolCache.get(this.toolName, callback, callback);
 };
 
 /**
@@ -692,7 +688,7 @@ YabiJob.prototype.solidify = function(obj) {
             var preloadValue = this.preloadValueFor(params[paramIndex]["switch"]);
 
             if (this.editable || preloadValue !== null) {
-                paramObj = new YabiJobParam(target, params[paramIndex], (params[paramIndex]["switch"] == this.batchParameter), this.editable, preloadValue);
+                paramObj = new YabiJobParam(this, params[paramIndex], (params[paramIndex]["switch"] == this.batchParameter), this.editable, preloadValue);
 
                 this.params.push(paramObj);
                 this.optionsEl.appendChild(paramObj.containerEl);
@@ -706,7 +702,7 @@ YabiJob.prototype.solidify = function(obj) {
         var preloadValue = this.preloadValueFor(params["switch"]);
 
         if (this.editable || preloadValue !== null) {
-            paramObj = new YabiJobParam(target, params, (params["switch"] == this.batchParameter), this.editable, this.preloadValueFor(params["switch"]));
+            paramObj = new YabiJobParam(this, params, (params["switch"] == this.batchParameter), this.editable, this.preloadValueFor(params["switch"]));
             this.params.push(paramObj);
             this.optionsEl.appendChild(paramObj.containerEl);
             if (paramObj.payload.mandatory !== true) {
@@ -801,16 +797,14 @@ YabiJob.prototype.hydrateResponse = function(o) {
     try {
         json = o.responseText;
         
-        target = o.argument[0];
-        
-        target.solidify(YAHOO.lang.JSON.parse(json));
-        target.failLoad = false;
+        this.solidify(YAHOO.lang.JSON.parse(json));
+        this.failLoad = false;
     } catch (e) {
-        target.valid = false;
-        target.failLoad = true;
-        target.displayName = "(tool '"+ target.toolName +"' failed to load)";
-        target.updateTitle();
-        target.renderLoadFailJob();
+        this.valid = false;
+        this.failLoad = true;
+        this.displayName = "(tool '"+ this.toolName +"' failed to load)";
+        this.updateTitle();
+        this.renderLoadFailJob();
         
         YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
     }
