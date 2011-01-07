@@ -4,8 +4,7 @@ from twisted.internet import defer, reactor
 import weakref
 import sys, os, json, stackless
 
-from Exceptions import PermissionDenied, InvalidPath, BlockingException, NoCredentials
-from utils.protocol.globus.CertificateProxy import ProxyInitError
+from Exceptions import PermissionDenied, InvalidPath, BlockingException, NoCredentials, ProxyInitError
 
 from utils.parsers import parse_url
 

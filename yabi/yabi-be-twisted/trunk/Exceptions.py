@@ -23,3 +23,9 @@ class NoCredentials(BlockingException):
 
 class AuthException(BlockingException):
     pass
+
+class ProxyInitError(Exception):
+    pass
+
+class ProxyInvalidPassword(Exception):
+    pass

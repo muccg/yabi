@@ -19,12 +19,6 @@ from conf import config
 
 import stackless
 
-class ProxyInitError(Exception):
-    pass
-
-class ProxyInvalidPassword(Exception):
-    pass
-
 GLOBUS_TIME_FORMAT = "%a %b %d %H:%M:%S %Y"
 DEFAULT_CERTIFICATE_EXPIRY_MINUTES = 1                          # 1 minute proxy
 

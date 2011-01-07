@@ -8,8 +8,7 @@ import stackless
 import json
 from MimeStreamDecoder import MimeStreamDecoder, no_intr
 
-from Exceptions import PermissionDenied, InvalidPath, NoCredentials
-from utils.protocol.globus.CertificateProxy import ProxyInitError
+from Exceptions import PermissionDenied, InvalidPath, NoCredentials, ProxyInitError
 
 from utils.stacklesstools import WaitForDeferredData
 from utils.parsers import parse_url
