@@ -127,7 +127,7 @@ class ParamDef(object):
         if self.name == argument:
             return True
         if self.switch_use in ('combined', 'combined with equals'):
-            if arguments.startswith(self.switch_use):
+            if argument.startswith(self.switch_use):
                 value_start = len(self.name)
                 if self.switch_use == 'combined with equals':
                     value_start += 1
