@@ -4,9 +4,11 @@ import httplib
 from urllib import urlencode, unquote, quote
 import base64
 import copy
+from email.utils import formatdate
 import datetime
 import hashlib
 import os
+from time import mktime
 
 from django.conf.urls.defaults import *
 from django.conf import settings
@@ -120,6 +122,15 @@ def proxy(request, url, base):
 def adminproxy(request, url):
     logger.debug('')
     return proxy(request, quote(url), request.user.get_profile().appliance.url)
+
+@authentication_required
+def adminproxy_cache(request, url):
+    response = adminproxy(request, url)
+
+    expiry = datetime.datetime.now() + datetime.timedelta(hours=1)
+    response["Expires"] = formatdate(timeval=mktime(expiry.timetuple()), usegmt=True)
+
+    return response
 
 # forms
 class LoginForm(forms.Form):
