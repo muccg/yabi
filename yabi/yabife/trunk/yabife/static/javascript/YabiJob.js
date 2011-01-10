@@ -445,21 +445,50 @@ YabiJob.prototype.getParam = function(switchName) {
 };
 
 /**
+ * renderJobStatus
+ *
+ * Render job status.
+ */
+YabiJob.prototype.renderJobStatus = function() {
+    // Get job status, if we can.
+    var self = this;
+
+    var callbacks = {
+        success: function(o) {
+            var obj = YAHOO.lang.JSON.parse(o.responseText);
+            self.renderJobStatusResponse(obj);
+        },
+        failure: function(o) {
+            self.renderJobStatusError();
+        }
+    };
+
+    this.statusListEl.style.display = "none";
+    this.statusErrorEl.style.display = "none";
+    this.statusLoading = new YAHOO.ccgyabi.widget.Loading(this.statusEl);
+    this.statusLoading.show();
+
+    var url = "engine/job/" + this.workflow.workflowId + "/" + (this.jobId - 1);
+    var req = YAHOO.util.Connect.asyncRequest("GET", url, callbacks);
+};
+
+/**
  * renderJobStatusError
  *
  * Render the job status error message.
  */
 YabiJob.prototype.renderJobStatusError = function() {
+    this.statusLoading.destroy();
     this.statusListEl.style.display = "none";
     this.statusErrorEl.style.display = "block";
 };
 
 /**
- * renderJobStatus
+ * renderJobStatusResponse
  *
  * Render job status.
  */
-YabiJob.prototype.renderJobStatus = function(obj) {
+YabiJob.prototype.renderJobStatusResponse = function(obj) {
     var self = this;
     var task = obj.tasks[0];
 
@@ -494,6 +523,8 @@ YabiJob.prototype.renderJobStatus = function(obj) {
                 })();
             }
         }
+
+        this.statusLoading.destroy();
 
         this.statusListEl.style.display = "block";
         this.statusErrorEl.style.display = "none";
@@ -731,23 +762,6 @@ YabiJob.prototype.solidify = function(obj) {
         //workflow delayed selectjob callback to allow propagation after this job is loaded
         this.workflow.delayedSelectJob(this);
     } 
-    else {
-        // Get job status, if we can.
-        var self = this;
-
-        var callbacks = {
-            success: function(o) {
-                var obj = YAHOO.lang.JSON.parse(o.responseText);
-                self.renderJobStatus(obj);
-            },
-            failure: function(o) {
-                self.renderJobStatusError();
-            }
-        };
-
-        var url = "engine/job/" + this.workflow.workflowId + "/" + (this.jobId - 1);
-        var req = YAHOO.util.Connect.asyncRequest("GET", url, callbacks);
-    }
     
     //now we are finished loading
     this.loaded = true;

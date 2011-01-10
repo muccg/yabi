@@ -41,6 +41,10 @@
             var column = document.querySelector(".yabiRightColumn");
             var selector = document.getElementById("jobPaneSelector");
 
+            /* We need to track the currently selected job to lazy load the
+             * Remote Status information. */
+            var job = null;
+
             // We'll use the RadioList widget to handle the button UI itself.
             var list = new RadioList(selector);
 
@@ -123,6 +127,13 @@
             });
 
             remote.addEventListener("select", function() {
+                if (job) {
+                    job.renderJobStatus();
+                }
+                else {
+                    job.renderJobStatusError();
+                }
+
                 showOnly(".active.jobStatus");
             });
 
@@ -133,6 +144,8 @@
             YabiJob.prototype.selectJob = function() {
                 // First things first: let's call the overriden method.
                 originalJobSelect.call(this);
+
+                job = this;
 
                 // Make sure the selector buttons are actually visible.
                 selector.style.display = "block";
@@ -151,6 +164,8 @@
             var originalJobDeselect = YabiJob.prototype.deselectJob;
             YabiJob.prototype.deselectJob = function() {
                 originalJobDeselect.call(this);
+
+                job = null;
 
                 /* Hide the selector buttons, at least until another job is
                  * selected. */
