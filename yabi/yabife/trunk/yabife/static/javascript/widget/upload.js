@@ -69,6 +69,10 @@ YAHOO.ccgyabi.widget.Upload.prototype.addEventListeners = function () {
         self.sendEvent("fail", message);
     });
 
+    this.impl.addEventListener("remove", function (e, file) {
+        self.remove(file);
+    });
+
     this.impl.addEventListener("upload", function (e) {
         self.sendEvent("upload");
     });
@@ -106,6 +110,29 @@ YAHOO.ccgyabi.widget.Upload.prototype.destroy = function () {
 
     this.container.removeChild(this.element);
     this.element = null;
+};
+
+/**
+ * Removes the given file from the current destination directory.
+ *
+ * @param {String} file The name of the file to delete.
+ */
+YAHOO.ccgyabi.widget.Upload.prototype.remove = function (file) {
+    var self = this;
+
+    if (this.uri) {
+        var callbacks = {
+            success: function (o) {
+                self.sendEvent("remove", file);
+            },
+            failure: function (o) {
+                self.sendEvent("removeFail", file);
+            }
+        };
+
+        var uri = appURL + "ws/fs/rm?uri=" + escape(this.uri + "/" + file);
+        YAHOO.util.Connect.asyncRequest("GET", uri, callbacks);
+    }
 };
 
 /**
@@ -169,7 +196,8 @@ YAHOO.ccgyabi.widget.Upload.Flash.prototype.addEventListeners = function () {
      * constructed. */
 
     YAHOO.util.Event.addListener(this.cancel, "click", function (e) {
-        self.uploader.cancelUpload(self.selectedFile, true);
+        self.uploader.cancelUpload(self.selectedFile.id, true);
+        self.sendEvent("remove", self.selectedFile.name);
     });
 };
 
@@ -232,7 +260,7 @@ YAHOO.ccgyabi.widget.Upload.Flash.prototype.createElements = function (container
         button_height: this.select.scrollHeight,
         file_queued_handler: function (file) {
             self.setFileName(file.name);
-            self.selectedFile = file.id;
+            self.selectedFile = file;
         },
         upload_start_handler: function (file) {
             self.showProgress(file.name, 0);
@@ -318,7 +346,7 @@ YAHOO.ccgyabi.widget.Upload.Flash.prototype.upload = function (uri) {
                      encodeURIComponent(uri).replace(/%20/g, "+");
 
         this.uploader.setUploadURL(target);
-        this.uploader.startUpload(this.selectedFile);
+        this.uploader.startUpload(this.selectedFile.id);
     }
     else {
         this.sendEvent("fail", "No file has been selected to upload");
@@ -649,6 +677,7 @@ YAHOO.ccgyabi.widget.Upload.HTML5.prototype.upload = function (uri) {
 
     this.xhr.addEventListener("abort", function (e) {
         // User aborts don't need to output a message.
+        self.sendEvent("remove", self.file.name);
         self.hideProgress();
         self.form.reset();
         self.setFile(null);

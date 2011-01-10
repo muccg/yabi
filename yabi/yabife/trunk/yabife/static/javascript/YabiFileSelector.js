@@ -150,6 +150,10 @@ YabiFileSelector.prototype.enableUpload = function() {
         YAHOO.ccgyabi.widget.YabiMessage.fail(message);
     });
 
+    this.upload.addEventListener("remove", function(e, file) {
+        self.updateBrowser(self.currentPath());
+    });
+
     this.upload.addEventListener("upload", function(e) {
         YAHOO.ccgyabi.widget.YabiMessage.success("File uploaded successfully");
         self.updateBrowser(self.currentPath());
