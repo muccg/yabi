@@ -81,7 +81,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
                 self.EnsureAuthed(yabiusername,scheme,username,host,"/")
         except globus.Auth.AuthException, ae:
             # connection problems.
-            channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = "Could not get auth credentials for %s://%s@%s. %s\n"%(scheme,username,host,str(ae)) ))
+            channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, stream = "Could not get auth credentials for %s://%s@%s. %s\n"%(scheme,username,host,str(ae)) ))
             return
         
         # now submit the job via globus
@@ -94,7 +94,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
             stackless.schedule()
             
         if processprotocol.exitcode!=0:
-            channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = processprotocol.err ))
+            channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, stream = processprotocol.err ))
             return
                 
         # send an OK message, but leave the stream open
