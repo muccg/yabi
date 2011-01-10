@@ -55,7 +55,6 @@ class Task(object):
             self.status("blocked")
             
         except GETFailure, gf:
-            print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             if '503' in gf.message[1]:
                 # blocked!
                 print "BLOCKED"
