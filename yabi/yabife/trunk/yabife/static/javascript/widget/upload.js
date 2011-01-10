@@ -641,8 +641,13 @@ YAHOO.ccgyabi.widget.Upload.HTML5.prototype.upload = function (uri) {
     var target = appURL + "ws/fs/put?uri=" + escape(uri);
     this.xhr.open("POST", target, true);
 
-    // Set up the event handlers for the request object.
-    this.xhr.upload.addEventListener("abort", function (e) {
+    /* Set up the event handlers for the request object. We need to attach the
+     * events to the XHR object and not the upload object for anything other
+     * than "progress", because the terminating events (most notably "load")
+     * are fired on the upload object _after_ the XHR object is GCed in WebKit,
+     * which isn't very helpful. */
+
+    this.xhr.addEventListener("abort", function (e) {
         // User aborts don't need to output a message.
         self.hideProgress();
         self.form.reset();
@@ -650,15 +655,15 @@ YAHOO.ccgyabi.widget.Upload.HTML5.prototype.upload = function (uri) {
         self.xhr = null;
     }, false);
 
-    this.xhr.upload.addEventListener("error", function (e) {
+    this.xhr.addEventListener("error", function (e) {
         self.uploadResponse(e);
     }, false);
 
-    this.xhr.upload.addEventListener("load", function (e) {
+    this.xhr.addEventListener("load", function (e) {
         self.uploadResponse(e);
     }, false);
 
-    this.xhr.upload.addEventListener("loadstart", function (e) {
+    this.xhr.addEventListener("loadstart", function (e) {
         self.uploadProgress(e);
     }, false);
 
