@@ -103,7 +103,6 @@ class SGEConnector(ExecConnector):
                             print warning
                             client_stream.write("Done\n")
                             client_stream.finish()
-                            self.del_running(jobid)
                             return
                         else:
                             raise qacct_error
