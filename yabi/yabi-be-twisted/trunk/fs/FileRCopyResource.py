@@ -140,7 +140,7 @@ class FileRCopyResource(resource.PostableResource):
                     if "503" in gf.message[1]:
                         result_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(gf)) )
                     else:
-                        result_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, str(e)) )
+                        result_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, str(gf)) )
                 except Exception, e:
                     result_channel.callback(
                                                     http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, str(e))
