@@ -27,14 +27,14 @@ DEBUG = False
 MAX_SSH_CONNECTIONS = 128
 SSH_CONNECTION_COUNT = 0
 
-def pre_ssh(self):
+def pre_ssh():
     while SSH_CONNECTION_COUNT >= MAX_SSH_CONNECTIONS:
         print "WARNING: max SSH connection count reached"
         stackless.schedule()
         
     SSH_CONNECTION_COUNT+=1
     
-def post_ssh(self):
+def post_ssh():
     SSH_CONNECTION_COUNT-=1
     
 def lock(f):
