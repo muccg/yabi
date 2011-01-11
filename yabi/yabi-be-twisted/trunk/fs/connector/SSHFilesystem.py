@@ -24,6 +24,28 @@ SCHEMA = "scp"
 
 DEBUG = False
 
+MAX_SSH_CONNECTIONS = 128
+SSH_CONNECTION_COUNT = 0
+
+def pre_ssh(self):
+    while SSH_CONNECTION_COUNT >= MAX_SSH_CONNECTIONS:
+        print "WARNING: max SSH connection count reached"
+        stackless.schedule()
+        
+    SSH_CONNECTION_COUNT+=1
+    
+def post_ssh(self):
+    SSH_CONNECTION_COUNT-=1
+    
+def lock(f):
+    def new_func(*args, **kwargs):
+        pre_ssh()
+        try:
+            return f(*args, **kwargs)
+        finally:
+            post_ssh()
+    return new_func
+
 class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
     """This is the resource that connects to the ssh backends"""
     VERSION=0.1
@@ -36,7 +58,8 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         # make a path to store keys in
         configdir = config.config['backend']['certificates']
         ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
-        
+    
+    @lock
     def mkdir(self, host, username, path, yabiusername=None, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
@@ -68,6 +91,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         return mkdir_data
         
+    @lock
     def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
@@ -99,6 +123,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         return rm_data
     
+    @lock
     def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
@@ -144,6 +169,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
                         
         return ls_data
         
+    @lock
     def GetWriteFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}):
         """sets up the chain needed to setup a write fifo from a remote path as a certain user.
         
@@ -170,6 +196,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         return pp, fifo
     
+    @lock
     def GetReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}):
         """sets up the chain needed to setup a read fifo from a remote path as a certain user.
         
@@ -184,6 +211,8 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             print "SSH::GetReadFifo(",host,username,path,filename,fifo,yabiusername,creds,")"
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         dst = "%s@%s:%s"%(username,host,os.path.join(path,filename))
+        
+        self.lock()
         
         # make sure we are authed
         if not creds:
