@@ -113,28 +113,19 @@ class FilePutResource(resource.PostableResource):
                         for i in range(100):
                             stackless.schedule()
                         
-                        print "Pre OPEN"
-                        
                         while True:
                             try:
-                                print "done?",self.procproto.isDone()
-                                print "failed?",self.procproto.isFailed()
                                 if self.procproto.isFailed():
                                     #channel.callback(http.HTTPError(http.StatusResponse(responsecode.SERVER_ERROR,"Write FIFO process failed! %s"%(self.procproto.err))))
                                     raise IOError, "Write FIFO process failed! %s"%(self.procproto.err)
                                 #self.fileopen = os.fdopen(os.open(fifo,os.O_NONBLOCK|os.O_WRONLY),"wb")
                                 self.fileopen=open(fifo,'wb')
-                                print "fileopen:",self.fileopen
                                 break
                             except (OSError, IOError), e:
-                                print "!!!"
                                 if e.errno == errno.EINTR or e.errno == errno.EAGAIN:
-                                    print "sched"
                                     stackless.schedule()
                                 else:
                                     raise
-                        
-                        print "Post OPEN"
                         
                     def close_write_stream(self):
                         """do the close, but also check the process result"""
