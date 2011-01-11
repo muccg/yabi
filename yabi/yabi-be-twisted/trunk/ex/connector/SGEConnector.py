@@ -131,7 +131,18 @@ class SGEConnector(ExecConnector):
             except ExecutionError, ee:
                 if "jobs do not exist" in str(ee):
                     # the job may have been passed through to qacct. lets check qacct
-                    jobsummary[jobid] = qacct(jobid)
+                    try:
+                        jobsummary[jobid] = qacct(jobid)
+                    except ExecutionError, qacct_error:
+                        if "job id %s not found"%(jobid) in str(qacct_error):
+                            # the job is not in qstat OR qacct
+                            # print bif fat warning and move into blocking state
+                            warning = "WARNING! SGE job id %s appears to have COMPLETELY VANISHED! both qstat and qacct have no idea what this job is!"%jobid
+                            print warning
+                            channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, stream = warning ))
+                            return
+                        else:
+                            raise qacct_error
                 else:
                     raise ee
             self.update_running(jobid,jobsummary)

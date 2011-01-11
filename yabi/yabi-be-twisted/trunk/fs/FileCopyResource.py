@@ -192,8 +192,6 @@ class FileCopyResource(resource.PostableResource):
                     
                 channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Copy OK\n"))
             else:
-                print "!!!!!"
-                
                 rexit = "Killed" if readproto.exitcode==None else str(readproto.exitcode)
                 wexit = "Killed" if writeproto.exitcode==None else str(writeproto.exitcode)
                 
