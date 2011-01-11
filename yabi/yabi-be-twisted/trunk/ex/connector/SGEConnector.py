@@ -59,9 +59,31 @@ class SGEConnector(ExecConnector):
         # lets report our id to the caller
         client_stream.write("id=%s\n"%jobid)
         
+        self.main_loop( client_stream, username, jobid, remote_url)
+            
+        # delete finished job
+        self.del_running(jobid)
+            
+        client_stream.finish()
+
+    def resume(self, jobid, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, max_memory=1024, cpus=1, queue="testing", job_type="single", module=None, **creds):
+    #def resume(self,yabiusername, eprfile, scheme, username, host, **creds):
+        # send an OK message, but leave the stream open
+        client_stream = stream.ProducerStream()
+        channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
+
+        username = self.get_running(jobid)['username']
+        
+        self.main_loop( client_stream, username, jobid )
+        
+        # delete finished job
+        self.del_running(jobid)
+            
+        client_stream.finish()
+
+    def main_loop(self, client_stream, username, jobid, remote_url=None ):
         newstate = state = None
         delay = JobPollGeneratorDefault()
-        warningcount = 0
         while state!="Done":
             # pause
             sleep(delay.next())
@@ -116,71 +138,6 @@ class SGEConnector(ExecConnector):
             if state=="Error":
                 client_stream.finish()
                 return
-            
-        # delete finished job
-        self.del_running(jobid)
-            
-        client_stream.finish()
-
-    def resume(self, jobid, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, max_memory=1024, cpus=1, queue="testing", job_type="single", module=None, **creds):
-    #def resume(self,yabiusername, eprfile, scheme, username, host, **creds):
-        # send an OK message, but leave the stream open
-        client_stream = stream.ProducerStream()
-        channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
-
-        username = self.get_running(jobid)['username']
-
-        state = None
-        delay = JobPollGeneratorDefault()
-        while state!="Done":
-            # pause
-            sleep(delay.next())
-            
-            try:
-                jobsummary = qstat(user=username)
-            except ExecutionError, ee:
-                if "jobs do not exist" in str(ee):
-                    # the job may have been passed through to qacct. lets check qacct
-                    try:
-                        jobsummary[jobid] = qacct(jobid)
-                    except ExecutionError, qacct_error:
-                        if "job id %s not found"%(jobid) in str(qacct_error):
-                            # the job is not in qstat OR qacct
-                            # print bif fat warning and move into blocking state
-                            warning = "WARNING! SGE job id %s appears to have COMPLETELY VANISHED! both qstat and qacct have no idea what this job is!"%jobid
-                            print warning
-                            channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, stream = warning ))
-                            return
-                        else:
-                            raise qacct_error
-                else:
-                    raise ee
-            self.update_running(jobid,jobsummary)
-            
-            if jobid in jobsummary:
-                # job has not finished
-                status = jobsummary[jobid]['status']
-                newstate = dict(qw="Unsubmitted", t="Pending",r="Running",hqw="Unsubmitted",ht="Pending",h="Pending",E="Error",Eqw="Error")[status]
-            else:
-                # job has finished
-                sleep(15.0)                      # deal with SGE flush bizarreness (files dont flush from remote host immediately. Totally retarded)
-                newstate = "Done"
-            if DEBUG:
-                print "Job summary:",jobsummary
-                
-            
-            if state!=newstate:
-                state=newstate
-                client_stream.write("%s\n"%state)
-                
-            if state=="Error":
-                client_stream.finish()
-                return
-            
-        # delete finished job
-        self.del_running(jobid)
-            
-        client_stream.finish()
         
     def info(self, jobid, username):
         jobsummary = qstat(user=username)
