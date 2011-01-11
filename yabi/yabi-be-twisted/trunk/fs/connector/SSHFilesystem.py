@@ -214,8 +214,6 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         dst = "%s@%s:%s"%(username,host,os.path.join(path,filename))
         
-        self.lock()
-        
         # make sure we are authed
         if not creds:
             #print "get creds"
