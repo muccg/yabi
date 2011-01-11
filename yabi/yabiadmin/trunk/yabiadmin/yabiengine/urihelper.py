@@ -18,6 +18,7 @@ def uriparse(uri):
     It is done this way as urlparse only accepts a specific list of url schemes
     and yabi:// is not one of them. The ParseResult object is read-only so
     we cannot inject the scheme back into it.
+    A copy of this function is in yabi-sh.
     """
     logger.debug(uri)
 
