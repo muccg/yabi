@@ -82,7 +82,7 @@ while res!=2:
     res = child.expect(["passphrase for key .+:","password:", "Permission denied",pexpect.EOF,pexpect.TIMEOUT],timeout=TIMEOUT)
     if res<=1:
         # send password
-        eprint "sending password"
+        eprint("sending password")
         child.sendline(password)
     elif res==2:
         # password failure
