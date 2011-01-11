@@ -101,7 +101,9 @@ class SGEConnector(ExecConnector):
                             # print bif fat warning and move into blocking state
                             warning = "WARNING! SGE job id %s appears to have COMPLETELY VANISHED! both qstat and qacct have no idea what this job is!"%jobid
                             print warning
-                            channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, stream = warning ))
+                            client_stream.write("Done\n")
+                            client_stream.finish()
+                            self.del_running(jobid)
                             return
                         else:
                             raise qacct_error
