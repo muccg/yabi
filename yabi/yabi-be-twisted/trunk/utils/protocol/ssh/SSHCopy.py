@@ -45,7 +45,6 @@ class SSHCopy(BaseShell):
                 fifo,                       # localfile
                 remoteurl
             ]
-        print "C:",command
             
         return BaseShell.execute(self,SCPProcessProtocol(password),
             command

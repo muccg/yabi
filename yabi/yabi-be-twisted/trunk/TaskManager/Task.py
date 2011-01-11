@@ -57,13 +57,13 @@ class Task(object):
         except GETFailure, gf:
             if '503' in gf.message[1]:
                 # blocked!
-                print "BLOCKED"
+                #print "BLOCKED"
                 self._blocked()
                 traceback.print_exc()
                 self.log("Task moved into blocking state: %s"%gf)
                 self.status("blocked")
             else:
-                print "ERROR"
+                #print "ERROR"
                 self._errored()
                 traceback.print_exc()
                 self.log("Task raised GETFailure: %s"%gf)
@@ -180,13 +180,12 @@ class NullBackendTask(Task):
                     print "list result:", listing
             except Exception, error:
                 # directory does not exist
-                print "Remote DIR does not exist"
-                
                 #make dir
                 try:
                     Mkdir(remotedir, yabiusername=self.yabiusername)
                 except GETFailure, gf:
-                    print "GF_",dir(gf),gf.args,"=====",gf.message
+                    if DEBUG:
+                        print "GF_",dir(gf),gf.args,"=====",gf.message
                     raise BlockingException("Make directory failed: %s"%gf.message[2])
             
             if src.endswith("/"):
@@ -313,8 +312,6 @@ class MainTask(Task):
                     print "list result:", listing
             except Exception, error:
                 # directory does not exist
-                print "Remote DIR does not exist"
-                
                 #make dir
                 Mkdir(remotedir, yabiusername=self.yabiusername)
             
@@ -421,7 +418,6 @@ class MainTask(Task):
                     raise TaskFailed("Execution failed")
                 
             except CloseConnections, cc:
-                print "CLOSECONNECTIONS",cc
                 retry=True
                 
             stackless.schedule()
@@ -477,7 +473,6 @@ class MainTask(Task):
                     raise TaskFailed("Execution failed: %s"%(error))
 
             except CloseConnections, cc:
-                print "CLOSECONNECTIONS",cc
                 retry=True
                 
             stackless.schedule()

@@ -100,9 +100,10 @@ class TaskManager(object):
             
             print "starting task:",taskdescription['taskid']
             
-            print "=========JSON============="
-            print json.dumps(taskdescription, sort_keys=True, indent=4)
-            print "=========================="
+            if DEBUG:
+                print "=========JSON============="
+                print json.dumps(taskdescription, sort_keys=True, indent=4)
+                print "=========================="
             
             runner_object = None
         
@@ -134,13 +135,12 @@ class TaskManager(object):
             
             print "resuming task:",taskdescription['taskid']
             
-            print "=========RESUME==========="
-            print json.dumps(taskdescription, sort_keys=True, indent=4)
-            print "=========================="
+            if DEBUG:
+                print "=========RESUME==========="
+                print json.dumps(taskdescription, sort_keys=True, indent=4)
+                print "=========================="
             
             runner_object = tasklets.get(taskdescription['taskid'])
-            print "RUNNER OBJ",runner_object
-            
             runner_object.unblock()
            
             # make the task and run it
