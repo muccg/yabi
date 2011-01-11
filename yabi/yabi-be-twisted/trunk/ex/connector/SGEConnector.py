@@ -126,7 +126,14 @@ class SGEConnector(ExecConnector):
             # pause
             sleep(delay.next())
             
-            jobsummary = qstat(user=username)
+            try:
+                jobsummary = qstat(user=username)
+            except ExecutionError, ee:
+                if "jobs do not exist" in str(ee):
+                    # the job may have been passed through to qacct. lets check qacct
+                    jobsummary[jobid] = qacct(jobid)
+                else:
+                    raise ee
             self.update_running(jobid,jobsummary)
             
             if jobid in jobsummary:
