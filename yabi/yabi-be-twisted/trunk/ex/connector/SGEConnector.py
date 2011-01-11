@@ -67,45 +67,45 @@ class SGEConnector(ExecConnector):
             sleep(delay.next())
             
             try:
-                if warningcount < 10:
-                    jobsummary = qstat(user=username)
-                else:
-                    jobsummary = {}
-                self.update_running(jobid,jobsummary)
-                warningcount = 0
-            
-                if jobid in jobsummary:
-                    # job has not finished
-                    status = jobsummary[jobid]['status']
-                    newstate = dict(qw="Unsubmitted", t="Pending",r="Running",hqw="Unsubmitted",ht="Pending",h="Pending",E="Error",Eqw="Error")[status]
-                else:
-                    # job has finished
-                    sleep(15.0)                      # deal with SGE flush bizarreness (files dont flush from remote host immediately. Totally retarded)
-                    newstate = "Done"
-                if DEBUG:
-                    print "Job summary:",jobsummary
-                    
-                
-                if state!=newstate:
-                    state=newstate
-                    client_stream.write("%s\n"%state)
-                    
-                    # report the full status to the remote_url
-                    if remote_url:
-                        if jobid in jobsummary:
-                            RemoteInfo(remote_url,json.dumps(jobsummary[jobid]))
-                        else:
-                            try:
-                                RemoteInfo(remote_url,json.dumps(qacct(jobid)))
-                            except ExecutionError, ee:
-                                print "RemoteInfo call for job",jobid,"failed with:",ee
-                    
-                if state=="Error":
-                    client_stream.finish()
-                    return
+                jobsummary = qstat(user=username)
             except ExecutionError, ee:
-                warningcount += 1
-                print "WARNING: retyring after qstat failed with error:",ee
+                if "jobs do not exist" in str(ee):
+                    # the job may have been passed through to qacct. lets check qacct
+                    jobsummary[jobid] = qacct(jobid)
+                else:
+                    raise ee
+                    
+            self.update_running(jobid,jobsummary)
+            
+            if jobid in jobsummary:
+                # job has not finished
+                status = jobsummary[jobid]['status']
+                newstate = dict(qw="Unsubmitted", t="Pending",r="Running",hqw="Unsubmitted",ht="Pending",h="Pending",E="Error",Eqw="Error")[status]
+            else:
+                # job has finished
+                sleep(15.0)                      # deal with SGE flush bizarreness (files dont flush from remote host immediately. Totally retarded)
+                newstate = "Done"
+            if DEBUG:
+                print "Job summary:",jobsummary
+                
+            
+            if state!=newstate:
+                state=newstate
+                client_stream.write("%s\n"%state)
+                
+                # report the full status to the remote_url
+                if remote_url:
+                    if jobid in jobsummary:
+                        RemoteInfo(remote_url,json.dumps(jobsummary[jobid]))
+                    else:
+                        try:
+                            RemoteInfo(remote_url,json.dumps(qacct(jobid)))
+                        except ExecutionError, ee:
+                            print "RemoteInfo call for job",jobid,"failed with:",ee
+                
+            if state=="Error":
+                client_stream.finish()
+                return
             
         # delete finished job
         self.del_running(jobid)
