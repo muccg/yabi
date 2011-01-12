@@ -238,9 +238,11 @@ class QstatVerboseProcessProtocol(protocol.ProcessProtocol):
         self.transport.closeStdin()
 
     def outReceived(self, data):
+        print "verbose out:",data
         self.out += data
 
     def errReceived(self, data):
+        print "verbose err:",data
         self.err += data
 
     def outConnectionLost(self):
