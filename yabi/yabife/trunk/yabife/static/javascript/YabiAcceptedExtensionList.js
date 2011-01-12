@@ -73,6 +73,11 @@ YabiAcceptedExtensionList.prototype.validForValue = function(value) {
     if (YAHOO.lang.isObject(value) && value instanceof YabiJob) {
         //console.log(value + " is object");
 
+        // Allow a job which presently emits no files to pass validation.
+        if (value.emittedFiles().length == 1) {
+            return true;
+        }
+
         extensions = value.outputExtensions;
         if (!YAHOO.lang.isArray(extensions)) {
             extensions = [extensions];

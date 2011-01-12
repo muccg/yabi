@@ -218,6 +218,17 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
     //run an initial validation on the default value
     this.validate();
 
+    if (this.isInputFile && this.job.acceptsInput && this.defaultValue) {
+        this.consumableFiles = [];
+        this.consumedFiles = [];
+
+        for (var i = 0; i < this.defaultValue.length; i++) {
+            var consumedJob = this.job.workflow.getJobForId(this.defaultValue[i].jobId);
+
+            this.consumableFiles.push(consumedJob);
+            this.consumedFiles.push(consumedJob);
+        }
+    }
 }
 
 /**
