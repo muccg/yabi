@@ -17,7 +17,7 @@ QSTAT_COMMAND = "/opt/torque/2.3.13/bin/qstat"
 SUDO = "/usr/bin/sudo"
 USE_SUDO = True                          
 
-DEBUG = False
+DEBUG = True
 
 class QsubProcessProtocol(protocol.ProcessProtocol):
     """ Job returns 'Your job 10 ("jobname") has been submitted'

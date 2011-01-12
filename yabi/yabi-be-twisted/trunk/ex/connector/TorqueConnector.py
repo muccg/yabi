@@ -88,6 +88,7 @@ class TorqueConnector(ExecConnector):
             # pause
             sleep(delay.next())
             
+            print "calling qstat..."
             jobsummary = qstat(user=username)
             self.update_running(jobid,jobsummary)
             
