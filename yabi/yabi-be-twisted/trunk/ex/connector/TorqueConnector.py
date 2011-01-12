@@ -15,7 +15,7 @@ DEBUG = False
 from twisted.web2 import http, responsecode, http_headers, stream
 
 from utils.stacklesstools import sleep, POST
-from utils.torquetools import qsub, qstat, qacct
+from utils.torquetools import qsub, qstat
 
 import json
 
