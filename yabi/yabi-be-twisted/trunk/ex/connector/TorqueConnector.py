@@ -98,7 +98,9 @@ class TorqueConnector(ExecConnector):
             else:
                 # job has finished
                 sleep(15.0)                      # deal with SGE flush bizarreness (files dont flush from remote host immediately. Totally retarded)
-                newstate = "Done"
+                print "ERROR: jobid %s not in jobsummary"%jobid
+                print "jobsummary is",jobsummary
+                newstate = "Error"
             if DEBUG:
                 print "Job summary:",jobsummary
                 
