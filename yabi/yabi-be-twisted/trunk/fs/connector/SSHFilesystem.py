@@ -22,31 +22,31 @@ ENV_CHECK = []
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "scp"
 
-DEBUG = False
+DEBUG = True
 
-MAX_SSH_CONNECTIONS = 128
-SSH_CONNECTION_COUNT = 0
+#MAX_SSH_CONNECTIONS = 128
+#SSH_CONNECTION_COUNT = 0
 
-def pre_ssh():
-    global SSH_CONNECTION_COUNT
-    while SSH_CONNECTION_COUNT >= MAX_SSH_CONNECTIONS:
-        print "WARNING: max SSH connection count reached"
-        stackless.schedule()
+#def pre_ssh():
+    #global SSH_CONNECTION_COUNT
+    #while SSH_CONNECTION_COUNT >= MAX_SSH_CONNECTIONS:
+        #print "WARNING: max SSH connection count reached"
+        #stackless.schedule()
     
-    SSH_CONNECTION_COUNT+=1
+    #SSH_CONNECTION_COUNT+=1
     
-def post_ssh():
-    global SSH_CONNECTION_COUNT
-    SSH_CONNECTION_COUNT-=1
+#def post_ssh():
+    #global SSH_CONNECTION_COUNT
+    #SSH_CONNECTION_COUNT-=1
     
-def lock(f):
-    def new_func(*args, **kwargs):
-        pre_ssh()
-        try:
-            return f(*args, **kwargs)
-        finally:
-            post_ssh()
-    return new_func
+#def lock(f):
+    #def new_func(*args, **kwargs):
+        #pre_ssh()
+        #try:
+            #return f(*args, **kwargs)
+        #finally:
+            #post_ssh()
+    #return new_func
 
 class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
     """This is the resource that connects to the ssh backends"""
