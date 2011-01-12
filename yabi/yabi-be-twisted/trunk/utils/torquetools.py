@@ -197,7 +197,7 @@ job-ID  prior   name       user         state submit/start at     queue         
     def isDone(self):
         return self.exitcode != None
     
-def qstat_spawn(jobid):
+def qstat_spawn(jobid, user="yabi"):
     """return the status of a running job via qstat
     /opt/sge/6.2u3/bin/lx24-amd64/qstat -u yabi
     """
@@ -229,9 +229,9 @@ def qstat_spawn(jobid):
     return pp
 
 from ex.connector.ExecConnector import ExecutionError
-def qstat(jobid):
+def qstat(jobid, user="yabi"):
     # run the qsub process.
-    pp = qstat_spawn(jobid)
+    pp = qstat_spawn(jobid, user)
     
     while not pp.isDone():
         stackless.schedule()
