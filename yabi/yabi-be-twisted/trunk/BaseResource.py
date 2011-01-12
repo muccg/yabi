@@ -23,6 +23,7 @@ from ex.resource import ExecResource
 # backends
 from ex.connector.GlobusConnector import GlobusConnector
 from ex.connector.SGEConnector import SGEConnector
+from ex.connector.TorqueConnector import TorqueConnector
 from ex.connector.SSHConnector import SSHConnector
 
 # taskmanager debug
