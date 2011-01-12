@@ -61,7 +61,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         configdir = config.config['backend']['certificates']
         ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
     
-    @lock
+    #@lock
     def mkdir(self, host, username, path, yabiusername=None, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
@@ -93,7 +93,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         return mkdir_data
         
-    @lock
+    #@lock
     def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
@@ -125,7 +125,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         return rm_data
     
-    @lock
+    #@lock
     def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
@@ -171,7 +171,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
                         
         return ls_data
         
-    @lock
+    #@lock
     def GetWriteFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}):
         """sets up the chain needed to setup a write fifo from a remote path as a certain user.
         
@@ -198,7 +198,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         return pp, fifo
     
-    @lock
+    #@lock
     def GetReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}):
         """sets up the chain needed to setup a read fifo from a remote path as a certain user.
         
