@@ -46,6 +46,7 @@ class QsubProcessProtocol(protocol.ProcessProtocol):
     def outConnectionLost(self):
         # stdout was closed. this will be our endpoint reference
         self.jobid = self.out.strip()
+        print "CONN LOST:",self.jobid
         return
         
         re_match = self.regexp.search(self.out)
@@ -177,6 +178,7 @@ job-ID  prior   name       user         state submit/start at     queue         
         self.err += data
             
     def outConnectionLost(self):
+        print "lost!"
         # stdout was closed. this will be our endpoint reference
         for line in self.out.split("\n"):
             re_match = self.regexp.search(line)
@@ -202,22 +204,27 @@ def qstat_spawn(jobid):
     subenv = os.environ.copy()
     pp = QstatProcessProtocol()
     
+    command = [
+                                QSTAT_COMMAND,
+                                "-f",
+                                jobid
+              ]
+                            
+    if USE_SUDO:
+        command = [             SUDO,
+                                "-u",
+                                user
+                  ] + command
+                                   
     if DEBUG:
-        print [
-                                QSTAT_COMMAND,
-                                "-f",
-                                jobid
-                            ]
-    
+        print command
+
     reactor.spawnProcess(   pp,
-                            QSTAT_COMMAND, 
-                            args=[
-                                QSTAT_COMMAND,
-                                "-f",
-                                jobid
-                            ],
+                            command[0], 
+                            args=command,
                             env=subenv
                         )
+                   
 
     return pp
 
