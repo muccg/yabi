@@ -88,26 +88,7 @@ class TorqueConnector(ExecConnector):
             # pause
             sleep(delay.next())
             
-            try:
-                jobsummary = qstat(user=username)
-            except ExecutionError, ee:
-                if "jobs do not exist" in str(ee):
-                    # the job may have been passed through to qacct. lets check qacct
-                    try:
-                        jobsummary[jobid] = qacct(jobid)
-                    except ExecutionError, qacct_error:
-                        if "job id %s not found"%(jobid) in str(qacct_error):
-                            # the job is not in qstat OR qacct
-                            # print bif fat warning and move into blocking state
-                            warning = "WARNING! SGE job id %s appears to have COMPLETELY VANISHED! both qstat and qacct have no idea what this job is!"%jobid
-                            print warning
-                            client_stream.write("Done\n")
-                            client_stream.finish()
-                            return
-                        else:
-                            raise qacct_error
-                else:
-                    raise ee
+            jobsummary = qstat(user=username)
             self.update_running(jobid,jobsummary)
             
             if jobid in jobsummary:
@@ -131,10 +112,7 @@ class TorqueConnector(ExecConnector):
                     if jobid in jobsummary:
                         RemoteInfo(remote_url,json.dumps(jobsummary[jobid]))
                     else:
-                        try:
-                            RemoteInfo(remote_url,json.dumps(qacct(jobid)))
-                        except ExecutionError, ee:
-                            print "RemoteInfo call for job",jobid,"failed with:",ee
+                        print "Cannot call RemoteInfo call for job",jobid
                 
             if state=="Error":
                 client_stream.finish()

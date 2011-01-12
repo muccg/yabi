@@ -13,7 +13,6 @@ from conf import config
 
 QSUB_COMMAND = "/opt/torque/2.3.13/bin/qsub"             #-N job-101 /home/yabi/test-remote
 QSTAT_COMMAND = "/opt/torque/2.3.13/bin/qstat"
-QACCT_COMMAND = "/opt/torque/2.3.13/bin/qacct"
 
 SUDO = "/usr/bin/sudo"
 USE_SUDO = True                          
@@ -285,126 +284,6 @@ def qstat_verbose_spawn(jobs,user,jobid):
 
     return pp
 
-
-class QacctProcessProtocol(protocol.ProcessProtocol):
-    """ qacct returns 
-    
-==============================================================
-qname        all.q               
-hostname     yabi-e-dev.localdomain
-group        tech                
-owner        ahunter             
-project      NONE                
-department   defaultdepartment   
-jobname      jobname             
-jobnumber    1306                
-taskid       undefined
-account      sge                 
-priority     0                   
-qsub_time    Tue Apr 13 13:50:19 2010
-start_time   Tue Apr 13 13:54:21 2010
-end_time     Tue Apr 13 13:54:21 2010
-granted_pe   NONE                
-slots        1                   
-failed       0    
-exit_status  0                   
-ru_wallclock 0            
-ru_utime     0.060        
-ru_stime     0.080        
-ru_maxrss    0                   
-ru_ixrss     0                   
-ru_ismrss    0                   
-ru_idrss     0                   
-ru_isrss     0                   
-ru_minflt    13352               
-ru_majflt    0                   
-ru_nswap     0                   
-ru_inblock   0                   
-ru_oublock   0                   
-ru_msgsnd    0                   
-ru_msgrcv    0                   
-ru_nsignals  0                   
-ru_nvcsw     117                 
-ru_nivcsw    30                  
-cpu          0.140        
-mem          0.000             
-io           0.000             
-iow          0.000             
-maxvmem      0.000
-arid         undefined
-
-    OR
-    
-error: job id 1306546 not found
-
-    """
-    # match line of form  "   12 0.00000 job-101    yabi         qw    10/13/2009 10:42:52                                    1        "
-    regexp = re.compile(r"^(\S+)\s+(.+)$")
-    
-    def __init__(self):
-        self.err = ""
-        self.out = ""
-        self.exitcode = None
-        
-        # where we store the data gathered from the process
-        self.info = {}
-        
-    def connectionMade(self):
-        # when the process finally spawns, close stdin, to indicate we have nothing to say to it
-        self.transport.closeStdin()
-        
-    def outReceived(self, data):
-        self.out += data
-        
-    def errReceived(self, data):
-        self.err += data
-            
-    def outConnectionLost(self):
-        # stdout was closed. this will be our endpoint reference
-        for line in self.out.split("\n"):
-            re_match = self.regexp.search(line)
-            #print "RE_MATCH:",re_match
-            if re_match:
-                key,val = re_match.groups()
-                self.info[key] = val
-                if DEBUG:
-                    print key,"=>",val
-                #print "id",jobid
-        
-    def processEnded(self, status_object):
-        self.exitcode = status_object.value.exitCode
-        
-    def isDone(self):
-        return self.exitcode != None
-    
-def qacct_spawn(jobid):
-    """return the status of a running job via qstat
-    /opt/sge/6.2u3/bin/lx24-amd64/qstat -u yabi
-    """
-    subenv = os.environ.copy()
-    pp = QstatProcessProtocol()
-    
-    if DEBUG:
-        print [
-                                QACCT_COMMAND,
-                                "-j",
-                                jobid
-                            ]
-    
-    reactor.spawnProcess(   pp,
-                            QACCT_COMMAND, 
-                            args=[
-                                QACCT_COMMAND,
-                                "-j",
-                                jobid
-                            ],
-                            env=subenv
-                        )
-
-    return pp
-
-
-
 from ex.connector.ExecConnector import ExecutionError
 def qstat(user="yabi"):
     # run the qsub process.
@@ -430,17 +309,3 @@ def qstat(user="yabi"):
 
     return pp.jobs
     
-def qacct(jobid):
-    # run qacct
-    pp = qacct_spawn(jobid)
-    
-    while not pp.isDone():
-        stackless.schedule()
-        
-    if pp.exitcode!=0:
-        err = pp.err
-        raise ExecutionError(err) 
-    
-    return pp.info
-
-
