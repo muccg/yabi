@@ -78,6 +78,7 @@ def qsub_spawn(jobname, commandfile, user="yabi", workingdir="/home/yabi", stdou
                                 "-e",stderr,
                                 "-o",stdout,
                                 "-d",workingdir,
+                                "-D",workingdir,
                                 commandfile
                             ]
     
