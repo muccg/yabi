@@ -45,7 +45,7 @@ class QsubProcessProtocol(protocol.ProcessProtocol):
             
     def outConnectionLost(self):
         # stdout was closed. this will be our endpoint reference
-        self.jobid = self.out
+        self.jobid = self.out.strip()
         return
         
         re_match = self.regexp.search(self.out)
