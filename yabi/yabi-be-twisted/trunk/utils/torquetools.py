@@ -199,7 +199,7 @@ def qstat_spawn(jobid, user="yabi"):
     
     command = [
                                 QSTAT_COMMAND,
-                                "-f","-l",
+                                "-f","-1",
                                 jobid
               ]
                             
