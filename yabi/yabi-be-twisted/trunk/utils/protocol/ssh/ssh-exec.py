@@ -76,7 +76,7 @@ else:
 eprint("SSH Command: %s"%(ssh_command))
 
 child = pexpect.spawn(SSH, args=ssh_command)
-child.logfile_read = sys.stderr
+child.logfile_read = sys.stdout
 res = 0
 while res!=2:
     res = child.expect(["passphrase for key .+:","password:", "Permission denied",pexpect.EOF,pexpect.TIMEOUT],timeout=TIMEOUT)
