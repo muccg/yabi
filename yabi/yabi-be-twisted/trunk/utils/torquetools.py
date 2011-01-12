@@ -36,17 +36,19 @@ class QsubProcessProtocol(protocol.ProcessProtocol):
         self.transport.closeStdin()
         
     def outReceived(self, data):
+        print "OUT recv",data
         self.out += data
         
     def errReceived(self, data):
+        print "ERR recv",data
         self.err += data
             
     def outConnectionLost(self):
         # stdout was closed. this will be our endpoint reference
         re_match = self.regexp.search(self.out)
-        #print "OUT:",self.out
-        #print "ERR:",self.err
-        #print "RE_MATCH:",re_match
+        print "OUT:",self.out
+        print "ERR:",self.err
+        print "RE_MATCH:",re_match
         if re_match:
             #print "Group",re_match.groups()
             jobid, jobname = re_match.groups()
