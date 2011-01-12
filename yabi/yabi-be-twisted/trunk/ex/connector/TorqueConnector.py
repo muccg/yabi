@@ -94,8 +94,8 @@ class TorqueConnector(ExecConnector):
             
             if jobid in jobsummary:
                 # job has not finished
-                status = jobsummary[jobid]['status']
-                newstate = dict(qw="Unsubmitted", t="Pending",r="Running",hqw="Unsubmitted",ht="Pending",h="Pending",E="Error",Eqw="Error")[status]
+                status = jobsummary[jobid]['job_state']
+                newstate = dict(Q="Unsubmitted",qw="Unsubmitted", t="Pending",r="Running",hqw="Unsubmitted",ht="Pending",h="Pending",E="Error",Eqw="Error")[status]
             else:
                 # job has finished
                 sleep(15.0)                      # deal with SGE flush bizarreness (files dont flush from remote host immediately. Totally retarded)

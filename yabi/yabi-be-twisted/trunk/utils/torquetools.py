@@ -146,15 +146,9 @@ job-ID  prior   name       user         state submit/start at     queue         
 
     """
     # match line of form  "   12 0.00000 job-101    yabi         qw    10/13/2009 10:42:52                                    1        "
-    regexp = re.compile(r"""\s+(\d+)                    # job-ID
-                            \s+([\d.]+)                 # prior
-                            \s+([\w\-\d_]+)             # name
-                            \s+(\w+)                    # user
-                            \s+(\w+)                    # state
-                            \s+([\d/]+)                 # submit/start
-                            \s+(\d+:\d+:\d+)            # at
-                            \s+([\w\d\-@.]*)            # submit host (optional)
-                            \s+(\d+)\s+$                # everything else on the line
+    regexp = re.compile(r"""\s+(\w+)                    # key
+                            \s*=\s*                     # =
+                            (.+)\s*$                   # value
                         """, re.VERBOSE)
     
     def __init__(self):
@@ -180,16 +174,14 @@ job-ID  prior   name       user         state submit/start at     queue         
     def outConnectionLost(self):
         print "lost!"
         # stdout was closed. this will be our endpoint reference
+        self.data = {}
         for line in self.out.split("\n"):
             re_match = self.regexp.search(line)
             #print "RE_MATCH:",re_match
             if re_match:
-                jobid, prior, name, user, status, submit, at, host, rest = re_match.groups()
-                jobid=jobid
-                self.jobs[jobid] = dict(name=name,user=user,status=status,submit=submit,at=at,rest=rest,host=host,prior=prior)
-                if DEBUG:
-                    print self.jobs[jobid]
-                #print "id",jobid
+                key,value = re_match.groups()
+                print "key",key,"value",value
+                self.data[key] = value
         
     def processEnded(self, status_object):
         self.exitcode = status_object.value.exitCode
@@ -240,5 +232,7 @@ def qstat(jobid, user="yabi"):
         err = pp.err
         raise ExecutionError(err)
 
-    return pp.jobs
+    jobs = {}
+    jobs[jobid] = pp.data
+    return jobs
     
