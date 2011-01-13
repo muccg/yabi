@@ -373,7 +373,7 @@ class MainTask(Task):
             retry=False
             
             try:
-                exec_status = None
+                exec_status = [None]
                 
                 # callback for job execution status change messages
                 def _task_status_change(line):
@@ -392,8 +392,8 @@ class MainTask(Task):
                         self._jobid = value
                         #self.remote_id(value)                           # TODO:send this id back to the middleware
                     else:
-                        exec_status = line.lower()
-                        self.status("exec:%s"%(exec_status))
+                        exec_status[0] = line.lower()
+                        self.status("exec:%s"%(exec_status[0]))
                 
                 # submit the job to the execution middle ware
                 self.log("Submitting to %s command: %s"%(task['exec']['backend'],task['exec']['command']))
@@ -409,7 +409,7 @@ class MainTask(Task):
                     
                     Exec(uri, command=task['exec']['command'], remote_info=task['remoteinfourl'],stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)     # this blocks untill the command is complete. or the execution errored
                     print "EXEC_STATUS",exec_status
-                    if exec_status == 'error':
+                    if exec_status[0] == 'error':
                         print "TASK[%s]: Execution failed!"%(self.taskid)
                         self.status("error")
                         self.log("Execution of %s on %s failed: %s"%(task['exec']['command'],task['exec']['backend'],error))
