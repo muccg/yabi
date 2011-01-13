@@ -412,7 +412,7 @@ class MainTask(Task):
                     if exec_status[0] == 'error':
                         print "TASK[%s]: Execution failed!"%(self.taskid)
                         self.status("error")
-                        self.log("Execution of %s on %s failed: %s"%(task['exec']['command'],task['exec']['backend'],error))
+                        self.log("Execution of %s on %s failed"%(task['exec']['command'],task['exec']['backend']))
                         
                         # finish task
                         raise TaskFailed("Execution failed")
