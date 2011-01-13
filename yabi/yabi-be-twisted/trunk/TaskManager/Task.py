@@ -408,6 +408,7 @@ class MainTask(Task):
                             extras[key]=task['exec'][key]
                     
                     Exec(uri, command=task['exec']['command'], remote_info=task['remoteinfourl'],stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)     # this blocks untill the command is complete. or the execution errored
+                    print "EXEC_STATUS",exec_status
                     if exec_status == 'error':
                         print "TASK[%s]: Execution failed!"%(self.taskid)
                         self.status("error")
