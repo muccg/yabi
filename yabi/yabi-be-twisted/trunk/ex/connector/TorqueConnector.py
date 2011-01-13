@@ -136,7 +136,7 @@ class TorqueConnector(ExecConnector):
             if state=="Error":
                 print "CLOSING STREAM"
                 client_stream.finish()
-                raise Exception
+                return
         
     def info(self, jobid, username):
         jobsummary = qstat(user=username)

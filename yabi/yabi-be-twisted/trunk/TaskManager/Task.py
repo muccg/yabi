@@ -373,6 +373,8 @@ class MainTask(Task):
             retry=False
             
             try:
+                exec_status = None
+                
                 # callback for job execution status change messages
                 def _task_status_change(line):
                     """Each line that comes back from the webservice gets passed into this callback"""
@@ -390,7 +392,8 @@ class MainTask(Task):
                         self._jobid = value
                         #self.remote_id(value)                           # TODO:send this id back to the middleware
                     else:
-                        self.status("exec:%s"%(line.lower()))
+                        exec_status = line.lower()
+                        self.status("exec:%s"%(exec_status))
                 
                 # submit the job to the execution middle ware
                 self.log("Submitting to %s command: %s"%(task['exec']['backend'],task['exec']['command']))
@@ -404,8 +407,16 @@ class MainTask(Task):
                         if key in task['exec'] and task['exec'][key]:
                             extras[key]=task['exec'][key]
                     
-                    Exec(uri, command=task['exec']['command'], remote_info=task['remoteinfourl'],stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)                # this blocks untill the command is complete.
-                    self.log("Execution finished")
+                    Exec(uri, command=task['exec']['command'], remote_info=task['remoteinfourl'],stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)     # this blocks untill the command is complete. or the execution errored
+                    if exec_status == 'error':
+                        print "TASK[%s]: Execution failed!"%(self.taskid)
+                        self.status("error")
+                        self.log("Execution of %s on %s failed: %s"%(task['exec']['command'],task['exec']['backend'],error))
+                        
+                        # finish task
+                        raise TaskFailed("Execution failed")
+                    else:
+                        self.log("Execution finished")
                 except GETFailure, error:
                     if "503" in error.message[1]:
                         raise                               # reraise a blocking error so our top level catcher will catch it and block the task
