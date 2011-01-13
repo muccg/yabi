@@ -151,6 +151,7 @@ job-ID  prior   name       user         state submit/start at     queue         
                             \s*=\s*                     # =
                             (.+)\s*$                   # value
                         """, re.VERBOSE)
+                        
     
     def __init__(self):
         self.err = ""
@@ -176,15 +177,18 @@ job-ID  prior   name       user         state submit/start at     queue         
         print "lost!"
         # stdout was closed. this will be our endpoint reference
         self.data = {}
+        key = None
         for line in self.out.split("\n"):
-            re_match = self.regexp.search(line)
-            #print "RE_MATCH:",re_match
-            if re_match:
-                key,value = re_match.groups()
-                print "key",key,"value",value
-                self.data[key] = value
-        if len(self.err):
-            self.data['STDERR']=self.err                    # standard error of the qstat command
+            if line.startswith('\t'):
+                re_match = self.regexp.search(line)
+                #print "RE_MATCH:",re_match
+                if re_match:
+                    key,value = re_match.groups()
+                    print "key",key,"value",value
+                    self.data[key] = value
+            else:
+                self.data[key]+=line+"\n"
+                
         
     def processEnded(self, status_object):
         self.exitcode = status_object.value.exitCode
