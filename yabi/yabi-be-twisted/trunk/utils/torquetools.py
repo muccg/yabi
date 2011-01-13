@@ -183,7 +183,7 @@ job-ID  prior   name       user         state submit/start at     queue         
                 key,value = re_match.groups()
                 print "key",key,"value",value
                 self.data[key] = value
-        if len(self.err.strip()):
+        if len(self.err):
             self.data['STDERR']=self.err                    # standard error of the qstat command
         
     def processEnded(self, status_object):
