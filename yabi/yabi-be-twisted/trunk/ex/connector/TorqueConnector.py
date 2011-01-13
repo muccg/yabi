@@ -123,6 +123,7 @@ class TorqueConnector(ExecConnector):
             
             if state!=newstate:
                 state=newstate
+                print "Writing state",state
                 client_stream.write("%s\n"%state)
                 
                 # report the full status to the remote_url
