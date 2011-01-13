@@ -134,6 +134,7 @@ class TorqueConnector(ExecConnector):
                         print "Cannot call RemoteInfo call for job",jobid
                 
             if state=="Error":
+                print "CLOSING STREAM"
                 client_stream.finish()
                 return
         
