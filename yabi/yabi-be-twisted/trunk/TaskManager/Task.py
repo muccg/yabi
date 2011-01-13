@@ -504,6 +504,7 @@ class MainTask(Task):
             raise TaskFailed("Stageout failed")
             
     def cleanup(self):
+        return
         task=self.json
         # cleanup working dir
         for copy in self.json['stagein']:
