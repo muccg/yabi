@@ -169,7 +169,7 @@ job-ID  prior   name       user         state submit/start at     queue         
         self.out += data
         
     def errReceived(self, data):
-        print "err:",data
+        print "====> Qstat err:",data
         self.err += data
             
     def outConnectionLost(self):
