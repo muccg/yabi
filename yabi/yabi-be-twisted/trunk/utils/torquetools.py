@@ -176,8 +176,8 @@ job-ID  prior   name       user         state submit/start at     queue         
     def outConnectionLost(self):
         print "lost!"
         # stdout was closed. this will be our endpoint reference
-        self.data = {}
-        key = None
+        self.data = {"STDOUT":""}
+        key = "STDOUT"
         for line in self.out.split("\n"):
             if line.startswith('\t'):
                 re_match = self.regexp.search(line)
