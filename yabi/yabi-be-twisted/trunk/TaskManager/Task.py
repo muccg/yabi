@@ -399,7 +399,8 @@ class MainTask(Task):
                 self.log("Submitting to %s command: %s"%(task['exec']['backend'],task['exec']['command']))
                 
                 try:
-                    uri = task['exec']['backend']+outputdir
+                    cull_trailing_slash = lambda s: s[:-1] if (len(s) and s[-1]=='/') else s
+                    uri = cull_trailing_slash(task['exec']['backend'])+outputdir
                     
                     # create extra parameter list
                     extras = {}
