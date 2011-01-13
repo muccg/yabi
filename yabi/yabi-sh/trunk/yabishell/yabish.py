@@ -101,7 +101,11 @@ class StageIn(object):
         for i,d in enumerate(dir_structure):
             params['dir_%i' % i] = d.relpath
         resp, json_response = self.yabi.post(uri, params)
-        stageindir_uri = json.loads(json_response)['uri']
+        response = json.loads(json_response)
+        if not response.get('success'):
+            raise errors.RemoteError(
+                "Couldn't create stagein directory on the server (%s)" % response.get('msg')) 
+        stageindir_uri = response['uri']
         dir_uri_mapping = {}
         for d in dir_structure:
             dir_uri = stageindir_uri + d.relpath
