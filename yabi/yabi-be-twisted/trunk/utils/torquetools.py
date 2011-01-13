@@ -179,7 +179,7 @@ job-ID  prior   name       user         state submit/start at     queue         
         self.data = {"STDOUT":""}
         key = "STDOUT"
         for line in self.out.split("\n"):
-            if line.startswith('\t'):
+            if line.startswith(' '):
                 re_match = self.regexp.search(line)
                 #print "RE_MATCH:",re_match
                 if re_match:
