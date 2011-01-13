@@ -16,6 +16,8 @@ from yabiadmin.yabiengine import backendhelper
 
 from yabiadmin.decorators import memcache, authentication_required
 
+from collections import namedtuple
+
 import logging
 logger = logging.getLogger('yabiadmin')
 
@@ -115,6 +117,8 @@ def createstageindir(request):
 
 # Implementation
 
+ParsedArg = namedtuple('ParsedArg', 'name original_arg value')
+
 class ParamDef(object):
     def __init__(self, name, switch_use, mandatory, is_input_file):
         self.name = name
@@ -125,6 +129,7 @@ class ParamDef(object):
 
     def matches(self, argument):
         if self.name == argument:
+            self.original_arg = argument
             return True
         if self.switch_use in ('combined', 'combined with equals'):
             if argument.startswith(self.switch_use):
@@ -132,6 +137,7 @@ class ParamDef(object):
                 if self.switch_use == 'combined with equals':
                     value_start += 1
                 self.value = [argument[value_start:]]
+                self.original_arg = argument
                 return True
         return False 
 
@@ -156,8 +162,9 @@ class ParamDef(object):
             if v.startswith('-'):
                 raise ParsingError('Option %s requires an argument' % self.name)
             self.value = [v]
+            self.original_arg = v
  
-    def switch_and_value(self):
+    def parsed_argument(self):
         value = self.value
         if self.input_file:
             root, filename = os.path.split(self.value[0])
@@ -170,7 +177,7 @@ class ParamDef(object):
                 'filename': filename,
                 'pathComponents': [root]
             }]
-        return [self.name, value] 
+        return ParsedArg(name= self.name, original_arg=self.original_arg, value=value) 
 
 class YabiArgumentParser(object):
     def __init__(self, tool):
@@ -216,7 +223,7 @@ class YabiArgumentParser(object):
             paramdef = self.find_matching_paramdef(next_arg)
             if paramdef:
                 paramdef.consume_values(remaining_args)
-                parsed_options.append(paramdef.switch_and_value()) 
+                parsed_options.append(paramdef.parsed_argument()) 
             else:
                 unhandled_args.append((next_arg, last_arg))
             last_arg = next_arg
@@ -226,7 +233,7 @@ class YabiArgumentParser(object):
         positionals = []
         for pos_paramdef in self.positional_paramdefs:
             pos_paramdef.consume_values(unhandled_args)
-            positionals.append(pos_paramdef.switch_and_value())
+            positionals.append(pos_paramdef.parsed_argument())
         return positionals
 
     def combine_results(self, parsed_options, parsed_positionals, positional_order):
@@ -234,11 +241,11 @@ class YabiArgumentParser(object):
         result = copy.copy(parsed_options)
         # and insert the positionals at the right location based on the original order
         for positional in parsed_positionals:
-            positional_value = positional[1][0]
-            insert_after = find_item(positional_order, lambda x: x[0] == positional[1][0])[1]
+            insert_after = find_item(positional_order, 
+                    lambda x: x[0] == positional.original_arg)[1]
             insert_idx = 0
             if insert_after is not None:
-                insert_idx = item_index(result, lambda x: x[0] == insert_after) + 1
+                insert_idx = item_index(result, lambda x: x.original_arg == insert_after) + 1
             result.insert(insert_idx, positional)
         return result
 
@@ -286,8 +293,8 @@ def create_params(request, argparser):
     arguments = reconstruct_argument_list(request)
     parsed_arguments = argparser.parse_args(arguments)
 
-    return [{'switchName': arg, 'valid': True, 'value': value} 
-                for arg,value in parsed_arguments]
+    return [{'switchName': arg.name, 'valid': True, 'value': arg.value} 
+                for arg in parsed_arguments]
     return params 
 
 def reconstruct_argument_list(request):
