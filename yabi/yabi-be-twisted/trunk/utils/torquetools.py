@@ -8,6 +8,7 @@ import re
 import stackless
 from tempfile import mktemp
 import os
+from utils.stacklesstools import sleep
 
 from conf import config
 
