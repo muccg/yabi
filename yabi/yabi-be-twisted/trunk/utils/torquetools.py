@@ -98,6 +98,17 @@ def qsub_spawn(jobname, commandfile, user="yabi", workingdir="/home/yabi", stdou
 
     return pp
 
+def qsub_backoff_generator():
+    delay = 60.0
+    yield delay
+    
+    while delay<3600.0:                      # while delay is less than an hour
+        delay *= 2
+        yield delay
+        
+    # exiting the generator means permanent error
+    return
+
 def qsub(jobname, command, user="yabi", workingdir="/home/yabi", stdout="STDOUT.txt", stderr="STDERR.txt", modules=[]):
     # use shlex to parse the command into executable and arguments
     #lexer = shlex.shlex(command, posix=True)
@@ -121,16 +132,30 @@ def qsub(jobname, command, user="yabi", workingdir="/home/yabi", stdout="STDOUT.
     # user we are submitting as needs to be able to read the file
     os.chmod(tempfile, 0604)
     
-    # run the qsub process.
-    pp = qsub_spawn(jobname,tempfile,user=user,workingdir=workingdir)
-    
-    while not pp.isDone():
-        stackless.schedule()
+    retry=True
+    delays = qsub_backoff_generator()
+    while retry:
+        # run the qsub process.
+        pp = qsub_spawn(jobname,tempfile,user=user,workingdir=workingdir)
         
-    if pp.exitcode!=0:
-        err = pp.err
-        from ex.connector.ExecConnector import ExecutionError
-        raise ExecutionError(err)
+        while not pp.isDone():
+            stackless.schedule()
+            
+        if pp.exitcode!=0:
+            print "QSUB ERROR CODE:",pp.exitcode
+            
+            if "Maximum number of jobs already in queue" in pp.err:
+                # backoff
+                try:
+                    sleep(delays.next())
+                except StopIteration:
+                    raise ExecutionError("torque qsub is reporting too many jobs in the queue for this user, and after backing off and retrying a number of times we've given up trying!")
+                
+            err = pp.err
+            from ex.connector.ExecConnector import ExecutionError
+            raise ExecutionError(err)
+        else:
+            retry = False
     
     # delete temp?
     os.unlink(tempfile)
