@@ -26,8 +26,9 @@ from conf import config
 USER_AGENT = "YabiStackless/0.1"
 
 ## errors
-class GETFailure(Exception): pass
 class ConnectionFailure(Exception): pass
+class GETFailure(ConnectionFailure): pass
+
 class DeferredError(Exception): pass
 class CloseConnections(Exception):
     """A special exception raised in tasklets by the engine shutdown.
