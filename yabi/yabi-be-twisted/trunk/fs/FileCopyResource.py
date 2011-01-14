@@ -165,6 +165,7 @@ class FileCopyResource(resource.PostableResource):
                 # readproto failed. write proto is still running. Kill it
                 if DEBUG:
                     print "READ FAILED",readproto.exitcode,writeproto.exitcode
+                print "read failed. attempting os.kill(",writeproto.transport.pid,",",signal.SIGKILL,")"
                 os.kill(writeproto.transport.pid, signal.SIGKILL)
             else:
                 # wait for write to finish
