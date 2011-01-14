@@ -126,13 +126,14 @@ class ParamDef(object):
         self.mandatory = mandatory
         self.input_file = is_input_file
         self.value = None
+        self.original_arg = None
 
     def matches(self, argument):
         if self.name == argument:
             self.original_arg = argument
             return True
         if self.switch_use in ('combined', 'combined with equals'):
-            if argument.startswith(self.switch_use):
+            if argument.startswith(self.name):
                 value_start = len(self.name)
                 if self.switch_use == 'combined with equals':
                     value_start += 1
@@ -162,7 +163,8 @@ class ParamDef(object):
             if v.startswith('-'):
                 raise ParsingError('Option %s requires an argument' % self.name)
             self.value = [v]
-            self.original_arg = v
+            if self.original_arg is None:
+                self.original_arg = v
  
     def parsed_argument(self):
         value = self.value
