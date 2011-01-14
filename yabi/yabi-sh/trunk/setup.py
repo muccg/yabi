@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(name='yabish',
-     version='0.1.0',
+     version='0.1.2',
      description='Command line interface for YABI.',
      author='Tamas Szabo',
      author_email='tszabo AT ccg.murdoch.edu.au',
@@ -12,6 +12,6 @@ setup(name='yabish',
      scripts=['yabish'],
      install_requires=['argparse', 'yaphc'],
      dependency_links = [
-        "http://code.google.com/p/yaphc/downloads/list"
+        "http://code.google.com/p/yaphc/downloads/list",
      ]
 )

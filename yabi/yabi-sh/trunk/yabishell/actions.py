@@ -149,6 +149,22 @@ class BackgroundRemoteAction(object):
         workflow_id = self.action.process(args)
         print "Submitted. Workflow id: %s" % workflow_id
 
+class Logout(Action):
+    def __init__(self, *args, **kwargs):
+        Action.__init__(self, *args, **kwargs)
+        self.url = 'wslogout'
+
+    def process(self, args):
+        resp, json_response = self.yabi.post(self.url)
+        return self.process_response(self.decode_json(json_response))
+
+    def process_response(self, response):
+        if response.get('success', False):
+            return True
+        else:
+            print >> sys.stderr, 'Logout unsuccessful'
+            return False
+
 class Login(Action):
     def __init__(self, *args, **kwargs):
         Action.__init__(self, *args, **kwargs)
