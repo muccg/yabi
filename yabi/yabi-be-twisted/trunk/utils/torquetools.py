@@ -148,13 +148,16 @@ def qsub(jobname, command, user="yabi", workingdir="/home/yabi", stdout="STDOUT.
             if "Maximum number of jobs already in queue" in pp.err:
                 # backoff
                 try:
-                    sleep(delays.next())
+                    delay = delays.next()
+                    print "Backing off",delay
+                    sleep(delay)
                 except StopIteration:
                     raise ExecutionError("torque qsub is reporting too many jobs in the queue for this user, and after backing off and retrying a number of times we've given up trying!")
-                
-            err = pp.err
-            from ex.connector.ExecConnector import ExecutionError
-            raise ExecutionError(err)
+            else:
+                err = pp.err
+                print "QSUB ERROR:",err
+                from ex.connector.ExecConnector import ExecutionError
+                raise ExecutionError(err)
         else:
             retry = False
     
