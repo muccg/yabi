@@ -20,7 +20,7 @@ RM_PATH = "/fs/rm"
 
 USER_AGENT = "YabiStackless/0.1"
 
-DEBUG = True
+DEBUG = False
 
 from utils.stacklesstools import GET, POST, GETFailure, CloseConnections, RetryGET, RetryPOST
 

@@ -17,7 +17,7 @@ QSTAT_COMMAND = "/opt/torque/2.3.13/bin/qstat"
 SUDO = "/usr/bin/sudo"
 USE_SUDO = True                          
 
-DEBUG = True
+DEBUG = False
 
 class QsubProcessProtocol(protocol.ProcessProtocol):
     """ Job returns 'Your job 10 ("jobname") has been submitted'
@@ -36,7 +36,7 @@ class QsubProcessProtocol(protocol.ProcessProtocol):
         self.transport.closeStdin()
         
     def outReceived(self, data):
-        print "OUT recv",data
+        #print "OUT recv",data
         self.out += data
         
     def errReceived(self, data):
@@ -46,13 +46,13 @@ class QsubProcessProtocol(protocol.ProcessProtocol):
     def outConnectionLost(self):
         # stdout was closed. this will be our endpoint reference
         self.jobid = self.out.strip()
-        print "CONN LOST:",self.jobid
+        #print "CONN LOST:",self.jobid
         return
         
         re_match = self.regexp.search(self.out)
-        print "OUT:",self.out
-        print "ERR:",self.err
-        print "RE_MATCH:",re_match
+        #print "OUT:",self.out
+        #print "ERR:",self.err
+        #print "RE_MATCH:",re_match
         if re_match:
             #print "Group",re_match.groups()
             jobid, jobname = re_match.groups()
@@ -165,18 +165,18 @@ job-ID  prior   name       user         state submit/start at     queue         
         self.transport.closeStdin()
         
     def outReceived(self, data):
-        print "out:",data
+        #print "out:",data
         self.out += data
         
     def errReceived(self, data):
-        print "====> Qstat err:",data
+        #print "====> Qstat err:",data
         self.err += data
             
     def outConnectionLost(self):
-        print "lost!"
+        #print "lost!"
         # stdout was closed. this will be our endpoint reference
-        self.data = {"STDOUT":""}
         key = "STDOUT"
+        self.data = {key:""}
         for line in self.out.split("\n"):
             if line.startswith(' '):
                 re_match = self.regexp.search(line)

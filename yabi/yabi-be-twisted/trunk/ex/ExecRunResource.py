@@ -53,8 +53,6 @@ class ExecRunResource(resource.PostableResource):
         if not hasattr(address,"username"):
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No username provided in uri\n")
         
-        print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!",address
-        print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!===",address.path
         username = address.username
         path = address.path
         hostname = address.hostname
