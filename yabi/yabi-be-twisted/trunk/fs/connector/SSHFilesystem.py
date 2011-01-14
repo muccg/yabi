@@ -22,7 +22,7 @@ ENV_CHECK = []
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "scp"
 
-DEBUG = True
+DEBUG = False
 
 #MAX_SSH_CONNECTIONS = 128
 #SSH_CONNECTION_COUNT = 0
