@@ -156,11 +156,12 @@ class Yabi(object):
     def request(self, method, url, params=None, files=None):
         if params is None:
             params = {}
+        act_as_ajax = {'HTTP_X_REQUESTED_WITH': 'XMLHttpRequest'}
         try:
             if method == 'GET':
-                request = GetRequest(url, params)
+                request = GetRequest(url, params, headers=act_as_ajax)
             elif method == 'POST':
-                request = PostRequest(url, params, files=files)
+                request = PostRequest(url, params, files=files, headers=act_as_ajax)
             else:
                 assert False, "Method should be GET or POST"
             if self.debug:
