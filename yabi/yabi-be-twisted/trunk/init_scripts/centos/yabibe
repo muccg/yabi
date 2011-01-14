@@ -106,7 +106,7 @@ fi
 case "$1" in
         start)
                 echo -n "Starting $NAME..."
-                ${TWISTD} --pidfile=$PID_FILE --rundir=$RUNNING_DIR --logfile=$LOG_FILE --python=${TAP}
+                ${TWISTD} --pidfile=$PID_FILE --rundir=$RUNNING_DIR --python=${TAP}
                 status -p $PID_FILE $NAME
                 ;;
 
