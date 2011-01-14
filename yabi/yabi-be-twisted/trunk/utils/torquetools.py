@@ -236,6 +236,7 @@ def qstat(jobid, user="yabi"):
         
     if pp.exitcode!=0:
         err = pp.err
+        print "QSTAT EXIT CODE",pp.exitcode
         raise ExecutionError(err)
 
     jobs = {}
