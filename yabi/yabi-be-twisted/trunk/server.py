@@ -9,6 +9,8 @@ config.sanitise()
 # sanity check that temp directory is set
 assert config.config['backend'].has_key('temp'), "[backend] section of yabi.conf is missing 'temp' directory setting"
 
+logfile = config.config['backend']['logfile']
+
 from urlparse import urlparse
 
 import stacklessreactor
@@ -32,6 +34,14 @@ assert "GLOBUS_LOCATION" in os.environ
 
 # Twisted Application Framework setup:
 application = service.Application('yabi-be-twisted')
+
+# set up twisted logging
+from twisted.python.log import ILogObserver, FileLogObserver
+from twisted.python.logfile import DailyLogFile
+
+path, fname = [ os.path.expanduser(X) for X in os.path.split(logfile)]
+logfileobj = DailyLogFile(fname, path)
+application.setComponent(ILogObserver, FileLogObserver(logfileobj).emit)
 
 # Create the resource we will be serving
 base = BaseResource()
@@ -85,7 +95,6 @@ def startup():
         
     print "Initialising connectors..."
     base.startup()
-    
 
 reactor.addSystemEventTrigger("after", "startup", startup)
 
