@@ -88,7 +88,6 @@ class TorqueConnector(ExecConnector):
             # pause
             sleep(delay.next())
             
-            print "calling qstat..."
             jobsummary = qstat(jobid, username)
             self.update_running(jobid,jobsummary)
             
@@ -97,7 +96,7 @@ class TorqueConnector(ExecConnector):
                 status = jobsummary[jobid]['job_state']
                 
                 if status == 'C':
-                    print "STATUS IS C <=============================================================",jobsummary[jobid]['exit_status']
+                    #print "STATUS IS C <=============================================================",jobsummary[jobid]['exit_status']
                     # state 'C' means complete OR error
                     if jobsummary[jobid]['exit_status'] == '0':
                         newstate = "Done"
@@ -123,7 +122,7 @@ class TorqueConnector(ExecConnector):
             
             if state!=newstate:
                 state=newstate
-                print "Writing state",state
+                #print "Writing state",state
                 client_stream.write("%s\n"%state)
                 
                 # report the full status to the remote_url
@@ -134,7 +133,7 @@ class TorqueConnector(ExecConnector):
                         print "Cannot call RemoteInfo call for job",jobid
                 
             if state=="Error":
-                print "CLOSING STREAM"
+                #print "CLOSING STREAM"
                 client_stream.finish()
                 return
         
