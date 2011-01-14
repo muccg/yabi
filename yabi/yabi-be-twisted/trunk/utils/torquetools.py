@@ -40,7 +40,7 @@ class QsubProcessProtocol(protocol.ProcessProtocol):
         self.out += data
         
     def errReceived(self, data):
-        print "ERR recv",data
+        #print "ERR recv",data
         self.err += data
             
     def outConnectionLost(self):
@@ -183,7 +183,7 @@ job-ID  prior   name       user         state submit/start at     queue         
                 #print "RE_MATCH:",re_match
                 if re_match:
                     key,value = re_match.groups()
-                    print "key",key,"value",value
+                    #print "key",key,"value",value
                     self.data[key] = value
             else:
                 self.data[key]+=line+"\n"
