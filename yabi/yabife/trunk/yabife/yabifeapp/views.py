@@ -280,6 +280,7 @@ def wslogout(request):
     response = {
         "success": True,
     }
+    return HttpResponse(content=json.dumps(response))
 
 @authentication_required
 def credentialproxy(request, url):
