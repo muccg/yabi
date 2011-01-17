@@ -84,8 +84,10 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             # error occurred
             print "SSH::mkdir exit",pp.exitcode
             if "Permission denied" in err:
+                print "SSH::mkdir permission denied"
                 raise PermissionDenied(err)
             else:
+                print "SSH::mkdir invalid path"
                 raise InvalidPath(err)
         
         if DEBUG:
@@ -117,8 +119,10 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             # error occurred
             print "SSH::rm exit",pp.exitcode
             if "Permission denied" in err:
+                print "SSH::rm permission denied"
                 raise PermissionDenied(err)
             else:
+                print "SSH::mkdir invalid path"
                 raise InvalidPath(err)
         
         if DEBUG:
