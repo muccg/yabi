@@ -122,7 +122,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
                 print "SSH::rm permission denied"
                 raise PermissionDenied(err)
             else:
-                print "SSH::mkdir invalid path"
+                print "SSH::rm invalid path",pp.err
                 raise InvalidPath(err)
         
         if DEBUG:
