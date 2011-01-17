@@ -47,6 +47,34 @@ DEBUG = False
         #finally:
             #post_ssh()
     #return new_func
+    
+def delay_generator():
+    delay = 5.0
+    while delay<60.0:
+        yield delay
+        delay *= 2.0
+    while True:
+        yield delay
+    
+def retry(num_retries):
+    def retry_decorator(f):
+        def new_func(*args, **kwargs):
+            num = num_retries
+            gen = delay_generator()
+            while True:
+                try:
+                    return f(*args, **kwargs)               # exits on success
+                except Exception, E:
+                    if num:
+                        delay = gen.next()
+                        print "WARNING: retry-function",f,"raised exception",E,"... waiting",delay,"seconds and retrying",num,"more times..."
+                        num -= 1
+                    else:
+                        raise                               # out of retries... fail
+        return new_func
+    return retry_decorator
+                
+                
 
 class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
     """This is the resource that connects to the ssh backends"""
@@ -62,6 +90,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
     
     #@lock
+    @retry(2)
     def mkdir(self, host, username, path, yabiusername=None, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
@@ -97,6 +126,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         return mkdir_data
         
     #@lock
+    @retry(2)
     def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
@@ -132,6 +162,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         return rm_data
     
     #@lock
+    @retry(2)
     def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
