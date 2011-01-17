@@ -335,7 +335,7 @@ def AdminBackoffSchedule():
     while delay<1000.0:
         yield delay
         delay*=2
-    while True:
+    while True:                             # retry forever
         yield delay
         
 def RetryCall(call, *args, **kwargs):
