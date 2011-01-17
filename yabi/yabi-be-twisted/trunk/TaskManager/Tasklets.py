@@ -70,16 +70,19 @@ class Tasklets(object):
             if f.startswith(self.TASK_FILENAME_PREFIX):
                 id = int(f[len(self.TASK_FILENAME_PREFIX):])
                 path = os.path.join(directory,f)
-                task = self.load_task(path)
-                os.unlink(path)
+                try:
+                    task = self.load_task(path)
+                    os.unlink(path)
                 
-                # lets try and start the task up
-                runner = stackless.tasklet(task.run)
-                runner.setup()
-                runner.run()
-                
-                self.tasks[id]=task
-                
+                    # lets try and start the task up
+                    runner = stackless.tasklet(task.run)
+                    runner.setup()
+                    runner.run()
+                    
+                    self.tasks[id]=task
+                except EOFError, eofe:
+                    print "WARNING: damaged task file: %s"%path
+                    
                 #print "task",task,"loaded"
            
     def debug(self):
