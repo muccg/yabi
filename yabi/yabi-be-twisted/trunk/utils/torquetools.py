@@ -145,7 +145,13 @@ def qsub(jobname, command, user="yabi", workingdir="/home/yabi", stdout="STDOUT.
         if pp.exitcode!=0:
             print "QSUB ERROR CODE:",pp.exitcode
             
-            if "Maximum number of jobs already in queue" in pp.err:
+            # deal with qstat failures
+            if pp.exitcode==171 and "Invalid credential" in pp.err:
+                print "Invalid credential temporary error"
+                # backoff
+                sleep(20.0)
+                
+            elif "Maximum number of jobs already in queue" in pp.err:
                 # backoff
                 try:
                     delay = delays.next()

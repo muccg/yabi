@@ -70,10 +70,13 @@ class TorqueConnector(ExecConnector):
     #def resume(self,yabiusername, eprfile, scheme, username, host, **creds):
         # send an OK message, but leave the stream open
         client_stream = stream.ProducerStream()
+        
+        try:
+            username = self.get_running(jobid)['username']
+        except KeyError, ke:
+            channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = "No such jobid resumable: %s"%jobid ))
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
 
-        username = self.get_running(jobid)['username']
-        
         self.main_loop( client_stream, username, jobid )
         
         # delete finished job
