@@ -3,6 +3,10 @@
 # WSGI bootstrapper for django
 import os
 
+# this is to avoid a python bug (the time module isn't thread-safe)
+# see CCG Trac ticket #1674
+import time
+
 # where are we installed
 projectdir=os.path.dirname(__file__)            # PROJECTDIR/nutrition
 parentdir=os.path.dirname(projectdir)           # PROJECTDIR/
