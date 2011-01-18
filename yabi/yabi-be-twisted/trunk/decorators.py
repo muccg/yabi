@@ -54,4 +54,19 @@ def lock(maximum):
         return new_func
     return lock_decorator
     
+def call_count(f):
+    if not hasattr(f,'_CONNECTION_COUNT'):
+        f._CONNECTION_COUNT = 0
+    def new_func(*args, **kwargs):
+        f._CONNECTION_COUNT += 1
+        print "function",f,f.__name__,"has",f._CONNECTION_COUNT,"present callees"
+        try:
+            return f(*args, **kwargs)
+        finally:
+            # post lock
+            f._CONNECTION_COUNT -= 1
+    return new_func
+                
+        
+    
     
