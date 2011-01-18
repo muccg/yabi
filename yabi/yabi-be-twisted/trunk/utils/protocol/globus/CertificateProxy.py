@@ -19,8 +19,11 @@ from conf import config
 
 import stackless
 
+DEBUG = False
+
 GLOBUS_TIME_FORMAT = "%a %b %d %H:%M:%S %Y"
-DEFAULT_CERTIFICATE_EXPIRY_MINUTES = 1                          # 1 minute proxy
+DEFAULT_CERTIFICATE_EXPIRY_MINUTES = 5                          # 5 minute proxy
+EXPIRY_OVERLAP_SECONDS = 60                                              # if a proxy is valid for this many seconds more, consider it invalid
 
 def _decode_time(timestring):
     """turn 'Tue Jun  9 04:02:41 2009' into a unix timestamp"""
@@ -112,7 +115,7 @@ class CertificateProxy(object):
         fstat = os.stat(filename)
         ctime = fstat[stat.ST_CTIME]
         
-        return time.time()-ctime < self.CERTIFICATE_EXPIRY_SECONDS
+        return time.time()-ctime < (self.CERTIFICATE_EXPIRY_SECONDS - EXPIRY_OVERLAP_SECONDS)
 
     def _make_cert_storage(self, directory=None):
         """makes a directory for storing the certificates in"""
@@ -146,7 +149,8 @@ class CertificateProxy(object):
             # get first line
             res = [X.split(':',1)[1] for X in res if X.startswith('Your proxy is valid until:')][0]
             
-            print "RES is",res
+            if DEBUG:
+                print "RES is",res
             return _decode_time(res.strip())
             
         # file locations
