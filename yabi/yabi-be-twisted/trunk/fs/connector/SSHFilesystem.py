@@ -49,7 +49,7 @@ DEBUG = False
     #return new_func
     
 def delay_generator():
-    delay = 5.0
+    delay = 10.0
     while delay<60.0:
         yield delay
         delay *= 2.0
@@ -90,7 +90,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
     
     #@lock
-    @retry(2)
+    @retry(3)
     def mkdir(self, host, username, path, yabiusername=None, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
@@ -126,7 +126,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         return mkdir_data
         
     #@lock
-    @retry(2)
+    @retry(3)
     def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
@@ -162,7 +162,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         return rm_data
     
     #@lock
-    @retry(2)
+    @retry(3)
     def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
