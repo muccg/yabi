@@ -87,7 +87,7 @@ class FileListResource(resource.PostableResource):
                 client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
                 #print "POST CALLBACK"
             except Exception, e:
-                client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
+                client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(e)))
             
         tasklet = stackless.tasklet(do_list)
         tasklet.setup()
