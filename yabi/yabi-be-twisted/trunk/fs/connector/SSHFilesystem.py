@@ -48,33 +48,7 @@ DEBUG = False
             #post_ssh()
     #return new_func
     
-def delay_generator():
-    delay = 10.0
-    while delay<60.0:
-        yield delay
-        delay *= 2.0
-    while True:
-        yield delay
-    
-def retry(num_retries):
-    def retry_decorator(f):
-        def new_func(*args, **kwargs):
-            num = num_retries
-            gen = delay_generator()
-            while True:
-                try:
-                    return f(*args, **kwargs)               # exits on success
-                except Exception, E:
-                    if num:
-                        delay = gen.next()
-                        print "WARNING: retry-function",f,"raised exception",E,"... waiting",delay,"seconds and retrying",num,"more times..."
-                        num -= 1
-                    else:
-                        raise                               # out of retries... fail
-        return new_func
-    return retry_decorator
-                
-                
+from decorators import retry
 
 class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
     """This is the resource that connects to the ssh backends"""
