@@ -11,14 +11,14 @@ def default_delay_generator():
     while True:
         yield delay
     
-def retry(num_retries = DEFAULT_FUNCTION_RETRY, delay = None):
+def retry(num_retries = DEFAULT_FUNCTION_RETRY, delay_func = None):
     def retry_decorator(f):
         def new_func(*args, **kwargs):
             num = num_retries
-            if delay:
-                gen = delay()
+            if delay_func:
+                gen = delay_func()
             else:
-                gen = delay_generator()
+                gen = default_delay_generator()
             while True:
                 try:
                     return f(*args, **kwargs)               # exits on success
