@@ -34,6 +34,8 @@ class FileListResource(resource.PostableResource):
         return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be GET\n")
 
     def handle_list(self, request):
+        print "HANDLE_LIST",request,dir(request)
+        
         if "uri" not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided\n")
 

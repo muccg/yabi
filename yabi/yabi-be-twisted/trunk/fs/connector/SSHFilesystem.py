@@ -24,6 +24,7 @@ SCHEMA = "scp"
 
 DEBUG = False
 
+
 #MAX_SSH_CONNECTIONS = 128
 #SSH_CONNECTION_COUNT = 0
 
@@ -49,6 +50,7 @@ DEBUG = False
     #return new_func
     
 from decorators import retry, call_count
+from LockQueue import LockQueue
 
 class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
     """This is the resource that connects to the ssh backends"""
