@@ -121,7 +121,10 @@ def proxy(request, url, base):
 @authentication_required
 def adminproxy(request, url):
     logger.debug('')
-    return proxy(request, quote(url), request.user.get_profile().appliance.url)
+    try:
+        return proxy(request, quote(url), request.user.get_profile().appliance.url)
+    except ObjectDoesNotExist:
+        return render_page("errors/403.html", request, response=HttpResponseForbidden())
 
 @authentication_required
 def adminproxy_cache(request, url):
@@ -141,6 +144,13 @@ class LoginForm(forms.Form):
 def render_page(template, request, response=None, **kwargs):
     if not response:
         response = HttpResponse()
+
+    # Check if the user has a profile; if not, nothing's going to work anyway,
+    # so we might as well fail more spectacularly.
+    try:
+        request.user.get_profile()
+    except ObjectDoesNotExist:
+        return logout(request)
 
     # Check for the debug cookie or GET variable.
     debug = False
@@ -178,8 +188,11 @@ def jobs(request):
 
 @login_required
 def account(request):
-    if request.user.get_profile().has_account_tab():
-        return render_page("account.html", request)
+    try:
+        if request.user.get_profile().has_account_tab():
+            return render_page("account.html", request)
+    except ObjectDoesNotExist:
+        pass
 
     return render_page("errors/403.html", request, response=HttpResponseForbidden())
 
@@ -284,8 +297,11 @@ def wslogout(request):
 
 @authentication_required
 def credentialproxy(request, url):
-    if request.user.get_profile().credential_access:
-        return adminproxy(request, url)
+    try:
+        if request.user.get_profile().credential_access:
+            return adminproxy(request, url)
+    except ObjectDoesNotExist:
+        pass
 
     return JsonMessageResponseForbidden("You do not have access to this Web service")
 
@@ -294,8 +310,11 @@ def password(request):
     if request.method != "POST":
         return JsonMessageResponseNotAllowed(["POST"])
 
-    profile = request.user.get_profile()
-    if not profile.user_option_access:
+    try:
+        profile = request.user.get_profile()
+        if not profile.user_option_access:
+            return JsonMessageResponseForbidden("You do not have access to this Web service")
+    except ObjectDoesNotExist:
         return JsonMessageResponseForbidden("You do not have access to this Web service")
 
     required = ("currentPassword", "newPassword", "confirmPassword")
@@ -545,7 +564,10 @@ def preview_key(uri):
 def upload_file(request, user):
     logger.debug('')
     
-    appliance = user.get_profile().appliance
+    try:
+        appliance = user.get_profile().appliance
+    except ObjectDoesNotExist:
+        return JsonMessageResponseForbidden("You do not have access to this Web service")
    
     upload_path = appliance.path
     while len(upload_path) and upload_path[-1]=='/':
