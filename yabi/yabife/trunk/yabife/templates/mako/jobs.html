@@ -6,7 +6,7 @@
     <link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/javascript/yui-2.4.1/container/assets/container-core.css')}" />
     <link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/jobs.css?20101220')}" />
 
-    <script type="text/javascript" src="${h.url('/static/javascript/widget/radiolist.js?20101201')}"></script>
+    <script type="text/javascript" src="${h.url('/static/javascript/widget/radiolist.js?20110119')}"></script>
 
     <script type="text/javascript">
         YAHOO.util.Event.onDOMReady(initWorkflowListing);
@@ -150,15 +150,17 @@
                 // Make sure the selector buttons are actually visible.
                 selector.style.display = "block";
 
-                // Reset the default pane to a known state.
-                list.selectItem(outputs);
-
                 // Remove any preview pane that might be open.
                 this.workflow.fileOutputsSelector.purgePreviewElements();
 
+                /* Reset the default pane to a known state: either the current
+                 * pane, or the file outputs if that's not set for some reason. */
+                var item = list.getSelectedItem() || outputs;
+                list.selectItem(item);
+
                 /* The event isn't resent if the item is already selected, but
                  * we want the height calculation to be redone anyway. */
-                outputs.sendEvent("select");
+                item.sendEvent("select");
             };
 
             var originalJobDeselect = YabiJob.prototype.deselectJob;

@@ -461,7 +461,6 @@ YabiWorkflow.prototype.selectJob = function(object) {
         this.selectedJob = object;
         
         if (!this.editable && !YAHOO.lang.isUndefined(this.payload.jobs[selectedIndex].stageout)) {
-            this.fileOutputsEl.style.display = "block";
             this.fileOutputsSelector.updateBrowser(new YabiSimpleFileValue([this.payload.jobs[selectedIndex].stageout], ''));
         }
 

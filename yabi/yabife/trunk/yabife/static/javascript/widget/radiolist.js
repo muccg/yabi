@@ -67,6 +67,19 @@ RadioList.prototype.destroy = function () {
 };
 
 /**
+ * Returns the currently selected list item.
+ *
+ * @return {RadioListItem}
+ */
+RadioList.prototype.getSelectedItem = function () {
+    for (var i = 0; i < this.items.length; i++) {
+        if (this.items[i].selected) {
+            return this.items[i];
+        }
+    }
+};
+
+/**
  * Selects the given item. Note that the "change" event is only sent if the
  * item given isn't already selected.
  *
