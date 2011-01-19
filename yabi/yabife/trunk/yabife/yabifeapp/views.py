@@ -145,13 +145,6 @@ def render_page(template, request, response=None, **kwargs):
     if not response:
         response = HttpResponse()
 
-    # Check if the user has a profile; if not, nothing's going to work anyway,
-    # so we might as well fail more spectacularly.
-    try:
-        request.user.get_profile()
-    except ObjectDoesNotExist:
-        return logout(request)
-
     # Check for the debug cookie or GET variable.
     debug = False
 
@@ -176,14 +169,35 @@ def render_page(template, request, response=None, **kwargs):
 
 @login_required
 def files(request):
+    # Check if the user has a profile; if not, nothing's going to work anyway,
+    # so we might as well fail more spectacularly.
+    try:
+        request.user.get_profile()
+    except ObjectDoesNotExist:
+        return logout(request)
+
     return render_page("files.html", request)
 
 @login_required
 def design(request, id=None):
+    # Check if the user has a profile; if not, nothing's going to work anyway,
+    # so we might as well fail more spectacularly.
+    try:
+        request.user.get_profile()
+    except ObjectDoesNotExist:
+        return logout(request)
+
     return render_page("design.html", request, reuseId=id)
     
 @login_required
 def jobs(request):
+    # Check if the user has a profile; if not, nothing's going to work anyway,
+    # so we might as well fail more spectacularly.
+    try:
+        request.user.get_profile()
+    except ObjectDoesNotExist:
+        return logout(request)
+
     return render_page("jobs.html", request)
 
 @login_required
