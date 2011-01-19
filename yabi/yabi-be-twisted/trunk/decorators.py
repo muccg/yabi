@@ -4,12 +4,10 @@ import stackless
 DEFAULT_FUNCTION_RETRY = 3
 
 def default_delay_generator():
-    delay = 10.0
-    while delay<60.0:
-        yield delay
-        delay *= 2.0
+    delay = 5.0
     while True:
         yield delay
+        delay *= 5.0
     
 def retry(num_retries = DEFAULT_FUNCTION_RETRY, delay_func = None):
     def retry_decorator(f):
