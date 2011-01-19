@@ -1,5 +1,7 @@
 <%inherit file="base.html"/>
 <%def name="header()">
+    <link rel="stylesheet" href="${h.url('/static/css/login.css?20110119')}" />
+    <script type="text/javascript" src="${h.url('/static/javascript/login.js?20110119')}"></script>
 </%def>
 
 <%def name="body()">
@@ -9,13 +11,48 @@
 <br/>
 
 <div style="position:relative;">
-<form enctype="multipart/form-data" method="post" action="${ h.url("/login") }">
-<div class="loginForm">
-${form.as_p()}
-<br/>
-</div>
-<input type="submit" value="Log In" class="loginFormButton"/>
-</form>
+    <noscript>
+        YABI requires JavaScript to be enabled. Please check your browser
+        settings and <a href="${h.url("/login")}">try again</a>.
+    </noscript>
+
+    <div id="requirements-failed">
+        Your browser does not support all of the features required for YABI to
+        function.
+
+        <span id="requirements-failed-firefox">
+            Please upgrade to Firefox 3.5 or later.
+        </span>
+
+        <span id="requirements-failed-ie">
+            Please upgrade to Internet Explorer 8 or later.
+        </span>
+
+        <span id="requirements-failed-chrome">
+            Please upgrade to Chrome 7 or later.
+        </span>
+
+        <span id="requirements-failed-safari">
+            Please upgrade to Safari 3.2 or later.
+        </span>
+
+        <span id="requirements-failed-opera">
+            Please upgrade to Opera 11 or later.
+        </span>
+
+        <span id="requirements-failed-generic">
+            Please upgrade to a supported browser, such as Firefox, Chrome or Safari.
+        </span>
+    </div>
+
+    <form enctype="multipart/form-data" method="post" action="${ h.url("/login") }">
+        <div class="loginForm">
+            ${form.as_p()}
+            <br/>
+        </div>
+
+        <input type="submit" value="Log In" class="loginFormButton"/>
+    </form>
 <br/><br/> 
 % for key, error_list in form.errors.iteritems():
     % for err in error_list:

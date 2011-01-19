@@ -1,0 +1,7 @@
+form {
+    display: none;
+}
+
+#requirements-failed, #requirements-failed span {
+    display: none;
+}
