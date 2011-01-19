@@ -18,7 +18,7 @@ class LockQueue(object):
         
         level is how high on the queue our lock we need to get before the lock being released
         """
-        level = level if level in not None else self.default_level
+        level = level if level is not None else self.default_level
         
         # get caller frame as our tag
         caller = inspect.currentframe().f_back
