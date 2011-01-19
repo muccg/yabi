@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from fabric.api import env, local
 from ccgfab.base import *
 import os
@@ -43,7 +44,7 @@ def backend():
     """
     run the twisted backend on the terminal without forking
     """
-    print local("/usr/local/stackless/bin/twistd -noy server.py", capture=False)
+    print local("/usr/local/stackless/bin/twistd -noy server.py --logfile=-", capture=False)
 
 def start():
     """

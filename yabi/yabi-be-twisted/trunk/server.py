@@ -8,7 +8,6 @@ config.sanitise()
 
 # sanity check that temp directory is set
 assert config.config['backend'].has_key('temp'), "[backend] section of yabi.conf is missing 'temp' directory setting"
-
 logfile = config.config['backend']['logfile']
 
 from urlparse import urlparse
@@ -39,15 +38,19 @@ application = service.Application('yabi-be-twisted')
 from twisted.python.log import ILogObserver, FileLogObserver
 from twisted.python.logfile import DailyLogFile
 
-path, fname = [ os.path.expanduser(X) for X in os.path.split(logfile)]
-logfileobj = DailyLogFile(fname, path)
-application.setComponent(ILogObserver, FileLogObserver(logfileobj).emit)
+LOG_STDOUT = "--logfile=-" in sys.argv or "-l-" in sys.argv
+
+if not LOG_STDOUT:
+    path, fname = [ os.path.expanduser(X) for X in os.path.split(logfile)]
+    logfileobj = DailyLogFile(fname, path)
+    application.setComponent(ILogObserver, FileLogObserver(logfileobj).emit)
 
 # Create the resource we will be serving
 base = BaseResource()
 
 # Setup default common access logging
 res = log.LogWrapperResource(base)
+
 log.DefaultCommonAccessLoggingObserver().start()
 
 # Create the site and application objects
