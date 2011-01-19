@@ -496,7 +496,7 @@ YabiJob.prototype.renderJobStatusResponse = function(obj) {
         this.statusListEl.removeChild(this.statusListEl.firstChild);
     }
 
-    if (task.remote_info) {
+    if (task && task.remote_info) {
         var keys = [];
 
         for (var key in task.remote_info) {
