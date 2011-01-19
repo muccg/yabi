@@ -20,6 +20,8 @@ import django.core.urlresolvers as resolvers
 <link rel="stylesheet" type="text/css" href="${self.block_stylesheet_rtl()}" />
 % endif
 
+<script type="text/javascript">window.__admin_media_prefix__ = "${ escapejs( admin.admin_media_prefix() ) }";</script>
+
 ${self.block_extrastyle()}<%def name="block_extrastyle()"></%def>
 ${self.block_extrahead()}<%def name="block_extrahead()"></%def>
 ${self.block_blockbots()}<%def name="block_blockbots()"><meta name="robots" content="NONE,NOARCHIVE" /></%def>
