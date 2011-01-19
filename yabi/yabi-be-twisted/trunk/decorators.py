@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import stackless
+from utils.stacklesstools import sleep
 
 DEFAULT_FUNCTION_RETRY = 3
 
@@ -24,6 +25,7 @@ def retry(num_retries = DEFAULT_FUNCTION_RETRY, delay_func = None):
                     if num:
                         delay = gen.next()
                         print "WARNING: retry-function",f,"raised exception",E,"... waiting",delay,"seconds and retrying",num,"more times..."
+                        sleep(delay)
                         num -= 1
                     else:
                         raise                               # out of retries... fail
