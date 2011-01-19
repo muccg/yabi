@@ -2,6 +2,7 @@
 import mimetypes
 import uuid
 import os
+import re
 
 from datetime import datetime, timedelta
 from urllib import quote
@@ -330,12 +331,34 @@ def submitworkflow(request):
     workflow_json = request.POST["workflowjson"]
     workflow_dict = json.loads(workflow_json)
     user = User.objects.get(name=yabiusername)
+
+    # Check if the user already has a workflow with the same name, and if so,
+    # munge the name appropriately.
+    if EngineWorkflow.objects.filter(user=user, name=workflow_dict["name"]).count():
+        # See if the name has already been munged.
+        match = re.search(r"^(.*) \(([0-9]+)\)$", workflow_dict["name"])
+        if match:
+            base = match.group(1)
+            val = int(match.group(2))
+        else:
+            base = workflow_dict["name"]
+            val = 1
+
+        used_names = [wf.name for wf in EngineWorkflow.objects.filter(user=user, name__startswith=base)]
+        used_names = dict(zip(used_names, [None] * len(used_names)))
+
+        munged_name = "%s (%d)" % (base, val)
+        while munged_name in used_names:
+            val += 1
+            munged_name = "%s (%d)" % (base, val)
+        
+        workflow_dict["name"] = munged_name
     
     workflow = EngineWorkflow(name=workflow_dict["name"], user=user)
     workflow.save()
 
     # put the workflow in the store
-    workflow.json = workflow_json
+    workflow.json = json.dumps(workflow_dict)
     
     # trigger a build via celery
     build.delay(workflow_id=workflow.id)
