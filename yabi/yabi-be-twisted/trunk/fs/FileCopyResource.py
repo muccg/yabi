@@ -129,6 +129,9 @@ class FileCopyResource(resource.PostableResource):
         src_retry_kws = sbend.NonFatalKeywords
         dst_retry_kws = dbend.NonFatalKeywords
         
+        src_lock = sbend.lockqueue.lock() if hasattr(sbend,"lockqueue") else None
+        dst_lock = dbend.lockqueue.lock() if hasattr(dbend,"lockqueue") else None
+        
         #print "src_hostname",src_hostname
         #print "src_username",src_username
         #print "src_path",src_path, src_filename
@@ -144,6 +147,10 @@ class FileCopyResource(resource.PostableResource):
                 writeproto, fifo = dbend.GetWriteFifo(dst_hostname, dst_username, dst_path, dst_filename,yabiusername=yabiusername,creds=creds['dst'] if 'dst' in creds else {})
                 readproto, fifo2 = sbend.GetReadFifo(src_hostname, src_username, src_path, src_filename, fifo,yabiusername=yabiusername,creds=creds['src'] if 'src' in creds else {})
             except BlockingException, be:
+                if src_lock:
+                    src_lock.unlock()
+                if dst_lock:
+                    dst_lock.unlock()
                 channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(be)))
                 return
             
@@ -176,7 +183,7 @@ class FileCopyResource(resource.PostableResource):
                     print "WFW",readproto.exitcode,writeproto.exitcode
                 while writeproto.exitcode == None:
                     stackless.schedule()
-                    
+                
                 # did write succeed?
                 if writeproto.exitcode == 0:
                     if DEBUG:
@@ -202,6 +209,11 @@ class FileCopyResource(resource.PostableResource):
                 msg = ("Copy failed:\n\nRead process: %s\n"+readproto.err+"\n\nWrite process: %s\n"+writeproto.err+"\n")%(rexit,wexit)
                 #print "MSG",msg
                 channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, msg))
+                
+            if src_lock:
+                src_lock.unlock()
+            if dst_lock:
+                dst_lock.unlock()
             
         client_channel = defer.Deferred()
         

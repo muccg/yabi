@@ -44,7 +44,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         #instantiate a lock queue for this backend.
         self.lockqueue = LockQueue( MAX_SSH_CONNECTIONS )
-    
+        
     #@lock
     @retry(3)
     @call_count
@@ -52,7 +52,8 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         # acquire our queue lock
-        lock = self.lockqueue.lock()
+        if priority:
+            lock = self.lockqueue.lock()
         
         # If we don't have creds, get them
         if not creds:
@@ -67,7 +68,8 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         while not pp.isDone():
             stackless.schedule()
             
-        self.lockqueue.unlock(lock)
+        if priority:
+            self.lockqueue.unlock(lock)
             
         err, mkdir_data = pp.err, pp.out
         
@@ -94,7 +96,8 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         # acquire our queue lock
-        lock = self.lockqueue.lock()
+        if priority:
+            lock = self.lockqueue.lock()
         
         # If we don't have creds, get them
         if not creds:
@@ -109,7 +112,8 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         while not pp.isDone():
             stackless.schedule()
         
-        self.lockqueue.unlock(lock)
+        if priority:
+            self.lockqueue.unlock(lock)
             
         err, rm_data = pp.err, pp.out
         
@@ -139,7 +143,8 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             print "SSHFilesystem::ls(",host,username,path,yabiusername,recurse,culldots,creds,priority,")"
         
         # acquire our queue lock
-        lock = self.lockqueue.lock()
+        if priority:
+            lock = self.lockqueue.lock()
         
         # If we don't have creds, get them
         if not creds:
@@ -155,7 +160,8 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             stackless.schedule()
             
         # release our queue lock
-        self.lockqueue.unlock(lock)
+        if priority:
+            self.lockqueue.unlock(lock)
             
         err, out = pp.err, pp.out
         
