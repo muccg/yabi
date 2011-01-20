@@ -38,8 +38,6 @@ class LockQueue(object):
                 
             print "Releasing",caller
                 
-        
-                
         return caller
     
     def unlock(self, tag):

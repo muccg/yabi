@@ -24,7 +24,7 @@ SCHEMA = "scp"
 
 DEBUG = False
 
-MAX_SSH_CONNECTIONS = 10
+MAX_SSH_CONNECTIONS = 3
     
 from decorators import retry, call_count
 from LockQueue import LockQueue
