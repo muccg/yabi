@@ -48,7 +48,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
     #@lock
     @retry(3)
     @call_count
-    def mkdir(self, host, username, path, yabiusername=None, creds={}):
+    def mkdir(self, host, username, path, yabiusername=None, creds={},priority=1):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         # acquire our queue lock
@@ -90,7 +90,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
     #@lock
     @retry(3)
     @call_count
-    def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}):
+    def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}, priority=1):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         # acquire our queue lock

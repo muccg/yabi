@@ -37,7 +37,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         """return the full url for out path"""
         return "%s://%s%s"%(self.copymode,server,remotepath) + path
     
-    def mkdir(self, host, username, path, yabiusername=None, creds={}):
+    def mkdir(self, host, username, path, yabiusername=None, creds={}, priority=1):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         # make sure we are authed
@@ -69,7 +69,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         
         return mkdir_data
         
-    def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}):
+    def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}, priority=1):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         # make sure we are authed
         if creds:
@@ -100,7 +100,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         
         return rm_data
     
-    def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}):
+    def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}, priority=1):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         if DEBUG:
