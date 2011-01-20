@@ -211,9 +211,9 @@ class FileCopyResource(resource.PostableResource):
                 channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, msg))
                 
             if src_lock:
-                src_lock.unlock()
+                sbend.lockqueue.unlock(src_lock)
             if dst_lock:
-                dst_lock.unlock()
+                dbend.lockqueue.unlock(dst_lock)
             
         client_channel = defer.Deferred()
         
