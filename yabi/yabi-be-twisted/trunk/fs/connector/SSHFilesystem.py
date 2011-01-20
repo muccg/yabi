@@ -45,6 +45,12 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         #instantiate a lock queue for this backend.
         self.lockqueue = LockQueue( MAX_SSH_CONNECTIONS )
         
+    def lock(self,*args,**kwargs):
+        return self.lockqueue.lock(prio,level)
+        
+    def unlock(self, tag):
+        return self.lockqueue.unlock(tag)
+        
     #@lock
     @retry(3)
     @call_count

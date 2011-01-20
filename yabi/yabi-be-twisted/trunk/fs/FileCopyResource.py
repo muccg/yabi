@@ -129,8 +129,11 @@ class FileCopyResource(resource.PostableResource):
         src_retry_kws = sbend.NonFatalKeywords
         dst_retry_kws = dbend.NonFatalKeywords
         
-        src_lock = sbend.lockqueue.lock() if hasattr(sbend,"lockqueue") else None
-        dst_lock = dbend.lockqueue.lock() if hasattr(dbend,"lockqueue") else None
+        # if source and destination are the same, only make one lock on this backend
+        if sbend == dbend:
+            locks = [sbend.lock(),None]
+        else:
+            locks = [sbend.lock(),dbend.lock()]
         
         #print "src_hostname",src_hostname
         #print "src_username",src_username
@@ -147,10 +150,9 @@ class FileCopyResource(resource.PostableResource):
                 writeproto, fifo = dbend.GetWriteFifo(dst_hostname, dst_username, dst_path, dst_filename,yabiusername=yabiusername,creds=creds['dst'] if 'dst' in creds else {})
                 readproto, fifo2 = sbend.GetReadFifo(src_hostname, src_username, src_path, src_filename, fifo,yabiusername=yabiusername,creds=creds['src'] if 'src' in creds else {})
             except BlockingException, be:
-                if src_lock:
-                    src_lock.unlock()
-                if dst_lock:
-                    dst_lock.unlock()
+                sbend.unlock(locks[0])
+                if locks[1]:
+                    dbend.unlock(locks[1])
                 channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(be)))
                 return
             
@@ -210,10 +212,9 @@ class FileCopyResource(resource.PostableResource):
                 #print "MSG",msg
                 channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, msg))
                 
-            if src_lock:
-                sbend.lockqueue.unlock(src_lock)
-            if dst_lock:
-                dbend.lockqueue.unlock(dst_lock)
+            sbend.unlock(locks[0])
+            if locks[1]:
+                dbend.unlock(locks[1])
             
         client_channel = defer.Deferred()
         

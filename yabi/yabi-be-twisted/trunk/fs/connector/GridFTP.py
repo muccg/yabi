@@ -33,6 +33,12 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         # we need to store a number of certificateproxies
         self.CreateAuthProxy()
     
+    def lock(self,*args,**kwargs):
+        return
+        
+    def unlock(self, tag):
+        return
+        
     def _make_remote_url(self, server, remotepath, path=""):
         """return the full url for out path"""
         return "%s://%s%s"%(self.copymode,server,remotepath) + path
