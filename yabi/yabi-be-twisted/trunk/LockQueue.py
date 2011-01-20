@@ -24,7 +24,7 @@ class LockQueue(object):
         
         # get caller frame as our tag. TODO: weakref this
         caller = inspect.currentframe().f_back
-        assert caller not in self.priomap.keys()
+        #assert caller not in self.priomap.keys()
         
         #print "lock tag",tag,"appending to queue of length",len(self.queue)
         
