@@ -46,7 +46,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         self.lockqueue = LockQueue( MAX_SSH_CONNECTIONS )
         
     def lock(self,*args,**kwargs):
-        return self.lockqueue.lock(prio,level)
+        return self.lockqueue.lock(*args, **kwargs)
         
     def unlock(self, tag):
         return self.lockqueue.unlock(tag)
