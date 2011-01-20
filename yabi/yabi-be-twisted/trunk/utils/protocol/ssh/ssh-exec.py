@@ -73,7 +73,7 @@ else:
     else:
         ssh_command = extra_args+["%s@%s"%(user,host),remote_command]
 
-eprint("SSH Command: %s"%(ssh_command))
+#eprint("SSH Command: %s"%(ssh_command))
 
 child = pexpect.spawn(SSH, args=ssh_command)
 child.logfile_read = sys.stdout
@@ -97,6 +97,7 @@ while res!=2:
             #eprint("waiting")
             child.wait()
         
+        eprint("Child exited unexpectedly with exit status %s"%child.exitstatus)
         sys.exit(child.exitstatus)
     
     else:
