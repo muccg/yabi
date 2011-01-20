@@ -30,8 +30,15 @@ class LockQueue(object):
         
         self._add_tag(prio,caller)
         
-        while not self._is_in_head(caller,level):
-            stackless.schedule()
+        if not self._is_in_head(caller,level):
+            print "Locking",caller
+        
+            while not self._is_in_head(caller,level):
+                stackless.schedule()
+                
+            print "Releasing",caller
+                
+        
                 
         return caller
     
