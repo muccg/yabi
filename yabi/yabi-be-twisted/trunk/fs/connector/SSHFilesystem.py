@@ -24,30 +24,7 @@ SCHEMA = "scp"
 
 DEBUG = False
 
-
-#MAX_SSH_CONNECTIONS = 128
-#SSH_CONNECTION_COUNT = 0
-
-#def pre_ssh():
-    #global SSH_CONNECTION_COUNT
-    #while SSH_CONNECTION_COUNT >= MAX_SSH_CONNECTIONS:
-        #print "WARNING: max SSH connection count reached"
-        #stackless.schedule()
-    
-    #SSH_CONNECTION_COUNT+=1
-    
-#def post_ssh():
-    #global SSH_CONNECTION_COUNT
-    #SSH_CONNECTION_COUNT-=1
-    
-#def lock(f):
-    #def new_func(*args, **kwargs):
-        #pre_ssh()
-        #try:
-            #return f(*args, **kwargs)
-        #finally:
-            #post_ssh()
-    #return new_func
+MAX_SSH_CONNECTIONS = 10
     
 from decorators import retry, call_count
 from LockQueue import LockQueue
@@ -64,12 +41,18 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         # make a path to store keys in
         configdir = config.config['backend']['certificates']
         ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
+        
+        #instantiate a lock queue for this backend.
+        self.lockqueue = LockQueue( MAX_SSH_CONNECTIONS )
     
     #@lock
     @retry(3)
     @call_count
     def mkdir(self, host, username, path, yabiusername=None, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
+        
+        # acquire our queue lock
+        lock = self.lockqueue.lock()
         
         # If we don't have creds, get them
         if not creds:
@@ -83,6 +66,8 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         while not pp.isDone():
             stackless.schedule()
+            
+        self.lockqueue.unlock(lock)
             
         err, mkdir_data = pp.err, pp.out
         
@@ -108,6 +93,9 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
     def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
+        # acquire our queue lock
+        lock = self.lockqueue.lock()
+        
         # If we don't have creds, get them
         if not creds:
             creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
@@ -120,6 +108,8 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         while not pp.isDone():
             stackless.schedule()
+        
+        self.lockqueue.unlock(lock)
             
         err, rm_data = pp.err, pp.out
         
@@ -142,11 +132,14 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
     #@lock
     @retry(3)
     @call_count
-    def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}):
+    def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}, priority=1):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         if DEBUG:
-            print "SSHFilesystem::ls(",host,username,path,yabiusername,recurse,culldots,creds,")"
+            print "SSHFilesystem::ls(",host,username,path,yabiusername,recurse,culldots,creds,priority,")"
+        
+        # acquire our queue lock
+        lock = self.lockqueue.lock()
         
         # If we don't have creds, get them
         if not creds:
@@ -160,6 +153,9 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         while not pp.isDone():
             stackless.schedule()
+            
+        # release our queue lock
+        self.lockqueue.unlock(lock)
             
         err, out = pp.err, pp.out
         

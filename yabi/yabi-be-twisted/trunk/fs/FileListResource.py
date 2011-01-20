@@ -34,7 +34,7 @@ class FileListResource(resource.PostableResource):
         return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be GET\n")
 
     def handle_list(self, request):
-        print "HANDLE_LIST",request,dir(request)
+        priority = 1
         
         if "uri" not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided\n")
@@ -80,7 +80,7 @@ class FileListResource(resource.PostableResource):
             if DEBUG:
                 print "dolist() hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
             try:
-                lister=bend.ls(hostname,path=path, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds)
+                lister=bend.ls(hostname,path=path, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds, priority=priority)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream=json.dumps(lister)))
             except BlockingException, be:
                 client_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(be)))
