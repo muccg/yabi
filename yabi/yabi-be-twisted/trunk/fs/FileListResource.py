@@ -34,7 +34,7 @@ class FileListResource(resource.PostableResource):
         return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be GET\n")
 
     def handle_list(self, request):
-        priority = 1
+        priority = 0
         
         if "uri" not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided\n")
@@ -84,10 +84,10 @@ class FileListResource(resource.PostableResource):
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream=json.dumps(lister)))
             except BlockingException, be:
                 client_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(be)))
-            except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
-                #print "IP"
+            except InvalidPath, exception:
+                client_channel.callback(http.Response( responsecode.NOT_FOUND, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
+            except (PermissionDenied,NoCredentials,ProxyInitError), exception:
                 client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
-                #print "POST CALLBACK"
             except Exception, e:
                 client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(e)))
             

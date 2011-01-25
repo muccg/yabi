@@ -86,7 +86,7 @@ while res!=2:
         child.sendline(password)
     elif res==2:
         # password failure
-        eprint("Access denied")
+        eprint("Permission denied")
         sys.exit(1)
         
     elif res==3:
@@ -97,7 +97,10 @@ while res!=2:
             #eprint("waiting")
             child.wait()
         
-        eprint("Child exited unexpectedly with exit status %s"%child.exitstatus)
+        if child.exitstatus==255:
+            eprint("SSH transport failed")
+        else:
+            eprint("Child exited unexpectedly with exit status %s"%child.exitstatus)
         sys.exit(child.exitstatus)
     
     else:

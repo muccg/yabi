@@ -24,7 +24,7 @@ SCHEMA = "scp"
 
 DEBUG = False
 
-MAX_SSH_CONNECTIONS = 3
+MAX_SSH_CONNECTIONS = 0                                     # zero is unlimited
     
 from decorators import retry, call_count
 from LockQueue import LockQueue
@@ -52,9 +52,9 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         return self.lockqueue.unlock(tag)
         
     #@lock
-    @retry(3)
+    @retry(3,(InvalidPath,PermissionDenied))
     @call_count
-    def mkdir(self, host, username, path, yabiusername=None, creds={},priority=1):
+    def mkdir(self, host, username, path, yabiusername=None, creds={},priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         # acquire our queue lock
@@ -96,9 +96,9 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         return mkdir_data
         
     #@lock
-    @retry(3)
+    @retry(3,(InvalidPath,PermissionDenied))
     @call_count
-    def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}, priority=1):
+    def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         # acquire our queue lock
@@ -140,9 +140,9 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         return rm_data
     
     #@lock
-    @retry(3)
+    @retry(3,(InvalidPath,PermissionDenied))
     @call_count
-    def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}, priority=1):
+    def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         if DEBUG:
@@ -175,8 +175,11 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             # error occurred
             if "Permission denied" in err:
                 raise PermissionDenied(err)
+            elif "No such file or directory" in out:
+                raise InvalidPath("No such file or directory\n")
             else:
-                raise InvalidPath(err)
+                print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
+                raise Exception(err)
         
         ls_data = parse_ls(out, culldots=culldots)
         
@@ -250,4 +253,3 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         #print "read from remote returned"
         
         return pp, fifo
-       

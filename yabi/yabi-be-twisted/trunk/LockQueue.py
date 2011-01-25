@@ -22,6 +22,9 @@ class LockQueue(object):
         """
         level = level if level is not None else self.default_level
         
+        #if not level:
+            #return
+        
         # get caller frame as our tag. TODO: weakref this
         caller = inspect.currentframe().f_back
         assert caller not in self.priomap.keys()

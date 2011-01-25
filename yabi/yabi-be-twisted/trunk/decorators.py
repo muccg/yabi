@@ -10,7 +10,11 @@ def default_delay_generator():
         yield delay
         delay *= 5.0
     
-def retry(num_retries = DEFAULT_FUNCTION_RETRY, delay_func = None):
+def retry(num_retries = DEFAULT_FUNCTION_RETRY, ignored=[], delay_func = None):
+    """num_retries is how often to retry the function.
+    ignored is a list of exception classes to ignore (allow to fall through and fail the function so it doesnt retry)
+    delay_func is a generator function to produce the delay generator
+    """
     def retry_decorator(f):
         def new_func(*args, **kwargs):
             num = num_retries
@@ -21,10 +25,12 @@ def retry(num_retries = DEFAULT_FUNCTION_RETRY, delay_func = None):
             while True:
                 try:
                     return f(*args, **kwargs)               # exits on success
-                except Exception, E:
+                except Exception, exc:
+                    if True in [isinstance(exc,E) for E in ignored]:                # is this an exception we should ignore
+                        raise                                                       # raise the exception
                     if num:
                         delay = gen.next()
-                        print "WARNING: retry-function",f,"raised exception",E,"... waiting",delay,"seconds and retrying",num,"more times..."
+                        print "WARNING: retry-function",f,"raised exception",exc,"... waiting",delay,"seconds and retrying",num,"more times..."
                         sleep(delay)
                         num -= 1
                     else:
@@ -66,7 +72,4 @@ def call_count(f):
             # post lock
             f._CONNECTION_COUNT -= 1
     return new_func
-                
-        
-    
-    
+
