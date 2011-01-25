@@ -8,7 +8,7 @@ def default_delay_generator():
     delay = 5.0
     while True:
         yield delay
-        delay *= 5.0
+        delay *= 2.0
     
 def retry(num_retries = DEFAULT_FUNCTION_RETRY, ignored=[], delay_func = None):
     """num_retries is how often to retry the function.

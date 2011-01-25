@@ -22,8 +22,8 @@ class LockQueue(object):
         """
         level = level if level is not None else self.default_level
         
-        #if not level:
-            #return
+        if not level:
+            return
         
         # get caller frame as our tag. TODO: weakref this
         caller = inspect.currentframe().f_back
@@ -46,7 +46,10 @@ class LockQueue(object):
     def unlock(self, tag):
         """unlock the queue"""
         #print "removing",tag
-        self._del_tag(tag)
+        try:
+            self._del_tag(tag)
+        except KeyError, ke:
+            pass                        # trying to unlock a tag that doesnt exist?
         #print "length now",len(self.queue)
     
     def _add_tag(self, prio, tag):

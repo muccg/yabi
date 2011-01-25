@@ -52,7 +52,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         return self.lockqueue.unlock(tag)
         
     #@lock
-    @retry(3,(InvalidPath,PermissionDenied))
+    @retry(5,(InvalidPath,PermissionDenied))
     @call_count
     def mkdir(self, host, username, path, yabiusername=None, creds={},priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
@@ -81,13 +81,13 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         if pp.exitcode!=0:
             # error occurred
-            print "SSH::mkdir exit",pp.exitcode
             if "Permission denied" in err:
-                print "SSH::mkdir permission denied"
                 raise PermissionDenied(err)
+            elif "No such file or directory" in out:
+                raise InvalidPath("No such file or directory\n")
             else:
-                print "SSH::mkdir invalid path",pp.err
-                raise InvalidPath(err)
+                print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
+                raise Exception(err)
         
         if DEBUG:
             print "mkdir_data=",mkdir_data
@@ -96,7 +96,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         return mkdir_data
         
     #@lock
-    @retry(3,(InvalidPath,PermissionDenied))
+    @retry(5,(InvalidPath,PermissionDenied))
     @call_count
     def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
@@ -125,13 +125,13 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         if pp.exitcode!=0:
             # error occurred
-            print "SSH::rm exit",pp.exitcode
             if "Permission denied" in err:
-                print "SSH::rm permission denied"
                 raise PermissionDenied(err)
+            elif "No such file or directory" in out:
+                raise InvalidPath("No such file or directory\n")
             else:
-                print "SSH::rm invalid path",pp.err
-                raise InvalidPath(err)
+                print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
+                raise Exception(err)
         
         if DEBUG:
             print "rm_data=",rm_data
@@ -140,7 +140,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         return rm_data
     
     #@lock
-    @retry(3,(InvalidPath,PermissionDenied))
+    @retry(5,(InvalidPath,PermissionDenied))
     @call_count
     def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
