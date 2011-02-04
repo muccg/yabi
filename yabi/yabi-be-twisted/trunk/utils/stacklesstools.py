@@ -332,11 +332,11 @@ def WaitForDeferredData(deferred):
 def AdminBackoffSchedule():
     """Generator that generates the various delays to wait between retries when admin fails"""
     delay = 1.0
-    while delay<1000.0:
+    while delay<300.0:                      # 5 minutes
         yield delay
         delay*=2
     while True:                             # retry forever
-        yield delay
+        yield 300.0
         
 def RetryCall(call, *args, **kwargs):
     delays = AdminBackoffSchedule()

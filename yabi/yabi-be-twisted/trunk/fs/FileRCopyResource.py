@@ -13,6 +13,8 @@ from utils.stacklesstools import GETFailure
 
 from Exceptions import BlockingException
 
+DEFAULT_RCOPY_PRIORITY = 1
+
 DEBUG = False
 
 class FileRCopyResource(resource.PostableResource):
@@ -55,6 +57,9 @@ class FileRCopyResource(resource.PostableResource):
             # source and destination
             if 'src' not in request.args or 'dst' not in request.args:
                 return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "copy must specify source 'src' and destination 'dst'\n")
+            
+            # override default priority
+            priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_RCOPY_PRIORITY
             
             src = request.args['src'][0]
             dst = request.args['dst'][0]
@@ -128,7 +133,7 @@ class FileRCopyResource(resource.PostableResource):
                             if DEBUG:
                                 print "Copy(",src_uri,",",dst_uri,")"
                             #print "Copy(",sbend+directory+"/"+file,",",dst+destpath+'/'+file,")"
-                            Copy(src_uri,dst_uri,yabiusername=yabiusername)
+                            Copy(src_uri,dst_uri,yabiusername=yabiusername,priority=priority)
                             Sleep(0.1)
                     
                     result_channel.callback(

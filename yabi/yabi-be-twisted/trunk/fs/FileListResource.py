@@ -12,6 +12,8 @@ from utils.parsers import parse_url
 
 from utils.submit_helpers import parsePOSTData
 
+DEFAULT_LIST_PRIORITY = 0                   # immediate by default
+
 DEBUG = False
 
 class FileListResource(resource.PostableResource):
@@ -34,10 +36,11 @@ class FileListResource(resource.PostableResource):
         return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be GET\n")
 
     def handle_list(self, request):
-        priority = 0
-        
         if "uri" not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided\n")
+
+        # override default priority
+        priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_LIST_PRIORITY
 
         uri = request.args['uri'][0]
         scheme, address = parse_url(uri)

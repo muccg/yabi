@@ -13,6 +13,8 @@ from utils.parsers import parse_url
 
 from utils.submit_helpers import parsePOSTData
 
+DEFAULT_COPY_PRIORITY = 1                   # not immediate by default but high priority
+
 DEBUG = False
 
 # module level storage for a summary of all the present copy jobs
@@ -79,6 +81,9 @@ class FileCopyResource(resource.PostableResource):
         self.fsresource = weakref.ref(fsresource)
         
     def handle_copy(self, request):
+        # override default priority
+        priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_COPY_PRIORITY
+
         # break our request path into parts
         #print "Copy",request,request.args
         if 'src' not in request.args or 'dst' not in request.args:

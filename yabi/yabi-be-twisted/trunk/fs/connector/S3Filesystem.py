@@ -113,17 +113,17 @@ class S3Filesystem(FSConnector.FSConnector, object):
         # return everything
         return bucket, path, creds['cert'],creds['key']
         
-    def mkdir(self, host, username, path, yabiusername=None, creds={}, priority=1):
+    def mkdir(self, host, username, path, yabiusername=None, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         mkdir(*self._decode_bucket(host, username, path, yabiusername, creds))
         return "OK"
         
-    def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}, priority=1):
+    def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         rm( *self._decode_bucket(host, username, path, yabiusername, creds) )
         return "OK"
     
-    def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}, priority=1):
+    def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         files,folders = ls(*self._decode_bucket(host, username, path, yabiusername, creds))
@@ -135,7 +135,7 @@ class S3Filesystem(FSConnector.FSConnector, object):
             }
         }
         
-    def GetWriteFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}):
+    def GetWriteFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         """sets up the chain needed to setup a write fifo from a remote path as a certain user.
         
         pass in here the username, path
@@ -159,7 +159,7 @@ class S3Filesystem(FSConnector.FSConnector, object):
         
         return pp, fifo
     
-    def GetReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}):
+    def GetReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         """sets up the chain needed to setup a read fifo from a remote path as a certain user.
         
         pass in here the username, path, and a deferred

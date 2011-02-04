@@ -11,6 +11,8 @@ from utils.parsers import parse_url
 
 from utils.submit_helpers import parsePOSTData
 
+DEFAULT_MKDIR_PRIORITY = 10
+
 class FileMkdirResource(resource.PostableResource):
     VERSION=0.1
     maxMem = 100*1024
@@ -27,6 +29,9 @@ class FileMkdirResource(resource.PostableResource):
         self.fsresource = weakref.ref(fsresource)
         
     def handle_mkdir(self, request):
+        # override default priority
+        priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_MKDIR_PRIORITY
+
         if 'uri' not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "copy must specify a directory 'uri' to make\n")
         
@@ -60,7 +65,7 @@ class FileMkdirResource(resource.PostableResource):
         def do_mkdir():
             #print "hostname=",hostname,"path=",path,"username=",username
             try:
-                mkdirer=bend.mkdir(hostname,path=path, username=username, yabiusername=yabiusername, creds=creds)
+                mkdirer=bend.mkdir(hostname,path=path, username=username, yabiusername=yabiusername, creds=creds, priority=priority)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
             except BlockingException, be:
                 client_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(be)))

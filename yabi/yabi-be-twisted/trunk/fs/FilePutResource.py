@@ -17,6 +17,8 @@ from twisted.internet.defer import Deferred
 
 from utils.submit_helpers import parsePOSTData
 
+DEFAULT_PUT_PRIORITY = 1
+
 UPLOAD_BLOCK_SIZE = 1024 * 256
 
 class FilePutResource(resource.PostableResource):
@@ -39,6 +41,9 @@ class FilePutResource(resource.PostableResource):
         return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be POST\n")
                         
     def http_POST(self, request):
+        # override default priority
+        priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_PUT_PRIORITY
+        
         #print "FilePutResource::http_POST(",request,")"
         if "uri" not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided in GET parameters\n")
@@ -100,7 +105,7 @@ class FilePutResource(resource.PostableResource):
                     """Override this class and put in our own file open methods"""
                     def open_write_stream(self, filename):
                         print "Uploading file:",filename
-                        self.procproto, fifo = bend.GetWriteFifo(hostname,username,path,filename, yabiusername=yabiusername,creds=creds)
+                        self.procproto, fifo = bend.GetWriteFifo(hostname,username,path,filename, yabiusername=yabiusername,creds=creds, priority=priority)
                         
                         # give the engine a chance to fire up the process
                         stackless.schedule()

@@ -24,10 +24,11 @@ SCHEMA = "scp"
 
 DEBUG = False
 
-MAX_SSH_CONNECTIONS = 0                                     # zero is unlimited
+MAX_SSH_CONNECTIONS = 15                                     # zero is unlimited
     
 from decorators import retry, call_count
 from LockQueue import LockQueue
+from utils.stacklesstools import sleep
 
 class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
     """This is the resource that connects to the ssh backends"""
@@ -150,8 +151,10 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         # acquire our queue lock
         if priority:
+            print "aquiring lock"
             lock = self.lockqueue.lock()
-        
+            print "lock acquired",lock
+                
         # If we don't have creds, get them
         if not creds:
             creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
@@ -199,7 +202,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         return ls_data
         
     #@lock
-    def GetWriteFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}):
+    def GetWriteFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         """sets up the chain needed to setup a write fifo from a remote path as a certain user.
         
         pass in here the username, path
@@ -226,7 +229,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         return pp, fifo
     
     #@lock
-    def GetReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}):
+    def GetReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         """sets up the chain needed to setup a read fifo from a remote path as a certain user.
         
         pass in here the username, path, and a deferred

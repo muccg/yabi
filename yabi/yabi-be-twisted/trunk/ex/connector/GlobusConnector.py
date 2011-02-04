@@ -120,6 +120,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
             
         state = None
         delay = JobPollGeneratorDefault()
+        warningcount=0
         while state!="Done":
             # pause
             sleep(delay.next())
@@ -141,11 +142,15 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
             #print "STATE:",processprotocol.jobstate, processprotocol.exitcode
                 
             if processprotocol.exitcode and processprotocol.jobstate!="Done":
-                # error occured running statecheck... sometimes globus just fails cause its a fucktard.
-                print "Job status check for %s Failed (%d) - %s / %s\n"%(job_id,processprotocol.exitcode,processprotocol.out,processprotocol.err)
-                client_stream.write("Failed - %s\n"%(processprotocol.err))
-                client_stream.finish()
-                return
+                if warningcount<5 and "no valid proxy credential was found" in processprotocol.err:
+                    warningcount+=1
+                    print "Warning: Failure #",warningcount,"running globus status command for",job_id,":",processprotocol.err
+                else:
+                    # error occured running statecheck... sometimes globus just fails cause its a fucktard.
+                    print "Job status check for %s Failed (%d) - %s / %s\n"%(job_id,processprotocol.exitcode,processprotocol.out,processprotocol.err)
+                    client_stream.write("Error - %s\n"%(processprotocol.err))
+                    client_stream.finish()
+                    return
             
             newstate = processprotocol.jobstate
             if state!=newstate:

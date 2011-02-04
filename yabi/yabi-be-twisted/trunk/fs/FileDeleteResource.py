@@ -12,6 +12,8 @@ from utils.submit_helpers import parsePOSTData
 
 import traceback
 
+DEFAULT_DELETE_PRIORITY = 2                         
+
 # print out extra debug information to the log
 DEBUG = False
 
@@ -34,6 +36,9 @@ class FileDeleteResource(resource.PostableResource):
         self.fsresource = weakref.ref(fsresource)
         
     def handle_delete(self, request):
+        # override default priority
+        priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_DELETE_PRIORITY
+        
         if "uri" not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided\n")
 
@@ -79,7 +84,7 @@ class FileDeleteResource(resource.PostableResource):
             try:
                 # if delete function is not disabled (for DEBUG purposes)
                 if not DISABLED:
-                    deleter=bend.rm(hostname,path=path, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds)
+                    deleter=bend.rm(hostname,path=path, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds, priority=priority)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
             except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
                 #print "rm call failed...\n%s"%traceback.format_exc()

@@ -18,6 +18,8 @@ from utils.FifoStream import FifoStream
 
 from utils.submit_helpers import parsePOSTData
 
+DEFAULT_GET_PRIORITY = 1
+
 DOWNLOAD_BLOCK_SIZE = 8192
 
 class FileGetResource(resource.PostableResource):
@@ -33,6 +35,9 @@ class FileGetResource(resource.PostableResource):
         self.fsresource = weakref.ref(fsresource)
         
     def handle_get(self, request):
+        # override default priority
+        priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_GET_PRIORITY
+        
         if "uri" not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided\n")
 
@@ -72,7 +77,7 @@ class FileGetResource(resource.PostableResource):
         def download_tasklet(req, channel):
             """Tasklet to do file download"""
             try:
-                procproto, fifo = bend.GetReadFifo(hostname,username,basepath,filename,yabiusername=yabiusername,creds=creds)
+                procproto, fifo = bend.GetReadFifo(hostname,username,basepath,filename,yabiusername=yabiusername,creds=creds, priority=priority)
             except NoCredentials, nc:
                 return channel.callback(http.Response( responsecode.UNAUTHORIZED, {'content-type': http_headers.MimeType('text', 'plain')}, str(nc) ))
             

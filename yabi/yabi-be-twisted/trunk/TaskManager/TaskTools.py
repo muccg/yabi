@@ -22,6 +22,8 @@ USER_AGENT = "YabiStackless/0.1"
 
 DEBUG = False
 
+DEFAULT_TASK_PRIORITY = 100
+
 from utils.stacklesstools import GET, POST, GETFailure, CloseConnections, RetryGET, RetryPOST
 
 def Sleep(seconds):
@@ -40,7 +42,7 @@ def Copy(src,dst,retry=COPY_RETRY, **kwargs):
     for num in range(retry):
         #print "retry num=",num
         try:
-            code,message,data = GET(COPY_PATH,src=src,dst=dst, **kwargs)
+            code,message,data = GET(COPY_PATH,src=src,dst=dst, priority=DEFAULT_TASK_PRIORITY, **kwargs)
             if DEBUG:
                 print "code=",repr(code)
             if int(code)==200:
@@ -59,7 +61,7 @@ def Copy(src,dst,retry=COPY_RETRY, **kwargs):
 def RCopy(src, dst, **kwargs):
     #print "RCopying %s to %s"%(src,dst)
     try:
-        POST(RCOPY_PATH,src=src,dst=dst, **kwargs)
+        POST(RCOPY_PATH,src=src,dst=dst, priority=DEFAULT_TASK_PRIORITY, **kwargs)
         # success!
         return True
     except GETFailure, err:
@@ -68,17 +70,17 @@ def RCopy(src, dst, **kwargs):
     
 def List(path,recurse=False, **kwargs):
     #print "LIST posting",LIST_PATH,path,recurse
-    code, message, data = GET(LIST_PATH,uri=path,recurse=recurse, **kwargs)
+    code, message, data = GET(LIST_PATH,uri=path,recurse=recurse, priority=DEFAULT_TASK_PRIORITY, **kwargs)
     #print "RESPONSE",code,message,data
     assert code==200
     #print "LIST:",data
     return json.loads(data)
 
 def Mkdir(path, **kwargs):
-    return GET(MKDIR_PATH,uri=path, **kwargs)
+    return GET(MKDIR_PATH,uri=path, priority=DEFAULT_TASK_PRIORITY, **kwargs)
 
 def Rm(path, recurse=False, **kwargs):
-    code, message, data = GET(RM_PATH,uri=path,recurse=recurse, **kwargs)
+    code, message, data = GET(RM_PATH,uri=path,recurse=recurse, priority=DEFAULT_TASK_PRIORITY, **kwargs)
     assert code==200
     return data
 
