@@ -29,6 +29,11 @@ class JsonMessageResponseBadRequest(JsonMessageResponse):
         super(JsonMessageResponseBadRequest, self).__init__(message=message, level=level, status=status)
 
 
+class JsonMessageResponseUnauthorized(JsonMessageResponse):
+    def __init__(self, message="", level=FAIL, status=401):
+        super(JsonMessageResponseUnauthorized, self).__init__(message=message, level=level, status=status)
+
+
 class JsonMessageResponseNotFound(JsonMessageResponse):
     def __init__(self, message="", level=FAIL, status=404):
         super(JsonMessageResponseNotFound, self).__init__(message=message, level=level, status=status)

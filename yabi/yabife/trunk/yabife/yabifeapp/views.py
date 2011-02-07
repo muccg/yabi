@@ -124,7 +124,7 @@ def adminproxy(request, url):
     try:
         return proxy(request, quote(url), request.user.get_profile().appliance.url)
     except ObjectDoesNotExist:
-        return render_page("errors/403.html", request, response=HttpResponseForbidden())
+        return JsonMessageResponseUnauthorized("User is not associated with an appliance")
 
 @authentication_required
 def adminproxy_cache(request, url):
@@ -315,7 +315,8 @@ def credentialproxy(request, url):
         if request.user.get_profile().credential_access:
             return adminproxy(request, url)
     except ObjectDoesNotExist:
-        pass
+        mail_admins_no_profile(request.user)
+        return JsonMessageResponseUnauthorized("User is not associated with an appliance")
 
     return JsonMessageResponseForbidden("You do not have access to this Web service")
 
@@ -329,7 +330,7 @@ def password(request):
         if not profile.user_option_access:
             return JsonMessageResponseForbidden("You do not have access to this Web service")
     except ObjectDoesNotExist:
-        return JsonMessageResponseForbidden("You do not have access to this Web service")
+        return JsonMessageResponseUnauthorized("You do not have access to this Web service")
 
     required = ("currentPassword", "newPassword", "confirmPassword")
     for key in required:
