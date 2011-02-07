@@ -12,8 +12,10 @@ from time import mktime
 
 from django.conf.urls.defaults import *
 from django.conf import settings
+from django.core.mail import mail_admins
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError, HttpResponseUnauthorized
 from django.shortcuts import render_to_response, get_object_or_404, render_mako
+from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import webhelpers
 from django.contrib.auth.decorators import login_required
@@ -124,6 +126,7 @@ def adminproxy(request, url):
     try:
         return proxy(request, quote(url), request.user.get_profile().appliance.url)
     except ObjectDoesNotExist:
+        mail_admins_no_profile(request.user)
         return JsonMessageResponseUnauthorized("User is not associated with an appliance")
 
 @authentication_required
@@ -174,6 +177,7 @@ def files(request):
     try:
         request.user.get_profile()
     except ObjectDoesNotExist:
+        mail_admins_no_profile(request.user)
         return logout(request)
 
     return render_page("files.html", request)
@@ -185,6 +189,7 @@ def design(request, id=None):
     try:
         request.user.get_profile()
     except ObjectDoesNotExist:
+        mail_admins_no_profile(request.user)
         return logout(request)
 
     return render_page("design.html", request, reuseId=id)
@@ -196,6 +201,7 @@ def jobs(request):
     try:
         request.user.get_profile()
     except ObjectDoesNotExist:
+        mail_admins_no_profile(request.user)
         return logout(request)
 
     return render_page("jobs.html", request)
@@ -206,7 +212,8 @@ def account(request):
         if request.user.get_profile().has_account_tab():
             return render_page("account.html", request)
     except ObjectDoesNotExist:
-        pass
+        mail_admins_no_profile(request.user)
+        return logout(request)
 
     return render_page("errors/403.html", request, response=HttpResponseForbidden())
 
@@ -232,6 +239,7 @@ def login(request):
                     try:
                         user.get_profile()
                     except (SiteProfileNotAvailable, User.DoesNotExist):
+                        mail_admins_no_profile(request.user)
                         return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':"User is not associated with an appliance"})
 
                     if not yabiadmin_login(username, password):
@@ -274,6 +282,7 @@ def wslogin(request):
             try:
                 user.get_profile()
             except (SiteProfileNotAvailable, User.DoesNotExist):
+                mail_admins_no_profile(request.user)
                 response = {
                     "success": False,
                     "message": "User is not associated with an appliance",
@@ -570,6 +579,11 @@ def memcache_http(user):
     yabiadmin = user.get_profile().appliance.url
     return Http(base_url=yabiadmin, cache=False, cookie_persister=mp)
 
+def mail_admins_no_profile(user):
+    mail_admins("User Profile Error", render_to_string("email/noprofile.txt", {
+        "user": user,
+    }))
+
 def preview_key(uri):
     # File names are generally in UTF-8, but memcache doesn't really like keys
     # with "control characters". We'll encode the URI in Base64 to avoid
@@ -582,6 +596,7 @@ def upload_file(request, user):
     try:
         appliance = user.get_profile().appliance
     except ObjectDoesNotExist:
+        mail_admins_no_profile(user)
         return JsonMessageResponseForbidden("You do not have access to this Web service")
    
     upload_path = appliance.path
