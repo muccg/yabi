@@ -372,4 +372,39 @@ def get_workflow(username, id, get_tags=True):
     
     return result
 
+# This function is needed just by migration script in scripts
+# TODO delete after users have been migrated
+def get_workflows(username, get_tags=True, sort="last_modified_on", dir="DESC"):
+    """Return all users workflows
+    If get_tags is true, also returns the taglist with each workflow
+    """
+    assert dir in ('ASC','DESC')
+    assert sort in WORKFLOW_VARS
+    
+    home = user_fs_home(username)
+    db = os.path.join(home, HISTORY_FILE)
+    
+    conn = sqlite3.connect(db)
+    
+    c = conn.cursor()
+    c.execute("""SELECT %s FROM yabistoreapp_workflow ORDER BY %s %s"""%(WORKFLOW_QUERY_LINE,sort,dir))
+    
+            # columns on workflow table
+    result =[]
+    for row in c:
+        result.append( dict( zip( WORKFLOW_VARS, row ) ) )
+    
+    if get_tags:
+        for row in result:
+            print row
+            row['tags'] = get_tags_for_workflow(username, int(row['id']), cursor = c)
+            
+            # decode the json object
+            row['json']=json.loads(row['json'])
+    
+    
+    conn.commit()
+    c.close()
+    
+    return result
 
