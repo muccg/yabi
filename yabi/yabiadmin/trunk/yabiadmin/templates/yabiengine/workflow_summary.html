@@ -100,7 +100,7 @@ ${self.block_content()}<%def name="block_content()">
     import json
 %>
 <pre>
-%if w.json is not None:
+%if w.json:
 ${json.dumps(json.loads(w.json), indent=2)}
 %endif
 </pre>
