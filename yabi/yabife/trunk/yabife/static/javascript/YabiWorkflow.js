@@ -618,7 +618,7 @@ YabiWorkflow.prototype.hydrate = function(workflowId) {
     }
 
     this.workflowId = workflowId;
-    var baseURL = appURL + "workflows/" + workflowId;
+    var baseURL = appURL + "ws/workflows/get/" + workflowId;
     
     //load json
     var jsUrl, jsCallback, jsTransaction;
@@ -664,7 +664,7 @@ YabiWorkflow.prototype.saveTags = function(postRelocate) {
         return;
     }
     
-    var baseURL = appURL + "workflows/" + this.workflowId + "/tags";
+    var baseURL = appURL + "ws/workflows/" + this.workflowId + "/tags";
     
     //load json
     var jsUrl, jsCallback, jsTransaction;

@@ -118,7 +118,7 @@ def proxy(request, url, base):
     
     target_url = os.path.join(base, url)
     target_request = make_request_object(target_url, request)
-    return make_http_request(target_request, request.user.username, request.is_ajax())
+    return make_http_request(target_request, request, request.is_ajax())
 
 @authentication_required
 def adminproxy(request, url):
@@ -242,7 +242,7 @@ def login(request):
                         mail_admins_no_profile(request.user)
                         return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':"User is not associated with an appliance"})
 
-                    if not yabiadmin_login(username, password):
+                    if not yabiadmin_login(request, username, password):
                         return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':"System error"})
 
                     return HttpResponseRedirect(webhelpers.url("/"))
@@ -260,9 +260,8 @@ def login(request):
 
 
 def logout(request):
-    username = request.user.username
+    yabiadmin_logout(request)
     django_logout(request)
-    yabiadmin_logout(username)
     return HttpResponseRedirect(webhelpers.url("/"))
 
 def wslogin(request):
@@ -288,7 +287,7 @@ def wslogin(request):
                     "message": "User is not associated with an appliance",
                 }
 
-            if yabiadmin_login(username, password):
+            if yabiadmin_login(request, username, password):
                 response = {
                     "success": True
                 }
@@ -310,9 +309,8 @@ def wslogin(request):
     return HttpResponse(content=json.dumps(response))
 
 def wslogout(request):
-    username = request.user.username
+    yabiadmin_logout(request)
     django_logout(request)
-    yabiadmin_logout(username)
     response = {
         "success": True,
     }
@@ -405,7 +403,7 @@ def preview(request):
 
     # Get the actual file size.
     ls_request = GetRequest("ws/fs/ls", { "uri": uri })
-    http = memcache_http(request.user)
+    http = memcache_http(request)
     resp, content = http.make_request(ls_request)
 
     if resp.status != 200:
@@ -541,9 +539,9 @@ def make_request_object(url, request):
         files = [('file%d' % (i+1), f.name, f.temporary_file_path()) for i,f in enumerate(request.FILES.values())] 
         return PostRequest(url, params, files=files)
 
-def make_http_request(request, user, ajax_call):
+def make_http_request(request, original_request, ajax_call):
     try:
-        with memcache_http(user) as http:
+        with memcache_http(original_request) as http:
             try:
                 resp, contents = http.make_request(request)
                 our_resp = HttpResponse(contents, status=int(resp.status))
@@ -569,12 +567,11 @@ def copy_non_empty_headers(src, to, header_names):
 def memcache_client():
     return memcache.Client(settings.MEMCACHE_SERVERS)
 
-def memcache_http(user):
-    if not isinstance(user, DjangoUser):
-        user = DjangoUser.objects.get(username=user)
+def memcache_http(request):
+    user = request.user
 
     mp = MemcacheCookiePersister(settings.MEMCACHE_SERVERS,
-            key='%s-cookies-%s' %(settings.MEMCACHE_KEYSPACE, user.username))
+            key='%s-cookies-%s' %(settings.MEMCACHE_KEYSPACE, request.session.session_key))
           
     yabiadmin = user.get_profile().appliance.url
     return Http(base_url=yabiadmin, cache=False, cookie_persister=mp)
@@ -607,7 +604,7 @@ def upload_file(request, user):
     upload_uri = request.GET['uri']
     
     # examine cookie jar for our admin session cookie
-    http = memcache_http(user)
+    http = memcache_http(request)
     jar = http.cookie_jar
     cookie_string = jar.cookies_to_send_header(user.get_profile().appliance.url)['Cookie']
     
@@ -631,11 +628,11 @@ def upload_file(request, user):
         }
     return HttpResponse(content=json.dumps(response))
 
-def yabiadmin_login(username, password):
+def yabiadmin_login(request, username, password):
     # TODO get the url from somewhere
     login_request = PostRequest('ws/login', params= {
         'username': username, 'password': password})
-    http = memcache_http(username)
+    http = memcache_http(request)
     resp, contents = http.make_request(login_request)
     if resp.status != 200: 
         return False
@@ -643,11 +640,11 @@ def yabiadmin_login(username, password):
     http.finish_session()
     return json_resp.get('success', False)
 
-def yabiadmin_logout(username):
+def yabiadmin_logout(request):
     # TODO get the url from somewhere
     logout_request = PostRequest('ws/logout')
     try:
-        with memcache_http(username) as http:
+        with memcache_http(request) as http:
             resp, contents = http.make_request(logout_request)
             if resp.status != 200: 
                 return False

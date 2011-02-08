@@ -218,7 +218,7 @@ YabiWorkflowCollection.prototype.hydrate = function() {
         YAHOO.util.Connect.abort( this.jsTransaction, null, false );
     }
     
-    var baseURL = appURL + "workflows/datesearch?start=" + this.dateStart;
+    var baseURL = appURL + "ws/workflows/datesearch?start=" + this.dateStart;
     
     //load json
     var jsUrl, jsCallback;
