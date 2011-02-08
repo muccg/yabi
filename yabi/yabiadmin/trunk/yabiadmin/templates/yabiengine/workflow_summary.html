@@ -100,7 +100,9 @@ ${self.block_content()}<%def name="block_content()">
     import json
 %>
 <pre>
+%if w.json is not None:
 ${json.dumps(json.loads(w.json), indent=2)}
+%endif
 </pre>
 
 </div>
