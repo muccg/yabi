@@ -105,6 +105,7 @@ def does_db_exist(username):
 def does_workflow_exist(username, **kwargs):
     assert len(kwargs) == 1
     assert kwargs.keys()[0] in ('id', 'name')
+    ensure_user_db(username)
 
     home = user_fs_home(username)
     db = os.path.join(home, HISTORY_FILE)
@@ -121,6 +122,8 @@ def does_workflow_exist(username, **kwargs):
     return (len(data) >= 0)
 
 def workflow_names_starting_with(username, base):
+    ensure_user_db(username)
+
     home = user_fs_home(username)
     db = os.path.join(home, HISTORY_FILE)
         
@@ -137,6 +140,7 @@ def workflow_names_starting_with(username, base):
     
 def save_workflow(username, workflow, taglist=[]):
     """place a row in the workflow table"""
+    ensure_user_db(username)
     home = user_fs_home(username)
     db = os.path.join(home, HISTORY_FILE)
     
@@ -167,6 +171,7 @@ def save_workflow(username, workflow, taglist=[]):
 
 def change_workflow_tags(username, id, taglist=None):
     """Change the tags of a given workflow"""
+    ensure_user_db(username)
     home = user_fs_home(username)
     db = os.path.join(home, HISTORY_FILE)
     
@@ -194,6 +199,7 @@ def change_workflow_tags(username, id, taglist=None):
     
 def tag_workflow(username,workflow_id,taglist=[], cursor=None):
     """add tags to an existing workflow"""
+    ensure_user_db(username)
     if cursor is None:
         home = user_fs_home(username)
         db = os.path.join(home, HISTORY_FILE)
@@ -235,6 +241,7 @@ def detag_workflow(username, workflow_id, taglist=[], delete_empty=True, cursor=
     """Unlinks the list of tags from a workflow.
     if delete_empty is True (default), then the tag will be deleted if it tags nothing
     """
+    ensure_user_db(username)
     if cursor is None:
         home = user_fs_home(username)
         db = os.path.join(home, HISTORY_FILE)
@@ -279,6 +286,7 @@ def detag_workflow(username, workflow_id, taglist=[], delete_empty=True, cursor=
         c.close()
             
 def get_tags_for_workflow(username, id, cursor=None):
+    ensure_user_db(username)
     if cursor is None:
         home = user_fs_home(username)
         db = os.path.join(home, HISTORY_FILE)
@@ -308,6 +316,7 @@ def find_workflow_by_date(username, start, end='now', sort="created_on", dir="DE
     """
     assert sort in WORKFLOW_VARS
     assert dir in ('ASC','DESC')
+    ensure_user_db(username)
     
     # TODO: sanity check julianday field 'start' and 'end'
     
@@ -345,6 +354,7 @@ def find_workflow_by_date(username, start, end='now', sort="created_on", dir="DE
 def get_workflow(username, id, get_tags=True):
     """Return workflow with id 'id'
     """
+    ensure_user_db(username)
     home = user_fs_home(username)
     db = os.path.join(home, HISTORY_FILE)
     
@@ -380,7 +390,7 @@ def get_workflows(username, get_tags=True, sort="last_modified_on", dir="DESC"):
     """
     assert dir in ('ASC','DESC')
     assert sort in WORKFLOW_VARS
-    
+    ensure_user_db(username)
     home = user_fs_home(username)
     db = os.path.join(home, HISTORY_FILE)
     
