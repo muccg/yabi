@@ -41,7 +41,6 @@ class Editable(object):
     edit_link.short_description = 'Edit'
     edit_link.allow_tags = True
 
-
 class Workflow(models.Model, Editable, Status):
     name = models.CharField(max_length=255)
     user = models.ForeignKey(User)
@@ -52,22 +51,12 @@ class Workflow(models.Model, Editable, Status):
     created_on = models.DateTimeField(auto_now_add=True, editable=False)
     status = models.TextField(max_length=64, blank=True)
     stageout = models.CharField(max_length=1000)
+    json = models.TextField()
+    original_json = models.TextField()
 
     def __unicode__(self):
         return self.name
 
-    def get_json(self):
-        # get from yabistore db
-        from yabiadmin.yabistoreapp import db
-        return db.get_workflow(self.user.name, self.id)
-    
-    def set_json(self,json):
-        # put the workflow json in the store
-        from yabiadmin.yabistoreapp import db
-        db.save_workflow(self.user.name, self.id, json, self.status, self.name)
-        
-    json = property(get_json,set_json)
-        
     @property
     def workflowid(self):
         return self.id
@@ -82,31 +71,18 @@ class Workflow(models.Model, Editable, Status):
     summary_link.short_description = 'Summary'
     summary_link.allow_tags = True
 
-    # TODO REFACTOR
-    # moved this from job to the workflow level, would be nice to put it at the engine workflow
-    # level, but I am worried about the impact on the django signals which reference Job and Workflow
-    # and not EngineJob or EngineWorkflow
-    #TODO change this to a @property type thing with setter also
-    '''
-    def update_json(self, job, data={}):
-        json_object = json.loads(self.json)
-        job_id = int(job.order)
-        assert json_object['jobs'][job_id]['jobId'] == job_id + 1 # jobs are 1 indexed in json
+    def delete_cascade(self):
+        tags = [t.tag for t in self.workflowtag_set.all()]
+        self.delete()
+        for tag in filter(lambda t: not t.workflowtag_set.exists(), tags):
+            tag.delete()
 
-        # status
-        json_object['jobs'][job_id]['status'] = job.status
+class Tag(models.Model):
+    value = models.CharField(max_length=255)
 
-        # data
-        for key in data:
-            json_object['jobs'][job_id][key] = data[key]
-
-        #stageout
-        if job.stageout:
-            json_object['jobs'][job_id]['stageout'] = job.stageout
-
-        self.json = json.dumps(json_object)
-        '''
-
+class WorkflowTag(models.Model):
+    workflow = models.ForeignKey(Workflow)
+    tag = models.ForeignKey(Tag)
 
 class Job(models.Model, Editable, Status):
     workflow = models.ForeignKey(Workflow)

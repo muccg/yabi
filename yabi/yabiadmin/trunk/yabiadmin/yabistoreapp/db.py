@@ -19,7 +19,7 @@ HISTORY_FILE = "history.sqlite3"
 DB_CREATE = """
 CREATE TABLE "yabistoreapp_tag" (
     "id" integer NOT NULL PRIMARY KEY AUTOINCREMENT,
-    "value" varchar(255) NOT NULL
+    "value" varchar(255) NOT NULL UNIQUE
 )
 ;
 CREATE TABLE "yabistoreapp_workflow" (
@@ -28,6 +28,7 @@ CREATE TABLE "yabistoreapp_workflow" (
     "json" text NOT NULL,
     "last_modified_on" datetime,
     "created_on" datetime NOT NULL,
+    "archived_on" datetime NOT NULL,
     "status" text NOT NULL
 )
 ;
@@ -101,54 +102,78 @@ def does_db_exist(username):
     
     return True
 
-def save_workflow(username, workflow_id, workflow_json, status, name, taglist=[]):
+def does_workflow_exist(username, **kwargs):
+    assert len(kwargs) == 1
+    assert kwargs.keys()[0] in ('id', 'name')
+
+    home = user_fs_home(username)
+    db = os.path.join(home, HISTORY_FILE)
+        
+    conn = sqlite3.connect(db)
+    c = conn.cursor()
+
+    field = kwargs.keys()[0]
+    c.execute('SELECT * FROM yabistoreapp_workflow WHERE %s = ?' % field,
+              (kwargs[field],))
+    data = c.fetchall()
+
+    c.close()
+    return (len(data) >= 0)
+
+def workflow_names_starting_with(username, base):
+    home = user_fs_home(username)
+    db = os.path.join(home, HISTORY_FILE)
+        
+    conn = sqlite3.connect(db)
+    c = conn.cursor()
+
+    c.execute('SELECT name FROM yabistoreapp_workflow WHERE name like ?',
+              (base + '%',))
+    result = [r[0] for r in c]
+
+    c.close()
+    return result
+   
+    
+def save_workflow(username, workflow, taglist=[]):
     """place a row in the workflow table"""
     home = user_fs_home(username)
     db = os.path.join(home, HISTORY_FILE)
     
     conn = sqlite3.connect(db)
-    
+   
     c = conn.cursor()
-    c.execute('INSERT INTO "yabistoreapp_workflow" (id, name, json, status, created_on, last_modified_on) VALUES (?, ?,?,?,julianday("now"),julianday("now"))',(workflow_id, name, workflow_json,status))
+    c.execute('INSERT INTO "yabistoreapp_workflow" ' +
+            '(id, name, json, status, created_on, last_modified_on, archived_on) ' +
+            'VALUES (?,?,?,?,?,?,julianday("now"))',
+            (workflow.id, workflow.name, workflow.json, workflow.status, workflow.created_on, workflow.last_modified_on))
         
     for tag in taglist:
         # see if the tag already exists
         c.execute('SELECT id FROM yabistoreapp_tag WHERE value = ?', (tag,) )
         data = c.fetchall()
-        assert len(data)==0 or len(data)==1, "Database corruption: Denormalised database! Tag '%s' has multiple entries in the tag table for user '%s'"%(tag,username)
         
         if len(data)==0:
             c.execute('INSERT INTO "yabistoreapp_tag" (value) VALUES (?)',(tag,) )
         
             # link the many to many
-            c.execute('INSERT INTO "yabistoreapp_workflowtag" (workflow_id, tag_id) VALUES (?, last_insert_rowid())', (workflow_id,))
+            c.execute('INSERT INTO "yabistoreapp_workflowtag" (workflow_id, tag_id) VALUES (?, last_insert_rowid())', (workflow.id,))
         else:
             # link the many to many
-            c.execute('INSERT INTO "yabistoreapp_workflowtag" (workflow_id, tag_id) VALUES (?, ?)', (workflow_id,data[0][0]))
+            c.execute('INSERT INTO "yabistoreapp_workflowtag" (workflow_id, tag_id) VALUES (?, ?)', (workflow.id,data[0][0]))
     
     conn.commit()
     c.close()
 
-def update_workflow(username, id, updateset, taglist=None):
-    """update a row in the workflow table"""
+def change_workflow_tags(username, id, taglist=None):
+    """Change the tags of a given workflow"""
     home = user_fs_home(username)
     db = os.path.join(home, HISTORY_FILE)
     
     conn = sqlite3.connect(db)
-    
-    # update the actual workflow
-    assert 'id' not in updateset, "id should not be updated in a workflow"
     c = conn.cursor()
     
-    if len(updateset):
-        command = 'UPDATE "yabistoreapp_workflow" SET '
-        for key in updateset:
-            command+="%s = ?, "%key
-        command += ' last_modified_on=julianday("now") WHERE id = ?'
-        c.execute(command,updateset.values()+[id])
-    
     if taglist is not None:
-        # now update the taglist. Lets get the existing taglist
         c.execute("""SELECT DISTINCT yabistoreapp_tag.value 
                     FROM yabistoreapp_workflowtag, yabistoreapp_tag 
                     WHERE yabistoreapp_tag.id = yabistoreapp_workflowtag.tag_id 
@@ -188,13 +213,10 @@ def tag_workflow(username,workflow_id,taglist=[], cursor=None):
     if len(data)==0:
         raise NoSuchWorkflow, "Workflow id %d not found for user %s"%(workflow_id,username)
     
-    assert len(data)==1, "Database corruption: Denormalised database! Workflow id %d has more than one occurance"%(workflow_id)
-    
     for tag in taglist:
         # see if the tag already exists
         c.execute('SELECT id FROM yabistoreapp_tag WHERE value = ?', (tag,) )
         data = c.fetchall()
-        assert len(data)==0 or len(data)==1, "Database corruption: Denormalised database! Tag '%s' has multiple entries in the tag table for user '%s'"%(tag,username)
         
         if len(data)==0:
             c.execute('INSERT INTO "yabistoreapp_tag" (value) VALUES (?)',(tag,) )
@@ -232,13 +254,11 @@ def detag_workflow(username, workflow_id, taglist=[], delete_empty=True, cursor=
     if len(data)==0:
         raise NoSuchWorkflow, "Workflow id %d not found for user %s"%(workflow_id,username)
     
-    assert len(data)==1, "Database corruption: Denormalised database! Workflow id %d has more than one occurance"%(workflow_id)
     
     for tag in taglist:
         # see if the tag  exists
         c.execute('SELECT id FROM yabistoreapp_tag WHERE value = ?', (tag,) )
         data = c.fetchall()
-        assert len(data)==0 or len(data)==1, "Database corruption: Denormalised database! Tag '%s' has multiple entries in the tag table for user '%s'"%(tag,username)
 
         if len(data)==1:
             tag_id = data[0][0]
@@ -258,89 +278,6 @@ def detag_workflow(username, workflow_id, taglist=[], delete_empty=True, cursor=
         conn.commit()
         c.close()
             
-def delete_tag(username, taglist):
-    """delete all links to tags in taglist and the tags themselves"""
-    home = user_fs_home(username)
-    db = os.path.join(home, HISTORY_FILE)
-    
-    conn = sqlite3.connect(db)
-    
-    c = conn.cursor()
-    
-    for tag in taglist:
-        print "deleting",tag
-        
-        # get tag id
-        c.execute('SELECT id FROM yabistoreapp_tag WHERE value = ?', (tag,) )
-        data = c.fetchall()
-        assert len(data)==0 or len(data)==1, "Database corruption: Denormalised database! Tag '%s' has multiple entries in the tag table for user '%s'"%(tag,username)
-        
-        if len(data):
-            tag_id = data[0][0]
-            print "id=",tag_id
-            
-            c.execute('DELETE FROM yabistoreapp_workflowtag WHERE tag_id=?',(tag_id,))
-            c.execute('DELETE FROM yabistoreapp_tag WHERE id=?',(tag_id,))
-        
-    conn.commit()
-    c.close()
-
-def delete_workflow(username, workflow_id, delete_empty=True):
-    """delete the specified workflow and all its tag links, and if delete_empty is set, all empty tags"""
-    home = user_fs_home(username)
-    db = os.path.join(home, HISTORY_FILE)
-    
-    conn = sqlite3.connect(db)
-    
-    c = conn.cursor()
-    # find all the tag links and their ids
-    c.execute("""SELECT DISTINCT yabistoreapp_workflowtag.tag_id 
-        FROM yabistoreapp_workflow, yabistoreapp_workflowtag 
-        WHERE yabistoreapp_workflow.id = yabistoreapp_workflowtag.workflow_id
-        AND yabistoreapp_workflow.id = ?""", (workflow_id,) )
-    tag_ids = [X[0] for X in c]
-    
-    # delete all the link table entries
-    c.execute("DELETE FROM yabistoreapp_workflowtag WHERE workflow_id = ?",(workflow_id,))
-    
-    # for each tag
-    if delete_empty:
-        for tag_id in tag_ids:
-            # is the tag now empty?
-            c.execute('SELECT count() FROM yabistoreapp_workflowtag WHERE yabistoreapp_workflowtag.tag_id = ?',(tag_id,))
-            data = c.fetchall()
-    
-            if data[0][0]==0:
-                # no more tag links left. delete.
-                c.execute('DELETE FROM yabistoreapp_tag WHERE id = ?',(tag_id,))
-     
-    # delete workflow itself
-    # TODO: check if workflow exists
-    c.execute("DELETE FROM yabistoreapp_workflow WHERE id = ?",(workflow_id,))
-    
-    conn.commit()
-    c.close()
-
-def get_tags(username, offset=0, limit=None):
-    """return a list of tags. pass in offset and limit if you want to get a subset of the total
-    
-    TODO: offset and limits
-    """
-    home = user_fs_home(username)
-    db = os.path.join(home, HISTORY_FILE)
-    
-    conn = sqlite3.connect(db)
-    
-    c = conn.cursor()
-    c.execute('SELECT value FROM yabistoreapp_tag')
-    
-    data = [X[0] for X in c]
-    
-    conn.commit()
-    c.close()
-    
-    return data
-
 def get_tags_for_workflow(username, id, cursor=None):
     if cursor is None:
         home = user_fs_home(username)
@@ -363,39 +300,6 @@ def get_tags_for_workflow(username, id, cursor=None):
     
     return data
 
-    
-def find_workflow_by_tag(username, tag, sort="created_on"):
-    """find all the workflows specified by a tag 'tag'
-    returns a list of workflows. The workflows are represented by a hash of key/value pairs
-    sort is an optional parameter which takes the workflow column to sort by
-    """
-    assert sort in WORKFLOW_VARS
-    
-    home = user_fs_home(username)
-    db = os.path.join(home, HISTORY_FILE)
-    
-    conn = sqlite3.connect(db)
-    
-    c = conn.cursor()
-    c.execute("""SELECT yabistoreapp_workflow.* FROM yabistoreapp_workflow,yabistoreapp_tag,yabistoreapp_workflowtag 
-        WHERE yabistoreapp_workflow.id = yabistoreapp_workflowtag.workflow_id 
-        AND yabistoreapp_tag.id = yabistoreapp_workflowtag.tag_id
-        AND yabistoreapp_tag.value = ?
-        ORDER BY yabistoreapp_workflow.%s"""%sort,
-        (tag,) )
-    
-    rows = []
-    for row in c:
-        rows.append( dict( zip( WORKFLOW_VARS, row ) ) )
-        
-    for row in rows:
-        row['json']=json.loads(row['json'])
-        
-    conn.commit()
-    c.close()
-    
-    return rows
-    
 def find_workflow_by_date(username, start, end='now', sort="created_on", dir="DESC", get_tags=True):
     """find all the users workflows between the 'start' date and the 'end' date
     sort is an optional parameter to sort by
@@ -414,15 +318,15 @@ def find_workflow_by_date(username, start, end='now', sort="created_on", dir="DE
     
     c = conn.cursor()
     c.execute("""SELECT %s FROM yabistoreapp_workflow
-        WHERE created_on >= julianday(?)
-        AND created_on <= julianday(?)
+        WHERE created_on >= date(?)
+        AND created_on <= date(?)
         ORDER BY %s %s"""%(WORKFLOW_QUERY_LINE,sort,dir),
         (start,end) )
     
     rows = []
     for row in c:
         rows.append( dict( zip( WORKFLOW_VARS, row ) ) )
-    
+
     if get_tags:
         for row in rows:
             row['tags'] = get_tags_for_workflow(username, int(row['id']), cursor = c)
@@ -438,77 +342,6 @@ def find_workflow_by_date(username, start, end='now', sort="created_on", dir="DE
     
     return rows
 
-def find_workflow_by_search(username, search, field="name", sort="created_on", operator="LIKE", dir="DESC"):
-    """find all the users workflows matching search
-    sort is an optional parameter to sort by
-    field is the field to search. defaults to 'name'
-    operator is overridable to implement regexp etc. Should be 'like','glob','regexp' or 'match'
-    returns a list of workflow hashes
-    """
-    operator = operator.upper()
-    assert operator in ('LIKE','GLOB','REGEXP','MATCH')
-    
-    if operator=='LIKE':
-        search = "%"+search+"%"
-    
-    assert sort in WORKFLOW_VARS
-    assert field in WORKFLOW_VARS
-    
-    home = user_fs_home(username)
-    db = os.path.join(home, HISTORY_FILE)
-    
-    conn = sqlite3.connect(db)
-    
-    c = conn.cursor()
-    c.execute("""SELECT * FROM yabistoreapp_workflow
-        WHERE %s %s ? 
-        ORDER BY %s %s"""%(field,operator,sort,dir),
-        (search,) )
-    
-    rows = []
-    for row in c:
-        # decode the json object
-        row['json']=json.loads(row['json'])
-    
-    for row in rows:
-        row['json']=json.loads(row['json'])
-        
-    conn.commit()
-    c.close()
-    
-    return rows
-    
-def find_tag_by_search(username, search, operator="LIKE"):
-    """find all the users workflows matching search
-    sort is an optional parameter to sort by
-    field is the field to search. defaults to 'name'
-    operator is overridable to implement regexp etc. Should be 'like','glob','regexp' or 'match'
-    returns a list of workflow hashes
-    """
-    operator = operator.upper()
-    assert operator in ('LIKE','GLOB','REGEXP','MATCH')
-    
-    if operator=='LIKE':
-        search = "%"+search+"%"
-    
-    home = user_fs_home(username)
-    db = os.path.join(home, HISTORY_FILE)
-    
-    conn = sqlite3.connect(db)
-    
-    c = conn.cursor()
-    c.execute("""SELECT * FROM yabistoreapp_tag
-        WHERE value %s ? """%(operator),
-        (search,) )
-    
-    rows = [X[1] for X in c.fetchall()]
-    
-    conn.commit()
-    c.close()
-    
-    return rows
-    
-    
 def get_workflow(username, id, get_tags=True):
     """Return workflow with id 'id'
     """
@@ -524,8 +357,6 @@ def get_workflow(username, id, get_tags=True):
     
     rows = c.fetchall()
     
-    assert len(rows)==0 or len(rows)==1, "Database corruption: Denormalised database! user %s workflow id:%d has multiple entries!"%(username,id)
-        
     if len(rows)==0:
         raise NoSuchWorkflow, "Workflow %d for user %s does not exist"%(id,username)
         
@@ -541,37 +372,4 @@ def get_workflow(username, id, get_tags=True):
     
     return result
 
-def get_workflows(username, get_tags=True, sort="last_modified_on", dir="DESC"):
-    """Return all users workflows
-    If get_tags is true, also returns the taglist with each workflow
-    """
-    assert dir in ('ASC','DESC')
-    assert sort in WORKFLOW_VARS
-    
-    home = user_fs_home(username)
-    db = os.path.join(home, HISTORY_FILE)
-    
-    conn = sqlite3.connect(db)
-    
-    c = conn.cursor()
-    c.execute("""SELECT %s FROM yabistoreapp_workflow ORDER BY %s %s"""%(WORKFLOW_QUERY_LINE,sort,dir))
-    
-            # columns on workflow table
-    result =[]
-    for row in c:
-        result.append( dict( zip( WORKFLOW_VARS, row ) ) )
-    
-    if get_tags:
-        for row in result:
-            print row
-            row['tags'] = get_tags_for_workflow(username, int(row['id']), cursor = c)
-            
-            # decode the json object
-            row['json']=json.loads(row['json'])
-    
-    
-    conn.commit()
-    c.close()
-    
-    return result
 

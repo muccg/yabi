@@ -2,6 +2,7 @@
 from yabiadmin.yabiengine.models import *
 
 from django.contrib import admin
+from django.contrib import messages
 from django.contrib.admin.actions import delete_selected
 from yabiadmin.yabiengine import storehelper as StoreHelper
 
@@ -31,31 +32,36 @@ class WorkflowAdmin(admin.ModelAdmin):
     list_display = ['name', 'status', 'stageout', link_to_jobs, link_to_tasks, link_to_stageins, 'summary_link']
     list_filter = ['status', 'user']
     search_fields = ['name']
-    actions = ['purge_workflow']
+    actions = ['archive_workflow']
     fieldsets = (
         (None, {
             'fields': ('name', 'user', 'start_time', 'end_time', 'log_file_path','status','stageout')
         }),
     )
 
-    def purge_workflow(self, request, queryset):
+    def archive_workflow(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
 
         for id in selected:
             wf = Workflow.objects.get(id=id)
-            StoreHelper.deleteWorkflow(wf)
+            success = StoreHelper.archiveWorkflow(wf)
 
-        if len(selected):
-            if len(selected) == 1:
-                message_bit = "1 workflow purged from store."
-            else:
-                message_bit = "%s workflows were purged from store." % len(selected)
-            self.message_user(request, message_bit)
+        if success:
+            if len(selected):
+                if len(selected) == 1:
+                    message_bit = "1 workflow archived."
+                else:
+                    message_bit = "%s workflows were archived." % len(selected)
+                
+                #self.message_user(request, message_bit)
+                messages.success(request, message_bit)
+        else:
+            messages.error(request, "Couldn't archive workflow(s)!")
 
         # pass on to delete action
-        return delete_selected(self, request, queryset)
+        #return delete_selected(self, request, queryset)
 
-    purge_workflow.short_description = "Purge selected Workflows from Store."
+    archive_workflow.short_description = "Archive selected Workflows."
 
 
 class QueuedWorkflowAdmin(admin.ModelAdmin):

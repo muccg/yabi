@@ -3,17 +3,25 @@ from django.conf.urls.defaults import *
 
 # frontend webservices
 urlpatterns = patterns('yabiadmin.yabi.ws_frontend_views',
-    url(r'^tool/(?P<toolname>[^/]+)[/]*$', 'tool', name='tool'),
     url(r'^login[/]*$', 'login'),
     url(r'^logout[/]*$', 'logout'),
+
+    url(r'^tool/(?P<toolname>[^/]+)[/]*$', 'tool', name='tool'),
     url(r'^menu[/]*$', 'menu', name='menu'),
+
     url(r'^fs/ls[/]*$', 'ls', name='ls'),
     url(r'^fs/get[/]*$', 'get', name='get'),
     url(r'^fs/put[/]*$', 'put', {'SSL':False}, name='put'),
     url(r'^fs/copy[/]*$', 'copy', name='copy'),
     url(r'^fs/rm[/]*$', 'rm', name='rm'),
-    url(r'^submitworkflow[/]*$', 'submitworkflow', name='submitworkflow'),
     url(r'^fs/getuploadurl/*$', 'getuploadurl', name='getuploadurl'),
+
+
+    url(r'^workflows/submit[/]*$', 'submit_workflow'),
+    url(r'^workflows/get/(?P<workflow_id>\d+)[/]*$', 'get_workflow'),
+    url(r'^workflows/datesearch[/]*$', 'workflow_datesearch'),
+    url(r'^workflows/(?P<id>\d+)/tags[/]*$', 'workflow_change_tags'),
+
     url(r'^account/credential[/]*$', 'credential', name='credential'),
     url(r'^account/credential/([0-9]+)[/]*$', 'save_credential', name='save_credential'),
 )

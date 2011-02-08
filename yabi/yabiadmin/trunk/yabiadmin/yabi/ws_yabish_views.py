@@ -41,12 +41,9 @@ def submitjob(request):
         workflow_json = json.dumps(workflow_dict)
         user = models.User.objects.get(name=request.user.username)
 
-        workflow = EngineWorkflow(name=workflow_dict["name"], user=user)
+        workflow = EngineWorkflow(name=workflow_dict["name"], user=user, json=workflow_json, original_json=workflow_json)
         workflow.save()
 
-        # put the workflow in the store
-        db.save_workflow(user.name, workflow.workflow_id, workflow_json, workflow.status, workflow.name)
-    
         # trigger a build via celery
         build.delay(workflow_id=workflow.id)
 

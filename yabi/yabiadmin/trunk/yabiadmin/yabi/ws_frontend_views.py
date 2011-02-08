@@ -29,11 +29,15 @@ from yabi.file_upload import *
 from django.contrib import auth
 from yabiadmin.decorators import memcache, authentication_required
 
+from yabiadmin.yabistoreapp import db
+
 
 import logging
 logger = logging.getLogger('yabiadmin')
 
 from UploadStreamer import UploadStreamer
+
+DATE_FORMAT = '%Y-%m-%d'
 
 class FileUploadStreamer(UploadStreamer):
     def __init__(self, host, port, selector, cookies, fields):
@@ -324,46 +328,145 @@ def put(request):
         raise
 
 @authentication_required
-def submitworkflow(request):
+def submit_workflow(request):
     yabiusername = request.user.username
     logger.debug(yabiusername)
 
-    workflow_json = request.POST["workflowjson"]
-    workflow_dict = json.loads(workflow_json)
+    received_json = request.POST["workflowjson"]
+    workflow_dict = json.loads(received_json)
     user = User.objects.get(name=yabiusername)
 
     # Check if the user already has a workflow with the same name, and if so,
     # munge the name appropriately.
-    if EngineWorkflow.objects.filter(user=user, name=workflow_dict["name"]).count():
-        # See if the name has already been munged.
-        match = re.search(r"^(.*) \(([0-9]+)\)$", workflow_dict["name"])
-        if match:
-            base = match.group(1)
-            val = int(match.group(2))
-        else:
-            base = workflow_dict["name"]
-            val = 1
-
-        used_names = [wf.name for wf in EngineWorkflow.objects.filter(user=user, name__startswith=base)]
-        used_names = dict(zip(used_names, [None] * len(used_names)))
-
-        munged_name = "%s (%d)" % (base, val)
-        while munged_name in used_names:
-            val += 1
-            munged_name = "%s (%d)" % (base, val)
-        
-        workflow_dict["name"] = munged_name
-    
-    workflow = EngineWorkflow(name=workflow_dict["name"], user=user)
+    workflow_dict["name"] = munge_name(yabiusername, workflow_dict["name"])
+   
+    workflow_json = json.dumps(workflow_dict)
+    workflow = EngineWorkflow(name=workflow_dict["name"], user=user, json=workflow_json, original_json=received_json)
     workflow.save()
 
-    # put the workflow in the store
-    workflow.json = json.dumps(workflow_dict)
-    
     # trigger a build via celery
     build.delay(workflow_id=workflow.id)
 
     return HttpResponse(json.dumps({"id":workflow.id}))
+
+def munge_name(user, workflow_name):
+    if EngineWorkflow.objects.filter(user__name=user, name=workflow_name).count() == 0:
+        if not db.does_workflow_exist(user, name=workflow_name):
+            return
+
+    # See if the name has already been munged.
+    match = re.search(r"^(.*) \(([0-9]+)\)$", workflow_name)
+    if match:
+        base = match.group(1)
+        val = int(match.group(2))
+    else:
+        base = workflow_name
+        val = 1
+
+    used_names = [wf.name for wf in EngineWorkflow.objects.filter(
+                        user__name=user, name__startswith=base)]
+    used_names.extend(db.workflow_names_starting_with(user, base))
+    used_names = dict(zip(used_names, [None] * len(used_names)))
+
+    munged_name = "%s (%d)" % (base, val)
+    while munged_name in used_names:
+        val += 1
+        munged_name = "%s (%d)" % (base, val)
+        
+    return munged_name
+ 
+@authentication_required
+def get_workflow(request, workflow_id):
+    yabiusername = request.user.username
+    logger.debug(yabiusername)
+
+    if not (workflow_id and yabiusername):
+        return JsonMessageResponseNotFound('No workflow_id or no username supplied')
+
+    workflow_id = int(workflow_id)
+    workflows = EngineWorkflow.objects.filter(id=workflow_id)
+    if len(workflows) == 1:
+        response = workflow_to_response(workflows[0])
+    else:
+        try:
+            response = db.get_workflow(yabiusername,workflow_id)
+        except (db.NoSuchWorkflow), e:
+            logger.critical('%s' % e)
+            return JsonMessageResponseNotFound(e)
+
+    return HttpResponse(json.dumps(response),
+                        mimetype='application/json')
+
+def workflow_to_response(workflow):
+    fmt = DATE_FORMAT
+    response = {
+            'id': workflow.id,
+            'name': workflow.name,
+            'last_modified_on': workflow.last_modified_on.strftime(fmt),
+            'created_on': workflow.created_on.strftime(fmt),
+            'status': workflow.status,
+            'json': json.loads(workflow.json),
+            'tags': [wft.tag.value for wft in workflow.workflowtag_set.all()] 
+        } 
+    return response
+
+@authentication_required
+def workflow_datesearch(request):
+    if request.method != 'GET':
+        return JsonMessageResponseNotAllowed(["GET"])
+
+    yabiusername = request.user.username
+    logger.debug(yabiusername)
+
+    fmt = DATE_FORMAT
+    tomorrow = lambda : datetime.today()+timedelta(days=1)
+
+    start = datetime.strptime(request.GET['start'], fmt)
+    end = request.GET.get('end')
+    if end is None:
+        end = tomorrow()
+    else:
+        end = datetime.strptime(end, fmt)
+    sort = request.GET['sort'] if 'sort' in request.GET else 'created_on'
+
+    workflows = EngineWorkflow.objects.filter(
+           user__name = yabiusername,
+           created_on__gte = start, created_on__lte = end
+        ).order_by(sort)
+    response = [workflow_to_response(w) for w in workflows]
+
+    archived_workflows = db.find_workflow_by_date(yabiusername,start,end,sort)
+
+    response.extend(archived_workflows)
+    response.sort(key=lambda x: x[sort])
+
+    return HttpResponse(json.dumps(response), mimetype='application/json')
+
+@authentication_required
+def workflow_change_tags(request, id=None):
+    if request.method != 'POST':
+        return JsonMessageResponseNotAllowed(["POST"])
+    id = int(id)
+
+    yabiusername = request.user.username
+    logger.debug(yabiusername)
+
+    if 'taglist' not in request.POST:
+        return HttpResponseBadRequest("taglist needs to be passed in\n")
+ 
+    taglist = request.POST['taglist'].split(',')
+    taglist = [t.strip() for t in taglist if t.strip()]
+    try:
+        workflow = EngineWorkflow.objects.get(pk=id)
+    except EngineWorkflow.DoesNotExist:
+        if db.does_workflow_exist(yabiusername, id=id):
+            db.change_workflow_tags(yabiusername, id, taglist)
+        else:
+            return HttpResponseNotFound()
+         
+    else:
+        workflow.change_tags(taglist)
+    return HttpResponse("Success")
 
 #@authentication_required
 def getuploadurl(request):

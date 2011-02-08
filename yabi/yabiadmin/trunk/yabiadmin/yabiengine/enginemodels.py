@@ -21,7 +21,7 @@ from yabiadmin.yabi.models import Backend, BackendCredential, Tool, User
 from yabiadmin.yabiengine import backendhelper 
 from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.yabiengine.commandlinehelper import CommandLineHelper, quote_argument
-from yabiadmin.yabiengine.models import Workflow, Task, Job, StageIn
+from yabiadmin.yabiengine.models import Workflow, Task, Job, StageIn, Tag
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
 from yabiadmin.yabiengine.YabiJobException import YabiJobException
 
@@ -48,7 +48,7 @@ class EngineWorkflow(Workflow):
         logger.debug('----- Building workflow id %d -----' % self.id)
 
         try:
-            workflow_dict = db.get_workflow(self.user.name,self.id)['json']
+            workflow_dict = json.loads(self.json)
             
             # sort out the stageout directory
             if 'default_stageout' in workflow_dict and workflow_dict['default_stageout']:
@@ -146,6 +146,25 @@ class EngineWorkflow(Workflow):
             logger.critical("Error in workflow")
             logger.critical(traceback.format_exc())
             raise
+
+    def change_tags(self, taglist):
+        current_tags = [wft.tag.value for wft in self.workflowtag_set.all()]
+        new_tags = [t for t in taglist if t not in current_tags]
+
+        # insert new tags
+        for new_tag in new_tags:
+            try:
+                tag = Tag.objects.get(value=new_tag)
+            except Tag.DoesNotExist:
+                tag = Tag.objects.create(value=new_tag)
+            self.workflowtag_set.create(tag=tag)
+
+        # delete old tags
+        for wft in self.workflowtag_set.exclude(tag__value__in=taglist):
+            wft.delete()
+            if not wft.tag.workflowtag_set.exists():
+                wft.tag.delete()
+
 
 class EngineJob(Job):
 
@@ -412,6 +431,21 @@ class EngineJob(Job):
     def get_errored_tasks_messages(self):
         return [X.error_msg for X in Task.objects.filter(job=self) if X.status == STATUS_ERROR]
 
+    def updateJson(self, snippet={}):
+        json_object = json.loads(self.workflow.json)
+
+        job_id = int(self.order)
+        assert json_object['jobs'][job_id]['jobId'] == job_id + 1 # jobs are 1 indexed in json
+
+        json_object['jobs'][job_id]['status'] = self.status
+        for key in snippet:
+           json_object['jobs'][job_id][key] = snippet[key]
+
+        if self.stageout:
+            json_object['jobs'][job_id]['stageout'] = self.stageout
+
+        self.workflow.json = json.dumps(json_object)
+        self.workflow.save()
 
 class EngineTask(Task):
 
@@ -596,24 +630,6 @@ class EngineTask(Task):
 # Django signals. These are only used to update the store. It should stay this way,
 # please refrain from adding anything here other than store updates.
 
-def signal_workflow_post_save(sender, **kwargs):
-    logger.debug("workflow post_save signal")
-    
-    try:
-        workflow = kwargs['instance']
-        updateset = {
-                 'name':workflow.name,
-                 'status':workflow.status
-                 }
-
-        #dont update the taglist with this set
-        return db.update_workflow( workflow.user.name, workflow.id, updateset )
-
-    except Exception, e:
-        logger.critical(e)
-        logger.critical(traceback.format_exc())
-        raise
-
 def signal_job_post_save(sender, **kwargs):
     logger.debug("job post_save signal")
 
@@ -632,16 +648,15 @@ def signal_job_post_save(sender, **kwargs):
         if ejob.status == STATUS_ERROR:
             data['errorMessage'] = str(ejob.get_errored_tasks_messages())
         logger.debug("Updating job "+str(ejob)+" with "+str(data))
-        StoreHelper.updateJob(ejob, data)
+        ejob.updateJson(data)
 
     except Exception, e:
         logger.critical(e)
         logger.critical(traceback.format_exc())
         raise
-    
-# connect up django signals
-post_save.connect(signal_workflow_post_save, sender=Workflow)
-post_save.connect(signal_job_post_save, sender=Job)
+   
 
-post_save.connect(signal_workflow_post_save, sender=EngineWorkflow)
+ 
+# connect up django signals
+post_save.connect(signal_job_post_save, sender=Job)
 post_save.connect(signal_job_post_save, sender=EngineJob)
