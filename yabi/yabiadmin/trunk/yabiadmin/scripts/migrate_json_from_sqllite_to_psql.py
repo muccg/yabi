@@ -67,7 +67,7 @@ def get_all_users():
 @transaction.commit_on_success
 def migrate_user(user):
     sqll_wfls = db.get_workflows(user)
-    sqll_wfl_ids = filter(lambda x: x is None, [s.get("id", None) for s in sqll_wfls])
+    sqll_wfl_ids = filter(lambda x: x is not None, [s.get("id", None) for s in sqll_wfls])
     missing = EngineWorkflow.objects.exclude(pk__in=sqll_wfl_ids).filter(user__name=user)
     if missing:
         raise MissingDataError('User %s has missing sqllite data' % user, 
