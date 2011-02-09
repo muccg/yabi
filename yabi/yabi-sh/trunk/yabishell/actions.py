@@ -27,7 +27,7 @@ class Action(object):
 
 class FileDownload(object):
     '''Mix into an Action that requires downloading files'''
-    get_url = 'ws/fs/get'
+    get_url = 'ws/fs/get/'
 
     def download_file(self, uri, dest, ignore_404=False):
         params = {'uri': uri}
@@ -66,7 +66,7 @@ class RemoteAction(Action):
 class Attach(Action, FileDownload):
     def __init__(self, *args, **kwargs):
         Action.__init__(self, *args, **kwargs)
-        self.url = 'workflows/'
+        self.url = 'ws/workflows/get/'
 
     def sleepgenerator(self):
         t = 1
@@ -211,7 +211,7 @@ class Ls(Action):
 class Jobs(Action):
     def __init__(self, *args, **kwargs):
         Action.__init__(self, *args, **kwargs)
-        self.url = 'workflows/datesearch'
+        self.url = 'ws/workflows/datesearch'
 
     def map_args(self, args):
         if args and args[0]:
