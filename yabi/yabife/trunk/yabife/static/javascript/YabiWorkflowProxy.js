@@ -30,7 +30,7 @@ function YabiWorkflowProxy(obj, collection) {
     
     this.dateEl = document.createElement("div");
     this.dateEl.className = "workflowDate";
-    this.dateEl.appendChild(document.createTextNode(this.payload.last_modified_on));
+    this.dateEl.appendChild(document.createTextNode(this.payload.created_on));
     this.proxyEl.appendChild(this.dateEl);
     
     this.el.appendChild(this.proxyEl);
