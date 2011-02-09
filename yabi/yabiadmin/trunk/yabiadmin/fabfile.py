@@ -1,5 +1,6 @@
 from fabric.api import env, local
 from ccgfab.base import *
+
 import os
 
 env.username = os.environ["USER"]
@@ -120,3 +121,14 @@ def _django_env():
     os.environ["CELERY_CHDIR"]=localPaths.getProjectDir()
     os.environ["PYTHONPATH"] = "/usr/local/etc/ccgapps/:" + localPaths.getProjectDir() + ":" + localPaths.getParentDir()
     os.environ["PROJECT_DIRECTORY"] = localPaths.getProjectDir()
+
+def manage_release(*args):
+    from ccgfab.vc.svn import ccg_checkout_tag, ccg_checkout_trunk
+    release = ccg_checkout_tag()
+    localPaths.target = release
+    _django_env()
+
+    print local(localPaths.getVirtualPython() + " " + localPaths.getProjectDir() + "/manage.py " + " ".join(args), capture=False)
+
+    
+        
