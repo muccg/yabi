@@ -397,7 +397,7 @@ def get_workflow(request, workflow_id):
     return HttpResponse(json.dumps(response),
                         mimetype='application/json')
 
-def workflow_to_response(workflow):
+def workflow_to_response(workflow, key=None):
     fmt = DATE_FORMAT
     response = {
             'id': workflow.id,
@@ -408,6 +408,8 @@ def workflow_to_response(workflow):
             'json': json.loads(workflow.json),
             'tags': [wft.tag.value for wft in workflow.workflowtag_set.all()] 
         } 
+    if key is not None:
+        response = (getattr(workflow,key), response)
     return response
 
 @authentication_required
@@ -427,18 +429,22 @@ def workflow_datesearch(request):
         end = tomorrow()
     else:
         end = datetime.strptime(end, fmt)
-    sort = request.GET['sort'] if 'sort' in request.GET else 'created_on'
-
+    sort = request.GET['sort'] if 'sort' in request.GET else '-created_on'
+    sort_dir, sort_field = ('ASC', sort)
+    if sort[0] == '-':
+        sort_dir, sort_field = ('DESC', sort[1:])
+ 
     workflows = EngineWorkflow.objects.filter(
            user__name = yabiusername,
            created_on__gte = start, created_on__lte = end
         ).order_by(sort)
-    response = [workflow_to_response(w) for w in workflows]
-
-    archived_workflows = db.find_workflow_by_date(yabiusername,start,end,sort)
+    response = [workflow_to_response(w, sort_field) for w in workflows]
+    
+    archived_workflows = db.find_workflow_by_date(yabiusername,start,end,sort_field,sort_dir)
 
     response.extend(archived_workflows)
-    response.sort(key=lambda x: x[sort])
+    response.sort(key=lambda x: x[0])
+    response = [r[1] for r in response]
 
     return HttpResponse(json.dumps(response), mimetype='application/json')
 

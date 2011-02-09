@@ -4,6 +4,7 @@ Support library to create and access the users personal history database
 """
 
 import sqlite3, os
+from datetime import datetime as datetime
 
 try:
     import json
@@ -327,17 +328,18 @@ def find_workflow_by_date(username, start, end='now', sort="created_on", dir="DE
     db = os.path.join(home, HISTORY_FILE)
     
     conn = sqlite3.connect(db)
-    
+   
+    query_line = '%s as sort_key, %s' % (sort, WORKFLOW_QUERY_LINE)
     c = conn.cursor()
     c.execute("""SELECT %s FROM yabistoreapp_workflow
         WHERE created_on >= date(?)
         AND created_on <= date(?)
-        ORDER BY %s %s"""%(WORKFLOW_QUERY_LINE,sort,dir),
+        ORDER BY %s %s"""%(query_line,sort,dir),
         (start,end) )
-    
+   
     rows = []
     for row in c:
-        rows.append( dict( zip( WORKFLOW_VARS, row ) ) )
+        rows.append( dict( zip( ['sort_key'] + WORKFLOW_VARS, row ) ) )
 
     if get_tags:
         for row in rows:
@@ -351,8 +353,16 @@ def find_workflow_by_date(username, start, end='now', sort="created_on", dir="DE
 
     conn.commit()
     c.close()
-    
-    return rows
+   
+    def get_sort_key_val(row):
+        val = row['sort_key']
+        if sort in ('last_modified_on', 'created_on'):
+            val = datetime.strptime(val, '%Y-%m-%d %H:%M:%S.%f')
+        return val
+
+    remove_sort_key = lambda d: dict(filter(lambda x: x[0] != 'sort_key', d.items()))
+ 
+    return [(get_sort_key_val(r), remove_sort_key(r)) for r in rows]
 
 def get_workflow(username, id, get_tags=True):
     """Return workflow with id 'id'
