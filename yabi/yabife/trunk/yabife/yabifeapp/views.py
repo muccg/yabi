@@ -639,7 +639,7 @@ def yabiadmin_login(request, username, password):
     http = memcache_http(request)
     resp, contents = http.make_request(login_request)
     if resp.status != 200: 
-        return False
+        return False, contents
     json_resp = json.loads(contents)
     http.finish_session()
     
