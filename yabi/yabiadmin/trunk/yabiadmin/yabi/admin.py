@@ -88,9 +88,9 @@ class QueueAdmin(admin.ModelAdmin):
     list_display = ['name', 'user_name', 'created_on']
 
 class CredentialAdmin(AdminBase):
-    list_display = ['description', 'user', 'username', 'encrypted', 'is_cached']
+    list_display = ['description', 'user', 'username', 'encrypted', 'is_cached','encrypt_on_login']
     list_filter = ['user']
-    actions = ['encrypt_credential','decrypt_credential','cache_credential','decache_credential']
+    actions = ['encrypt_credential','decrypt_credential','cache_credential','decache_credential','set_encrypt_on_login']
 
     def encrypt_credential(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
@@ -125,6 +125,12 @@ class CredentialAdmin(AdminBase):
         
     
     decache_credential.short_description = "Purge selected credentials from cache."
+    
+    def set_encrypt_on_login(self,request,queryset):
+        queryset.update(encrypt_on_login=True)
+        self.message_user(request, "%d credential%s successfully set to encrypt on login." % (len(queryset),"s" if len(queryset)==1 else "") )
+    set_encrypt_on_login.short_description = "Encrypt on login."
+    
     
     
 class BackendAdmin(AdminBase):

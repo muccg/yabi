@@ -313,7 +313,6 @@ class User(Base):
     backends_link.short_description = 'Backends'
     backends_link.allow_tags = True
 
-
     def __unicode__(self):
         return self.name
 
@@ -337,6 +336,7 @@ class Credential(Base):
 
     expires_on = models.DateTimeField( null=True )                      # null mean never expire this
     encrypted = models.BooleanField( null=False )
+    encrypt_on_login = models.BooleanField( null=False, default=True )
     
     username.help_text="The username on the backend this credential is for."
     user.help_text="Yabi username."
@@ -364,6 +364,10 @@ class Credential(Base):
         self.key = aes_dec_hex(self.key,key)
         
         self.encrypted = False
+        
+    def recrypt(self,oldkey,newkey):
+        self.decrypt(oldkey)
+        self.encrypt(newkey)
         
     def memcache_keyname(self):
         """return the memcache key for this credential"""

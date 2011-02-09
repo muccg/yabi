@@ -20,6 +20,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.ldap_helper import LDAPSearchResult, LDAPHandler
 from django.conf import settings
 
+from crypto import DecryptException
+
 from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.yabiengine.tasks import build
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
@@ -30,7 +32,6 @@ from django.contrib import auth
 from yabiadmin.decorators import memcache, authentication_required
 
 from yabiadmin.yabistoreapp import db
-
 
 import logging
 logger = logging.getLogger('yabiadmin')
@@ -77,7 +78,27 @@ class FileUploadStreamer(UploadStreamer):
 ## will need to change call from front end to include username
 ## then uncomment decorator
 
+
+def ensure_encrypted(username, password):
+    """returns true on successful encryption. false on failure to decrypt"""
+    # find the unencrypted credentials for this user that should be ecrypted and encrypt with the passed in CORRECT password
+    creds = Credential.objects.filter(user__name=username).filter(encrypt_on_login=True).filter(encrypted=False)
+    for cred in creds:
+        cred.encrypt(password)
+        cred.save()
+        
+    # decrypt all encrypted credentials and store in memcache
+    creds = Credential.objects.filter(user__name=username, encrypted=True)
+    try:
+        for cred in creds:
+            cred.send_to_memcache(password)
+    except DecryptException, de:
+        return False
+
+    return True                 #success
+
 def login(request):
+    print "LOGIN",request
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
     username = request.POST.get('username')
@@ -91,6 +112,13 @@ def login(request):
             response = {
                 "success": True
             }
+            
+            # encrypt any pending user credentials.
+            if not ensure_encrypted(user.username,password):
+                response = {
+                    "success": False,
+                    "message": "One or more of the credentials failed to decrypt with your password. Please see your system administrator."
+                }
         else:
             response = {
                 "success": False,
@@ -101,6 +129,7 @@ def login(request):
             "success": False,
             "message": "The user name and password are incorrect.",
         }
+        
     return HttpResponse(content=json.dumps(response))
 
 def logout(request):
@@ -499,7 +528,23 @@ def getuploadurl(request):
         json.dumps(upload_url)
     )
 
-
+@authentication_required
+def passchange(request):
+    if request.method != "POST":
+        return HttpResponseNotAllowed("Method must be POST")
+    
+    yabiuser = User.objects.get(name=request.user.username)
+    oldPassword = request.POST['oldPassword']
+    newPassword = request.POST['newPassword']
+    
+    # get all creds for this user that are encrypted
+    creds = Credential.objects.filter(user=yabiuser, encrypted=True)
+    for cred in creds:
+        cred.recrypt(oldPassword, newPassword)
+        cred.save()
+        
+    return HttpResponse(json.dumps("OK"))
+        
 @authentication_required
 def credential(request):
     if request.method != "GET":

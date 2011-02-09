@@ -24,6 +24,7 @@ urlpatterns = patterns('yabiadmin.yabi.ws_frontend_views',
 
     url(r'^account/credential[/]*$', 'credential', name='credential'),
     url(r'^account/credential/([0-9]+)[/]*$', 'save_credential', name='save_credential'),
+    url(r'^account/passchange[/]*$', 'passchange', name="passchange"),
 )
 
 # admin support pages
