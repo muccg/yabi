@@ -242,8 +242,9 @@ def login(request):
                         mail_admins_no_profile(request.user)
                         return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':"User is not associated with an appliance"})
 
-                    if not yabiadmin_login(request, username, password):
-                        return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':"System error"})
+                    success, message = yabiadmin_login(request, username, password)
+                    if not success:
+                        return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':message})
 
                     return HttpResponseRedirect(webhelpers.url("/"))
 
@@ -368,6 +369,9 @@ def password(request):
         return JsonMessageResponseServerError("Error changing password")
 
     request.user.save()
+    
+    # if all this succeeded we should tell the middleware to re-encrypt the users credentials with the new password.
+    reencrypt_user_credentials(request, request.POST["currentPassword"], request.POST["newPassword"])
 
     return JsonMessageResponse("Password changed successfully")
 
@@ -638,7 +642,11 @@ def yabiadmin_login(request, username, password):
         return False
     json_resp = json.loads(contents)
     http.finish_session()
-    return json_resp.get('success', False)
+    
+    success = json_resp.get('success', False)
+    message = json_resp.get('message', "System Error")
+    
+    return success, message
 
 def yabiadmin_logout(request):
     # TODO get the url from somewhere
@@ -652,3 +660,11 @@ def yabiadmin_logout(request):
         return json_resp.get('success', False)
     except ObjectDoesNotExist:
         pass
+
+def reencrypt_user_credentials(request, currentPassword, newPassword):
+    enc_request = PostRequest("ws/account/passchange", params={ "oldPassword": currentPassword, "newPassword": newPassword })
+    http = memcache_http(request)
+    resp, content = http.make_request(enc_request)
+    print "RESP:",resp
+    print "CONT:",content
+    assert resp['status']=='200'
