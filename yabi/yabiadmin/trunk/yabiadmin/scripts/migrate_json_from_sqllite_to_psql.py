@@ -5,8 +5,20 @@
 #
 # yabiadmin $ fab manage:shell_plus
 # shell> from scripts import migrate_json_from_sqllite_to_psql as m
+# 
+# To make a simulation only do:
+#
+# shell> m.DontAct = True
+#
 # shell> m.migrate(USERNAME) 
 #
+# or to migrate all users call without args:
+#
+# shell> m.migrate() 
+#
+# If you wan't to do the migration for real set back DontAct to False first
+#
+# shell> m.DontAct = False
 
 from yabi.models import User
 from yabistoreapp import db
@@ -23,6 +35,9 @@ class MissingDataError(StandardError):
 
 MigrationError = namedtuple('MigrationError', 'user msg details')
 
+# Set to True to allow making DB changes
+DontAct = False
+
 # entry point
 def migrate(*users):
     if not users:
@@ -31,7 +46,7 @@ def migrate(*users):
     succeeded = []
     for user in users:
         try:
-            migrate_user(user)
+            migrate_user(user, DontAct)
         except MissingDataError, e:
             failed.append(MigrationError(user, str(e), 
                 "The following workflows don't have SQLLite data:\n %s" % 
@@ -65,7 +80,7 @@ def get_all_users():
 
 
 @transaction.commit_on_success
-def migrate_user(user):
+def migrate_user(user, dont_act):
     sqll_wfls = db.get_workflows(user)
     sqll_wfl_ids = filter(lambda x: x is not None, [s.get("id", None) for s in sqll_wfls])
     missing = EngineWorkflow.objects.exclude(pk__in=sqll_wfl_ids).filter(user__name=user)
@@ -78,10 +93,11 @@ def migrate_user(user):
         try:
             to_wfl = EngineWorkflow.objects.get(pk=from_wfl['id'])
             if to_wfl.json is None:
-                to_wfl.json = json.dumps(from_wfl['json'])
-                to_wfl.change_tags(from_wfl['tags'])
-                to_wfl.save()
+                if not dont_act:
+                    to_wfl.json = json.dumps(from_wfl['json'])
+                    to_wfl.change_tags(from_wfl['tags'])
+                    to_wfl.save()
         except EngineWorkflow.DoesNotExist:
-            print 'MISSING: ' + str(from_wfl['id'])
+            print 'The following SQLite Workflow has no Postgres correspondent: ' + str(from_wfl['id'])
             pass
 
