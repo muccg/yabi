@@ -822,6 +822,13 @@ input {
     cursor: pointer;
 }
 
+.fakeButton:hover {
+    background: #eff3f6;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#fafdff', EndColorStr='#e7ebee');
+    background: -moz-linear-gradient(top, #fafdff, #e7ebee);
+    background: -webkit-gradient(linear, left top, left bottom, from(#fafdff), to(#e7ebee));
+}
+
 .largeButton {
     padding:4px;
     font-size:120%;
