@@ -32,6 +32,7 @@ YabiAccount.prototype.solidify = function() {
     }
 
     this.loading.hide();
+    this.list.selectItem(this.list.items[0]);
 };
 
 YabiAccount.prototype.destroyRightColumn = function () {

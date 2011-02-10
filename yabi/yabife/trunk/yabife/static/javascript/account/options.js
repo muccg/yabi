@@ -20,6 +20,8 @@ YabiAccountOptions.prototype.createList = function () {
 
     this.list = new RadioList(document.querySelector(".yabiMiddleColumn"));
     this.password = new YabiAccountPassword(this);
+
+    this.list.selectItem(this.list.items[0]);
 };
 
 YabiAccountOptions.prototype.destroyList = function () {
