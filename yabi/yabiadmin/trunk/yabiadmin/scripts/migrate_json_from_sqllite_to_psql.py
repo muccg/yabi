@@ -6,7 +6,7 @@
 # yabiadmin $ fab manage:shell_plus
 # shell> from scripts import migrate_json_from_sqllite_to_psql as m
 # 
-# To make a simulation only do:
+# To make a simulation only do (now True by default):
 #
 # shell> m.DontAct = True
 #
@@ -16,7 +16,7 @@
 #
 # shell> m.migrate() 
 #
-# If you wan't to do the migration for real set back DontAct to False first
+# If you want to do the migration for real set back DontAct to False first
 #
 # shell> m.DontAct = False
 
@@ -36,7 +36,7 @@ class MissingDataError(StandardError):
 MigrationError = namedtuple('MigrationError', 'user msg details')
 
 # Set to True to allow making DB changes
-DontAct = False
+DontAct = True
 
 # entry point
 def migrate(*users):
