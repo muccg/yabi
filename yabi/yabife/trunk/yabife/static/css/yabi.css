@@ -722,6 +722,10 @@ input {
     cursor: pointer;
 }
 
+.statusFilter:hover {
+    background-color: #ebf3f9;
+}
+
 .selectedStatusFilter {
     display: inline;
     border-radius: 8px;
