@@ -575,7 +575,8 @@ def memcache_http(request):
     user = request.user
 
     mp = MemcacheCookiePersister(settings.MEMCACHE_SERVERS,
-            key='%s-cookies-%s' %(settings.MEMCACHE_KEYSPACE, request.session.session_key))
+            key='%s-cookies-%s' %(settings.MEMCACHE_KEYSPACE, request.session.session_key),
+            cache_time=settings.SESSION_COOKIE_AGE)
           
     yabiadmin = user.get_profile().appliance.url
     return Http(base_url=yabiadmin, cache=False, cookie_persister=mp)
