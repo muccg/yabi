@@ -128,6 +128,8 @@ def adminproxy(request, url):
     except ObjectDoesNotExist:
         mail_admins_no_profile(request.user)
         return JsonMessageResponseUnauthorized("User is not associated with an appliance")
+    except AttributeError:
+        return JsonMessageResponseUnauthorized("Anonymous users do not have access to appliances")
 
 @authentication_required
 def adminproxy_cache(request, url):
@@ -179,6 +181,8 @@ def files(request):
     except ObjectDoesNotExist:
         mail_admins_no_profile(request.user)
         return logout(request)
+    except AttributeError:
+        return JsonMessageResponseUnauthorized("Anonymous users do not have access to YABI")
 
     return render_page("files.html", request)
 
@@ -191,6 +195,8 @@ def design(request, id=None):
     except ObjectDoesNotExist:
         mail_admins_no_profile(request.user)
         return logout(request)
+    except AttributeError:
+        return JsonMessageResponseUnauthorized("Anonymous users do not have access to YABI")
 
     return render_page("design.html", request, reuseId=id)
     
@@ -203,6 +209,8 @@ def jobs(request):
     except ObjectDoesNotExist:
         mail_admins_no_profile(request.user)
         return logout(request)
+    except AttributeError:
+        return JsonMessageResponseUnauthorized("Anonymous users do not have access to YABI")
 
     return render_page("jobs.html", request)
 
@@ -214,6 +222,8 @@ def account(request):
     except ObjectDoesNotExist:
         mail_admins_no_profile(request.user)
         return logout(request)
+    except AttributeError:
+        return JsonMessageResponseUnauthorized("Anonymous users do not have access to YABI")
 
     return render_page("errors/403.html", request, response=HttpResponseForbidden())
 
@@ -238,7 +248,7 @@ def login(request):
                     # as such.
                     try:
                         user.get_profile()
-                    except (SiteProfileNotAvailable, User.DoesNotExist):
+                    except (SiteProfileNotAvailable, User.DoesNotExist, AttributeError):
                         mail_admins_no_profile(request.user)
                         return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':"User is not associated with an appliance"})
 
@@ -281,7 +291,7 @@ def wslogin(request):
             # don't have an appliance, and hence can't log in as such.
             try:
                 user.get_profile()
-            except (SiteProfileNotAvailable, User.DoesNotExist):
+            except (SiteProfileNotAvailable, User.DoesNotExist, AttributeError):
                 mail_admins_no_profile(request.user)
                 response = {
                     "success": False,
@@ -325,6 +335,8 @@ def credentialproxy(request, url):
     except ObjectDoesNotExist:
         mail_admins_no_profile(request.user)
         return JsonMessageResponseUnauthorized("User is not associated with an appliance")
+    except AttributeError:
+        return JsonMessageResponseUnauthorized("You do not have access to this Web service")
 
     return JsonMessageResponseForbidden("You do not have access to this Web service")
 
@@ -337,7 +349,7 @@ def password(request):
         profile = request.user.get_profile()
         if not profile.user_option_access:
             return JsonMessageResponseForbidden("You do not have access to this Web service")
-    except ObjectDoesNotExist:
+    except (ObjectDoesNotExist, AttributeError):
         return JsonMessageResponseUnauthorized("You do not have access to this Web service")
 
     required = ("currentPassword", "newPassword", "confirmPassword")
@@ -600,6 +612,8 @@ def upload_file(request, user):
     except ObjectDoesNotExist:
         mail_admins_no_profile(user)
         return JsonMessageResponseForbidden("You do not have access to this Web service")
+    except AttributeError:
+        return JsonMessageResponseForbidden("You do not have access to this Web service")
    
     upload_path = appliance.path
     while len(upload_path) and upload_path[-1]=='/':
@@ -659,7 +673,7 @@ def yabiadmin_logout(request):
                 return False
             json_resp = json.loads(contents)
         return json_resp.get('success', False)
-    except ObjectDoesNotExist:
+    except (ObjectDoesNotExist, AttributeError):
         pass
 
 def reencrypt_user_credentials(request, currentPassword, newPassword):
