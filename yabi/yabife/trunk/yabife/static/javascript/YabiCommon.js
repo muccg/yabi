@@ -14,6 +14,22 @@ Yabi = {
 };
 
 /**
+ * Removes all children from the given element. Normally you'd use a library
+ * that does this for you, but sadly, we're not blessed with such a beast in
+ * YUI 2.
+ *
+ * @param {DOMElement} e The element to purge children from.
+ * @return {DOMElement}
+ */
+Yabi.util.empty = function(e) {
+    while (e.childNodes.length) {
+        e.removeChild(e.firstChild);
+    }
+
+    return e;
+};
+
+/**
  * Returns the offset from the top-left of the viewport for the given element.
  *
  * @return An object with "left" and "top" elements, each a number representing
@@ -52,4 +68,32 @@ Yabi.util.getViewportHeight = function() {
     }
 
     return height;
+};
+
+/**
+ * Replaces all child elements in the given element with the new element(s).
+ *
+ * @param {DOMElement} e
+ * @param {DOMElement} ...
+ * @return {DOMElement}
+ */
+Yabi.util.replace = function(e) {
+    Yabi.util.empty(e);
+
+    for (var i = 1; i < arguments.length; i++) {
+        e.appendChild(arguments[i]);
+    }
+
+    return e;
+};
+
+/**
+ * Updates the given element to contain only the given text.
+ *
+ * @param {DOMElement} e
+ * @param {String} text
+ * @return {DOMElement}
+ */
+Yabi.util.text = function(e, text) {
+    return Yabi.util.replace(e, document.createTextNode(text));
 };
