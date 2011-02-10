@@ -381,7 +381,7 @@ def submit_workflow(request):
 def munge_name(user, workflow_name):
     if EngineWorkflow.objects.filter(user__name=user, name=workflow_name).count() == 0:
         if not db.does_workflow_exist(user, name=workflow_name):
-            return
+            return workflow_name
 
     # See if the name has already been munged.
     match = re.search(r"^(.*) \(([0-9]+)\)$", workflow_name)
@@ -472,7 +472,7 @@ def workflow_datesearch(request):
     archived_workflows = db.find_workflow_by_date(yabiusername,start,end,sort_field,sort_dir)
 
     response.extend(archived_workflows)
-    response.sort(key=lambda x: x[0])
+    response.sort(key=lambda x: x[0], reverse=sort_dir=='DESC')
     response = [r[1] for r in response]
 
     return HttpResponse(json.dumps(response), mimetype='application/json')

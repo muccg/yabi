@@ -123,7 +123,7 @@ def does_workflow_exist(username, **kwargs):
     data = c.fetchall()
 
     c.close()
-    return (len(data) >= 0)
+    return (len(data) >= 1)
 
 def workflow_names_starting_with(username, base):
     ensure_user_db(username)
