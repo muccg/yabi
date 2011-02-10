@@ -79,9 +79,8 @@ function YabiWorkflow(editable) {
     this.tagInputEl.className = "displayNone";
     this.tagEl.appendChild( this.tagInputEl );
     
-    this.tagAddLink = new Image();
+    this.tagAddLink = document.createElement("div");
     this.tagAddLink.className = "tagAddLink";
-    this.tagAddLink.src = appURL + 'static/images/addtag.png';
     YAHOO.util.Event.addListener(this.tagAddLink, "click", this.addTagCallback, this);
     this.tagEl.appendChild(this.tagAddLink);
     
