@@ -5,6 +5,7 @@ from django.conf.urls.defaults import *
 from yabife import admin
 
 urlpatterns = patterns('yabife.yabifeapp.views',
+    (r'^status[/]*$', status_view, {'SSL': True}),
     (r'^(?P<url>engine/job/.*)$', 'adminproxy'),
     (r'^(?P<url>ws/account/credential.*)$', 'credentialproxy'),
     (r'^(?P<url>ws/fs/put)/(?P<session>[0-9a-f]{32})$', 'fileupload_session'),
