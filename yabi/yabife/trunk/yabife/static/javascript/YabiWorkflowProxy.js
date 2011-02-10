@@ -26,8 +26,6 @@ function YabiWorkflowProxy(obj, collection) {
         }
     } catch (e) {}
     
-    this.proxyEl.appendChild(document.createTextNode(this.detailsPayload.name));
-    
     this.dateEl = document.createElement("div");
     this.dateEl.className = "workflowDate";
     this.dateEl.appendChild(document.createTextNode(this.payload.created_on));
@@ -38,6 +36,8 @@ function YabiWorkflowProxy(obj, collection) {
     this.badgeEl = document.createElement("div");
     this.badgeEl.className = "badge"+ obj.status;
     this.proxyEl.appendChild(this.badgeEl);
+    
+    this.proxyEl.appendChild(document.createTextNode(this.detailsPayload.name));
     
     this.tagEl = document.createElement("div");
     this.tagEl.className = "tagDiv";
