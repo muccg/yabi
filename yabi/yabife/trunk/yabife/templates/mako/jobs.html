@@ -110,10 +110,10 @@
 
                 /* We need to size the file selector to use as much of the
                  * available screen real estate as possible. */
-                var height = getViewportHeight();
+                var height = Yabi.util.getViewportHeight();
                 if (height) {
                     var fs = column.querySelector(".fileSelectorBrowse");
-                    var top = getElementOffset(fs).top;
+                    var top = Yabi.util.getElementOffset(fs).top;
                     
                     // The 20 pixels is pure, unadulterated fudge factor.
                     var height = height - top - 20;

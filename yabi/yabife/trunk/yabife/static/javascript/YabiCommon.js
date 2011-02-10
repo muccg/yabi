@@ -8,6 +8,9 @@ YabiGlobalEventHandler = {
 YAHOO.util.Connect.failureEvent.subscribe(YabiGlobalEventHandler.failure, YabiGlobalEventHandler);
 
 
+// Utility functions.
+Yabi.util = {};
+
 /**
  * Returns the offset from the top-left of the viewport for the given element.
  *
@@ -15,7 +18,7 @@ YAHOO.util.Connect.failureEvent.subscribe(YabiGlobalEventHandler.failure, YabiGl
  *         the offset from the viewport origin in pixels.
  * @type Object
  */
-var getElementOffset = function(element) {
+Yabi.util.getElementOffset = function(element) {
     var left = element.offsetLeft;
     var top = element.offsetTop;
     
@@ -36,7 +39,7 @@ var getElementOffset = function(element) {
  * @return The viewport height in pixels.
  * @type Number
  */
-var getViewportHeight = function() {
+Yabi.util.getViewportHeight = function() {
     var height;
 
     if (typeof window.innerHeight != "undefined") {

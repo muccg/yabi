@@ -34,9 +34,9 @@
 
                 // Resize the file selector to roughly fit the available space.
                 var fs = document.querySelector(".fileSelector");
-                var height = getViewportHeight();
+                var height = Yabi.util.getViewportHeight();
                 if (fs && height) {
-                    var top = getElementOffset(fs).top;
+                    var top = Yabi.util.getElementOffset(fs).top;
 
                     // The 30 pixels is pure, unadulterated fudge factor.
                     var height = height - top - 30;
