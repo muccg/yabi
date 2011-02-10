@@ -8,8 +8,10 @@ YabiGlobalEventHandler = {
 YAHOO.util.Connect.failureEvent.subscribe(YabiGlobalEventHandler.failure, YabiGlobalEventHandler);
 
 
-// Utility functions.
-Yabi.util = {};
+// Utility function namespaces.
+Yabi = {
+    util: {}
+};
 
 /**
  * Returns the offset from the top-left of the viewport for the given element.
