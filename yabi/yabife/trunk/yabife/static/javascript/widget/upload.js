@@ -759,6 +759,12 @@ YAHOO.util.Event.onDOMReady(function () {
         return;
     }
 
+    var useFlash = false;
+
+    if(!useFlash) {
+        YAHOO.ccgyabi.widget.Upload.supportedImplementation = YAHOO.ccgyabi.widget.Upload.HTML;
+    } else {
+
     var testFlash = function () {
         YAHOO.ccgyabi.widget.Upload.supportedImplementation = YAHOO.ccgyabi.widget.Upload.Flash;
 
@@ -788,5 +794,6 @@ YAHOO.util.Event.onDOMReady(function () {
             testFlash();
         }
         catch (e) {}
+    }
     }
 });
