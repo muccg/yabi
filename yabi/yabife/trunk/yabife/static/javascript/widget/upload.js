@@ -765,35 +765,35 @@ YAHOO.util.Event.onDOMReady(function () {
         YAHOO.ccgyabi.widget.Upload.supportedImplementation = YAHOO.ccgyabi.widget.Upload.HTML;
     } else {
 
-    var testFlash = function () {
-        YAHOO.ccgyabi.widget.Upload.supportedImplementation = YAHOO.ccgyabi.widget.Upload.Flash;
+        var testFlash = function () {
+            YAHOO.ccgyabi.widget.Upload.supportedImplementation = YAHOO.ccgyabi.widget.Upload.Flash;
 
-        FBD.initialize(function (blocked) {
-            if (blocked) {
-                YAHOO.ccgyabi.widget.Upload.supportedImplementation = YAHOO.ccgyabi.widget.Upload.HTML;
+            FBD.initialize(function (blocked) {
+                if (blocked) {
+                    YAHOO.ccgyabi.widget.Upload.supportedImplementation = YAHOO.ccgyabi.widget.Upload.HTML;
+                }
+            });
+        };
+
+        YAHOO.ccgyabi.widget.Upload.supportedImplementation = YAHOO.ccgyabi.widget.Upload.HTML;
+
+        if (navigator.plugins && navigator.plugins["Shockwave Flash"]) {
+            testFlash();
+        }
+        else if (navigator.mimeTypes && navigator.mimeTypes["application/x-shockwave-flash"]) {
+            var flash = navigator.mimeTypes["application/x-shockwave-flash"];
+            if (flash && flash.enabledPlugin) {
+                testFlash();
             }
-        });
-    };
-
-    YAHOO.ccgyabi.widget.Upload.supportedImplementation = YAHOO.ccgyabi.widget.Upload.HTML;
-
-    if (navigator.plugins && navigator.plugins["Shockwave Flash"]) {
-        testFlash();
-    }
-    else if (navigator.mimeTypes && navigator.mimeTypes["application/x-shockwave-flash"]) {
-        var flash = navigator.mimeTypes["application/x-shockwave-flash"];
-        if (flash && flash.enabledPlugin) {
-            testFlash();
         }
-    }
-    else {
-        // IE. We'll only look for Flash 9 or later.
-        try {
-            console.log("IE test");
-            new ActiveXObject("ShockwaveFlash.ShockwaveFlash.9");
-            testFlash();
+        else {
+            // IE. We'll only look for Flash 9 or later.
+            try {
+                console.log("IE test");
+                new ActiveXObject("ShockwaveFlash.ShockwaveFlash.9");
+                testFlash();
+            }
+            catch (e) {}
         }
-        catch (e) {}
-    }
     }
 });
