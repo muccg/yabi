@@ -251,8 +251,8 @@ class ToolParameter(Base):
 class ToolOutputExtension(Base):
     tool = models.ForeignKey(Tool)
     file_extension = models.ForeignKey(FileExtension)
-    must_exist = models.NullBooleanField(default=False)
-    must_be_larger_than = models.PositiveIntegerField(null=True, blank=True)
+    must_exist = models.NullBooleanField(default=False) #TODO this field not currently in use
+    must_be_larger_than = models.PositiveIntegerField(null=True, blank=True) #TODO this field not currently in use
 
 class ToolGroup(Base):
     name = models.CharField(max_length=100, unique=True)
