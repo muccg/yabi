@@ -44,7 +44,7 @@ class ToolGroupingInline(admin.TabularInline):
 class ToolOutputExtensionInline(admin.TabularInline):
     model = ToolOutputExtension
     extra = 1
-
+    fields = ['file_extension']
 
 
 class ToolParameterFormset(BaseInlineFormSet):
