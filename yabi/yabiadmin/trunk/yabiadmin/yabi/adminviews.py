@@ -70,8 +70,8 @@ class ToolParamView:
                 ['"%s"' % af.name for af in tp.accepted_filetypes.all()]))
         if tp.output_file:
             props.append('Output File')
-        if tp.source_param:
-            props.append('Source parameter: ' + tp.source_param.switch)
+        if tp.use_batch_filename:
+            props.append('Use Batch Filename: ' + tp.use_batch_filename)
         if tp.extension_param:
             props.append('Extension parameter: ' + tp.extension_param.switch)
         return props
