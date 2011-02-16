@@ -338,15 +338,6 @@ def create_tool(request, tool_dict):
 
     # we need to do this in a separate loop otherwise the param we want to refer to doesn't exist yet
     for parameter in tool_dict["parameter_list"]:
-        # add source param
-        if "source_param" in parameter:
-            try:
-                source_toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["source_param"])
-                toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["switch"])
-                toolparameter.source_param=source_toolparameter
-                toolparameter.save()
-            except ObjectDoesNotExist,e:
-                logger.critical("Unable to add source parameter on parameter field: %s" % e)
 
         # add extension param
         if "extension_param" in parameter:
