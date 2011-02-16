@@ -598,7 +598,7 @@ class EngineTask(Task):
 
             # replace one instance of placeholder for this file
             quoted_filename = quote_argument(url_join(self.fsbackend_parts.path, self.working_dir, "input", filename))
-            self.command = self.command.replace('$', quoted_filename, 1)
+            self.command = self.command.replace('__yabi_fp', quoted_filename, 1)
 
             self.create_stagein(param=dirpath+'/', file=filename, scheme=self.fsscheme,
                            hostname=self.fsbackend_parts.hostname,
@@ -610,12 +610,16 @@ class EngineTask(Task):
         if batch_file:
             # add the task specific file replacing the % in the command line
             quoted_filename = quote_argument(url_join(self.fsbackend_parts.path, self.working_dir, "input", batch_file))
-            self.command = self.command.replace("%", quoted_filename)
+            self.command = self.command.replace("__yabi_bp", quoted_filename)
 
             self.create_stagein(param=uri, file=batch_file, scheme=self.fsscheme,
                            hostname=self.fsbackend_parts.hostname,
                            path=os.path.join(self.fsbackend_parts.path, self.working_dir, "input", batch_file),
                            username=self.fsbackend_parts.username)
+
+            # now use the filename in any output "extension param" parameters
+            self.command = self.command.replace("__yabi_bf__", os.path.basename(batch_file))
+
 
     def create_stagein(self, param=None, file=None, scheme=None, hostname=None, path=None, username=None):
         s, created = StageIn.objects.get_or_create(task=self,

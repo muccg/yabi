@@ -54,10 +54,6 @@ class ToolParameterFormset(BaseInlineFormSet):
 
     def add_fields(self, form, index):
         super(ToolParameterFormset, self).add_fields(form, index)
-        tool_only_queryset = ToolParameter.objects.filter(tool=self.instance)
-        form.fields["source_param"].queryset = tool_only_queryset
-        form.fields["extension_param"].queryset = tool_only_queryset
-
 
 class ToolParameterInline(admin.StackedInline):
     model = ToolParameter
@@ -67,7 +63,7 @@ class ToolParameterInline(admin.StackedInline):
 class ToolAdmin(AdminBase):
     form = ToolForm
     list_display = ['name', 'display_name', 'path', 'enabled', 'backend', 'fs_backend', 'tool_groups_str', 'tool_link', 'created_by', 'created_on']
-    inlines = [ToolOutputExtensionInline, ToolParameterInline] # need to add back in tool groupings and find out why it is not working with mango
+    inlines = [ToolOutputExtensionInline, ToolParameterInline] # TODO need to add back in tool groupings and find out why it is not working with mango
     search_fields = ['name', 'display_name', 'path']
     save_as = True
 

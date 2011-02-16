@@ -166,10 +166,8 @@ class Tool(Base):
         for p in tool_dict["parameter_list"]:
             tp = ToolParameter.objects.get(id=p["id"])
             p["acceptedExtensionList"] = tp.input_filetype_extensions()
-            if tp.source_param:
-                p["source_param"] = tp.source_param.switch
             if tp.extension_param:
-                p["extension_param"] = tp.extension_param.switch
+                p["extension_param"] = tp.extension_param.extension
         return tool_dict
     
     def json(self):
@@ -219,8 +217,8 @@ class ToolParameter(Base):
     input_file = models.BooleanField(blank=True, default=False)
     output_file = models.BooleanField(blank=True, default=False)
     accepted_filetypes = models.ManyToManyField(FileType, blank=True)
-    source_param = models.ForeignKey('self', related_name='source_parent', null=True, blank=True)
-    extension_param = models.ForeignKey('self', related_name='extension_parent', null=True, blank=True)
+    use_batch_filename = models.BooleanField(default=False)
+    extension_param = models.ForeignKey(FileExtension, null=True, blank=True)
     possible_values = models.TextField(null=True, blank=True)
     default_value = models.TextField(null=True, blank=True)
     helptext = models.TextField(null=True, blank=True)    
@@ -232,8 +230,8 @@ class ToolParameter(Base):
     input_file.help_text="Select if the switch takes a file as input from another tool."
     output_file.help_text="Select if the switch is specifying an output file."
     accepted_filetypes.help_text="The extensions of accepted filetypes for this switch."
-    source_param.help_text="Unused. Could be used again for appending and extension to the end of a input file. This switch would then refer to a file specified at another switch."
-    extension_param.help_text="Unused. Need to find what this is for."
+    use_batch_filename.help_text="If selected the tool will use the batch parameter file name as the basename of the output"
+    extension_param.help_text="If an extension is selected then this extension will be appended to the filename. This should only be set for specifying output files."
     possible_values.help_text="Json snippet for html select. See blast tool for examples."
     default_value.help_text="Value that will appear in field. If possible values is populated this should match one of the values so the select widget defaults to that option."
     helptext.help_text="Help text that is passed to the frontend for display to the user."

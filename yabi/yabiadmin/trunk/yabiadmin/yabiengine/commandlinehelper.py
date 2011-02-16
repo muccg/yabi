@@ -80,12 +80,22 @@ class CommandLineHelper():
                         input_file = (f, tp.input_filetype_extensions(),) # NB it's a tuple
                         self._other_files.append(input_file)
 
+
+            # if this parameter specifies "use_batch_filename" then use the batch_param filename as output
+            if tp.use_batch_filename and tp.output_file:
+                self.param_dict[tp.switch][0] = "__yabi_bf__"
+
+            # if it has has an "extension_param" then append the extension, if it is not there already
+            if tp.extension_param and tp.output_file:
+                if not str(self.param_dict[tp.switch][0]).endswith(".%s" % tp.extension_param):
+                    self.param_dict[tp.switch][0] = "%s.%s" % (self.param_dict[tp.switch][0], tp.extension_param)
+
             # if the switch is the batch on param switch put it in batch_files and add placeholder in command
             if tp == tool.batch_on_param:
                 for f in self.param_dict[tp.switch]:
                     input_file = (f, tp.input_filetype_extensions(),) # NB it's a tuple
                     self._batch_files.append(input_file)
-                self.param_dict[tp.switch] = ['%'] # use place holder now in self.command
+                self.param_dict[tp.switch] = ['__yabi_bp'] # use place holder now in self.command
             elif tp.input_file:
                 # add to job level stagins, later at task level we'll check these and add a stagein if needed
                 # only add if it is an input file parameter
@@ -93,7 +103,7 @@ class CommandLineHelper():
                 for f in self.param_dict[tp.switch]:
                     input_file = (f, tp.input_filetype_extensions(),) # NB it's a tuple
                     self._parameter_files.append(input_file)
-                self.param_dict[tp.switch] = ['$ '* filecount] # use place holder now in self.command
+                self.param_dict[tp.switch] = ['__yabi_fp '* filecount] # use place holder now in self.command
             else:
                 # Since argument quoting won't be done when the task is built,
                 # unlike file parameters, we should do it here.
