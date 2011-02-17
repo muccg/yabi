@@ -625,7 +625,7 @@ def upload_file(request, user):
     # examine cookie jar for our admin session cookie
     http = memcache_http(request)
     jar = http.cookie_jar
-    cookie_string = jar.cookies_to_send_header(user.get_profile().appliance.url)['Cookie']
+    cookie_string = jar.cookies_to_send_header(user.get_profile().appliance.url)['Cookie'] #TODO can this just be appliance and not user.get_profile().appliance.url
     
     streamer = FileUploadStreamer(host=appliance.host, port=appliance.port or 80, selector=upload_path+"/ws/fs/put?uri=%s"%quote(upload_uri), cookies=[cookie_string], fields=[])
     request.upload_handlers = [ streamer ]
