@@ -61,6 +61,7 @@ class FileGetResource(resource.PostableResource):
         username = address.username
         path = address.path
         hostname = address.hostname
+        port = address.port
         
         basepath, filename = os.path.split(path)
         
@@ -77,7 +78,7 @@ class FileGetResource(resource.PostableResource):
         def download_tasklet(req, channel):
             """Tasklet to do file download"""
             try:
-                procproto, fifo = bend.GetReadFifo(hostname,username,basepath,filename,yabiusername=yabiusername,creds=creds, priority=priority)
+                procproto, fifo = bend.GetReadFifo(hostname,username,basepath,port,filename,yabiusername=yabiusername,creds=creds, priority=priority)
             except NoCredentials, nc:
                 return channel.callback(http.Response( responsecode.UNAUTHORIZED, {'content-type': http_headers.MimeType('text', 'plain')}, str(nc) ))
             
@@ -159,4 +160,4 @@ class FileGetResource(resource.PostableResource):
 
     def http_GET(self, request):
         return self.handle_get(request)
-    
+   

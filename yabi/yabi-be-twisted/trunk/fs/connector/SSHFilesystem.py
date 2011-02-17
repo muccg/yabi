@@ -43,7 +43,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         configdir = config.config['backend']['certificates']
         ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
         
-        #instantiate a lock queue for this backend.
+        # instantiate a lock queue for this backend. Key refers to the particular back end. None is the global queue
         self.lockqueue = LockQueue( MAX_SSH_CONNECTIONS )
         
     def lock(self,*args,**kwargs):
@@ -55,7 +55,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
     #@lock
     @retry(5,(InvalidPath,PermissionDenied))
     #@call_count
-    def mkdir(self, host, username, path, yabiusername=None, creds={},priority=0):
+    def mkdir(self, host, username, path, port=22, yabiusername=None, creds={},priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         # acquire our queue lock
@@ -70,7 +70,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         # we need to munge the path for transport over ssh (cause it sucks)
         #mungedpath = '"' + path.replace('"',r'\"') + '"'
-        pp = ssh.Shell.mkdir(usercert,host,path, username=creds['username'], password=creds['password'])
+        pp = ssh.Shell.mkdir(usercert,host,path, port=port, username=creds['username'], password=creds['password'])
         
         while not pp.isDone():
             stackless.schedule()
@@ -99,7 +99,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
     #@lock
     @retry(5,(InvalidPath,PermissionDenied))
     #@call_count
-    def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}, priority=0):
+    def rm(self, host, username, path, port=22, yabiusername=None, recurse=False, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         # acquire our queue lock
@@ -114,7 +114,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         # we need to munge the path for transport over gsissh (cause it sucks)
         #mungedpath = '"' + path.replace('"',r'\"') + '"'
-        pp = ssh.Shell.rm(usercert,host,path,args="-r" if recurse else "", username=creds['username'], password=creds['password'])
+        pp = ssh.Shell.rm(usercert,host,path, port=port,args="-r" if recurse else "", username=creds['username'], password=creds['password'])
         
         while not pp.isDone():
             stackless.schedule()
@@ -143,11 +143,11 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
     #@lock
     @retry(5,(InvalidPath,PermissionDenied))
     #@call_count
-    def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}, priority=0):
+    def ls(self, host, username, path, port=22, yabiusername=None, recurse=False, culldots=True, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         if DEBUG:
-            print "SSHFilesystem::ls(",host,username,path,yabiusername,recurse,culldots,creds,priority,")"
+            print "SSHFilesystem::ls(",host,username,path,port,yabiusername,recurse,culldots,creds,priority,")"
         
         # acquire our queue lock
         if priority:
@@ -163,7 +163,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         # we need to munge the path for transport over gsissh (cause it sucks)
         #mungedpath = '"' + path.replace('"',r'\"') + '"'
-        pp = ssh.Shell.ls(usercert,host,path, args="-lFR" if recurse else "-lF", username=creds['username'], password=creds['password'] )
+        pp = ssh.Shell.ls(usercert,host,path, port=port, args="-lFR" if recurse else "-lF", username=creds['username'], password=creds['password'] )
         
         while not pp.isDone():
             stackless.schedule()
@@ -202,7 +202,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         return ls_data
         
     #@lock
-    def GetWriteFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
+    def GetWriteFifo(self, host=None, username=None, path=None, port=22, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         """sets up the chain needed to setup a write fifo from a remote path as a certain user.
         
         pass in here the username, path
@@ -224,12 +224,12 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             
         usercert = self.save_identity(creds['key'])
         
-        pp, fifo = ssh.Copy.WriteToRemote(usercert,dst,password=creds['password'],fifo=fifo)
+        pp, fifo = ssh.Copy.WriteToRemote(usercert,dst,port=port,password=creds['password'],fifo=fifo)
         
         return pp, fifo
     
     #@lock
-    def GetReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
+    def GetReadFifo(self, host=None, username=None, path=None, port=22, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         """sets up the chain needed to setup a read fifo from a remote path as a certain user.
         
         pass in here the username, path, and a deferred
@@ -252,7 +252,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         usercert = self.save_identity(creds['key'])
         
         #print "read from remote"
-        pp, fifo = ssh.Copy.ReadFromRemote(usercert,dst,password=creds['password'],fifo=fifo)
+        pp, fifo = ssh.Copy.ReadFromRemote(usercert,dst,port=port,password=creds['password'],fifo=fifo)
         #print "read from remote returned"
         
         return pp, fifo

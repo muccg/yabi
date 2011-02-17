@@ -52,6 +52,7 @@ class FileMkdirResource(resource.PostableResource):
         username = address.username
         path = address.path
         hostname = address.hostname
+        port = address.port
         
         fsresource = self.fsresource()
         if scheme not in fsresource.Backends():
@@ -65,7 +66,7 @@ class FileMkdirResource(resource.PostableResource):
         def do_mkdir():
             #print "hostname=",hostname,"path=",path,"username=",username
             try:
-                mkdirer=bend.mkdir(hostname,path=path, username=username, yabiusername=yabiusername, creds=creds, priority=priority)
+                mkdirer=bend.mkdir(hostname,path=path,port=port, username=username, yabiusername=yabiusername, creds=creds, priority=priority)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
             except BlockingException, be:
                 client_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(be)))

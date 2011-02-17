@@ -39,10 +39,12 @@ def Copy(src,dst,retry=COPY_RETRY, **kwargs):
     """Copy src (url) to dst (url) using the fileservice"""
     if DEBUG:
         print "Copying %s to %s"%(src,dst)
+    if 'priority' not in kwargs:
+        kwargs['priority']=str(DEFAULT_TASK_PRIORITY)
     for num in range(retry):
         #print "retry num=",num
         try:
-            code,message,data = GET(COPY_PATH,src=src,dst=dst, priority=DEFAULT_TASK_PRIORITY, **kwargs)
+            code,message,data = GET(COPY_PATH,src=src,dst=dst, **kwargs)
             if DEBUG:
                 print "code=",repr(code)
             if int(code)==200:
@@ -60,8 +62,12 @@ def Copy(src,dst,retry=COPY_RETRY, **kwargs):
     
 def RCopy(src, dst, **kwargs):
     #print "RCopying %s to %s"%(src,dst)
+    if 'priority' not in kwargs:
+        kwargs['priority']=str(DEFAULT_TASK_PRIORITY)
+
     try:
-        POST(RCOPY_PATH,src=src,dst=dst, priority=DEFAULT_TASK_PRIORITY, **kwargs)
+        print "POSTING",RCOPY_PATH,src,dst,DEFAULT_TASK_PRIORITY,"kwargs:",kwargs
+        POST(RCOPY_PATH,src=src,dst=dst, **kwargs)
         # success!
         return True
     except GETFailure, err:
@@ -69,18 +75,26 @@ def RCopy(src, dst, **kwargs):
         raise
     
 def List(path,recurse=False, **kwargs):
-    #print "LIST posting",LIST_PATH,path,recurse
-    code, message, data = GET(LIST_PATH,uri=path,recurse=recurse, priority=DEFAULT_TASK_PRIORITY, **kwargs)
+    if 'priority' not in kwargs:
+        kwargs['priority']=str(DEFAULT_TASK_PRIORITY)
+
+    code, message, data = GET(LIST_PATH,uri=path,recurse=recurse, **kwargs)
     #print "RESPONSE",code,message,data
     assert code==200
     #print "LIST:",data
     return json.loads(data)
 
 def Mkdir(path, **kwargs):
-    return GET(MKDIR_PATH,uri=path, priority=DEFAULT_TASK_PRIORITY, **kwargs)
+    if 'priority' not in kwargs:
+        kwargs['priority']=str(DEFAULT_TASK_PRIORITY)
+
+    return GET(MKDIR_PATH,uri=path, **kwargs)
 
 def Rm(path, recurse=False, **kwargs):
-    code, message, data = GET(RM_PATH,uri=path,recurse=recurse, priority=DEFAULT_TASK_PRIORITY, **kwargs)
+    if 'priority' not in kwargs:
+        kwargs['priority']=str(DEFAULT_TASK_PRIORITY)
+
+    code, message, data = GET(RM_PATH,uri=path,recurse=recurse, **kwargs)
     assert code==200
     return data
 

@@ -53,6 +53,7 @@ class FileListResource(resource.PostableResource):
         username = address.username
         path = address.path
         hostname = address.hostname
+        port = address.port
         
         # compile any credentials together to pass to backend
         creds={}
@@ -83,7 +84,7 @@ class FileListResource(resource.PostableResource):
             if DEBUG:
                 print "dolist() hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
             try:
-                lister=bend.ls(hostname,path=path, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds, priority=priority)
+                lister=bend.ls(hostname,path=path,port=port, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds, priority=priority)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream=json.dumps(lister)))
             except BlockingException, be:
                 client_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(be)))

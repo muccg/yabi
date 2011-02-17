@@ -118,6 +118,8 @@ class FileCopyResource(resource.PostableResource):
         dst_path, dst_filename = os.path.split(dst_address.path)
         src_hostname = src_address.hostname
         dst_hostname = dst_address.hostname
+        src_port = src_address.port
+        dst_port = dst_address.port
         
         # backends
         sbend = self.fsresource().GetBackend(src_scheme)
@@ -152,8 +154,8 @@ class FileCopyResource(resource.PostableResource):
         
         def copy(channel):
             try:
-                writeproto, fifo = dbend.GetWriteFifo(dst_hostname, dst_username, dst_path, dst_filename,yabiusername=yabiusername,creds=creds['dst'] if 'dst' in creds else {})
-                readproto, fifo2 = sbend.GetReadFifo(src_hostname, src_username, src_path, src_filename, fifo,yabiusername=yabiusername,creds=creds['src'] if 'src' in creds else {})
+                writeproto, fifo = dbend.GetWriteFifo(dst_hostname, dst_username, dst_path, dst_port, dst_filename,yabiusername=yabiusername,creds=creds['dst'] if 'dst' in creds else {})
+                readproto, fifo2 = sbend.GetReadFifo(src_hostname, src_username, src_path, src_port, src_filename, fifo,yabiusername=yabiusername,creds=creds['src'] if 'src' in creds else {})
             except BlockingException, be:
                 #sbend.unlock(locks[0])
                 #if locks[1]:
@@ -243,7 +245,7 @@ class FileCopyResource(resource.PostableResource):
             return self.handle_copy(request)
         
         deferred.addCallback(post_parsed)
-        deferred.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Job Submission Failed %s\n"%res) )
+        deferred.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Copy Submission Failed %s\n"%res) )
         
         return deferred
 

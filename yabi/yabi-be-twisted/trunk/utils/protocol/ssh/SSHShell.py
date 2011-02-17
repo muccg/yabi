@@ -29,8 +29,10 @@ class SSHShell(BaseShell):
         result = '"`echo -e \'%s\'`"'%(convert_filename_to_encoded_for_echo(filename))
         return result
 
-    def execute(self, certfile, host, command, username, password, port=22):
+    def execute(self, certfile, host, command, username, password, port=None):
         """Run inside gsissh, this command line. Command parts are passed in as a list of parameters, not a string."""
+        port = port or 22
+        
         subenv = self._make_env()
         
         command = [ self.python, self.ssh_exec,
@@ -45,11 +47,11 @@ class SSHShell(BaseShell):
             
         return BaseShell.execute(self,SSHExecProcessProtocol(password),command)
       
-    def ls(self, certfile, host, directory,username, password, args="-lFR"):
-        return self.execute(certfile,host,command=["ls",args,self._make_echo(directory)],username=username, password=password)
+    def ls(self, certfile, host, directory,username, password, args="-lFR", port=None):
+        return self.execute(certfile,host,command=["ls",args,self._make_echo(directory)],username=username, password=password, port=port)
       
-    def mkdir(self, certfile, host, directory,username, password, args="-p"):
-        return self.execute(certfile,host,command=["mkdir",args,self._make_echo(directory)],username=username, password=password)
+    def mkdir(self, certfile, host, directory,username, password, args="-p", port=None):
+        return self.execute(certfile,host,command=["mkdir",args,self._make_echo(directory)],username=username, password=password, port=port)
       
-    def rm(self, certfile, host, directory,username, password, args=None):
-        return self.execute(certfile,host,command=["rm",args,self._make_echo(directory)],username=username, password=password) if args else self.execute(certfile,host,command=["rm",self._make_echo(directory)],username=username, password=password) 
+    def rm(self, certfile, host, directory,username, password, args=None, port=None):
+        return self.execute(certfile,host,command=["rm",args,self._make_echo(directory)],username=username, password=password, port=port) if args else self.execute(certfile,host,command=["rm",self._make_echo(directory)],username=username, password=password, port=port) 

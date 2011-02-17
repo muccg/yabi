@@ -82,6 +82,8 @@ class FileRCopyResource(resource.PostableResource):
             dst_path, dst_filename = os.path.split(dst_address.path)
             src_hostname = src_address.hostname
             dst_hostname = dst_address.hostname
+            src_port = src_address.port
+            dst_port = dst_address.port
             
             # backends
             sbend = self.fsresource().GetBackend(src_scheme)

@@ -237,7 +237,6 @@ def POST(path,**kws):
     
     postdata=urllib.urlencode(kws)
     #postdata="src=gridftp1/cwellington/bi01/cwellington/test&dst=gridftp1/cwellington/bi01/cwellington/test2"
-    #print "POST DATA:",postdata
     
     factory = CallbackHTTPClientFactory(
         str("http://%s:%d%s"%(host,port,path)),

@@ -452,7 +452,7 @@ class MainTask(Task):
             pass
         
         try:
-            RCopy(outputuri,task['stageout'], yabiusername=self.yabiusername)
+            RCopy(outputuri,task['stageout'],yabiusername=self.yabiusername)
             self.log("Files successfuly staged out")
         except GETFailure, error:
             if "503" in error.message[1]:

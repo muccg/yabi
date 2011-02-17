@@ -64,7 +64,8 @@ class FileDeleteResource(resource.PostableResource):
         username = address.username
         path = address.path
         hostname = address.hostname
-        
+        port = address.port
+ 
         #print "URI",uri
         #print "ADDRESS",address
         
@@ -84,7 +85,7 @@ class FileDeleteResource(resource.PostableResource):
             try:
                 # if delete function is not disabled (for DEBUG purposes)
                 if not DISABLED:
-                    deleter=bend.rm(hostname,path=path, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds, priority=priority)
+                    deleter=bend.rm(hostname,path=path, port=port, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds, priority=priority)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
             except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
                 #print "rm call failed...\n%s"%traceback.format_exc()

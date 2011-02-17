@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Class to encapsulate the functionality in "globus-url-copy"
 """
 import os

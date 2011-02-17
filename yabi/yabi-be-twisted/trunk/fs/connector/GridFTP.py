@@ -43,7 +43,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         """return the full url for out path"""
         return "%s://%s%s"%(self.copymode,server,remotepath) + path
     
-    def mkdir(self, host, username, path, yabiusername=None, creds={}, priority=0):
+    def mkdir(self, host, username, path, port=None, yabiusername=None, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         # make sure we are authed
@@ -75,7 +75,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         
         return mkdir_data
         
-    def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}, priority=0):
+    def rm(self, host, username, path, port=None, yabiusername=None, recurse=False, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         # make sure we are authed
         if creds:
@@ -106,7 +106,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         
         return rm_data
     
-    def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}, priority=0):
+    def ls(self, host, username, path, port=None, yabiusername=None, recurse=False, culldots=True, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         if DEBUG:
@@ -150,7 +150,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
                         
         return ls_data
         
-    def GetWriteFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
+    def GetWriteFifo(self, host=None, username=None, path=None, port=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         """sets up the chain needed to setup a read fifo from a remote path as a certain user.
         
         pass in here the username, path, and a deferred
@@ -176,7 +176,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         
         return pp, fifo
     
-    def GetReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
+    def GetReadFifo(self, host=None, username=None, path=None, port=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         """sets up the chain needed to setup a read fifo from a remote path as a certain user.
         
         pass in here the username, path, and a deferred

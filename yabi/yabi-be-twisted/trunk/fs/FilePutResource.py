@@ -69,6 +69,7 @@ class FilePutResource(resource.PostableResource):
         username = address.username
         path = address.path
         hostname = address.hostname
+        port = address.port
         
         # get the backend
         fsresource = self.fsresource()
@@ -105,7 +106,7 @@ class FilePutResource(resource.PostableResource):
                     """Override this class and put in our own file open methods"""
                     def open_write_stream(self, filename):
                         print "Uploading file:",filename
-                        self.procproto, fifo = bend.GetWriteFifo(hostname,username,path,filename, yabiusername=yabiusername,creds=creds, priority=priority)
+                        self.procproto, fifo = bend.GetWriteFifo(hostname,username,path,port,filename, yabiusername=yabiusername,creds=creds, priority=priority)
                         
                         # give the engine a chance to fire up the process
                         stackless.schedule()
