@@ -408,6 +408,7 @@ class MainTask(Task):
                         if key in task['exec'] and task['exec'][key]:
                             extras[key]=task['exec'][key]
                     
+                    print "callfunc is",callfunc
                     callfunc(uri, command=task['exec']['command'], remote_info=task['remoteinfourl'],stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)     # this blocks untill the command is complete. or the execution errored
                     if 'error' in exec_status[0]:
                         print "TASK[%s]: Execution failed!"%(self.taskid)
@@ -440,7 +441,7 @@ class MainTask(Task):
 
     def resume(self, outputdir):
         # curry resume into the do method
-        return self.do(outputdir, lambda *x: Resume( self._jobid, *x))
+        return self.do(outputdir, lambda *x, **y: Resume( self._jobid, *x, **y))
         
     def stageout(self,outputuri):
         task=self.json
