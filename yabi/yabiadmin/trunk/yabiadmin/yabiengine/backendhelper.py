@@ -15,7 +15,7 @@ from django.core.servers.basehttp import FileWrapper
 
 import logging
 logger = logging.getLogger('yabiengine')
-
+  
 
 def get_backendcredential_for_uri(yabiusername, uri):
     """

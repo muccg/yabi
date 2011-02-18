@@ -473,10 +473,12 @@ class Backend(Base):
     hostname = models.CharField(max_length=512)
     port = models.IntegerField(null=True, blank=True)
     path = models.CharField(max_length=512)
+    max_connections = models.IntegerField(null=True, blank=True)
 
     scheme.help_text="Must be one of %s." % ", ".join(settings.VALID_SCHEMES)
     hostname.help_text="Hostname must not end with a /."
     path.help_text="Path must start and end with a /.<br/>Execution backends must only have / in the path field."
+    max_connections.help_text="Backend connection limit. Does not affect front end immediate mode requests. Blank means no limit on the number of connections. '0' means no connections allowed (frozen)."
 
     @property
     def uri(self):

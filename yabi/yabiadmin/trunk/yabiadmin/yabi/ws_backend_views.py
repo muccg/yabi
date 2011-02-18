@@ -8,6 +8,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 
 from yabiadmin.yabi.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
@@ -17,8 +18,6 @@ from yabiadmin.responses import *
 
 import logging
 logger = logging.getLogger('yabiadmin')
-
-
 
 def credential_uri(request, yabiusername):
     if 'uri' not in request.REQUEST:
@@ -37,3 +36,20 @@ def credential_uri(request, yabiusername):
         return JsonMessageResponseNotFound("Object not found")
     except DecryptedCredentialNotAvailable, dcna:
         return JsonMessageResponseServerError("Decrypted Credential Not Available: %s" % dcna, status=503)
+
+def backend_connection_limit(request,scheme,hostname):
+    filt = Q(scheme=scheme) & Q(hostname=hostname)
+    if 'port' in request.REQUEST:
+        if request.REQUEST['port'].lower() == 'none':
+            filt &= Q(port=None)
+        else:
+            filt &= Q(port=int(request.REQUEST['port']))
+    if 'path' in request.REQUEST:
+        filt &= Q(path=request.REQUEST['path'])
+            
+    backends = Backend.objects.filter(filt)
+    if not len(backends):
+        return HttpResponse("Object not found",status=404)
+    if len(backends)>1:
+        return HttpResponse("More than one matching backend object found",status=500)
+    return HttpResponse(json.dumps(backends[0].max_connections))
