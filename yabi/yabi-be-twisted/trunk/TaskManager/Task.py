@@ -435,7 +435,6 @@ class MainTask(Task):
                 
             stackless.schedule()
         
-        
     def execute(self, outputdir):
         return self.do(outputdir, Exec)
 
