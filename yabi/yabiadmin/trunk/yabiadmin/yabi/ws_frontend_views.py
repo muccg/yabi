@@ -98,7 +98,6 @@ def ensure_encrypted(username, password):
     return True                 #success
 
 def login(request):
-    print "LOGIN",request
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
     username = request.POST.get('username')
