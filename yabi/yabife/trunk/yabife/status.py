@@ -10,7 +10,7 @@ def check_database(request):
 
     from yabifeapp.models import Appliance, User
 
-    return (Appliance.objects.count() > 1 and User.objects.count() > 1)
+    return (Appliance.objects.count() > 0 and User.objects.count() > 1)
 
 
 def check_disk(request):
