@@ -73,7 +73,7 @@ class ToolParamView:
         if tp.use_batch_filename:
             props.append('Use Batch Filename: ' + tp.use_batch_filename)
         if tp.extension_param:
-            props.append('Extension parameter: ' + tp.extension_param.switch)
+            props.append('Extension parameter: ' + tp.extension_param.extension)
         return props
         return props
 
