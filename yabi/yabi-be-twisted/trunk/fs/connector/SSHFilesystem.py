@@ -78,7 +78,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         if priority:
             self.lockqueue.unlock(lock)
             
-        err, mkdir_data = pp.err, pp.out
+        err, out = pp.err, pp.out
         
         if pp.exitcode!=0:
             # error occurred
@@ -91,10 +91,10 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
                 raise Exception(err)
         
         if DEBUG:
-            print "mkdir_data=",mkdir_data
+            print "mkdir_data=",out
             print "err", err
         
-        return mkdir_data
+        return out
         
     #@lock
     @retry(5,(InvalidPath,PermissionDenied))
@@ -122,7 +122,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         if priority:
             self.lockqueue.unlock(lock)
             
-        err, rm_data = pp.err, pp.out
+        err, out = pp.err, pp.out
         
         if pp.exitcode!=0:
             # error occurred
@@ -135,10 +135,10 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
                 raise Exception(err)
         
         if DEBUG:
-            print "rm_data=",rm_data
+            print "rm_data=",out
             print "err", err
         
-        return rm_data
+        return out
     
     #@lock
     @retry(5,(InvalidPath,PermissionDenied))
