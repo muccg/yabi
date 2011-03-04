@@ -56,11 +56,13 @@ class RemoteAction(Action):
         params = {'name': self.name}
         for i,arg in enumerate(args):
             params['arg' + str(i)] = arg
-        print 'Running your job on the server.'
+
         resp, json_response = self.yabi.post(self.url, params)
         decoded_resp = self.decode_json(json_response)
         if not decoded_resp['success']:
             raise errors.RemoteError(decoded_resp['msg'])
+
+        print 'Running your job on the server. Id: %s' % decoded_resp['workflow_id']
         return decoded_resp['workflow_id']
 
 class Attach(Action, FileDownload):
@@ -225,6 +227,26 @@ class Jobs(Action):
         for job in response:
             print '%7d  %s  %10s  %s' % (job['id'], job['created_on'], job['status'].upper(), job['name'])
 
+class Status(Action):
+    def __init__(self, *args, **kwargs):
+        Action.__init__(self, *args, **kwargs)
+        self.url = 'ws/workflows/get'
+
+    def map_args(self, args):
+        # add the job id to the url
+        if args and args[0]:
+            self.url = '%s/%s' % (self.url, args[0])
+        return {}
+
+    def process_response(self, response):
+        try:
+            for key in ['status', 'name', 'tags', 'id', 'created_on', 'last_modified_on']:
+                print "%s:%s" % (key, response[key])
+            print 'stageout:%s' % response['json']['jobs'][0]['stageout']
+
+        except Exception, e:
+            print "Unable to load job status: %s" % e
+            
 class Cp(Action, FileDownload):
     def __init__(self, *args, **kwargs):
         Action.__init__(self, *args, **kwargs)
