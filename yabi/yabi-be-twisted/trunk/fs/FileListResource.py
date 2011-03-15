@@ -55,10 +55,6 @@ class FileListResource(resource.PostableResource):
         hostname = address.hostname
         port = address.port
         
-        # make sure path ends in a slash. this is necessary to stop symlink listing problem echoing the listed path rather than the directory it points to
-        if path[-1]!='/':
-            path+='/'
-        
         # compile any credentials together to pass to backend
         creds={}
         for varname in ['key','password','username','cert']:
