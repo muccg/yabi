@@ -93,6 +93,10 @@
     position:relative;
 }
 
+.fileSelectorListing .fileLink {
+    background:#fff url(../images/file-link.png) 2px 2px no-repeat;
+}
+
 .fileSelectorListing .fileItem:hover {
     text-decoration: none;
 }
@@ -136,6 +140,14 @@
 
 .fileSelectorListing .dirItem.hover, .fileSelectorListing .dirItem:hover {
     background:#fff url(../images/folder_open.png) 2px 2px no-repeat;
+}
+
+.fileSelectorListing .dirLink {
+    background:#fff url(../images/folder-link.png) 2px 2px no-repeat;
+}
+
+.fileSelectorListing .dirLink.hover, .fileSelectorListing .dirLink:hover {
+    background:#fff url(../images/folder_open-link.png) 2px 2px no-repeat;
 }
 
 .fileSelectorListing .dirItem a {

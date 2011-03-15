@@ -189,6 +189,9 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
         for (index in this.browseListing[toplevelindex].directories) {
             fileEl = document.createElement("div");
             fileEl.className = "dirItem";
+            if (this.browseListing[toplevelindex].directories[index][3]) {
+                fileEl.className += " dirLink"                                      // this is a symlink, so change the icon image
+            }
             fileEl.appendChild(document.createTextNode(this.browseListing[toplevelindex].directories[index][0]));
             this.fileListEl.appendChild(fileEl);
             
@@ -226,6 +229,9 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
         for (index in this.browseListing[toplevelindex].files) {
             fileEl = document.createElement("a");
             fileEl.className = "fileItem";
+            if (this.browseListing[toplevelindex].files[index][3]) {
+                fileEl.className += " fileLink"                                      // this is a symlink, so change the icon image
+            }
             fileEl.appendChild(document.createTextNode(this.browseListing[toplevelindex].files[index][0]));
             this.fileListEl.appendChild(fileEl);
             
