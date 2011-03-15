@@ -166,6 +166,7 @@ class NullBackendTask(Task):
         # for each stagein, copy to stageout NOT the stagein destination
         for copy in self.json['stagein']:
             src = copy['src']
+            method = copy['method'] if 'method' in copy else 'copy'                     # copy or link
             
             # check that destination directory exists.
             scheme,address = parse_url(dst)
@@ -180,7 +181,7 @@ class NullBackendTask(Task):
                     print "list result:", listing
             except Exception, error:
                 # directory does not exist
-                #make dir
+                # make dir
                 try:
                     Mkdir(remotedir, yabiusername=self.yabiusername)
                 except GETFailure, gf:

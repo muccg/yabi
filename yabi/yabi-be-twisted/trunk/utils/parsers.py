@@ -25,19 +25,31 @@ def parse_ls_generate_items(lines):
     """A generator that is passed lines of a ls output, and generates an item for each line"""
     for line in lines:
         parts=line.split(None,8)
-        if line.startswith('/') and line.endswith(':'):
+        if line.startswith('/') and line.endswith(':'):                             # only absolute path listings are supported (start with '/', not '.')
             # header
             yield (line[:-1],)
         elif len(parts)==2:
             assert parts[0]=="total"
         elif len(parts)==9:
+            # check for symlink
+            nodetype='f'
+            link = False
+            if parts[0][0]=='l':
+                #its a symlink
+                link = True
+                parts[8],destination=parts[8].rsplit(' -> ',1)                               # truncate linked to part
+                if destination[-1]=='/':
+                    nodetype='d'
+            if parts[0][0]=='d':
+                nodetype='d'
+                parts[8]=parts[8][:-1]
             #body
             filename, filesize, date = (parts[8], int(parts[4]), "%s %s %s"%tuple(parts[5:8]))
             if filename[-1] in "*@|":
                 # filename ends in a "*@|"
-                yield (filename[:-1], filesize, date)
+                yield (nodetype,filename[:-1], filesize, date, link)
             else:
-                yield (filename, filesize, date)
+                yield (nodetype,filename, filesize, date, link)
         else:
             pass                #ignore line
 
@@ -57,17 +69,17 @@ def parse_ls_directories(data, culldots=True):
             filelisting=[]                  # space to store listing
             dirlisting=[]
         else:
-            assert len(line)==3
+            assert len(line)==5
             if filelisting==None and dirlisting==None:
                 # we are probably a non recursive listing. Set us up for a single dir
                 assert presentdir==None
                 filelisting, dirlisting = [], []
 
-            if line[0][-1]=="/":
-                if not culldots or (line[0][:-1]!="." and line[0][:-1]!=".."):
-                    dirlisting.append((line[0][:-1],line[1],line[2]))                #line[0][:-1] removes the trailing /
+            if line[0][0]=="d":
+                if not culldots or (line[1][:-1]!="." and line[1][:-1]!=".."):
+                    dirlisting.append(line[1:])                
             else:
-                filelisting.append(line)
+                filelisting.append(line[1:])
     
     # send the last one
     if None not in [filelisting,dirlisting]:

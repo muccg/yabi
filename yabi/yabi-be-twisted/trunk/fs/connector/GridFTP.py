@@ -149,6 +149,76 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
             del ls_data[None]
                         
         return ls_data
+
+    def ln(self, host, username, target, link, port=None, yabiusername=None, recurse=False, culldots=True, creds={}, priority=0):
+        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
+        
+        if DEBUG:
+            print "GridFTP::ln(",host,username,target,link,yabiusername,recurse,culldots,creds,")"
+        
+        # make sure we are authed
+        if creds:
+            self.EnsureAuthedWithCredentials(host, **creds)
+        else:
+            self.EnsureAuthed(yabiusername, SCHEMA,username,host,target)
+        
+        usercert = self.GetAuthProxy(host).ProxyFile(username)
+        # we need to munge the path for transport over gsissh (cause it sucks)
+        #mungedpath = '"' + path.replace('"',r'\"') + '"'
+        pp = globus.Shell.ln(usercert,host,target,link)
+        
+        while not pp.isDone():
+            stackless.schedule()
+            
+        err, out = pp.err, pp.out
+        
+        if pp.exitcode!=0:
+            # error occurred
+            if "Permission denied" in err:
+                raise PermissionDenied(err)
+            else:
+                raise InvalidPath(err)
+       
+        if DEBUG:
+            print "ln_out", out
+            print "ln_err", err
+        
+        return out
+
+    def cp(self, host, username, src, dst, port=None, yabiusername=None, recurse=False, culldots=True, creds={}, priority=0):
+        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
+        
+        if DEBUG:
+            print "GridFTP::cp(",host,username,src,dst,yabiusername,recurse,culldots,creds,")"
+        
+        # make sure we are authed
+        if creds:
+            self.EnsureAuthedWithCredentials(host, **creds)
+        else:
+            self.EnsureAuthed(yabiusername, SCHEMA,username,host,src)
+        
+        usercert = self.GetAuthProxy(host).ProxyFile(username)
+        # we need to munge the path for transport over gsissh (cause it sucks)
+        #mungedpath = '"' + path.replace('"',r'\"') + '"'
+        pp = globus.Shell.ln(usercert,host,src,dst)
+        
+        while not pp.isDone():
+            stackless.schedule()
+            
+        err, out = pp.err, pp.out
+        
+        if pp.exitcode!=0:
+            # error occurred
+            if "Permission denied" in err:
+                raise PermissionDenied(err)
+            else:
+                raise InvalidPath(err)
+       
+        if DEBUG:
+            print "cp_out", out
+            print "cp_err", err
+        
+        return out
         
     def GetWriteFifo(self, host=None, username=None, path=None, port=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         """sets up the chain needed to setup a read fifo from a remote path as a certain user.

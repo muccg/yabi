@@ -52,7 +52,6 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
     def unlock(self, tag):
         return self.lockqueue.unlock(tag)
         
-    #@lock
     @retry(5,(InvalidPath,PermissionDenied))
     #@call_count
     def mkdir(self, host, username, path, port=22, yabiusername=None, creds={},priority=0):
@@ -200,6 +199,94 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         os.unlink(usercert)
                         
         return ls_data
+        
+    @retry(5,(InvalidPath,PermissionDenied))
+    #@call_count
+    def ln(self, host, username, target, link, port=22, yabiusername=None, creds={},priority=0):
+        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
+        
+        # acquire our queue lock
+        if priority:
+            lock = self.lockqueue.lock()
+        
+        # If we don't have creds, get them
+        if not creds:
+            creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, target)
+        
+        usercert = self.save_identity(creds['key'])                         #, tag=(yabiusername,username,host,path)
+        
+        # we need to munge the path for transport over ssh (cause it sucks)
+        #mungedpath = '"' + path.replace('"',r'\"') + '"'
+        pp = ssh.Shell.ln(usercert,host,target, link, port=port, username=creds['username'], password=creds['password'])
+        
+        while not pp.isDone():
+            stackless.schedule()
+            
+        if priority:
+            self.lockqueue.unlock(lock)
+            
+        err, out = pp.err, pp.out
+        
+        if pp.exitcode!=0:
+            # error occurred
+            if "Permission denied" in err:
+                raise PermissionDenied(err)
+            elif "No such file or directory" in out:
+                raise InvalidPath("No such file or directory\n")
+            else:
+                print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
+                raise Exception(err)
+        
+        if DEBUG:
+            print "ln_data=",out
+            print "ln_err", err
+        
+        return out
+        
+    @retry(5,(InvalidPath,PermissionDenied))
+    #@call_count
+    def cp(self, host, username, src, dst, port=22, yabiusername=None, creds={},priority=0):
+        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
+        
+        # acquire our queue lock
+        if priority:
+            lock = self.lockqueue.lock()
+        
+        # If we don't have creds, get them
+        if not creds:
+            creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
+        
+        usercert = self.save_identity(creds['key'])                         #, tag=(yabiusername,username,host,path)
+        
+        # we need to munge the path for transport over ssh (cause it sucks)
+        #mungedpath = '"' + path.replace('"',r'\"') + '"'
+        pp = ssh.Shell.cp(usercert,host,src, dst, port=port, username=creds['username'], password=creds['password'])
+        
+        while not pp.isDone():
+            stackless.schedule()
+            
+        if priority:
+            self.lockqueue.unlock(lock)
+            
+        err, out = pp.err, pp.out
+        
+        if pp.exitcode!=0:
+            # error occurred
+            if "Permission denied" in err:
+                raise PermissionDenied(err)
+            elif "No such file or directory" in out:
+                raise InvalidPath("No such file or directory\n")
+            else:
+                print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
+                raise Exception(err)
+        
+        if DEBUG:
+            print "cp_data=",out
+            print "cp_err", err
+        
+        return out
+        
+    
         
     #@lock
     def GetWriteFifo(self, host=None, username=None, path=None, port=22, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):

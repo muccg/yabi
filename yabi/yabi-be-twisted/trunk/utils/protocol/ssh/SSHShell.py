@@ -55,3 +55,10 @@ class SSHShell(BaseShell):
       
     def rm(self, certfile, host, directory,username, password, args=None, port=None):
         return self.execute(certfile,host,command=["rm",args,self._make_echo(directory)],username=username, password=password, port=port) if args else self.execute(certfile,host,command=["rm",self._make_echo(directory)],username=username, password=password, port=port) 
+
+    def ln(self, certfile, host, target, link, username, password, args="-s", port=None):
+        return self.execute(certfile,host,command=["ln",args,self._make_echo(target),self._make_echo(link)],username=username, password=password, port=port) if args else self.execute(certfile,host,command=["ln",self._make_echo(target),self._make_echo(link)],username=username, password=password, port=port)
+        
+    def cp(self, certfile, host, src, dst, username, password, args=None, port=None):
+        return self.execute(certfile,host,command=["cp",args,self._make_echo(src),self._make_echo(dst)],username=username, password=password, port=port) if args else self.execute(certfile,host,command=["cp",self._make_echo(src),self._make_echo(dst)],username=username, password=password, port=port)
+        

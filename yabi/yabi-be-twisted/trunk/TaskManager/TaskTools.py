@@ -97,6 +97,10 @@ def Rm(path, recurse=False, **kwargs):
     code, message, data = GET(RM_PATH,uri=path,recurse=recurse, **kwargs)
     assert code==200
     return data
+    
+def Ln(path):
+    """create symlink on a uri to another location on the same filesystem"""
+    pass
 
 def Log(logpath,message):
     """Report an error to the webservice"""
