@@ -582,6 +582,10 @@ YabiFileSelector.prototype.hydrate = function(path) {
     
     //load json
     var jsUrl, jsCallback;
+    if(path.length && path.charAt(path.length-1)!="/")
+    {
+        path += "/"
+    }
     jsUrl =  baseURL + "?uri=" + escape(path);
     jsCallback = {
             success: this.hydrateResponse,
