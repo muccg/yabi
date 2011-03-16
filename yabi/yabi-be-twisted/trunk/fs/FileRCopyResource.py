@@ -125,7 +125,7 @@ class FileRCopyResource(resource.PostableResource):
                                 pass
                             created.append(dst+destpath)
                              
-                        for file,size,date in fsystem[directory]['files']:
+                        for file,size,date,link in fsystem[directory]['files']:
                             if DEBUG:
                                 print "COPY",file,size,date
                                 print "EXTRA",">",destpath,">",directory
