@@ -16,6 +16,8 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django import forms
 from django.forms.util import ErrorList
+from suds.client import Client
+from suds.xsd.doctor import ImportDoctor, Import
 
 import logging
 logger = logging.getLogger('yabiadmin')
@@ -217,24 +219,26 @@ def backend_cred_test(request, backend_cred_id):
 def add_tool(request):
 
     if request.method == 'GET':
-        return render_to_response('yabi/addtool.html',
+        return render_to_response('yabi/add.html',
                                   {'form':AddToolForm(),
                                    'user':request.user,
                                    'title': 'Add Tool',
                                    'root_path':urlresolvers.reverse('admin:index'),                                   
-                                   'tool_path': urlresolvers.reverse('add_tool_view')
+                                   'action_path': urlresolvers.reverse('add_tool_view'),
+                                   'breadcrumb':'Add Tool'
                                    }
                                   )
     else:
 
         f = AddToolForm(request.POST)
         if not f.is_valid():
-            return render_to_response('yabi/addtool.html',
+            return render_to_response('yabi/add.html',
                                       {'form': f,
                                        'user':request.user,
                                        'title': 'Add Tool',
                                        'root_path':urlresolvers.reverse('admin:index'),                                       
-                                       'tool_path': urlresolvers.reverse('add_tool_view')
+                                       'action_path': urlresolvers.reverse('add_tool_view'),
+                                       'breadcrumb':'Add Tool'
                                        }
                                       )
     
@@ -447,6 +451,91 @@ def password_collection(request):
 
         return render_to_response('yabi/crypt_password.html', render_data)
     
+
+
+@staff_member_required
+def add_wsdl(request):
+
+    if request.method == 'GET':
+        return render_to_response('yabi/add.html',
+                                  {'form':WsdlForm(),
+                                   'user':request.user,
+                                   'title': 'Add Tool From WSDL',
+                                   'root_path':urlresolvers.reverse('admin:index'),                                   
+                                   'action_path': urlresolvers.reverse('add_wsdl_view'),
+                                   'breadcrumb':'Add WSDL'                                   
+                                   }
+                                  )
+    else:
+
+        f = WsdlForm(request.POST)
+        if not f.is_valid():
+            return render_to_response('yabi/add.html',
+                                      {'form': f,
+                                       'user':request.user,
+                                       'title': 'Add Tool from WSDL',
+                                       'root_path':urlresolvers.reverse('admin:index'),                                       
+                                       'action_path': urlresolvers.reverse('add_wsdl_view'),
+                                       'breadcrumb':'Add WSDL'                                   
+                                       }
+                                      )
+    
+        else:
+
+
+            result = ''
+            url = f.cleaned_data["url"]
+            #client = Client(url)
+
+            imp = Import('http://schemas.xmlsoap.org/soap/encoding/')
+            doctor = ImportDoctor(imp)
+            client = Client(url, doctor=doctor)
+
+
+            for sd in client.sd:
+                for port in sd.ports:
+                    for method in port[1]:
+                        result += "%s<br/>" % method[0]
+                        for parameter in method[1]:
+                            result += " - %s %s" % (parameter[0], sd.xlate(parameter[1]))
+                            result += "<br/><br/>"
+
+## >>> for p in sd.ports:
+## ...  for m in p[1]:
+## ...   print m[0]
+## ...   for x in m[1]:
+## ...    print x[0], sd.xlate(x[1])
+## ... 
+
+
+
+
+##         for p in self.ports:
+##             s.append(indent(2))
+##             s.append('(%s)' % p[0].name)
+##             s.append(indent(3))
+##             s.append('Methods (%d):' % len(p[1]))
+##             for m in p[1]:
+##                 sig = []
+##                 s.append(indent(4))
+##                 sig.append(m[0])
+##                 sig.append('(')
+##                 for p in m[1]:
+##                     sig.append(self.xlate(p[1]))
+##                     sig.append(' ')
+##                     sig.append(p[0])
+##                     sig.append(', ')
+##                 sig.append(')')
+##                 try:
+##                     s.append(''.join(sig))
+##                 except:
+##                     pass
+##             s.append(indent(3))
+            
+
+            return HttpResponse(result)
+            
+            #return HttpResponseRedirect(urlresolvers.reverse('admin:yabi_tool_change', args=(tool.id,)))
 
 
 
