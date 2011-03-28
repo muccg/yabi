@@ -17,6 +17,12 @@ logger = logging.getLogger('yabiengine')
 
 from constants import *
 
+STAGING_COPY_CHOICES = (
+    ( 'copy',   'remote copy' ),
+    ( 'lcopy',  'local copy' ),
+    ( 'link',   'symbolic link' )
+)
+
 class Status(object):
     COLOURS = {
         STATUS_PENDING:  'grey',
@@ -103,6 +109,8 @@ class Job(models.Model, Editable, Status):
     parameter_files = models.TextField(blank=True, null=True)
     other_files = models.TextField(blank=True, null=True)
     stageout = models.CharField(max_length=1000, null=True)
+    preferred_stagein_method = models.CharField(max_length=5, null=False, choices=STAGING_COPY_CHOICES)
+    preferred_stageout_method = models.CharField(max_length=5, null=False, choices=STAGING_COPY_CHOICES)
 
 
     def __unicode__(self):
@@ -172,8 +180,19 @@ class Task(models.Model, Editable, Status):
             remoteidurl = webhelpers.url("/engine/remote_id/%d" % self.id)
             remoteinfourl = webhelpers.url("/engine/remote_info/%d" % self.id)
 
+        # get our tools fs_backend
         fsscheme, fsbackend_parts = uriparse(self.job.fs_backend)
-
+        fs_backend = backendhelper.get_backend_for_uri(self.job.workflow.user.name,self.job.fs_backend)
+        
+        # if the tools filesystem and the users stageout area are on the same schema/host/port
+        # then use the preferred_copy_method, else default to 'copy'
+        so_backend = backendhelper.get_backend_for_uri(self.job.workflow.user.name,self.job.stageout)
+        soscheme, sobackend_parts = uriparse(self.job.stageout)
+        if  so_backend==fs_backend and soscheme==fsscheme and sobackend_parts.hostname==fsbackend_parts.hostname and sobackend_parts.port==fsbackend_parts.port and sobackend_parts.username==fsbackend_parts.username:
+            stageout_method = self.job.preferred_stageout_method
+        else:
+            stageout_method = "copy"
+        
         output = {
             "yabiusername":self.job.workflow.user.name,
             "taskid":self.id,
@@ -194,18 +213,19 @@ class Task(models.Model, Editable, Status):
                 "max_memory":self.job.max_memory,
                 "job_type":self.job.job_type
                 },
-            "stageout":self.job.stageout+"/"+("" if not self.name else self.name+"/")
+            "stageout":self.job.stageout+"/"+("" if not self.name else self.name+"/"),
+            "stageout_method":stageout_method
             }
 
+        
         stageins = self.stagein_set.all()
         for s in stageins:
-            src_backend = backendhelper.get_backendcredential_for_uri(self.job.workflow.user.name,s.src).backend
+            src_backend = backendhelper.get_backend_for_uri(self.job.workflow.user.name,s.src)
             src_scheme, src_rest = uriparse(s.src)
-            dst_backend = backendhelper.get_backendcredential_for_uri(self.job.workflow.user.name,s.dst).backend
+            dst_backend = backendhelper.get_backend_for_uri(self.job.workflow.user.name,s.dst)
             dst_scheme, dst_rest = uriparse(s.dst)
-
-
-            output["stagein"].append({"src":s.src, "dst":s.dst, "order":s.order})
+            
+            output["stagein"].append({"src":s.src, "dst":s.dst, "order":s.order, "method":s.method})              # method may be 'copy', 'lcopy' or 'link'
 
         return json.dumps(output)
 
@@ -227,12 +247,12 @@ class Task(models.Model, Editable, Status):
     link_to_syslog.short_description = "Syslog"
 
 
-
 class StageIn(models.Model, Editable):
     src = models.CharField(max_length=256)
     dst = models.CharField(max_length=256)
     order = models.IntegerField()
     task = models.ForeignKey(Task)
+    method = models.CharField(max_length=5,choices=STAGING_COPY_CHOICES)
 
     @property
     def workflowid(self):
@@ -252,8 +272,10 @@ class QueueBase(models.Model):
     def user_name(self):
         return self.workflow.user.name
 
+
 class QueuedWorkflow(QueueBase):
     pass
+
 
 class Syslog(models.Model):
     message = models.TextField(blank=True)

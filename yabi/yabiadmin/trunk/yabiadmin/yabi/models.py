@@ -81,7 +81,8 @@ class Tool(Base):
     queue = models.CharField(max_length=50, default='normal', null=True, blank=True)
     max_memory = models.PositiveIntegerField(null=True, blank=True)
     job_type = models.CharField(max_length=40, default='single', null=True, blank=True)
-
+    lcopy_supported = models.BooleanField(default=True)
+    link_supported = models.BooleanField(default=True)
 
     name.help_text="Unique toolname for internal use."
     display_name.help_text="Tool name visible to users."
@@ -93,6 +94,8 @@ class Tool(Base):
     accepts_input.help_text="If checked, this tool will accept inputs from prior tools rather than presenting file select widgets."
     batch_on_param.help_text="Specify switch that will be fed files in batch mode. i.e. -i in blast."
     module.help_text="Comma separated list of modules to load."
+    lcopy_supported.help_text="If this tool should use local copies on supported backends where appropriate."
+    link_supported.help_text="If this tool should use symlinks on supported backends where appropriate."
     
     def tool_groups_str(self):
         return ",".join(
@@ -474,11 +477,16 @@ class Backend(Base):
     port = models.IntegerField(null=True, blank=True)
     path = models.CharField(max_length=512)
     max_connections = models.IntegerField(null=True, blank=True)
+    lcopy_supported = models.BooleanField(default=True)
+    link_supported = models.BooleanField(default=True)
+
 
     scheme.help_text="Must be one of %s." % ", ".join(settings.VALID_SCHEMES)
     hostname.help_text="Hostname must not end with a /."
     path.help_text="Path must start and end with a /.<br/>Execution backends must only have / in the path field."
     max_connections.help_text="Backend connection limit. Does not affect front end immediate mode requests. Blank means no limit on the number of connections. '0' means no connections allowed (frozen)."
+    lcopy_supported.help_text="Backend supports 'cp' localised copies."
+    link_supported.help_text="Backend supports 'ln' localised symlinking."
 
     @property
     def uri(self):

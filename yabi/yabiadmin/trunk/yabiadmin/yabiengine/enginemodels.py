@@ -86,6 +86,7 @@ class EngineWorkflow(Workflow):
         check if the workflow has completed after each walk
         '''
         logger.debug('----- Walking workflow id %d -----' % self.id)
+        print "WALKING"
 
         try:
             jobset = [X for X in EngineJob.objects.filter(workflow=self).order_by("order")]
@@ -93,12 +94,12 @@ class EngineWorkflow(Workflow):
                 logger.debug('----- Walking workflow id %d job id %d -----' % (self.id, job.id))
 
                 # dont walk job if it already has tasks
-                if (job.total_tasks() > 0):
+                if job.total_tasks() > 0:
                     logger.info("job %s has tasks, skipping walk" % job.id)
                     continue
 
                 # we can't proceed until all previous job dependencies are satisfied
-                if (job.has_incomplete_dependencies()):
+                if job.has_incomplete_dependencies():
                     logger.info('job %s has incomplete dependencies, skipping walk' % job.id)
                     continue
 
@@ -256,6 +257,11 @@ class EngineJob(Job):
         # let me know if keep refs to ORM objects like this is not cool
         self.tool = Tool.objects.get(name=job_dict["toolName"])
 
+        # lets work out the highest copy level supported by this tool and store it in job. This makes no account for the backends capabilities.
+        # that will be resolved later when the stagein is created during the walk
+        self.preferred_stagein_method = 'link' if self.tool.link_supported else 'lcopy' if self.tool.lcopy_supported else 'copy'
+        self.preferred_stageout_method = 'lcopy' if self.tool.lcopy_supported else 'copy'                                                   # stageouts should never be linked. Only local copy or remote copy
+        
         # cache job for later reference
         job_id = job_dict["jobId"] # the id that is used in the json
         self.workflow.job_cache[job_id] = self
@@ -484,7 +490,7 @@ class EngineTask(Task):
 
         self.status = ''
         self.save()
-
+        
         logger.info('Created task for job id: %s using command: %s' % (self.job.id, self.command))
         logger.info('working dir is: %s' % (self.working_dir) )
 
@@ -520,7 +526,7 @@ class EngineTask(Task):
                         continue
 
                     self.create_stagein(param=dirpath+'/', file=filename, scheme=self.fsscheme,
-                                        hostname=self.fsbackend_parts.hostname,
+                                        hostname=self.fsbackend_parts.hostname,  port=self.fsbackend_parts.port,
                                         path=os.path.join(self.fsbackend_parts.path, self.working_dir, "input", filename),
                                         username=self.fsbackend_parts.username)
 
@@ -547,7 +553,7 @@ class EngineTask(Task):
                                 continue
 
                             self.create_stagein(param=dirpath+'/', file=filename, scheme=self.fsscheme,
-                                           hostname=self.fsbackend_parts.hostname,
+                                           hostname=self.fsbackend_parts.hostname, port=self.fsbackend_parts.port,
                                            path=os.path.join(self.fsbackend_parts.path, self.working_dir, "input", filename),
                                            username=self.fsbackend_parts.username)
 
@@ -601,7 +607,7 @@ class EngineTask(Task):
             self.command = self.command.replace('__yabi_fp', quoted_filename, 1)
 
             self.create_stagein(param=dirpath+'/', file=filename, scheme=self.fsscheme,
-                           hostname=self.fsbackend_parts.hostname,
+                           hostname=self.fsbackend_parts.hostname, port=self.fsbackend_parts.port,
                            path=os.path.join(self.fsbackend_parts.path, self.working_dir, "input", filename),
                            username=self.fsbackend_parts.username)
 
@@ -613,7 +619,7 @@ class EngineTask(Task):
             self.command = self.command.replace("__yabi_bp", quoted_filename)
 
             self.create_stagein(param=uri, file=batch_file, scheme=self.fsscheme,
-                           hostname=self.fsbackend_parts.hostname,
+                           hostname=self.fsbackend_parts.hostname, port=self.fsbackend_parts.port,
                            path=os.path.join(self.fsbackend_parts.path, self.working_dir, "input", batch_file),
                            username=self.fsbackend_parts.username)
 
@@ -621,13 +627,30 @@ class EngineTask(Task):
             self.command = self.command.replace("__yabi_bf__", os.path.basename(batch_file))
 
 
-    def create_stagein(self, param=None, file=None, scheme=None, hostname=None, path=None, username=None):
+    def create_stagein(self, param, file, scheme, hostname, port, path, username):
+        preferred_stagein_method = self.job.preferred_stagein_method
+        
+        src = "%s%s" % (param, file)
+        if port:
+            dst = "%s://%s@%s:%d%s" % (scheme, username, hostname, port, path)
+        else:
+            dst = "%s://%s@%s%s" % (scheme, username, hostname, path)
+        
+        # if src and dst are same backend, and the backend supports advanced copy methods, set the method as such
+        sscheme,srest = uriparse(src)
+        dscheme,drest = uriparse(dst)
+        if sscheme==dscheme and srest.hostname==drest.hostname and srest.port==drest.port:
+            method = preferred_stagein_method
+        else:
+            method = 'copy'
+        
         s, created = StageIn.objects.get_or_create(task=self,
-                    src="%s%s" % (param, file),
-                    dst="%s://%s@%s%s" % (scheme, username, hostname, path),
-                    order=0)
+                    src=src,
+                    dst=dst,
+                    order=0,
+                    method=method)
 
-        logger.debug("Stagein: %s <=> %s: %s " % (s.src, s.dst, "created" if created else "reused"))
+        logger.debug("Stagein: %s <=> %s (%s): %s " % (s.src, s.dst, method, "created" if created else "reused"))
         s.save()
 
 

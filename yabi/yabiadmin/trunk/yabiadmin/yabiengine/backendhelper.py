@@ -78,6 +78,9 @@ def get_backendcredential_for_uri(yabiusername, uri):
     
 def get_credential_for_uri(yabiusername, uri):
     return get_backendcredential_for_uri(yabiusername,uri).credential
+    
+def get_backend_for_uri(yabiusername, uri):
+    return get_backendcredential_for_uri(yabiusername,uri).backend
 
 def POST(resource, datadict, extraheaders={}, server=None):
     """Do a x-www-form-urlencoded style POST. That is NOT a file upload style"""

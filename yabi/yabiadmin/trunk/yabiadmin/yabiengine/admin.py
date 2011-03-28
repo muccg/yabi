@@ -83,7 +83,7 @@ class TaskAdmin(admin.ModelAdmin):
 
     
 class StageInAdmin(admin.ModelAdmin):
-    list_display = ['src', 'dst', 'order']
+    list_display = ['src', 'dst', 'order','method']
 
 
 def register(site):
