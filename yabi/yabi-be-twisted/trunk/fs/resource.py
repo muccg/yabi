@@ -12,6 +12,7 @@ from FileDeleteResource import FileDeleteResource
 from FileListResource import FileListResource
 from FileMkdirResource import FileMkdirResource
 from FileLinkResource import FileLinkResource
+from FileLCopyResource import FileLCopyResource
 from FilePutResource import FilePutResource
 from FileGetResource import FileGetResource
 from FileUploadResource import UploadTicket, FileUploadResource, UploadStatus
@@ -69,6 +70,8 @@ class FSResource(resource.Resource, BackendResource):
             return FileListResource(request,segments,fsresource=self), []
         elif segments[0]=="ln":
             return FileLinkResource(request,segments,fsresource=self), []
+        elif segments[0]=="lcopy":
+            return FileLCopyResource(request,segments,fsresource=self), []
         elif segments[0]=="rm":
             return FileDeleteResource(request,segments,fsresource=self), []
         elif segments[0]=="rcopy":

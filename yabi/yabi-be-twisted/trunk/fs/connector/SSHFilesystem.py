@@ -245,7 +245,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
     @retry(5,(InvalidPath,PermissionDenied))
     #@call_count
-    def cp(self, host, username, src, dst, port=22, yabiusername=None, creds={},priority=0):
+    def cp(self, host, username, src, dst, port=22, yabiusername=None, recurse=False, creds={},priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         # acquire our queue lock
@@ -254,13 +254,13 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         # If we don't have creds, get them
         if not creds:
-            creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
+            creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, dst)
         
         usercert = self.save_identity(creds['key'])                         #, tag=(yabiusername,username,host,path)
         
         # we need to munge the path for transport over ssh (cause it sucks)
         #mungedpath = '"' + path.replace('"',r'\"') + '"'
-        pp = ssh.Shell.cp(usercert,host,src, dst, port=port, username=creds['username'], password=creds['password'])
+        pp = ssh.Shell.cp(usercert,host,src, dst, args="-r" if recurse else None, port=port, username=creds['username'], password=creds['password'])
         
         while not pp.isDone():
             stackless.schedule()

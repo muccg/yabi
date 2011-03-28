@@ -10,6 +10,7 @@ from Exceptions import PermissionDenied, InvalidPath, BlockingException, NoCrede
 from utils.parsers import parse_url
 
 from utils.submit_helpers import parsePOSTData
+import traceback
 
 DEFAULT_MKDIR_PRIORITY = 10
 
@@ -69,10 +70,13 @@ class FileMkdirResource(resource.PostableResource):
                 mkdirer=bend.mkdir(hostname,path=path,port=port, username=username, yabiusername=yabiusername, creds=creds, priority=priority)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
             except BlockingException, be:
+                print traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(be)))
             except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
+                print traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
             except Exception, e:
+                print traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(e)))
             
         tasklet = stackless.tasklet(do_mkdir)

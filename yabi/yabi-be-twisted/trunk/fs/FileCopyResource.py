@@ -4,6 +4,7 @@ from twisted.internet import defer, reactor
 import weakref, json
 import sys, os, signal
 import stackless
+import traceback
 from Exceptions import BlockingException
 
 # how often to check back on a process. 
@@ -160,6 +161,7 @@ class FileCopyResource(resource.PostableResource):
                 #sbend.unlock(locks[0])
                 #if locks[1]:
                     #dbend.unlock(locks[1])
+                print traceback.format_exc()
                 channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(be)))
                 return
             

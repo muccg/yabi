@@ -16,6 +16,7 @@ from utils.parsers import parse_url
 from twisted.internet.defer import Deferred
 
 from utils.submit_helpers import parsePOSTData
+import traceback
 
 DEFAULT_PUT_PRIORITY = 1
 
@@ -128,6 +129,7 @@ class FilePutResource(resource.PostableResource):
                                 self.fileopen=open(fifo,'wb')
                                 break
                             except (OSError, IOError), e:
+                                print traceback.format_exc()
                                 if e.errno == errno.EINTR or e.errno == errno.EAGAIN:
                                     stackless.schedule()
                                 else:
@@ -164,11 +166,12 @@ class FilePutResource(resource.PostableResource):
                 except IOError, ioe:
                     #print "IOError!!!",ioe
                     # sleep until the task finished
+                    print traceback.format_exc()
                     while not parser.procproto.isDone():
                         stackless.schedule()
                     return channel.callback(http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "File upload failed: %s\n"%parser.procproto.err))
                 except Exception, ex:
-                    import traceback
+                    print traceback.format_exc()
                     channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "File upload failed: %s\n"%(traceback.format_exc())))
                     #TODO: why does the client channel stay open here? How do we close it after returning this error message? We are inside a stackless threadlet. Is that why?
                     raise

@@ -12,6 +12,7 @@ from utils.parsers import parse_url
 from utils.stacklesstools import GETFailure
 
 from Exceptions import BlockingException
+import traceback
 
 DEFAULT_RCOPY_PRIORITY = 1
 
@@ -103,6 +104,7 @@ class FileRCopyResource(resource.PostableResource):
                     try:
                         fsystem = List(path=src,recurse=True,yabiusername=yabiusername)
                     except BlockingException, be:
+                        print traceback.format_exc()
                         result_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(be)) )
                     
                     #print "Fsystem:",fsystem
@@ -119,6 +121,7 @@ class FileRCopyResource(resource.PostableResource):
                             try:
                                 Mkdir(dst+destpath,yabiusername=yabiusername)
                             except BlockingException, be:
+                                print traceback.format_exc()
                                 result_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(be)) )    
                             except GETFailure, gf:
                                 # ignore. directory probably already exists
@@ -142,13 +145,16 @@ class FileRCopyResource(resource.PostableResource):
                                                     http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Copied successfuly\n")
                                 )
                 except BlockingException, be:
+                    print traceback.format_exc()
                     result_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(be)) )
                 except GETFailure, gf:
+                    print traceback.format_exc()
                     if "503" in gf.message[1]:
                         result_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(gf)) )
                     else:
                         result_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, str(gf)) )
                 except Exception, e:
+                    print traceback.format_exc()
                     result_channel.callback(
                                                     http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, str(e))
                                 )

@@ -5,6 +5,7 @@ from twisted.internet import defer
 import weakref
 import os
 import stackless
+import traceback
 
 from utils.parsers import parse_url
 
@@ -76,6 +77,7 @@ class ExecResumeResource(resource.PostableResource):
                 try:
                     val = cast(args[key][0])
                 except ValueError, ve:
+                    print traceback.format_exc()
                     return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "Cannot convert parameter '%s' to %s: %s\n"%(key,cast,ve))
                 #print "setting",key,"to",cast(args[key][0])
                 kwargs[key]=val

@@ -7,7 +7,7 @@ import pickle
 
 from utils.parsers import parse_url
 
-from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Resume, Mkdir, Rm, List, UserCreds, GETFailure, CloseConnections
+from TaskTools import Copy, Ln, LCopy, RCopy, Sleep, Log, Status, Exec, Resume, Mkdir, Rm, List, UserCreds, GETFailure, CloseConnections
 
 import traceback
 from Exceptions import BlockingException
@@ -168,6 +168,14 @@ class NullBackendTask(Task):
             src = copy['src']
             method = copy['method'] if 'method' in copy else 'copy'                     # copy or link
             
+            # sanity check method and fail back to copy if needed
+            if method=='link' or method=='lcopy':
+                sscheme,sparse = parse_url(src)
+                dscheme,dparse = parse_url(dst)
+                if sscheme!=dscheme or sparse.hostname!=dparse.hostname or sparse.username!=dparse.username or sparse.port!=dparse.port:
+                    # fall back to copy
+                    method='copy'
+            
             # check that destination directory exists.
             scheme,address = parse_url(dst)
             
@@ -185,8 +193,6 @@ class NullBackendTask(Task):
                 try:
                     Mkdir(remotedir, yabiusername=self.yabiusername)
                 except GETFailure, gf:
-                    if DEBUG:
-                        print "GF_",dir(gf),gf.args,"=====",gf.message
                     raise BlockingException("Make directory failed: %s"%gf.message[2])
             
             if src.endswith("/"):
@@ -202,19 +208,56 @@ class NullBackendTask(Task):
                     return              # finish task
             
                 print "TASK[%s]: RCopy %s to %s Success!"%(self.taskid,src,dst)
-            else:
-                log("Copying %s to %s..."%(src,dst))
-                try:
-                    Copy(src,dst, yabiusername=self.yabiusername)
-                    log("Copying %s to %s Success"%(src,dst))
-                except GETFailure, error:
-                    # error copying!
-                    print "TASK[%s]: Copy %s to %s Error!"%(self.taskid,src,dst)
-                    status("error")
-                    log("Copying %s to %s failed: %s"%(src,dst, error))
-                    return              # finish task
+            else: 
+                if method=='copy':
+                    self.log("Copying %s to %s..."%(src,dst))
+                    try:
+                        Copy(src,dst, yabiusername=self.yabiusername)
+                        self.log("Copying %s to %s Success"%(src,dst))
+                    except GETFailure, error:
+                        if "503" in error.message[1]:
+                            raise                               # reraise a blocking error so our top level catcher will catch it and block the task
+                        # error copying!
+                        print "TASK[%s]: Copy %s to %s Error!"%(self.taskid,src,dst)
+                        self.status("error")
+                        self.log("Copying %s to %s failed: %s"%(src,dst, error))
+                        
+                        raise TaskFailed("Stage In failed")
             
-                print "TASK[%s]: Copy %s to %s Success!"%(self.taskid,src,dst)
+                    print "TASK[%s]: Copy %s to %s Success!"%(self.taskid,src,dst)
+                elif method=='lcopy':
+                    self.log("Local copying %s to %s..."%(src,dst))
+                    try:
+                        LCopy(src,dst, yabiusername=self.yabiusername)
+                        self.log("Local copying %s to %s Success"%(src,dst))
+                    except GETFailure, error:
+                        if "503" in error.message[1]:
+                            raise                               # reraise a blocking error so our top level catcher will catch it and block the task
+                        # error copying!
+                        print "TASK[%s]: Local copy %s to %s Error!"%(self.taskid,src,dst)
+                        self.status("error")
+                        self.log("Local copying %s to %s failed: %s"%(src,dst, error))
+                        
+                        raise TaskFailed("Stage In failed")
+            
+                    print "TASK[%s]: Local copy %s to %s Success!"%(self.taskid,src,dst)
+                elif method=='link':
+                    self.log("Linking %s to point to %s"%(dst,src))
+                    try:
+                        Ln(src,dst,yabiusername=self.yabiusername)
+                        self.log("Linking %s to point to %s success"%(dst,src))
+                    except GETFailure, error:
+                        if "503" in error.message[1]:
+                            raise                               # reraise a blocking error so our top level catcher will catch it and block the task
+                        # error copying!
+                        print "TASK[%s]: Link %s to point to %s Error!"%(self.taskid,dst,src)
+                        self.status("error")
+                        self.log("Linking %s to point to %s failed: %s"%(dst, src, error))
+                        
+                        raise TaskFailed("Stage In failed")
+                        
+                else:
+                    raise TaskFailed("Stage in failed: unknown stage in method %s"%method)
             
 class MainTask(Task):
     STAGEIN = 0
@@ -299,6 +342,7 @@ class MainTask(Task):
         for copy in task['stagein']:
             src = copy['src']
             dst = copy['dst']
+            method = copy['method'] if 'method' in copy else 'copy'                     # copy or link
             
             # check that destination directory exists.
             scheme,address = parse_url(dst)
@@ -314,23 +358,61 @@ class MainTask(Task):
             except Exception, error:
                 # directory does not exist
                 #make dir
-                Mkdir(remotedir, yabiusername=self.yabiusername)
+                try:
+                    Mkdir(remotedir, yabiusername=self.yabiusername)
+                except GETFailure, gf:
+                    raise BlockingException("Make directory failed: %s"%gf.message[2])
             
-            self.log("Copying %s to %s..."%(src,dst))
-            try:
-                Copy(src,dst, yabiusername=self.yabiusername)
-                self.log("Copying %s to %s Success"%(src,dst))
-            except GETFailure, error:
-                if "503" in error.message[1]:
-                    raise                               # reraise a blocking error so our top level catcher will catch it and block the task
-                # error copying!
-                print "TASK[%s]: Copy %s to %s Error!"%(self.taskid,src,dst)
-                self.status("error")
-                self.log("Copying %s to %s failed: %s"%(src,dst, error))
-                
-                raise TaskFailed("Stage In failed")
+            if method=='copy':
+                self.log("Copying %s to %s..."%(src,dst))
+                try:
+                    Copy(src,dst, yabiusername=self.yabiusername)
+                    self.log("Copying %s to %s Success"%(src,dst))
+                except GETFailure, error:
+                    if "503" in error.message[1]:
+                        raise                               # reraise a blocking error so our top level catcher will catch it and block the task
+                    # error copying!
+                    print "TASK[%s]: Copy %s to %s Error!"%(self.taskid,src,dst)
+                    self.status("error")
+                    self.log("Copying %s to %s failed: %s"%(src,dst, error))
+                    
+                    raise TaskFailed("Stage In failed")
         
-            print "TASK[%s]: Copy %s to %s Success!"%(self.taskid,src,dst)
+                print "TASK[%s]: Copy %s to %s Success!"%(self.taskid,src,dst)
+            elif method=='lcopy':
+                self.log("Local copying %s to %s..."%(src,dst))
+                try:
+                    LCopy(src,dst, yabiusername=self.yabiusername)
+                    self.log("Local copying %s to %s Success"%(src,dst))
+                except GETFailure, error:
+                    if "503" in error.message[1]:
+                        raise                               # reraise a blocking error so our top level catcher will catch it and block the task
+                    # error copying!
+                    print "TASK[%s]: Local copy %s to %s Error!"%(self.taskid,src,dst)
+                    self.status("error")
+                    self.log("Local copying %s to %s failed: %s"%(src,dst, error))
+                    
+                    raise TaskFailed("Stage In failed")
+        
+                print "TASK[%s]: Local copy %s to %s Success!"%(self.taskid,src,dst)
+            elif method=='link':
+                self.log("Linking %s to point to %s"%(dst,src))
+                try:
+                    Ln(src,dst,yabiusername=self.yabiusername)
+                    self.log("Linking %s to point to %s success"%(dst,src))
+                except GETFailure, error:
+                    if "503" in error.message[1]:
+                        raise                               # reraise a blocking error so our top level catcher will catch it and block the task
+                    # error copying!
+                    print "TASK[%s]: Link %s to point to %s Error!"%(self.taskid,dst,src)
+                    self.status("error")
+                    self.log("Linking %s to point to %s failed: %s"%(dst, src, error))
+                    
+                    raise TaskFailed("Stage In failed")
+                    
+            else:
+                raise TaskFailed("Stage in failed: unknown stage in method %s"%method)
+                
         
     def mkdir(self):
         task=self.json
@@ -446,28 +528,49 @@ class MainTask(Task):
     def stageout(self,outputuri):
         task=self.json
         if DEBUG:
-            print "STAGEOUT:",task['stageout']
-        try:
-            Mkdir(task['stageout'], yabiusername=self.yabiusername)
-        except GETFailure, error:
-            pass
+            print "STAGEOUT:",task['stageout'],"METHOD:",task['stageout_method']
         
-        try:
-            RCopy(outputuri,task['stageout'],yabiusername=self.yabiusername)
-            self.log("Files successfuly staged out")
-        except GETFailure, error:
-            if "503" in error.message[1]:
-                    raise                               # reraise a blocking error so our top level catcher will catch it and block the task
-            # error executing
-            print "TASK[%s]: Stageout failed!"%(self.taskid)
-            self.status("error")
-            if DEBUG:
-                self.log("Staging out remote %s to %s failed... \n%s"%(outputuri,task['stageout'],traceback.format_exc()))
-            else:
-                self.log("Staging out remote %s to %s failed... %s"%(outputuri,task['stageout'],error))
+        if task['stageout_method']=='copy':   
+            try:
+                Mkdir(task['stageout'], yabiusername=self.yabiusername)
+            except GETFailure, error:
+                pass
             
-            # finish task
-            raise TaskFailed("Stageout failed")
+            try:
+                RCopy(outputuri,task['stageout'],yabiusername=self.yabiusername)
+                self.log("Files successfuly staged out")
+            except GETFailure, error:
+                if "503" in error.message[1]:
+                        raise                               # reraise a blocking error so our top level catcher will catch it and block the task
+                # error executing
+                print "TASK[%s]: Stageout failed!"%(self.taskid)
+                self.status("error")
+                if DEBUG:
+                    self.log("Staging out remote %s to %s failed... \n%s"%(outputuri,task['stageout'],traceback.format_exc()))
+                else:
+                    self.log("Staging out remote %s to %s failed... %s"%(outputuri,task['stageout'],error))
+                
+                # finish task
+                raise TaskFailed("Stageout failed")
+        elif task['stageout_method']=='lcopy':
+            try:
+                LCopy(outputuri,task['stageout'],yabiusername=self.yabiusername,recurse=True)
+                self.log("Files successfuly staged out")
+            except GETFailure, error:
+                if "503" in error.message[1]:
+                        raise                               # reraise a blocking error so our top level catcher will catch it and block the task
+                # error executing
+                print "TASK[%s]: Stageout failed!"%(self.taskid)
+                self.status("error")
+                if DEBUG:
+                    self.log("Staging out remote %s to %s failed... \n%s"%(outputuri,task['stageout'],traceback.format_exc()))
+                else:
+                    self.log("Staging out remote %s to %s failed... %s"%(outputuri,task['stageout'],error))
+                
+                # finish task
+                raise TaskFailed("Stageout failed")
+        else:
+            raise TaskFailed("Unsupported stageout method %s"%task['stageout_method'])
             
     def cleanup(self):
         task=self.json

@@ -2,22 +2,19 @@
 from twisted.web2 import resource, http_headers, responsecode, http, server
 from twisted.internet import defer, reactor
 import weakref
-import sys, os
-import stackless
-import json
-import traceback
+import sys, os, json
 
+import stackless
 from Exceptions import PermissionDenied, InvalidPath, BlockingException, NoCredentials, AuthException, ProxyInitError
 
 from utils.parsers import parse_url
 
 from utils.submit_helpers import parsePOSTData
+import traceback
 
-DEFAULT_LIST_PRIORITY = 0                   # immediate by default
+DEFAULT_LCOPY_PRIORITY = 10
 
-DEBUG = False
-
-class FileListResource(resource.PostableResource):
+class FileLCopyResource(resource.PostableResource):
     VERSION=0.1
     maxMem = 100*1024
     maxFields = 16
@@ -28,33 +25,38 @@ class FileListResource(resource.PostableResource):
         self.path = path
         
         if not fsresource:
-            raise Exception, "FileListResource must be informed on construction as to which FSResource is its parent"
+            raise Exception, "FileLinkResource must be informed on construction as to which FSResource is its parent"
         
         self.fsresource = weakref.ref(fsresource)
         
-    def old_http_POST(self, request):
-        # break our request path into parts
-        return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be GET\n")
-
-    def handle_list(self, request):
-        if "uri" not in request.args:
-            return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided\n")
-
+    def handle_mkdir(self, request):
         # override default priority
-        priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_LIST_PRIORITY
+        priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_LCOPY_PRIORITY
 
-        uri = request.args['uri'][0]
-        scheme, address = parse_url(uri)
+        recurse = False
+        if 'recurse' in request.args:
+            recurse = bool(request.args['recurse'][0])
+
+        if 'src' not in request.args:
+            return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "link must specify a directory 'target' to link to\n")
         
-        if not hasattr(address,"username"):
-            return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No username provided in uri\n")
+        if 'dst' not in request.args:
+            return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "link must specify a directory 'link' parameter\n")
         
-        recurse = 'recurse' in request.args
-        bendname = scheme
-        username = address.username
-        path = address.path
-        hostname = address.hostname
-        port = address.port
+        srcuri = request.args['src'][0]
+        srcscheme, srcaddress = parse_url(srcuri)
+        dsturi = request.args['dst'][0]
+        dstscheme, dstaddress = parse_url(dsturi)
+        
+        # check that the uris both point to the same location
+        if srcscheme != dstscheme:
+            return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "dst and src schemes must be the same\n")
+        
+        for part in ['username','hostname','port']:
+            s = getattr(srcaddress,part)
+            d = getattr(dstaddress,part)
+            if s != d:
+                return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "dst and src %s must be the same\n"%part)
         
         # compile any credentials together to pass to backend
         creds={}
@@ -62,51 +64,45 @@ class FileListResource(resource.PostableResource):
             if varname in request.args:
                 creds[varname] = request.args[varname][0]
                 del request.args[varname]
-        
+    
         yabiusername = request.args['yabiusername'][0] if "yabiusername" in request.args else None
         
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
-        if DEBUG:
-            print "URI",uri
-            print "ADDRESS",address
+        username = srcaddress.username
+        hostname = srcaddress.hostname
+        port = srcaddress.port
         
-        # get the backend
         fsresource = self.fsresource()
-        if bendname not in fsresource.Backends():
-            return http.Response( responsecode.NOT_FOUND, {'content-type': http_headers.MimeType('text', 'plain')}, "Backend '%s' not found\n"%bendname)
+        if srcscheme not in fsresource.Backends():
+            return http.Response( responsecode.NOT_FOUND, {'content-type': http_headers.MimeType('text', 'plain')}, "Backend '%s' not found\n"%srcscheme)
             
-        bend = fsresource.GetBackend(bendname)
+        bend = fsresource.GetBackend(srcscheme)
         
         # our client channel
         client_channel = defer.Deferred()
         
-        def do_list():
-            if DEBUG:
-                print "dolist() hostname=",hostname,"path=",path,"username=",username,"recurse=",recurse
+        def do_lcopy():
+            #print "LN hostname=",hostname,"path=",targetaddress.path,"username=",username
             try:
-                lister=bend.ls(hostname,path=path,port=port, username=username,recurse=recurse, yabiusername=yabiusername, creds=creds, priority=priority)
-                client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream=json.dumps(lister)))
+                copyer=bend.cp(hostname,src=srcaddress.path,dst=dstaddress.path,port=port, recurse=recurse, username=username, yabiusername=yabiusername, creds=creds, priority=priority)
+                client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
             except BlockingException, be:
                 print traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(be)))
-            except InvalidPath, exception:
-                if DEBUG:
-                    print traceback.format_exc()
-                client_channel.callback(http.Response( responsecode.NOT_FOUND, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
-            except (PermissionDenied,NoCredentials,ProxyInitError), exception:
+            except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
                 print traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
             except Exception, e:
                 print traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(e)))
             
-        tasklet = stackless.tasklet(do_list)
+        tasklet = stackless.tasklet(do_lcopy)
         tasklet.setup()
         tasklet.run()
         
         return client_channel
-            
+    
     def http_POST(self, request):
         """
         Respond to a POST request.
@@ -118,7 +114,7 @@ class FileListResource(resource.PostableResource):
         deferred = parsePOSTData(request)
         
         def post_parsed(result):
-            return self.handle_list(request)
+            return self.handle_mkdir(request)
         
         deferred.addCallback(post_parsed)
         deferred.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Job Submission Failed %s\n"%res) )
@@ -126,4 +122,5 @@ class FileListResource(resource.PostableResource):
         return deferred
 
     def http_GET(self, request):
-        return self.handle_list(request)
+        return self.handle_mkdir(request)
+    

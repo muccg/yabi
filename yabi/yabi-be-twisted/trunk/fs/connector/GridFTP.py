@@ -165,7 +165,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         usercert = self.GetAuthProxy(host).ProxyFile(username)
         # we need to munge the path for transport over gsissh (cause it sucks)
         #mungedpath = '"' + path.replace('"',r'\"') + '"'
-        pp = globus.Shell.ln(usercert,host,target,link)
+        pp = globus.Shell.ln(usercert,host,target, link, port=port)
         
         while not pp.isDone():
             stackless.schedule()
@@ -185,11 +185,11 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         
         return out
 
-    def cp(self, host, username, src, dst, port=None, yabiusername=None, recurse=False, culldots=True, creds={}, priority=0):
+    def cp(self, host, username, src, dst, port=None, yabiusername=None, recurse=False, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         if DEBUG:
-            print "GridFTP::cp(",host,username,src,dst,yabiusername,recurse,culldots,creds,")"
+            print "GridFTP::cp(",host,username,src,dst,yabiusername,recurse,creds,")"
         
         # make sure we are authed
         if creds:
@@ -200,7 +200,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         usercert = self.GetAuthProxy(host).ProxyFile(username)
         # we need to munge the path for transport over gsissh (cause it sucks)
         #mungedpath = '"' + path.replace('"',r'\"') + '"'
-        pp = globus.Shell.ln(usercert,host,src,dst)
+        pp = globus.Shell.cp(usercert,host,src,dst,args="-r" if recurse else None, port=port)
         
         while not pp.isDone():
             stackless.schedule()

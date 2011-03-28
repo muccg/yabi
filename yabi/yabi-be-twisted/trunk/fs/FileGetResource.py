@@ -7,6 +7,7 @@ import sys, os
 import stackless
 import json
 from MimeStreamDecoder import MimeStreamDecoder, no_intr
+import traceback
 
 from Exceptions import PermissionDenied, InvalidPath, NoCredentials, ProxyInitError
 
@@ -80,6 +81,7 @@ class FileGetResource(resource.PostableResource):
             try:
                 procproto, fifo = bend.GetReadFifo(hostname,username,basepath,port,filename,yabiusername=yabiusername,creds=creds, priority=priority)
             except NoCredentials, nc:
+                print traceback.format_exc()
                 return channel.callback(http.Response( responsecode.UNAUTHORIZED, {'content-type': http_headers.MimeType('text', 'plain')}, str(nc) ))
             
             # give the engine a chance to fire up the process

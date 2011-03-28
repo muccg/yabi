@@ -10,9 +10,13 @@ import os
 from conf import config
 
 COPY_RETRY = 3
+LINK_RETRY = LCOPY_RETRY = 3
+
 COPY_PATH = "/fs/copy"
 RCOPY_PATH = "/fs/rcopy"
+LCOPY_PATH = "/fs/lcopy"
 LIST_PATH = "/fs/ls"
+LINK_PATH = "/fs/ln"
 EXEC_PATH = "/exec/run"
 RESUME_PATH = "/exec/resume"
 MKDIR_PATH = "/fs/mkdir"
@@ -98,9 +102,54 @@ def Rm(path, recurse=False, **kwargs):
     assert code==200
     return data
     
-def Ln(path):
-    """create symlink on a uri to another location on the same filesystem"""
-    pass
+class LinkError(Exception): pass
+    
+def Ln(target,link,retry=LINK_RETRY, **kwargs):
+    """Copy src (url) to dst (url) using the fileservice"""
+    if DEBUG:
+        print "linking %s from %s"%(target,link)
+    if 'priority' not in kwargs:
+        kwargs['priority']=str(DEFAULT_TASK_PRIORITY)
+    for num in range(retry):
+        #print "retry num=",num
+        try:
+            code,message,data = GET(LINK_PATH,target=target,link=link, **kwargs)
+            if DEBUG:
+                print "code=",repr(code)
+            if int(code)==200:
+                return True
+            else:
+                raise LinkError(data)
+        except GETFailure, err:
+            print "Warning: Post failed with error:",err
+            Sleep(5.0)              
+    
+    raise err
+
+def LCopy(src,dst,retry=LCOPY_RETRY, **kwargs):
+    """Copy src (url) to dst (url) using the fileservice"""
+    if DEBUG:
+        print "Local-Copying %s to %s"%(src,dst)
+    if 'priority' not in kwargs:
+        kwargs['priority']=str(DEFAULT_TASK_PRIORITY)
+    for num in range(retry):
+        #print "retry num=",num
+        try:
+            code,message,data = GET(LCOPY_PATH,src=src,dst=dst, **kwargs)
+            if DEBUG:
+                print "code=",repr(code)
+            if int(code)==200:
+                # success!
+                #print "SUCC"
+                return True
+            else:
+                #print "FAIL"
+                raise CopyError(data)
+        except GETFailure, err:
+            print "Warning: Post failed with error:",err
+            Sleep(5.0)              
+    
+    raise err
 
 def Log(logpath,message):
     """Report an error to the webservice"""

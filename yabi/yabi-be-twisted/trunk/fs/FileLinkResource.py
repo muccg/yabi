@@ -10,6 +10,7 @@ from Exceptions import PermissionDenied, InvalidPath, BlockingException, NoCrede
 from utils.parsers import parse_url
 
 from utils.submit_helpers import parsePOSTData
+import traceback
 
 DEFAULT_LINK_PRIORITY = 10
 
@@ -70,7 +71,7 @@ class FileLinkResource(resource.PostableResource):
         
         fsresource = self.fsresource()
         if targetscheme not in fsresource.Backends():
-            return http.Response( responsecode.NOT_FOUND, {'content-type': http_headers.MimeType('text', 'plain')}, "Backend '%s' not found\n"%scheme)
+            return http.Response( responsecode.NOT_FOUND, {'content-type': http_headers.MimeType('text', 'plain')}, "Backend '%s' not found\n"%targetscheme)
             
         bend = fsresource.GetBackend(targetscheme)
         
@@ -83,10 +84,13 @@ class FileLinkResource(resource.PostableResource):
                 linker=bend.ln(hostname,target=targetaddress.path,link=linkaddress.path,port=port, username=username, yabiusername=yabiusername, creds=creds, priority=priority)
                 client_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "OK\n"))
             except BlockingException, be:
+                print traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(be)))
             except (PermissionDenied,NoCredentials,InvalidPath,ProxyInitError), exception:
+                print traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
             except Exception, e:
+                print traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(e)))
             
         tasklet = stackless.tasklet(do_ln)

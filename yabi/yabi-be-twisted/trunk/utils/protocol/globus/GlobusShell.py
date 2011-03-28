@@ -28,18 +28,17 @@ class GlobusShell(BaseShell):
         """Turn a filename into the remote eval line"""
         return '"`echo -e \'%s\'`"'%(convert_filename_to_encoded_for_echo(filename))
 
-    def execute(self, certfile, host, command):
+    def execute(self, certfile, host, command, port=None):
         """Run inside gsissh, this command line. Command parts are passed in as a list of parameters, not a string."""
+        com = [self.gsissh]
+        if port:
+            com.extend( ["-P",str(port) ] )
+        com.append(host)
+        com.extend(list(command))
         if DEBUG:
-            print "GlobusShell running:",[ 
-                self.gsissh, 
-                host 
-            ] + list(command)
+            print "GlobusShell running:", com
         return BaseShell.execute(self,GlobusShellProcessProtocol,certfile,
-            [ 
-                self.gsissh, 
-                host 
-            ] + list(command)
+            com
         )
     def ls(self, certfile, host, directory, args="-lFR", port=None):
         return self.execute(certfile,host,command=["ls",args,self._make_echo(directory)])
@@ -50,9 +49,9 @@ class GlobusShell(BaseShell):
     def rm(self, certfile, host, directory, args=None, port=None):
         return self.execute(certfile,host,command=["rm",args,self._make_echo(directory)]) if args else self.execute(certfile,host,command=["rm",self._make_echo(directory)]) 
 
-    def ln(self, certfile, host, target, link, username, password, args="-s", port=None):
-        return self.execute(certfile,host,command=["ln",args,self._make_echo(target),self._make_echo(link)],username=username, password=password, port=port) if args else self.execute(certfile,host,command=["ln",self._make_echo(target),self._make_echo(link)],username=username, password=password, port=port)
+    def ln(self, certfile, host, target, link, args="-s", port=None):
+        return self.execute(certfile,host,command=["ln",args,self._make_echo(target),self._make_echo(link)], port=port) if args else self.execute(certfile,host,command=["ln",self._make_echo(target),self._make_echo(link)], port=port)
         
-    def cp(self, certfile, host, src, dst, username, password, args=None, port=None):
-        return self.execute(certfile,host,command=["cp",args,self._make_echo(src),self._make_echo(dst)],username=username, password=password, port=port) if args else self.execute(certfile,host,command=["cp",self._make_echo(src),self._make_echo(dst)],username=username, password=password, port=port)
+    def cp(self, certfile, host, src, dst, args=None, port=None):
+        return self.execute(certfile,host,command=["cp",args,self._make_echo(src),self._make_echo(dst)], port=port) if args else self.execute(certfile,host,command=["cp",self._make_echo(src),self._make_echo(dst)], port=port)
         

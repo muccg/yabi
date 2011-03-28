@@ -6,6 +6,7 @@ import weakref
 import sys, os, errno, time
 import stackless
 import json
+import traceback
 from MimeStreamDecoder import MimeStreamDecoder, no_intr
 
 from Exceptions import PermissionDenied, InvalidPath, NoCredentials, ProxyInitError
@@ -284,12 +285,13 @@ class FileUploadResource(resource.PostableResource):
                 except IOError, ioe:
                     #print "IOError!!!",ioe
                     # sleep until the task finished
+                    print traceback.format_exc()
                     while not parser.procproto.isDone():
                         stackless.schedule()
                     del uploads_progress[self.uuid]
                     return channel.callback(http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "File upload failed: %s\n"%parser.procproto.err))
                 except Exception, ex:
-                    import traceback
+                    print traceback.format_exc()
                     del uploads_progress[self.uuid]
                     channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "File upload failed: %s\n"%(traceback.format_exc())))
                     #TODO: why does the client channel stay open here? How do we close it after returning this error message? We are inside a stackless threadlet. Is that why?
