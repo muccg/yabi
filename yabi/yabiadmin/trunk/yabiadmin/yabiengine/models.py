@@ -82,6 +82,16 @@ class Workflow(models.Model, Editable, Status):
         self.delete()
         for tag in filter(lambda t: not t.workflowtag_set.exists(), tags):
             tag.delete()
+    
+    def get_jobs_queryset(self):
+        """return a query set of jobs in order"""
+        return self.job_set.order_by('order')
+        
+    def get_jobs(self):
+        return self.get_jobs_queryset().all()
+        
+    def get_job(self, order):
+        return self.job_set.get(order=order)
 
 class Tag(models.Model):
     value = models.CharField(max_length=255)
@@ -213,7 +223,7 @@ class Task(models.Model, Editable, Status):
                 "max_memory":self.job.max_memory,
                 "job_type":self.job.job_type
                 },
-            "stageout":self.job.stageout+"/"+("" if not self.name else self.name+"/"),
+            "stageout":self.job.stageout+("" if self.job.stageout.endswith("/") else "/")+("" if not self.name else self.name+"/"),
             "stageout_method":stageout_method
             }
 

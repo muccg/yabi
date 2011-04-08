@@ -79,12 +79,20 @@ def aes_dec(data,key, check=False):
     
 def aes_dec_base64(data,key, check=False):
     """decrypt a base64 encoded encrypted block"""
-    ciphertext = base64.decodestring("".join(data.split("\n")))
+    try:
+        ciphertext = base64.decodestring("".join(data.split("\n")))
+    except TypeError, te:
+        # the credential binary block cannot be decoded
+        raise DecryptException("Credential does not seem to contain binary encrypted data")
     return aes_dec(ciphertext, key, check)
 
 def aes_dec_hex(data,key, check=False):
     """decrypt a base64 encoded encrypted block"""
-    ciphertext = binascii.unhexlify("".join("".join(data.split("\n")).split("\r")))
+    try:
+        ciphertext = binascii.unhexlify("".join("".join(data.split("\n")).split("\r")))
+    except TypeError, te:
+        # the credential binary block cannot be decoded
+        raise DecryptException("Credential does not seem to contain binary encrypted data")
     return aes_dec(ciphertext, key, check)
     
 def contains_binary(data):
