@@ -350,26 +350,33 @@ class CommandTemplate(object):
             stageout = job.stageout
             file_list = backendhelper.get_file_list(self.username, stageout)
             
-            # do we now have files for this old job?
-            if len(file_list):
-                for filename, size, date, link in file_list:
-                    details = {
-                            "path" : [],
-                            "filename" : filename,
-                            "type" : "file",
-                            "root" : stageout,
-                            "pathComponents" : [ stageout ],
-                            "extensions" : backref['extensions']
-                        }
-                    self.backfiles.append(details)
-                    
-                    if backref['bundle_extra_files']:
-                        # this file should be forced into the file list
-                        self.files.append(details)
-                    
+            # has the job finished?
+            if job.status == "complete":
+                # do we now have files for this old job?
+                if len(file_list):
+                    for filename, size, date, link in file_list:
+                        details = {
+                                "path" : [],
+                                "filename" : filename,
+                                "type" : "file",
+                                "root" : stageout,
+                                "pathComponents" : [ stageout ],
+                                "extensions" : backref['extensions']
+                            }
+                        self.backfiles.append(details)
+                        
+                        if backref['bundle_extra_files']:
+                            # this file should be forced into the file list
+                            self.files.append(details)
+                else:
+                    # job is finished but there are no files created!
+                    assert job.status=="error"
+                    new_backrefs.append(backref)
+                        
             else:
                 # job still hasnt finished
                 new_backrefs.append(backref)
+            
                 
         self.backrefs=new_backrefs
         
