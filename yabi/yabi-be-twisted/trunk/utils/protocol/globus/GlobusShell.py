@@ -53,5 +53,9 @@ class GlobusShell(BaseShell):
         return self.execute(certfile,host,command=["ln",args,self._make_echo(target),self._make_echo(link)], port=port) if args else self.execute(certfile,host,command=["ln",self._make_echo(target),self._make_echo(link)], port=port)
         
     def cp(self, certfile, host, src, dst, args=None, port=None):
-        return self.execute(certfile,host,command=["cp",args,self._make_echo(src),self._make_echo(dst)], port=port) if args else self.execute(certfile,host,command=["cp",self._make_echo(src),self._make_echo(dst)], port=port)
+        # if the coipy is recursive, and the src ends in a slash, then we should add a wildcard '*' to the src to make it copy the contents of the directory
+        if "r" in args and src.endswith("/"):
+            return self.execute(certfile,host,command=["cp",args,self._make_echo(src)+"*",self._make_echo(dst)], port=port) if args else self.execute(certfile,host,command=["cp",self._make_echo(src),self._make_echo(dst)], port=port)
+        else:
+            return self.execute(certfile,host,command=["cp",args,self._make_echo(src),self._make_echo(dst)], port=port) if args else self.execute(certfile,host,command=["cp",self._make_echo(src),self._make_echo(dst)], port=port)
         
