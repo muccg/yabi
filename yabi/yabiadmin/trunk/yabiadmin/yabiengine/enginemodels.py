@@ -20,8 +20,7 @@ from django.db.transaction import TransactionManagementError
 from yabiadmin.yabi.models import Backend, BackendCredential, Tool, User
 from yabiadmin.yabiengine import backendhelper 
 from yabiadmin.yabiengine import storehelper as StoreHelper
-from yabiadmin.yabiengine.commandlinehelper import CommandLineHelper, quote_argument
-from yabiadmin.yabiengine.commandlinetemplate import CommandTemplate
+from yabiadmin.yabiengine.commandlinetemplate import CommandTemplate, quote_argument
 from yabiadmin.yabiengine.models import Workflow, Task, Job, StageIn, Tag
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
 from yabiadmin.yabiengine.YabiJobException import YabiJobException
