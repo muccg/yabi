@@ -319,6 +319,7 @@ class MainTask(Task):
         
             # make sure we have the stageout directory
             self.log("making stageout directory %s"%self.json['stageout'])
+            self.make_stageout()
         
             self.stageout(self.outuri)
         
@@ -448,6 +449,16 @@ class MainTask(Task):
             raise TaskFailed("Mkdir failed")
         
         return outputuri,outputdir
+        
+    def make_stageout(self):
+        stageout = self.json['stageout']
+        
+        if DEBUG:
+            print "STAGEOUT:",stageout
+        try:
+            Mkdir(stageout, yabiusername=self.yabiusername)
+        except GETFailure, error:
+            raise BlockingException("Make directory failed: %s"%error.message[2])
     
     def do(self, outputdir, callfunc):
         task=self.json
@@ -553,6 +564,11 @@ class MainTask(Task):
                 # finish task
                 raise TaskFailed("Stageout failed")
         elif task['stageout_method']=='lcopy':
+            try:
+                Mkdir(task['stageout'], yabiusername=self.yabiusername)
+            except GETFailure, error:
+                pass
+            
             try:
                 LCopy(outputuri,task['stageout'],yabiusername=self.yabiusername,recurse=True)
                 self.log("Files successfuly staged out")

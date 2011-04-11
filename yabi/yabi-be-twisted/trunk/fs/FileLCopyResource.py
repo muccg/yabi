@@ -29,7 +29,7 @@ class FileLCopyResource(resource.PostableResource):
         
         self.fsresource = weakref.ref(fsresource)
         
-    def handle_mkdir(self, request):
+    def handle_lcopy(self, request):
         # override default priority
         priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_LCOPY_PRIORITY
 
@@ -42,8 +42,9 @@ class FileLCopyResource(resource.PostableResource):
         
         if 'dst' not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "link must specify a directory 'link' parameter\n")
-        
+                
         srcuri = request.args['src'][0]
+        #srcuri = srcuri + ("*" if (recurse and srcuri.endswith('/')) else "")                               # for a recursive copy from /path/to/directory/, copy the *contents* of the directory
         srcscheme, srcaddress = parse_url(srcuri)
         dsturi = request.args['dst'][0]
         dstscheme, dstaddress = parse_url(dsturi)
@@ -114,7 +115,7 @@ class FileLCopyResource(resource.PostableResource):
         deferred = parsePOSTData(request)
         
         def post_parsed(result):
-            return self.handle_mkdir(request)
+            return self.handle_lcopy(request)
         
         deferred.addCallback(post_parsed)
         deferred.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Job Submission Failed %s\n"%res) )
@@ -122,5 +123,5 @@ class FileLCopyResource(resource.PostableResource):
         return deferred
 
     def http_GET(self, request):
-        return self.handle_mkdir(request)
+        return self.handle_lcopy(request)
     
