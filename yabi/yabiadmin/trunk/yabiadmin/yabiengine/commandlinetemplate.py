@@ -52,6 +52,21 @@ class SwitchFilename(object):
         
     def set(self, filename):
         self.filename = filename
+        
+class SwitchInputFilename(object):
+    """represents an input filename known at build time, but that will need to be converted at template render time. eg, a secondary input filename"""
+    def __init__(self, filename):
+        self.filename = filename
+        self.convfunc = None
+        
+    def __str__(self):
+        """Convert the filename using the conversion routine"""
+        return quote_argument(self.convfunc(self.filename))
+        
+    def set(self, convfunc):
+        """this is passed a conversion function to make the full filename"""
+        assert callable(convfunc)
+        self.convfunc = convfunc
 
 class Switch(Arg):
     """A flag for a command with an optional parameter"""
@@ -62,7 +77,11 @@ class Switch(Arg):
         
         self.switchuse=switchuse                 # comes from the switch use entry of the tool param (example: "%(switch)s %(value)s"
 
-        self.takes_output_file = not (type(value) is str or type(value) is unicode)
+        # this flag is true if this switch needs to be given an output filename
+        self.takes_output_file = not (type(value) is str or type(value) is unicode) and value.__class__ is SwitchFilename
+        
+        # this flag is true if this switch has a filename that needs to be converted to a fullpath at render time
+        self.needs_filename_conversion = not (type(value) is str or type(value) is unicode) and value.__class__ is SwitchInputFilename
 
     def as_string(self):
         assert self.switchuse is not None, "Switch 'switchuse' has not been set"
@@ -78,6 +97,7 @@ class Switch(Arg):
     def render(self,output=None):
         if output:
             self.value.set(output)
+        
         return self.as_string()
        
 class BatchSwitch(Switch):
@@ -246,6 +266,9 @@ class CommandTemplate(object):
             'fullpath':rest.path,
             'filename':rest.path.rsplit("/",1)[-1]
         }
+        
+    def _convert_filename(self, filename):
+        return self.uri_conversion_string%{'filename':filename}
 
     def render(self, *batchfiles):
         # ATM only one file per batch
@@ -265,6 +288,9 @@ class CommandTemplate(object):
                 output += " "+argument.render(self._convert(batchfiles.pop(0)))
             elif argument.takes_output_file:
                 output += " "+argument.render(output_filename)
+            elif argument.needs_filename_conversion:
+                # if this argument needs a conversion, we pass in a converter function for it to use
+                output += " "+argument.render(lambda x: self._convert_filename(x))
             else:
                 output += " "+argument.render()
             
@@ -314,13 +340,17 @@ class CommandTemplate(object):
                             # annotate extra info
                             value['extensions'] = tp.input_filetype_extensions() 
                             value['bundle_extra_files'] = tool.batch_on_param_bundle_files
+                            value['batch_on_param'] = (tp==tool.batch_on_param)
                     
                             # save the param
-                            self.backrefs.append(value)       
+                            self.backrefs.append(value)
                             if tp == tool.batch_on_param:
+                                # this is a batch parameter, so it needs the special batch switch
                                 self.arguments.append( BatchSwitch( tp.switch, switchuse=tp.switch_use.formatstring ) )
                             else:
-                                self.arguments.append( Switch( tp.switch, value, switchuse=tp.switch_use.formatstring))
+                                assert 'filename' in value, "A non batch-on-file parameter was passed batch bundle"
+                                # this is just an input file that will be staged along. lets add the filename statically now as it wont change, then we use the uri conversion later to make it full path
+                                self.arguments.append( Switch( tp.switch, SwitchInputFilename(value['filename']), switchuse=tp.switch_use.formatstring ) )
                             
                         elif type(value) is str or type(value) is unicode:
                             value = quote_argument( value )
@@ -349,26 +379,53 @@ class CommandTemplate(object):
             # get this job
             job = workflow.get_job(job_index)
             stageout = job.stageout
-            file_list = backendhelper.get_file_list(self.username, stageout)
+            
             
             # has the job finished?
-            if job.status == "complete":
+            if job.status == "complete":    
                 # do we now have files for this old job?
+                file_list = backendhelper.get_file_list(self.username, stageout)
                 if len(file_list):
-                    for filename, size, date, link in file_list:
+                    # if it's a 'jobfile' then we need to select just the specified file.
+                    if backref['type']=='jobfile':
+                        # file must appear in list
+                        assert backref['filename'] in [X[0] for X in file_list], "Selected input file does not appear in output of previous tool"
+                        index = [X[0] for X in file_list].index(backref['filename'])
+                        filename, size, date, link = file_list[index]
                         details = {
-                                "path" : [],
-                                "filename" : filename,
-                                "type" : "file",
-                                "root" : stageout,
-                                "pathComponents" : [ stageout ],
-                                "extensions" : backref['extensions']
-                            }
-                        self.backfiles.append(details)
-                        
-                        if backref['bundle_extra_files']:
-                            # this file should be forced into the file list
+                            "path" : [],
+                            "filename" : filename,
+                            "type" : "file",
+                            "root" : stageout,
+                            "pathComponents" : [ stageout ],
+                            "extensions" : backref['extensions']
+                        }
+                        if backref['batch_on_param']:
+                            # its a single batch file. add it to backfiles
+                            self.backfiles.append(details)
+                        else:
+                            # its a single file passed in via a param
                             self.files.append(details)
+                            
+                    else:
+                        assert backref['type']=='job'
+                        for filename, size, date, link in file_list:
+                            details = {
+                                    "path" : [],
+                                    "filename" : filename,
+                                    "type" : "file",
+                                    "root" : stageout,
+                                    "pathComponents" : [ stageout ],
+                                    "extensions" : backref['extensions']
+                                }
+                            
+                            # this is a file BUNDLE, so it MUST be batch_on_param
+                            assert backref['batch_on_param'], "Bundle of files processed during update dependencies is not passed into a batch parameter"
+                            self.backfiles.append(details)
+                            
+                            if backref['bundle_extra_files']:
+                                # this file should be forced into the file list
+                                self.files.append(details)
                 else:
                     # job is finished but there are no files created!
                     assert job.status=="error"

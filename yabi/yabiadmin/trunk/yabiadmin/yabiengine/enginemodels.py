@@ -65,15 +65,28 @@ class EngineWorkflow(Workflow):
                 job = EngineJob(workflow=self, order=i, start_time=datetime.datetime.now())
                 job.add_job(job_dict)
 
+        except AssertionError, e:
+            self.status = STATUS_ERROR
+            self.save()
+            logger.critical(e)
+            logger.critical(traceback.format_exc())        
+            raise
+
         except ObjectDoesNotExist, e:
+            self.status = STATUS_ERROR
+            self.save()
             logger.critical(e)
             logger.critical(traceback.format_exc())        
             raise
         except KeyError, e:
+            self.status = STATUS_ERROR
+            self.save()
             logger.critical(e)
             logger.critical(traceback.format_exc())        
             raise
         except Exception, e:
+            self.status = STATUS_ERROR
+            self.save()
             logger.critical(e)
             logger.critical(traceback.format_exc())
             raise
