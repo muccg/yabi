@@ -61,7 +61,7 @@ class SSHShell(BaseShell):
         
     def cp(self, certfile, host, src, dst, username, password, args=None, port=None):
         # if the coipy is recursive, and the src ends in a slash, then we should add a wildcard '*' to the src to make it copy the contents of the directory
-        if "r" in args and src.endswith("/"):
+        if args is not None and "r" in args and src.endswith("/"):
             return self.execute(certfile,host,command=["cp",args,self._make_echo(src)+"*",self._make_echo(dst)],username=username, password=password, port=port) if args else self.execute(certfile,host,command=["cp",self._make_echo(src),self._make_echo(dst)],username=username, password=password, port=port)
         else:
             return self.execute(certfile,host,command=["cp",args,self._make_echo(src),self._make_echo(dst)],username=username, password=password, port=port) if args else self.execute(certfile,host,command=["cp",self._make_echo(src),self._make_echo(dst)],username=username, password=password, port=port)
