@@ -317,9 +317,10 @@ class CommandTemplate(object):
                     
                             # save the param
                             self.backrefs.append(value)       
-                            assert tp == tool.batch_on_param
-                            
-                            self.arguments.append( BatchSwitch( tp.switch, switchuse=tp.switch_use.formatstring ) )
+                            if tp == tool.batch_on_param:
+                                self.arguments.append( BatchSwitch( tp.switch, switchuse=tp.switch_use.formatstring ) )
+                            else:
+                                self.arguments.append( Switch( tp.switch, value, switchuse=tp.switch_use.formatstring))
                             
                         elif type(value) is str or type(value) is unicode:
                             value = quote_argument( value )
