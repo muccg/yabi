@@ -89,7 +89,7 @@ class Switch(Arg):
         return self.switchuse%{'switch':self.flag, 'value':self.value}
         
     def __str__(self):
-        return "<switch:%s value:%s>"%(self.flag, self.value)
+        return "<Switch:%s Value:%s>"%(self.flag, self.value)
         
     def __repr__(self):
         return str(self)
@@ -105,7 +105,7 @@ class BatchSwitch(Switch):
     takes_input_file = True
     
     def __str__(self):
-        return "<batchswitch:%s value:%s>"%(self.flag, self.value)
+        return "<BatchSwitch:%s Value:%s>"%(self.flag, self.value)
     
     def render(self, filename):
         assert self.switchuse is not None, "Switch 'switchuse' has not been set"
@@ -115,7 +115,7 @@ class BatchSwitch(Switch):
 class BatchArg(Arg):
     """This represents a batch file argument that knows it needs a batch filename at some future point"""
     def __str__(self):
-        return "<batcharg:%s>"%(self.arg)
+        return "<BatchArg:%s>"%(self.arg)
         
 class Command(object):
     """A path to a command"""
@@ -125,7 +125,7 @@ class Command(object):
         self.path = path
         
     def __str__(self):
-        return "<command: %s>"%self.path
+        return "<Command:%s>"%self.path
         
     def render(self):
         return self.path
@@ -137,7 +137,7 @@ class SelectFile(Command):
         pass
     
     def __str__(self):
-        return "<select file>"
+        return "<SelectFile>"
         
     def render(self):
         return ""
@@ -243,7 +243,10 @@ class CommandTemplate(object):
         self.params = dict( [(p['switchName'],p) for p in parameters] )
             
     def dump(self):
-        print "%s (%s)"%(str(self.command),str(self.arguments))
+        print str(self)
+        
+    def __str__(self):
+        return "%s (%s)"%(str(self.command),str(self.arguments))
         
     def serialise(self):
         import pickle

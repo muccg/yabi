@@ -72,7 +72,7 @@ class SyslogAdmin(admin.ModelAdmin):
     search_fields = ['table_name', 'table_id']
 
 class JobAdmin(admin.ModelAdmin):
-    list_display = ['order', 'status', 'command', 'batch_files', 'start_time', 'end_time', 'cpus', 'walltime', link_to_tasks]
+    list_display = ['order', 'status', 'command', 'start_time', 'end_time', 'cpus', 'walltime', link_to_tasks]
     list_filter = ['workflow']
     ordering = ['order']
 

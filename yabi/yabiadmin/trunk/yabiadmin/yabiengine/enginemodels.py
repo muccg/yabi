@@ -65,30 +65,11 @@ class EngineWorkflow(Workflow):
                 job = EngineJob(workflow=self, order=i, start_time=datetime.datetime.now())
                 job.add_job(job_dict)
 
-        except AssertionError, e:
+        except (AssertionError, ObjectDoesNotExist, KeyError, Exception) , e:
             self.status = STATUS_ERROR
             self.save()
             logger.critical(e)
             logger.critical(traceback.format_exc())        
-            raise
-
-        except ObjectDoesNotExist, e:
-            self.status = STATUS_ERROR
-            self.save()
-            logger.critical(e)
-            logger.critical(traceback.format_exc())        
-            raise
-        except KeyError, e:
-            self.status = STATUS_ERROR
-            self.save()
-            logger.critical(e)
-            logger.critical(traceback.format_exc())        
-            raise
-        except Exception, e:
-            self.status = STATUS_ERROR
-            self.save()
-            logger.critical(e)
-            logger.critical(traceback.format_exc())
             raise
 
     # NOTE: this is a load bearing decorator. Do not remove it or the roof will fall in. (it stops locking nightmares)
@@ -152,11 +133,15 @@ class EngineWorkflow(Workflow):
                 self.save()
 
         except ObjectDoesNotExist,e:
-            logger.critical("ObjectDoesNotExist at workflow.walk")
+            self.status = STATUS_ERROR
+            self.save()
+            logger.critical("ObjectDoesNotExist at workflow::walk")
             logger.critical(traceback.format_exc())
             raise
         except Exception,e:
-            logger.critical("Error in workflow")
+            self.status = STATUS_ERROR
+            self.save()
+            logger.critical("Exception raised in workflow::walk")
             logger.critical(traceback.format_exc())
             raise
 
@@ -189,9 +174,9 @@ class EngineJob(Job):
 
     def __init__(self, *args, **kwargs):
         ret = Job.__init__(self,*args, **kwargs)
-        if self.command:
+        if self.command_template:
             self.template = CommandTemplate()
-            self.template.deserialise(self.command)
+            self.template.deserialise(self.command_template)
         else:
             self.template = None
         return ret
@@ -273,7 +258,9 @@ class EngineJob(Job):
         
         # cache job for later reference
         job_id = job_dict["jobId"] # the id that is used in the json
-        self.command = template.serialise()
+        self.command_template = template.serialise()
+        self.command = str(template)                    # text description of command
+        
         self.status = STATUS_PENDING
         self.stageout = "%s%s/" % (self.workflow.stageout, "%d - %s"%(self.order+1,self.tool.display_name) )
         self.exec_backend = self.exec_credential.homedir_uri
