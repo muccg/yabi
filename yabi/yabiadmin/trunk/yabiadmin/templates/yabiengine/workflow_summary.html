@@ -47,7 +47,7 @@ ${self.block_content()}<%def name="block_content()">
           <td><font color="${job.get_status_colour(job.status)}">${job.status}</font></td>
           <td>${job.start_time}</td>
           <td>${job.end_time}</td>
-          <td>${job.command}</td>
+          <td>${job.command|h}</td>
           <td>${job.edit_link()}</td>
     </tr>
 
