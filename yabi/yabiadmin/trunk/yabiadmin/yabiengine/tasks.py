@@ -30,8 +30,5 @@ def walk(workflow_id):
     except Exception, e:
         eworkflow.status = STATUS_ERROR
         eworkflow.save()
-        logger.critical("Exception raised in task::walk")
-        logger.critical(traceback.format_exc())
-        print traceback.format_exc()
         raise
     return workflow_id

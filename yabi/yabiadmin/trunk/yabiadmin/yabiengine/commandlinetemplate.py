@@ -121,6 +121,7 @@ class UnknownFileSwitch(Switch):
     def __init__(self, *args, **kwargs):
         Switch.__init__(self, *args, **kwargs)
         self._resolved = False
+        self.needs_filename_conversion = True
     
     def __str__(self):
         return "<UnknownFileSwitch:%s Value:%s>"%(self.flag, self.value)
@@ -138,13 +139,13 @@ class UnknownFileSwitch(Switch):
         self.value = filename
         self._resolved=True
     
-    def render(self):
+    def render(self, convfunc):
         assert self.switchuse is not None, "Switch 'switchuse' has not been set"
         assert type(self.switchuse) is str or type(self.switchuse) is unicode, "Switch 'switchuse' is wrong type"
         
         # lets list the previous job files
         
-        return self.switchuse%{'switch':self.flag, 'value':quote_argument(self.value)}
+        return self.switchuse%{'switch':self.flag, 'value':quote_argument(convfunc(self.value))}
     
 class BatchArg(Arg):
     """This represents a batch file argument that knows it needs a batch filename at some future point"""
