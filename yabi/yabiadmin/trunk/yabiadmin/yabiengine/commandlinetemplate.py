@@ -478,6 +478,7 @@ class CommandTemplate(object):
                                                     for extension in backref['extensions']:
                                                         if fnmatch.fnmatch(filename, '*.%s'%extension):
                                                             arg.set_value(filename)
+                                                            self.files.append(details)
                                             
                 else:
                     # job is finished but there are no files created!
