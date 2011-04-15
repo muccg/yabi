@@ -16,6 +16,7 @@ from yabiadmin.yabiengine.models import Workflow, Task, Job
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
 
 import pickle
+import fnmatch
 
 import logging
 logger = logging.getLogger('yabiengine')
@@ -70,7 +71,7 @@ class SwitchInputFilename(object):
         """this is passed a conversion function to make the full filename"""
         assert callable(convfunc)
         self.convfunc = convfunc
-
+        
 class Switch(Arg):
     """A flag for a command with an optional parameter"""
     
@@ -114,6 +115,36 @@ class BatchSwitch(Switch):
         assert self.switchuse is not None, "Switch 'switchuse' has not been set"
         assert type(self.switchuse) is str or type(self.switchuse) is unicode, "Switch 'switchuse' is wrong type"
         return self.switchuse%{'switch':self.flag, 'value':quote_argument(filename)}
+
+class UnknownFileSwitch(Switch):
+    """This represents a non-batch file switch that doesn't know its filename but will find out at render time"""
+    def __init__(self, *args, **kwargs):
+        Switch.__init__(self, *args, **kwargs)
+        self._resolved = False
+    
+    def __str__(self):
+        return "<UnknownFileSwitch:%s Value:%s>"%(self.flag, self.value)
+    
+    def is_value(self, value):
+        if self._resolved:
+            return False            # resolved UnknownFileSwitches are never our backref value
+    
+        return self.value['type']==value['type'] and self.value['jobId']==value['jobId'] and self.value['extensions']==value['extensions']                    # TODO: IS this the best way to map UnknownFileSwitches with the backrefs?
+    
+    def is_value_resolved(self):
+        return self._resolved
+    
+    def set_value(self, filename):
+        self.value = filename
+        self._resolved=True
+    
+    def render(self):
+        assert self.switchuse is not None, "Switch 'switchuse' has not been set"
+        assert type(self.switchuse) is str or type(self.switchuse) is unicode, "Switch 'switchuse' is wrong type"
+        
+        # lets list the previous job files
+        
+        return self.switchuse%{'switch':self.flag, 'value':quote_argument(self.value)}
     
 class BatchArg(Arg):
     """This represents a batch file argument that knows it needs a batch filename at some future point"""
@@ -354,11 +385,12 @@ class CommandTemplate(object):
                                 # this is a batch parameter, so it needs the special batch switch
                                 self.arguments.append( BatchSwitch( tp.switch, switchuse=tp.switch_use.formatstring ) )
                             else:
-                                print "PREASSERT"
-                                print value
-                                assert 'filename' in value, "A non batch-on-file parameter was passed batch bundle"
-                                # this is just an input file that will be staged along. lets add the filename statically now as it wont change, then we use the uri conversion later to make it full path
-                                self.arguments.append( Switch( tp.switch, SwitchInputFilename(value['filename']), switchuse=tp.switch_use.formatstring ) )
+                                if 'filename' in value:
+                                    # this is just an input file that will be staged along. lets add the filename statically now as it wont change, then we use the uri conversion later to make it full path
+                                    self.arguments.append( Switch( tp.switch, SwitchInputFilename(value['filename']), switchuse=tp.switch_use.formatstring ) )
+                                else:
+                                    assert value['type']=='job' and 'jobId' in value, "non previous job switch input filename. value is: %s"%(str(value))
+                                    self.arguments.append( UnknownFileSwitch( tp.switch, value, switchuse=tp.switch_use.formatstring ) )
                             
                         elif type(value) is str or type(value) is unicode:
                             value = quote_argument( value )
@@ -413,8 +445,7 @@ class CommandTemplate(object):
                             self.backfiles.append(details)
                         else:
                             # its a single file passed in via a param
-                            self.files.append(details)
-                            
+                            self.files.append(details)                           
                     else:
                         assert backref['type']=='job'
                         for filename, size, date, link in file_list:
@@ -427,13 +458,27 @@ class CommandTemplate(object):
                                     "extensions" : backref['extensions']
                                 }
                             
-                            # this is a file BUNDLE, so it MUST be batch_on_param
-                            assert backref['batch_on_param'], "Bundle of files processed during update dependencies is not passed into a batch parameter"
-                            self.backfiles.append(details)
                             
-                            if backref['bundle_extra_files']:
-                                # this file should be forced into the file list
-                                self.files.append(details)
+                            if backref['batch_on_param']:
+                                # this is a file BUNDLE, so it MUST be batch_on_param
+
+                                self.backfiles.append(details)
+                                
+                                if backref['bundle_extra_files']:
+                                    # this file should be forced into the file list
+                                    self.files.append(details)
+                            else:
+                                if 'extensions' in backref:  
+                                    # if an UnknownFileSwitch argument refers to this backref, then resolve the filename in the UnknownFileSwitch to this file if it matches
+                                    for arg in self.arguments:
+                                        if arg.__class__ is UnknownFileSwitch:                          # TODO: Ducktyping fixing
+                                            if arg.is_value(backref):
+                                                # this is our backref arg
+                                                if not arg.is_value_resolved():
+                                                    for extension in backref['extensions']:
+                                                        if fnmatch.fnmatch(filename, '*.%s'%extension):
+                                                            arg.set_value(filename)
+                                            
                 else:
                     # job is finished but there are no files created!
                     assert job.status=="error"

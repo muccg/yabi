@@ -2,7 +2,8 @@
 from celery.decorators import task
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
-from constants import STATUS_REWALK
+from constants import STATUS_REWALK, STATUS_ERROR
+import traceback
 
 @task
 def build(workflow_id):
@@ -26,4 +27,11 @@ def walk(workflow_id):
         print "Walk failed due to decrypted credential not being available. Will re-walk on decryption. Exception was %s"%dcna
         eworkflow.status = STATUS_REWALK
         eworkflow.save()
+    except Exception, e:
+        eworkflow.status = STATUS_ERROR
+        eworkflow.save()
+        logger.critical("Exception raised in task::walk")
+        logger.critical(traceback.format_exc())
+        print traceback.format_exc()
+        raise
     return workflow_id
