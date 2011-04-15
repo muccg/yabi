@@ -325,7 +325,7 @@ class EngineJob(Job):
 
         tasks_to_create = []
 
-        if self.template.command.is_select_file or not len(self.template.batchfiles):
+        if self.template.command.is_select_file or not len([X for X in self.template.all_possible_batch_files()]):
             return [ [self,None ] ]
         else:
             for f, extensions in self.template.all_possible_batch_files():
