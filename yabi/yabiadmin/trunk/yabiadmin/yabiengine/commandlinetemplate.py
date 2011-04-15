@@ -61,7 +61,10 @@ class SwitchInputFilename(object):
         
     def __str__(self):
         """Convert the filename using the conversion routine"""
-        return quote_argument(self.convfunc(self.filename))
+        if self.convfunc:
+            return quote_argument(self.convfunc(self.filename))
+        else:
+            return quote_argument(self.filename)
         
     def set(self, convfunc):
         """this is passed a conversion function to make the full filename"""
