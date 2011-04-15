@@ -69,7 +69,8 @@ class EngineWorkflow(Workflow):
             self.status = STATUS_ERROR
             self.save()
             logger.critical(e)
-            logger.critical(traceback.format_exc())        
+            logger.critical(traceback.format_exc())
+            print traceback.format_exc()    
             raise
 
     # NOTE: this is a load bearing decorator. Do not remove it or the roof will fall in. (it stops locking nightmares)
@@ -137,12 +138,14 @@ class EngineWorkflow(Workflow):
             self.save()
             logger.critical("ObjectDoesNotExist at workflow::walk")
             logger.critical(traceback.format_exc())
+            print traceback.format_exc()
             raise
         except Exception,e:
             self.status = STATUS_ERROR
             self.save()
             logger.critical("Exception raised in workflow::walk")
             logger.critical(traceback.format_exc())
+            print traceback.format_exc()
             raise
 
     def change_tags(self, taglist):
@@ -277,7 +280,7 @@ class EngineJob(Job):
 
     def create_tasks(self):
         tasks = self._prepare_tasks()
-        #print "_prepare_tasks returned: %s"%(str(tasks))
+        print "_prepare_tasks returned: %s"%(str(tasks))
         
         # by default Django is running with an open transaction
         transaction.commit()
@@ -322,13 +325,14 @@ class EngineJob(Job):
 
         tasks_to_create = []
 
-        if self.template.command.is_select_file:
+        if self.template.command.is_select_file or not len(self.template.batchfiles):
             return [ [self,None ] ]
         else:
             for f, extensions in self.template.all_possible_batch_files():
                 if self.is_task_file_valid(f, extensions):
                     logger.debug("Preparing batch_file task for file %s" % f)
                     tasks_to_create.append([self, f])
+                    
 
         return tasks_to_create
 
