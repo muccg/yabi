@@ -354,6 +354,8 @@ class CommandTemplate(object):
                                 # this is a batch parameter, so it needs the special batch switch
                                 self.arguments.append( BatchSwitch( tp.switch, switchuse=tp.switch_use.formatstring ) )
                             else:
+                                print "PREASSERT"
+                                print value
                                 assert 'filename' in value, "A non batch-on-file parameter was passed batch bundle"
                                 # this is just an input file that will be staged along. lets add the filename statically now as it wont change, then we use the uri conversion later to make it full path
                                 self.arguments.append( Switch( tp.switch, SwitchInputFilename(value['filename']), switchuse=tp.switch_use.formatstring ) )
