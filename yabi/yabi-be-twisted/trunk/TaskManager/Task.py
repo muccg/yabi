@@ -487,6 +487,8 @@ class MainTask(Task):
                         #self.remote_id(value)                           # TODO:send this id back to the middleware
                     else:
                         exec_status[0] = line.lower()
+                        print "SETTING STATUS TO:",exec_status[0]
+                        print "EXEC_STATUS=",line
                         self.status("exec:%s"%(exec_status[0]))
                 
                 # submit the job to the execution middle ware
