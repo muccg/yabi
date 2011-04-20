@@ -460,14 +460,15 @@ class CommandTemplate(object):
                                 }
                             
                             
+                            if backref['bundle_extra_files']:
+                                    # this file should be forced into the file list
+                                    self.files.append(details)
+                            
                             if backref['batch_on_param']:
                                 # this is a file BUNDLE, so it MUST be batch_on_param
 
                                 self.backfiles.append(details)
                                 
-                                if backref['bundle_extra_files']:
-                                    # this file should be forced into the file list
-                                    self.files.append(details)
                             else:
                                 if 'extensions' in backref:  
                                     # if an UnknownFileSwitch argument refers to this backref, then resolve the filename in the UnknownFileSwitch to this file if it matches
