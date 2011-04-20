@@ -32,6 +32,10 @@ def main():
             print_usage()
             return
 
+        if args.first_argument in ('-v', '--version'):
+            print_version()
+            return
+
         debug = options.yabi_debug
         yabi = Yabi(url=options.yabi_url, bg=options.yabi_bg, debug=options.yabi_debug)
         action = yabi.choose_action(args.first_argument)
@@ -200,11 +204,15 @@ class Yabi(object):
         self.http.finish_session()
 
 def print_usage():
-    print >> sys.stderr, '''
+    print '''
 Welcome to Yabish!
 
 Command should be used like BLA BLA BLA
 '''
+
+def print_version():
+    from version import __version__ 
+    print 'yabish %s' % __version__
 
 def print_error(error, debug=False):
     print >> sys.stderr, 'An error occured: \n\t%s' % error
