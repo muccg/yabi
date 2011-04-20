@@ -25,6 +25,9 @@ class Action(object):
     def decode_json(self, resp):
         return json.loads(resp)        
 
+    def stagein_required(self):
+        return False
+
 class FileDownload(object):
     '''Mix into an Action that requires downloading files'''
     get_url = 'ws/fs/get/'
@@ -64,6 +67,9 @@ class RemoteAction(Action):
 
         print 'Running your job on the server. Id: %s' % decoded_resp['workflow_id']
         return decoded_resp['workflow_id']
+
+    def stagein_required(self):
+        return True
 
 class Attach(Action, FileDownload):
     def __init__(self, *args, **kwargs):

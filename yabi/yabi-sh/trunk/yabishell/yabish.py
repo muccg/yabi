@@ -18,6 +18,7 @@ YABI_DEFAULT_URL = 'https://faramir/yabife/snapshot/'
 def main():
     debug = False
     yabi = None
+    stagein = False
     try:
         argparser = ArgumentParser(description='YABI shell', add_help=False)
         argparser.add_argument("--yabi-debug", action='store_true', help="Run in debug mode")
@@ -33,11 +34,12 @@ def main():
 
         debug = options.yabi_debug
         yabi = Yabi(url=options.yabi_url, bg=options.yabi_bg, debug=options.yabi_debug)
-        stagein = (len(args.local_files) > 0)
-        if stagein:
-            stageindir_uri, files_uris = yabi.stage_in(args.local_files)
-            args.substitute_file_urls(files_uris)
         action = yabi.choose_action(args.first_argument)
+        if action.stagein_required():
+            stagein = (len(args.local_files) > 0)
+            if stagein:
+                stageindir_uri, files_uris = yabi.stage_in(args.local_files)
+                args.substitute_file_urls(files_uris)
         action.process(args.rest_of_arguments)
         if stagein:
             yabi.delete_dir(stageindir_uri)
