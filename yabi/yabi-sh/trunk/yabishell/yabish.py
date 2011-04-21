@@ -13,12 +13,13 @@ from yabishell import actions
 from yabishell.utils import human_readable_size
 
 # TODO config file
-YABI_DEFAULT_URL = 'https://faramir/yabife/snapshot/'
+#YABI_DEFAULT_URL = 'https://faramir/yabife/snapshot/'
+YABI_DEFAULT_URL = 'https://faramir/yabife/tszabo/'
 
 def main():
     debug = False
     yabi = None
-    stagein = False
+    stagein = None
     try:
         argparser = ArgumentParser(description='YABI shell', add_help=False)
         argparser.add_argument("--yabi-debug", action='store_true', help="Run in debug mode")
@@ -40,13 +41,13 @@ def main():
         yabi = Yabi(url=options.yabi_url, bg=options.yabi_bg, debug=options.yabi_debug)
         action = yabi.choose_action(args.first_argument)
         if action.stagein_required():
-            stagein = (len(args.local_files) > 0)
-            if stagein:
-                stageindir_uri, files_uris = yabi.stage_in(args.local_files)
+            stagein = StageIn(yabi, args)
+            files_uris = stagein.do()
+            if files_uris:
                 args.substitute_file_urls(files_uris)
         action.process(args.rest_of_arguments)
         if stagein:
-            yabi.delete_dir(stageindir_uri)
+            stagein.delete_stageindir()
 
     except Exception, e:
         print_error(e, debug)
@@ -55,15 +56,23 @@ def main():
             yabi.session_finished()
 
 class StageIn(object):
-    def __init__(self, yabi, files):
+    def __init__(self, yabi, args):
         self.yabi = yabi
-        self.files = files
+        self.args = args
+        self.stageindir = None
+        self.files = None
    
     @property
     def debug(self):
         return self.yabi.debug
  
     def do(self):
+        if not self.args.local_files:
+            return
+        self.files = self.files_to_stagein()       
+        if not self.files:
+            return
+ 
         files_to_uris = {}
         alldirs, allfiles, total_size = self.collect_files()
         stagein_dir, dir_uris = self.create_stagein_dir(alldirs)
@@ -75,7 +84,7 @@ class StageIn(object):
             file_uri = self.stagein_file(f, stagein_dir + rel_path)
             files_to_uris[f.relpath] = file_uri
         print "Staging in finished."
-        return stagein_dir, files_to_uris
+        return files_to_uris
 
     def collect_files(self):
         allfiles = []
@@ -100,6 +109,18 @@ class StageIn(object):
                         allfiles.append(RelativeFile(rpath, fpath))
                         total_size += os.path.getsize(fpath)
         return alldirs, allfiles, total_size
+
+    def files_to_stagein(self):
+        uri = 'ws/yabish/is_stagein_required'
+        params = {'name': self.args.first_argument}
+        for i,a in enumerate(self.args.rest_of_arguments):
+            params['arg%i' % i] = a
+        resp, json_response = self.yabi.post(uri, params)
+        response = json.loads(json_response)
+        if not response.get('stagein_required'):
+            return []
+        local_files = self.args.local_files
+        return filter(lambda f: f in local_files, response['files'])
 
     def create_stagein_dir(self, dir_structure):
         uri = 'ws/yabish/createstageindir'
@@ -131,6 +152,10 @@ class StageIn(object):
         assert resp.status == 200
         return os.path.join(stagein_dir, fname)
 
+    def delete_stageindir(self):
+        if self.stageindir:
+            self.yabi.delete_dir(self.stageindir)
+
 class Yabi(object):
     def __init__(self, url, bg=False, debug=False):
         self.http = Http(workdir=os.path.expanduser('~/.yabish'), base_url=url)
@@ -144,10 +169,6 @@ class Yabi(object):
     def delete_dir(self, stageindir):
         rmdir = actions.Rm(self)
         rmdir.process([stageindir])
-
-    def stage_in(self, files):
-        stagein = StageIn(self, files)
-        return stagein.do()
 
     def login(self):
         import getpass
@@ -174,6 +195,7 @@ class Yabi(object):
                 print '=' * 5 + 'Making HTTP request'
             resp, contents = self.http.make_request(request)
             if self.debug:
+                print resp, contents
                 print '=' * 5 + 'End of HTTP request'
         except UnauthorizedError:
             if not self.login():
@@ -236,6 +258,10 @@ class CommandLineArguments(object):
     @property
     def rest_of_arguments(self):
         return [] if len(self.args) <= 1 else self.args[1:]
+
+    @property
+    def all_arguments(self):
+        return self.args
 
     @property
     def local_files(self):
