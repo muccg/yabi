@@ -149,6 +149,9 @@ class ForegroundRemoteAction(object):
         workflow_id = self.action.process(args)
         self.attacher.process([workflow_id])
 
+    def stagein_required(self):
+        return self.action.stagein_required()
+
 class BackgroundRemoteAction(object):
     def __init__(self, *args, **kwargs):
         self.action = RemoteAction(*args, **kwargs)
@@ -156,6 +159,9 @@ class BackgroundRemoteAction(object):
     def process(self, args):
         workflow_id = self.action.process(args)
         print "Submitted. Workflow id: %s" % workflow_id
+
+    def stagein_required(self):
+        return self.action.stagein_required()
 
 class Logout(Action):
     def __init__(self, *args, **kwargs):
