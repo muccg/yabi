@@ -47,4 +47,5 @@ urlpatterns += patterns('yabiadmin.yabi.ws_backend_views',
 urlpatterns += patterns('yabiadmin.yabi.ws_yabish_views',
     url(r'^yabish/submitjob/?$', 'submitjob', name='submitjob'),  
     url(r'^yabish/createstageindir/?$', 'createstageindir', name='createstageindir'),  
+    url(r'^yabish/is_stagein_required/?$', 'is_stagein_required', name='is_stagein_required'),  
 )

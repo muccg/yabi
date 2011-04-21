@@ -28,16 +28,31 @@ class ParsingError(YabiError):
     pass
 
 @authentication_required
+def is_stagein_required(request):
+    logger.debug(request.user.username)
+    try:
+        tool, params = extract_tool_and_params(request)
+        input_files = [p.original_value for p in params if p.input_file]
+        if input_files:
+            resp = {'success': True, 'stagein_required': True, 'files': input_files}
+        else:
+            resp = {'success': True, 'stagein_required': False}
+    except YabiError, e:
+        resp = {'success': False, 'msg': str(e)}
+
+    return HttpResponse(json.dumps(resp))
+
+@authentication_required
 def submitjob(request):
     logger.debug(request.user.username)
 
     # TODO extract common code from here and submitworkflow
 
     try:
-        toolname = request.POST.get('name')
-        job = create_job(request)
+        tool, params = extract_tool_and_params(request)
+        job = create_job(tool, params)
         selectfile_job, job = split_job(job)
-        workflow_dict = create_wrapper_workflow(selectfile_job, job, toolname)
+        workflow_dict = create_wrapper_workflow(selectfile_job, job, tool.name)
         workflow_json = json.dumps(workflow_dict)
         user = models.User.objects.get(name=request.user.username)
 
@@ -114,7 +129,7 @@ def createstageindir(request):
 
 # Implementation
 
-ParsedArg = namedtuple('ParsedArg', 'name original_arg value')
+ParsedArg = namedtuple('ParsedArg', 'name original_arg value original_value input_file')
 
 class ParamDef(object):
     def __init__(self, name, switch_use, mandatory, is_input_file):
@@ -141,6 +156,7 @@ class ParamDef(object):
 
     def consume_values(self, arguments):
         '''WARNING! This changes the passed in arguments list in place! '''
+        self.original_value = None
         if self.switch_use == 'switchOnly':
             self.value = ['Yes']
             return 
@@ -152,6 +168,7 @@ class ParamDef(object):
             if v1.startswith('-') or v2.startswith('-'):
                 raise ParsingError('Option %s requires 2 arguments' % self.name)
             self.value = [v1, v2]
+            self.original_value = '%s %s' % (v1, v2)
 
         if self.switch_use not in ('combined', 'combined_with_equals'):
             if not arguments:
@@ -160,6 +177,7 @@ class ParamDef(object):
             if v.startswith('-'):
                 raise ParsingError('Option %s requires an argument' % self.name)
             self.value = [v]
+            self.original_value = v
             if self.original_arg is None:
                 self.original_arg = v
  
@@ -176,7 +194,8 @@ class ParamDef(object):
                 'filename': filename,
                 'pathComponents': [root]
             }]
-        return ParsedArg(name= self.name, original_arg=self.original_arg, value=value) 
+        return ParsedArg(name= self.name, original_arg=self.original_arg, 
+            value=value, original_value=self.original_value, input_file=self.input_file) 
 
 class YabiArgumentParser(object):
     def __init__(self, tool):
@@ -259,7 +278,7 @@ class YabiArgumentParser(object):
         if missing_params:
             raise ParsingError('Mandatory option: %s not passed in.' % ','.join(missing_params))
 
-def create_job(request):
+def extract_tool_and_params(request):
     toolname = request.POST.get('name')
     tools = models.Tool.objects.filter(display_name=toolname, toolgrouping__tool_set__users__name=request.user.username)
     if len(tools) == 0:
@@ -267,8 +286,13 @@ def create_job(request):
     tool = tools[0]    
     argparser = YabiArgumentParser(tool)
     params = create_params(request, argparser)
+    return tool, params
+
+def create_job(tool, params):
+    params_list = [{'switchName': arg.name, 'valid': True, 'value': arg.value} 
+                for arg in params]
     return {'toolName': tool.name, 'valid': True, 
-            'parameterList': {'parameter': params}}
+            'parameterList': {'parameter': params_list}}
 
 def create_wrapper_workflow(selectfile_job, job, toolname):
     def generate_name(toolname):
@@ -288,13 +312,9 @@ def create_wrapper_workflow(selectfile_job, job, toolname):
     return workflow    
 
 def create_params(request, argparser):
-    params = []
     arguments = reconstruct_argument_list(request)
     parsed_arguments = argparser.parse_args(arguments)
-
-    return [{'switchName': arg.name, 'valid': True, 'value': arg.value} 
-                for arg in parsed_arguments]
-    return params 
+    return parsed_arguments
 
 def reconstruct_argument_list(request):
     '''Reconstructs the argument list from request params named arg0, arg1, ... argN'''
