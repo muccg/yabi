@@ -298,3 +298,24 @@ class Rm(Action):
     def decode_json(self, response):
         return None
 
+
+class Purge(Action):
+    def __init__(self, *args, **kwargs):
+        Action.__init__(self, *args, **kwargs)
+
+    def process(self, args):
+        if not args or 'workdir' in args:
+            self.delete(self.yabi.workdir)
+        else:
+            if 'cache' in args:
+                self.delete(self.yabi.cachedir)
+            if 'cookies' in args:
+                self.delete(self.yabi.cookiesfile)
+
+    def delete(self, what):
+        import shutil
+        if shutil.os.path.isdir(what):
+            shutil.rmtree(what)
+        if shutil.os.path.isfile(what):
+            shutil.os.unlink(what)
+        

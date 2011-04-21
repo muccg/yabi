@@ -14,7 +14,6 @@ from yabishell.utils import human_readable_size
 
 # TODO config file
 YABI_DEFAULT_URL = 'https://faramir/yabife/snapshot/'
-#YABI_DEFAULT_URL = 'https://faramir/yabife/tszabo/'
 
 def main():
     debug = False
@@ -158,13 +157,23 @@ class StageIn(object):
 
 class Yabi(object):
     def __init__(self, url, bg=False, debug=False):
-        self.http = Http(workdir=os.path.expanduser('~/.yabish'), base_url=url)
+        self._http = None
+        self.yabi_url = url
+        self.workdir = os.path.expanduser('~/.yabish')
+        self.cachedir = os.path.join(self.workdir, 'cache')
+        self.cookiesfile = os.path.join(self.workdir, 'cookies.txt')
         self.username = None
         self.run_in_background = bg
         self.debug = debug
         if self.debug:
             import httplib2
             httplib2.debuglevel = 1
+
+    @property
+    def http(self):
+        if self._http is None:
+            self._http = Http(workdir=self.workdir, base_url=self.yabi_url)
+        return self._http
 
     def delete_dir(self, stageindir):
         rmdir = actions.Rm(self)
@@ -223,7 +232,8 @@ class Yabi(object):
         return cls(self, name=action_name)
 
     def session_finished(self):
-        self.http.finish_session()
+        if self._http:
+            self._http.finish_session()
 
 def print_usage():
     print '''
