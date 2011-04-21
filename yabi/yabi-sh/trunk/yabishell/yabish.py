@@ -13,8 +13,8 @@ from yabishell import actions
 from yabishell.utils import human_readable_size
 
 # TODO config file
-#YABI_DEFAULT_URL = 'https://faramir/yabife/snapshot/'
-YABI_DEFAULT_URL = 'https://faramir/yabife/tszabo/'
+YABI_DEFAULT_URL = 'https://faramir/yabife/snapshot/'
+#YABI_DEFAULT_URL = 'https://faramir/yabife/tszabo/'
 
 def main():
     debug = False
