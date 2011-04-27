@@ -78,7 +78,8 @@ def split_job(job):
             params.append({
                 "valid": True, 
                 "value": [{
-                    "type": "job", 
+                    "filename": param['value'][0]['filename'],
+                    "type": "jobfile", 
                     "jobId": 1
                 }], 
                 "switchName": param['switchName']
