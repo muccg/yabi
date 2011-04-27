@@ -27,6 +27,7 @@ from django import forms
 from django.core.servers.basehttp import FileWrapper
 from django.template.loader import get_template
 from django.utils import simplejson as json
+from django.utils.importlib import import_module
 
 from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
 from yaphc.memcache_persister import MemcacheCookiePersister
@@ -101,7 +102,11 @@ def fileupload_session(request, url, session):
             return response("Session expired")
 
         # Get the user, if set.
-        user = DjangoUser.objects.get(pk=session.get_decoded()["_auth_user_id"])
+        request.user = user = DjangoUser.objects.get(pk=session.get_decoded()["_auth_user_id"])
+
+        # Update the session object in the request.
+        engine = import_module(settings.SESSION_ENGINE)
+        request.session = engine.SessionStore(session.pk)
     except DjangoUser.DoesNotExist:
         return response("User not found", status=403)
     except KeyError:
