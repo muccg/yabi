@@ -217,6 +217,7 @@ class ToolParameter(Base):
     switch_use = models.ForeignKey(ParameterSwitchUse)
     rank = models.IntegerField(null=True, blank=True)
     mandatory = models.BooleanField(blank=True, default=False)
+    hidden = models.BooleanField(blank=True, default=False)
     input_file = models.BooleanField(blank=True, default=False)
     output_file = models.BooleanField(blank=True, default=False)
     accepted_filetypes = models.ManyToManyField(FileType, blank=True)
@@ -230,6 +231,7 @@ class ToolParameter(Base):
     switch_use.help_text="The way the switch should be combined with the value."
     rank.help_text="The order in which the switches should appear. Leave blank if order is unimportant."
     mandatory.help_text="Select if the switch is required as input."
+    hidden.help_text="Select if the switch should be hidden from users in the frontend."
     input_file.help_text="Select if the switch takes a file as input from another tool."
     output_file.help_text="Select if the switch is specifying an output file."
     accepted_filetypes.help_text="The extensions of accepted filetypes for this switch."
