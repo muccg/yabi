@@ -161,7 +161,7 @@ class Tool(Base):
             'job_type': self.job_type,
             'inputExtensions': self.input_filetype_extensions(),
             'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__extension")),            
-            'parameter_list': list(self.toolparameter_set.order_by('id').values("id", "rank", "mandatory", "input_file", "output_file",
+            'parameter_list': list(self.toolparameter_set.order_by('id').values("id", "rank", "mandatory", "hidden", "input_file", "output_file",
                                                                                 "switch", "switch_use__display_text", "switch_use__formatstring","switch_use__description",
                                                                                 "possible_values","default_value","helptext"))
             }
