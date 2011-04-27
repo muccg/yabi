@@ -411,7 +411,8 @@ class CommandTemplate(object):
         return len(self.backrefs)
     dependencies = property(get_dependencies)
     
-    def update_dependencies(self,workflow):
+    def update_dependencies(self, workflow, ignore_glob_list=[]):
+        """ignore_glob_list is a list of filename globbing patterns of files to exclude from use in any jobs"""
         new_backrefs=[]
         for backref in self.backrefs:
             assert 'type' in backref and (backref['type']=="job" or backref['type']=='jobfile')                     # TODO: support jobfile correctly
@@ -429,6 +430,7 @@ class CommandTemplate(object):
                 if len(file_list):
                     # if it's a 'jobfile' then we need to select just the specified file.
                     if backref['type']=='jobfile':
+                        # SINGLE FILE
                         # file must appear in list
                         assert backref['filename'] in [X[0] for X in file_list], "Selected input file does not appear in output of previous tool"
                         index = [X[0] for X in file_list].index(backref['filename'])
@@ -449,7 +451,11 @@ class CommandTemplate(object):
                             self.files.append(details)                           
                     else:
                         assert backref['type']=='job'
+                        # BUNCH OF FILES
                         for filename, size, date, link in file_list:
+                            if True in [fnmatch.fnmatch(filename, glob) for glob in ignore_glob_list]:
+                                continue                        # skip this filename because it matches the glob ignore list
+                                
                             details = {
                                     "path" : [],
                                     "filename" : filename,

@@ -33,6 +33,8 @@ logger = logging.getLogger('yabiengine')
 from constants import *
 from yabistoreapp import db
 
+FNMATCH_EXCLUDE_GLOBS = [ '*/STDOUT.txt', '*/STDERR.txt' ]
+
 class EngineWorkflow(Workflow):
     job_cache = {}
     job_dict = []
@@ -229,7 +231,7 @@ class EngineJob(Job):
            The only dependency we have are yabi:// style references in batch_files
         """
         logger.info('Check dependencies for jobid: %s...' % self.id)
-        self.template.update_dependencies(self.workflow)
+        self.template.update_dependencies(self.workflow, ignore_glob_list=FNMATCH_EXCLUDE_GLOBS)
         return self.template.dependencies!=0
 
     @transaction.commit_on_success
@@ -375,6 +377,9 @@ class EngineJob(Job):
             if '*' not in extension:
                 extension = "*."+extension
             if fnmatch.fnmatch(file, extension):
+                for pattern in FNMATCH_EXCLUDE_GLOBS:
+                    if fnmatch.fnmatch(file, pattern):
+                        return False
                 return True
                 
         return False
