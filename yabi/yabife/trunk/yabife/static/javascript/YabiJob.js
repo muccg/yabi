@@ -719,7 +719,10 @@ YabiJob.prototype.solidify = function(obj) {
                 paramObj = new YabiJobParam(this, params[paramIndex], (params[paramIndex]["switch"] == this.batchParameter), this.editable, preloadValue);
 
                 this.params.push(paramObj);
-                this.optionsEl.appendChild(paramObj.containerEl);
+
+                if (!params[paramIndex]["hidden"]) {
+                    this.optionsEl.appendChild(paramObj.containerEl);
+                }
 
                 if (paramObj.payload.mandatory !== true) {
                     allMandatory = false;
@@ -732,7 +735,11 @@ YabiJob.prototype.solidify = function(obj) {
         if (this.editable || preloadValue !== null) {
             paramObj = new YabiJobParam(this, params, (params["switch"] == this.batchParameter), this.editable, this.preloadValueFor(params["switch"]));
             this.params.push(paramObj);
-            this.optionsEl.appendChild(paramObj.containerEl);
+
+            if (!params["hidden"]) {
+                this.optionsEl.appendChild(paramObj.containerEl);
+            }
+
             if (paramObj.payload.mandatory !== true) {
                 allMandatory = false;
             }
