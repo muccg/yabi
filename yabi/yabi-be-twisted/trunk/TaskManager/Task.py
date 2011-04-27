@@ -271,6 +271,8 @@ class MainTask(Task):
         
         # for resuming started backend execution jobs
         self._jobid = None
+        
+        self._failed = False
     
     def load_json(self, json, stage=0):
         Task.load_json(self, json, stage)
@@ -297,16 +299,22 @@ class MainTask(Task):
         if self.stage == self.EXEC:
             # now we are going to run the job
             self.status("exec")
-            if self._jobid is None:
-                # start a fresh taskjob
-                print "Executing fresh:",self._jobid
-                self.execute(self.outdir)                        # TODO. implement picking up on this exec task without re-running it??
-        
-            else:
-                # reconnect with this taskjob
-                print "Reconnecting with taskjob:",self._jobid
-                self.resume(self.outdir)
-        
+            try:
+                if self._jobid is None:
+                    # start a fresh taskjob
+                    print "Executing fresh:",self._jobid
+                    self.execute(self.outdir)                        # TODO. implement picking up on this exec task without re-running it??
+            
+                else:
+                    # reconnect with this taskjob
+                    print "Reconnecting with taskjob:",self._jobid
+                    self.resume(self.outdir)
+            
+            except TaskFailed, ex:
+                # task has errored. Lets stage out any remnants.
+                self._failed = True
+                self.log('Task has failed. Staging out any job remnants...')
+            
             self._set_stage(self.STAGEOUT)
         
         if self.stage == self.STAGEOUT:
@@ -333,9 +341,13 @@ class MainTask(Task):
         
             self.cleanup()
         
-            self.log("Job completed successfully")
-            self.status("complete")
-            
+            if self._failed:
+                self.log("Task failed")
+                self.status("error")
+            else:
+                self.log("Task completed successfully")
+                self.status("complete")
+                
             self._end_stage()
         
     def stage_in_files(self):

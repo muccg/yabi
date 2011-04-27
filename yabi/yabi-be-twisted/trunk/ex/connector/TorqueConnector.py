@@ -101,7 +101,7 @@ class TorqueConnector(ExecConnector):
                 if status == 'C':
                     #print "STATUS IS C <=============================================================",jobsummary[jobid]['exit_status']
                     # state 'C' means complete OR error
-                    if jobsummary[jobid]['exit_status'] == '0':
+                    if 'exit_status' in jobsummary[jobid] and jobsummary[jobid]['exit_status'] == '0':
                         newstate = "Done"
                     else:
                         newstate = "Error"
