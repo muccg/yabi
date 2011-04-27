@@ -303,7 +303,7 @@ def get(request):
 
         response = HttpResponse(get_file(yabiusername, uri, bytes=bytes))
 
-        mimetypes.init([os.path.normpath('/usr/local/etc/mime.types')])
+        mimetypes.init([os.path.join(settings.PROJECT_DIRECTORY, 'mime.types')])
         mtype, file_encoding = mimetypes.guess_type(filename, False)
         if mtype is not None:
             response['content-type'] = mtype
