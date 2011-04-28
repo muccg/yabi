@@ -75,13 +75,16 @@ def split_job(job):
     params = []
     for param in job['parameterList']['parameter']:
         if type(param['value'][0]) == dict and param['value'][0].get('type') == 'file':
+            filename = param['value'][0]['filename']
+            value = {"jobId": 1}
+            if filename:
+                value['filename'] = filename
+                value['type'] = "jobfile"
+            else:
+                value['type'] = "job"
             params.append({
                 "valid": True, 
-                "value": [{
-                    "filename": param['value'][0]['filename'],
-                    "type": "jobfile", 
-                    "jobId": 1
-                }], 
+                "value": [value],
                 "switchName": param['switchName']
             })
             files.append(param['value'][0])
