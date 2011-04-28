@@ -305,7 +305,8 @@ def create_tool(request, tool_dict):
                                       output_file=parameter["output_file"],
                                       default_value=parameter["default_value"],
                                       helptext=parameter["helptext"],
-                                      switch=parameter["switch"]
+                                      switch=parameter["switch"],
+                                      hidden=parameter["hidden"]                                      
                                       )
 
 
