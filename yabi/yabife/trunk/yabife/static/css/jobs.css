@@ -243,6 +243,13 @@
     display: none;
 }
 
+.jobParam .value .acceptedExtension {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 290px;
+    white-space: nowrap;
+}
+
 /* Miscellany. */
 .jobParam label {
     position: static;
