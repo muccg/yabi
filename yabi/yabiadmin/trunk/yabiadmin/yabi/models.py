@@ -257,6 +257,10 @@ class ToolOutputExtension(Base):
     must_exist = models.NullBooleanField(default=False) #TODO this field not currently in use
     must_be_larger_than = models.PositiveIntegerField(null=True, blank=True) #TODO this field not currently in use
 
+    def __unicode__(self):
+        return "%s" % self.file_extension
+
+
 class ToolGroup(Base):
     name = models.CharField(max_length=100, unique=True)
 

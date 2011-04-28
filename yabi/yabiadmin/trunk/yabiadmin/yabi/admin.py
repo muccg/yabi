@@ -79,6 +79,11 @@ class ToolSetAdmin(AdminBase):
 
 class FileTypeAdmin(AdminBase):
     list_display = ['name']
+    search_fields = ['name']    
+
+class FileExtensionAdmin(AdminBase):
+    list_display = ['extension']
+    search_fields = ['extension']
 
 class QueueAdmin(admin.ModelAdmin):
     list_display = ['name', 'user_name', 'created_on']
@@ -146,7 +151,7 @@ class ParameterSwitchUseAdmin(AdminBase):
     search_fields = ['display_text', 'description']
 
 def register(site):
-    site.register(FileExtension, AdminBase)
+    site.register(FileExtension, FileExtensionAdmin)
     site.register(ParameterSwitchUse, ParameterSwitchUseAdmin)
     #site.register(QueuedWorkflow, QueueAdmin)
     #site.register(InProgressWorkflow, QueueAdmin)
