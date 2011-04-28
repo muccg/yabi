@@ -670,9 +670,10 @@ YabiWorkflow.prototype.saveTags = function(postRelocate) {
     var jsUrl, jsCallback, jsTransaction;
     jsUrl =  baseURL;
     jsCallback = {
-    success: this.saveTagsResponseCallback,
-    failure: this.saveTagsResponseCallback,
-        argument: [this, postRelocate] };
+        success: this.saveTagsResponseCallback,
+        failure: function(o) { YAHOO.ccgyabi.widget.YabiMessage.fail("Error saving tags"); },
+        argument: [this, postRelocate]
+    };
     jsTransaction = YAHOO.util.Connect.asyncRequest('POST', jsUrl, jsCallback, "taglist="+escape(this.tagInputEl.value));
 };
 
