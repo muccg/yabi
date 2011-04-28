@@ -149,7 +149,7 @@ class Job(models.Model, Editable, Status):
         Checks all the tasks for a job and sets the job status based on precedence of the task status.
         The order of the list being checked is therefore important.
         '''
-        for status in [STATUS_ERROR, 'stagein', 'mkdir', 'exec', 'exec:active', 'exec:pending', 'exec:unsubmitted', 'stageout', 'cleaning', STATUS_READY, STATUS_COMPLETE]:
+        for status in [STATUS_ERROR, 'stagein', 'mkdir', 'exec', 'exec:active', 'exec:pending', 'exec:unsubmitted', 'stageout', 'cleaning', STATUS_BLOCKED, STATUS_READY, STATUS_COMPLETE]:
             if Task.objects.filter(job=self, status=status):
                 # we need to map the task status values to valid job status values
                 if status.startswith('exec') or status in ['stageout', 'cleaning', 'stagein', 'mkdir']:
