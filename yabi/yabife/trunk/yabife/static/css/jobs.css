@@ -210,10 +210,10 @@
 }
 
 #jobPaneSelector li:hover {
-    background: #eff3f6;
-    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#fafdff', EndColorStr='#e7ebee');
-    background: -moz-linear-gradient(top, #fafdff, #e7ebee);
-    background: -webkit-gradient(linear, left top, left bottom, from(#fafdff), to(#e7ebee));
+    background: #e1e7e9;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#eaeff2', EndColorStr='#dadfe2');
+    background: -moz-linear-gradient(top, #eaeff2, #dadfe2);
+    background: -webkit-gradient(linear, left top, left bottom, from(#eaeff2), to(#dadfe2));
 }
 
 #jobPaneSelector li.selected {

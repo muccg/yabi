@@ -131,16 +131,6 @@ body {
     font-size:80%;
 }
 
-.addLink {
-    position:absolute;
-    right:0px;
-    top:0px;
-    cursor:pointer;
-    width:53px;
-    height:25px;
-    background:url(../images/addtool.png) no-repeat;
-}
-
 #yui-main {
     margin:0px;
     overflow:hidden;
@@ -205,8 +195,8 @@ body {
     border-left: 1px solid #eee;
     border-right: 1px solid #eee;
 
-    border-radius-top-left: 5px;
-    border-radius-top-right: 5px;
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
     -moz-border-radius-topleft: 5px; 
     -webkit-border-top-left-radius: 5px;
     -moz-border-radius-topright: 5px;
@@ -343,11 +333,19 @@ display:inline;
     right: 4px;
     width: 15px;
     height: 15px;
-    background: url(../images/addtag.png) no-repeat;
+    background: url(../images/add-tag.png) no-repeat;
 }
 
 .tagAddLink:hover {
-    background: url(../images/addtag-hover.png) no-repeat;
+    background: url(../images/add-tag-hover.png) no-repeat;
+}
+
+.inlinesvg .tagAddLink {
+    background: url(../images/add-tag.svg) no-repeat;
+}
+
+.inlinesvg .tagAddLink:hover {
+    background: url(../images/add-tag-hover.svg) no-repeat;
 }
 
 .tagList {
@@ -401,18 +399,71 @@ display:inline;
 }
 
 .workflowHint {
-    width:282px;
-    height:120px;
-    margin:20px;
-    background:url(../images/empty_workflow_help.png);
+    width: 180px;
+    height: 119px;
+    margin: 20px;
+    padding: 0 30px 0 70px;
+    background-image: url(../images/workflow-background.png);
+    background-repeat: none;
+    background-position: 50% 50%;
+    color: #4b8be4;
+}
+
+.workflowHint div {
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+    width: 180px;
+    height: 119px;
+}
+
+.workflowHint div span {
+    display: inline-block;
+    text-indent: -100000px;
+    width: 33px;
+    height: 14px;
+    background-image: url(../images/add-tool.png);
+    background-repeat: none;
+    background-position: bottom left;
+}
+
+.inlinesvg .workflowHint {
+    background-image: url(../images/workflow-background.svg);
+}
+
+.inlinesvg .workflowHint div span {
+    background-image: url(../images/add-tool.svg);
 }
 
 .wfSelectionHint {
-    width:280px;
-    height:146px;
-    margin:20px;
-    margin-left:5px;
-    background:url(../images/no_wf_selection.png) no-repeat;
+    width: 174px;
+    height: 120px;
+    margin: 20px 5px;
+    padding: 40px 25px 0 75px;
+    background-image: url(../images/no-workflow-background.png);
+    background-repeat: none;
+    background-position: 50% 50%;
+    color: #4b8be4;
+}
+
+.wfSelectionHint div {
+    display: table-row;
+    margin: 0;
+    padding: 0;
+}
+
+.wfSelectionHint div span {
+    display: table-cell;
+    text-align: center;
+    width: 174px;
+    height: 60px;
+    margin: 0;
+    padding: 0;
+    vertical-align: middle;
+}
+
+.inlinesvg .wfSelectionHint {
+    background-image: url(../images/no-workflow-background.svg);
 }
 
 .wfNoResultsDiv {
@@ -723,7 +774,7 @@ input {
 }
 
 .statusFilter:hover {
-    background-color: #ebf3f9;
+    background-color: #f7fcff;
 }
 
 .selectedStatusFilter {
@@ -831,13 +882,15 @@ input {
     -moz-box-shadow: 0px 1px 1px #ddd;
     -webkit-box-shadow: 0px 1px 1px #ddd;
     cursor: pointer;
+    text-decoration: none;
 }
 
 .fakeButton:hover {
-    background: #eff3f6;
-    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#fafdff', EndColorStr='#e7ebee');
-    background: -moz-linear-gradient(top, #fafdff, #e7ebee);
-    background: -webkit-gradient(linear, left top, left bottom, from(#fafdff), to(#e7ebee));
+    background: #e1e7e9;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#eaeff2', EndColorStr='#dadfe2');
+    background: -moz-linear-gradient(top, #eaeff2, #dadfe2);
+    background: -webkit-gradient(linear, left top, left bottom, from(#eaeff2), to(#dadfe2));
+    text-decoration: none;
 }
 
 .largeButton {
@@ -1009,6 +1062,38 @@ input {
     text-shadow: 0px 1px 1px #fff;
 }
 
+div:hover > .tool {
+    background: #e1e7e9;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#eaeff2', EndColorStr='#dadfe2');
+    background: -moz-linear-gradient(top, #eaeff2, #dadfe2);
+    background: -webkit-gradient(linear, left top, left bottom, from(#eaeff2), to(#dadfe2));
+    text-shadow: 0 1px 1px #eee;
+}
+
+.addLink {
+    position:absolute;
+    right:0px;
+    top:0px;
+    cursor:pointer;
+    width:53px;
+    height:25px;
+    background-image: url(../images/add-tool.png);
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+}
+
+.addLink:hover {
+    background-image: url(../images/add-tool-hover.png);
+}
+
+.inlinesvg .addLink {
+    background-image: url(../images/add-tool.svg);
+}
+
+.inlinesvg .addLink:hover {
+    background-image: url(../images/add-tool-hover.svg);
+}
+
 .workflowProxy {
     border-bottom:1px solid #ddd;
     padding:4px;
@@ -1068,16 +1153,36 @@ input {
     margin-top:5px;
     height:20px;
     width:180px;
-    background:url(../images/slider-bg.png) no-repeat;
+    background-image: url(../images/slider-background.png);
+    background-repeat: no-repeat;
     position:absolute;
     left:80px;
 }
 
+.inlinesvg .slider-bg {
+    background-image: url(../images/slider-background.svg);
+}
+
 .slider-thumb {
-    margin-left:-5px;
-    padding-top:3px;
+    margin-top: 3px;
+    margin-left: -7.5px;
     width: 15px;
     height: 15px;
+    background-image: url(../images/slider-button.png);
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+.slider-thumb:hover {
+    background-image: url(../images/slider-button-hover.png);
+}
+
+.inlinesvg .slider-thumb {
+    background-image: url(../images/slider-button.svg);
+}
+
+.inlinesvg .slider-thumb:hover {
+    background-image: url(../images/slider-button-hover.svg);
 }
 
 .listingLoading {

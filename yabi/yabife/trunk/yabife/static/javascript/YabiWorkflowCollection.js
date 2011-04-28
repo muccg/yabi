@@ -49,7 +49,7 @@ function YabiWorkflowCollection() {
     
     this.clearFilterEl = document.createElement("span");
     this.clearFilterEl.className = "fakeButton";
-    this.clearFilterEl.appendChild( document.createTextNode(" show all ") );
+    this.clearFilterEl.appendChild( document.createTextNode("show all") );
     this.clearFilterEl.style.visibility = "hidden";
     YAHOO.util.Event.addListener(this.clearFilterEl, "click", this.clearFilterCallback, this);
     
@@ -66,9 +66,6 @@ function YabiWorkflowCollection() {
     this.sliderEl.className = "yui-h-slider slider-bg";
     this.slideThumbEl = document.createElement("div");
     this.slideThumbEl.className = "yui-slider-thumb slider-thumb";
-    var sliderImage = new Image();
-    sliderImage.src = appURL + "static/images/slider-thumb.png";
-    this.slideThumbEl.appendChild( sliderImage );
     this.sliderEl.appendChild(this.slideThumbEl);
     this.sliderContainerEl.appendChild(this.sliderEl);
     this.sliderValueEl = document.createElement("div");
@@ -117,6 +114,8 @@ function YabiWorkflowCollection() {
     //no selected wf div, not added explicitly
     this.noSelectionDiv = document.createElement("div");
     this.noSelectionDiv.className = 'wfSelectionHint';
+    this.noSelectionDiv.innerHTML = "<div><span>click the design tab to design a new workflow</span></div>" +
+        "<div><span>or find and click on a workflow to view it here</span></div>";
     
     this.listingEl = document.createElement("div");
     this.listingEl.className = "workflowListing";
@@ -130,7 +129,7 @@ function YabiWorkflowCollection() {
 }
 
 YabiWorkflowCollection.prototype.changeDateRange = function() {
-    var value = (this.slider.getValue() - 10) / 40;
+    var value = Math.floor((this.slider.getValue() - 10) / 40);
     
     while (this.sliderValueEl.firstChild) {
         this.sliderValueEl.removeChild(this.sliderValueEl.firstChild);

@@ -33,7 +33,7 @@ function YabiToolCollection() {
     
     this.clearFilterEl = document.createElement("span");
     this.clearFilterEl.className = "fakeButton";
-    this.clearFilterEl.appendChild( document.createTextNode(" show all ") );
+    this.clearFilterEl.appendChild( document.createTextNode("show all") );
     this.clearFilterEl.style.visibility = "hidden";
     YAHOO.util.Event.addListener(this.clearFilterEl, "click", this.clearFilterCallback, this);
 

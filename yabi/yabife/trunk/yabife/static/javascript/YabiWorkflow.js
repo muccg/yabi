@@ -136,6 +136,7 @@ function YabiWorkflow(editable) {
     this.hintEl = document.createElement('div');
     this.hintEl.className = 'workflowHint';
     if (this.editable) {
+        this.hintEl.innerHTML = "<div>drag tools here to begin<br />(or use the <span>add</span> buttons)</div>";
         this.mainEl.appendChild(this.hintEl);
     }
         
