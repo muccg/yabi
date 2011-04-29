@@ -25,6 +25,7 @@ from crypto import DecryptException
 from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.yabiengine.tasks import build
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
+from yabiadmin.yabiengine.models import WorkflowTag
 from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_backendcredential_for_uri, copy_file, rm_file, send_upload_hash
 from yabiadmin.responses import *
 from yabi.file_upload import *
@@ -425,7 +426,7 @@ def get_workflow(request, workflow_id):
     return HttpResponse(json.dumps(response),
                         mimetype='application/json')
 
-def workflow_to_response(workflow, key=None):
+def workflow_to_response(workflow, key=None, parse_json=True, retrieve_tags=True):
     fmt = DATE_FORMAT
     response = {
             'id': workflow.id,
@@ -433,11 +434,16 @@ def workflow_to_response(workflow, key=None):
             'last_modified_on': workflow.last_modified_on.strftime(fmt),
             'created_on': workflow.created_on.strftime(fmt),
             'status': workflow.status,
-            'json': json.loads(workflow.json),
-            'tags': [wft.tag.value for wft in workflow.workflowtag_set.all()] 
+            'json': json.loads(workflow.json) if parse_json else workflow.json,
+            "tags": [],
         } 
+
+    if retrieve_tags:
+        response["tags"] = [wft.tag.value for wft in workflow.workflowtag_set.all()] 
+
     if key is not None:
         response = (getattr(workflow,key), response)
+
     return response
 
 @authentication_required
@@ -462,12 +468,26 @@ def workflow_datesearch(request):
     if sort[0] == '-':
         sort_dir, sort_field = ('DESC', sort[1:])
  
+    # Retrieve the matched workflows.
     workflows = EngineWorkflow.objects.filter(
            user__name = yabiusername,
            created_on__gte = start, created_on__lte = end
         ).order_by(sort)
-    response = [workflow_to_response(w, sort_field) for w in workflows]
-    
+
+    # Use that list to retrieve all of the tags applied to those workflows in
+    # one query, then build a dict we can use when iterating over the
+    # workflows.
+    workflow_tags = WorkflowTag.objects.select_related("tag", "workflow").filter(workflow__in=workflows)
+    tags = {}
+    for wt in workflow_tags:
+        tags[wt.workflow.id] = tags.get(wt.workflow.id, []) + [wt.tag.value]
+
+    response = []
+    for workflow in workflows:
+        workflow_response = workflow_to_response(workflow, sort_field, parse_json=False, retrieve_tags=False)
+        workflow_response[1]["tags"] = tags.get(workflow.id, [])
+        response.append(workflow_response)
+
     archived_workflows = db.find_workflow_by_date(yabiusername,start,end,sort_field,sort_dir)
 
     response.extend(archived_workflows)

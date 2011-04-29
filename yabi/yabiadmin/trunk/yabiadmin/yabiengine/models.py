@@ -54,7 +54,7 @@ class Workflow(models.Model, Editable, Status):
     end_time = models.DateTimeField(null=True)
     log_file_path = models.CharField(max_length=1000,null=True)
     last_modified_on = models.DateTimeField(null=True, auto_now=True, editable=False)
-    created_on = models.DateTimeField(auto_now_add=True, editable=False)
+    created_on = models.DateTimeField(auto_now_add=True, editable=False, db_index=True)
     status = models.TextField(max_length=64, blank=True)
     stageout = models.CharField(max_length=1000)
     json = models.TextField()
