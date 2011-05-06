@@ -10,6 +10,8 @@ from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.utils import webhelpers 
 
 class AdminBase(ExtJsonInterface, admin.ModelAdmin):
+    save_as = True
+
     def save_model(self, request, obj, form, change):
         if not isinstance(obj, Base): 
             return form.save()
@@ -65,7 +67,6 @@ class ToolAdmin(AdminBase):
     list_display = ['name', 'display_name', 'path', 'enabled', 'backend', 'fs_backend', 'tool_groups_str', 'tool_link', 'created_by', 'created_on']
     inlines = [ToolOutputExtensionInline, ToolParameterInline] # TODO need to add back in tool groupings and find out why it is not working with mango
     search_fields = ['name', 'display_name', 'path']
-    save_as = True
 
     def get_form(self, request, obj=None, **kwargs):
         return ToolForm
