@@ -43,9 +43,14 @@ class Arg(object):
 
 class SwitchFilename(object):
     """represents the filename that the render() was run with. It is at template time, unknown. It is filled in with render"""
-    def __init__(self,default="unkown",template="%s"):
+    def __init__(self,default="unkown",template="%s", source_switch=None):
         self.filename = default
         self.template = template
+        
+        # source switch is the "-switch" to be used as the originator of the filename for this switch. It is a string
+        # eg. our object may describe output switch "-o" and source_switch may be "-i" meaning that the name for the
+        # -o flag must be derived from the filename associated with the -i flag.
+        self.source_switch = source_switch
         
     def __str__(self):
         """This is the render function that renders the filename"""
@@ -103,6 +108,10 @@ class Switch(Arg):
             self.value.set(output)
         
         return self.as_string()
+       
+    @property
+    def source_switch(self):
+        return self.value.source_switch
        
 class BatchSwitch(Switch):
     """This represents a batch file switch that knows it needs a batch filename at some future point"""
@@ -242,8 +251,9 @@ class CommandTemplate(object):
         self.arguments = []                 # a list of our flags, parameters and arguments
         self.files = []                     # a list of any extra 'input files' required. The items are dictionaries that are copies of the "parameter" input dictionary describing the selection
         self.backrefs = []                  # a list of any previous jobs we are waiting on
-        self.batchfiles = []                # once a previous job is finished, the files that are represented by the output of that job for use by us are assembled here
-                                            # these are the URIs that are converted to the final /full/directory/path to use in the command
+        self.batchfiles = {}                # once a previous job is finished, the files that are represented by the output of that job for use by us are assembled here
+                                            # these are the URIs that are converted to the final /full/directory/path to use in the command. the keys are the switch strings
+                                            # the value the files.
         self.backfiles = []                 # when the backrefs are processed, this array is filled with the decoded reference URIs. this is to be used by the caller to be passed back into render
                                             # this represents ALL the possibilities that could be batched, not _just_ those relating to render()
  
@@ -308,12 +318,10 @@ class CommandTemplate(object):
     def _convert_filename(self, filename):
         return self.uri_conversion_string%{'filename':filename}
 
-    def render(self, *batchfiles):
-        # ATM only one file per batch
+    def deprecated_render(self, *batchfiles):
         self.batchfiles = batchfiles
         batchfiles = list(batchfiles)
-        assert len(self.batchfiles)<=1
-
+        
         # our 'output filename base' is just the filename of the first batchfile (ATM)
         if batchfiles:
             output_filename = batchfiles[0].rsplit("/")[-1]
@@ -326,6 +334,35 @@ class CommandTemplate(object):
                 output += " "+argument.render(self._convert(batchfiles.pop(0)))
             elif argument.takes_output_file:
                 output += " "+argument.render(output_filename)
+            elif argument.needs_filename_conversion:
+                # if this argument needs a conversion, we pass in a converter function for it to use
+                output += " "+argument.render(lambda x: self._convert_filename(x))
+            else:
+                output += " "+argument.render()
+            
+        return output
+
+    def render(self, batchfiles={}):
+        """renders the command template into a string. needs to be passed a dictionary of the batch files"""
+        print "render:",batchfiles
+        self.batchfiles = batchfiles
+        
+        output = self.command.render()
+        
+        for argument in self.arguments:
+            if argument.takes_input_file:
+                assert len(batchfiles), "batch_files passed in has %d entries which is not enough for command tempate %r"%(len(self.batchfiles),self)
+                print "batchfiles: %s"%(batchfiles)
+                print "argument: %s"%(argument)
+                print "flag: %s"%(argument.flag)
+                output += " "+argument.render(self._convert(batchfiles[argument.flag]))
+            elif argument.takes_output_file:
+                # find the base filename this switch requires
+                print "argument.source_switch=%s"%(argument.source_switch)
+                base_name = batchfiles[argument.source_switch].rsplit("/")[-1]
+                print "basename=%s"%(base_name)
+                print "render=%s"%(argument.render(base_name))
+                output += " "+argument.render(base_name)                                # pass it into the argument render function
             elif argument.needs_filename_conversion:
                 # if this argument needs a conversion, we pass in a converter function for it to use
                 output += " "+argument.render(lambda x: self._convert_filename(x))
@@ -354,35 +391,42 @@ class CommandTemplate(object):
             if params['valid']:
                 details = params['value']
                 for value in details:
-                    if 'type' in value and (value['type']=='file' or value['type']=='directory'):
+                    if 'type' in value and (value['type']=='file' or value['type']=='directory'):                       # TODO: what if value is unicode and contains the word 'type' within it! LOL
                         # param refers to a file
                         assert tp.input_file, "File parameter passed in on switch '%s' where the input_file table boolean is not set"%(tp.switch)
                         value['extensions'] = tp.input_filetype_extensions()
+                        
+                        # annotate with the switch we are processing
+                        value['switch'] = tp.switch
+                    
                         self.files.append(value)
                     else:
                         # switch has single parameter
                         if DEBUG:
-                            if tool.batch_on_param_bundle_files:
-                                print "!!!![%s] tool.batch_on_param_bundle_files"%(tp.switch)
+                            if tp.batch_bundle_files:
+                                print "!!!![%s] tool.batch_bundle_files"%(tp.switch)
                             if tp.input_file:
                                 print "!!!![%s] tp.input_file"%(tp.switch)
                             if tp.output_file:
                                 print "!!!![%s] tp.output_file"%(tp.switch)
-                            if tp.use_batch_filename:
-                                print "!!!![%s] tp.use_batch_filename"%(tp.switch)
+                            if tp.use_output_filename:
+                                print "!!!![%s] tp.use_output_filename = %s"%(tp.switch,tp.use_output_filename)
                             if tp.extension_param:
                                 print "!!!![%s] tp.extension_param"%(tp.switch)
                         if type(value) is dict:
-                            assert "type" in value and (value['type']=='job' or value['type']=='jobfile'), "Unknown param value type for switch '%s', type is '%s'"%(tp.switch,value['type'])           # TODO: support type 'jobfile' correctly
+                            assert "type" in value and (value['type']=='job' or value['type']=='jobfile'), "Unknown param value type for switch '%s', type is '%s'"%(tp.switch,value['type'])           
                             
                             # annotate extra info
                             value['extensions'] = tp.input_filetype_extensions() 
-                            value['bundle_extra_files'] = tool.batch_on_param_bundle_files
-                            value['batch_on_param'] = (tp==tool.batch_on_param)
-                    
+                            value['bundle_files'] = tp.batch_bundle_files
+                            value['batch_param'] = tp.batch_param
+                            
+                            # annotate with the switch we are processing
+                            value['switch'] = tp.switch
+                                               
                             # save the param
                             self.backrefs.append(value)
-                            if tp == tool.batch_on_param:
+                            if tp.batch_param:
                                 # this is a batch parameter, so it needs the special batch switch
                                 self.arguments.append( BatchSwitch( tp.switch, switchuse=tp.switch_use.formatstring ) )
                             else:
@@ -397,11 +441,12 @@ class CommandTemplate(object):
                             value = quote_argument( value )
                             
                             if tp.output_file:
-                                if tp.use_batch_filename:
+                                if tp.use_output_filename:
+                                    # this means output filename has to be named after the filename associated with the switch this parameter is pointing to
                                     if tp.extension_param:
-                                        value = SwitchFilename(default=value, template="%s."+str(tp.extension_param))
+                                        value = SwitchFilename(default=value, template="%s."+str(tp.extension_param), source_switch=tp.use_output_filename.switch)
                                     else:
-                                        value = SwitchFilename(default=value)
+                                        value = SwitchFilename(default=value, source_switch=tp.use_output_filename.switch)
                                 
                             self.arguments.append( Switch( tp.switch, value, switchuse=tp.switch_use.formatstring ) )
     
@@ -441,9 +486,10 @@ class CommandTemplate(object):
                             "type" : "file",
                             "root" : stageout,
                             "pathComponents" : [ stageout ],
-                            "extensions" : backref['extensions']
+                            "extensions" : backref['extensions'],
+                            "switch" : backref['switch']
                         }
-                        if backref['batch_on_param']:
+                        if backref['batch_param']:
                             # its a single batch file. add it to backfiles
                             self.backfiles.append(details)
                         else:
@@ -462,15 +508,16 @@ class CommandTemplate(object):
                                     "type" : "file",
                                     "root" : stageout,
                                     "pathComponents" : [ stageout ],
-                                    "extensions" : backref['extensions']
+                                    "extensions" : backref['extensions'],
+                                    "switch" : backref['switch']
                                 }
                             
                             
-                            if backref['bundle_extra_files']:
+                            if backref['bundle_files']:
                                     # this file should be forced into the file list
                                     self.files.append(details)
                             
-                            if backref['batch_on_param']:
+                            if backref['batch_param']:
                                 # this is a file BUNDLE, so it MUST be batch_on_param
 
                                 self.backfiles.append(details)
@@ -510,23 +557,30 @@ class CommandTemplate(object):
         """Like stageins but only those files assosicated with this rendering instance of the template as batch files
         Returns remote fs paths, not URIs
         """
-        for selection in self.batchfiles:
-            yield selection
+        print "Batchfiles=%s"%(self.batchfiles)
+        for key,selection in self.batchfiles.items():
+            yield key,selection
             
     def all_files(self):
         for file in self.other_files():
-            yield file
+            print "otherfile:%s"%(file)
+            yield None, file
             
-        for file in self.batch_files():
-            yield file
+        for key,file in self.batch_files():
+            print "batchfile:%s"%(file)
+            yield key,file
             
     def all_possible_batch_files(self):
         """This returns all possible input batch files for this command template. Not just those used by this render.
         This generator is used to return all the possibilities for batch. From this we call render on each one to derive a task
+        
+        This returns the files as a dictionary of files with the key being the switch and the value being the uri
         """
+        print "APBF",self.backfiles
         for selection in self.backfiles:
+            print "parser:",self.parse_param_value(selection)
             for file in self.parse_param_value(selection):
-                yield file, selection['extensions']
+                yield selection['switch'],file, selection['extensions']
     
     def parse_param_value(self,item):
         if item['type'] == 'file':

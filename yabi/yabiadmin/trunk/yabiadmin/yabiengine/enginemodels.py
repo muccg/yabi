@@ -330,10 +330,11 @@ class EngineJob(Job):
         if self.template.command.is_select_file or not len([X for X in self.template.all_possible_batch_files()]):
             return [ [self,None ] ]
         else:
-            for f, extensions in self.template.all_possible_batch_files():
+            for switch, f, extensions in self.template.all_possible_batch_files():
+                print "prepare task %s, %s, %s"%(switch,f,extensions)
                 if self.is_task_file_valid(f, extensions):
                     logger.debug("Preparing batch_file task for file %s" % f)
-                    tasks_to_create.append([self, f])
+                    tasks_to_create.append([self, {switch:f}])
                     
 
         return tasks_to_create
@@ -435,8 +436,8 @@ class EngineTask(Task):
     def workflow_id(self):
         return self.job.workflow.id
 
-    def add_task(self, uri, name=""):
-        logger.debug("uri: %s" % (uri))
+    def add_task(self, uridict, name=""):
+        logger.debug("uridict: %s" % (uridict))
         
         # create the task
         self.working_dir = str(uuid.uuid4()) # random uuid
@@ -452,18 +453,19 @@ class EngineTask(Task):
         # set our template batch uri conversion path
         template.set_uri_conversion(url_join(self.fsbackend_parts.path, self.working_dir, "input")+"/%(filename)s")
         
-        if uri is None:
+        if uridict is None:
             # batchfileless task (eg, select file)
             self.command = template.render()
         else:
-            self.command = template.render(uri)
+            self.command = template.render(uridict)
         
         self.expected_ip = settings.BACKEND_IP
         self.expected_port = settings.BACKEND_PORT
         self.save()
 
         # non batch stageins
-        for stagein in template.all_files():
+        for key,stagein in template.all_files():
+            print "key:%s stagein:%s"%(key,stagein)
             self.batch_files_stagein(stagein)
 
         self.status = ''

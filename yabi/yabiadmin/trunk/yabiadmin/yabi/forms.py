@@ -65,14 +65,43 @@ class ToolForm(forms.ModelForm):
     class Meta:
         model = Tool
         exclude = ('groups','output_filetypes')
-
-    def __init__(self, *args, **kwargs):
-        super(ToolForm, self).__init__(*args, **kwargs)
-        self.fields["batch_on_param"].queryset = ToolParameter.objects.filter(tool=self.instance)
-
+        
     def clean_backend(self):
         backend = self.cleaned_data['backend']
         if backend.path != '/':
             raise forms.ValidationError("Execution backends must only have / in the path field. (This is probably a file system backend.)")
         return backend
 
+class ToolParameterForm(forms.ModelForm):
+    class Meta:
+        model = ToolParameter
+    def __init__(self, *args, **kwargs):
+        super(ToolParameterForm, self).__init__(*args, **kwargs)
+        
+        # this is no longer on the tool, but on the toolparameter
+        # limit the drop down for parameters to batch to only be those for this tool
+        # the problem here is that with Django architecture there is no way of knowing inside this Form INLINE what Tool we came from
+        # so we are going to do a DIRTY HACK and look back through the stack frames at our tree of callers and look for the stack frame
+        # from which this all was constructed at a point where we know what the underlying tool object is and then we yoink it out of that
+        # frame into this frame. the correct way of doing it is to pass this information through the contruction process to pass it in here
+        # this requires changes to mango
+        import inspect
+        f_search = inspect.currentframe()
+        tool_object = None
+        while not tool_object and f_search:
+            # is this the frame we are looking for?
+            f_locals = f_search.f_locals                        # grab handle on local variable space
+            f_globals = f_search.f_globals
+            if "__name__" in f_globals and f_globals['__name__']=='django.contrib.admin.options':
+                if "obj" in f_locals and "object_id" in f_locals and "FormSet" in f_locals and "formsets" in f_locals:
+                    # this is the frame. Lets get our object
+                    tool_object = f_locals['obj']
+                    assert tool_object.__class__ is Tool, "When i traced back through the frame stack to find my tool object, I found an object, but it wasnt a tool, it was a %s"%(tool_object.__class__)
+                
+            # go back a frame
+            f_search = f_search.f_back
+        
+        if tool_object:
+            self.fields["use_output_filename"].queryset = ToolParameter.objects.filter(tool=tool_object)
+
+    

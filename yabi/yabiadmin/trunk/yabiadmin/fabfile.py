@@ -99,6 +99,9 @@ def syncdb():
     """
     manage("syncdb")
 
+def runserver_plus(*args):
+    manage("runserver_plus",*args)
+
 def manage(*args):
     _django_env()
     print local(localPaths.getVirtualPython() + " " + localPaths.getProjectDir() + "/manage.py " + " ".join(args), capture=False)

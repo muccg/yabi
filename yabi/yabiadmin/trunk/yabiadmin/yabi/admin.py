@@ -58,6 +58,7 @@ class ToolParameterFormset(BaseInlineFormSet):
         super(ToolParameterFormset, self).add_fields(form, index)
 
 class ToolParameterInline(admin.StackedInline):
+    form = ToolParameterForm
     model = ToolParameter
     formset = ToolParameterFormset
     extra = 3

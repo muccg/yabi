@@ -73,8 +73,11 @@ class Tool(Base):
     groups = models.ManyToManyField('ToolGroup', through='ToolGrouping', null=True, blank=True)
     output_filetypes = models.ManyToManyField(FileExtension, through='ToolOutputExtension', null=True, blank=True)
     accepts_input = models.BooleanField(default=False)
-    batch_on_param = models.ForeignKey('ToolParameter', related_name='batch_tool', null=True, blank=True)
-    batch_on_param_bundle_files = models.NullBooleanField(null=True, blank=True)
+    
+    # OBSOLETE
+    #batch_on_param = models.ForeignKey('ToolParameter', related_name='batch_tool', null=True, blank=True)
+    #batch_on_param_bundle_files = models.NullBooleanField(null=True, blank=True)
+    
     cpus = models.CharField(max_length=64, null=True, blank=True)
     walltime = models.CharField(max_length=64, null=True, blank=True)
     module = models.TextField(null=True, blank=True)
@@ -92,7 +95,7 @@ class Tool(Base):
     backend.help_text="The execution backend for this tool."
     fs_backend.help_text="The filesystem backend for this tool."
     accepts_input.help_text="If checked, this tool will accept inputs from prior tools rather than presenting file select widgets."
-    batch_on_param.help_text="Specify switch that will be fed files in batch mode. i.e. -i in blast."
+    #batch_on_param.help_text="Specify switch that will be fed files in batch mode. i.e. -i in blast."
     module.help_text="Comma separated list of modules to load."
     lcopy_supported.help_text="If this tool should use local copies on supported backends where appropriate."
     link_supported.help_text="If this tool should use symlinks on supported backends where appropriate."
@@ -151,8 +154,8 @@ class Tool(Base):
             'backend':self.backend.name,
             'fs_backend':self.fs_backend.name,            
             'accepts_input':self.accepts_input,
-            'batch_on_param':self.batch_on_param.switch if self.batch_on_param else '',
-            'batch_on_param_bundle_files':self.batch_on_param_bundle_files,
+            #'batch_on_param':self.batch_on_param.switch if self.batch_on_param else '',
+            #'batch_on_param_bundle_files':self.batch_on_param_bundle_files,
             'cpus':self.cpus,
             'walltime':self.walltime,
             'module':self.module,
@@ -221,11 +224,19 @@ class ToolParameter(Base):
     input_file = models.BooleanField(blank=True, default=False)
     output_file = models.BooleanField(blank=True, default=False)
     accepted_filetypes = models.ManyToManyField(FileType, blank=True)
-    use_batch_filename = models.BooleanField(default=False)
+    #use_batch_filename = models.BooleanField(default=False)
     extension_param = models.ForeignKey(FileExtension, null=True, blank=True)
     possible_values = models.TextField(null=True, blank=True)
     default_value = models.TextField(null=True, blank=True)
-    helptext = models.TextField(null=True, blank=True)    
+    helptext = models.TextField(null=True, blank=True)
+    
+    # this replaces the Tool level batch_on_param and batch_on_param_bundle_files
+    batch_param = models.BooleanField(blank=False, null=False, default=False)
+    batch_bundle_files = models.BooleanField(blank=False, null=False, default=False)
+    
+    # this foreign key points to the tool parameter (that is a batch_on_param) that we will derive the output filename for this switch from
+    use_output_filename = models.ForeignKey('ToolParameter', null=True, blank=True)
+    
 
     switch.help_text="The actual command line switch that should be passed to the tool i.e. -i or --input-file"
     switch_use.help_text="The way the switch should be combined with the value."
@@ -235,7 +246,7 @@ class ToolParameter(Base):
     input_file.help_text="Select if the switch takes a file as input from another tool."
     output_file.help_text="Select if the switch is specifying an output file."
     accepted_filetypes.help_text="The extensions of accepted filetypes for this switch."
-    use_batch_filename.help_text="If selected the tool will use the batch parameter file name as the basename of the output"
+    #use_batch_filename.help_text="If selected the tool will use the batch parameter file name as the basename of the output"
     extension_param.help_text="If an extension is selected then this extension will be appended to the filename. This should only be set for specifying output files."
     possible_values.help_text="Json snippet for html select. See blast tool for examples."
     default_value.help_text="Value that will appear in field. If possible values is populated this should match one of the values so the select widget defaults to that option."
