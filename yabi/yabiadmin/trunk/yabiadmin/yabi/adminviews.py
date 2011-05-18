@@ -274,7 +274,6 @@ def create_tool(request, tool_dict):
                 backend=backend,
                 fs_backend=fs_backend,
                 accepts_input=tool_dict["accepts_input"],
-                batch_on_param_bundle_files=tool_dict["batch_on_param_bundle_files"],
                 cpus=tool_dict["cpus"],
                 walltime=tool_dict["walltime"],
                 module=tool_dict["module"],
@@ -309,7 +308,9 @@ def create_tool(request, tool_dict):
                                       default_value=parameter["default_value"],
                                       helptext=parameter["helptext"],
                                       switch=parameter["switch"],
-                                      hidden=parameter["hidden"]                                      
+                                      hidden=parameter["hidden"],
+                                      batch_param=parameter["batch_param"],
+                                      batch_bundle_files=parameter["batch_bundle_files"]
                                       )
 
 
@@ -338,33 +339,32 @@ def create_tool(request, tool_dict):
         if parameter["possible_values"]:
             toolparameter.possible_values=json.dumps(parameter["possible_values"])
 
-
-
         toolparameter.save()
 
 
     # we need to do this in a separate loop otherwise the param we want to refer to doesn't exist yet
     for parameter in tool_dict["parameter_list"]:
 
+        # add use_output_filename
+        if "use_output_filename__switch" in parameter:
+            try:
+                outputfilename_toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["use_output_filename__switch"])
+                toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["switch"])
+                toolparameter.use_output_filename=outputfilename_toolparameter
+                toolparameter.save()                
+            except ObjectDoesNotExist,e:
+                logger.critical("Unable to add use_output_filename on parameter.use_output_filename field: %s" % e)
+
         # add extension param
         if "extension_param" in parameter:
             try:
-                extension_toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["extension_param"])
+                extension = FileExtension.objects.get(extension=parameter["extension_param"])
                 toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["switch"])
-                toolparameter.extension_param=extension_toolparameter
+                toolparameter.extension_param=extension
                 toolparameter.save()                
             except ObjectDoesNotExist,e:
-                logger.critical("Unable to add extension parameter on parameter field: %s" % e)
+                logger.critical("Unable to add extension on parameter.extension field: %s" % e)
 
-
-
-    # add batch on param
-    if tool_dict["batch_on_param"]:
-        try:
-            batch_toolparameter = ToolParameter.objects.get(tool=tool, switch=tool_dict["batch_on_param"])
-            tool.batch_on_param=batch_toolparameter
-        except ObjectDoesNotExist,e:
-            logger.critical("Unable to add batch on parameter field %s" % e)
 
     tool.save()
     return tool

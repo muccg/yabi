@@ -166,7 +166,7 @@ class Tool(Base):
             'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__extension")),            
             'parameter_list': list(self.toolparameter_set.order_by('id').values("id", "rank", "mandatory", "hidden", "input_file", "output_file",
                                                                                 "switch", "switch_use__display_text", "switch_use__formatstring","switch_use__description",
-                                                                                "possible_values","default_value","helptext"))
+                                                                                "possible_values","default_value","helptext","batch_param", "batch_bundle_files", "use_output_filename__switch"))
             }
 
         for p in tool_dict["parameter_list"]:
@@ -261,6 +261,7 @@ class ToolParameter(Base):
         filetypes = self.accepted_filetypes.all()
         extensions = [ext.extension for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]
         return list(set(extensions)) # remove duplicates
+
 
 class ToolOutputExtension(Base):
     tool = models.ForeignKey(Tool)
