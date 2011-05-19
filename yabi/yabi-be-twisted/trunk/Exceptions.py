@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 ### BEGIN COPYRIGHT ###
 #
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
