@@ -25,7 +25,7 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # 
 ### END COPYRIGHT ###
-# -*- coding: utf-8 -*-
+
 """
 Configuration
 =============
@@ -99,7 +99,7 @@ class ConfigError(Exception):
 
 class Configuration(object):
     """Holds the running configuration for the full yabi stack that is running under this twistd"""
-    SECTIONS = ['backend','admin','frontend','store']       # sections of the config file
+    SECTIONS = ['backend']       # sections of the config file
     KEYS = ['port','path','startup','sslport','ssl','alert_email','http_redirect_to_https','http_redirect_to_https_port','memcache_servers','logfile']
     
     # defaults
@@ -126,97 +126,6 @@ class Configuration(object):
                         "memcache_prefix":"yabibe",
                         
                         "admin":None                # none means "use the one provided here"
-                    },
-        'admin':    {
-                        "port":"0.0.0.0:8000",
-                        "sslport":"0.0.0.0:8443",
-                        "path":"/yabiadmin",
-                        "startup":"true",
-                        
-                        "certfile":"~/.yabi/servercert.pem",
-                        "keyfile":"~/.yabi/servercert.pem",
-                        
-                        "backend":None,
-                        "store":None,
-                        
-                        "database":"custom",           
-                        "debug": "false",           # run the app in debug mode
-                        
-                        # custom database setting defaults
-                        "database_engine":"postgresql_psycopg2",
-                        "database_name":"yabiadmin_db",
-                        "database_user":"yabi",
-                        "database_password":"password",
-                        "database_host":"db.localdomain",
-                        "database_port":None,
-                        
-                        "auth_ldap_server":"ldaps://ldap.localdomain",
-                        "auth_ldap_user_base":"ou=Unit,dc=Domain",
-                        "auth_ldap_group_base":"ou=Unit,dc=Domain",
-                        "auth_ldap_group":"group",
-                        "auth_ldap_default_group":"user",
-                        
-                        "memcache_servers":"memcache1.localdomain:11211 memcache2.localdomain:11211",
-                        "memcache_prefix":"yabiadmin",
-                        
-                        "alert_email":"Tech Alerts <alerts@ccg.murdoch.edu.au>",
-                        
-                        "celery_queue_name":"default"
-                    },
-        'frontend': {
-                        "port":"0.0.0.0:8000",
-                        "sslport":"0.0.0.0:8443",
-                        "path":"/fe",
-                        "startup":"true",
-                        
-                        "certfile":"~/.yabi/servercert.pem",
-                        "keyfile":"~/.yabi/servercert.pem",
-                        
-                        "admin":None,
-                        # AH front end should not need to know about store
-                        #"store": None,
-                        
-                        # custom database setting defaults
-                        "database_engine":"postgresql_psycopg2",
-                        "database_name":"yabiadmin_db",
-                        "database_user":"yabi",
-                        "database_password":"password",
-                        "database_host":"db.localdomain",
-                        "database_port":None,
-                        
-                        "auth_ldap_server":"ldaps://ldap.localdomain",
-                        "auth_ldap_user_base":"ou=Unit,dc=Domain",
-                        "auth_ldap_group_base":"ou=Unit,dc=Domain",
-                        "auth_ldap_group":"group",
-                        "auth_ldap_default_group":"user",
-                        
-                        "memcache_servers":"memcache1.localdomain:11211 memcache2.localdomain:11211",
-                        "memcache_prefix":"yabife",
-                                                
-                        "alert_email":"Tech Alerts <alerts@ccg.murdoch.edu.au>",
-
-                    },
-        'store':    {
-                        "port":"0.0.0.0:8000",
-                        "sslport":"0.0.0.0:8443",
-                        "path":"/store",
-                        "startup":"true",
-
-                        "certfile":"~/.yabi/servercert.pem",
-                        "keyfile":"~/.yabi/servercert.pem",
-                        
-                        "alert_email":"Tech Alerts <alerts@ccg.murdoch.edu.au>",
-
-                        "memcache_servers":"memcache1.localdomain:11211 memcache2.localdomain:11211",
-                        "memcache_prefix":"yabistore",
-                        
-                        "history":None,
-                        
-                        "debug": "true"             # run the app in debug mode
-                    },
-        'global':   {
-                        "user":"yabi",
-                        "group":"yabi"
                     },
         'taskmanager':{
                         'simultaneous':'5',
@@ -247,12 +156,6 @@ class Configuration(object):
                     if conf_parser.has_option(section,key):
                         self.config[section][key] = conf_parser.get(section,key)
         
-        # global section
-        name = "global"
-        if conf_parser.has_section(name):
-            self.config[name]['user'] = conf_parser.get(name,'user')
-            self.config[name]['group'] = conf_parser.get(name,'group')
-            
         # taskmanager section
         name = "taskmanager"
         if conf_parser.has_section(name):
@@ -277,71 +180,6 @@ class Configuration(object):
             if conf_parser.has_option(name,'certfile'):
                 self.config[name]['certfile'] = path_sanitise(conf_parser.get(name,'certfile'))
             
-            # memcache
-            if conf_parser.has_option(name,'memcache_servers'):
-                self.config[name]['memcache_servers'] = conf_parser.get(name,'memcache_servers')
-            if conf_parser.has_option(name,'memcache_prefix'):
-                self.config[name]['memcache_prefix'] = conf_parser.get(name,'memcache_prefix')
-            
-        name = "admin"
-        if conf_parser.has_section(name):
-            self.config[name]['backend'] = conf_parser.get(name,'backend')
-            self.config[name]['store'] = conf_parser.get(name,'store')
-            self.config[name]['database'] = "custom" if conf_parser.has_option(name,'database') and conf_parser.get(name,'database').lower()=="custom" else "live" if conf_parser.has_option(name,'database') and conf_parser.get(name,'database').lower()=="live" else "dev"
-            self.config[name]['debug'] = conf_parser.get(name,'debug') if conf_parser.has_option(name,'debug') else "false"
-            if conf_parser.has_option(name,'keyfile'):
-                self.config[name]['keyfile'] = path_sanitise(conf_parser.get(name,'keyfile'))
-            if conf_parser.has_option(name,'certfile'):
-                self.config[name]['certfile'] = path_sanitise(conf_parser.get(name,'certfile'))
-            
-            # database settings
-            for parm in ['database_engine','database_host','database_name','database_password','database_port','database_user','auth_ldap_server', 'auth_ldap_user_base','auth_ldap_group_base','auth_ldap_group','auth_ldap_default_group']:
-                if conf_parser.has_option(name,parm):
-                    self.config[name][parm] = conf_parser.get(name,parm)
-                    
-            # memcache
-            if conf_parser.has_option(name,'memcache_servers'):
-                self.config[name]['memcache_servers'] = conf_parser.get(name,'memcache_servers')
-            if conf_parser.has_option(name,'memcache_prefix'):
-                self.config[name]['memcache_prefix'] = conf_parser.get(name,'memcache_prefix')
-                
-            # celery queue name
-            if conf_parser.has_option(name,'celery_queue_name'):
-                self.config[name]['celery_queue_name'] = conf_parser.get(name,'celery_queue_name')
-
-        name = "store"
-        if conf_parser.has_section(name):
-            self.config[name]['database'] = "dev" if conf_parser.has_option(name,'database') and conf_parser.get(name,'database').lower()=="dev" else "live"
-            self.config[name]['debug'] = conf_parser.get(name,'debug') if conf_parser.has_option(name,'debug') else "false"
-            self.config[name]['history'] = path_sanitise(conf_parser.get(name,'history'))
-            if conf_parser.has_option(name,'keyfile'):
-                self.config[name]['keyfile'] = path_sanitise(conf_parser.get(name,'keyfile'))
-            if conf_parser.has_option(name,'certfile'):
-                self.config[name]['certfile'] = path_sanitise(conf_parser.get(name,'certfile'))
-            
-            # memcache
-            if conf_parser.has_option(name,'memcache_servers'):
-                self.config[name]['memcache_servers'] = conf_parser.get(name,'memcache_servers')
-            if conf_parser.has_option(name,'memcache_prefix'):
-                self.config[name]['memcache_prefix'] = conf_parser.get(name,'memcache_prefix')
-                
-        name = "frontend"
-        if conf_parser.has_section(name):
-            self.config[name]['database'] = "dev" if conf_parser.has_option(name,'database') and conf_parser.get(name,'database').lower()=="dev" else "live"
-            self.config[name]['debug'] = conf_parser.get(name,'debug') if conf_parser.has_option(name,'debug') else "false"
-            self.config[name]['admin'] = conf_parser.get(name,'admin')
-            # AH frontend should not need to know about store
-            #self.config[name]['store'] = conf_parser.get(name,'store')
-            if conf_parser.has_option(name,'keyfile'):
-                self.config[name]['keyfile'] = path_sanitise(conf_parser.get(name,'keyfile'))
-            if conf_parser.has_option(name,'certfile'):
-                self.config[name]['certfile'] = path_sanitise(conf_parser.get(name,'certfile'))
-            
-            # database settings
-            for parm in ['database_engine','database_host','database_name','database_password','database_port','database_user','auth_ldap_server', 'auth_ldap_user_base','auth_ldap_group_base','auth_ldap_group','auth_ldap_default_group']:
-                if conf_parser.has_option(name,parm):
-                    self.config[name][parm] = conf_parser.get(name,parm)
-                    
             # memcache
             if conf_parser.has_option(name,'memcache_servers'):
                 self.config[name]['memcache_servers'] = conf_parser.get(name,'memcache_servers')
