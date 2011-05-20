@@ -25,7 +25,7 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # 
 ### END COPYRIGHT ###
-# -*- coding: utf-8 -*-
+
 import httplib, os, datetime, uuid, traceback
 from math import log10
 from urllib import urlencode
@@ -309,7 +309,7 @@ class EngineJob(Job):
 
     def create_tasks(self):
         tasks = self._prepare_tasks()
-        print "_prepare_tasks returned: %s"%(str(tasks))
+        #print "_prepare_tasks returned: %s"%(str(tasks))
         
         # by default Django is running with an open transaction
         transaction.commit()
@@ -357,12 +357,8 @@ class EngineJob(Job):
         if self.template.command.is_select_file or not len([X for X in self.template.all_possible_batch_files()]):
             return [ [self,None ] ]
         else:
-            for switch, f, extensions in self.template.all_possible_batch_files():
-                print "prepare task %s, %s, %s"%(switch,f,extensions)
-                if self.is_task_file_valid(f, extensions):
-                    logger.debug("Preparing batch_file task for file %s" % f)
-                    tasks_to_create.append([self, {switch:f}])
-                    
+            for input_file_set in self.template.all_possible_batch_files():
+                tasks_to_create.append([self, input_file_set])    
 
         return tasks_to_create
 
@@ -394,23 +390,6 @@ class EngineJob(Job):
             task.add_task(*(task_data+[name]))
             num,name = buildname(num)
 
-    def is_task_file_valid(self, file, extensions):
-        """Returns a boolean, true if the file passed in is a valid file for the job. Only uses the file extension to tell."""
-        logger.debug(file)
-        logger.debug(extensions)
-        
-        # TODO: change the database to hold glob patterns
-        import fnmatch
-        for extension in extensions:
-            if '*' not in extension:
-                extension = "*."+extension
-            if fnmatch.fnmatch(file, extension):
-                for pattern in FNMATCH_EXCLUDE_GLOBS:
-                    if fnmatch.fnmatch(file, pattern):
-                        return False
-                return True
-                
-        return False
         
     def progress_score(self):
         tasks = Task.objects.filter(job=self)
@@ -492,7 +471,7 @@ class EngineTask(Task):
 
         # non batch stageins
         for key,stagein in template.all_files():
-            print "key:%s stagein:%s"%(key,stagein)
+            #print "key:%s stagein:%s"%(key,stagein)
             self.batch_files_stagein(stagein)
 
         self.status = ''
