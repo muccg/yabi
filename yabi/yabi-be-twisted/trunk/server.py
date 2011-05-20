@@ -55,7 +55,7 @@ from OpenSSL import SSL
 from BaseResource import BaseResource
 
 # make sure our env is sane
-assert "GLOBUS_LOCATION" in os.environ
+#assert "GLOBUS_LOCATION" in os.environ
 #assert "SGE_ROOT" in os.environ
 
 # Twisted Application Framework setup:
