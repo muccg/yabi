@@ -148,7 +148,7 @@ YabiAcceptedExtensionList.prototype.validForExtension = function(value) {
     }
 
     for (extension in this.acceptedExtensions) {
-        if (this.acceptedExtensions[extension] == "*" || this.acceptedExtensions[extension] == value) {
+        if (this.acceptedExtensions[extension] == "*" || this.acceptedExtensions[extension].toLowerCase()  == value.toLowerCase() ) {
             return true;
         }
     }
