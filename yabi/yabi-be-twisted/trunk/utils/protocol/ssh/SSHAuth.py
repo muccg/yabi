@@ -44,7 +44,7 @@ class SSHAuth(object):
         useragent = "YabiFS/0.1"
         
         try:
-            path = os.path.join(config.yabiadminpath,"ws/credential/%s/?uri=%s://%s@%s%s"%(yabiusername,scheme,username,hostname,urllib.quote(path)))
+            path = os.path.join(config.yabiadminpath,"ws/credential/%s/?uri="%(yabiusername)+urllib.quote("%s://%s@%s%s"%(scheme,username,hostname,path)))
             host = config.yabiadminserver
             port = config.yabiadminport
             

@@ -36,14 +36,19 @@ from FifoPool import Fifos
 from BaseShell import BaseShell, BaseShellProcessProtocol
 
 class SSHExecProcessProtocol(BaseShellProcessProtocol):
-    def __init__(self, password):
+    def __init__(self, password, stdin_data=None):
         BaseShellProcessProtocol.__init__(self)
         self.started = False
         self.password = password
+        self.stdin_data = stdin_data
         
     def connectionMade(self):
         self.transport.write(str(self.password))
         self.transport.write("\n")
+        
+        if self.stdin_data:
+            self.transport.write(self.stdin_data)
+        
         self.transport.closeStdin()
         self.started = True
                 
@@ -67,11 +72,47 @@ class SSHRun(BaseShell):
         command = [ self.python, self.ssh_exec,
             "-i", certfile,
             "-P", port,
-            "-o", stdout,
-            "-e", stderr,
             "-w", working,
-            "-x", remote_command,
-            "%s@%s"%(username,host)
             ]
+        
+        if stdout:
+            command.extend(["-o", stdout])
+        if stderr:
+            command.extend(["-e", stderr])
+            
+        command.extend( [   "-x", remote_command,
+                            "%s@%s"%(username,host)
+                        ] )
+        
             
         return BaseShell.execute(self,SSHExecProcessProtocol(password),command)
+        
+    def runstream(self, certfile, remote_command="hostname", username="yabi", host="faramir.localdomain", working="/tmp", port="22", stdout="STDOUT.txt", stderr="STDERR.txt",password="",modules=[],streamin=None):
+        """Spawn a process to run a remote ssh job. return the process handler
+        takes an input string to pipe into stdin of the ssh-exec process after the password which will be passed on through
+        the ssh transport into the remote clients stdin
+        """
+        subenv = self._make_env()
+        
+        if modules:
+            remote_command = "&&".join(["module load %s"%module for module in modules]+[remote_command])
+        
+        command = [ self.python, self.ssh_exec,
+            "-i", certfile,
+            "-P", port,
+            "-s"
+            ]
+        
+        if stdout:
+            command.extend(["-o", stdout])
+        if stderr:
+            command.extend(["-e", stderr])
+            
+        command.extend( [   "-x", remote_command,
+                            "%s@%s"%(username,host)
+                        ] )
+        
+        
+        return BaseShell.execute(self,SSHExecProcessProtocol(password,streamin),command)
+        
+      
