@@ -57,7 +57,7 @@ class GlobusShell(BaseShell):
 
     def execute(self, certfile, host, command, port=None):
         """Run inside gsissh, this command line. Command parts are passed in as a list of parameters, not a string."""
-        com = [self.gsissh]
+        com = [self.gsissh,"-o","PasswordAuthentication=no"]
         if port:
             com.extend( ["-P",str(port) ] )
         com.append(host)
