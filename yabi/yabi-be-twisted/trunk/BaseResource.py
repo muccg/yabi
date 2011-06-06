@@ -52,6 +52,7 @@ from ex.connector.GlobusConnector import GlobusConnector
 from ex.connector.SGEConnector import SGEConnector
 from ex.connector.TorqueConnector import TorqueConnector
 from ex.connector.SSHConnector import SSHConnector
+from ex.connector.SSHQsubConnector import SSHQsubConnector
 
 # taskmanager debug
 from TaskManager import TaskManagerResource, TaskManagerPickleResource

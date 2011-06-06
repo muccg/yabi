@@ -81,7 +81,8 @@ class ExecConnector(object):
         if os.path.exists(filename):
             self.load_running(filename)        
     
-    def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
+    #def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
+    def run(self, *args, **kwargs):
         """Run a job on a backend. extra params can be passed in that are specific to a backend. They should all have defaults if ommitted
         
         command is the command to run
@@ -91,6 +92,7 @@ class ExecConnector(object):
         callback is a callable that is called with the status changes for the running job
         
         """
+        #print "The run method for this backend is not implemented"
         raise NotImplemented("The run method for this backend is not implemented")
     
     def SetEnvironment(self, env):

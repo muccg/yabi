@@ -91,6 +91,7 @@ class ExecRunResource(resource.PostableResource):
         fsresource = self.fsresource()
         if DEBUG:
             print "BACKENDS",fsresource.Backends()
+            print "SCHEME",scheme
         if scheme not in fsresource.Backends():
             return http.Response( responsecode.NOT_FOUND, {'content-type': http_headers.MimeType('text', 'plain')}, "Backend '%s' not found\n"%scheme)
             
@@ -113,8 +114,12 @@ class ExecRunResource(resource.PostableResource):
         #client_stream = stream.ProducerStream()
         client_deferred = defer.Deferred()
         
+        if DEBUG:
+            print "starting tasklet",bend.run
         task = stackless.tasklet(bend.run)
         task.setup(yabiusername, command, basepath, scheme, username, hostname, remote_info_url, client_deferred, **kwargs)
+        if DEBUG:
+            print "running tasklet",task,"with inputs",(yabiusername, command, basepath, scheme, username, hostname, remote_info_url, client_deferred, kwargs)
         task.run()
         
         return client_deferred

@@ -25,7 +25,7 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # 
 ### END COPYRIGHT ###
-# -*- coding: utf-8 -*-
+
 from ExecConnector import ExecConnector, ExecutionError
 
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
