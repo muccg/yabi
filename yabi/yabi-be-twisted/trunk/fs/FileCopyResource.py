@@ -212,7 +212,7 @@ class FileCopyResource(resource.PostableResource):
                     print "READ FAILED",readproto.exitcode,writeproto.exitcode
                 print "read failed. attempting os.kill(",writeproto.transport.pid,",",signal.SIGKILL,")",type(writeproto.transport.pid),type(signal.SIGKILL)
                 while writeproto.transport.pid==None:
-                    print "writeproto transport pid not set. waiting for setting..."
+                    #print "writeproto transport pid not set. waiting for setting..."
                     stackless.schedule()
                 os.kill(writeproto.transport.pid, signal.SIGKILL)
             else:
