@@ -177,9 +177,9 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         # acquire our queue lock
         if priority:
-            print "aquiring lock"
+            #print "aquiring lock"
             lock = self.lockqueue.lock()
-            print "lock acquired",lock
+            #print "lock acquired",lock
                 
         # If we don't have creds, get them
         if not creds:
@@ -189,6 +189,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         # we need to munge the path for transport over gsissh (cause it sucks)
         #mungedpath = '"' + path.replace('"',r'\"') + '"'
+        #print "===>LS",usercert,host,path, port, "-lFR" if recurse else "-lF", creds['username'], creds['password']
         pp = ssh.Shell.ls(usercert,host,path, port=port, args="-lFR" if recurse else "-lF", username=creds['username'], password=creds['password'] )
         
         while not pp.isDone():
