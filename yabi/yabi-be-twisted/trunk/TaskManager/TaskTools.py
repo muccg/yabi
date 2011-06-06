@@ -33,7 +33,7 @@ from twisted.web import client
 from twisted.internet import reactor
 import time
 import json
-import os
+import os, urllib
 from conf import config
 
 COPY_RETRY = 3
@@ -97,7 +97,7 @@ def RCopy(src, dst, **kwargs):
         kwargs['priority']=str(DEFAULT_TASK_PRIORITY)
 
     try:
-        print "POSTING",RCOPY_PATH,src,dst,DEFAULT_TASK_PRIORITY,"kwargs:",kwargs
+        #print "POSTING",RCOPY_PATH,src,dst,DEFAULT_TASK_PRIORITY,"kwargs:",kwargs
         POST(RCOPY_PATH,src=src,dst=dst, **kwargs)
         # success!
         return True
@@ -243,7 +243,7 @@ def UserCreds(yabiusername, uri):
     """Get a users credentials"""
     # see if we can get the credentials
     #print "UserCreds",scheme,username,hostname
-    url = os.path.join(config.yabiadminpath,'ws/credential/%s/?uri=%s'%(yabiusername,uri))
+    url = os.path.join(config.yabiadminpath,'ws/credential/%s/?uri=%s'%(yabiusername,urllib.quote(uri)))
     code, message, data = RetryGET(url, host=config.yabiadminserver, port=config.yabiadminport)
     assert code==200
     if DEBUG:
