@@ -329,12 +329,14 @@ class MainTask(Task):
             try:
                 if self._jobid is None:
                     # start a fresh taskjob
-                    print "Executing fresh:",self._jobid
+                    if DEBUG:
+                        print "Executing fresh:",self._jobid
                     self.execute(self.outdir)                        # TODO. implement picking up on this exec task without re-running it??
             
                 else:
                     # reconnect with this taskjob
-                    print "Reconnecting with taskjob:",self._jobid
+                    if DEBUG:
+                        print "Reconnecting with taskjob:",self._jobid
                     self.resume(self.outdir)
             
             except TaskFailed, ex:
@@ -473,7 +475,6 @@ class MainTask(Task):
         outputuri = fsbackend + ("/" if not fsbackend.endswith('/') else "") + "output/"
         outputdir = workingdir + ("/" if not workingdir.endswith('/') else "") + "output/"
         
-        print "Making directory",outputuri
         #self._tasks[stackless.getcurrent()]=workingdir
         try:
             Mkdir(outputuri, yabiusername=self.yabiusername)
@@ -521,13 +522,11 @@ class MainTask(Task):
                         key,value = line.split("=")
                         value = value.strip()
                         
-                        print "execution job given ID:",value
+                        #print "execution job given ID:",value
                         self._jobid = value
                         #self.remote_id(value)                           # TODO:send this id back to the middleware
                     else:
                         exec_status[0] = line.lower()
-                        print "SETTING STATUS TO:",exec_status[0]
-                        print "EXEC_STATUS=",line
                         self.status("exec:%s"%(exec_status[0]))
                 
                 # submit the job to the execution middle ware
@@ -543,7 +542,7 @@ class MainTask(Task):
                         if key in task['exec'] and task['exec'][key]:
                             extras[key]=task['exec'][key]
                     
-                    print "callfunc is",callfunc
+                    #print "callfunc is",callfunc
                     callfunc(uri, command=task['exec']['command'], remote_info=task['remoteinfourl'],stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)     # this blocks untill the command is complete. or the execution errored
                     if exec_status[0] and 'error' in exec_status[0]:
                         print "TASK[%s]: Execution failed!"%(self.taskid)
