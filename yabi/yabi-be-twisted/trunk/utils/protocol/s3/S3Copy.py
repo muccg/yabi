@@ -29,6 +29,7 @@
 """Implement s3 copies"""
 
 import os
+import sys
 import tempfile
 
 from FifoPool import Fifos
@@ -59,7 +60,7 @@ class S3Error(Exception):
 
 class S3Copy(BaseShell):
     s3cp = os.path.join( os.path.dirname(os.path.realpath(__file__)), "s3-copy.py" )
-    python = "/usr/bin/python"
+    python = sys.executable
     
     def WriteToRemote(self, cert, remoteurl, password="",fifo=None):
         subenv = self._make_env()

@@ -29,6 +29,7 @@
 """Implement scp connections"""
 
 import os
+import sys
 import tempfile
 
 from FifoPool import Fifos
@@ -56,7 +57,7 @@ class SCPError(Exception):
 
 class SSHCopy(BaseShell):
     scp = os.path.join( os.path.dirname(os.path.realpath(__file__)), "ssh-copy-2.py" )
-    python = "/usr/bin/python"
+    python = sys.executable
     
     def WriteToRemote(self, certfile, remoteurl, port=None, password="",fifo=None):
         subenv = self._make_env()

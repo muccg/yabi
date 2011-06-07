@@ -1,1 +1,3 @@
 pyOpenSSL
+paramiko
+setproctitle

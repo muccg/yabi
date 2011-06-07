@@ -29,6 +29,7 @@
 """Implement scp connections"""
 
 import os
+import sys
 import tempfile
 
 from FifoPool import Fifos
@@ -60,7 +61,7 @@ class SSHError(Exception):
 
 class SSHRun(BaseShell):
     ssh_exec = os.path.join( os.path.dirname(os.path.realpath(__file__)), "ssh-exec.py" )
-    python = "/usr/bin/python"
+    python = sys.executable                     # use the same python that yabi backend is running under
     
     def run(self, certfile, remote_command="hostname", username="yabi", host="faramir.localdomain", working="/tmp", port="22", stdout="STDOUT.txt", stderr="STDERR.txt",password="",modules=[]):
         """Spawn a process to run a remote ssh job. return the process handler"""

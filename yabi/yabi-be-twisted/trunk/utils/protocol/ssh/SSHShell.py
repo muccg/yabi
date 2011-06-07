@@ -27,6 +27,7 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import os
+import sys
 from twisted.internet import protocol
 from twisted.internet import reactor
 
@@ -46,7 +47,7 @@ def convert_filename_to_encoded_for_echo(filename):
 
 class SSHShell(BaseShell):
     ssh_exec = os.path.join( os.path.dirname(os.path.realpath(__file__)), "ssh-exec.py" )
-    python = "/usr/bin/python"
+    python = sys.executable
     
     def _make_path(self):
         return "/usr/bin"    
