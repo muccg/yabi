@@ -118,7 +118,7 @@ CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
 ##
 ## Validation settings
 ##
-VALID_SCHEMES = ['http', 'https', 'gridftp', 'globus', 'sge', 'torque', 'yabifs', 'ssh', 'scp', 's3', 'null']
+VALID_SCHEMES = ['http', 'https', 'gridftp', 'globus', 'sge', 'torque', 'yabifs', 'ssh', 'scp', 's3', 'null', 'ssh+pbspro', 'ssh+qsub']
 
 ##
 ## Celery settings
