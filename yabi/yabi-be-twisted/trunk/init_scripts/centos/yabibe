@@ -10,8 +10,18 @@
 # processname: portmap
 
 NAME="yabibe"
-TWISTD="/usr/local/stackless/bin/twistd"
+TWISTDLIST="/usr/local/stackless/bin/twistd /home/yabi/mypython/bin/twistd mypython/bin/twistd"
 CONFFILE="yabi.conf"
+
+for T in $TWISTDLIST
+do
+    if [ -f $T ] && [ -x $T ]
+    then
+        TWISTD=$T
+    fi
+done
+
+echo "using $TWISTD..."
 
 # This is an interactive program, we need the current locale
 [ -f /etc/profile.d/lang.sh ] && . /etc/profile.d/lang.sh

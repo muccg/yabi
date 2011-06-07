@@ -71,7 +71,8 @@ def backend():
     """
     run the twisted backend on the terminal without forking
     """
-    print local("/usr/local/stackless/bin/twistd -noy server.py --logfile=-", capture=False)
+    #print local("/usr/local/stackless/bin/twistd -noy server.py --logfile=-", capture=False)
+    print local("./mypython/bin/twistd -noy server.py --logfile=-", capture=False)
 
 def start():
     """
