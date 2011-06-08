@@ -196,11 +196,6 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
             import traceback
             traceback.print_exc()
             client_stream.write("Error\n")
-            if remote_url:
-                if jobid in jobsummary:
-                    RemoteInfo(remote_url,json.dumps(jobsummary[jobid]))
-                else:
-                    print "Cannot call RemoteInfo call for job",jobid
         finally:
                 
             # delete finished job
