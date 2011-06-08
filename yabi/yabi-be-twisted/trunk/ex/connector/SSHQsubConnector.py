@@ -194,6 +194,7 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
             self.main_loop( client_stream, jobid, remote_url, working, stdout, stderr, command, yabiusername, username, host, module,  **creds)
         except (ExecutionError, SSHQstatException), ee:
             import traceback
+            print "!!!!"
             traceback.print_exc()
             client_stream.write("Error\n")
             client_stream.finish()

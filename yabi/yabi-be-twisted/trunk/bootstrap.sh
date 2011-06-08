@@ -9,6 +9,7 @@ BASE_PYTHON='/usr/local/stackless/bin/python'
 VPYTHON_DIR='mypython'
 VIRTUALENV='virtualenv-1.6.1'
 VIRTUALENV_TARBALL='virtualenv-1.6.1.tar.gz'
+EGG_DOWNLOAD_FILE='eggs/Downloads.txt'
 
 # only install if we dont already exist
 if [ ! -d $VPYTHON_DIR ]
@@ -40,14 +41,14 @@ then
     # install all the eggs in this app
     for EGG in eggs/*
     do
-        if [ "$EGG" != "eggs/Downloads.txt" ]
+        if [ "$EGG" != $EGG_DOWNLOAD_FILE ]
         then
             ./$VPYTHON_DIR/bin/easy_install $EGG
         fi
     done
     
     # install the Downloads.txt eggs
-    for EGG in `cat eggs/Downloads.txt`
+    for EGG in `cat $EGG_DOWNLOAD_FILE`
     do
         ./$VPYTHON_DIR/bin/easy_install $EGG
     done
