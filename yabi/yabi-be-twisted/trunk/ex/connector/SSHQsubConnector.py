@@ -201,7 +201,7 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
                     RemoteInfo(remote_url,json.dumps(jobsummary[jobid]))
                 else:
                     print "Cannot call RemoteInfo call for job",jobid
-       finally:
+        finally:
                 
             # delete finished job
             self.del_running(jobid)
