@@ -194,16 +194,19 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
             self.main_loop( client_stream, jobid, remote_url, working, stdout, stderr, command, yabiusername, username, host, module,  **creds)
         except (ExecutionError, SSHQstatException), ee:
             import traceback
-            print "!!!!"
             traceback.print_exc()
             client_stream.write("Error\n")
+            if remote_url:
+                if jobid in jobsummary:
+                    RemoteInfo(remote_url,json.dumps(jobsummary[jobid]))
+                else:
+                    print "Cannot call RemoteInfo call for job",jobid
+       finally:
+                
+            # delete finished job
+            self.del_running(jobid)
+                
             client_stream.finish()
-            return
-            
-        # delete finished job
-        self.del_running(jobid)
-            
-        client_stream.finish()
             
     def main_loop(self, client_stream, jobid, remote_url, working, stdout, stderr, command, yabiusername, username, host, module,  **creds):
         newstate = state = None
