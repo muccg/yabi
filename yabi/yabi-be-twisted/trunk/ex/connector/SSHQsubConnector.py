@@ -201,8 +201,6 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
             # delete finished job
             self.del_running(jobid)
             
-            stackless.schedule()
-                
             client_stream.finish()
             
     def main_loop(self, client_stream, jobid, remote_url, working, stdout, stderr, command, yabiusername, username, host, module,  **creds):
