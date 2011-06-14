@@ -552,8 +552,8 @@ class CommandTemplate(object):
                             
                             if backref['batch_param']:
                                 # this is a file BUNDLE, so it MUST be batch_on_param
-                                for extension in backref['extensions']:
-                                    if fnmatch.fnmatch(filename.upper(), '*.%s'%extension.upper()):
+                                for pattern in backref['extensions']:
+                                    if fnmatch.fnmatch(filename.upper(), pattern.upper()):
                                         if backref['switch'] not in self.backfiles:
                                             self.backfiles[backref['switch']]=[]
                                         #print "Adding %s to batckfiles switch %s"%(filename,backref['switch'])
@@ -567,8 +567,8 @@ class CommandTemplate(object):
                                         if arg.is_value(backref):
                                             # this is our backref arg
                                             if not arg.is_value_resolved():
-                                                for extension in backref['extensions']:
-                                                    if fnmatch.fnmatch(filename.upper(), '*.%s'%extension.upper()):
+                                                for pattern in backref['extensions']:
+                                                    if fnmatch.fnmatch(filename.upper(), pattern.upper()):
                                                         #print "setting value of %s to %s"%(arg,filename)
                                                         arg.set_value(filename)
                                                         
