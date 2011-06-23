@@ -110,7 +110,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             # error occurred
             if "Permission denied" in err:
                 raise PermissionDenied(err)
-            elif "No such file or directory" in out:
+            elif "No such file or directory" in err:
                 raise InvalidPath("No such file or directory\n")
             else:
                 print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
@@ -154,7 +154,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             # error occurred
             if "Permission denied" in err:
                 raise PermissionDenied(err)
-            elif "No such file or directory" in out:
+            elif "No such file or directory" in err:
                 raise InvalidPath("No such file or directory\n")
             else:
                 print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
@@ -205,7 +205,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             # error occurred
             if "Permission denied" in err:
                 raise PermissionDenied(err)
-            elif "No such file or directory" in out:
+            elif "No such file or directory" in err:
                 raise InvalidPath("No such file or directory\n")
             else:
                 print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
@@ -259,7 +259,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             # error occurred
             if "Permission denied" in err:
                 raise PermissionDenied(err)
-            elif "No such file or directory" in out:
+            elif "No such file or directory" in err:
                 raise InvalidPath("No such file or directory\n")
             else:
                 print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
@@ -302,7 +302,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             # error occurred
             if "Permission denied" in err:
                 raise PermissionDenied(err)
-            elif "No such file or directory" in out:
+            elif "No such file or directory" in err:
                 raise InvalidPath("No such file or directory\n")
             else:
                 print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)

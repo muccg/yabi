@@ -55,11 +55,27 @@ class SSHExecProcessProtocol(BaseShellProcessProtocol):
                 
     def isStarted(self):
         return self.started
+
+class SSHExecProcessProtocolParamiko(BaseShellProcessProtocol):
+    def __init__(self, stdin_data=None):
+        BaseShellProcessProtocol.__init__(self)
+        self.started = False
+        self.stdin_data = stdin_data
+        
+    def connectionMade(self):
+        if self.stdin_data:
+            self.transport.write(self.stdin_data)
+        
+        self.transport.closeStdin()
+        self.started = True
+                
+    def isStarted(self):
+        return self.started
         
 class SSHError(Exception):
     pass
 
-class SSHRun(BaseShell):
+class SSHRunOld(BaseShell):
     ssh_exec = os.path.join( os.path.dirname(os.path.realpath(__file__)), "ssh-exec.py" )
     python = sys.executable                     # use the same python that yabi backend is running under
     
@@ -116,4 +132,23 @@ class SSHRun(BaseShell):
         
         return BaseShell.execute(self,SSHExecProcessProtocol(password,streamin),command)
         
-      
+class SSHRun(BaseShell):
+    ssh_exec = os.path.join( os.path.dirname(os.path.realpath(__file__)), "paramiko-ssh.py" )
+    python = sys.executable                     # use the same python that yabi backend is running under
+    
+    def run(self, certfile, remote_command="hostname", username="yabi", host="faramir.localdomain", working="/tmp", port="22", stdout="STDOUT.txt", stderr="STDERR.txt",password="",modules=[],streamin=None):
+        """Spawn a process to run a remote ssh job. return the process handler"""
+        subenv = self._make_env()
+        
+        if modules:
+            remote_command = "&&".join(["module load %s"%module for module in modules]+[remote_command])
+        
+        command = [self.python, self.ssh_exec ]
+        command += ["-i",certfile] if certfile else []
+        command += ["-p",password] if password else []
+        command += ["-u",username] if username else []
+        command += ["-H",host] if host else []
+        command.extend( [ "-x", remote_command ] )
+        
+            
+        return BaseShell.execute(self,SSHExecProcessProtocolParamiko(streamin),command)

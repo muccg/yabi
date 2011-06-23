@@ -32,7 +32,7 @@ from twisted.internet import protocol
 from twisted.internet import reactor
 
 from BaseShell import BaseShell, BaseShellProcessProtocol
-from SSHRun import SSHExecProcessProtocol 
+from SSHRun import SSHExecProcessProtocol,  SSHExecProcessProtocolParamiko 
 
 
 DEBUG = False
@@ -46,7 +46,7 @@ def convert_filename_to_encoded_for_echo(filename):
     return filename
 
 class SSHShell(BaseShell):
-    ssh_exec = os.path.join( os.path.dirname(os.path.realpath(__file__)), "ssh-exec.py" )
+    ssh_exec = os.path.join( os.path.dirname(os.path.realpath(__file__)), "paramiko-ssh.py" )
     python = sys.executable
     
     def _make_path(self):
@@ -57,7 +57,7 @@ class SSHShell(BaseShell):
         result = '"`echo -e \'%s\'`"'%(convert_filename_to_encoded_for_echo(filename))
         return result
 
-    def execute(self, certfile, host, command, username, password, port=None):
+    def executeold(self, certfile, host, command, username, password, port=None):
         """Run inside gsissh, this command line. Command parts are passed in as a list of parameters, not a string."""
         port = port or 22
         
@@ -74,6 +74,31 @@ class SSHShell(BaseShell):
             print "SSHShell Running:",command
             
         return BaseShell.execute(self,SSHExecProcessProtocol(password),command)
+        
+    def execute(self, certfile, host, command, username, password, port=None):
+        """Spawn a process to run a remote ssh job. return the process handler"""
+        if DEBUG:
+            print "CERTFILE:",certfile
+            print "HOST:",host
+            print "COMMAND:",command
+            print "USERNAME:",username
+            print "PASSWORD:",password
+        
+        subenv = self._make_env()
+        
+        sshcommand = [self.python, self.ssh_exec ]
+        sshcommand += ["-i",certfile] if certfile else []
+        sshcommand += ["-p",password] if password else []
+        sshcommand += ["-u",username] if username else []
+        sshcommand += ["-H",host] if host else []
+        sshcommand.extend( [ "-x", " ".join(command) ] )
+        
+        if DEBUG:
+            print "SSHShell Running:",sshcommand
+         
+        
+        return BaseShell.execute(self,SSHExecProcessProtocolParamiko(),sshcommand)
+
       
     def ls(self, certfile, host, directory,username, password, args="-lFR", port=None):
         return self.execute(certfile,host,command=["ls",args,self._make_echo(directory)],username=username, password=password, port=port)

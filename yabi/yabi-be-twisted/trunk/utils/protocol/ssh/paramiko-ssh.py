@@ -33,6 +33,9 @@ setproctitle.setproctitle("yabi-ssh startup...")
 import paramiko
 import os, sys, select
 
+# read() blocksize
+BLOCK_SIZE = 512
+
 def main():
     options, arguments = parse_args()
     sanity_check(options)
@@ -79,14 +82,21 @@ def sanity_check(options):
 def get_rsa_key(options):
     privatekeyfile = os.path.expanduser(options.identity)
     return paramiko.RSAKey.from_private_key_file(privatekeyfile, password=options.password)
-    
+
+def get_dsa_key(options):
+    privatekeyfile = os.path.expanduser(options.identity)
+    return paramiko.DSSKey.from_private_key_file(privatekeyfile, password=options.password)
+
 def ssh_connect_login(options):
     if options.identity:
         ssh = paramiko.SSHClient()
         ssh.load_system_host_keys()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         
-        mykey = get_rsa_key(options)
+        try:
+            mykey = get_rsa_key(options)
+        except paramiko.SSHException, pe:
+            mykey = get_dsa_key(options)
         
         ssh.connect(options.hostname, username=options.username, pkey=mykey)
         return ssh
@@ -159,6 +169,7 @@ def execute(ssh,options):
                 else:
                     stdin.write( input )
                     stdin.flush()
+                    # stdin.close()?
                     
             if stdout.channel in rlist:
                 sys.stdout.write( stdout.read(512) )
@@ -169,6 +180,10 @@ def execute(ssh,options):
                 sys.stderr.write("error! ")
                 sys.stderr.write(repr(elist))
                 sys.stderr.write("\n")
+                
+        # exhaust stdout and stderr
+        sys.stderr.write( stderr.read() )
+        sys.stdout.write( stdout.read() )
                 
         return stdout.channel.exit_status
 
