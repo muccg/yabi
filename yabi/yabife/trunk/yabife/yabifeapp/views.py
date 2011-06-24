@@ -203,60 +203,43 @@ def render_page(template, request, response=None, **kwargs):
 
     return response
 
-@login_required
-def files(request):
-    # Check if the user has a profile; if not, nothing's going to work anyway,
-    # so we might as well fail more spectacularly.
-    try:
-        request.user.get_profile()
-    except ObjectDoesNotExist:
-        mail_admins_no_profile(request.user)
-        return logout(request)
-    except AttributeError:
-        return JsonMessageResponseUnauthorized("Anonymous users do not have access to YABI")
+def mail_admins_no_profile_decorator(func):
+    def newfunc(request,*args,**kwargs):
+        # Check if the user has a profile; if not, nothing's going to work anyway,
+        # so we might as well fail more spectacularly.
+        try:
+            request.user.get_profile()
+        except ObjectDoesNotExist:
+            mail_admins_no_profile(request.user)
+            return logout(request)
+        except AttributeError:
+            return JsonMessageResponseUnauthorized("Anonymous users do not have access to YABI")
+        return func(request, *args, **kwargs)    
+            
+    return newfunc
 
+
+@login_required
+@mail_admins_no_profile_decorator
+def files(request):
     return render_page("files.html", request)
 
 @login_required
+@mail_admins_no_profile_decorator
 def design(request, id=None):
-    # Check if the user has a profile; if not, nothing's going to work anyway,
-    # so we might as well fail more spectacularly.
-    try:
-        request.user.get_profile()
-    except ObjectDoesNotExist:
-        mail_admins_no_profile(request.user)
-        return logout(request)
-    except AttributeError:
-        return JsonMessageResponseUnauthorized("Anonymous users do not have access to YABI")
-
     return render_page("design.html", request, reuseId=id)
     
 @login_required
+@mail_admins_no_profile_decorator
 def jobs(request):
-    # Check if the user has a profile; if not, nothing's going to work anyway,
-    # so we might as well fail more spectacularly.
-    try:
-        request.user.get_profile()
-    except ObjectDoesNotExist:
-        mail_admins_no_profile(request.user)
-        return logout(request)
-    except AttributeError:
-        return JsonMessageResponseUnauthorized("Anonymous users do not have access to YABI")
-
     return render_page("jobs.html", request)
 
 @login_required
+@mail_admins_no_profile_decorator
 def account(request):
-    try:
-        if request.user.get_profile().has_account_tab():
-            return render_page("account.html", request)
-    except ObjectDoesNotExist:
-        mail_admins_no_profile(request.user)
-        return logout(request)
-    except AttributeError:
-        return JsonMessageResponseUnauthorized("Anonymous users do not have access to YABI")
-
-    return render_page("errors/403.html", request, response=HttpResponseForbidden())
+    if not request.user.get_profile().has_account_tab():
+        return render_page("errors/403.html", request, response=HttpResponseForbidden())
+    return render_page("account.html", request)
 
 def login(request):
     if request.method == 'POST':
@@ -370,6 +353,10 @@ def credentialproxy(request, url):
         return JsonMessageResponseUnauthorized("You do not have access to this Web service")
 
     return JsonMessageResponseForbidden("You do not have access to this Web service")
+
+@login_required
+def explode(request):
+    raise Exception("KA BLAM")
 
 @login_required
 def password(request):
