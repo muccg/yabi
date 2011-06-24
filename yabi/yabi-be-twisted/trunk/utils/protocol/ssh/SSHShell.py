@@ -32,7 +32,7 @@ from twisted.internet import protocol
 from twisted.internet import reactor
 
 from BaseShell import BaseShell, BaseShellProcessProtocol
-from SSHRun import SSHExecProcessProtocol,  SSHExecProcessProtocolParamiko 
+from SSHRun import  SSHExecProcessProtocolParamiko 
 
 
 DEBUG = False
@@ -57,24 +57,6 @@ class SSHShell(BaseShell):
         result = '"`echo -e \'%s\'`"'%(convert_filename_to_encoded_for_echo(filename))
         return result
 
-    def executeold(self, certfile, host, command, username, password, port=None):
-        """Run inside gsissh, this command line. Command parts are passed in as a list of parameters, not a string."""
-        port = port or 22
-        
-        subenv = self._make_env()
-        
-        command = [ self.python, self.ssh_exec,
-            "-i", certfile,
-            "-P", str(port),
-            "-x", " ".join(command),
-            "%s@%s"%(username,host)
-            ]
-        
-        if DEBUG:
-            print "SSHShell Running:",command
-            
-        return BaseShell.execute(self,SSHExecProcessProtocol(password),command)
-        
     def execute(self, certfile, host, command, username, password, port=None):
         """Spawn a process to run a remote ssh job. return the process handler"""
         if DEBUG:

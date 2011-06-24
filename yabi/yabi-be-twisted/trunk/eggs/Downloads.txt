@@ -1,3 +1,2 @@
 pyOpenSSL
-paramiko
 setproctitle

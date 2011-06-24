@@ -137,7 +137,7 @@ def precopy(options):
         setproctitle.setproctitle("yabi-ssh %s@%s copy local %s to remote %s"%(options.username, options.hostname, options.prelocal, options.preremote))
         transport = transport_connect_login(options)
         sftp = paramiko.SFTPClient.from_transport(transport)
-        sftp.put(options.prelocal,options.preremote)
+        sftp.put(options.prelocal,options.preremote,confirm=False)
         sftp.close()
         transport.close()
 
@@ -146,7 +146,7 @@ def postcopy(options):
         setproctitle.setproctitle("yabi-ssh %s@%s copy remote %s to local %s"%(options.username, options.hostname, options.postremote, options.postlocal))
         transport = transport_connect_login(options) 
         sftp = paramiko.SFTPClient.from_transport(transport)
-        sftp.get(options.preremote,options.prelocal)
+        sftp.get(options.postremote,options.postlocal,confirm=False)
         sftp.close()
         transport.close()
 

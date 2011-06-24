@@ -123,7 +123,7 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
             print "password:",creds['password']
             print "script:",script_string
             
-        pp = ssh.Run.runstream(usercert,ssh_command,username,host,working=None,port="22",stdout=None,stderr=None,password=creds['password'], modules=modules, streamin=script_string)
+        pp = ssh.Run.run(usercert,ssh_command,username,host,working=None,port="22",stdout=None,stderr=None,password=creds['password'], modules=modules, streamin=script_string)
         while not pp.isDone():
             stackless.schedule()
             
@@ -154,7 +154,7 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
             print "modules",modules
             print "password:",creds['password']
             
-        pp = ssh.Run.runstream(usercert,ssh_command,username,host,working=None,port="22",stdout=None,stderr=None,password=creds['password'], modules=modules )
+        pp = ssh.Run.run(usercert,ssh_command,username,host,working=None,port="22",stdout=None,stderr=None,password=creds['password'], modules=modules )
         while not pp.isDone():
             stackless.schedule()
             

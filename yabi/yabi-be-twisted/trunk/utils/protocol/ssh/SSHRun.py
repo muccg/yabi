@@ -36,26 +36,6 @@ from FifoPool import Fifos
 
 from BaseShell import BaseShell, BaseShellProcessProtocol
 
-class SSHExecProcessProtocol(BaseShellProcessProtocol):
-    def __init__(self, password, stdin_data=None):
-        BaseShellProcessProtocol.__init__(self)
-        self.started = False
-        self.password = password
-        self.stdin_data = stdin_data
-        
-    def connectionMade(self):
-        self.transport.write(str(self.password))
-        self.transport.write("\n")
-        
-        if self.stdin_data:
-            self.transport.write(self.stdin_data)
-        
-        self.transport.closeStdin()
-        self.started = True
-                
-    def isStarted(self):
-        return self.started
-
 class SSHExecProcessProtocolParamiko(BaseShellProcessProtocol):
     def __init__(self, stdin_data=None):
         BaseShellProcessProtocol.__init__(self)
@@ -74,63 +54,6 @@ class SSHExecProcessProtocolParamiko(BaseShellProcessProtocol):
         
 class SSHError(Exception):
     pass
-
-class SSHRunOld(BaseShell):
-    ssh_exec = os.path.join( os.path.dirname(os.path.realpath(__file__)), "ssh-exec.py" )
-    python = sys.executable                     # use the same python that yabi backend is running under
-    
-    def run(self, certfile, remote_command="hostname", username="yabi", host="faramir.localdomain", working="/tmp", port="22", stdout="STDOUT.txt", stderr="STDERR.txt",password="",modules=[]):
-        """Spawn a process to run a remote ssh job. return the process handler"""
-        subenv = self._make_env()
-        
-        if modules:
-            remote_command = "&&".join(["module load %s"%module for module in modules]+[remote_command])
-        
-        command = [ self.python, self.ssh_exec,
-            "-i", certfile,
-            "-P", port,
-            "-w", working,
-            ]
-        
-        if stdout:
-            command.extend(["-o", stdout])
-        if stderr:
-            command.extend(["-e", stderr])
-            
-        command.extend( [   "-x", remote_command,
-                            "%s@%s"%(username,host)
-                        ] )
-        
-            
-        return BaseShell.execute(self,SSHExecProcessProtocol(password),command)
-        
-    def runstream(self, certfile, remote_command="hostname", username="yabi", host="faramir.localdomain", working="/tmp", port="22", stdout="STDOUT.txt", stderr="STDERR.txt",password="",modules=[],streamin=None):
-        """Spawn a process to run a remote ssh job. return the process handler
-        takes an input string to pipe into stdin of the ssh-exec process after the password which will be passed on through
-        the ssh transport into the remote clients stdin
-        """
-        subenv = self._make_env()
-        
-        if modules:
-            remote_command = "&&".join(["module load %s"%module for module in modules]+[remote_command])
-        
-        command = [ self.python, self.ssh_exec,
-            "-i", certfile,
-            "-P", port,
-            "-s"
-            ]
-        
-        if stdout:
-            command.extend(["-o", stdout])
-        if stderr:
-            command.extend(["-e", stderr])
-            
-        command.extend( [   "-x", remote_command,
-                            "%s@%s"%(username,host)
-                        ] )
-        
-        
-        return BaseShell.execute(self,SSHExecProcessProtocol(password,streamin),command)
         
 class SSHRun(BaseShell):
     ssh_exec = os.path.join( os.path.dirname(os.path.realpath(__file__)), "paramiko-ssh.py" )

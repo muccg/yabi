@@ -34,29 +34,16 @@ import tempfile
 
 from FifoPool import Fifos
 
-from BaseShell import BaseShell, BaseShellProcessProtocol
+from BaseShell import BaseShell
+from SSHRun import SSHExecProcessProtocolParamiko
 
-class SCPProcessProtocol(BaseShellProcessProtocol):
-    def __init__(self, password):
-        BaseShellProcessProtocol.__init__(self)
-        self.started = False
-        self.password = password
-        
-    def connectionMade(self):
-        #print "Connection made"
-        self.transport.write(str(self.password))
-        self.transport.write("\n")
-        self.transport.closeStdin()
-        self.started = True
-                
-    def isStarted(self):
-        return self.started
+DEBUG = False
         
 class SCPError(Exception):
     pass
 
 class SSHCopy(BaseShell):
-    scp = os.path.join( os.path.dirname(os.path.realpath(__file__)), "ssh-copy-2.py" )
+    scp = os.path.join( os.path.dirname(os.path.realpath(__file__)), "paramiko-ssh.py" )
     python = sys.executable
     
     def WriteToRemote(self, certfile, remoteurl, port=None, password="",fifo=None):
@@ -67,16 +54,28 @@ class SSHCopy(BaseShell):
         if not fifo:
             fifo = Fifos.Get()
             
-        remotehost,remotepath = remoteurl.split(':',1)
+        remoteuserhost,remotepath = remoteurl.split(':',1)
+        remoteuser, remotehost = remoteuserhost.split('@',1)
             
-        command = [   self.python, self.scp,
-                "-i",certfile,              # keyfile
-                "-P",str(port),                  # port
-                fifo,                       # localfile
-                remoteurl
-            ]
+        command  = [   self.python, self.scp ]
+        command += [ "-i", certfile ] if certfile else []
+        command += [ "-p", password ] if password else []
+        command += [ "-u", remoteuser ] if remoteuser else []
+        command += [ "-H", remotehost ] if remotehost else []
+        command += [ "-l", fifo, "-r", remotepath ]
+        
+        if DEBUG:
+            print "CERTFILE",certfile
+            print "REMOTEUSER",remoteuser
+            print "REMOTEHOST",remotehost
+            print "REMOTEPATH",remotepath
+            print "PORT",port
+            print "PASSWORD","*"*len(password)
+            print "FIFO",fifo
             
-        return BaseShell.execute(self,SCPProcessProtocol(password),
+            print "COMMAND",command
+            
+        return BaseShell.execute(self,SSHExecProcessProtocolParamiko(),
             command
         ), fifo
         
@@ -88,11 +87,29 @@ class SSHCopy(BaseShell):
         if not fifo:
             fifo = Fifos.Get()
             
-        return BaseShell.execute(self,SCPProcessProtocol(password),
-            [   self.python, self.scp,
-                "-i",certfile,
-                "-P",str(port),
-                remoteurl,
-                fifo
-            ]
+            
+        remoteuserhost,remotepath = remoteurl.split(':',1)
+        remoteuser, remotehost = remoteuserhost.split('@',1)
+            
+        command  = [   self.python, self.scp ]
+        command += [ "-i", certfile ] if certfile else []
+        command += [ "-p", password ] if password else []
+        command += [ "-u", remoteuser ] if remoteuser else []
+        command += [ "-H", remotehost ] if remotehost else []
+        command += [ "-L", fifo, "-R", remotepath ]
+        
+        if DEBUG:
+            print "CERTFILE",certfile
+            print "REMOTEUSER",remoteuser
+            print "REMOTEHOST",remotehost
+            print "REMOTEPATH",remotepath
+            print "PORT",port
+            print "PASSWORD","*"*len(password)
+            print "FIFO",fifo
+            
+            print "COMMAND",command
+        
+        return BaseShell.execute(self,SSHExecProcessProtocolParamiko(),
+            command
         ), fifo
+        
