@@ -419,7 +419,7 @@ class CommandTemplate(object):
                     if 'type' in value and (value['type']=='file' or value['type']=='directory'):                       # TODO: what if value is unicode and contains the word 'type' within it! LOL
                         # param refers to a file
                         assert tp.input_file, "File parameter passed in on switch '%s' where the input_file table boolean is not set"%(tp.switch)
-                        value['extensions'] = tp.input_filetype_extensions()
+                        value['extensions'] = tp.input_filetype_patterns()
                         
                         # annotate with the switch we are processing
                         value['switch'] = tp.switch
@@ -442,7 +442,7 @@ class CommandTemplate(object):
                             assert "type" in value and (value['type']=='job' or value['type']=='jobfile'), "Unknown param value type for switch '%s', type is '%s'"%(tp.switch,value['type'])           
                             
                             # annotate extra info
-                            value['extensions'] = tp.input_filetype_extensions() 
+                            value['extensions'] = tp.input_filetype_patterns() 
                             value['bundle_files'] = tp.batch_bundle_files
                             value['batch_param'] = tp.batch_param
                             
@@ -469,7 +469,7 @@ class CommandTemplate(object):
                                 if tp.use_output_filename:
                                     # this means output filename has to be named after the filename associated with the switch this parameter is pointing to
                                     if tp.extension_param:
-                                        value = SwitchFilename(default=value, template="%s."+str(tp.extension_param), source_switch=tp.use_output_filename.switch)
+                                        value = SwitchFilename(default=value, template="%s."+tp.extension_param.extension(), source_switch=tp.use_output_filename.switch)
                                     else:
                                         value = SwitchFilename(default=value, source_switch=tp.use_output_filename.switch)
                                 
