@@ -111,8 +111,8 @@ class FileTypeAdmin(AdminBase):
     search_fields = ['name']    
 
 class FileExtensionAdmin(AdminBase):
-    list_display = ['extension']
-    search_fields = ['extension']
+    list_display = ['pattern']
+    search_fields = ['pattern']
 
 class QueueAdmin(admin.ModelAdmin):
     list_display = ['name', 'user_name', 'created_on']
