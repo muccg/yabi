@@ -684,9 +684,9 @@ YabiJob.prototype.solidify = function(obj) {
         for (index in this.payload.tool.outputExtensions) {
             
             //add to the outputextensionsarray
-            this.outputExtensions.push(this.payload.tool.outputExtensions[index].file_extension__extension);
+            this.outputExtensions.push(this.payload.tool.outputExtensions[index].file_extension__pattern);
             
-            ext = document.createTextNode(this.payload.tool.outputExtensions[index].file_extension__extension);
+            ext = document.createTextNode(this.payload.tool.outputExtensions[index].file_extension__pattern);
             spanEl = document.createElement("span");
             spanEl.setAttribute("class", "acceptedExtension");
             spanEl.appendChild(ext);
