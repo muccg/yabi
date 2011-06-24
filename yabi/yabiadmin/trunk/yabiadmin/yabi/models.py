@@ -77,6 +77,11 @@ class FileExtension(Base):
     
     def __unicode__(self):
         return self.pattern
+        
+    def extension(self):
+        """try and express _only_ the extension from this glob. This is very naive.
+        """
+        return self.pattern.rsplit(".")[-1]
 
 class FileType(Base):
     name = models.CharField(max_length=255, unique=True)
@@ -151,7 +156,7 @@ class Tool(Base):
         '''
         # empty list passed to reduce is initializer, see reduce docs
         filetypes = reduce(lambda x, y: x+y, [list(x.accepted_filetypes.all()) for x in self.toolparameter_set.all()],[])
-        extensions = [ext.pattern for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]
+        extensions = [ext.extension() for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]           # HACK: make frontend see old nonglob
         return list(set(extensions)) # remove duplicates
 
     def input_filetype_extensions_for_batch_param(self):
@@ -161,12 +166,12 @@ class Tool(Base):
         extensions = []
         if self.batch_on_param:
             filetypes = self.batch_on_param.accepted_filetypes.all()
-            extensions = [ext.pattern for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]
+            extensions = [ext.extension() for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]       # HACK: make frontend see old nonglob
         return list(set(extensions)) # remove duplicates
 
     def output_filetype_extensions(self):
         '''Work out output file extensions for this tool and return a a list of them all'''
-        extensions = [fe.file_extension.pattern for fe in self.tooloutputextension_set.all()]
+        extensions = [fe.file_extension.extension() for fe in self.tooloutputextension_set.all()]                                       # HACK: make frontend see old nonglob
         return list(set(extensions)) # remove duplicates
 
     def tool_dict(self):
@@ -189,18 +194,23 @@ class Tool(Base):
             'queue':self.queue,
             'max_memory':self.max_memory,
             'job_type': self.job_type,
-            'inputExtensions': self.input_filetype_extensions(),
-            'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__extension")),            
+            'inputExtensions':self.input_filetype_extensions(),                     
+            'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__pattern")),            
             'parameter_list': list(self.toolparameter_set.order_by('id').values("id", "rank", "mandatory", "hidden", "input_file", "output_file",
                                                                                 "switch", "switch_use__display_text", "switch_use__formatstring","switch_use__description",
                                                                                 "possible_values","default_value","helptext","batch_param", "batch_bundle_files", "use_output_filename__switch"))
             }
+            
+        for index in range(len(tool_dict['outputExtensions'])):
+            tool_dict['outputExtensions'][index]['file_extension__pattern']=tool_dict['outputExtensions'][index]['file_extension__pattern'].rsplit('.')[-1]    # HACK. munge the glob so it looks oldschool so we dont need to rewrite the frontend
 
         for p in tool_dict["parameter_list"]:
             tp = ToolParameter.objects.get(id=p["id"])
-            p["acceptedExtensionList"] = tp.input_filetype_extensions()
+            p["acceptedExtensionList"] = tp.input_filetype_extensions()        # HACK. munge the glob so it looks oldschool so we dont need to rewrite the frontend
             if tp.extension_param:
-                p["extension_param"] = tp.extension_param.extension
+                p["extension_param"] = tp.extension_param.extension()                           # HACK. munge the glob so it looks oldschool so we dont need to rewrite the frontend
+                
+            print "!!!!!!!!!!!!!!!!!",tool_dict
         return tool_dict
     
     def json(self):
@@ -282,11 +292,18 @@ class ToolParameter(Base):
     def __unicode__(self):
         return self.switch or ''
 
-    def input_filetype_extensions(self):
+    def input_filetype_patterns(self):
         '''Work out input file extensions for this toolparameter and return a a list of them all'''
         # empty list passed to reduce is initializer, see reduce docs
         filetypes = self.accepted_filetypes.all()
         extensions = [ext.pattern for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]
+        return list(set(extensions)) # remove duplicates
+
+    def input_filetype_extensions(self):
+        '''Work out input file extensions for this toolparameter and return a a list of them all'''
+        # empty list passed to reduce is initializer, see reduce docs
+        filetypes = self.accepted_filetypes.all()
+        extensions = [ext.extension() for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]
         return list(set(extensions)) # remove duplicates
 
 
@@ -441,6 +458,7 @@ class Credential(Base):
         # push the credential to memcache server
         ksc = KeyspacedMemcacheClient()
         ksc.add(key=mckey, val=mcval, time=time_to_cache)
+        ksc.disconnect_all()
         
         # unblock our blocked tasks
         self.unblock_all_blocked_tasks()
@@ -472,11 +490,17 @@ class Credential(Base):
         
     def is_memcached(self):
         """return true if there is a decypted cert in memcache"""
-        return bool(KeyspacedMemcacheClient().get(self.memcache_keyname()))
+        kmc = KeyspacedMemcacheClient()
+        truth = bool(kmc.get(self.memcache_keyname()))
+        kmc.disconnect_all()
+        return truth
         
     def get_memcache_json(self):
         """return the memcached credential"""
-        return KeyspacedMemcacheClient().get(self.memcache_keyname())
+        kmc = KeyspacedMemcacheClient()
+        truth = kmc.get(self.memcache_keyname())
+        kmc.disconnect_all()
+        return truth
         
     def get_memcache(self):
         """return the decoded memcached credentials"""
@@ -490,11 +514,13 @@ class Credential(Base):
         cred = mc.get( name )
         assert cred, "tried to refresh a non-cached credential"
         mc.set(name, cred, time=time_to_cache)
+        mc.disconnect_all()
         
     def clear_memcache(self):
         mc = KeyspacedMemcacheClient()
         name = self.memcache_keyname()
         mc.delete( name )
+        mc.disconnect_all()
         
     @property
     def is_cached(self):
