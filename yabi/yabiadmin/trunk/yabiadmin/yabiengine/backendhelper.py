@@ -204,10 +204,10 @@ def get_listing(yabiusername, uri, recurse=False):
     except httplib.CannotSendRequest, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
         raise
-    print "CRED",data
-    print "STATUS",r.status
+    #print "CRED",data
+    #print "STATUS",r.status
     read = r.read()
-    print "READ",read
+    #print "READ",read
     assert(r.status == 200)
     return read
 
