@@ -64,7 +64,7 @@ class SGEConnector(ExecConnector):
         print "SGEConnector::__init__() debug setting is",DEBUG
         ExecConnector.__init__(self)
     
-    def run(self, yabiusername, command, working, scheme, username, host, remote_url, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
+    def run(self, yabiusername, command, working, scheme, username, host, remote_url, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, max_memory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
         try:
             if DEBUG:
                 print "QSUB",command,"WORKING:",working

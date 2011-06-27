@@ -38,7 +38,7 @@ from utils.parsers import parse_url
 
 from utils.submit_helpers import parsePOSTDataRemoteWriter
 
-DEBUG = False
+DEBUG = True
 
 class ExecRunResource(resource.PostableResource):
     VERSION=0.1
@@ -116,6 +116,7 @@ class ExecRunResource(resource.PostableResource):
         
         if DEBUG:
             print "starting tasklet",bend.run
+            print "KWARGS:",kwargs
         task = stackless.tasklet(bend.run)
         task.setup(yabiusername, command, basepath, scheme, username, hostname, remote_info_url, client_deferred, **kwargs)
         if DEBUG:

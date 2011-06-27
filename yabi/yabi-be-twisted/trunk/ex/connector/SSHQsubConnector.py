@@ -103,6 +103,7 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
         if not creds:
             creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, "/")
     
+        print "CREDS",creds
         usercert = self.save_identity(creds['key'])
         
         # build our command script
@@ -172,7 +173,7 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
         else:
             raise SSHQstatException("SSHQstat error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
 
-    def run(self, yabiusername, command, working, scheme, username, host, remote_url, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
+    def run(self, yabiusername, command, working, scheme, username, host, remote_url, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, max_memory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
         try:
             modules = [] if not module else [X.strip() for X in module.split(",")]
             jobid = self._ssh_qsub(working, stdout, stderr, command, yabiusername, username, host, modules, remote_url, **creds)
