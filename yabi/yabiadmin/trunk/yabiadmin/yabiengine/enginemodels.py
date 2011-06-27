@@ -60,7 +60,7 @@ logger = logging.getLogger('yabiengine')
 from constants import *
 from yabistoreapp import db
 
-FNMATCH_EXCLUDE_GLOBS = [ '*/STDOUT.txt', '*/STDERR.txt' ]
+FNMATCH_EXCLUDE_GLOBS = [ '*/STDOUT.txt', '*/STDERR.txt', 'STDOUT.txt', 'STDERR.txt' ]
 
 class EngineWorkflow(Workflow):
     job_cache = {}
@@ -99,7 +99,8 @@ class EngineWorkflow(Workflow):
             self.save()
             logger.critical(e)
             logger.critical(traceback.format_exc())
-            print traceback.format_exc()    
+            print traceback.format_exc()  
+            transaction.commit()
             raise
 
     # NOTE: this is a load bearing decorator. Do not remove it or the roof will fall in. (it stops locking nightmares)
@@ -168,13 +169,16 @@ class EngineWorkflow(Workflow):
             logger.critical("ObjectDoesNotExist at workflow::walk")
             logger.critical(traceback.format_exc())
             print traceback.format_exc()
+            transaction.commit()
             raise
         except Exception,e:
+            print "WALKER FAILED", self
             self.status = STATUS_ERROR
             self.save()
             logger.critical("Exception raised in workflow::walk")
             logger.critical(traceback.format_exc())
             print traceback.format_exc()
+            transaction.commit()
             raise
 
     def change_tags(self, taglist):

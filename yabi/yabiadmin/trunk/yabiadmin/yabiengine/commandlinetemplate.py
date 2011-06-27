@@ -558,6 +558,7 @@ class CommandTemplate(object):
                                             self.backfiles[backref['switch']]=[]
                                         #print "Adding %s to batckfiles switch %s"%(filename,backref['switch'])
                                         self.backfiles[backref['switch']].append(details)
+                                        break
                            
                             if 'extensions' in backref:
                                 # if an UnknownFileSwitch argument refers back to THIS backref, then resolve the filename in the UnknownFileSwitch to this file if it matches
@@ -704,7 +705,7 @@ class CommandTemplate(object):
         return '%s%s%s' % (item['root'], path, item['filename'])
         
     def parse_param_directory_value(self, item):
-        fulluri = item['root']+item['filename']+'/'
+        fulluri = "".join(item['pathComponents'])+'/'+item['filename']+'/'
 
         # get recursive directory listing
         filelist = backendhelper.get_file_list(self.username, fulluri, recurse=True)
