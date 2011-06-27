@@ -117,7 +117,10 @@ def transport_connect_login(options):
         #ssh.load_system_host_keys()
         #ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         
-        mykey = get_rsa_key(options)
+        try:
+            mykey = get_rsa_key(options)
+        except paramiko.SSHException, pe:
+            mykey = get_dsa_key(options)
         
         ssh.connect(username=options.username, pkey=mykey)
         return ssh
