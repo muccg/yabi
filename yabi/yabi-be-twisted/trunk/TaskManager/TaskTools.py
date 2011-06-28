@@ -34,6 +34,7 @@ from twisted.internet import reactor
 import time
 import json
 import os, urllib
+from utils.parsers import parse_url
 from conf import config
 
 COPY_RETRY = 3
@@ -178,6 +179,18 @@ def LCopy(src,dst,retry=LCOPY_RETRY, **kwargs):
     
     raise err
 
+def SmartCopy(preferred,src,dst,retry=LCOPY_RETRY, **kwargs):
+    if DEBUG:
+        print "Smart-Copying %s to %s"%(src,dst)
+    
+    srcscheme, srcaddress = parse_url(src)
+    dstscheme, dstaddress = parse_url(dst)
+    
+    if srcaddress.hostname != dstaddress.hostname or srcaddress.username != dstaddress.username or preferred == 'copy':
+        return Copy(src,dst,retry=retry,**kwargs)
+    else:
+        return LCopy(src,dst,retry=retry,**kwargs)
+                    
 def Log(logpath,message):
     """Report an error to the webservice"""
     #print "Reporting error to %s"%(logpath)
