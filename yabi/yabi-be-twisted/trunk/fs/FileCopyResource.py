@@ -43,7 +43,7 @@ from utils.submit_helpers import parsePOSTData
 
 DEFAULT_COPY_PRIORITY = 1                   # not immediate by default but high priority
 
-DEBUG = True
+DEBUG = False
 
 # module level storage for a summary of all the present copy jobs
 # key = yabiusername

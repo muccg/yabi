@@ -38,7 +38,7 @@ from utils.parsers import parse_url
 
 from utils.submit_helpers import parsePOSTDataRemoteWriter
 
-DEBUG = True
+DEBUG = False
 
 class ExecRunResource(resource.PostableResource):
     VERSION=0.1
