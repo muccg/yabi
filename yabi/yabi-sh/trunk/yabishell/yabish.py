@@ -14,6 +14,7 @@ from yabishell.utils import human_readable_size
 
 # TODO config file
 YABI_DEFAULT_URL = 'https://faramir/yabife/snapshot/'
+#YABI_DEFAULT_URL = 'https://ccg.murdoch.edu.au/yabi/'
 
 def main():
     debug = False
