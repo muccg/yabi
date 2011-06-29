@@ -119,7 +119,10 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         if DEBUG:
             print "mkdir_data=",out
             print "err", err
-        
+
+        if usercert:
+            os.unlink(usercert)
+
         return out
         
     #@lock
@@ -163,7 +166,10 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         if DEBUG:
             print "rm_data=",out
             print "err", err
-        
+
+        if usercert:
+            os.unlink(usercert)
+
         return out
     
     #@lock
@@ -223,8 +229,9 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             # "None" path header is actually our path
             ls_data[path]=ls_data[None]
             del ls_data[None]
-                        
-        os.unlink(usercert)
+        
+        if usercert:
+            os.unlink(usercert)
                         
         return ls_data
         
@@ -269,6 +276,9 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             print "ln_data=",out
             print "ln_err", err
         
+        if usercert:
+            os.unlink(usercert)
+        
         return out
         
     @retry(5,(InvalidPath,PermissionDenied))
@@ -311,7 +321,10 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         if DEBUG:
             print "cp_data=",out
             print "cp_err", err
-        
+
+        if usercert:
+            os.unlink(usercert)
+
         return out
         
     

@@ -64,6 +64,16 @@ class KeyStore(object):
         rm_rf(self.directory)
         
     def save_identity(self, identity, tag=None):
+        
+        # TODO: avoid calling this method when there is no key
+        from string import whitespace
+        def is_whitespace(st):
+            return False not in [X in whitespace for X in st]
+            
+        if is_whitespace(identity):
+            return None
+        
+        
         filename = tempfile.mktemp(dir=self.directory)
         fh = open( filename, "w" )
         fh.write( identity )
