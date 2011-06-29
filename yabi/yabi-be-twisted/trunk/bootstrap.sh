@@ -43,15 +43,15 @@ then
     do
         if [ "$EGG" != $EGG_DOWNLOAD_FILE ]
         then
-            ./$VPYTHON_DIR/bin/easy_install $EGG
+            ./$VPYTHON_DIR/bin/easy_install  --allow-hosts=None  $EGG
         fi
     done
     
     # install the Downloads.txt eggs
-    for EGG in `cat $EGG_DOWNLOAD_FILE`
-    do
-        ./$VPYTHON_DIR/bin/easy_install $EGG
-    done
+#     for EGG in `cat $EGG_DOWNLOAD_FILE`
+#     do
+#         ./$VPYTHON_DIR/bin/easy_install $EGG
+#     done
     
     # install
 
