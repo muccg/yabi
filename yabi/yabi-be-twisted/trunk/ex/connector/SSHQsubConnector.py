@@ -87,6 +87,8 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
     
     def _ssh_qsub(self, working, stdout, stderr, command, yabiusername, username, host, modules, remote_url, **creds):
         """This submits via ssh the qsub command. This returns the jobid, or raises an exception on an error"""
+        assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
+        
         submission_script = os.path.join(TMP_DIR,str(uuid.uuid4())+".sh")
         
         # build up our remote qsub command
@@ -103,7 +105,6 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
         if not creds:
             creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, "/")
     
-        print "CREDS",creds
         usercert = self.save_identity(creds['key'])
         
         # build our command script
@@ -136,6 +137,8 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
             
     def _ssh_qstat(self, jobid, working, stdout, stderr, command, yabiusername, username, host, modules, **creds):
         """This submits via ssh the qstat command. This takes the jobid"""
+        assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
+        
         ssh_command = "cat > /dev/null && qstat -f -1 '%s'"%( jobid )
         
         if not creds:
@@ -192,7 +195,7 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
         client_stream.write("id=%s\n"%jobid)
         
         try:
-            self.main_loop( client_stream, jobid, remote_url, working, stdout, stderr, command, yabiusername, username, host, module,  **creds)
+            self.main_loop( client_stream, jobid, remote_url, working, stdout, stderr, command, yabiusername, username, host, modules,  **creds)
         except (ExecutionError, SSHQstatException), ee:
             import traceback
             traceback.print_exc()
@@ -204,14 +207,14 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
             
             client_stream.finish()
             
-    def main_loop(self, client_stream, jobid, remote_url, working, stdout, stderr, command, yabiusername, username, host, module,  **creds):
+    def main_loop(self, client_stream, jobid, remote_url, working, stdout, stderr, command, yabiusername, username, host, modules,  **creds):
         newstate = state = None
         delay = JobPollGeneratorDefault()
         while state!="Done":
             # pause
             sleep(delay.next())
             
-            jobsummary = self._ssh_qstat(jobid, working, stdout, stderr, command, yabiusername, username, host, module,  **creds)
+            jobsummary = self._ssh_qstat(jobid, working, stdout, stderr, command, yabiusername, username, host, modules,  **creds)
             self.update_running(jobid,jobsummary)
             
             if jobid in jobsummary:

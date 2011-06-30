@@ -34,7 +34,6 @@ from twisted.internet import reactor
 from BaseShell import BaseShell, BaseShellProcessProtocol
 from SSHRun import  SSHExecProcessProtocolParamiko 
 
-
 DEBUG = False
 
 def convert_filename_to_encoded_for_echo(filename):
