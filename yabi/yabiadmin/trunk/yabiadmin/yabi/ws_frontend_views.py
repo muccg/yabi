@@ -680,8 +680,8 @@ def save_credential(request, id):
     if "password" in request.POST or "key" in request.POST or "certificate" in request.POST:
         credential.encrypted = False
         credential.password = request.POST.get("password", "")
-        credential.key = request.POST.get("key", None)
-        credential.cert = request.POST.get("certificate", None)
+        credential.key = request.POST.get("key", "")
+        credential.cert = request.POST.get("certificate", "")
 
     if "username" in request.POST:
         credential.username = request.POST["username"]
