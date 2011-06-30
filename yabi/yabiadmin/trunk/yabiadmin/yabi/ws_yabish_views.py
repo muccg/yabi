@@ -259,7 +259,7 @@ class YabiArgumentParser(object):
 
     def init_paramdefs(self, tool):
         return [ParamDef(param.switch, param.switch_use.display_text, param.mandatory, param.input_file) 
-                    for param in tool.toolparameter_set.all()]
+                    for param in tool.toolparameter_set.all().order_by('rank')]
 
     def parse_options(self, arguments):
         remaining_args = arguments
