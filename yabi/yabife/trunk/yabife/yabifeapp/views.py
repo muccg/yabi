@@ -701,6 +701,4 @@ def reencrypt_user_credentials(request, currentPassword, newPassword):
     enc_request = PostRequest("ws/account/passchange", params={ "oldPassword": currentPassword, "newPassword": newPassword })
     http = memcache_http(request)
     resp, content = http.make_request(enc_request)
-    print "RESP:",resp
-    print "CONT:",content
     assert resp['status']=='200'
