@@ -172,7 +172,6 @@ class EngineWorkflow(Workflow):
             transaction.commit()
             raise
         except Exception,e:
-            print "WALKER FAILED", self
             self.status = STATUS_ERROR
             self.save()
             logger.critical("Exception raised in workflow::walk")
@@ -248,6 +247,7 @@ class EngineJob(Job):
         try:
             rval = BackendCredential.objects.get(credential__user=self.workflow.user, backend=self.tool.fs_backend)
         except (ObjectDoesNotExist, MultipleObjectsReturned):
+            print 'Invalid filesystem backend credentials for user: %s and backend: %s' % (self.workflow.user, self.tool.fs_backend)
             logger.critical('Invalid filesystem backend credentials for user: %s and backend: %s' % (self.workflow.user, self.tool.fs_backend))
             fsbcs = BackendCredential.objects.filter(credential__user=self.workflow.user, backend=self.tool.fs_backend)
             logger.debug("FS Backend Credentials returned: %s"%(fsbcs))

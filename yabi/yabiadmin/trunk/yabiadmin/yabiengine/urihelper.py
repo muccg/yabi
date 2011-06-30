@@ -46,8 +46,8 @@ def uriparse(uri):
     we cannot inject the scheme back into it.
     A copy of this function is in yabi-sh.
     """
-    logger.debug(uri)
-
+    logger.debug('uriparse(%s)'%uri)
+    
     try:
         scheme, rest = uri.split(":",1)
         assert re_url_schema.match(scheme)        
