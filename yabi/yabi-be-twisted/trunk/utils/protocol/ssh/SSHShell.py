@@ -63,7 +63,7 @@ class SSHShell(BaseShell):
             print "HOST:",host
             print "COMMAND:",command
             print "USERNAME:",username
-            print "PASSWORD:",password
+            print "PASSWORD:","*"*len(password)
         
         subenv = self._make_env()
         

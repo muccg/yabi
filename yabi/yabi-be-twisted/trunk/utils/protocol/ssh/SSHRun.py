@@ -66,6 +66,8 @@ class SSHRun(BaseShell):
         if modules:
             remote_command = "&&".join(["module load %s"%module for module in modules]+[remote_command])
         
+        print "running remote command:",remote_command
+        
         command = [self.python, self.ssh_exec ]
         command += ["-i",certfile] if certfile else []
         command += ["-p",password] if password else []
@@ -73,5 +75,7 @@ class SSHRun(BaseShell):
         command += ["-H",host] if host else []
         command.extend( [ "-x", remote_command ] )
         
+            
+        print "COMMAND:",command
             
         return BaseShell.execute(self,SSHExecProcessProtocolParamiko(streamin),command)

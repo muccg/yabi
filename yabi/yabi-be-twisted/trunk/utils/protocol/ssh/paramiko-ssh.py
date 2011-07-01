@@ -153,10 +153,58 @@ def postcopy(options):
         sftp.close()
         transport.close()
 
-def execute(ssh,options):       
+# the interactive mode does not work
+def _execute_interactive(ssh,options):
+    if options.execute:
+        setproctitle.setproctitle("yabi-ssh %s@%s interactive-exec %s"%(options.username, options.hostname, options.execute))
+        
+        shell = ssh.invoke_shell()
+        shell.send(options.execute+'\n')
+        
+        stdout = shell.makefile()
+        stderr = shell.makefile_stderr()
+        
+        readlist = [sys.stdin,stdout.channel,stderr.channel]
+        while not stdout.channel.exit_status_ready():
+            rlist,wlist,elist = select.select(readlist,[shell],[sys.stdin,shell,stdout.channel,stderr.channel])
+            #print "r",rlist,"w",len(wlist),"e",len(elist)
+            if sys.stdin in rlist:
+                # read stdin and pipe to process
+                input = sys.stdin.readline()
+                if not input:
+                    readlist.remove(sys.stdin)
+                    shell.shutdown(2)
+                    shell.close()
+                else:
+                    shell.write( input )
+                    shell.flush()
+                    # stdin.close()?
+                    
+            if stdout.channel in rlist:
+                sys.stdout.write( stdout.read(512) )
+            if stderr.channel in rlist:
+                sys.stderr.write( stderr.read(512) )
+            
+            if len(elist):
+                sys.stderr.write("error! ")
+                sys.stderr.write(repr(elist))
+                sys.stderr.write("\n")
+                
+        # exhaust stdout and stderr
+        sys.stderr.write( stderr.read() )
+        sys.stdout.write( stdout.read() )
+                
+        return stdout.channel.exit_status
+
+def execute(ssh,options,shell=True):
     if options.execute:
         setproctitle.setproctitle("yabi-ssh %s@%s exec %s"%(options.username, options.hostname, options.execute))
-        stdin, stdout, stderr = ssh.exec_command(options.execute)
+        
+        if shell:
+            ex = options.execute.replace("'","'\\''")        # escape any single quotes
+            stdin, stdout, stderr = ssh.exec_command("bash -i -c '"+ex+"'")
+        else:
+            stdin, stdout, stderr = ssh.exec_command(options.execute)
     
         readlist = [sys.stdin,stdout.channel,stderr.channel]
         while not stdout.channel.exit_status_ready():

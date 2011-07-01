@@ -35,7 +35,7 @@ ENV_CHILD_INHERIT = ['PATH']
 ENV_CHECK = []
 
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
-SCHEMA = "ssh+qsub"
+SCHEMA = "ssh+pbspro"
 
 DEBUG = False
 
@@ -78,7 +78,7 @@ class SSHQsubException(Exception):
 class SSHQstatException(Exception):
     pass
 
-class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
+class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
     def __init__(self):
         ExecConnector.__init__(self)
         
@@ -93,14 +93,16 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
         
         # build up our remote qsub command
         ssh_command = "cat >'%s' && "%(submission_script)
-        ssh_command += "qsub -N '%s' -e '%s' -o '%s' -d '%s' '%s'"%(    
+        ssh_command += "qsub -N '%s' -e '%s' -o '%s' '%s'"%(    
                                                                         "yabi-task-"+remote_url.rsplit('/')[-1],
                                                                         os.path.join(working,stderr),
                                                                         os.path.join(working,stdout),
-                                                                        working,
                                                                         submission_script
                                                                     )
-        ssh_command += " || rm '%s'"%(submission_script)
+        ssh_command += " ; EXIT=$? "
+        ssh_command += " ; rm '%s'"%(submission_script)
+        #ssh_command += " ; echo $EXIT"
+        ssh_command += " ; exit $EXIT"
 
         if not creds:
             creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, "/")
@@ -109,10 +111,12 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
         
         # build our command script
         script = ["module load %s"%mod for mod in modules or []]
+        script.append( "cd '%s'"%working )                                              # TODO: what if the path has a single quote in it?
         script.append( command )
         script_string = "\n".join(script)+"\n"
         
         if DEBUG:
+            print "_ssh_qsub"
             print "usercert:",usercert
             print "command:",command
             print "username:",username
@@ -122,12 +126,17 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
             print "stdout:",stdout
             print "stderr:",stderr
             print "modules",modules
-            print "password:",creds['password']
+            print "password:","*"*len(creds['password'])
             print "script:",script_string
             
         pp = ssh.Run.run(usercert,ssh_command,username,host,working=None,port="22",stdout=None,stderr=None,password=creds['password'], modules=modules, streamin=script_string)
         while not pp.isDone():
             stackless.schedule()
+          
+        if DEBUG:
+            print "EXITCODE:",pp.exitcode
+            print "STDERR:",pp.err
+            print "STDOUT:",pp.out
             
         if pp.exitcode==0:
             # success
@@ -139,7 +148,9 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
         """This submits via ssh the qstat command. This takes the jobid"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
         
-        ssh_command = "cat > /dev/null && qstat -f -1 '%s'"%( jobid )
+        ssh_command = "cat > /dev/null && qstat -x -f '%s'"%( jobid )
+        ssh_command += " | sed -ne '1h;1!H;${;g;s/\\n\\t//g;p;}'"
+        
         
         if not creds:
             creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, "/")
@@ -156,7 +167,7 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
             print "stdout:",stdout
             print "stderr:",stderr
             print "modules",modules
-            print "password:",creds['password']
+            print "password:","*"*len(creds['password'])
             
         pp = ssh.Run.run(usercert,ssh_command,username,host,working=None,port="22",stdout=None,stderr=None,password=creds['password'], modules=modules )
         while not pp.isDone():
@@ -219,17 +230,20 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
             
             if jobid in jobsummary:
                 # job has not finished
-                status = jobsummary[jobid]['job_state']
-                
-                if status == 'C':
-                    #print "STATUS IS C <=============================================================",jobsummary[jobid]['exit_status']
-                    # state 'C' means complete OR error
-                    if 'exit_status' in jobsummary[jobid] and jobsummary[jobid]['exit_status'] == '0':
-                        newstate = "Done"
+                if 'job_state' in jobsummary[jobid]:
+                    status = jobsummary[jobid]['job_state']
+                    
+                    if status == 'F' or status == "X":
+                        # state 'F' means complete OR error
+                        if 'Exit_status' in jobsummary[jobid] and jobsummary[jobid]['Exit_status'] == '0':
+                            newstate = "Done"
+                        else:
+                            newstate = "Error"
                     else:
-                        newstate = "Error"
+                        newstate = dict(B="Running", E="Running", F="Done", H="Pending", M="Pending", Q="Unsubmitted", R="Running", S="Running", T="Pending", U="Pending", W="Pending", X="Done")[status]
+                    
                 else:
-                    newstate = dict(Q="Unsubmitted", E="Running", H="Pending", R="Running", T="Pending", W="Pending", S="Pending")[status]
+                    newstate = "Done"
                 
                 
             else:
@@ -242,8 +256,9 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
                 
                 
                 newstate = "Error"
-            if DEBUG:
-                print "Job summary:",jobsummary
+            
+            #if DEBUG:
+                #print "Job summary:",jobsummary
                 
             
             if state!=newstate:
@@ -253,7 +268,7 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
                 
                 # report the full status to the remote_url
                 if remote_url:
-                    if jobid in jobsummary:
+                    if jobid in jobsummary and jobsummary[jobid]:
                         RemoteInfo(remote_url,json.dumps(jobsummary[jobid]))
                     else:
                         print "Cannot call RemoteInfo call for job",jobid

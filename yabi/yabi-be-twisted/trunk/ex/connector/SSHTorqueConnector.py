@@ -35,7 +35,7 @@ ENV_CHILD_INHERIT = ['PATH']
 ENV_CHECK = []
 
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
-SCHEMA = "ssh+qsub"
+SCHEMA = "ssh+torque"
 
 DEBUG = False
 
@@ -78,7 +78,7 @@ class SSHQsubException(Exception):
 class SSHQstatException(Exception):
     pass
 
-class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
+class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
     def __init__(self):
         ExecConnector.__init__(self)
         
@@ -100,7 +100,10 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
                                                                         working,
                                                                         submission_script
                                                                     )
-        ssh_command += " || rm '%s'"%(submission_script)
+        ssh_command += " ; EXIT=$? "
+        ssh_command += " ; rm '%s'"%(submission_script)
+        #ssh_command += " ; echo $EXIT"
+        ssh_command += " ; exit $EXIT"
 
         if not creds:
             creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, "/")
@@ -122,7 +125,7 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
             print "stdout:",stdout
             print "stderr:",stderr
             print "modules",modules
-            print "password:",creds['password']
+            print "password:","*"*len(creds['password'])
             print "script:",script_string
             
         pp = ssh.Run.run(usercert,ssh_command,username,host,working=None,port="22",stdout=None,stderr=None,password=creds['password'], modules=modules, streamin=script_string)
@@ -156,7 +159,7 @@ class SSHQsubConnector(ExecConnector, ssh.KeyStore.KeyStore):
             print "stdout:",stdout
             print "stderr:",stderr
             print "modules",modules
-            print "password:",creds['password']
+            print "password:","*"*len(creds['password'])
             
         pp = ssh.Run.run(usercert,ssh_command,username,host,working=None,port="22",stdout=None,stderr=None,password=creds['password'], modules=modules )
         while not pp.isDone():
