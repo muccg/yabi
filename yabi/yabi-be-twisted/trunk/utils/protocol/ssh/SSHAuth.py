@@ -58,6 +58,8 @@ class SSHAuth(object):
             assert status==200
             credentials = json.loads( data )
             
+            assert 'key' in credentials and 'cert' in credentials and 'password' in credentials, "Malformed credential JSON received from admin. I received: %s"%(str(credentials))
+            
             return credentials
         
         except GETFailure, gf:
