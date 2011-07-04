@@ -210,7 +210,6 @@ class Tool(Base):
             if tp.extension_param:
                 p["extension_param"] = tp.extension_param.extension()                           # HACK. munge the glob so it looks oldschool so we dont need to rewrite the frontend
                 
-            print "!!!!!!!!!!!!!!!!!",tool_dict
         return tool_dict
     
     def json(self):

@@ -252,8 +252,8 @@ class Task(models.Model, Editable, Status):
                 "walltime": self.job.walltime,
                 "module": self.job.module,
                 "queue": self.job.queue,
-                "max_memory":self.job.max_memory,
-                "job_type":self.job.job_type
+                "memory":self.job.max_memory,
+                "jobtype":self.job.job_type
                 },
             "stageout":self.job.stageout+("" if self.job.stageout.endswith("/") else "/")+("" if not self.name else self.name+"/"),
             "stageout_method":stageout_method
