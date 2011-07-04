@@ -36,6 +36,8 @@ from FifoPool import Fifos
 
 from BaseShell import BaseShell, BaseShellProcessProtocol
 
+DEBUG = False
+
 class SSHExecProcessProtocolParamiko(BaseShellProcessProtocol):
     def __init__(self, stdin_data=None):
         BaseShellProcessProtocol.__init__(self)
@@ -66,7 +68,8 @@ class SSHRun(BaseShell):
         if modules:
             remote_command = "&&".join(["module load %s"%module for module in modules]+[remote_command])
         
-        print "running remote command:",remote_command
+        if DEBUG:
+            print "running remote command:",remote_command
         
         command = [self.python, self.ssh_exec ]
         command += ["-i",certfile] if certfile else []
@@ -75,7 +78,7 @@ class SSHRun(BaseShell):
         command += ["-H",host] if host else []
         command.extend( [ "-x", remote_command ] )
         
-            
-        print "COMMAND:",command
+        if DEBUG:      
+            print "COMMAND:",command
             
         return BaseShell.execute(self,SSHExecProcessProtocolParamiko(streamin),command)
