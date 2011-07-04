@@ -45,7 +45,7 @@ class GlobusAuth(object):
     def GetAuthProxy(self, hostname):
         return self.authproxy[hostname]
     
-    def AuthProxyUser(self, yabiusername, scheme, username, hostname, path, *args):
+    def AuthProxyUser(self, yabiusername, scheme, username, hostname, path):
         """Auth a user via getting the credentials from the json yabiadmin backend. When the credentials are gathered, successcallback is called with the deferred.
         The deferred should be the result channel your result will go back down"""
         assert hasattr(self,"authproxy"), "Class must have an authproxy parameter"
@@ -63,7 +63,7 @@ class GlobusAuth(object):
             # create the user proxy
             if hostname not in self.authproxy:
                 self.authproxy[hostname]=CertificateProxy()
-            expire_time = self.authproxy[hostname].CreateUserProxy(username,credentials['cert'],credentials['key'],credentials['password'])
+            expire_time = self.authproxy[hostname].CreateUserProxy(credentials)
             
             return credentials
         
@@ -86,22 +86,23 @@ class GlobusAuth(object):
                 return self.AuthProxyUser(yabiusername,scheme,username,hostname, path)
             # else user is already authed
                 
-    def AuthProxyUserWithCredentials(self, hostname, username, cert, key, password):
-        #print "AuthProxyUserWithCredentials"
+    def AuthProxyUserWithCredentials(self, hostname, creds):
+        assert 'username' in creds and 'cert' in creds and 'key' in creds and 'password' in creds, "Malformed credential. Credential passed in is: %s"%(str(creds))
         if hostname not in self.authproxy:
             self.authproxy[hostname]=CertificateProxy()
-        expire_time = self.authproxy[hostname].CreateUserProxy(username,cert,key,password)
+        expire_time = self.authproxy[hostname].CreateUserProxy(creds)
         expires_in = time.mktime(expire_time)-time.time()
         
         #schedule a removal of the proxy file in this many seconds
-        reactor.callLater(expires_in,self.authproxy[hostname].DestroyUserProxy,username) 
+        #reactor.callLater(expires_in,self.authproxy[hostname].DestroyUserProxy,creds['username']) 
         
-    def EnsureAuthedWithCredentials(self, hostname, username, cert, key, password):
+    def EnsureAuthedWithCredentials(self, hostname, creds):
+        assert 'username' in creds and 'cert' in creds and 'key' in creds and 'password' in creds, "Malformed credential. Credential passed in is: %s"%(str(creds))
         if hostname not in self.authproxy:
             # no!
-            return self.AuthProxyUserWithCredentials(hostname,username,cert,key,password)
+            return self.AuthProxyUserWithCredentials(hostname,creds)
         else:
             # yes! lets see if we have a valid cert
-            if not self.authproxy[hostname].IsProxyValid(username):
-                return self.AuthProxyUserWithCredentials(hostname,username,cert,key,password)
+            if not self.authproxy[hostname].IsProxyValid(creds['username']):
+                return self.AuthProxyUserWithCredentials(hostname,creds)
             # else user is already authed

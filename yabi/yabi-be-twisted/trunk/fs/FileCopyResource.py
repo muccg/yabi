@@ -170,12 +170,14 @@ class FileCopyResource(resource.PostableResource):
         #else:
             #locks = [sbend.lock(),dbend.lock()]
         
-        #print "src_hostname",src_hostname
-        #print "src_username",src_username
-        #print "src_path",src_path, src_filename
-        #print "dst_hostname",dst_hostname
-        #print "dst_username",dst_username
-        #print "dst_path",dst_path, dst_filename
+        if DEBUG:
+            print "src_hostname",src_hostname
+            print "src_username",src_username
+            print "src_path",src_path, src_filename
+            print "dst_hostname",dst_hostname
+            print "dst_username",dst_username
+            print "dst_path",dst_path, dst_filename
+            print "creds:",creds
         
         # if no dest filename is provided, use the src_filename
         dst_filename = src_filename if not len(dst_filename) else dst_filename

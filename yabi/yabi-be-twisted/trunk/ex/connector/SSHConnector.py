@@ -60,7 +60,7 @@ class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
         configdir = config.config['backend']['certificates']
         ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
     
-    def run(self, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
+    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
         # preprocess some stuff
         modules = [] if not module else [X.strip() for X in module.split(",")]
         
@@ -70,7 +70,7 @@ class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
         
         try:
             if DEBUG:
-                print "SSH",command,"WORKING:",working    
+                print "SSH",command,"WORKING:",working,"CREDS passed in:%s"%(creds)    
             client_stream.write("Unsubmitted\n")
             stackless.schedule()
             

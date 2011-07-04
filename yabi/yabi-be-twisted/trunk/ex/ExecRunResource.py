@@ -43,7 +43,7 @@ DEBUG = False
 class ExecRunResource(resource.PostableResource):
     VERSION=0.1
     
-    ALLOWED_OVERRIDE = [("walltime",str), ("max_memory",int), ("cpus",int), ("queue",str), ("job_type",str), ("directory",str), ("stdout",str), ("stderr",str), ('module',str)]
+    ALLOWED_OVERRIDE = [("walltime",str), ("memory",int), ("cpus",int), ("queue",str), ("jobtype",str), ("directory",str), ("stdout",str), ("stderr",str), ('module',str)]
     
     def __init__(self,request=None, path=None, fsresource=None):
         """Pass in the backends to be served out by this FSResource"""
@@ -118,7 +118,7 @@ class ExecRunResource(resource.PostableResource):
             print "starting tasklet",bend.run
             print "KWARGS:",kwargs
         task = stackless.tasklet(bend.run)
-        task.setup(yabiusername, command, basepath, scheme, username, hostname, remote_info_url, client_deferred, **kwargs)
+        task.setup(yabiusername, None, command, basepath, scheme, username, hostname, remote_info_url, client_deferred, **kwargs)
         if DEBUG:
             print "running tasklet",task,"with inputs",(yabiusername, command, basepath, scheme, username, hostname, remote_info_url, client_deferred, kwargs)
         task.run()

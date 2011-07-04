@@ -64,7 +64,7 @@ class TorqueConnector(ExecConnector):
         print "TorqueConnector::__init__() debug setting is",DEBUG
         ExecConnector.__init__(self)
     
-    def run(self, yabiusername, command, working, scheme, username, host, remote_url, channel, stdout="STDOUT.txt", stderr="STDERR.txt", maxWallTime=60, maxMemory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
+    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
         try:
             if DEBUG:
                 print "QSUB",command,"WORKING:",working
@@ -86,14 +86,14 @@ class TorqueConnector(ExecConnector):
         # lets report our id to the caller
         client_stream.write("id=%s\n"%jobid)
         
-        self.main_loop( client_stream, username, jobid, remote_url)
+        self.main_loop(client_stream, username, jobid, remoteurl)
             
         # delete finished job
         self.del_running(jobid)
             
         client_stream.finish()
 
-    def resume(self, jobid, yabiusername, command, working, scheme, username, host, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, max_memory=1024, cpus=1, queue="testing", job_type="single", module=None, **creds):
+    def resume(self, jobid, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
     #def resume(self,yabiusername, eprfile, scheme, username, host, **creds):
         # send an OK message, but leave the stream open
         client_stream = stream.ProducerStream()
@@ -111,7 +111,7 @@ class TorqueConnector(ExecConnector):
             
         client_stream.finish()
 
-    def main_loop(self, client_stream, username, jobid, remote_url=None ):
+    def main_loop(self, client_stream, username, jobid, remoteurl=None ):
         newstate = state = None
         delay = JobPollGeneratorDefault()
         while state!="Done":
@@ -156,9 +156,9 @@ class TorqueConnector(ExecConnector):
                 client_stream.write("%s\n"%state)
                 
                 # report the full status to the remote_url
-                if remote_url:
+                if remoteurl:
                     if jobid in jobsummary:
-                        RemoteInfo(remote_url,json.dumps(jobsummary[jobid]))
+                        RemoteInfo(remoteurl,json.dumps(jobsummary[jobid]))
                     else:
                         print "Cannot call RemoteInfo call for job",jobid
                 

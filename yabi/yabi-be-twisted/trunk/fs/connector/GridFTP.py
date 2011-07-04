@@ -75,7 +75,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         
         # make sure we are authed
         if creds:
-            self.EnsureAuthedWithCredentials(host, **creds)
+            self.EnsureAuthedWithCredentials(host, creds)
         else:
             self.EnsureAuthed(yabiusername,SCHEMA,username,host,path)
         
@@ -106,7 +106,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         # make sure we are authed
         if creds:
-            self.EnsureAuthedWithCredentials(host, **creds)
+            self.EnsureAuthedWithCredentials(host, creds)
         else:
             self.EnsureAuthed(yabiusername, SCHEMA,username,host,path)
         
@@ -141,7 +141,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         
         # make sure we are authed
         if creds:
-            self.EnsureAuthedWithCredentials(host, **creds)
+            self.EnsureAuthedWithCredentials(host, creds)
         else:
             self.EnsureAuthed(yabiusername, SCHEMA,username,host,path)
         
@@ -185,7 +185,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         
         # make sure we are authed
         if creds:
-            self.EnsureAuthedWithCredentials(host, **creds)
+            self.EnsureAuthedWithCredentials(host, creds)
         else:
             self.EnsureAuthed(yabiusername, SCHEMA,username,host,target)
         
@@ -220,7 +220,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         
         # make sure we are authed
         if creds:
-            self.EnsureAuthedWithCredentials(host, **creds)
+            self.EnsureAuthedWithCredentials(host, creds)
         else:
             self.EnsureAuthed(yabiusername, SCHEMA,username,host,src)
         
@@ -239,7 +239,10 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
             if "Permission denied" in err:
                 raise PermissionDenied(err)
             else:
-                raise InvalidPath(err)
+                # if we did a recursive lcopy, and the source directory was empty, we may get a "cp: cannot stat `/full/path/*': No such file or directory" because of the wildcard character not matching
+                # TODO: fix this symantic problem deeper down in the shell routines
+                if not ("cp: cannot stat" in str(err) and "*': No such file or directory" in str(err) and recurse==True):
+                    raise InvalidPath(err)
        
         if DEBUG:
             print "cp_out", out
@@ -264,7 +267,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         
         # make sure we are authed
         if creds:
-            self.EnsureAuthedWithCredentials(host, **creds)
+            self.EnsureAuthedWithCredentials(host, creds)
         else:
             self.EnsureAuthed(yabiusername, SCHEMA,username,host, path)
         usercert = self.GetAuthProxy(host).ProxyFile(username)
@@ -288,7 +291,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         
         # make sure we are authed
         if creds:
-            self.EnsureAuthedWithCredentials(host, **creds)
+            self.EnsureAuthedWithCredentials(host, creds)
         else:
             self.EnsureAuthed(yabiusername,SCHEMA,username,host, path)
         usercert = self.GetAuthProxy(host).ProxyFile(username)

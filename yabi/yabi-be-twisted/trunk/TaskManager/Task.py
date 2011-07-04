@@ -506,7 +506,7 @@ class MainTask(Task):
                     
                     # create extra parameter list
                     extras = {}
-                    for key in [ 'cpus', 'job_type', 'max_memory', 'module', 'queue', 'walltime' ]:
+                    for key in [ 'cpus', 'jobtype', 'memory', 'module', 'queue', 'walltime' ]:
                         if key in task['exec'] and task['exec'][key]:
                             extras[key]=task['exec'][key]
                     

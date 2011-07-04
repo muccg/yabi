@@ -313,7 +313,8 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             if "Permission denied" in err:
                 raise PermissionDenied(err)
             elif "No such file or directory" in err:
-                raise InvalidPath("No such file or directory\n")
+                if not ("cp: cannot stat" in str(err) and "*': No such file or directory" in str(err) and recurse==True):
+                    raise InvalidPath("No such file or directory\n")
             else:
                 print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
                 raise Exception(err)
@@ -352,7 +353,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             
         usercert = self.save_identity(creds['key'])
         
-        pp, fifo = ssh.Copy.WriteToRemote(usercert,dst,port=port,password=creds['password'],fifo=fifo)
+        pp, fifo = ssh.Copy.WriteToRemote(usercert,dst,port=port,password=str(creds['password']),fifo=fifo)
         
         return pp, fifo
     

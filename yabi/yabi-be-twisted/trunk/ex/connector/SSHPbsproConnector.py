@@ -85,7 +85,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         configdir = config.config['backend']['certificates']
         ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
     
-    def _ssh_qsub(self, working, stdout, stderr, command, yabiusername, username, host, modules, remote_url, **creds):
+    def _ssh_qsub(self, yabiusername, creds, command, working, username, host, remoteurl, stdout, stderr, modules ):
         """This submits via ssh the qsub command. This returns the jobid, or raises an exception on an error"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
         
@@ -94,7 +94,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         # build up our remote qsub command
         ssh_command = "cat >'%s' && "%(submission_script)
         ssh_command += "qsub -N '%s' -e '%s' -o '%s' '%s'"%(    
-                                                                        "yabi-task-"+remote_url.rsplit('/')[-1],
+                                                                        "yabi-task-"+remoteurl.rsplit('/')[-1],
                                                                         os.path.join(working,stderr),
                                                                         os.path.join(working,stdout),
                                                                         submission_script
@@ -143,8 +143,8 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
             return pp.out.strip().split("\n")[-1]
         else:
             raise SSHQsubException("SSHQsub error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
-            
-    def _ssh_qstat(self, jobid, working, stdout, stderr, command, yabiusername, username, host, modules, **creds):
+    
+    def _ssh_qstat(self, yabiusername, creds, command, working, username, host, stdout, stderr, modules, jobid):
         """This submits via ssh the qstat command. This takes the jobid"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
         
@@ -187,10 +187,10 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         else:
             raise SSHQstatException("SSHQstat error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
 
-    def run(self, yabiusername, command, working, scheme, username, host, remote_url, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, max_memory=1024, cpus=1, queue="testing", jobType="single", module=None, **creds):
+    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
         try:
             modules = [] if not module else [X.strip() for X in module.split(",")]
-            jobid = self._ssh_qsub(working, stdout, stderr, command, yabiusername, username, host, modules, remote_url, **creds)
+            jobid = self._ssh_qsub(yabiusername,creds,command,working,username,host,remoteurl,stdout,stderr,modules)
         except (SSHQsubException, ExecutionError), ee:
             channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = str(ee) ))
             return
@@ -206,7 +206,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         client_stream.write("id=%s\n"%jobid)
         
         try:
-            self.main_loop( client_stream, jobid, remote_url, working, stdout, stderr, command, yabiusername, username, host, modules,  **creds)
+            self.main_loop( yabiusername, creds, command, working, username, host, remoteurl, client_stream, stdout, stderr, modules, jobid)
         except (ExecutionError, SSHQstatException), ee:
             import traceback
             traceback.print_exc()
@@ -218,14 +218,14 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
             
             client_stream.finish()
             
-    def main_loop(self, client_stream, jobid, remote_url, working, stdout, stderr, command, yabiusername, username, host, modules,  **creds):
+    def main_loop(self, yabiusername, creds, command, working, username, host, remoteurl, client_stream, stdout, stderr, modules, jobid):
         newstate = state = None
         delay = JobPollGeneratorDefault()
         while state!="Done":
             # pause
             sleep(delay.next())
             
-            jobsummary = self._ssh_qstat(jobid, working, stdout, stderr, command, yabiusername, username, host, modules,  **creds)
+            jobsummary = self._ssh_qstat(yabiusername, creds, command, working, username, host, stdout, stderr, modules, jobid)
             self.update_running(jobid,jobsummary)
             
             if jobid in jobsummary:
@@ -267,9 +267,9 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
                 client_stream.write("%s\n"%state)
                 
                 # report the full status to the remote_url
-                if remote_url:
+                if remoteurl:
                     if jobid in jobsummary and jobsummary[jobid]:
-                        RemoteInfo(remote_url,json.dumps(jobsummary[jobid]))
+                        RemoteInfo(remoteurl,json.dumps(jobsummary[jobid]))
                     else:
                         print "Cannot call RemoteInfo call for job",jobid
                 

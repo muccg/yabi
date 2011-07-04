@@ -154,13 +154,19 @@ class CertificateProxy(object):
     def DestroyUserProxy(self, userid):
         os.unlink( self.ProxyFile(userid) )
         
-    def CreateUserProxy(self, userid, cert, key, password):
+    def CreateUserProxy(self, creds):
         """creates the proxy object for the specified user, using the passed in cert and key, decrypted by password
         returns a struct_time representing the expiry time of the proxy
         """
+        assert 'username' in creds and 'key' in creds and 'cert' in creds and 'password' in creds, "Malformed credential. Credential passed in is: %s"%(str(creds))
 
-        if userid in self.pp_info:
-            pp = self.pp_info[userid]
+        username = creds['username']
+        key = creds['key']
+        cert = creds['cert']
+        password = creds['password']
+
+        if username in self.pp_info:
+            pp = self.pp_info[username]
             # we are already decrypting the proxy cert elsewhere. Lets just wait until that job is done and then return it.
             while not pp.isDone():
                 stackless.schedule()
@@ -181,8 +187,8 @@ class CertificateProxy(object):
             return _decode_time(res.strip())
             
         # file locations
-        certfile = os.path.join( self.tempdir, "%s.cert"%userid )
-        keyfile = os.path.join( self.tempdir, "%s.key"%userid )
+        certfile = os.path.join( self.tempdir, "%s.cert"%username )
+        keyfile = os.path.join( self.tempdir, "%s.key"%username )
   
 
         # write out the pems
@@ -197,13 +203,13 @@ class CertificateProxy(object):
         os.chmod( certfile, 0644 )
          
         # where our proxy will live
-        proxyfile = self.ProxyFile(userid)
+        proxyfile = self.ProxyFile(username)
         
         # now run the grid-proxy-init code
         # run "/usr/local/globus/bin/grid-proxy-init -cert PEMFILE -key KEYFILE -pwstdin -out PROXYFILE"
         subenv = os.environ.copy()
         path="/usr/bin"
-        pp = self.pp_info[userid] = GridProxyInitProcessProtocol("%s\n\n"%password)
+        pp = self.pp_info[username] = GridProxyInitProcessProtocol("%s\n\n"%password)
         reactor.spawnProcess(   pp,
                                 self.grid_proxy_init,
                                 [  self.grid_proxy_init,
@@ -243,7 +249,7 @@ class CertificateProxy(object):
         # get first line
         res = [X.split(':',1)[1] for X in res if X.startswith('Your proxy is valid until:')][0]
         
-        del self.pp_info[userid]
+        del self.pp_info[username]
         
         return _decode_time(res.strip())
       
