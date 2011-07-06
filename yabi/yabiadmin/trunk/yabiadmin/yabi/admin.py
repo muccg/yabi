@@ -107,7 +107,7 @@ class ToolSetAdmin(AdminBase):
     list_display = ['name', 'users_str']
 
 class FileTypeAdmin(AdminBase):
-    list_display = ['name']
+    list_display = ['name', 'file_extensions_text']
     search_fields = ['name']    
 
 class FileExtensionAdmin(AdminBase):

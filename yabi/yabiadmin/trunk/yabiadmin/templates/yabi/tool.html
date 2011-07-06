@@ -69,7 +69,7 @@ No
 
 % for outext in tool.tooloutputextension_set.all():
 
-    <li>${outext.file_extension.extension}
+    <li>${outext.file_extension.pattern}
 % if outext.must_exist or outext.must_be_larger_than:
  - 
 % endif

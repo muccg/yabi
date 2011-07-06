@@ -72,16 +72,17 @@ class Base(models.Model):
     created_by = models.ForeignKey(DjangoUser, editable=False, related_name="%(class)s_creators",null=True)
     created_on = models.DateTimeField(auto_now_add=True, editable=False)
 
+
 class FileExtension(Base):
     pattern = models.CharField(max_length=64, unique=True)
     
     def __unicode__(self):
         return self.pattern
-        
+
     def extension(self):
-        """try and express _only_ the extension from this glob. This is very naive.
-        """
+        """Try and express _only_ the extension from this glob. This is very naive."""
         return self.pattern.rsplit(".")[-1]
+
 
 class FileType(Base):
     name = models.CharField(max_length=255, unique=True)
@@ -89,7 +90,16 @@ class FileType(Base):
     extensions = models.ManyToManyField(FileExtension, null=True, blank=True)
 
     def __unicode__(self):
-        return self.name
+        return "%s (%s)" % (self.name, self.file_extensions_text())
+
+    def file_extensions_list(self):
+        extensions = [ext.pattern for ext in self.extensions.all()]
+        return extensions
+
+    def file_extensions_text(self):
+        return ", ".join(self.file_extensions_list())
+    file_extensions_text.short_description = 'File Extensions'
+
 
 class Tool(Base):
     class Meta:
@@ -156,7 +166,7 @@ class Tool(Base):
         '''
         # empty list passed to reduce is initializer, see reduce docs
         filetypes = reduce(lambda x, y: x+y, [list(x.accepted_filetypes.all()) for x in self.toolparameter_set.all()],[])
-        extensions = [ext.extension() for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]           # HACK: make frontend see old nonglob
+        extensions = [ext.pattern for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]
         return list(set(extensions)) # remove duplicates
 
     def input_filetype_extensions_for_batch_param(self):
@@ -166,12 +176,12 @@ class Tool(Base):
         extensions = []
         if self.batch_on_param:
             filetypes = self.batch_on_param.accepted_filetypes.all()
-            extensions = [ext.extension() for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]       # HACK: make frontend see old nonglob
+            extensions = [ext.pattern for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]
         return list(set(extensions)) # remove duplicates
 
     def output_filetype_extensions(self):
         '''Work out output file extensions for this tool and return a a list of them all'''
-        extensions = [fe.file_extension.extension() for fe in self.tooloutputextension_set.all()]                                       # HACK: make frontend see old nonglob
+        extensions = [fe.file_extension.pattern for fe in self.tooloutputextension_set.all()]
         return list(set(extensions)) # remove duplicates
 
     def tool_dict(self):
@@ -202,13 +212,13 @@ class Tool(Base):
             }
             
         for index in range(len(tool_dict['outputExtensions'])):
-            tool_dict['outputExtensions'][index]['file_extension__pattern']=tool_dict['outputExtensions'][index]['file_extension__pattern'].rsplit('.')[-1]    # HACK. munge the glob so it looks oldschool so we dont need to rewrite the frontend
-
+            tool_dict['outputExtensions'][index]['file_extension__pattern']=tool_dict['outputExtensions'][index]['file_extension__pattern']
+            
         for p in tool_dict["parameter_list"]:
             tp = ToolParameter.objects.get(id=p["id"])
-            p["acceptedExtensionList"] = tp.input_filetype_extensions()        # HACK. munge the glob so it looks oldschool so we dont need to rewrite the frontend
+            p["acceptedExtensionList"] = tp.input_filetype_extensions()
             if tp.extension_param:
-                p["extension_param"] = tp.extension_param.extension()                           # HACK. munge the glob so it looks oldschool so we dont need to rewrite the frontend
+                p["extension_param"] = tp.extension_param.pattern
                 
         return tool_dict
     
@@ -302,7 +312,7 @@ class ToolParameter(Base):
         '''Work out input file extensions for this toolparameter and return a a list of them all'''
         # empty list passed to reduce is initializer, see reduce docs
         filetypes = self.accepted_filetypes.all()
-        extensions = [ext.extension() for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]
+        extensions = [ext.pattern for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]
         return list(set(extensions)) # remove duplicates
 
 

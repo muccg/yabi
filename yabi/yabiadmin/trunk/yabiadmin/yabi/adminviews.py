@@ -313,7 +313,7 @@ def create_tool(request, tool_dict):
 
     # add the output extensions
     for output_ext in tool_dict["outputExtensions"]:
-        extension, created = FileExtension.objects.get_or_create(extension=output_ext["file_extension__extension"])
+        extension, created = FileExtension.objects.get_or_create(pattern=output_ext["file_extension__pattern"])
         tooloutputextension, created = ToolOutputExtension.objects.get_or_create(tool=tool,
                                                                         file_extension=extension,
                                                                         must_exist=output_ext["must_exist"],
@@ -352,9 +352,9 @@ def create_tool(request, tool_dict):
         toolparameter.switch_use=switch_use
         toolparameter.save() # so we can add many-to-many on accepted_filetypes
 
-        # for each of the accepted filetype extensions get all associated filetypes and add them to tool parameter
-        for ext in parameter["acceptedExtensionList"]:
-            fileextensions = FileExtension.objects.filter(extension=ext)
+        # for each of the accepted filetype extension glob patterns get all associated filetypes and add them to tool parameter
+        for ext_glob in parameter["acceptedExtensionList"]:
+            fileextensions = FileExtension.objects.filter(pattern=ext_glob)
             for fe in fileextensions:
                 filetypes = fe.filetype_set.all()
                 for ft in filetypes:
@@ -385,7 +385,7 @@ def create_tool(request, tool_dict):
         # add extension param
         if "extension_param" in parameter:
             try:
-                extension = FileExtension.objects.get(extension=parameter["extension_param"])
+                extension = FileExtension.objects.get(pattern=parameter["extension_param"])
                 toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["switch"])
                 toolparameter.extension_param=extension
                 toolparameter.save()                
