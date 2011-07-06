@@ -110,7 +110,9 @@ def List(path,recurse=False, **kwargs):
     if 'priority' not in kwargs:
         kwargs['priority']=str(DEFAULT_TASK_PRIORITY)
 
-    code, message, data = GET(LIST_PATH,uri=path,recurse=recurse, **kwargs)
+    if recurse:
+        kwargs['recurse']='true'
+    code, message, data = GET(LIST_PATH,uri=path, **kwargs)
     #print "RESPONSE",code,message,data
     assert code==200
     #print "LIST:",data
@@ -255,7 +257,6 @@ def Resume(jobid, backend, command, callbackfunc=None, **kwargs):
 def UserCreds(yabiusername, uri):
     """Get a users credentials"""
     # see if we can get the credentials
-    #print "UserCreds",scheme,username,hostname
     url = os.path.join(config.yabiadminpath,'ws/credential/%s/?uri=%s'%(yabiusername,urllib.quote(uri)))
     code, message, data = RetryGET(url, host=config.yabiadminserver, port=config.yabiadminport)
     assert code==200

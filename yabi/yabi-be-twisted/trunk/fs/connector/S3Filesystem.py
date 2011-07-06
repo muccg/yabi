@@ -52,7 +52,8 @@ DEBUG = False
 
 # helper utilities for s3
 from utils.protocol.s3 import S3
-
+from utils.protocol.s3 import s3utils
+    
 class S3Error(Exception):
     pass
 
@@ -64,55 +65,98 @@ def mkdir(bucket, path, ACCESSKEYID, SECRETKEYID):
     conn = S3.AWSAuthConnection(ACCESSKEYID, SECRETKEYID)
     response = conn.put(bucket,path,obj,headers={"Content-Length":"0"})
     
-    if response.http_response.status!=200:
+    if not (200 <= response.http_response.status <300):
         raise S3Error("Could not create directory '%s' in bucket '%s': %s"%(path, bucket, response.message))
 
 def rm(bucket, path, ACCESSKEYID, SECRETKEYID):
     conn = S3.AWSAuthConnection(ACCESSKEYID, SECRETKEYID)
+    #print "RM",path
     response = conn.delete(bucket,path)
-    if response.http_response.status != 200:
+    if not (200 <= response.http_response.status <300):
         raise S3Error("Could not delete key '%s' in bucket '%s': %s"%(path, bucket, response.message))
+
+def rmrf(bucket, path, ACCESSKEYID, SECRETKEYID):
+    conn = S3.AWSAuthConnection(ACCESSKEYID, SECRETKEYID)
+    response = conn.list_bucket(bucket)
+    
+    if not (200 <= response.http_response.status <300):
+        raise S3Error("Could recursive delete because could not list bucket '%s': %s"%(bucket,response.message))
+   
+    tree = s3utils.make_tree([(OBJ.key,OBJ) for OBJ in response.entries])
+    
+    # find the child node
+    treenode = tree.find_node(path)
+    
+    # delete all below
+    for obj in treenode.walk():
+        try:
+            #print "DEL1",obj.key
+            response = conn.delete(bucket,obj.key)
+            if not (200 <= response.http_response.status <300):
+                raise S3Error("Aborting recursive delete because could not delete key '%s' in bucket '%s': %s"%(path, bucket, response.message))
+        except AttributeError:
+            #print "SKIP",obj.s3folder
+            if obj.s3folder:
+                #print "DEL2",obj.s3folder.key
+                response = conn.delete(bucket,obj.s3folder.key)
+                if not (200 <= response.http_response.status <300):
+                    raise S3Error("Aborting recursive delete because could not delete key '%s' in bucket '%s': %s"%(path, bucket, response.message))
+    
+    # delete this node now
+    #print "DEL3",path
+    rm(bucket, path, ACCESSKEYID, SECRETKEYID)
+    
 
 def ls(bucket, path, ACCESSKEYID, SECRETKEYID):
     # path separator
     SEP = '/'
     
+    #if there are MULTIPLE seperators on the end, remove all but one
+    # TODO: fix the extra / on initial root directory listings
+    while len(path)>=2 and path[-2:] == (SEP*2):
+        path=path[:-1]
+    
     conn = S3.AWSAuthConnection(ACCESSKEYID, SECRETKEYID)
     response = conn.list_bucket(bucket)
     
-    if response.http_response.status != 200:
+    if not (200 <= response.http_response.status <300):
         raise S3Error("Could not list bucket '%s': %s"%(bucket,response.message))
    
-    entries = [(OBJ.key.split(SEP),OBJ) for OBJ in response.entries]
+    tree = s3utils.make_tree([(OBJ.key,OBJ) for OBJ in response.entries])
+    #tree.dump()
+    try:
+        lsdata = tree.ls(path)
+    except s3utils.NodeNotFound:
+        raise InvalidPath("No such file or directory\n")
     
-    # we now filter the list down to just what we would see in this directory
-    while path.endswith('/'):
-        path = path[:-1]
-    our_filter = path.split(SEP)
+    return lsdata
+
+def lsrecurse(bucket, path, ACCESSKEYID, SECRETKEYID):
+    # path separator
+    SEP = '/'
     
-    paths = entries
-    if len(path):
-        for part in our_filter:
-            paths = [ (KEY[1:],OBJ) for KEY,OBJ in paths if KEY[0]==part ]
+    #if there are MULTIPLE seperators on the end, remove all but one
+    # TODO: fix the extra / on initial root directory listings
+    while len(path)>=2 and path[-2:] == (SEP*2):
+        path=path[:-1]
     
-    # what are folders and what are entries. If there is any extra path parts, its a folder. lets make a list of the files
-    files = [(KEY[0],OBJ) for KEY,OBJ in paths if len(KEY)==1]
-    if paths==[[]] or paths==[]:
-        raise S3Error("Path not a directory")
+    conn = S3.AWSAuthConnection(ACCESSKEYID, SECRETKEYID)
+    response = conn.list_bucket(bucket)
+    
+    if not (200 <= response.http_response.status <300):
+        raise S3Error("Could not list bucket '%s': %s"%(bucket,response.message))
+   
+    tree = s3utils.make_tree([(OBJ.key,OBJ) for OBJ in response.entries])
+    directory = tree.find_node(path)
+    
+    def get_ls_data(lpath,ldirectory):
+        files, folders = ldirectory.ls()
+        out = { lpath:{'files':files,'directories':folders } }
+        for folder in [X[0] for X in folders]:
+            out.update(get_ls_data(lpath+folder+"/",ldirectory.find_node(folder)))
+        return out
             
-    # a folder is anything that is not a file
-    folders = [(KEY[0],OBJ) for KEY,OBJ in paths if KEY[0] not in [F[0] for F in files] and not KEY[1]]
-    
-    # change actual object into size and date entries to be returned
-    return  [
-                (FILE[0],FILE[1].size,FILE[1].last_modified) 
-                for FILE in files 
-                if FILE[0]
-            ],[
-                (FOLDER[0],FOLDER[1].size,FOLDER[1].last_modified) 
-                for FOLDER in folders 
-                if FOLDER[0]
-            ]
+    return get_ls_data(path,directory)
     
 class S3Filesystem(FSConnector.FSConnector, object):
     """This is the resource that connects to the globus gridftp backends"""
@@ -140,29 +184,35 @@ class S3Filesystem(FSConnector.FSConnector, object):
         # return everything
         return bucket, path, creds['cert'],creds['key']
         
-    def mkdir(self, host, username, path, yabiusername=None, creds={}, priority=0):
+    def mkdir(self, host, username, path, port=None, yabiusername=None, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         mkdir(*self._decode_bucket(host, username, path, yabiusername, creds))
         return "OK"
         
-    def rm(self, host, username, path, yabiusername=None, recurse=False, creds={}, priority=0):
+    def rm(self, host, username, path, port=None, yabiusername=None, recurse=False, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
-        rm( *self._decode_bucket(host, username, path, yabiusername, creds) )
+        if recurse:
+            rmrf( *self._decode_bucket(host, username, path, yabiusername, creds) )
+        else:
+            rm( *self._decode_bucket(host, username, path, yabiusername, creds) )
         return "OK"
     
-    def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}, priority=0):
+    def ls(self, host, username, path, port=None, yabiusername=None, recurse=False, culldots=True, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
-        files,folders = ls(*self._decode_bucket(host, username, path, yabiusername, creds))
-              
-        return {
-            path : {
-                'files':files,
-                'directories':folders,
+        if not recurse:
+            files,folders = ls(*self._decode_bucket(host, username, path, yabiusername, creds))
+                
+            return {
+                path : {
+                    'files':files,
+                    'directories':folders,
+                }
             }
-        }
+        else:
+            return lsrecurse(*self._decode_bucket(host, username, path, yabiusername, creds))
         
-    def GetWriteFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
+    def GetWriteFifo(self, host=None, username=None, path=None, port=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         """sets up the chain needed to setup a write fifo from a remote path as a certain user.
         
         pass in here the username, path
@@ -186,7 +236,7 @@ class S3Filesystem(FSConnector.FSConnector, object):
         
         return pp, fifo
     
-    def GetReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
+    def GetReadFifo(self, host=None, username=None, path=None, port=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         """sets up the chain needed to setup a read fifo from a remote path as a certain user.
         
         pass in here the username, path, and a deferred
@@ -196,7 +246,8 @@ class S3Filesystem(FSConnector.FSConnector, object):
         when everything is setup and ready, deferred will be called with (proc, fifo), with proc being the python subprocess Popen object
         and fifo being the filesystem location of the fifo.
         """
-        print "S3::GetReadFifo(",host,username,path,filename,fifo,yabiusername,creds,")"
+        if DEBUG:
+            print "S3::GetReadFifo(",host,username,path,filename,fifo,yabiusername,creds,")"
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         dst = "%s@%s:%s"%(username,host,os.path.join(path,filename))
         
@@ -208,7 +259,8 @@ class S3Filesystem(FSConnector.FSConnector, object):
         pp, fifo = s3.Copy.ReadFromRemote(creds['cert'],dst,password=creds['key'],fifo=fifo)
         #print "read from remote returned"
         
-        print "S3::GetReadFifo returning",pp,fifo
+        if DEBUG:
+            print "S3::GetReadFifo returning",pp,fifo
         
         return pp, fifo
        

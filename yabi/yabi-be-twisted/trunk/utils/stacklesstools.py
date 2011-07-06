@@ -110,12 +110,20 @@ class HTTPConnection(object):
         for key,value in headers.iteritems():
             ascii_headers[key]=str(value)
         
-        factory = RememberingHTTPClientFactory( fullpath, agent=USER_AGENT, headers=ascii_headers)
-        factory.noisy = noisy
-        
         # switches to trigger the unblocking of the stackless thread
         self.get_complete = [False]
         self.get_failed = [False]
+        self.connect_failed = [False]
+        
+        if DEBUG:
+            print "HTTP:",fullpath
+            print "AGENT:",USER_AGENT
+            print "HEADERS:",ascii_headers
+            print "HOST:",self.host
+            print "PORT:",self.port
+        
+        factory = RememberingHTTPClientFactory( fullpath, method=method, agent=USER_AGENT, headers=ascii_headers, connect_failed = self.connect_failed)
+        factory.noisy = noisy
         
         # now if the get fails for some reason. deal with it
         def _doFailure(data):
@@ -139,7 +147,12 @@ class HTTPConnection(object):
         # now we schedule this thread until the task is complete
         while not self.get_complete[0] and not self.get_failed[0]:
             schedule()
-            
+        
+        if self.connect_failed[0]:
+            if DEBUG:
+                print "connect_failed=",self.connect_failed
+            raise ConnectionFailure(self.connect_failed[0])
+        
         if self.get_failed[0]:
             if DEBUG:
                 print "get_failed=",self.get_failed

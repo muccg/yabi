@@ -38,7 +38,7 @@ def eprint(text):
     sys.stderr.write(text)
     sys.stderr.write("\n")
 
-DEBUG = False
+DEBUG = True
 
 CHUNKSIZE = 4096
 
@@ -103,7 +103,8 @@ if direction == L2R:
     
     # create a connection object
     conn = S3.AWSAuthConnection(accesskey, secretkey)
-    response = conn.put(bucket,path,open(infile,"rb").read())
+    data = open(infile,"rb").read()
+    response = conn.put(bucket,path,data,headers={'Content-Length':str(len(data))})
     
     if response.http_response.status == 200:
         # success.
@@ -128,7 +129,7 @@ elif direction == R2L:
     
     # create connection
     conn = S3.AWSAuthConnection(accesskey,secretkey)
-    response = conn.get(bucket,path)
+    response = conn.get(bucket,path,headers={'Content-Length':'0'})
     
     if response.http_response.status == 200:
         # success

@@ -34,17 +34,62 @@ from twisted.python import failure, log
 
 import os, types
 
+DEBUG = False
+
 class RememberingHTTPClient(client.HTTPPageGetter):
     errordata=None
+    _specialHeaders = set(('host', 'user-agent', 'cookie'))
+    
+    def connectionMade(self):
+        method = getattr(self.factory, 'method', 'GET')
+        if DEBUG:
+            print "METHOD:",method
+        self.sendCommand(method, self.factory.path)
+        if self.factory.scheme == 'http' and self.factory.port != 80:
+            host = '%s:%s' % (self.factory.host, self.factory.port)
+        elif self.factory.scheme == 'https' and self.factory.port != 443:
+            host = '%s:%s' % (self.factory.host, self.factory.port)
+        else:
+            host = self.factory.host
+        self.sendHeader('Host', self.factory.headers.get("host", host))
+        self.sendHeader('User-Agent', self.factory.agent)
+        
+        data = getattr(self.factory, 'postdata', None)
+        if data is not None:
+            self.sendHeader("Content-Length", str(len(data)))
+
+        cookieData = []
+        for (key, value) in self.factory.headers.items():
+            if key.lower() not in self._specialHeaders:
+                # we calculated it on our own
+                self.sendHeader(key, value)
+            if key.lower() == 'cookie':
+                cookieData.append(value)
+        for cookie, cookval in self.factory.cookies.items():
+            cookieData.append('%s=%s' % (cookie, cookval))
+        if cookieData:
+            self.sendHeader('Cookie', '; '.join(cookieData))
+        self.endHeaders()
+        self.headers = {}
+
+        if data is not None:
+            self.transport.write(data)
+
+    def sendHeader(self,*args,**kwargs):
+        if DEBUG:
+            print "sendHeader",args,kwargs
+        return client.HTTPPageGetter.sendHeader(self,*args, **kwargs)
     
     def rawDataReceived(self, data):
-        if int(self.status) != 200:
+        if not (200 <= int(self.status) < 300):
             # we got an error. TODO: something graceful here
             #print "ERROR. NON 200 CODE RETURNED FOR JOB EXEC STATUS"
             self.errordata=data
             #print "errordata",data
         return client.HTTPPageGetter.rawDataReceived(self,data)        
-
+    
+    handleStatus_204 = lambda self: self.handleStatus_200()
+    
 class RememberingHTTPClientFactory(client.HTTPClientFactory):
     protocol = RememberingHTTPClient
     
@@ -67,9 +112,11 @@ class RememberingHTTPClientFactory(client.HTTPClientFactory):
         #return client.HTTPClientFactory.clientConnectionLost(self, connector, reason)
   
     def clientConnectionFailed(self, connector, reason):
-        print "clientConnectionFailed",connector, reason, self.connect_failed
+        if DEBUG:
+            print "clientConnectionFailed",connector, reason, self.connect_failed
         self.connect_failed[0]=reason
-        print "Set to",self.connect_failed
+        if DEBUG:
+            print "Set to",self.connect_failed
         return client.HTTPClientFactory.clientConnectionFailed(self, connector, reason)
 
 class RememberingHTTPPageGetter(client.HTTPPageGetter,RememberingHTTPClient):

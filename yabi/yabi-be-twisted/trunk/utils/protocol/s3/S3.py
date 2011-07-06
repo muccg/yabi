@@ -109,7 +109,7 @@ def canonical_string(method, bucket="", key="", query_args={}, headers={}, expir
         buf += "?logging"
     elif query_args.has_key("location"):
         buf += "?location"
-
+    
     return buf
 
 # computes the base64'ed hmac-sha hash of the canonical string and the secret
@@ -304,12 +304,12 @@ class AWSAuthConnection:
                 connection = httplib.HTTPSConnection(host)
             else:
                 connection = HTTPConnection(host)
-                print "connection set to",connection
-
+            
             final_headers = merge_meta(headers, metadata);
+            
             # add auth header
             self._add_aws_auth_header(final_headers, method, bucket, key, query_args)
-
+            
             connection.request(method, path, data, final_headers)
             resp = connection.getresponse()
             if resp.status < 300 or resp.status >= 400:
@@ -343,7 +343,6 @@ class QueryStringAuthGenerator:
 
     def __init__(self, aws_access_key_id, aws_secret_access_key, is_secure=True,
                  server=DEFAULT_HOST, port=None, calling_format=CallingFormat.SUBDOMAIN):
-
         if not port:
             port = PORTS_BY_SECURITY[is_secure]
 

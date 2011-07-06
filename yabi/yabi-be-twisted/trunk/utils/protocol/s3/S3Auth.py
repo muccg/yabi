@@ -44,6 +44,10 @@ class S3Auth(object):
         useragent = "YabiFS/0.1"
         
         try:
+            # remove prefixed '/'s from path
+            while len(path) and path[0]=='/':
+                path = path[1:]
+                
             uri = "%s://%s@%s/%s"%(scheme,username,hostname,urllib.quote(path))
             path = os.path.join(config.yabiadminpath,"ws/credential/%s/?uri=%s"%(yabiusername,uri))
             host = config.yabiadminserver
