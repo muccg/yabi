@@ -469,7 +469,7 @@ class CommandTemplate(object):
                                 if tp.use_output_filename:
                                     # this means output filename has to be named after the filename associated with the switch this parameter is pointing to
                                     if tp.extension_param:
-                                        value = SwitchFilename(default=value, template="%s."+tp.extension_param.pattern, source_switch=tp.use_output_filename.switch)
+                                        value = SwitchFilename(default=value, template="%s."+tp.extension_param.extension(), source_switch=tp.use_output_filename.switch)
                                     else:
                                         value = SwitchFilename(default=value, source_switch=tp.use_output_filename.switch)
                                 
