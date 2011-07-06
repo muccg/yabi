@@ -124,15 +124,11 @@ YabiAcceptedExtensionList.prototype.validForValue = function(value) {
             return false;
         }
 
-        //if there is no extension on the filename, allow it implicitly
-        if (value.length < 1 || value.indexOf(".") == -1) {
+        if (value.length < 1) {
             return true;
         }
-        
-        //split value for extension, search over accepted extensions
-        finalExtension = value.substr( value.lastIndexOf(".") + 1 );
-        
-        if (this.validForExtension(finalExtension)) {
+       
+        if (this.validForExtension(value)) {
             return true;
         }
         
@@ -141,17 +137,20 @@ YabiAcceptedExtensionList.prototype.validForValue = function(value) {
     return false;
 };
 
+// TODO we glob check not check for extensions anymore - rename stuff later 
 YabiAcceptedExtensionList.prototype.validForExtension = function(value) {
     //if this is a batch param, then always accept zip
-    if (this.allowsBatching && (value == "zip" || value == "*")) {
+    var i, glob;
+    if (this.allowsBatching && (value == "*" || Yabi.util.doesGlobMatch(value, '*.zip'))) {
         return true;
     }
-
-    for (extension in this.acceptedExtensions) {
-        if (this.acceptedExtensions[extension] == "*" || this.acceptedExtensions[extension].toLowerCase()  == value.toLowerCase() ) {
+    for (i = 0; i < this.acceptedExtensions.length; i++) {
+        glob = this.acceptedExtensions[i];
+        if (glob === "*" || Yabi.util.doesGlobMatch(value, glob)) {
             return true;
         }
     }
     
     return false;
 };
+

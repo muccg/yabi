@@ -132,7 +132,7 @@ YabiJob.prototype.emittedFileTypes = function() {
                 continue;
             }
 
-            finalExtension = value.substr( value.lastIndexOf(".") + 1 );
+            finalExtension = '*.' + value.substr(value.lastIndexOf(".") + 1 );
             actualExtensions.push(finalExtension);
         }
     }
