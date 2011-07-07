@@ -116,7 +116,7 @@ class ExecResumeResource(resource.PostableResource):
         print "resume func:",bend.resume
 
         task = stackless.tasklet(bend.resume)
-        task.setup(jobid, yabiusername, command, basepath, scheme, username, hostname, client_deferred, **kwargs)
+        task.setup(jobid, yabiusername, None, command, basepath, scheme, username, hostname, None, client_deferred, **kwargs)                   # TODO: remember and pass through remote_url
         task.run()
         
         return client_deferred

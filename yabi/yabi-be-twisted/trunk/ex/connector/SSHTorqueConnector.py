@@ -211,6 +211,23 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
             
             client_stream.finish()
             
+    def resume(self, jobid, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+        # send an OK message, but leave the stream open
+        client_stream = stream.ProducerStream()
+        
+        try:
+            username = self.get_running(jobid)['username']
+        except KeyError, ke:
+            channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = "No such jobid resumable: %s"%jobid ))
+        channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
+
+        self.main_loop( yabiusername, creds, command, working, username, host, remoteurl, client_stream, stdout, stderr, modules, jobid)
+        
+        # delete finished job
+        self.del_running(jobid)
+            
+        client_stream.finish()            
+            
     def main_loop(self, yabiusername, creds, command, working, username, host, remoteurl, client_stream, stdout, stderr, modules, jobid):
         newstate = state = None
         delay = JobPollGeneratorDefault()

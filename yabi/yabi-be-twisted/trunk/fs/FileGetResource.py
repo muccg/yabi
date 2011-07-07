@@ -107,6 +107,12 @@ class FileGetResource(resource.PostableResource):
             """Tasklet to do file download"""
             try:
                 procproto, fifo = bend.GetReadFifo(hostname,username,basepath,port,filename,yabiusername=yabiusername,creds=creds, priority=priority)
+                
+                def fifo_cleanup(response):
+                    os.unlink(fifo)
+                    return response
+                channel.addCallback(fifo_cleanup)
+                
             except NoCredentials, nc:
                 print traceback.format_exc()
                 return channel.callback(http.Response( responsecode.UNAUTHORIZED, {'content-type': http_headers.MimeType('text', 'plain')}, str(nc) ))

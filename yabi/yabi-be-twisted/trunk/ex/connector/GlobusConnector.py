@@ -177,6 +177,8 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
                     print "Job status check for %s Failed (%d) - %s / %s\n"%(job_id,processprotocol.exitcode,processprotocol.out,processprotocol.err)
                     client_stream.write("Error - %s\n"%(processprotocol.err))
                     client_stream.finish()
+                    self.del_running(job_id)
+                    os.unlink(eprfile)
                     return
             
             newstate = processprotocol.jobstate
@@ -251,6 +253,10 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
                 print "Job status check for %s Failed (%d) - %s / %s\n"%(jobid,processprotocol.exitcode,processprotocol.out,processprotocol.err)
                 client_stream.write("Failed - %s\n"%(processprotocol.err))
                 client_stream.finish()
+                
+                # job is finished, lets forget about it
+                self.del_running(jobid)
+                os.unlink(eprfile)
                 return
             
             newstate = processprotocol.jobstate

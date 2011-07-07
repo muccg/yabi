@@ -186,6 +186,12 @@ class FileCopyResource(resource.PostableResource):
             try:
                 writeproto, fifo = dbend.GetWriteFifo(dst_hostname, dst_username, dst_path, dst_port, dst_filename,yabiusername=yabiusername,creds=creds['dst'] if 'dst' in creds else {})
                 readproto, fifo2 = sbend.GetReadFifo(src_hostname, src_username, src_path, src_port, src_filename, fifo,yabiusername=yabiusername,creds=creds['src'] if 'src' in creds else {})
+                
+                def fifo_cleanup(response):
+                    os.unlink(fifo)
+                    return response
+                channel.addCallback(fifo_cleanup)
+                
             except BlockingException, be:
                 #sbend.unlock(locks[0])
                 #if locks[1]:

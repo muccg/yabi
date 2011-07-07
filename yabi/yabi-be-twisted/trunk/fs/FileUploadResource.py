@@ -252,6 +252,11 @@ class FileUploadResource(resource.PostableResource):
                         print "Uploading file:",filename
                         self.procproto, fifo = bend.GetWriteFifo(hostname,username,path,filename, yabiusername=yabiusername,creds=creds, priority=priority)
                         
+                        def fifo_cleanup(response):
+                            os.unlink(fifo)
+                            return response
+                        channel.addCallback(fifo_cleanup)
+                                
                         # give the engine a chance to fire up the process
                         stackless.schedule()
                         

@@ -108,10 +108,28 @@ if config.config['backend']['telnet']:
     shellfactory.username = ''
     shellfactory.password = ''
 
+def rm_rf(root,contents_only=False):
+    """If contents_only is true, containing folder is not removed"""
+    for path, dirs, files in os.walk(root, False):
+        for fn in files:
+            os.unlink(os.path.join(path, fn))
+        for dn in dirs:
+            os.rmdir(os.path.join(path, dn))
+    if not contents_only:
+        os.rmdir(root)
+
 def startup():
     # setup yabiadmin server, port and path as global variables
     print "yabi admin server:",config.config["backend"]["admin"]
     
+    # cleanup stray old files
+    print "cleaning fifo storage:",config.config["backend"]["fifos"]
+    rm_rf(config.config["backend"]["fifos"], contents_only=True)
+    print "cleaning certificate storage:",config.config["backend"]["certificates"]
+    rm_rf(config.config["backend"]["certificates"], contents_only=True)
+    print "cleaning temp storage:",config.config["backend"]["temp"]
+    rm_rf(config.config["backend"]["temp"], contents_only=True)
+       
     print "Loading connectors..."
     base.LoadConnectors()
         
