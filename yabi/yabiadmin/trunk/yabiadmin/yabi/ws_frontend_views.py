@@ -268,8 +268,13 @@ def copy(request):
     """
     yabiusername = request.user.username
     try:
-        logger.debug("yabiusername: %s src: %s -> dst: %s" %(yabiusername, request.GET['src'],request.GET['dst']))
-        status, data = copy_file(yabiusername,request.GET['src'],request.GET['dst'])
+        # TODO: This needs to be fixed in the FRONTEND, by sending the right url through as destination. For now we just make sure it ends in a slash
+        src,dst = request.GET['src'],request.GET['dst']
+        if dst[-1]!='/':
+            dst += '/'
+        logger.debug("yabiusername: %s src: %s -> dst: %s" %(yabiusername, src, dst))
+        
+        status, data = copy_file(yabiusername,src,dst)
 
         return HttpResponse(content=data, status=status)
     except AssertionError, e:
