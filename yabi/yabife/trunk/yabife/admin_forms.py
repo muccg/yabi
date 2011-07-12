@@ -24,42 +24,18 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # 
 ### END COPYRIGHT ###
-from django.contrib import admin
-from django.contrib.webservices.ext import ExtJsonInterface
 
-import django.contrib.auth.admin
-import django.contrib.auth.models
-import django.contrib.sites.admin
-import django.contrib.sites.models
+from django import forms
+from django.conf import settings
+from yabife.yabifeapp.models import *
 
-import yabife.registration.admin
-import yabife.yabifeapp.admin
-from yabife.yabifeapp.admin_forms import *
+class UserForm(forms.ModelForm):
+    class Meta:
+        model = User
 
-# Overrides for the default django.contrib.auth ModelAdmin subclasses that
-# include the JSON mixin.
-class GroupAdmin(ExtJsonInterface, django.contrib.auth.admin.GroupAdmin):
-    def queryset(self, request):
-        if request.user.is_superuser:
-            return django.contrib.auth.models.Group.objects.all()
+    def clean_appliance(self):
+        appliance = self.cleaned_data['appliance']
+        if not path.endswith('/'):
+            raise forms.ValidationError("Appliance must end with a /.")            
+        return appliance
 
-        return django.contrib.auth.models.Group.objects.none()
-
-class UserAdmin(ExtJsonInterface, django.contrib.auth.admin.UserAdmin):
-    form = UserForm
-    
-    def queryset(self, request):
-        if request.user.is_superuser:
-            return django.contrib.auth.models.User.objects.all()
-
-        return django.contrib.auth.models.User.objects.none()
-
-
-site = admin.AdminSite(name="Yabi Frontend Administration")
-
-# Django Auth.
-site.register(django.contrib.auth.models.Group, GroupAdmin)
-site.register(django.contrib.auth.models.User, UserAdmin)
-
-yabife.registration.admin.register(site)
-yabife.yabifeapp.admin.register(site)
