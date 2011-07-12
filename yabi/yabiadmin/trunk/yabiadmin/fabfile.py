@@ -63,6 +63,13 @@ class LocalPaths():
     def getVirtualPython(self):
         return os.path.join(self.getProjectDir(), 'virtualpython/bin/python')
 
+    def getEggCacheDir(self):
+        return os.path.join(self.getProjectDir(), 'scratch', 'egg-cache')
+
+    def getCeleryEggCacheDir(self):
+        return os.path.join(self.getProjectDir(), 'scratch', 'egg-cache-celery')
+
+
 
 localPaths = LocalPaths()
 
@@ -141,6 +148,7 @@ def _munge_settings(**kwargs):
         
 def _celeryd():
     _django_env()
+    os.environ["PYTHON_EGG_CACHE"] = localPaths.getCeleryEggCacheDir()    
     print local(localPaths.getVirtualPython() + " " + localPaths.getCeleryd() + env.celeryd_options, capture=False)
 
 def _django_env():
