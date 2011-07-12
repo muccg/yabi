@@ -29,13 +29,13 @@ from django import forms
 from django.conf import settings
 from yabife.yabifeapp.models import *
 
-class UserForm(forms.ModelForm):
+class ApplianceForm(forms.ModelForm):
     class Meta:
-        model = User
+        model = Appliance
 
-    def clean_appliance(self):
-        appliance = self.cleaned_data['appliance']
-        if not path.endswith('/'):
-            raise forms.ValidationError("Appliance must end with a /.")            
-        return appliance
+    def clean_url(self):
+        url = self.cleaned_data['url']
+        if not url.endswith('/'):
+            raise forms.ValidationError("URL must end with a /.")            
+        return url
 

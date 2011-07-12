@@ -40,7 +40,7 @@ import hashlib
 
 class Appliance(models.Model):
     name = models.CharField(max_length=50)
-    url = models.CharField(max_length=200, verbose_name="URL")
+    url = models.CharField(max_length=200, verbose_name="URL", help_text="Full URL to appliance ending with a / i.e. https://hostname.edu.au/yabiadmin/")
     tos = models.TextField(verbose_name="terms of service")
 
     def __unicode__(self):

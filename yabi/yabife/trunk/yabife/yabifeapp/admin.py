@@ -27,7 +27,7 @@
 from django.contrib.admin import ModelAdmin, TabularInline
 from django.contrib.webservices.ext import ExtJsonInterface
 from yabife.yabifeapp.models import Appliance, ApplianceAdministrator, User
-
+from yabife.yabifeapp.admin_forms import *
 
 class SuperuserOnlyModelAdmin(ModelAdmin):
     def queryset(self, request):
@@ -41,6 +41,7 @@ class ApplianceAdministratorAdmin(TabularInline):
     model = ApplianceAdministrator
  
 class ApplianceAdmin(ExtJsonInterface, SuperuserOnlyModelAdmin):
+    form = ApplianceForm
     inlines = [ApplianceAdministratorAdmin]
     list_display = ("name", "url")
 

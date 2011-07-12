@@ -34,7 +34,7 @@ import django.contrib.sites.models
 
 import yabife.registration.admin
 import yabife.yabifeapp.admin
-from yabife.yabifeapp.admin_forms import *
+
 
 # Overrides for the default django.contrib.auth ModelAdmin subclasses that
 # include the JSON mixin.
@@ -46,8 +46,6 @@ class GroupAdmin(ExtJsonInterface, django.contrib.auth.admin.GroupAdmin):
         return django.contrib.auth.models.Group.objects.none()
 
 class UserAdmin(ExtJsonInterface, django.contrib.auth.admin.UserAdmin):
-    form = UserForm
-    
     def queryset(self, request):
         if request.user.is_superuser:
             return django.contrib.auth.models.User.objects.all()
