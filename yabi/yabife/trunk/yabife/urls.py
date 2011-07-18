@@ -30,6 +30,7 @@ import os
 from django.conf import settings
 from django.conf.urls.defaults import *
 from yabife import admin
+from django.utils.webhelpers import url as webhelper_url
 
 urlpatterns = patterns('yabife.yabifeapp.views',
     (r'^status[/]*$', status_view, {'SSL': True}),
@@ -68,7 +69,7 @@ if settings.DEBUG:
     )
 
 urlpatterns += patterns('django.views.generic.simple',
-    (r'^favicon\.ico', 'redirect_to', {'url': '/static/images/favicon.ico'}),
+    (r'^favicon\.ico', 'redirect_to', {'url': webhelper_url('/static/images/favicon.ico')}),
 )
 
 handler404 = "yabife.yabifeapp.views.error_404"

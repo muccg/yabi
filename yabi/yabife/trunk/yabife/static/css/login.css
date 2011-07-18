@@ -1,7 +1,150 @@
+* {
+	margin: 0;
+}
+
+html, body {
+	height: 100%;
+    background:url() repeat-y;
+    min-width: 900px;
+    overflow:inherit; /* triggers 100% height in Opera 9.5 */
+}
+
+body { 
+    padding-top:20px;
+    padding-left:10%;
+    padding-right:10%;
+ }
+
+.content {
+	min-height: 100%;
+	margin: 0 auto -30px; /* the bottom margin is the negative value of the footer's height */
+}
+
+.push { 
+	height: 30px; /* .push must be the same height as .footer */
+    clear:both;
+}
+
+.login_footer {
+    margin-top:20px;
+	height: 30px;
+}
+
+
 form {
     display: none;
 }
 
 #requirements-failed, #requirements-failed span {
     display: none;
+}
+
+.youtube { 
+    padding-top:40px;
+    padding-bottom:40px;
+ }
+
+.yabi_statement{ 
+    font-size:200%;
+    color: grey;
+}
+
+.yabi_testimonials{ 
+}
+
+
+.yabi_quote_block { 
+    padding-bottom:80px;
+}
+
+.yabi_testimonials blockquote { 
+    font-size:150%;
+    color: grey;
+}
+
+.yabi_testimonials span { 
+    padding-top:5px;
+    font-size:90%;
+    color: black;
+    font-weight:bold;
+    text-align:right;
+    float:right;
+}
+
+
+.loginArea { 
+    position:absolute;
+    top:0px;
+    right:20px;
+    width:250px;
+    color:grey;
+}
+
+.loginForm {
+    margin-top:16px;
+}
+
+.loginForm input {
+    color:#666;
+    font-size: 100%;
+    font-weight: ;
+    padding:2px;
+    padding-left:2px;
+    background:#fff;
+    width:130px;
+    border:2px solid #3879e6;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    box-shadow: 0px 1px 2px #eee;
+    -moz-box-shadow: 0px 1px 2px #eee;
+    -webkit-box-shadow: 0px 1px 2px #eee;
+    margin:4px;
+}
+
+.loginForm label {
+    color: #3879e6;
+}
+
+
+.loginInput {
+    margin: 1px;
+    color:#f60;
+    border:1px solid #ccc;
+    padding:3px;
+    font-weight:bold;
+    border-radius: 5px;
+    -moz-border-radius: 5px;        
+    -webkit-border-radius: 5px;
+}
+
+
+
+.loginFormButton {
+    color:white;
+    font-size: 110%;
+    font-weight: bold;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
+    box-shadow: 0px 1px 2px #eee;
+    -moz-box-shadow: 0px 1px 2px #eee;
+    -webkit-box-shadow: 0px 1px 2px #eee;
+    margin:4px;
+    padding:4px;
+    padding-left:18px;
+    padding-right:18px;
+    margin-left:120px;
+    margin-top: 0px;
+    margin-right:0px;
+    text-shadow:0px -1px 1px #666;
+    border:1px solid #3879e6;
+
+    background: #3879e6 url(../images/selectedWFbg.png);
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#5aa4fb', EndColorStr='#3879e5');
+    background: -moz-linear-gradient(top, #5aa4fb, #3879e5);
+    background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
+
+    height:1.9em;
+
 }
