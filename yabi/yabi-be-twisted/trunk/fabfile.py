@@ -34,10 +34,7 @@ env.username = os.environ["USER"]
 env.app_root = '/usr/local/python/ccgapps/'
 env.app_name = 'yabibe'
 env.app_install_names = ['yabibe'] # use app_name or list of names for each install
-env.vc = 'svn'
-env.git_trunk_url = ""
-env.svn_trunk_url = "svn+ssh://store.localdomain/store/techsvn/ccg/yabi/yabi-be-twisted/trunk/"
-env.svn_tags_url = "svn+ssh://store.localdomain/store/techsvn/ccg/yabi/yabi-be-twisted/tags/"
+env.vc = 'mercurial'
 
 env.writeable_dirs.extend([]) # add directories you wish to have created and made writeable
 env.content_excludes.extend([]) # add quoted patterns here for extra rsync excludes
