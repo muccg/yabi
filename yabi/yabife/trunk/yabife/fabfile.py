@@ -29,7 +29,7 @@ from ccgfab.base import *
 
 env.app_root = '/usr/local/python/ccgapps/'
 env.app_name = 'yabife'
-env.app_install_names = ['yabifeapp'] # use app_name or list of names for each install
+env.app_install_names = ['yabife'] # use app_name or list of names for each install
 env.vc = 'mercurial'
 
 env.writeable_dirs.extend([]) # add directories you wish to have created and made writeable
