@@ -1,0 +1,102 @@
+{
+    "tool": {
+        "outputExtensions": [
+            {
+                "must_be_larger_than": null, 
+                "must_exist": true, 
+                "file_extension__pattern": "*.L1B_LAC"
+            }, 
+            {
+                "must_be_larger_than": null, 
+                "must_exist": false, 
+                "file_extension__pattern": "*.L1B_QKM"
+            }, 
+            {
+                "must_be_larger_than": null, 
+                "must_exist": false, 
+                "file_extension__pattern": "*.L1B_HKM"
+            }
+        ], 
+        "display_name": "modis L1A to L1B (6.1)", 
+        "name": "modis_L1A_to_L1B.xe.ivec.org", 
+        "parameter_list": [
+            {
+                "default_value": "", 
+                "mandatory": true, 
+                "input_file": true, 
+                "use_output_filename__switch": null, 
+                "output_file": false, 
+                "possible_values": "", 
+                "rank": 1, 
+                "switch_use__description": "Only the value will be passed in the argument list (ie. the switch won't be used)", 
+                "switch_use__formatstring": "%(value)s", 
+                "batch_param": true, 
+                "switch": "inputFileHDF=", 
+                "acceptedExtensionList": [
+                    "*.hdf"
+                ], 
+                "helptext": "", 
+                "batch_bundle_files": false, 
+                "hidden": false, 
+                "id": 1830, 
+                "switch_use__display_text": "valueOnly"
+            }, 
+            {
+                "default_value": "", 
+                "mandatory": true, 
+                "input_file": true, 
+                "use_output_filename__switch": null, 
+                "output_file": false, 
+                "possible_values": "", 
+                "rank": 2, 
+                "switch_use__description": "Only the value will be passed in the argument list (ie. the switch won't be used)", 
+                "switch_use__formatstring": "%(value)s", 
+                "batch_param": true, 
+                "switch": "inputFileGEO=", 
+                "acceptedExtensionList": [
+                    "*.GEO"
+                ], 
+                "helptext": "", 
+                "batch_bundle_files": false, 
+                "hidden": false, 
+                "id": 1831, 
+                "switch_use__display_text": "valueOnly"
+            }, 
+            {
+                "default_value": "", 
+                "mandatory": false, 
+                "input_file": false, 
+                "use_output_filename__switch": null, 
+                "output_file": true, 
+                "possible_values": "", 
+                "rank": 3, 
+                "switch_use__description": "Both the switch and the value will be passed in the argument list. They will be separated by a space.", 
+                "switch_use__formatstring": "%(switch)s %(value)s", 
+                "batch_param": false, 
+                "switch": "-o", 
+                "acceptedExtensionList": [], 
+                "helptext": "", 
+                "batch_bundle_files": false, 
+                "hidden": false, 
+                "id": 1832, 
+                "switch_use__display_text": "both"
+            }
+        ], 
+        "accepts_input": true, 
+        "job_type": "single", 
+        "enabled": true, 
+        "cpus": "", 
+        "fs_backend": "gridftp/gsissh hybrid xe-gt4.ivec.org", 
+        "queue": "normal", 
+        "module": "seadas/6.1", 
+        "max_memory": null, 
+        "inputExtensions": [
+            "*.GEO", 
+            "*.hdf"
+        ], 
+        "path": "modis_L1A_to_L1B.csh", 
+        "backend": "globus xe-gt4.ivec.org", 
+        "walltime": "", 
+        "description": "Create level 1B (calibrated radiances) data"
+    }
+}

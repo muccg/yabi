@@ -1,0 +1,76 @@
+{
+    "tool": {
+        "outputExtensions": [
+            {
+                "must_be_larger_than": null, 
+                "must_exist": true, 
+                "file_extension__pattern": "*.hdf"
+            }
+        ], 
+        "display_name": "L2 Gridding", 
+        "name": "GRID_L2_LAND.pl", 
+        "parameter_list": [
+            {
+                "default_value": "", 
+                "mandatory": true, 
+                "input_file": true, 
+                "use_output_filename__switch": null, 
+                "output_file": false, 
+                "possible_values": null, 
+                "rank": 2, 
+                "switch_use__description": "Both the switch and the value will be passed in the argument list. They will be separated by a space.", 
+                "switch_use__formatstring": "%(switch)s %(value)s", 
+                "batch_param": false, 
+                "switch": "-i", 
+                "acceptedExtensionList": [
+                    "*.hdf"
+                ], 
+                "helptext": "Any hdf file.", 
+                "batch_bundle_files": false, 
+                "hidden": false, 
+                "id": 2248, 
+                "switch_use__display_text": "both"
+            }, 
+            {
+                "default_value": "", 
+                "mandatory": true, 
+                "input_file": true, 
+                "use_output_filename__switch": null, 
+                "output_file": false, 
+                "possible_values": "", 
+                "rank": 3, 
+                "switch_use__description": "Both the switch and the value will be passed in the argument list. They will be separated by a space.", 
+                "switch_use__formatstring": "%(switch)s %(value)s", 
+                "batch_param": false, 
+                "switch": "-g", 
+                "acceptedExtensionList": [
+                    "*.geo", 
+                    "*.GEO", 
+                    "*.hdf"
+                ], 
+                "helptext": "", 
+                "batch_bundle_files": false, 
+                "hidden": false, 
+                "id": 2249, 
+                "switch_use__display_text": "both"
+            }
+        ], 
+        "accepts_input": true, 
+        "job_type": "single", 
+        "enabled": true, 
+        "cpus": "", 
+        "fs_backend": "gridftp/gsissh hybrid xe-gt4.ivec.org", 
+        "queue": "normal", 
+        "module": "csdw-scripts/33", 
+        "max_memory": null, 
+        "inputExtensions": [
+            "*.geo", 
+            "*.GEO", 
+            "*.hdf"
+        ], 
+        "path": "seadasHeadless GRID_L2_LAND.pl", 
+        "backend": "globus xe-gt4.ivec.org", 
+        "walltime": "", 
+        "description": ""
+    }
+}

@@ -1,0 +1,323 @@
+{
+    "tool": {
+        "outputExtensions": [], 
+        "display_name": "HDF  Generic Display (6.1)", 
+        "name": "seadas_hdf_sd_generic_display.pl", 
+        "parameter_list": [
+            {
+                "default_value": "seadas_hdf_sd_generic_display.pl", 
+                "mandatory": true, 
+                "input_file": false, 
+                "use_output_filename__switch": null, 
+                "output_file": false, 
+                "possible_values": "", 
+                "rank": 1, 
+                "switch_use__description": "Only the value will be passed in the argument list (ie. the switch won't be used)", 
+                "switch_use__formatstring": "%(value)s", 
+                "batch_param": false, 
+                "switch": "programName", 
+                "acceptedExtensionList": [], 
+                "helptext": "", 
+                "batch_bundle_files": false, 
+                "hidden": false, 
+                "id": 1892, 
+                "switch_use__display_text": "valueOnly"
+            }, 
+            {
+                "default_value": "", 
+                "mandatory": true, 
+                "input_file": true, 
+                "use_output_filename__switch": null, 
+                "output_file": false, 
+                "possible_values": "", 
+                "rank": 2, 
+                "switch_use__description": "Both the switch and the value will be passed in the argument list. They will be separated by a space.", 
+                "switch_use__formatstring": "%(switch)s %(value)s", 
+                "batch_param": false, 
+                "switch": "-i", 
+                "acceptedExtensionList": [
+                    "*.hdf"
+                ], 
+                "helptext": "", 
+                "batch_bundle_files": false, 
+                "hidden": false, 
+                "id": 1893, 
+                "switch_use__display_text": "both"
+            }, 
+            {
+                "default_value": "png", 
+                "mandatory": false, 
+                "input_file": false, 
+                "use_output_filename__switch": null, 
+                "output_file": false, 
+                "possible_values": {
+                    "value": [
+                        {
+                            "display": "png", 
+                            "value": "png"
+                        }, 
+                        {
+                            "display": "colour_png", 
+                            "value": "colour_png"
+                        }, 
+                        {
+                            "display": "geotiff", 
+                            "value": "geotiff"
+                        }, 
+                        {
+                            "display": "postscript", 
+                            "value": "postscript"
+                        }, 
+                        {
+                            "display": "ps", 
+                            "value": "ps"
+                        }, 
+                        {
+                            "display": "PS", 
+                            "value": "PS"
+                        }
+                    ]
+                }, 
+                "rank": 3, 
+                "switch_use__description": "Both the switch and the value will be passed in the argument list. They will be separated by a space.", 
+                "switch_use__formatstring": "%(switch)s %(value)s", 
+                "batch_param": false, 
+                "switch": "-o", 
+                "acceptedExtensionList": [], 
+                "helptext": "", 
+                "batch_bundle_files": false, 
+                "hidden": false, 
+                "id": 1894, 
+                "switch_use__display_text": "both"
+            }, 
+            {
+                "default_value": "green", 
+                "mandatory": false, 
+                "input_file": false, 
+                "use_output_filename__switch": null, 
+                "output_file": false, 
+                "possible_values": {
+                    "value": [
+                        {
+                            "display": "red", 
+                            "value": "red"
+                        }, 
+                        {
+                            "display": "green", 
+                            "value": "green"
+                        }, 
+                        {
+                            "display": "blue", 
+                            "value": "blue"
+                        }, 
+                        {
+                            "display": "yellow", 
+                            "value": "yellow"
+                        }, 
+                        {
+                            "display": "pink", 
+                            "value": "pink"
+                        }, 
+                        {
+                            "display": "black", 
+                            "value": "black"
+                        }, 
+                        {
+                            "display": "white", 
+                            "value": "white"
+                        }, 
+                        {
+                            "display": "RED", 
+                            "value": "RED"
+                        }, 
+                        {
+                            "display": "GREEN", 
+                            "value": "GREEN"
+                        }, 
+                        {
+                            "display": "BLUE", 
+                            "value": "BLUE"
+                        }, 
+                        {
+                            "display": "YELLOW", 
+                            "value": "YELLOW"
+                        }, 
+                        {
+                            "display": "PINK", 
+                            "value": "PINK"
+                        }, 
+                        {
+                            "display": "BLACK", 
+                            "value": "BLACK"
+                        }, 
+                        {
+                            "display": "WHITE", 
+                            "value": "WHITE"
+                        }
+                    ]
+                }, 
+                "rank": 4, 
+                "switch_use__description": "Both the switch and the value will be passed in the argument list. They will be separated by a space.", 
+                "switch_use__formatstring": "%(switch)s %(value)s", 
+                "batch_param": false, 
+                "switch": "-c", 
+                "acceptedExtensionList": [], 
+                "helptext": "", 
+                "batch_bundle_files": false, 
+                "hidden": false, 
+                "id": 1895, 
+                "switch_use__display_text": "both"
+            }, 
+            {
+                "default_value": "YELLOW", 
+                "mandatory": false, 
+                "input_file": false, 
+                "use_output_filename__switch": null, 
+                "output_file": false, 
+                "possible_values": {
+                    "value": [
+                        {
+                            "display": "red", 
+                            "value": "red"
+                        }, 
+                        {
+                            "display": "green", 
+                            "value": "green"
+                        }, 
+                        {
+                            "display": "blue", 
+                            "value": "blue"
+                        }, 
+                        {
+                            "display": "yellow", 
+                            "value": "yellow"
+                        }, 
+                        {
+                            "display": "pink", 
+                            "value": "pink"
+                        }, 
+                        {
+                            "display": "black", 
+                            "value": "black"
+                        }, 
+                        {
+                            "display": "white", 
+                            "value": "white"
+                        }, 
+                        {
+                            "display": "RED", 
+                            "value": "RED"
+                        }, 
+                        {
+                            "display": "GREEN", 
+                            "value": "GREEN"
+                        }, 
+                        {
+                            "display": "BLUE", 
+                            "value": "BLUE"
+                        }, 
+                        {
+                            "display": "YELLOW", 
+                            "value": "YELLOW"
+                        }, 
+                        {
+                            "display": "PINK", 
+                            "value": "PINK"
+                        }, 
+                        {
+                            "display": "BLACK", 
+                            "value": "BLACK"
+                        }, 
+                        {
+                            "display": "WHITE", 
+                            "value": "WHITE"
+                        }
+                    ]
+                }, 
+                "rank": 5, 
+                "switch_use__description": "Both the switch and the value will be passed in the argument list. They will be separated by a space.", 
+                "switch_use__formatstring": "%(switch)s %(value)s", 
+                "batch_param": false, 
+                "switch": "-g", 
+                "acceptedExtensionList": [], 
+                "helptext": "", 
+                "batch_bundle_files": false, 
+                "hidden": false, 
+                "id": 1896, 
+                "switch_use__display_text": "both"
+            }, 
+            {
+                "default_value": "", 
+                "mandatory": false, 
+                "input_file": false, 
+                "use_output_filename__switch": null, 
+                "output_file": false, 
+                "possible_values": "", 
+                "rank": 6, 
+                "switch_use__description": "Both the switch and the value will be passed in the argument list. They will be separated by a space.", 
+                "switch_use__formatstring": "%(switch)s %(value)s", 
+                "batch_param": false, 
+                "switch": "-s", 
+                "acceptedExtensionList": [], 
+                "helptext": "", 
+                "batch_bundle_files": false, 
+                "hidden": false, 
+                "id": 1897, 
+                "switch_use__display_text": "both"
+            }, 
+            {
+                "default_value": "on", 
+                "mandatory": false, 
+                "input_file": false, 
+                "use_output_filename__switch": null, 
+                "output_file": false, 
+                "possible_values": {
+                    "value": [
+                        {
+                            "display": "horizontal", 
+                            "value": "horizontal"
+                        }, 
+                        {
+                            "display": "vertical", 
+                            "value": "vertical"
+                        }, 
+                        {
+                            "display": "on", 
+                            "value": "on"
+                        }, 
+                        {
+                            "display": "off", 
+                            "value": "off"
+                        }
+                    ]
+                }, 
+                "rank": 7, 
+                "switch_use__description": "Both the switch and the value will be passed in the argument list. They will be separated by a space.", 
+                "switch_use__formatstring": "%(switch)s %(value)s", 
+                "batch_param": false, 
+                "switch": "-b", 
+                "acceptedExtensionList": [], 
+                "helptext": "", 
+                "batch_bundle_files": false, 
+                "hidden": false, 
+                "id": 1898, 
+                "switch_use__display_text": "both"
+            }
+        ], 
+        "accepts_input": true, 
+        "job_type": "single", 
+        "enabled": true, 
+        "cpus": "", 
+        "fs_backend": "gridftp/gsissh hybrid xe-gt4.ivec.org", 
+        "queue": "normal", 
+        "module": "csdw-scripts/20", 
+        "max_memory": null, 
+        "inputExtensions": [
+            "*.hdf"
+        ], 
+        "path": "seadasHeadless", 
+        "backend": "globus xe-gt4.ivec.org", 
+        "walltime": "", 
+        "description": ""
+    }
+}
