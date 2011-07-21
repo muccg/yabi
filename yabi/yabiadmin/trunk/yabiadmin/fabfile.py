@@ -1,9 +1,12 @@
-from fabric.api import env
+from fabric.api import env, local
 from ccgfab.base import *
 
+import os
+
+env.username = os.environ["USER"]
 env.app_root = '/usr/local/python/ccgapps/'
 env.app_name = 'yabiadmin'
-env.app_install_names = ['yabiadminapp'] # use app_name or list of names for each install
+env.app_install_names = ['yabiadmin'] # use app_name or list of names for each install
 env.vc = 'mercurial'
 
 env.writeable_dirs.extend([]) # add directories you wish to have created and made writeable
@@ -11,12 +14,43 @@ env.content_excludes.extend([]) # add quoted patterns here for extra rsync exclu
 env.content_includes.extend([]) # add quoted patterns here for extra rsync includes
 env.auto_confirm_purge = False #controls whether the confirmation prompt for purge is used
 
+env.celeryd_options = " -l debug"
+
+class LocalPaths():
+
+    target = env.username
+
+    def getSettings(self):
+        return os.path.join(env.app_root, env.app_install_names[0], self.target, env.app_name, "settings.py")
+
+    def getProjectDir(self):
+        return os.path.join(env.app_root, env.app_install_names[0], self.target, env.app_name)
+
+    def getParentDir(self):
+        return os.path.join(env.app_root, env.app_install_names[0], self.target)
+
+    def getCeleryd(self):
+        return os.path.join(self.getProjectDir(), 'virtualpython/bin/celeryd')
+
+    def getVirtualPython(self):
+        return os.path.join(self.getProjectDir(), 'virtualpython/bin/python')
+
+    def getEggCacheDir(self):
+        return os.path.join(self.getProjectDir(), 'scratch', 'egg-cache')
+
+    def getCeleryEggCacheDir(self):
+        return os.path.join(self.getProjectDir(), 'scratch', 'egg-cache-celery')
+
+localPaths = LocalPaths()
+
+
 def deploy(auto_confirm_purge = False):
     """
     Make a user deployment
     """
     env.auto_confirm_purge = auto_confirm_purge
     _ccg_deploy_user()
+    _munge_settings()
 
 def snapshot(auto_confirm_purge=False):
     """
@@ -24,6 +58,8 @@ def snapshot(auto_confirm_purge=False):
     """
     env.auto_confirm_purge=auto_confirm_purge
     _ccg_deploy_snapshot()
+    localPaths.target="snapshot"
+    _munge_settings(debug_logging='logging.WARNING', sentry=True) #pass string for warning, not actual logging.WARNING
 
 def release(auto_confirm_purge=False):
     """
