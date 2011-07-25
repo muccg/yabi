@@ -6,6 +6,7 @@ import os
 env.username = os.environ["USER"]
 env.app_root = '/usr/local/python/ccgapps/'
 env.app_name = 'yabiadmin'
+env.repo_path = 'yabi/yabiadmin/trunk/'
 env.app_install_names = ['yabiadmin'] # use app_name or list of names for each install
 env.vc = 'mercurial'
 
