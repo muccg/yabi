@@ -1,27 +1,33 @@
 #!/usr/bin/env python
 
 # WSGI bootstrapper for django
-import os
-
-# this is to avoid a python bug (the time module isn't thread-safe)
-# see CCG Trac ticket #1674
-import time
+import os, sys
+import site
+import time # this is to avoid a python bug (the time module isn't thread-safe), see CCG Trac ticket #1674
 
 # where are we installed
 projectdir=os.path.dirname(__file__)            # PROJECTDIR/nutrition
 parentdir=os.path.dirname(projectdir)           # PROJECTDIR/
+priv_settings_dir=os.path.join("/usr","local","etc","ccgapps") # location of private, site specific settings
 
-# virtual python env setup
-import site
-site.addsitedir(os.path.join(projectdir,"virtualpython","lib","python2.6","site-packages"))
+# run some checks and alert users to help them find errors
+if not os.path.exists(projectdir):
+    raise Exception("Directory does not exist: %s" % projectdir)
+if not os.path.exists(parentdir):
+    raise Exception("Directory does not exist: %s" % parentdir)
+if not os.path.exists(priv_settings_dir):
+    raise Exception("Directory does not exist: %s" % priv_settings_dir)
+
+
+# virtual python env setup, work out python install version so we use the correct site-packages
+python_version = "python%s.%s" % (sys.version_info[0], sys.version_info[1])
+site.addsitedir(os.path.join(projectdir,"virtualpython","lib",python_version,"site-packages"))
 site.addsitedir(projectdir)
-
-import sys
 
 # the parent directory to search
 sys.path.append(projectdir)
 sys.path.append(parentdir)
-sys.path.append(os.path.join("/usr","local","etc","ccgapps"))
+sys.path.append(priv_settings_dir)
 
 # save the project dir in a environment variable
 os.environ['PROJECT_DIRECTORY']=projectdir
@@ -33,14 +39,6 @@ try:
 except OSError, ose:
     pass
 os.environ['PYTHON_EGG_CACHE']=eggdir
-
-# matplot lib needs a writable configuration area
-eggdir = os.path.join(projectdir,"scratch","matplotlib-conf")
-try:
-    os.makedirs(eggdir)
-except OSError, ose:
-    pass
-os.environ['MPLCONFIGDIR']=eggdir
 
 # setup the settings module for the WSGI app
 os.environ['DJANGO_SETTINGS_MODULE'] = '%s.settings'%(os.path.basename(projectdir))
@@ -56,5 +54,3 @@ def wrapper(environ, start):
         return django.core.handlers.wsgi.WSGIHandler()(environ,start)
 
 application = wrapper
-
-#django.core.handlers.wsgi.WSGIHandler()
