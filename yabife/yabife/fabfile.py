@@ -29,7 +29,7 @@ from ccgfab.base import *
 
 env.app_root = '/usr/local/python/ccgapps/'
 env.app_name = 'yabife'
-env.repo_path = 'yabi/yabife/trunk/'
+env.repo_path = 'yabife'
 env.app_install_names = ['yabife'] # use app_name or list of names for each install
 env.vc = 'mercurial'
 
