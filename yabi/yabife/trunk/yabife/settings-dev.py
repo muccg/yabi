@@ -142,39 +142,16 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 import logging
 LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
 LOGGING_LEVEL = logging.DEBUG
-LOGGING_FORMATTER = logging.Formatter('[%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
+install_name = PROJECT_DIRECTORY.split('/')[-2]
+LOGGING_FORMATTER = logging.Formatter('YABI [%(name)s:' + install_name + ':%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
 LOGS = ['yabife']
 
 # kick off mango initialisation of logging
 from django.contrib import logging as mangologging
 
-##
-## SENTRY
-##
+# add Syslog handler to yabife
+handler = logging.handlers.SysLogHandler(address='/dev/log', facility='local4')
+handler.setFormatter(LOGGING_FORMATTER)
+logger = logging.getLogger('yabife')
+logger.addHandler(handler)
 
-# Use sentry if we can, otherwise use EmailExceptionMiddleware
-# sentry_test is set to true by snapshot deploy, so we can use sentry
-# even though debug=True
-try:
-    assert DEBUG == False
-    SENTRY_REMOTE_URL = 'http://faramir.localdomain/sentryserver/%s/store/' % TARGET
-    SENTRY_KEY = 'lrHEULXanJMB5zygOLUUcCRvCxYrcWVZJZ0fzsMzx'
-    SENTRY_TESTING = False
-
-    INSTALLED_APPS.extend(['sentry.client'])
-    
-    from sentry.client.handlers import SentryHandler
-    logging.getLogger().addHandler(SentryHandler())
-
-    # Add StreamHandler to sentry's default so you can catch missed exceptions
-    logging.getLogger('sentry.errors').addHandler(logging.StreamHandler())
-
-    # remove the EmailExceptionMiddleware so
-    # exceptions are handled and mailed by sentry
-    try:
-        MIDDLEWARE_CLASSES.remove('django.middleware.email.EmailExceptionMiddleware')
-    except ValueError,e:
-        pass
-
-except (ImportError, AssertionError), e:
-    pass

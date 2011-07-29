@@ -138,11 +138,21 @@ CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
+##
+## LOGGING
+##
 import logging
 LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
-LOGGING_LEVEL = logging.DEBUG if DEBUG else logging.CRITICAL
-LOGGING_FORMATTER = logging.Formatter('[%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
+LOGGING_LEVEL = logging.DEBUG
+install_name = PROJECT_DIRECTORY.split('/')[-2]
+LOGGING_FORMATTER = logging.Formatter('YABI [%(name)s:' + install_name + ':%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
 LOGS = ['yabife']
 
 # kick off mango initialisation of logging
 from django.contrib import logging as mangologging
+
+# add Syslog handler to yabife
+handler = logging.handlers.SysLogHandler(address='/dev/log', facility='local4')
+handler.setFormatter(LOGGING_FORMATTER)
+logger = logging.getLogger('yabife')
+logger.addHandler(handler)

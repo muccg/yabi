@@ -702,3 +702,9 @@ def reencrypt_user_credentials(request, currentPassword, newPassword):
     http = memcache_http(request)
     resp, content = http.make_request(enc_request)
     assert resp['status']=='200'
+
+
+@login_required
+def exception_view(request):
+    logger.debug("test exception view")
+    raise Exception("This is a test exception.")
