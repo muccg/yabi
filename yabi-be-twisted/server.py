@@ -47,7 +47,7 @@ from twisted.internet import reactor
 from twisted.application import strports, service, internet
 from twisted.web2 import server, vhost, channel
 from twisted.web2 import resource as web2resource
-from twisted.python import util
+from twisted.python import util, syslog
 
 # for SSL context
 from OpenSSL import SSL
@@ -66,11 +66,20 @@ from twisted.python.log import ILogObserver, FileLogObserver
 from twisted.python.logfile import DailyLogFile
 
 LOG_STDOUT = "--logfile=-" in sys.argv or "-l-" in sys.argv
+LOG_FILE = False                                                                                    # False, log to syslog. True, log to file.
+
+SYSLOG_PREFIX = "yabi-be-twised"
+SYSLOG_FACILITY = syslog.syslog.LOG_LOCAL4
 
 if not LOG_STDOUT:
     path, fname = [ os.path.expanduser(X) for X in os.path.split(logfile)]
     logfileobj = DailyLogFile(fname, path)
-    application.setComponent(ILogObserver, FileLogObserver(logfileobj).emit)
+    
+    if LOG_FILE:
+        application.setComponent(ILogObserver, FileLogObserver(logfileobj).emit)
+    else:
+        # log to syslog
+        application.setComponent(ILogObserver, syslog.SyslogObserver(prefix=SYSLOG_PREFIX, facility=SYSLOG_FACILITY).emit)
 
 # Create the resource we will be serving
 base = BaseResource()
