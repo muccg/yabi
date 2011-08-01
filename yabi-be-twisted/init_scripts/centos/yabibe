@@ -97,7 +97,7 @@ cfg.section.backend
 if [ "${runningdir}X" = "X" ]; then RUNNING_DIR="/var/run/yabi/backend"; else RUNNING_DIR=$runningdir; fi
 if [ "${logfile}X" = "X" ]; then LOG_FILE="/var/log/yabi/backend.log"; else LOG_FILE=$logfile; fi
 if [ "${pidfile}X" = "X" ]; then PID_FILE="/var/run/yabi/backend.pid"; else PID_FILE=$pidfile; fi
-if [ "${source}X" = "X" ]; then SOURCE="${HOME}/yabi/yabi-be-twisted/trunk"; else SOURCE=$source; fi
+if [ "${source}X" = "X" ]; then SOURCE="${HOME}/yabi/yabi-be-twisted"; else SOURCE=$source; fi
 
 TAP="${SOURCE}/server.py"
 
