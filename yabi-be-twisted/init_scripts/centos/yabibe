@@ -10,7 +10,8 @@
 # processname: portmap
 
 NAME="yabibe"
-TWISTDLIST="/usr/local/yabi/src/yabi-be-twisted/release/mypython/bin/twistd"
+#TWISTDLIST="/usr/local/yabi/src/yabi-be-twisted/release/mypython/bin/twistd"
+TWISTDLIST="virt_yabi-be-twisted/bin/twistd"
 CONFFILE="yabi.conf"
 
 for T in $TWISTDLIST
