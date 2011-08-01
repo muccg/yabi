@@ -67,7 +67,6 @@ class AddToolForm(forms.Form):
 
 class ToolGroupView:
     def __init__(self, name):
-        logger.debug('')
         self.name = name
         self.tools = set([])
 
@@ -78,7 +77,6 @@ class ToolGroupView:
 
 class ToolParamView:
     def __init__(self, tool_param):
-        logger.debug('')        
         self._tool_param = tool_param
         self.rank = tool_param.rank is None and ' ' or tool_param.rank
         self.switch = tool_param.switch
@@ -86,7 +84,6 @@ class ToolParamView:
         self.properties = self.other_properties()
         
     def other_properties(self):
-        logger.debug('')
         tp = self._tool_param
         props = []
         
@@ -114,7 +111,7 @@ def format_params(tool_parameters):
 
 @staff_member_required
 def tool(request, tool_id):
-    logger.error('There was some really crazy error', exc_info=None, extra={'url': request.build_absolute_uri(), 'data': {'username': request.user.username}})
+    logger.debug("")
 
     tool = get_object_or_404(Tool, pk=tool_id)
     

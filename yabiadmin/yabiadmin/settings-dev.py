@@ -188,55 +188,18 @@ CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
 CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
 
 
+# How long to cache decypted credentials for
+DEFAULT_CRED_CACHE_TIME = 60*60*24                   # 1 day default
+
+
 ##
 ## LOGGING
 ##
-import logging
+import logging, logging.handlers
 LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
 LOGGING_LEVEL = logging.DEBUG
-LOGGING_FORMATTER = logging.Formatter('[%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
+install_name = PROJECT_DIRECTORY.split('/')[-2]
+LOGGING_FORMATTER = logging.Formatter('YABI [%(name)s:' + install_name + ':%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
 LOGS = ['yabiengine','yabiadmin']
 
-# kick off mango initialisation of logging
-try:
-
-    from django.contrib import logging as mangologging
-except IOError, ioe:
-    print "WARNING: inside settings.py I failed to import mangologging because I got the following exception"
-    print ioe
-
-
-##
-## SENTRY
-##
-
-# Use sentry if we can, otherwise use EmailExceptionMiddleware
-# sentry_test is set to true by snapshot deploy, so we can use sentry
-# even though debug=True
-try:
-    assert DEBUG == False
-    SENTRY_REMOTE_URL = 'http://faramir.localdomain/sentryserver/%s/store/' % TARGET
-    SENTRY_KEY = 'lrHEULXanJMB5zygOLUUcCRvCxYrcWVZJZ0fzsMzx'
-    SENTRY_TESTING = False
-
-    INSTALLED_APPS.extend(['sentry.client'])
-    
-    from sentry.client.handlers import SentryHandler
-    logging.getLogger().addHandler(SentryHandler())
-
-    # Add StreamHandler to sentry's default so you can catch missed exceptions
-    logging.getLogger('sentry.errors').addHandler(logging.StreamHandler())
-
-    # remove the EmailExceptionMiddleware so
-    # exceptions are handled and mailed by sentry
-    try:
-        MIDDLEWARE_CLASSES.remove('django.middleware.email.EmailExceptionMiddleware')
-    except ValueError,e:
-        pass
-
-except (ImportError, AssertionError), e:
-    pass
-
-
-# How long to cache decypted credentials for
-DEFAULT_CRED_CACHE_TIME = 60*60*24                   # 1 day default
+import ccglogging

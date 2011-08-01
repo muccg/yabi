@@ -142,20 +142,19 @@ CELERY_QUEUES = {
 CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
 CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
 
+# How long to cache decypted credentials for
+DEFAULT_CRED_CACHE_TIME = 60*60*24                   # 1 day default
+
 
 ##
 ## LOGGING
 ##
-import logging
+import logging, logging.handlers
 LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
-LOGGING_LEVEL = logging.WARNING
-LOGGING_FORMATTER = logging.Formatter('[%(name)s:%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
+LOGGING_LEVEL = logging.DEBUG
+install_name = PROJECT_DIRECTORY.split('/')[-2]
+LOGGING_FORMATTER = logging.Formatter('YABI [%(name)s:' + install_name + ':%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
 LOGS = ['yabiengine','yabiadmin']
 
-
-# How long to cache decypted credentials for
-DEFAULT_CRED_CACHE_TIME = 60*60*24                   # 1 day default
-
-# kick off mango initialisation of logging
-from django.contrib import logging as mangologging
+import ccglogging
 
