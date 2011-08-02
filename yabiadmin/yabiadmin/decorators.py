@@ -41,21 +41,30 @@ mc = KeyspacedMemcacheClient()
 
 import pickle
 
-def req_to_str(request, user_specific):
+def req_to_str(request):
     s = request.path
-    if user_specific:
-        s += '-' + request.user.username
     for k in sorted(request.REQUEST):
         s += '-' + request.REQUEST[k]
     return s
+    
+def func_create_memcache_keyname(basekey, kwargs, kwargkeylist, request_specific=None, user_specific=None):
+    keylist = sorted(kwargs.keys()) if kwargkeylist=='*' else kwargkeylist
+    
+    parts = [basekey]
+    if request_specific is not None:
+        parts += [req_to_str(request_specific)]
+    if user_specific is not None:
+        parts += [user_specific]
+    parts += [str(kwargs[X]) for X in keylist]
+    
+    keyname = "-".join(parts)
+    return keyname.encode()              # make sure its ascii if its unicode
 
-def memcache(basekey,kwargkeylist=[],timeout=120,refresh=False,user_specific=True):
+def memcache(basekey,kwargkeylist=[],timeout=120,refresh=False,request_specific=True,user_specific=True):
     """refresh is if you want to refresh memcache with a fresh timeout on cache hit, or if you want to leave it and let it expire as per before cache hit"""
     def memcache_decorator(func):
         def memcache_decorated_func(request, *args, **kwargs):
-            keylist = sorted(kwargs.keys()) if kwargkeylist=='*' else kwargkeylist
-            keyname = "-".join([basekey, req_to_str(request,user_specific)] + [str(kwargs[X]) for X in keylist])
-            keyname = keyname.encode()
+            keyname = func_create_memcache_keyname(basekey,kwargs,kwargkeylist,request if request_specific else None, request.user.username if user_specific else None)
             cached_result = mc.get(keyname)
             if cached_result:
                 if refresh:
