@@ -103,8 +103,8 @@ class ServerContextFactory:
         ctx.use_privatekey_file(os.path.join(config.config['backend']['keyfile']))
         return ctx
 
-internet.TCPServer(config.config['backend']['port'][1], channel.HTTPFactory(site)).setServiceParent(application)
-internet.SSLServer(config.config['backend']['sslport'][1], channel.HTTPFactory(site), ServerContextFactory()).setServiceParent(application)
+internet.TCPServer(config.config['backend']['port'][1], channel.HTTPFactory(site), interface=config.config['backend']['port'][0]).setServiceParent(application)
+internet.SSLServer(config.config['backend']['sslport'][1], channel.HTTPFactory(site), ServerContextFactory(), interface=config.config['backend']['sslport'][0]).setServiceParent(application)
 
 if config.config['backend']['telnet']:
     # telnet port to python shell
