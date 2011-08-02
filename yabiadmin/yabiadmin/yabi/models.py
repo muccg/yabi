@@ -52,20 +52,8 @@ class ManyToManyField_NoSyncdb(models.ManyToManyField):
         self.creates_table = False
 
 class Base(models.Model):
-    """
-    comment
-    """
-    
-    '''
-    comment
-    '''
-    
-    
     class Meta:
         abstract = True
-
-        # now do this
-        
 
     last_modified_by = models.ForeignKey(DjangoUser, editable=False, related_name="%(class)s_modifiers", null=True)
     last_modified_on = models.DateTimeField(null=True, auto_now=True, editable=False)
