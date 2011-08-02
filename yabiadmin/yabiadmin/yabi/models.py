@@ -196,8 +196,6 @@ class Tool(Base):
             'backend':self.backend.name,
             'fs_backend':self.fs_backend.name,            
             'accepts_input':self.accepts_input,
-            #'batch_on_param':self.batch_on_param.switch if self.batch_on_param else '',
-            #'batch_on_param_bundle_files':self.batch_on_param_bundle_files,
             'cpus':self.cpus,
             'walltime':self.walltime,
             'module':self.module,
