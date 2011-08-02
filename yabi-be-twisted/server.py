@@ -26,7 +26,7 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-import sys, os
+import sys, os, pwd
 sys.path.append(os.path.dirname(__file__))                  # add our base directory to the pythonpath
 
 from conf import config
@@ -68,7 +68,7 @@ from twisted.python.logfile import DailyLogFile
 LOG_STDOUT = "--logfile=-" in sys.argv or "-l-" in sys.argv
 LOG_FILE = False                                                                                    # False, log to syslog. True, log to file.
 
-SYSLOG_PREFIX = "YABI [yabi-be-twisted:%s]" % os.getusername()
+SYSLOG_PREFIX = "YABI [yabi-be-twisted:%s]" % pwd.getpwuid(os.getuid()).pw_name
 SYSLOG_FACILITY = syslog.syslog.LOG_LOCAL4
 
 if not LOG_STDOUT:
