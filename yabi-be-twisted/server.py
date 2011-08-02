@@ -68,7 +68,7 @@ from twisted.python.logfile import DailyLogFile
 LOG_STDOUT = "--logfile=-" in sys.argv or "-l-" in sys.argv
 LOG_FILE = False                                                                                    # False, log to syslog. True, log to file.
 
-SYSLOG_PREFIX = "yabi-be-twised"
+SYSLOG_PREFIX = "YABI"
 SYSLOG_FACILITY = syslog.syslog.LOG_LOCAL4
 
 if not LOG_STDOUT:
