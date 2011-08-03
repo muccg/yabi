@@ -34,8 +34,10 @@ from django.core import urlresolvers
 from django.conf import settings
 from urlparse import urlparse, urlunparse
 from crypto import aes_enc_hex, aes_dec_hex
+import traceback
 
 from django.contrib.memcache import KeyspacedMemcacheClient
+from yabiadmin.decorators import func_create_memcache_keyname
 
 from constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK
 
@@ -52,20 +54,8 @@ class ManyToManyField_NoSyncdb(models.ManyToManyField):
         self.creates_table = False
 
 class Base(models.Model):
-    """
-    comment
-    """
-    
-    '''
-    comment
-    '''
-    
-    
     class Meta:
         abstract = True
-
-        # now do this
-        
 
     last_modified_by = models.ForeignKey(DjangoUser, editable=False, related_name="%(class)s_modifiers", null=True)
     last_modified_on = models.DateTimeField(null=True, auto_now=True, editable=False)
@@ -196,8 +186,6 @@ class Tool(Base):
             'backend':self.backend.name,
             'fs_backend':self.fs_backend.name,            
             'accepts_input':self.accepts_input,
-            #'batch_on_param':self.batch_on_param.switch if self.batch_on_param else '',
-            #'batch_on_param_bundle_files':self.batch_on_param_bundle_files,
             'cpus':self.cpus,
             'walltime':self.walltime,
             'module':self.module,
@@ -245,7 +233,13 @@ class Tool(Base):
                 plist["possible_values"] = json.loads(plist["possible_values"])
 
         return json.dumps({'tool':output}, indent=4)
-
+        
+    def purge_from_memcache(self):
+        """Purge this tools entry description from memcache"""
+        keyname = func_create_memcache_keyname("tool",{'toolname':self.name},['toolname'])
+        mc = KeyspacedMemcacheClient()
+        mc.delete(keyname)
+        mc.disconnect_all()
 
     def __unicode__(self):
         return self.name
@@ -694,3 +688,28 @@ class BackendCredential(Base):
         return '<a href="%s">Edit</a>' % self.edit_url()
     backend_cred_test_link.short_description = 'Test Credential'
     backend_cred_test_link.allow_tags = True
+
+
+##
+## Django Signals
+##
+
+def signal_tool_post_save(sender, **kwargs):
+    logger.debug("tool post_save signal")
+
+    try:
+        tool = kwargs['instance']
+        logger.debug("purging tool %s from memcache"%str(tool))
+        tool.purge_from_memcache()
+
+    except Exception, e:
+        logger.critical(e)
+        logger.critical(traceback.format_exc())
+        raise
+   
+
+ 
+# connect up signals
+from django.db.models.signals import post_save
+post_save.connect(signal_tool_post_save, sender=Tool)
+
