@@ -56,7 +56,9 @@ def parse_ls_generate_items(lines):
             # header
             yield (line[:-1],)
         elif len(parts)==2:
-            assert parts[0]=="total"
+            # HACK: remove asserts to deal with non-clean ssh non-interactive sessions
+            #assert parts[0]=="total"
+            pass
         elif len(parts)==9:
             # check for symlink
             nodetype='f'
@@ -114,6 +116,20 @@ def parse_ls_directories(data, culldots=True):
             
 def parse_ls(data, culldots=True):
     """Upper level ls parser."""
+    
+    # HACK: this code may have unintended, silent consequences
+    # some institutions that use yabi have an unclean non-interactive ssh login
+    # the correct thing to do would be for them to make their ssh login clean
+    # to route around this we just check the word 'total' appears on a two word lines.
+    # if it does we assume its an ls output. We also at this point remove our defensive
+    # asserts so that we dont crash and we trash instead.
+    looks_like_ls_data = False
+    for line in data.split("/n"):
+        if len(line.split())==2 and line.split()[0]=="total":
+            looks_like_ls_data = True
+    if not looks_like_ls_data:
+        return {None:{"files":[],"directories":[]}}         # I feel so dirty
+            
     output = {}
     for name,filelisting,dirlisting in parse_ls_directories(data, culldots):
         if DEBUG:
