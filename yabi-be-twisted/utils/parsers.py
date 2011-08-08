@@ -124,7 +124,7 @@ def parse_ls(data, culldots=True):
     # if it does we assume its an ls output. We also at this point remove our defensive
     # asserts so that we dont crash and we trash instead.
     looks_like_ls_data = False
-    for line in data.split("/n"):
+    for line in data.split("\n"):
         if len(line.split())==2 and line.split()[0]=="total":
             looks_like_ls_data = True
     if not looks_like_ls_data:
