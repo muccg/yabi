@@ -13,16 +13,19 @@ from yabishell import actions
 from yabishell.utils import human_readable_size
 
 # TODO config file
-#YABI_DEFAULT_URL = 'https://faramir/yabife/snapshot/'
-YABI_DEFAULT_URL = 'https://ccg.murdoch.edu.au/yabi/'
+YABI_DEFAULT_URL = 'https://faramir/yabife/snapshot/'
 #YABI_DEFAULT_URL = 'https://ccg.murdoch.edu.au/yabi/'
+
 
 def main():
     debug = False
     yabi = None
     stagein = None
     try:
-        argparser = ArgumentParser(description='YABI shell', add_help=False)
+        help_desc = """Run the yabish command followed by the Yabi tool or command you wish to run ie:
+        yabish blast -i myseqs.fa -p blastn -d nt"""
+        
+        argparser = ArgumentParser(description=help_desc, add_help=False)
         argparser.add_argument("--yabi-debug", action='store_true', help="Run in debug mode")
         argparser.add_argument("--yabi-bg", action='store_true', help="Run in background")
         argparser.add_argument("--yabi-url", help="The URL of the YABI server", default=YABI_DEFAULT_URL)
@@ -31,7 +34,8 @@ def main():
         args = CommandLineArguments(args)
 
         if args.no_arguments or args.first_argument in ('-h', '--help'):
-            print_usage()
+
+            argparser.print_help()
             return
 
         if args.first_argument in ('-v', '--version'):
@@ -236,13 +240,6 @@ class Yabi(object):
     def session_finished(self):
         if self._http:
             self._http.finish_session()
-
-def print_usage():
-    print '''
-Welcome to Yabish!
-
-Command should be used like BLA BLA BLA
-'''
 
 def print_version():
     from version import __version__ 
