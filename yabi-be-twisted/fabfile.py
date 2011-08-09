@@ -88,3 +88,11 @@ def restart():
     restart the twistd server
     """
     print local("./init_scripts/centos/yabibe restart")
+
+
+def release(auto_confirm_purge=False):
+    """
+    Make a release deployment
+    """
+    env.auto_confirm=auto_confirm_purge
+    _ccg_deploy_release()
