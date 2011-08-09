@@ -1,7 +1,7 @@
 Installation from google code required a few alterations for the backend
 
 1. Not done via fab. Use:
-	hg archive -I yabi-be-twisted ~/temporary
+	hg archive -r Tagname -I yabi-be-twisted ~/temporary
 	scp ~/temporary/yabi-be-twisted yabi@yabi:/usr/local/yabi/src/yabi-be-twisted/tag-version
 
 2. Need to bootstrap, but from release symlink so the init script can find the correct virtualpython
