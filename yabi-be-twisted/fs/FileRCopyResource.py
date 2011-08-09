@@ -134,7 +134,8 @@ class FileRCopyResource(resource.PostableResource):
                         print traceback.format_exc()
                         result_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(be)) )
                     
-                    #print "Fsystem:",fsystem
+                    # lets split the source path on separator
+                    destination_dir_name = [X for X in src.split("/") if len(X)][-1]
                     
                     # remember the directories we make so we only make them once
                     created=[]
@@ -143,24 +144,24 @@ class FileRCopyResource(resource.PostableResource):
                         # make directory
                         destpath = directory[len(src_path)+1:]              # the subpath part
                         #print "D:",dst,":",destpath,";",src_path
-                        if dst+destpath not in created:
-                            #print dst+destpath,"not in",created
+                        if dst+destination_dir_name + "/"+destpath not in created:
+                            print dst+destination_dir_name + "/"+destpath,"not in",created
                             try:
-                                Mkdir(dst+destpath,yabiusername=yabiusername)
+                                Mkdir(dst+destination_dir_name + "/"+destpath,yabiusername=yabiusername)
                             except BlockingException, be:
                                 print traceback.format_exc()
                                 result_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(be)) )    
                             except GETFailure, gf:
                                 # ignore. directory probably already exists
                                 pass
-                            created.append(dst+destpath)
+                            created.append(dst+destination_dir_name + "/"+destpath)
                              
                         for file,size,date,link in fsystem[directory]['files']:
                             if DEBUG:
                                 print "COPY",file,size,date
                                 print "EXTRA",">",destpath,">",directory
                             src_uri = src+destpath+file
-                            dst_uri = dst+destpath+file
+                            dst_uri = dst+destination_dir_name + "/"+destpath+file
                             
                             if DEBUG:
                                 print "Copy(",src_uri,",",dst_uri,")"
