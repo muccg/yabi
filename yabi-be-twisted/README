@@ -1,1 +1,19 @@
-requires stackless and twisted
+Installation from google code required a few alterations for the backend
+
+1. Not done via fab. Use:
+	hg archive -I yabi-be-twisted ~/temporary
+	scp ~/temporary/yabi-be-twisted yabi@yabi:/usr/local/yabi/src/yabi-be-twisted/tag-version
+
+2. Need to bootstrap, but from release symlink so the init script can find the correct virtualpython
+	cd /usr/local/yabi/src/yabi-be-twisted
+	rm release && ln -s tag-version release
+	cd release
+	wget http://ccg-python-build.googlecode.com/hg/bootstrap.sh
+	chmod 700 bootstrap.sh
+	./bootstrap.sh
+
+3. Change initscript to use 
+	TWISTDLIST="/usr/local/yabi/src/yabi-be-twisted/release/virt_release/bin/twistd"
+
+4. Start yabibe
+	/usr/local/yabi/src/yabi-be-twisted/release/init_scripts/centos/yabibe start
