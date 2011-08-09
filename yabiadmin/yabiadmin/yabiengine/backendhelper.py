@@ -306,12 +306,10 @@ def rm_file(yabiusername, uri):
 
 def copy_file(yabiusername, src, dst):
     """Send a request to the backend to perform the specified file copy"""
-    logger.debug('yabiusername: %s src: %s dst: %s'%(yabiusername,src,dst))
-    
-    recurse = '&recurse' if src[-1]=='/' else ''
-    
+    logger.debug('copy_file yabiusername: %s src: %s dst: %s'%(yabiusername,src,dst))
+        
     try:
-        resource = "%s?src=%s&dst=%s%s" % (settings.YABIBACKEND_COPY, quote(src), quote(dst),recurse)
+        resource = "%s?src=%s&dst=%s" % (settings.YABIBACKEND_COPY, quote(src), quote(dst))
         logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
 
         # get credentials for src and destination backend
@@ -331,7 +329,35 @@ def copy_file(yabiusername, src, dst):
     except httplib.CannotSendRequest, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
         raise
+
+
+def rcopy_file(yabiusername, src, dst):
+    """Send a request to the backend to perform the specified file copy"""
+    logger.debug('rcopy_file yabiusername: %s src: %s dst: %s'%(yabiusername,src,dst))
     
+    try:
+        resource = "%s?src=%s&dst=%s" % (settings.YABIBACKEND_RCOPY, quote(src), quote(dst))
+        logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
+
+        # get credentials for src and destination backend
+        src = get_credential_for_uri(yabiusername, src).get()
+        dst = get_credential_for_uri(yabiusername, dst).get()
+        data = {'yabiusername':yabiusername}
+        data.update( dict( [("src_"+K,V) for K,V in src.iteritems()] ))
+        data.update( dict( [("dst_"+K,V) for K,V in dst.iteritems()] ))
+        r = POST(resource,data)
+        data=r.read()
+        assert(r.status == 200)
+        return r.status, data
+ 
+    except socket.error, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
+        raise
+    except httplib.CannotSendRequest, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
+        raise
+     
+
 def send_upload_hash(yabiusername,uri,uuid):
     """Send an upload has to the backend. Returns the url returned by the backend for uploading"""
     logger.debug('yabiusername: %s uri: %s uuid: %s'%(yabiusername,uri,uuid))

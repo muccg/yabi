@@ -314,9 +314,16 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
  * handleDrop
  */
 YabiFileSelector.prototype.handleDrop = function(src, dest, srcFileSelector, destFileselector) {
-    //send copy command
+    // default is normal copy
     var baseURL = appURL + "ws/fs/copy";
-
+    
+    // is source path a directory
+    if(src.type=='directory')
+    {
+        // we want to use rcopy webservice
+        baseURL = appURL + "ws/fs/rcopy";
+    }
+    
     //load json
     var jsUrl, jsCallback, jsTransaction;
     jsUrl =  baseURL + "?src=" + escape(src) + "&dst=" + escape(dest);
@@ -332,6 +339,8 @@ YabiFileSelector.prototype.handleDrop = function(src, dest, srcFileSelector, des
             argument: [destFileselector] };
     jsTransaction = YAHOO.util.Connect.asyncRequest('GET', jsUrl, jsCallback, null);
 
+    alert("jsUrl="+jsUrl);
+    
     if (!YAHOO.lang.isUndefined(messageManager)) {
         messageManager.addMessage(jsTransaction, 'Copying '+src+' to '+dest, 'fileOperationMessage');
     }

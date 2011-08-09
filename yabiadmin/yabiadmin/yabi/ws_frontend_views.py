@@ -53,7 +53,7 @@ from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.yabiengine.tasks import build
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import WorkflowTag
-from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_backendcredential_for_uri, copy_file, rm_file, send_upload_hash
+from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_backendcredential_for_uri, copy_file, rcopy_file, rm_file, send_upload_hash
 from yabiadmin.responses import *
 from yabi.file_upload import *
 from django.contrib import auth
@@ -267,13 +267,44 @@ def copy(request):
     """
     yabiusername = request.user.username
     try:
-        # TODO: This needs to be fixed in the FRONTEND, by sending the right url through as destination. For now we just make sure it ends in a slash
         src,dst = request.GET['src'],request.GET['dst']
+        # src must not be directory
+        assert src[-1]!='/', "src malformed. Either no length or not trailing with slash '/'"
+        # TODO: This needs to be fixed in the FRONTEND, by sending the right url through as destination. For now we just make sure it ends in a slash
         if dst[-1]!='/':
             dst += '/'
         logger.debug("yabiusername: %s src: %s -> dst: %s" %(yabiusername, src, dst))
         
         status, data = copy_file(yabiusername,src,dst)
+
+        return HttpResponse(content=data, status=status)
+    except AssertionError, e:
+        # The file handling functions in the backendhelper module throw
+        # assertion errors when they receive an unexpected HTTP status code
+        # from the backend. Since failed assertions don't result in the
+        # exception having a useful message, we'll intercept it here and return
+        # a response with something a little more useful for the user.
+        return JsonMessageResponseNotFound("The requested copy operation failed: please check that both the source file and destination exist and are accessible")
+    except Exception, e:
+        return JsonMessageResponseNotFound(e)
+
+@authentication_required
+def rcopy(request):
+    """
+    This function will instantiate a rcopy on the backend for this user
+    """
+    yabiusername = request.user.username
+    try:
+        src,dst = request.GET['src'],request.GET['dst']
+        
+        # src must be directory
+        assert src[-1]=='/', "src malformed. Not directory."
+        # TODO: This needs to be fixed in the FRONTEND, by sending the right url through as destination. For now we just make sure it ends in a slash
+        if dst[-1]!='/':
+            dst += '/'
+        logger.debug("yabiusername: %s src: %s -> dst: %s" %(yabiusername, src, dst))
+        
+        status, data = rcopy_file(yabiusername,src,dst)
 
         return HttpResponse(content=data, status=status)
     except AssertionError, e:

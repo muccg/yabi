@@ -66,10 +66,10 @@ BACKEND = {
         'STORE_HOME': '/home/yabi/.yabi/run/store/',
     },
     'cwellington': {
-	    'BACKEND_IP': '0.0.0.0',
-	    'BACKEND_PORT': '9001',
-	    'BACKEND_BASE': '/',
-	    'YABI_URL': 'yabi://faramir.localdomain/',
+        'BACKEND_IP': '192.168.1.12',
+        'BACKEND_PORT': '9001',
+        'BACKEND_BASE': '/',
+        'YABI_URL': 'yabi://faramir.localdomain/',
         'STORE_HOME': '/home/yabi/.yabi/run/store/',
     },
     'tszabo': {
