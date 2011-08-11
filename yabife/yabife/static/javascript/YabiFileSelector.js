@@ -342,6 +342,8 @@ YabiFileSelector.prototype.handleDrop = function(src, dest, srcFileSelector, des
     if (!YAHOO.lang.isUndefined(messageManager)) {
         messageManager.addMessage(jsTransaction, 'Copying '+src+' to '+dest, 'fileOperationMessage');
     }
+    
+    // make copying spinner appear
 };
 
 /**
@@ -753,6 +755,19 @@ YabiFileSelector.prototype.movelessDrop = function(e) {
     DOM.setStyle(lel, "visibility", "");
 };
 
+/**
+ * YabiFileCopyStatusPane
+ * 
+ * Overlays a large spinner on the window
+ */
+var YabiFileCopyStatusPane = function( fs ) {
+    this.fs = fs
+    
+    this.spinnerEl = document.createElement("div");
+    this.spinnerEl.className = "fileCopyStatusPane";
+    
+    this.fs.browseEl.appendChild(this.spinnerEl);
+}
 
 /**
  * YabiFileSelectorPreview
