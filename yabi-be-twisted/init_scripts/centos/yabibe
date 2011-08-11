@@ -15,7 +15,7 @@ NAME="yabibe"
 TWISTDLIST=( "virt_yabi-be-twisted/bin/twistd" "/usr/local/yabi/src/yabi-be-twisted/release/virt_release/bin/twistd" )
 CONFFILE="yabi.conf"
 
-for T in"${TWISTDLIST[@]}"
+for T in "${TWISTDLIST[@]}"
 do
     if [ -f $T ] && [ -x $T ]
     then
