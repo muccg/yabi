@@ -34,6 +34,10 @@ from ldap import LDAPError, MOD_REPLACE
 from urlparse import urlparse
 from yabife.ldapclient import LDAPClient
 from yabife.ldaputils import get_userdn_of
+from utils import reencrypt_user_credentials
+
+from django.contrib import logging
+logger = logging.getLogger('yabife')
 
 import base64
 import hashlib
@@ -127,8 +131,16 @@ class LDAPBackendUser(User):
         client.unbind()
 
 
-    def change_password(self, currentPassword, newPassword, confirmPassword):
+    def change_password(self, request):
         """Return a tuple of (valid, errormsg)"""
+
+        currentPassword = request.POST.get("currentPassword", None)
+        newPassword = request.POST.get("newPassword", None)
+        confirmPassword = request.POST.get("confirmPassword", None)
+
+        # check the user is allowed to change password
+        if not self.user_option_access:
+            return (False, "You do not have access to this web service")
 
         # check we have everything
         if not currentPassword or not newPassword or not confirmPassword:
@@ -156,6 +168,10 @@ class LDAPBackendUser(User):
             # Send back something fairly generic.
             logger.debug("Error connecting to server: %s" % str(e))
             return (False, "Error changing password")
+
+        # if all this succeeded we should tell the middleware to re-encrypt the users credentials with the new password.
+        # TODO catch exception here and return appropriately
+        reencrypt_user_credentials(request, currentPassword, newPassword)
 
         self.user.save()
 

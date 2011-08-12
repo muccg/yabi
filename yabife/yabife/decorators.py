@@ -25,6 +25,7 @@
 # 
 ### END COPYRIGHT ###
 from django.http import HttpResponseUnauthorized
+from yabifeapp.utils import mail_admins_no_profile
 
 def authentication_required(f):
 

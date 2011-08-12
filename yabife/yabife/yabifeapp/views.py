@@ -38,7 +38,6 @@ from time import mktime
 
 from django.conf.urls.defaults import *
 from django.conf import settings
-from django.core.mail import mail_admins
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError, HttpResponseUnauthorized
 from django.shortcuts import render_to_response, get_object_or_404, render_mako
 from django.template.loader import render_to_string
@@ -66,7 +65,8 @@ from yabife.ldaputils import get_userdn_of
 from yabife.responses import *
 from yabife.preview import html
 
-import memcache
+from utils import memcache_client, memcache_http, make_http_request, make_request_object, preview_key, reencrypt_user_credentials
+
 
 from django.contrib import logging
 logger = logging.getLogger('yabife')
@@ -358,34 +358,17 @@ def credentialproxy(request, url):
 def explode(request):
     raise Exception("KA BLAM")
 
+
 @login_required
+@mail_admins_no_profile_decorator
 def password(request):
     if request.method != "POST":
         return JsonMessageResponseNotAllowed(["POST"])
 
-    try:
-        profile = request.user.get_profile()
-        if not profile.user_option_access:
-            return JsonMessageResponseForbidden("You do not have access to this Web service")
-    except (ObjectDoesNotExist, AttributeError):
-        return JsonMessageResponseUnauthorized("You do not have access to this Web service")
-
-    required = ("currentPassword", "newPassword", "confirmPassword")
-    for key in required:
-        if key not in request.POST:
-            return JsonMessageResponseBadRequest("Expected key '%s' not found in request" % key)
-
-    currentPassword = request.POST.get("currentPassword", None)
-    newPassword = request.POST.get("newPassword", None)
-    confirmPassword = request.POST.get("confirmPassword", None)
-
-    (valid, errormsg) = profile.change_password(currentPassword, newPassword, confirmPassword)
+    profile = request.user.get_profile()
+    (valid, errormsg) = profile.change_password(request)
     if not valid:
         return JsonMessageResponseServerError(errormsg)
-
-
-    # if all this succeeded we should tell the middleware to re-encrypt the users credentials with the new password.
-    reencrypt_user_credentials(request, currentPassword, newPassword)
 
     return JsonMessageResponse("Password changed successfully")
 
@@ -541,74 +524,6 @@ def error_500(request):
     
 # Implementation methods
 
-def redirect_to_login():
-    from django.contrib.auth import REDIRECT_FIELD_NAME
-    from django.utils.http import urlquote
-    #tup = settings.LOGIN_URL, REDIRECT_FIELD_NAME, urlquote(request.get_full_path())
-    #return HttpResponseRedirect('%s?%s=%s' % tup)
-    return HttpResponseRedirect(settings.LOGIN_URL)
-
-def make_request_object(url, request):
-    params = {}
-    for k in request.REQUEST:
-        params[k] = request.REQUEST[k]
-    if request.method == 'GET':
-        return GetRequest(url, params)
-    elif request.method == 'POST':
-        files = [('file%d' % (i+1), f.name, f.temporary_file_path()) for i,f in enumerate(request.FILES.values())] 
-        return PostRequest(url, params, files=files)
-
-def make_http_request(request, original_request, ajax_call):
-    try:
-        with memcache_http(original_request) as http:
-            try:
-                resp, contents = http.make_request(request)
-                our_resp = HttpResponse(contents, status=int(resp.status))
-                copy_non_empty_headers(resp, our_resp, ('content-disposition', 'content-type'))
-                return our_resp
-            except UnauthorizedError:
-                if ajax_call:
-                    return HttpResponseUnauthorized() 
-                else:
-                    return redirect_to_login()
-    except ObjectDoesNotExist:
-        if ajax_call:
-            return HttpResponseUnauthorized() 
-        else:
-            return redirect_to_login()
-
-def copy_non_empty_headers(src, to, header_names):
-    for header_name in header_names:
-        header_value = src.get(header_name)
-        if header_value:
-            to[header_name] = header_value
-
-def memcache_client():
-    return memcache.Client(settings.MEMCACHE_SERVERS)
-
-def memcache_http(request):
-    user = request.user
-
-    mp = MemcacheCookiePersister(settings.MEMCACHE_SERVERS,
-            key='%s-cookies-%s' %(settings.MEMCACHE_KEYSPACE, request.session.session_key),
-            cache_time=settings.SESSION_COOKIE_AGE)
-          
-    yabiadmin = user.get_profile().appliance.url
-    return Http(base_url=yabiadmin, cache=False, cookie_persister=mp)
-
-def mail_admins_no_profile(user):
-    mail_admins("User Profile Error", render_to_string("email/noprofile.txt", {
-        "user": user,
-    }))
-
-def preview_key(uri):
-    # The naïve approach here is to use the file name encoded in such a way
-    # that memcache accepts it as a key, but that turns out to be problematic,
-    # as it's not uncommon for file names within YABI to be greater than the
-    # 250 character limit memcache imposes on key names. As a result, we'll
-    # hash the file name and accept the (extremely slight) risk of collisions.
-    file_hash = hashlib.sha512(uri).hexdigest()
-    return str("%s-preview-%s" % (settings.MEMCACHE_KEYSPACE, file_hash))
 
 def upload_file(request, user):
     logger.debug('')
@@ -682,11 +597,6 @@ def yabiadmin_logout(request):
     except (ObjectDoesNotExist, AttributeError):
         pass
 
-def reencrypt_user_credentials(request, currentPassword, newPassword):
-    enc_request = PostRequest("ws/account/passchange", params={ "oldPassword": currentPassword, "newPassword": newPassword })
-    http = memcache_http(request)
-    resp, content = http.make_request(enc_request)
-    assert resp['status']=='200', (resp['status'], content)
 
 
 @login_required
