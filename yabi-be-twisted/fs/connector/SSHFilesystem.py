@@ -34,6 +34,7 @@ from FifoPool import Fifos
 from twisted.internet import protocol
 from twisted.internet import reactor
 import os
+import json
 from utils.protocol import ssh
 
 from conf import config
@@ -196,7 +197,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         # we need to munge the path for transport over gsissh (cause it sucks)
         #mungedpath = '"' + path.replace('"',r'\"') + '"'
         #print "===>LS",usercert,host,path, port, "-lFR" if recurse else "-lF", creds['username'], creds['password']
-        pp = ssh.Shell.ls(usercert,host,path, port=port, args="-lFR" if recurse else "-lF", username=creds['username'], password=creds['password'] )
+        pp = ssh.Shell.ls(usercert,host,path, port=port, recurse=recurse, username=creds['username'], password=creds['password'] )
         
         while not pp.isDone():
             stackless.schedule()
@@ -217,18 +218,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
                 print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
                 raise Exception(err)
         
-        ls_data = parse_ls(out, culldots=culldots)
-        
-        if DEBUG:
-            print "ls_data=",ls_data
-            print "out", out
-            print "err", err
-        
-        # are we non recursive?
-        if not recurse:
-            # "None" path header is actually our path
-            ls_data[path]=ls_data[None]
-            del ls_data[None]
+        ls_data = json.loads(out)
         
         if usercert:
             os.unlink(usercert)

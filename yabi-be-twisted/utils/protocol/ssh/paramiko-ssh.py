@@ -31,7 +31,7 @@ import setproctitle
 setproctitle.setproctitle("yabi-ssh startup...")
 
 import paramiko
-import os, sys, select, stat, time
+import os, sys, select, stat, time, json
 
 # read() blocksize
 BLOCK_SIZE = 512
@@ -47,7 +47,14 @@ def main():
     # connect and authenticate
     if options.listfolder:
         ssh = transport_connect_login(options)
-        exit_status = list_folder_recurse(ssh, options)
+        output = list_folder(ssh, options)
+        print json.dumps(output)
+        exit_status = 0
+    elif options.listfolderrecurse:
+        ssh = transport_connect_login(options)
+        output = list_folder_recurse(ssh, options)
+        print json.dumps(output)
+        exit_status = 0
     else:
         ssh = ssh_connect_login(options)
         exit_status = execute(ssh, options)
@@ -72,33 +79,36 @@ def parse_args():
     parser.add_option( "-L", "--postlocal", dest="postlocal", help="Post-copy postremote to postlocal")
     parser.add_option( "-R", "--postremote", dest="postremote", help="Post-copy postremote to postlocal")
     parser.add_option( "-f", "--list-folder", dest="listfolder", help="Do an ssh list operation on the specified folder")
+    parser.add_option( "-F", "--list-folder-recurse", dest="listfolderrecurse", help="Do a recursive list operation on the specified folder")
 
     return parser.parse_args()
 
 def list_folder(ssh, options): 
     sftp = paramiko.SFTPClient.from_transport( ssh )
-    contents = sftp.listdir_attr(options.listfolder)
-    output = {}
-    for entry in contents:
-        #output[entry.filename]=[entry.attr,entry.st_atime, entry.st_gid, entry.st_mode, entry.st_mtime, entry.st_size, entry.st_uid,stat.S_ISLNK(entry.st_mode),stat.S_ISDIR(entry.st_mode)]
-        output[entry.filename]=[entry.st_mtime, entry.st_size, entry.st_uid,stat.S_ISLNK(entry.st_mode),stat.S_ISDIR(entry.st_mode)]
-    print output
+    return {options.listfolder:do_ls(sftp,options.listfolder)}
     
 def do_ls(sftp, path):
     output = {"files":[],"directories":[]}
     for entry in sftp.listdir_attr(path):
-        if stat.S_ISDIR(entry.st_mode):
-            # directory
-            output['directories'].append([entry.filename,entry.st_size,time.strftime("%a, %d %b %Y %H:%M:%S",time.localtime(entry.st_mtime)),stat.S_ISLNK(entry.st_mode)])
-        else:
-            # files
-            output['files'].append([entry.filename,entry.st_size,time.strftime("%a, %d %b %Y %H:%M:%S",time.localtime(entry.st_mtime)),stat.S_ISLNK(entry.st_mode)])
+        # if not a hidden directory
+        if not entry.filename.startswith('.'):
+            if stat.S_ISDIR(entry.st_mode):
+                # directory
+                output['directories'].append([entry.filename,entry.st_size,time.strftime("%a, %d %b %Y %H:%M:%S",time.localtime(entry.st_mtime)),stat.S_ISLNK(entry.st_mode)])
+            else:
+                # files
+                output['files'].append([entry.filename,entry.st_size,time.strftime("%a, %d %b %Y %H:%M:%S",time.localtime(entry.st_mtime)),stat.S_ISLNK(entry.st_mode)])
+    
+    # sort entries
+    output['directories'].sort()
+    output['files'].sort()
+    
     return output
     
 def list_folder_recurse(ssh, options):
     sftp = paramiko.SFTPClient.from_transport( ssh )
     output = {}
-    return do_ls_r(sftp,options.listfolder,output)
+    return do_ls_r(sftp,options.listfolderrecurse,output)
 
 def do_ls_r(sftp,path,output):
     try:
@@ -112,8 +122,6 @@ def do_ls_r(sftp,path,output):
         do_ls_r(sftp, os.path.join(path,filename), output)
         
     return output
-        
-    
 
 def sanity_check(options):
     if not options.hostname:

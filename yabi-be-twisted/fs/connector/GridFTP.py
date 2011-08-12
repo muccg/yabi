@@ -174,7 +174,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
             # "None" path header is actually our path
             ls_data[path]=ls_data[None]
             del ls_data[None]
-                        
+            
         return ls_data
 
     def ln(self, host, username, target, link, port=None, yabiusername=None, recurse=False, culldots=True, creds={}, priority=0):

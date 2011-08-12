@@ -80,10 +80,35 @@ class SSHShell(BaseShell):
         
         return BaseShell.execute(self,SSHExecProcessProtocolParamiko(),sshcommand)
 
+    def execute_list(self, certfile, host, path, username, password, recurse=False, port=None):
+        """Spawn a process to run a remote ssh job. return the process handler"""
+        if DEBUG:
+            print "CERTFILE:",certfile
+            print "HOST:",host
+            print "USERNAME:",username
+            print "PASSWORD:","*"*len(password)
+            print "RECURSE:",recurse
+            print "PATH:",path
+        
+        subenv = self._make_env()
+        
+        sshcommand = [self.python, self.ssh_exec ]
+        sshcommand += ["-i",certfile] if certfile else []
+        sshcommand += ["-p",password] if password else []
+        sshcommand += ["-u",username] if username else []
+        sshcommand += ["-H",host] if host else []
+        sshcommand.extend( [ "-F" if recurse else "-f", path ] )
+        
+        if DEBUG:
+            print "SSHShell Running:",sshcommand
+         
+        
+        return BaseShell.execute(self,SSHExecProcessProtocolParamiko(),sshcommand)
+
       
-    def ls(self, certfile, host, directory,username, password, args="-lFR", port=None):
-        return self.execute(certfile,host,command=["ls",args,self._make_echo(directory)],username=username, password=password, port=port)
-      
+    def ls(self, certfile, host, directory,username, password, recurse=False, port=None):
+        return self.execute_list(certfile, host, directory,username, password, recurse, port)
+        
     def mkdir(self, certfile, host, directory,username, password, args="-p", port=None):
         return self.execute(certfile,host,command=["mkdir",args,self._make_echo(directory)],username=username, password=password, port=port)
       
