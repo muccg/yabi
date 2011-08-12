@@ -83,11 +83,20 @@ class User(models.Model):
     user_option_access = models.BooleanField(default=True)
     credential_access = models.BooleanField(default=True)
 
+    class Meta:
+        ordering = ["user__username"]
+
     def __unicode__(self):
         return "%s: %s" % (self.user.username, self.appliance.url)
 
+    def has_account_tab(self):
+        return self.user_option_access or self.credential_access
+
+
+class LDAPBackendUser(User):
+
     class Meta:
-        ordering = ["user__username"]
+        proxy = True
 
     class LDAPUserDoesNotExist(ObjectDoesNotExist):
         pass
@@ -99,9 +108,6 @@ class User(models.Model):
             raise User.LDAPUserDoesNotExist
 
         return userdn
-
-    def has_account_tab(self):
-        return self.user_option_access or self.credential_access
 
     def set_ldap_password(self, current_password, new_password, bind_userdn=None, bind_password=None):
         userdn = self.get_userdn()
@@ -119,3 +125,38 @@ class User(models.Model):
         client.modify(userdn, modlist)
 
         client.unbind()
+
+
+    def change_password(self, currentPassword, newPassword, confirmPassword):
+        """Return a tuple of (valid, errormsg)"""
+
+        # check we have everything
+        if not currentPassword or not newPassword or not confirmPassword:
+            return (False, "Either the current, new or confirmation password is missing from request.")
+
+        # check the current password
+        if not self.user.check_password(currentPassword):
+            return (False, "Current password is incorrect")
+
+        # the new passwords should at least match and meet whatever rules we decide
+        # to impose (currently a minimum six character length)
+        if newPassword != confirmPassword:
+            return (False, "The new passwords must match")
+
+        if len(newPassword) < 6:
+            return (False, "The new password must be at least 6 characters in length")
+
+        # ok, let's actually try to change the password
+        self.user.set_password(newPassword)
+
+        # and, more importantly, in LDAP if we can.
+        try:
+            self.set_ldap_password(currentPassword, newPassword)
+        except (AttributeError, LDAPError), e:
+            # Send back something fairly generic.
+            logger.debug("Error connecting to server: %s" % str(e))
+            return (False, "Error changing password")
+
+        self.user.save()
+
+        return (True, "Password changed successfully")

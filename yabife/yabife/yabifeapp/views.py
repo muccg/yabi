@@ -375,35 +375,20 @@ def password(request):
         if key not in request.POST:
             return JsonMessageResponseBadRequest("Expected key '%s' not found in request" % key)
 
-    # Check the current password.
-    if not authenticate(username=request.user.username, password=request.POST["currentPassword"]):
-        return JsonMessageResponseForbidden("Current password is incorrect")
+    currentPassword = request.POST.get("currentPassword", None)
+    newPassword = request.POST.get("newPassword", None)
+    confirmPassword = request.POST.get("confirmPassword", None)
 
-    # The new passwords should at least match and meet whatever rules we decide
-    # to impose (currently a minimum six character length).
-    if request.POST["newPassword"] != request.POST["confirmPassword"]:
-        return JsonMessageResponseBadRequest("The new passwords must match")
+    (valid, errormsg) = profile.change_password(currentPassword, newPassword, confirmPassword)
+    if not valid:
+        return JsonMessageResponseServerError(errormsg)
 
-    if len(request.POST["newPassword"]) < 6:
-        return JsonMessageResponseBadRequest("The new password must be at least 6 characters in length")
 
-    # OK, let's actually try to change the password.
-    request.user.set_password(request.POST["newPassword"])
-    
-    # And, more importantly, in LDAP if we can.
-    try:
-        profile.set_ldap_password(request.POST["currentPassword"], request.POST["newPassword"])
-    except (AttributeError, LDAPError), e:
-        # Send back something fairly generic.
-        logger.debug("Error connecting to server: %s" % str(e))
-        return JsonMessageResponseServerError("Error changing password")
-
-    request.user.save()
-    
     # if all this succeeded we should tell the middleware to re-encrypt the users credentials with the new password.
-    reencrypt_user_credentials(request, request.POST["currentPassword"], request.POST["newPassword"])
+    reencrypt_user_credentials(request, currentPassword, newPassword)
 
     return JsonMessageResponse("Password changed successfully")
+
 
 @login_required
 def preview(request):
@@ -701,7 +686,7 @@ def reencrypt_user_credentials(request, currentPassword, newPassword):
     enc_request = PostRequest("ws/account/passchange", params={ "oldPassword": currentPassword, "newPassword": newPassword })
     http = memcache_http(request)
     resp, content = http.make_request(enc_request)
-    assert resp['status']=='200'
+    assert resp['status']=='200', (resp['status'], content)
 
 
 @login_required
