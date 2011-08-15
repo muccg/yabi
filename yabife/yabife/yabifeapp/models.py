@@ -28,6 +28,7 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.contrib.auth.models import User as DjangoUser
+from django.contrib.auth import authenticate
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from ldap import LDAPError, MOD_REPLACE
@@ -147,7 +148,7 @@ class LDAPBackendUser(User):
             return (False, "Either the current, new or confirmation password is missing from request.")
 
         # check the current password
-        if not self.user.check_password(currentPassword):
+        if not authenticate(username=request.user.username, password=currentPassword):
             return (False, "Current password is incorrect")
 
         # the new passwords should at least match and meet whatever rules we decide

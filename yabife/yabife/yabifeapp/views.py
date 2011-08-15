@@ -26,7 +26,7 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-# Create your views here.
+
 import httplib
 from urllib import urlencode, unquote, quote
 import copy
@@ -44,7 +44,7 @@ from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import webhelpers
 from django.contrib.auth.decorators import login_required
-from yabife.decorators import authentication_required
+from yabife.decorators import authentication_required, profile_required
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate
 from django.contrib.auth.models import SiteProfileNotAvailable, User as DjangoUser
 from django.contrib.sessions.models import Session
@@ -65,7 +65,7 @@ from yabife.ldaputils import get_userdn_of
 from yabife.responses import *
 from yabife.preview import html
 
-from utils import memcache_client, memcache_http, make_http_request, make_request_object, preview_key, reencrypt_user_credentials
+from utils import memcache_client, memcache_http, make_http_request, make_request_object, preview_key, reencrypt_user_credentials, logout
 
 
 from django.contrib import logging
@@ -152,15 +152,10 @@ def proxy(request, url, base):
     return make_http_request(target_request, request, request.is_ajax())
 
 @authentication_required
+@profile_required
 def adminproxy(request, url):
     logger.debug('')
-    try:
-        return proxy(request, quote(url), request.user.get_profile().appliance.url)
-    except ObjectDoesNotExist:
-        mail_admins_no_profile(request.user)
-        return JsonMessageResponseUnauthorized("User is not associated with an appliance")
-    except AttributeError:
-        return JsonMessageResponseUnauthorized("Anonymous users do not have access to appliances")
+    return proxy(request, quote(url), request.user.get_profile().appliance.url)
 
 @authentication_required
 def adminproxy_cache(request, url):
@@ -203,39 +198,25 @@ def render_page(template, request, response=None, **kwargs):
 
     return response
 
-def mail_admins_no_profile_decorator(func):
-    def newfunc(request,*args,**kwargs):
-        # Check if the user has a profile; if not, nothing's going to work anyway,
-        # so we might as well fail more spectacularly.
-        try:
-            request.user.get_profile()
-        except ObjectDoesNotExist:
-            mail_admins_no_profile(request.user)
-            return logout(request)
-        except AttributeError:
-            return JsonMessageResponseUnauthorized("Anonymous users do not have access to YABI")
-        return func(request, *args, **kwargs)    
-            
-    return newfunc
 
 
 @login_required
-@mail_admins_no_profile_decorator
+@profile_required
 def files(request):
     return render_page("files.html", request)
 
 @login_required
-@mail_admins_no_profile_decorator
+@profile_required
 def design(request, id=None):
     return render_page("design.html", request, reuseId=id)
     
 @login_required
-@mail_admins_no_profile_decorator
+@profile_required
 def jobs(request):
     return render_page("jobs.html", request)
 
 @login_required
-@mail_admins_no_profile_decorator
+@profile_required
 def account(request):
     if not request.user.get_profile().has_account_tab():
         return render_page("errors/403.html", request, response=HttpResponseForbidden())
@@ -256,19 +237,13 @@ def login(request):
             if user is not None:
                 if user.is_active:
                     django_login(request, user)
+                    yabiadmin_login(request, username, password)
 
-                    # Look up the user's profile -- if they don't have one,
-                    # then they don't have an appliance, and hence can't log in
-                    # as such.
-                    try:
-                        user.get_profile()
-                    except (SiteProfileNotAvailable, User.DoesNotExist, AttributeError):
-                        mail_admins_no_profile(request.user)
-                        return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':"User is not associated with an appliance"})
-
-                    success, message = yabiadmin_login(request, username, password)
-                    if not success:
-                        return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':message})
+                    # TODO need to be able to get this message to frontend, not so easily done using decorator
+                    # but don't want to duplicate decorator code here just to get this message in
+                    #  success, message = yabiadmin_login(request, username, password)
+                    # if not success:
+                    #     return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':message})
 
                     return HttpResponseRedirect(webhelpers.url("/"))
 
@@ -284,10 +259,6 @@ def login(request):
         return render_to_response('login.html', {'h':webhelpers, 'form':form, 'url':None})
 
 
-def logout(request):
-    yabiadmin_logout(request)
-    django_logout(request)
-    return HttpResponseRedirect(webhelpers.url("/"))
 
 def wslogin(request):
     if request.method != "POST":
@@ -301,26 +272,11 @@ def wslogin(request):
         if user.is_active:
             django_login(request, user)
 
-            # Look up the user's profile -- if they don't have one, then they
-            # don't have an appliance, and hence can't log in as such.
-            try:
-                user.get_profile()
-            except (SiteProfileNotAvailable, User.DoesNotExist, AttributeError):
-                mail_admins_no_profile(request.user)
-                response = {
-                    "success": False,
-                    "message": "User is not associated with an appliance",
+            yabiadmin_login(request, username, password)
+            response = {
+                "success": True
                 }
 
-            if yabiadmin_login(request, username, password):
-                response = {
-                    "success": True
-                }
-            else:
-               response = {
-                    "success": False,
-                    "message": "System Error (can't log in admin)",
-               }
         else:
             response = {
                 "success": False,
@@ -331,6 +287,7 @@ def wslogin(request):
             "success": False,
             "message": "The user name and password are incorrect.",
         }
+
     return HttpResponse(content=json.dumps(response))
 
 def wslogout(request):
@@ -360,7 +317,7 @@ def explode(request):
 
 
 @login_required
-@mail_admins_no_profile_decorator
+@profile_required
 def password(request):
     if request.method != "POST":
         return JsonMessageResponseNotAllowed(["POST"])
@@ -524,19 +481,13 @@ def error_500(request):
     
 # Implementation methods
 
-
+@profile_required
 def upload_file(request, user):
     logger.debug('')
     
-    try:
-        appliance = user.get_profile().appliance
-    except ObjectDoesNotExist:
-        mail_admins_no_profile(user)
-        return JsonMessageResponseForbidden("You do not have access to this Web service")
-    except AttributeError:
-        return JsonMessageResponseForbidden("You do not have access to this Web service")
-   
+    appliance = user.get_profile().appliance
     upload_path = appliance.path
+
     while len(upload_path) and upload_path[-1]=='/':
         upload_path = upload_path[:-1]
         
@@ -568,6 +519,7 @@ def upload_file(request, user):
         }
     return HttpResponse(content=json.dumps(response))
 
+@profile_required
 def yabiadmin_login(request, username, password):
     # TODO get the url from somewhere
     login_request = PostRequest('ws/login', params= {
@@ -584,18 +536,6 @@ def yabiadmin_login(request, username, password):
     
     return success, message
 
-def yabiadmin_logout(request):
-    # TODO get the url from somewhere
-    logout_request = PostRequest('ws/logout')
-    try:
-        with memcache_http(request) as http:
-            resp, contents = http.make_request(logout_request)
-            if resp.status != 200: 
-                return False
-            json_resp = json.loads(contents)
-        return json_resp.get('success', False)
-    except (ObjectDoesNotExist, AttributeError):
-        pass
 
 
 

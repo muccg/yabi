@@ -26,6 +26,13 @@
 ### END COPYRIGHT ###
 from django.http import HttpResponseUnauthorized
 from yabifeapp.utils import mail_admins_no_profile
+from django.core.exceptions import ObjectDoesNotExist
+
+from yabifeapp.utils import mail_admins_no_profile, logout
+from yabife.responses import JsonMessageResponseUnauthorized
+
+from django.contrib import logging
+logger = logging.getLogger('yabife')
 
 def authentication_required(f):
 
@@ -36,3 +43,23 @@ def authentication_required(f):
         return f(*args, **kwargs)
     return new_function
 
+
+def profile_required(func):
+    def newfunc(request,*args,**kwargs):
+        # Check if the user has a profile; if not, nothing's going to work anyway,
+        # so we might as well fail more spectacularly.
+        try:
+            request.user.get_profile()
+
+        except ObjectDoesNotExist:
+            mail_admins_no_profile(request.user)
+            logger.critical("User is not associated with an appliance: %s" % request.user)
+            return logout(request)
+
+        except AttributeError:
+            logger.critical("Anonymous user attempting to access Yabi")
+            return JsonMessageResponseUnauthorized("Anonymous users do not have access to YABI")
+
+        return func(request, *args, **kwargs)    
+            
+    return newfunc

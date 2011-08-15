@@ -26,12 +26,16 @@
 # 
 ### END COPYRIGHT ###
 
-import memcache
+import memcache, hashlib
 
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError, HttpResponseUnauthorized
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import mail_admins
+from django.contrib.auth import login as django_login, logout as django_logout
+from django.utils import webhelpers
+from django.template.loader import render_to_string
+from django.utils import simplejson as json
 
 from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
 from yaphc.memcache_persister import MemcacheCookiePersister
@@ -111,3 +115,24 @@ def reencrypt_user_credentials(request, currentPassword, newPassword):
     http = memcache_http(request)
     resp, content = http.make_request(enc_request)
     assert resp['status']=='200', (resp['status'], content)
+
+
+def logout(request):
+    yabiadmin_logout(request)
+    django_logout(request)
+    return HttpResponseRedirect(webhelpers.url("/"))
+
+
+def yabiadmin_logout(request):
+    # TODO get the url from somewhere
+    logout_request = PostRequest('ws/logout')
+    try:
+        with memcache_http(request) as http:
+            resp, contents = http.make_request(logout_request)
+            if resp.status != 200: 
+                return False
+            json_resp = json.loads(contents)
+        return json_resp.get('success', False)
+    except (ObjectDoesNotExist, AttributeError):
+        pass
+
