@@ -65,7 +65,7 @@ from yabife.ldaputils import get_userdn_of
 from yabife.responses import *
 from yabife.preview import html
 
-from utils import memcache_client, memcache_http, make_http_request, make_request_object, preview_key, reencrypt_user_credentials, logout
+from utils import memcache_client, memcache_http, make_http_request, make_request_object, preview_key, reencrypt_user_credentials, logout, yabiadmin_logout
 
 
 from django.contrib import logging
