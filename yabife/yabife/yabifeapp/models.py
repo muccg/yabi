@@ -98,6 +98,50 @@ class User(models.Model):
         return self.user_option_access or self.credential_access
 
 
+class ModelBackendUser(User):
+
+    class Meta:
+        proxy = True
+
+    def change_password(self, request):
+        """Return a tuple of (valid, errormsg)"""
+
+        currentPassword = request.POST.get("currentPassword", None)
+        newPassword = request.POST.get("newPassword", None)
+        confirmPassword = request.POST.get("confirmPassword", None)
+
+        # check the user is allowed to change password
+        if not self.user_option_access:
+            return (False, "You do not have access to this web service")
+
+        # check we have everything
+        if not currentPassword or not newPassword or not confirmPassword:
+            return (False, "Either the current, new or confirmation password is missing from request.")
+
+        # check the current password
+        if not authenticate(username=request.user.username, password=currentPassword):
+            return (False, "Current password is incorrect")
+
+        # the new passwords should at least match and meet whatever rules we decide
+        # to impose (currently a minimum six character length)
+        if newPassword != confirmPassword:
+            return (False, "The new passwords must match")
+
+        if len(newPassword) < 6:
+            return (False, "The new password must be at least 6 characters in length")
+
+        # this is the model backend so we have to change the password in the db
+        self.user.set_password(newPassword)
+        
+        # if all this succeeded we should tell the middleware to do the same
+        # TODO catch exception here and return appropriately
+        yabiadmin_passchange(request, currentPassword, newPassword)
+
+        self.user.save()
+
+        return (True, "Password changed successfully")
+
+    
 class LDAPBackendUser(User):
 
     class Meta:
@@ -132,7 +176,7 @@ class LDAPBackendUser(User):
 
         # this is an ldap model backend, so we don't change the Auth.User password
 
-        # if all this succeeded we should tell the middleware to re-encrypt the users credentials with the new password.
+        # if all this succeeded we should tell the middleware to do the same
         # TODO catch exception here and return appropriately
         yabiadmin_passchange(request, currentPassword, newPassword)
 

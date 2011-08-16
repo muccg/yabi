@@ -713,7 +713,28 @@ class UserProfile(models.Model):
             cred.save()
 
 
+class ModelBackendUserProfile(UserProfile):
 
+    class Meta:
+        proxy = True
+
+    def passchange(self, request):
+        currentPassword = request.POST.get("currentPassword", None)
+        newPassword = request.POST.get("newPassword", None)
+
+        assert currentPassword, "No currentPassword was found in the request."
+        assert newPassword, "No newPassword was found in the request."
+
+        try:
+            self.user.set_password(newPassword)
+            self.reencrypt_user_credentials(request)
+            return (True, "Password successfully changed")
+        except (AttributeError, LDAPError), e:
+            # Send back something fairly generic.
+            logger.debug("Error changing password in LDAP server: %s" % str(e))
+            return (False, "Error changing password")
+
+        
 class LDAPBackendUserProfile(UserProfile):
 
     class Meta:
