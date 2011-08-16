@@ -26,18 +26,23 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
+import traceback, hashlib, base64
+
 from django.db import models
 from django import forms
 from django.contrib.auth.models import User as DjangoUser
 from django.utils import simplejson as json
 from django.core import urlresolvers
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from urlparse import urlparse, urlunparse
 from crypto import aes_enc_hex, aes_dec_hex
-import traceback
 
+from ldap import LDAPError, MOD_REPLACE
 from django.contrib.memcache import KeyspacedMemcacheClient
 from yabiadmin.decorators import func_create_memcache_keyname
+from yabiadmin.ldapclient import LDAPClient
+from yabiadmin.ldaputils import get_userdn_of
 
 from constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK
 
@@ -690,6 +695,76 @@ class BackendCredential(Base):
     backend_cred_test_link.allow_tags = True
 
 
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(DjangoUser)
+
+
+    def reencrypt_user_credentials(self, request):
+        yabiuser = User.objects.get(name=request.user.username)
+
+        currentPassword = request.POST['currentPassword']
+        newPassword = request.POST['newPassword']
+    
+        # get all creds for this user that are encrypted
+        creds = Credential.objects.filter(user=yabiuser, encrypted=True)
+        for cred in creds:
+            cred.recrypt(currentPassword, newPassword)
+            cred.save()
+
+
+
+class LDAPBackendUserProfile(UserProfile):
+
+    class Meta:
+        proxy = True
+
+    class LDAPUserDoesNotExist(ObjectDoesNotExist):
+        pass
+
+    def get_userdn(self):
+        userdn = get_userdn_of(self.user.username)
+
+        if not userdn:
+            raise LDAPBackendUserProfile.LDAPUserDoesNotExist
+
+        return userdn
+
+    def set_ldap_password(self, current_password, new_password, bind_userdn=None, bind_password=None):
+        userdn = self.get_userdn()
+        client = LDAPClient(settings.AUTH_LDAP_SERVER)
+
+        if bind_userdn and bind_password:
+            client.bind_as(bind_userdn, bind_password)
+        else:
+            client.bind_as(userdn, current_password)
+
+        md5 = hashlib.md5(new_password).digest()
+        modlist = (
+            (MOD_REPLACE, "userPassword", "{MD5}%s" % (base64.encodestring(md5).strip(), )),
+        )
+        client.modify(userdn, modlist)
+
+        client.unbind()
+
+
+    def passchange(self, request):
+        currentPassword = request.POST.get("currentPassword", None)
+        newPassword = request.POST.get("newPassword", None)
+
+        assert currentPassword, "No currentPassword was found in the request."
+        assert newPassword, "No newPassword was found in the request."
+
+        try:
+            self.set_ldap_password(currentPassword, newPassword)
+            self.reencrypt_user_credentials(request)
+            return (True, "Password successfully changed")
+        except (AttributeError, LDAPError), e:
+            # Send back something fairly generic.
+            logger.debug("Error changing password in LDAP server: %s" % str(e))
+            return (False, "Error changing password")
+
+
 ##
 ## Django Signals
 ##
@@ -706,10 +781,16 @@ def signal_tool_post_save(sender, **kwargs):
         logger.critical(e)
         logger.critical(traceback.format_exc())
         raise
-   
+
+
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
 
  
 # connect up signals
 from django.db.models.signals import post_save
 post_save.connect(signal_tool_post_save, sender=Tool)
+post_save.connect(create_user_profile, sender=DjangoUser)
+
 
