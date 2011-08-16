@@ -110,8 +110,8 @@ def preview_key(uri):
     return str("%s-preview-%s" % (settings.MEMCACHE_KEYSPACE, file_hash))
 
 
-def reencrypt_user_credentials(request, currentPassword, newPassword):
-    enc_request = PostRequest("ws/account/passchange", params={ "oldPassword": currentPassword, "newPassword": newPassword })
+def yabiadmin_passchange(request, currentPassword, newPassword):
+    enc_request = PostRequest("ws/account/passchange", params={ "currentPassword": currentPassword, "newPassword": newPassword })
     http = memcache_http(request)
     resp, content = http.make_request(enc_request)
     assert resp['status']=='200', (resp['status'], content)
