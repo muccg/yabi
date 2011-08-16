@@ -89,6 +89,7 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.LDAPBackend',
     'django.contrib.auth.backends.NoAuthModelBackend',
 ]
+AUTH_PROFILE_MODULE = 'yabi.LDAPBackendUserProfile'
 
 SESSION_COOKIE_PATH = url('/')
 SESSION_SAVE_EVERY_REQUEST = True
