@@ -35,7 +35,7 @@ from ldap import LDAPError, MOD_REPLACE
 from urlparse import urlparse
 from yabife.ldapclient import LDAPClient
 from yabife.ldaputils import get_userdn_of
-from utils import reencrypt_user_credentials
+from utils import yabiadmin_passchange
 
 from django.contrib import logging
 logger = logging.getLogger('yabife')
@@ -103,35 +103,6 @@ class LDAPBackendUser(User):
     class Meta:
         proxy = True
 
-    class LDAPUserDoesNotExist(ObjectDoesNotExist):
-        pass
-
-    def get_userdn(self):
-        userdn = get_userdn_of(self.user.username)
-
-        if not userdn:
-            raise User.LDAPUserDoesNotExist
-
-        return userdn
-
-    def set_ldap_password(self, current_password, new_password, bind_userdn=None, bind_password=None):
-        userdn = self.get_userdn()
-        client = LDAPClient(settings.AUTH_LDAP_SERVER)
-
-        if bind_userdn and bind_password:
-            client.bind_as(bind_userdn, bind_password)
-        else:
-            client.bind_as(userdn, current_password)
-
-        md5 = hashlib.md5(new_password).digest()
-        modlist = (
-            (MOD_REPLACE, "userPassword", "{MD5}%s" % (base64.encodestring(md5).strip(), )),
-        )
-        client.modify(userdn, modlist)
-
-        client.unbind()
-
-
     def change_password(self, request):
         """Return a tuple of (valid, errormsg)"""
 
@@ -159,20 +130,11 @@ class LDAPBackendUser(User):
         if len(newPassword) < 6:
             return (False, "The new password must be at least 6 characters in length")
 
-        # ok, let's actually try to change the password
-        self.user.set_password(newPassword)
-
-        # and, more importantly, in LDAP if we can.
-        try:
-            self.set_ldap_password(currentPassword, newPassword)
-        except (AttributeError, LDAPError), e:
-            # Send back something fairly generic.
-            logger.debug("Error connecting to server: %s" % str(e))
-            return (False, "Error changing password")
+        # this is an ldap model backend, so we don't change the Auth.User password
 
         # if all this succeeded we should tell the middleware to re-encrypt the users credentials with the new password.
         # TODO catch exception here and return appropriately
-        reencrypt_user_credentials(request, currentPassword, newPassword)
+        yabiadmin_passchange(request, currentPassword, newPassword)
 
         self.user.save()
 
