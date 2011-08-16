@@ -167,7 +167,7 @@ def logout(request):
     return HttpResponse(content=json.dumps(response))
 
 @authentication_required
-@memcache("tool",timeout=30,refresh=True,request_specific=False,user_specific=False)                # global app tool cache
+@memcache("tool",kwargkeylist=['toolname'],timeout=30,refresh=True,request_specific=False,user_specific=False)                # global app tool cache
 def tool(request, toolname):
     logger.debug(toolname)
 
