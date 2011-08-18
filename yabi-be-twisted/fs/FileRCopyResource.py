@@ -86,6 +86,9 @@ class FileRCopyResource(resource.PostableResource):
             if 'src' not in request.args or 'dst' not in request.args:
                 return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "copy must specify source 'src' and destination 'dst'\n")
             
+            # if 'contents' is set, then copy the contents of the source directory, not the directory itself (like going cp -r src/* dst/)
+            copy_contents = 'contents' in request.args
+            
             # override default priority
             priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_RCOPY_PRIORITY
             
@@ -135,7 +138,7 @@ class FileRCopyResource(resource.PostableResource):
                         result_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(be)) )
                     
                     # lets split the source path on separator
-                    destination_dir_name = [X for X in src.split("/") if len(X)][-1]
+                    destination_dir_name = "" if copy_contents else ([X for X in src.split("/") if len(X)][-1]+'/')
                     
                     # remember the directories we make so we only make them once
                     created=[]
@@ -143,25 +146,27 @@ class FileRCopyResource(resource.PostableResource):
                     for directory in sorted(fsystem.keys()):
                         # make directory
                         destpath = directory[len(src_path)+1:]              # the subpath part
+                        if len(destpath) and destpath[-1]!='/':
+                            destpath += '/'
                         #print "D:",dst,":",destpath,";",src_path
-                        if dst+destination_dir_name + "/"+destpath not in created:
-                            print dst+destination_dir_name + "/"+destpath,"not in",created
+                        if dst+destination_dir_name+destpath not in created:
+                            print dst+destination_dir_name+destpath,"not in",created
                             try:
-                                Mkdir(dst+destination_dir_name + "/"+destpath,yabiusername=yabiusername)
+                                Mkdir(dst+destination_dir_name+destpath,yabiusername=yabiusername)
                             except BlockingException, be:
                                 print traceback.format_exc()
                                 result_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(be)) )    
                             except GETFailure, gf:
                                 # ignore. directory probably already exists
                                 pass
-                            created.append(dst+destination_dir_name + "/"+destpath)
+                            created.append(dst+destination_dir_name+destpath)
                              
                         for file,size,date,link in fsystem[directory]['files']:
                             if DEBUG:
                                 print "COPY",file,size,date
                                 print "EXTRA",">",destpath,">",directory
                             src_uri = src+destpath+file
-                            dst_uri = dst+destination_dir_name + "/"+destpath+file
+                            dst_uri = dst+destination_dir_name+destpath+file
                             
                             if DEBUG:
                                 print "Copy(",src_uri,",",dst_uri,")"

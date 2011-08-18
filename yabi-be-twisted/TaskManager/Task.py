@@ -553,12 +553,16 @@ class MainTask(Task):
         
         if task['stageout_method']=='copy':   
             try:
+                if DEBUG:
+                    print "Mkdir(",task['stageout'],",",self.yabiusername,")"
                 Mkdir(task['stageout'], yabiusername=self.yabiusername)
             except GETFailure, error:
                 pass
             
             try:
-                RCopy(outputuri,task['stageout'],yabiusername=self.yabiusername)
+                if DEBUG:
+                    print "RCopy(",outputuri,",",task['stageout'],",",self.yabiusername,")"
+                RCopy(outputuri,task['stageout'],yabiusername=self.yabiusername,contents=True)
                 self.log("Files successfuly staged out")
             except GETFailure, error:
                 if "503" in error.message[1]:
