@@ -28,12 +28,17 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.contrib.auth.models import User as DjangoUser
+from django.contrib.auth import authenticate
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
 from ldap import LDAPError, MOD_REPLACE
 from urlparse import urlparse
 from yabife.ldapclient import LDAPClient
 from yabife.ldaputils import get_userdn_of
+from utils import yabiadmin_passchange
+
+from django.contrib import logging
+logger = logging.getLogger('yabife')
 
 import base64
 import hashlib
@@ -83,39 +88,96 @@ class User(models.Model):
     user_option_access = models.BooleanField(default=True)
     credential_access = models.BooleanField(default=True)
 
-    def __unicode__(self):
-        return "%s: %s" % (self.user.username, self.appliance.url)
-
     class Meta:
         ordering = ["user__username"]
 
-    class LDAPUserDoesNotExist(ObjectDoesNotExist):
-        pass
-
-    def get_userdn(self):
-        userdn = get_userdn_of(self.user.username)
-
-        if not userdn:
-            raise User.LDAPUserDoesNotExist
-
-        return userdn
+    def __unicode__(self):
+        return "%s: %s" % (self.user.username, self.appliance.url)
 
     def has_account_tab(self):
         return self.user_option_access or self.credential_access
 
-    def set_ldap_password(self, current_password, new_password, bind_userdn=None, bind_password=None):
-        userdn = self.get_userdn()
-        client = LDAPClient(settings.AUTH_LDAP_SERVER)
+    def validate(self, request):
 
-        if bind_userdn and bind_password:
-            client.bind_as(bind_userdn, bind_password)
-        else:
-            client.bind_as(userdn, current_password)
+        currentPassword = request.POST.get("currentPassword", None)
+        newPassword = request.POST.get("newPassword", None)
+        confirmPassword = request.POST.get("confirmPassword", None)
 
-        md5 = hashlib.md5(new_password).digest()
-        modlist = (
-            (MOD_REPLACE, "userPassword", "{MD5}%s" % (base64.encodestring(md5).strip(), )),
-        )
-        client.modify(userdn, modlist)
+        # check the user is allowed to change password
+        if not self.user_option_access:
+            return (False, "You do not have access to this web service")
 
-        client.unbind()
+        # check we have everything
+        if not currentPassword or not newPassword or not confirmPassword:
+            return (False, "Either the current, new or confirmation password is missing from request.")
+
+        # check the current password
+        if not authenticate(username=request.user.username, password=currentPassword):
+            return (False, "Current password is incorrect")
+
+        # the new passwords should at least match and meet whatever rules we decide
+        # to impose (currently a minimum six character length)
+        if newPassword != confirmPassword:
+            return (False, "The new passwords must match")
+
+        if len(newPassword) < 6:
+            return (False, "The new password must be at least 6 characters in length")
+
+        return (True, "Password valid.")
+
+
+class ModelBackendUser(User):
+
+    class Meta:
+        proxy = True
+
+    def change_password(self, request):
+        """Return a tuple of (valid, errormsg)"""
+
+        (valid, message) = self.validate(request)
+        if not valid:
+            return (valid, message)
+        
+        currentPassword = request.POST.get("currentPassword", None)
+        newPassword = request.POST.get("newPassword", None)
+        confirmPassword = request.POST.get("confirmPassword", None)
+
+        # this is the model backend so we have to change the password in the db
+        self.user.set_password(newPassword)
+        
+        # if all this succeeded we should tell the middleware to do the same
+        # the yabiadmin_passchange call asserts for status 200 so password will not be
+        # saved in next line if admin change fails
+        yabiadmin_passchange(request, currentPassword, newPassword)
+
+        self.user.save()
+
+        return (True, "Password changed successfully")
+
+    
+class LDAPBackendUser(User):
+
+    class Meta:
+        proxy = True
+
+    def change_password(self, request):
+        """Return a tuple of (valid, errormsg)"""
+
+        (valid, message) = self.validate(request)
+        if not valid:
+            return (valid, message)
+
+        currentPassword = request.POST.get("currentPassword", None)
+        newPassword = request.POST.get("newPassword", None)
+        confirmPassword = request.POST.get("confirmPassword", None)
+
+        # this is an ldap model backend, so we don't change the Auth.User password
+
+        # if all this succeeded we should tell the middleware to do the same
+        # the yabiadmin_passchange call asserts for status 200 so password will not be
+        # saved in next line if admin change fails
+        yabiadmin_passchange(request, currentPassword, newPassword)
+
+        self.user.save()
+
+        return (True, "Password changed successfully")

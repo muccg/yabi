@@ -33,6 +33,8 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseUnauthorized
 
+
+
 import logging
 logger = logging.getLogger('yabiadmin')
 
@@ -94,6 +96,23 @@ def authentication_required(f):
             return HttpResponseUnauthorized()
         return f(*args, **kwargs)
     return new_function
+
+
+def profile_required(func):
+    from yabi.models import UserProfile
+    def newfunc(request,*args,**kwargs):
+        # Check if the user has a profile; if not, nothing's going to work anyway,
+        # so we might as well fail more spectacularly.
+        try:
+            request.user.get_profile()
+        except ObjectDoesNotExist:
+            UserProfile.objects.create(user=request.user)
+
+        return func(request, *args, **kwargs)    
+            
+    return newfunc
+
+
     
 # Number of times to indent output
 # A list is used to force access by reference
@@ -126,3 +145,6 @@ def report(fn):
         return ret
     wrap.callcount = 0
     return wrap    
+
+
+
