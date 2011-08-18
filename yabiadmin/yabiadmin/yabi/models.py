@@ -701,6 +701,7 @@ class UserProfile(models.Model):
 
 
     def reencrypt_user_credentials(self, request):
+        logger.debug("")
         yabiuser = User.objects.get(name=request.user.username)
 
         currentPassword = request.POST['currentPassword']
@@ -719,6 +720,7 @@ class ModelBackendUserProfile(UserProfile):
         proxy = True
 
     def passchange(self, request):
+        logger.debug("passchange in ModelBackendUserProfile")        
         currentPassword = request.POST.get("currentPassword", None)
         newPassword = request.POST.get("newPassword", None)
 
@@ -728,6 +730,7 @@ class ModelBackendUserProfile(UserProfile):
         try:
             self.user.set_password(newPassword)
             self.reencrypt_user_credentials(request)
+            self.user.save()
             return (True, "Password successfully changed")
         except (AttributeError, LDAPError), e:
             # Send back something fairly generic.
@@ -770,6 +773,7 @@ class LDAPBackendUserProfile(UserProfile):
 
 
     def passchange(self, request):
+        logger.debug("passchange in LDAPBackendUserProfile")
         currentPassword = request.POST.get("currentPassword", None)
         newPassword = request.POST.get("newPassword", None)
 
