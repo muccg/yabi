@@ -26,7 +26,7 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-# Create your views here.
+
 import httplib
 from urllib import urlencode, unquote, quote
 import copy
@@ -38,14 +38,13 @@ from time import mktime
 
 from django.conf.urls.defaults import *
 from django.conf import settings
-from django.core.mail import mail_admins
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError, HttpResponseUnauthorized
 from django.shortcuts import render_to_response, get_object_or_404, render_mako
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import webhelpers
 from django.contrib.auth.decorators import login_required
-from yabife.decorators import authentication_required
+from yabife.decorators import authentication_required, profile_required
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate
 from django.contrib.auth.models import SiteProfileNotAvailable, User as DjangoUser
 from django.contrib.sessions.models import Session
@@ -66,7 +65,8 @@ from yabife.ldaputils import get_userdn_of
 from yabife.responses import *
 from yabife.preview import html
 
-import memcache
+from utils import memcache_client, memcache_http, make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout
+
 
 from django.contrib import logging
 logger = logging.getLogger('yabife')
@@ -152,15 +152,10 @@ def proxy(request, url, base):
     return make_http_request(target_request, request, request.is_ajax())
 
 @authentication_required
+@profile_required
 def adminproxy(request, url):
     logger.debug('')
-    try:
-        return proxy(request, quote(url), request.user.get_profile().appliance.url)
-    except ObjectDoesNotExist:
-        mail_admins_no_profile(request.user)
-        return JsonMessageResponseUnauthorized("User is not associated with an appliance")
-    except AttributeError:
-        return JsonMessageResponseUnauthorized("Anonymous users do not have access to appliances")
+    return proxy(request, quote(url), request.user.get_profile().appliance.url)
 
 @authentication_required
 def adminproxy_cache(request, url):
@@ -203,39 +198,25 @@ def render_page(template, request, response=None, **kwargs):
 
     return response
 
-def mail_admins_no_profile_decorator(func):
-    def newfunc(request,*args,**kwargs):
-        # Check if the user has a profile; if not, nothing's going to work anyway,
-        # so we might as well fail more spectacularly.
-        try:
-            request.user.get_profile()
-        except ObjectDoesNotExist:
-            mail_admins_no_profile(request.user)
-            return logout(request)
-        except AttributeError:
-            return JsonMessageResponseUnauthorized("Anonymous users do not have access to YABI")
-        return func(request, *args, **kwargs)    
-            
-    return newfunc
 
 
 @login_required
-@mail_admins_no_profile_decorator
+@profile_required
 def files(request):
     return render_page("files.html", request)
 
 @login_required
-@mail_admins_no_profile_decorator
+@profile_required
 def design(request, id=None):
     return render_page("design.html", request, reuseId=id)
     
 @login_required
-@mail_admins_no_profile_decorator
+@profile_required
 def jobs(request):
     return render_page("jobs.html", request)
 
 @login_required
-@mail_admins_no_profile_decorator
+@profile_required
 def account(request):
     if not request.user.get_profile().has_account_tab():
         return render_page("errors/403.html", request, response=HttpResponseForbidden())
@@ -256,19 +237,13 @@ def login(request):
             if user is not None:
                 if user.is_active:
                     django_login(request, user)
+                    yabiadmin_login(request, username, password)
 
-                    # Look up the user's profile -- if they don't have one,
-                    # then they don't have an appliance, and hence can't log in
-                    # as such.
-                    try:
-                        user.get_profile()
-                    except (SiteProfileNotAvailable, User.DoesNotExist, AttributeError):
-                        mail_admins_no_profile(request.user)
-                        return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':"User is not associated with an appliance"})
-
-                    success, message = yabiadmin_login(request, username, password)
-                    if not success:
-                        return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':message})
+                    # TODO need to be able to get this message to frontend, not so easily done using decorator
+                    # but don't want to duplicate decorator code here just to get this message in
+                    #  success, message = yabiadmin_login(request, username, password)
+                    # if not success:
+                    #     return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':message})
 
                     return HttpResponseRedirect(webhelpers.url("/"))
 
@@ -284,10 +259,6 @@ def login(request):
         return render_to_response('login.html', {'h':webhelpers, 'form':form, 'url':None})
 
 
-def logout(request):
-    yabiadmin_logout(request)
-    django_logout(request)
-    return HttpResponseRedirect(webhelpers.url("/"))
 
 def wslogin(request):
     if request.method != "POST":
@@ -301,26 +272,11 @@ def wslogin(request):
         if user.is_active:
             django_login(request, user)
 
-            # Look up the user's profile -- if they don't have one, then they
-            # don't have an appliance, and hence can't log in as such.
-            try:
-                user.get_profile()
-            except (SiteProfileNotAvailable, User.DoesNotExist, AttributeError):
-                mail_admins_no_profile(request.user)
-                response = {
-                    "success": False,
-                    "message": "User is not associated with an appliance",
+            yabiadmin_login(request, username, password)
+            response = {
+                "success": True
                 }
 
-            if yabiadmin_login(request, username, password):
-                response = {
-                    "success": True
-                }
-            else:
-               response = {
-                    "success": False,
-                    "message": "System Error (can't log in admin)",
-               }
         else:
             response = {
                 "success": False,
@@ -331,6 +287,7 @@ def wslogin(request):
             "success": False,
             "message": "The user name and password are incorrect.",
         }
+
     return HttpResponse(content=json.dumps(response))
 
 def wslogout(request):
@@ -358,52 +315,20 @@ def credentialproxy(request, url):
 def explode(request):
     raise Exception("KA BLAM")
 
+
 @login_required
+@profile_required
 def password(request):
     if request.method != "POST":
         return JsonMessageResponseNotAllowed(["POST"])
 
-    try:
-        profile = request.user.get_profile()
-        if not profile.user_option_access:
-            return JsonMessageResponseForbidden("You do not have access to this Web service")
-    except (ObjectDoesNotExist, AttributeError):
-        return JsonMessageResponseUnauthorized("You do not have access to this Web service")
-
-    required = ("currentPassword", "newPassword", "confirmPassword")
-    for key in required:
-        if key not in request.POST:
-            return JsonMessageResponseBadRequest("Expected key '%s' not found in request" % key)
-
-    # Check the current password.
-    if not authenticate(username=request.user.username, password=request.POST["currentPassword"]):
-        return JsonMessageResponseForbidden("Current password is incorrect")
-
-    # The new passwords should at least match and meet whatever rules we decide
-    # to impose (currently a minimum six character length).
-    if request.POST["newPassword"] != request.POST["confirmPassword"]:
-        return JsonMessageResponseBadRequest("The new passwords must match")
-
-    if len(request.POST["newPassword"]) < 6:
-        return JsonMessageResponseBadRequest("The new password must be at least 6 characters in length")
-
-    # OK, let's actually try to change the password.
-    request.user.set_password(request.POST["newPassword"])
-    
-    # And, more importantly, in LDAP if we can.
-    try:
-        profile.set_ldap_password(request.POST["currentPassword"], request.POST["newPassword"])
-    except (AttributeError, LDAPError), e:
-        # Send back something fairly generic.
-        logger.debug("Error connecting to server: %s" % str(e))
-        return JsonMessageResponseServerError("Error changing password")
-
-    request.user.save()
-    
-    # if all this succeeded we should tell the middleware to re-encrypt the users credentials with the new password.
-    reencrypt_user_credentials(request, request.POST["currentPassword"], request.POST["newPassword"])
+    profile = request.user.get_profile()
+    (valid, errormsg) = profile.change_password(request)
+    if not valid:
+        return JsonMessageResponseServerError(errormsg)
 
     return JsonMessageResponse("Password changed successfully")
+
 
 @login_required
 def preview(request):
@@ -556,87 +481,13 @@ def error_500(request):
     
 # Implementation methods
 
-def redirect_to_login():
-    from django.contrib.auth import REDIRECT_FIELD_NAME
-    from django.utils.http import urlquote
-    #tup = settings.LOGIN_URL, REDIRECT_FIELD_NAME, urlquote(request.get_full_path())
-    #return HttpResponseRedirect('%s?%s=%s' % tup)
-    return HttpResponseRedirect(settings.LOGIN_URL)
-
-def make_request_object(url, request):
-    params = {}
-    for k in request.REQUEST:
-        params[k] = request.REQUEST[k]
-    if request.method == 'GET':
-        return GetRequest(url, params)
-    elif request.method == 'POST':
-        files = [('file%d' % (i+1), f.name, f.temporary_file_path()) for i,f in enumerate(request.FILES.values())] 
-        return PostRequest(url, params, files=files)
-
-def make_http_request(request, original_request, ajax_call):
-    try:
-        with memcache_http(original_request) as http:
-            try:
-                resp, contents = http.make_request(request)
-                our_resp = HttpResponse(contents, status=int(resp.status))
-                copy_non_empty_headers(resp, our_resp, ('content-disposition', 'content-type'))
-                return our_resp
-            except UnauthorizedError:
-                if ajax_call:
-                    return HttpResponseUnauthorized() 
-                else:
-                    return redirect_to_login()
-    except ObjectDoesNotExist:
-        if ajax_call:
-            return HttpResponseUnauthorized() 
-        else:
-            return redirect_to_login()
-
-def copy_non_empty_headers(src, to, header_names):
-    for header_name in header_names:
-        header_value = src.get(header_name)
-        if header_value:
-            to[header_name] = header_value
-
-def memcache_client():
-    return memcache.Client(settings.MEMCACHE_SERVERS)
-
-def memcache_http(request):
-    user = request.user
-
-    mp = MemcacheCookiePersister(settings.MEMCACHE_SERVERS,
-            key='%s-cookies-%s' %(settings.MEMCACHE_KEYSPACE, request.session.session_key),
-            cache_time=settings.SESSION_COOKIE_AGE)
-          
-    yabiadmin = user.get_profile().appliance.url
-    return Http(base_url=yabiadmin, cache=False, cookie_persister=mp)
-
-def mail_admins_no_profile(user):
-    mail_admins("User Profile Error", render_to_string("email/noprofile.txt", {
-        "user": user,
-    }))
-
-def preview_key(uri):
-    # The naïve approach here is to use the file name encoded in such a way
-    # that memcache accepts it as a key, but that turns out to be problematic,
-    # as it's not uncommon for file names within YABI to be greater than the
-    # 250 character limit memcache imposes on key names. As a result, we'll
-    # hash the file name and accept the (extremely slight) risk of collisions.
-    file_hash = hashlib.sha512(uri).hexdigest()
-    return str("%s-preview-%s" % (settings.MEMCACHE_KEYSPACE, file_hash))
-
+@profile_required
 def upload_file(request, user):
     logger.debug('')
     
-    try:
-        appliance = user.get_profile().appliance
-    except ObjectDoesNotExist:
-        mail_admins_no_profile(user)
-        return JsonMessageResponseForbidden("You do not have access to this Web service")
-    except AttributeError:
-        return JsonMessageResponseForbidden("You do not have access to this Web service")
-   
+    appliance = user.get_profile().appliance
     upload_path = appliance.path
+
     while len(upload_path) and upload_path[-1]=='/':
         upload_path = upload_path[:-1]
         
@@ -668,6 +519,7 @@ def upload_file(request, user):
         }
     return HttpResponse(content=json.dumps(response))
 
+@profile_required
 def yabiadmin_login(request, username, password):
     # TODO get the url from somewhere
     login_request = PostRequest('ws/login', params= {
@@ -684,24 +536,7 @@ def yabiadmin_login(request, username, password):
     
     return success, message
 
-def yabiadmin_logout(request):
-    # TODO get the url from somewhere
-    logout_request = PostRequest('ws/logout')
-    try:
-        with memcache_http(request) as http:
-            resp, contents = http.make_request(logout_request)
-            if resp.status != 200: 
-                return False
-            json_resp = json.loads(contents)
-        return json_resp.get('success', False)
-    except (ObjectDoesNotExist, AttributeError):
-        pass
 
-def reencrypt_user_credentials(request, currentPassword, newPassword):
-    enc_request = PostRequest("ws/account/passchange", params={ "oldPassword": currentPassword, "newPassword": newPassword })
-    http = memcache_http(request)
-    resp, content = http.make_request(enc_request)
-    assert resp['status']=='200'
 
 
 @login_required

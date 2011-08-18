@@ -25,7 +25,6 @@
 # 
 ### END COPYRIGHT ###
 import ldap
-from yabiadmin import settings
 
 class LDAPClient:
     def __init__(self, servers, userdn=None, password=None):
@@ -50,6 +49,9 @@ class LDAPClient:
                 print "Ldap Error while binding to server %s:" % server
                 print e
         return False       
+
+    def modify(self, dn, modlist, serverctrls=None, clientctrls=None):
+        self._ldap.modify_ext_s(dn, modlist, serverctrls, clientctrls)
 
     def search(self, base, search_for, retr_attrs=None):
         if not hasattr(self, '_ldap'):

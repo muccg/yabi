@@ -57,7 +57,7 @@ from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, ge
 from yabiadmin.responses import *
 from yabi.file_upload import *
 from django.contrib import auth
-from yabiadmin.decorators import memcache, authentication_required
+from yabiadmin.decorators import memcache, authentication_required, profile_required
 
 from yabiadmin.yabistoreapp import db
 
@@ -610,21 +610,18 @@ def getuploadurl(request):
     )
 
 @authentication_required
+@profile_required
 def passchange(request):
     if request.method != "POST":
         return HttpResponseNotAllowed("Method must be POST")
+
+    profile = request.user.get_profile()
+    success, message = profile.passchange(request)
+    if success:
+        return HttpResponse(json.dumps(message))
+    else:
+        return HttpResponseServerError(json.dumps(message))
     
-    yabiuser = User.objects.get(name=request.user.username)
-    oldPassword = request.POST['oldPassword']
-    newPassword = request.POST['newPassword']
-    
-    # get all creds for this user that are encrypted
-    creds = Credential.objects.filter(user=yabiuser, encrypted=True)
-    for cred in creds:
-        cred.recrypt(oldPassword, newPassword)
-        cred.save()
-        
-    return HttpResponse(json.dumps("OK"))
         
 @authentication_required
 def credential(request):
