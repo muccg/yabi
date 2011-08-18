@@ -92,12 +92,14 @@ def do_ls(sftp, path):
     for entry in sftp.listdir_attr(path):
         # if not a hidden directory
         if not entry.filename.startswith('.'):
-            if stat.S_ISDIR(entry.st_mode):
+            s = sftp.stat(os.path.join(path,entry.filename))            # stat the destination of any link
+            if stat.S_ISDIR(s.st_mode):
                 # directory
                 output['directories'].append([entry.filename,entry.st_size,time.strftime("%a, %d %b %Y %H:%M:%S",time.localtime(entry.st_mtime)),stat.S_ISLNK(entry.st_mode)])
             else:
-                # files
+                # file or symlink to directory
                 output['files'].append([entry.filename,entry.st_size,time.strftime("%a, %d %b %Y %H:%M:%S",time.localtime(entry.st_mtime)),stat.S_ISLNK(entry.st_mode)])
+                
     
     # sort entries
     output['directories'].sort()
@@ -124,7 +126,11 @@ def do_ls_r(sftp,path,output):
     
 def do_stat(sftp,path):
     # is it a solo file?
-    lresult = sftp.lstat(path)
+    try:
+        lresult = sftp.lstat(path)
+    except IOError, ioe:
+        sys.stderr.write("No such file or directory: %s\n"%path)
+        sys.exit(2)
     result = sftp.stat(path)
     if stat.S_ISREG(result.st_mode):
         # regular file
