@@ -80,12 +80,12 @@ def parse_args():
     parser.add_option( "-R", "--postremote", dest="postremote", help="Post-copy postremote to postlocal")
     parser.add_option( "-f", "--list-folder", dest="listfolder", help="Do an ssh list operation on the specified folder")
     parser.add_option( "-F", "--list-folder-recurse", dest="listfolderrecurse", help="Do a recursive list operation on the specified folder")
-
+    
     return parser.parse_args()
 
 def list_folder(ssh, options): 
     sftp = paramiko.SFTPClient.from_transport( ssh )
-    return {options.listfolder:do_ls(sftp,options.listfolder)}
+    return do_stat( sftp, options.listfolder ) or {options.listfolder:do_ls(sftp,options.listfolder)}
     
 def do_ls(sftp, path):
     output = {"files":[],"directories":[]}
@@ -107,8 +107,7 @@ def do_ls(sftp, path):
     
 def list_folder_recurse(ssh, options):
     sftp = paramiko.SFTPClient.from_transport( ssh )
-    output = {}
-    return do_ls_r(sftp,options.listfolderrecurse,output)
+    return do_stat( sftp, options.listfolderrecurse ) or do_ls_r( sftp, options.listfolderrecurse, {} )
 
 def do_ls_r(sftp,path,output):
     try:
@@ -122,6 +121,21 @@ def do_ls_r(sftp,path,output):
         do_ls_r(sftp, os.path.join(path,filename), output)
         
     return output
+    
+def do_stat(sftp,path):
+    # is it a solo file?
+    lresult = sftp.lstat(path)
+    result = sftp.stat(path)
+    if stat.S_ISREG(result.st_mode):
+        # regular file
+        output = {
+            'directories': [],
+            'files':       [
+                [path.rsplit('/',1)[-1],lresult.st_size, time.strftime("%a, %d %b %Y %H:%M:%S",time.localtime(lresult.st_mtime)),stat.S_ISLNK(lresult.st_mode)]
+            ] }
+            
+        return output
+    return None
 
 def sanity_check(options):
     if not options.hostname:
