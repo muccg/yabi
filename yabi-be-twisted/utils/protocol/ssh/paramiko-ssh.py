@@ -140,7 +140,7 @@ def do_stat(sftp,path):
                 [path.rsplit('/',1)[-1],lresult.st_size, time.strftime("%a, %d %b %Y %H:%M:%S",time.localtime(lresult.st_mtime)),stat.S_ISLNK(lresult.st_mode)]
             ] }
             
-        return output
+        return {path:output}
     return None
 
 def sanity_check(options):
