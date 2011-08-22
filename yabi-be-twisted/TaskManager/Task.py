@@ -62,7 +62,9 @@ class Task(object):
         self.statusurl = json['statusurl']
         self.errorurl = json['errorurl']
         self.yabiusername = json['yabiusername']
-                
+                        
+        self.submission = json['exec']['submission']
+                        
         # shortcuts for our status and log calls
         self.status = lambda x: Status(self.statusurl,x)
         self.log = lambda x: Log(self.errorurl,x)
@@ -143,7 +145,7 @@ class Task(object):
             assert key in self.json, "Task JSON description is missing a vital key '%s'"%key
         
         # check the exec section
-        for key in ['backend', 'command', 'fsbackend', 'workingdir']:
+        for key in ['backend', 'command', 'fsbackend', 'workingdir', 'submission']:
             assert key in self.json['exec'], "Task JSON description is missing a vital key inside the 'exec' section. Key name is '%s'"%key
            
 class NullBackendTask(Task):
@@ -511,7 +513,7 @@ class MainTask(Task):
                             extras[key]=task['exec'][key]
                     
                     #print "callfunc is",callfunc
-                    callfunc(uri, command=task['exec']['command'], remote_info=task['remoteinfourl'],stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)     # this blocks untill the command is complete. or the execution errored
+                    callfunc(uri, command=task['exec']['command'], remote_info=task['remoteinfourl'], submission=self.submission, stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)     # this blocks untill the command is complete. or the execution errored
                     while exec_status[0]==None:
                         stackless.schedule()
                     if exec_status[0] and 'error' in exec_status[0]:

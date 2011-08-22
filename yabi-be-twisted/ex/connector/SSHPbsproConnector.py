@@ -85,7 +85,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         configdir = config.config['backend']['certificates']
         ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
     
-    def _ssh_qsub(self, yabiusername, creds, command, working, username, host, remoteurl, stdout, stderr, modules ):
+    def _ssh_qsub(self, yabiusername, creds, command, working, username, host, remoteurl, submission, stdout, stderr, modules, walltime=None, memory=None, cpus=None ):
         """This submits via ssh the qsub command. This returns the jobid, or raises an exception on an error"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
         
@@ -93,7 +93,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         
         # build up our remote qsub command
         ssh_command = "cat >'%s' && "%(submission_script)
-        ssh_command += "qsub -N '%s' -e '%s' -o '%s' '%s'"%(    
+        ssh_command += "qsub -N '%s' -e '%s' -o '%s' '%s'"%(
                                                                         "yabi-task-"+remoteurl.rsplit('/')[-1],
                                                                         os.path.join(working,stderr),
                                                                         os.path.join(working,stdout),
@@ -109,11 +109,41 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
     
         usercert = self.save_identity(creds['key'])
         
-        # build our command script
-        script = ["module load %s"%mod for mod in modules or []]
-        script.append( "cd '%s'"%working )                                              # TODO: what if the path has a single quote in it?
-        script.append( command )
-        script_string = "\n".join(script)+"\n"
+        if not submission:
+            # build our command script
+            script = ["#!/bin/sh"]
+            if walltime:
+                script.append("#PBS -l walltime=%s"%walltime)
+            if memory:
+                script.append("#PBS -l mem=%s"%memory)
+            if cpus:
+                script.append("#PBS -l ncpus=%s"%cpus)
+            script.extend(["module load %s"%mod for mod in modules or []])
+            script.append( "cd '%s'"%working )                                              # TODO: what if the path has a single quote in it?
+            script.append( command )
+            script_string = "\n".join(script)+"\n"
+        else:
+            # we have been passed a Mako template for the script.
+            from mako.template import Template
+            tmpl = Template(submission)
+            
+            # our variable space
+            variables = {
+                'working':working,
+                'command':command,
+                'modules':modules,
+                'cpus':cpus,
+                'memory':memory,
+                'walltime':walltime,
+                'yabiusername':yabiusername,
+                'username':username,
+                'host':host
+            }
+            
+            if DEBUG:
+                print "mako submission script variables:",variables
+            
+            script_string = str(tmpl.render(**variables))
         
         if DEBUG:
             print "_ssh_qsub"
@@ -187,10 +217,10 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         else:
             raise SSHQstatException("SSHQstat error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
 
-    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
         try:
             modules = [] if not module else [X.strip() for X in module.split(",")]
-            jobid = self._ssh_qsub(yabiusername,creds,command,working,username,host,remoteurl,stdout,stderr,modules)
+            jobid = self._ssh_qsub(yabiusername,creds,command,working,username,host,remoteurl,submission,stdout,stderr,modules,walltime,memory,cpus)
         except (SSHQsubException, ExecutionError), ee:
             channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = str(ee) ))
             return

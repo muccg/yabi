@@ -64,7 +64,7 @@ class TorqueConnector(ExecConnector):
         print "TorqueConnector::__init__() debug setting is",DEBUG
         ExecConnector.__init__(self)
     
-    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
         try:
             if DEBUG:
                 print "QSUB",command,"WORKING:",working

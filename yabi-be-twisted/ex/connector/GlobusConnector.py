@@ -75,7 +75,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         globus.Auth.GlobusAuth.__init__(self)
         self.CreateAuthProxy()
 
-    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
         # use shlex to parse the command into executable and arguments
         lexer = shlex.shlex(command, posix=True)
         lexer.wordchars += r"-.:;/="

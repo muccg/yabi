@@ -50,6 +50,17 @@ STAGING_COPY_CHOICES = (
     ( 'link',   'symbolic link' )
 )
 
+SUBMISSION="""#!/bin/sh
+#PBS -l walltime=${walltime}
+#PBS -l mem=${memory}
+#PBS -l ncpus=${cpus}
+% for module in modules:
+    module load ${module}
+% endfor
+cd '${working}'
+${command}
+"""
+
 class Status(object):
     COLOURS = {
         STATUS_PENDING:  'grey',
@@ -253,7 +264,9 @@ class Task(models.Model, Editable, Status):
                 "module": self.job.module,
                 "queue": self.job.queue,
                 "memory":self.job.max_memory,
-                "jobtype":self.job.job_type
+                "jobtype":self.job.job_type,
+                "submission":SUBMISSION
+                
                 },
             "stageout":self.job.stageout+("" if self.job.stageout.endswith("/") else "/")+("" if not self.name else self.name+"/"),
             "stageout_method":stageout_method

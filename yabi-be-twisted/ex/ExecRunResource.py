@@ -68,6 +68,10 @@ class ExecRunResource(resource.PostableResource):
         if "uri" not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided\n")
             
+        if "submission" not in request.args:
+            return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No submission script provided\n")
+        submission = args['submission'][0]
+            
         # an optional remote info url can be submitted. If it is submitted with a job, then everytime the status of this job changes,
         # this sends a POST to the url with a json key/value set with info on the backend task
         remote_info_url = args['remote_info'][0] if 'remote_info' in args else None
@@ -118,9 +122,9 @@ class ExecRunResource(resource.PostableResource):
             print "starting tasklet",bend.run
             print "KWARGS:",kwargs
         task = stackless.tasklet(bend.run)
-        task.setup(yabiusername, None, command, basepath, scheme, username, hostname, remote_info_url, client_deferred, **kwargs)
+        task.setup(yabiusername, None, command, basepath, scheme, username, hostname, remote_info_url, client_deferred, submission, **kwargs)
         if DEBUG:
-            print "running tasklet",task,"with inputs",(yabiusername, command, basepath, scheme, username, hostname, remote_info_url, client_deferred, kwargs)
+            print "running tasklet",task,"with inputs",(yabiusername, command, basepath, scheme, username, hostname, remote_info_url, client_deferred, submission, kwargs)
         task.run()
         
         return client_deferred
