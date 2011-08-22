@@ -238,6 +238,9 @@ class Task(models.Model, Editable, Status):
         fsscheme, fsbackend_parts = uriparse(self.job.fs_backend)
         fs_backend = backendhelper.get_backend_for_uri(self.job.workflow.user.name,self.job.fs_backend)
         
+        # get out exec backend so we can get our submission script
+        submission_backend = backendhelper.get_backend_for_uri(self.job.workflow.user.name,self.job.exec_backend)
+        
         # if the tools filesystem and the users stageout area are on the same schema/host/port
         # then use the preferred_copy_method, else default to 'copy'
         so_backend = backendhelper.get_backend_for_uri(self.job.workflow.user.name,self.job.stageout)
@@ -266,7 +269,7 @@ class Task(models.Model, Editable, Status):
                 "queue": self.job.queue,
                 "memory":self.job.max_memory,
                 "jobtype":self.job.job_type,
-                "submission":SUBMISSION
+                "submission":submission_backend.submission
                 
                 },
             "stageout":self.job.stageout+("" if self.job.stageout.endswith("/") else "/")+("" if not self.name else self.name+"/"),
