@@ -130,10 +130,12 @@ class Attach(Action, FileDownload):
         base_path = rest.path
         rel_dirs = map(lambda x: x[len(base_path):], response)
         rel_dirs = filter(lambda x: x != '', rel_dirs)
-        rel_files = [[d[len(base_path):] + f[0] for f in listing['files']] for d,listing in response.items()]
+        rel_files = [[os.path.join(d[len(base_path):], f[0]) for f in listing['files']] for d,listing in response.items()]
+
         # flatten the file list
         rel_files = [f for f in itertools.chain.from_iterable(rel_files)]
         rel_files = filter(lambda x: x not in ('STDERR.txt', 'STDOUT.txt'), rel_files)
+
         for d in rel_dirs:
             mkdir_p(d)
         for f in rel_files:
