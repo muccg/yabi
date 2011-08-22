@@ -54,6 +54,7 @@ SUBMISSION="""#!/bin/sh
 #PBS -l walltime=${walltime}
 #PBS -l mem=${memory}
 #PBS -l ncpus=${cpus}
+#PBS -W group_list=project 
 % for module in modules:
     module load ${module}
 % endfor

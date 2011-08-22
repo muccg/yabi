@@ -559,6 +559,7 @@ class Backend(Base):
     lcopy_supported = models.BooleanField(default=True)
     link_supported = models.BooleanField(default=True)
 
+    submission = models.TextField(blank=True)
 
     scheme.help_text="Must be one of %s." % ", ".join(settings.VALID_SCHEMES)
     hostname.help_text="Hostname must not end with a /."
@@ -566,6 +567,8 @@ class Backend(Base):
     max_connections.help_text="Backend connection limit. Does not affect front end immediate mode requests. Blank means no limit on the number of connections. '0' means no connections allowed (frozen)."
     lcopy_supported.help_text="Backend supports 'cp' localised copies."
     link_supported.help_text="Backend supports 'ln' localised symlinking."
+
+    submission.help_text="Mako script to be used to generate the submission script. (Variables: walltime, memory, cpus, working, modules, command)"
 
     @property
     def uri(self):
@@ -601,8 +604,12 @@ class BackendCredential(Base):
     visible = models.BooleanField()                                                         # ALTER TABLE "admin_backendcredential" ADD "visible" boolean NOT NULL default False;
     default_stageout = models.BooleanField()                                                         # ALTER TABLE "admin_backendcredential" ADD "visible" boolean NOT NULL default False;
 
+    submission = models.TextField(blank=True)
+
     homedir.help_text="Homedir must not start with a / but must end with a /."
     default_stageout.help_text="There must be only one default_stageout per yabi user."
+    
+    submission.help_text="Mako script to be used to generate a custom submission script. (Variables: walltime, memory, cpus, working, modules, command)"
     
     def __unicode__(self):
         if DEBUG:
