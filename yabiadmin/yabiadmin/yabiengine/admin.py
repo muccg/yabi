@@ -44,10 +44,20 @@ def link_to_tasks(obj):
 link_to_tasks.allow_tags = True
 link_to_tasks.short_description = "Tasks"
 
+def link_to_tasks_from_job(obj):
+    return '<a href="%s?job__workflow__exact=%d&job__exact=%d">%s</a>' % (url('/admin/yabiengine/task/'), obj.workflowid, obj.id, "Tasks")
+link_to_tasks_from_job.allow_tags = True
+link_to_tasks_from_job.short_description = "Tasks"
+
 def link_to_stageins(obj):
     return '<a href="%s?task__job__workflow__exact=%d">%s</a>' % (url('/admin/yabiengine/stagein/'), obj.workflowid, "Stageins")
 link_to_stageins.allow_tags = True
 link_to_stageins.short_description = "Stageins"
+
+def link_to_stageins_from_task(obj):
+    return '<a href="%s?task__job__workflow__exact=%d&task__exact=%d">%s</a>' % (url('/admin/yabiengine/stagein/'), obj.workflowid, obj.id, "Stageins")
+link_to_stageins_from_task.allow_tags = True
+link_to_stageins_from_task.short_description = "Stageins"
 
 def link_to_syslog_from_task(obj):
     return '<a href="%s?table_name=task&table_id=%d">%s</a>' % (url('/admin/yabiengine/syslog/'), obj.id, "Syslog")
@@ -99,12 +109,12 @@ class SyslogAdmin(admin.ModelAdmin):
     search_fields = ['table_name', 'table_id']
 
 class JobAdmin(admin.ModelAdmin):
-    list_display = ['order', 'status', 'command', 'start_time', 'end_time', 'cpus', 'walltime', link_to_tasks]
+    list_display = ['order', 'status', 'command', 'start_time', 'end_time', 'cpus', 'walltime', link_to_tasks_from_job]
     list_filter = ['workflow']
     ordering = ['order']
 
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ['job', 'status', 'remote_id', 'remote_info', 'start_time', 'end_time', 'job_identifier', 'command', 'error_msg', link_to_stageins, link_to_syslog_from_task]
+    list_display = ['job', 'status', 'remote_id', 'remote_info', 'start_time', 'end_time', 'job_identifier', 'command', 'error_msg', link_to_stageins_from_task, link_to_syslog_from_task]
     list_filter = ['status', 'job__workflow__user']
     #readonly_fields = ['remote_id']
 

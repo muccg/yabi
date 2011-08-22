@@ -1008,4 +1008,4 @@ video/x-ms-wvx					wvx
 video/x-msvideo					avi
 video/x-sgi-movie				movie
 x-conference/x-cooltalk				ice
-text/plain                                      fa fna bls chips aln dnd gff genscan pepinfo clustalw sirna eprimer3 lst
+text/plain                  aln bls cat chips clustalw detail dnd eprimer3 fa fna genemark genscan gff icm kig lst masked out pepinfo predict screen sirna tbl train
