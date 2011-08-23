@@ -239,7 +239,10 @@ class Task(models.Model, Editable, Status):
         fs_backend = backendhelper.get_backend_for_uri(self.job.workflow.user.name,self.job.fs_backend)
         
         # get out exec backend so we can get our submission script
-        submission_backend = backendhelper.get_backend_for_uri(self.job.workflow.user.name,self.job.exec_backend)
+        submission_backendcredential = backendhelper.get_backendcredential_for_uri(self.job.workflow.user.name,self.job.exec_backend)
+        submission_backend = submission_backendcredential.backend
+        
+        submission = submission_backendcredential.submission if str(submission_backend.submission).isspace() else submission_backend.submission
         
         # if the tools filesystem and the users stageout area are on the same schema/host/port
         # then use the preferred_copy_method, else default to 'copy'
@@ -269,7 +272,7 @@ class Task(models.Model, Editable, Status):
                 "queue": self.job.queue,
                 "memory":self.job.max_memory,
                 "jobtype":self.job.job_type,
-                "submission":submission_backend.submission
+                "submission":submission
                 
                 },
             "stageout":self.job.stageout+("" if self.job.stageout.endswith("/") else "/")+("" if not self.name else self.name+"/"),
