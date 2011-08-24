@@ -90,6 +90,8 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
         
         submission_script = os.path.join(TMP_DIR,str(uuid.uuid4())+".sh")
+        if DEBUG:
+            print "submission script path is %s"%(submission_script)
         
         # build up our remote qsub command
         ssh_command = "cat >'%s' && "%(submission_script)
@@ -125,7 +127,9 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         else:
             # we have been passed a Mako template for the script.
             from mako.template import Template
-            tmpl = Template(submission)
+            cleaned_submission = submission.replace('\r\n','\n').replace('\n\r','\n').replace('\r','\n')
+            
+            tmpl = Template(cleaned_submission)
             
             # our variable space
             variables = {
@@ -144,7 +148,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
                 print "mako submission script variables:",variables
             
             script_string = str(tmpl.render(**variables))
-        
+            
         if DEBUG:
             print "_ssh_qsub"
             print "usercert:",usercert
