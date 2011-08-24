@@ -4,7 +4,7 @@
 
 from mako.template import Template
 
-def make_script(template,working,command,modules,cpus,memory,walltime,yabiusername,username,host):
+def make_script(template,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue,stdout,stderr):
     cleaned_template = template.replace('\r\n','\n').replace('\n\r','\n').replace('\r','\n')
     tmpl = Template(cleaned_template)
     
@@ -18,7 +18,10 @@ def make_script(template,working,command,modules,cpus,memory,walltime,yabiuserna
         'walltime':walltime,
         'yabiusername':yabiusername,
         'username':username,
-        'host':host
+        'host':host,
+        'queue':queue,
+        'stdout':stdout,
+        'stderr':stderr
     }
     
     return str(tmpl.render(**variables))

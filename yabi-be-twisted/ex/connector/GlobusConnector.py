@@ -37,6 +37,11 @@ ENV_CHECK = ['GLOBUS_LOCATION']
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "globus"
 
+# where we temporarily store the RSL XML on the submission host
+TMP_DIR = "/tmp"
+
+DEBUG = True
+
 import shlex
 from utils.protocol import globus
 import stackless
@@ -45,7 +50,7 @@ import os
 
 from utils.stacklesstools import sleep, POST
 
-import json
+import json, uuid
 
 from twisted.web2 import stream, http, responsecode, http_headers
 
@@ -53,6 +58,7 @@ from twisted.web2 import stream, http, responsecode, http_headers
 from conf import config
 
 from TaskManager.TaskTools import RemoteInfo, Sleep
+from SubmissionTemplate import make_script
 
 from Exceptions import NoCredentials, AuthException
 
@@ -76,29 +82,31 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         self.CreateAuthProxy()
 
     def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
-        # use shlex to parse the command into executable and arguments
-        lexer = shlex.shlex(command, posix=True)
-        lexer.wordchars += r"-.:;/="
-        arguments = list(lexer)
+        print "RRRUUUUNNN",module
+        modules = [] if not module else [X.strip() for X in module.split(",")]
         
-        rsl = globus.ConstructRSL(
-            command = arguments[0],
-            args = arguments[1:],
-            directory = working,
-            stdout = stdout,
-            stderr = stderr,
-            address = host,
-            maxWallTime = walltime,
-            maxMemory = memory,
-            cpus = cpus,
-            queue = queue,
-            jobType = jobtype,
-            modules = [] if not module else [X.strip() for X in module.split(",")]
-        )
+        submission_script = os.path.join(TMP_DIR,str(uuid.uuid4())+".rsl")
+        if DEBUG:
+            print "rsl submission script path is %s"%(submission_script)
+            print "input script is",repr(submission)
         
-        # store the rsl in a file
-        rslfile = globus.writersltofile(rsl)
+        script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue,stdout,stderr)    
         
+        if DEBUG:
+            print "globus-run"
+            print "command:",command
+            print "username:",username
+            print "host:",host
+            print "working:",working
+            print "port:","22"
+            print "stdout:",stdout
+            print "stderr:",stderr
+            print "modules",modules
+            print "script:",repr(script_string)
+        
+        with open(submission_script,'w') as fh:
+            fh.write(script_string)
+                
         # first we need to auth the proxy
         try:
             if creds:
@@ -115,7 +123,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         usercert = self.GetAuthProxy(host).ProxyFile(username)
         
         # TODO: what if our proxy has expired in the meantime? (rare, but possible)
-        processprotocol = globus.Run.run( usercert, rslfile, host)
+        processprotocol = globus.Run.run( usercert, submission_script, host)
         
         while not processprotocol.isDone():
             stackless.schedule()
