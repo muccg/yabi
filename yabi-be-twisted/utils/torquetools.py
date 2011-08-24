@@ -137,34 +137,15 @@ def qsub_backoff_generator():
     # exiting the generator means permanent error
     return
 
-def qsub(jobname, command, user="yabi", workingdir="/home/yabi", stdout="STDOUT.txt", stderr="STDERR.txt", modules=[]):
-    # use shlex to parse the command into executable and arguments
-    #lexer = shlex.shlex(command, posix=True)
-    #lexer.wordchars += r"-.:;/"
-    #arguments = list(lexer)
-     
-     # make a temporary file to store the command in
-    tempfile = mktemp(dir=config.config['backend']['temp'])
-    temp=open(tempfile,'w+b')
-    
-    # write module load lines
-    for module in modules:
-        # assert the module name is sanity
-        assert " " not in module
-        temp.write("module load %s\n"%(module))
-    
-    temp.write(command)
-    temp.write("\n")
-    temp.close()
-   
+def qsub(jobname, submission_script, user="yabi", workingdir="/home/yabi"):
     # user we are submitting as needs to be able to read the file
-    os.chmod(tempfile, 0604)
+    os.chmod(submission_script, 0604)
     
     retry=True
     delays = qsub_backoff_generator()
     while retry:
         # run the qsub process.
-        pp = qsub_spawn(jobname,tempfile,user=user,workingdir=workingdir)
+        pp = qsub_spawn(jobname,submission_script,user=user,workingdir=workingdir)
         
         while not pp.isDone():
             stackless.schedule()
@@ -195,7 +176,7 @@ def qsub(jobname, command, user="yabi", workingdir="/home/yabi", stdout="STDOUT.
             retry = False
     
     # delete temp?
-    os.unlink(tempfile)
+    os.unlink(submission_script)
     
     return pp.jobid
 

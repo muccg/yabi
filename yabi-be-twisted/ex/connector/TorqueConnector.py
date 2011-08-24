@@ -37,15 +37,18 @@ ENV_CHECK = []
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "torque"
 
-DEBUG = False
+DEBUG = True
+
+TMP_DIR = "/tmp"
 
 from twisted.web2 import http, responsecode, http_headers, stream
 
 from utils.stacklesstools import sleep, POST
 from utils.torquetools import qsub, qstat
 
-import json
+import json, uuid, os
 
+from SubmissionTemplate import make_script
 from TaskManager.TaskTools import RemoteInfo
 
 # for Job status updates, poll this often
@@ -65,10 +68,35 @@ class TorqueConnector(ExecConnector):
         ExecConnector.__init__(self)
     
     def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+        print "RUNNNNNN"
+        modules = [] if not module else [X.strip() for X in module.split(",")]
+        
+        submission_script = os.path.join(TMP_DIR,str(uuid.uuid4())+".sh")
+        if DEBUG:
+            print "submission script path is %s"%(submission_script)
+            print "input script is",repr(submission)
+        
+        script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue,stdout,stderr)    
+        
+        if DEBUG:
+            print "torque"
+            print "command:",command
+            print "username:",username
+            print "host:",host
+            print "working:",working
+            print "port:","22"
+            print "stdout:",stdout
+            print "stderr:",stderr
+            print "modules",modules
+            print "script:",repr(script_string)
+        
+        with open(submission_script,'w') as fh:
+            fh.write(script_string)
+        
         try:
             if DEBUG:
                 print "QSUB",command,"WORKING:",working
-            jobid = qsub("jobname", command=command, user=username, workingdir=working, modules = [] if not module else [X.strip() for X in module.split(",")])
+            jobid = qsub("jobname", submission_script=submission_script, user=username, workingdir=working)
             if DEBUG:
                 print "JOB ID",jobid
         

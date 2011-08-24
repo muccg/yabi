@@ -82,7 +82,6 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         self.CreateAuthProxy()
 
     def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
-        print "RRRUUUUNNN",module
         modules = [] if not module else [X.strip() for X in module.split(",")]
         
         submission_script = os.path.join(TMP_DIR,str(uuid.uuid4())+".rsl")
