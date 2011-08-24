@@ -37,7 +37,7 @@ ENV_CHECK = []
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "torque"
 
-DEBUG = True
+DEBUG = False
 
 TMP_DIR = "/tmp"
 

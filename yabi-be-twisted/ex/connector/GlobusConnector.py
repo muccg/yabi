@@ -40,7 +40,7 @@ SCHEMA = "globus"
 # where we temporarily store the RSL XML on the submission host
 TMP_DIR = "/tmp"
 
-DEBUG = True
+DEBUG = False
 
 import shlex
 from utils.protocol import globus
