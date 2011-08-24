@@ -58,6 +58,7 @@ from utils.protocol import ssh
 from conf import config
 
 from TaskManager.TaskTools import RemoteInfo
+from SubmissionTemplate import make_script
 
 sshauth = ssh.SSHAuth.SSHAuth()
 
@@ -111,43 +112,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
     
         usercert = self.save_identity(creds['key'])
         
-        if not submission:
-            # build our command script
-            script = ["#!/bin/sh"]
-            if walltime:
-                script.append("#PBS -l walltime=%s"%walltime)
-            if memory:
-                script.append("#PBS -l mem=%s"%memory)
-            if cpus:
-                script.append("#PBS -l ncpus=%s"%cpus)
-            script.extend(["module load %s"%mod for mod in modules or []])
-            script.append( "cd '%s'"%working )                                              # TODO: what if the path has a single quote in it?
-            script.append( command )
-            script_string = "\n".join(script)+"\n"
-        else:
-            # we have been passed a Mako template for the script.
-            from mako.template import Template
-            cleaned_submission = submission.replace('\r\n','\n').replace('\n\r','\n').replace('\r','\n')
-            
-            tmpl = Template(cleaned_submission)
-            
-            # our variable space
-            variables = {
-                'working':working,
-                'command':command,
-                'modules':modules,
-                'cpus':cpus,
-                'memory':memory,
-                'walltime':walltime,
-                'yabiusername':yabiusername,
-                'username':username,
-                'host':host
-            }
-            
-            if DEBUG:
-                print "mako submission script variables:",variables
-            
-            script_string = str(tmpl.render(**variables))
+        script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host)    
             
         if DEBUG:
             print "_ssh_qsub"
@@ -161,7 +126,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
             print "stderr:",stderr
             print "modules",modules
             print "password:","*"*len(creds['password'])
-            print "script:",script_string
+            print "script:",repr(script_string)
             
         pp = ssh.Run.run(usercert,ssh_command,username,host,working=None,port="22",stdout=None,stderr=None,password=creds['password'], modules=modules, streamin=script_string)
         while not pp.isDone():
