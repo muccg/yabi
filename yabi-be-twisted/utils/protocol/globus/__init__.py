@@ -37,5 +37,3 @@ import Jobs
 # module level "singletons"
 Copy = GlobusURLCopy.GlobusURLCopy()
 Shell = GlobusShell.GlobusShell()
-
-from RSL import RSL, ConstructRSL, writersltofile
