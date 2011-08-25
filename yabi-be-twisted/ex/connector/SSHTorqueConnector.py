@@ -179,7 +179,7 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
         else:
             raise SSHQstatException("SSHQstat error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
 
-    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
         try:
             modules = [] if not module else [X.strip() for X in module.split(",")]
             jobid = self._ssh_qsub(yabiusername,creds,command,working,username,host,remoteurl,stdout,stderr,modules)
