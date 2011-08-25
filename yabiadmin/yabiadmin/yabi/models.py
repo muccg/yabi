@@ -426,6 +426,7 @@ class Credential(Base):
         self.key = aes_enc_hex(self.key,key,linelength=80)
         
         self.encrypted = True
+        self.encrypt_on_login = False
         
     def decrypt(self, key):
         assert self.encrypted == True
