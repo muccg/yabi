@@ -112,6 +112,17 @@ def profile_required(func):
             
     return newfunc
 
+#
+# for views to be used only by the yabi backend, use this decorator to lock it down
+# also use authentication_required
+#
+def backend_only(func):
+    """Ensure that the user viewing this view is the backend system user"""
+    def newfunc(request, *args, **kwargs):
+        if request.user.name != "yabibackend":
+            raise HttpResponseUnauthorized()
+        return func(request, *args, **kwargs)
+    return newfunc
 
     
 # Number of times to indent output
