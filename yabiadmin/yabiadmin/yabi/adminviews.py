@@ -43,6 +43,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django import forms
 from django.forms.util import ErrorList
+from django.views.debug import get_safe_settings
 
 import logging
 logger = logging.getLogger('yabiadmin')
@@ -482,4 +483,26 @@ def password_collection(request):
 @staff_member_required
 def test_exception(request):
     raise Exception('Test exception')
+
+
+@staff_member_required
+def status(request):
+
+    import psi.process
+    celery_procs = []
+    for p in psi.process.ProcessTable().values():
+        if 'celery' in p.command.lower():
+            celery_procs.append(p)
+
+
+    render_data = {
+        'request':request,
+        'title': 'Admin Status',
+        'user': request.user,
+        'root_path':webhelpers.url("/"),
+        'settings': get_safe_settings(),
+        'celery_procs': celery_procs,
+        }
+    
+    return render_to_response('yabi/admin_status.html', render_data)
 
