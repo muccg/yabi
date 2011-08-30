@@ -43,11 +43,13 @@ from yabiadmin.yabiengine import backendhelper
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.responses import *
 
-from yabiadmin.decorators import memcache, authentication_required, profile_required, backend_only
+from yabiadmin.decorators import memcache, authentication_required, profile_required, hmac_authenticated
 
 import logging
 logger = logging.getLogger('yabiadmin')
 
+#@authentication_required
+@hmac_authenticated
 def credential_uri(request, yabiusername):
     if 'uri' not in request.REQUEST:
         return HttpResponse("Request must contain parameter 'uri' in the GET or POST parameters.")
