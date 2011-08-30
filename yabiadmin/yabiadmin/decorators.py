@@ -33,7 +33,7 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseUnauthorized
 
-
+import hmac
 
 import logging
 logger = logging.getLogger('yabiadmin')
@@ -42,6 +42,10 @@ from django.contrib.memcache import KeyspacedMemcacheClient
 mc = KeyspacedMemcacheClient()
 
 import pickle
+
+import settings
+
+HTTP_HMAC_KEY = 'HTTP_HMAC_DIGEST'
 
 def req_to_str(request):
     s = request.path
@@ -116,11 +120,23 @@ def profile_required(func):
 # for views to be used only by the yabi backend, use this decorator to lock it down
 # also use authentication_required
 #
-def backend_only(func):
+def hmac_authenticated(func):
     """Ensure that the user viewing this view is the backend system user"""
     def newfunc(request, *args, **kwargs):
-        if request.user.name != "yabibackend":
-            raise HttpResponseUnauthorized()
+        # check hmac result
+        hmac_digest = hmac.new(settings.HMAC_KEY)
+        hmac_digest.update(request.META['REQUEST_URI'])
+        logger.info("hmac incoming should be %s"%(hmac_digest.hexdigest()))
+        
+        if HTTP_HMAC_KEY not in request.META:
+            logger.info("Hmac-digest header not present in incoming request. Denying.")
+            return HttpResponseUnauthorized("Hmac-digest header not present in request\n")
+            
+        # check HMAC matches
+        if request.META[HTTP_HMAC_KEY] != hmac_digest.hexdigest():
+            logger.info("Hmac-digest header does not match expected. Authentication denied.")
+            return HttpResponseUnauthorized("Hmac-digest authentication failed\n")
+            
         return func(request, *args, **kwargs)
     return newfunc
 
