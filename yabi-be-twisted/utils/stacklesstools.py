@@ -45,8 +45,9 @@ from stackless import schedule, tasklet
 
 from CallbackHTTPClient import CallbackHTTPClient, CallbackHTTPClientFactory, CallbackHTTPDownloader
 from RememberingHTTPClient import RememberingHTTPClient, RememberingHTTPClientFactory, RememberingHTTPDownloader
+from ServerContextFactory import ServerContextFactory
 
-DEBUG = False
+DEBUG = True
 
 from conf import config
 
@@ -94,17 +95,20 @@ class HTTPResponse(object):
         return self.message
         
 class HTTPConnection(object):
-    def __init__(self, host, port=80):
+    SCHEME = 'https'
+    PORT = 80
+    
+    def __init__(self, host, port=None):
         if ':' in host:
             self.host,self.port=host.split(':')
             self.port=int(self.port)
         else:
             self.host = host
-            self.port = port
+            self.port = port or self.PORT
         
     def request(self, method, url, body=None, headers={}, noisy=False):
         """Issue the specified HTTP request"""
-        fullpath = "http://%s:%d%s"%(self.host,self.port,url)
+        fullpath = "%s://%s:%d%s"%(self.SCHEME,self.host,self.port,url)
 
         ascii_headers = {}
         for key,value in headers.iteritems():
@@ -141,7 +145,10 @@ class HTTPConnection(object):
         
         # start the connection
         factory.deferred.addCallback(_doSuccess).addErrback(_doFailure)
-        reactor.connectTCP(self.host, self.port, factory)
+        if self.scheme == 'https':
+            reactor.connectSSL(self.host, self.port, factory, ServerContextFactory())
+        else:
+            reactor.connectTCP(self.host, self.port, factory)
 
     def getresponse(self):
         # now we schedule this thread until the task is complete
@@ -184,9 +191,9 @@ def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,*
     getdata=urllib.urlencode(kws)
     
     if DEBUG:
-        print "=>",str("http://%s:%d%s"%(host,port,path+"?"+getdata))
+        print "=>",str("https://%s:%d%s"%(host,port,path+"?"+getdata))
         
-    fullpath=str("http://%s:%d%s"%(host,port,path))
+    fullpath=str("https://%s:%d%s"%(host,port,path))
     if getdata:
         fullpath += "?"+getdata
         
@@ -200,7 +207,7 @@ def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,*
         agent = USER_AGENT,
         connect_failed = connect_failed
         )
-    factory.noisy=False
+    factory.noisy=True
     
     if DEBUG:
         print "GETing",fullpath
@@ -212,7 +219,7 @@ def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,*
         if isinstance(data,Failure):
             exc = data.value
             #get_failed[0] = -1, str(exc), "Tried to GET %s"%(fullpath)
-            get_failed[0] = -1, str(exc), "Tried to GET %s.\nRemote response was:\n%s"%(fullpath,factory.last_client.errordata)
+            get_failed[0] = -1, str(exc), "Tried to GET %s.\nRemote response was:\n%s"%(fullpath,factory.last_client.errordata), int(factory.status)
         else:
             get_failed[0] = int(factory.status), factory.message, "Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
         
@@ -223,12 +230,16 @@ def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,*
     
     # start the connection
     factory.deferred.addCallback(_doSuccess).addErrback(_doFailure)
-    reactor.connectTCP(host, port, factory)
+    if fullpath.startswith('https'):
+        reactor.connectSSL(host, port, factory, ServerContextFactory())
+    else:
+        reactor.connectTCP(host, port, factory)
 
     # now we schedule this thread until the task is complete
     while not get_complete[0] and not get_failed[0] and not connect_failed[0]:
         if DEBUG:
-            print "G",get_complete[0],"G2",get_failed[0],"CF",connect_failed[0]
+            pass
+            #print "G",get_complete[0],"G2",get_failed[0],"CF",connect_failed[0]
         # has out actual initial connection failed?
         schedule()
         
@@ -240,7 +251,7 @@ def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,*
     if get_failed[0]:
         if DEBUG:
             print "get_failed=",get_failed
-        if type(get_failed[0])==tuple and len(get_failed[0])==3:
+        if type(get_failed[0])==tuple and len(get_failed[0])==4:
             # failed naturally
             raise GETFailure(get_failed[0])
         elif get_failed[0]==True:
@@ -279,7 +290,7 @@ def POST(path,**kws):
     #postdata="src=gridftp1/cwellington/bi01/cwellington/test&dst=gridftp1/cwellington/bi01/cwellington/test2"
     
     factory = CallbackHTTPClientFactory(
-        str("http://%s:%d%s"%(host,port,path)),
+        str("https://%s:%d%s"%(host,port,path)),
         agent = USER_AGENT,
         method="POST",
         postdata=postdata,
@@ -301,7 +312,7 @@ def POST(path,**kws):
     def _doFailure(data):
         if isinstance(data,Failure):
             exc = data.value
-            get_failed[0] = -1, str(exc), "Tried to POST %s to %s.\nRemote response was:\n%s"%(postdata,str("http://%s:%d%s"%(host,port,path)),factory.last_client.errordata)
+            get_failed[0] = -1, str(exc), "Tried to POST %s to %s.\nRemote response was:\n%s"%(postdata,str("https://%s:%d%s"%(host,port,path)),factory.last_client.errordata)
         else:
             get_failed[0] = int(factory.status), factory.message, "Remote host %s:%d%s said: %s"%(host,port,path,factory.last_client.errordata)
     
@@ -311,7 +322,10 @@ def POST(path,**kws):
         
     factory.deferred.addCallback(_doSuccess).addErrback(_doFailure)
 
-    reactor.connectTCP(host, port, factory)
+    if fullpath.startswith('https'):
+        reactor.connectSSL(host, port, factory, ServerContextFactory())
+    else:
+        reactor.connectTCP(host, port, factory)
     
     # now we schedule this thread until the task is complete
     while not get_complete[0] and not get_failed[0] and not connect_failed[0]:
