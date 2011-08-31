@@ -40,6 +40,8 @@ from utils.parsers import parse_url
 
 from utils.submit_helpers import parsePOSTData
 
+from decorators import hmac_authenticated
+
 DEFAULT_LIST_PRIORITY = 0                   # immediate by default
 
 DEBUG = False
@@ -62,7 +64,8 @@ class FileListResource(resource.PostableResource):
     def old_http_POST(self, request):
         # break our request path into parts
         return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be GET\n")
-
+    
+    @hmac_authenticated
     def handle_list(self, request):
         if "uri" not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided\n")
