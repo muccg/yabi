@@ -304,6 +304,7 @@ class AWSAuthConnection:
                 connection = httplib.HTTPSConnection(host)
             else:
                 connection = HTTPConnection(host)
+                connection.scheme = 'http'
             
             final_headers = merge_meta(headers, metadata);
             

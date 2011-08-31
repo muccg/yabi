@@ -95,7 +95,7 @@ class HTTPResponse(object):
         return self.message
         
 class HTTPConnection(object):
-    SCHEME = 'https'
+    scheme = 'https'
     PORT = 80
     
     def __init__(self, host, port=None):
@@ -108,7 +108,7 @@ class HTTPConnection(object):
         
     def request(self, method, url, body=None, headers={}, noisy=False):
         """Issue the specified HTTP request"""
-        fullpath = "%s://%s:%d%s"%(self.SCHEME,self.host,self.port,url)
+        fullpath = "%s://%s:%d%s"%(self.scheme,self.host,self.port,url)
 
         ascii_headers = {}
         for key,value in headers.iteritems():
