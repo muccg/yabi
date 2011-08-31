@@ -100,3 +100,29 @@ def call_count(f):
             f._CONNECTION_COUNT -= 1
     return new_func
 
+from twisted.web2 import http, responsecode, http_headers
+import hmac
+from conf import config
+
+#
+# for resources that need to be authed via hmac secret
+#
+def hmac_authenticated(func):
+    def newfunc(self, request, *args, **kwargs):
+        # check hmac result
+        headers = request.headers
+        if not headers.hasHeader("hmac-digest"):
+            return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No hmac-digest header present in http request.\n")
+            
+        digest_incoming = headers.getRawHeaders("hmac-digest")[0]
+        uri = request.uri
+        
+        hmac_digest = hmac.new(config.config['backend']['hmacsecret'])
+        hmac_digest.update(uri)
+        
+        if hmac_digest.hexdigest() != digest_incoming:
+            return http.Response( responsecode.UNAUTHORIZED, {'content-type': http_headers.MimeType('text', 'plain')}, "hmac-digest header present in http request is incorrect.\n")
+        
+        return func(self,request, *args, **kwargs)
+    return newfunc
+    
