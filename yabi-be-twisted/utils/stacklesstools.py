@@ -47,7 +47,7 @@ from CallbackHTTPClient import CallbackHTTPClient, CallbackHTTPClientFactory, Ca
 from RememberingHTTPClient import RememberingHTTPClient, RememberingHTTPClientFactory, RememberingHTTPDownloader
 from ServerContextFactory import ServerContextFactory
 
-DEBUG = True
+DEBUG = False
 
 from conf import config
 
