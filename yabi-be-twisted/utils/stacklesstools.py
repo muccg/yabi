@@ -184,9 +184,9 @@ def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,*
     returns the return code and data on success 
     """
     # defaults to us
-    host=host or config.config['backend']['port'][0]
+    host=host or config.config['backend']['sslport'][0]
     host = "127.0.0.1" if host=="0.0.0.0" else host
-    port=port or config.config['backend']['port'][1]
+    port=port or config.config['backend']['sslport'][1]
     
     getdata=urllib.urlencode(kws)
     
@@ -269,14 +269,14 @@ def POST(path,**kws):
         host = kws['host']
         del kws['host']
     else:
-        host = config.config['backend']['port'][0]
+        host = config.config['backend']['sslport'][0]
         host = "127.0.0.1" if host=="0.0.0.0" else host
         
     if 'port' in kws:
         port = kws['port']
         del kws['port']
     else:
-        port = config.config['backend']['port'][1]
+        port = config.config['backend']['sslport'][1]
         
     errorpage=[None]
         

@@ -34,9 +34,20 @@ from twisted.python import failure, log
 
 import os, types
 
+from conf import config
+
 from stackless import tasklet
 
 DEBUG = False
+
+import hmac
+
+HMAC_SECRET = config.config['backend']['hmacsecret']
+
+def sign_uri(uri):
+    hmac_digest = hmac.new(HMAC_SECRET)
+    hmac_digest.update(uri)
+    return hmac_digest.hexdigest()
 
 class CallbackHTTPClient(client.HTTPPageGetter):
     def __init__(self, *args, **kwargs):
@@ -45,7 +56,43 @@ class CallbackHTTPClient(client.HTTPPageGetter):
     
     def SetCallback(self, callback):
         self.callback = callback
-    
+        
+    def connectionMade(self):
+        method = getattr(self.factory, 'method', 'GET')
+        if DEBUG:
+            print "METHOD:",method
+            print "TRANSPORT",self.transport
+        self.sendCommand(method, self.factory.path)
+        if self.factory.scheme == 'http' and self.factory.port != 80:
+            host = '%s:%s' % (self.factory.host, self.factory.port)
+        elif self.factory.scheme == 'https' and self.factory.port != 443:
+            host = '%s:%s' % (self.factory.host, self.factory.port)
+        else:
+            host = self.factory.host
+        self.sendHeader('Host', self.factory.headers.get("host", host))
+        self.sendHeader('User-Agent', self.factory.agent)
+        self.sendHeader('Hmac-digest', sign_uri(self.factory.path))
+        
+        data = getattr(self.factory, 'postdata', None)
+        if data is not None:
+            self.sendHeader("Content-Length", str(len(data)))
+
+        cookieData = []
+        for (key, value) in self.factory.headers.items():
+            if key.lower() not in self._specialHeaders:
+                # we calculated it on our own
+                self.sendHeader(key, value)
+            if key.lower() == 'cookie':
+                cookieData.append(value)
+        for cookie, cookval in self.factory.cookies.items():
+            cookieData.append('%s=%s' % (cookie, cookval))
+        if cookieData:
+            self.sendHeader('Cookie', '; '.join(cookieData))
+        self.endHeaders()
+        self.headers = {}
+
+        if data is not None:
+            self.transport.write(data)
     #def lineReceived(self, line):
         #print "LINE_RECEIVED:",line
         #return client.HTTPPageGetter.lineReceived(self,line)

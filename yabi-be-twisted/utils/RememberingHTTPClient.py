@@ -248,7 +248,4 @@ class RememberingHTTPDownloader(RememberingHTTPClientFactory):
             self.deferred.errback(failure.Failure())
             return
         self.deferred.callback(self.value)
-        
-    def clientConnectionFailed(self, connector, reason):
-        print "BAM"
-
+     

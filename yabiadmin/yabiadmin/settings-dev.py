@@ -167,14 +167,6 @@ CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
 VALID_SCHEMES = ['http', 'https', 'gridftp', 'globus', 'sge', 'torque', 'yabifs', 'ssh', 'scp', 's3', 'null', 'ssh+pbspro', 'ssh+torque']
 
 ##
-## HMAC key
-##
-try:
-    from hmac_key import HMAC_KEY 
-except ImportError, ie:
-    raise ImportError("Cannot import HMAC key. Please create a secret key and place into hmac_key.py in root directory")
-
-##
 ## Celery settings
 ##
 import djcelery
