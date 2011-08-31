@@ -207,7 +207,7 @@ def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,*
         agent = USER_AGENT,
         connect_failed = connect_failed
         )
-    factory.noisy=True
+    factory.noisy=False
     
     if DEBUG:
         print "GETing",fullpath
@@ -289,8 +289,10 @@ def POST(path,**kws):
     postdata=urllib.urlencode(kws)
     #postdata="src=gridftp1/cwellington/bi01/cwellington/test&dst=gridftp1/cwellington/bi01/cwellington/test2"
     
+    fullpath=str("https://%s:%d%s"%(host,port,path))
+    
     factory = CallbackHTTPClientFactory(
-        str("https://%s:%d%s"%(host,port,path)),
+        fullpath,
         agent = USER_AGENT,
         method="POST",
         postdata=postdata,
