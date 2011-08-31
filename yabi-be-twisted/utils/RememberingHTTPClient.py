@@ -45,7 +45,7 @@ def sign_uri(uri):
     hmac_digest.update(uri)
     return hmac_digest.hexdigest()
 
-DEBUG = True
+DEBUG = False
 
 class RememberingHTTPClient(client.HTTPPageGetter):
     errordata=None
