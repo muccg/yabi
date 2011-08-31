@@ -39,6 +39,8 @@ from utils.parsers import parse_url
 from utils.submit_helpers import parsePOSTData
 import traceback
 
+from decorators import hmac_authenticated
+
 DEFAULT_LINK_PRIORITY = 10
 
 class FileLinkResource(resource.PostableResource):
@@ -56,6 +58,7 @@ class FileLinkResource(resource.PostableResource):
         
         self.fsresource = weakref.ref(fsresource)
         
+    @hmac_authenticated
     def handle_mkdir(self, request):
         # override default priority
         priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_LINK_PRIORITY

@@ -45,6 +45,8 @@ from twisted.internet.defer import Deferred
 from utils.submit_helpers import parsePOSTData
 import traceback
 
+from decorators import hmac_authenticated
+
 DEFAULT_PUT_PRIORITY = 1
 
 UPLOAD_BLOCK_SIZE = 1024 * 256
@@ -68,6 +70,7 @@ class FilePutResource(resource.PostableResource):
         # break our request path into parts
         return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be POST\n")
                         
+    @hmac_authenticated
     def http_POST(self, request):
         # override default priority
         priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_PUT_PRIORITY

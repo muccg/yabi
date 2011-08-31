@@ -45,6 +45,8 @@ from twisted.internet.defer import Deferred
 
 from utils.submit_helpers import parsePOSTData
 
+from decorators import hmac_authenticated
+
 DEFAULT_UPLOAD_PRIORITY = 1
 
 UPLOAD_BLOCK_SIZE = 1024 * 256
@@ -180,7 +182,8 @@ class FileUploadResource(resource.PostableResource):
     def render(self, request):
         # break our request path into parts
         return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be POST\n")
-                        
+    
+    @hmac_authenticated
     def http_POST(self, request):
         #print "FilePutResource::http_POST(",request,")"
         if not self.uuid:

@@ -46,6 +46,8 @@ from utils.FifoStream import FifoStream
 
 from utils.submit_helpers import parsePOSTData
 
+from decorators import hmac_authenticated
+
 DEFAULT_GET_PRIORITY = 1
 
 DOWNLOAD_BLOCK_SIZE = 8192
@@ -62,6 +64,7 @@ class FileGetResource(resource.PostableResource):
         
         self.fsresource = weakref.ref(fsresource)
         
+    @hmac_authenticated
     def handle_get(self, request):
         # override default priority
         priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_GET_PRIORITY

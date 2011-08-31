@@ -39,6 +39,8 @@ from utils.submit_helpers import parsePOSTData
 
 import traceback
 
+from decorators import hmac_authenticated
+
 DEFAULT_DELETE_PRIORITY = 2                         
 
 # print out extra debug information to the log
@@ -61,7 +63,8 @@ class FileDeleteResource(resource.PostableResource):
             raise Exception, "FileListResource must be informed on construction as to which FSResource is its parent"
         
         self.fsresource = weakref.ref(fsresource)
-        
+    
+    @hmac_authenticated
     def handle_delete(self, request):
         # override default priority
         priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_DELETE_PRIORITY

@@ -39,6 +39,8 @@ from utils.parsers import parse_url
 from utils.submit_helpers import parsePOSTData
 import traceback
 
+from decorators import hmac_authenticated
+
 DEFAULT_LCOPY_PRIORITY = 10
 
 class FileLCopyResource(resource.PostableResource):
@@ -55,7 +57,8 @@ class FileLCopyResource(resource.PostableResource):
             raise Exception, "FileLinkResource must be informed on construction as to which FSResource is its parent"
         
         self.fsresource = weakref.ref(fsresource)
-        
+
+    @hmac_authenticated
     def handle_lcopy(self, request):
         # override default priority
         priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_LCOPY_PRIORITY

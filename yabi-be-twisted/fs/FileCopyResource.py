@@ -41,6 +41,8 @@ from utils.parsers import parse_url
 
 from utils.submit_helpers import parsePOSTData
 
+from decorators import hmac_authenticated
+
 DEFAULT_COPY_PRIORITY = 1                   # not immediate by default but high priority
 
 DEBUG = False
@@ -67,7 +69,8 @@ class FileCopyProgressResource(resource.Resource):
         
         return response
         
-    
+
+    @hmac_authenticated
     def http_GET(self, request):
         if 'yabiusername' in request.args:
             yabiusername = request.args['yabiusername'][0]
@@ -107,7 +110,8 @@ class FileCopyResource(resource.PostableResource):
             raise Exception, "FileCopyResource must be informed on construction as to which FSResource is its parent"
         
         self.fsresource = weakref.ref(fsresource)
-        
+
+    @hmac_authenticated
     def handle_copy(self, request):
         # override default priority
         priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_COPY_PRIORITY
