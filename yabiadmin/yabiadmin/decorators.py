@@ -31,7 +31,7 @@
 # lets help make the frontend more snappy
 #
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseUnauthorized
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseUnauthorized, HttpResponseBadRequest
 
 import hmac
 
@@ -130,7 +130,7 @@ def hmac_authenticated(func):
         
         if HTTP_HMAC_KEY not in request.META:
             logger.info("Hmac-digest header not present in incoming request. Denying.")
-            return HttpResponseUnauthorized("Hmac-digest header not present in request\n")
+            return HttpResponseBadRequest("Hmac-digest header not present in request\n")
             
         # check HMAC matches
         if request.META[HTTP_HMAC_KEY] != hmac_digest.hexdigest():
