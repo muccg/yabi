@@ -257,9 +257,26 @@ def Resume(jobid, backend, command, callbackfunc=None, **kwargs):
 def UserCreds(yabiusername, uri):
     """Get a users credentials"""
     # see if we can get the credentials
+    print "UserCreds...",yabiusername,uri
     url = os.path.join(config.yabiadminpath,'ws/credential/%s/?uri=%s'%(yabiusername,urllib.quote(uri)))
-    code, message, data = RetryGET(url, host=config.yabiadminserver, port=config.yabiadminport)
-    assert code==200
-    if DEBUG:
-        print "JSON DATA:",data
-    return json.loads(data)
+    print "calling url...",url
+    try:
+        code, message, data = GET(url, host=config.yabiadminserver, port=config.yabiadminport)
+        print "Code:",code
+        assert code==200
+        if DEBUG:
+            print "JSON DATA:",data
+        return json.loads(data)
+    except GETFailure, gf:
+        code = gf.args[0][3]
+        if code==401:
+            # unauthorised... we need to login.
+            pass
+            
+def wslogin():
+    username = "cwellington"
+    password = "password"
+    
+    url = os.path.join(config.yabiadminpath,'ws/login')
+    code, message, data = GET(url, host=config.yabiadminserver, port=config.yabiadminport)
+    

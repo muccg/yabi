@@ -34,7 +34,15 @@ from twisted.python import failure, log
 
 import os, types
 
-DEBUG = False
+import hmac
+HMAC_SECRET = None                          # replace with key
+
+def sign_uri(uri):
+    hmac_digest = hmac.new(HMAC_SECRET)
+    hmac_digest.update(uri)
+    return hmac_digest.hexdigest()
+
+DEBUG = True
 
 class RememberingHTTPClient(client.HTTPPageGetter):
     errordata=None
@@ -44,6 +52,7 @@ class RememberingHTTPClient(client.HTTPPageGetter):
         method = getattr(self.factory, 'method', 'GET')
         if DEBUG:
             print "METHOD:",method
+            print "TRANSPORT",self.transport
         self.sendCommand(method, self.factory.path)
         if self.factory.scheme == 'http' and self.factory.port != 80:
             host = '%s:%s' % (self.factory.host, self.factory.port)
@@ -53,6 +62,7 @@ class RememberingHTTPClient(client.HTTPPageGetter):
             host = self.factory.host
         self.sendHeader('Host', self.factory.headers.get("host", host))
         self.sendHeader('User-Agent', self.factory.agent)
+        self.sendHeader('Hmac-digest', sign_uri(self.factory.path))
         
         data = getattr(self.factory, 'postdata', None)
         if data is not None:
@@ -74,6 +84,10 @@ class RememberingHTTPClient(client.HTTPPageGetter):
 
         if data is not None:
             self.transport.write(data)
+            
+    #def connectionLost(self,reason):
+        #print "LOST",reason
+        #return client.HTTPPageGetter.connectionLost(self,reason)
 
     def sendHeader(self,*args,**kwargs):
         if DEBUG:
@@ -81,6 +95,8 @@ class RememberingHTTPClient(client.HTTPPageGetter):
         return client.HTTPPageGetter.sendHeader(self,*args, **kwargs)
     
     def rawDataReceived(self, data):
+        if DEBUG:
+            print "rawDataReceived %d bytes"%len(data)
         if not (200 <= int(self.status) < 300):
             # we got an error. TODO: something graceful here
             #print "ERROR. NON 200 CODE RETURNED FOR JOB EXEC STATUS"

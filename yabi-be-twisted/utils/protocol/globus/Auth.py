@@ -53,12 +53,16 @@ class GlobusAuth(object):
         useragent = "YabiFS/0.1"
         
         try:
-            status, message, data = RetryGET( path = os.path.join(config.yabiadminpath,"ws/credential/%s/?uri=%s://%s@%s%s"%(yabiusername,scheme,username,hostname,urllib.quote(path))),
-                                        host = config.yabiadminserver,
-                                        port = config.yabiadminport )
-            
-            assert status==200
-            credentials = json.loads( data )
+            # get credential for uri...
+            from TaskManager.TaskTools import UserCreds
+            credentials = UserCreds(yabiusername, "%s://%s@%s%s"%(scheme,username,hostname,urllib.quote(path)))
+            if False:
+                status, message, data = RetryGET( path = os.path.join(config.yabiadminpath,"ws/credential/%s/?uri=%s://%s@%s%s"%(yabiusername,scheme,username,hostname,urllib.quote(path))),
+                                            host = config.yabiadminserver,
+                                            port = config.yabiadminport )
+                
+                assert status==200
+                credentials = json.loads( data )
             
             # create the user proxy
             if hostname not in self.authproxy:

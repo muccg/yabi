@@ -39,10 +39,10 @@ from utils.parsers import parse_url
 from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Mkdir, Rm, List, UserCreds, GETFailure, CloseConnections
 
 # if debug is on, full tracebacks are logged into yabiadmin
-DEBUG = True
+DEBUG = False
 
 # if this is true the backend constantly rants about when it collects the next task
-VERBOSE = False
+VERBOSE = True
 
 import traceback
 
@@ -191,15 +191,20 @@ class TaskManager(object):
         task_origin = "?origin=%s:%s" % tuple(config.config['backend']['port'])
         task_url = task_server + task_path + task_origin
 
+        if VERBOSE:
+            print "Getting next task from:",task_url
+
         factory = client.HTTPClientFactory(
             url = task_url,
             agent = useragent
             )
         factory.noisy = False
         if VERBOSE:
-            print "reactor.connectTCP(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.TASK_URL),")"
+            print "reactor.connectSSL(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.TASK_URL),")"
         port = config.yabiadminport
-        reactor.connectTCP(config.yabiadminserver, port, factory)
+        
+        from ServerContextFactory import ServerContextFactory
+        reactor.connectSSL(config.yabiadminserver, port, factory, ServerContextFactory())
 
         # now if the page fails for some reason. deal with it
         def _doFailure(data):
