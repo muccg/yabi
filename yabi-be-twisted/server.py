@@ -37,6 +37,9 @@ config.sanitise()
 assert config.config['backend'].has_key('temp'), "[backend] section of yabi.conf is missing 'temp' directory setting"
 logfile = config.config['backend']['logfile']
 
+assert config.config['backend'].has_key('hmacsecret'), "[backend] section of yabi.conf is missing 'hmacsecret' setting"
+assert config.config['backend']['hmacsecret'], "[backend] section of yabi.conf has unset 'hmacsecret' value"
+
 from urlparse import urlparse
 
 import stacklessreactor

@@ -120,6 +120,8 @@ class Configuration(object):
                         "certfile":"~/.yabi/servercert.pem",
                         "keyfile":"~/.yabi/servercert.pem",
                         
+                        "hmacsecret":None,
+                        
                         "alert_email":"Tech Alerts <alerts@ccg.murdoch.edu.au>",
                         
                         "memcache_servers":"memcache1.localdomain:11211 memcache2.localdomain:11211",
@@ -179,6 +181,8 @@ class Configuration(object):
                 self.config[name]['keyfile'] = path_sanitise(conf_parser.get(name,'keyfile'))
             if conf_parser.has_option(name,'certfile'):
                 self.config[name]['certfile'] = path_sanitise(conf_parser.get(name,'certfile'))
+            if conf_parser.has_option(name,'hmacsecret'):
+                self.config[name]['hmacsecret'] = conf_parser.get(name,'hmacsecret')
             
             # memcache
             if conf_parser.has_option(name,'memcache_servers'):

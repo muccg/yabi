@@ -32,10 +32,13 @@ from twisted.internet import reactor
 from twisted.internet.defer import Deferred
 from twisted.python import failure, log
 
+from conf import config
+
 import os, types
 
 import hmac
-HMAC_SECRET = None                          # replace with key
+
+HMAC_SECRET = config.config['backend']['hmacsecret']
 
 def sign_uri(uri):
     hmac_digest = hmac.new(HMAC_SECRET)
