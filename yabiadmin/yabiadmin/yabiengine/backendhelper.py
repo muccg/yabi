@@ -109,10 +109,18 @@ def get_credential_for_uri(yabiusername, uri):
 def get_backend_for_uri(yabiusername, uri):
     return get_backendcredential_for_uri(yabiusername,uri).backend
 
+import hmac
+
+def make_hmac(uri):
+    """Make the hash value for a passed in uri"""
+    hmac_digest = hmac.new(settings.HMAC_KEY)
+    hmac_digest.update(uri)
+    return hmac_digest.hexdigest()
+    
 def POST(resource, datadict, extraheaders={}, server=None):
     """Do a x-www-form-urlencoded style POST. That is NOT a file upload style"""
     data = urlencode(datadict)
-    headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
+    headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain", "Hmac-digest":make_hmac(resource)}
     headers.update(extraheaders)
     server = server if server else settings.YABIBACKEND_SERVER
     conn = httplib.HTTPConnection(server)
