@@ -117,7 +117,7 @@ def hmac_authenticated(func):
         digest_incoming = headers.getRawHeaders("hmac-digest")[0]
         uri = request.uri
         
-        hmac_digest = hmac.new(config.config['backend']['hmacsecret'])
+        hmac_digest = hmac.new(config.config['backend']['hmackey'])
         hmac_digest.update(uri)
         
         if hmac_digest.hexdigest() != digest_incoming:

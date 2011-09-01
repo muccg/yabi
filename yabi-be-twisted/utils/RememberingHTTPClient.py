@@ -38,7 +38,7 @@ import os, types
 
 import hmac
 
-HMAC_SECRET = config.config['backend']['hmacsecret']
+HMAC_SECRET = config.config['backend']['hmackey']
 
 def sign_uri(uri):
     hmac_digest = hmac.new(HMAC_SECRET)
