@@ -259,6 +259,12 @@ class ParameterSwitchUse(Base):
     def __unicode__(self):
         return self.display_text
 
+FILE_ASSIGNMENT_CHOICES = (
+    ('none', 'No input files'),
+    ('batch', 'Batch files'),
+    ('all', 'Consume all files'),
+)
+
 class ToolParameter(Base):
     tool = models.ForeignKey(Tool)
     switch = models.CharField(max_length=64)
@@ -266,7 +272,10 @@ class ToolParameter(Base):
     rank = models.IntegerField(null=True, blank=True)
     mandatory = models.BooleanField(blank=True, default=False)
     hidden = models.BooleanField(blank=True, default=False)
-    input_file = models.BooleanField(blank=True, default=False)
+    
+    # replaced with file_assignment
+    #input_file = models.BooleanField(blank=True, default=False)
+    
     output_file = models.BooleanField(blank=True, default=False)
     accepted_filetypes = models.ManyToManyField(FileType, blank=True)
     #use_batch_filename = models.BooleanField(default=False)
@@ -275,9 +284,12 @@ class ToolParameter(Base):
     default_value = models.TextField(null=True, blank=True)
     helptext = models.TextField(null=True, blank=True)
     
-    # this replaces the Tool level batch_on_param and batch_on_param_bundle_files
-    batch_param = models.BooleanField(blank=False, null=False, default=False)
+    # this is replaced by a setting in file_assignment
+    #batch_param = models.BooleanField(blank=False, null=False, default=False)
     batch_bundle_files = models.BooleanField(blank=False, null=False, default=False)
+    
+    # this replaces batch_param with a 'file assignment mode' that determines if it 'batches' or 'consumes all'
+    file_assignment = models.CharField(max_length=5, null=False, choices=FILE_ASSIGNMENT_CHOICES)
     
     # this foreign key points to the tool parameter (that is a batch_on_param) that we will derive the output filename for this switch from
     use_output_filename = models.ForeignKey('ToolParameter', null=True, blank=True)
