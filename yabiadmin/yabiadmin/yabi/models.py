@@ -199,9 +199,9 @@ class Tool(Base):
             'job_type': self.job_type,
             'inputExtensions':self.input_filetype_extensions(),                     
             'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__pattern")),            
-            'parameter_list': list(self.toolparameter_set.order_by('id').values("id", "rank", "mandatory", "hidden", "input_file", "output_file",
+            'parameter_list': list(self.toolparameter_set.order_by('id').values("id", "rank", "mandatory", "hidden", "file_assignment", "output_file",
                                                                                 "switch", "switch_use__display_text", "switch_use__formatstring","switch_use__description",
-                                                                                "possible_values","default_value","helptext","batch_param", "batch_bundle_files", "use_output_filename__switch"))
+                                                                                "possible_values","default_value","helptext", "batch_bundle_files", "use_output_filename__switch"))
             }
             
         for index in range(len(tool_dict['outputExtensions'])):
@@ -300,7 +300,7 @@ class ToolParameter(Base):
     rank.help_text="The order in which the switches should appear. Leave blank if order is unimportant."
     mandatory.help_text="Select if the switch is required as input."
     hidden.help_text="Select if the switch should be hidden from users in the frontend."
-    input_file.help_text="Select if the switch takes a file as input from another tool."
+    #input_file.help_text="Select if the switch takes a file as input from another tool."
     output_file.help_text="Select if the switch is specifying an output file."
     accepted_filetypes.help_text="The extensions of accepted filetypes for this switch."
     #use_batch_filename.help_text="If selected the tool will use the batch parameter file name as the basename of the output"

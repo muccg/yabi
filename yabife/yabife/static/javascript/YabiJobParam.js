@@ -41,7 +41,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
         this.isMandatory = false;
     }
     
-    if (this.payload.input_file === true) {
+    if (this.payload.file_assignment == "batch" || this.payload.file_assignment == "all") {
         this.isInputFile = true;
     }
     

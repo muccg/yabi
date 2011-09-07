@@ -50,18 +50,6 @@ STAGING_COPY_CHOICES = (
     ( 'link',   'symbolic link' )
 )
 
-SUBMISSION="""#!/bin/sh
-#PBS -l walltime=${walltime}
-#PBS -l mem=${memory}
-#PBS -l ncpus=${cpus}
-#PBS -W group_list=project 
-% for module in modules:
-    module load ${module}
-% endfor
-cd '${working}'
-${command}
-"""
-
 class Status(object):
     COLOURS = {
         STATUS_PENDING:  'grey',

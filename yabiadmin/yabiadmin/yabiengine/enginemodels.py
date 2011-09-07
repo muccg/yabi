@@ -358,10 +358,10 @@ class EngineJob(Job):
 
         tasks_to_create = []
 
-        if self.template.command.is_select_file or not len([X for X in self.template.all_possible_batch_files()]):
+        if self.template.command.is_select_file or not len([X for X in self.template.file_sets()]):
             return [ [self,None ] ]
         else:
-            for input_file_set in self.template.all_possible_batch_files():
+            for input_file_set in self.template.file_sets():
                 tasks_to_create.append([self, input_file_set])    
 
         return tasks_to_create
@@ -474,9 +474,10 @@ class EngineTask(Task):
         self.save()
 
         # non batch stageins
-        for key,stagein in template.all_files():
-            #print "key:%s stagein:%s"%(key,stagein)
-            self.batch_files_stagein(stagein)
+        for key,stageins in template.all_files():
+            print "key:%s stagein:%s"%(key,stageins)
+            for stagein in stageins:
+                self.batch_files_stagein(stagein)
 
         self.status = ''
         self.save()

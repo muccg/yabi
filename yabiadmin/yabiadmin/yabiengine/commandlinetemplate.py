@@ -168,10 +168,21 @@ class BatchSwitch(Switch):
     def __str__(self):
         return "<BatchSwitch:%s Value:%s>"%(self.flag, self.value)
     
-    def render(self, filename):
+    def render(self, filenames):
         assert self.switchuse is not None, "Switch 'switchuse' has not been set"
         assert type(self.switchuse) is str or type(self.switchuse) is unicode, "Switch 'switchuse' is wrong type"
-        return self.switchuse%{'switch':self.flag, 'value':quote_argument(filename)}
+        assert len(filenames)==1, "BatchSwitch can only take single filenames"
+        return self.switchuse%{'switch':self.flag, 'value':quote_argument(filenames[0])}
+        
+class ConsumerSwitch(BatchSwitch):
+    """This represents a file input switch that doesn't 'batch' but instead tries to consume all the incoming files at once"""
+    def __str__(self):
+        return "<ConsumerSwitch:%s Value:%s>"%(self.flag, self.value)
+    
+    def render(self, filenames):
+        assert self.switchuse is not None, "Switch 'switchuse' has not been set"
+        assert type(self.switchuse) is str or type(self.switchuse) is unicode, "Switch 'switchuse' is wrong type"
+        return self.switchuse%{'switch':self.flag, 'value':" ".join([quote_argument(X) for X in filenames])}
 
 class UnknownFileSwitch(Switch):
     """This represents a non-batch file switch that doesn't know its filename but will find out at render time"""
@@ -233,7 +244,7 @@ class SelectFile(Command):
         
     def render(self):
         return ""
-    
+  
 class CommandTemplate(object):
     """Holds the structure of a yabi command including the associated flags and arguments
     
@@ -306,8 +317,11 @@ class CommandTemplate(object):
                                             # this represents ALL the possibilities that could be batched, not _just_ those relating to render()
                                             # the keys here are the switch name. The value is a list of 'details'
  
-        self.uri_conversion_string = "%%(file)s"            # to convert a URI into a remote path we use this string template
+        self.batch_switches = []            # the switches that need to have the input files batched
+        self.consume_switches = []          # the switches that need to have the input files consumed
  
+        self.uri_conversion_string = "%%(file)s"            # to convert a URI into a remote path we use this string template
+        
     def setup(self, job, job_dict):
         """
         setup the command template as per the job passed in and the parameter dictionary passed in
@@ -344,10 +358,10 @@ class CommandTemplate(object):
         
     def serialise(self):
         import pickle
-        return pickle.dumps([self.command,self.arguments,self.files,self.backrefs,self.username,self.backfiles,self.batchfiles])
+        return pickle.dumps([self.command,self.arguments,self.files,self.backrefs,self.username,self.backfiles,self.batchfiles,self.batch_switches,self.consume_switches])
 
     def deserialise(self, data):
-        self.command, self.arguments,self.files,self.backrefs,self.username,self.backfiles,self.batchfiles = pickle.loads(str(data))
+        self.command, self.arguments,self.files,self.backrefs,self.username,self.backfiles,self.batchfiles,self.batch_switches,self.consume_switches = pickle.loads(str(data))
 
     def set_uri_conversion(self, string):
         self.uri_conversion_string = string
@@ -369,7 +383,7 @@ class CommandTemplate(object):
 
     def render(self, batchfiles={}):
         """renders the command template into a string. needs to be passed a dictionary of the batch files"""
-        #print "render:",batchfiles
+        print "render:",batchfiles
         self.batchfiles = batchfiles
         
         output = self.command.render()
@@ -380,11 +394,13 @@ class CommandTemplate(object):
                 #print "batchfiles: %s"%(batchfiles)
                 #print "argument: %s"%(argument)
                 #print "flag: %s"%(argument.flag)
-                output += " "+argument.render(self._convert(batchfiles[argument.flag]))
+                # render all in a list
+                output += " "+argument.render([self._convert(X) for X in batchfiles[argument.flag]])
+                #output += " ".join([argument.render(self._convert(X)) for X in batchfiles[argument.flag]])
             elif argument.takes_output_file:
                 # find the base filename this switch requires
                 #print "argument.source_switch=%s"%(argument.source_switch)
-                base_name = batchfiles[argument.source_switch].rsplit("/")[-1]
+                base_name = batchfiles[argument.source_switch][0].rsplit("/")[-1]
                 #print "basename=%s"%(base_name)
                 #print "render=%s"%(argument.render(base_name))
                 output += " "+argument.render(base_name)                                # pass it into the argument render function
@@ -418,7 +434,7 @@ class CommandTemplate(object):
                 for value in details:
                     if 'type' in value and (value['type']=='file' or value['type']=='directory'):                       # TODO: what if value is unicode and contains the word 'type' within it! LOL
                         # param refers to a file
-                        assert tp.input_file, "File parameter passed in on switch '%s' where the input_file table boolean is not set"%(tp.switch)
+                        assert tp.file_assignment=="batch" or tp.file_assignment=="all", "File parameter passed in on switch '%s' where file_assignment is neither 'batch' nor 'all'"%(tp.switch)
                         value['extensions'] = tp.input_filetype_patterns()
                         
                         # annotate with the switch we are processing
@@ -444,16 +460,23 @@ class CommandTemplate(object):
                             # annotate extra info
                             value['extensions'] = tp.input_filetype_patterns() 
                             value['bundle_files'] = tp.batch_bundle_files
-                            value['batch_param'] = tp.batch_param
+                            value['file_assignment'] = tp.file_assignment
                             
                             # annotate with the switch we are processing
                             value['switch'] = tp.switch
                             
                             # save the param
                             self.backrefs.append(value)
-                            if tp.batch_param:
+                            if tp.file_assignment=="batch":                 #tp.batch_param:
                                 # this is a batch parameter, so it needs the special batch switch
                                 self.arguments.append( BatchSwitch( tp.switch, switchuse=tp.switch_use.formatstring ) )
+                                self.batch_switches.append(tp.switch)
+                                
+                            elif tp.file_assignment=="all":
+                                # this is a consume parameter. so it needs the consumer switch
+                                self.arguments.append( ConsumerSwitch( tp.switch, switchuse=tp.switch_use.formatstring ) )
+                                self.consume_switches.append(tp.switch)
+                                                                
                             else:
                                 if 'filename' in value:
                                     # this is just an input file that will be staged along. lets add the filename statically now as it wont change, then we use the uri conversion later to make it full path
@@ -550,8 +573,8 @@ class CommandTemplate(object):
                                 # this file should be forced into the file list
                                 self.files.append(details)
                             
-                            if backref['batch_param']:
-                                # this is a file BUNDLE, so it MUST be batch_on_param
+                            if backref['file_assignment']=='batch' or backref['file_assignment']=='all':
+                                # this is a file BUNDLE, so it MUST be batch, or consume
                                 for pattern in backref['extensions']:
                                     if fnmatch.fnmatch(filename.upper(), pattern.upper()):
                                         if backref['switch'] not in self.backfiles:
@@ -608,13 +631,54 @@ class CommandTemplate(object):
         """This, when called post render, returns all the files needed to stagein"""
         for file in self.other_files():
             #print "otherfile:%s"%(file)
-            yield None, file
+            yield None,[file]
             
-        for key,file in self.batch_files():
+        for key,files in self.batch_files():
             #print "batchfile:%s"%(file)
-            yield key,file
+            yield key,files
+    
+    def file_sets(self):
+        """This returns all the filesets to pass to various renders of this command template.
+        This is a sequence of parameters. Each item in the sequence is a dictionary.
+        for tools taking batch params, each item in the quequence represents one batch job.
+        for tools consuming all input files, there is only one item in the sequence, and it represents every file being consumed by a task, organised by input flag.
+        """
+        
+        # first, get how the batch parameters look
+        batch_set = [X for X in self.possible_batch_files()]
+        
+        # if there are no batch sets, just return the consume set
+        if not batch_set:
+            return self.possible_consume_files()
+        
+        # there are some batch. For each batch set in the sequence, add in all the consume set
+        consume_set = [X for X in self.possible_consume_files()][0]
+        
+        for fileset in batch_set:
+            print "updating",fileset,"with",consume_set
+            fileset.update(consume_set)
             
-    def all_possible_batch_files(self):
+        print "RETURNING:",batch_set
+        return batch_set
+        
+    def possible_consume_files(self):
+        """This returns a single itemed sequence consuming all possible files into the one fileset for passing to render.
+        """
+        if not len(self.backfiles):
+            return
+        
+        out_hash = {}
+        
+        # for each switch that is in consume_switches
+        for switch in [X for X in self.backfiles.keys() if X in self.consume_switches]:
+            out_hash[switch] = []
+            for details_hash in self.backfils[switch]:
+                out_hash[switch].extend( self.parse_param_value(details_hash) )
+                
+        yield out_hash              # only one item in this sequence.        
+            
+    
+    def possible_batch_files(self):
         """This returns all possible input batch files for this command template. Not just those used by this render.
         This generator is used to return all the possibilities for batch. From this we call render on each one to derive a task
         
@@ -626,8 +690,9 @@ class CommandTemplate(object):
             return
         
         # now we take each list of backfiles and group them together based on filename similarity.
-        
-        set_keys = self.backfiles.keys()
+       
+        # only use keys that are batch switches
+        set_keys = [X for X in self.backfiles.keys() if X in self.batch_switches]
         
         # the key we loop over will be the key with the most entries (or the first if they are all the same)
         lengths = [len(self.backfiles[X]) for X in set_keys]
@@ -646,6 +711,7 @@ class CommandTemplate(object):
         
         for details_hash in primary_set:
             filename = details_hash['filename']             # the filename we have to find the most similar other filename to
+            #batch_type = details_hash['batch_type']         # consume all or batch
             batch_set = {primary_set_key:details_hash}
             
             # for each other set
@@ -668,20 +734,20 @@ class CommandTemplate(object):
                 # now we get that detail entry
                 matching_entry = self.backfiles[compare_key][distances[min_distance]]
                 
-                #print "Filename: %s matches up with %s"%(filename,matching_entry['filename'])
+                print "Filename: %s matches up with %s"%(filename,matching_entry['filename'])
         
                 batch_set[compare_key]=matching_entry
                 
-            #print "BATCH_SET: %s"%(str(batch_set))
+            print "BATCH_SET: %s"%(str(batch_set))
             
             # now process the values of batch_set into parsed_param_values
             out_hash = {}
             for key,val in batch_set.iteritems():
                 decoded_file_list = self.parse_param_value(val)
                 assert len(decoded_file_list)==1
-                out_hash[key] = decoded_file_list[0]
+                out_hash[key] = decoded_file_list
             
-            #print "YIELDING:",out_hash
+            print "YIELDING:",out_hash
             yield out_hash
         
         
