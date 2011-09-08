@@ -44,6 +44,7 @@ from yabiadmin.yabiengine.urihelper import uriparse, url_join
 
 import pickle
 import fnmatch
+import os.path
 
 import logging
 logger = logging.getLogger('yabiengine')
@@ -287,7 +288,7 @@ class CommandTemplate(object):
         
         template.set_uri_conversion("/some/long/remote/path/to/%(filename)s")
     
-    * render the final command line passing batch file URIs in. TODO: support passing in more than one batch file
+    * render the final command line passing batch file URIs in.
     
         command = template.render( batch_file1 )
         
@@ -655,10 +656,10 @@ class CommandTemplate(object):
         consume_set = [X for X in self.possible_consume_files()][0]
         
         for fileset in batch_set:
-            print "updating",fileset,"with",consume_set
+            #print "updating",fileset,"with",consume_set
             fileset.update(consume_set)
             
-        print "RETURNING:",batch_set
+        #print "RETURNING:",batch_set
         return batch_set
         
     def possible_consume_files(self):
@@ -672,9 +673,10 @@ class CommandTemplate(object):
         # for each switch that is in consume_switches
         for switch in [X for X in self.backfiles.keys() if X in self.consume_switches]:
             out_hash[switch] = []
-            for details_hash in self.backfils[switch]:
+            for details_hash in self.backfiles[switch]:
                 out_hash[switch].extend( self.parse_param_value(details_hash) )
-                
+            out_hash[switch].sort(key=lambda path:os.path.basename(path))
+        
         yield out_hash              # only one item in this sequence.        
             
     
@@ -697,6 +699,9 @@ class CommandTemplate(object):
         # the key we loop over will be the key with the most entries (or the first if they are all the same)
         lengths = [len(self.backfiles[X]) for X in set_keys]
         #print "set keys: %s lengths: %s"%(str(set_keys),str(lengths))
+        if not lengths:
+            return
+            
         primary_key_index = lengths.index(max(lengths))
         primary_set_key = set_keys[primary_key_index]
         
@@ -734,11 +739,11 @@ class CommandTemplate(object):
                 # now we get that detail entry
                 matching_entry = self.backfiles[compare_key][distances[min_distance]]
                 
-                print "Filename: %s matches up with %s"%(filename,matching_entry['filename'])
+                #print "Filename: %s matches up with %s"%(filename,matching_entry['filename'])
         
                 batch_set[compare_key]=matching_entry
                 
-            print "BATCH_SET: %s"%(str(batch_set))
+            #print "BATCH_SET: %s"%(str(batch_set))
             
             # now process the values of batch_set into parsed_param_values
             out_hash = {}
@@ -747,7 +752,7 @@ class CommandTemplate(object):
                 assert len(decoded_file_list)==1
                 out_hash[key] = decoded_file_list
             
-            print "YIELDING:",out_hash
+            #print "YIELDING:",out_hash
             yield out_hash
         
         
