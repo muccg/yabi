@@ -90,7 +90,7 @@ class ToolParamView:
         
         if tp.mandatory:
             props.append('Mandatory')
-        if tp.input_file:
+        if tp.file_assignment != 'none':
             props.append('Input File (%s)' % ",".join(
                 ['"%s"' % af.name for af in tp.accepted_filetypes.all()]))
         if tp.output_file:
@@ -328,13 +328,12 @@ def create_tool(request, tool_dict):
         toolparameter = ToolParameter(tool=tool,
                                       rank=parameter["rank"],
                                       mandatory=parameter["mandatory"],
-                                      input_file=parameter["input_file"],
+                                      file_assignment=parameter["file_assignment"],
                                       output_file=parameter["output_file"],
                                       default_value=parameter["default_value"],
                                       helptext=parameter["helptext"],
                                       switch=parameter["switch"],
                                       hidden=parameter["hidden"],
-                                      batch_param=parameter["batch_param"],
                                       batch_bundle_files=parameter["batch_bundle_files"]
                                       )
 
