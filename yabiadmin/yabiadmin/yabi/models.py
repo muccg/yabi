@@ -326,6 +326,10 @@ class ToolParameter(Base):
         extensions = [ext.pattern for ext in reduce(lambda x,y: x+y, [list(ft.extensions.all()) for ft in filetypes],[])]
         return list(set(extensions)) # remove duplicates
 
+    @property
+    def input_file(self):
+        return self.file_assignment == 'batch' or self.file_assignment == 'all'
+
 
 class ToolOutputExtension(Base):
     tool = models.ForeignKey(Tool)
