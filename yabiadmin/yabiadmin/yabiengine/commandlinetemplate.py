@@ -537,7 +537,7 @@ class CommandTemplate(object):
                             "extensions" : backref['extensions'],
                             "switch" : backref['switch']
                         }
-                        if backref['batch_param']:
+                        if backref['file_assignment']=='batch' or backref['file_assignment']=='all':
                             # its a single batch file. add it to backfiles
                             if backref['switch'] not in self.backfiles:
                                 #print "self: %s backfiles: %s"%(str(self), str(self.backfiles))
