@@ -42,6 +42,7 @@ DEBUG = True
 from twisted.web2 import http, responsecode, http_headers, stream
 
 import shlex
+import os
 from utils.protocol import globus
 import stackless
 import tempfile
@@ -154,10 +155,10 @@ class LocalRun(BaseShell):
         if DEBUG:
             print "running local command:",remote_command
         
-        return BaseShell.execute(self,BaseShellProcessProtocol(streamin),command)
+        return BaseShell.execute(self,BaseShellProcessProtocol(streamin),remote_command)
 
 class LocalConnector(ExecConnector):    
-    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
         # preprocess some stuff
         modules = [] if not module else [X.strip() for X in module.split(",")]
         
@@ -175,7 +176,6 @@ class LocalConnector(ExecConnector):
             stackless.schedule()
             
             if DEBUG:
-                print "usercert:",usercert
                 print "command:",command
                 print "username:",username
                 print "host:",host
@@ -184,9 +184,8 @@ class LocalConnector(ExecConnector):
                 print "stdout:",stdout
                 print "stderr:",stderr
                 print "modules",modules
-                print "password:",creds['password']
-            
-            pp = ssh.Run.run(usercert,command,username,host,working,port="22",stdout=stdout,stderr=stderr,password=creds['password'], modules=modules)
+                
+            pp = LocalRun().run(None,command,username,host,working,port="22",stdout=stdout,stderr=stderr,password=None, modules=modules)
             client_stream.write("Running\n")
             stackless.schedule()
             

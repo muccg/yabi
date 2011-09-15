@@ -112,6 +112,11 @@ class JobAdmin(admin.ModelAdmin):
     list_display = ['order', 'status', 'command', 'start_time', 'end_time', 'cpus', 'walltime', link_to_tasks_from_job]
     list_filter = ['workflow']
     ordering = ['order']
+    fieldsets = (
+        (None, {
+            'fields': ('workflow','order','start_time','cpus','walltime','module','queue','max_memory','job_type','status','exec_backend','fs_backend','command','stageout','preferred_stagein_method','preferred_stageout_method')
+        }),
+    )
 
 class TaskAdmin(admin.ModelAdmin):
     list_display = ['job', 'status', 'remote_id', 'remote_info', 'start_time', 'end_time', 'job_identifier', 'command', 'error_msg', link_to_stageins_from_task, link_to_syslog_from_task]
