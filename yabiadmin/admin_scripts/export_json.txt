@@ -1,0 +1,12 @@
+To be run via shell_plus.
+
+NB: be sure not to run tool.save() or it will change all the backends on the tools.
+
+
+>>> be = Backend.objects.get(name='nullbackend')
+>>> tools = Tool.objects.all()
+>>> for t in tools:
+...  with open("json/%s.json" % t.name, 'w') as f:
+...   t.backend = be
+...   t.fs_backend = be
+...   f.write(t.json())
