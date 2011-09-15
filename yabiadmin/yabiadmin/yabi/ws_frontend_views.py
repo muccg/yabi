@@ -172,7 +172,7 @@ def tool(request, toolname):
     logger.debug(toolname)
 
     try:
-        tool = Tool.objects.get( name=toolname )
+        tool = Tool.objects.get(name=toolname, enabled=True)
         return HttpResponse(tool.json_pretty(), content_type="text/plain; charset=UTF-8")
     except ObjectDoesNotExist:
         return JsonMessageResponseNotFound("Object not found")
@@ -191,14 +191,14 @@ def menu(request):
         for toolset in toolsets:
             for toolgroup in ToolGrouping.objects.filter(tool_set=toolset):
                 tg = all_tools.setdefault(toolgroup.tool_group.name, {})
-                tool = tg.setdefault(toolgroup.tool.name, {})
-                if not tool:
-                    tool["name"] = toolgroup.tool.name
-                    tool["displayName"] = toolgroup.tool.display_name
-                    tool["description"] = toolgroup.tool.description                
-                    tool["outputExtensions"] = toolgroup.tool.output_filetype_extensions()
-                    tool["inputExtensions"] = toolgroup.tool.input_filetype_extensions()
-
+                if toolgroup.tool.enabled:  # only include tools that are enabled
+                    tool = tg.setdefault(toolgroup.tool.name, {})
+                    if not tool:
+                        tool["name"] = toolgroup.tool.name
+                        tool["displayName"] = toolgroup.tool.display_name
+                        tool["description"] = toolgroup.tool.description                
+                        tool["outputExtensions"] = toolgroup.tool.output_filetype_extensions()
+                        tool["inputExtensions"] = toolgroup.tool.input_filetype_extensions()
 
         # from here down is getting the tools into a form
         # used by the front end so no changes are needed there
