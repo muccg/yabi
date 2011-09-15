@@ -362,7 +362,11 @@ class CommandTemplate(object):
         return pickle.dumps([self.command,self.arguments,self.files,self.backrefs,self.username,self.backfiles,self.batchfiles,self.batch_switches,self.consume_switches])
 
     def deserialise(self, data):
-        self.command, self.arguments,self.files,self.backrefs,self.username,self.backfiles,self.batchfiles,self.batch_switches,self.consume_switches = pickle.loads(str(data))
+        try:
+            self.command, self.arguments,self.files,self.backrefs,self.username,self.backfiles,self.batchfiles,self.batch_switches,self.consume_switches = pickle.loads(str(data))
+        except ImportError, ie:
+            # might be caused by frontend editing causing \n's to be replaced with \r\n's
+            self.command, self.arguments,self.files,self.backrefs,self.username,self.backfiles,self.batchfiles,self.batch_switches,self.consume_switches = pickle.loads(str(data).replace('\r\n','\n'))
 
     def set_uri_conversion(self, string):
         self.uri_conversion_string = string
