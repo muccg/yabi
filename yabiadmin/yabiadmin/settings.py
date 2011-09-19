@@ -69,16 +69,16 @@ INSTALLED_APPS.extend( [
     'djcelery'
 ] )
 
-# TODO memcache session settings kill app
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-CACHE_BACKEND = 'memcached://'+(';'.join(MEMCACHE_SERVERS))+"/"
-MEMCACHE_KEYSPACE = "yabiadmin"
+
+# uncomment to use memcache for sessions, be sure to have uncommented memcache settings elsewhere
+#SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+#CACHE_BACKEND = 'memcached://'+(';'.join(MEMCACHE_SERVERS))+"/"
+#MEMCACHE_KEYSPACE = "yabiadmin"
 
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.LDAPBackend',
-    'django.contrib.auth.backends.NoAuthModelBackend',
+    'django.contrib.auth.backends.ModelBackend'
 ]
-AUTH_PROFILE_MODULE = 'yabi.LDAPBackendUserProfile'
+AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
 
 SESSION_COOKIE_PATH = url('/')
 SESSION_SAVE_EVERY_REQUEST = True
