@@ -72,7 +72,7 @@ INSTALLED_APPS.extend( [
 # TODO memcache session settings kill app
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 CACHE_BACKEND = 'memcached://'+(';'.join(MEMCACHE_SERVERS))+"/"
-MEMCACHE_KEYSPACE = "dev-yabiadmin-"+TARGET
+MEMCACHE_KEYSPACE = "yabiadmin"
 
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.LDAPBackend',
@@ -117,7 +117,7 @@ import djcelery
 djcelery.setup_loader()
 
 CELERY_IGNORE_RESULT = True
-CELERY_QUEUE_NAME = 'yabiadmin-dev-'+TARGET
+CELERY_QUEUE_NAME = 'yabiadmin'
 CARROT_BACKEND = "ghettoq.taproot.Database"
 CELERYD_LOG_LEVEL = "DEBUG"
 CELERYD_CONCURRENCY = 1
