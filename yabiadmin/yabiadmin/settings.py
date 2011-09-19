@@ -26,125 +26,17 @@
 # 
 ### END COPYRIGHT ###
 
-import os, sys
-from django.utils.webhelpers import url
 
-from appsettings.default_dev import *
-from appsettings.yabiadmin.dev import *
+# Load default settings.
+# These are part of the project manifest.
+from settingsdefault import *
 
-
-# uploads are currently written to disk and double handled, setting a limit will break things 
-FILE_UPLOAD_MAX_MEMORY_SIZE = 0
-
-
-BACKEND_IP = '0.0.0.0'
-BACKEND_PORT = '21080'
-BACKEND_BASE = '/'
-YABIBACKEND_SERVER = BACKEND_IP + ':' +  BACKEND_PORT
-YABISTORE_HOME = '/home/yabi/.yabi/run/store/'
-BACKEND_UPLOAD = 'http://'+BACKEND_IP+':'+BACKEND_PORT+BACKEND_BASE+"fs/ticket"
-
-YABIBACKEND_COPY = '/fs/copy'
-YABIBACKEND_RCOPY = '/fs/rcopy'
-YABIBACKEND_MKDIR = '/fs/mkdir'
-YABIBACKEND_RM = '/fs/rm'
-YABIBACKEND_LIST = '/fs/ls'
-YABIBACKEND_PUT = '/fs/put'
-YABIBACKEND_GET = '/fs/get'
-
-DEFAULT_STAGEIN_DIRNAME = 'stagein/'
-
-##if "LOCALDEV" in os.environ:
-##    SSL_ENABLED = False
-##    os.environ['PROJECT_DIRECTORY'] = 'TODO'
-##    assert 'TODO localdev testing'
-
-ROOT_URLCONF = 'yabiadmin.urls'
-
-INSTALLED_APPS.extend( [
-    'yabiadmin.yabi',
-    'yabiadmin.yabiengine',
-    'yabiadmin.yabistoreapp',
-    'ghettoq',
-    'djcelery'
-] )
-
-
-# uncomment to use memcache for sessions, be sure to have uncommented memcache settings elsewhere
-#SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-#CACHE_BACKEND = 'memcached://'+(';'.join(MEMCACHE_SERVERS))+"/"
-#MEMCACHE_KEYSPACE = "yabiadmin"
-
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend'
-]
-AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
-
-SESSION_COOKIE_PATH = url('/')
-SESSION_SAVE_EVERY_REQUEST = True
-CSRF_COOKIE_NAME = "csrftoken_yabiadmin"
-
-WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
-
-#functions to evaluate for status checking
-#from status_checks import *
-#STATUS_CHECKS = [check_default]
-
-APPEND_SLASH = True
-SITE_NAME = 'yabiadmin'
-
-##
-## CAPTCHA settings
-##
-# the filesystem space to write the captchas into
-CAPTCHA_ROOT = os.path.join(MEDIA_ROOT, 'captchas')
-
-# the URL base that points to that directory served out
-CAPTCHA_URL = os.path.join(MEDIA_URL, 'captchas')
-
-# Captcha image directory
-CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
-
-##
-## Validation settings
-##
-VALID_SCHEMES = ['http', 'https', 'gridftp', 'globus', 'sge', 'torque', 'yabifs', 'ssh', 'scp', 's3', 'null', 'ssh+pbspro', 'ssh+torque', 'local']
-
-##
-## Celery settings
-##
-import djcelery
-djcelery.setup_loader()
-
-CELERY_IGNORE_RESULT = True
-CELERY_QUEUE_NAME = 'yabiadmin'
-CARROT_BACKEND = "ghettoq.taproot.Database"
-CELERYD_LOG_LEVEL = "DEBUG"
-CELERYD_CONCURRENCY = 1
-CELERYD_PREFETCH_MULTIPLIER = 1
-#CELERY_DISABLE_RATE_LIMITS = True
-CELERY_QUEUES = {
-    CELERY_QUEUE_NAME: {
-        "binding_key": "celery",
-        "exchange": CELERY_QUEUE_NAME
-    },
-}
-CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
-CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
-
-
-# How long to cache decypted credentials for
-DEFAULT_CRED_CACHE_TIME = 60*60*24                   # 1 day default
-
-
-####
-#### LOGGING
-####
-##import logging, logging.handlers
-##LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
-##LOGGING_LEVEL = logging.DEBUG
-##install_name = PROJECT_DIRECTORY.split('/')[-2]
-##LOGGING_FORMATTER = logging.Formatter('YABI [%(name)s:' + install_name + ':%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
-##LOGS = ['yabiengine','yabiadmin']
-
-##import ccglogging
+# Load instance settings.
+# These are installed locally to this project instance.
+# They will be loaded from appsettings.yabiadmin, which can exist anywhere
+# in the instance's pythonpath. This is a CCG convention designed to support
+# global shared settings among multiple Django projects.
+try:
+    from appsettings.yabiadmin import *
+except ImportError, e:
+    pass
