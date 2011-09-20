@@ -96,8 +96,8 @@ TIME_ZONE = 'Australia/Perth'
 LANGUAGE_CODE = 'en-us'
 USE_I18N = True
 
-LOGIN_URL = url('/accounts/login/')
-LOGOUT_URL = url('/accounts/logout/')
+LOGIN_URL = url('/login/')
+LOGOUT_URL = url('/logout/')
 
 # for local development, this is set to the static serving directory. For deployment use Apache Alias
 STATIC_SERVER_PATH = os.path.join(PROJECT_DIRECTORY,"static")
