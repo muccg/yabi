@@ -84,7 +84,7 @@ def memcache(basekey,kwargkeylist=[],timeout=120,refresh=False,request_specific=
             result = func(request, *args, **kwargs)
             mc.set(keyname,pickle.dumps(result),timeout)
             return result
-        return memcache_decorated_func
+        return memcache_decorated_func if settings.MEMCACHE_SERVERS else func
     return memcache_decorator
             
 
