@@ -28,9 +28,10 @@
 
 import os, sys
 from django.utils.webhelpers import url
+import djcelery
 import yabi_logging
 
-### DJANGO AND WSGI SETUP ###
+### SERVER ###
 
 # SCRIPT_NAME isnt set when not under wsgi
 if not os.environ.has_key('SCRIPT_NAME'):
@@ -39,31 +40,20 @@ if not os.environ.has_key('SCRIPT_NAME'):
 SCRIPT_NAME =   os.environ['SCRIPT_NAME']
 PROJECT_DIRECTORY = os.environ['PROJECT_DIRECTORY']
 
-DEBUG = True
-DEV_SERVER = True
-SITE_ID = 1
-
-# HTTPS
+# https
 if SCRIPT_NAME:
     SSL_ENABLED = True
 else:
     SSL_ENABLED = False
 
-# LOCALE
-TIME_ZONE = 'Australia/Perth'
-LANGUAGE_CODE = 'en-us'
-USE_I18N = True
 
-LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY, 'logs')
-TEMPLATE_DEBUG = DEBUG
+### DEBUG ###
+DEBUG = True
+DEV_SERVER = True
+SITE_ID = 1
 
-LOGIN_URL = url('/accounts/login/')
-LOGOUT_URL = url('/accounts/logout/')
 
-TEMPLATE_LOADERS = [
-    'django.template.loaders.filesystem.load_template_source',
-    'django.template.loaders.app_directories.load_template_source',
-]
+### APPLICATION
 
 MIDDLEWARE_CLASSES = [
     'django.middleware.email.EmailExceptionMiddleware',
@@ -73,17 +63,38 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.doc.XViewMiddleware',
     'django.middleware.ssl.SSLRedirect'
 ]
-TEMPLATE_DIRS = [
-    os.path.join(PROJECT_DIRECTORY,"templates","mako"), 
-    os.path.join(PROJECT_DIRECTORY,"templates"),
-]
+
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
+    'yabiadmin.yabi',
+    'yabiadmin.yabiengine',
+    'yabiadmin.yabistoreapp',
+    'ghettoq',
+    'djcelery'
 ]
+
+ROOT_URLCONF = 'yabiadmin.urls'
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend'
+]
+AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
+
+SESSION_COOKIE_PATH = url('/')
+SESSION_SAVE_EVERY_REQUEST = True
+CSRF_COOKIE_NAME = "csrftoken_yabiadmin"
+
+# locale
+TIME_ZONE = 'Australia/Perth'
+LANGUAGE_CODE = 'en-us'
+USE_I18N = True
+
+LOGIN_URL = url('/accounts/login/')
+LOGOUT_URL = url('/accounts/logout/')
 
 # for local development, this is set to the static serving directory. For deployment use Apache Alias
 STATIC_SERVER_PATH = os.path.join(PROJECT_DIRECTORY,"static")
@@ -91,22 +102,63 @@ STATIC_SERVER_PATH = os.path.join(PROJECT_DIRECTORY,"static")
 # a directory that will be writable by the webserver, for storing various files...
 WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
 
+# cookies
+SESSION_COOKIE_AGE = 60*60
+
+# media directories
+MEDIA_ROOT = os.path.join(PROJECT_DIRECTORY,"static","media")
+MEDIA_URL = '/static/media/'
+ADMIN_MEDIA_PREFIX = url('/static/admin-media/')
+
+APPEND_SLASH = True
+SITE_NAME = 'yabiadmin'
+
+# validation settings
+VALID_SCHEMES = ['http', 'https', 'gridftp', 'globus', 'sge', 'torque', 'yabifs', 'ssh', 'scp', 's3', 'null', 'ssh+pbspro', 'ssh+torque', 'local']
+
+
+
+### CAPTCHA ###
+
+# the filesystem space to write the captchas into
+CAPTCHA_ROOT = os.path.join(MEDIA_ROOT, 'captchas')
+
+# the url base that points to that directory served out
+CAPTCHA_URL = os.path.join(MEDIA_URL, 'captchas')
+
+# captcha image directory
+CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
+
+
+
+
+### TEMPLATING ###
+TEMPLATE_DEBUG = DEBUG
+
+TEMPLATE_LOADERS = [
+    'django.template.loaders.filesystem.load_template_source',
+    'django.template.loaders.app_directories.load_template_source',
+]
+
+
+TEMPLATE_DIRS = [
+    os.path.join(PROJECT_DIRECTORY,"templates","mako"), 
+    os.path.join(PROJECT_DIRECTORY,"templates"),
+]
+
+
 # mako compiled templates directory
 MAKO_MODULE_DIR = os.path.join(WRITABLE_DIRECTORY, "templates")
 
 # mako module name
 MAKO_MODULENAME_CALLABLE = ''
 
-# cookies
-SESSION_COOKIE_AGE = 60*60
-
-MEDIA_ROOT = os.path.join(PROJECT_DIRECTORY,"static","media")
-MEDIA_URL = '/static/media/'
-ADMIN_MEDIA_PREFIX = url('/static/admin-media/')
 
 
 
-### APPLICATION SPECIFIC SETUP ###
+### USER SPECIFIC SETUP ###
+
+# these are the settings you will most likely change to reflect your setup
 
 # point this towards a database in the normal Django fashion
 DATABASES = {
@@ -120,11 +172,9 @@ DATABASES = {
     }
 }
 
-
 # Make these unique, and don't share it with anybody.
 SECRET_KEY = 'set_this'
 HMAC_KEY = 'set_this'
-
 
 # email server
 EMAIL_HOST = 'set_this'
@@ -132,15 +182,14 @@ EMAIL_APP_NAME = "Yabi Admin "
 SERVER_EMAIL = "apache@set_this"                      # from address
 EMAIL_SUBJECT_PREFIX = "DEV "
 
-
 # default emails
 ADMINS = [
     ( 'alert', 'alerts@set_this.com' )
 ]
 MANAGERS = ADMINS
 
-
-# if you want to use ldap you'll need to uncomment and configure this
+# if you want to use ldap you'll need to uncomment and configure this section
+# you'll also need to change AUTHENTICATION_BACKENDS and AUTH_PROFILE_MODULE
 #AUTH_LDAP_SERVER = ['ldaps://set_this.localdomain']
 #AUTH_LDAP_USER_BASE = 'ou=People,dc=set_this,dc=edu,dc=au'
 #AUTH_LDAP_GROUP_BASE = 'ou=Yabi,ou=Web Groups,dc=set_this,dc=edu,dc=au'
@@ -156,13 +205,18 @@ MANAGERS = ADMINS
 # memcache server list
 #MEMCACHE_SERVERS = ['set_this.localdomain:11211']
 #MEMCACHE_KEYSPACE = "yabiadmin-dev"
-# -*- coding: utf-8 -*-
 
+# uncomment to use memcache for sessions, be sure to have uncommented memcache settings above
+#SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+#CACHE_BACKEND = 'memcached://'+(';'.join(MEMCACHE_SERVERS))+"/"
+#MEMCACHE_KEYSPACE = "yabiadmin"
 
 # uploads are currently written to disk and double handled, setting a limit will break things 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
 
+### BACKEND ###
+# point this to the yabi backend server
 BACKEND_IP = '0.0.0.0'
 BACKEND_PORT = '21080'
 BACKEND_BASE = '/'
@@ -180,66 +234,12 @@ YABIBACKEND_GET = '/fs/get'
 
 DEFAULT_STAGEIN_DIRNAME = 'stagein/'
 
-##if "LOCALDEV" in os.environ:
-##    SSL_ENABLED = False
-##    os.environ['PROJECT_DIRECTORY'] = 'TODO'
-##    assert 'TODO localdev testing'
-
-ROOT_URLCONF = 'yabiadmin.urls'
-
-INSTALLED_APPS.extend( [
-    'yabiadmin.yabi',
-    'yabiadmin.yabiengine',
-    'yabiadmin.yabistoreapp',
-    'ghettoq',
-    'djcelery'
-] )
+# How long to cache decypted credentials for
+DEFAULT_CRED_CACHE_TIME = 60*60*24                   # 1 day default
 
 
-# uncomment to use memcache for sessions, be sure to have uncommented memcache settings elsewhere
-#SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-#CACHE_BACKEND = 'memcached://'+(';'.join(MEMCACHE_SERVERS))+"/"
-#MEMCACHE_KEYSPACE = "yabiadmin"
 
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend'
-]
-AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
-
-SESSION_COOKIE_PATH = url('/')
-SESSION_SAVE_EVERY_REQUEST = True
-CSRF_COOKIE_NAME = "csrftoken_yabiadmin"
-
-WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
-
-#functions to evaluate for status checking
-#from status_checks import *
-#STATUS_CHECKS = [check_default]
-
-APPEND_SLASH = True
-SITE_NAME = 'yabiadmin'
-
-##
-## CAPTCHA settings
-##
-# the filesystem space to write the captchas into
-CAPTCHA_ROOT = os.path.join(MEDIA_ROOT, 'captchas')
-
-# the URL base that points to that directory served out
-CAPTCHA_URL = os.path.join(MEDIA_URL, 'captchas')
-
-# Captcha image directory
-CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
-
-##
-## Validation settings
-##
-VALID_SCHEMES = ['http', 'https', 'gridftp', 'globus', 'sge', 'torque', 'yabifs', 'ssh', 'scp', 's3', 'null', 'ssh+pbspro', 'ssh+torque', 'local']
-
-##
-## Celery settings
-##
-import djcelery
+### CELERY ###
 djcelery.setup_loader()
 
 CELERY_IGNORE_RESULT = True
@@ -257,9 +257,3 @@ CELERY_QUEUES = {
 }
 CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
 CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
-
-
-# How long to cache decypted credentials for
-DEFAULT_CRED_CACHE_TIME = 60*60*24                   # 1 day default
-
-
