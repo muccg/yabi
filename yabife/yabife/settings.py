@@ -23,22 +23,24 @@
 # DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
 # OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
-### END COPYRIGHT ###
+#
 
-import os, sys
+import os
 from django.utils.webhelpers import url
-import djcelery
 import yabi_logging
 
 ### SERVER ###
-
-# SCRIPT_NAME isnt set when not under wsgi
 if not os.environ.has_key('SCRIPT_NAME'):
     os.environ['SCRIPT_NAME']=''
 
 SCRIPT_NAME =   os.environ['SCRIPT_NAME']
 PROJECT_DIRECTORY = os.environ['PROJECT_DIRECTORY']
+
+
+### PROJECT_DIRECTORY isnt set when not under wsgi
+##if not os.environ.has_key('PROJECT_DIRECTORY'):
+##    os.environ['PROJECT_DIRECTORY']=os.path.dirname(__file__).split("/appsettings/")[0]
+
 
 # https
 if SCRIPT_NAME:
@@ -54,7 +56,6 @@ SITE_ID = 1
 
 
 ### APPLICATION
-
 MIDDLEWARE_CLASSES = [
     'django.middleware.email.EmailExceptionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -62,6 +63,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.doc.XViewMiddleware',
     'django.middleware.ssl.SSLRedirect'
+    'django.contrib.messages.middleware.MessageMiddleware',
 ]
 
 INSTALLED_APPS = [
@@ -70,27 +72,26 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
-    'yabiadmin.yabi',
-    'yabiadmin.yabiengine',
-    'yabiadmin.yabistoreapp',
-    'ghettoq',
-    'djcelery'
-]
+    'django.contrib.messages',
+    'yabife.registration',
+    'yabife.yabifeapp',
+    ]
 
-ROOT_URLCONF = 'yabiadmin.urls'
+ROOT_URLCONF = 'yabife.urls'
 
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend'
+ 'django.contrib.auth.backends.ModelBackend'
 ]
-AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
+
+AUTH_PROFILE_MODULE = 'yabifeapp.ModelBackendUser'
 
 # cookies
 SESSION_COOKIE_AGE = 60*60
 SESSION_COOKIE_PATH = url('/')
 SESSION_SAVE_EVERY_REQUEST = True
-CSRF_COOKIE_NAME = "csrftoken_yabiadmin"
+CSRF_COOKIE_NAME = "csrftoken_yabife"
 
-# locale
+# Locale
 TIME_ZONE = 'Australia/Perth'
 LANGUAGE_CODE = 'en-us'
 USE_I18N = True
@@ -110,23 +111,23 @@ MEDIA_URL = '/static/media/'
 ADMIN_MEDIA_PREFIX = url('/static/admin-media/')
 
 APPEND_SLASH = True
-SITE_NAME = 'yabiadmin'
-
-# validation settings
-VALID_SCHEMES = ['http', 'https', 'gridftp', 'globus', 'sge', 'torque', 'yabifs', 'ssh', 'scp', 's3', 'null', 'ssh+pbspro', 'ssh+torque', 'local']
+SITE_NAME = 'yabife'
 
 
-
-### CAPTCHA ###
-
+##
+## CAPTCHA settings
+##
 # the filesystem space to write the captchas into
 CAPTCHA_ROOT = os.path.join(MEDIA_ROOT, 'captchas')
 
-# the url base that points to that directory served out
+# the URL base that points to that directory served out
 CAPTCHA_URL = os.path.join(MEDIA_URL, 'captchas')
 
-# captcha image directory
+# Captcha image directory
 CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
+
+FILE_UPLOAD_MAX_MEMORY_SIZE = 0
+
 
 
 ### TEMPLATING ###
@@ -150,7 +151,6 @@ MAKO_MODULENAME_CALLABLE = ''
 
 
 
-
 ### USER SPECIFIC SETUP ###
 # these are the settings you will most likely change to reflect your setup
 
@@ -166,21 +166,8 @@ DATABASES = {
     }
 }
 
-# Make these unique, and don't share it with anybody.
+# Make this unique, and don't share it with anybody.
 SECRET_KEY = 'set_this'
-HMAC_KEY = 'set_this'
-
-# email server
-EMAIL_HOST = 'set_this'
-EMAIL_APP_NAME = "Yabi Admin "
-SERVER_EMAIL = "apache@set_this"                      # from address
-EMAIL_SUBJECT_PREFIX = "DEV "
-
-# default emails
-ADMINS = [
-    ( 'alert', 'alerts@set_this.com' )
-]
-MANAGERS = ADMINS
 
 # if you want to use ldap you'll need to uncomment and configure this section
 # you'll also need to change AUTHENTICATION_BACKENDS and AUTH_PROFILE_MODULE
@@ -198,60 +185,63 @@ MANAGERS = ADMINS
 # if you want to use memcache, including for sessions, uncomment and configure
 # memcache server list
 #MEMCACHE_SERVERS = ['set_this.localdomain:11211']
-#MEMCACHE_KEYSPACE = "yabiadmin"
+#MEMCACHE_KEYSPACE = "yabife-"
 
-# uncomment to use memcache for sessions, be sure to have uncommented memcache settings above
-#SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-#CACHE_BACKEND = 'memcached://'+(';'.join(MEMCACHE_SERVERS))+"/"
-#MEMCACHE_KEYSPACE = "yabiadmin"
+# email server
+EMAIL_HOST = 'set_this'
+EMAIL_APP_NAME = "Yabi Admin "
+SERVER_EMAIL = "apache@set_this"                      # from address
+EMAIL_SUBJECT_PREFIX = "DEV "
 
-# uploads are currently written to disk and double handled, setting a limit will break things 
-FILE_UPLOAD_MAX_MEMORY_SIZE = 0
-
-
-### BACKEND ###
-# point this to the yabi backend server
-BACKEND_IP = '0.0.0.0'
-BACKEND_PORT = '21080'
-BACKEND_BASE = '/'
-YABIBACKEND_SERVER = BACKEND_IP + ':' +  BACKEND_PORT
-YABISTORE_HOME = '/home/yabi/.yabi/run/store/'
-BACKEND_UPLOAD = 'http://'+BACKEND_IP+':'+BACKEND_PORT+BACKEND_BASE+"fs/ticket"
-
-YABIBACKEND_COPY = '/fs/copy'
-YABIBACKEND_RCOPY = '/fs/rcopy'
-YABIBACKEND_MKDIR = '/fs/mkdir'
-YABIBACKEND_RM = '/fs/rm'
-YABIBACKEND_LIST = '/fs/ls'
-YABIBACKEND_PUT = '/fs/put'
-YABIBACKEND_GET = '/fs/get'
-
-DEFAULT_STAGEIN_DIRNAME = 'stagein/'
-
-# How long to cache decypted credentials for
-DEFAULT_CRED_CACHE_TIME = 60*60*24                   # 1 day default
+# default emails
+ADMINS = [
+    ( 'alert', 'alerts@set_this.com' )
+]
+MANAGERS = ADMINS
 
 
 
-### CELERY ###
-djcelery.setup_loader()
+#functions to evaluate for status checking
+import status
+STATUS_CHECKS = [
+    status.check_database,
+    status.check_disk,
+]
 
-CELERY_IGNORE_RESULT = True
-CELERY_QUEUE_NAME = 'yabiadmin'
-CARROT_BACKEND = "ghettoq.taproot.Database"
-CELERYD_LOG_LEVEL = "DEBUG"
-CELERYD_CONCURRENCY = 1
-CELERYD_PREFETCH_MULTIPLIER = 1
-#CELERY_DISABLE_RATE_LIMITS = True
-CELERY_QUEUES = {
-    CELERY_QUEUE_NAME: {
-        "binding_key": "celery",
-        "exchange": CELERY_QUEUE_NAME
-    },
+
+
+### PREVIEW SETTINGS
+
+# The truncate key controls whether the file may be previewed in truncated form
+# (ie the first "size" bytes returned). If set to false, files beyond the size
+# limit simply won't be available for preview.
+#
+# The override_mime_type key will set the content type that's sent in the
+# response to the browser, replacing the content type received from Admin.
+#
+# MIME types not in this list will result in the preview being unavailable.
+PREVIEW_SETTINGS = {
+    # Text formats.
+    "text/plain": { "truncate": True },
+
+    # Structured markup formats.
+    "text/html": { "truncate": False, "sanitise": True },
+    "application/xhtml+xml": { "truncate": False, "sanitise": True },
+    "text/svg+xml": { "truncate": True, "override_mime_type": "text/plain" },
+    "text/xml": { "truncate": True, "override_mime_type": "text/plain" },
+    "application/xml": { "truncate": True, "override_mime_type": "text/plain" },
+
+    # Image formats.
+    "image/gif": { "truncate": False },
+    "image/jpeg": { "truncate": False },
+    "image/png": { "truncate": False },
 }
-CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
-CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
 
+# The length of time preview metadata will be cached, in seconds.
+PREVIEW_METADATA_EXPIRY = 60
+
+# The maximum file size that can be previewed.
+PREVIEW_SIZE_LIMIT = 1048576
 
 
 
@@ -263,6 +253,6 @@ CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
 # in the instance's pythonpath. This is a CCG convention designed to support
 # global shared settings among multiple Django projects.
 try:
-    from appsettings.yabiadmin import *
+    from appsettings.yabife import *
 except ImportError, e:
     pass
