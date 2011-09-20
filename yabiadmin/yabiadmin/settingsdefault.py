@@ -28,7 +28,7 @@
 
 import os, sys
 from django.utils.webhelpers import url
-
+import yabi_logging
 
 ### DJANGO AND WSGI SETUP ###
 
@@ -263,14 +263,3 @@ CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
 DEFAULT_CRED_CACHE_TIME = 60*60*24                   # 1 day default
 
 
-##
-## LOGGING
-##
-import logging, logging.handlers
-LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
-LOGGING_LEVEL = logging.DEBUG
-install_name = PROJECT_DIRECTORY.split('/')[-2]
-LOGGING_FORMATTER = logging.Formatter('YABI [%(name)s:' + install_name + ':%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
-LOGS = ['yabiengine','yabiadmin']
-
-#import ccglogging
