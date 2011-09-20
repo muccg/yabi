@@ -52,7 +52,7 @@ def getLogger(name):
         return loggers[name]
 
 def init_logger(name = "mango", logfile = "mango.log"):
-    print "init logger %s " % logfile
+    #print "init logger %s " % logfile
 
     logger = logging.getLogger(name)
     logger.setLevel(LOGGING_LEVEL)
