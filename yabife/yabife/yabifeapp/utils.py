@@ -26,7 +26,7 @@
 # 
 ### END COPYRIGHT ###
 
-import memcache, hashlib
+import memcache, hashlib, os
 
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError, HttpResponseUnauthorized
 from django.conf import settings
@@ -39,19 +39,23 @@ from django.utils import simplejson as json
 
 from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
 from yaphc.memcache_persister import MemcacheCookiePersister
-
+from yaphc.cookies import FileCookiePersister
 
 def memcache_client():
     return memcache.Client(settings.MEMCACHE_SERVERS)
 
 
 def memcache_http(request):
+    '''Have altered this to fall back to FileCookiePersister when no memcache is available. TODO refactor to call this something different'''
     user = request.user
 
-    mp = MemcacheCookiePersister(settings.MEMCACHE_SERVERS,
-            key='%s-cookies-%s' %(settings.MEMCACHE_KEYSPACE, request.session.session_key),
-            cache_time=settings.SESSION_COOKIE_AGE)
-          
+    if settings.MEMCACHE_SERVERS:
+        mp = MemcacheCookiePersister(settings.MEMCACHE_SERVERS,
+                key='%s-cookies-%s' %(settings.MEMCACHE_KEYSPACE, request.session.session_key),
+                cache_time=settings.SESSION_COOKIE_AGE)
+    else:
+        mp = FileCookiePersister(os.path.join(settings.FILE_COOKIE_DIR, settings.FILE_COOKIE_NAME))
+
     yabiadmin = user.get_profile().appliance.url
     return Http(base_url=yabiadmin, cache=False, cookie_persister=mp)
 

@@ -113,7 +113,6 @@ ADMIN_MEDIA_PREFIX = url('/static/admin-media/')
 APPEND_SLASH = True
 SITE_NAME = 'yabife'
 
-
 ##
 ## CAPTCHA settings
 ##
@@ -186,6 +185,10 @@ SECRET_KEY = 'set_this'
 # memcache server list
 #MEMCACHE_SERVERS = ['set_this.localdomain:11211']
 #MEMCACHE_KEYSPACE = "yabife-"
+
+# file cookie persisting for connection between yabife and yabiadmin, this is not used if memcache is turned on
+FILE_COOKIE_DIR = WRITABLE_DIRECTORY
+FILE_COOKIE_NAME = 'yabife_cookie.txt'
 
 # email server
 EMAIL_HOST = 'set_this'
