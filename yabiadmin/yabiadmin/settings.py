@@ -215,7 +215,7 @@ BACKEND_IP = '0.0.0.0'
 BACKEND_PORT = '21080'
 BACKEND_BASE = '/'
 YABIBACKEND_SERVER = BACKEND_IP + ':' +  BACKEND_PORT
-YABISTORE_HOME = '/home/yabi/.yabi/run/store/'
+YABISTORE_HOME = '.yabi/run/store/'
 BACKEND_UPLOAD = 'http://'+BACKEND_IP+':'+BACKEND_PORT+BACKEND_BASE+"fs/ticket"
 
 YABIBACKEND_COPY = '/fs/copy'
