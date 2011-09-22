@@ -79,6 +79,10 @@ def init_logger(name = "mango", logfile = "mango.log"):
 
 
 def init():   
+
+    if not os.path.exists(LOG_DIRECTORY):
+        os.mkdir(LOG_DIRECTORY)
+
     for logname in LOGS:
         loggers[logname] = init_logger(logname, "%s.log"%logname)
 
