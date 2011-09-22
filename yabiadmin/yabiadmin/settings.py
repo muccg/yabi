@@ -29,7 +29,7 @@
 import os, sys
 from django.utils.webhelpers import url
 import djcelery
-import yabi_logging
+import yabilogging
 
 ### SERVER ###
 
