@@ -27,7 +27,7 @@
 
 import os
 from django.utils.webhelpers import url
-import yabi_logging
+import yabilogging
 
 ### SERVER ###
 if not os.environ.has_key('SCRIPT_NAME'):
