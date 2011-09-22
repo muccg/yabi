@@ -32,6 +32,7 @@
 #
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseUnauthorized, HttpResponseBadRequest
+from django.conf import settings
 
 import hmac
 
@@ -84,7 +85,10 @@ def memcache(basekey,kwargkeylist=[],timeout=120,refresh=False,request_specific=
             result = func(request, *args, **kwargs)
             mc.set(keyname,pickle.dumps(result),timeout)
             return result
-        return memcache_decorated_func
+        if hasattr(settings, 'MEMCACHE_SERVERS'):        
+            return memcache_decorated_func
+        else:
+            return func
     return memcache_decorator
             
 
