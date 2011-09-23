@@ -50,6 +50,7 @@ import tempfile
 from utils.stacklesstools import sleep
 
 from conf import config
+from SubmissionTemplate import make_script
 
 from twisted.internet import protocol
 from twisted.internet import reactor
@@ -175,6 +176,8 @@ class LocalConnector(ExecConnector):
             client_stream.write("Pending\n")
             stackless.schedule()
             
+            script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue, stdout, stderr)    
+            
             if DEBUG:
                 print "command:",command
                 print "username:",username
@@ -183,7 +186,9 @@ class LocalConnector(ExecConnector):
                 print "port:","22"
                 print "stdout:",stdout
                 print "stderr:",stderr
-                print "modules",modules
+                print "modules:",modules
+                print "submission script:",submission
+                print "script string:",script_string
                 
             pp = LocalRun().run(None,command,username,host,working,port="22",stdout=stdout,stderr=stderr,password=None, modules=modules)
             client_stream.write("Running\n")
