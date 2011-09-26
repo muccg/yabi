@@ -52,19 +52,25 @@ def snapshot(auto_confirm_purge=False):
     env.auto_confirm_purge=auto_confirm_purge
     _ccg_deploy_snapshot()
 
-def release(auto_confirm_purge=False):
+def release(*args):
     """
     Make a release deployment
     """
-    env.auto_confirm=auto_confirm_purge
-    _ccg_deploy_release()
-
-def testrelease(auto_confirm_purge=False):
+    env.auto_confirm=False
+    if len(args):
+        _ccg_deploy_release(tag=args[0])
+    else:
+        _ccg_deploy_release()
+        
+def testrelease(*args):
     """
     Make a release deployment using the dev settings file
     """
-    env.auto_confirm=auto_confirm_purge
-    _ccg_deploy_release(devrelease=True)
+    env.auto_confirm=False
+    if len(args):
+        _ccg_deploy_release(devrelease=True, tag=args[0])
+    else:
+        _ccg_deploy_release(devrelease=True)
 
 def purge(auto_confirm_purge=False):
     """
