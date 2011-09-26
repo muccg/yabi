@@ -156,11 +156,11 @@ MAKO_MODULENAME_CALLABLE = ''
 # point this towards a database in the normal Django fashion
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'USER': 'set_this',
-        'NAME': 'set_this',
-        'PASSWORD': 'set_this', 
-        'HOST': 'set_this',                    
+        'ENGINE': 'django.db.backends.sqlite3',
+        'USER': '',
+        'NAME': 'yabife.sqlite3',
+        'PASSWORD': '', 
+        'HOST': '',                    
         'PORT': '',
     }
 }
