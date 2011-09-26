@@ -110,6 +110,9 @@ then
     # we use fab for deployments
     ./$VPYTHON_DIR/bin/pip install fabric
 
+    # we use gunicorn for running quick start environment
+    ./$VPYTHON_DIR/bin/pip install gunicorn
+
     # install all the eggs in this app
     if [ $INSTALL_EGGS -eq 1 ]  
     then
