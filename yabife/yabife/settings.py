@@ -156,11 +156,11 @@ MAKO_MODULENAME_CALLABLE = ''
 # point this towards a database in the normal Django fashion
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'USER': 'set_this',
-        'NAME': 'set_this',
-        'PASSWORD': 'set_this', 
-        'HOST': 'set_this',                    
+        'ENGINE': 'django.db.backends.sqlite3',
+        'USER': '',
+        'NAME': 'yabife.sqlite3',
+        'PASSWORD': '', 
+        'HOST': '',                    
         'PORT': '',
     }
 }
@@ -181,14 +181,13 @@ SECRET_KEY = 'set_this'
 #AUTH_LDAP_USERDN = 'ou=People'
 
 
-# if you want to use memcache, including for sessions, uncomment and configure
 # memcache server list
-#MEMCACHE_SERVERS = ['set_this.localdomain:11211']
-#MEMCACHE_KEYSPACE = "yabife-"
+MEMCACHE_SERVERS = ['localhost.localdomain:11211']
+MEMCACHE_KEYSPACE = "yabife"
 
 # file cookie persisting for connection between yabife and yabiadmin, this is not used if memcache is turned on
-FILE_COOKIE_DIR = WRITABLE_DIRECTORY
-FILE_COOKIE_NAME = 'yabife_cookie.txt'
+#FILE_COOKIE_DIR = WRITABLE_DIRECTORY
+#FILE_COOKIE_NAME = 'yabife_cookie.txt'
 
 # email server
 EMAIL_HOST = 'set_this'

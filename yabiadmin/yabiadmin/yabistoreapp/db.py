@@ -88,7 +88,7 @@ def user_fs_home(username):
     
     dir = os.path.join(USERS_HOME,username)
     if not os.path.exists(dir):
-        os.mkdir(dir)
+        os.makedirs(dir)
     return dir
 
 def create_user_db(username):

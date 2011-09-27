@@ -157,11 +157,11 @@ MAKO_MODULENAME_CALLABLE = ''
 # point this towards a database in the normal Django fashion
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'USER': 'set_this',
-        'NAME': 'set_this',
-        'PASSWORD': 'set_this', 
-        'HOST': 'set_this',                    
+        'ENGINE': 'django.db.backends.sqlite3',
+        'USER': '',
+        'NAME': 'yabiadmin.sqlite3',
+        'PASSWORD': '', 
+        'HOST': '',                    
         'PORT': '',
     }
 }
@@ -195,15 +195,14 @@ MANAGERS = ADMINS
 #AUTH_LDAP_USERDN = 'ou=People'
 
 
-# if you want to use memcache, including for sessions, uncomment and configure
 # memcache server list
-#MEMCACHE_SERVERS = ['set_this.localdomain:11211']
-#MEMCACHE_KEYSPACE = "yabiadmin"
+MEMCACHE_SERVERS = ['localhost.localdomain:11211']
+MEMCACHE_KEYSPACE = "yabiadmin"
 
 # uncomment to use memcache for sessions, be sure to have uncommented memcache settings above
-#SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-#CACHE_BACKEND = 'memcached://'+(';'.join(MEMCACHE_SERVERS))+"/"
-#MEMCACHE_KEYSPACE = "yabiadmin"
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+CACHE_BACKEND = 'memcached://'+(';'.join(MEMCACHE_SERVERS))+"/"
+MEMCACHE_KEYSPACE = "yabiadmin"
 
 # uploads are currently written to disk and double handled, setting a limit will break things 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
@@ -215,7 +214,7 @@ BACKEND_IP = '0.0.0.0'
 BACKEND_PORT = '21080'
 BACKEND_BASE = '/'
 YABIBACKEND_SERVER = BACKEND_IP + ':' +  BACKEND_PORT
-YABISTORE_HOME = '/home/yabi/.yabi/run/store/'
+YABISTORE_HOME = '.yabi/run/store/'
 BACKEND_UPLOAD = 'http://'+BACKEND_IP+':'+BACKEND_PORT+BACKEND_BASE+"fs/ticket"
 
 YABIBACKEND_COPY = '/fs/copy'

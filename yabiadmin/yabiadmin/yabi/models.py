@@ -53,10 +53,6 @@ class DecryptedCredentialNotAvailable(Exception): pass
 import logging
 logger = logging.getLogger('yabiadmin')
 
-class ManyToManyField_NoSyncdb(models.ManyToManyField):
-    def __init__(self, *args, **kwargs):
-        super(ManyToManyField_NoSyncdb, self).__init__(*args, **kwargs)
-        self.creates_table = False
 
 class Base(models.Model):
     class Meta:
@@ -365,7 +361,7 @@ class ToolGrouping(Base):
 
 class ToolSet(Base):
     name = models.CharField(max_length=50, unique=True)
-    users = ManyToManyField_NoSyncdb("User", related_name='users', db_table='yabi_user_toolsets', blank=True)
+    users = models.ManyToManyField("User", related_name='users', db_table='yabi_user_toolsets', blank=True)
 
     def users_str(self):
         return ",".join([str(user) for user in self.users.all()])
@@ -376,10 +372,9 @@ class ToolSet(Base):
 
 class User(Base):
     name = models.CharField(max_length=50, unique=True)
-    toolsets = models.ManyToManyField("ToolSet", related_name='toolsets', db_table='yabi_user_toolsets', blank=True)
 
     def toolsets_str(self):
-        return ",".join([str(role) for role in self.toolsets.all()])
+        return ",".join([str(role) for role in self.users.all()])
     toolsets_str.short_description = 'Toolsets'
 
     @models.permalink
