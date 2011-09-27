@@ -45,11 +45,11 @@ from urlparse import urlparse
 import stacklessreactor
 stacklessreactor.install()
 
-from twisted.web2 import log
+from twistedweb2 import log
 from twisted.internet import reactor
 from twisted.application import strports, service, internet
-from twisted.web2 import server, vhost, channel
-from twisted.web2 import resource as web2resource
+from twistedweb2 import server, vhost, channel
+from twistedweb2 import resource as web2resource
 from twisted.python import util, syslog
 
 # for SSL context

@@ -39,7 +39,7 @@ SCHEMA = "ssh"
 
 DEBUG = False
 
-from twisted.web2 import http, responsecode, http_headers, stream
+from twistedweb2 import http, responsecode, http_headers, stream
 
 import shlex
 from utils.protocol import globus

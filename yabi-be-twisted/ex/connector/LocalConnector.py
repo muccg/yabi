@@ -39,7 +39,7 @@ SCHEMA = "local"
 
 DEBUG = True
 
-from twisted.web2 import http, responsecode, http_headers, stream
+from twistedweb2 import http, responsecode, http_headers, stream
 
 import shlex
 import os

@@ -28,7 +28,7 @@
 # -*- coding: utf-8 -*-
 """Our twisted filesystem server resource"""
 
-from twisted.web2 import resource, http_headers, responsecode, http, server
+from twistedweb2 import resource, http_headers, responsecode, http, server
 from twisted.internet import defer, reactor
 import weakref
 import sys, os

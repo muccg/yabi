@@ -30,7 +30,7 @@ from twisted.internet.defer import Deferred
 from twisted.internet import interfaces as ti_interfaces, defer, reactor, protocol, error as ti_error
 from twisted.python import components, log
 from twisted.python.failure import Failure
-from twisted.web2.stream import SimpleStream, ISendfileableStream
+from twistedweb2.stream import SimpleStream, ISendfileableStream
 import errno
 
 class FifoStream(SimpleStream):

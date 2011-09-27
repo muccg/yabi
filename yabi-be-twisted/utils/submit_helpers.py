@@ -31,7 +31,7 @@
 #
 import os.path, tempfile
 from twisted.internet import defer
-from twisted.web2 import http, iweb, fileupload, responsecode
+from twistedweb2 import http, iweb, fileupload, responsecode
 from StringIO import StringIO
                 
 TMP_DIRECTORY="/tmp"
@@ -103,7 +103,7 @@ def parsePOSTData(request, maxMem=100*1024, maxFields=1024,
     Parse data of a POST request.
 
     @param request: the request to parse.
-    @type request: L{twisted.web2.http.Request}.
+    @type request: L{twistedweb2.http.Request}.
     @param maxMem: maximum memory used during the parsing of the data.
     @type maxMem: C{int}
     @param maxFields: maximum number of form fields allowed.
@@ -163,14 +163,14 @@ def parsePOSTData(request, maxMem=100*1024, maxFields=1024,
                     ctype.mediaType, ctype.mediaSubtype))))
 
 
-from twisted.web2.stream import readStream
+from twistedweb2.stream import readStream
 def parsePUTData(request, maxMem=100*1024, maxFields=1024,
                             maxSize=10*1024*1024,filename="/tmp/test.tmp"):
     """
     Parse data of a PUT request.
 
     @param request: the request to parse.
-    @type request: L{twisted.web2.http.Request}.
+    @type request: L{twistedweb2.http.Request}.
     @param maxMem: maximum memory used during the parsing of the data.
     @type maxMem: C{int}
     @param maxFields: maximum number of form fields allowed.
@@ -270,7 +270,7 @@ def parsePOSTDataRemoteWriter(request, maxMem=100*1024, maxFields=1024,
     Parse data of a POST request.
 
     @param request: the request to parse.
-    @type request: L{twisted.web2.http.Request}.
+    @type request: L{twistedweb2.http.Request}.
     @param maxMem: maximum memory used during the parsing of the data.
     @type maxMem: C{int}
     @param maxFields: maximum number of form fields allowed.

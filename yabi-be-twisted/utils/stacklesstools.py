@@ -79,7 +79,7 @@ class HTTPResponse(object):
     def __init__(self, status=None, message=None, data=None):
         self.status = status
         self.message = message
-        self.data = data                # data could be the actual result, or a twisted web2 stream
+        self.data = data                # data could be the actual result, or a twistedweb2 stream
     
         self._isread = False
     

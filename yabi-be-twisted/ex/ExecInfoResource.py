@@ -26,7 +26,7 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-from twisted.web2 import resource, http_headers, responsecode, http, stream
+from twistedweb2 import resource, http_headers, responsecode, http, stream
 from twisted.internet import defer
 
 import weakref

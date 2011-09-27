@@ -52,7 +52,7 @@ def shutdown():
     print "Saving tasklets..."
     tasklets.save(directory=config.config['backend']['tasklets'])
 
-from twisted.web2 import resource, http_headers, responsecode, http, server
+from twistedweb2 import resource, http_headers, responsecode, http, server
 from twisted.internet import defer, reactor
 import weakref
 import sys, os

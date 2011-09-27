@@ -100,7 +100,7 @@ def call_count(f):
             f._CONNECTION_COUNT -= 1
     return new_func
 
-from twisted.web2 import http, responsecode, http_headers
+from twistedweb2 import http, responsecode, http_headers
 import hmac
 from conf import config
 

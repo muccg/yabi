@@ -27,7 +27,7 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 """Web2 style resource that is gonna serve our children"""
-from twisted.web2 import resource, http_headers, responsecode, http
+from twistedweb2 import resource, http_headers, responsecode, http
 import os, sys
 
 ##

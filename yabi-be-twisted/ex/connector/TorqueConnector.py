@@ -41,7 +41,7 @@ DEBUG = False
 
 TMP_DIR = "/tmp"
 
-from twisted.web2 import http, responsecode, http_headers, stream
+from twistedweb2 import http, responsecode, http_headers, stream
 
 from utils.stacklesstools import sleep, POST
 from utils.torquetools import qsub, qstat

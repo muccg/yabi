@@ -52,7 +52,7 @@ from utils.stacklesstools import sleep, POST
 
 import json, uuid
 
-from twisted.web2 import stream, http, responsecode, http_headers
+from twistedweb2 import stream, http, responsecode, http_headers
 
 # import conf so we can get the location our tempfiles should be stored in
 from conf import config

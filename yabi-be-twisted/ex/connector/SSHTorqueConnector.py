@@ -42,7 +42,7 @@ DEBUG = False
 # where we temporarily store the submission scripts on the submission host
 TMP_DIR = "/tmp"
 
-from twisted.web2 import http, responsecode, http_headers, stream
+from twistedweb2 import http, responsecode, http_headers, stream
 
 import shlex
 import os
