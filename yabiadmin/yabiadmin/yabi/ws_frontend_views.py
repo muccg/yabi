@@ -396,7 +396,9 @@ def put(request):
 
         bc = get_backendcredential_for_uri(yabiusername, uri)
         resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))
-        resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(bc.credential.username),quote(bc.credential.password),quote( bc.credential.cert),quote(bc.credential.key))
+        
+        decrypted = bc.gredential.get()
+        resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(decrypted['username']),quote(decrypted['password']),quote( decrypted['cert']),quote(decrypted['key']))
 
         streamer = FileUploadStreamer(host=settings.BACKEND_IP, port=settings.BACKEND_PORT, selector=resource, cookies=[], fields=[])
         request.upload_handlers = [ streamer ]
