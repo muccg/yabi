@@ -1,5 +1,52 @@
 [
     {
+        "pk": 1, 
+        "model": "auth.user", 
+        "fields": {
+            "username": "admin", 
+            "first_name": "", 
+            "last_name": "", 
+            "is_active": true, 
+            "is_superuser": true, 
+            "is_staff": true, 
+            "last_login": "2011-09-26 11:08:44", 
+            "groups": [], 
+            "user_permissions": [], 
+            "password": "sha1$7f57a$97456404bf498ef0474fcc3209279255c9115610", 
+            "email": "andrew@ccg.murdoch.edu.au", 
+            "date_joined": "2011-09-26 10:51:27"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "auth.user", 
+        "fields": {
+            "username": "demo", 
+            "first_name": "", 
+            "last_name": "", 
+            "is_active": true, 
+            "is_superuser": false, 
+            "is_staff": false, 
+            "last_login": "2011-09-26 10:55:34", 
+            "groups": [], 
+            "user_permissions": [], 
+            "password": "sha1$2dd8b$2bcdd04e75eb454a041395f697a72daca9dc5ff4", 
+            "email": "", 
+            "date_joined": "2011-09-26 10:55:34"
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "yabi.user", 
+        "fields": {
+            "created_on": "2011-09-26 10:56:16", 
+            "created_by": 1, 
+            "last_modified_on": "2011-09-26 10:56:16", 
+            "last_modified_by": 1, 
+            "name": "demo"
+        }
+    }, 
+    {
         "pk": 20, 
         "model": "contenttypes.contenttype", 
         "fields": {
@@ -344,6 +391,26 @@
     }, 
     {
         "pk": 1, 
+        "model": "yabi.backend", 
+        "fields": {
+            "max_connections": null, 
+            "description": "Use this backend when tools should not be run ie fileselector", 
+            "submission": "", 
+            "lcopy_supported": true, 
+            "link_supported": true, 
+            "hostname": "localhost.localdomain", 
+            "created_by": 1, 
+            "created_on": "2011-09-26 10:59:04", 
+            "last_modified_by": 1, 
+            "path": "/", 
+            "scheme": "null", 
+            "port": null, 
+            "last_modified_on": "2011-09-26 10:59:04", 
+            "name": "nullbackend"
+        }
+    }, 
+    {
+        "pk": 1, 
         "model": "yabi.tool", 
         "fields": {
             "walltime": "", 
@@ -366,6 +433,44 @@
             "backend": 1, 
             "last_modified_on": "2011-09-26 11:10:05", 
             "description": "Select a file from your workspace directory."
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "yabi.toolset", 
+        "fields": {
+            "users": [
+                1
+            ], 
+            "created_by": 1, 
+            "created_on": "2011-09-26 10:56:09", 
+            "last_modified_by": 1, 
+            "last_modified_on": "2011-09-26 10:56:31", 
+            "name": "alltools"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "yabi.toolgroup", 
+        "fields": {
+            "created_on": "2011-09-26 10:57:23", 
+            "created_by": 1, 
+            "last_modified_on": "2011-09-26 11:10:21", 
+            "last_modified_by": 1, 
+            "name": "select data"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "yabi.toolgrouping", 
+        "fields": {
+            "tool": 1, 
+            "created_by": 1, 
+            "created_on": "2011-09-26 11:10:21", 
+            "last_modified_by": 1, 
+            "tool_group": 1, 
+            "last_modified_on": "2011-09-26 11:10:21", 
+            "tool_set": 1
         }
     }, 
     {
@@ -422,55 +527,6 @@
     }, 
     {
         "pk": 1, 
-        "model": "yabi.toolgroup", 
-        "fields": {
-            "created_on": "2011-09-26 10:57:23", 
-            "created_by": 1, 
-            "last_modified_on": "2011-09-26 11:10:21", 
-            "last_modified_by": 1, 
-            "name": "select data"
-        }
-    }, 
-    {
-        "pk": 1, 
-        "model": "yabi.toolgrouping", 
-        "fields": {
-            "tool": 1, 
-            "created_by": 1, 
-            "created_on": "2011-09-26 11:10:21", 
-            "last_modified_by": 1, 
-            "tool_group": 1, 
-            "last_modified_on": "2011-09-26 11:10:21", 
-            "tool_set": 1
-        }
-    }, 
-    {
-        "pk": 1, 
-        "model": "yabi.toolset", 
-        "fields": {
-            "users": [
-                1
-            ], 
-            "created_by": 1, 
-            "created_on": "2011-09-26 10:56:09", 
-            "last_modified_by": 1, 
-            "last_modified_on": "2011-09-26 10:56:31", 
-            "name": "alltools"
-        }
-    }, 
-    {
-        "pk": 1, 
-        "model": "yabi.user", 
-        "fields": {
-            "created_on": "2011-09-26 10:56:16", 
-            "created_by": 1, 
-            "last_modified_on": "2011-09-26 10:56:16", 
-            "last_modified_by": 1, 
-            "name": "demo"
-        }
-    }, 
-    {
-        "pk": 1, 
         "model": "yabi.credential", 
         "fields": {
             "username": "demo", 
@@ -486,26 +542,6 @@
             "password": "", 
             "last_modified_on": "2011-09-26 11:08:52", 
             "user": 1
-        }
-    }, 
-    {
-        "pk": 1, 
-        "model": "yabi.backend", 
-        "fields": {
-            "max_connections": null, 
-            "description": "Use this backend when tools should not be run ie fileselector", 
-            "submission": "", 
-            "lcopy_supported": true, 
-            "link_supported": true, 
-            "hostname": "localhost.localdomain", 
-            "created_by": 1, 
-            "created_on": "2011-09-26 10:59:04", 
-            "last_modified_by": 1, 
-            "path": "/", 
-            "scheme": "null", 
-            "port": null, 
-            "last_modified_on": "2011-09-26 10:59:04", 
-            "name": "nullbackend"
         }
     }, 
     {
@@ -1478,42 +1514,6 @@
             "codename": "delete_workflowtag", 
             "name": "Can delete workflow tag", 
             "content_type": 27
-        }
-    }, 
-    {
-        "pk": 1, 
-        "model": "auth.user", 
-        "fields": {
-            "username": "admin", 
-            "first_name": "", 
-            "last_name": "", 
-            "is_active": true, 
-            "is_superuser": true, 
-            "is_staff": true, 
-            "last_login": "2011-09-26 11:08:44", 
-            "groups": [], 
-            "user_permissions": [], 
-            "password": "sha1$7f57a$97456404bf498ef0474fcc3209279255c9115610", 
-            "email": "andrew@ccg.murdoch.edu.au", 
-            "date_joined": "2011-09-26 10:51:27"
-        }
-    }, 
-    {
-        "pk": 2, 
-        "model": "auth.user", 
-        "fields": {
-            "username": "demo", 
-            "first_name": "", 
-            "last_name": "", 
-            "is_active": true, 
-            "is_superuser": false, 
-            "is_staff": false, 
-            "last_login": "2011-09-26 10:55:34", 
-            "groups": [], 
-            "user_permissions": [], 
-            "password": "sha1$2dd8b$2bcdd04e75eb454a041395f697a72daca9dc5ff4", 
-            "email": "", 
-            "date_joined": "2011-09-26 10:55:34"
         }
     }
 ]
