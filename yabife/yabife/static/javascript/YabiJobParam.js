@@ -224,7 +224,6 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
 
         for (var i = 0; i < this.defaultValue.length; i++) {
             var consumedJob = this.job.workflow.getJobForId(this.defaultValue[i].jobId);
-
             this.consumableFiles.push(consumedJob);
             this.consumedFiles.push(consumedJob);
         }
@@ -351,9 +350,7 @@ YabiJobParam.prototype.optionallyConsumeFiles = function(fileArray) {
                     updatedConsumable.push(a); //retain this item
                     
                     //check if it is currently consumed
-                    //console.log(this.consumedFiles);
                     for (var consumeIndex in this.consumedFiles) {
-                        //console.log(consumeIndex);
                         if (this.consumedFiles[consumeIndex].isEqual(b)) {
                             updatedConsumed.push(a);
                             break;
@@ -375,7 +372,7 @@ YabiJobParam.prototype.optionallyConsumeFiles = function(fileArray) {
             }
         }
 
-        //console.log(this.job + " .. " + fileArray + " >> " + this.consumableFiles + " >> " + this.consumedFiles);
+        //console.log("job:" + this.job + " filearray:" + fileArray + " consumable: " + this.consumableFiles + " consumed: " + this.consumedFiles);
        
         //render consumable files
         if (this.renderMode == "select") {
@@ -466,6 +463,7 @@ YabiJobParam.prototype.getValue = function(useInternal) {
 
         return "";
     } else if (this.renderMode == "select") {
+
         if (this.inputEl.options.length === 0 || this.inputEl.selectedIndex < 0) {
             return "";
         }
@@ -576,10 +574,7 @@ YabiJobParam.prototype.validate = function() {
                     this.consumedFiles = this.consumableFiles.slice(this.inputEl.selectedIndex - 1, this.inputEl.selectedIndex);
                 }
             }
-            //console.log(this.consumableFiles);
-            //console.log("consumed is now: ")
-            //console.log(this.consumedFiles);
-            //console.log(" index: " + this.inputEl.selectedIndex);
+
         } else {
             //dealing with possible values
             
@@ -593,7 +588,6 @@ YabiJobParam.prototype.validate = function() {
     //check for empty mandatory
     if (this.payload.mandatory === true && this.getValue().length === 0) {
         //console.log("failed mandatory test");
-        //console.log(this.getValue());
         this.valid = false;
     }
     
