@@ -101,6 +101,9 @@ class ToolParamView:
             props.append('Extension parameter: %s' % tp.extension_param.extension)
         if tp.batch_bundle_files:
             props.append('Bundle Files: %s' % tp.batch_bundle_files)
+        if tp.hidden:
+            props.append('Hidden')
+
 
         return props
         return props
