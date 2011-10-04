@@ -1,10 +1,10 @@
 Hi ${user.first_name},
 
 We're sorry, but your YABI account has been denied. If you feel this is
-in error, please contact one of the following appliance administrators:
+in error, please contact one of the following administrators:
 
-% for admin in appliance.applianceadministrator_set.all():
-* ${admin.name} <${admin.email}>
+% for email in emails:
+* ${email[0]} <${email[1]}>
 % endfor
 
 Thanks,

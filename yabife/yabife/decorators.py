@@ -53,7 +53,7 @@ def profile_required(func):
 
         except ObjectDoesNotExist:
             mail_admins_no_profile(request.user)
-            logger.critical("User is not associated with an appliance: %s" % request.user)
+            logger.critical("User does not have a profile: %s" % request.user)
             return logout(request)
 
         except AttributeError:

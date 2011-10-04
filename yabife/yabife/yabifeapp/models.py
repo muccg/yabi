@@ -43,48 +43,8 @@ logger = logging.getLogger('yabife')
 import base64
 import hashlib
 
-class Appliance(models.Model):
-    name = models.CharField(max_length=50)
-    url = models.CharField(max_length=200, verbose_name="URL", help_text="Full URL to appliance ending with a / i.e. https://hostname.edu.au/yabiadmin/")
-    tos = models.TextField(verbose_name="terms of service")
-
-    def __unicode__(self):
-        if self.name:
-            return self.name
-
-        return self.url
-
-    @property
-    def host(self):
-        return urlparse(self.url).hostname
-        
-    @property
-    def port(self):
-        return urlparse(self.url).port
-
-    @property
-    def path(self):
-        return urlparse(self.url).path
-
-    class Meta:
-        ordering = ["name", "url"]
-
-
-class ApplianceAdministrator(models.Model):
-    appliance = models.ForeignKey(Appliance)
-    name = models.CharField(max_length=200)
-    email = models.EmailField()
-
-    def __unicode__(self):
-        return "%s <%s>" % (self.name, self.email)
-
-    class Meta:
-        ordering = ["appliance", "name"]
-
-
 class User(models.Model):
     user = models.OneToOneField(DjangoUser)
-    appliance = models.ForeignKey(Appliance)
     user_option_access = models.BooleanField(default=True)
     credential_access = models.BooleanField(default=True)
 
@@ -92,7 +52,7 @@ class User(models.Model):
         ordering = ["user__username"]
 
     def __unicode__(self):
-        return "%s: %s" % (self.user.username, self.appliance.url)
+        return "%s" % self.user.username
 
     def has_account_tab(self):
         return self.user_option_access or self.credential_access

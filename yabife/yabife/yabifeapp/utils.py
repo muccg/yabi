@@ -56,7 +56,7 @@ def memcache_http(request):
     else:
         mp = FileCookiePersister(os.path.join(settings.FILE_COOKIE_DIR, settings.FILE_COOKIE_NAME))
 
-    yabiadmin = user.get_profile().appliance.url
+    yabiadmin = settings.YABIADMIN_SERVER
     return Http(base_url=yabiadmin, cache=False, cookie_persister=mp)
 
 

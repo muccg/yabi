@@ -35,6 +35,7 @@ import datetime
 import hashlib
 import os
 from time import mktime
+from urlparse import urlparse
 
 from django.conf.urls.defaults import *
 from django.conf import settings
@@ -155,7 +156,7 @@ def proxy(request, url, base):
 @profile_required
 def adminproxy(request, url):
     logger.debug('')
-    return proxy(request, quote(url), request.user.get_profile().appliance.url)
+    return proxy(request, quote(url), settings.YABIADMIN_SERVER)
 
 @authentication_required
 def adminproxy_cache(request, url):
@@ -305,7 +306,7 @@ def credentialproxy(request, url):
             return adminproxy(request, url)
     except ObjectDoesNotExist:
         mail_admins_no_profile(request.user)
-        return JsonMessageResponseUnauthorized("User is not associated with an appliance")
+        return JsonMessageResponseUnauthorized("User does not have a profile or user record.")
     except AttributeError:
         return JsonMessageResponseUnauthorized("You do not have access to this Web service")
 
@@ -484,9 +485,10 @@ def error_500(request):
 @profile_required
 def upload_file(request, user):
     logger.debug('')
-    
-    appliance = user.get_profile().appliance
-    upload_path = appliance.path
+
+    host = urlparse(settings.YABIADMIN_SERVER).hostname
+    port = urlparse(settings.YABIADMIN_SERVER).port
+    upload_path = urlparse(settings.YABIADMIN_SERVER).path
 
     while len(upload_path) and upload_path[-1]=='/':
         upload_path = upload_path[:-1]
@@ -497,9 +499,9 @@ def upload_file(request, user):
     # examine cookie jar for our admin session cookie
     http = memcache_http(request)
     jar = http.cookie_jar
-    cookie_string = jar.cookies_to_send_header(user.get_profile().appliance.url)['Cookie'] #TODO can this just be appliance and not user.get_profile().appliance.url
+    cookie_string = jar.cookies_to_send_header(settings.YABIADMIN_SERVER)['Cookie']
     
-    streamer = FileUploadStreamer(host=appliance.host, port=appliance.port or 80, selector=upload_path+"/ws/fs/put?uri=%s"%quote(upload_uri), cookies=[cookie_string], fields=[])
+    streamer = FileUploadStreamer(host=host, port=port or 80, selector=upload_path+"/ws/fs/put?uri=%s"%quote(upload_uri), cookies=[cookie_string], fields=[])
     request.upload_handlers = [ streamer ]
     
     # evaluating POST triggers the processing of the request body

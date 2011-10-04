@@ -4,10 +4,6 @@
     <link rel="stylesheet" type="text/css" href="${h.url('/static/css/registration/registration.css')}" />
     <link rel="stylesheet" type="text/css" href="${h.url('/static/css/registration/index.css')}" />
 
-    <script type="text/javascript">
-        var applianceTerms = ${terms};
-    </script>
-
     <script type="text/javascript" src="${h.url('/static/javascript/registration.js')}"></script>
 </%def>
 
@@ -16,19 +12,20 @@
 
     <p class="help">
         This form allows you to request an account to use the
-        supercomputing facilities available through a particular
-        institution's YABI appliance.
+        supercomputing facilities available through Yabi.
     </p>
 
     <form method="post">
         ${form.as_p()}
 
         <p class="help">
-            By requesting an account on this appliance, you agree to the
+            By requesting an account on Yabi, you agree to the
             terms of service below.
         </p>
 
-        <div id="tos"></div>
+        <div id="tos">
+        ${terms}
+        </div>
 
         <p class="submit-row">
             <input type="submit" value="Request Account" />

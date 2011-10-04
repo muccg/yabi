@@ -31,13 +31,13 @@
 def check_database(request):
     """
     Check that we can communicate with the Frontend database by checking that
-    both the appliance and user models have at least one record defined. (If
+    the user model has at least one record defined. (If
     they don't, we really have bigger problems.
     """
 
-    from yabifeapp.models import Appliance, User
+    from yabifeapp.models import User
 
-    return (Appliance.objects.count() > 0 and User.objects.count() > 1)
+    return (User.objects.count() > 1)
 
 
 def check_disk(request):

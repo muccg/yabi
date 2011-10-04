@@ -63,9 +63,7 @@ class Request(models.Model):
                                                   bind_password=settings.AUTH_LDAP_PASSWORD_CHANGE_PASSWORD)
         self.user.save()
 
-        appliance = self.user.get_profile().appliance
         message = render_to_string("registration/email/approved.txt", {
-            "appliance": appliance,
             "password": password,
             "request": self,
             "url": request.build_absolute_uri(webhelpers.url("/")),
@@ -80,21 +78,18 @@ class Request(models.Model):
         self.state = 1
         self.save()
 
-        appliance = self.user.get_profile().appliance
         message = render_to_string("registration/email/approve.txt", {
-            "appliance": appliance,
             "base": request.build_absolute_uri(webhelpers.url("/admin/registration/request/")),
             "request": self,
             "user": self.user,
         })
 
-        emails = [admin.email for admin in appliance.applianceadministrator_set.all()]
+        emails = [admin[1] for admin in settings.ADMINS]
         send_mail("YABI Account Request", message, settings.DEFAULT_FROM_EMAIL, emails)
 
     def deny(self, request):
-        appliance = self.user.get_profile().appliance
         message = render_to_string("registration/email/denied.txt", {
-            "appliance": appliance,
+            "emails": settings.ADMINS,
             "request": self,
             "url": request.build_absolute_uri(webhelpers.url("/")),
             "user": self.user,

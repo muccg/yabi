@@ -26,11 +26,7 @@
 ### END COPYRIGHT ###
 from django import forms
 
-from yabife.yabifeapp.models import Appliance
-
-
 class RegistrationForm(forms.Form):
-    appliance = forms.ModelChoiceField(queryset=Appliance.objects.all())
     username = forms.CharField(max_length=30)
     email = forms.EmailField(label="E-mail address")
     first_name = forms.CharField(max_length=30)

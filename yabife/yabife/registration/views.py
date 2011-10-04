@@ -30,9 +30,9 @@ from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template.loader import render_to_string
 from django.utils import webhelpers
-from json import dumps
+from django.conf import settings
 
-from yabife.yabifeapp.models import Appliance, User
+from yabife.yabifeapp.models import User
 
 from forms import RegistrationForm
 from models import Request
@@ -49,11 +49,10 @@ def confirm(request, key):
 
 @transaction.commit_on_success
 def index(request):
-    terms = dict([(a.id, a.tos) for a in Appliance.objects.all()])
 
     context = {
         "h": webhelpers,
-        "terms": dumps(terms),
+        "terms": settings.TERMS_OF_SERVICE,
     }
 
     if request.method == "POST":
@@ -72,7 +71,7 @@ def index(request):
                 user.is_active = False
                 user.save()
 
-                profile = User.objects.create(user=user, appliance=form.cleaned_data["appliance"])
+                profile = User.objects.create(user=user)
 
                 req = Request.objects.create(user=user)
 
@@ -86,10 +85,13 @@ def index(request):
                 context["email"] = email
                 return render_to_response("registration/success.html", context)
             except IntegrityError, e:
+                print "Your error: %s" % e
                 transaction.rollback()
                 form.add_error("username", "The username is already in use.")
             except Exception, e:
                 transaction.rollback()
+                print "Your error: %s" % e
+
                 form.add_global_error(unicode(e))
 
     else:

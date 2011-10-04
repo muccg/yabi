@@ -26,8 +26,7 @@
 ### END COPYRIGHT ###
 from django.contrib.admin import ModelAdmin, TabularInline
 from django.contrib.webservices.ext import ExtJsonInterface
-from yabife.yabifeapp.models import Appliance, ApplianceAdministrator, User
-from yabife.yabifeapp.admin_forms import *
+from yabife.yabifeapp.models import User
 
 class SuperuserOnlyModelAdmin(ModelAdmin):
     def queryset(self, request):
@@ -37,27 +36,17 @@ class SuperuserOnlyModelAdmin(ModelAdmin):
         return self.model.objects.none()
 
 
-class ApplianceAdministratorAdmin(TabularInline):
-    model = ApplianceAdministrator
- 
-class ApplianceAdmin(ExtJsonInterface, SuperuserOnlyModelAdmin):
-    form = ApplianceForm
-    inlines = [ApplianceAdministratorAdmin]
-    list_display = ("name", "url")
-
-
 class UserAdmin(ExtJsonInterface, SuperuserOnlyModelAdmin):
     fieldsets = (
         (None, {
-            "fields": ("user", "appliance"),
+            "fields": ("user",),
         }),
         ("Permissions", {
             "fields": ("user_option_access", "credential_access"),
         }),
     )
-    list_display = ("user", "appliance")
+    list_display = ("user",)
 
 
 def register(site):
-    site.register(Appliance, ApplianceAdmin)
     site.register(User, UserAdmin)
