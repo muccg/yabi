@@ -85,13 +85,10 @@ def index(request):
                 context["email"] = email
                 return render_to_response("registration/success.html", context)
             except IntegrityError, e:
-                print "Your error: %s" % e
                 transaction.rollback()
                 form.add_error("username", "The username is already in use.")
             except Exception, e:
                 transaction.rollback()
-                print "Your error: %s" % e
-
                 form.add_global_error(unicode(e))
 
     else:
