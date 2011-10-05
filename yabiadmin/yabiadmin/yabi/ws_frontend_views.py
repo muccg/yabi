@@ -395,8 +395,13 @@ def put(request):
         uri = request.GET['uri']
 
         bc = get_backendcredential_for_uri(yabiusername, uri)
+        decrypt_cred = bc.credential.get()
+        
         resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))
-        resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(bc.credential.username),quote(bc.credential.password),quote( bc.credential.cert),quote(bc.credential.key))
+        
+        # TODO: the following is using GET parameters to push the decrypt creds onto the backend. This will probably make them show up in the backend logs
+        # we should push them via POST parameters, or at least not log them in the backend.
+        resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(decrypt_cred['username']),quote(decrypt_cred['password']),quote( decrypt_cred['cert']),quote(decrypt_cred['key']))
 
         streamer = FileUploadStreamer(host=settings.BACKEND_IP, port=settings.BACKEND_PORT, selector=resource, cookies=[], fields=[])
         request.upload_handlers = [ streamer ]
