@@ -245,9 +245,7 @@ PREVIEW_METADATA_EXPIRY = 60
 # The maximum file size that can be previewed.
 PREVIEW_SIZE_LIMIT = 1048576
 
-
 YABIADMIN_SERVER = 'http://127.0.0.1:8001/'
-
 
 TERMS_OF_SERVICE = "Set your Terms of Service here, or import from another file"
 
