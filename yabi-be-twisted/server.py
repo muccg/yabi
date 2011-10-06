@@ -34,7 +34,10 @@ from conf import config
 #read default config
 config.read_from_file(os.path.join(os.path.dirname(__file__),"conf","yabi_defaults.conf"))
 
-config.read_config()
+if "YABICONF" in os.environ:
+    config.read_from_file(os.environ['YABICONF'])
+else:
+    config.read_config()
 
 config.sanitise()
 
