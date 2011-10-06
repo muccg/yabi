@@ -32,7 +32,7 @@ import os
 
 env.username = os.environ["USER"]
 env.app_root = '/usr/local/python/ccgapps/'
-env.app_name = 'yabibe'
+env.app_name = 'yabi-be-twisted'
 env.app_install_names = ['yabibe'] # use app_name or list of names for each install
 env.vc = 'mercurial'
 
@@ -88,3 +88,13 @@ def restart():
     restart the twistd server
     """
     print local("./init_scripts/centos/yabibe restart")
+
+def release(*args):
+    """
+    Make a release deployment
+    """
+    env.auto_confirm=False
+    if len(args):
+        _ccg_deploy_release(tag=args[0])
+    else:
+        _ccg_deploy_release()
