@@ -72,7 +72,7 @@ class WorkflowAdmin(admin.ModelAdmin):
     actions = ['archive_workflow']
     fieldsets = (
         (None, {
-            'fields': ('name', 'user', 'start_time', 'end_time', 'log_file_path','status','stageout')
+            'fields': ('name', 'user', 'start_time', 'end_time','status','stageout')
         }),
     )
 
