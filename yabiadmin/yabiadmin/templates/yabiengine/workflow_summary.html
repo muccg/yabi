@@ -15,7 +15,6 @@ ${self.block_content()}<%def name="block_content()">
         <th>User</th>
         <th>Start</th>
         <th>End</th>
-        <th>Log File Path</th>
         <th>Status</th>
         <th></th>
     </tr>
@@ -24,7 +23,6 @@ ${self.block_content()}<%def name="block_content()">
         <td>${w.user.name}</td>
         <td>${w.start_time}</td>
         <td>${w.end_time}</td>
-        <td>${w.log_file_path}</td>
         <td><font color="${w.get_status_colour(w.status)}">${w.status}</font></td>
         <td>${w.edit_link()}</td>
     </tr>

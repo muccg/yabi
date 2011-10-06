@@ -2148,7 +2148,6 @@ CREATE TABLE yabiengine_workflow (
     user_id integer NOT NULL,
     start_time timestamp with time zone,
     end_time timestamp with time zone,
-    log_file_path character varying(1000),
     last_modified_on timestamp with time zone,
     created_on timestamp with time zone NOT NULL,
     status text NOT NULL,
@@ -3240,7 +3239,7 @@ COPY yabiengine_task (id, job_id, start_time, end_time, job_identifier, command,
 -- Data for Name: yabiengine_workflow; Type: TABLE DATA; Schema: public; Owner: yabiapp
 --
 
-COPY yabiengine_workflow (id, name, user_id, start_time, end_time, log_file_path, last_modified_on, created_on, status, stageout, json, original_json) FROM stdin;
+COPY yabiengine_workflow (id, name, user_id, start_time, end_time, last_modified_on, created_on, status, stageout, json, original_json) FROM stdin;
 \.
 
 
