@@ -30,7 +30,12 @@ import sys, os, pwd
 sys.path.append(os.path.dirname(__file__))                  # add our base directory to the pythonpath
 
 from conf import config
+
+#read default config
+config.read_from_file(os.path.join(os.path.basepath(__file__),"conf","yabi_conf_template.conf"))
+
 config.read_config()
+
 config.sanitise()
 
 # sanity check that temp directory is set
