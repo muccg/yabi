@@ -280,7 +280,7 @@ class Task(models.Model, Editable, Status):
         return json.dumps(output)
 
     def __unicode__(self):
-        return self.job_identifier
+        return self.job.workflow.name
 
     @property
     def workflowid(self):

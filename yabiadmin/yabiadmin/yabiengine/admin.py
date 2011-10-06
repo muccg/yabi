@@ -109,24 +109,32 @@ class SyslogAdmin(admin.ModelAdmin):
     search_fields = ['table_name', 'table_id']
 
 class JobAdmin(admin.ModelAdmin):
-    list_display = ['order', 'status', 'command', 'start_time', 'end_time', 'cpus', 'walltime', link_to_tasks_from_job]
-    list_filter = ['workflow']
+
+    def workflow_name(obj):
+        return obj.workflow.name
+
+    list_display = [workflow_name, 'order', 'status', 'command', 'start_time', 'end_time', 'cpus', 'walltime', link_to_tasks_from_job]
     ordering = ['order']
     fieldsets = (
         (None, {
             'fields': ('workflow','order','start_time','cpus','walltime','module','queue','max_memory','job_type','status','exec_backend','fs_backend','command','stageout','preferred_stagein_method','preferred_stageout_method')
         }),
     )
+    raw_id_fields = ['workflow']
 
 class TaskAdmin(admin.ModelAdmin):
-    list_display = ['job', 'status', 'remote_id', 'remote_info', 'start_time', 'end_time', 'job_identifier', 'command', 'error_msg', link_to_stageins_from_task, link_to_syslog_from_task]
+
+    def workflow_name(obj):
+        return obj.job.workflow.name
+
+    list_display = [workflow_name, 'status', 'start_time', 'end_time', 'job_identifier', 'error_msg', 'command', link_to_stageins_from_task, link_to_syslog_from_task]        
     list_filter = ['status', 'job__workflow__user']
-    #readonly_fields = ['remote_id']
+    raw_id_fields = ['job']
 
     
 class StageInAdmin(admin.ModelAdmin):
     list_display = ['src', 'dst', 'order','method']
-
+    raw_id_fields = ['task']
 
 def register(site):
     site.register(Workflow, WorkflowAdmin)
