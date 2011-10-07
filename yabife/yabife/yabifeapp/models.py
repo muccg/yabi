@@ -31,10 +31,7 @@ from django.contrib.auth.models import User as DjangoUser
 from django.contrib.auth import authenticate
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import models
-from ldap import LDAPError, MOD_REPLACE
 from urlparse import urlparse
-from yabife.ldapclient import LDAPClient
-from yabife.ldaputils import get_userdn_of
 from utils import yabiadmin_passchange
 
 from django.contrib import logging
