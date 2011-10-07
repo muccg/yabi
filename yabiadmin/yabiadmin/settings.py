@@ -211,7 +211,7 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 ### BACKEND ###
 # point this to the yabi backend server
 BACKEND_IP = '0.0.0.0'
-BACKEND_PORT = '21080'
+BACKEND_PORT = '9001'
 BACKEND_BASE = '/'
 YABIBACKEND_SERVER = BACKEND_IP + ':' +  BACKEND_PORT
 YABISTORE_HOME = '.yabi/run/store/'
