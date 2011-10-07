@@ -59,10 +59,6 @@ from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
 from yaphc.memcache_persister import MemcacheCookiePersister
 
 from yabife.yabifeapp.models import User
-
-from ldap import LDAPError, MOD_REPLACE
-from yabife.ldapclient import LDAPClient
-from yabife.ldaputils import get_userdn_of
 from yabife.responses import *
 from yabife.preview import html
 
