@@ -73,8 +73,9 @@ INSTALLED_APPS = [
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
     'yabiadmin.yabistoreapp',
-    'ghettoq',
-    'djcelery'
+    'ghettoq',  # todo not sure this used with latest celery
+    'djcelery',
+    'djkombu'
 ]
 
 ROOT_URLCONF = 'yabiadmin.urls'
@@ -238,7 +239,7 @@ djcelery.setup_loader()
 
 CELERY_IGNORE_RESULT = True
 CELERY_QUEUE_NAME = 'yabiadmin'
-CARROT_BACKEND = "ghettoq.taproot.Database"
+CARROT_BACKEND = "django"
 CELERYD_LOG_LEVEL = "DEBUG"
 CELERYD_CONCURRENCY = 1
 CELERYD_PREFETCH_MULTIPLIER = 1
