@@ -246,7 +246,7 @@ class LocalFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         if DEBUG:
-            print "SSHFilesystem::ls(",host,username,path,port,yabiusername,recurse,culldots,creds,priority,")"
+            print "LocalFilesystem::ls(",host,username,path,port,yabiusername,recurse,culldots,creds,priority,")"
         
         # acquire our queue lock
         if priority:
@@ -361,7 +361,7 @@ class LocalFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         and fifo being the filesystem location of the fifo.
         """
         if DEBUG:
-            print "SSHFilesystem::GetWriteFifo( host:"+host,",username:",username,",path:",path,",filename:",filename,",fifo:",fifo,",yabiusername:",yabiusername,",creds:",creds,")"
+            print "LocalFilesystem::GetWriteFifo( host:"+host,",username:",username,",path:",path,",filename:",filename,",fifo:",fifo,",yabiusername:",yabiusername,",creds:",creds,")"
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         dst = "%s@%s:%s"%(username,host,os.path.join(path,filename))
@@ -382,7 +382,7 @@ class LocalFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         and fifo being the filesystem location of the fifo.
         """
         if DEBUG:
-            print "SSH::GetReadFifo(",host,username,path,filename,fifo,yabiusername,creds,")"
+            print "LocalFilesystem::GetReadFifo(",host,username,path,filename,fifo,yabiusername,creds,")"
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         dst = "%s@%s:%s"%(username,host,os.path.join(path,filename))
         
