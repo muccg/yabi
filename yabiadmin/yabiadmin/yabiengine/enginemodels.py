@@ -466,8 +466,7 @@ class EngineTask(Task):
         else:
             self.command = template.render(uridict)
         
-        self.expected_ip = settings.BACKEND_IP
-        self.expected_port = settings.BACKEND_PORT
+        self.tasktag = settings.TASKTAG
         self.save()
 
         # non batch stageins

@@ -46,22 +46,18 @@ logger = logging.getLogger('yabiengine')
 from constants import *
 
 def task(request):
-    if "origin" not in request.REQUEST:
-        return HttpResponseServerError("Error requesting task. No origin identifier set.")
+    if "tasktag" not in request.REQUEST:
+        return HttpResponseServerError("Error requesting task. No tasktag identifier set.")
     
-    # verify that the requesters origin is correct
-    origin = request.REQUEST["origin"]
-    ip,port = origin.split(":")
-    exp_ip = settings.BACKEND_IP
-    exp_port = settings.BACKEND_PORT
-    if ip != exp_ip or port != exp_port:
-        ipaddress = request.META[ "HTTP_X_FORWARDED_FOR" if "HTTP_X_FORWARDED_FOR" in request.META else "REMOTE_ADDR" ]
-        logger.critical("IP %s requested task but had incorrect identifier set. Expected id %s:%s but got %s:%s instead."%(ipaddress,exp_ip,exp_port,ip,port))
-        return HttpResponseServerError("Error requesting task. Origin incorrect. This is not the admin you are looking for")
+    # verify that the requesters tasktag is correct
+    tasktag = request.REQUEST["tasktag"]
+    if tasktag != settings.TASKTAG:
+        logger.critical("Task requested  had incorrect identifier set. Expected tasktag %s but got %s instead." % (settings.TASKTAG, tasktag))
+        return HttpResponseServerError("Error requesting task. Tasktag incorrect. This is not the admin you are looking for.")
        
     try:
         # only expose tasks that are ready and are intended for the expeceted backend
-        tasks = Task.objects.filter(status=STATUS_READY, expected_ip=exp_ip, expected_port=exp_port)
+        tasks = Task.objects.filter(status=STATUS_READY, tasktag=tasktag)
 
         if tasks:
             task = tasks[0]
@@ -82,22 +78,18 @@ def task(request):
         return HttpResponseServerError("Error requesting task.")
 
 def blockedtask(request):
-    if "origin" not in request.REQUEST:
-        return HttpResponseServerError("Error requesting task. No origin identifier set.")
+    if "tasktag" not in request.REQUEST:
+        return HttpResponseServerError("Error requesting task. No tasktag identifier set.")
     
-    # verify that the requesters origin is correct
-    origin = request.REQUEST["origin"]
-    ip,port = origin.split(":")
-    exp_ip = settings.BACKEND_IP
-    exp_port = settings.BACKEND_PORT
-    if ip != exp_ip or port != exp_port:
-        ipaddress = request.META[ "HTTP_X_FORWARDED_FOR" if "HTTP_X_FORWARDED_FOR" in request.META else "REMOTE_ADDR" ]
-        logger.critical("IP %s requested blocked task but had incorrect identifier set. Expected id %s:%s but got %s:%s instead."%(ipaddress,exp_ip,exp_port,ip,port))
-        return HttpResponseServerError("Error requesting task. Origin incorrect. This is not the admin you are looking for")
+    # verify that the requesters tasktag is correct
+    tasktag = request.REQUEST["tasktag"]
+    if tasktag != settings.TASKTAG:
+        logger.critical("Task requested  had incorrect identifier set. Expected tasktag %s but got %s instead." % (settings.TASKTAG, tasktag))
+        return HttpResponseServerError("Error requesting task. Tasktag incorrect. This is not the admin you are looking for.")
        
     try:
         # only expose tasks that are ready and are intended for the expeceted backend
-        tasks = Task.objects.filter(status=STATUS_RESUME, expected_ip=exp_ip, expected_port=exp_port)
+        tasks = Task.objects.filter(status=STATUS_RESUME, tasktag=tasktag)
 
         print "TASKS",tasks
 
