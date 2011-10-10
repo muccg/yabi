@@ -121,7 +121,7 @@ class Configuration(object):
                         "keyfile":"~/.yabi/servercert.pem",
                         
                         "hmackey":None,
-                        
+                                                
                         "alert_email":"Tech Alerts <alerts@ccg.murdoch.edu.au>",
                         
                         "memcache_servers":"memcache1.localdomain:11211 memcache2.localdomain:11211",
@@ -132,7 +132,8 @@ class Configuration(object):
         'taskmanager':{
                         'simultaneous':'5',
                         'polldelay':'5',
-                        'startup':'true'
+                        'startup':'true',
+                        "tasktag":None,
                     }
     }
     
@@ -164,6 +165,8 @@ class Configuration(object):
             self.config[name]['polldelay'] = conf_parser.get(name,'polldelay')
             self.config[name]['simultaneous'] = conf_parser.get(name,'simultaneous')
             self.config[name]['startup'] = boolean_proc(conf_parser.get(name,'startup'))
+            if conf_parser.has_option(name,'tasktag'):
+                self.config[name]['tasktag'] = conf_parser.get(name,'tasktag')
             
         # backend section
         name = "backend"
@@ -183,6 +186,7 @@ class Configuration(object):
                 self.config[name]['certfile'] = path_sanitise(conf_parser.get(name,'certfile'))
             if conf_parser.has_option(name,'hmackey'):
                 self.config[name]['hmackey'] = conf_parser.get(name,'hmackey')
+            
             
             # memcache
             if conf_parser.has_option(name,'memcache_servers'):
