@@ -106,12 +106,15 @@ class Configuration(object):
     config = {
         'backend':  {
                         "port":"0.0.0.0:8000",
-                        "sslport":"0.0.0.0:8443",
-                        "path":"/",
-                        "startup":"true",
+                        "start_http":"true",
                         
+                        "sslport":"0.0.0.0:8443",
+                        "start_https":"true",
+                        
+                        "path":"/",
+                                                
                         "telnet":"false",
-                        "telnetport":"0.0.0.0:8021",
+                        "telnet_port":"0.0.0.0:8021",
                         
                         "fifos":None,
                         "tasklets":None,
