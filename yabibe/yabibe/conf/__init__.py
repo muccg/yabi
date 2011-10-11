@@ -109,7 +109,7 @@ class Configuration(object):
                         "start_http":"true",
                         
                         "sslport":"0.0.0.0:8443",
-                        "start_https":"true",
+                        "start_https":"false",
                         
                         "path":"/",
                                                 
@@ -207,7 +207,8 @@ class Configuration(object):
     def sanitise(self):
         """Check the settings for sanity"""
         for section in self.SECTIONS:
-            self.config[section]['startup'] = boolean_proc(self.config[section]['startup'])
+            self.config[section]['start_http'] = boolean_proc(self.config[section]['start_http'])
+            self.config[section]['start_https'] = boolean_proc(self.config[section]['start_https'])
             self.config[section]['port'] = port_setting(self.config[section]['port'])
             self.config[section]['ssl'] = boolean_proc(self.config[section]['ssl'])
             self.config[section]['sslport'] = port_setting(self.config[section]['sslport'])

@@ -70,7 +70,7 @@ from BaseResource import BaseResource
 #assert "SGE_ROOT" in os.environ
 
 # Twisted Application Framework setup:
-application = service.Application('yabi-be-twisted')
+application = service.Application('yabibe')
 
 # set up twisted logging
 from twisted.python.log import ILogObserver, FileLogObserver
@@ -79,7 +79,7 @@ from twisted.python.logfile import DailyLogFile
 LOG_STDOUT = "--logfile=-" in sys.argv or "-l-" in sys.argv
 LOG_FILE = False                                                                                    # False, log to syslog. True, log to file.
 
-SYSLOG_PREFIX = "YABI [yabi-be-twisted:%s]" % pwd.getpwuid(os.getuid()).pw_name
+SYSLOG_PREFIX = "YABI [yabibe:%s]" % pwd.getpwuid(os.getuid()).pw_name
 SYSLOG_FACILITY = syslog.syslog.LOG_LOCAL4
 
 if not LOG_STDOUT:
@@ -106,8 +106,11 @@ site = server.Site(res)
 # for HTTPS, we need a server context factory to build the context for each ssl connection
 from ServerContextFactory import ServerContextFactory
 
-internet.TCPServer(config.config['backend']['port'][1], channel.HTTPFactory(site), interface=config.config['backend']['port'][0]).setServiceParent(application)
-internet.SSLServer(config.config['backend']['sslport'][1], channel.HTTPFactory(site), ServerContextFactory(), interface=config.config['backend']['sslport'][0]).setServiceParent(application)
+if config.config['backend']['start_http']:
+    internet.TCPServer(config.config['backend']['port'][1], channel.HTTPFactory(site), interface=config.config['backend']['port'][0]).setServiceParent(application)
+
+if config.config['backend']['start_https']:
+    internet.SSLServer(config.config['backend']['sslport'][1], channel.HTTPFactory(site), ServerContextFactory(), interface=config.config['backend']['sslport'][0]).setServiceParent(application)
 
 if config.config['backend']['telnet']:
     # telnet port to python shell
