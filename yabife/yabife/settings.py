@@ -262,8 +262,6 @@ except ImportError, e:
     pass
 
 
-YABIADMIN_SERVER = 'https://127.0.0.1/yabiadmin/cwellington/'
-
 
 
 
