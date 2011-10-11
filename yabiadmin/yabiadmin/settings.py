@@ -73,7 +73,6 @@ INSTALLED_APPS = [
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
     'yabiadmin.yabistoreapp',
-    'ghettoq',  # todo not sure this used with latest celery
     'djcelery',
     'djkombu'
 ]
