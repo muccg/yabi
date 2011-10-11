@@ -12,7 +12,7 @@
 NAME="yabibe"
 #TWISTDLIST="/usr/local/yabi/src/yabi-be-twisted/release/mypython/bin/twistd"
 #TWISTDLIST="virt_yabi-be-twisted/bin/twistd"
-TWISTDLIST=( "virt_yabi-be-twisted/bin/twistd" "/usr/local/yabi/src/yabi-be-twisted/release/virt_release/bin/twistd" )
+TWISTDLIST=( "virt_yabibe/bin/twistd" "/usr/local/yabi/src/yabi-be-twisted/release/virt_release/bin/twistd" "/usr/local/bin/twistd" "/usr/bin/twistd" )
 CONFFILE="yabi.conf"
 
 for T in "${TWISTDLIST[@]}"
@@ -22,6 +22,11 @@ do
         TWISTD=$T
     fi
 done
+
+if [ "X$TWISTD" = "X" ] ; then
+    echo "twistd not found. aborting."
+    exit 1
+fi
 
 echo "using $TWISTD..."
 
