@@ -100,7 +100,7 @@ class ConfigError(Exception):
 class Configuration(object):
     """Holds the running configuration for the full yabi stack that is running under this twistd"""
     SECTIONS = ['backend']       # sections of the config file
-    KEYS = ['port','path','startup','sslport','ssl','alert_email','http_redirect_to_https','http_redirect_to_https_port','memcache_servers','logfile']
+    KEYS = ['port','path','start_http','start_https','sslport','ssl','alert_email','http_redirect_to_https','http_redirect_to_https_port','memcache_servers','logfile']
     
     # defaults
     config = {
