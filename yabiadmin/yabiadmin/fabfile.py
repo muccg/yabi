@@ -15,7 +15,7 @@ env.content_excludes.extend([]) # add quoted patterns here for extra rsync exclu
 env.content_includes.extend([]) # add quoted patterns here for extra rsync includes
 env.auto_confirm_purge = False #controls whether the confirmation prompt for purge is used
 
-env.celeryd_options = " -l debug"
+env.celeryd_options = " -l debug -E"
 
 class LocalPaths():
 

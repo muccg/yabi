@@ -73,8 +73,8 @@ INSTALLED_APPS = [
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
     'yabiadmin.yabistoreapp',
-    'ghettoq',
-    'djcelery'
+    'djcelery',
+    'djkombu'
 ]
 
 ROOT_URLCONF = 'yabiadmin.urls'
@@ -213,7 +213,7 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 BACKEND_IP = '0.0.0.0'
 BACKEND_PORT = '9001'
 BACKEND_BASE = '/'
-TASKTAG = 'set_this' // this must be the same in the yabi.conf for the backend that will consume tasks from this admin
+TASKTAG = 'set_this' # this must be the same in the yabi.conf for the backend that will consume tasks from this admin
 YABIBACKEND_SERVER = BACKEND_IP + ':' +  BACKEND_PORT
 YABISTORE_HOME = '.yabi/run/store/'
 BACKEND_UPLOAD = 'http://'+BACKEND_IP+':'+BACKEND_PORT+BACKEND_BASE+"fs/ticket"
@@ -238,7 +238,7 @@ djcelery.setup_loader()
 
 CELERY_IGNORE_RESULT = True
 CELERY_QUEUE_NAME = 'yabiadmin'
-CARROT_BACKEND = "ghettoq.taproot.Database"
+CARROT_BACKEND = "django"
 CELERYD_LOG_LEVEL = "DEBUG"
 CELERYD_CONCURRENCY = 1
 CELERYD_PREFETCH_MULTIPLIER = 1
