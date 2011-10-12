@@ -332,7 +332,7 @@ class EngineJob(Job):
             if (settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2'):
                 cursor.execute('LOCK TABLE %s IN ACCESS EXCLUSIVE MODE' % Task._meta.db_table)
             elif (settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql'):
-                cursor.execute('LOCK TABLES %s WRITE' % Task._meta.db_table)
+                cursor.execute('LOCK TABLES %s, %s WRITE' % (Task._meta.db_table, StageIn._meta.db_table))
             else:
                 assert("Locking code not implemented for db backend %s " % settings.DATABASES['default']['engine'])
 
@@ -344,6 +344,8 @@ class EngineJob(Job):
                 logger.debug("job %s has tasks, skipping create_tasks" % self.id)
 
             transaction.commit()
+            if (settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql'):
+                cursor.execute('UNLOCK TABLES')
             logger.debug('Committed, released lock')
         except:
             logger.critical(traceback.format_exc())
