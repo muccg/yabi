@@ -28,7 +28,7 @@
 # -*- coding: utf-8 -*-
 import traceback, hashlib, base64
 
-from django.db import models
+from django.db import models, transaction
 from django import forms
 from django.contrib.auth.models import User as DjangoUser
 from django.utils import simplejson as json
@@ -488,6 +488,10 @@ class Credential(Base):
         wfs=self.rewalk_workflows()
         ids = [W.id for W in wfs]
         wfs.update(status=STATUS_READY)
+
+        # always commit transactions before sending tasks depending on state from the current transaction http://docs.celeryq.org/en/latest/userguide/tasks.html
+        transaction.commit()
+
         for id in ids:
             print "WALK----------->",id
             walk.delay(workflow_id=id)

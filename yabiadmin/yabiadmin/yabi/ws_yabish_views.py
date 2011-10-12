@@ -32,6 +32,7 @@ import copy
 import os
 from datetime import datetime
 
+from django.db import transaction
 from django.http import HttpResponse
 from yabiadmin.yabi import models
 from django.utils import simplejson as json
@@ -85,6 +86,9 @@ def submitjob(request):
 
         workflow = EngineWorkflow(name=workflow_dict["name"], user=user, json=workflow_json, original_json=workflow_json)
         workflow.save()
+
+        # always commit transactions before sending tasks depending on state from the current transaction http://docs.celeryq.org/en/latest/userguide/tasks.html
+        transaction.commit()
 
         # trigger a build via celery
         build.delay(workflow_id=workflow.id)
