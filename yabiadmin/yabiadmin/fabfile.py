@@ -15,7 +15,7 @@ env.content_excludes.extend([]) # add quoted patterns here for extra rsync exclu
 env.content_includes.extend([]) # add quoted patterns here for extra rsync includes
 env.auto_confirm_purge = False #controls whether the confirmation prompt for purge is used
 
-env.celeryd_options = " -l debug -E -B"
+env.celeryd_options = "--config=settings -l debug -E -B"
 
 class LocalPaths():
 
@@ -130,9 +130,10 @@ def _munge_settings(**kwargs):
         print local("sed -i -r -e 's/LOGGING_LEVEL = logging.DEBUG/LOGGING_LEVEL = %s/g' %s"  % (kwargs.get('debug_logging'),localPaths.getSettings()))
 
 def _celeryd():
-    _django_env()
-    os.environ["PYTHON_EGG_CACHE"] = localPaths.getCeleryEggCacheDir()
-    print local(localPaths.getVirtualPython() + " " + localPaths.getCeleryd() + env.celeryd_options, capture=False)
+    #_django_env()
+    #os.environ["PYTHON_EGG_CACHE"] = localPaths.getCeleryEggCacheDir()
+    #print local(localPaths.getVirtualPython() + " " + localPaths.getCeleryd() + env.celeryd_options, capture=False)
+    print local("python -m celery.bin.celery " + env.celeryd_options, capture=False)
 
 def _django_env():
     os.environ["DJANGO_SETTINGS_MODULE"]="settings"
