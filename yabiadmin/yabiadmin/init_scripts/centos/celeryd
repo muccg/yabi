@@ -74,8 +74,8 @@
 #       A directory to add to the Python path.
 
 CELERY_CONFIG_MODULE="settings"
-CELERYD_OPTS="-E -B"
 CELERYD_CHDIR="/usr/local/python/ccgapps/yabiadmin/release/yabiadmin"
+CELERYD_OPTS="-E -B --schedule=$CELERYD_CHDIR/logs/celerybeat-schedule"
 CELERYD_PID_FILE="$CELERYD_CHDIR/logs/celeryd.pid"
 CELERYD_LOG_FILE="$CELERYD_CHDIR/logs/celeryd.log"
 CELERYD_LOG_LEVEL="INFO"
