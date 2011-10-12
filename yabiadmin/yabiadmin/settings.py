@@ -251,6 +251,8 @@ CELERY_QUEUES = {
 }
 CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
 CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
+# The maximum number of seconds celerybeat can sleep between checking the schedule. 
+CELERYBEAT_MAX_LOOP_INTERVAL = 30
 
 
 
