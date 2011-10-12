@@ -102,6 +102,13 @@ def celeryd():
     """
     _celeryd()
 
+def celeryd_quickstart():
+    """
+    Foreground celeryd using your deployment of admin
+    """
+    _celeryd_quickstart()
+
+
 def snapshot_celeryd():
     """
     Foreground celeryd using snapshot deployment of admin
@@ -130,6 +137,10 @@ def _munge_settings(**kwargs):
         print local("sed -i -r -e 's/LOGGING_LEVEL = logging.DEBUG/LOGGING_LEVEL = %s/g' %s"  % (kwargs.get('debug_logging'),localPaths.getSettings()))
 
 def _celeryd():
+    _django_env()
+    print local("python -m celery.bin.celeryd " + env.celeryd_options, capture=False)
+
+def _celeryd_quickstart():
     _celery_env()
     print local("python -m celery.bin.celeryd " + env.celeryd_options, capture=False)
 
