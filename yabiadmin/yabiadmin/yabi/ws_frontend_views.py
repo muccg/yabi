@@ -425,6 +425,7 @@ def put(request):
         raise
 
 @authentication_required
+@transaction.commit_on_success
 def submit_workflow(request):
     yabiusername = request.user.username
     logger.debug(yabiusername)

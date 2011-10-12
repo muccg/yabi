@@ -111,6 +111,7 @@ def blockedtask(request):
         logger.critical(traceback.format_exc())
         return HttpResponseServerError("Error requesting task.")
 
+@transaction.commit_on_success
 def status(request, model, id):
     logger.debug('model: %s id: %s' % (model, id))
     models = {'task':EngineTask, 'job':EngineJob, 'workflow':EngineWorkflow}
