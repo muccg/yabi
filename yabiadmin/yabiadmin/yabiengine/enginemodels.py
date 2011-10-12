@@ -326,8 +326,15 @@ class EngineJob(Job):
 
             from django.db import connection
             cursor = connection.cursor()
-            logger.debug("Acquiring lock on %s for job %s" % (Task._meta.db_table, self.id)) 
-            cursor.execute('LOCK TABLE %s IN ACCESS EXCLUSIVE MODE' % Task._meta.db_table)
+            logger.debug("Acquiring lock on %s for job %s" % (Task._meta.db_table, self.id))
+            assert(settings.DATABASES.has_key('default'))
+            assert(settings.DATABASES['default'].has_key('engine'))
+            if (settings.DATABASES['default']['engine'] == 'django.db.backends.postgresql_psycopg2'):
+                cursor.execute('LOCK TABLE %s IN ACCESS EXCLUSIVE MODE' % Task._meta.db_table)
+            else if (settings.DATABASES['default']['engine'] == 'django.db.backends.mysql'):
+                cursor.execute('LOCK TABLES %s WRITE' % Task._meta.db_table)
+            else:
+                assert("Locking code not implemented for db backend %s " % settings.DATABASES['default']['engine'])
 
             if (self.total_tasks() == 0):
                 logger.debug("job %s is having tasks created" % self.id) 
