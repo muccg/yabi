@@ -26,7 +26,7 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-from celery.decorators import task
+from celery.task import task
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from constants import STATUS_REWALK, STATUS_ERROR
