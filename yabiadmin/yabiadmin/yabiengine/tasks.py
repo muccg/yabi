@@ -32,7 +32,7 @@ from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from constants import STATUS_REWALK, STATUS_ERROR
 import traceback
 
-@task
+@task(name="yabiadmin.yabiengine.tasks.build")
 def build(workflow_id):
     print "BUILD:",workflow_id
     assert(workflow_id)
@@ -43,7 +43,7 @@ def build(workflow_id):
     eworkflow.walk()
     return workflow_id
 
-@task
+@task(name="yabiadmin.yabiengine.tasks.walk")
 def walk(workflow_id):
     print "WALK:",workflow_id
     assert(workflow_id)
