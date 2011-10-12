@@ -130,10 +130,8 @@ def _munge_settings(**kwargs):
         print local("sed -i -r -e 's/LOGGING_LEVEL = logging.DEBUG/LOGGING_LEVEL = %s/g' %s"  % (kwargs.get('debug_logging'),localPaths.getSettings()))
 
 def _celeryd():
-    #_django_env()
-    #os.environ["PYTHON_EGG_CACHE"] = localPaths.getCeleryEggCacheDir()
-    #print local(localPaths.getVirtualPython() + " " + localPaths.getCeleryd() + env.celeryd_options, capture=False)
-    print local("python -m celery.bin.celery " + env.celeryd_options, capture=False)
+    _celery_env()
+    print local("python -m celery.bin.celeryd " + env.celeryd_options, capture=False)
 
 def _django_env():
     os.environ["DJANGO_SETTINGS_MODULE"]="settings"
@@ -142,3 +140,10 @@ def _django_env():
     os.environ["CELERY_CHDIR"]=localPaths.getProjectDir()
     os.environ["PYTHONPATH"] = "/usr/local/etc/ccgapps/:" + localPaths.getProjectDir() + ":" + localPaths.getParentDir()
     os.environ["PROJECT_DIRECTORY"] = localPaths.getProjectDir()
+
+def _celery_env(): 
+    os.environ["DJANGO_SETTINGS_MODULE"]="settings" 
+    os.environ["DJANGO_PROJECT_DIR"]="." 
+    os.environ["CELERY_LOADER"]="django" 
+    os.environ["CELERY_CHDIR"]="." 
+    os.environ["PROJECT_DIRECTORY"] = "." 

@@ -39,7 +39,7 @@ import os, socket
 PROJECT_DIRECTORY = os.environ['PROJECT_DIRECTORY']
 LOG_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"logs")
 LOGGING_LEVEL = logging.DEBUG
-install_name = PROJECT_DIRECTORY.split('/')[-2]
+install_name = 'install_name' # TODO FIXME - use settings from appsettings level
 LOGGING_FORMATTER = logging.Formatter('YABI [%(name)s:' + install_name + ':%(levelname)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s')
 LOGS = ['yabiengine','yabiadmin']
 
