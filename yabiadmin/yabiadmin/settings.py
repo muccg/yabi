@@ -252,6 +252,7 @@ CELERY_QUEUES = {
 CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
 CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
 CELERY_IMPORTS = ("yabiadmin.yabiengine.tasks",)
+BROKER_TRANSPORT = "djkombu.transport.DatabaseTransport"
 
 
 
