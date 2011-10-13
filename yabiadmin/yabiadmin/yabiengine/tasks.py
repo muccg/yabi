@@ -31,6 +31,7 @@ from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from constants import STATUS_REWALK, STATUS_ERROR
 import traceback
+from django.db import transaction
 
 @task(name="yabiadmin.yabiengine.tasks.build")
 def build(workflow_id):
