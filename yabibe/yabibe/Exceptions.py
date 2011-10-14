@@ -44,6 +44,10 @@ class InvalidPath(Exception):
     """The path passed is an invalid path for this connector"""
     pass
 
+class IsADirectory(Exception):
+    """pretty much only used where you try to delete a directory and dont use recurse"""
+    pass
+
 class NoCredentials(BlockingException):
     """User has no globus credentials for this server"""
     pass
