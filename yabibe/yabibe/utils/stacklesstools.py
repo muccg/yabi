@@ -177,23 +177,32 @@ class HTTPConnection(object):
         return HTTPResponse( status=self.get_complete[0][0], message=self.get_complete[0][1], data=self.get_complete[0][2] )
 
 #def GET(path, host=WS_HOST, port=WS_PORT, factory_class=CallbackHTTPClientFactory,**kws):
-def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,**kws):
+def GET(path, scheme=None, host=None, port=None, factory_class=RememberingHTTPClientFactory,**kws):
     """Stackless integrated twisted webclient GET
     Pass in the path to get and optionally the host and port
     raises a GETFailure exception on failure
     returns the return code and data on success 
     """
     # defaults to us
-    host=host or config.config['backend']['sslport'][0]
-    host = "127.0.0.1" if host=="0.0.0.0" else host
-    port=port or config.config['backend']['sslport'][1]
-    
+    if config.config['backend']['start_https']:
+        # use https because its switched on
+        host=host if host else config.config['backend']['sslport'][0] 
+        host = "127.0.0.1" if host=="0.0.0.0" else host
+        port=port if port else config.config['backend']['sslport'][1]
+        scheme = scheme if scheme else "https"
+    else:
+        #use http
+        host=host if host else config.config['backend']['port'][0]
+        host = "127.0.0.1" if host=="0.0.0.0" else host
+        port=port if port else config.config['backend']['port'][1]
+        scheme = scheme if scheme else "http"
+
     getdata=urllib.urlencode(kws)
     
     if DEBUG:
-        print "=>",str("https://%s:%d%s"%(host,port,path+"?"+getdata))
+        print "=>",str("%s://%s:%d%s"%(scheme,host,port,path+"?"+getdata))
         
-    fullpath=str("https://%s:%d%s"%(host,port,path))
+    fullpath=str("%s://%s:%d%s"%(scheme,host,port,path))
     if getdata:
         fullpath += "?"+getdata
         
@@ -265,18 +274,40 @@ def GET(path, host=None, port=None, factory_class=RememberingHTTPClientFactory,*
 
 def POST(path,**kws):
     """Stackless integrated twisted webclient POST"""
+    print "POST",path
+    
+    if 'scheme' in kws:
+        scheme = kws['scheme']
+        del kws['scheme']
+    else:
+        scheme = "https" if config.config['backend']['start_https'] else "http"
+    
     if 'host' in kws:
         host = kws['host']
         del kws['host']
     else:
-        host = config.config['backend']['sslport'][0]
-        host = "127.0.0.1" if host=="0.0.0.0" else host
+        if config.config['backend']['start_https']:
+            # use https because its switched on
+            host=config.config['backend']['sslport'][0] 
+            host = "127.0.0.1" if host=="0.0.0.0" else host
+            scheme = "https"
+        else:
+            #use http
+            host=config.config['backend']['port'][0]
+            host = "127.0.0.1" if host=="0.0.0.0" else host
+            scheme = "http"
+
         
     if 'port' in kws:
         port = kws['port']
         del kws['port']
     else:
-        port = config.config['backend']['sslport'][1]
+        if config.config['backend']['start_https']:
+            # use https because its switched on
+            port=config.config['backend']['sslport'][1]
+        else:
+            #use http
+            port=config.config['backend']['port'][1]
         
     errorpage=[None]
         
@@ -289,7 +320,10 @@ def POST(path,**kws):
     postdata=urllib.urlencode(kws)
     #postdata="src=gridftp1/cwellington/bi01/cwellington/test&dst=gridftp1/cwellington/bi01/cwellington/test2"
     
-    fullpath=str("https://%s:%d%s"%(host,port,path))
+    fullpath=str("%s://%s:%d%s"%(scheme,host,port,path))
+    
+    if DEBUG:
+        print "POST =>",fullpath
     
     factory = CallbackHTTPClientFactory(
         fullpath,

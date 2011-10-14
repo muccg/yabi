@@ -257,8 +257,8 @@ class ParameterSwitchUse(Base):
 
 FILE_ASSIGNMENT_CHOICES = (
     ('none', 'No input files'),
-    ('batch', 'Batch files'),
-    ('all', 'Consume all files'),
+    ('batch', 'Single input file'),
+    ('all', 'Multiple input files'),
 )
 
 class ToolParameter(Base):
@@ -304,6 +304,12 @@ class ToolParameter(Base):
     possible_values.help_text="Json snippet for html select. See blast tool for examples."
     default_value.help_text="Value that will appear in field. If possible values is populated this should match one of the values so the select widget defaults to that option."
     helptext.help_text="Help text that is passed to the frontend for display to the user."
+    
+    batch_bundle_files.help_text = "When staging in files, stage in every file that is in the same source location as this file. Useful for bringing along other files that are associated, but not specified."
+    file_assignment.help_text = """Specifies how to deal with files that match the accepted filetypes setting...<br/><br/>
+        <i>No input files:</i> This parameter does not take any input files as an argument<br/>
+        <i>Single input file:</i> This parameter can only take a single input file, and batch jobs will need to be created for multiple files if the user passes them in<br/>
+        <i>Multiple input file:</i> This parameter can take a whole string of onput files, one after the other. All matching filetypes will be passed into it"""
     
     def __unicode__(self):
         return self.switch or ''
