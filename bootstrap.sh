@@ -107,25 +107,7 @@ then
     # create a virtual python in the current directory
     $TARGET_PYTHON $VIRTUALENV/build/lib*/virtualenv.py --no-site-packages $VPYTHON_DIR
 
-    # we use fab for deployments
-    ./$VPYTHON_DIR/bin/pip install fabric
-
-    # we use gunicorn for running quick start environment
-    ./$VPYTHON_DIR/bin/pip install gunicorn
-
-    # install all the eggs in this app
-    if [ $INSTALL_EGGS -eq 1 ]  
-    then
-        ./$VPYTHON_DIR/bin/easy_install $EGGS_PATH --allow-hosts=None
-    fi
-    # now we are going to eggify app settings, so we can run it locally
-    # we need to jump through a few legacy hoops to make this happen
-
-    #remove temp dir
-    if [ -d tmp ]
-    then
-        rm -Rf tmp
-    fi
+    ./$VPYTHON_DIR/bin/pip install -Ur requirements.txt
 
     # hack activate to set some environment we need
     echo "PROJECT_DIRECTORY=`pwd`;" >>  $VPYTHON_DIR/bin/activate
@@ -141,11 +123,11 @@ fi
 
 echo -e "\n\n What just happened?\n\n"
 echo " * Python has been installed into $VPYTHON_DIR"
+cat requirements.txt
 if [ $INSTALL_EGGS -eq 1 ]
 then
     echo " * eggs from the eggs in this project ($EGGS_PATH) have been installed"
 fi
-echo " * fabric is also installed"
 
 
 # tell the user how to activate this python install
