@@ -9,7 +9,7 @@ amqplib==1.0.2
 anyjson==0.3.1
 carrot==0.10.7
 #ccgfab==1.5
-http://ccg-python-build.googlecode.com/files/ccg-python-build_v1_7.tar.gz
+http://ccg-python-build.googlecode.com/files/ccg-python-build_v1_8.tar.gz
 celery==2.3.3
 django-celery==2.3.3
 #django-kombu==0.9.4
@@ -26,6 +26,6 @@ pycrypto==2.0.1
 pygooglechart==0.2.1
 pyparsing==1.5.6
 python-dateutil==1.5
-python-ldap==2.3.8
+python-ldap>=2.3.8
 virtualenv==1.6.1
 wsgiref==0.1.2
