@@ -198,6 +198,7 @@ def Log(logpath,message):
     #print "Reporting error to %s"%(logpath)
     #print "Logging to %s"%(logpath)
     if DEBUG:
+        print "logpath=",logpath
         print "log=",message
     
     if "://" in logpath:
@@ -206,7 +207,7 @@ def Log(logpath,message):
         #print "LOG:",parsed.path, message,parsed.hostname,parsed.port
         code,msg,data = RetryPOST(parsed.path, message=message,host=parsed.hostname,port=parsed.port)              # error exception should bubble up and be caught
     else:
-        code,msg,data = RetryPOST(logpath, host=config.yabiadminserver,port=config.yabiadminport, message=message)              # error exception should bubble up and be caught
+        code,msg,data = RetryPOST(logpath, scheme=config.yabiadminscheme, host=config.yabiadminserver,port=config.yabiadminport, message=message)              # error exception should bubble up and be caught
     assert code==200
 
     
@@ -222,7 +223,7 @@ def Status(statuspath, message):
         
         code,msg,data = RetryPOST(parsed.path, status=message,host=parsed.hostname,port=parsed.port)              # error exception should bubble up and be caught
     else:
-        code,msg,data = RetryPOST(statuspath, host=config.yabiadminserver,port=config.yabiadminport, status=message)              # error exception should bubble up and be caught
+        code,msg,data = RetryPOST(statuspath, scheme=config.yabiadminscheme, host=config.yabiadminserver,port=config.yabiadminport, status=message)              # error exception should bubble up and be caught
     assert code==200
 
 def RemoteInfo(statuspath, message):
@@ -237,7 +238,7 @@ def RemoteInfo(statuspath, message):
         
         code,msg,data = RetryPOST(parsed.path, remote_info=message,host=parsed.hostname,port=parsed.port)              # error exception should bubble up and be caught
     else:
-        code,msg,data = RetryPOST(statuspath, host=config.yabiadminserver,port=config.yabiadminport, remote_info=message)              # error exception should bubble up and be caught
+        code,msg,data = RetryPOST(statuspath, scheme=config.yabiadminscheme, host=config.yabiadminserver,port=config.yabiadminport, remote_info=message)              # error exception should bubble up and be caught
     assert code==200
     
 def Exec(backend, command, callbackfunc=None, **kwargs):
@@ -258,7 +259,7 @@ def UserCreds(yabiusername, uri):
     """Get a users credentials"""
     # see if we can get the credentials
     url = os.path.join(config.yabiadminpath,'ws/credential/%s/?uri=%s'%(yabiusername,urllib.quote(uri)))
-    code, message, data = GET(url, host=config.yabiadminserver, port=config.yabiadminport)
+    code, message, data = GET(url, scheme=config.yabiadminscheme, host=config.yabiadminserver, port=config.yabiadminport)
     assert code==200
     if DEBUG:
         print "JSON DATA:",data
