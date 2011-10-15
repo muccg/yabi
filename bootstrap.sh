@@ -3,13 +3,16 @@
 # You need to have:
 #   python header files 
 
+PROJECT_DIR=`pwd`
+CACHE='/tmp'
+PIP_DOWNLOAD_CACHE=${CACHE}
 EGGS_DIR='eggs/'
 EGGS_PATTERN='*.*' #this ignores dirs, but means egg names must contain a .
-PIP_DOWNLOAD_CACHE='/tmp/'
-export PIP_DOWNLOAD_CACHE
 INSTALL_EGGS=1 #if this is 1, we will install eggs from eggs/...
 CONFIG_DIR=""
 TARGET_PYTHON="python"
+
+export PIP_DOWNLOAD_CACHE
 
 help() {
     echo >&2 "Usage $0 [-p targetpython] [-c configname]"
@@ -61,8 +64,6 @@ then
     fi
 fi
 
-
-
 if [ $INSTALL_EGGS -eq 1 ]
 then
     echo "---+++---"
@@ -77,8 +78,11 @@ fi
 BASE_DIR=`basename ${PWD}`
 PRE="virt_"
 VPYTHON_DIR="$PRE$BASE_DIR"
-VIRTUALENV='virtualenv-1.6.1'
-VIRTUALENV_TARBALL='virtualenv-1.6.1.tar.gz'
+VIRTUALENV="virtualenv-1.6.1"
+VIRTUALENV_TARBALL="${VIRTUALENV}.tar.gz"
+PIP="./${VPYTHON_DIR}/bin/pip"
+PIP_OPTS="-I --use-mirrors --timeout=10"
+YOPYPI="./${VPYTHON_DIR}/bin/yopypi-cli"
 
 # only install if we dont already exist
 if [ ! -d $VPYTHON_DIR ]
@@ -86,28 +90,32 @@ then
     echo -e '\n\nNo virtual python dir, lets create one\n\n'
 
     # only install virtual env if its not hanging around
-    if [ ! -d $VIRTUALENV ]
+    if [ ! -d "${CACHE}/${VIRTUALENV}" ]
     then
         echo -e '\n\nNo virtual env, creating\n\n'
   
         # only download the tarball if needed
-        if [ ! -f $VIRTUALENV_TARBALL ]
+        if [ ! -f "${CACHE}/${VIRTUALENV_TARBALL}" ]
         then
-            wget http://pypi.python.org/packages/source/v/virtualenv/$VIRTUALENV_TARBALL
+            wget -O "${CACHE}/${VIRTUALENV_TARBALL}" http://pypi.python.org/packages/source/v/virtualenv/${VIRTUALENV_TARBALL}
         fi
 
         # build virtualenv
+        cd ${CACHE}
         tar zxvf $VIRTUALENV_TARBALL
         cd $VIRTUALENV
         $TARGET_PYTHON setup.py build
-        cd ..
+        cd ${PROJECT_DIR}
 
     fi
        
     # create a virtual python in the current directory
-    $TARGET_PYTHON $VIRTUALENV/build/lib*/virtualenv.py --no-site-packages $VPYTHON_DIR
+    $TARGET_PYTHON ${CACHE}/$VIRTUALENV/build/lib*/virtualenv.py --no-site-packages $VPYTHON_DIR
 
-    ./$VPYTHON_DIR/bin/pip install -I --timeout=10 -r requirements.txt
+    ${PIP} install ${PIP_OPTS} yopypi
+    ${YOPYPI} start
+    ${PIP} install ${PIP_OPTS} -r requirements.txt
+    ${YOPYPI} stop
 
     # hack activate to set some environment we need
     echo "PROJECT_DIRECTORY=`pwd`;" >>  $VPYTHON_DIR/bin/activate
@@ -122,7 +130,7 @@ then
 fi
 
 echo -e "\n\n What just happened?\n\n"
-echo " * Python has been installed into $VPYTHON_DIR"
+echo -e " * Python has been installed into $VPYTHON_DIR"
 cat requirements.txt
 if [ $INSTALL_EGGS -eq 1 ]
 then
