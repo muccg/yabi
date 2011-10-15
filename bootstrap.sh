@@ -78,10 +78,10 @@ fi
 BASE_DIR=`basename ${PWD}`
 PRE="virt_"
 VPYTHON_DIR="$PRE$BASE_DIR"
-VIRTUALENV="virtualenv-1.6.1"
+VIRTUALENV="virtualenv-1.6.4"
 VIRTUALENV_TARBALL="${VIRTUALENV}.tar.gz"
 PIP="./${VPYTHON_DIR}/bin/pip"
-PIP_OPTS="-I --use-mirrors --timeout=10"
+PIP_OPTS="--index-url=http://127.0.0.1:8080/simple"
 YOPYPI="./${VPYTHON_DIR}/bin/yopypi-cli"
 
 # only install if we dont already exist
@@ -112,7 +112,7 @@ then
     # create a virtual python in the current directory
     $TARGET_PYTHON ${CACHE}/$VIRTUALENV/build/lib*/virtualenv.py --no-site-packages $VPYTHON_DIR
 
-    ${PIP} install ${PIP_OPTS} yopypi
+    ${PIP} install yopypi
     ${YOPYPI} start
     ${PIP} install ${PIP_OPTS} -r requirements.txt
     ${YOPYPI} stop
