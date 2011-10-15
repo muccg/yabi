@@ -107,7 +107,7 @@ then
     # create a virtual python in the current directory
     $TARGET_PYTHON $VIRTUALENV/build/lib*/virtualenv.py --no-site-packages $VPYTHON_DIR
 
-    ./$VPYTHON_DIR/bin/pip install -I -M --timeout=10 -r requirements.txt
+    ./$VPYTHON_DIR/bin/pip install -I --timeout=10 -r requirements.txt
 
     # hack activate to set some environment we need
     echo "PROJECT_DIRECTORY=`pwd`;" >>  $VPYTHON_DIR/bin/activate
