@@ -18,8 +18,8 @@ django-picklefield==0.1.9
 django-templatetag-sugar==0.1
 gunicorn==0.13.4
 importlib==1.0.2
-kombu==1.4.1
-#http://pypi.python.org/packages/source/k/kombu/kombu-1.4.1.tar.gz
+#kombu==1.4.1
+http://pypi.python.org/packages/source/k/kombu/kombu-1.4.1.tar.gz
 #ordereddict==1.1
 http://pypi.python.org/packages/source/o/ordereddict/ordereddict-1.1.tar.gz
 paramiko==1.7.7.1
@@ -29,5 +29,5 @@ pygooglechart==0.2.1
 pyparsing==1.5.6
 python-dateutil==1.5
 python-ldap>=2.3.13
-virtualenv==1.6.1
+virtualenv==1.6.4
 wsgiref==0.1.2
