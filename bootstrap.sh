@@ -81,7 +81,8 @@ VPYTHON_DIR="$PRE$BASE_DIR"
 VIRTUALENV="virtualenv-1.6.4"
 VIRTUALENV_TARBALL="${VIRTUALENV}.tar.gz"
 PIP="./${VPYTHON_DIR}/bin/pip"
-PIP_OPTS="--index-url=http://127.0.0.1:8080/simple"
+#PIP_OPTS="--index-url=http://127.0.0.1:8080/simple"
+PIP_OPTS="--use-mirrors"
 YOPYPI="./${VPYTHON_DIR}/bin/yopypi-cli"
 
 # only install if we dont already exist
