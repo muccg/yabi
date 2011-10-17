@@ -17,6 +17,9 @@ env.auto_confirm_purge = False #controls whether the confirmation prompt for pur
 
 env.celeryd_options = "--config=settings -l debug -E -B"
 
+env.ccg_pip_options = "--use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors=http://d.pypi.python.org/ --mirrors=http://e.pypi.python.org/"
+
+
 class LocalPaths():
 
     target = env.username
