@@ -15,7 +15,7 @@ env.content_excludes.extend([]) # add quoted patterns here for extra rsync exclu
 env.content_includes.extend([]) # add quoted patterns here for extra rsync includes
 env.auto_confirm_purge = False #controls whether the confirmation prompt for purge is used
 
-env.celeryd_options = " -l debug -E -B"
+env.celeryd_options = "--config=settings -l debug -E -B"
 
 class LocalPaths():
 
@@ -102,6 +102,13 @@ def celeryd():
     """
     _celeryd()
 
+def celeryd_quickstart():
+    """
+    Foreground celeryd using your deployment of admin
+    """
+    _celeryd_quickstart()
+
+
 def snapshot_celeryd():
     """
     Foreground celeryd using snapshot deployment of admin
@@ -131,8 +138,11 @@ def _munge_settings(**kwargs):
 
 def _celeryd():
     _django_env()
-    os.environ["PYTHON_EGG_CACHE"] = localPaths.getCeleryEggCacheDir()
-    print local(localPaths.getVirtualPython() + " " + localPaths.getCeleryd() + env.celeryd_options, capture=False)
+    print local("python -m celery.bin.celeryd " + env.celeryd_options, capture=False)
+
+def _celeryd_quickstart():
+    _celery_env()
+    print local("python -m celery.bin.celeryd " + env.celeryd_options, capture=False)
 
 def _django_env():
     os.environ["DJANGO_SETTINGS_MODULE"]="settings"
@@ -141,3 +151,10 @@ def _django_env():
     os.environ["CELERY_CHDIR"]=localPaths.getProjectDir()
     os.environ["PYTHONPATH"] = "/usr/local/etc/ccgapps/:" + localPaths.getProjectDir() + ":" + localPaths.getParentDir()
     os.environ["PROJECT_DIRECTORY"] = localPaths.getProjectDir()
+
+def _celery_env(): 
+    os.environ["DJANGO_SETTINGS_MODULE"]="settings" 
+    os.environ["DJANGO_PROJECT_DIR"]="." 
+    os.environ["CELERY_LOADER"]="django" 
+    os.environ["CELERY_CHDIR"]="." 
+    os.environ["PROJECT_DIRECTORY"] = "." 

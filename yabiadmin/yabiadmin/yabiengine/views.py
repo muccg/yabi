@@ -111,6 +111,7 @@ def blockedtask(request):
         logger.critical(traceback.format_exc())
         return HttpResponseServerError("Error requesting task.")
 
+@transaction.commit_on_success
 def status(request, model, id):
     logger.debug('model: %s id: %s' % (model, id))
     models = {'task':EngineTask, 'job':EngineJob, 'workflow':EngineWorkflow}
@@ -151,6 +152,9 @@ def status(request, model, id):
                 obj.job.save()
 
             if status in [STATUS_READY, STATUS_COMPLETE, STATUS_ERROR]:
+                # always commit transactions before sending tasks depending on state from the current transaction http://docs.celeryq.org/en/latest/userguide/tasks.html
+                transaction.commit()
+
                 # trigger a walk via celery 
                 walk.delay(workflow_id=obj.workflow_id)
 
