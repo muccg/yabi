@@ -81,7 +81,7 @@ VPYTHON_DIR="$PRE$BASE_DIR"
 VIRTUALENV="virtualenv-1.6.4"
 VIRTUALENV_TARBALL="${VIRTUALENV}.tar.gz"
 PIP="./${VPYTHON_DIR}/bin/pip"
-PIP_OPTS="--use-mirrors"
+PIP_OPTS="--use-mirrors --no-index"
 
 # only install if we dont already exist
 if [ ! -d $VPYTHON_DIR ]
