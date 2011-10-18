@@ -38,6 +38,9 @@ env.content_excludes.extend([]) # add quoted patterns here for extra rsync exclu
 env.content_includes.extend([]) # add quoted patterns here for extra rsync includes
 env.auto_confirm_purge = False #controls whether the confirmation prompt for purge is used
 
+env.ccg_pip_options = "--download-cache=/tmp --use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors=http://d.pypi.python.org/ --mirrors=http://e.pypi.python.org/"
+
+
 def deploy(auto_confirm_purge = False):
     """
     Make a user deployment
