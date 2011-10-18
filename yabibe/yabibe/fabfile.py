@@ -41,7 +41,8 @@ env.writeable_dirs.extend([]) # add directories you wish to have created and mad
 env.content_excludes.extend([]) # add quoted patterns here for extra rsync excludes
 env.content_includes.extend([]) # add quoted patterns here for extra rsync includes
 
-env.celeryd_options = " -l debug"
+env.ccg_pip_options = "--download-cache=/tmp --use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors=http://d.pypi.python.org/ --mirrors=http://e.pypi.python.org/"
+
 
 class LocalPaths():
 
