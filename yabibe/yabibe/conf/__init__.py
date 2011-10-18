@@ -100,7 +100,7 @@ class ConfigError(Exception):
 class Configuration(object):
     """Holds the running configuration for the full yabi stack that is running under this twistd"""
     SECTIONS = ['backend']       # sections of the config file
-    KEYS = ['port','path','start_http','start_https','sslport','alert_email','http_redirect_to_https','http_redirect_to_https_port','memcache_servers','logfile']
+    KEYS = ['port','path','start_http','start_https','sslport','logfile']
     
     # defaults
     config = {
@@ -125,15 +125,9 @@ class Configuration(object):
                         
                         "hmackey":None,
                                                 
-                        "alert_email":"Tech Alerts <alerts@ccg.murdoch.edu.au>",
-                        
-                        "memcache_servers":"memcache1.localdomain:11211 memcache2.localdomain:11211",
-                        "memcache_prefix":"yabibe",
-                        
                         "admin":None                # none means "use the one provided here"
                     },
         'taskmanager':{
-                        'simultaneous':'5',
                         'polldelay':'5',
                         'startup':'true',
                         "tasktag":None,
@@ -166,7 +160,6 @@ class Configuration(object):
         name = "taskmanager"
         if conf_parser.has_section(name):
             self.config[name]['polldelay'] = conf_parser.get(name,'polldelay')
-            self.config[name]['simultaneous'] = conf_parser.get(name,'simultaneous')
             self.config[name]['startup'] = boolean_proc(conf_parser.get(name,'startup'))
             if conf_parser.has_option(name,'tasktag'):
                 self.config[name]['tasktag'] = conf_parser.get(name,'tasktag')
@@ -190,12 +183,6 @@ class Configuration(object):
             if conf_parser.has_option(name,'hmackey'):
                 self.config[name]['hmackey'] = conf_parser.get(name,'hmackey')
             
-            
-            # memcache
-            if conf_parser.has_option(name,'memcache_servers'):
-                self.config[name]['memcache_servers'] = conf_parser.get(name,'memcache_servers')
-            if conf_parser.has_option(name,'memcache_prefix'):
-                self.config[name]['memcache_prefix'] = conf_parser.get(name,'memcache_prefix')
 
     def read_config(self, search=SEARCH_PATH):
         for part in search:
@@ -211,7 +198,6 @@ class Configuration(object):
             self.config[section]['start_https'] = boolean_proc(self.config[section]['start_https'])
             self.config[section]['port'] = port_setting(self.config[section]['port'])
             self.config[section]['sslport'] = port_setting(self.config[section]['sslport'])
-            self.config[section]['alert_email'] = email_setting(self.config[section]['alert_email'])
             
             conversions = dict( 
                 telnet=boolean_proc,
