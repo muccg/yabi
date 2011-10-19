@@ -182,25 +182,21 @@ class LocalShell(object):
         else:
             return self.execute(LocalShellProcessProtocol(),command=["cp"]+ ([args] if args else []) +[self._make_echo(src),self._make_echo(dst)])
 
-    def WriteToRemote(self,remoteurl,fifo=None):
+    def WriteToRemote(self,path,fifo=None):
         subenv = self._make_env()
-        
-        port = port or 22
         
         if not fifo:
             fifo = Fifos.Get()
         
-        return self.execute(), fifo
+        return self.execute(LocalShellProcessProtocol(),command=["bash","-c","cat > %s"%(self._make_echo(path))]), fifo
         
-    def ReadFromRemote(self,remoteurl,fifo=None):
+    def ReadFromRemote(self,path,fifo=None):
         subenv = self._make_env()
-        
-        port = port or 22
         
         if not fifo:
             fifo = Fifos.Get()
                 
-        return self.execute(), fifo
+        return self.execute(LocalShellProcessProtocol(),command=["cat",self._make_echo(path)]), fifo
         
 
 class LocalFilesystem(FSConnector.FSConnector, object):
@@ -426,11 +422,10 @@ class LocalFilesystem(FSConnector.FSConnector, object):
         """
         if DEBUG:
             print "LocalFilesystem::GetWriteFifo( host:"+host,",username:",username,",path:",path,",filename:",filename,",fifo:",fifo,",yabiusername:",yabiusername,",creds:",creds,")"
-        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
-        dst = "%s@%s:%s"%(username,host,os.path.join(path,filename))
+        dst = os.path.join(path,filename))
         
-        pp, fifo = ssh.Copy.WriteToRemote(usercert,dst,port=port,password=str(creds['password']),fifo=fifo)
+        pp, fifo = LocalShell().WriteToRemote(dst,fifo=fifo)
         
         return pp, fifo
     
@@ -447,11 +442,9 @@ class LocalFilesystem(FSConnector.FSConnector, object):
         """
         if DEBUG:
             print "LocalFilesystem::GetReadFifo(",host,username,path,filename,fifo,yabiusername,creds,")"
-        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
-        dst = "%s@%s:%s"%(username,host,os.path.join(path,filename))
+        dst = os.path.join(path,filename))
         
-        #print "read from remote"
-        pp, fifo = ssh.Copy.ReadFromRemote(usercert,dst,port=port,password=creds['password'],fifo=fifo)
+        pp, fifo = LocalShell().ReadFromRemote(dst,fifo=fifo)
         #print "read from remote returned"
         
         return pp, fifo
