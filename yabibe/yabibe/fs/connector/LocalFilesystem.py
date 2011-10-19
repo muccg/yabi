@@ -423,7 +423,7 @@ class LocalFilesystem(FSConnector.FSConnector, object):
         if DEBUG:
             print "LocalFilesystem::GetWriteFifo( host:"+host,",username:",username,",path:",path,",filename:",filename,",fifo:",fifo,",yabiusername:",yabiusername,",creds:",creds,")"
         
-        dst = os.path.join(path,filename))
+        dst = os.path.join(path,filename)
         
         pp, fifo = LocalShell().WriteToRemote(dst,fifo=fifo)
         
@@ -442,7 +442,7 @@ class LocalFilesystem(FSConnector.FSConnector, object):
         """
         if DEBUG:
             print "LocalFilesystem::GetReadFifo(",host,username,path,filename,fifo,yabiusername,creds,")"
-        dst = os.path.join(path,filename))
+        dst = os.path.join(path,filename)
         
         pp, fifo = LocalShell().ReadFromRemote(dst,fifo=fifo)
         #print "read from remote returned"
