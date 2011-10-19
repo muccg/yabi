@@ -50,7 +50,7 @@ SCHEMA = "localfs"
 
 MAX_FS_OPERATIONS = 32                          # how long the lockqueue should be
 
-DEBUG = False
+DEBUG = True
  
 from decorators import retry, call_count
 from LockQueue import LockQueue
@@ -70,12 +70,15 @@ class LocalShellProcessProtocol(protocol.ProcessProtocol):
         self.err = ""
         self.out = ""
         self.exitcode = None
+        self.started = False
         
     def connectionMade(self):
         # when the process finally spawns, close stdin, to indicate we have nothing to say to it
         if self.stdin:
             self.transport.write(self.stdin)
         self.transport.closeStdin()
+        
+        self.started = True
         
     def outReceived(self, data):
         self.out += data
@@ -119,6 +122,9 @@ class LocalShellProcessProtocol(protocol.ProcessProtocol):
         
     def isFailed(self):
         return self.isDone() and self.exitcode != 0
+        
+    def isStarted(self):
+        return self.started
 
 class LocalShell(object):
     def __init__(self):
@@ -188,7 +194,7 @@ class LocalShell(object):
         if not fifo:
             fifo = Fifos.Get()
         
-        return self.execute(LocalShellProcessProtocol(),command=["bash","-c","cat > %s"%(self._make_echo(path))]), fifo
+        return self.execute(LocalShellProcessProtocol(),command=["cp",fifo,self._make_echo(path)]), fifo
         
     def ReadFromRemote(self,path,fifo=None):
         subenv = self._make_env()
@@ -196,7 +202,7 @@ class LocalShell(object):
         if not fifo:
             fifo = Fifos.Get()
                 
-        return self.execute(LocalShellProcessProtocol(),command=["cat",self._make_echo(path)]), fifo
+        return self.execute(LocalShellProcessProtocol(),command=["cp",self._make_echo(path),fifo]), fifo
         
 
 class LocalFilesystem(FSConnector.FSConnector, object):
