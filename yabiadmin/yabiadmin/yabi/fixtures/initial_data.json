@@ -214,22 +214,6 @@
     },  
     {
         "pk": 1, 
-        "model": "yabi.backendcredential", 
-        "fields": {
-            "credential": 2, 
-            "homedir": "", 
-            "submission": "", 
-            "default_stageout": false, 
-            "created_by": 1, 
-            "visible": false, 
-            "created_on": "2011-10-11 12:28:04", 
-            "last_modified_by": 1, 
-            "last_modified_on": "2011-10-11 12:28:58", 
-            "backend": 2
-        }
-    }, 
-    {
-        "pk": 1, 
         "model": "yabi.toolset", 
         "fields": {
             "users": [
@@ -335,6 +319,126 @@
             "password": "", 
             "last_modified_on": "2011-09-26 11:08:52", 
             "user": 1
+        }
+    },
+    {
+        "pk": 1, 
+        "model": "yabi.backendcredential", 
+        "fields": {
+            "credential": 1, 
+            "homedir": "", 
+            "submission": "", 
+            "default_stageout": false, 
+            "created_by": 1, 
+            "visible": false, 
+            "created_on": "2011-10-11 12:28:04", 
+            "last_modified_by": 1, 
+            "last_modified_on": "2011-10-11 12:28:58", 
+            "backend": 1
+        }
+    },
+    {
+        "pk": 6, 
+        "model": "yabi.parameterswitchuse", 
+        "fields": {
+            "display_text": "pair", 
+            "description": "The switch and the value passed in to the argument list as a pair.", 
+            "formatstring": "pair", 
+            "created_by": null, 
+            "created_on": "2009-03-31 16:44:23", 
+            "last_modified_by": null, 
+            "last_modified_on": "2009-03-31 16:44:23"
+        }
+    }, 
+    {
+        "pk": 4, 
+        "model": "yabi.parameterswitchuse", 
+        "fields": {
+            "display_text": "combined", 
+            "description": "Both the switch and the value will be passed in the argument list. They will be joined together with no space between them.", 
+            "formatstring": "%(switch)s%(value)s", 
+            "created_by": null, 
+            "created_on": "2009-03-31 16:43:22", 
+            "last_modified_by": 2, 
+            "last_modified_on": "2010-04-16 13:12:39"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "yabi.parameterswitchuse", 
+        "fields": {
+            "display_text": "both", 
+            "description": "Both the switch and the value will be passed in the argument list. They will be separated by a space.", 
+            "formatstring": "%(switch)s %(value)s", 
+            "created_by": null, 
+            "created_on": "2009-03-31 16:42:10", 
+            "last_modified_by": 2, 
+            "last_modified_on": "2010-04-16 13:12:43"
+        }
+    }, 
+    {
+        "pk": 7, 
+        "model": "yabi.parameterswitchuse", 
+        "fields": {
+            "display_text": "combined with equals", 
+            "description": "Both the switch and the value will be passed in the argument list. They will be separated joined with an equals(=) character with no spaces.", 
+            "formatstring": "%(switch)s=%(value)s", 
+            "created_by": 2, 
+            "created_on": "2010-04-16 13:32:55", 
+            "last_modified_by": 2, 
+            "last_modified_on": "2010-04-16 13:39:13"
+        }
+    }, 
+    {
+        "pk": 1, 
+        "model": "yabi.parameterswitchuse", 
+        "fields": {
+            "display_text": "switchOnly", 
+            "description": "Only the switch will be passed in the argument list.", 
+            "formatstring": "%(switch)s", 
+            "created_by": null, 
+            "created_on": "2009-03-31 16:40:26", 
+            "last_modified_by": 2, 
+            "last_modified_on": "2010-04-21 16:29:50"
+        }
+    }, 
+    {
+        "pk": 2, 
+        "model": "yabi.parameterswitchuse", 
+        "fields": {
+            "display_text": "valueOnly", 
+            "description": "Only the value will be passed in the argument list (ie. the switch won't be used)", 
+            "formatstring": "%(value)s", 
+            "created_by": null, 
+            "created_on": "2009-03-31 16:41:11", 
+            "last_modified_by": 2, 
+            "last_modified_on": "2010-04-21 16:29:57"
+        }
+    }, 
+    {
+        "pk": 12, 
+        "model": "yabi.parameterswitchuse", 
+        "fields": {
+            "display_text": "redirect", 
+            "description": "Use this to redirect the output of stdout into a file.", 
+            "formatstring": ">%(value)s", 
+            "created_by": 2, 
+            "created_on": "2010-12-02 13:23:44", 
+            "last_modified_by": 2, 
+            "last_modified_on": "2010-12-02 13:23:44"
+        }
+    }, 
+    {
+        "pk": 5, 
+        "model": "yabi.parameterswitchuse", 
+        "fields": {
+            "display_text": "nothing", 
+            "description": "The switch and the value won't be passed in the argument list.", 
+            "formatstring": "", 
+            "created_by": null, 
+            "created_on": "2009-03-31 16:44:23", 
+            "last_modified_by": 2, 
+            "last_modified_on": "2011-04-05 15:17:58"
         }
     }
 ]
