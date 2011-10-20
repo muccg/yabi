@@ -30,6 +30,7 @@ from django.conf import settings
 from django.utils import simplejson as json
 import httplib
 import socket
+import errno
 import os
 from os.path import splitext
 from urllib import urlencode, quote
@@ -38,7 +39,11 @@ from yabiadmin.yabi.models import Backend, BackendCredential
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.servers.basehttp import FileWrapper
 
+class BackendRefusedConnection(Exception):
+    pass
 
+class BackendHostUnreachable(Exception):
+    pass
 
 import logging
 logger = logging.getLogger('yabiengine')
@@ -207,6 +212,15 @@ def get_listing(yabiusername, uri, recurse=False):
         r = POST(resource,data)
 
     except socket.error, e:
+        if e.errno==errno.ECONNREFUSED:
+            logger.critical("Error connecting to Backend server %s: %s. Connection refused. Is the backend running? Are we configured to call it correctly?" % (settings.YABIBACKEND_SERVER, e))
+            raise BackendRefusedConnection(e)
+        elif e.errno==errno.EHOSTUNREACH:
+            logger.critical("Error connecting to Backend server %s: %s. No route to host. Is yabi admin's backend setting correct?" % (settings.YABIBACKEND_SERVER, e))
+            raise BackendHostUnreachable(e)
+        
+        logger.critical("dir(): %s"%(str(dir(e))))
+        logger.critical("errno=: %d"%(e.errno))
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
         raise
     except httplib.CannotSendRequest, e:
