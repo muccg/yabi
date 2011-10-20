@@ -70,6 +70,7 @@ class EngineWorkflow(Workflow):
     def workflow_id(self):
         return self.id
 
+    @transaction.commit_on_success
     def build(self):
         logger.debug('----- Building workflow id %d -----' % self.id)
 
