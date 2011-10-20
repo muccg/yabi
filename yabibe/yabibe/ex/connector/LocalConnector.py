@@ -35,7 +35,7 @@ ENV_CHILD_INHERIT = ['PATH']
 ENV_CHECK = []
 
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
-SCHEMA = "local"
+SCHEMA = "localex"
 
 DEBUG = True
 

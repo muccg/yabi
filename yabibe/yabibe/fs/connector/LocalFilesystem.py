@@ -50,7 +50,7 @@ SCHEMA = "localfs"
 
 MAX_FS_OPERATIONS = 32                          # how long the lockqueue should be
 
-DEBUG = False
+DEBUG = True
  
 from decorators import retry, call_count
 from LockQueue import LockQueue
@@ -70,12 +70,15 @@ class LocalShellProcessProtocol(protocol.ProcessProtocol):
         self.err = ""
         self.out = ""
         self.exitcode = None
+        self.started = False
         
     def connectionMade(self):
         # when the process finally spawns, close stdin, to indicate we have nothing to say to it
         if self.stdin:
             self.transport.write(self.stdin)
         self.transport.closeStdin()
+        
+        self.started = True
         
     def outReceived(self, data):
         self.out += data
@@ -119,6 +122,9 @@ class LocalShellProcessProtocol(protocol.ProcessProtocol):
         
     def isFailed(self):
         return self.isDone() and self.exitcode != 0
+        
+    def isStarted(self):
+        return self.started
 
 class LocalShell(object):
     def __init__(self):
@@ -182,25 +188,21 @@ class LocalShell(object):
         else:
             return self.execute(LocalShellProcessProtocol(),command=["cp"]+ ([args] if args else []) +[self._make_echo(src),self._make_echo(dst)])
 
-    def WriteToRemote(self,remoteurl,fifo=None):
+    def WriteToRemote(self,path,fifo=None):
         subenv = self._make_env()
-        
-        port = port or 22
         
         if not fifo:
             fifo = Fifos.Get()
         
-        return self.execute(), fifo
+        return self.execute(LocalShellProcessProtocol(),command=["cp",fifo,self._make_echo(path)]), fifo
         
-    def ReadFromRemote(self,remoteurl,fifo=None):
+    def ReadFromRemote(self,path,fifo=None):
         subenv = self._make_env()
-        
-        port = port or 22
         
         if not fifo:
             fifo = Fifos.Get()
                 
-        return self.execute(), fifo
+        return self.execute(LocalShellProcessProtocol(),command=["cp",self._make_echo(path),fifo]), fifo
         
 
 class LocalFilesystem(FSConnector.FSConnector, object):
@@ -426,11 +428,10 @@ class LocalFilesystem(FSConnector.FSConnector, object):
         """
         if DEBUG:
             print "LocalFilesystem::GetWriteFifo( host:"+host,",username:",username,",path:",path,",filename:",filename,",fifo:",fifo,",yabiusername:",yabiusername,",creds:",creds,")"
-        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
-        dst = "%s@%s:%s"%(username,host,os.path.join(path,filename))
+        dst = os.path.join(path,filename)
         
-        pp, fifo = ssh.Copy.WriteToRemote(usercert,dst,port=port,password=str(creds['password']),fifo=fifo)
+        pp, fifo = LocalShell().WriteToRemote(dst,fifo=fifo)
         
         return pp, fifo
     
@@ -447,11 +448,9 @@ class LocalFilesystem(FSConnector.FSConnector, object):
         """
         if DEBUG:
             print "LocalFilesystem::GetReadFifo(",host,username,path,filename,fifo,yabiusername,creds,")"
-        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
-        dst = "%s@%s:%s"%(username,host,os.path.join(path,filename))
+        dst = os.path.join(path,filename)
         
-        #print "read from remote"
-        pp, fifo = ssh.Copy.ReadFromRemote(usercert,dst,port=port,password=creds['password'],fifo=fifo)
+        pp, fifo = LocalShell().ReadFromRemote(dst,fifo=fifo)
         #print "read from remote returned"
         
         return pp, fifo
