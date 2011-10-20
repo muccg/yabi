@@ -43,7 +43,7 @@ DEBUG = False
 class ExecRunResource(resource.PostableResource):
     VERSION=0.1
     
-    ALLOWED_OVERRIDE = [("walltime",str), ("memory",int), ("cpus",int), ("queue",str), ("jobtype",str), ("directory",str), ("stdout",str), ("stderr",str), ('module',str)]
+    ALLOWED_OVERRIDE = [("walltime",str), ("memory",str), ("cpus",int), ("queue",str), ("jobtype",str), ("directory",str), ("stdout",str), ("stderr",str), ('module',str)]
     
     def __init__(self,request=None, path=None, fsresource=None):
         """Pass in the backends to be served out by this FSResource"""
