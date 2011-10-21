@@ -261,7 +261,7 @@ def ls(request):
         # from the backend. Since failed assertions don't result in the
         # exception having a useful message, we'll intercept it here and return
         # a response with something a little more useful for the user.
-        return JsonMessageResponseNotFound("CHANGEME: The requested directory either doesn't exist or is inaccessible")
+        return JsonMessageResponseNotFound("The requested directory either doesn't exist or is inaccessible")
     except BackendRefusedConnection, e:
         return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
     except BackendHostUnreachable, e:
@@ -295,7 +295,7 @@ def copy(request):
         # from the backend. Since failed assertions don't result in the
         # exception having a useful message, we'll intercept it here and return
         # a response with something a little more useful for the user.
-        return JsonMessageResponseNotFound("CHANGEME: The requested copy operation failed: please check that both the source file and destination exist and are accessible")
+        return JsonMessageResponseNotFound("The requested copy operation failed: please check that both the source file and destination exist and are accessible")
     except BackendRefusedConnection, e:
         return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
     except Exception, e:
@@ -326,7 +326,7 @@ def rcopy(request):
         # from the backend. Since failed assertions don't result in the
         # exception having a useful message, we'll intercept it here and return
         # a response with something a little more useful for the user.
-        return JsonMessageResponseNotFound("CHANGEME: The requested copy operation failed: please check that both the source file and destination exist and are accessible")
+        return JsonMessageResponseNotFound("The requested copy operation failed: please check that both the source file and destination exist and are accessible")
     except BackendRefusedConnection, e:
         return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
     except Exception, e:
@@ -350,7 +350,7 @@ def rm(request):
         # from the backend. Since failed assertions don't result in the
         # exception having a useful message, we'll intercept it here and return
         # a response with something a little more useful for the user.
-        return JsonMessageResponseNotFound("CHANGEME: The requested file or directory is inaccessible and cannot be deleted")
+        return JsonMessageResponseNotFound("The requested file or directory is inaccessible and cannot be deleted")
     except BackendRefusedConnection, e:
         return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
     except Exception, e:
