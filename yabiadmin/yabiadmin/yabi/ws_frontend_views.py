@@ -236,6 +236,24 @@ def menu(request):
 
 from yabiadmin.yabiengine.backendhelper import BackendRefusedConnection, BackendHostUnreachable
 
+def handle_connection(closure):
+    try:
+        closure()
+    except DecryptedCredentialNotAvailable, dcna:
+        return JsonMessageResponseServerError(dcna)
+    except PermissionDenied, pd:
+        return JsonMessageResponseNotFound("You do not have permissions to access this file or directory")
+    except FileNotFound, fnf:
+        return JsonMessageResponseNotFound("The requested directory either doesn't exist")
+    except BackendStatusCodeError, bsce:
+        return JsonMessageResponseNotFound("The yabi backend returned an inapropriate status code: %s"%(str(bsce)))
+    except BackendRefusedConnection, e:
+        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
+    except BackendHostUnreachable, e:
+        return JsonMessageResponseNotFound(BACKEND_HOST_UNREACHABLE_MESSAGE)
+    except Exception, e:
+        return JsonMessageResponseNotFound("%s::ls threw %s... %s"%(__file__,str(e.__class__),str(e)))
+        
 @authentication_required
 def ls(request):
     """
@@ -255,18 +273,16 @@ def ls(request):
         return HttpResponse(filelisting)
     except DecryptedCredentialNotAvailable, dcna:
         return JsonMessageResponseServerError(dcna)
-    except AssertionError, e:
-        # The file handling functions in the backendhelper module throw
-        # assertion errors when they receive an unexpected HTTP status code
-        # from the backend. Since failed assertions don't result in the
-        # exception having a useful message, we'll intercept it here and return
-        # a response with something a little more useful for the user.
-        return JsonMessageResponseNotFound("The requested directory either doesn't exist or is inaccessible")
+    except PermissionDenied, pd:
+        return JsonMessageResponseNotFound("You do not have permissions to access this file or directory")
+    except FileNotFound, fnf:
+        return JsonMessageResponseNotFound("The requested directory either doesn't exist")
+    except BackendStatusCodeError, bsce:
+        return JsonMessageResponseNotFound("The yabi backend returned an inapropriate status code: %s"%(str(bsce)))
     except BackendRefusedConnection, e:
         return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
     except BackendHostUnreachable, e:
         return JsonMessageResponseNotFound(BACKEND_HOST_UNREACHABLE_MESSAGE)
-        
     except Exception, e:
         return JsonMessageResponseNotFound("%s::ls threw %s... %s"%(__file__,str(e.__class__),str(e)))
 
