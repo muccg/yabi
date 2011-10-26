@@ -295,11 +295,9 @@ def rm_file(yabiusername, uri):
     logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
     recurse = '&recurse' if uri[-1]=='/' else ''
     resource = "%s?uri=%s%s" % (settings.YABIBACKEND_RM, quote(uri),recurse)
-    
     logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-    
     r = handle_connection(POST,resource,get_credential_for_uri(yabiusername, uri).get())
-    return r.status, data
+    return r.status, r.read()
 
 def copy_file(yabiusername, src, dst):
     """Send a request to the backend to perform the specified file copy"""
@@ -315,9 +313,7 @@ def copy_file(yabiusername, src, dst):
     data.update( dict( [("src_"+K,V) for K,V in src.iteritems()] ))
     data.update( dict( [("dst_"+K,V) for K,V in dst.iteritems()] ))
     r = handle_connection(POST,resource,data)
-    
-    data=r.read()
-    return r.status, data
+    return r.status, r.read()
 
 def rcopy_file(yabiusername, src, dst):
     """Send a request to the backend to perform the specified file copy"""
