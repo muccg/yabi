@@ -140,7 +140,7 @@ start_worker () {
 
 stop_worker () {
     echo -n $"Stopping celeryd: "
-    killproc -p $CELERYD_PID_FILE $CELERYD 2>/dev/null
+    killproc -p $CELERYD_PID_FILE "celeryd" 2>/dev/null
     RETVAL=$?
     sleep 3; echo
     if [ $RETVAL -eq 0 ]; then
