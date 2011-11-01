@@ -34,7 +34,7 @@ from django.db import models
 from urlparse import urlparse
 from utils import yabiadmin_passchange
 
-from django.contrib import logging
+import logging
 logger = logging.getLogger('yabife')
 
 import base64

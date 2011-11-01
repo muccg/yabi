@@ -39,8 +39,9 @@ from urlparse import urlparse
 
 from django.conf.urls.defaults import *
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError, HttpResponseUnauthorized
-from django.shortcuts import render_to_response, get_object_or_404, render_mako
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
+from ccg.http import HttpResponseUnauthorized
+from django.shortcuts import render_to_response, get_object_or_404
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils import webhelpers
@@ -65,7 +66,7 @@ from yabife.preview import html
 from utils import memcache_client, memcache_http, make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout
 
 
-from django.contrib import logging
+import logging
 logger = logging.getLogger('yabife')
 
 from UploadStreamer import UploadStreamer
@@ -189,12 +190,7 @@ def render_page(template, request, response=None, **kwargs):
         "debug": debug,
     }
     context.update(kwargs)
-
-    template = get_template(template)
-    response.write(template.render(**context))
-
-    return response
-
+    return render_to_response(template, context)
 
 
 @login_required

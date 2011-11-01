@@ -31,6 +31,7 @@ from django.conf import settings
 from django.conf.urls.defaults import *
 from yabife import admin
 from django.utils.webhelpers import url as webhelper_url
+from ccg.views import status_view
 
 urlpatterns = patterns('yabife.yabifeapp.views',
     (r'^status[/]*$', status_view, {'SSL': True}),

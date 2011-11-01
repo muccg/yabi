@@ -25,7 +25,7 @@
 # 
 ### END COPYRIGHT ###
 from django.contrib import admin
-from django.contrib.webservices.ext import ExtJsonInterface
+from ccg.webservices.ext import ExtJsonInterface
 
 import django.contrib.auth.admin
 import django.contrib.auth.models

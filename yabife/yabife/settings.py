@@ -133,12 +133,12 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 TEMPLATE_DEBUG = DEBUG
 
 TEMPLATE_LOADERS = [
-    'django.template.loaders.filesystem.load_template_source',
-    'django.template.loaders.app_directories.load_template_source',
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+    'ccg.template.loaders.makoloader.filesystem.Loader'
 ]
 
 TEMPLATE_DIRS = [
-    os.path.join(PROJECT_DIRECTORY,"templates","mako"), 
     os.path.join(PROJECT_DIRECTORY,"templates"),
 ]
 
