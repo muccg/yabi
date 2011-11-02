@@ -211,7 +211,6 @@ EMAIL_SUBJECT_PREFIX = "DEV "
 
 # admins to email error reports to
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#admins
-
 ADMINS = [
     ( 'alert', 'alerts@set_this.com' )
 ]
