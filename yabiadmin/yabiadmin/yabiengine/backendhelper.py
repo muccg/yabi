@@ -45,6 +45,16 @@ class BackendRefusedConnection(Exception):
 class BackendHostUnreachable(Exception):
     pass
 
+class PermissionDenied(Exception):
+    pass
+
+class FileNotFound(Exception):
+    pass
+
+class BackendStatusCodeError(Exception):
+    pass
+
+
 import logging
 logger = logging.getLogger('yabiengine')
   
@@ -191,26 +201,9 @@ def get_first_matching_file(yabiusername, uri, extension_list):
 
     return filename
         
-        
-    
-
-def get_listing(yabiusername, uri, recurse=False):
-    """
-    Return a listing from backend
-    """
-    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
-
+def handle_connection(func,*args,**kwargs):
     try:
-        resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, quote(uri))
-        if recurse:
-            resource += '&recurse=true'
-        logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-        
-        bc = get_backendcredential_for_uri(yabiusername, uri)
-        data = bc.credential.get()
-        
-        r = POST(resource,data)
-
+        r = func(*args, **kwargs)
     except socket.error, e:
         if e.errno==errno.ECONNREFUSED:
             logger.critical("Error connecting to Backend server %s: %s. Connection refused. Is the backend running? Are we configured to call it correctly?" % (settings.YABIBACKEND_SERVER, e))
@@ -219,40 +212,47 @@ def get_listing(yabiusername, uri, recurse=False):
             logger.critical("Error connecting to Backend server %s: %s. No route to host. Is yabi admin's backend setting correct?" % (settings.YABIBACKEND_SERVER, e))
             raise BackendHostUnreachable(e)
         
-        logger.critical("dir(): %s"%(str(dir(e))))
-        logger.critical("errno=: %d"%(e.errno))
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
         raise
     except httplib.CannotSendRequest, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
         raise
-    #print "CRED",data
-    #print "STATUS",r.status
-    read = r.read()
-    #print "READ",read
-    assert(r.status == 200)
-    return read
+    
+    if r.status != 200:
+        # try and process the error and then raise a sane exception
+        if r.status == 403:
+            # forbidden
+            raise PermissionDenied("Access denied: You do not have sufficient permissions to access the resource.")
+        elif r.status == 404:
+            # not found
+            raise FileNotFound("File or directory not found.")
+        else:
+            # other error
+            raise BackendStatusCodeError("Request to backend for uri: %s returned unhandled status code: %d and message: %s"%(uri,r.status,read))
+        
+    return r
 
-
+def get_listing(yabiusername, uri, recurse=False):
+    """
+    Return a listing from backend
+    """
+    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
+    resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, quote(uri))
+    if recurse:
+        resource += '&recurse=true'
+    logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
+    bc = get_backendcredential_for_uri(yabiusername, uri)
+    data = bc.credential.get()
+    return handle_connection(POST,resource,data).read()
+    
 def mkdir(yabiusername, uri):
     """
     Make a directory via the backend
     """
     logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
-    
-    try:
-        resource = "%s?uri=%s" % (settings.YABIBACKEND_MKDIR, quote(uri))
-        logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-        r = POST(resource, get_credential_for_uri(yabiusername, uri).get())
-    except socket.error, e:
-        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
-        raise
-    except httplib.CannotSendRequest, e:
-        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
-        raise
-
-    assert(r.status == 200)
-    return r.read() 
+    resource = "%s?uri=%s" % (settings.YABIBACKEND_MKDIR, quote(uri))
+    logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
+    return handle_connection(POST,resource, get_credential_for_uri(yabiusername, uri).get()).read()
 
 def get_backend_list(yabiusername):
     """
@@ -281,139 +281,76 @@ def get_file(yabiusername, uri, bytes=None):
     Return a file at given uri
     """
     logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
+    resource = "%s?uri=%s" % (settings.YABIBACKEND_GET, quote(uri))
+    if bytes is not None:
+        resource += "&bytes=%d" % int(bytes)
 
-    try:
-        resource = "%s?uri=%s" % (settings.YABIBACKEND_GET, quote(uri))
-
-        if bytes is not None:
-            resource += "&bytes=%d" % int(bytes)
-
-        logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-        r = POST(resource,get_credential_for_uri(yabiusername, uri).get())
-        
-        assert(r.status == 200)
-        return FileWrapper(r, blksize=1024**2)
- 
-    except socket.error, e:
-        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
-        raise
-    except httplib.CannotSendRequest, e:
-        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
-        raise
+    logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
+    return FileWrapper(handle_connection(POST,resource,get_credential_for_uri(yabiusername, uri).get()),read(), blksize=1024**2)
 
 def rm_file(yabiusername, uri):
     """
     Return a file at given uri
     """
     logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
-
     recurse = '&recurse' if uri[-1]=='/' else ''
-
-    try:
-        resource = "%s?uri=%s%s" % (settings.YABIBACKEND_RM, quote(uri),recurse)
-        logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-        r = POST(resource,get_credential_for_uri(yabiusername, uri).get())
-        data=r.read()
-
-        assert(r.status == 200)
-        return r.status, data
- 
-    except socket.error, e:
-        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
-        raise
-    except httplib.CannotSendRequest, e:
-        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
-        raise
-
+    resource = "%s?uri=%s%s" % (settings.YABIBACKEND_RM, quote(uri),recurse)
+    logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
+    r = handle_connection(POST,resource,get_credential_for_uri(yabiusername, uri).get())
+    return r.status, r.read()
 
 def copy_file(yabiusername, src, dst):
     """Send a request to the backend to perform the specified file copy"""
     logger.debug('copy_file yabiusername: %s src: %s dst: %s'%(yabiusername,src,dst))
         
-    try:
-        resource = "%s?src=%s&dst=%s" % (settings.YABIBACKEND_COPY, quote(src), quote(dst))
-        logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
+    resource = "%s?src=%s&dst=%s" % (settings.YABIBACKEND_COPY, quote(src), quote(dst))
+    logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
 
-        # get credentials for src and destination backend
-        src = get_credential_for_uri(yabiusername, src).get()
-        dst = get_credential_for_uri(yabiusername, dst).get()
-        data = {'yabiusername':yabiusername}
-        data.update( dict( [("src_"+K,V) for K,V in src.iteritems()] ))
-        data.update( dict( [("dst_"+K,V) for K,V in dst.iteritems()] ))
-        r = POST(resource,data)
-        data=r.read()
-        assert(r.status == 200)
-        return r.status, data
- 
-    except socket.error, e:
-        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
-        raise
-    except httplib.CannotSendRequest, e:
-        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
-        raise
-
+    # get credentials for src and destination backend
+    src = get_credential_for_uri(yabiusername, src).get()
+    dst = get_credential_for_uri(yabiusername, dst).get()
+    data = {'yabiusername':yabiusername}
+    data.update( dict( [("src_"+K,V) for K,V in src.iteritems()] ))
+    data.update( dict( [("dst_"+K,V) for K,V in dst.iteritems()] ))
+    r = handle_connection(POST,resource,data)
+    return r.status, r.read()
 
 def rcopy_file(yabiusername, src, dst):
     """Send a request to the backend to perform the specified file copy"""
     logger.debug('rcopy_file yabiusername: %s src: %s dst: %s'%(yabiusername,src,dst))
     
-    try:
-        resource = "%s?src=%s&dst=%s" % (settings.YABIBACKEND_RCOPY, quote(src), quote(dst))
-        logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
+    resource = "%s?src=%s&dst=%s" % (settings.YABIBACKEND_RCOPY, quote(src), quote(dst))
+    logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
 
-        # get credentials for src and destination backend
-        src = get_credential_for_uri(yabiusername, src).get()
-        dst = get_credential_for_uri(yabiusername, dst).get()
-        data = {'yabiusername':yabiusername}
-        data.update( dict( [("src_"+K,V) for K,V in src.iteritems()] ))
-        data.update( dict( [("dst_"+K,V) for K,V in dst.iteritems()] ))
-        r = POST(resource,data)
-        data=r.read()
-        assert(r.status == 200)
-        return r.status, data
- 
-    except socket.error, e:
-        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
-        raise
-    except httplib.CannotSendRequest, e:
-        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
-        raise
-     
+    # get credentials for src and destination backend
+    src = get_credential_for_uri(yabiusername, src).get()
+    dst = get_credential_for_uri(yabiusername, dst).get()
+    data = {'yabiusername':yabiusername}
+    data.update( dict( [("src_"+K,V) for K,V in src.iteritems()] ))
+    data.update( dict( [("dst_"+K,V) for K,V in dst.iteritems()] ))
+    r = handle_connection(POST,resource,data)
+    data=r.read()
+    return r.status, data
 
 def send_upload_hash(yabiusername,uri,uuid):
     """Send an upload has to the backend. Returns the url returned by the backend for uploading"""
     logger.debug('yabiusername: %s uri: %s uuid: %s'%(yabiusername,uri,uuid))
     
-    try:
-        resource = "%s?uri=%s&uuid=%s&yabiusername=%s"%(settings.YABIBACKEND_UPLOAD,quote(uri),quote(uuid),quote(yabiusername))
-        
-        # get credentials for uri destination backend
-        data = get_credential_for_uri(yabiusername, uri).get()
+    resource = "%s?uri=%s&uuid=%s&yabiusername=%s"%(settings.YABIBACKEND_UPLOAD,quote(uri),quote(uuid),quote(yabiusername))
+    
+    # get credentials for uri destination backend
+    data = get_credential_for_uri(yabiusername, uri).get()
+            
+    resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(cred['username']),quote(cred['password']),quote(cred['cert']),quote(cred['key']))
+    logger.debug('server: %s resource: %s'%(settings.YABIBACKEND_SERVER, resource))
                 
-        resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(cred['username']),quote(cred['password']),quote(cred['cert']),quote(cred['key']))
-        logger.debug('server: %s resource: %s'%(settings.YABIBACKEND_SERVER, resource))
-                    
-        logger.debug( "POST"+resource )
-        logger.debug( "DATA"+str(data) )
-                    
-        r = POST(resource, data)
-        result = r.read()
-        logger.debug("status:"+str(r.status))
-        logger.debug("data:"+str(result))
-        assert(r.status == 200)
-    
-    except socket.error, e:
-        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
-        raise
-    
-    except httplib.CannotSendRequest, e:
-        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
-        raise
-    
+    logger.debug( "POST"+resource )
+    logger.debug( "DATA"+str(data) )
+                
+    r = handle_connection(POST,resource, data)
+    result = r.read()
+    logger.debug("status:"+str(r.status))
+    logger.debug("data:"+str(result))
     decoded = json.loads(result)
     return decoded
     
-    # now we return to the client our upload url for client to POST to
-    upload_url = "http://%s/upload/%s"%(settings.YABIBACKEND_SERVER)
-    return upload_url
-

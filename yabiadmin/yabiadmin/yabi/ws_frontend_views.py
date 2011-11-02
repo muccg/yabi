@@ -234,8 +234,26 @@ def menu(request):
     except ObjectDoesNotExist:
         return JsonMessageResponseNotFound("Object not found")
 
-from yabiadmin.yabiengine.backendhelper import BackendRefusedConnection, BackendHostUnreachable
+from yabiadmin.yabiengine.backendhelper import BackendRefusedConnection, BackendHostUnreachable, PermissionDenied, FileNotFound, BackendStatusCodeError
 
+def handle_connection(closure):
+    try:
+        return closure()
+    except DecryptedCredentialNotAvailable, dcna:
+        return JsonMessageResponseServerError(dcna)
+    except PermissionDenied, pd:
+        return JsonMessageResponseNotFound("You do not have permissions to access this file or directory")
+    except FileNotFound, fnf:
+        return JsonMessageResponseNotFound("The requested directory either doesn't exist")
+    except BackendStatusCodeError, bsce:
+        return JsonMessageResponseNotFound("The yabi backend returned an inapropriate status code: %s"%(str(bsce)))
+    except BackendRefusedConnection, e:
+        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
+    except BackendHostUnreachable, e:
+        return JsonMessageResponseNotFound(BACKEND_HOST_UNREACHABLE_MESSAGE)
+    #except Exception, e:
+        #return JsonMessageResponseNotFound("%s::ls threw %s... %s"%(__file__,str(e.__class__),str(e)))
+        
 @authentication_required
 def ls(request):
     """
@@ -244,7 +262,7 @@ def ls(request):
     """
     yabiusername = request.user.username
 
-    try:
+    def closure():
         logger.debug("yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
         if request.GET['uri']:
             recurse = request.GET.get('recurse')
@@ -253,23 +271,8 @@ def ls(request):
             filelisting = get_backend_list(yabiusername)
 
         return HttpResponse(filelisting)
-    except DecryptedCredentialNotAvailable, dcna:
-        return JsonMessageResponseServerError(dcna)
-    except AssertionError, e:
-        # The file handling functions in the backendhelper module throw
-        # assertion errors when they receive an unexpected HTTP status code
-        # from the backend. Since failed assertions don't result in the
-        # exception having a useful message, we'll intercept it here and return
-        # a response with something a little more useful for the user.
-        return JsonMessageResponseNotFound("The requested directory either doesn't exist or is inaccessible")
-    except BackendRefusedConnection, e:
-        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
-    except BackendHostUnreachable, e:
-        return JsonMessageResponseNotFound(BACKEND_HOST_UNREACHABLE_MESSAGE)
         
-    except Exception, e:
-        return JsonMessageResponseNotFound("%s::ls threw %s... %s"%(__file__,str(e.__class__),str(e)))
-
+    return handle_connection(closure)
 
 @authentication_required
 def copy(request):
@@ -277,7 +280,8 @@ def copy(request):
     This function will instantiate a copy on the backend for this user
     """
     yabiusername = request.user.username
-    try:
+    
+    def closure():
         src,dst = request.GET['src'],request.GET['dst']
         # src must not be directory
         assert src[-1]!='/', "src malformed. Either no length or not trailing with slash '/'"
@@ -289,17 +293,21 @@ def copy(request):
         status, data = copy_file(yabiusername,src,dst)
 
         return HttpResponse(content=data, status=status)
-    except AssertionError, e:
-        # The file handling functions in the backendhelper module throw
-        # assertion errors when they receive an unexpected HTTP status code
-        # from the backend. Since failed assertions don't result in the
-        # exception having a useful message, we'll intercept it here and return
-        # a response with something a little more useful for the user.
-        return JsonMessageResponseNotFound("The requested copy operation failed: please check that both the source file and destination exist and are accessible")
-    except BackendRefusedConnection, e:
-        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
-    except Exception, e:
-        return JsonMessageResponseNotFound(e)
+    
+    return handle_connection(closure)
+    
+    
+    #except AssertionError, e:
+        ## The file handling functions in the backendhelper module throw
+        ## assertion errors when they receive an unexpected HTTP status code
+        ## from the backend. Since failed assertions don't result in the
+        ## exception having a useful message, we'll intercept it here and return
+        ## a response with something a little more useful for the user.
+        #return JsonMessageResponseNotFound("The requested copy operation failed: please check that both the source file and destination exist and are accessible")
+    #except BackendRefusedConnection, e:
+        #return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
+    #except Exception, e:
+        #return JsonMessageResponseNotFound(e)
 
 @authentication_required
 def rcopy(request):
@@ -307,7 +315,8 @@ def rcopy(request):
     This function will instantiate a rcopy on the backend for this user
     """
     yabiusername = request.user.username
-    try:
+        
+    def closure():
         src,dst = request.GET['src'],request.GET['dst']
         
         # src must be directory
@@ -320,17 +329,20 @@ def rcopy(request):
         status, data = rcopy_file(yabiusername,src,dst)
 
         return HttpResponse(content=data, status=status)
-    except AssertionError, e:
-        # The file handling functions in the backendhelper module throw
-        # assertion errors when they receive an unexpected HTTP status code
-        # from the backend. Since failed assertions don't result in the
-        # exception having a useful message, we'll intercept it here and return
-        # a response with something a little more useful for the user.
-        return JsonMessageResponseNotFound("The requested copy operation failed: please check that both the source file and destination exist and are accessible")
-    except BackendRefusedConnection, e:
-        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
-    except Exception, e:
-        return JsonMessageResponseNotFound(e)
+    
+    return handle_connection(closure)
+    
+    #except AssertionError, e:
+        ## The file handling functions in the backendhelper module throw
+        ## assertion errors when they receive an unexpected HTTP status code
+        ## from the backend. Since failed assertions don't result in the
+        ## exception having a useful message, we'll intercept it here and return
+        ## a response with something a little more useful for the user.
+        #return JsonMessageResponseNotFound("The requested copy operation failed: please check that both the source file and destination exist and are accessible")
+    #except BackendRefusedConnection, e:
+        #return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
+    #except Exception, e:
+        #return JsonMessageResponseNotFound(e)
 
 @authentication_required
 def rm(request):
@@ -339,22 +351,25 @@ def rm(request):
     is not empty then it will pass on the call to the backend to get a listing of that uri
     """
     yabiusername = request.user.username
-    try:
+    def closure():
         logger.debug("yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
         status, data = rm_file(yabiusername,request.GET['uri'])
 
         return HttpResponse(content=data, status=status)
-    except AssertionError, e:
-        # The file handling functions in the backendhelper module throw
-        # assertion errors when they receive an unexpected HTTP status code
-        # from the backend. Since failed assertions don't result in the
-        # exception having a useful message, we'll intercept it here and return
-        # a response with something a little more useful for the user.
-        return JsonMessageResponseNotFound("The requested file or directory is inaccessible and cannot be deleted")
-    except BackendRefusedConnection, e:
-        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
-    except Exception, e:
-        return JsonMessageResponseNotFound(e)
+    
+    return handle_connection(closure)
+    
+    #except AssertionError, e:
+        ## The file handling functions in the backendhelper module throw
+        ## assertion errors when they receive an unexpected HTTP status code
+        ## from the backend. Since failed assertions don't result in the
+        ## exception having a useful message, we'll intercept it here and return
+        ## a response with something a little more useful for the user.
+        #return JsonMessageResponseNotFound("The requested file or directory is inaccessible and cannot be deleted")
+    #except BackendRefusedConnection, e:
+        #return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
+    #except Exception, e:
+        #return JsonMessageResponseNotFound(e)
 
 
 @authentication_required

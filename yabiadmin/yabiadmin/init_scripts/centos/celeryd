@@ -79,7 +79,7 @@ CELERYD_OPTS="-E -B --schedule=$CELERYD_CHDIR/logs/celerybeat-schedule"
 CELERYD_PID_FILE="$CELERYD_CHDIR/logs/celeryd.pid"
 CELERYD_LOG_FILE="$CELERYD_CHDIR/logs/celeryd.log"
 CELERYD_LOG_LEVEL="INFO"
-CELERYD="-m celery.bin.celeryd_detach"
+CELERYD="python -m celery.bin.celeryd_detach"
 CELERYD_USER="apache"
 CELERYD_GROUP="apache"
 CELERY_LOADER="django"
@@ -92,6 +92,8 @@ DJANGO_PROJECT_DIR="$CELERYD_CHDIR"
 PROJECT_DIRECTORY="$CELERYD_CHDIR"
 
 export CELERY_CONFIG_MODULE DJANGO_SETTINGS_MODULE DJANGO_PROJECT_DIR CELERY_LOADER CELERY_CHDIR PYTHONPATH PROJECT_DIRECTORY PYTHON_EGG_CACHE
+
+cd $CELERYD_CHDIR
 
 # Source function library.
 . /etc/init.d/functions
@@ -138,7 +140,7 @@ start_worker () {
 
 stop_worker () {
     echo -n $"Stopping celeryd: "
-    killproc -p $CELERYD_PID_FILE $CELERYD 2>/dev/null
+    killproc -p $CELERYD_PID_FILE "celeryd" 2>/dev/null
     RETVAL=$?
     sleep 3; echo
     if [ $RETVAL -eq 0 ]; then
