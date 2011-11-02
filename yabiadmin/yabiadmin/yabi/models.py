@@ -37,12 +37,8 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from urlparse import urlparse, urlunparse
 from crypto import aes_enc_hex, aes_dec_hex
-
-from ldap import LDAPError, MOD_REPLACE
-from django.contrib.memcache import KeyspacedMemcacheClient
+from ccg.memcache import KeyspacedMemcacheClient
 from yabiadmin.decorators import func_create_memcache_keyname
-from yabiadmin.ldapclient import LDAPClient
-from yabiadmin.ldaputils import get_userdn_of
 
 from constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK
 
@@ -764,7 +760,7 @@ class ModelBackendUserProfile(UserProfile):
             self.reencrypt_user_credentials(request)
             self.user.save()
             return (True, "Password successfully changed")
-        except (AttributeError, LDAPError), e:
+        except AttributeError, e:
             # Send back something fairly generic.
             logger.debug("Error changing password in LDAP server: %s" % str(e))
             return (False, "Error changing password")
@@ -772,6 +768,17 @@ class ModelBackendUserProfile(UserProfile):
         
 class LDAPBackendUserProfile(UserProfile):
 
+    def __init__(self, *args, **kwargs):
+        UserProfile.__init__(self,*args, **kwargs)
+
+        # TODO look at moving ldap profile to separate file so these imports
+        # can be at the top of the file, not within the class
+        # depends on how Django can import UserProfiles, currently it seems to
+        # be string based
+        from ldap import LDAPError, MOD_REPLACE
+        from yabiadmin.ldapclient import LDAPClient
+        from yabiadmin.ldaputils import get_userdn_of
+        
     class Meta:
         proxy = True
 
