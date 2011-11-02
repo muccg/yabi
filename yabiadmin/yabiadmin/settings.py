@@ -45,7 +45,7 @@ else:
 
 
 # set debug, see: https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = True
+DEBUG = False
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
