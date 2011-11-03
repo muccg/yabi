@@ -147,7 +147,7 @@ def get_file_list(yabiusername, uri, recurse=True):
     """
     Return a list of file tuples
     """
-    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
+    logger.debug('backendhelper::get_file_list() yabiusername: %s uri: %s'%(yabiusername,uri))
 
     try:
         resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, quote(uri))
@@ -286,7 +286,9 @@ def get_file(yabiusername, uri, bytes=None):
         resource += "&bytes=%d" % int(bytes)
 
     logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-    return FileWrapper(handle_connection(POST,resource,get_credential_for_uri(yabiusername, uri).get()),read(), blksize=1024**2)
+    
+    result = handle_connection(POST,resource,get_credential_for_uri(yabiusername, uri).get())
+    return FileWrapper(result, blksize=1024**2)
 
 def rm_file(yabiusername, uri):
     """
