@@ -380,7 +380,7 @@ def get(request):
     """
     yabiusername = request.user.username
     try:
-        logger.debug("yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
+        logger.debug("ws_frontend_views::get() yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
         uri = request.GET['uri']
         
         try:
