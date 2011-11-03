@@ -92,7 +92,8 @@ class Arg(object):
 
 class SwitchFilename(object):
     """represents the filename that the render() was run with. It is at template time, unknown. It is filled in with render"""
-    def __init__(self,default="unkown",template="%s", source_switch=None):
+    def __init__(self,default="unkown",template=None, source_switch=None):
+        """template is a fucntion to call with the filename, and the new filename is returned"""
         self.filename = default
         self.template = template
         
@@ -103,7 +104,7 @@ class SwitchFilename(object):
         
     def __str__(self):
         """This is the render function that renders the filename"""
-        return quote_argument(self.template%self.filename)
+        return quote_argument(self.template(self.filename))
         
     def set(self, filename):
         self.filename = filename
@@ -497,7 +498,7 @@ class CommandTemplate(object):
                                 if tp.use_output_filename:
                                     # this means output filename has to be named after the filename associated with the switch this parameter is pointing to
                                     if tp.extension_param:
-                                        value = SwitchFilename(default=value, template="%s."+tp.extension_param.extension(), source_switch=tp.use_output_filename.switch)
+                                        value = SwitchFilename(default=value, template=lambda fname:"%s.%s"%(fname,tp.extension_param.extension()), source_switch=tp.use_output_filename.switch)
                                     else:
                                         value = SwitchFilename(default=value, source_switch=tp.use_output_filename.switch)
                                 
