@@ -78,6 +78,10 @@ def levenshtein(a,b):
             
     return current[n]
 
+def make_fname(fname, ext):
+    if not ext or fname.endswith(".%s"%(ext)):
+        return fname
+    return "%s.%s"%(fname,ext)
 
 class Arg(object):
     """An argument to the command line"""
@@ -92,10 +96,11 @@ class Arg(object):
 
 class SwitchFilename(object):
     """represents the filename that the render() was run with. It is at template time, unknown. It is filled in with render"""
-    def __init__(self,default="unkown",template=None, source_switch=None):
+    def __init__(self,default="unkown",template=None, source_switch=None, extension=None):
         """template is a fucntion to call with the filename, and the new filename is returned"""
         self.filename = default
         self.template = template
+        self.extension = extension
         
         # source switch is the "-switch" to be used as the originator of the filename for this switch. It is a string
         # eg. our object may describe output switch "-o" and source_switch may be "-i" meaning that the name for the
@@ -104,7 +109,7 @@ class SwitchFilename(object):
         
     def __str__(self):
         """This is the render function that renders the filename"""
-        return quote_argument(self.template(self.filename))
+        return quote_argument(self.template(self.filename, self.extension))
         
     def set(self, filename):
         self.filename = filename
@@ -498,7 +503,7 @@ class CommandTemplate(object):
                                 if tp.use_output_filename:
                                     # this means output filename has to be named after the filename associated with the switch this parameter is pointing to
                                     if tp.extension_param:
-                                        value = SwitchFilename(default=value, template=lambda fname:"%s.%s"%(fname,tp.extension_param.extension()), source_switch=tp.use_output_filename.switch)
+                                        value = SwitchFilename(default=value, template=make_fname, source_switch=tp.use_output_filename.switch, extension=tp.extension_param.extension() )
                                     else:
                                         value = SwitchFilename(default=value, source_switch=tp.use_output_filename.switch)
                                 
