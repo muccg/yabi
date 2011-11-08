@@ -104,12 +104,6 @@ class FileUploadStreamer(UploadStreamer):
         """raw input"""
         # this is called right at the beginning. So we grab the uri detail here and initialise the outgoing POST
         self.post_multipart(host=self._host, port=self._port, selector=self._selector, cookies=self._cookies )
-   
-
-## TODO do we want to limit tools to those the user can access?
-## will need to change call from front end to include username
-## then uncomment decorator
-
 
 def ensure_encrypted(username, password):
     """returns true on successful encryption. false on failure to decrypt"""
