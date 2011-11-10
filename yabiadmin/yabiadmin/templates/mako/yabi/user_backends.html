@@ -1,0 +1,65 @@
+<%inherit file="admin/base_site.html"/>
+<%namespace name="admin" module="django.contrib.admin.templatetags.adminmedia" />
+
+
+% if not is_popup:
+${self.block_breadcrumbs()}<%def name="block_breadcrumbs()"><div class="breadcrumbs"><a href="${root_path}">${trans("Home")}</a> &rsaquo; User Backends</div></%def>
+% endif
+
+
+${self.block_content()}<%def name="block_content()">
+<div id="content-main">
+
+
+<h3>Credentials Associated With This User</h3>
+<table>
+    <tr>
+        <th>Description</th
+        <th>Yabi Username</th>
+        <th>Username</th>
+        <th>Certificate</th>
+        <th>Key</th>
+        <th>Home Dir</th>
+        <th>Visible</th>
+        <th>Uri</th>
+        <th>Home Dir Uri</th>
+
+    </tr>
+    % for bec in backendcredentials:
+    <tr>
+    <td>${bec.credential.description}</td>
+    <td>${bec.credential.user.name}</td>
+    <td>${bec.credential.username}</td>
+    <td>
+    % if bec.credential.cert:
+    Yes
+    % else:
+    No
+    % endif
+    </td>
+    <td>
+    % if bec.credential.key:
+    Yes
+    % else:
+    No
+    % endif
+    </td>
+    <td>${bec.homedir}</td>
+    <td>${bec.visible}</td>
+    <td>${bec.uri}</td>
+    <td>${bec.homedir_uri}</td>
+    <td>${bec.backend_cred_edit_link()}</td>
+    <td>
+    % if bec.homedir:
+    ${bec.backend_cred_test_link()}
+    % endif
+    </td>
+    </tr>
+    % endfor
+          
+
+</table>
+
+
+</div>
+</%def>

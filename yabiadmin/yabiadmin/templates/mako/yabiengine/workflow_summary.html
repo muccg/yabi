@@ -1,0 +1,107 @@
+<%inherit file="admin/base_site.html"/>
+<%namespace name="admin" module="django.contrib.admin.templatetags.adminmedia" />
+
+% if not is_popup:
+${self.block_breadcrumbs()}<%def name="block_breadcrumbs()"><div class="breadcrumbs"><a href="${root_path}">${trans("Home")}</a> &rsaquo; Backend ${w.name}</div></%def>
+% endif
+
+
+${self.block_content()}<%def name="block_content()">
+<div id="content-main">
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>User</th>
+        <th>Start</th>
+        <th>End</th>
+        <th>Status</th>
+        <th></th>
+    </tr>
+    <tr>
+        <td>${w.name}</td>
+        <td>${w.user.name}</td>
+        <td>${w.start_time}</td>
+        <td>${w.end_time}</td>
+        <td><font color="${w.get_status_colour(w.status)}">${w.status}</font></td>
+        <td>${w.edit_link()}</td>
+    </tr>
+</table>
+
+<br/>
+
+<table>
+    <tr>
+          <th>Order</th>
+          <th>Status</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Command</th>
+          <th/>
+    </tr>
+% for job in w.job_set.all().order_by('order'):
+    <tr>
+          <td>${job.order}</td>
+          <td><font color="${job.get_status_colour(job.status)}">${job.status}</font></td>
+          <td>${job.start_time}</td>
+          <td>${job.end_time}</td>
+          <td>${job.command|h}</td>
+          <td>${job.edit_link()}</td>
+    </tr>
+
+    %if job.task_set.all():
+    % for task in job.task_set.all():
+    <tr>
+          <td/>
+          <td><font color="${task.get_status_colour(task.status)}">${task.status}</font></td>
+          <td colspan="3">
+            Task: ${task.command}
+          </td>
+          <td>
+              ${task.edit_link()}
+              <br/>
+              ${task.link_to_syslog()}
+              <br/>
+              ${task.link_to_json()}
+          </td>
+          
+
+    </tr>
+
+    %for stagein in task.stagein_set.all().order_by("order"):
+
+    <tr>
+    <td/>
+    <td/>
+    <td colspan="3">
+        Src: ${stagein.src}<br/>
+        Dst: ${stagein.dst}
+    </td>
+    <td>${stagein.edit_link()}</td>
+    </tr>
+    %endfor
+
+
+    %endfor
+    % endif
+
+    <tr>
+    <td colspan="6"><br/><br/><br/></td>
+    </tr>
+
+
+%endfor
+</table>
+
+<h3>Workflow Json</h3>
+<%
+    import json
+%>
+<pre>
+%if w.json:
+${json.dumps(json.loads(w.json), indent=2)}
+%endif
+</pre>
+
+</div>
+</%def>

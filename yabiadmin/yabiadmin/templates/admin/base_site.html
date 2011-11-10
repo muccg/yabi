@@ -1,16 +1,14 @@
-<%inherit file="admin/base.html"/>
+{% extends "admin/base.html" %}
+{% load i18n %}
 
-
-${self.block_title()}<%def name="block_title()">${trans('Yabi Administration')}</%def>
-
-
-${self.block_extrahead()}<%def name="block_extrastyle()">
+{% block extrahead %}
+<link rel="stylesheet" type="text/css" href="/static/css/admin.css" />
 <link rel="SHORTCUT ICON" href="/static/images/favicon.ico" type="image/x-icon" />
-</%def>
+{% endblock %}
+{% block title %}{{ title }} | {% trans 'Yabi Administration' %}{% endblock %}
 
+{% block branding %}
+<h1 id="site-name">{% trans 'Yabi Administration' %}</h1>
+{% endblock %}
 
-${self.block_branding()}<%def name="block_branding()">
-<h1 id="site-name">${trans('Yabi Administration')}</h1>
-</%def>
-
-${self.block_nav_global()}<%def name="block_nav_global()"></%def>
+{% block nav-global %}{% endblock %}

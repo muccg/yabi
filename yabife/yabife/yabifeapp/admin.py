@@ -25,7 +25,7 @@
 # 
 ### END COPYRIGHT ###
 from django.contrib.admin import ModelAdmin, TabularInline
-from django.contrib.webservices.ext import ExtJsonInterface
+from ccg.webservices.ext import ExtJsonInterface
 from yabife.yabifeapp.models import User
 
 class SuperuserOnlyModelAdmin(ModelAdmin):

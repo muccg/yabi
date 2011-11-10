@@ -35,7 +35,6 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core import urlresolvers
 from yabiadmin.yabi.models import *
-from yabiadmin import ldaputils
 from django.utils import webhelpers
 from django.utils import simplejson as json
 from json_util import makeJsonFriendly
@@ -47,6 +46,11 @@ from django.views.debug import get_safe_settings
 
 import logging
 logger = logging.getLogger('yabiadmin')
+
+try:
+    from yabiadmin import ldaputils
+except ImportError, e:
+    logger.warn("Unable to load ldaputils: %s" % e)
 
 
 class AddToolForm(forms.Form):

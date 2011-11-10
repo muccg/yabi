@@ -45,7 +45,6 @@ from django.utils import webhelpers
 from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.ldap_helper import LDAPSearchResult, LDAPHandler
 from django.conf import settings
 
 from crypto import DecryptException
@@ -64,6 +63,12 @@ from yabiadmin.yabistoreapp import db
 
 import logging
 logger = logging.getLogger('yabiadmin')
+
+
+try:
+    from ccg.auth.ldap_helper import LDAPSearchResult, LDAPHandler
+except ImportError, e:
+    logger.warn("Unable to load ldaphelper: %s" % e)
 
 from UploadStreamer import UploadStreamer
 

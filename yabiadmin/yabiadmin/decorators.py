@@ -31,7 +31,8 @@
 # lets help make the frontend more snappy
 #
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseUnauthorized, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest
+from ccg.http import HttpResponseUnauthorized
 from django.conf import settings
 
 import hmac
@@ -39,7 +40,7 @@ import hmac
 import logging
 logger = logging.getLogger('yabiadmin')
 
-from django.contrib.memcache import KeyspacedMemcacheClient
+from ccg.memcache import KeyspacedMemcacheClient
 mc = KeyspacedMemcacheClient()
 
 import pickle

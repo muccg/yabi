@@ -45,7 +45,7 @@ else:
 
 
 # set debug, see: https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = True
+DEBUG = False
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
@@ -149,13 +149,13 @@ TEMPLATE_DEBUG = DEBUG
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
 TEMPLATE_LOADERS = [
-    'django.template.loaders.filesystem.load_template_source',
-    'django.template.loaders.app_directories.load_template_source',
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+    'ccg.template.loaders.makoloader.filesystem.Loader'
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
 TEMPLATE_DIRS = [
-    os.path.join(PROJECT_DIRECTORY,"templates","mako"), 
     os.path.join(PROJECT_DIRECTORY,"templates"),
 ]
 
