@@ -36,27 +36,32 @@ import os, sys, select, stat, time, json
 # read() blocksize
 BLOCK_SIZE = 512
 
+KNOWN_HOSTS_FILE = "~/.ssh/known_hosts"
+
 def main():
     options, arguments = parse_args()
     sanity_check(options)
     
+    # load our known hosts
+    known_hosts = load_known_hosts(os.path.expanduser(KNOWN_HOSTS_FILE))
+
     # pre copy local to remote
     precopy(options)
 
     # execute our remote command joining pipes with present shell
     # connect and authenticate
     if options.listfolder:
-        ssh = transport_connect_login(options)
+        ssh = transport_connect_login(options, known_hosts)
         output = list_folder(ssh, options)
         print json.dumps(output)
         exit_status = 0
     elif options.listfolderrecurse:
-        ssh = transport_connect_login(options)
+        ssh = transport_connect_login(options, known_hosts)
         output = list_folder_recurse(ssh, options)
         print json.dumps(output)
         exit_status = 0
     else:
-        ssh = ssh_connect_login(options)
+        ssh = ssh_connect_login(options, known_hosts)
         exit_status = execute(ssh, options)
     ssh.close()
     
@@ -65,6 +70,10 @@ def main():
 
     if exit_status:
         sys.exit(exit_status)
+
+def load_known_hosts(filename):
+    """Load the known hosts file into the paramiko object"""
+    return paramiko.hostkeys.HostKeys(filename)
 
 def parse_args():
     from optparse import OptionParser
@@ -80,6 +89,7 @@ def parse_args():
     parser.add_option( "-R", "--postremote", dest="postremote", help="Post-copy postremote to postlocal")
     parser.add_option( "-f", "--list-folder", dest="listfolder", help="Do an ssh list operation on the specified folder")
     parser.add_option( "-F", "--list-folder-recurse", dest="listfolderrecurse", help="Do a recursive list operation on the specified folder")
+    #parser.add_option( "-Y", "--yes-add-host-key", dest="addhostkey", help="Add unknown host keys to known_hosts")
     
     return parser.parse_args()
 
@@ -160,50 +170,73 @@ def get_dsa_key(options):
     privatekeyfile = os.path.expanduser(options.identity)
     return paramiko.DSSKey.from_private_key_file(privatekeyfile, password=options.password)
 
-def ssh_connect_login(options):
+def ssh_connect_login(options, known_hosts):
     if options.identity:
         ssh = paramiko.SSHClient()
-        ssh.load_system_host_keys()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh._system_host_keys = known_hosts
         
         try:
             mykey = get_rsa_key(options)
         except paramiko.SSHException, pe:
             mykey = get_dsa_key(options)
         
-        ssh.connect(options.hostname, username=options.username, pkey=mykey)
+        try:
+            ssh.connect(options.hostname, username=options.username, pkey=mykey)
+        except paramiko.SSHException, ex:
+            if "Unknown server" in ex.message:
+                # key failure
+                raise Exception("Trying to connect to unknown host. Remote host key not found in %s"%(KNOWN_HOSTS_FILE))
+            raise ex
         return ssh
                
     elif options.password:
         ssh = paramiko.SSHClient()
-        ssh.load_system_host_keys()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh._system_host_keys = known_hosts
         
-        ssh.connect(options.hostname, username=options.username, password=options.password)
+        try:
+            ssh.connect(options.hostname, username=options.username, password=options.password)
+        except paramiko.SSHException, ex:
+            if "Unknown server" in ex.message:
+                # key failure
+                raise Exception("Trying to connect to unknown host. Remote host key not found in %s"%(KNOWN_HOSTS_FILE))
+            raise ex
         return ssh
         
     raise Exception("Unknown login method. Both identity and password are unset")
 
-def transport_connect_login(options):
+def transport_connect_login(options, known_hosts):
     if options.identity:
         ssh = paramiko.Transport((options.hostname, 22))
-        #ssh.load_system_host_keys()
-        #ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        
+                
         try:
             mykey = get_rsa_key(options)
         except paramiko.SSHException, pe:
             mykey = get_dsa_key(options)
         
         ssh.connect(username=options.username, pkey=mykey)
+        
+        # check remote host key with known_hosts...
+        remote_key = ssh.get_remote_server_key()
+        known = known_hosts.check(options.hostname,  remote_key)
+        
+        if not known:
+            raise Exception("Trying to connect to unknown host. Remote host key not found in %s"%(KNOWN_HOSTS_FILE))
+        
         return ssh
                
     elif options.password:
         ssh = paramiko.Transport((options.hostname, 22))
-        #ssh.load_system_host_keys()
-        #ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         
+        # establish connection
         ssh.connect(username=options.username, password=options.password)
+        
+        # check remote host key with known_hosts...
+        remote_key = ssh.get_remote_server_key()
+        known = known_hosts.check(options.hostname,  remote_key)
+        
+        if not known:
+            raise Exception("Trying to connect to unknown host. Remote host key not found in %s"%(KNOWN_HOSTS_FILE))
+        
         return ssh
         
     raise Exception("Unknown login method. Both identity and password are unset")
