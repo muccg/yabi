@@ -16,7 +16,12 @@
 Fabric==1.2.2
 #Mango-py==1.3
 #file:eggs#egg=mango
-http://mango-py.googlecode.com/files/mango-1.2-hg180.tar.gz
+http://mango-py.googlecode.com/files/Mango-py-1.3.1-ccg-195.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-django-introspect-0.1.1.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-django-webservices-0.1.1.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-django-extras-0.1.1.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-django-auth-0.3.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-django-makoloader-0.2.2.tar.gz
 PSI==0.3b2
 SQLAlchemy==0.7.1
 Werkzeug==0.6.2
@@ -24,7 +29,7 @@ amqplib==1.0.2
 anyjson==0.3.1
 carrot==0.10.7
 #ccgfab==1.5
-http://ccg-python-build.googlecode.com/files/ccg-python-build_v2_0.tar.gz
+http://ccg-python-build.googlecode.com/files/ccg-python-build_v2_1.tar.gz
 celery==2.3.3
 django-celery==2.3.3
 django-kombu==0.9.4
