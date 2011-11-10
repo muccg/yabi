@@ -109,12 +109,6 @@ class FileUploadStreamer(UploadStreamer):
         """raw input"""
         # this is called right at the beginning. So we grab the uri detail here and initialise the outgoing POST
         self.post_multipart(host=self._host, port=self._port, selector=self._selector, cookies=self._cookies )
-   
-
-## TODO do we want to limit tools to those the user can access?
-## will need to change call from front end to include username
-## then uncomment decorator
-
 
 def ensure_encrypted(username, password):
     """returns true on successful encryption. false on failure to decrypt"""
@@ -300,19 +294,6 @@ def copy(request):
         return HttpResponse(content=data, status=status)
     
     return handle_connection(closure)
-    
-    
-    #except AssertionError, e:
-        ## The file handling functions in the backendhelper module throw
-        ## assertion errors when they receive an unexpected HTTP status code
-        ## from the backend. Since failed assertions don't result in the
-        ## exception having a useful message, we'll intercept it here and return
-        ## a response with something a little more useful for the user.
-        #return JsonMessageResponseNotFound("The requested copy operation failed: please check that both the source file and destination exist and are accessible")
-    #except BackendRefusedConnection, e:
-        #return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
-    #except Exception, e:
-        #return JsonMessageResponseNotFound(e)
 
 @authentication_required
 def rcopy(request):
@@ -336,19 +317,7 @@ def rcopy(request):
         return HttpResponse(content=data, status=status)
     
     return handle_connection(closure)
-    
-    #except AssertionError, e:
-        ## The file handling functions in the backendhelper module throw
-        ## assertion errors when they receive an unexpected HTTP status code
-        ## from the backend. Since failed assertions don't result in the
-        ## exception having a useful message, we'll intercept it here and return
-        ## a response with something a little more useful for the user.
-        #return JsonMessageResponseNotFound("The requested copy operation failed: please check that both the source file and destination exist and are accessible")
-    #except BackendRefusedConnection, e:
-        #return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
-    #except Exception, e:
-        #return JsonMessageResponseNotFound(e)
-
+   
 @authentication_required
 def rm(request):
     """
@@ -363,19 +332,6 @@ def rm(request):
         return HttpResponse(content=data, status=status)
     
     return handle_connection(closure)
-    
-    #except AssertionError, e:
-        ## The file handling functions in the backendhelper module throw
-        ## assertion errors when they receive an unexpected HTTP status code
-        ## from the backend. Since failed assertions don't result in the
-        ## exception having a useful message, we'll intercept it here and return
-        ## a response with something a little more useful for the user.
-        #return JsonMessageResponseNotFound("The requested file or directory is inaccessible and cannot be deleted")
-    #except BackendRefusedConnection, e:
-        #return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
-    #except Exception, e:
-        #return JsonMessageResponseNotFound(e)
-
 
 @authentication_required
 def get(request):
