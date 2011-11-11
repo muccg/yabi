@@ -29,17 +29,15 @@
 import FSConnector
 import stackless
 from utils.parsers import *
-from Exceptions import PermissionDenied, InvalidPath
+from Exceptions import PermissionDenied, InvalidPath, IsADirectory
 from FifoPool import Fifos
 from twisted.internet import protocol
 from twisted.internet import reactor
 import os
 import json
-from utils.protocol import ssh
+from utils.parsers import parse_ls
 
 from conf import config
-
-sshauth = ssh.SSHAuth.SSHAuth()
 
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
 ENV_CHILD_INHERIT = ['PATH']
@@ -52,11 +50,19 @@ SCHEMA = "localfs"
 
 MAX_FS_OPERATIONS = 32                          # how long the lockqueue should be
 
-DEBUG = False
+DEBUG = True
  
 from decorators import retry, call_count
 from LockQueue import LockQueue
 from utils.stacklesstools import sleep
+
+def convert_filename_to_encoded_for_echo(filename):
+    """This function takes a filename, and encodes the whole thing to a back ticked eval command.
+    This enables us to completely encode a full filename across ssh without any nasty side effects from special characters"""
+    CHARS_TO_REPLACE = '\\' + "'" + '"' + "$@!~|<>#;*[]{}?%^&()= "
+    for char in CHARS_TO_REPLACE:
+        filename=filename.replace(char,"\\x%x"%(ord(char)))
+    return filename
 
 class LocalShellProcessProtocol(protocol.ProcessProtocol):
     def __init__(self, stdin=None):
@@ -64,12 +70,15 @@ class LocalShellProcessProtocol(protocol.ProcessProtocol):
         self.err = ""
         self.out = ""
         self.exitcode = None
+        self.started = False
         
     def connectionMade(self):
         # when the process finally spawns, close stdin, to indicate we have nothing to say to it
         if self.stdin:
             self.transport.write(self.stdin)
         self.transport.closeStdin()
+        
+        self.started = True
         
     def outReceived(self, data):
         self.out += data
@@ -113,6 +122,9 @@ class LocalShellProcessProtocol(protocol.ProcessProtocol):
         
     def isFailed(self):
         return self.isDone() and self.exitcode != 0
+        
+    def isStarted(self):
+        return self.started
 
 class LocalShell(object):
     def __init__(self):
@@ -126,6 +138,12 @@ class LocalShell(object):
         subenv = environ.copy() if environ!=None else os.environ.copy()
         return subenv    
 
+    def _make_echo(self,filename):
+        """Turn a filename into the remote eval line"""
+        return filename
+        result = '"`echo -e \'%s\'`"'%(convert_filename_to_encoded_for_echo(filename))
+        return result
+    
     def execute(self, pp, command):
         """execute a command using a process protocol"""
 
@@ -149,9 +167,45 @@ class LocalShell(object):
         return pp
 
     def mkdir(self, path):
-        return self.execute(
+        return self.execute()
+        
+    def ls(self,path,recurse=False):
+        return self.execute(LocalShellProcessProtocol(),["ls","-lFR" if recurse else "-lF",path])
+        
+    def mkdir(self, directory, args="-p"):
+        return self.execute(LocalShellProcessProtocol(),["mkdir",args,self._make_echo(directory)])
+      
+    def rm(self, directory, args=None):
+        return self.execute(LocalShellProcessProtocol(),["rm"] + ( [args] if args else [] ) + [self._make_echo(directory)] )
 
-class LocalFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
+    def ln(self, target, link, args="-s"):
+        return self.execute(LocalShellProcessProtocol(),["ln"] + ( [args] if args else [] ) + [self._make_echo(target),self._make_echo(link)])
+        
+    def cp(self, src, dst, args=None):
+        # if the coipy is recursive, and the src ends in a slash, then we should add a wildcard '*' to the src to make it copy the contents of the directory
+        if args is not None and "r" in args and src.endswith("/"):
+            return self.execute(LocalShellProcessProtocol(),command=["cp"]+ ([args] if args else []) +[self._make_echo(src)+"*",self._make_echo(dst)])
+        else:
+            return self.execute(LocalShellProcessProtocol(),command=["cp"]+ ([args] if args else []) +[self._make_echo(src),self._make_echo(dst)])
+
+    def WriteToRemote(self,path,fifo=None):
+        subenv = self._make_env()
+        
+        if not fifo:
+            fifo = Fifos.Get()
+        
+        return self.execute(LocalShellProcessProtocol(),command=["cp",fifo,self._make_echo(path)]), fifo
+        
+    def ReadFromRemote(self,path,fifo=None):
+        subenv = self._make_env()
+        
+        if not fifo:
+            fifo = Fifos.Get()
+                
+        return self.execute(LocalShellProcessProtocol(),command=["cp",self._make_echo(path),fifo]), fifo
+        
+
+class LocalFilesystem(FSConnector.FSConnector, object):
     """This is the resource that connects to the ssh backends"""
     VERSION=0.1
     NAME="Local Backend Filesystem"
@@ -161,7 +215,6 @@ class LocalFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         # make a path to store keys in
         configdir = config.config['backend']['certificates']
-        ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
         
         # instantiate a lock queue for this backend. Key refers to the particular back end. None is the global queue
         self.lockqueue = LockQueue( MAX_FS_OPERATIONS )
@@ -182,7 +235,7 @@ class LocalFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             lock = self.lockqueue.lock()
         
         # call the mkdir function
-        pp = mkdir(path)
+        pp = LocalShell().mkdir(path)
         
         while not pp.isDone():
             stackless.schedule()
@@ -208,7 +261,7 @@ class LocalFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
 
         return out
         
-    @retry(5,(InvalidPath,PermissionDenied))
+    @retry(5,(InvalidPath,PermissionDenied, IsADirectory))
     #@call_count
     def rm(self, host, username, path, port=22, yabiusername=None, recurse=False, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
@@ -217,7 +270,7 @@ class LocalFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         if priority:
             lock = self.lockqueue.lock()
         
-        pp = rm(path,args="-rf" if recurse else "-f")
+        pp = LocalShell().rm(path,args="-rf" if recurse else "-f")
         
         while not pp.isDone():
             stackless.schedule()
@@ -230,6 +283,8 @@ class LocalFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
                 raise PermissionDenied(err)
             elif "No such file or directory" in err:
                 raise InvalidPath("No such file or directory\n")
+            elif "Is a directory" in err:
+                raise IsADirectory("Cannot delete a directory without using recursive delete: %s\n"%(err))
             else:
                 print "rm failed with exit code %d and output: %s"%(pp.exitcode,out)
                 raise Exception(err)
@@ -252,7 +307,7 @@ class LocalFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         if priority:
             lock = self.lockqueue.lock()
                 
-        pp = ls(path, recurse=recurse)
+        pp = LocalShell().ls(path, recurse=recurse)
         
         while not pp.isDone():
             stackless.schedule()
@@ -273,8 +328,19 @@ class LocalFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
                 print "LS failed with exit code %d and output: %s"%(pp.exitcode,out)
                 raise Exception(err)
         
-        ls_data = json.loads(out)
+        ls_data = parse_ls(out, culldots=culldots)
         
+        if DEBUG:
+            print "ls_data=",ls_data
+            print "out", out
+            print "err", err
+        
+        # are we non recursive?
+        if not recurse:
+            # "None" path header is actually our path
+            ls_data[path]=ls_data[None]
+            del ls_data[None]
+            
         return ls_data
         
     @retry(5,(InvalidPath,PermissionDenied))
@@ -285,7 +351,7 @@ class LocalFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         # acquire our queue lock
         if priority:
             lock = self.lockqueue.lock()
-        pp = ln(target, link)
+        pp = LocalShell().ln(target, link)
         
         while not pp.isDone():
             stackless.schedule()
@@ -320,7 +386,7 @@ class LocalFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         if priority:
             lock = self.lockqueue.lock()
         
-        pp = cp(src, dst, args="-r" if recurse else None)
+        pp = LocalShell().cp(src, dst, args="-r" if recurse else None)
         
         while not pp.isDone():
             stackless.schedule()
@@ -362,11 +428,10 @@ class LocalFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         """
         if DEBUG:
             print "LocalFilesystem::GetWriteFifo( host:"+host,",username:",username,",path:",path,",filename:",filename,",fifo:",fifo,",yabiusername:",yabiusername,",creds:",creds,")"
-        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
-        dst = "%s@%s:%s"%(username,host,os.path.join(path,filename))
+        dst = os.path.join(path,filename)
         
-        pp, fifo = ssh.Copy.WriteToRemote(usercert,dst,port=port,password=str(creds['password']),fifo=fifo)
+        pp, fifo = LocalShell().WriteToRemote(dst,fifo=fifo)
         
         return pp, fifo
     
@@ -383,11 +448,9 @@ class LocalFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         """
         if DEBUG:
             print "LocalFilesystem::GetReadFifo(",host,username,path,filename,fifo,yabiusername,creds,")"
-        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
-        dst = "%s@%s:%s"%(username,host,os.path.join(path,filename))
+        dst = os.path.join(path,filename)
         
-        #print "read from remote"
-        pp, fifo = ssh.Copy.ReadFromRemote(usercert,dst,port=port,password=creds['password'],fifo=fifo)
+        pp, fifo = LocalShell().ReadFromRemote(dst,fifo=fifo)
         #print "read from remote returned"
         
         return pp, fifo

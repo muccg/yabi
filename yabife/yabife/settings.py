@@ -29,33 +29,25 @@ import os
 from django.utils.webhelpers import url
 import yabilogging
 
-### SERVER ###
+# these settings are used when running under WSGI
 if not os.environ.has_key('SCRIPT_NAME'):
     os.environ['SCRIPT_NAME']=''
-
 SCRIPT_NAME =   os.environ['SCRIPT_NAME']
 PROJECT_DIRECTORY = os.environ['PROJECT_DIRECTORY']
 
-
-### PROJECT_DIRECTORY isnt set when not under wsgi
-##if not os.environ.has_key('PROJECT_DIRECTORY'):
-##    os.environ['PROJECT_DIRECTORY']=os.path.dirname(__file__).split("/appsettings/")[0]
-
-
-# https
+# setting to control ssl middleware
 if SCRIPT_NAME:
     SSL_ENABLED = True
 else:
     SSL_ENABLED = False
 
-
-### DEBUG ###
+# set debug, see: https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = True
-DEV_SERVER = True
+
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
 
-
-### APPLICATION
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#middleware-classes
 MIDDLEWARE_CLASSES = [
     'django.middleware.email.EmailExceptionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -66,6 +58,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.messages.middleware.MessageMiddleware',
 ]
 
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -77,40 +70,57 @@ INSTALLED_APPS = [
     'yabife.yabifeapp',
     ]
 
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
 ROOT_URLCONF = 'yabife.urls'
 
+# these determine which authentication method to use
+# yabi uses modelbackend by default, but can be overridden here
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#authentication-backends
 AUTHENTICATION_BACKENDS = [
  'django.contrib.auth.backends.ModelBackend'
 ]
 
+# code used for additional user related operations
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#auth-profile-module
 AUTH_PROFILE_MODULE = 'yabifeapp.ModelBackendUser'
 
 # cookies
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-age
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-name
 SESSION_COOKIE_AGE = 60*60
 SESSION_COOKIE_PATH = url('/')
 SESSION_SAVE_EVERY_REQUEST = True
 CSRF_COOKIE_NAME = "csrftoken_yabife"
 
 # Locale
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#time-zone
+#      https://docs.djangoproject.com/en/dev/ref/settings/#language-code
+#      https://docs.djangoproject.com/en/dev/ref/settings/#use-i18n
 TIME_ZONE = 'Australia/Perth'
 LANGUAGE_CODE = 'en-us'
 USE_I18N = True
 
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#login-url
 LOGIN_URL = url('/login/')
 LOGOUT_URL = url('/logout/')
 
-# for local development, this is set to the static serving directory. For deployment use Apache Alias
+# for local development, this is set to the static serving directory.
+# Deployment uses an apache alias.
 STATIC_SERVER_PATH = os.path.join(PROJECT_DIRECTORY,"static")
 
 # a directory that will be writable by the webserver, for storing various files...
 WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
 
 # media directories
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#media-root
 MEDIA_ROOT = os.path.join(PROJECT_DIRECTORY,"static","media")
 MEDIA_URL = '/static/media/'
 ADMIN_MEDIA_PREFIX = url('/static/admin-media/')
 
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#append-slash
 APPEND_SLASH = True
+
+# TODO: probably deprecated
 SITE_NAME = 'yabife'
 
 ##
@@ -125,20 +135,21 @@ CAPTCHA_URL = os.path.join(MEDIA_URL, 'captchas')
 # Captcha image directory
 CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
 
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#file-upload-max-memory-size
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
-
-
-### TEMPLATING ###
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
 TEMPLATE_DEBUG = DEBUG
 
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
 TEMPLATE_LOADERS = [
-    'django.template.loaders.filesystem.load_template_source',
-    'django.template.loaders.app_directories.load_template_source',
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+    'ccg.template.loaders.makoloader.filesystem.Loader'
 ]
 
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
 TEMPLATE_DIRS = [
-    os.path.join(PROJECT_DIRECTORY,"templates","mako"), 
     os.path.join(PROJECT_DIRECTORY,"templates"),
 ]
 
@@ -153,7 +164,7 @@ MAKO_MODULENAME_CALLABLE = ''
 ### USER SPECIFIC SETUP ###
 # these are the settings you will most likely change to reflect your setup
 
-# point this towards a database in the normal Django fashion
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -166,6 +177,7 @@ DATABASES = {
 }
 
 # Make this unique, and don't share it with anybody.
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = 'set_this'
 
 # if you want to use ldap you'll need to uncomment and configure this section
@@ -182,6 +194,7 @@ SECRET_KEY = 'set_this'
 
 
 # memcache server list
+# add a list of your memcache servers
 MEMCACHE_SERVERS = ['localhost.localdomain:11211']
 MEMCACHE_KEYSPACE = "yabife"
 
@@ -189,18 +202,21 @@ MEMCACHE_KEYSPACE = "yabife"
 #FILE_COOKIE_DIR = WRITABLE_DIRECTORY
 #FILE_COOKIE_NAME = 'yabife_cookie.txt'
 
-# email server
+# email settings so yabi can send email error alerts etc
+# see https://docs.djangoproject.com/en/dev/ref/settings/#email-host
 EMAIL_HOST = 'set_this'
 EMAIL_APP_NAME = "Yabi Admin "
-SERVER_EMAIL = "apache@set_this"                      # from address
+SERVER_EMAIL = "apache@set_this"
 EMAIL_SUBJECT_PREFIX = "DEV "
 
-# default emails
+# admins to email error reports to
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#admins
 ADMINS = [
     ( 'alert', 'alerts@set_this.com' )
 ]
-MANAGERS = ADMINS
 
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#managers
+MANAGERS = ADMINS
 
 
 #functions to evaluate for status checking
@@ -245,10 +261,11 @@ PREVIEW_METADATA_EXPIRY = 60
 # The maximum file size that can be previewed.
 PREVIEW_SIZE_LIMIT = 1048576
 
+# the uri for your yabiadmin server. If you put this uri in a browser it should bring up the yabiadmin login page
 YABIADMIN_SERVER = 'http://127.0.0.1:8001/'
 
+# terms of service for the registration application
 TERMS_OF_SERVICE = "Set your Terms of Service here, or import from another file"
-
 
 
 # Load instance settings.
@@ -260,8 +277,3 @@ try:
     from appsettings.yabife import *
 except ImportError, e:
     pass
-
-
-
-
-

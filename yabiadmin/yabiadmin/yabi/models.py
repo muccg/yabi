@@ -37,12 +37,8 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from urlparse import urlparse, urlunparse
 from crypto import aes_enc_hex, aes_dec_hex
-
-from ldap import LDAPError, MOD_REPLACE
-from django.contrib.memcache import KeyspacedMemcacheClient
+from ccg.memcache import KeyspacedMemcacheClient
 from yabiadmin.decorators import func_create_memcache_keyname
-from yabiadmin.ldapclient import LDAPClient
-from yabiadmin.ldaputils import get_userdn_of
 
 from constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK
 
@@ -115,7 +111,7 @@ class Tool(Base):
     walltime = models.CharField(max_length=64, null=True, blank=True)
     module = models.TextField(null=True, blank=True)
     queue = models.CharField(max_length=50, default='normal', null=True, blank=True)
-    max_memory = models.PositiveIntegerField(null=True, blank=True)
+    max_memory = models.CharField(max_length=64, null=True, blank=True)
     job_type = models.CharField(max_length=40, default='single', null=True, blank=True)
     lcopy_supported = models.BooleanField(default=True)
     link_supported = models.BooleanField(default=True)
@@ -257,8 +253,8 @@ class ParameterSwitchUse(Base):
 
 FILE_ASSIGNMENT_CHOICES = (
     ('none', 'No input files'),
-    ('batch', 'Batch files'),
-    ('all', 'Consume all files'),
+    ('batch', 'Single input file'),
+    ('all', 'Multiple input files'),
 )
 
 class ToolParameter(Base):
@@ -304,6 +300,12 @@ class ToolParameter(Base):
     possible_values.help_text="Json snippet for html select. See blast tool for examples."
     default_value.help_text="Value that will appear in field. If possible values is populated this should match one of the values so the select widget defaults to that option."
     helptext.help_text="Help text that is passed to the frontend for display to the user."
+    
+    batch_bundle_files.help_text = "When staging in files, stage in every file that is in the same source location as this file. Useful for bringing along other files that are associated, but not specified."
+    file_assignment.help_text = """Specifies how to deal with files that match the accepted filetypes setting...<br/><br/>
+        <i>No input files:</i> This parameter does not take any input files as an argument<br/>
+        <i>Single input file:</i> This parameter can only take a single input file, and batch jobs will need to be created for multiple files if the user passes them in<br/>
+        <i>Multiple input file:</i> This parameter can take a whole string of onput files, one after the other. All matching filetypes will be passed into it"""
     
     def __unicode__(self):
         return self.switch or ''
@@ -758,7 +760,7 @@ class ModelBackendUserProfile(UserProfile):
             self.reencrypt_user_credentials(request)
             self.user.save()
             return (True, "Password successfully changed")
-        except (AttributeError, LDAPError), e:
+        except AttributeError, e:
             # Send back something fairly generic.
             logger.debug("Error changing password in LDAP server: %s" % str(e))
             return (False, "Error changing password")
@@ -766,6 +768,17 @@ class ModelBackendUserProfile(UserProfile):
         
 class LDAPBackendUserProfile(UserProfile):
 
+    def __init__(self, *args, **kwargs):
+        UserProfile.__init__(self,*args, **kwargs)
+
+        # TODO look at moving ldap profile to separate file so these imports
+        # can be at the top of the file, not within the class
+        # depends on how Django can import UserProfiles, currently it seems to
+        # be string based
+        from ldap import LDAPError, MOD_REPLACE
+        from yabiadmin.ldapclient import LDAPClient
+        from yabiadmin.ldaputils import get_userdn_of
+        
     class Meta:
         proxy = True
 

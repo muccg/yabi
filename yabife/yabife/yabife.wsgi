@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # WSGI bootstrapper for django
 import os, sys
@@ -18,11 +19,64 @@ if not os.path.exists(parentdir):
 if not os.path.exists(priv_settings_dir):
     raise Exception("Directory does not exist: %s" % priv_settings_dir)
 
+def prependpackage(sitedir, name, known_paths):
+    """Process a .pth file within the site-packages directory:
+       For each line in the file, either combine it with sitedir to a path
+       and add that to known_paths, or execute it if it starts with 'import '.
+    """
+    if known_paths is None:
+        site._init_pathinfo()
+        reset = 1
+    else:
+        reset = 0
+    fullname = os.path.join(sitedir, name)
+    try:
+        f = open(fullname, "rU")
+    except IOError:
+        return
+    with f:
+        for line in f:
+            if line.startswith("#"):
+                continue
+            if line.startswith(("import ", "import\t")):
+                exec line
+                continue
+            line = line.rstrip()
+            dir, dircase = site.makepath(sitedir, line)
+            if not dircase in known_paths and os.path.exists(dir):
+                sys.path.insert(0,dir)
+                known_paths.add(dircase)
+    if reset:
+        known_paths = None
+    return known_paths
+
+def prependsitedir(sitedir, known_paths=None):
+    """Add 'sitedir' argument to sys.path if missing and handle .pth files in
+    'sitedir'"""
+    if known_paths is None:
+        known_paths = site._init_pathinfo()
+        reset = 1
+    else:
+        reset = 0
+    sitedir, sitedircase = site.makepath(sitedir)
+    if not sitedircase in known_paths:
+        sys.path.insert(0,sitedir)        # Add path component
+    try:
+        names = os.listdir(sitedir)
+    except os.error:
+        return
+    dotpth = os.extsep + "pth"
+    names = [name for name in names if name.endswith(dotpth)]
+    for name in sorted(names):
+        prependpackage(sitedir, name, known_paths)
+    if reset:
+        known_paths = None
+    return known_paths
 
 # virtual python env setup, work out python install version so we use the correct site-packages
 python_version = "python%s.%s" % (sys.version_info[0], sys.version_info[1])
-site.addsitedir(os.path.join(projectdir,"virtualpython","lib",python_version,"site-packages"))
-site.addsitedir(projectdir)
+prependsitedir(os.path.join(projectdir,"virtualpython","lib",python_version,"site-packages"))
+prependsitedir(projectdir)
 
 # the parent directory to search
 sys.path.append(projectdir)
