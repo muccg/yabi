@@ -1,0 +1,39 @@
+#
+# Requirements for YabiFe
+#
+# To see what requirements your current virtualenv is using type:
+#
+# $ pip freeze
+#
+#
+# Requirements can be specified as:
+#  - local files (eggs/ccg-python-build_v2_0.tar.gz)
+#  - http        (http://ccg-python-build.googlecode.com/files/ccg-python-build_v2_0.tar.gz)
+#  - eggs        (python-ldap>=2.3.13)
+#
+# http://www.pip-installer.org/en/latest/requirement-format.html
+#
+BeautifulSoup==3.2.0
+Fabric==1.2.2
+http://mango-py.googlecode.com/files/Mango-py-1.3.1-ccg-195.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-django-introspect-0.1.1.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-django-webservices-0.1.1.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-django-extras-0.1.1.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-django-auth-0.3.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-django-makoloader-0.2.2.tar.gz
+Werkzeug==0.6.2
+http://ccg-python-build.googlecode.com/files/ccg-python-build_v2_1.tar.gz
+cssutils==0.9.7
+django-templatetag-sugar==0.1
+httplib2==0.6.0
+Mercurial>=1.9.3
+paramiko==1.7.7.1
+psycopg2==2.0.8
+pycrypto==2.3
+pygooglechart==0.2.1
+python-ldap>=2.3.13
+python-memcached==1.47
+virtualenv==1.6.4
+wsgiref==0.1.2
+http://yaphc.googlecode.com/files/yaphc-v0_1_3.tgz
+gunicorn==0.13.4
