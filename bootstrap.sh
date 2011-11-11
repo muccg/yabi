@@ -20,7 +20,7 @@ PIP_OPTS="--use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors
 export PIP_DOWNLOAD_CACHE
 
 help() {
-    echo >&2 "Usage $0 [-p targetpython]"
+    echo >&2 "Usage $0 [-p targetpython] [-r requirements.txt]"
     echo >&2 "target python is the interpreter you want your virtual python to be based on"
     exit 1;
 }
@@ -31,9 +31,10 @@ then
 fi
 
 #parse command line options
-while getopts p: opt
+while getopts p:r: opt
 do case "$opt" in 
     p)      TARGET_PYTHON="$OPTARG";;
+    r)      REQUIREMENTS="$OPTARG";;
     [?]|*)  help;; 
     esac
 done
