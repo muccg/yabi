@@ -334,8 +334,10 @@ class EngineJob(Job):
                 cursor.execute('LOCK TABLE %s IN ACCESS EXCLUSIVE MODE' % Task._meta.db_table)
             elif (settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql'):
                 cursor.execute('LOCK TABLES %s WRITE, %s WRITE' % (Task._meta.db_table, StageIn._meta.db_table))
+            elif (settings.DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3'):
+                # don't do anything!
             else:
-                assert("Locking code not implemented for db backend %s " % settings.DATABASES['default']['engine'])
+                assert("Locking code not implemented for db backend %s " % settings.DATABASES['default']['ENGINE'])
 
             if (self.total_tasks() == 0):
                 logger.debug("job %s is having tasks created" % self.id) 
