@@ -65,7 +65,6 @@ from yabife.preview import html
 
 from utils import memcache_client, memcache_http, make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout
 
-
 import logging
 logger = logging.getLogger('yabife')
 
@@ -249,7 +248,8 @@ def login(request):
 
     else:
         form = LoginForm()
-        return render_to_response('login.html', {'h':webhelpers, 'form':form, 'url':None})
+        error = request.GET['error'] if 'error' in request.GET else ''
+        return render_to_response('login.html', {'h':webhelpers, 'form':form, 'url':None, 'error':error})
 
 
 
