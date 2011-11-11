@@ -336,6 +336,7 @@ class EngineJob(Job):
                 cursor.execute('LOCK TABLES %s WRITE, %s WRITE' % (Task._meta.db_table, StageIn._meta.db_table))
             elif (settings.DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3'):
                 # don't do anything!
+                pass
             else:
                 assert("Locking code not implemented for db backend %s " % settings.DATABASES['default']['ENGINE'])
 
