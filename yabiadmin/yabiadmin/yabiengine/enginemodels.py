@@ -343,9 +343,9 @@ class EngineJob(Job):
             else:
                 logger.debug("job %s has tasks, skipping create_tasks" % self.id)
 
-            transaction.commit()
             if (settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql'):
                 cursor.execute('UNLOCK TABLES')
+            transaction.commit()
             logger.debug('Committed, released lock')
         except:
             logger.critical(traceback.format_exc())

@@ -29,7 +29,9 @@ carrot==0.10.7
 http://ccg-python-build.googlecode.com/files/ccg-python-build_v2_1.tar.gz
 celery==2.3.3
 django-celery==2.3.3
-django-kombu==0.9.4
+# Use a pacthed version of django-kombu that fixes a known bug
+#django-kombu==0.9.4
+http://yabi.googlecode.com/files/django-kombu-ccg-0.9.4.tar.gz
 django-picklefield==0.1.9
 django-templatetag-sugar==0.1
 kombu==1.4.1
