@@ -42,6 +42,9 @@ from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
 from yaphc.memcache_persister import MemcacheCookiePersister
 from yaphc.cookies import FileCookiePersister
 
+import logging
+logger = logging.getLogger('yabife')
+
 def memcache_client():
     return memcache.Client(settings.MEMCACHE_SERVERS)
 
@@ -66,14 +69,16 @@ def make_http_request(request, original_request, ajax_call):
         with memcache_http(original_request) as http:
             try:
                 resp, contents = http.make_request(request)
+                logger.debug("response status is: %d"%(resp.status))
                 our_resp = HttpResponse(contents, status=int(resp.status))
                 copy_non_empty_headers(resp, our_resp, ('content-disposition', 'content-type'))
                 return our_resp
             except UnauthorizedError:
+                logger.error("Cannot connect successfully to yabi admin. Is yabife set to connect to a valid admin via https?")
                 if ajax_call:
                     return HttpResponseUnauthorized() 
                 else:
-                    return HttpResponseRedirect(settings.LOGIN_URL)
+                    return HttpResponseRedirect(settings.LOGIN_URL+"?error=Cannot+authenticate+with+yabi+admin.")
     except ObjectDoesNotExist:
         if ajax_call:
             return HttpResponseUnauthorized() 
