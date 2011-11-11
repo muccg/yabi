@@ -80,6 +80,17 @@ form {
     color:grey;
 }
 
+.error {
+    color: red;
+    font-weight: bold; 
+}
+
+.errorlist {
+    color: red;
+    font-weight: bold; 
+}
+
+
 .loginForm {
     margin-top:16px;
 }
