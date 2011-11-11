@@ -161,3 +161,4 @@ def _celery_env():
     os.environ["CELERY_LOADER"]="django" 
     os.environ["CELERY_CHDIR"]="." 
     os.environ["PROJECT_DIRECTORY"] = "." 
+    os.environ["PYTHONPATH"] = ".:.."
