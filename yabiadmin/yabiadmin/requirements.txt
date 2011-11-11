@@ -14,5 +14,5 @@
 # http://www.pip-installer.org/en/latest/requirement-format.html
 #
 psycopg2==2.0.8
-python-ldap>=2.3.13
+python-ldap==2.3.13
 -r base-requirements.txt
