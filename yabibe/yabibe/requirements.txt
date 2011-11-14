@@ -18,7 +18,7 @@ Mako==0.4.2
 MarkupSafe==0.9.3
 Twisted==11.0.0
 eggs/TwistedWeb2.tar.gz
-http://ccg-python-build.googlecode.com/files/ccg-python-build_v2_0.tar.gz
+http://ccg-python-build.googlecode.com/files/ccg-python-build_v2_1.tar.gz
 paramiko==1.7.7.1
 pyOpenSSL==0.12
 pycrypto==2.3
