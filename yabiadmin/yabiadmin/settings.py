@@ -71,7 +71,9 @@ INSTALLED_APPS = [
     'yabiadmin.yabiengine',
     'yabiadmin.yabistoreapp',
     'djcelery',
-    'djkombu'
+    'djkombu',
+    'django_extensions',
+    'south'    
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
