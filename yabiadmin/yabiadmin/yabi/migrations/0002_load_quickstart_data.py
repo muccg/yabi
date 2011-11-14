@@ -8,7 +8,7 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         from django.core.management import call_command
-        call_command("loaddata", "fixtures/quickstart_data.json")
+        call_command("loaddata", "quickstart_data.json")
 
     def backwards(self, orm):
         raise RuntimeError("Cannot reverse this migration.")
