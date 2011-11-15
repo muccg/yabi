@@ -57,6 +57,8 @@ RM_PATH = '/bin/rm'
 LN_PATH = '/bin/ln'
 CP_PATH = '/bin/cp'
 
+LS_TIME_STYLE = r"+%b %_d  %Y"
+
 DEBUG = True
  
 from decorators import retry, call_count
@@ -177,7 +179,7 @@ class LocalShell(object):
         return self.execute()
         
     def ls(self,path,recurse=False):
-        return self.execute(LocalShellProcessProtocol(),[LS_PATH,"-lFR" if recurse else "-lF",path])
+        return self.execute(LocalShellProcessProtocol(),[LS_PATH,"--time-style=\"%s\""%(LS_TIME_STYLE),"-lFR" if recurse else "-lF",path])
         
     def mkdir(self, directory, args="-p"):
         return self.execute(LocalShellProcessProtocol(),[MKDIR_PATH,args,self._make_echo(directory)])
