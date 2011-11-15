@@ -50,6 +50,13 @@ SCHEMA = "localfs"
 
 MAX_FS_OPERATIONS = 32                          # how long the lockqueue should be
 
+# paths to localfs helper commands
+LS_PATH = '/bin/ls'
+MKDIR_PATH = '/bin/mkdir'
+RM_PATH = '/bin/rm'
+LN_PATH = '/bin/ln'
+CP_PATH = '/bin/cp'
+
 DEBUG = True
  
 from decorators import retry, call_count
@@ -170,23 +177,23 @@ class LocalShell(object):
         return self.execute()
         
     def ls(self,path,recurse=False):
-        return self.execute(LocalShellProcessProtocol(),["ls","-lFR" if recurse else "-lF",path])
+        return self.execute(LocalShellProcessProtocol(),[LS_PATH,"-lFR" if recurse else "-lF",path])
         
     def mkdir(self, directory, args="-p"):
-        return self.execute(LocalShellProcessProtocol(),["mkdir",args,self._make_echo(directory)])
+        return self.execute(LocalShellProcessProtocol(),[MKDIR_PATH,args,self._make_echo(directory)])
       
     def rm(self, directory, args=None):
-        return self.execute(LocalShellProcessProtocol(),["rm"] + ( [args] if args else [] ) + [self._make_echo(directory)] )
+        return self.execute(LocalShellProcessProtocol(),[RM_PATH] + ( [args] if args else [] ) + [self._make_echo(directory)] )
 
     def ln(self, target, link, args="-s"):
-        return self.execute(LocalShellProcessProtocol(),["ln"] + ( [args] if args else [] ) + [self._make_echo(target),self._make_echo(link)])
+        return self.execute(LocalShellProcessProtocol(),[LN_PATH] + ( [args] if args else [] ) + [self._make_echo(target),self._make_echo(link)])
         
     def cp(self, src, dst, args=None):
         # if the coipy is recursive, and the src ends in a slash, then we should add a wildcard '*' to the src to make it copy the contents of the directory
         if args is not None and "r" in args and src.endswith("/"):
-            return self.execute(LocalShellProcessProtocol(),command=["cp"]+ ([args] if args else []) +[self._make_echo(src)+"*",self._make_echo(dst)])
+            return self.execute(LocalShellProcessProtocol(),command=[CP_PATH]+ ([args] if args else []) +[self._make_echo(src)+"*",self._make_echo(dst)])
         else:
-            return self.execute(LocalShellProcessProtocol(),command=["cp"]+ ([args] if args else []) +[self._make_echo(src),self._make_echo(dst)])
+            return self.execute(LocalShellProcessProtocol(),command=[CP_PATH]+ ([args] if args else []) +[self._make_echo(src),self._make_echo(dst)])
 
     def WriteToRemote(self,path,fifo=None):
         subenv = self._make_env()
@@ -194,7 +201,7 @@ class LocalShell(object):
         if not fifo:
             fifo = Fifos.Get()
         
-        return self.execute(LocalShellProcessProtocol(),command=["cp",fifo,self._make_echo(path)]), fifo
+        return self.execute(LocalShellProcessProtocol(),command=[CP_PATH,fifo,self._make_echo(path)]), fifo
         
     def ReadFromRemote(self,path,fifo=None):
         subenv = self._make_env()
@@ -202,7 +209,7 @@ class LocalShell(object):
         if not fifo:
             fifo = Fifos.Get()
                 
-        return self.execute(LocalShellProcessProtocol(),command=["cp",self._make_echo(path),fifo]), fifo
+        return self.execute(LocalShellProcessProtocol(),command=[CP_PATH,self._make_echo(path),fifo]), fifo
         
 
 class LocalFilesystem(FSConnector.FSConnector, object):
