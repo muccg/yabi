@@ -91,6 +91,7 @@ AUTH_PROFILE_MODULE = 'yabifeapp.ModelBackendUser'
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-name
 SESSION_COOKIE_AGE = 60*60
 SESSION_COOKIE_PATH = url('/')
+SESSION_COOKIE_NAME = 'yabife_sessionid'
 SESSION_SAVE_EVERY_REQUEST = True
 CSRF_COOKIE_NAME = "csrftoken_yabife"
 
