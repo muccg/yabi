@@ -57,7 +57,7 @@ RM_PATH = '/bin/rm'
 LN_PATH = '/bin/ln'
 CP_PATH = '/bin/cp'
 
-LS_TIME_STYLE = r"+%b %_d  %Y"
+LS_TIME_STYLE = r"+%b %d  %Y"
 
 DEBUG = True
  
