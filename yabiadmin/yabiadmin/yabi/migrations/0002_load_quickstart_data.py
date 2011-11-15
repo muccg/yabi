@@ -3,12 +3,21 @@ import datetime
 from south.db import db
 from south.v2 import DataMigration
 from django.db import models
+import os
 
 class Migration(DataMigration):
 
     def forwards(self, orm):
         from django.core.management import call_command
         call_command("loaddata", "quickstart_data.json")
+
+        # set the backend credentials to the user's homedir
+        ex_bec = orm.BackendCredential.objects.get(id=2)
+        ex_bec.homedir = "%s%s" % (os.environ['HOME'], '/')
+        ex_bec.save()
+        fs_bec = orm.BackendCredential.objects.get(id=3)
+        fs_bec.homedir = "%s%s" % (os.environ['HOME'], '/')
+        fs_bec.save()
 
     def backwards(self, orm):
         raise RuntimeError("Cannot reverse this migration.")

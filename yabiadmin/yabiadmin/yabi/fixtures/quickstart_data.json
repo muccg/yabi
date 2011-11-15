@@ -187,6 +187,46 @@
         }
     }, 
     {
+        "pk": 2, 
+        "model": "yabi.backend", 
+        "fields": {
+            "max_connections": null, 
+            "description": "This backend gives access to the file system on the machine running Yabi.", 
+            "submission": "", 
+            "lcopy_supported": true, 
+            "link_supported": true, 
+            "hostname": "localhost", 
+            "created_by": 1, 
+            "created_on": "2011-11-15 10:47:24", 
+            "last_modified_by": 1, 
+            "path": "/", 
+            "scheme": "localfs", 
+            "port": null, 
+            "last_modified_on": "2011-11-15 10:48:13", 
+            "name": "Local Filesystem"
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "yabi.backend", 
+        "fields": {
+            "max_connections": null, 
+            "description": "This backend gives access to execution on the machine running Yabi.", 
+            "submission": "", 
+            "lcopy_supported": true, 
+            "link_supported": true, 
+            "hostname": "localhost", 
+            "created_by": 1, 
+            "created_on": "2011-11-15 10:48:04", 
+            "last_modified_by": 1, 
+            "path": "/", 
+            "scheme": "localex", 
+            "port": null, 
+            "last_modified_on": "2011-11-15 10:48:04", 
+            "name": "Local Execution"
+        }
+    },
+    {
         "pk": 1, 
         "model": "yabi.tool", 
         "fields": {
@@ -337,6 +377,38 @@
             "backend": 1
         }
     },
+    {
+        "pk": 2, 
+        "model": "yabi.backendcredential", 
+        "fields": {
+            "credential": 1, 
+            "homedir": "", 
+            "submission": "", 
+            "default_stageout": false, 
+            "created_by": 1, 
+            "visible": false, 
+            "created_on": "2011-11-15 10:48:48", 
+            "last_modified_by": 1, 
+            "last_modified_on": "2011-11-15 10:48:48", 
+            "backend": 3
+        }
+    }, 
+    {
+        "pk": 3, 
+        "model": "yabi.backendcredential", 
+        "fields": {
+            "credential": 1, 
+            "homedir": "", 
+            "submission": "", 
+            "default_stageout": true, 
+            "created_by": 1, 
+            "visible": true, 
+            "created_on": "2011-11-15 10:49:04", 
+            "last_modified_by": 1, 
+            "last_modified_on": "2011-11-15 10:49:04", 
+            "backend": 2
+        }
+    }, 
     {
         "pk": 6, 
         "model": "yabi.parameterswitchuse", 
