@@ -333,9 +333,3 @@ try:
     from appsettings.yabife import *
 except ImportError, e:
     pass
-
-
-
-
-
-DEBUG = False
