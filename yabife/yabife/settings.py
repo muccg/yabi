@@ -110,7 +110,8 @@ LOGOUT_URL = url('/logout/')
 
 # for local development, this is set to the static serving directory.
 # Deployment uses an apache alias.
-STATIC_SERVER_PATH = os.path.join(PROJECT_DIRECTORY,"static")
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#static-root
+STATIC_ROOT = os.path.join(PROJECT_DIRECTORY,"static")
 
 # a directory that will be writable by the webserver, for storing various files...
 WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
