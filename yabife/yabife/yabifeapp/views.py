@@ -215,7 +215,6 @@ def account(request):
     return render_page("account.html", request)
 
 def login(request):
-    logger.error('')
     if request.method == 'POST':
         form = LoginForm(request.POST)
 
