@@ -47,7 +47,7 @@ import fnmatch
 import os.path
 
 import logging
-logger = logging.getLogger('yabiengine')
+logger = logging.getLogger(__name__)
 
 DEBUG = False
 

@@ -40,7 +40,7 @@ from django.utils import webhelpers
 from django import forms
 
 import logging
-logger = logging.getLogger('yabiadmin')
+logger = logging.getLogger(__name__)
 
 # proxy view to pass through all requests set up in urls.py
 def proxy(request, url, server, base):

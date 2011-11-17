@@ -62,7 +62,7 @@ from yabiadmin.decorators import memcache, authentication_required, profile_requ
 from yabiadmin.yabistoreapp import db
 
 import logging
-logger = logging.getLogger('yabiadmin')
+logger = logging.getLogger(__name__)
 
 
 try:

@@ -37,7 +37,7 @@ from django.utils import simplejson as json
 from yabiadmin.yabistoreapp import db
 
 import logging
-logger = logging.getLogger('yabiengine')
+logger = logging.getLogger(__name__)
 
 
 def archiveWorkflow(workflow):

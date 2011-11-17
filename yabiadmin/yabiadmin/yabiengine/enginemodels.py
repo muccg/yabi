@@ -52,7 +52,7 @@ from yabiadmin.yabiengine.YabiJobException import YabiJobException
 from yabiadmin.yabistoreapp import db
 
 import logging
-logger = logging.getLogger('yabiengine')
+logger = logging.getLogger(__name__)
 
 from constants import *
 from yabistoreapp import db

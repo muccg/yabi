@@ -56,7 +56,7 @@ class BackendStatusCodeError(Exception):
 
 
 import logging
-logger = logging.getLogger('yabiengine')
+logger = logging.getLogger(__name__)
   
 
 def get_backendcredential_for_uri(yabiusername, uri):

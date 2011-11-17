@@ -38,7 +38,7 @@ from django.conf import settings
 import hmac
 
 import logging
-logger = logging.getLogger('yabiadmin')
+logger = logging.getLogger(__name__)
 
 from ccg.memcache import KeyspacedMemcacheClient
 mc = KeyspacedMemcacheClient()

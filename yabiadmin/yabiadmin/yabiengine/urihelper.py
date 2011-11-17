@@ -32,7 +32,7 @@ from urlparse import urlparse
 from django.core.exceptions import ObjectDoesNotExist
 
 import logging
-logger = logging.getLogger('yabiengine')
+logger = logging.getLogger(__name__)
 
 import re
 re_url_schema = re.compile(r'\w+')

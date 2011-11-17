@@ -46,7 +46,7 @@ from yabiadmin.responses import *
 from yabiadmin.decorators import memcache, authentication_required, profile_required, hmac_authenticated
 
 import logging
-logger = logging.getLogger('yabiadmin')
+logger = logging.getLogger(__name__)
 
 #@authentication_required
 @hmac_authenticated

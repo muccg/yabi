@@ -41,7 +41,7 @@ from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
 from yabiadmin.yabiengine.enginemodels import EngineTask, EngineJob, EngineWorkflow
 
 import logging
-logger = logging.getLogger('yabiengine')
+logger = logging.getLogger(__name__)
 
 from constants import *
 

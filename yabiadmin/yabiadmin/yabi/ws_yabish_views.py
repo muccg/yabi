@@ -47,7 +47,7 @@ from yabiadmin.decorators import memcache, authentication_required
 from collections import namedtuple
 
 import logging
-logger = logging.getLogger('yabiadmin')
+logger = logging.getLogger(__name__)
 
 class YabiError(StandardError):
     pass

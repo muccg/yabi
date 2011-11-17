@@ -27,7 +27,9 @@
 
 import os
 from django.utils.webhelpers import url
-import yabilogging
+import logging
+import logging.handlers
+
 
 # these settings are used when running under WSGI
 if not os.environ.has_key('SCRIPT_NAME'):
@@ -271,6 +273,58 @@ YABIADMIN_SERVER = 'http://127.0.0.1:8001/'
 TERMS_OF_SERVICE = "Set your Terms of Service here, or import from another file"
 
 
+### LOGGING SETUP ###
+# see https://docs.djangoproject.com/en/dev/topics/logging/
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': 'YABI [%(name)s:%(levelname)s:%(asctime)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s'
+        },
+        'simple': {
+            'format': 'YABI %(levelname)s %(message)s'
+        },
+    },
+    'filters': {
+    },
+    'handlers': {
+        'null': {
+            'level':'DEBUG',
+            'class':'django.utils.log.NullHandler',
+        },
+        'console':{
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter':'verbose'
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers':['null'],
+            'propagate': True,
+            'level':'INFO',
+        },
+        'django.request': {
+            'handlers': ['console', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'yabife': {
+            'handlers': ['console', 'mail_admins'],
+            'level': 'DEBUG'
+        }
+    }
+}
+
+
+
 # Load instance settings.
 # These are installed locally to this project instance.
 # They will be loaded from appsettings.yabiadmin, which can exist anywhere
@@ -280,3 +334,8 @@ try:
     from appsettings.yabife import *
 except ImportError, e:
     pass
+
+
+
+
+

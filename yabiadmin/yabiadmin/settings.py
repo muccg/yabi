@@ -29,7 +29,8 @@
 import os, sys
 from django.utils.webhelpers import url
 import djcelery
-import yabilogging
+import logging
+import logging.handlers
 
 # these settings are used when running under WSGI
 if not os.environ.has_key('SCRIPT_NAME'):
@@ -282,6 +283,55 @@ CELERY_IMPORTS = ("yabiadmin.yabiengine.tasks",)
 BROKER_TRANSPORT = "djkombu.transport.DatabaseTransport"
 
 
+### LOGGING SETUP ###
+# see https://docs.djangoproject.com/en/dev/topics/logging/
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': 'YABI [%(name)s:%(levelname)s:%(asctime)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s'
+        },
+        'simple': {
+            'format': 'YABI %(levelname)s %(message)s'
+        },
+    },
+    'filters': {
+    },
+    'handlers': {
+        'null': {
+            'level':'DEBUG',
+            'class':'django.utils.log.NullHandler',
+        },
+        'console':{
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter':'verbose'
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers':['null'],
+            'propagate': True,
+            'level':'INFO',
+        },
+        'django.request': {
+            'handlers': ['console', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'yabiadmin': {
+            'handlers': ['console', 'mail_admins'],
+            'level': 'DEBUG'
+        }
+    }
+}
 
 
 
