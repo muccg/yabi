@@ -13,7 +13,7 @@
             "groups": [], 
             "user_permissions": [], 
             "password": "sha1$7f57a$97456404bf498ef0474fcc3209279255c9115610", 
-            "email": "andrew@ccg.murdoch.edu.au", 
+            "email": "admin@example.com", 
             "date_joined": "2011-09-26 10:51:27"
         }
     }, 
@@ -31,7 +31,7 @@
             "groups": [], 
             "user_permissions": [], 
             "password": "sha1$2dd8b$2bcdd04e75eb454a041395f697a72daca9dc5ff4", 
-            "email": "", 
+            "email": "user@example.com", 
             "date_joined": "2011-09-26 10:55:34"
         }
     },
