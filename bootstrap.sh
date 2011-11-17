@@ -8,7 +8,8 @@ CACHE='/tmp'
 PIP_DOWNLOAD_CACHE=${CACHE}
 CONFIG_DIR=""
 TARGET_PYTHON="python"
-REQUIREMENTS="requirements.txt"
+REQUIREMENTS=""
+BUILD_REQUIREMENTS="build-requirements.txt"
 BASE_DIR=`basename ${PWD}`
 PRE="virt_"
 VPYTHON_DIR="$PRE$BASE_DIR"
@@ -20,8 +21,9 @@ PIP_OPTS="--use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors
 export PIP_DOWNLOAD_CACHE
 
 help() {
-    echo >&2 "Usage $0 [-p targetpython] [-r requirements.txt]"
-    echo >&2 "target python is the interpreter you want your virtual python to be based on"
+    echo >&2 "Usage $0 [-p targetpython] [-r requirements]"
+    echo >&2 "targetpython is the interpreter you want your virtual python to be based on"
+    echo >&2 "requirements is pip requirements file to optionally install"
     exit 1;
 }
 
@@ -39,10 +41,10 @@ do case "$opt" in
     esac
 done
 
-# we need a requirements file
-if [ ! -f "${REQUIREMENTS}" ]
+# we need a bootstrap file
+if [ ! -f "${BUILD_REQUIREMENTS}" ]
 then
-    echo "No requirements file found - ${REQUIREMENTS}"
+    echo "No build requirements file found - ${BUILD_REQUIREMENTS}"
     exit 1;
 fi
 
@@ -74,6 +76,7 @@ then
     # create a virtual python in the current directory
     $TARGET_PYTHON ${CACHE}/$VIRTUALENV/build/lib*/virtualenv.py --no-site-packages $VPYTHON_DIR
 
+    ${PIP} install ${PIP_OPTS} -r ${BUILD_REQUIREMENTS}
     if [ -f "${REQUIREMENTS}" ]
     then
         ${PIP} install ${PIP_OPTS} -r ${REQUIREMENTS}
@@ -87,7 +90,8 @@ fi
 # tell the user how to activate this python install
 echo -e "\n\n What just happened?\n\n"
 echo -e " * Python has been installed into $VPYTHON_DIR"
-if [ -f "requirements.txt" ]
+cat ${BUILD_REQUIREMENTS}
+if [ -f "${REQUIREMENTS}" ]
 then
     cat ${REQUIREMENTS}
 fi

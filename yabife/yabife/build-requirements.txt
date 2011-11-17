@@ -1,0 +1,21 @@
+#
+# Build requirements for Yabefe
+#
+# To see what requirements your current virtualenv is using type:
+#
+# $ pip freeze
+#
+#
+# Requirements can be specified as:
+#  - local files (eggs/ccg-python-build_v2_0.tar.gz)
+#  - http        (http://ccg-python-build.googlecode.com/files/ccg-python-build_v2_0.tar.gz)
+#  - eggs        (python-ldap>=2.3.13)
+#
+# http://www.pip-installer.org/en/latest/requirement-format.html
+#
+Fabric==1.2.2
+http://ccg-python-build.googlecode.com/files/ccg-python-build_v2_1.tar.gz
+virtualenv==1.6.4
+Mercurial>=1.9.3
+pycrypto>=1.9
+paramiko>=1.7.6
