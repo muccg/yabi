@@ -22,7 +22,6 @@ http://ccg-django-extras.googlecode.com/files/ccg-makoloader-0.2.3.tar.gz
 http://ccg-django-extras.googlecode.com/files/ccg-introspect-0.1.2.tar.gz
 http://ccg-django-extras.googlecode.com/files/ccg-extras-0.1.2.tar.gz
 http://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.1.tar.gz
-Werkzeug==0.6.2
 http://ccg-python-build.googlecode.com/files/ccg-python-build_v2_1.tar.gz
 cssutils==0.9.7
 django-templatetag-sugar==0.1

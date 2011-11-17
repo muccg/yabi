@@ -19,3 +19,4 @@ virtualenv==1.6.4
 Mercurial>=1.9.3
 pycrypto>=1.9
 paramiko>=1.7.6
+Werkzeug==0.6.2
