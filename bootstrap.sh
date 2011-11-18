@@ -3,6 +3,9 @@
 # You need to have:
 #   python header files 
 
+# if any subscript fails, fail the entire script so we immediately know
+set -e
+
 PROJECT_DIR=`pwd`
 CACHE='/tmp'
 PIP_DOWNLOAD_CACHE=${CACHE}
@@ -79,7 +82,15 @@ then
     ${PIP} install ${PIP_OPTS} -r ${BUILD_REQUIREMENTS}
     if [ -f "${REQUIREMENTS}" ]
     then
+        if [ -f "pre-${REQUIREMENTS}" ]
+        then 
+            ${PIP} install ${PIP_OPTS} -r pre-${REQUIREMENTS}
+        fi
         ${PIP} install ${PIP_OPTS} -r ${REQUIREMENTS}
+        if [ -f "post-${REQUIREMENTS}" ]
+        then 
+            ${PIP} install ${PIP_OPTS} -r post-${REQUIREMENTS}
+        fi
     fi
 
     # hack activate to set some environment we need
