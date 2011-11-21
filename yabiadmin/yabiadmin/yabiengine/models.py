@@ -40,7 +40,7 @@ from yabiadmin.yabiengine.urihelper import uriparse, url_join
 from urllib import urlencode
 
 import logging
-logger = logging.getLogger('yabiengine')
+logger = logging.getLogger(__name__)
 
 from constants import *
 

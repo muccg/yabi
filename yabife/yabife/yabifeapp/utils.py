@@ -43,7 +43,7 @@ from yaphc.memcache_persister import MemcacheCookiePersister
 from yaphc.cookies import FileCookiePersister
 
 import logging
-logger = logging.getLogger('yabife')
+logger = logging.getLogger(__name__)
 
 def memcache_client():
     return memcache.Client(settings.MEMCACHE_SERVERS)

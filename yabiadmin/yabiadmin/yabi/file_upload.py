@@ -37,7 +37,7 @@ import StringIO
 from stat import *
 
 import logging
-logger = logging.getLogger('yabiadmin')
+logger = logging.getLogger(__name__)
 
 
 def post_multipart(host, selector, fields, files):

@@ -36,7 +36,7 @@ from django.core import signals
 from yabiadmin.yabistoreapp.json_util import *
 
 import logging
-logger = logging.getLogger('yabiadmin')
+logger = logging.getLogger(__name__)
 
 options.DEFAULT_NAMES += ('db_name',)
 

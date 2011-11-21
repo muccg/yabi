@@ -45,7 +45,7 @@ from django.forms.util import ErrorList
 from django.views.debug import get_safe_settings
 
 import logging
-logger = logging.getLogger('yabiadmin')
+logger = logging.getLogger(__name__)
 
 try:
     from yabiadmin import ldaputils

@@ -47,7 +47,7 @@ DEBUG = False
 class DecryptedCredentialNotAvailable(Exception): pass
 
 import logging
-logger = logging.getLogger('yabiadmin')
+logger = logging.getLogger(__name__)
 
 
 class Base(models.Model):

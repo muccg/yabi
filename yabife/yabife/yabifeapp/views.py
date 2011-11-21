@@ -66,7 +66,7 @@ from yabife.preview import html
 from utils import memcache_client, memcache_http, make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout
 
 import logging
-logger = logging.getLogger('yabife')
+logger = logging.getLogger(__name__)
 
 from UploadStreamer import UploadStreamer
 from django.views.decorators.csrf import csrf_exempt

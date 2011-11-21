@@ -66,7 +66,7 @@ if settings.DEBUG:
     urlpatterns += patterns('',
         (r'^static/(?P<path>.*)$',
                             'django.views.static.serve', 
-                            {'document_root': os.path.join(os.path.dirname(__file__),"static"), 'show_indexes': True}),
+                            {'document_root': settings.STATIC_ROOT, 'show_indexes': True}),
 
     )
 

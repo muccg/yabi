@@ -35,7 +35,7 @@ from urlparse import urlparse
 from utils import yabiadmin_passchange
 
 import logging
-logger = logging.getLogger('yabife')
+logger = logging.getLogger(__name__)
 
 import base64
 import hashlib

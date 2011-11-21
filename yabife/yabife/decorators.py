@@ -32,10 +32,9 @@ from yabifeapp.utils import mail_admins_no_profile, logout
 from yabife.responses import JsonMessageResponseUnauthorized
 
 import logging
-logger = logging.getLogger('yabife')
+logger = logging.getLogger(__name__)
 
 def authentication_required(f):
-
     def new_function(*args, **kwargs):
         request = args[0]
         if not request.user.is_authenticated():

@@ -29,7 +29,8 @@
 import os, sys
 from django.utils.webhelpers import url
 import djcelery
-import yabilogging
+import logging
+import logging.handlers
 
 # these settings are used when running under WSGI
 if not os.environ.has_key('SCRIPT_NAME'):
@@ -45,14 +46,13 @@ else:
 
 
 # set debug, see: https://docs.djangoproject.com/en/dev/ref/settings/#debug
-DEBUG = False
+DEBUG = True
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#middleware-classes
 MIDDLEWARE_CLASSES = [
-    'django.middleware.email.EmailExceptionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
+    'django.contrib.staticfiles',
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
     'yabiadmin.yabistoreapp',
@@ -99,6 +100,7 @@ SESSION_COOKIE_NAME = 'yabiadmin_sessionid'
 SESSION_SAVE_EVERY_REQUEST = True
 CSRF_COOKIE_NAME = "csrftoken_yabiadmin"
 
+
 # Locale
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#time-zone
 #      https://docs.djangoproject.com/en/dev/ref/settings/#language-code
@@ -111,18 +113,21 @@ USE_I18N = True
 LOGIN_URL = url('/accounts/login/')
 LOGOUT_URL = url('/accounts/logout/')
 
-# for local development, this is set to the static serving directory.
-# Deployment uses an apache alias.
-STATIC_SERVER_PATH = os.path.join(PROJECT_DIRECTORY,"static")
 
-# a directory that will be writable by the webserver, for storing various files...
-WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
+### static file management ###
+# see: https://docs.djangoproject.com/en/dev/howto/static-files/
+# deployment uses an apache alias
+STATICFILES_DIRS = []
+STATIC_ROOT = os.path.join(PROJECT_DIRECTORY,"static")
+STATIC_URL = '/static/'
 
 # media directories
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#media-root
 MEDIA_ROOT = os.path.join(PROJECT_DIRECTORY,"static","media")
 MEDIA_URL = '/static/media/'
-ADMIN_MEDIA_PREFIX = url('/static/admin-media/')
+
+# a directory that will be writable by the webserver, for storing various files...
+WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#append-slash
 APPEND_SLASH = True
@@ -282,6 +287,55 @@ CELERY_IMPORTS = ("yabiadmin.yabiengine.tasks",)
 BROKER_TRANSPORT = "djkombu.transport.DatabaseTransport"
 
 
+### LOGGING SETUP ###
+# see https://docs.djangoproject.com/en/dev/topics/logging/
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': 'YABI [%(name)s:%(levelname)s:%(asctime)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s'
+        },
+        'simple': {
+            'format': 'YABI %(levelname)s %(message)s'
+        },
+    },
+    'filters': {
+    },
+    'handlers': {
+        'null': {
+            'level':'DEBUG',
+            'class':'django.utils.log.NullHandler',
+        },
+        'console':{
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter':'verbose'
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers':['null'],
+            'propagate': True,
+            'level':'INFO',
+        },
+        'django.request': {
+            'handlers': ['console', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'yabiadmin': {
+            'handlers': ['console', 'mail_admins'],
+            'level': 'DEBUG'
+        }
+    }
+}
 
 
 

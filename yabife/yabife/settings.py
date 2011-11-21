@@ -27,7 +27,9 @@
 
 import os
 from django.utils.webhelpers import url
-import yabilogging
+import logging
+import logging.handlers
+
 
 # these settings are used when running under WSGI
 if not os.environ.has_key('SCRIPT_NAME'):
@@ -49,7 +51,6 @@ SITE_ID = 1
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#middleware-classes
 MIDDLEWARE_CLASSES = [
-    'django.middleware.email.EmailExceptionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -65,6 +66,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
+    'django.contrib.staticfiles',    
     'django.contrib.messages',
     'django_extensions',
     'south',
@@ -95,6 +97,7 @@ SESSION_COOKIE_NAME = 'yabife_sessionid'
 SESSION_SAVE_EVERY_REQUEST = True
 CSRF_COOKIE_NAME = "csrftoken_yabife"
 
+
 # Locale
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#time-zone
 #      https://docs.djangoproject.com/en/dev/ref/settings/#language-code
@@ -107,18 +110,20 @@ USE_I18N = True
 LOGIN_URL = url('/login/')
 LOGOUT_URL = url('/logout/')
 
-# for local development, this is set to the static serving directory.
-# Deployment uses an apache alias.
-STATIC_SERVER_PATH = os.path.join(PROJECT_DIRECTORY,"static")
-
-# a directory that will be writable by the webserver, for storing various files...
-WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
+### static file management ###
+# see: https://docs.djangoproject.com/en/dev/howto/static-files/
+# deployment uses an apache alias
+STATICFILES_DIRS = []
+STATIC_ROOT = os.path.join(PROJECT_DIRECTORY,"static")
+STATIC_URL = '/static/'
 
 # media directories
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#media-root
 MEDIA_ROOT = os.path.join(PROJECT_DIRECTORY,"static","media")
 MEDIA_URL = '/static/media/'
-ADMIN_MEDIA_PREFIX = url('/static/admin-media/')
+
+# a directory that will be writable by the webserver, for storing various files...
+WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#append-slash
 APPEND_SLASH = True
@@ -269,6 +274,58 @@ YABIADMIN_SERVER = 'http://127.0.0.1:8001/'
 
 # terms of service for the registration application
 TERMS_OF_SERVICE = "Set your Terms of Service here, or import from another file"
+
+
+### LOGGING SETUP ###
+# see https://docs.djangoproject.com/en/dev/topics/logging/
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': 'YABI [%(name)s:%(levelname)s:%(asctime)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s'
+        },
+        'simple': {
+            'format': 'YABI %(levelname)s %(message)s'
+        },
+    },
+    'filters': {
+    },
+    'handlers': {
+        'null': {
+            'level':'DEBUG',
+            'class':'django.utils.log.NullHandler',
+        },
+        'console':{
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter':'verbose'
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers':['null'],
+            'propagate': True,
+            'level':'INFO',
+        },
+        'django.request': {
+            'handlers': ['console', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'yabife': {
+            'handlers': ['console', 'mail_admins'],
+            'level': 'DEBUG'
+        }
+    }
+}
+
 
 
 # Load instance settings.
