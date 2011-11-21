@@ -26,7 +26,7 @@
 #
 
 import os
-from django.utils.webhelpers import url
+from ccg.utils.webhelpers import url
 import logging
 import logging.handlers
 
@@ -115,12 +115,13 @@ LOGOUT_URL = url('/logout/')
 # deployment uses an apache alias
 STATICFILES_DIRS = []
 STATIC_ROOT = os.path.join(PROJECT_DIRECTORY,"static")
-STATIC_URL = '/static/'
+STATIC_URL = url('/static/')
+ADMIN_MEDIA_PREFIX = url('/static/admin-media/')
 
 # media directories
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#media-root
 MEDIA_ROOT = os.path.join(PROJECT_DIRECTORY,"static","media")
-MEDIA_URL = '/static/media/'
+MEDIA_URL = url('/static/media/')
 
 # a directory that will be writable by the webserver, for storing various files...
 WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
