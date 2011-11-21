@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
+    'django.contrib.staticfiles',
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
     'yabiadmin.yabistoreapp',
@@ -111,18 +112,21 @@ USE_I18N = True
 LOGIN_URL = url('/accounts/login/')
 LOGOUT_URL = url('/accounts/logout/')
 
-# for local development, this is set to the static serving directory.
-# Deployment uses an apache alias.
-STATIC_ROOT = os.path.join(PROJECT_DIRECTORY,"static")
 
-# a directory that will be writable by the webserver, for storing various files...
-WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
+### static file management ###
+# see: https://docs.djangoproject.com/en/dev/howto/static-files/
+# deployment uses an apache alias
+STATICFILES_DIRS = []
+STATIC_ROOT = os.path.join(PROJECT_DIRECTORY,"static")
+STATIC_URL = '/static/'
 
 # media directories
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#media-root
 MEDIA_ROOT = os.path.join(PROJECT_DIRECTORY,"static","media")
 MEDIA_URL = '/static/media/'
-ADMIN_MEDIA_PREFIX = url('/static/admin-media/')
+
+# a directory that will be writable by the webserver, for storing various files...
+WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#append-slash
 APPEND_SLASH = True
