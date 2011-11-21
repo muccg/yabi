@@ -200,11 +200,17 @@ class TaskManager(object):
             )
         factory.noisy = False
         if VERBOSE:
-            print "reactor.connectSSL(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.TASK_URL),")"
+            if config.yabiadminscheme == 'https':
+                print "reactor.connectSSL(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.TASK_URL),")"
+            else:
+                print "reactor.connectTCP(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.TASK_URL),")"
         port = config.yabiadminport
         
         from ServerContextFactory import ServerContextFactory
-        reactor.connectSSL(config.yabiadminserver, port, factory, ServerContextFactory())
+        if config.yabiadminscheme == 'https':
+            reactor.connectSSL(config.yabiadminserver, port, factory, ServerContextFactory())
+        else:
+            reactor.connectTCP(config.yabiadminserver, port, factory)
 
         # now if the page fails for some reason. deal with it
         def _doFailure(data):
@@ -229,9 +235,16 @@ class TaskManager(object):
             )
         factory.noisy = False
         if VERBOSE:
-            print "reactor.connectTCP(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.TASK_URL),")"
+            if config.yabiadminscheme == 'https':
+                print "reactor.connectSSL(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.BLOCKED_URL),")"
+            else:
+                print "reactor.connectTCP(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.BLOCKED_URL),")"
         port = config.yabiadminport
-        reactor.connectTCP(config.yabiadminserver, port, factory)
+        
+        if config.yabiadminscheme == 'https':
+            reactor.connectSSL(config.yabiadminserver, port, factory, ServerContextFactory())
+        else:
+            reactor.connectTCP(config.yabiadminserver, port, factory)
 
         # now if the page fails for some reason. deal with it
         def _doFailure(data):
