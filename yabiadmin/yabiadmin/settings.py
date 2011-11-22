@@ -117,10 +117,10 @@ LOGOUT_URL = url('/accounts/logout/')
 ### static file management ###
 # see: https://docs.djangoproject.com/en/dev/howto/static-files/
 # deployment uses an apache alias
-STATICFILES_DIRS = []
-STATIC_ROOT = os.path.join(PROJECT_DIRECTORY,"static")
+STATICFILES_DIRS = [os.path.join(PROJECT_DIRECTORY,"static")]
 STATIC_URL = url('/static/')
 ADMIN_MEDIA_PREFIX = url('/static/admin/')
+
 # media directories
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#media-root
 MEDIA_ROOT = os.path.join(PROJECT_DIRECTORY,"static","media")

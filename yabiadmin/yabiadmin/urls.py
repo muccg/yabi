@@ -46,12 +46,13 @@ urlpatterns += patterns('django.views.generic.simple',
 )
 
 # pattern for serving statically
+# not needed by runserver, but it is by gunicorn
 # will be overridden by apache alias under WSGI
 if settings.DEBUG:
     urlpatterns += patterns('',
         (r'^static/(?P<path>.*)$',
                             'django.views.static.serve', 
-                            {'document_root': settings.STATIC_ROOT, 'show_indexes': True}),
+                            {'document_root': settings.STATICFILES_DIRS[0], 'show_indexes': True}),
 
     )
 

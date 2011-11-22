@@ -60,6 +60,18 @@ urlpatterns = patterns('yabife.yabifeapp.views',
     (r'^exception[/]*$', 'exception_view'),
 )
 
+
+# pattern for serving statically
+# not needed by runserver, but it is by gunicorn
+# will be overridden by apache alias under WSGI
+if settings.DEBUG:
+    urlpatterns += patterns('',
+        (r'^static/(?P<path>.*)$',
+                            'django.views.static.serve', 
+                            {'document_root': settings.STATICFILES_DIRS[0], 'show_indexes': True}),
+
+    )
+
 urlpatterns += patterns('django.views.generic.simple',
     (r'^favicon\.ico', 'redirect_to', {'url': webhelper_url('/static/images/favicon.ico')}),
 )
