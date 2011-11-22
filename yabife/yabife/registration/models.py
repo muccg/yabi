@@ -29,7 +29,7 @@ from django.contrib.auth.models import SiteProfileNotAvailable, User as DjangoUs
 from django.core.mail import send_mail
 from django.db import models
 from django.template.loader import render_to_string
-from django.utils import webhelpers
+from ccg.utils import webhelpers
 
 from datetime import datetime, timedelta
 from uuid import uuid4

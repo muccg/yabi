@@ -44,7 +44,7 @@ from ccg.http import HttpResponseUnauthorized
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
-from django.utils import webhelpers
+from ccg.utils import webhelpers
 from django.contrib.auth.decorators import login_required
 from yabife.decorators import authentication_required, profile_required
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate

@@ -30,7 +30,7 @@ from django.contrib.admin import ModelAdmin
 from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from django.utils import webhelpers
+from ccg.utils import webhelpers
 from models import Request
 from yabife.yabifeapp.models import User
 
