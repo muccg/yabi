@@ -57,7 +57,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.doc.XViewMiddleware',
-    'django.middleware.ssl.SSLRedirect'
+    'ccg.middleware.ssl.SSLRedirect'
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps

@@ -35,9 +35,10 @@ from django.db import models, connection, transaction
 from django.db.models import Q
 from django.db.transaction import enter_transaction_management, leave_transaction_management, managed, is_dirty, is_managed
 from django.conf import settings
-from django.utils import simplejson as json, webhelpers
+from django.utils import simplejson as json
+from ccg.utils import webhelpers
 from django.db.models.signals import post_save
-from django.utils.webhelpers import url
+from ccg.utils.webhelpers import url
 
 from django.db.transaction import TransactionManagementError
 
