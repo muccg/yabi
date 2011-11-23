@@ -94,10 +94,13 @@ AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
 # cookies
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-age
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-name
+# you SHOULD change the cookie to use HTTPONLY and SECURE when in production
 SESSION_COOKIE_AGE = 60*60
 SESSION_COOKIE_PATH = url('/')
 SESSION_COOKIE_NAME = 'yabiadmin_sessionid'
 SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_HTTPONLY = False 
+SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_NAME = "csrftoken_yabiadmin"
 
 

@@ -91,10 +91,13 @@ AUTH_PROFILE_MODULE = 'yabifeapp.ModelBackendUser'
 # cookies
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-age
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-name
+# you SHOULD change the cookie to use HTTPONLY and SECURE when in production
 SESSION_COOKIE_AGE = 60*60
 SESSION_COOKIE_PATH = url('/')
 SESSION_COOKIE_NAME = 'yabife_sessionid'
 SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_HTTPONLY = False 
+SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_NAME = "csrftoken_yabife"
 
 
