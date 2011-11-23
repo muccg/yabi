@@ -32,18 +32,10 @@ import djcelery
 import logging
 import logging.handlers
 
-# these settings are used when running under WSGI
-if not os.environ.has_key('SCRIPT_NAME'):
-    os.environ['SCRIPT_NAME']=''
-SCRIPT_NAME =   os.environ['SCRIPT_NAME']
-PROJECT_DIRECTORY = os.environ['PROJECT_DIRECTORY']
-
-# setting to control ssl middleware
-if SCRIPT_NAME:
-    SSL_ENABLED = True
-else:
-    SSL_ENABLED = False
-
+# setting to control ccg ssl middleware
+# see http://code.google.com/p/ccg-django-extras/source/browse/
+# you SHOULD change the SSL_ENABLED to True when in production
+SSL_ENABLED = False
 
 # set debug, see: https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = True
