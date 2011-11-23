@@ -338,8 +338,8 @@ LOGGING = {
 # Load instance settings.
 # These are installed locally to this project instance.
 # They will be loaded from appsettings.yabiadmin, which can exist anywhere
-# in the instance's pythonpath. This is a CCG convention designed to support
-# global shared settings among multiple Django projects.
+# in the instance's pythonpath. This allows private and local settings to be kept out
+# of this file.
 try:
     from appsettings.yabiadmin import *
 except ImportError, e:
