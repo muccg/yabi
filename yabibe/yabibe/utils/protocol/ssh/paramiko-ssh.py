@@ -46,7 +46,7 @@ def main():
     known_hosts = load_known_hosts(os.path.expanduser(KNOWN_HOSTS_FILE))
 
     # pre copy local to remote
-    precopy(options)
+    precopy(options, known_hosts)
 
     # execute our remote command joining pipes with present shell
     # connect and authenticate
@@ -66,7 +66,7 @@ def main():
     ssh.close()
     
     # post copy remote to local
-    postcopy(options)
+    postcopy(options, known_hosts)
 
     if exit_status:
         sys.exit(exit_status)
@@ -241,19 +241,19 @@ def transport_connect_login(options, known_hosts):
         
     raise Exception("Unknown login method. Both identity and password are unset")
 
-def precopy(options):
+def precopy(options, known_hosts):
     if options.preremote and options.prelocal:
         setproctitle.setproctitle("yabi-ssh %s@%s copy local %s to remote %s"%(options.username, options.hostname, options.prelocal, options.preremote))
-        transport = transport_connect_login(options)
+        transport = transport_connect_login(options, known_hosts)
         sftp = paramiko.SFTPClient.from_transport(transport)
         sftp.put(options.prelocal,options.preremote,confirm=False)
         sftp.close()
         transport.close()
 
-def postcopy(options):
+def postcopy(options, known_hosts):
     if options.postremote and options.postlocal:
         setproctitle.setproctitle("yabi-ssh %s@%s copy remote %s to local %s"%(options.username, options.hostname, options.postremote, options.postlocal))
-        transport = transport_connect_login(options) 
+        transport = transport_connect_login(options, known_hosts) 
         sftp = paramiko.SFTPClient.from_transport(transport)
         sftp.get(options.postremote,options.postlocal,confirm=False)
         sftp.close()
