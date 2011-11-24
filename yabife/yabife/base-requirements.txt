@@ -15,7 +15,7 @@
 #
 BeautifulSoup==3.2.0
 Fabric==1.2.2
-http://mango-py.googlecode.com/files/Mango-py-1.3.1-ccg-197.tar.gz
+http://mango-py.googlecode.com/files/Mango-py-1.3.1-ccg1-0.tar.gz
 http://ccg-django-extras.googlecode.com/files/ccg-webservices-0.1.2.tar.gz
 http://ccg-django-extras.googlecode.com/files/ccg-registration-0.8-alpha-1.tar.gz
 http://ccg-django-extras.googlecode.com/files/ccg-makoloader-0.2.3.tar.gz
