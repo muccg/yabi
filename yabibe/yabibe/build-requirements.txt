@@ -13,9 +13,11 @@
 #
 # http://www.pip-installer.org/en/latest/requirement-format.html
 #
+# used patched paramiko for fifos
+http://yabi.googlecode.com/files/paramiko-1.7.7.1-fifopatch.tar.gz
 Fabric==1.2.2
 http://ccg-python-build.googlecode.com/files/ccg-python-build_v2_1.tar.gz
 virtualenv==1.6.4
 Mercurial>=1.9.3
 pycrypto>=1.9
-paramiko>=1.7.6
+
