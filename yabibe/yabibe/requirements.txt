@@ -13,15 +13,15 @@
 #
 # http://www.pip-installer.org/en/latest/requirement-format.html
 #
+pyOpenSSL==0.12
+pycrypto==2.3
+http://yabi.googlecode.com/files/paramiko-1.7.7.1-fifopatch.tar.gz
 Fabric==1.2.2
 Mako==0.4.2
 MarkupSafe==0.9.3
 Twisted==11.0.0
 eggs/TwistedWeb2.tar.gz
 http://ccg-python-build.googlecode.com/files/ccg-python-build_v2_1.tar.gz
-http://yabi.googlecode.com/files/paramiko-1.7.7.1-fifopatch.tar.gz
-pyOpenSSL==0.12
-pycrypto==2.3
 setproctitle==1.1.2
 virtualenv==1.6.4
 wsgiref==0.1.2
