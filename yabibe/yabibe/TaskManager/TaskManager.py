@@ -51,6 +51,8 @@ from conf import config
 from Tasklets import tasklets
 from Task import NullBackendTask, MainTask
 
+from ServerContextFactory import ServerContextFactory
+
 class CustomTasklet(stackless.tasklet):
     # When this is present, it is called in lieu of __reduce__.
     # As the base tasklet class provides it, we need to as well.
@@ -206,7 +208,6 @@ class TaskManager(object):
                 print "reactor.connectTCP(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.TASK_URL),")"
         port = config.yabiadminport
         
-        from ServerContextFactory import ServerContextFactory
         if config.yabiadminscheme == 'https':
             reactor.connectSSL(config.yabiadminserver, port, factory, ServerContextFactory())
         else:
