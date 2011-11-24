@@ -32,6 +32,8 @@ import djcelery
 import logging
 import logging.handlers
 
+PROJECT_DIRECTORY = os.environ['PROJECT_DIRECTORY']
+
 # setting to control ccg ssl middleware
 # see http://code.google.com/p/ccg-django-extras/source/browse/
 # you SHOULD change the SSL_ENABLED to True when in production
