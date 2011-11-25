@@ -36,7 +36,7 @@ from django.core import urlresolvers
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from urlparse import urlparse, urlunparse
-from crypto import aes_enc_hex, aes_dec_hex
+from crypto import aes_enc_hex, aes_dec_hex, looks_like_ciphertext
 from ccg.memcache import KeyspacedMemcacheClient
 from yabiadmin.decorators import func_create_memcache_keyname
 
@@ -432,23 +432,26 @@ class Credential(Base):
     
     def encrypt(self, key):
         """Turn this unencrypted cred into an encrypted one using the supplied password"""
-        assert self.encrypted == False
-        
         self.password = aes_enc_hex(self.password,key)
         self.cert = aes_enc_hex(self.cert,key,linelength=80)
         self.key = aes_enc_hex(self.key,key,linelength=80)
-        
-        self.encrypted = True
-        self.encrypt_on_login = False
-        
+                
     def decrypt(self, key):
-        assert self.encrypted == True
-        
         self.password = aes_dec_hex(self.password,key)
         self.cert = aes_dec_hex(self.cert,key)
         self.key = aes_dec_hex(self.key,key)
         
-        self.encrypted = False
+    def protect(self):
+        """temporarily protects a key by encrypting it with the secret django key"""
+        self.password = aes_enc_hex(self.password, settings.SECRET_KEY)
+        self.cert = aes_enc_hex(self.cert, settings.SECRET_KEY)
+        self.key = aes_enc_hex(self.key, settings.SECRET_KEY)
+        
+    def unprotect(self):
+        """take a temporarily protected key and decrypt it with the django secret key"""
+        self.password = aes_dec_hex(self.password, settings.SECRET_KEY)
+        self.cert = aes_dec_hex(self.cert, settings.SECRET_KEY)
+        self.key = aes_dec_hex(self.key, settings.SECRET_KEY)
         
     def recrypt(self,oldkey,newkey):
         self.decrypt(oldkey)
@@ -463,9 +466,6 @@ class Credential(Base):
         # set up defaults if they aren't set
         memcache = memcache or "localhost.localdomain"
         time_to_cache = time_to_cache or settings.DEFAULT_CRED_CACHE_TIME
-        
-        # make sure this is an encrypted cred, otherwise theres no point
-        assert self.encrypted == True
         
         # decrypt the credential using the passed in password
         credential = {
@@ -565,7 +565,8 @@ class Credential(Base):
     def unblock_all_blocked_tasks(self):
         """Set the status on all tasks blocked for this user to 'resume' so they can resume"""
         self.blocked_tasks().update(status=STATUS_RESUME)     
-        
+
+
 class Backend(Base):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=512, blank=True)
@@ -603,7 +604,6 @@ class Backend(Base):
         if DEBUG:
             return "Backend <%s name=%s scheme=%s hostname=%s port=%s path=%s>"%(self.id, self.name,self.scheme,self.hostname,self.port,self.path)
         return "Backend %s %s %s://%s:%s%s"%(self.name, self.description,self.scheme,self.hostname,self.port,self.path)
-
 
     @models.permalink
     def get_absolute_url(self):
@@ -833,6 +833,18 @@ class LDAPBackendUserProfile(UserProfile):
 ## Django Signals
 ##
 
+def signal_credential_pre_save(sender, instance, **kwargs):
+    logger.debug("credential pre_save signal")
+    
+    # see if instance is not encrypted
+    if instance.is_plaintext:
+        # encrypt symetrically so we never store plaintext in DB
+        logger.debug("temporarily encrypting plain text cred before saving in database")
+        instance.protect()
+        
+def singal_credential_post_init(sender, instance, **kwargs):
+    logger.debug("credential post_init signal")
+
 def signal_tool_post_save(sender, **kwargs):
     logger.debug("tool post_save signal")
 
@@ -853,8 +865,11 @@ def create_user_profile(sender, instance, created, **kwargs):
 
  
 # connect up signals
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save,post_init
 post_save.connect(signal_tool_post_save, sender=Tool)
 post_save.connect(create_user_profile, sender=DjangoUser)
+pre_save.connect(signal_credential_pre_save, sender=Credential)
+post_init.connect(signal_credential_post_init, sender=Credential)
+
 
 
