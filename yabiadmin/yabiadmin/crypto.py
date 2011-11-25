@@ -40,7 +40,7 @@ chunkify = lambda v, l: (v[i*l:(i+1)*l] for i in range(int(math.ceil(len(v)/floa
 #
 # this annotates a string with the 
 #
-annotate = lambda tag,ciphertext: "$%s$%s$"$(tag,ciphertext)
+annotate = lambda tag,ciphertext: "$%s$%s$"%(tag,ciphertext)
 
 #
 # join a split string together and de CR LF it

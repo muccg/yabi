@@ -842,7 +842,7 @@ def signal_credential_pre_save(sender, instance, **kwargs):
         logger.debug("temporarily encrypting plain text cred before saving in database")
         instance.protect()
         
-def singal_credential_post_init(sender, instance, **kwargs):
+def signal_credential_post_init(sender, instance, **kwargs):
     logger.debug("credential post_init signal")
 
 def signal_tool_post_save(sender, **kwargs):
