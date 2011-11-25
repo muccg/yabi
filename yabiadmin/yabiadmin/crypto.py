@@ -38,6 +38,35 @@ import binascii
 chunkify = lambda v, l: (v[i*l:(i+1)*l] for i in range(int(math.ceil(len(v)/float(l)))))
 
 #
+# this annotates a string with the 
+#
+annotate = lambda tag,ciphertext: "$%s$%s$"$(tag,ciphertext)
+
+#
+# join a split string together and de CR LF it
+#
+joiner = lambda data: "".join("".join(data.split("\n")).split("\r"))
+
+#
+# this deannotates the string
+#
+def deannotate( string ):
+    try:
+        dummy,tag,cipher,dummy2 = string.split('$')
+    except ValueError, ve:
+        raise DecryptException("Invalid input string to deannotator")
+    
+    if dummy or dummy2:
+        raise DecryptException("Invalid input string to deannotator")
+    
+    return tag, cipher
+
+# known tags
+AES64TAG = 'aes64'
+AESHEXTAG = 'aeshex'
+
+
+#
 # Some exceptions to notify callers of failure to decrypt if validity is being checked (not just blind decrypt)
 #
 class DecryptException(Exception): pass
@@ -47,6 +76,7 @@ def aes_enc(data,key):
         return data                         # encrypt nothing. get nothing.
         
     assert data[-1]!='\0', "encrypt/decrypt implementation uses null padding and cant reliably decrypt a binary string that ends in \\0"
+    
     #
     # Our AES Cipher
     #
@@ -69,7 +99,7 @@ def aes_enc_base64(data,key,linelength=None):
     encoded = base64.encodestring(enc)
     
     if linelength:
-        encoded = "\n".join(chunkify(encoded,linelength))
+        encoded = "\n".join(chunkify(annotate(AES64TAG,encoded),linelength))
     
     return encoded
 
@@ -79,7 +109,7 @@ def aes_enc_hex(data,key,linelength=None):
     encoded = binascii.hexlify(enc)
     
     if linelength:
-        encoded = "\n".join(chunkify(encoded,linelength))
+        encoded = "\n".join(chunkify(annotate(AESHEXTAG,encoded),linelength))
     
     return encoded
       
@@ -106,8 +136,13 @@ def aes_dec(data,key, check=False):
     
 def aes_dec_base64(data,key, check=False):
     """decrypt a base64 encoded encrypted block"""
+    tag, ciphertext = deannotate(joiner(data))
+    
+    if tag != AES64TAG:
+        raise DecryptException("Calling aes base64 decrypt on non valid text. tag seems to be %s and it should be %s"%(tag,AES64TAG))
+    
     try:
-        ciphertext = base64.decodestring("".join(data.split("\n")))
+        ciphertext = base64.decodestring( ciphertext )
     except TypeError, te:
         # the credential binary block cannot be decoded
         raise DecryptException("Credential does not seem to contain binary encrypted data")
@@ -115,8 +150,13 @@ def aes_dec_base64(data,key, check=False):
 
 def aes_dec_hex(data,key, check=False):
     """decrypt a base64 encoded encrypted block"""
+    tag, ciphertext = deannotate(joiner(data))
+       
+    if tag != AESHEXTAG:
+        raise DecryptException("Calling aes hex decrypt on non valid text. tag seems to be %s and it should be %s"%(tag,AESHEXTAG))
+    
     try:
-        ciphertext = binascii.unhexlify("".join("".join(data.split("\n")).split("\r")))
+        ciphertext = binascii.unhexlify( ciphertext )
     except TypeError, te:
         # the credential binary block cannot be decoded
         raise DecryptException("Credential does not seem to contain binary encrypted data")
@@ -127,3 +167,16 @@ def contains_binary(data):
     # for now just see if there are any unprintable characters in the string
     import string
     return False in [X in string.printable for X in data]
+    
+def looks_like_ciphertext(data):
+    """returns true if the string 'data' looks like it is 
+    actually cipher text. Of course we can not be 100% sure... but it makes a best guess attempt
+    """
+    CIPHER_CHARS = '0123456789ABCDEFabcdef\n\r\t '
+    for char in data:
+        if char not in CIPHER_CHARS:
+            return False
+            
+    return True
+    
+
