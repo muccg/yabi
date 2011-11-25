@@ -13,7 +13,7 @@
 #
 # http://www.pip-installer.org/en/latest/requirement-format.html
 #
-http://mango-py.googlecode.com/files/Mango-py-1.3.1-ccg1-0.tar.gz
+http://mango-py.googlecode.com/files/Mango-py-1.3.1-ccg1-1.tar.gz
 http://ccg-django-extras.googlecode.com/files/ccg-webservices-0.1.2.tar.gz
 http://ccg-django-extras.googlecode.com/files/ccg-registration-0.8-alpha-1.tar.gz
 http://ccg-django-extras.googlecode.com/files/ccg-makoloader-0.2.3.tar.gz
