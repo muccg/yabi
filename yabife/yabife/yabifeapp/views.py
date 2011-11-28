@@ -63,7 +63,7 @@ from yabife.yabifeapp.models import User
 from yabife.responses import *
 from yabife.preview import html
 
-from utils import memcache_client, memcache_http, make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout
+from utils import memcache_client, memcache_http, make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout, using_dev_settings
 
 import logging
 logger = logging.getLogger(__name__)
@@ -215,6 +215,10 @@ def account(request):
     return render_page("account.html", request)
 
 def login(request):
+
+    # show a warning if using dev settings
+    show_dev_warning = using_dev_settings()
+
     if request.method == 'POST':
         form = LoginForm(request.POST)
 
@@ -241,15 +245,15 @@ def login(request):
 
             else:
                 form = LoginForm()
-                return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':"Invalid login credentials"})
+                return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':'Invalid login credentials', 'show_dev_warning':show_dev_warning})
 
         else:
-            return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':"Invalid login credentials"})
+            return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':'Invalid login credentials', 'show_dev_warning':show_dev_warning})
 
     else:
         form = LoginForm()
         error = request.GET['error'] if 'error' in request.GET else ''
-        return render_to_response('login.html', {'h':webhelpers, 'form':form, 'url':None, 'error':error})
+        return render_to_response('login.html', {'h':webhelpers, 'form':form, 'url':None, 'error':error, 'show_dev_warning':show_dev_warning})
 
 
 

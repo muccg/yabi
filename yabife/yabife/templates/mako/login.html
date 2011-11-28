@@ -20,6 +20,14 @@
 </%def>
 
 <%def name="body()">
+
+%if show_dev_warning:
+<div id="warningbanner">
+<strong>Warning: Development settings in use.</strong><br/>Change your settings files before deployment to production servers.
+</div>
+%endif
+
+
 <div id="content">
 
 <a href="${h.url('/')}"><img src="${h.url('/static/images/yabi-logo.png')}" alt="Yabi-logo" height="60" width="198" /></a><p>

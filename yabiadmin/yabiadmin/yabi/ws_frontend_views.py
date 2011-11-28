@@ -58,8 +58,8 @@ from yabiadmin.responses import *
 from yabi.file_upload import *
 from django.contrib import auth
 from yabiadmin.decorators import memcache, authentication_required, profile_required
-
 from yabiadmin.yabistoreapp import db
+from yabiadmin.utils import using_dev_settings
 
 import logging
 logger = logging.getLogger(__name__)
@@ -129,6 +129,10 @@ def ensure_encrypted(username, password):
     return True                 #success
 
 def login(request):
+
+    if using_dev_settings():
+        logger.warning("Development settings are in use, DO NOT use in production environment without changing settings.")
+
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
     username = request.POST.get('username')
