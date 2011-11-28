@@ -110,24 +110,6 @@ class FileUploadStreamer(UploadStreamer):
         # this is called right at the beginning. So we grab the uri detail here and initialise the outgoing POST
         self.post_multipart(host=self._host, port=self._port, selector=self._selector, cookies=self._cookies )
 
-def ensure_encrypted(username, password):
-    """returns true on successful encryption. false on failure to decrypt"""
-    # find the unencrypted credentials for this user that should be ecrypted and encrypt with the passed in CORRECT password
-    creds = Credential.objects.filter(user__name=username).filter(encrypt_on_login=True).filter(encrypted=False)
-    for cred in creds:
-        cred.encrypt(password)
-        cred.save()
-        
-    # decrypt all encrypted credentials and store in memcache
-    creds = Credential.objects.filter(user__name=username, encrypted=True)
-    try:
-        for cred in creds:
-            cred.send_to_memcache(password)
-    except DecryptException, de:
-        return False
-
-    return True                 #success
-
 def login(request):
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
@@ -143,12 +125,15 @@ def login(request):
                 "success": True
             }
             
-            # encrypt any pending user credentials.
-            if not ensure_encrypted(user.username,password):
-                response = {
-                    "success": False,
-                    "message": "One or more of the credentials failed to decrypt with your password. Please see your system administrator."
-                }
+            # for every credential for this user, call the login hook
+            creds = Credential.objects.filter(user__name=username, encrypted=True)
+            for cred in creds:
+                cred.login( password )
+                
+            response = {
+                "success": False,
+                "message": "One or more of the credentials failed to decrypt with your password. Please see your system administrator."
+            }
         else:
             response = {
                 "success": False,

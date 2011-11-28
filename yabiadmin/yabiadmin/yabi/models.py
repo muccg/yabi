@@ -46,6 +46,8 @@ DEBUG = False
 
 class DecryptedCredentialNotAvailable(Exception): pass
 
+AESTEMP = "AESTEMP"                     # tag for temporary decryption of aes for protection in memecache and on DB prior to user key encryption
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -443,15 +445,15 @@ class Credential(Base):
         
     def protect(self):
         """temporarily protects a key by encrypting it with the secret django key"""
-        self.password = aes_enc_hex(self.password, settings.SECRET_KEY)
-        self.cert = aes_enc_hex(self.cert, settings.SECRET_KEY)
-        self.key = aes_enc_hex(self.key, settings.SECRET_KEY)
+        self.password = aes_enc_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
+        self.cert = aes_enc_hex(self.cert, settings.SECRET_KEY,tag=AESTEMP)
+        self.key = aes_enc_hex(self.key, settings.SECRET_KEY,tag=AESTEMP)
         
     def unprotect(self):
         """take a temporarily protected key and decrypt it with the django secret key"""
-        self.password = aes_dec_hex(self.password, settings.SECRET_KEY)
-        self.cert = aes_dec_hex(self.cert, settings.SECRET_KEY)
-        self.key = aes_dec_hex(self.key, settings.SECRET_KEY)
+        self.password = aes_dec_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
+        self.cert = aes_dec_hex(self.cert, settings.SECRET_KEY,tag=AESTEMP)
+        self.key = aes_dec_hex(self.key, settings.SECRET_KEY,tag=AESTEMP)
         
     def recrypt(self,oldkey,newkey):
         self.decrypt(oldkey)
@@ -461,21 +463,18 @@ class Credential(Base):
         """return the memcache key for this credential"""
         return "-cred-%s-%d"%(self.user.name.encode("utf-8"),self.id)              # TODO: memcache keys dont support unicode. user.name may contain unicode
         
-    def send_to_memcache(self, key="encryption key", memcache=None, time_to_cache=None ):
-        """This method temporarily decypts the key and stores the decrypted key in memcache"""
+    def send_to_memcache(self, memcache=None, time_to_cache=None ):
+        """This method stores the key as it is in memcache"""
         # set up defaults if they aren't set
         memcache = memcache or "localhost.localdomain"
         time_to_cache = time_to_cache or settings.DEFAULT_CRED_CACHE_TIME
-        
-        # decrypt the credential using the passed in password
-        credential = {
-            'password': aes_dec_hex(self.password,key),
-            'cert': aes_dec_hex(self.cert,key),
-            'key': aes_dec_hex(self.key,key)
-        }
-        
+                
         mckey = self.memcache_keyname()
-        mcval = json.dumps(credential)
+        mcval = json.dumps( {
+            'password': self.password,
+            'cert': self.cert,
+            'key': self.key
+        } )
         
         # push the credential to memcache server
         ksc = KeyspacedMemcacheClient()
@@ -565,6 +564,58 @@ class Credential(Base):
     def unblock_all_blocked_tasks(self):
         """Set the status on all tasks blocked for this user to 'resume' so they can resume"""
         self.blocked_tasks().update(status=STATUS_RESUME)     
+
+    @property
+    def is_plaintext(self):
+        """We assume its plaintext if it fails the crypto looks_like_annotated_block() function"""
+        return not looks_like_annotated_block(self.password) and not looks_like_annotated_block(self.key) and not looks_like_annotated_block(self.cert)
+
+    def on_pre_save(self):
+        if self.is_plaintext:
+            # temporarily protect this for saving
+            self.protect()
+            
+    def on_post_init(self):
+        if not self.is_plaintext:
+            # ciphertext... lets look at its tag
+            tag = looks_like_annotated_block(self.password) or looks_like_annotated_block(self.key) or looks_like_annotated_block(self.cert)
+
+    def on_login(self, username, password):
+        """When a user logs in, this method is called on every one of their credentials, and gets passed their login password"""
+        
+        # 1.try and decrypt with this password
+        try:
+            self.decrypt(password)
+            
+            # decrypt with users password succeeded. protect and cache...
+            self.protect()
+            
+            # dont save
+            self.send_to_memcache()
+            
+        except DecryptException, de:
+            # decrypt with password failed
+            pass
+            
+            
+def deprecated_ensure_encrypted(username, password):
+    """returns true on successful encryption. false on failure to decrypt"""
+    # find the unencrypted credentials for this user that should be ecrypted and encrypt with the passed in CORRECT password
+    creds = Credential.objects.filter(user__name=username).filter(encrypt_on_login=True).filter(encrypted=False)
+    for cred in creds:
+        cred.encrypt(password)
+        cred.save()
+        
+    # decrypt all encrypted credentials and store in memcache
+    creds = Credential.objects.filter(user__name=username, encrypted=True)
+    try:
+        for cred in creds:
+            cred.send_to_memcache(password)
+    except DecryptException, de:
+        return False
+
+    return True                 #success
+    
 
 
 class Backend(Base):
@@ -836,14 +887,12 @@ class LDAPBackendUserProfile(UserProfile):
 def signal_credential_pre_save(sender, instance, **kwargs):
     logger.debug("credential pre_save signal")
     
-    # see if instance is not encrypted
-    if instance.is_plaintext:
-        # encrypt symetrically so we never store plaintext in DB
-        logger.debug("temporarily encrypting plain text cred before saving in database")
-        instance.protect()
+    instance.on_pre_save()
         
 def signal_credential_post_init(sender, instance, **kwargs):
     logger.debug("credential post_init signal")
+
+    instance.on_post_init()
 
 def signal_tool_post_save(sender, **kwargs):
     logger.debug("tool post_save signal")
