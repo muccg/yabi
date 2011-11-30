@@ -28,7 +28,6 @@
 # -*- coding: utf-8 -*-
 from Crypto.Hash import SHA256
 from Crypto.Cipher import AES
-import base64
 import math
 import binascii
 
@@ -62,9 +61,7 @@ def deannotate( string ):
     return tag, cipher
 
 # known tags
-AES64TAG = 'aes64'
-AESHEXTAG = 'aeshex'
-
+AESHEXTAG = 'AES'
 
 #
 # Some exceptions to notify callers of failure to decrypt if validity is being checked (not just blind decrypt)
@@ -92,24 +89,14 @@ def aes_enc(data,key):
         output += aes.encrypt(chunk)
         
     return output
-    
-def aes_enc_base64(data,key,linelength=None, tag=AES64TAG):
-    """DO an aes encrypt, but return data as base64 encoded"""
-    enc = aes_enc(data,key)
-    encoded = base64.encodestring(enc)
-    
-    if linelength:
-        encoded = "\n".join(chunkify(annotate(tag,encoded),linelength))
-    
-    return encoded
 
 def aes_enc_hex(data,key,linelength=None, tag=AESHEXTAG):
     """DO an aes encrypt, but return data as base64 encoded"""
     enc = aes_enc(data,key)
-    encoded = binascii.hexlify(enc)
+    encoded = annotate(tag,binascii.hexlify(enc))
     
     if linelength:
-        encoded = "\n".join(chunkify(annotate(tag,encoded),linelength))
+        encoded = "\n".join(chunkify(encoded,linelength))
     
     return encoded
       
@@ -133,20 +120,6 @@ def aes_dec(data,key, check=False):
         raise DecryptException, "AES decrypt failed. Decrypted data contains binary"
     
     return output
-    
-def aes_dec_base64(data,key, check=False, tag=AES64TAG):
-    """decrypt a base64 encoded encrypted block"""
-    tag, ciphertext = deannotate(joiner(data))
-    
-    if tag != tag:
-        raise DecryptException("Calling aes base64 decrypt on non valid text. tag seems to be %s and it should be %s"%(tag,AES64TAG))
-    
-    try:
-        ciphertext = base64.decodestring( ciphertext )
-    except TypeError, te:
-        # the credential binary block cannot be decoded
-        raise DecryptException("Credential does not seem to contain binary encrypted data")
-    return aes_dec(ciphertext, key, check)
 
 def aes_dec_hex(data,key, check=False, tag=AESHEXTAG):
     """decrypt a base64 encoded encrypted block"""
@@ -189,7 +162,13 @@ def looks_like_annotated_block(data):
     
     onelinedata = joiner(data)
     
-    tag,ciphertext = onelinedata.split('$')
+    try:
+        dummy,tag,ciphertext,dummy2 = onelinedata.split('$')
+    except ValueError, ve:
+        return False
+        
+    if dummy or dummy2:
+        return False
     
     if not looks_like_ciphertext(ciphertext):
         return False

@@ -36,7 +36,7 @@ from django.core import urlresolvers
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from urlparse import urlparse, urlunparse
-from crypto import aes_enc_hex, aes_dec_hex, looks_like_ciphertext
+from crypto import aes_enc_hex, aes_dec_hex, looks_like_ciphertext, looks_like_annotated_block, DecryptException
 from ccg.memcache import KeyspacedMemcacheClient
 from yabiadmin.decorators import func_create_memcache_keyname
 
@@ -568,8 +568,8 @@ class Credential(Base):
     @property
     def is_plaintext(self):
         """We assume its plaintext if it fails the crypto looks_like_annotated_block() function"""
-        return not looks_like_annotated_block(self.password) and not looks_like_annotated_block(self.key) and not looks_like_annotated_block(self.cert)
-
+        return not (looks_like_annotated_block(self.password) and looks_like_annotated_block(self.key) and looks_like_annotated_block(self.cert))
+        
     def on_pre_save(self):
         if self.is_plaintext:
             # temporarily protect this for saving
@@ -583,6 +583,16 @@ class Credential(Base):
     def on_login(self, username, password):
         """When a user logs in, this method is called on every one of their credentials, and gets passed their login password"""
         
+        #print "on_login(",self,username,password,")"
+        
+        # is it not encrypted at all?
+        if self.is_plaintext:
+            # we need to protect this with users password and save it back before we do anything else.
+            self.encrypt(password)
+            self.save()
+            
+       
+        # now the generic stuff to do with an encrypted password.    
         # 1.try and decrypt with this password
         try:
             self.decrypt(password)
@@ -592,10 +602,27 @@ class Credential(Base):
             
             # dont save
             self.send_to_memcache()
-            
         except DecryptException, de:
             # decrypt with password failed
-            pass
+            # 2. try to decrypt with symetric key
+            try:
+                self.unprotect()
+
+                # its symetricly encrypted... that means we need to encrypt with the users password and save it encrypted into db
+                self.encrypt(password)
+                self.save()
+                
+                # now decrypt and protect and save to memcache
+                self.decrypt(password)
+                
+                self.protect()
+
+                # dont save
+                self.send_to_memcache()
+            except DecryptException, de:
+                # failed to decrypt with users key or symetric key
+                raise DecryptException("Failed to decrypt %s with users key or symetric key!"%(self))
+            
             
             
 def deprecated_ensure_encrypted(username, password):

@@ -126,9 +126,9 @@ def login(request):
             }
             
             # for every credential for this user, call the login hook
-            creds = Credential.objects.filter(user__name=username, encrypted=True)
+            creds = Credential.objects.filter(user__name=username)
             for cred in creds:
-                cred.login( password )
+                cred.on_login( username,password )
                 
             response = {
                 "success": False,
