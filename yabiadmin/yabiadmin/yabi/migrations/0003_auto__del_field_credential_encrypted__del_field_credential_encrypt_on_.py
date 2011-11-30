@@ -1,4 +1,4 @@
-# encoding: utf-8
+# -*- coding: utf-8 -*-
 import datetime
 from south.db import db
 from south.v2 import SchemaMigration
@@ -7,6 +7,20 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        for cred in orm.Credential.objects.all():
+            if cred.encrypted:
+                assert cred.is_only_hex(), "Credential id %d: %s marked as encrypted yet contains non hex characters"%(cred.id,str(cred))
+                
+                from crypto import annotate, joiner, AESHEXTAG
+                cred.password = annotate(AESHEXTAG,joiner(cred.password))
+                cred.cert = annotate(AESHEXTAG,joiner(cred.cert))
+                cred.key = annotate(AESHEXTAG,joiner(cred.key))
+                cred.save()
+                
+            else:
+                #cred is plaintext. protect it and resave
+                cred.protect()
+                cred.save()
         
         # Deleting field 'Credential.encrypted'
         db.delete_column('yabi_credential', 'encrypted')

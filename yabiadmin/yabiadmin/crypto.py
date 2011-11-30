@@ -62,6 +62,8 @@ def deannotate( string ):
 
 # known tags
 AESHEXTAG = 'AES'
+AESTEMP = "AESTEMP"                     # tag for temporary decryption of aes for protection in memecache and on DB prior to user key encryption
+
 
 #
 # Some exceptions to notify callers of failure to decrypt if validity is being checked (not just blind decrypt)
@@ -141,7 +143,7 @@ def contains_binary(data):
     import string
     return False in [X in string.printable for X in data]
     
-def looks_like_ciphertext(data):
+def looks_like_hex_ciphertext(data):
     """returns true if the string 'data' looks like it is 
     actually cipher text. Of course we can not be 100% sure... but it makes a best guess attempt
     """
@@ -170,7 +172,7 @@ def looks_like_annotated_block(data):
     if dummy or dummy2:
         return False
     
-    if not looks_like_ciphertext(ciphertext):
+    if not looks_like_hex_ciphertext(ciphertext):
         return False
         
     return tag

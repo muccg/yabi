@@ -36,7 +36,7 @@ from django.core import urlresolvers
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from urlparse import urlparse, urlunparse
-from crypto import aes_enc_hex, aes_dec_hex, looks_like_ciphertext, looks_like_annotated_block, DecryptException
+from crypto import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, DecryptException, AESTEMP
 from ccg.memcache import KeyspacedMemcacheClient
 from yabiadmin.decorators import func_create_memcache_keyname
 
@@ -45,8 +45,6 @@ from constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK
 DEBUG = False
 
 class DecryptedCredentialNotAvailable(Exception): pass
-
-AESTEMP = "AESTEMP"                     # tag for temporary decryption of aes for protection in memecache and on DB prior to user key encryption
 
 import logging
 logger = logging.getLogger(__name__)
@@ -569,6 +567,12 @@ class Credential(Base):
     def is_plaintext(self):
         """We assume its plaintext if it fails the crypto looks_like_annotated_block() function"""
         return not (looks_like_annotated_block(self.password) and looks_like_annotated_block(self.key) and looks_like_annotated_block(self.cert))
+        
+    def is_only_hex(self):
+        """This is a legacy function to help migrating old encrypted creds to new creds.
+        It returns true if the key, cert and password fields are soley composed of hex characters.
+        """
+        return looks_like_hex_ciphertext(self.password) and looks_like_hex_ciphertext(self.key) and looks_like_hex_ciphertext(self.cert)
         
     def on_pre_save(self):
         if self.is_plaintext:
