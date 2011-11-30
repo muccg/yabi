@@ -14,7 +14,7 @@
 # http://www.pip-installer.org/en/latest/requirement-format.html
 #
 Fabric==1.2.2
-http://ccg-python-build.googlecode.com/files/ccg-python-build_v2_2_6.tar.gz
+http://ccg-python-build.googlecode.com/files/ccg-python-build-2.2.7.tar.gz
 virtualenv==1.6.4
 Mercurial>=1.9.3
 pycrypto>=1.9

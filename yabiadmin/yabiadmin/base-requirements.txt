@@ -25,7 +25,7 @@ SQLAlchemy==0.7.1
 amqplib==1.0.2
 anyjson==0.3.1
 carrot==0.10.7
-http://ccg-python-build.googlecode.com/files/ccg-python-build_v2_2_6.tar.gz
+http://ccg-python-build.googlecode.com/files/ccg-python-build-2.2.7.tar.gz
 celery==2.3.3
 django-celery==2.3.3
 # Use a pacthed version of django-kombu that fixes a known bug
