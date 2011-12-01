@@ -63,25 +63,27 @@ def snapshot(auto_confirm_purge=False):
     _ccg_deploy_snapshot()
     localPaths.target="snapshot"
 
-def release(migration=True, *args):
+def release(*args, **kwargs):
     """
     Make a release deployment
     """
+    migration = kwargs.get("migration", True)
     env.auto_confirm=False
     if len(args):
-        _ccg_deploy_release(tag=args[0])
+        _ccg_deploy_release(tag=args[0],migration=migration)
     else:
-        _ccg_deploy_release()
-        
-def testrelease(migration=True, *args):
+        _ccg_deploy_release(migration=migration)
+
+def testrelease(*args, **kwargs):
     """
     Make a release deployment using the dev settings file
     """
+    migration = kwargs.get("migration", True)
     env.auto_confirm=False
     if len(args):
-        _ccg_deploy_release(devrelease=True, tag=args[0])
+        _ccg_deploy_release(devrelease=True, tag=args[0], migration=migration)
     else:
-        _ccg_deploy_release(devrelease=True)
+        _ccg_deploy_release(devrelease=True, migration=migration)
 
 def purge(auto_confirm_purge=False):
     """

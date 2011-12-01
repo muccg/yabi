@@ -55,20 +55,22 @@ def snapshot(auto_confirm_purge=False, migration=True):
     env.auto_confirm_purge=auto_confirm_purge
     _ccg_deploy_snapshot(migration=migration)
 
-def release(migration=True, *args):
+def release(*args, **kwargs):
     """
     Make a release deployment
     """
+    migration = kwargs.get("migration", True)
     env.auto_confirm=False
     if len(args):
         _ccg_deploy_release(tag=args[0],migration=migration)
     else:
         _ccg_deploy_release(migration=migration)
 
-def testrelease(migration=True, *args):
+def testrelease(*args, **kwargs):
     """
     Make a release deployment using the dev settings file
     """
+    migration = kwargs.get("migration", True)
     env.auto_confirm=False
     if len(args):
         _ccg_deploy_release(devrelease=True, tag=args[0], migration=migration)
