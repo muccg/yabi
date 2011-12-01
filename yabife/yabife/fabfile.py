@@ -41,39 +41,39 @@ env.auto_confirm_purge = False #controls whether the confirmation prompt for pur
 env.ccg_pip_options = "--download-cache=/tmp --use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors=http://d.pypi.python.org/ --mirrors=http://e.pypi.python.org/"
 
 
-def deploy(auto_confirm_purge = False):
+def deploy(auto_confirm_purge=False, migration=True):
     """
     Make a user deployment
     """
     env.auto_confirm_purge = auto_confirm_purge
-    _ccg_deploy_user()
+    _ccg_deploy_user(migration=migration)
 
-def snapshot(auto_confirm_purge=False):
+def snapshot(auto_confirm_purge=False, migration=True):
     """
     Make a snapshot deployment
     """
     env.auto_confirm_purge=auto_confirm_purge
-    _ccg_deploy_snapshot()
+    _ccg_deploy_snapshot(migration=migration)
 
-def release(*args):
+def release(migration=True, *args):
     """
     Make a release deployment
     """
     env.auto_confirm=False
     if len(args):
-        _ccg_deploy_release(tag=args[0])
+        _ccg_deploy_release(tag=args[0],migration=migration)
     else:
-        _ccg_deploy_release()
-        
-def testrelease(*args):
+        _ccg_deploy_release(migration=migration)
+
+def testrelease(migration=True, *args):
     """
     Make a release deployment using the dev settings file
     """
     env.auto_confirm=False
     if len(args):
-        _ccg_deploy_release(devrelease=True, tag=args[0])
+        _ccg_deploy_release(devrelease=True, tag=args[0], migration=migration)
     else:
-        _ccg_deploy_release(devrelease=True)
+        _ccg_deploy_release(devrelease=True, migration=migration)
 
 def purge(auto_confirm_purge=False):
     """
@@ -88,3 +88,10 @@ def purge_snapshot(auto_confirm_purge = False):
     """
     env.auto_confirm_purge = auto_confirm_purge
     _ccg_purge_snapshot()
+
+
+
+
+
+
+

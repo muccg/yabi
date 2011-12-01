@@ -63,7 +63,7 @@ def snapshot(auto_confirm_purge=False):
     _ccg_deploy_snapshot()
     localPaths.target="snapshot"
 
-def release(*args):
+def release(migration=True, *args):
     """
     Make a release deployment
     """
@@ -73,7 +73,7 @@ def release(*args):
     else:
         _ccg_deploy_release()
         
-def testrelease(*args):
+def testrelease(migration=True, *args):
     """
     Make a release deployment using the dev settings file
     """
