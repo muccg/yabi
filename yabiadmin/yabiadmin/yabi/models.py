@@ -419,8 +419,6 @@ class Credential(Base):
     backends = models.ManyToManyField('Backend', through='BackendCredential', null=True, blank=True)
 
     expires_on = models.DateTimeField( null=True )                      # null mean never expire this
-    encrypted = models.BooleanField( null=False )
-    encrypt_on_login = models.BooleanField( null=False, default=True )
     
     username.help_text="The username on the backend this credential is for."
     user.help_text="Yabi username."
