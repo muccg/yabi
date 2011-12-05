@@ -5,35 +5,16 @@ from south.v2 import DataMigration
 from django.db import models
 import os
 
+from ..migrationutils import add_user
+
 class Migration(DataMigration):
 
     def forwards(self, orm):
 
-        django_user_1 = orm['auth.user']()
-        django_user_1.last_modified_by = django_user_1
-        django_user_1.last_modified_on = datetime.datetime(2011, 9, 26, 10, 56, 16)
-        django_user_1.created_by = django_user_1
-        django_user_1.created_on = datetime.datetime(2011, 9, 26, 10, 56, 16)
-        django_user_1.username = u'admin'
-        django_user_1.password = "sha1$7f57a$97456404bf498ef0474fcc3209279255c9115610"
-        django_user_1.email = "admin@example.com"
-        django_user_1.is_active = True
-        django_user_1.is_staff = True
-        django_user_1.is_superuser = True
-        
+        django_user_1 = add_user( orm, username = 'admin', password = 'admin', email="admin@example.com", staff=True, superuser=True )
         django_user_1.save()
         
-        django_user_2 = orm['auth.user']()
-        django_user_2.last_modified_by = django_user_1
-        django_user_2.last_modified_on = datetime.datetime(2011, 9, 26, 10, 56, 16)
-        django_user_2.created_by = django_user_1
-        django_user_2.created_on = datetime.datetime(2011, 9, 26, 10, 56, 16)
-        django_user_2.username = u'demo'
-        django_user_2.password = "sha1$2dd8b$2bcdd04e75eb454a041395f697a72daca9dc5ff4"
-        django_user_2.email = "user@example.com"
-        django_user_2.is_active = True
-        django_user_2.is_staff = False
-        django_user_2.is_superuser = False
+        django_user_2 = add_user( orm, username = 'demo', password = 'demo', email="user@example.com" )
         django_user_2.save()
         
         yabi_user_1 = orm['yabi.User']()
