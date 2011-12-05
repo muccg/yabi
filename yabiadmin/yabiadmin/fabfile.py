@@ -16,7 +16,6 @@ env.content_includes.extend([]) # add quoted patterns here for extra rsync inclu
 env.auto_confirm_purge = False #controls whether the confirmation prompt for purge is used
 
 env.celeryd_options = "--config=settings -l debug -E -B"
-
 env.ccg_pip_options = "--download-cache=/tmp --use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors=http://d.pypi.python.org/ --mirrors=http://e.pypi.python.org/"
 
 
@@ -68,11 +67,11 @@ def release(*args, **kwargs):
     Make a release deployment
     """
     migration = kwargs.get("migration", True)
+    requirements = kwargs.get("requirements", "requirements.txt")
+    tag = kwargs.get("tag", None)
+    env.ccg_requirements = requirements
     env.auto_confirm=False
-    if len(args):
-        _ccg_deploy_release(tag=args[0],migration=migration)
-    else:
-        _ccg_deploy_release(migration=migration)
+    _ccg_deploy_release(tag=tag,migration=migration)
 
 def testrelease(*args, **kwargs):
     """
