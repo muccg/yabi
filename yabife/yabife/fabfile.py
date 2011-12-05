@@ -60,11 +60,11 @@ def release(*args, **kwargs):
     Make a release deployment
     """
     migration = kwargs.get("migration", True)
+    requirements = kwargs.get("requirements", "requirements.txt")
+    tag = kwargs.get("tag", None)
+    env.ccg_requirements = requirements
     env.auto_confirm=False
-    if len(args):
-        _ccg_deploy_release(tag=args[0],migration=migration)
-    else:
-        _ccg_deploy_release(migration=migration)
+    _ccg_deploy_release(tag=tag,migration=migration)
 
 def testrelease(*args, **kwargs):
     """
