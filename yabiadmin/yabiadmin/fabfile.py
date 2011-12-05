@@ -48,12 +48,12 @@ class LocalPaths():
 localPaths = LocalPaths()
 
 
-def deploy(auto_confirm_purge = False):
+def deploy(auto_confirm_purge = False, migration = True):
     """
     Make a user deployment
     """
     env.auto_confirm_purge = auto_confirm_purge
-    _ccg_deploy_user()
+    _ccg_deploy_user(migration)
 
 def snapshot(auto_confirm_purge=False):
     """
