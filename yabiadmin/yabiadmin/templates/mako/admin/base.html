@@ -56,7 +56,7 @@ ${user.first_name}
 % else:
 ${user.username}
 % endif
-</strong>. ${self.block_userlinks()}<%def name="block_userlinks()"><% docsroot = url(django_admindocs_docroot) %>
+</strong>. ${self.block_userlinks()}<%def name="block_userlinks()">
 % if docsroot:
 <a href="${docsroot}">${trans('Documentation')}</a> / 
 % endif
