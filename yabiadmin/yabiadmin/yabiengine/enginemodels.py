@@ -209,8 +209,12 @@ class EngineJob(Job):
     def __init__(self, *args, **kwargs):
         ret = Job.__init__(self,*args, **kwargs)
         if self.command_template:
-            self.template = CommandTemplate()
-            self.template.deserialise(self.command_template)
+            try:
+                self.template = CommandTemplate()
+                self.template.deserialise(self.command_template)
+            except ValueError, e: 
+                logger.warning("Unable to deserialise command_template on engine job id: %s" % self.id)
+
         else:
             self.template = None
         return ret
