@@ -72,6 +72,28 @@ def yabi_backend(name, description, scheme, hostname, port, path, max_connection
     yabi_backend.submission = submission
     return yabi_backend
         
+def yabi_credential(credentialuser, description, username="", password="", cert="", key="", user=None, orm=None):
+    user = user or settings.user
+    orm = orm or settings.orm
+    
+    yabi_credential = orm['yabi.Credential']()
+    yabi_credential.last_modified_by = user
+    yabi_credential.last_modified_on = datetime.now()
+    yabi_credential.created_by = user
+    yabi_credential.created_on = datetime.now()
+    yabi_credential.description = description
+    yabi_credential.username = username
+    yabi_credential.password = password
+    yabi_credential.cert = cert
+    yabi_credential.key = key
+    yabi_credential.user = credentialuser
+    yabi_credential.expires_on = datetime(2111, 1, 1, 12, 0)
+    
+    yabi_credential.encrypted = False
+    yabi_credential.encrypt_on_login = False
+    
+    return yabi_credential
+        
 def yabi_tool(name, display_name, path, description, backend, fs_backend, enabled=True, accepts_input=False, cpus='', walltime='',module='',queue='',max_memory='',job_type='',lcopy=False, link=False, user=None, orm=None):
     user = user or settings.user
     orm = orm or settings.orm
@@ -125,15 +147,34 @@ def yabi_toolgroup(name, user=None, orm=None):
     yabi_toolgroup.last_modified_by = user
     yabi_toolgroup.created_on = datetime.now()
     yabi_toolgroup.created_by = user
-    yabi_toolgroup.name = u'select data'
+    yabi_toolgroup.name = name
     return yabi_toolgroup
     
-#def yabi_user(user=None, orm=None):
-    #user = user or settings.user
-    #orm = orm or settings.orm
+def yabi_toolset(name, user=None, orm=None):
+    user = user or settings.user
+    orm = orm or settings.orm
     
+    yabi_toolset = orm['yabi.ToolSet']()
+    yabi_toolset.last_modified_on = datetime.now()
+    yabi_toolset.last_modified_by = user
+    yabi_toolset.created_on = datetime.now()
+    yabi_toolset.created_by = user
+    yabi_toolset.name = name
+    return yabi_toolset
  
- 
+def yabi_toolgrouping(toolgroup, tool, toolset, user=None, orm=None):
+    user = user or settings.user
+    orm = orm or settings.orm
+    
+    yabi_toolgrouping = orm['yabi.ToolGrouping']()
+    yabi_toolgrouping.last_modified_on = datetime.now()
+    yabi_toolgrouping.last_modified_by = user
+    yabi_toolgrouping.created_on = datetime.now()
+    yabi_toolgrouping.created_by = user
+    yabi_toolgrouping.tool_group = toolgroup
+    yabi_toolgrouping.tool = tool
+    yabi_toolgrouping.tool_set = toolset
+    return yabi_toolgrouping
 
 def yabi_fileextension(pattern, user=None, orm=None):
     user = user or settings.user

@@ -58,37 +58,15 @@ class Migration(DataMigration):
         yabi_toolgroup_1 = yabi_toolgroup('select data')
         yabi_toolgroup_1.save()
 
-        yabi_toolset_1 = orm['yabi.ToolSet']()
-        yabi_toolset_1.last_modified_on = datetime.datetime(2011, 9, 26, 10, 56, 31)
-        yabi_toolset_1.created_on = datetime.datetime(2011, 9, 26, 10, 56, 9)
-        yabi_toolset_1.name = u'alltools'
+        yabi_toolset_1 = yabi_toolset('alltools')
         yabi_toolset_1.save()
-
-        
-        yabi_toolgrouping_1 = orm['yabi.ToolGrouping']()
-        yabi_toolgrouping_1.last_modified_on = datetime.datetime(2011, 9, 26, 11, 10, 21)
-        yabi_toolgrouping_1.created_on = datetime.datetime(2011, 9, 26, 11, 10, 21)
-        yabi_toolgrouping_1.tool_group = yabi_toolgroup_1
-        yabi_toolgrouping_1.tool = yabi_tool_1
-        yabi_toolgrouping_1.tool_set = yabi_toolset_1
+       
+        yabi_toolgrouping_1 = yabi_toolgrouping( yabi_toolgroup_1, yabi_tool_1, yabi_toolset_1 )
         yabi_toolgrouping_1.save()
 
         yabi_tooloutputextension_1.save()
 
-        yabi_credential_1 = orm['yabi.Credential']()
-        yabi_credential_1.last_modified_by = django_user_1
-        yabi_credential_1.last_modified_on = datetime.datetime(2011, 9, 26, 11, 8, 52)
-        yabi_credential_1.created_by = django_user_1
-        yabi_credential_1.created_on = datetime.datetime(2011, 9, 26, 11, 1, 39)
-        yabi_credential_1.description = u'null credential'
-        yabi_credential_1.username = u'demo'
-        yabi_credential_1.password = u''
-        yabi_credential_1.cert = u''
-        yabi_credential_1.key = u''
-        yabi_credential_1.user = yabi_user_1
-        yabi_credential_1.expires_on = datetime.datetime(2111, 1, 1, 12, 0)
-        yabi_credential_1.encrypted = False
-        yabi_credential_1.encrypt_on_login = False
+        yabi_credential_1 = yabi_credential(yabi_user_1,'null credential',username='demo')
         yabi_credential_1.save()
 
         yabi_backend_1 = orm.Backend()
