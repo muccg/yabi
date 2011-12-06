@@ -5,141 +5,53 @@ from south.v2 import DataMigration
 from django.db import models
 import os
 
-from ..migrationutils import add_user
+from ..migrationutils import auth_user, yabi_fileextension, yabi_user, yabi_backend, yabi_tool
+from ..migrationutils import set_default_user, set_default_orm
 
 class Migration(DataMigration):
 
     def forwards(self, orm):
-
-        django_user_1 = add_user( orm, username = 'admin', password = 'admin', email="admin@example.com", staff=True, superuser=True )
+        # all calls to this orm
+        set_default_orm(orm)
+        
+        # first lets just make a first user to own future objects
+        django_user_1 = auth_user( username = 'admin', password = 'admin', email="admin@example.com", staff=True, superuser=True )
         django_user_1.save()
         
-        django_user_2 = add_user( orm, username = 'demo', password = 'demo', email="user@example.com" )
+        # make this the user that owns all the future objects that are created,
+        set_default_user(django_user_1)
+       
+        django_user_2 = auth_user( username = 'demo', password = 'demo', email="user@example.com" )
         django_user_2.save()
         
-        yabi_user_1 = orm['yabi.User']()
-        yabi_user_1.last_modified_by = django_user_1
-        yabi_user_1.last_modified_on = datetime.datetime(2011, 9, 26, 10, 56, 16)
-        yabi_user_1.created_by = django_user_1
-        yabi_user_1.created_on = datetime.datetime(2011, 9, 26, 10, 56, 16)
-        yabi_user_1.name = u'admin'
-        
-        #yabi_user_1.last_login = "2011-09-26 11:08:44", 
+        yabi_user_1 = yabi_user('admin')
         yabi_user_1.save()
-        
-        # now set it correctly
-        yabi_user_1.last_modified_by = django_user_1
-        yabi_user_1.created_by = django_user_1
-        yabi_user_1.save()
-        
-        yabi_user_2 = orm['yabi.User']()
-        yabi_user_2.last_modified_by = django_user_1
-        yabi_user_2.last_modified_on = datetime.datetime(2011, 9, 26, 10, 56, 16)
-        yabi_user_2.created_by = django_user_1
-        yabi_user_2.created_on = datetime.datetime(2011, 9, 26, 10, 56, 16)
-        yabi_user_2.name = u'demo'
-        
-        
-        
+        yabi_user_2 = yabi_user('demo')
         yabi_user_2.save()
         
-        # now set it correctly
-        yabi_user_2.last_modified_by = django_user_1
-        yabi_user_2.created_by = django_user_1
-        yabi_user_2.save()
-        
-        yabi_fileextension_1 = orm.FileExtension()
-        yabi_fileextension_1.last_modified_by = django_user_1
-        yabi_fileextension_1.last_modified_on = datetime.datetime(2011, 9, 26, 11, 9, 31)
-        yabi_fileextension_1.created_by = django_user_1
-        yabi_fileextension_1.created_on = datetime.datetime(2011, 9, 26, 11, 9, 31)
-        yabi_fileextension_1.pattern = u'*'
+        yabi_fileextension_1 = yabi_fileextension("*")
         yabi_fileextension_1.save()
-
-        yabi_fileextension_2 = orm.FileExtension()
-        yabi_fileextension_2.last_modified_by = django_user_1
-        yabi_fileextension_2.last_modified_on = datetime.datetime(2009, 6, 26, 12, 44, 17)
-        yabi_fileextension_2.created_by = django_user_1
-        yabi_fileextension_2.created_on = datetime.datetime(2009, 6, 26, 12, 44, 17)
-        yabi_fileextension_2.pattern = u'*.fa'
+        yabi_fileextension_2 = yabi_fileextension("*.fa")
         yabi_fileextension_2.save()
-
-        yabi_fileextension_3 = orm.FileExtension()
-        yabi_fileextension_3.last_modified_by = django_user_1
-        yabi_fileextension_3.last_modified_on = datetime.datetime(2009, 6, 26, 12, 44, 17)
-        yabi_fileextension_3.created_by = django_user_1
-        yabi_fileextension_3.created_on = datetime.datetime(2009, 6, 26, 12, 44, 17)
-        yabi_fileextension_3.pattern = u'*.fna'
+        yabi_fileextension_3 = yabi_fileextension("*.fna")
         yabi_fileextension_3.save()
-
-        yabi_fileextension_4 = orm.FileExtension()
-        yabi_fileextension_4.last_modified_by = django_user_1
-        yabi_fileextension_4.last_modified_on = datetime.datetime(2009, 6, 26, 12, 44, 17)
-        yabi_fileextension_4.created_by = django_user_1
-        yabi_fileextension_4.created_on = datetime.datetime(2009, 6, 26, 12, 44, 17)
-        yabi_fileextension_4.pattern = u'*.faa'
+        yabi_fileextension_4 = yabi_fileextension("*.faa")
         yabi_fileextension_4.save()
-
-        yabi_fileextension_5 = orm.FileExtension()
-        yabi_fileextension_5.last_modified_by = django_user_1
-        yabi_fileextension_5.last_modified_on = datetime.datetime(2009, 6, 26, 12, 44, 20)
-        yabi_fileextension_5.created_by = django_user_1
-        yabi_fileextension_5.created_on = datetime.datetime(2009, 6, 26, 12, 44, 20)
-        yabi_fileextension_5.pattern = u'*.fasta'
+        yabi_fileextension_5 = yabi_fileextension("*.fasta")
         yabi_fileextension_5.save()
-
-        yabi_fileextension_6 = orm.FileExtension()
-        yabi_fileextension_6.last_modified_on = datetime.datetime(2011, 4, 27, 14, 22, 31)
-        yabi_fileextension_6.created_on = datetime.datetime(2011, 4, 27, 14, 22, 31)
-        yabi_fileextension_6.pattern = u'*.ffn'
+        yabi_fileextension_6 = yabi_fileextension('*.ffn')
         yabi_fileextension_6.save()
-
-        yabi_fileextension_7 = orm.FileExtension()
-        yabi_fileextension_7.last_modified_on = datetime.datetime(2011, 4, 27, 14, 22, 48)
-        yabi_fileextension_7.created_on = datetime.datetime(2011, 4, 27, 14, 22, 48)
-        yabi_fileextension_7.pattern = u'*.frn'
+        yabi_fileextension_7 = yabi_fileextension('*.frn')
         yabi_fileextension_7.save()
-        
-        
-        yabi_backend_1 = orm['yabi.Backend']()
-        yabi_backend_1.last_modified_by = django_user_1
-        yabi_backend_1.last_modified_on = datetime.datetime(2011, 9, 26, 10, 59, 4)
-        yabi_backend_1.created_by = django_user_1
-        yabi_backend_1.created_on = datetime.datetime(2011, 9, 26, 10, 59, 4)
-        yabi_backend_1.name = u'nullbackend'
-        yabi_backend_1.description = u'Use this backend when tools should not be run ie fileselector'
-        yabi_backend_1.scheme = u'null'
-        yabi_backend_1.hostname = u'localhost.localdomain'
-        yabi_backend_1.port = None
-        yabi_backend_1.path = u'/'
-        yabi_backend_1.max_connections = None
-        yabi_backend_1.lcopy_supported = True
-        yabi_backend_1.link_supported = True
-        yabi_backend_1.submission = u''
+   
+        yabi_backend_1=yabi_backend('nullbackend','Use this backend when tools should not be run ie fileselector','null','localhost.localdomain',None,'/')
         yabi_backend_1.save()
         
-        
-        yabi_tool_1 = orm.Tool()
-        yabi_tool_1.last_modified_by = django_user_1
-        yabi_tool_1.last_modified_on = datetime.datetime(2011, 9, 26, 11, 10, 5)
-        yabi_tool_1.created_by = None
-        yabi_tool_1.created_on = datetime.datetime(2011, 9, 26, 11, 9, 31)
-        yabi_tool_1.name = u'fileselector'
-        yabi_tool_1.display_name = u'select file'
-        yabi_tool_1.path = u''
-        yabi_tool_1.description = u'Select a file from your workspace directory.'
-        yabi_tool_1.enabled = True
-        yabi_tool_1.backend = yabi_backend_1
-        yabi_tool_1.fs_backend = yabi_backend_1
-        yabi_tool_1.accepts_input = False
-        yabi_tool_1.cpus = u''
-        yabi_tool_1.walltime = u''
-        yabi_tool_1.module = u''
-        yabi_tool_1.queue = u''
-        yabi_tool_1.max_memory = None
-        yabi_tool_1.job_type = u''
-        yabi_tool_1.lcopy_supported = False
-        yabi_tool_1.link_supported = False
+        yabi_tool_1 = yabi_tool(name = 'fileselector', display_name='select file', path='', description='Select a file from your workspace directory.',
+                                backend=yabi_backend_1, fs_backend=yabi_backend_1,
+                                accepts_input=False,
+                                cpus='',
+                                walltime='',module='',queue='',max_memory='',job_type='',lcopy=False, link=False )
         yabi_tool_1.save()
         
         yabi_tooloutputextension_1 = orm['yabi.ToolOutputExtension']()
