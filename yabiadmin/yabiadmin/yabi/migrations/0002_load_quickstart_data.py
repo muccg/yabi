@@ -5,8 +5,7 @@ from south.v2 import DataMigration
 from django.db import models
 import os
 
-from ..migrationutils import auth_user, yabi_fileextension, yabi_user, yabi_backend, yabi_tool
-from ..migrationutils import set_default_user, set_default_orm
+from ..migrationutils import *
 
 class Migration(DataMigration):
 
@@ -54,20 +53,9 @@ class Migration(DataMigration):
                                 walltime='',module='',queue='',max_memory='',job_type='',lcopy=False, link=False )
         yabi_tool_1.save()
         
-        yabi_tooloutputextension_1 = orm['yabi.ToolOutputExtension']()
-        yabi_tooloutputextension_1.last_modified_by = None
-        yabi_tooloutputextension_1.last_modified_on = datetime.datetime(2011, 9, 26, 11, 9, 31)
-        yabi_tooloutputextension_1.created_by = None
-        yabi_tooloutputextension_1.created_on = datetime.datetime(2011, 9, 26, 11, 9, 31)
-        yabi_tooloutputextension_1.must_exist = None
-        yabi_tooloutputextension_1.tool = yabi_tool_1
-        yabi_tooloutputextension_1.file_extension = yabi_fileextension_1
-        yabi_tooloutputextension_1.must_be_larger_than = None
+        yabi_tooloutputextension_1 = yabi_tooloutputextension( yabi_tool_1, yabi_fileextension_1 )
         
-        yabi_toolgroup_1 = orm['yabi.ToolGroup']()
-        yabi_toolgroup_1.last_modified_on = datetime.datetime(2011, 9, 26, 11, 10, 21)
-        yabi_toolgroup_1.created_on = datetime.datetime(2011, 9, 26, 10, 57, 23)
-        yabi_toolgroup_1.name = u'select data'
+        yabi_toolgroup_1 = yabi_toolgroup('select data')
         yabi_toolgroup_1.save()
 
         yabi_toolset_1 = orm['yabi.ToolSet']()

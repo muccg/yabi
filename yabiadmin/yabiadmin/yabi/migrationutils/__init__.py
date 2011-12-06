@@ -99,9 +99,34 @@ def yabi_tool(name, display_name, path, description, backend, fs_backend, enable
     yabi_tool.link_supported = link
     return yabi_tool
 
-#def yabi_user(user=None, orm=None):
-    #user = user or settings.user
-    #orm = orm or settings.orm
+def yabi_tooloutputextension(tool, extension, user=None, orm=None):
+    user = user or settings.user
+    orm = orm or settings.orm
+    
+    yabi_tooloutputextension = orm['yabi.ToolOutputExtension']()
+    yabi_tooloutputextension.last_modified_by = user
+    yabi_tooloutputextension.last_modified_on = datetime.now()
+    yabi_tooloutputextension.created_by = user
+    yabi_tooloutputextension.created_on = datetime.now()
+    yabi_tooloutputextension.tool = tool
+    yabi_tooloutputextension.file_extension = extension
+    
+    yabi_tooloutputextension.must_exist = None 
+    yabi_tooloutputextension.must_be_larger_than = None 
+    
+    return yabi_tooloutputextension
+
+def yabi_toolgroup(name, user=None, orm=None):
+    user = user or settings.user
+    orm = orm or settings.orm
+    
+    yabi_toolgroup = orm['yabi.ToolGroup']()
+    yabi_toolgroup.last_modified_on = datetime.now()
+    yabi_toolgroup.last_modified_by = user
+    yabi_toolgroup.created_on = datetime.now()
+    yabi_toolgroup.created_by = user
+    yabi_toolgroup.name = u'select data'
+    return yabi_toolgroup
     
 #def yabi_user(user=None, orm=None):
     #user = user or settings.user
