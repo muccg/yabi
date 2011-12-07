@@ -1,5 +1,5 @@
 #
-# Build requirements for Yabefe
+# Requirements for YabiFE
 #
 # To see what requirements your current virtualenv is using type:
 #
@@ -13,10 +13,5 @@
 #
 # http://www.pip-installer.org/en/latest/requirement-format.html
 #
-Fabric==1.2.2
-http://ccg-python-build.googlecode.com/files/ccg-python-build-2.2.9.tar.gz
-virtualenv==1.6.4
-Mercurial>=1.9.3
-pycrypto>=1.9
-paramiko>=1.7.6
-Werkzeug==0.6.2
+MySQL-python==1.2.3
+-r base-requirements.txt
