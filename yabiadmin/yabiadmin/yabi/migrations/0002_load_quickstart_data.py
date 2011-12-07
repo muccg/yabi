@@ -43,6 +43,9 @@ class Migration(DataMigration):
         yabi_fileextension_7 = yabi_fileextension('*.frn')
         yabi_fileextension_7.save()
    
+        yabi_filetype_1 = yabi_filetype('fasta','Fasta bioinformatics file format', [yabi_fileextension_2, yabi_fileextension_3, yabi_fileextension_4, yabi_fileextension_5, yabi_fileextension_6, yabi_fileextension_7])
+        yabi_filetype_1.save()
+   
         yabi_backend_1=yabi_backend('nullbackend','Use this backend when tools should not be run ie fileselector','null','localhost.localdomain',None,'/')
         yabi_backend_1.save()
         
@@ -69,205 +72,61 @@ class Migration(DataMigration):
         yabi_credential_1 = yabi_credential(yabi_user_1,'null credential',username='demo')
         yabi_credential_1.save()
 
-        yabi_backend_1 = orm.Backend()
-        yabi_backend_1.last_modified_by = django_user_1
-        yabi_backend_1.last_modified_on = datetime.datetime(2011, 9, 26, 10, 59, 4)
-        yabi_backend_1.created_by = django_user_1
-        yabi_backend_1.created_on = datetime.datetime(2011, 9, 26, 10, 59, 4)
-        yabi_backend_1.name = u'nullbackend'
-        yabi_backend_1.description = u'Use this backend when tools should not be run ie fileselector'
-        yabi_backend_1.scheme = u'null'
-        yabi_backend_1.hostname = u'localhost.localdomain'
-        yabi_backend_1.port = None
-        yabi_backend_1.path = u'/'
-        yabi_backend_1.max_connections = None
-        yabi_backend_1.lcopy_supported = True
-        yabi_backend_1.link_supported = True
-        yabi_backend_1.submission = u''
-        yabi_backend_1.save()
-
-        yabi_backend_2 = orm.Backend()
-        yabi_backend_2.last_modified_by = django_user_1
-        yabi_backend_2.last_modified_on = datetime.datetime(2011, 11, 15, 10, 48, 13)
-        yabi_backend_2.created_by = django_user_1
-        yabi_backend_2.created_on = datetime.datetime(2011, 11, 15, 10, 47, 24)
-        yabi_backend_2.name = u'Local Filesystem'
-        yabi_backend_2.description = u'This backend gives access to the file system on the machine running Yabi.'
-        yabi_backend_2.scheme = u'localfs'
-        yabi_backend_2.hostname = u'localhost'
-        yabi_backend_2.port = None
-        yabi_backend_2.path = u'/'
-        yabi_backend_2.max_connections = None
-        yabi_backend_2.lcopy_supported = True
-        yabi_backend_2.link_supported = True
-        yabi_backend_2.submission = u''
+        yabi_backend_2 = yabi_backend('Local Filesystem','This backend gives access to the file system on the machine running Yabi.','localfs','localhost',None,'/')
         yabi_backend_2.save()
 
-        yabi_backend_3 = orm.Backend()
-        yabi_backend_3.last_modified_by = django_user_1
-        yabi_backend_3.last_modified_on = datetime.datetime(2011, 11, 15, 10, 48, 4)
-        yabi_backend_3.created_by = django_user_1
-        yabi_backend_3.created_on = datetime.datetime(2011, 11, 15, 10, 48, 4)
-        yabi_backend_3.name = u'Local Execution'
-        yabi_backend_3.description = u'This backend gives access to execution on the machine running Yabi.'
-        yabi_backend_3.scheme = u'localex'
-        yabi_backend_3.hostname = u'localhost'
-        yabi_backend_3.port = None
-        yabi_backend_3.path = u'/'
-        yabi_backend_3.max_connections = None
-        yabi_backend_3.lcopy_supported = True
-        yabi_backend_3.link_supported = True
-        yabi_backend_3.submission = u''
+        yabi_backend_3 = yabi_backend('Local Execution','This backend gives access to execution on the machine running Yabi.','localex','localhost',None,'/')
         yabi_backend_3.save()
 
-        yabi_backendcredential_1 = orm.BackendCredential()
-        yabi_backendcredential_1.last_modified_by = django_user_1
-        yabi_backendcredential_1.last_modified_on = datetime.datetime(2011, 10, 11, 12, 28, 58)
-        yabi_backendcredential_1.created_by = django_user_1
-        yabi_backendcredential_1.created_on = datetime.datetime(2011, 10, 11, 12, 28, 4)
-        yabi_backendcredential_1.backend = yabi_backend_1
-        yabi_backendcredential_1.credential = yabi_credential_1
-        yabi_backendcredential_1.homedir = u''
-        yabi_backendcredential_1.visible = False
-        yabi_backendcredential_1.default_stageout = False
-        yabi_backendcredential_1.submission = u''
+        yabi_backendcredential_1 = yabi_backendcredential(yabi_backend_1, yabi_credential_1, homedir='')
         yabi_backendcredential_1.save()
 
-        yabi_backendcredential_2 = orm.BackendCredential()
-        yabi_backendcredential_2.last_modified_by = django_user_1
-        yabi_backendcredential_2.last_modified_on = datetime.datetime(2011, 12, 1, 17, 12, 26, 938282)
-        yabi_backendcredential_2.created_by = django_user_1
-        yabi_backendcredential_2.created_on = datetime.datetime(2011, 11, 15, 10, 48, 48)
-        yabi_backendcredential_2.backend = yabi_backend_3
-        yabi_backendcredential_2.credential = yabi_credential_1
-        yabi_backendcredential_2.homedir = u'/home/cwellington/'
-        yabi_backendcredential_2.visible = False
-        yabi_backendcredential_2.default_stageout = False
-        yabi_backendcredential_2.submission = u''
+        yabi_backendcredential_2 = yabi_backendcredential(yabi_backend_3, yabi_credential_1, '/home/cwellington/')
         yabi_backendcredential_2.save()
 
-        yabi_backendcredential_3 = orm.BackendCredential()
-        yabi_backendcredential_3.last_modified_by = django_user_1
-        yabi_backendcredential_3.last_modified_on = datetime.datetime(2011, 12, 1, 17, 12, 26, 947421)
-        yabi_backendcredential_3.created_by = django_user_1
-        yabi_backendcredential_3.created_on = datetime.datetime(2011, 11, 15, 10, 49, 4)
-        yabi_backendcredential_3.backend = yabi_backend_2
-        yabi_backendcredential_3.credential = yabi_credential_1
-        yabi_backendcredential_3.homedir = u'/home/cwellington/'
-        yabi_backendcredential_3.visible = True
-        yabi_backendcredential_3.default_stageout = True
-        yabi_backendcredential_3.submission = u''
+        yabi_backendcredential_3 = yabi_backendcredential(yabi_backend_2, yabi_credential_1, '/home/cwellington/', visible=True, default_stageout=True)
         yabi_backendcredential_3.save()
 
         yabi_userprofile_1 = orm.UserProfile()
         yabi_userprofile_1.user = django_user_1
         yabi_userprofile_1.save()
 
-        yabi_filetype_1 = orm.FileType()
-        yabi_filetype_1.last_modified_on = datetime.datetime(2011, 4, 27, 14, 22, 53)
-        yabi_filetype_1.created_by = django_user_1
-        yabi_filetype_1.created_on = datetime.datetime(2009, 6, 26, 12, 44, 20)
-        yabi_filetype_1.name = u'fasta'
-        yabi_filetype_1.description = u''
-        yabi_filetype_1.save()
-
-        yabi_filetype_1.extensions.add(yabi_fileextension_2)
-        yabi_filetype_1.extensions.add(yabi_fileextension_3)
-        yabi_filetype_1.extensions.add(yabi_fileextension_4)
-        yabi_filetype_1.extensions.add(yabi_fileextension_5)
-        yabi_filetype_1.extensions.add(yabi_fileextension_6)
-        yabi_filetype_1.extensions.add(yabi_fileextension_7)
-
-        yabi_parameterswitchuse_1 = orm.ParameterSwitchUse()
-        yabi_parameterswitchuse_1.last_modified_on = datetime.datetime(2010, 4, 21, 16, 29, 50)
-        yabi_parameterswitchuse_1.created_by = django_user_1
-        yabi_parameterswitchuse_1.created_on = datetime.datetime(2009, 3, 31, 16, 40, 26)
-        yabi_parameterswitchuse_1.display_text = u'switchOnly'
-        yabi_parameterswitchuse_1.formatstring = u'%(switch)s'
-        yabi_parameterswitchuse_1.description = u'Only the switch will be passed in the argument list.'
+        yabi_parameterswitchuse_1 = yabi_parameterswitchuse('switchOnly','%(switch)s','Only the switch will be passed in the argument list.')
         yabi_parameterswitchuse_1.save()
 
-        yabi_parameterswitchuse_2 = orm.ParameterSwitchUse()
-        yabi_parameterswitchuse_2.last_modified_on = datetime.datetime(2010, 4, 21, 16, 29, 57)
-        yabi_parameterswitchuse_2.created_by = django_user_1
-        yabi_parameterswitchuse_2.created_on = datetime.datetime(2009, 3, 31, 16, 41, 11)
-        yabi_parameterswitchuse_2.display_text = u'valueOnly'
-        yabi_parameterswitchuse_2.formatstring = u'%(value)s'
-        yabi_parameterswitchuse_2.description = u"Only the value will be passed in the argument list (ie. the switch won't be used)"
+        yabi_parameterswitchuse_2 = yabi_parameterswitchuse('valueOnly','%(value)s',"Only the value will be passed in the argument list (ie. the switch won't be used)")
         yabi_parameterswitchuse_2.save()
 
-        yabi_parameterswitchuse_3 = orm.ParameterSwitchUse()
-        yabi_parameterswitchuse_3.last_modified_on = datetime.datetime(2010, 4, 16, 13, 12, 43)
-        yabi_parameterswitchuse_3.created_by = django_user_1
-        yabi_parameterswitchuse_3.created_on = datetime.datetime(2009, 3, 31, 16, 42, 10)
-        yabi_parameterswitchuse_3.display_text = u'both'
-        yabi_parameterswitchuse_3.formatstring = u'%(switch)s %(value)s'
-        yabi_parameterswitchuse_3.description = u'Both the switch and the value will be passed in the argument list. They will be separated by a space.'
+        yabi_parameterswitchuse_3 = yabi_parameterswitchuse('both','%(switch)s %(value)s','Both the switch and the value will be passed in the argument list. They will be separated by a space.')
         yabi_parameterswitchuse_3.save()
 
-        yabi_parameterswitchuse_4 = orm.ParameterSwitchUse()
-        yabi_parameterswitchuse_4.last_modified_on = datetime.datetime(2010, 4, 16, 13, 12, 39)
-        yabi_parameterswitchuse_4.created_by = django_user_1
-        yabi_parameterswitchuse_4.created_on = datetime.datetime(2009, 3, 31, 16, 43, 22)
-        yabi_parameterswitchuse_4.display_text = u'combined'
-        yabi_parameterswitchuse_4.formatstring = u'%(switch)s%(value)s'
-        yabi_parameterswitchuse_4.description = u'Both the switch and the value will be passed in the argument list. They will be joined together with no space between them.'
+        yabi_parameterswitchuse_4 = yabi_parameterswitchuse('combined','%(switch)s%(value)s','Both the switch and the value will be passed in the argument list. They will be joined together with no space between them.')
         yabi_parameterswitchuse_4.save()
 
-        yabi_parameterswitchuse_5 = orm.ParameterSwitchUse()
-        yabi_parameterswitchuse_5.last_modified_on = datetime.datetime(2011, 4, 5, 15, 17, 58)
-        yabi_parameterswitchuse_5.created_by = django_user_1
-        yabi_parameterswitchuse_5.created_on = datetime.datetime(2009, 3, 31, 16, 44, 23)
-        yabi_parameterswitchuse_5.display_text = u'nothing'
-        yabi_parameterswitchuse_5.formatstring = u''
-        yabi_parameterswitchuse_5.description = u"The switch and the value won't be passed in the argument list."
+        yabi_parameterswitchuse_5 = yabi_parameterswitchuse('nothing','',"The switch and the value won't be passed in the argument list.")
         yabi_parameterswitchuse_5.save()
 
-        yabi_parameterswitchuse_6 = orm.ParameterSwitchUse()
-        yabi_parameterswitchuse_6.last_modified_by = django_user_1
-        yabi_parameterswitchuse_6.last_modified_on = datetime.datetime(2009, 3, 31, 16, 44, 23)
-        yabi_parameterswitchuse_6.created_by = django_user_1
-        yabi_parameterswitchuse_6.created_on = datetime.datetime(2009, 3, 31, 16, 44, 23)
-        yabi_parameterswitchuse_6.display_text = u'pair'
-        yabi_parameterswitchuse_6.formatstring = u'pair'
-        yabi_parameterswitchuse_6.description = u'The switch and the value passed in to the argument list as a pair.'
+        yabi_parameterswitchuse_6 = yabi_parameterswitchuse('pair','pair','The switch and the value passed in to the argument list as a pair.')
         yabi_parameterswitchuse_6.save()
 
-        yabi_parameterswitchuse_7 = orm.ParameterSwitchUse()
-        yabi_parameterswitchuse_7.last_modified_on = datetime.datetime(2010, 4, 16, 13, 39, 13)
-        yabi_parameterswitchuse_7.created_on = datetime.datetime(2010, 4, 16, 13, 32, 55)
-        yabi_parameterswitchuse_7.display_text = u'combined with equals'
-        yabi_parameterswitchuse_7.formatstring = u'%(switch)s=%(value)s'
-        yabi_parameterswitchuse_7.description = u'Both the switch and the value will be passed in the argument list. They will be separated joined with an equals(=) character with no spaces.'
+        yabi_parameterswitchuse_7 = yabi_parameterswitchuse('combined with equals','%(switch)s=%(value)s','Both the switch and the value will be passed in the argument list. They will be separated joined with an equals(=) character with no spaces.')
         yabi_parameterswitchuse_7.save()
 
-        yabi_parameterswitchuse_8 = orm.ParameterSwitchUse()
-        yabi_parameterswitchuse_8.last_modified_on = datetime.datetime(2010, 12, 2, 13, 23, 44)
-        yabi_parameterswitchuse_8.created_on = datetime.datetime(2010, 12, 2, 13, 23, 44)
-        yabi_parameterswitchuse_8.display_text = u'redirect'
-        yabi_parameterswitchuse_8.formatstring = u'>%(value)s'
-        yabi_parameterswitchuse_8.description = u'Use this to redirect the output of stdout into a file.'
+        yabi_parameterswitchuse_8 = yabi_parameterswitchuse('redirect','>%(value)s','Use this to redirect the output of stdout into a file.')
         yabi_parameterswitchuse_8.save()
 
-        yabi_toolparameter_1 = orm.ToolParameter()
-        yabi_toolparameter_1.last_modified_by = django_user_1
-        yabi_toolparameter_1.last_modified_on = datetime.datetime(2011, 9, 26, 11, 9, 31)
-        yabi_toolparameter_1.created_by = django_user_1
-        yabi_toolparameter_1.created_on = datetime.datetime(2011, 9, 26, 11, 9, 31)
-        yabi_toolparameter_1.tool = yabi_tool_1
-        yabi_toolparameter_1.switch = u'files'
-        yabi_toolparameter_1.switch_use = yabi_parameterswitchuse_1
-        yabi_toolparameter_1.rank = 1
-        yabi_toolparameter_1.mandatory = True
-        yabi_toolparameter_1.hidden = False
-        yabi_toolparameter_1.output_file = False
-        yabi_toolparameter_1.extension_param = None
-        yabi_toolparameter_1.possible_values = None
-        yabi_toolparameter_1.default_value = u'selected files'
-        yabi_toolparameter_1.helptext = None
-        yabi_toolparameter_1.batch_bundle_files = False
-        yabi_toolparameter_1.file_assignment = u'batch'
-        yabi_toolparameter_1.use_output_filename = None
+        yabi_toolparameter_1 = yabi_toolparameter(yabi_tool_1,'files',yabi_parameterswitchuse_1,
+                                                    rank = 1,
+                                                    mandatory = True,
+                                                    hidden = False,
+                                                    output_file = False,
+                                                    extension_param = None,
+                                                    possible_values = None,
+                                                    default_value = u'selected files',
+                                                    helptext = None,
+                                                    batch_bundle_files = False,
+                                                    file_assignment = 'batch',
+                                                    use_output_filename = None )
         yabi_toolparameter_1.save()
 
         yabi_tooloutputextension_1.tool = yabi_tool_1

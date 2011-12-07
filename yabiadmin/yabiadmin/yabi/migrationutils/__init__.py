@@ -93,7 +93,58 @@ def yabi_credential(credentialuser, description, username="", password="", cert=
     yabi_credential.encrypt_on_login = False
     
     return yabi_credential
+
+def yabi_backendcredential(backend,credential,homedir,visible = False,default_stageout = False,submission='', user=None, orm=None):
+    user = user or settings.user
+    orm = orm or settings.orm
         
+    yabi_backendcredential = orm['yabi.BackendCredential']()
+    yabi_backendcredential.last_modified_by = user
+    yabi_backendcredential.last_modified_on = datetime.now()
+    yabi_backendcredential.created_by = user
+    yabi_backendcredential.created_on = datetime.now()
+    yabi_backendcredential.backend = backend
+    yabi_backendcredential.credential = credential
+    yabi_backendcredential.homedir = homedir
+    yabi_backendcredential.visible = visible
+    yabi_backendcredential.default_stageout = default_stageout
+    yabi_backendcredential.submission = submission
+    return yabi_backendcredential
+
+def yabi_filetype(name, description, extension_list, user=None, orm=None):
+    user = user or settings.user
+    orm = orm or settings.orm
+        
+    yabi_filetype = orm['yabi.FileType']()
+    yabi_filetype.last_modified_by = user
+    yabi_filetype.last_modified_on = datetime.now()
+    yabi_filetype.created_by = user
+    yabi_filetype.created_on = datetime.now()
+    yabi_filetype.name = name
+    yabi_filetype.description = description
+    
+    if extension_list:
+        yabi_filetype.save()                # gives it an id
+        
+    for extension in extension_list:
+        yabi_filetype.extensions.add(extension)
+    
+    return yabi_filetype
+   
+def yabi_parameterswitchuse(display_text, formatstring,description, user=None, orm=None):
+    user = user or settings.user
+    orm = orm or settings.orm
+        
+    yabi_parameterswitchuse = orm['yabi.ParameterSwitchUse']()
+    yabi_parameterswitchuse.last_modified_by = user
+    yabi_parameterswitchuse.last_modified_on = datetime.now()
+    yabi_parameterswitchuse.created_by = user
+    yabi_parameterswitchuse.created_on = datetime.now()
+    yabi_parameterswitchuse.display_text = display_text
+    yabi_parameterswitchuse.formatstring = formatstring
+    yabi_parameterswitchuse.description = description
+    return yabi_parameterswitchuse
+
 def yabi_tool(name, display_name, path, description, backend, fs_backend, enabled=True, accepts_input=False, cpus='', walltime='',module='',queue='',max_memory='',job_type='',lcopy=False, link=False, user=None, orm=None):
     user = user or settings.user
     orm = orm or settings.orm
@@ -120,6 +171,33 @@ def yabi_tool(name, display_name, path, description, backend, fs_backend, enable
     yabi_tool.lcopy_supported = lcopy
     yabi_tool.link_supported = link
     return yabi_tool
+    
+    
+def yabi_toolparameter(tool, switch, switch_use, rank, mandatory, hidden, output_file, extension_param, possible_values, default_value, helptext, batch_bundle_files, file_assignment, use_output_filename, user=None, orm=None):
+    user = user or settings.user
+    orm = orm or settings.orm
+
+    yabi_toolparameter = orm['yabi.ToolParameter']()
+    yabi_toolparameter.last_modified_by = user
+    yabi_toolparameter.last_modified_on = datetime.now()
+    yabi_toolparameter.created_by = user
+    yabi_toolparameter.created_on = datetime.now()
+    yabi_toolparameter.tool = tool
+    yabi_toolparameter.switch = switch
+    yabi_toolparameter.switch_use =  switch_use
+    yabi_toolparameter.rank = rank
+    yabi_toolparameter.mandatory = mandatory
+    yabi_toolparameter.hidden = hidden
+    yabi_toolparameter.output_file = output_file
+    yabi_toolparameter.extension_param = extension_param
+    yabi_toolparameter.possible_values = possible_values
+    yabi_toolparameter.default_value = default_value
+    yabi_toolparameter.helptext = helptext
+    yabi_toolparameter.batch_bundle_files = batch_bundle_files
+    yabi_toolparameter.file_assignment = file_assignment
+    yabi_toolparameter.use_output_filename = use_output_filename
+    return yabi_toolparameter
+    
 
 def yabi_tooloutputextension(tool, extension, user=None, orm=None):
     user = user or settings.user
