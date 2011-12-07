@@ -129,6 +129,7 @@ class Migration(DataMigration):
                                                     use_output_filename = None )
         yabi_toolparameter_1.save()
 
+        # make sure stuff is linked together
         yabi_tooloutputextension_1.tool = yabi_tool_1
         yabi_tooloutputextension_1.file_extension = yabi_fileextension_1
         yabi_tooloutputextension_1.save()
