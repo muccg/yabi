@@ -131,7 +131,7 @@ def ensure_encrypted(username, password):
 def login(request):
 
     if using_dev_settings():
-        logger.warning("Development settings are in use, DO NOT use in production environment without changing settings.")
+        logger.warning("Development settings are in use, DO NOT USE IN PRODUCTION ENVIRONMENT without changing settings.")
 
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
