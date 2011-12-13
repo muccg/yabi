@@ -133,7 +133,9 @@ APPEND_SLASH = True
 SITE_NAME = 'yabiadmin'
 
 # validation settings, these reflect the types of backend that yabi can handle
-VALID_SCHEMES = ['http', 'https', 'gridftp', 'globus', 'sge', 'torque', 'yabifs', 'ssh', 'scp', 's3', 'null', 'ssh+pbspro', 'ssh+torque', 'localfs', 'localex']
+EXEC_SCHEMES = ['globus', 'sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 'localex']
+FS_SCHEMES = ['http', 'https', 'gridftp', 'yabifs', 'scp', 's3', 'localfs']
+VALID_SCHEMES = EXEC_SCHEMES + FS_SCHEMES + ['null']
 
 
 ##
