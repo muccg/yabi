@@ -53,7 +53,7 @@ from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.yabiengine.tasks import build
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import WorkflowTag
-from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_backendcredential_for_uri, copy_file, rcopy_file, rm_file, send_upload_hash
+from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_fs_backendcredential_for_uri, copy_file, rcopy_file, rm_file, send_upload_hash
 from yabiadmin.responses import *
 from yabi.file_upload import *
 from django.contrib import auth
@@ -374,7 +374,7 @@ def put(request):
         logger.debug("uri: %s" %(request.GET['uri']))
         uri = request.GET['uri']
 
-        bc = get_backendcredential_for_uri(yabiusername, uri)
+        bc = get_fs_backendcredential_for_uri(yabiusername, uri)
         decrypt_cred = bc.credential.get()
         
         resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))

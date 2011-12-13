@@ -223,17 +223,17 @@ class Task(models.Model, Editable, Status):
 
         # get our tools fs_backend
         fsscheme, fsbackend_parts = uriparse(self.job.fs_backend)
-        fs_backend = backendhelper.get_backend_for_uri(self.job.workflow.user.name,self.job.fs_backend)
+        fs_backend = backendhelper.get_fs_backend_for_uri(self.job.workflow.user.name,self.job.fs_backend)
         
         # get out exec backend so we can get our submission script
-        submission_backendcredential = backendhelper.get_backendcredential_for_uri(self.job.workflow.user.name,self.job.exec_backend)
+        submission_backendcredential = backendhelper.get_exec_backendcredential_for_uri(self.job.workflow.user.name,self.job.exec_backend)
         submission_backend = submission_backendcredential.backend
         
         submission = submission_backendcredential.submission if str(submission_backend.submission).isspace() else submission_backend.submission
         
         # if the tools filesystem and the users stageout area are on the same schema/host/port
         # then use the preferred_copy_method, else default to 'copy'
-        so_backend = backendhelper.get_backend_for_uri(self.job.workflow.user.name,self.job.stageout)
+        so_backend = backendhelper.get_fs_backend_for_uri(self.job.workflow.user.name,self.job.stageout)
         soscheme, sobackend_parts = uriparse(self.job.stageout)
         if  so_backend==fs_backend and soscheme==fsscheme and sobackend_parts.hostname==fsbackend_parts.hostname and sobackend_parts.port==fsbackend_parts.port and sobackend_parts.username==fsbackend_parts.username:
             stageout_method = self.job.preferred_stageout_method
@@ -269,9 +269,9 @@ class Task(models.Model, Editable, Status):
         
         stageins = self.stagein_set.all()
         for s in stageins:
-            src_backend = backendhelper.get_backend_for_uri(self.job.workflow.user.name,s.src)
+            src_backend = backendhelper.get_fs_backend_for_uri(self.job.workflow.user.name,s.src)
             src_scheme, src_rest = uriparse(s.src)
-            dst_backend = backendhelper.get_backend_for_uri(self.job.workflow.user.name,s.dst)
+            dst_backend = backendhelper.get_fs_backend_for_uri(self.job.workflow.user.name,s.dst)
             dst_scheme, dst_rest = uriparse(s.dst)
             
             output["stagein"].append({"src":s.src, "dst":s.dst, "order":s.order, "method":s.method})              # method may be 'copy', 'lcopy' or 'link'

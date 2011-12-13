@@ -193,7 +193,7 @@ def get_file_list(yabiusername, uri, recurse=True):
             resource += "&recurse"
         logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
 
-        bc = get_backendcredential_for_uri(yabiusername, uri)
+        bc = get_fs_backendcredential_for_uri(yabiusername, uri)
         data = bc.credential.get()
         
         r = POST(resource,data)
@@ -279,7 +279,7 @@ def get_listing(yabiusername, uri, recurse=False):
     if recurse:
         resource += '&recurse=true'
     logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-    bc = get_backendcredential_for_uri(yabiusername, uri)
+    bc = get_fs_backendcredential_for_uri(yabiusername, uri)
     data = bc.credential.get()
     return handle_connection(POST,resource,data).read()
     
@@ -290,7 +290,7 @@ def mkdir(yabiusername, uri):
     logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
     resource = "%s?uri=%s" % (settings.YABIBACKEND_MKDIR, quote(uri))
     logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-    return handle_connection(POST,resource, get_credential_for_uri(yabiusername, uri).get()).read()
+    return handle_connection(POST,resource, get_fs_credential_for_uri(yabiusername, uri).get()).read()
 
 def get_backend_list(yabiusername):
     """
@@ -325,7 +325,7 @@ def get_file(yabiusername, uri, bytes=None):
 
     logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
     
-    result = handle_connection(POST,resource,get_credential_for_uri(yabiusername, uri).get())
+    result = handle_connection(POST,resource,get_fs_credential_for_uri(yabiusername, uri).get())
     return FileWrapper(result, blksize=1024**2)
 
 def rm_file(yabiusername, uri):
@@ -336,7 +336,7 @@ def rm_file(yabiusername, uri):
     recurse = '&recurse' if uri[-1]=='/' else ''
     resource = "%s?uri=%s%s" % (settings.YABIBACKEND_RM, quote(uri),recurse)
     logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-    r = handle_connection(POST,resource,get_credential_for_uri(yabiusername, uri).get())
+    r = handle_connection(POST,resource,get_fs_credential_for_uri(yabiusername, uri).get())
     return r.status, r.read()
 
 def copy_file(yabiusername, src, dst):
@@ -347,8 +347,8 @@ def copy_file(yabiusername, src, dst):
     logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
 
     # get credentials for src and destination backend
-    src = get_credential_for_uri(yabiusername, src).get()
-    dst = get_credential_for_uri(yabiusername, dst).get()
+    src = get_fs_credential_for_uri(yabiusername, src).get()
+    dst = get_fs_credential_for_uri(yabiusername, dst).get()
     data = {'yabiusername':yabiusername}
     data.update( dict( [("src_"+K,V) for K,V in src.iteritems()] ))
     data.update( dict( [("dst_"+K,V) for K,V in dst.iteritems()] ))
@@ -363,8 +363,8 @@ def rcopy_file(yabiusername, src, dst):
     logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
 
     # get credentials for src and destination backend
-    src = get_credential_for_uri(yabiusername, src).get()
-    dst = get_credential_for_uri(yabiusername, dst).get()
+    src = get_fs_credential_for_uri(yabiusername, src).get()
+    dst = get_fs_credential_for_uri(yabiusername, dst).get()
     data = {'yabiusername':yabiusername}
     data.update( dict( [("src_"+K,V) for K,V in src.iteritems()] ))
     data.update( dict( [("dst_"+K,V) for K,V in dst.iteritems()] ))
@@ -379,7 +379,7 @@ def send_upload_hash(yabiusername,uri,uuid):
     resource = "%s?uri=%s&uuid=%s&yabiusername=%s"%(settings.YABIBACKEND_UPLOAD,quote(uri),quote(uuid),quote(yabiusername))
     
     # get credentials for uri destination backend
-    data = get_credential_for_uri(yabiusername, uri).get()
+    data = get_fs_credential_for_uri(yabiusername, uri).get()
             
     resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(cred['username']),quote(cred['password']),quote(cred['cert']),quote(cred['key']))
     logger.debug('server: %s resource: %s'%(settings.YABIBACKEND_SERVER, resource))
