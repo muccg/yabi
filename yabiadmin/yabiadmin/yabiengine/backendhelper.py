@@ -32,7 +32,7 @@ import httplib
 import socket
 import errno
 import os
-from os.path import splitext
+from os.path import splitext, normpath
 from urllib import urlencode, quote
 from yabiadmin.yabiengine.urihelper import uriparse, get_backend_userdir
 from yabiadmin.yabi.models import Backend, BackendCredential
@@ -72,11 +72,14 @@ def get_exec_backendcredential_for_uri(yabiusername, uri):
     logger.debug('yabiusername: %s schema: %s usernamea :%s hostnamea :%s patha :%s'%(yabiusername,schema,rest.username,rest.hostname,rest.path))
     
     # enforce FS scehmas only
-    if schema not in settings.FS_SCHEMES:
-        logger.error("get_fs_backendcredential_for_uri was asked to get an executions schema! This is forbidden.")
-        raise ValueError("Invalid schema in uri passed to get_fs_backendcredential_for_uri")
+    if schema not in settings.EXEC_SCHEMES:
+        logger.error("get_exec_backendcredential_for_uri was asked to get an fs schema! This is forbidden.")
+        raise ValueError("Invalid schema in uri passed to get_exec_backendcredential_for_uri")
     
     path = rest.path
+    if path!="/":
+        logger.error("get_exec_backendcredential_for_uri was passed a uri with a path! This is forbidden. Path must be / for exec backends")
+        raise ValueError("Invalid path in uri passed to get_exec_backendcredential_for_uri")
 
     # get our set of credential candidates
     bcs = BackendCredential.objects.filter(credential__user__name=yabiusername,
@@ -84,45 +87,12 @@ def get_exec_backendcredential_for_uri(yabiusername, uri):
                                            credential__username=rest.username,
                                            backend__hostname=rest.hostname)
     
-    logger.debug("potential credentials [%s]" % (",".join([str(x) for x in bcs])))
-    
-    # TODO: fix this exec/fs credential problem expressed here
-    # if there is only one in bcs, then we will assume its for us. This enables a request for uri = "gridftp://user@host/" to match the credential for "gridftp://user@host/scratch/bi01/" if there is only one cred
-    # this keeps globus working on the gridftp credential
+    # there must only be one valid exec credential
     if len(bcs)==1:
-        logger.debug("assuming credential: %s" % bcs[0])
         return bcs[0]
     
-    # lets look at the paths for these to find candidates
-    cred = None
-    for bc in bcs:
-        checkpath = os.path.join(bc.backend.path,bc.homedir)
-
-        # allow path to make with and without trailing /
-        alternate_path = path
-        if alternate_path.endswith('/'):
-            alternate_path = alternate_path.rstrip('/')
-        else:
-            alternate_path += '/'
-
-        logger.debug("path: %s alternate: %s bc.homedir: %s bc.backend.path: %s checkpath: %s" % (path,alternate_path,bc.homedir,bc.backend.path,checkpath))
-        
-        if path.startswith(checkpath) or alternate_path.startswith(checkpath):
-            # valid. If homedir path is longer than the present stored one, replace the stored one with this one to user
-            if cred==None:
-                logger.debug("setting cred to %s",str(bc))
-                cred = bc
-            elif len(checkpath) > len(os.path.join(cred.backend.path,cred.homedir)):
-                logger.debug("resetting cred to %s",str(bc))
-                cred = bc
-            
-    # cred is now either None if there was no valid credential, or it is the credential for this URI
-    if not cred:
-        raise ObjectDoesNotExist("Could not find backendcredential")
+    raise ObjectDoesNotExist("Could not find backendcredential")
     
-    logger.debug("using backendcredential: %s" % cred)
-    return cred
-
 def get_fs_backendcredential_for_uri(yabiusername, uri):
     """
     Looks up a backend credential based on the supplied uri, which should include a username.
@@ -140,7 +110,7 @@ def get_fs_backendcredential_for_uri(yabiusername, uri):
         logger.error("get_fs_backendcredential_for_uri was asked to get an executions schema! This is forbidden.")
         raise ValueError("Invalid schema in uri passed to get_fs_backendcredential_for_uri")
     
-    path = rest.path
+    path = os.path.normpath(rest.path)                      # normalise path to get rid of ../../ style exploits
 
     # get our set of credential candidates
     bcs = BackendCredential.objects.filter(credential__user__name=yabiusername,
@@ -149,13 +119,6 @@ def get_fs_backendcredential_for_uri(yabiusername, uri):
                                            backend__hostname=rest.hostname)
     
     logger.debug("potential credentials [%s]" % (",".join([str(x) for x in bcs])))
-    
-    # TODO: fix this exec/fs credential problem expressed here
-    # if there is only one in bcs, then we will assume its for us. This enables a request for uri = "gridftp://user@host/" to match the credential for "gridftp://user@host/scratch/bi01/" if there is only one cred
-    # this keeps globus working on the gridftp credential
-    if len(bcs)==1:
-        logger.debug("assuming credential: %s" % bcs[0])
-        return bcs[0]
     
     # lets look at the paths for these to find candidates
     cred = None
@@ -187,11 +150,17 @@ def get_fs_backendcredential_for_uri(yabiusername, uri):
     logger.debug("using backendcredential: %s" % cred)
     return cred
     
-def get_credential_for_uri(yabiusername, uri):
-    return get_backendcredential_for_uri(yabiusername,uri).credential
+def get_fs_credential_for_uri(yabiusername, uri):
+    return get_fs_backendcredential_for_uri(yabiusername,uri).credential
     
-def get_backend_for_uri(yabiusername, uri):
-    return get_backendcredential_for_uri(yabiusername,uri).backend
+def get_fs_backend_for_uri(yabiusername, uri):
+    return get_fs_backendcredential_for_uri(yabiusername,uri).backend
+
+def get_exec_credential_for_uri(yabiusername, uri):
+    return get_exec_backendcredential_for_uri(yabiusername,uri).credential
+    
+def get_exec_backend_for_uri(yabiusername, uri):
+    return get_exec_backendcredential_for_uri(yabiusername,uri).backend
 
 import hmac
 
