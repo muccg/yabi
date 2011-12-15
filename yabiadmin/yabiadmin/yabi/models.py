@@ -776,6 +776,9 @@ class BackendCredential(Base):
 
         uri = urlunparse((self.backend.scheme, netloc, self.backend.path, '', '', ''))
 
+        if uri.endswith('/') and self.homedir.startswith('/'):
+            uri = uri[:-1]
+
         return uri + self.homedir
 
     @property
