@@ -69,7 +69,7 @@ class Migration(DataMigration):
 
         yabi_tooloutputextension_1.save()
 
-        yabi_credential_1 = yabi_credential(yabi_user_1,'null credential',username='demo')
+        yabi_credential_1 = yabi_credential(yabi_user_2,'null credential',username='demo')
         yabi_credential_1.save()
 
         yabi_backend_2 = yabi_backend('Local Filesystem','This backend gives access to the file system on the machine running Yabi.','localfs','localhost',None,'/')
@@ -81,10 +81,10 @@ class Migration(DataMigration):
         yabi_backendcredential_1 = yabi_backendcredential(yabi_backend_1, yabi_credential_1, homedir='')
         yabi_backendcredential_1.save()
 
-        yabi_backendcredential_2 = yabi_backendcredential(yabi_backend_3, yabi_credential_1, '/home/cwellington/')
+        yabi_backendcredential_2 = yabi_backendcredential(yabi_backend_3, yabi_credential_1, 'home')
         yabi_backendcredential_2.save()
 
-        yabi_backendcredential_3 = yabi_backendcredential(yabi_backend_2, yabi_credential_1, '/home/cwellington/', visible=True, default_stageout=True)
+        yabi_backendcredential_3 = yabi_backendcredential(yabi_backend_2, yabi_credential_1, 'home', visible=True, default_stageout=True)
         yabi_backendcredential_3.save()
 
         yabi_userprofile_1 = orm.UserProfile()
