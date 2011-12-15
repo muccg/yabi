@@ -492,19 +492,27 @@ class Credential(Base):
         for id in ids:
             print "WALK----------->",id
             walk.delay(workflow_id=id)
+            
+    def get_from_memcache(self):
+        result = self.get_memcache()
+        self.password = result['password']
+        self.cert = result['cert']
+        self.key = result['key']
        
     def get(self):
         """return the decrypted cert if available. Otherwise raise exception"""
-        if not self.encrypted:
+        #return dict([('username', self.username),
+                    #('password', self.password),
+                    #('cert', self.cert),
+                    #('key', self.key)])
+        
+        if self.is_memcached():
+            result = self.get_memcache()
+            self.unprotect()
             return dict([('username', self.username),
                     ('password', self.password),
                     ('cert', self.cert),
                     ('key', self.key)])
-        
-        if self.is_memcached():
-            result = self.get_memcache()
-            result['username']=self.username
-            return result
             
         # encrypted but not cached. ERROR!
         raise DecryptedCredentialNotAvailable("Credential for yabiuser: %s id: %d is not available in a decrypted form"%(self.user.name, self.id))
@@ -581,6 +589,8 @@ class Credential(Base):
         if not self.is_plaintext:
             # ciphertext... lets look at its tag
             tag = looks_like_annotated_block(self.password) or looks_like_annotated_block(self.key) or looks_like_annotated_block(self.cert)
+        
+            # TODO: automate this bit
 
     def on_login(self, username, password):
         """When a user logs in, this method is called on every one of their credentials, and gets passed their login password"""
