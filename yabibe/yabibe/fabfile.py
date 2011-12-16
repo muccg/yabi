@@ -97,6 +97,6 @@ def release(*args):
     """
     env.auto_confirm=False
     if len(args):
-        _ccg_deploy_release(tag=args[0], apacheDeployment=False)
+        _ccg_deploy_release(tag=args[0], apacheDeployment=False, migration=False)
     else:
-        _ccg_deploy_release(apacheDeployment=False)
+        _ccg_deploy_release(apacheDeployment=False, migration=False)

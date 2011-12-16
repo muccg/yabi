@@ -1,5 +1,5 @@
 #
-# Requirements for YabiAdmin
+# Requirements for YabiFE
 #
 # To see what requirements your current virtualenv is using type:
 #

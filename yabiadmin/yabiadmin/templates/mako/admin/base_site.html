@@ -1,0 +1,16 @@
+<%inherit file="admin/base.html"/>
+
+
+${self.block_title()}<%def name="block_title()">${trans('Yabi Administration')}</%def>
+
+
+${self.block_extrahead()}<%def name="block_extrastyle()">
+<link rel="SHORTCUT ICON" href="/static/images/favicon.ico" type="image/x-icon" />
+</%def>
+
+
+${self.block_branding()}<%def name="block_branding()">
+<h1 id="site-name">${trans('Yabi Administration')}</h1>
+</%def>
+
+${self.block_nav_global()}<%def name="block_nav_global()"></%def>

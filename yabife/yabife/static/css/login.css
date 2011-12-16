@@ -159,3 +159,9 @@ form {
     height:1.9em;
 
 }
+
+#warningbanner {
+    color: red;
+    margin-bottom:20px;
+    font-size:140%
+ }

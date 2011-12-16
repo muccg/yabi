@@ -146,3 +146,29 @@ def yabiadmin_logout(request):
     except (ObjectDoesNotExist, AttributeError):
         pass
 
+
+def using_dev_settings():
+    
+    using_dev_settings = False
+
+    # these should be true in production
+    for s in ['SSL_ENABLED', 'SESSION_COOKIE_SECURE', 'SESSION_COOKIE_HTTPONLY', ]:
+        if getattr(settings, s) == False:
+            using_dev_settings = True
+            break
+
+    # these should be false in production
+    for s in ['DEBUG']:
+        if getattr(settings, s) == True:
+            using_dev_settings = True
+            break
+
+    # SECRET_KEY
+    if settings.SECRET_KEY == 'set_this':
+        using_dev_settings = True
+
+    # YABIADMIN_SERVER
+    if not settings.YABIADMIN_SERVER.startswith('https://'):
+        using_dev_settings = True
+
+    return using_dev_settings

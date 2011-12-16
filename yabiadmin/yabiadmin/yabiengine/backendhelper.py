@@ -266,7 +266,7 @@ def handle_connection(func,*args,**kwargs):
             raise FileNotFound("File or directory not found.")
         else:
             # other error
-            raise BackendStatusCodeError("Request to backend for uri: %s returned unhandled status code: %d and message: %s"%(uri,r.status,read))
+            raise BackendStatusCodeError("Request to backend for resource: %s returned unhandled status code: %d" % (args[0],r.status))
         
     return r
 
