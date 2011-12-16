@@ -48,20 +48,12 @@ class S3Auth(object):
             while len(path) and path[0]=='/':
                 path = path[1:]
                 
+            # get credential for uri...
+            from TaskManager.TaskTools import UserCreds
             uri = "%s://%s@%s/%s"%(scheme,username,hostname,urllib.quote(path))
-            path = os.path.join(config.yabiadminpath,"ws/credential/%s/?uri=%s"%(yabiusername,uri))
-            host = config.yabiadminserver
-            port = config.yabiadminport
+            credentials = UserCreds(yabiusername, uri, credtype="fs")
             
-            if DEBUG:
-                print "S3Auth getting credential. Doing GET on path:",path
-                print "host:",host
-                print "port:",port
-            
-            status, message, data = RetryGET( path = path, host=host, port=port )
-            
-            assert status==200
-            credentials = json.loads( data )
+            assert 'key' in credentials and 'cert' in credentials and 'password' in credentials, "Malformed credential JSON received from admin. I received: %s"%(str(credentials))
             
             return credentials
         

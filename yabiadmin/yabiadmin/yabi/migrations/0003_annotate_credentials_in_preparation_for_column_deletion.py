@@ -1,159 +1,43 @@
+# -*- coding: utf-8 -*-
 # encoding: utf-8
 import datetime
 from south.db import db
 from south.v2 import DataMigration
 from django.db import models
-import os
-
-from ..migrationutils import *
 
 class Migration(DataMigration):
 
+    def protect(self,record):
+        annotate = lambda tag,ciphertext: "$%s$%s$"%(tag,ciphertext)
+        joiner = lambda data: "".join("".join(data.split("\n")).split("\r"))
+
+        return annotate("AES",joiner(record))
+
     def forwards(self, orm):
-        # all calls to this orm
-        set_default_orm(orm)
+        "Write your forwards methods here."
+        for cred in orm.Credential.objects.all():
+            #print "cred...",dir(cred)
+            if cred.encrypted:
+                #print "enc"
+                assert cred.is_only_hex(), "Credential id %d: %s marked as encrypted yet contains non hex characters"%(cred.id,str(cred))
+                
+                from crypto import annotate, joiner, AESHEXTAG
+                cred.password = annotate(AESHEXTAG,joiner(cred.password))
+                cred.cert = annotate(AESHEXTAG,joiner(cred.cert))
+                cred.key = annotate(AESHEXTAG,joiner(cred.key))
+                cred.save()
+                
+            else:
+                #print "plain"
+                #cred is plaintext. protect it and resave
+                cred.password = self.protect(cred.password)
+                cred.cert = self.protect(cred.cert)
+                cred.key = self.protect(cred.key)
+                cred.save()
         
-        # first lets just make a first user to own future objects
-        django_user_1 = auth_user( username = 'admin', password = 'admin', email="admin@example.com", staff=True, superuser=True )
-        django_user_1.save()
-        
-        # make this the user that owns all the future objects that are created,
-        set_default_user(django_user_1)
-       
-        django_user_2 = auth_user( username = 'demo', password = 'demo', email="user@example.com" )
-        django_user_2.save()
-        
-        yabi_user_1 = yabi_user('admin')
-        yabi_user_1.save()
-        yabi_user_2 = yabi_user('demo')
-        yabi_user_2.save()
-        
-        yabi_fileextension_1 = yabi_fileextension("*")
-        yabi_fileextension_1.save()
-        yabi_fileextension_2 = yabi_fileextension("*.fa")
-        yabi_fileextension_2.save()
-        yabi_fileextension_3 = yabi_fileextension("*.fna")
-        yabi_fileextension_3.save()
-        yabi_fileextension_4 = yabi_fileextension("*.faa")
-        yabi_fileextension_4.save()
-        yabi_fileextension_5 = yabi_fileextension("*.fasta")
-        yabi_fileextension_5.save()
-        yabi_fileextension_6 = yabi_fileextension('*.ffn')
-        yabi_fileextension_6.save()
-        yabi_fileextension_7 = yabi_fileextension('*.frn')
-        yabi_fileextension_7.save()
-   
-        yabi_filetype_1 = yabi_filetype('fasta','Fasta bioinformatics file format', [yabi_fileextension_2, yabi_fileextension_3, yabi_fileextension_4, yabi_fileextension_5, yabi_fileextension_6, yabi_fileextension_7])
-        yabi_filetype_1.save()
-   
-        yabi_backend_1=yabi_backend('nullbackend','Use this backend when tools should not be run ie fileselector','null','localhost.localdomain',None,'/')
-        yabi_backend_1.save()
-        
-        yabi_tool_1 = yabi_tool(name = 'fileselector', display_name='select file', path='', description='Select a file from your workspace directory.',
-                                backend=yabi_backend_1, fs_backend=yabi_backend_1,
-                                accepts_input=False,
-                                cpus='',
-                                walltime='',module='',queue='',max_memory='',job_type='',lcopy=False, link=False )
-        yabi_tool_1.save()
-        
-        yabi_tooloutputextension_1 = yabi_tooloutputextension( yabi_tool_1, yabi_fileextension_1 )
-        
-        yabi_toolgroup_1 = yabi_toolgroup('select data')
-        yabi_toolgroup_1.save()
-
-        yabi_toolset_1 = yabi_toolset('alltools')
-        yabi_toolset_1.save()
-       
-        yabi_toolgrouping_1 = yabi_toolgrouping( yabi_toolgroup_1, yabi_tool_1, yabi_toolset_1 )
-        yabi_toolgrouping_1.save()
-
-        yabi_tooloutputextension_1.save()
-
-        yabi_credential_1 = yabi_credential(yabi_user_2,'null credential',username='demo')
-        yabi_credential_1.save()
-
-        yabi_backend_2 = yabi_backend('Local Filesystem','This backend gives access to the file system on the machine running Yabi.','localfs','localhost',None,'/')
-        yabi_backend_2.save()
-
-        yabi_backend_3 = yabi_backend('Local Execution','This backend gives access to execution on the machine running Yabi.','localex','localhost',None,'/')
-        yabi_backend_3.save()
-
-        yabi_backendcredential_1 = yabi_backendcredential(yabi_backend_1, yabi_credential_1, homedir='')
-        yabi_backendcredential_1.save()
-
-        yabi_backendcredential_2 = yabi_backendcredential(yabi_backend_3, yabi_credential_1, 'home')
-        yabi_backendcredential_2.save()
-
-        yabi_backendcredential_3 = yabi_backendcredential(yabi_backend_2, yabi_credential_1, 'home', visible=True, default_stageout=True)
-        yabi_backendcredential_3.save()
-
-        yabi_userprofile_1 = orm.UserProfile()
-        yabi_userprofile_1.user = django_user_1
-        yabi_userprofile_1.save()
-
-        yabi_parameterswitchuse_1 = yabi_parameterswitchuse('switchOnly','%(switch)s','Only the switch will be passed in the argument list.')
-        yabi_parameterswitchuse_1.save()
-
-        yabi_parameterswitchuse_2 = yabi_parameterswitchuse('valueOnly','%(value)s',"Only the value will be passed in the argument list (ie. the switch won't be used)")
-        yabi_parameterswitchuse_2.save()
-
-        yabi_parameterswitchuse_3 = yabi_parameterswitchuse('both','%(switch)s %(value)s','Both the switch and the value will be passed in the argument list. They will be separated by a space.')
-        yabi_parameterswitchuse_3.save()
-
-        yabi_parameterswitchuse_4 = yabi_parameterswitchuse('combined','%(switch)s%(value)s','Both the switch and the value will be passed in the argument list. They will be joined together with no space between them.')
-        yabi_parameterswitchuse_4.save()
-
-        yabi_parameterswitchuse_5 = yabi_parameterswitchuse('nothing','',"The switch and the value won't be passed in the argument list.")
-        yabi_parameterswitchuse_5.save()
-
-        yabi_parameterswitchuse_6 = yabi_parameterswitchuse('pair','pair','The switch and the value passed in to the argument list as a pair.')
-        yabi_parameterswitchuse_6.save()
-
-        yabi_parameterswitchuse_7 = yabi_parameterswitchuse('combined with equals','%(switch)s=%(value)s','Both the switch and the value will be passed in the argument list. They will be separated joined with an equals(=) character with no spaces.')
-        yabi_parameterswitchuse_7.save()
-
-        yabi_parameterswitchuse_8 = yabi_parameterswitchuse('redirect','>%(value)s','Use this to redirect the output of stdout into a file.')
-        yabi_parameterswitchuse_8.save()
-
-        yabi_toolparameter_1 = yabi_toolparameter(yabi_tool_1,'files',yabi_parameterswitchuse_1,
-                                                    rank = 1,
-                                                    mandatory = True,
-                                                    hidden = False,
-                                                    output_file = False,
-                                                    extension_param = None,
-                                                    possible_values = None,
-                                                    default_value = u'selected files',
-                                                    helptext = None,
-                                                    batch_bundle_files = False,
-                                                    file_assignment = 'batch',
-                                                    use_output_filename = None )
-        yabi_toolparameter_1.save()
-
-        # make sure stuff is linked together
-        yabi_tooloutputextension_1.tool = yabi_tool_1
-        yabi_tooloutputextension_1.file_extension = yabi_fileextension_1
-        yabi_tooloutputextension_1.save()
-
-        yabi_toolgroup_1.last_modified_by = django_user_1
-        yabi_toolgroup_1.created_by = django_user_1
-        yabi_toolgroup_1.save()
-
-        yabi_toolgrouping_1.last_modified_by = django_user_1
-        yabi_toolgrouping_1.created_by = django_user_1
-        yabi_toolgrouping_1.tool = yabi_tool_1
-        yabi_toolgrouping_1.tool_set = yabi_toolset_1
-        yabi_toolgrouping_1.save()
-
-        # set the backend credentials to the user's homedir
-        ex_bec = orm.BackendCredential.objects.get(id=2)
-        ex_bec.homedir = "%s%s" % (os.environ['HOME'], '/')
-        ex_bec.save()
-        fs_bec = orm.BackendCredential.objects.get(id=3)
-        fs_bec.homedir = "%s%s" % (os.environ['HOME'], '/')
-        fs_bec.save()
 
     def backwards(self, orm):
-        raise RuntimeError("Cannot reverse this migration.")
+        "Write your backwards methods here."
 
 
     models = {
@@ -174,17 +58,17 @@ class Migration(DataMigration):
             'Meta': {'object_name': 'User'},
             'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
-            'first_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
+            'first_name': ('django.db.models.fields.CharField', [], {'max_length': '256', 'blank': 'True'}),
             'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
+            'last_name': ('django.db.models.fields.CharField', [], {'max_length': '256', 'blank': 'True'}),
             'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
-            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
+            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'})
         },
         'contenttypes.contenttype': {
             'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},

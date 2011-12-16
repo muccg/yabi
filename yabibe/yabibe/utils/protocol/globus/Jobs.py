@@ -181,31 +181,13 @@ class Jobs(object):
     
     def AuthProxyUser(self, username, backend, successcallback, errorcb):
         """Try to auth the user noninteractively"""
-        host,port = "localhost",8000
-        useragent = "YabiFS/0.1"
-        
-        factory = client.HTTPClientFactory(
-            'http://%s:%d/yabiadmin/ws/credential/%s/%s/'%(host,port,username,backend),
-            agent = useragent
-            )
-        reactor.connectTCP(host, port, factory)
-        
-        # now if the page fails for some reason. deal with it
-        def _doFailure(data):
-            print "Job _doFailure:",factory,":",type(data),data.__class__
-            print data
-            
+        from TaskManager.TaskTools import UserCreds, NoSuchCredential
+        try:
+            credentials = UserCreds(username,backend,credtype="exec")
+        except NoSuchCredential:
             errorcb("User: %s does not have credentials for this backend\n"%username)
             
-        # if we get the credentials decode them and auth them
-        def _doSuccess(data):
-            print "Job _doSuccess"
-            credentials=json.loads(data)
-            print "Credentials gathered successfully for user %s"%username
-            
-            # auth the user
-            self.authproxy.CreateUserProxy(username,credentials['cert'],credentials['key'],credentials['password'])
-            
-            successcallback()
+        # auth the user
+        self.authproxy.CreateUserProxy(username,credentials['cert'],credentials['key'],credentials['password'])    
+        successcallback()
         
-        return factory.deferred.addCallback(_doSuccess).addErrback(_doFailure)

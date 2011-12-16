@@ -53,7 +53,7 @@ from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.yabiengine.tasks import build
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import WorkflowTag
-from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_backendcredential_for_uri, copy_file, rcopy_file, rm_file, send_upload_hash
+from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_fs_backendcredential_for_uri, copy_file, rcopy_file, rm_file, send_upload_hash
 from yabiadmin.responses import *
 from yabi.file_upload import *
 from django.contrib import auth
@@ -110,24 +110,6 @@ class FileUploadStreamer(UploadStreamer):
         # this is called right at the beginning. So we grab the uri detail here and initialise the outgoing POST
         self.post_multipart(host=self._host, port=self._port, selector=self._selector, cookies=self._cookies )
 
-def ensure_encrypted(username, password):
-    """returns true on successful encryption. false on failure to decrypt"""
-    # find the unencrypted credentials for this user that should be ecrypted and encrypt with the passed in CORRECT password
-    creds = Credential.objects.filter(user__name=username).filter(encrypt_on_login=True).filter(encrypted=False)
-    for cred in creds:
-        cred.encrypt(password)
-        cred.save()
-        
-    # decrypt all encrypted credentials and store in memcache
-    creds = Credential.objects.filter(user__name=username, encrypted=True)
-    try:
-        for cred in creds:
-            cred.send_to_memcache(password)
-    except DecryptException, de:
-        return False
-
-    return True                 #success
-
 def login(request):
 
     if using_dev_settings():
@@ -147,12 +129,15 @@ def login(request):
                 "success": True
             }
             
-            # encrypt any pending user credentials.
-            if not ensure_encrypted(user.username,password):
-                response = {
-                    "success": False,
-                    "message": "One or more of the credentials failed to decrypt with your password. Please see your system administrator."
-                }
+            # for every credential for this user, call the login hook
+            creds = Credential.objects.filter(user__name=username)
+            for cred in creds:
+                cred.on_login( username,password )
+                
+            response = {
+                "success": False,
+                "message": "One or more of the credentials failed to decrypt with your password. Please see your system administrator."
+            }
         else:
             response = {
                 "success": False,
@@ -393,7 +378,7 @@ def put(request):
         logger.debug("uri: %s" %(request.GET['uri']))
         uri = request.GET['uri']
 
-        bc = get_backendcredential_for_uri(yabiusername, uri)
+        bc = get_fs_backendcredential_for_uri(yabiusername, uri)
         decrypt_cred = bc.credential.get()
         
         resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))

@@ -32,7 +32,7 @@ import httplib
 import socket
 import errno
 import os
-from os.path import splitext
+from os.path import splitext, normpath
 from urllib import urlencode, quote
 from yabiadmin.yabiengine.urihelper import uriparse, get_backend_userdir
 from yabiadmin.yabi.models import Backend, BackendCredential
@@ -59,7 +59,7 @@ import logging
 logger = logging.getLogger(__name__)
   
 
-def get_backendcredential_for_uri(yabiusername, uri):
+def get_exec_backendcredential_for_uri(yabiusername, uri):
     """
     Looks up a backend credential based on the supplied uri, which should include a username.
     Returns bc, will log and reraise ObjectDoesNotExist and MultipleObjectsReturned exceptions if more than one credential
@@ -71,7 +71,46 @@ def get_backendcredential_for_uri(yabiusername, uri):
 
     logger.debug('yabiusername: %s schema: %s usernamea :%s hostnamea :%s patha :%s'%(yabiusername,schema,rest.username,rest.hostname,rest.path))
     
+    # enforce FS scehmas only
+    if schema not in settings.EXEC_SCHEMES:
+        logger.error("get_exec_backendcredential_for_uri was asked to get an fs schema! This is forbidden.")
+        raise ValueError("Invalid schema in uri passed to get_exec_backendcredential_for_uri")
+    
     path = rest.path
+    if path!="/":
+        logger.error("get_exec_backendcredential_for_uri was passed a uri with a path! This is forbidden. Path must be / for exec backends")
+        raise ValueError("Invalid path in uri passed to get_exec_backendcredential_for_uri")
+
+    # get our set of credential candidates
+    bcs = BackendCredential.objects.filter(credential__user__name=yabiusername,
+                                           backend__scheme=schema,
+                                           credential__username=rest.username,
+                                           backend__hostname=rest.hostname)
+    
+    # there must only be one valid exec credential
+    if len(bcs)==1:
+        return bcs[0]
+    
+    raise ObjectDoesNotExist("Could not find backendcredential")
+    
+def get_fs_backendcredential_for_uri(yabiusername, uri):
+    """
+    Looks up a backend credential based on the supplied uri, which should include a username.
+    Returns bc, will log and reraise ObjectDoesNotExist and MultipleObjectsReturned exceptions if more than one credential
+    """
+    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
+
+    # parse the URI into chunks
+    schema, rest = uriparse(uri)
+
+    logger.debug('yabiusername: %s schema: %s usernamea :%s hostnamea :%s patha :%s'%(yabiusername,schema,rest.username,rest.hostname,rest.path))
+    
+    # enforce FS scehmas only
+    if schema not in settings.FS_SCHEMES:
+        logger.error("get_fs_backendcredential_for_uri was asked to get an executions schema! This is forbidden.")
+        raise ValueError("Invalid schema in uri passed to get_fs_backendcredential_for_uri")
+    
+    path = os.path.normpath(rest.path)                      # normalise path to get rid of ../../ style exploits
 
     # get our set of credential candidates
     bcs = BackendCredential.objects.filter(credential__user__name=yabiusername,
@@ -80,13 +119,6 @@ def get_backendcredential_for_uri(yabiusername, uri):
                                            backend__hostname=rest.hostname)
     
     logger.debug("potential credentials [%s]" % (",".join([str(x) for x in bcs])))
-    
-    # TODO: fix this exec/fs credential problem expressed here
-    # if there is only one in bcs, then we will assume its for us. This enables a request for uri = "gridftp://user@host/" to match the credential for "gridftp://user@host/scratch/bi01/" if there is only one cred
-    # this keeps globus working on the gridftp credential
-    if len(bcs)==1:
-        logger.debug("assuming credential: %s" % bcs[0])
-        return bcs[0]
     
     # lets look at the paths for these to find candidates
     cred = None
@@ -118,11 +150,17 @@ def get_backendcredential_for_uri(yabiusername, uri):
     logger.debug("using backendcredential: %s" % cred)
     return cred
     
-def get_credential_for_uri(yabiusername, uri):
-    return get_backendcredential_for_uri(yabiusername,uri).credential
+def get_fs_credential_for_uri(yabiusername, uri):
+    return get_fs_backendcredential_for_uri(yabiusername,uri).credential
     
-def get_backend_for_uri(yabiusername, uri):
-    return get_backendcredential_for_uri(yabiusername,uri).backend
+def get_fs_backend_for_uri(yabiusername, uri):
+    return get_fs_backendcredential_for_uri(yabiusername,uri).backend
+
+def get_exec_credential_for_uri(yabiusername, uri):
+    return get_exec_backendcredential_for_uri(yabiusername,uri).credential
+    
+def get_exec_backend_for_uri(yabiusername, uri):
+    return get_exec_backendcredential_for_uri(yabiusername,uri).backend
 
 import hmac
 
@@ -155,7 +193,7 @@ def get_file_list(yabiusername, uri, recurse=True):
             resource += "&recurse"
         logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
 
-        bc = get_backendcredential_for_uri(yabiusername, uri)
+        bc = get_fs_backendcredential_for_uri(yabiusername, uri)
         data = bc.credential.get()
         
         r = POST(resource,data)
@@ -241,7 +279,7 @@ def get_listing(yabiusername, uri, recurse=False):
     if recurse:
         resource += '&recurse=true'
     logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-    bc = get_backendcredential_for_uri(yabiusername, uri)
+    bc = get_fs_backendcredential_for_uri(yabiusername, uri)
     data = bc.credential.get()
     return handle_connection(POST,resource,data).read()
     
@@ -252,7 +290,7 @@ def mkdir(yabiusername, uri):
     logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
     resource = "%s?uri=%s" % (settings.YABIBACKEND_MKDIR, quote(uri))
     logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-    return handle_connection(POST,resource, get_credential_for_uri(yabiusername, uri).get()).read()
+    return handle_connection(POST,resource, get_fs_credential_for_uri(yabiusername, uri).get()).read()
 
 def get_backend_list(yabiusername):
     """
@@ -287,7 +325,7 @@ def get_file(yabiusername, uri, bytes=None):
 
     logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
     
-    result = handle_connection(POST,resource,get_credential_for_uri(yabiusername, uri).get())
+    result = handle_connection(POST,resource,get_fs_credential_for_uri(yabiusername, uri).get())
     return FileWrapper(result, blksize=1024**2)
 
 def rm_file(yabiusername, uri):
@@ -298,7 +336,7 @@ def rm_file(yabiusername, uri):
     recurse = '&recurse' if uri[-1]=='/' else ''
     resource = "%s?uri=%s%s" % (settings.YABIBACKEND_RM, quote(uri),recurse)
     logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-    r = handle_connection(POST,resource,get_credential_for_uri(yabiusername, uri).get())
+    r = handle_connection(POST,resource,get_fs_credential_for_uri(yabiusername, uri).get())
     return r.status, r.read()
 
 def copy_file(yabiusername, src, dst):
@@ -309,8 +347,8 @@ def copy_file(yabiusername, src, dst):
     logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
 
     # get credentials for src and destination backend
-    src = get_credential_for_uri(yabiusername, src).get()
-    dst = get_credential_for_uri(yabiusername, dst).get()
+    src = get_fs_credential_for_uri(yabiusername, src).get()
+    dst = get_fs_credential_for_uri(yabiusername, dst).get()
     data = {'yabiusername':yabiusername}
     data.update( dict( [("src_"+K,V) for K,V in src.iteritems()] ))
     data.update( dict( [("dst_"+K,V) for K,V in dst.iteritems()] ))
@@ -325,8 +363,8 @@ def rcopy_file(yabiusername, src, dst):
     logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
 
     # get credentials for src and destination backend
-    src = get_credential_for_uri(yabiusername, src).get()
-    dst = get_credential_for_uri(yabiusername, dst).get()
+    src = get_fs_credential_for_uri(yabiusername, src).get()
+    dst = get_fs_credential_for_uri(yabiusername, dst).get()
     data = {'yabiusername':yabiusername}
     data.update( dict( [("src_"+K,V) for K,V in src.iteritems()] ))
     data.update( dict( [("dst_"+K,V) for K,V in dst.iteritems()] ))
@@ -341,7 +379,7 @@ def send_upload_hash(yabiusername,uri,uuid):
     resource = "%s?uri=%s&uuid=%s&yabiusername=%s"%(settings.YABIBACKEND_UPLOAD,quote(uri),quote(uuid),quote(yabiusername))
     
     # get credentials for uri destination backend
-    data = get_credential_for_uri(yabiusername, uri).get()
+    data = get_fs_credential_for_uri(yabiusername, uri).get()
             
     resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(cred['username']),quote(cred['password']),quote(cred['cert']),quote(cred['key']))
     logger.debug('server: %s resource: %s'%(settings.YABIBACKEND_SERVER, resource))

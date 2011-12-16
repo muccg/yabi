@@ -46,21 +46,7 @@ class SSHAuth(object):
         try:
             # get credential for uri...
             from TaskManager.TaskTools import UserCreds
-            credentials = UserCreds(yabiusername, "%s://%s@%s%s"%(scheme,username,hostname,urllib.quote(path)))
-            if False:
-                path = os.path.join(config.yabiadminpath,"ws/credential/%s/?uri="%(yabiusername)+urllib.quote("%s://%s@%s%s"%(scheme,username,hostname,path)))
-                host = config.yabiadminserver
-                port = config.yabiadminport
-                
-                if DEBUG:
-                    print "SSHAuth getting credential. Doing GET on path:",path
-                    print "host:",host
-                    print "port:",port
-                
-                status, message, data = RetryGET( path = path, host=host, port=port )
-                
-                assert status==200
-                credentials = json.loads( data )
+            credentials = UserCreds(yabiusername, "%s://%s@%s%s"%(scheme,username,hostname,urllib.quote(path)), credtype="fs")
             
             assert 'key' in credentials and 'cert' in credentials and 'password' in credentials, "Malformed credential JSON received from admin. I received: %s"%(str(credentials))
             
