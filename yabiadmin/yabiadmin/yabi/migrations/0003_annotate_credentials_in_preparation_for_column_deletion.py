@@ -94,8 +94,6 @@ def cred_is_only_hex(self):
     """
     return looks_like_hex_ciphertext(self.password) and looks_like_hex_ciphertext(self.key) and looks_like_hex_ciphertext(self.cert)
     
-
-    
 def cred_protect(self):
     """temporarily protects a key by encrypting it with the secret django key"""
     self.password = aes_enc_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
@@ -130,7 +128,6 @@ class Migration(DataMigration):
                 cred_protect(cred)
                 cred.save()
         
-
     def backwards(self, orm):
         "Write your backwards methods here."
 
