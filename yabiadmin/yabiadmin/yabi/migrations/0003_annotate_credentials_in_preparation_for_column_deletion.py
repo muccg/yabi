@@ -110,6 +110,7 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         "Write your forwards methods here."
+        print "Migrating credentials..."
         for cred in orm.Credential.objects.all():
             #print "cred...",dir(cred)
             if cred.encrypted:
@@ -117,6 +118,7 @@ class Migration(DataMigration):
                 assert cred_is_only_hex(cred), "Credential id %d: %s marked as encrypted yet contains non hex characters"%(cred.id,str(cred))
                 
                 from crypto import annotate, joiner, AESHEXTAG
+                print "Annotating credential %d..."%(cred.id)
                 cred.password = annotate(AESHEXTAG,joiner(cred.password))
                 cred.cert = annotate(AESHEXTAG,joiner(cred.cert))
                 cred.key = annotate(AESHEXTAG,joiner(cred.key))
@@ -125,6 +127,7 @@ class Migration(DataMigration):
             else:
                 #print "plain"
                 #cred is plaintext. protect it and resave
+                print "Encrypting credential %d using key %r ..."%(cred.id,settings.SECRET_KEY)
                 cred_protect(cred)
                 cred.save()
         
