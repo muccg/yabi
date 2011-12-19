@@ -529,7 +529,7 @@ class Credential(Base):
                     #('key', self.key)])
         
         if self.is_memcached():
-            result = self.get_memcache()
+            self.get_from_memcache()
             self.unprotect()
             return dict([('username', self.username),
                     ('password', self.password),
