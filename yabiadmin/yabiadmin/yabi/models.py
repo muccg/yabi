@@ -430,26 +430,48 @@ class Credential(Base):
     
     def encrypt(self, key):
         """Turn this unencrypted cred into an encrypted one using the supplied password"""
-        self.password = aes_enc_hex(self.password,key)
-        self.cert = aes_enc_hex(self.cert,key,linelength=80)
-        self.key = aes_enc_hex(self.key,key,linelength=80)
+        password = aes_enc_hex(self.password,key)
+        cert = aes_enc_hex(self.cert,key,linelength=80)
+        key = aes_enc_hex(self.key,key,linelength=80)
+        
+        # they all have to work before we change the object
+        self.password = password
+        self.cert = cert
+        self.key = key
                 
     def decrypt(self, key):
-        self.password = aes_dec_hex(self.password,key)
-        self.cert = aes_dec_hex(self.cert,key)
-        self.key = aes_dec_hex(self.key,key)
+        password = aes_dec_hex(self.password,key)
+        cert = aes_dec_hex(self.cert,key)
+        key = aes_dec_hex(self.key,key)
+        
+        # they all have to work before we change the object
+        self.password = password
+        self.cert = cert
+        self.key = key
         
     def protect(self):
         """temporarily protects a key by encrypting it with the secret django key"""
-        self.password = aes_enc_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
-        self.cert = aes_enc_hex(self.cert, settings.SECRET_KEY,tag=AESTEMP)
-        self.key = aes_enc_hex(self.key, settings.SECRET_KEY,tag=AESTEMP)
+        password = aes_enc_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
+        cert = aes_enc_hex(self.cert, settings.SECRET_KEY,tag=AESTEMP)
+        key = aes_enc_hex(self.key, settings.SECRET_KEY,tag=AESTEMP)
+        
+        # they all have to work before we change the object
+        self.password = password
+        self.cert = cert
+        self.key = key
+        
         
     def unprotect(self):
         """take a temporarily protected key and decrypt it with the django secret key"""
-        self.password = aes_dec_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
-        self.cert = aes_dec_hex(self.cert, settings.SECRET_KEY,tag=AESTEMP)
-        self.key = aes_dec_hex(self.key, settings.SECRET_KEY,tag=AESTEMP)
+        password = aes_dec_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
+        cert = aes_dec_hex(self.cert, settings.SECRET_KEY,tag=AESTEMP)
+        key = aes_dec_hex(self.key, settings.SECRET_KEY,tag=AESTEMP)
+        
+        # they all have to work before we change the object
+        self.password = password
+        self.cert = cert
+        self.key = key
+        
         
     def recrypt(self,oldkey,newkey):
         self.decrypt(oldkey)
@@ -602,6 +624,7 @@ class Credential(Base):
             # we need to protect this with users password and save it back before we do anything else.
             self.encrypt(password)
             self.save()
+            return
             
        
         # now the generic stuff to do with an encrypted password.    
