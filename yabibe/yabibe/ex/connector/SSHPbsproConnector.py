@@ -108,7 +108,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         ssh_command += " ; exit $EXIT"
 
         if not creds:
-            creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, "/")
+            creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, "/", credtype="exec")
     
         usercert = self.save_identity(creds['key'])
         
