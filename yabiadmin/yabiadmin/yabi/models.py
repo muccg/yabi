@@ -762,29 +762,14 @@ class BackendCredential(Base):
             'credential':cred.description,
             'username':cred.username,
         })
-        if cred.encrypted:
-            # encrypted credential. Lets try and get the cached decrypted version
-            
-            if cred.is_memcached():
-                # there is a plain credential available
-                parts = cred.get_memcache()
+        
+        parts = cred.get()
+        
+        # refresh its time stamp
+        cred.refresh_memcache()
                 
-                # refresh its time stamp
-                cred.refresh_memcache()
-                
-                # add in the decrypted cred parts
-                output.update(parts)
-                
-            else:
-                # there is no plain credential available!
-                raise DecryptedCredentialNotAvailable("Credential for yabiuser: %s id: %d is not available in a decrypted form"%(cred.user.name, cred.id))
-        else:
-            # credential is decrypted already. we can just return it
-            output.update( {
-                'password':self.credential.password,
-                'cert':self.credential.cert,
-                'key':self.credential.key
-            } )
+        # add in the decrypted cred parts
+        output.update(parts)
             
         return json.dumps(output)
 
