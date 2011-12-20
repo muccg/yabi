@@ -38,7 +38,7 @@ DEBUG = False
 
 class SSHAuth(object):
     
-    def AuthProxyUser(self, yabiusername, scheme, username, hostname, path, *args, credtype="fs"):
+    def AuthProxyUser(self, yabiusername, scheme, username, hostname, path, credtype="fs", *args):
         """Auth a user via getting the credentials from the json yabiadmin backend. When the credentials are gathered, successcallback is called with the deferred.
         The deferred should be the result channel your result will go back down"""
         useragent = "YabiFS/0.1"
