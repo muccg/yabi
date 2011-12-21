@@ -480,7 +480,7 @@ class Credential(Base):
 
     def encrypted2protected(self, key):
         """Tries to decrypt using the key and if successful protects the credential"""
-        self.decrypt(password)
+        self.decrypt(key)
         self.protect()
         self.save()
 
