@@ -519,22 +519,19 @@ def duplicate_credential(request):
             return HttpResponseRedirect(webhelpers.url("/admin/yabi/credential/?ids=%s" % (request.POST['ids'])))
 
     else:
-        action = request.GET.get('action',None)
-        assert action=="encrypt" or action=="decrypt" or action=="cache"
         ids = request.GET.get('ids', [])
 
         render_data = {'h':webhelpers,
-                       #'ct': request.GET['ct'],
-                       'return_url': '/varietydetail/',
+                       'return_url': webhelpers.url("/ws/duplicate_credential/"),
                        'ids':ids,
                        'request':request,
                        'LANGUAGE_CODE':"en",
-                       'title': "%s Credential"%(action.capitalize()),
+                       'title': "Credential Duplication",
                        'user':request.user,
                        'root_path':webhelpers.url("/"),
-                       'action':action,
+                       'action': 'duplicate',
                        'plural':'s',
-                       'checkpassword': action=="encrypt"
+                       #'checkpassword': action=="duplicate" # not used, but is hangover from password_collection method
                        }
 
         return render_to_response('yabi/crypt_password.html', render_data)
