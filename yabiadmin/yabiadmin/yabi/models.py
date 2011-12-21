@@ -460,7 +460,6 @@ class Credential(Base):
         self.cert = cert
         self.key = key
         
-        
     def unprotect(self):
         """take a temporarily protected key and decrypt it with the django secret key"""
         password = aes_dec_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
@@ -472,19 +471,15 @@ class Credential(Base):
         self.cert = cert
         self.key = key
         
-        
     def recrypt(self,oldkey,newkey):
         self.decrypt(oldkey)
         self.encrypt(newkey)
         
-
     def encrypted2protected(self, key):
-        """Tries to decrypt using the key and if successful protects the credential"""
+        """Tries to decrypt using the key and if successful protects
+        the credential. Credential must be saved to take effect."""
         self.decrypt(key)
         self.protect()
-        self.save()
-
-        
 
     def memcache_keyname(self):
         """return the memcache key for this credential"""

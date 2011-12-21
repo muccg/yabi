@@ -504,7 +504,9 @@ def duplicate_credential(request):
                 cred = Credential.objects.get(id=id)
 
                 try:
+                    cred.id = None
                     cred.encrypted2protected(request.POST["password"])
+                    cred.save()
                     success += 1
                 except DecryptException:
                     fail +=1
@@ -515,6 +517,27 @@ def duplicate_credential(request):
                 request.user.message_set.create(message=msg)
             
             return HttpResponseRedirect(webhelpers.url("/admin/yabi/credential/?ids=%s" % (request.POST['ids'])))
+
+    else:
+        action = request.GET.get('action',None)
+        assert action=="encrypt" or action=="decrypt" or action=="cache"
+        ids = request.GET.get('ids', [])
+
+        render_data = {'h':webhelpers,
+                       #'ct': request.GET['ct'],
+                       'return_url': '/varietydetail/',
+                       'ids':ids,
+                       'request':request,
+                       'LANGUAGE_CODE':"en",
+                       'title': "%s Credential"%(action.capitalize()),
+                       'user':request.user,
+                       'root_path':webhelpers.url("/"),
+                       'action':action,
+                       'plural':'s',
+                       'checkpassword': action=="encrypt"
+                       }
+
+        return render_to_response('yabi/crypt_password.html', render_data)
 
 
 @staff_member_required
