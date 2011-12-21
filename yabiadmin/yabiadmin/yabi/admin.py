@@ -122,19 +122,13 @@ class QueueAdmin(admin.ModelAdmin):
 class CredentialAdmin(AdminBase):
     list_display = ['description', 'user', 'username', 'is_cached']
     list_filter = ['user']
-    actions = ['encrypt_credential','decrypt_credential','cache_credential','decache_credential']
+    actions = ['duplicate_credential','cache_credential','decache_credential']
 
-    def encrypt_credential(self, request, queryset):
-        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-        return HttpResponseRedirect(webhelpers.url("/ws/password_collection/?ids=%s&action=encrypt" % (",".join(selected)))) 
-        
-    encrypt_credential.short_description = "Encrypt selected credentials."
-
-    def decrypt_credential(self, request, queryset):
+    def duplicate_credential(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)        
-        return HttpResponseRedirect(webhelpers.url("/ws/password_collection/?ids=%s&action=decrypt" % (",".join(selected)))) 
+        return HttpResponseRedirect(webhelpers.url("/ws/duplicate_credential/?ids=%s" % (",".join(selected)))) 
         
-    decrypt_credential.short_description = "Decrypt selected credentials."
+    duplicate_credential.short_description = "Duplicate selected credentials."
     
     def cache_credential(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)        

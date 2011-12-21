@@ -477,6 +477,15 @@ class Credential(Base):
         self.decrypt(oldkey)
         self.encrypt(newkey)
         
+
+    def encrypted2protected(self, key):
+        """Tries to decrypt using the key and if successful protects the credential"""
+        self.decrypt(password)
+        self.protect()
+        self.save()
+
+        
+
     def memcache_keyname(self):
         """return the memcache key for this credential"""
         return "-cred-%s-%d"%(self.user.name.encode("utf-8"),self.id)              # TODO: memcache keys dont support unicode. user.name may contain unicode

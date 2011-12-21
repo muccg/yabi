@@ -486,6 +486,37 @@ def password_collection(request):
         return render_to_response('yabi/crypt_password.html', render_data)
 
 
+@login_required
+def duplicate_credential(request):
+
+    if request.method == 'POST':
+        # bail early if canceled
+        if 'button' in request.POST and request.POST['button'] == "Cancel":
+            message = "No changes made."
+            request.user.message_set.create(message=message)
+            return HttpResponseRedirect(webhelpers.url("/admin/yabi/credential/?ids=%s" % (request.POST['ids'])))
+        else:
+            ids = [int(X) for X in request.POST.get('ids', '').split(',')]     
+            action = request.POST.get('action',None)
+            
+            success, fail = 0,0
+            for id in ids:
+                cred = Credential.objects.get(id=id)
+
+                try:
+                    cred.encrypted2protected(request.POST["password"])
+                    success += 1
+                except DecryptException:
+                    fail +=1
+
+            msg = "%s credential%s duplicated. %s credential%s failed." %   (success, "s" if success > 1 else "", fail, "s" if fail > 1 else "")
+           
+            if success or fail:
+                request.user.message_set.create(message=msg)
+            
+            return HttpResponseRedirect(webhelpers.url("/admin/yabi/credential/?ids=%s" % (request.POST['ids'])))
+
+
 @staff_member_required
 def test_exception(request):
     raise Exception('Test exception')
