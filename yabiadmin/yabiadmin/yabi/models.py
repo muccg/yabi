@@ -837,7 +837,7 @@ class UserProfile(models.Model):
         newPassword = request.POST['newPassword']
     
         # get all creds for this user that are encrypted
-        creds = Credential.objects.filter(user=yabiuser, encrypted=True)
+        creds = Credential.objects.filter(user=yabiuser)
         for cred in creds:
             cred.recrypt(currentPassword, newPassword)
             cred.save()
