@@ -57,8 +57,7 @@ urlpatterns = patterns('yabiadmin.yabi.ws_frontend_views',
 
 # admin support pages
 urlpatterns += patterns('yabiadmin.yabi.adminviews',
-    url(r'^password_collection[/]*$', 'password_collection'),
-    url(r'^duplicate_credential[/]*$', 'duplicate_credential')                        
+    url(r'^manage_credential[/]*$', 'duplicate_credential')                        
 )
 
 # backend webservices
