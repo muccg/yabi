@@ -42,7 +42,6 @@ DEBUG = False
 from twistedweb2 import http, responsecode, http_headers, stream
 
 import shlex
-from utils.protocol import globus
 import stackless
 import tempfile
 
