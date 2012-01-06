@@ -432,7 +432,7 @@ class MainTask(Task):
         # get our credential working directory. We lookup the execution backends auth proxy cache, and get the users home directory from that
         # this comes from their credentials.
         scheme, address = parse_url(task['exec']['backend'])
-        usercreds = UserCreds(self.yabiusername, task['exec']['backend'])
+        usercreds = UserCreds(self.yabiusername, task['exec']['backend'],credtype="exec")
         workingdir = task['exec']['workingdir']
         
         assert address.path=="/", "Error. JSON[exec][backend] has a path. Execution backend URI's must not have a path (path is %s)"%address.path 

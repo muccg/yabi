@@ -209,24 +209,23 @@ class Task(models.Model, Editable, Status):
 
     def json(self):
         # formulate our status url and our error url
-        if 'YABIADMIN' in os.environ:                                                   # if we are forced to talk to a particular admin
-            statusurl = "http://%sengine/status/task/%d"%(os.environ['YABIADMIN'],self.id)
-            errorurl = "http://%sengine/error/task/%d"%(os.environ['YABIADMIN'],self.id)
-            remoteidurl = "http://%sengine/remote_id/%d"%(os.environ['YABIADMIN'],self.id)
-            remoteinfourl = "http://%sengine/remote_info/%d"%(os.environ['YABIADMIN'],self.id)
-        else:
-            # use the yabiadmin embedded in this server
-            statusurl = webhelpers.url("/engine/status/task/%d" % self.id)
-            errorurl = webhelpers.url("/engine/error/task/%d" % self.id)
-            remoteidurl = webhelpers.url("/engine/remote_id/%d" % self.id)
-            remoteinfourl = webhelpers.url("/engine/remote_info/%d" % self.id)
+        # use the yabiadmin embedded in this server
+        statusurl = webhelpers.url("/engine/status/task/%d" % self.id)
+        errorurl = webhelpers.url("/engine/error/task/%d" % self.id)
+        remoteidurl = webhelpers.url("/engine/remote_id/%d" % self.id)
+        remoteinfourl = webhelpers.url("/engine/remote_info/%d" % self.id)
 
         # get our tools fs_backend
         fsscheme, fsbackend_parts = uriparse(self.job.fs_backend)
+        logger.debug("getting fs backend for user: %s fs_backend:%s"%(self.job.workflow.user.name,self.job.fs_backend))
         fs_backend = backendhelper.get_fs_backend_for_uri(self.job.workflow.user.name,self.job.fs_backend)
+        logger.debug("fs backend is: %s"%(fs_backend))
         
         # get out exec backend so we can get our submission script
+        logger.debug("getting exec backendcredential for user: %s exec_backend:%s"%(self.job.workflow.user.name,self.job.exec_backend))
         submission_backendcredential = backendhelper.get_exec_backendcredential_for_uri(self.job.workflow.user.name,self.job.exec_backend)
+        logger.debug("exec backendcredential is: %s"%(submission_backendcredential))
+        
         submission_backend = submission_backendcredential.backend
         
         submission = submission_backendcredential.submission if str(submission_backend.submission).isspace() else submission_backend.submission

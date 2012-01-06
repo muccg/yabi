@@ -5,6 +5,101 @@ from south.db import db
 from south.v2 import DataMigration
 from django.db import models
 
+import settings
+
+from Crypto.Hash import SHA256
+from Crypto.Cipher import AES
+import math
+import binascii
+
+#
+# this is a chunking lambda generator
+#
+chunkify = lambda v, l: (v[i*l:(i+1)*l] for i in range(int(math.ceil(len(v)/float(l)))))
+
+#
+# this annotates a string with the 
+#
+annotate = lambda tag,ciphertext: "$%s$%s$"%(tag,ciphertext)
+
+#
+# join a split string together and de CR LF it
+#
+joiner = lambda data: "".join("".join(data.split("\n")).split("\r"))
+
+#
+# this deannotates the string
+#
+def deannotate( string ):
+    try:
+        dummy,tag,cipher,dummy2 = string.split('$')
+    except ValueError, ve:
+        raise DecryptException("Invalid input string to deannotator")
+    
+    if dummy or dummy2:
+        raise DecryptException("Invalid input string to deannotator")
+    
+    return tag, cipher
+
+# known tags
+AESHEXTAG = 'AES'
+AESTEMP = "AESTEMP"                     # tag for temporary decryption of aes for protection in memecache and on DB prior to user key encryption
+
+def aes_enc(data,key):
+    if not data:
+        return data                         # encrypt nothing. get nothing.
+        
+    assert data[-1]!='\0', "encrypt/decrypt implementation uses null padding and cant reliably decrypt a binary string that ends in \\0"
+    
+    #
+    # Our AES Cipher
+    #
+    key_hash = SHA256.new(key)
+    aes = AES.new(key_hash.digest())
+    
+    # pad to nearest 16.
+    data += '\0'*(16-(len(data)%16))
+    
+    # take chunks of 16
+    output = ""
+    for chunk in chunkify(data,16):
+        output += aes.encrypt(chunk)
+        
+    return output
+
+def aes_enc_hex(data,key,linelength=None, tag=AESHEXTAG):
+    """DO an aes encrypt, but return data as base64 encoded"""
+    enc = aes_enc(data,key)
+    encoded = annotate(tag,binascii.hexlify(enc))
+    
+    if linelength:
+        encoded = "\n".join(chunkify(encoded,linelength))
+    
+    return encoded
+
+def looks_like_hex_ciphertext(data):
+    """returns true if the string 'data' looks like it is 
+    actually cipher text. Of course we can not be 100% sure... but it makes a best guess attempt
+    """
+    CIPHER_CHARS = '0123456789ABCDEFabcdef\n\r\t '
+    for char in data:
+        if char not in CIPHER_CHARS:
+            return False
+            
+    return True
+    
+def cred_is_only_hex(self):
+    """This is a legacy function to help migrating old encrypted creds to new creds.
+    It returns true if the key, cert and password fields are soley composed of hex characters.
+    """
+    return looks_like_hex_ciphertext(self.password) and looks_like_hex_ciphertext(self.key) and looks_like_hex_ciphertext(self.cert)
+    
+def cred_protect(self):
+    """temporarily protects a key by encrypting it with the secret django key"""
+    self.password = aes_enc_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
+    self.cert = aes_enc_hex(self.cert, settings.SECRET_KEY,tag=AESTEMP)
+    self.key = aes_enc_hex(self.key, settings.SECRET_KEY,tag=AESTEMP)
+
 class Migration(DataMigration):
 
     def protect(self,record):
@@ -15,13 +110,15 @@ class Migration(DataMigration):
 
     def forwards(self, orm):
         "Write your forwards methods here."
+        print "Migrating credentials..."
         for cred in orm.Credential.objects.all():
             #print "cred...",dir(cred)
             if cred.encrypted:
                 #print "enc"
-                assert cred.is_only_hex(), "Credential id %d: %s marked as encrypted yet contains non hex characters"%(cred.id,str(cred))
+                assert cred_is_only_hex(cred), "Credential id %d: %s marked as encrypted yet contains non hex characters"%(cred.id,str(cred))
                 
                 from crypto import annotate, joiner, AESHEXTAG
+                print "Annotating credential %d..."%(cred.id)
                 cred.password = annotate(AESHEXTAG,joiner(cred.password))
                 cred.cert = annotate(AESHEXTAG,joiner(cred.cert))
                 cred.key = annotate(AESHEXTAG,joiner(cred.key))
@@ -30,12 +127,10 @@ class Migration(DataMigration):
             else:
                 #print "plain"
                 #cred is plaintext. protect it and resave
-                cred.password = self.protect(cred.password)
-                cred.cert = self.protect(cred.cert)
-                cred.key = self.protect(cred.key)
+                print "Encrypting credential %d using key %r ..."%(cred.id,settings.SECRET_KEY)
+                cred_protect(cred)
                 cred.save()
         
-
     def backwards(self, orm):
         "Write your backwards methods here."
 

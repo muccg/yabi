@@ -670,7 +670,6 @@ def credential(request):
         "key": exists(c.key),
         "backends": backends(c),
         "expires_in": expires_in(c.expires_on),
-        "encrypted": c.encrypted,
     } for c in creds]), content_type="application/json; charset=UTF-8")
 
 
@@ -702,10 +701,9 @@ def save_credential(request, id):
                 return JsonMessageResponseBadRequest("Invalid expiry")
 
     # OK, let's see if we have any of password, key or certificate. If so, we
-    # replace all of the fields and clear the encrypted flag, since this
+    # replace all of the fields, since this
     # service can only create unencrypted credentials at present.
     if "password" in request.POST or "key" in request.POST or "certificate" in request.POST:
-        credential.encrypted = False
         credential.password = request.POST.get("password", "")
         credential.key = request.POST.get("key", "")
         credential.cert = request.POST.get("certificate", "")

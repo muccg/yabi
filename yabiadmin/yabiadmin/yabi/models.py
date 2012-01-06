@@ -430,31 +430,57 @@ class Credential(Base):
     
     def encrypt(self, key):
         """Turn this unencrypted cred into an encrypted one using the supplied password"""
-        self.password = aes_enc_hex(self.password,key)
-        self.cert = aes_enc_hex(self.cert,key,linelength=80)
-        self.key = aes_enc_hex(self.key,key,linelength=80)
+        password = aes_enc_hex(self.password,key)
+        cert = aes_enc_hex(self.cert,key,linelength=80)
+        key = aes_enc_hex(self.key,key,linelength=80)
+        
+        # they all have to work before we change the object
+        self.password = password
+        self.cert = cert
+        self.key = key
                 
     def decrypt(self, key):
-        self.password = aes_dec_hex(self.password,key)
-        self.cert = aes_dec_hex(self.cert,key)
-        self.key = aes_dec_hex(self.key,key)
+        password = aes_dec_hex(self.password,key)
+        cert = aes_dec_hex(self.cert,key)
+        key = aes_dec_hex(self.key,key)
+        
+        # they all have to work before we change the object
+        self.password = password
+        self.cert = cert
+        self.key = key
         
     def protect(self):
         """temporarily protects a key by encrypting it with the secret django key"""
-        self.password = aes_enc_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
-        self.cert = aes_enc_hex(self.cert, settings.SECRET_KEY,tag=AESTEMP)
-        self.key = aes_enc_hex(self.key, settings.SECRET_KEY,tag=AESTEMP)
+        password = aes_enc_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
+        cert = aes_enc_hex(self.cert, settings.SECRET_KEY,tag=AESTEMP)
+        key = aes_enc_hex(self.key, settings.SECRET_KEY,tag=AESTEMP)
+        
+        # they all have to work before we change the object
+        self.password = password
+        self.cert = cert
+        self.key = key
         
     def unprotect(self):
         """take a temporarily protected key and decrypt it with the django secret key"""
-        self.password = aes_dec_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
-        self.cert = aes_dec_hex(self.cert, settings.SECRET_KEY,tag=AESTEMP)
-        self.key = aes_dec_hex(self.key, settings.SECRET_KEY,tag=AESTEMP)
+        password = aes_dec_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
+        cert = aes_dec_hex(self.cert, settings.SECRET_KEY,tag=AESTEMP)
+        key = aes_dec_hex(self.key, settings.SECRET_KEY,tag=AESTEMP)
+        
+        # they all have to work before we change the object
+        self.password = password
+        self.cert = cert
+        self.key = key
         
     def recrypt(self,oldkey,newkey):
         self.decrypt(oldkey)
         self.encrypt(newkey)
         
+    def encrypted2protected(self, key):
+        """Tries to decrypt using the key and if successful protects
+        the credential. Credential must be saved to take effect."""
+        self.decrypt(key)
+        self.protect()
+
     def memcache_keyname(self):
         """return the memcache key for this credential"""
         return "-cred-%s-%d"%(self.user.name.encode("utf-8"),self.id)              # TODO: memcache keys dont support unicode. user.name may contain unicode
@@ -507,7 +533,7 @@ class Credential(Base):
                     #('key', self.key)])
         
         if self.is_memcached():
-            result = self.get_memcache()
+            self.get_from_memcache()
             self.unprotect()
             return dict([('username', self.username),
                     ('password', self.password),
@@ -602,6 +628,7 @@ class Credential(Base):
             # we need to protect this with users password and save it back before we do anything else.
             self.encrypt(password)
             self.save()
+            return
             
        
         # now the generic stuff to do with an encrypted password.    
@@ -739,29 +766,14 @@ class BackendCredential(Base):
             'credential':cred.description,
             'username':cred.username,
         })
-        if cred.encrypted:
-            # encrypted credential. Lets try and get the cached decrypted version
-            
-            if cred.is_memcached():
-                # there is a plain credential available
-                parts = cred.get_memcache()
+        
+        parts = cred.get()
+        
+        # refresh its time stamp
+        cred.refresh_memcache()
                 
-                # refresh its time stamp
-                cred.refresh_memcache()
-                
-                # add in the decrypted cred parts
-                output.update(parts)
-                
-            else:
-                # there is no plain credential available!
-                raise DecryptedCredentialNotAvailable("Credential for yabiuser: %s id: %d is not available in a decrypted form"%(cred.user.name, cred.id))
-        else:
-            # credential is decrypted already. we can just return it
-            output.update( {
-                'password':self.credential.password,
-                'cert':self.credential.cert,
-                'key':self.credential.key
-            } )
+        # add in the decrypted cred parts
+        output.update(parts)
             
         return json.dumps(output)
 
@@ -829,7 +841,7 @@ class UserProfile(models.Model):
         newPassword = request.POST['newPassword']
     
         # get all creds for this user that are encrypted
-        creds = Credential.objects.filter(user=yabiuser, encrypted=True)
+        creds = Credential.objects.filter(user=yabiuser)
         for cred in creds:
             cred.recrypt(currentPassword, newPassword)
             cred.save()
