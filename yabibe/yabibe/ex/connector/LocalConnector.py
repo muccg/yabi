@@ -44,7 +44,7 @@ from twistedweb2 import http, responsecode, http_headers, stream
 import shlex
 import os
 from utils.protocol import globus
-import stackless
+import gevent
 import tempfile
 
 from utils.stacklesstools import sleep
@@ -165,16 +165,16 @@ class LocalConnector(ExecConnector):
         
         client_stream = stream.ProducerStream()
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
-        stackless.schedule()
+        gevent.sleep()
         
         try:
             if DEBUG:
                 print "LOCAL",command,"WORKING:",working,"CREDS passed in:%s"%(creds)    
             client_stream.write("Unsubmitted\n")
-            stackless.schedule()
+            gevent.sleep()
             
             client_stream.write("Pending\n")
-            stackless.schedule()
+            gevent.sleep()
             
             script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue, stdout, stderr)    
             
@@ -192,10 +192,10 @@ class LocalConnector(ExecConnector):
                 
             pp = LocalRun().run(None,command,username,host,working,port="22",stdout=stdout,stderr=stderr,password=None, modules=modules)
             client_stream.write("Running\n")
-            stackless.schedule()
+            gevent.sleep()
             
             while not pp.isDone():
-                stackless.schedule()
+                gevent.sleep()
                 
             if pp.exitcode==0:
                 # success

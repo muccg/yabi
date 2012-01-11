@@ -31,7 +31,7 @@ from twisted.internet import defer, reactor
 
 import weakref
 import sys, os
-import stackless
+import gevent
 import json
 from MimeStreamDecoder import MimeStreamDecoder, no_intr
 import traceback
@@ -122,7 +122,7 @@ class FileGetResource(resource.PostableResource):
             
             # give the engine a chance to fire up the process
             while not procproto.isStarted():
-                stackless.schedule()
+                gevent.sleep()
             
             # nonblocking open the fifo
             fd = no_intr(os.open,fifo,os.O_RDONLY | os.O_NONBLOCK )
@@ -159,7 +159,7 @@ class FileGetResource(resource.PostableResource):
                                 datastream = FifoStream(file, truncate=bytes_to_read)
                                 datastream.prepush(data)
                                 return channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('application', 'data')}, stream=datastream ))
-                            stackless.schedule()
+                            gevent.sleep()
                         
                         if procproto.exitcode:
                             return channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Get failed: %s\n"%procproto.err ))
@@ -167,14 +167,12 @@ class FileGetResource(resource.PostableResource):
                             # empty file successfully transfered
                             return channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('application', 'data')}, stream=data ))
                     
-                stackless.schedule()
+                gevent.sleep()
                 
             return channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Catastrophic codepath violation. This error should never happen. It's a bug!" ))
 
         
-        tasklet = stackless.tasklet(download_tasklet)
-        tasklet.setup( request, client_channel )
-        tasklet.run()
+        tasklet = gevent.spawn(download_tasklet, request, client_channel )
         
         return client_channel
     

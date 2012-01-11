@@ -30,7 +30,7 @@
 """
 Queue with priority for managing connections to protocols, hosts and ports
 """
-import stackless
+import gevent
 import inspect
 
 class TagNotInLockQueue(Exception): pass
@@ -64,7 +64,7 @@ class LockQueue(object):
             print "Locking",caller
         
             while not self._is_in_head(caller,level):
-                stackless.schedule()
+                gevent.sleep()
                 
             print "Releasing",caller
                 

@@ -49,7 +49,7 @@ import os
 import uuid
 import json
 from utils.protocol import globus
-import stackless
+import gevent
 import tempfile
 
 from utils.stacklesstools import sleep
@@ -130,7 +130,7 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
             
         pp = ssh.Run.run(usercert,ssh_command,username,host,working=None,port="22",stdout=None,stderr=None,password=creds['password'], modules=modules, streamin=script_string)
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         if pp.exitcode==0:
             # success
@@ -163,7 +163,7 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
             
         pp = ssh.Run.run(usercert,ssh_command,username,host,working=None,port="22",stdout=None,stderr=None,password=creds['password'], modules=modules )
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         if pp.exitcode==0:
             # success. lets process our qstat results

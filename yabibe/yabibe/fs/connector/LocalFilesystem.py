@@ -27,7 +27,7 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import FSConnector
-import stackless
+import gevent
 from utils.parsers import *
 from Exceptions import PermissionDenied, InvalidPath, IsADirectory
 from FifoPool import Fifos
@@ -247,7 +247,7 @@ class LocalFilesystem(FSConnector.FSConnector, object):
         pp = LocalShell().mkdir(path)
         
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         if priority:
             self.lockqueue.unlock(lock)
@@ -282,7 +282,7 @@ class LocalFilesystem(FSConnector.FSConnector, object):
         pp = LocalShell().rm(path,args="-rf" if recurse else "-f")
         
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
         
         err, out = pp.err, pp.out
         
@@ -319,7 +319,7 @@ class LocalFilesystem(FSConnector.FSConnector, object):
         pp = LocalShell().ls(path, recurse=recurse)
         
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         # release our queue lock
         if priority:
@@ -363,7 +363,7 @@ class LocalFilesystem(FSConnector.FSConnector, object):
         pp = LocalShell().ln(target, link)
         
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         if priority:
             self.lockqueue.unlock(lock)
@@ -398,7 +398,7 @@ class LocalFilesystem(FSConnector.FSConnector, object):
         pp = LocalShell().cp(src, dst, args="-r" if recurse else None)
         
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         if priority:
             self.lockqueue.unlock(lock)

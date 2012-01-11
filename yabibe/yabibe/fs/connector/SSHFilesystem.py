@@ -27,7 +27,7 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import FSConnector
-import stackless
+import gevent
 from utils.parsers import *
 from Exceptions import PermissionDenied, InvalidPath
 from FifoPool import Fifos
@@ -100,7 +100,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         pp = ssh.Shell.mkdir(usercert,host,path, port=port, username=creds['username'], password=creds['password'])
         
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         if priority:
             self.lockqueue.unlock(lock)
@@ -147,7 +147,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         pp = ssh.Shell.rm(usercert,host,path, port=port,args="-rf" if recurse else "-f", username=creds['username'], password=creds['password'])
         
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
         
         if priority:
             self.lockqueue.unlock(lock)
@@ -200,7 +200,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         pp = ssh.Shell.ls(usercert,host,path, port=port, recurse=recurse, username=creds['username'], password=creds['password'] )
         
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         # release our queue lock
         if priority:
@@ -245,7 +245,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         pp = ssh.Shell.ln(usercert,host,target, link, port=port, username=creds['username'], password=creds['password'])
         
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         if priority:
             self.lockqueue.unlock(lock)
@@ -291,7 +291,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         pp = ssh.Shell.cp(usercert,host,src, dst, args="-r" if recurse else None, port=port, username=creds['username'], password=creds['password'])
         
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         if priority:
             self.lockqueue.unlock(lock)

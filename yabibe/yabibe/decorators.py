@@ -26,7 +26,7 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-import stackless
+import gevent
 from utils.stacklesstools import sleep
 
 DEFAULT_FUNCTION_RETRY = 3
@@ -74,7 +74,7 @@ def lock(maximum):
             # pre lock
             while f._CONNECTION_COUNT >= maximum:
                 print "WARNING: max connection count reached for",f,"(%d)"%maximum
-                stackless.schedule()
+                gevent.sleep()
                 
             f._CONNECTION_COUNT += 1
             

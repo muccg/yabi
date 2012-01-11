@@ -27,7 +27,7 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import json
-import stackless
+import gevent
 import random
 import os
 import pickle
@@ -515,7 +515,7 @@ class MainTask(Task):
                     #print "callfunc is",callfunc
                     callfunc(uri, command=task['exec']['command'], remote_info=task['remoteinfourl'], submission=self.submission, stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)     # this blocks untill the command is complete. or the execution errored
                     while exec_status[0]==None:
-                        stackless.schedule()
+                        gevent.sleep()
                     if exec_status[0] and 'error' in exec_status[0]:
                         print "TASK[%s]: Execution failed!"%(self.taskid)
                         self.status("error")
@@ -539,7 +539,7 @@ class MainTask(Task):
             except CloseConnections, cc:
                 retry=True
                 
-            stackless.schedule()
+            gevent.sleep()
         
     def execute(self, outputdir):
         return self.do(outputdir, Exec)

@@ -32,7 +32,7 @@ from twisted.internet import protocol
 from twisted.internet import reactor
 
 import re
-import stackless
+import gevent
 from tempfile import mktemp
 import os
 from utils.stacklesstools import sleep
@@ -148,7 +148,7 @@ def qsub(jobname, submission_script, user="yabi", workingdir="/home/yabi"):
         pp = qsub_spawn(jobname,submission_script,user=user,workingdir=workingdir)
         
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         if pp.exitcode!=0:
             print "QSUB ERROR CODE:",pp.exitcode
@@ -275,7 +275,7 @@ def qstat(jobid, user="yabi"):
     pp = qstat_spawn(jobid, user)
     
     while not pp.isDone():
-        stackless.schedule()
+        gevent.sleep()
         
     if pp.exitcode!=0:
         err = pp.err

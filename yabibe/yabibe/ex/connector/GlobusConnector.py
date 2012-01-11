@@ -44,7 +44,7 @@ DEBUG = False
 
 import shlex
 from utils.protocol import globus
-import stackless
+import gevent
 import tempfile
 import os
 
@@ -125,7 +125,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         processprotocol = globus.Run.run( usercert, submission_script, host)
         
         while not processprotocol.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         if processprotocol.exitcode!=0:
             channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, stream = processprotocol.err ))
@@ -171,7 +171,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
             processprotocol = globus.Run.status( usercert, eprfile, host )
             
             while not processprotocol.isDone():
-                stackless.schedule()
+                gevent.sleep()
                 
             #print "STATE:",processprotocol.jobstate, processprotocol.exitcode
                 
@@ -251,7 +251,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
             processprotocol = globus.Run.status( usercert, eprfile, host )
             
             while not processprotocol.isDone():
-                stackless.schedule()
+                gevent.sleep()
                 
             #print "STATE:",processprotocol.jobstate, processprotocol.exitcode
                 

@@ -28,7 +28,7 @@
 # -*- coding: utf-8 -*-
 import FSConnector
 from utils.protocol import globus
-import stackless
+import gevent
 from utils.parsers import *
 from Exceptions import PermissionDenied, InvalidPath
 from FifoPool import Fifos

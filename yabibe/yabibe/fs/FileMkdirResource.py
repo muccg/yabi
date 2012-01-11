@@ -31,7 +31,7 @@ from twisted.internet import defer, reactor
 import weakref
 import sys, os, json
 
-import stackless
+import gevent
 from Exceptions import PermissionDenied, InvalidPath, BlockingException, NoCredentials, AuthException, ProxyInitError
 
 from utils.parsers import parse_url

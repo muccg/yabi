@@ -28,7 +28,7 @@
 # -*- coding: utf-8 -*-
 """All these funcs are done in a blocking manner using a stackless aproach. Not your normal funcs"""
 
-from stackless import schedule, tasklet
+import gevent
 from twisted.web import client
 from twisted.internet import reactor
 import time
@@ -60,10 +60,7 @@ from utils.stacklesstools import GET, POST, GETFailure, CloseConnections, RetryG
 
 def Sleep(seconds):
     """sleep tasklet for this many seconds. seconds is a float"""
-    now = time.time()
-    then = now+seconds
-    while time.time()<then:
-        schedule()
+    gevent.sleep(seconds)
 
 class CopyError(Exception): pass
 
