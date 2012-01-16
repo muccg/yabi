@@ -65,8 +65,8 @@ class TaskManager(object):
     def __init__(self):
         #self.pausechannel_task = stackless.channel()
         #self.pausechannel_unblock = stackless.channel()
-        self.pausechannel_task = gevent.hub.Waiter()
-        self.pausechannel_unblock = gevent.hub.Waiter()
+        self.pausechannel_task = gevent.queue.Queue(maxsize=0)          # a channel
+        self.pausechannel_unblock = gevent.queue.Queue(maxsize=0)       # a channel
         
         self.tasks = []                 # store all the tasks currently being executed in a list
     
@@ -117,7 +117,7 @@ class TaskManager(object):
             tasklets.add(runner_object, taskdescription['taskid'])
             
             # Lets try and start anotherone.
-            self.pausechannel_task.switch(self.JOB_PAUSE)
+            self.pausechannel_task.put(self.JOB_PAUSE)
             
         except Exception, e:
             # log any exception
@@ -142,7 +142,7 @@ class TaskManager(object):
             tasklet = gevent.spawn(runner_object.run)
             
             # Lets try and start anotherone.
-            self.pausechannel_unblock.switch(self.JOB_PAUSE)
+            self.pausechannel_unblock.put(self.JOB_PAUSE)
             
         except Exception, e:
             # log any exception
@@ -182,7 +182,7 @@ class TaskManager(object):
             if VERBOSE:
                 print "No more jobs. Sleeping for",self.JOBLESS_PAUSE
             # no more tasks. we should wait for the next task.
-            self.pausechannel_task.switch(self.JOBLESS_PAUSE)
+            self.pausechannel_task.put(self.JOBLESS_PAUSE)
             
         d = factory.deferred.addCallback(self.start_task).addErrback(_doFailure)
         return d
@@ -216,7 +216,7 @@ class TaskManager(object):
             if VERBOSE:
                 print "No more unblock requests. Sleeping for",self.JOBLESS_PAUSE
             # no more tasks. we should wait for the next task.
-            self.pausechannel_unblock.switch(self.JOBLESS_PAUSE)
+            self.pausechannel_unblock.put(self.JOBLESS_PAUSE)
             
         d = factory.deferred.addCallback(self.start_unblock).addErrback(_doFailure)
         return d
