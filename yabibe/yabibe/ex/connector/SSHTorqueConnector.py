@@ -106,7 +106,7 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
         ssh_command += " ; exit $EXIT"
 
         if not creds:
-            creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, "/")
+            creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, "/", credtype="exec")
     
         usercert = self.save_identity(creds['key'])
         
@@ -145,7 +145,7 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
         ssh_command = "cat > /dev/null && qstat -f -1 '%s'"%( jobid )
         
         if not creds:
-            creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, "/")
+            creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, "/", credtype="exec")
     
         usercert = self.save_identity(creds['key'])
         

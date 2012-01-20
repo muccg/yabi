@@ -130,7 +130,7 @@ def hmac_authenticated(func):
     def newfunc(request, *args, **kwargs):
         # check hmac result
         hmac_digest = hmac.new(settings.HMAC_KEY)
-        hmac_digest.update(request.META['REQUEST_URI'])
+        hmac_digest.update(request.META['REQUEST_URI'] if 'REQUEST_URI' in request.META else request.META['RAW_URI'])
         logger.info("hmac incoming should be %s"%(hmac_digest.hexdigest()))
         
         if HTTP_HMAC_KEY not in request.META:
