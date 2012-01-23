@@ -131,7 +131,11 @@ class Configuration(object):
                         'polldelay':'5',
                         'startup':'true',
                         "tasktag":None,
-                    }
+                    },
+        'ssh+sge':{
+                        'qstat':'qstat',
+                        'qsub':'qsub',
+                    },
     }
     
     def read_from_data(self,dat):
@@ -163,6 +167,12 @@ class Configuration(object):
             self.config[name]['startup'] = boolean_proc(conf_parser.get(name,'startup'))
             if conf_parser.has_option(name,'tasktag'):
                 self.config[name]['tasktag'] = conf_parser.get(name,'tasktag')
+                
+        # ssh+sge section
+        name = "sge+ssh"
+        if conf_parser.has_section(name):
+            self.config[name]['qstat'] = conf_parser.get(name,'qstat')
+            self.config[name]['qsub'] = conf_parser.get(name,'qsub')
             
         # backend section
         name = "backend"

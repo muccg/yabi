@@ -93,7 +93,8 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
         
         # build up our remote qsub command
         ssh_command = "cat >'%s' && "%(submission_script)
-        ssh_command += "qsub -N '%s' -e '%s' -o '%s' -d '%s' '%s'"%(    
+        ssh_command += "'%s' -N '%s' -e '%s' -o '%s' -d '%s' '%s'"%(    
+                                                                        config['ssh+sge']['qsub'],
                                                                         "yabi-task-"+remoteurl.rsplit('/')[-1],
                                                                         os.path.join(working,stderr),
                                                                         os.path.join(working,stdout),
@@ -142,7 +143,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
         """This submits via ssh the qstat command. This takes the jobid"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
         
-        ssh_command = "cat > /dev/null && qstat -f -1 '%s'"%( jobid )
+        ssh_command = "cat > /dev/null && '%s' -f -1 '%s'"%( config['ssh+sge']['qstat'],jobid )
         
         if not creds:
             creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, "/", credtype="exec")
