@@ -128,11 +128,13 @@ def profile_required(func):
 def hmac_authenticated(func):
     """Ensure that the user viewing this view is the backend system user"""
     def newfunc(request, *args, **kwargs):
+
         # check hmac result
         hmac_digest = hmac.new(settings.HMAC_KEY)
-        hmac_digest.update(request.META['REQUEST_URI'] if 'REQUEST_URI' in request.META else request.META['RAW_URI'])
-        logger.info("hmac incoming should be %s"%(hmac_digest.hexdigest()))
+        hmac_digest.update(request.get_full_path())
         
+        logger.info("hmac incoming should be %s"%(hmac_digest.hexdigest()))
+
         if HTTP_HMAC_KEY not in request.META:
             logger.info("Hmac-digest header not present in incoming request. Denying.")
             return HttpResponseBadRequest("Hmac-digest header not present in request\n")
