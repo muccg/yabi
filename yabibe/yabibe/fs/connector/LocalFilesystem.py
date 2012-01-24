@@ -59,7 +59,7 @@ CP_PATH = '/bin/cp'
 
 LS_TIME_STYLE = r"+%b %d  %Y"
 
-DEBUG = True
+DEBUG = False
  
 from decorators import retry, call_count
 from LockQueue import LockQueue
