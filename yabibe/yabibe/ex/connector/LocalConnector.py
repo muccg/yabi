@@ -37,7 +37,7 @@ ENV_CHECK = []
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "localex"
 
-DEBUG = True
+DEBUG = False
 
 from twistedweb2 import http, responsecode, http_headers, stream
 
@@ -125,21 +125,25 @@ class BaseShell(object):
 
     def execute(self, pp, command):
         """execute a command using a process protocol"""
-
+        
+        lexer = shlex.shlex(command, posix=True)
+        lexer.wordchars += r"-.:;/"
+        arguments = list(lexer)
+        
         subenv = self._make_env()
         if DEBUG:
             print "env",subenv
-            print "exec:",command
+            print "exec:",arguments
             print  [pp,
-                                command[0],
-                                command,
+                                arguments[0],
+                                arguments,
                                 subenv,
                                 self._make_path()]
             
             
         reactor.spawnProcess(   pp,
-                                command[0],
-                                command,
+                                arguments[0],
+                                arguments,
                                 env=subenv,
                                 path=self._make_path()
                             )
@@ -170,10 +174,10 @@ class LocalConnector(ExecConnector):
         try:
             if DEBUG:
                 print "LOCAL",command,"WORKING:",working,"CREDS passed in:%s"%(creds)    
-            client_stream.write("Unsubmitted\n")
+            client_stream.write("Unsubmitted\r\n")
             stackless.schedule()
             
-            client_stream.write("Pending\n")
+            client_stream.write("Pending\r\n")
             stackless.schedule()
             
             script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue, stdout, stderr)    
@@ -191,15 +195,22 @@ class LocalConnector(ExecConnector):
                 print "script string:",script_string
                 
             pp = LocalRun().run(None,command,username,host,working,port="22",stdout=stdout,stderr=stderr,password=None, modules=modules)
-            client_stream.write("Running\n")
+            client_stream.write("Running\r\n")
             stackless.schedule()
             
             while not pp.isDone():
                 stackless.schedule()
                 
+            # write out stdout and stderr.
+            # TODO: make this streaming
+            with open(os.path.join(working,stdout),'w') as fh:
+                fh.write(pp.out)
+            with open(os.path.join(working,stderr),'w') as fh:
+                fh.write(pp.err)
+                
             if pp.exitcode==0:
                 # success
-                client_stream.write("Done\n")
+                client_stream.write("Done\r\n")
                 client_stream.finish()
                 return
                 
@@ -208,14 +219,14 @@ class LocalConnector(ExecConnector):
                 print "SSH Job error:"
                 print "OUT:",pp.out
                 print "ERR:",pp.err
-            client_stream.write("Error\n")
+            client_stream.write("Error\r\n")
             client_stream.finish()
             return
                     
         except Exception, ee:
             import traceback
             traceback.print_exc()
-            client_stream.write("Error\n")
+            client_stream.write("Error\r\n")
             client_stream.finish()
             return
         
