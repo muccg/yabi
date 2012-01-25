@@ -220,6 +220,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
     def resume(self, jobid, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
         # send an OK message, but leave the stream open
         client_stream = stream.ProducerStream()
+        modules = [] if not module else [X.strip() for X in module.split(",")]
         
         try:
             username = self.get_running(jobid)['username']
