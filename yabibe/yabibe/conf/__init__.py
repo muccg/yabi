@@ -135,6 +135,7 @@ class Configuration(object):
         'ssh+sge':{
                         'qstat':'qstat',
                         'qsub':'qsub',
+                        'qacct':'qacct',
                     },
     }
     
@@ -173,6 +174,8 @@ class Configuration(object):
         if conf_parser.has_section(name):
             self.config[name]['qstat'] = conf_parser.get(name,'qstat')
             self.config[name]['qsub'] = conf_parser.get(name,'qsub')
+            self.config[name]['qacct'] = conf_parser.get(name,'qacct')
+            
             
         # backend section
         name = "backend"

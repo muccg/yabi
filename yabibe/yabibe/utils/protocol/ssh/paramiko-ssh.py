@@ -265,7 +265,7 @@ def execute(ssh,options,shell=True):
         
         if shell:
             ex = options.execute.replace("'","'\\''")        # escape any single quotes
-            stdin, stdout, stderr = ssh.exec_command("bash -i -c '"+ex+"'")
+            stdin, stdout, stderr = ssh.exec_command("bash -c '"+ex+"'")
         else:
             stdin, stdout, stderr = ssh.exec_command(options.execute)
     

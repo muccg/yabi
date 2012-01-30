@@ -261,7 +261,6 @@ def UserCreds(yabiusername, uri, credtype="fs"):
     """Get a users credentials"""
     # see if we can get the credentials
     url = os.path.join(config.yabiadminpath,'ws/credential/%s/%s/?uri=%s'%(credtype,yabiusername,urllib.quote(uri)))
-    print "GET:",url
     code, message, data = GET(url, scheme=config.yabiadminscheme, host=config.yabiadminserver, port=config.yabiadminport)
     if code!=200:
         raise NoSuchCredential("GET request for %s returned %d => %s"%(url,code,message))

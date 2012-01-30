@@ -431,7 +431,6 @@ class MainTask(Task):
         
         # get our credential working directory. We lookup the execution backends auth proxy cache, and get the users home directory from that
         # this comes from their credentials.
-        print "MKDIR:",task['exec']['backend']
         scheme, address = parse_url(task['exec']['backend'])
         usercreds = UserCreds(self.yabiusername, task['exec']['backend'], credtype="exec")
         workingdir = task['exec']['workingdir']
