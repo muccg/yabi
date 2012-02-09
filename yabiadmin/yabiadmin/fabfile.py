@@ -18,6 +18,7 @@ env.auto_confirm_purge = False #controls whether the confirmation prompt for pur
 env.celeryd_options = "--config=settings -l debug -E -B"
 env.ccg_pip_options = "--download-cache=/tmp --use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors=http://d.pypi.python.org/ --mirrors=http://e.pypi.python.org/"
 
+env.gunicorn_listening_on = "127.0.0.1:8001"
 
 class LocalPaths():
 
@@ -117,6 +118,46 @@ def snapshot_celeryd():
     """
     localPaths.target = "snapshot"
     _celeryd()
+
+def initdb():
+    """
+    Creates the DB schema and runs the DB migrations
+    To be used on initial project setup only
+    """
+    local("python manage.py syncdb --noinput")
+    migrate()
+
+def migrate():
+    """
+    Runs the DB migrations
+    """
+    local("python manage.py migrate")
+
+
+def runserver():
+    """
+    Runs the gunicorn server for local development
+    """
+    local("gunicorn_django -b "+ env.gunicorn_listening_on, capture=False)
+
+
+def killserver():
+    """
+    Kills the gunicorn server for local development
+    """
+    def anyfn(fn, iterable):
+        for e in iterable:
+            if fn(e): return True
+        return False
+    import psutil
+    gunicorn_pss = [p for p in psutil.process_iter() if p.name == 'gunicorn_django']
+    our_gunicorn_pss = [p for p in gunicorn_pss if anyfn(lambda arg: env.gunicorn_listening_on in arg, p.cmdline)]
+    counter = 0
+    for ps in our_gunicorn_pss:
+        if psutil.pid_exists(ps.pid):
+            counter += 1
+            ps.terminate()
+    print "%i processes terminated" % counter
 
 def syncdb():
     """

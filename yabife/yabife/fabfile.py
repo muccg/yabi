@@ -24,7 +24,7 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # 
 ### END COPYRIGHT ###
-from fabric.api import env
+from fabric.api import env, local
 from ccgfab.base import *
 
 env.app_root = '/usr/local/python/ccgapps/'
@@ -40,6 +40,7 @@ env.auto_confirm_purge = False #controls whether the confirmation prompt for pur
 
 env.ccg_pip_options = "--download-cache=/tmp --use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors=http://d.pypi.python.org/ --mirrors=http://e.pypi.python.org/"
 
+env.gunicorn_listening_on = "127.0.0.1:8000"
 
 def deploy(auto_confirm_purge=False, migration=True):
     """
@@ -91,9 +92,43 @@ def purge_snapshot(auto_confirm_purge = False):
     env.auto_confirm_purge = auto_confirm_purge
     _ccg_purge_snapshot()
 
+def initdb():
+    """
+    Creates the DB schema and runs the DB migrations
+    To be used on initial project setup only
+    """
+    local("python manage.py syncdb --noinput")
+    migrate()
+
+def migrate():
+    """
+    Runs the DB migrations
+    """
+    local("python manage.py migrate")
 
 
+def runserver():
+    """
+    Runs the gunicorn server for local development
+    """
+    local("gunicorn_django -w 5 -b "+ env.gunicorn_listening_on, capture=False)
 
 
-
+def killserver():
+    """
+    Kills the gunicorn server for local development
+    """
+    def anyfn(fn, iterable):
+        for e in iterable:
+            if fn(e): return True
+        return False
+    import psutil
+    gunicorn_pss = [p for p in psutil.process_iter() if p.name == 'gunicorn_django']
+    our_gunicorn_pss = [p for p in gunicorn_pss if anyfn(lambda arg: env.gunicorn_listening_on in arg, p.cmdline)]
+    counter = 0
+    for ps in our_gunicorn_pss:
+        if psutil.pid_exists(ps.pid):
+            counter += 1
+            ps.terminate()
+    print "%i processes terminated" % counter
 

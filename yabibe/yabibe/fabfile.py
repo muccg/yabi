@@ -100,3 +100,10 @@ def release(*args):
         _ccg_deploy_release(tag=args[0], apacheDeployment=False, migration=False)
     else:
         _ccg_deploy_release(apacheDeployment=False, migration=False)
+
+def createdirs():
+    """
+    Create essential directories in home directory of user running the backend
+    """
+    local("mkdir -p ~/.yabi/run/backend/fifos/ ~/.yabi/run/backend/tasklets/ ~/.yabi/run/backend/temp/ ~/.yabi/run/backend/certificates/")
+
