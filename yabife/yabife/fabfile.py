@@ -107,11 +107,14 @@ def migrate():
     local("python manage.py migrate")
 
 
-def runserver():
+def runserver(bg=False):
     """
     Runs the gunicorn server for local development
     """
-    local("gunicorn_django -w 5 -b "+ env.gunicorn_listening_on, capture=False)
+    cmd = "gunicorn_django -w 5 -b "+ env.gunicorn_listening_on
+    if bg:
+        cmd += " -D"
+    local(cmd, capture=False)
 
 
 def killserver():

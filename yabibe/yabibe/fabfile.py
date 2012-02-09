@@ -66,12 +66,15 @@ class LocalPaths():
 
 localPaths = LocalPaths()
 
-def backend():
+def backend(bg=False):
     """
     run the twisted backend on the terminal without forking
     """
     #print local("/usr/local/stackless/bin/twistd -noy server.py --logfile=-", capture=False)
-    print local("nice twistd -noy server.py --logfile=-", capture=False)
+    cmd = "nice twistd -noy server.py --logfile=-"
+    if bg:
+        cmd += " >/dev/null 2>&1 &"
+    print local(cmd, capture=False)
 
 def start():
     """

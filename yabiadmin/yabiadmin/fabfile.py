@@ -105,11 +105,11 @@ def celeryd():
     """
     _celeryd()
 
-def celeryd_quickstart():
+def celeryd_quickstart(bg=False):
     """
     Foreground celeryd using your deployment of admin
     """
-    _celeryd_quickstart()
+    _celeryd_quickstart(bg)
 
 
 def snapshot_celeryd():
@@ -134,11 +134,14 @@ def migrate():
     local("python manage.py migrate")
 
 
-def runserver():
+def runserver(bg=False):
     """
     Runs the gunicorn server for local development
     """
-    local("gunicorn_django -b "+ env.gunicorn_listening_on, capture=False)
+    cmd = "gunicorn_django -b "+ env.gunicorn_listening_on
+    if bg:
+        cmd += " -D"
+    local(cmd, capture=False)
 
 
 def killserver():
@@ -159,6 +162,24 @@ def killserver():
             ps.terminate()
     print "%i processes terminated" % counter
 
+def killcelery():
+    """
+    Kills the celery server for local development
+    """
+    def anyfn(fn, iterable):
+        for e in iterable:
+            if fn(e): return True
+        return False
+    import psutil
+    celeryd_pss = [p for p in psutil.process_iter() if p.name == 'python' and anyfn(lambda arg: 'celery.bin.celeryd' in arg, p.cmdline)]
+    counter = 0
+    for ps in celeryd_pss:
+        if psutil.pid_exists(ps.pid):
+            counter += 1
+            ps.terminate()
+    print "%i processes terminated" % counter
+
+
 def syncdb():
     """
     syncdb using your deployment of yabi admin
@@ -176,9 +197,12 @@ def _celeryd():
     _django_env()
     print local("python -m celery.bin.celeryd " + env.celeryd_options, capture=False)
 
-def _celeryd_quickstart():
+def _celeryd_quickstart(bg=False):
     _celery_env()
-    print local("python -m celery.bin.celeryd " + env.celeryd_options, capture=False)
+    cmd = "python -m celery.bin.celeryd " + env.celeryd_options
+    if bg:
+        cmd += " >/dev/null 2>&1 &"
+    print local(cmd, capture=False)
 
 def _django_env():
     os.environ["DJANGO_SETTINGS_MODULE"]="settings"
