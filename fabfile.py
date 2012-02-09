@@ -12,6 +12,10 @@ BE = {
     "dir": "yabibe/yabibe",
     "virtenvdir": "virt_yabibe"
 }
+YABISH = {
+    "dir": "yabish",
+    "virtenvdir": "virt_yabish"
+}
 STACKLESS_PYTHON = '/usr/local/bin/spython'
 
 def admin_bootstrap():
@@ -85,11 +89,16 @@ def be_quickstart(bg=False):
     be_createdirs()
     be_runserver(bg)
 
+def yabish_bootstrap():
+    with lcd(YABISH['dir']):
+        local("sh ../bootstrap.sh")
+
 def quickstart():
     fe_quickstart(bg=True)
     admin_quickstart(bg=True)
     admin_runcelery(bg=True)
     be_quickstart(bg=True)
+    yabish_bootstrap()
 
 def _virtualenv(project, command):
     with lcd(project['dir']):
