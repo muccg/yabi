@@ -27,6 +27,9 @@ def admin_runserver():
 def admin_killserver():
     _virtualenv(ADMIN, "fab killserver")
 
+def admin_runcelery():
+    _virtualenv(ADMIN, "fab celeryd_quickstart")
+
 def admin_quickstart():
     admin_bootstrap()
     admin_initdb()
