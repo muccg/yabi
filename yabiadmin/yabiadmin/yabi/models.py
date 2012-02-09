@@ -373,6 +373,9 @@ class ToolSet(Base):
         return self.name
 
 class User(Base):
+    class Meta:
+        ordering = ("name",)
+
     name = models.CharField(max_length=50, unique=True)
 
     def toolsets_str(self):
@@ -425,8 +428,8 @@ class Credential(Base):
 
     def __unicode__(self):
         if DEBUG:
-            return "Credential <id=%s description=%s username=%s user=%s backends=%s>" % (self.id, self.description if len(self.description)<20 else self.description[:20], self.username, self.user.name, self.backends.all())
-        return "Credential %s username:%s for yabiuser:%s"%(self.description,self.username,self.user.name)
+            return "<id=%s description=%s username=%s user=%s backends=%s>" % (self.id, self.description if len(self.description)<20 else self.description[:20], self.username, self.user.name, self.backends.all())
+        return "%s username:%s for yabiuser:%s"%(self.description,self.username,self.user.name)
     
     def encrypt(self, key):
         """Turn this unencrypted cred into an encrypted one using the supplied password"""
@@ -719,8 +722,8 @@ class Backend(Base):
 
     def __unicode__(self):
         if DEBUG:
-            return "Backend <%s name=%s scheme=%s hostname=%s port=%s path=%s>"%(self.id, self.name,self.scheme,self.hostname,self.port,self.path)
-        return "Backend %s %s %s://%s:%s%s"%(self.name, self.description,self.scheme,self.hostname,self.port,self.path)
+            return "<%s name=%s scheme=%s hostname=%s port=%s path=%s>"%(self.id, self.name,self.scheme,self.hostname,self.port,self.path)
+        return "%s - %s://%s:%s%s"%(self.name,self.scheme,self.hostname,self.port,self.path)
 
     @models.permalink
     def get_absolute_url(self):
@@ -831,7 +834,6 @@ class BackendCredential(Base):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(DjangoUser)
-
 
     def reencrypt_user_credentials(self, request):
         logger.debug("")

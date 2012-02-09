@@ -89,6 +89,7 @@ class ToolParameterInline(admin.StackedInline):
     model = ToolParameter
     formset = ToolParameterFormset
     extra = 3
+    filter_horizontal = ['accepted_filetypes']
 
 class ToolAdmin(AdminBase):
     form = ToolForm
@@ -107,6 +108,7 @@ class ToolGroupAdmin(AdminBase):
     
 class ToolSetAdmin(AdminBase):
     list_display = ['name', 'users_str']
+    filter_horizontal = ['users']
 
 class FileTypeAdmin(AdminBase):
     list_display = ['name', 'file_extensions_text']
