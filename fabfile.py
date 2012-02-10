@@ -84,6 +84,9 @@ def be_runserver(bg=False):
         cmd += ":bg"
     _virtualenv(BE, cmd)
 
+def be_killserver():
+    _virtualenv(BE, "fab killbackend")
+
 def be_quickstart(bg=False):
     be_bootstrap()
     be_createdirs()
@@ -99,6 +102,17 @@ def quickstart():
     admin_runcelery(bg=True)
     be_quickstart(bg=True)
     yabish_bootstrap()
+
+def killservers():
+    fe_killserver()
+    admin_killserver()
+    admin_killcelery()
+    be_killserver()
+
+def tests():
+    with lcd('yabitests'):
+        local(". %s/bin/activate && %s" % ('../yabish/virt_yabish', 'python tests.py'))
+
 
 def _virtualenv(project, command):
     with lcd(project['dir']):

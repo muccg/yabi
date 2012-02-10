@@ -68,13 +68,26 @@ localPaths = LocalPaths()
 
 def backend(bg=False):
     """
-    run the twisted backend on the terminal without forking
+    run the twisted backend on the terminal without forking, unless bg=True which runs it in background
     """
     #print local("/usr/local/stackless/bin/twistd -noy server.py --logfile=-", capture=False)
     cmd = "nice twistd -noy server.py --logfile=-"
     if bg:
         cmd += " >/dev/null 2>&1 &"
     print local(cmd, capture=False)
+
+def killbackend():
+    """
+    kill the twisted backend
+    """
+    import psutil
+    twisted_pss = [p for p in psutil.process_iter() if p.name == 'twistd']
+    counter = 0
+    for ps in twisted_pss:
+        if psutil.pid_exists(ps.pid):
+            counter += 1
+            ps.terminate()
+    print "%i processes terminated" % counter
 
 def start():
     """
