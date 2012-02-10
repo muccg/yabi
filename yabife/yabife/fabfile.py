@@ -24,6 +24,7 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # 
 ### END COPYRIGHT ###
+import os
 from fabric.api import env, local
 from ccgfab.base import *
 
@@ -114,6 +115,7 @@ def runserver(bg=False):
     cmd = "gunicorn_django -w 5 -b "+ env.gunicorn_listening_on
     if bg:
         cmd += " -D"
+    os.environ['PROJECT_DIRECTORY'] = '.'
     local(cmd, capture=False)
 
 

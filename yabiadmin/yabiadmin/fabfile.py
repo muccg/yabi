@@ -141,6 +141,7 @@ def runserver(bg=False):
     cmd = "gunicorn_django -b "+ env.gunicorn_listening_on
     if bg:
         cmd += " -D"
+    os.environ["PROJECT_DIRECTORY"] = "." 
     local(cmd, capture=False)
 
 
