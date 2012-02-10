@@ -146,7 +146,7 @@ class Migration(DataMigration):
 
         # set the backend credentials to the user's homedir
         ex_bec = orm.BackendCredential.objects.get(id=2)
-        ex_bec.homedir = "%s%s" % (os.environ['HOME'], '/')
+        ex_bec.homedir = ""                                         # exec backends have no path
         ex_bec.save()
         fs_bec = orm.BackendCredential.objects.get(id=3)
         fs_bec.homedir = "%s%s" % (os.environ['HOME'], '/')

@@ -22,11 +22,10 @@ http://ccg-django-extras.googlecode.com/files/ccg-makoloader-0.2.3.tar.gz
 http://ccg-django-extras.googlecode.com/files/ccg-introspect-0.1.2.tar.gz
 http://ccg-django-extras.googlecode.com/files/ccg-extras-0.1.3.tar.gz
 http://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.2.tar.gz
-http://ccg-python-build.googlecode.com/files/ccg-python-build-2.2.9.tar.gz
+http://ccg-python-build.googlecode.com/files/ccg-python-build-2.3.3.tar.gz
 cssutils==0.9.7
 django-templatetag-sugar==0.1
 httplib2==0.6.0
-Mercurial>=1.9.3
 paramiko==1.7.7.1
 pycrypto==2.3
 pygooglechart==0.2.1
