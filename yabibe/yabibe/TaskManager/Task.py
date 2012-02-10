@@ -516,6 +516,13 @@ class MainTask(Task):
                     callfunc(uri, command=task['exec']['command'], remote_info=task['remoteinfourl'], submission=self.submission, stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)     # this blocks untill the command is complete. or the execution errored
                     while exec_status[0]==None:
                         stackless.schedule()
+                    
+                    #DEBUG
+                    from twisted.python import log
+                    exec_status_message = "exec_status is %r"%(exec_status)
+                    self.log(exec_status_message)
+                    log.msg(exec_status_message)
+                    
                     if exec_status[0] and 'error' in exec_status[0]:
                         print "TASK[%s]: Execution failed!"%(self.taskid)
                         self.status("error")
