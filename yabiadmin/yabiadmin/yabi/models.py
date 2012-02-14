@@ -28,7 +28,7 @@
 # -*- coding: utf-8 -*-
 import traceback, hashlib, base64
 
-from django.db import models
+from django.db import models, transaction
 from django import forms
 from django.contrib.auth.models import User as DjangoUser
 from django.utils import simplejson as json
@@ -36,13 +36,9 @@ from django.core import urlresolvers
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from urlparse import urlparse, urlunparse
-from crypto import aes_enc_hex, aes_dec_hex
-
-from ldap import LDAPError, MOD_REPLACE
-from django.contrib.memcache import KeyspacedMemcacheClient
+from crypto import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, DecryptException, AESTEMP
+from ccg.memcache import KeyspacedMemcacheClient
 from yabiadmin.decorators import func_create_memcache_keyname
-from yabiadmin.ldapclient import LDAPClient
-from yabiadmin.ldaputils import get_userdn_of
 
 from constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK
 
@@ -51,7 +47,7 @@ DEBUG = False
 class DecryptedCredentialNotAvailable(Exception): pass
 
 import logging
-logger = logging.getLogger('yabiadmin')
+logger = logging.getLogger(__name__)
 
 
 class Base(models.Model):
@@ -115,7 +111,7 @@ class Tool(Base):
     walltime = models.CharField(max_length=64, null=True, blank=True)
     module = models.TextField(null=True, blank=True)
     queue = models.CharField(max_length=50, default='normal', null=True, blank=True)
-    max_memory = models.PositiveIntegerField(null=True, blank=True)
+    max_memory = models.CharField(max_length=64, null=True, blank=True)
     job_type = models.CharField(max_length=40, default='single', null=True, blank=True)
     lcopy_supported = models.BooleanField(default=True)
     link_supported = models.BooleanField(default=True)
@@ -257,8 +253,8 @@ class ParameterSwitchUse(Base):
 
 FILE_ASSIGNMENT_CHOICES = (
     ('none', 'No input files'),
-    ('batch', 'Batch files'),
-    ('all', 'Consume all files'),
+    ('batch', 'Single input file'),
+    ('all', 'Multiple input files'),
 )
 
 class ToolParameter(Base):
@@ -304,6 +300,12 @@ class ToolParameter(Base):
     possible_values.help_text="Json snippet for html select. See blast tool for examples."
     default_value.help_text="Value that will appear in field. If possible values is populated this should match one of the values so the select widget defaults to that option."
     helptext.help_text="Help text that is passed to the frontend for display to the user."
+    
+    batch_bundle_files.help_text = "When staging in files, stage in every file that is in the same source location as this file. Useful for bringing along other files that are associated, but not specified."
+    file_assignment.help_text = """Specifies how to deal with files that match the accepted filetypes setting...<br/><br/>
+        <i>No input files:</i> This parameter does not take any input files as an argument<br/>
+        <i>Single input file:</i> This parameter can only take a single input file, and batch jobs will need to be created for multiple files if the user passes them in<br/>
+        <i>Multiple input file:</i> This parameter can take a whole string of onput files, one after the other. All matching filetypes will be passed into it"""
     
     def __unicode__(self):
         return self.switch or ''
@@ -417,8 +419,6 @@ class Credential(Base):
     backends = models.ManyToManyField('Backend', through='BackendCredential', null=True, blank=True)
 
     expires_on = models.DateTimeField( null=True )                      # null mean never expire this
-    encrypted = models.BooleanField( null=False )
-    encrypt_on_login = models.BooleanField( null=False, default=True )
     
     username.help_text="The username on the backend this credential is for."
     user.help_text="Yabi username."
@@ -430,50 +430,73 @@ class Credential(Base):
     
     def encrypt(self, key):
         """Turn this unencrypted cred into an encrypted one using the supplied password"""
-        assert self.encrypted == False
+        password = aes_enc_hex(self.password,key)
+        cert = aes_enc_hex(self.cert,key,linelength=80)
+        key = aes_enc_hex(self.key,key,linelength=80)
         
-        self.password = aes_enc_hex(self.password,key)
-        self.cert = aes_enc_hex(self.cert,key,linelength=80)
-        self.key = aes_enc_hex(self.key,key,linelength=80)
-        
-        self.encrypted = True
-        self.encrypt_on_login = False
-        
+        # they all have to work before we change the object
+        self.password = password
+        self.cert = cert
+        self.key = key
+                
     def decrypt(self, key):
-        assert self.encrypted == True
+        password = aes_dec_hex(self.password,key)
+        cert = aes_dec_hex(self.cert,key)
+        key = aes_dec_hex(self.key,key)
         
-        self.password = aes_dec_hex(self.password,key)
-        self.cert = aes_dec_hex(self.cert,key)
-        self.key = aes_dec_hex(self.key,key)
+        # they all have to work before we change the object
+        self.password = password
+        self.cert = cert
+        self.key = key
         
-        self.encrypted = False
+    def protect(self):
+        """temporarily protects a key by encrypting it with the secret django key"""
+        password = aes_enc_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
+        cert = aes_enc_hex(self.cert, settings.SECRET_KEY,tag=AESTEMP)
+        key = aes_enc_hex(self.key, settings.SECRET_KEY,tag=AESTEMP)
+        
+        # they all have to work before we change the object
+        self.password = password
+        self.cert = cert
+        self.key = key
+        
+    def unprotect(self):
+        """take a temporarily protected key and decrypt it with the django secret key"""
+        password = aes_dec_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
+        cert = aes_dec_hex(self.cert, settings.SECRET_KEY,tag=AESTEMP)
+        key = aes_dec_hex(self.key, settings.SECRET_KEY,tag=AESTEMP)
+        
+        # they all have to work before we change the object
+        self.password = password
+        self.cert = cert
+        self.key = key
         
     def recrypt(self,oldkey,newkey):
         self.decrypt(oldkey)
         self.encrypt(newkey)
         
+    def encrypted2protected(self, key):
+        """Tries to decrypt using the key and if successful protects
+        the credential. Credential must be saved to take effect."""
+        self.decrypt(key)
+        self.protect()
+
     def memcache_keyname(self):
         """return the memcache key for this credential"""
         return "-cred-%s-%d"%(self.user.name.encode("utf-8"),self.id)              # TODO: memcache keys dont support unicode. user.name may contain unicode
         
-    def send_to_memcache(self, key="encryption key", memcache=None, time_to_cache=None ):
-        """This method temporarily decypts the key and stores the decrypted key in memcache"""
+    def send_to_memcache(self, memcache=None, time_to_cache=None ):
+        """This method stores the key as it is in memcache"""
         # set up defaults if they aren't set
         memcache = memcache or "localhost.localdomain"
         time_to_cache = time_to_cache or settings.DEFAULT_CRED_CACHE_TIME
-        
-        # make sure this is an encrypted cred, otherwise theres no point
-        assert self.encrypted == True
-        
-        # decrypt the credential using the passed in password
-        credential = {
-            'password': aes_dec_hex(self.password,key),
-            'cert': aes_dec_hex(self.cert,key),
-            'key': aes_dec_hex(self.key,key)
-        }
-        
+                
         mckey = self.memcache_keyname()
-        mcval = json.dumps(credential)
+        mcval = json.dumps( {
+            'password': self.password,
+            'cert': self.cert,
+            'key': self.key
+        } )
         
         # push the credential to memcache server
         ksc = KeyspacedMemcacheClient()
@@ -488,22 +511,34 @@ class Credential(Base):
         wfs=self.rewalk_workflows()
         ids = [W.id for W in wfs]
         wfs.update(status=STATUS_READY)
+
+        # always commit transactions before sending tasks depending on state from the current transaction http://docs.celeryq.org/en/latest/userguide/tasks.html
+        transaction.commit()
+
         for id in ids:
             print "WALK----------->",id
             walk.delay(workflow_id=id)
+            
+    def get_from_memcache(self):
+        result = self.get_memcache()
+        self.password = result['password']
+        self.cert = result['cert']
+        self.key = result['key']
        
     def get(self):
         """return the decrypted cert if available. Otherwise raise exception"""
-        if not self.encrypted:
+        #return dict([('username', self.username),
+                    #('password', self.password),
+                    #('cert', self.cert),
+                    #('key', self.key)])
+        
+        if self.is_memcached():
+            self.get_from_memcache()
+            self.unprotect()
             return dict([('username', self.username),
                     ('password', self.password),
                     ('cert', self.cert),
                     ('key', self.key)])
-        
-        if self.is_memcached():
-            result = self.get_memcache()
-            result['username']=self.username
-            return result
             
         # encrypted but not cached. ERROR!
         raise DecryptedCredentialNotAvailable("Credential for yabiuser: %s id: %d is not available in a decrypted form"%(self.user.name, self.id))
@@ -559,7 +594,96 @@ class Credential(Base):
     def unblock_all_blocked_tasks(self):
         """Set the status on all tasks blocked for this user to 'resume' so they can resume"""
         self.blocked_tasks().update(status=STATUS_RESUME)     
+
+    @property
+    def is_plaintext(self):
+        """We assume its plaintext if it fails the crypto looks_like_annotated_block() function"""
+        return not (looks_like_annotated_block(self.password) and looks_like_annotated_block(self.key) and looks_like_annotated_block(self.cert))
         
+    def is_only_hex(self):
+        """This is a legacy function to help migrating old encrypted creds to new creds.
+        It returns true if the key, cert and password fields are soley composed of hex characters.
+        """
+        return looks_like_hex_ciphertext(self.password) and looks_like_hex_ciphertext(self.key) and looks_like_hex_ciphertext(self.cert)
+        
+    def on_pre_save(self):
+        if self.is_plaintext:
+            # temporarily protect this for saving
+            self.protect()
+            
+    def on_post_init(self):
+        if not self.is_plaintext:
+            # ciphertext... lets look at its tag
+            tag = looks_like_annotated_block(self.password) or looks_like_annotated_block(self.key) or looks_like_annotated_block(self.cert)
+        
+            # TODO: automate this bit
+
+    def on_login(self, username, password):
+        """When a user logs in, this method is called on every one of their credentials, and gets passed their login password"""
+        
+        #print "on_login(",self,username,password,")"
+        
+        # is it not encrypted at all?
+        if self.is_plaintext:
+            # we need to protect this with users password and save it back before we do anything else.
+            self.encrypt(password)
+            self.save()
+            return
+            
+       
+        # now the generic stuff to do with an encrypted password.    
+        # 1.try and decrypt with this password
+        try:
+            self.decrypt(password)
+            
+            # decrypt with users password succeeded. protect and cache...
+            self.protect()
+            
+            # dont save
+            self.send_to_memcache()
+        except DecryptException, de:
+            # decrypt with password failed
+            # 2. try to decrypt with symetric key
+            try:
+                self.unprotect()
+
+                # its symetricly encrypted... that means we need to encrypt with the users password and save it encrypted into db
+                self.encrypt(password)
+                self.save()
+                
+                # now decrypt and protect and save to memcache
+                self.decrypt(password)
+                
+                self.protect()
+
+                # dont save
+                self.send_to_memcache()
+            except DecryptException, de:
+                # failed to decrypt with users key or symetric key
+                raise DecryptException("Failed to decrypt %s with users key or symetric key!"%(self))
+            
+            
+            
+def deprecated_ensure_encrypted(username, password):
+    """returns true on successful encryption. false on failure to decrypt"""
+    # find the unencrypted credentials for this user that should be ecrypted and encrypt with the passed in CORRECT password
+    creds = Credential.objects.filter(user__name=username).filter(encrypt_on_login=True).filter(encrypted=False)
+    for cred in creds:
+        cred.encrypt(password)
+        cred.save()
+        
+    # decrypt all encrypted credentials and store in memcache
+    creds = Credential.objects.filter(user__name=username, encrypted=True)
+    try:
+        for cred in creds:
+            cred.send_to_memcache(password)
+    except DecryptException, de:
+        return False
+
+    return True                 #success
+    
+
+
 class Backend(Base):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=512, blank=True)
@@ -597,7 +721,6 @@ class Backend(Base):
         if DEBUG:
             return "Backend <%s name=%s scheme=%s hostname=%s port=%s path=%s>"%(self.id, self.name,self.scheme,self.hostname,self.port,self.path)
         return "Backend %s %s %s://%s:%s%s"%(self.name, self.description,self.scheme,self.hostname,self.port,self.path)
-
 
     @models.permalink
     def get_absolute_url(self):
@@ -643,29 +766,14 @@ class BackendCredential(Base):
             'credential':cred.description,
             'username':cred.username,
         })
-        if cred.encrypted:
-            # encrypted credential. Lets try and get the cached decrypted version
-            
-            if cred.is_memcached():
-                # there is a plain credential available
-                parts = cred.get_memcache()
+        
+        parts = cred.get()
+        
+        # refresh its time stamp
+        cred.refresh_memcache()
                 
-                # refresh its time stamp
-                cred.refresh_memcache()
-                
-                # add in the decrypted cred parts
-                output.update(parts)
-                
-            else:
-                # there is no plain credential available!
-                raise DecryptedCredentialNotAvailable("Credential for yabiuser: %s id: %d is not available in a decrypted form"%(cred.user.name, cred.id))
-        else:
-            # credential is decrypted already. we can just return it
-            output.update( {
-                'password':self.credential.password,
-                'cert':self.credential.cert,
-                'key':self.credential.key
-            } )
+        # add in the decrypted cred parts
+        output.update(parts)
             
         return json.dumps(output)
 
@@ -679,6 +787,9 @@ class BackendCredential(Base):
             netloc += ':%d' % self.backend.port
 
         uri = urlunparse((self.backend.scheme, netloc, self.backend.path, '', '', ''))
+
+        if uri.endswith('/') and self.homedir.startswith('/'):
+            uri = uri[:-1]
 
         return uri + self.homedir
 
@@ -730,7 +841,7 @@ class UserProfile(models.Model):
         newPassword = request.POST['newPassword']
     
         # get all creds for this user that are encrypted
-        creds = Credential.objects.filter(user=yabiuser, encrypted=True)
+        creds = Credential.objects.filter(user=yabiuser)
         for cred in creds:
             cred.recrypt(currentPassword, newPassword)
             cred.save()
@@ -754,7 +865,7 @@ class ModelBackendUserProfile(UserProfile):
             self.reencrypt_user_credentials(request)
             self.user.save()
             return (True, "Password successfully changed")
-        except (AttributeError, LDAPError), e:
+        except AttributeError, e:
             # Send back something fairly generic.
             logger.debug("Error changing password in LDAP server: %s" % str(e))
             return (False, "Error changing password")
@@ -762,6 +873,17 @@ class ModelBackendUserProfile(UserProfile):
         
 class LDAPBackendUserProfile(UserProfile):
 
+    def __init__(self, *args, **kwargs):
+        UserProfile.__init__(self,*args, **kwargs)
+
+        # TODO look at moving ldap profile to separate file so these imports
+        # can be at the top of the file, not within the class
+        # depends on how Django can import UserProfiles, currently it seems to
+        # be string based
+        from ldap import LDAPError, MOD_REPLACE
+        from yabiadmin.ldapclient import LDAPClient
+        from yabiadmin.ldaputils import get_userdn_of
+        
     class Meta:
         proxy = True
 
@@ -816,6 +938,16 @@ class LDAPBackendUserProfile(UserProfile):
 ## Django Signals
 ##
 
+def signal_credential_pre_save(sender, instance, **kwargs):
+    logger.debug("credential pre_save signal")
+    
+    instance.on_pre_save()
+        
+def signal_credential_post_init(sender, instance, **kwargs):
+    logger.debug("credential post_init signal")
+
+    instance.on_post_init()
+
 def signal_tool_post_save(sender, **kwargs):
     logger.debug("tool post_save signal")
 
@@ -836,8 +968,11 @@ def create_user_profile(sender, instance, created, **kwargs):
 
  
 # connect up signals
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save,post_init
 post_save.connect(signal_tool_post_save, sender=Tool)
 post_save.connect(create_user_profile, sender=DjangoUser)
+pre_save.connect(signal_credential_pre_save, sender=Credential)
+post_init.connect(signal_credential_post_init, sender=Credential)
+
 
 

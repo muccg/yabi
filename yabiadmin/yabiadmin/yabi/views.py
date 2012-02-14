@@ -36,11 +36,11 @@ from django.conf import settings
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404, render_mako
 from django.core.exceptions import ObjectDoesNotExist
-from django.utils import webhelpers
+from ccg.utils import webhelpers
 from django import forms
 
 import logging
-logger = logging.getLogger('yabiadmin')
+logger = logging.getLogger(__name__)
 
 # proxy view to pass through all requests set up in urls.py
 def proxy(request, url, server, base):

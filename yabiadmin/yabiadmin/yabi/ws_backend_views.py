@@ -29,7 +29,7 @@
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from django.utils import webhelpers
+from ccg.utils import webhelpers
 from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
@@ -46,11 +46,11 @@ from yabiadmin.responses import *
 from yabiadmin.decorators import memcache, authentication_required, profile_required, hmac_authenticated
 
 import logging
-logger = logging.getLogger('yabiadmin')
+logger = logging.getLogger(__name__)
 
 #@authentication_required
 @hmac_authenticated
-def credential_uri(request, yabiusername):
+def fs_credential_uri(request, yabiusername):
     if 'uri' not in request.REQUEST:
         return HttpResponse("Request must contain parameter 'uri' in the GET or POST parameters.")
         
@@ -61,7 +61,26 @@ def credential_uri(request, yabiusername):
     schema, rest = uriparse(uri)
 
     try:
-        bc = backendhelper.get_backendcredential_for_uri(yabiusername, uri)
+        bc = backendhelper.get_fs_backendcredential_for_uri(yabiusername, uri)
+        return HttpResponse(bc.json())
+    except ObjectDoesNotExist, odne:
+        return JsonMessageResponseNotFound("Object not found")
+    except DecryptedCredentialNotAvailable, dcna:
+        return JsonMessageResponseServerError("Decrypted Credential Not Available: %s" % dcna, status=503)
+
+@hmac_authenticated
+def exec_credential_uri(request, yabiusername):
+    if 'uri' not in request.REQUEST:
+        return HttpResponse("Request must contain parameter 'uri' in the GET or POST parameters.")
+        
+    uri = request.REQUEST['uri']
+    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
+
+    # parse the URI into chunks
+    schema, rest = uriparse(uri)
+
+    try:
+        bc = backendhelper.get_exec_backendcredential_for_uri(yabiusername, uri)
         return HttpResponse(bc.json())
     except ObjectDoesNotExist, odne:
         return JsonMessageResponseNotFound("Object not found")

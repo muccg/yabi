@@ -20,6 +20,14 @@
 </%def>
 
 <%def name="body()">
+
+%if show_dev_warning:
+<div id="warningbanner">
+<strong>Warning: Development settings in use.</strong><br/>Change your settings files before deployment to production servers.
+</div>
+%endif
+
+
 <div id="content">
 
 <a href="${h.url('/')}"><img src="${h.url('/static/images/yabi-logo.png')}" alt="Yabi-logo" height="60" width="198" /></a><p>
@@ -47,6 +55,13 @@ Workflows made easy.
 friendliness. With its state-of-the-art web-based interface, it is a much needed - 
 and very welcome - addition to the bioinformatics ecosystem.</i></blockquote>
 <span>Tomas Di Domenico, Biocomputing Lab, Department of Biology, University of Padova</span>
+</div>
+</div>
+
+<div class="yabi_quote_block">
+<div class="yabi_testimonials">
+<blockquote><i>Yabi enables scientists to focus on science. It creates a much needed bridge to "big iron" for researchers <br/>who aren't specialists in high-performance computing.</i></blockquote>
+<span>Dr David R Lovell, Transformational Biology - Bioinformatics and Analytics Leader, CSIRO Mathematics, Informatics and Statistics (CMIS)</span>
 </div>
 </div>
 

@@ -27,98 +27,120 @@
 ### END COPYRIGHT ###
 
 import os, sys
-from django.utils.webhelpers import url
+from ccg.utils.webhelpers import url
 import djcelery
-import yabilogging
+import logging
+import logging.handlers
 
-### SERVER ###
-
-# SCRIPT_NAME isnt set when not under wsgi
-if not os.environ.has_key('SCRIPT_NAME'):
-    os.environ['SCRIPT_NAME']=''
-
-SCRIPT_NAME =   os.environ['SCRIPT_NAME']
 PROJECT_DIRECTORY = os.environ['PROJECT_DIRECTORY']
 
-# https
-if SCRIPT_NAME:
-    SSL_ENABLED = True
-else:
-    SSL_ENABLED = False
+# setting to control ccg ssl middleware
+# see http://code.google.com/p/ccg-django-extras/source/browse/
+# you SHOULD change the SSL_ENABLED to True when in production
+SSL_ENABLED = False
 
-
-### DEBUG ###
+# set debug, see: https://docs.djangoproject.com/en/dev/ref/settings/#debug
 DEBUG = True
-DEV_SERVER = True
+
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
 
-
-### APPLICATION
-
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#middleware-classes
 MIDDLEWARE_CLASSES = [
-    'django.middleware.email.EmailExceptionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.doc.XViewMiddleware',
-    'django.middleware.ssl.SSLRedirect'
+    'ccg.middleware.ssl.SSLRedirect'
 ]
 
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
+    'django.contrib.staticfiles',
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
     'yabiadmin.yabistoreapp',
-    'ghettoq',
-    'djcelery'
+    'djcelery',
+    'djkombu',
+    'django_extensions',
+    'south'    
 ]
 
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
 ROOT_URLCONF = 'yabiadmin.urls'
 
+# these determine which authentication method to use
+# yabi uses modelbackend by default, but can be overridden here
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#authentication-backends
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend'
 ]
+
+# code used for additional user related operations
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#auth-profile-module
 AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
 
 # cookies
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-age
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-name
+# you SHOULD change the cookie to use HTTPONLY and SECURE when in production
 SESSION_COOKIE_AGE = 60*60
 SESSION_COOKIE_PATH = url('/')
+SESSION_COOKIE_NAME = 'yabiadmin_sessionid'
 SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_HTTPONLY = False 
+SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_NAME = "csrftoken_yabiadmin"
 
-# locale
+
+# Locale
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#time-zone
+#      https://docs.djangoproject.com/en/dev/ref/settings/#language-code
+#      https://docs.djangoproject.com/en/dev/ref/settings/#use-i18n
 TIME_ZONE = 'Australia/Perth'
 LANGUAGE_CODE = 'en-us'
 USE_I18N = True
 
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#login-url
 LOGIN_URL = url('/accounts/login/')
 LOGOUT_URL = url('/accounts/logout/')
 
-# for local development, this is set to the static serving directory. For deployment use Apache Alias
-STATIC_SERVER_PATH = os.path.join(PROJECT_DIRECTORY,"static")
+
+### static file management ###
+# see: https://docs.djangoproject.com/en/dev/howto/static-files/
+# deployment uses an apache alias
+STATICFILES_DIRS = [os.path.join(PROJECT_DIRECTORY,"static")]
+STATIC_URL = url('/static/')
+ADMIN_MEDIA_PREFIX = url('/static/admin/')
+
+# media directories
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#media-root
+MEDIA_ROOT = os.path.join(PROJECT_DIRECTORY,"static","media")
+MEDIA_URL = url('/static/media/')
 
 # a directory that will be writable by the webserver, for storing various files...
 WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
 
-# media directories
-MEDIA_ROOT = os.path.join(PROJECT_DIRECTORY,"static","media")
-MEDIA_URL = '/static/media/'
-ADMIN_MEDIA_PREFIX = url('/static/admin-media/')
-
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#append-slash
 APPEND_SLASH = True
+
+# TODO: probably deprecated
 SITE_NAME = 'yabiadmin'
 
-# validation settings
-VALID_SCHEMES = ['http', 'https', 'gridftp', 'globus', 'sge', 'torque', 'yabifs', 'ssh', 'scp', 's3', 'null', 'ssh+pbspro', 'ssh+torque', 'local']
+# validation settings, these reflect the types of backend that yabi can handle
+EXEC_SCHEMES = ['globus', 'sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex','null']
+FS_SCHEMES = ['http', 'https', 'gridftp', 'yabifs', 'scp', 's3', 'localfs','null']
+VALID_SCHEMES = EXEC_SCHEMES + FS_SCHEMES
 
 
-
-### CAPTCHA ###
-
+##
+## CAPTCHA settings
+##
 # the filesystem space to write the captchas into
 CAPTCHA_ROOT = os.path.join(MEDIA_ROOT, 'captchas')
 
@@ -129,16 +151,18 @@ CAPTCHA_URL = os.path.join(MEDIA_URL, 'captchas')
 CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
 
 
-### TEMPLATING ###
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug
 TEMPLATE_DEBUG = DEBUG
 
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
 TEMPLATE_LOADERS = [
-    'django.template.loaders.filesystem.load_template_source',
-    'django.template.loaders.app_directories.load_template_source',
+    'django.template.loaders.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader',
+    'ccg.template.loaders.makoloader.filesystem.Loader'
 ]
 
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
 TEMPLATE_DIRS = [
-    os.path.join(PROJECT_DIRECTORY,"templates","mako"), 
     os.path.join(PROJECT_DIRECTORY,"templates"),
 ]
 
@@ -154,7 +178,7 @@ MAKO_MODULENAME_CALLABLE = ''
 ### USER SPECIFIC SETUP ###
 # these are the settings you will most likely change to reflect your setup
 
-# point this towards a database in the normal Django fashion
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -166,20 +190,25 @@ DATABASES = {
     }
 }
 
-# Make these unique, and don't share it with anybody.
+# Make this unique, and don't share it with anybody.
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = 'set_this'
 HMAC_KEY = 'set_this'
 
-# email server
+# email settings so yabi can send email error alerts etc
+# see https://docs.djangoproject.com/en/dev/ref/settings/#email-host
 EMAIL_HOST = 'set_this'
 EMAIL_APP_NAME = "Yabi Admin "
 SERVER_EMAIL = "apache@set_this"                      # from address
 EMAIL_SUBJECT_PREFIX = "DEV "
 
-# default emails
+# admins to email error reports to
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#admins
 ADMINS = [
     ( 'alert', 'alerts@set_this.com' )
 ]
+
+# see: https://docs.djangoproject.com/en/dev/ref/settings/#managers
 MANAGERS = ADMINS
 
 # if you want to use ldap you'll need to uncomment and configure this section
@@ -196,15 +225,18 @@ MANAGERS = ADMINS
 
 
 # memcache server list
+# add a list of your memcache servers
 MEMCACHE_SERVERS = ['localhost.localdomain:11211']
 MEMCACHE_KEYSPACE = "yabiadmin"
 
 # uncomment to use memcache for sessions, be sure to have uncommented memcache settings above
+# see https://docs.djangoproject.com/en/dev/ref/settings/#session-engine
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 CACHE_BACKEND = 'memcached://'+(';'.join(MEMCACHE_SERVERS))+"/"
 MEMCACHE_KEYSPACE = "yabiadmin"
 
-# uploads are currently written to disk and double handled, setting a limit will break things 
+# uploads are currently written to disk and double handled, setting a limit will break things
+# see https://docs.djangoproject.com/en/dev/ref/settings/#file-upload-max-memory-size
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
 
@@ -213,6 +245,7 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 BACKEND_IP = '0.0.0.0'
 BACKEND_PORT = '9001'
 BACKEND_BASE = '/'
+TASKTAG = 'set_this' # this must be the same in the yabi.conf for the backend that will consume tasks from this admin
 YABIBACKEND_SERVER = BACKEND_IP + ':' +  BACKEND_PORT
 YABISTORE_HOME = '.yabi/run/store/'
 BACKEND_UPLOAD = 'http://'+BACKEND_IP+':'+BACKEND_PORT+BACKEND_BASE+"fs/ticket"
@@ -231,13 +264,12 @@ DEFAULT_STAGEIN_DIRNAME = 'stagein/'
 DEFAULT_CRED_CACHE_TIME = 60*60*24                   # 1 day default
 
 
-
 ### CELERY ###
 djcelery.setup_loader()
 
 CELERY_IGNORE_RESULT = True
 CELERY_QUEUE_NAME = 'yabiadmin'
-CARROT_BACKEND = "ghettoq.taproot.Database"
+CARROT_BACKEND = "django"
 CELERYD_LOG_LEVEL = "DEBUG"
 CELERYD_CONCURRENCY = 1
 CELERYD_PREFETCH_MULTIPLIER = 1
@@ -250,8 +282,59 @@ CELERY_QUEUES = {
 }
 CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
 CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
+CELERY_IMPORTS = ("yabiadmin.yabiengine.tasks",)
+BROKER_TRANSPORT = "djkombu.transport.DatabaseTransport"
 
 
+### LOGGING SETUP ###
+# see https://docs.djangoproject.com/en/dev/topics/logging/
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'verbose': {
+            'format': 'YABI [%(name)s:%(levelname)s:%(asctime)s:%(filename)s:%(lineno)s:%(funcName)s] %(message)s'
+        },
+        'simple': {
+            'format': 'YABI %(levelname)s %(message)s'
+        },
+    },
+    'filters': {
+    },
+    'handlers': {
+        'null': {
+            'level':'DEBUG',
+            'class':'django.utils.log.NullHandler',
+        },
+        'console':{
+            'level':'DEBUG',
+            'class':'logging.StreamHandler',
+            'formatter': 'verbose'
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter':'verbose'
+        }
+    },
+    'loggers': {
+        'django': {
+            'handlers':['null'],
+            'propagate': True,
+            'level':'INFO',
+        },
+        'django.request': {
+            'handlers': ['console', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'yabiadmin': {
+            'handlers': ['console', 'mail_admins'],
+            'level': 'DEBUG'
+        }
+    }
+}
 
 
 
@@ -259,8 +342,8 @@ CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
 # Load instance settings.
 # These are installed locally to this project instance.
 # They will be loaded from appsettings.yabiadmin, which can exist anywhere
-# in the instance's pythonpath. This is a CCG convention designed to support
-# global shared settings among multiple Django projects.
+# in the instance's pythonpath. This allows private and local settings to be kept out
+# of this file.
 try:
     from appsettings.yabiadmin import *
 except ImportError, e:

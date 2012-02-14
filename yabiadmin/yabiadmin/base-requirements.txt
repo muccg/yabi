@@ -1,0 +1,47 @@
+#
+# Requirements for YabiAdmin
+#
+# To see what requirements your current virtualenv is using type:
+#
+# $ pip freeze
+#
+#
+# Requirements can be specified as:
+#  - local files (eggs/ccg-python-build_v2_0.tar.gz)
+#  - http        (http://ccg-python-build.googlecode.com/files/ccg-python-build_v2_0.tar.gz)
+#  - eggs        (python-ldap>=2.3.13)
+#
+# http://www.pip-installer.org/en/latest/requirement-format.html
+#
+http://mango-py.googlecode.com/files/Mango-py-1.3.1-ccg1-2.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-webservices-0.1.2.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-registration-0.8-alpha-1.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-makoloader-0.2.3.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-introspect-0.1.2.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-extras-0.1.3.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.2.tar.gz
+PSI==0.3b2
+SQLAlchemy==0.7.1
+amqplib==1.0.2
+anyjson==0.3.1
+carrot==0.10.7
+http://ccg-python-build.googlecode.com/files/ccg-python-build-2.3.3.tar.gz
+celery==2.3.3
+django-celery==2.3.3
+# Use a pacthed version of django-kombu that fixes a known bug
+#django-kombu==0.9.4
+http://yabi.googlecode.com/files/django-kombu-ccg-0.9.4.tar.gz
+django-picklefield==0.1.9
+django-templatetag-sugar==0.1
+kombu==1.4.1
+ordereddict==1.1
+pygooglechart==0.2.1
+pyparsing==1.5.6
+python-dateutil==1.5
+virtualenv==1.6.4
+wsgiref==0.1.2
+python-memcached==1.44
+Mako>=0.5.0
+South>=0.7.3
+django-extensions>=0.7.1
+pycrypto>=1.9

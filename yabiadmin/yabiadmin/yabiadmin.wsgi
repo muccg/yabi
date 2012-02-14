@@ -6,7 +6,7 @@ import os
 os.environ["CELERY_LOADER"] = "django"
 
 # where are we installed
-projectdir=os.path.dirname(__file__)            # PROJECTDIR/nutrition
+projectdir=os.path.dirname(__file__)            # PROJECTDIR/yabiadmin
 parentdir=os.path.dirname(projectdir)           # PROJECTDIR/
 
 # virtual python env setup

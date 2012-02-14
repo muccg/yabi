@@ -80,6 +80,17 @@ form {
     color:grey;
 }
 
+.error {
+    color: red;
+    font-weight: bold; 
+}
+
+.errorlist {
+    color: red;
+    font-weight: bold; 
+}
+
+
 .loginForm {
     margin-top:16px;
 }
@@ -148,3 +159,9 @@ form {
     height:1.9em;
 
 }
+
+#warningbanner {
+    color: red;
+    margin-bottom:20px;
+    font-size:140%
+ }

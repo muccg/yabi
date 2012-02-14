@@ -28,18 +28,22 @@
 
 import memcache, hashlib, os
 
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError, HttpResponseUnauthorized
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
+from ccg.http import HttpResponseUnauthorized
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import mail_admins
 from django.contrib.auth import login as django_login, logout as django_logout
-from django.utils import webhelpers
+from ccg.utils import webhelpers
 from django.template.loader import render_to_string
 from django.utils import simplejson as json
 
 from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
 from yaphc.memcache_persister import MemcacheCookiePersister
 from yaphc.cookies import FileCookiePersister
+
+import logging
+logger = logging.getLogger(__name__)
 
 def memcache_client():
     return memcache.Client(settings.MEMCACHE_SERVERS)
@@ -65,14 +69,16 @@ def make_http_request(request, original_request, ajax_call):
         with memcache_http(original_request) as http:
             try:
                 resp, contents = http.make_request(request)
+                logger.debug("response status is: %d"%(resp.status))
                 our_resp = HttpResponse(contents, status=int(resp.status))
                 copy_non_empty_headers(resp, our_resp, ('content-disposition', 'content-type'))
                 return our_resp
             except UnauthorizedError:
+                logger.error("Cannot connect successfully to yabi admin. Is yabife set to connect to a valid admin via https?")
                 if ajax_call:
                     return HttpResponseUnauthorized() 
                 else:
-                    return HttpResponseRedirect(settings.LOGIN_URL)
+                    return HttpResponseRedirect(settings.LOGIN_URL+"?error=Cannot+authenticate+with+yabi+admin.")
     except ObjectDoesNotExist:
         if ajax_call:
             return HttpResponseUnauthorized() 
@@ -140,3 +146,29 @@ def yabiadmin_logout(request):
     except (ObjectDoesNotExist, AttributeError):
         pass
 
+
+def using_dev_settings():
+    
+    using_dev_settings = False
+
+    # these should be true in production
+    for s in ['SSL_ENABLED', 'SESSION_COOKIE_SECURE', 'SESSION_COOKIE_HTTPONLY', ]:
+        if getattr(settings, s) == False:
+            using_dev_settings = True
+            break
+
+    # these should be false in production
+    for s in ['DEBUG']:
+        if getattr(settings, s) == True:
+            using_dev_settings = True
+            break
+
+    # SECRET_KEY
+    if settings.SECRET_KEY == 'set_this':
+        using_dev_settings = True
+
+    # YABIADMIN_SERVER
+    if not settings.YABIADMIN_SERVER.startswith('https://'):
+        using_dev_settings = True
+
+    return using_dev_settings

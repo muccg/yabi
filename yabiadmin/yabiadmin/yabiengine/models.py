@@ -32,15 +32,16 @@ from django.conf import settings
 from yabiadmin.yabi.models import User
 from yabiadmin.yabiengine import backendhelper
 from yabiadmin.yabiengine.urihelper import uriparse
-from django.utils import simplejson as json, webhelpers
+from django.utils import simplejson as json
+from ccg.utils import webhelpers
 from django.db.models.signals import post_save
-from django.utils.webhelpers import url
+from ccg.utils.webhelpers import url
 import httplib, os
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
 from urllib import urlencode
 
 import logging
-logger = logging.getLogger('yabiengine')
+logger = logging.getLogger(__name__)
 
 from constants import *
 
@@ -135,7 +136,7 @@ class Job(models.Model, Editable, Status):
     walltime = models.CharField(max_length=64, null=True, blank=True)
     module = models.TextField(null=True, blank=True)
     queue = models.CharField(max_length=50, default='normal', null=True, blank=True)
-    max_memory = models.PositiveIntegerField(null=True, blank=True)
+    max_memory = models.CharField(max_length=64, null=True, blank=True)
     job_type = models.CharField(max_length=40, default='single', null=True, blank=True)
     status = models.CharField(max_length=64, blank=True)
     exec_backend = models.CharField(max_length=256)
@@ -175,10 +176,12 @@ class Job(models.Model, Editable, Status):
         Checks all the tasks for a job and sets the job status based on precedence of the task status.
         The order of the list being checked is therefore important.
         '''
-        for status in [STATUS_ERROR, 'stagein', 'mkdir', 'exec', 'exec:active', 'exec:pending', 'exec:unsubmitted', 'stageout', 'cleaning', STATUS_BLOCKED, STATUS_READY, STATUS_COMPLETE]:
+        for status in [STATUS_ERROR, 'exec:error', 'pending', 'requested', 'stagein', 'mkdir', 'exec', 'exec:active', 'exec:pending', 'exec:unsubmitted', 'exec:running', 'exec:cleanup', 'exec:done', 'stageout', 'cleaning', STATUS_BLOCKED, STATUS_READY, STATUS_COMPLETE]:
             if Task.objects.filter(job=self, status=status):
                 # we need to map the task status values to valid job status values
-                if status.startswith('exec') or status in ['stageout', 'cleaning', 'stagein', 'mkdir']:
+                if status == 'exec:error':
+                    self.status = STATUS_ERROR
+                elif status.startswith('exec') or status in ['stageout', 'cleaning', 'stagein', 'mkdir']:
                     self.status = STATUS_RUNNING
                 else:
                     self.status = status
@@ -204,36 +207,34 @@ class Task(models.Model, Editable, Status):
 
     working_dir = models.CharField(max_length=256, null=True, blank=True)
     name = models.CharField(max_length=256, null=True, blank=True)                  # if we are null, we behave the old way and use our task.id
-    expected_ip = models.CharField(max_length=256, null=True, blank=True)           # if we are null, we behave the old way and use our task.id
-    expected_port = models.PositiveIntegerField(null=True, blank=True)
+    tasktag = models.CharField(max_length=256, null=True, blank=True)           # if we are null, we behave the old way and use our task.id
 
     def json(self):
         # formulate our status url and our error url
-        if 'YABIADMIN' in os.environ:                                                   # if we are forced to talk to a particular admin
-            statusurl = "http://%sengine/status/task/%d"%(os.environ['YABIADMIN'],self.id)
-            errorurl = "http://%sengine/error/task/%d"%(os.environ['YABIADMIN'],self.id)
-            remoteidurl = "http://%sengine/remote_id/%d"%(os.environ['YABIADMIN'],self.id)
-            remoteinfourl = "http://%sengine/remote_info/%d"%(os.environ['YABIADMIN'],self.id)
-        else:
-            # use the yabiadmin embedded in this server
-            statusurl = webhelpers.url("/engine/status/task/%d" % self.id)
-            errorurl = webhelpers.url("/engine/error/task/%d" % self.id)
-            remoteidurl = webhelpers.url("/engine/remote_id/%d" % self.id)
-            remoteinfourl = webhelpers.url("/engine/remote_info/%d" % self.id)
+        # use the yabiadmin embedded in this server
+        statusurl = webhelpers.url("/engine/status/task/%d" % self.id)
+        errorurl = webhelpers.url("/engine/error/task/%d" % self.id)
+        remoteidurl = webhelpers.url("/engine/remote_id/%d" % self.id)
+        remoteinfourl = webhelpers.url("/engine/remote_info/%d" % self.id)
 
         # get our tools fs_backend
         fsscheme, fsbackend_parts = uriparse(self.job.fs_backend)
-        fs_backend = backendhelper.get_backend_for_uri(self.job.workflow.user.name,self.job.fs_backend)
+        logger.debug("getting fs backend for user: %s fs_backend:%s"%(self.job.workflow.user.name,self.job.fs_backend))
+        fs_backend = backendhelper.get_fs_backend_for_uri(self.job.workflow.user.name,self.job.fs_backend)
+        logger.debug("fs backend is: %s"%(fs_backend))
         
         # get out exec backend so we can get our submission script
-        submission_backendcredential = backendhelper.get_backendcredential_for_uri(self.job.workflow.user.name,self.job.exec_backend)
+        logger.debug("getting exec backendcredential for user: %s exec_backend:%s"%(self.job.workflow.user.name,self.job.exec_backend))
+        submission_backendcredential = backendhelper.get_exec_backendcredential_for_uri(self.job.workflow.user.name,self.job.exec_backend)
+        logger.debug("exec backendcredential is: %s"%(submission_backendcredential))
+        
         submission_backend = submission_backendcredential.backend
         
         submission = submission_backendcredential.submission if str(submission_backend.submission).isspace() else submission_backend.submission
         
         # if the tools filesystem and the users stageout area are on the same schema/host/port
         # then use the preferred_copy_method, else default to 'copy'
-        so_backend = backendhelper.get_backend_for_uri(self.job.workflow.user.name,self.job.stageout)
+        so_backend = backendhelper.get_fs_backend_for_uri(self.job.workflow.user.name,self.job.stageout)
         soscheme, sobackend_parts = uriparse(self.job.stageout)
         if  so_backend==fs_backend and soscheme==fsscheme and sobackend_parts.hostname==fsbackend_parts.hostname and sobackend_parts.port==fsbackend_parts.port and sobackend_parts.username==fsbackend_parts.username:
             stageout_method = self.job.preferred_stageout_method
@@ -269,9 +270,9 @@ class Task(models.Model, Editable, Status):
         
         stageins = self.stagein_set.all()
         for s in stageins:
-            src_backend = backendhelper.get_backend_for_uri(self.job.workflow.user.name,s.src)
+            src_backend = backendhelper.get_fs_backend_for_uri(self.job.workflow.user.name,s.src)
             src_scheme, src_rest = uriparse(s.src)
-            dst_backend = backendhelper.get_backend_for_uri(self.job.workflow.user.name,s.dst)
+            dst_backend = backendhelper.get_fs_backend_for_uri(self.job.workflow.user.name,s.dst)
             dst_scheme, dst_rest = uriparse(s.dst)
             
             output["stagein"].append({"src":s.src, "dst":s.dst, "order":s.order, "method":s.method})              # method may be 'copy', 'lcopy' or 'link'

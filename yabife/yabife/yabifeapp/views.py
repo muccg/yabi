@@ -39,11 +39,12 @@ from urlparse import urlparse
 
 from django.conf.urls.defaults import *
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError, HttpResponseUnauthorized
-from django.shortcuts import render_to_response, get_object_or_404, render_mako
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
+from ccg.http import HttpResponseUnauthorized
+from django.shortcuts import render_to_response, get_object_or_404
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
-from django.utils import webhelpers
+from ccg.utils import webhelpers
 from django.contrib.auth.decorators import login_required
 from yabife.decorators import authentication_required, profile_required
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate
@@ -62,11 +63,10 @@ from yabife.yabifeapp.models import User
 from yabife.responses import *
 from yabife.preview import html
 
-from utils import memcache_client, memcache_http, make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout
+from utils import memcache_client, memcache_http, make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout, using_dev_settings
 
-
-from django.contrib import logging
-logger = logging.getLogger('yabife')
+import logging
+logger = logging.getLogger(__name__)
 
 from UploadStreamer import UploadStreamer
 from django.views.decorators.csrf import csrf_exempt
@@ -189,12 +189,7 @@ def render_page(template, request, response=None, **kwargs):
         "debug": debug,
     }
     context.update(kwargs)
-
-    template = get_template(template)
-    response.write(template.render(**context))
-
-    return response
-
+    return render_to_response(template, context)
 
 
 @login_required
@@ -220,6 +215,10 @@ def account(request):
     return render_page("account.html", request)
 
 def login(request):
+
+    # show a warning if using dev settings
+    show_dev_warning = using_dev_settings()
+
     if request.method == 'POST':
         form = LoginForm(request.POST)
 
@@ -246,14 +245,15 @@ def login(request):
 
             else:
                 form = LoginForm()
-                return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':"Invalid login credentials"})
+                return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':'Invalid login credentials', 'show_dev_warning':show_dev_warning})
 
         else:
-            return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':"Invalid login credentials"})
+            return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':'Invalid login credentials', 'show_dev_warning':show_dev_warning})
 
     else:
         form = LoginForm()
-        return render_to_response('login.html', {'h':webhelpers, 'form':form, 'url':None})
+        error = request.GET['error'] if 'error' in request.GET else ''
+        return render_to_response('login.html', {'h':webhelpers, 'form':form, 'url':None, 'error':error, 'show_dev_warning':show_dev_warning})
 
 
 

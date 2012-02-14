@@ -35,16 +35,16 @@ from datetime import datetime, timedelta
 from urllib import quote
 from urlparse import urlparse, urlunparse
 
+from django.db import transaction
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError, Http404
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from yabiadmin.yabi.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
-from django.utils import webhelpers
+from ccg.utils import webhelpers
 from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.ldap_helper import LDAPSearchResult, LDAPHandler
 from django.conf import settings
 
 from crypto import DecryptException
@@ -53,20 +53,29 @@ from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.yabiengine.tasks import build
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import WorkflowTag
-from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_backendcredential_for_uri, copy_file, rcopy_file, rm_file, send_upload_hash
+from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_fs_backendcredential_for_uri, copy_file, rcopy_file, rm_file, send_upload_hash
 from yabiadmin.responses import *
 from yabi.file_upload import *
 from django.contrib import auth
 from yabiadmin.decorators import memcache, authentication_required, profile_required
-
 from yabiadmin.yabistoreapp import db
+from yabiadmin.utils import using_dev_settings
 
 import logging
-logger = logging.getLogger('yabiadmin')
+logger = logging.getLogger(__name__)
+
+
+try:
+    from ccg.auth.ldap_helper import LDAPSearchResult, LDAPHandler
+except ImportError, e:
+    logger.warn("Unable to load ldaphelper: %s" % e)
 
 from UploadStreamer import UploadStreamer
 
 DATE_FORMAT = '%Y-%m-%d'
+
+BACKEND_REFUSED_CONNECTION_MESSAGE = "The backend server is refusing connections. Check that the backend server at %s on port %s is running and answering requests."%(settings.BACKEND_IP,settings.BACKEND_PORT) 
+BACKEND_HOST_UNREACHABLE_MESSAGE = "The backend server is unreachable. Check that the backend server setting is correct. It is presently configured to %s."%(settings.BACKEND_IP) 
 
 class FileUploadStreamer(UploadStreamer):
     def __init__(self, host, port, selector, cookies, fields):
@@ -100,32 +109,12 @@ class FileUploadStreamer(UploadStreamer):
         """raw input"""
         # this is called right at the beginning. So we grab the uri detail here and initialise the outgoing POST
         self.post_multipart(host=self._host, port=self._port, selector=self._selector, cookies=self._cookies )
-   
-
-## TODO do we want to limit tools to those the user can access?
-## will need to change call from front end to include username
-## then uncomment decorator
-
-
-def ensure_encrypted(username, password):
-    """returns true on successful encryption. false on failure to decrypt"""
-    # find the unencrypted credentials for this user that should be ecrypted and encrypt with the passed in CORRECT password
-    creds = Credential.objects.filter(user__name=username).filter(encrypt_on_login=True).filter(encrypted=False)
-    for cred in creds:
-        cred.encrypt(password)
-        cred.save()
-        
-    # decrypt all encrypted credentials and store in memcache
-    creds = Credential.objects.filter(user__name=username, encrypted=True)
-    try:
-        for cred in creds:
-            cred.send_to_memcache(password)
-    except DecryptException, de:
-        return False
-
-    return True                 #success
 
 def login(request):
+
+    if using_dev_settings():
+        logger.warning("Development settings are in use, DO NOT USE IN PRODUCTION ENVIRONMENT without changing settings.")
+
     if request.method != "POST":
         return HttpResponseNotAllowed(["POST"])
     username = request.POST.get('username')
@@ -140,12 +129,15 @@ def login(request):
                 "success": True
             }
             
-            # encrypt any pending user credentials.
-            if not ensure_encrypted(user.username,password):
-                response = {
-                    "success": False,
-                    "message": "One or more of the credentials failed to decrypt with your password. Please see your system administrator."
-                }
+            # for every credential for this user, call the login hook
+            creds = Credential.objects.filter(user__name=username)
+            for cred in creds:
+                cred.on_login( username,password )
+                
+            response = {
+                "success": False,
+                "message": "One or more of the credentials failed to decrypt with your password. Please see your system administrator."
+            }
         else:
             response = {
                 "success": False,
@@ -230,6 +222,26 @@ def menu(request):
     except ObjectDoesNotExist:
         return JsonMessageResponseNotFound("Object not found")
 
+from yabiadmin.yabiengine.backendhelper import BackendRefusedConnection, BackendHostUnreachable, PermissionDenied, FileNotFound, BackendStatusCodeError
+
+def handle_connection(closure):
+    try:
+        return closure()
+    except DecryptedCredentialNotAvailable, dcna:
+        return JsonMessageResponseServerError(dcna)
+    except PermissionDenied, pd:
+        return JsonMessageResponseNotFound("You do not have permissions to access this file or directory")
+    except FileNotFound, fnf:
+        return JsonMessageResponseNotFound("The requested directory either doesn't exist")
+    except BackendStatusCodeError, bsce:
+        return JsonMessageResponseNotFound("The yabi backend returned an inapropriate status code: %s"%(str(bsce)))
+    except BackendRefusedConnection, e:
+        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
+    except BackendHostUnreachable, e:
+        return JsonMessageResponseNotFound(BACKEND_HOST_UNREACHABLE_MESSAGE)
+    #except Exception, e:
+        #return JsonMessageResponseNotFound("%s::ls threw %s... %s"%(__file__,str(e.__class__),str(e)))
+        
 @authentication_required
 def ls(request):
     """
@@ -238,7 +250,7 @@ def ls(request):
     """
     yabiusername = request.user.username
 
-    try:
+    def closure():
         logger.debug("yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
         if request.GET['uri']:
             recurse = request.GET.get('recurse')
@@ -247,18 +259,8 @@ def ls(request):
             filelisting = get_backend_list(yabiusername)
 
         return HttpResponse(filelisting)
-    except DecryptedCredentialNotAvailable, dcna:
-        return JsonMessageResponseServerError(dcna)
-    except AssertionError, e:
-        # The file handling functions in the backendhelper module throw
-        # assertion errors when they receive an unexpected HTTP status code
-        # from the backend. Since failed assertions don't result in the
-        # exception having a useful message, we'll intercept it here and return
-        # a response with something a little more useful for the user.
-        return JsonMessageResponseNotFound("The requested directory either doesn't exist or is inaccessible")
-    except Exception, e:
-        return JsonMessageResponseNotFound(e)
-
+        
+    return handle_connection(closure)
 
 @authentication_required
 def copy(request):
@@ -266,7 +268,8 @@ def copy(request):
     This function will instantiate a copy on the backend for this user
     """
     yabiusername = request.user.username
-    try:
+    
+    def closure():
         src,dst = request.GET['src'],request.GET['dst']
         # src must not be directory
         assert src[-1]!='/', "src malformed. Either no length or not trailing with slash '/'"
@@ -278,15 +281,8 @@ def copy(request):
         status, data = copy_file(yabiusername,src,dst)
 
         return HttpResponse(content=data, status=status)
-    except AssertionError, e:
-        # The file handling functions in the backendhelper module throw
-        # assertion errors when they receive an unexpected HTTP status code
-        # from the backend. Since failed assertions don't result in the
-        # exception having a useful message, we'll intercept it here and return
-        # a response with something a little more useful for the user.
-        return JsonMessageResponseNotFound("The requested copy operation failed: please check that both the source file and destination exist and are accessible")
-    except Exception, e:
-        return JsonMessageResponseNotFound(e)
+    
+    return handle_connection(closure)
 
 @authentication_required
 def rcopy(request):
@@ -294,7 +290,8 @@ def rcopy(request):
     This function will instantiate a rcopy on the backend for this user
     """
     yabiusername = request.user.username
-    try:
+        
+    def closure():
         src,dst = request.GET['src'],request.GET['dst']
         
         # src must be directory
@@ -307,16 +304,9 @@ def rcopy(request):
         status, data = rcopy_file(yabiusername,src,dst)
 
         return HttpResponse(content=data, status=status)
-    except AssertionError, e:
-        # The file handling functions in the backendhelper module throw
-        # assertion errors when they receive an unexpected HTTP status code
-        # from the backend. Since failed assertions don't result in the
-        # exception having a useful message, we'll intercept it here and return
-        # a response with something a little more useful for the user.
-        return JsonMessageResponseNotFound("The requested copy operation failed: please check that both the source file and destination exist and are accessible")
-    except Exception, e:
-        return JsonMessageResponseNotFound(e)
-
+    
+    return handle_connection(closure)
+   
 @authentication_required
 def rm(request):
     """
@@ -324,21 +314,13 @@ def rm(request):
     is not empty then it will pass on the call to the backend to get a listing of that uri
     """
     yabiusername = request.user.username
-    try:
+    def closure():
         logger.debug("yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
         status, data = rm_file(yabiusername,request.GET['uri'])
 
         return HttpResponse(content=data, status=status)
-    except AssertionError, e:
-        # The file handling functions in the backendhelper module throw
-        # assertion errors when they receive an unexpected HTTP status code
-        # from the backend. Since failed assertions don't result in the
-        # exception having a useful message, we'll intercept it here and return
-        # a response with something a little more useful for the user.
-        return JsonMessageResponseNotFound("The requested file or directory is inaccessible and cannot be deleted")
-    except Exception, e:
-        return JsonMessageResponseNotFound(e)
-
+    
+    return handle_connection(closure)
 
 @authentication_required
 def get(request):
@@ -348,7 +330,7 @@ def get(request):
     """
     yabiusername = request.user.username
     try:
-        logger.debug("yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
+        logger.debug("ws_frontend_views::get() yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
         uri = request.GET['uri']
         
         try:
@@ -375,6 +357,8 @@ def get(request):
 
         return response
 
+    except BackendRefusedConnection, e:
+        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
     except Exception, e:
         # The response from this view is displayed directly to the user, so
         # we'll send a normal response rather than a JSON message.
@@ -394,7 +378,7 @@ def put(request):
         logger.debug("uri: %s" %(request.GET['uri']))
         uri = request.GET['uri']
 
-        bc = get_backendcredential_for_uri(yabiusername, uri)
+        bc = get_fs_backendcredential_for_uri(yabiusername, uri)
         decrypt_cred = bc.credential.get()
         
         resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))
@@ -416,6 +400,8 @@ def put(request):
         
         return HttpResponse(content=content,status=status)
         
+    except BackendRefusedConnection, e:
+        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
     except socket.error, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
         raise
@@ -424,6 +410,7 @@ def put(request):
         raise
 
 @authentication_required
+@transaction.commit_on_success
 def submit_workflow(request):
     yabiusername = request.user.username
     logger.debug(yabiusername)
@@ -439,6 +426,9 @@ def submit_workflow(request):
     workflow_json = json.dumps(workflow_dict)
     workflow = EngineWorkflow(name=workflow_dict["name"], user=user, json=workflow_json, original_json=received_json)
     workflow.save()
+
+    # always commit transactions before sending tasks depending on state from the current transaction http://docs.celeryq.org/en/latest/userguide/tasks.html
+    transaction.commit()
 
     # trigger a build via celery
     build.delay(workflow_id=workflow.id)
@@ -680,7 +670,6 @@ def credential(request):
         "key": exists(c.key),
         "backends": backends(c),
         "expires_in": expires_in(c.expires_on),
-        "encrypted": c.encrypted,
     } for c in creds]), content_type="application/json; charset=UTF-8")
 
 
@@ -712,10 +701,9 @@ def save_credential(request, id):
                 return JsonMessageResponseBadRequest("Invalid expiry")
 
     # OK, let's see if we have any of password, key or certificate. If so, we
-    # replace all of the fields and clear the encrypted flag, since this
+    # replace all of the fields, since this
     # service can only create unencrypted credentials at present.
     if "password" in request.POST or "key" in request.POST or "certificate" in request.POST:
-        credential.encrypted = False
         credential.password = request.POST.get("password", "")
         credential.key = request.POST.get("key", "")
         credential.cert = request.POST.get("certificate", "")

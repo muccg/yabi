@@ -30,38 +30,33 @@ from django.http import HttpResponse, HttpResponseNotFound, HttpResponseServerEr
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.core import urlresolvers
-from django.utils import webhelpers
 from django.db import transaction 
 from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
-
+from ccg.utils import webhelpers
 from yabiadmin.yabiengine.tasks import walk
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
 from yabiadmin.yabiengine.enginemodels import EngineTask, EngineJob, EngineWorkflow
 
 import logging
-logger = logging.getLogger('yabiengine')
+logger = logging.getLogger(__name__)
 
 from constants import *
 
 def task(request):
-    if "origin" not in request.REQUEST:
-        return HttpResponseServerError("Error requesting task. No origin identifier set.")
+    if "tasktag" not in request.REQUEST:
+        return HttpResponseServerError("Error requesting task. No tasktag identifier set.")
     
-    # verify that the requesters origin is correct
-    origin = request.REQUEST["origin"]
-    ip,port = origin.split(":")
-    exp_ip = settings.BACKEND_IP
-    exp_port = settings.BACKEND_PORT
-    if ip != exp_ip or port != exp_port:
-        ipaddress = request.META[ "HTTP_X_FORWARDED_FOR" if "HTTP_X_FORWARDED_FOR" in request.META else "REMOTE_ADDR" ]
-        logger.critical("IP %s requested task but had incorrect identifier set. Expected id %s:%s but got %s:%s instead."%(ipaddress,exp_ip,exp_port,ip,port))
-        return HttpResponseServerError("Error requesting task. Origin incorrect. This is not the admin you are looking for")
+    # verify that the requesters tasktag is correct
+    tasktag = request.REQUEST["tasktag"]
+    if tasktag != settings.TASKTAG:
+        logger.critical("Task requested  had incorrect identifier set. Expected tasktag %s but got %s instead." % (settings.TASKTAG, tasktag))
+        return HttpResponseServerError("Error requesting task. Tasktag incorrect. This is not the admin you are looking for.")
        
     try:
         # only expose tasks that are ready and are intended for the expeceted backend
-        tasks = Task.objects.filter(status=STATUS_READY, expected_ip=exp_ip, expected_port=exp_port)
+        tasks = Task.objects.filter(status=STATUS_READY, tasktag=tasktag)
 
         if tasks:
             task = tasks[0]
@@ -82,22 +77,18 @@ def task(request):
         return HttpResponseServerError("Error requesting task.")
 
 def blockedtask(request):
-    if "origin" not in request.REQUEST:
-        return HttpResponseServerError("Error requesting task. No origin identifier set.")
+    if "tasktag" not in request.REQUEST:
+        return HttpResponseServerError("Error requesting task. No tasktag identifier set.")
     
-    # verify that the requesters origin is correct
-    origin = request.REQUEST["origin"]
-    ip,port = origin.split(":")
-    exp_ip = settings.BACKEND_IP
-    exp_port = settings.BACKEND_PORT
-    if ip != exp_ip or port != exp_port:
-        ipaddress = request.META[ "HTTP_X_FORWARDED_FOR" if "HTTP_X_FORWARDED_FOR" in request.META else "REMOTE_ADDR" ]
-        logger.critical("IP %s requested blocked task but had incorrect identifier set. Expected id %s:%s but got %s:%s instead."%(ipaddress,exp_ip,exp_port,ip,port))
-        return HttpResponseServerError("Error requesting task. Origin incorrect. This is not the admin you are looking for")
+    # verify that the requesters tasktag is correct
+    tasktag = request.REQUEST["tasktag"]
+    if tasktag != settings.TASKTAG:
+        logger.critical("Task requested  had incorrect identifier set. Expected tasktag %s but got %s instead." % (settings.TASKTAG, tasktag))
+        return HttpResponseServerError("Error requesting task. Tasktag incorrect. This is not the admin you are looking for.")
        
     try:
         # only expose tasks that are ready and are intended for the expeceted backend
-        tasks = Task.objects.filter(status=STATUS_RESUME, expected_ip=exp_ip, expected_port=exp_port)
+        tasks = Task.objects.filter(status=STATUS_RESUME, tasktag=tasktag)
 
         print "TASKS",tasks
 
@@ -119,6 +110,7 @@ def blockedtask(request):
         logger.critical(traceback.format_exc())
         return HttpResponseServerError("Error requesting task.")
 
+@transaction.commit_on_success
 def status(request, model, id):
     logger.debug('model: %s id: %s' % (model, id))
     models = {'task':EngineTask, 'job':EngineJob, 'workflow':EngineWorkflow}
@@ -159,6 +151,9 @@ def status(request, model, id):
                 obj.job.save()
 
             if status in [STATUS_READY, STATUS_COMPLETE, STATUS_ERROR]:
+                # always commit transactions before sending tasks depending on state from the current transaction http://docs.celeryq.org/en/latest/userguide/tasks.html
+                transaction.commit()
+
                 # trigger a walk via celery 
                 walk.delay(workflow_id=obj.workflow_id)
 

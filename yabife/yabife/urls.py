@@ -30,7 +30,8 @@ import os
 from django.conf import settings
 from django.conf.urls.defaults import *
 from yabife import admin
-from django.utils.webhelpers import url as webhelper_url
+from ccg.utils.webhelpers import url as webhelper_url
+from ccg.views import status_view
 
 urlpatterns = patterns('yabife.yabifeapp.views',
     (r'^status[/]*$', status_view, {'SSL': True}),
@@ -59,13 +60,15 @@ urlpatterns = patterns('yabife.yabifeapp.views',
     (r'^exception[/]*$', 'exception_view'),
 )
 
+
 # pattern for serving statically
+# not needed by runserver, but it is by gunicorn
 # will be overridden by apache alias under WSGI
 if settings.DEBUG:
     urlpatterns += patterns('',
         (r'^static/(?P<path>.*)$',
                             'django.views.static.serve', 
-                            {'document_root': os.path.join(os.path.dirname(__file__),"static"), 'show_indexes': True}),
+                            {'document_root': settings.STATICFILES_DIRS[0], 'show_indexes': True}),
 
     )
 

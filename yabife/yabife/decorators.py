@@ -24,18 +24,17 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # 
 ### END COPYRIGHT ###
-from django.http import HttpResponseUnauthorized
+from ccg.http import HttpResponseUnauthorized
 from yabifeapp.utils import mail_admins_no_profile
 from django.core.exceptions import ObjectDoesNotExist
 
 from yabifeapp.utils import mail_admins_no_profile, logout
 from yabife.responses import JsonMessageResponseUnauthorized
 
-from django.contrib import logging
-logger = logging.getLogger('yabife')
+import logging
+logger = logging.getLogger(__name__)
 
 def authentication_required(f):
-
     def new_function(*args, **kwargs):
         request = args[0]
         if not request.user.is_authenticated():

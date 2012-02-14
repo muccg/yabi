@@ -31,15 +31,16 @@
 # lets help make the frontend more snappy
 #
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseUnauthorized, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest
+from ccg.http import HttpResponseUnauthorized
 from django.conf import settings
 
 import hmac
 
 import logging
-logger = logging.getLogger('yabiadmin')
+logger = logging.getLogger(__name__)
 
-from django.contrib.memcache import KeyspacedMemcacheClient
+from ccg.memcache import KeyspacedMemcacheClient
 mc = KeyspacedMemcacheClient()
 
 import pickle
@@ -127,11 +128,13 @@ def profile_required(func):
 def hmac_authenticated(func):
     """Ensure that the user viewing this view is the backend system user"""
     def newfunc(request, *args, **kwargs):
+
         # check hmac result
         hmac_digest = hmac.new(settings.HMAC_KEY)
-        hmac_digest.update(request.META['REQUEST_URI'])
-        logger.info("hmac incoming should be %s"%(hmac_digest.hexdigest()))
+        hmac_digest.update(request.get_full_path())
         
+        logger.info("hmac incoming should be %s"%(hmac_digest.hexdigest()))
+
         if HTTP_HMAC_KEY not in request.META:
             logger.info("Hmac-digest header not present in incoming request. Denying.")
             return HttpResponseBadRequest("Hmac-digest header not present in request\n")

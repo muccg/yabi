@@ -1,7 +1,7 @@
 YabiGlobalEventHandler = {
     failure: function(eventType, args) {
         if (args[0].status == 401) { 
-            document.location.href = appURL + 'login';
+            document.location.href = appURL + 'login?error=Could+not+connect+to+yabiadmin+server:+401+Unauthorised+returned';
         }
     }
 };

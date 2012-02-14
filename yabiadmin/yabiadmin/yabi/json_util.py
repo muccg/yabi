@@ -27,7 +27,7 @@
 import datetime
 
 import logging
-logger = logging.getLogger('yabiadmin')
+logger = logging.getLogger(__name__)
 
 def makeJsonFriendly(data):
   '''Will traverse a dict or list compound data struct and

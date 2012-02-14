@@ -3,151 +3,130 @@
 # You need to have:
 #   python header files 
 
-EGGS_DIR='eggs/'
-EGGS_PATTERN='*.*' #this ignores dirs, but means egg names must contain a .
-PIP_DOWNLOAD_CACHE='/tmp/'
-export PIP_DOWNLOAD_CACHE
-INSTALL_EGGS=1 #if this is 1, we will install eggs from eggs/...
+# if any subscript fails, fail the entire script so we immediately know
+set -e
+
+VERSION='2.3.2'
+PROJECT_DIR=`pwd`
+CACHE='/tmp'
+PIP_DOWNLOAD_CACHE=${CACHE}
 CONFIG_DIR=""
 TARGET_PYTHON="python"
-
-help() {
-    echo >&2 "Usage $0 [-p targetpython] [-c configname]"
-            echo >&2 "target python is the interpreter you want your virtual python to be based on (default=python)"
-            echo >&2 "configname is the name of a subdir of eggs containing custom eggs for your environment"
-            exit 1;
-    
-}
-
-if [ $# -eq 1 ]
-then
-    help;
-fi
-
-#parse command line options
-while getopts p:c: opt
-do case "$opt" in 
-    p)      TARGET_PYTHON="$OPTARG";;
-    c)      CONFIG_DIR="$OPTARG";;
-    [?]|*)  help;; 
-    esac
-done
-
-#First, lets check to see if the config dir exists
-EGGS_PATH="$EGGS_DIR$CONFIG_DIR/$EGGS_PATTERN"
-if [ ! -d $EGGS_DIR$CONFIG_DIR ]
-then
-    if [ "$CONFIG_DIR" != "" ]
-    then
-        echo "No such configuration path exists: $EGGS_PATH"
-        if [ -d $EGGS_DIR ]
-        then    
-            echo "Perhaps try one of these:"
-            cd $EGGS_DIR
-            for arg in *
-            do
-                if [ -d $arg ]
-                then
-                    echo "$arg"
-                fi
-            done
-        cd ..
-        fi
-        echo "Explicit config $CONFIG_DIR given but didn't exist - exiting"
-        exit
-    else
-        echo "No eggs dir found, proceeding with bare install."
-        INSTALL_EGGS=0
-    fi
-fi
-
-
-
-if [ $INSTALL_EGGS -eq 1 ]
-then
-    echo "---+++---"
-    echo "Building for eggs in $EGGS_PATH"
-    if [ -f $EGGS_DIR$CONFIG_DIR/DEPENDENCIES ]
-    then
-        cat $EGGS_DIR$CONFIG_DIR/DEPENDENCIES
-    fi    
-    echo "---+++---"
-fi
-
+REQUIREMENTS=""
+BUILD_REQUIREMENTS="build-requirements.txt"
+NOPROMPT=0
 BASE_DIR=`basename ${PWD}`
 PRE="virt_"
 VPYTHON_DIR="$PRE$BASE_DIR"
-VIRTUALENV='virtualenv-1.6.1'
-VIRTUALENV_TARBALL='virtualenv-1.6.1.tar.gz'
+VIRTUALENV="virtualenv-1.6.4"
+VIRTUALENV_TARBALL="${VIRTUALENV}.tar.gz"
+PIP="./${VPYTHON_DIR}/bin/pip"
+PIP_OPTS="--use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors=http://d.pypi.python.org/ --mirrors=http://e.pypi.python.org/ --log=pip-bootstrap.log"
 
-# only install if we dont already exist
-if [ ! -d $VPYTHON_DIR ]
+export PIP_DOWNLOAD_CACHE
+
+help() {
+    echo >&2 "Usage $0 [-p targetpython] [-r requirements] [-n]"
+    echo >&2 "targetpython is the interpreter you want your virtual python to be based on"
+    echo >&2 "requirements is pip requirements file to optionally install"
+    echo >&2 "-n (noprompt) is for non-interactive use, all prompts use defaults"
+    exit 1;
+}
+
+
+#parse command line options
+while getopts p:r:n opt
+do case "$opt" in 
+    p)      TARGET_PYTHON="$OPTARG";;
+    r)      REQUIREMENTS="$OPTARG";;
+    n)      NOPROMPT=1;;
+    ?)      help;; 
+    esac
+done
+
+# we need a bootstrap file
+if [ ! -f "${BUILD_REQUIREMENTS}" ]
 then
-    echo -e '\n\nNo virtual python dir, lets create one\n\n'
+    echo "No build requirements file found - ${BUILD_REQUIREMENTS}"
+    exit 1;
+fi
 
-    # only install virtual env if its not hanging around
-    if [ ! -d $VIRTUALENV ]
-    then
-        echo -e '\n\nNo virtual env, creating\n\n'
-  
-        # only download the tarball if needed
-        if [ ! -f $VIRTUALENV_TARBALL ]
-        then
-            wget http://pypi.python.org/packages/source/v/virtualenv/$VIRTUALENV_TARBALL
-        fi
+if [ $VIRTUAL_ENV ]
+then
+    echo "Run bootstrap.sh from outside of a virtualpython environment";
+    exit 1;
+fi
 
-        # build virtualenv
-        tar zxvf $VIRTUALENV_TARBALL
-        cd $VIRTUALENV
-        $TARGET_PYTHON setup.py build
-        cd ..
-
+if [ -d $VPYTHON_DIR ]
+then
+    echo -e "\n\nYou already have a virtual python dir ($VPYTHON_DIR)"
+    if [ $NOPROMPT ]; then
+        PURGE="n";
+    else
+        read -n 1 -p "Purge before continuing? (abort/yes/NO): " PURGE;
+        echo;
     fi
-       
-    # create a virtual python in the current directory
-    $TARGET_PYTHON $VIRTUALENV/build/lib*/virtualenv.py --no-site-packages $VPYTHON_DIR
-
-    # we use fab for deployments
-    ./$VPYTHON_DIR/bin/pip install fabric
-
-    # we use gunicorn for running quick start environment
-    ./$VPYTHON_DIR/bin/pip install gunicorn
-
-    # install all the eggs in this app
-    if [ $INSTALL_EGGS -eq 1 ]  
-    then
-        ./$VPYTHON_DIR/bin/easy_install $EGGS_PATH --allow-hosts=None
-    fi
-    # now we are going to eggify app settings, so we can run it locally
-    # we need to jump through a few legacy hoops to make this happen
-
-    #remove temp dir
-    if [ -d tmp ]
-    then
-        rm -Rf tmp
-    fi
-
-    # hack activate to set some environment we need
-    echo "PROJECT_DIRECTORY=`pwd`;" >>  $VPYTHON_DIR/bin/activate
-    echo "export PROJECT_DIRECTORY " >>  $VPYTHON_DIR/bin/activate
-    
-    #if we have env stuff in an ENVIRONMENT file, source it. It should
-    #be coded to hack more stuff onto the end of activate
-    if [ -f $EGGS_DIR$CONFIG_DIR/ENVIRONMENT ]
-    then
-        source $EGGS_DIR$CONFIG_DIR/ENVIRONMENT
+    if [ "$PURGE" = "y" ]; then
+        echo -n "Deleting $VPYTHON_DIR...";
+        rm -rf $VPYTHON_DIR;
+        echo "done.";
+    elif [ "$PURGE" = "a" ]; then
+        echo "Aborting...";
+        exit 0;
     fi
 fi
 
-echo -e "\n\n What just happened?\n\n"
-echo " * Python has been installed into $VPYTHON_DIR"
-if [ $INSTALL_EGGS -eq 1 ]
-then
-    echo " * eggs from the eggs in this project ($EGGS_PATH) have been installed"
-fi
-echo " * fabric is also installed"
 
+# only install virtual env if its not hanging around
+if [ ! -d "${CACHE}/${VIRTUALENV}" ]
+then
+    echo -e '\n\nNo virtual env, creating\n\n'
+
+    # only download the tarball if needed
+    if [ ! -f "${CACHE}/${VIRTUALENV_TARBALL}" ]
+    then
+        wget -O "${CACHE}/${VIRTUALENV_TARBALL}" http://pypi.python.org/packages/source/v/virtualenv/${VIRTUALENV_TARBALL}
+    fi
+
+    # build virtualenv
+    cd ${CACHE}
+    tar zxvf $VIRTUALENV_TARBALL
+    cd $VIRTUALENV
+    $TARGET_PYTHON setup.py build
+    cd ${PROJECT_DIR}
+
+fi
+   
+# create a virtual python in the current directory
+$TARGET_PYTHON ${CACHE}/$VIRTUALENV/build/lib*/virtualenv.py --no-site-packages $VPYTHON_DIR
+
+export PATH=$PWD/$VPYTHON_DIR/bin:$PATH
+
+# make mercurial a standard build requirement so we can use hg+http URLs
+# in the build-requirements file
+${PIP} install ${PIP_OPTS} 'Mercurial==2.0.1'
+
+${PIP} install ${PIP_OPTS} -r ${BUILD_REQUIREMENTS}
+if [ -f "${REQUIREMENTS}" ]
+then
+    if [ -f "pre-${REQUIREMENTS}" ]
+    then 
+        ${PIP} install ${PIP_OPTS} -r pre-${REQUIREMENTS}
+    fi
+    ${PIP} install ${PIP_OPTS} -r ${REQUIREMENTS}
+    if [ -f "post-${REQUIREMENTS}" ]
+    then 
+        ${PIP} install ${PIP_OPTS} -r post-${REQUIREMENTS}
+    fi
+fi
 
 # tell the user how to activate this python install
+echo -e "\n\n What just happened?\n\n"
+echo -e " * Python has been installed into $VPYTHON_DIR"
+cat ${BUILD_REQUIREMENTS}
+if [ -f "${REQUIREMENTS}" ]
+then
+    cat ${REQUIREMENTS}
+fi
 echo -e "\n\nTo activate this python install, type the following at the prompt:\n\nsource $VPYTHON_DIR/bin/activate\n"
 echo -e "To exit your virtual python, simply type 'deactivate' at the shell prompt\n\n"
