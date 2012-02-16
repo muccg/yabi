@@ -12,7 +12,7 @@ setup(name='yabish',
      url = 'http://ccg.murdoch.edu.au',
      packages = find_packages(),
      scripts = ['yabish'],
-     install_requires = ['argparse', 'yaphc'],
+     install_requires = ['argparse', 'http://yaphc.googlecode.com/files/yaphc-v0_1_4.tgz'],
      dependency_links = [
         "http://code.google.com/p/yaphc/downloads/list",
      ]
