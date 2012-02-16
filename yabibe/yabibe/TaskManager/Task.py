@@ -514,7 +514,7 @@ class MainTask(Task):
                     
                     #print "callfunc is",callfunc
                     callfunc(uri, command=task['exec']['command'], remote_info=task['remoteinfourl'], submission=self.submission, stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)     # this blocks untill the command is complete. or the execution errored
-                    while self.exec_status[0]==None:
+                    while self.exec_status[0]==None or self.exec_status[0]=="pending" or self.exec_status[0]=="unsubmitted" or self.exec_status[0]=="running":
                         stackless.schedule()
                     
                     #DEBUG
