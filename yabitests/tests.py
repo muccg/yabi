@@ -3,12 +3,14 @@ import subprocess, os, shutil, glob, time
 from collections import namedtuple
 import config
 
+
 CONFIG_SECTION='quickstart_tests'
 DEBUG = False
 
 class FirstTest(unittest.TestCase):
     def test_success(self):
         self.assertTrue(True)
+
 
 class Result(object):
     def __init__(self, status, stdout, stderr, runner):
@@ -79,7 +81,8 @@ class Yabi(object):
 
     def run(self, args=''):
         command = self.command + ' ' + args
-        cmd = subprocess.Popen(command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        prefix = '. ../yabish/virt_yabish/bin/activate && '
+        cmd = subprocess.Popen(prefix + command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         status = cmd.wait()
         return Result(status, cmd.stdout.read(), cmd.stderr.read(), runner=self)
 
@@ -101,20 +104,41 @@ class YabiTestCase(unittest.TestCase):
 
     runner = Yabi
 
+    def _setup_admin(self):
+        if 'setUpAdmin' in dir(self.__class__):
+            prefix = '. ../yabiadmin/yabiadmin/virt_yabiadmin/bin/activate && '
+            prefix += ' cd ../yabiadmin/yabiadmin && '
+            command = 'python manage.py runscript run_test_setup --pythonpath ../.. --script-args="%s"' % 'yabitests.tests.' + self.__class__.__name__
+            cmd = subprocess.Popen(prefix + command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+            status = cmd.wait()
+            print status
+            print cmd.stdout.read()
+            print cmd.stderr.read()
+
+    def _teardown_admin(self):
+        if 'tearDownAdmin' in dir(self.__class__):
+            prefix = '. ../yabiadmin/yabiadmin/virt_yabiadmin/bin/activate && '
+            prefix += ' cd ../yabiadmin/yabiadmin && '
+            command = 'python manage.py runscript run_test_teardown --pythonpath ../.. --script-args="%s"' % 'yabitests.tests.' + self.__class__.__name__
+            cmd = subprocess.Popen(prefix + command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+            status = cmd.wait()
+            print status
+            print cmd.stdout.read()
+            print cmd.stderr.read()
+
+
     def setUp(self):
         self.yabi = self.runner()
         self.yabi.login()
-
+        self._setup_admin()
 
     def tearDown(self):
         self.yabi.logout()
         self.yabi.purge()
+        self._teardown_admin()
 
 
 class NotLoggedInTest(YabiTestCase):
-
-    def setUp(self):
-        self.yabi = self.runner()
 
     def test_run_yabish_no_args(self):
         result = self.yabi.run()
@@ -127,15 +151,30 @@ class NotLoggedInTest(YabiTestCase):
         self.assertTrue(self.yabi.login())
 
 
-class YabiTestCase(unittest.TestCase):
+class ToolNotSetupTest(YabiTestCase):
+    def test_hostname_not_setup(self):
+        result = self.yabi.run('hostname')
+        self.assertTrue('Unknown tool name "hostname"' in result.stderr)
 
-    runner = Yabi
+class HostnameTest(YabiTestCase):
+    @classmethod
+    def setUpAdmin(self):
+        from yabiadmin.yabi import models
+        lfs = models.Backend.objects.get(name='Local Filesystem')
+        lex = models.Backend.objects.get(name='Local Execution')
+        hostname = models.Tool.objects.create(name='hostname', display_name='hostname', path='hostname', backend=lex, fs_backend=lfs)
+        tg = models.ToolGroup.objects.get(name='select data')
+        alltools = models.ToolSet.objects.get(name='alltools')
+        tg.toolgrouping_set.create(tool=hostname, tool_set=alltools)
 
-    def setUp(self):
-        self.yabi = self.runner()
-        self.yabi.login()
+    @classmethod
+    def tearDownAdmin(self):
+        from yabiadmin.yabi import models
+        models.Tool.objects.get(name='hostname').delete()
 
-
+    def test_hostname(self):
+        result = self.yabi.run('hostname')
+        self.assertTrue('ubuntu' in result.stdout)
 
 if __name__ == "__main__":
     unittest.main()
