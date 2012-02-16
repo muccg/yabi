@@ -60,6 +60,8 @@ from conf import config
 from TaskManager.TaskTools import RemoteInfo
 from SubmissionTemplate import make_script
 
+from twisted.python import log
+
 sshauth = ssh.SSHAuth.SSHAuth()
 
 # for Job status updates, poll this often
@@ -250,7 +252,12 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
                 if 'job_state' in jobsummary[jobid]:
                     status = jobsummary[jobid]['job_state']
                     
+                    log_msg="ssh+pbspro jobid:%s is status:%s... "%(jobid,status)
+                    
                     if status == 'F' or status == "X":
+                        if 'Exit_status' in jobsummary[jobid]:
+                            log_msg += "exit status present and it is %s"%jobsummary[jobid]['Exit_status']
+                        
                         # state 'F' means complete OR error
                         if 'Exit_status' in jobsummary[jobid] and jobsummary[jobid]['Exit_status'] == '0':
                             newstate = "Done"
@@ -258,6 +265,8 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
                             newstate = "Error"
                     else:
                         newstate = dict(B="Running", E="Running", F="Done", H="Pending", M="Pending", Q="Unsubmitted", R="Running", S="Running", T="Pending", U="Pending", W="Pending", X="Done")[status]
+                    
+                    log.msg(log_msg + "thus setting job state to: %s"%newstate)
                     
                 else:
                     newstate = "Done"
