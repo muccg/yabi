@@ -16,4 +16,5 @@
 
 ^yabish/virt_yabish
 
+^yabitests/virt_yabitests
 ^yabitests/.httplib2_workdir

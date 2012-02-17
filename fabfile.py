@@ -16,6 +16,11 @@ YABISH = {
     "dir": "yabish",
     "virtenvdir": "virt_yabish"
 }
+TESTS = {
+    "dir": "yabitests",
+    "virtenvdir": "virt_yabitests"
+}
+
 STACKLESS_PYTHON = '/usr/local/bin/spython'
 
 def admin_bootstrap():
@@ -96,6 +101,10 @@ def yabish_bootstrap():
     with lcd(YABISH['dir']):
         local("sh ../bootstrap.sh")
 
+def tests_bootstrap():
+    with lcd(TESTS['dir']):
+        local("sh ../bootstrap.sh")
+
 def quickstart():
     fe_quickstart(bg=True)
     admin_quickstart(bg=True)
@@ -110,9 +119,7 @@ def killservers():
     be_killserver()
 
 def tests():
-    with lcd('yabitests'):
-        local(". %s/bin/activate && %s" % ('../yabish/virt_yabish', 'python tests.py'))
-
+    _virtualenv(TESTS, "nosetests")
 
 def _virtualenv(project, command):
     with lcd(project['dir']):
