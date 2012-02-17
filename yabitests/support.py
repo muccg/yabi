@@ -2,8 +2,8 @@ import subprocess, os, shutil, glob, time
 import config
 import unittest
 
-CONFIG_SECTION='quickstart_tests'
 DEBUG = False
+CONFIG_SECTION= os.environ.get('TEST_CONFIG_SECTION','quickstart_tests')
 YABI_DIR = os.environ.get('YABI_DIR', '..')
 
 def yabipath(relpath):

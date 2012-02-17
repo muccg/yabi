@@ -44,6 +44,3 @@ class HostnameTest(YabiTestCase):
         result = self.yabi.run('hostname')
         self.assertTrue(gethostname() in result.stdout)
 
-if __name__ == "__main__":
-    unittest.main()
-
