@@ -111,6 +111,13 @@ def quickstart():
     admin_runcelery(bg=True)
     be_quickstart(bg=True)
     yabish_bootstrap()
+    tests_bootstrap()
+
+def runservers():
+    fe_runserver(bg=True)
+    admin_runserver(bg=True)
+    admin_runcelery(bg=True)
+    be_runserver(bg=True)
 
 def killservers():
     fe_killserver()
@@ -118,8 +125,11 @@ def killservers():
     admin_killcelery()
     be_killserver()
 
-def tests():
-    _virtualenv(TESTS, "nosetests")
+def tests(dryrun=False):
+    cmd = "nosetests -v"
+    if dryrun:
+        cmd += " --collect-only"
+    _virtualenv(TESTS, cmd)
 
 def _virtualenv(project, command):
     with lcd(project['dir']):
