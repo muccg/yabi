@@ -102,10 +102,6 @@ $TARGET_PYTHON ${CACHE}/$VIRTUALENV/build/lib*/virtualenv.py --no-site-packages 
 
 export PATH=$PWD/$VPYTHON_DIR/bin:$PATH
 
-# make mercurial a standard build requirement so we can use hg+http URLs
-# in the build-requirements file
-${PIP} install ${PIP_OPTS} 'Mercurial==2.0.1'
-
 ${PIP} install ${PIP_OPTS} -r ${BUILD_REQUIREMENTS}
 if [ -f "${REQUIREMENTS}" ]
 then
