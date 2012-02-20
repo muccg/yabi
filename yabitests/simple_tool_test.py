@@ -13,7 +13,7 @@ class HostnameTest(YabiTestCase):
         from yabiadmin.yabi import models
         models.Tool.objects.get(name='hostname').delete()
 
-    unittest.skip("while STDOUT, STDERR not returned properly in quickstart")
+    #unittest.skip("while STDOUT, STDERR not returned properly in quickstart")
     def test_hostname(self):
         from socket import gethostname
         result = self.yabi.run('hostname')
