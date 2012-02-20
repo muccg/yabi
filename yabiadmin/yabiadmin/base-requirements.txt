@@ -13,7 +13,7 @@
 #
 # http://www.pip-installer.org/en/latest/requirement-format.html
 #
-http://mango-py.googlecode.com/files/Mango-py-1.3.1-ccg1-1.tar.gz
+http://mango-py.googlecode.com/files/Mango-py-1.3.1-ccg1-2.tar.gz
 http://ccg-django-extras.googlecode.com/files/ccg-webservices-0.1.2.tar.gz
 http://ccg-django-extras.googlecode.com/files/ccg-registration-0.8-alpha-1.tar.gz
 http://ccg-django-extras.googlecode.com/files/ccg-makoloader-0.2.3.tar.gz
@@ -25,7 +25,7 @@ SQLAlchemy==0.7.1
 amqplib==1.0.2
 anyjson==0.3.1
 carrot==0.10.7
-http://ccg-python-build.googlecode.com/files/ccg-python-build-2.2.9.tar.gz
+http://ccg-python-build.googlecode.com/files/ccg-python-build-2.3.3.tar.gz
 celery==2.3.3
 django-celery==2.3.3
 # Use a pacthed version of django-kombu that fixes a known bug
@@ -45,3 +45,4 @@ Mako>=0.5.0
 South>=0.7.3
 django-extensions>=0.7.1
 pycrypto>=1.9
+psutil
