@@ -1,6 +1,11 @@
 import unittest
 from support import YabiTestCase
 from fixture_helpers import admin
+import os
+
+JSON_DIR = os.path.join(os.getcwd(), 'json_workflows')
+def json_path(name):
+    return os.path.join(JSON_DIR, name + '.json')
 
 class HostnameTest(YabiTestCase):
     @classmethod
@@ -13,11 +18,21 @@ class HostnameTest(YabiTestCase):
         from yabiadmin.yabi import models
         models.Tool.objects.get(name='hostname').delete()
 
-    #unittest.skip("while STDOUT, STDERR not returned properly in quickstart")
     def test_hostname(self):
         from socket import gethostname
         result = self.yabi.run('hostname')
         self.assertTrue(gethostname() in result.stdout)
+
+    def test_submit_json_directly(self):
+        from socket import gethostname
+        result = self.yabi.run('submitworkflow %s' % json_path('hostname'))
+        self.assertTrue(gethostname() in result.stdout)
+
+    def test_submit_json_directly_larger_workflow(self):
+        from socket import gethostname
+        result = self.yabi.run('submitworkflow %s' % json_path('hostname_ten_times'))
+        self.assertTrue(gethostname() in result.stdout)
+
 
 class ExplodingBackendTest(YabiTestCase):
 
@@ -37,6 +52,4 @@ class ExplodingBackendTest(YabiTestCase):
         from socket import gethostname
         result = self.yabi.run('hostname')
         self.assertTrue('Error running workflow' in result.stderr)
-
    
-
