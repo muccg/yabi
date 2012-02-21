@@ -257,9 +257,19 @@ class Status(Action):
             for key in ['status', 'name', 'tags', 'id', 'created_on', 'last_modified_on']:
                 print "%s:%s" % (key, response[key])
             print 'stageout:%s' % response['json']['jobs'][0]['stageout']
+            print "=== JOBS ==="
+            print "%4s %20s   %s" % ('ID', 'Status', 'Toolname')
+            print "=" * 80
+            for job in response['json']['jobs']:
+                tool_name = job['toolName']
+                if len(tool_name) > 50: 
+                    tool_name = tool_name[:47] + '...'
+                print "%4s %20s   %s" % (job['jobId'], job['status'], tool_name) 
 
         except Exception, e:
             print "Unable to load job status: %s" % e
+
+
             
 class Cp(Action, FileDownload):
     def __init__(self, *args, **kwargs):
