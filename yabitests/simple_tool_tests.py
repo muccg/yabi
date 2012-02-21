@@ -30,7 +30,7 @@ class HostnameTest(YabiTestCase):
 
     def test_submit_json_directly_larger_workflow(self):
         from socket import gethostname
-        result = self.yabi.run('submitworkflow %s' % json_path('hostname_ten_times'))
+        result = self.yabi.run('submitworkflow %s' % json_path('hostname_forty_times'))
         self.assertTrue(gethostname() in result.stdout)
 
 
