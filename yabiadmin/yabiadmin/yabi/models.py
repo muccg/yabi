@@ -49,6 +49,14 @@ class DecryptedCredentialNotAvailable(Exception): pass
 import logging
 logger = logging.getLogger(__name__)
 
+# conditionally import ldap code as we may not be using ldap
+try:
+    from ldap import LDAPError, MOD_REPLACE
+    from yabiadmin.ldapclient import LDAPClient
+    from yabiadmin.ldaputils import get_userdn_of       
+except ImportError, e:
+    logger.info("LDAP modules not imported.")
+
 
 class Base(models.Model):
     class Meta:
@@ -870,20 +878,12 @@ class ModelBackendUserProfile(UserProfile):
             logger.debug("Error changing password in LDAP server: %s" % str(e))
             return (False, "Error changing password")
 
-        
+
 class LDAPBackendUserProfile(UserProfile):
 
     def __init__(self, *args, **kwargs):
         UserProfile.__init__(self,*args, **kwargs)
 
-        # TODO look at moving ldap profile to separate file so these imports
-        # can be at the top of the file, not within the class
-        # depends on how Django can import UserProfiles, currently it seems to
-        # be string based
-        from ldap import LDAPError, MOD_REPLACE
-        from yabiadmin.ldapclient import LDAPClient
-        from yabiadmin.ldaputils import get_userdn_of
-        
     class Meta:
         proxy = True
 
