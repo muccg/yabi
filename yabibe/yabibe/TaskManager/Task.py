@@ -517,12 +517,6 @@ class MainTask(Task):
                     while self.exec_status[0]==None or self.exec_status[0]=="pending" or self.exec_status[0]=="unsubmitted" or self.exec_status[0]=="running":
                         gevent.sleep()
                     
-                    #DEBUG
-                    from twisted.python import log
-                    exec_status_message = "exec_status is %r"%(self.exec_status)
-                    self.log(exec_status_message)
-                    log.msg(exec_status_message)
-                    
                     if self.exec_status[0] and 'error' in self.exec_status[0]:
                         print "TASK[%s]: Execution failed!"%(self.taskid)
                         self.status("error")
