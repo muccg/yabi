@@ -53,8 +53,7 @@ fi
 
 if [ $VIRTUAL_ENV ]
 then
-    echo "Run bootstrap.sh from outside of a virtualpython environment";
-    exit 1;
+    echo "Warning- you are running bootstrap.sh from inside a virtualpython environment";
 fi
 
 if [ -d $VPYTHON_DIR ]
