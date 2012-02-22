@@ -109,9 +109,7 @@ class FileMkdirResource(resource.PostableResource):
                 print traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(e)))
             
-        tasklet = stackless.tasklet(do_mkdir)
-        tasklet.setup()
-        tasklet.run()
+        tasklet = gevent.spawn(do_mkdir)
         
         return client_channel
     

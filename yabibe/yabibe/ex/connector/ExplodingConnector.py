@@ -44,7 +44,7 @@ from twistedweb2 import http, responsecode, http_headers, stream
 import shlex
 import os
 from utils.protocol import globus
-import stackless
+import gevent
 import tempfile
 
 from utils.stacklesstools import sleep
@@ -67,7 +67,7 @@ class ExplodingConnector(ExecConnector):
     def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
         client_stream = stream.ProducerStream()
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
-        stackless.schedule()
+        gevent.sleep()
         
         for delay, message in times:
             sleep(delay)

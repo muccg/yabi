@@ -155,7 +155,7 @@ class FileGetResource(resource.PostableResource):
                         # Did we error out? Wait until task is finished
                         while not procproto.isDone():
                             # let the "isDone" propagate. This stops some race conditions where
-                            stackless.schedule()
+                            gevent.sleep()
                             
                             data = no_intr(file.read,DOWNLOAD_BLOCK_SIZE)
                             if len(data):
