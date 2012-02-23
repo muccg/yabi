@@ -95,7 +95,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
         ssh_command = "cat >'%s' && "%(submission_script)
         ssh_command += "'%s' -N '%s' -e '%s' -o '%s' -wd '%s' '%s'"%(    
                                                                         config.config['ssh+sge']['qsub'],
-                                                                        "yabi-task-"+remoteurl.rsplit('/')[-1],
+                                                                        "yabi-"+remoteurl.rsplit('/')[-1],
                                                                         os.path.join(working,stderr),
                                                                         os.path.join(working,stdout),
                                                                         working,

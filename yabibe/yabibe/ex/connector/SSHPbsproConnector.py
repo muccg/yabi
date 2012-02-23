@@ -99,7 +99,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         # build up our remote qsub command
         ssh_command = "cat >'%s' && "%(submission_script)
         ssh_command += "qsub -N '%s' -e '%s' -o '%s' '%s'"%(
-                                                                        "yabi-task-"+remoteurl.rsplit('/')[-1],
+                                                                        "yabi-"+remoteurl.rsplit('/')[-1],
                                                                         os.path.join(working,stderr),
                                                                         os.path.join(working,stdout),
                                                                         submission_script

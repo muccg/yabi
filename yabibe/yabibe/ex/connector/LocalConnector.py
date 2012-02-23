@@ -60,10 +60,12 @@ class BaseShellProcessProtocol(protocol.ProcessProtocol):
         self.stdin=stdin
         self.err = ""
         self.out = ""
+        self.started = False
         self.exitcode = None
         
     def connectionMade(self):
         # when the process finally spawns, close stdin, to indicate we have nothing to say to it
+        self.started = True
         if self.stdin:
             self.transport.write(self.stdin)
         self.transport.closeStdin()
@@ -110,6 +112,9 @@ class BaseShellProcessProtocol(protocol.ProcessProtocol):
         
     def isFailed(self):
         return self.isDone() and self.exitcode != 0
+        
+    def isStarted(self):
+        return self.started
 
 class BaseShell(object):
     def __init__(self):
