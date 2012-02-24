@@ -123,7 +123,7 @@ class BaseShell(object):
         subenv = environ.copy() if environ!=None else os.environ.copy()
         return subenv    
 
-    def execute(self, pp, command, working):
+    def execute(self, pp, command):
         """execute a command using a process protocol"""
         
         lexer = shlex.shlex(command, posix=True)
@@ -138,14 +138,14 @@ class BaseShell(object):
                                 arguments[0],
                                 arguments,
                                 subenv,
-                                working]
+                                self._make_path()]
             
             
         reactor.spawnProcess(   pp,
                                 arguments[0],
                                 arguments,
                                 env=subenv,
-                                path=working
+                                path=self._make_path()
                             )
         return pp
 
@@ -160,7 +160,7 @@ class LocalRun(BaseShell):
         if DEBUG:
             print "running local command:",remote_command
         
-        return BaseShell.execute(self,BaseShellProcessProtocol(streamin),remote_command, working)
+        return BaseShell.execute(self,BaseShellProcessProtocol(streamin),remote_command)
 
 class LocalConnector(ExecConnector):    
     def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
