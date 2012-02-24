@@ -13,7 +13,7 @@
 #
 # http://www.pip-installer.org/en/latest/requirement-format.html
 #
-pyOpenSSL==0.12
+pyOpenSSL>=0.12
 pycrypto==2.3
 http://yabi.googlecode.com/files/paramiko-1.7.7.1-fifopatch.tar.gz
 Fabric==1.2.2
