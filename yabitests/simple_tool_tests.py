@@ -2,12 +2,13 @@ import unittest
 from support import YabiTestCase, StatusResult
 from fixture_helpers import admin
 import os
+import time
 
 JSON_DIR = os.path.join(os.getcwd(), 'json_workflows')
 def json_path(name):
     return os.path.join(JSON_DIR, name + '.json')
 
-def allItems(fn, items):
+def all_items(fn, items):
     for i in items:
         if not fn(i):
             return False
@@ -35,11 +36,11 @@ class HostnameTest(YabiTestCase):
         self.assertTrue(gethostname() in result.stdout)
 
     def test_submit_json_directly_larger_workflow(self):
-        result = self.yabi.run('submitworkflow %s' % json_path('hostname_hundred_times'))
+        result = self.yabi.run('submitworkflow %s' % json_path('hostname_fifty_times'))
         wfl_id = result.id
         result = StatusResult(self.yabi.run('status %s' % wfl_id))
         self.assertEqual(result.workflow.status, 'complete')
-        self.assertTrue(allItems(lambda j: j.status == 'complete', result.workflow.jobs))
+        self.assertTrue(all_items(lambda j: j.status == 'complete', result.workflow.jobs))
 
 class ExplodingBackendTest(YabiTestCase):
 
@@ -61,10 +62,14 @@ class ExplodingBackendTest(YabiTestCase):
         self.assertTrue('Error running workflow' in result.stderr)
 
     def test_submit_json_directly_larger_workflow(self):
-        result = self.yabi.run('submitworkflow %s' % json_path('hostname_hundred_times'))
+        result = self.yabi.run('submitworkflow %s' % json_path('hostname_fifty_times'))
         wfl_id = result.id
-        result = StatusResult(self.yabi.run('status %s' % wfl_id))
+        all_jobs_finished = False
+        while not all_jobs_finished:
+            result = StatusResult(self.yabi.run('status %s' % wfl_id))
+            all_jobs_finished = all_items(lambda j: j.status in ('error', 'complete'), result.workflow.jobs)
+            time.sleep(2)
         self.assertEqual(result.workflow.status, 'error')
-        self.assertTrue(allItems(lambda j: j.status == 'error', result.workflow.jobs))
+        self.assertTrue(all_items(lambda j: j.status == 'error', result.workflow.jobs))
 
   

@@ -73,8 +73,8 @@ class FileUploadTest(YabiTestCase):
         return expected_cksum, expected_size
 
     def test_cksum_of_large_file(self):
-        #FIVE_GB = 5 * 1024 * 1024 * 1024
-        FIVE_GB = 5 * 1024
+        FIVE_GB = 5 * 1024 * 1024 * 1024
+        #FIVE_GB = 5 * 1024
         filename = self.create_tempfile(size=FIVE_GB)
             
         result = self.yabi.run('cksum %s' % filename)
@@ -82,7 +82,7 @@ class FileUploadTest(YabiTestCase):
         expected_cksum, expected_size = self.run_cksum_locally(filename)
        
         returned_lines = filter(lambda l: l.startswith(expected_cksum), result.stdout.split("\n"))
-        self.assertEqual(len(returned_lines), 1)
+        self.assertEqual(len(returned_lines), 1, 'Cksum result not returned or checksum is incorrect')
         our_line = returned_lines[0]
         actual_cksum, actual_size, rest = our_line.split()
         self.assertEqual(expected_cksum, actual_cksum)
