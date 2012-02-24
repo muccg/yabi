@@ -43,6 +43,8 @@ env.content_includes.extend([]) # add quoted patterns here for extra rsync inclu
 
 env.ccg_pip_options = "--download-cache=/tmp --use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors=http://d.pypi.python.org/ --mirrors=http://e.pypi.python.org/"
 
+env.ccg_python = '/usr/local/stackless/bin/python'
+env.ccg_virtualenv = '/usr/local/stackless/bin/virtualenv'
 
 class LocalPaths():
 
@@ -66,12 +68,28 @@ class LocalPaths():
 
 localPaths = LocalPaths()
 
-def backend():
+def backend(bg=False):
     """
-    run the twisted backend on the terminal without forking
+    run the twisted backend on the terminal without forking, unless bg=True which runs it in background
     """
     #print local("/usr/local/stackless/bin/twistd -noy server.py --logfile=-", capture=False)
-    print local("nice twistd -noy server.py --logfile=-", capture=False)
+    cmd = "nice twistd -noy server.py --logfile=-"
+    if bg:
+        cmd += " >/dev/null 2>&1 &"
+    print local(cmd, capture=False)
+
+def killbackend():
+    """
+    kill the twisted backend
+    """
+    import psutil
+    twisted_pss = [p for p in psutil.process_iter() if p.name == 'twistd']
+    counter = 0
+    for ps in twisted_pss:
+        if psutil.pid_exists(ps.pid):
+            counter += 1
+            ps.terminate()
+    print "%i processes terminated" % counter
 
 def start():
     """
@@ -100,3 +118,10 @@ def release(*args):
         _ccg_deploy_release(tag=args[0], apacheDeployment=False, migration=False)
     else:
         _ccg_deploy_release(apacheDeployment=False, migration=False)
+
+def createdirs():
+    """
+    Create essential directories in home directory of user running the backend
+    """
+    local("mkdir -p ~/.yabi/run/backend/fifos/ ~/.yabi/run/backend/tasklets/ ~/.yabi/run/backend/temp/ ~/.yabi/run/backend/certificates/")
+

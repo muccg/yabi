@@ -18,6 +18,7 @@ env.auto_confirm_purge = False #controls whether the confirmation prompt for pur
 env.celeryd_options = "--config=settings -l debug -E -B"
 env.ccg_pip_options = "--download-cache=/tmp --use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors=http://d.pypi.python.org/ --mirrors=http://e.pypi.python.org/"
 
+env.gunicorn_listening_on = "127.0.0.1:8001"
 
 class LocalPaths():
 
@@ -104,11 +105,11 @@ def celeryd():
     """
     _celeryd()
 
-def celeryd_quickstart():
+def celeryd_quickstart(bg=False):
     """
     Foreground celeryd using your deployment of admin
     """
-    _celeryd_quickstart()
+    _celeryd_quickstart(bg)
 
 
 def snapshot_celeryd():
@@ -117,6 +118,68 @@ def snapshot_celeryd():
     """
     localPaths.target = "snapshot"
     _celeryd()
+
+def initdb():
+    """
+    Creates the DB schema and runs the DB migrations
+    To be used on initial project setup only
+    """
+    local("python manage.py syncdb --noinput")
+    migrate()
+
+def migrate():
+    """
+    Runs the DB migrations
+    """
+    local("python manage.py migrate")
+
+
+def runserver(bg=False):
+    """
+    Runs the gunicorn server for local development
+    """
+    cmd = "gunicorn_django -b "+ env.gunicorn_listening_on
+    if bg:
+        cmd += " -D"
+    os.environ["PROJECT_DIRECTORY"] = "." 
+    local(cmd, capture=False)
+
+
+def killserver():
+    """
+    Kills the gunicorn server for local development
+    """
+    def anyfn(fn, iterable):
+        for e in iterable:
+            if fn(e): return True
+        return False
+    import psutil
+    gunicorn_pss = [p for p in psutil.process_iter() if p.name == 'gunicorn_django']
+    our_gunicorn_pss = [p for p in gunicorn_pss if anyfn(lambda arg: env.gunicorn_listening_on in arg, p.cmdline)]
+    counter = 0
+    for ps in our_gunicorn_pss:
+        if psutil.pid_exists(ps.pid):
+            counter += 1
+            ps.terminate()
+    print "%i processes terminated" % counter
+
+def killcelery():
+    """
+    Kills the celery server for local development
+    """
+    def anyfn(fn, iterable):
+        for e in iterable:
+            if fn(e): return True
+        return False
+    import psutil
+    celeryd_pss = [p for p in psutil.process_iter() if p.name == 'python' and anyfn(lambda arg: 'celery.bin.celeryd' in arg, p.cmdline)]
+    counter = 0
+    for ps in celeryd_pss:
+        if psutil.pid_exists(ps.pid):
+            counter += 1
+            ps.terminate()
+    print "%i processes terminated" % counter
+
 
 def syncdb():
     """
@@ -135,9 +198,12 @@ def _celeryd():
     _django_env()
     print local("python -m celery.bin.celeryd " + env.celeryd_options, capture=False)
 
-def _celeryd_quickstart():
+def _celeryd_quickstart(bg=False):
     _celery_env()
-    print local("python -m celery.bin.celeryd " + env.celeryd_options, capture=False)
+    cmd = "python -m celery.bin.celeryd " + env.celeryd_options
+    if bg:
+        cmd += " >/dev/null 2>&1 &"
+    print local(cmd, capture=False)
 
 def _django_env():
     os.environ["DJANGO_SETTINGS_MODULE"]="settings"

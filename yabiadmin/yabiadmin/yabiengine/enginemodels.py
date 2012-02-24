@@ -101,6 +101,13 @@ class EngineWorkflow(Workflow):
             print traceback.format_exc()  
             transaction.commit()
             raise
+    
+    #@transaction.commit_on_success
+    def update_json_to_db(self):
+        jobset = [X for X in EngineJob.objects.filter(workflow=self).order_by("order")]
+        for job in jobset:
+            job.update_status()     
+            job.save()
 
     # NOTE: this is a load bearing decorator. Do not remove it or the roof will fall in. (it stops locking nightmares)
     @transaction.commit_on_success
@@ -151,11 +158,11 @@ class EngineWorkflow(Workflow):
             # so all the jobs are marked as "STATUS_COMPLETE" in the database, but not necessarily in the json representation.      
             # so lets make sure the json fully reflects our new complete state      
 
-            # TODO: make this happen in a minimal way. fo now, just recheck one more time   
-            for job in jobset:      
-                job.update_status()     
-                job.save()
-                
+            # now we just need to make sure all the jobs json reflects the database state. 
+            # we get celery to do this later, so we don't tie up locks
+            from yabiadmin.yabiengine.tasks import update_workflow_json
+            update_workflow_json.delay(workflow_id=self.id)
+            
             # check for error jobs, if so, change status on workflow
             error_jobs = Job.objects.filter(workflow=self).filter(status=STATUS_ERROR)
             if len(error_jobs):
@@ -164,19 +171,21 @@ class EngineWorkflow(Workflow):
 
         except ObjectDoesNotExist,e:
             self.status = STATUS_ERROR
-            self.save()
             logger.critical("ObjectDoesNotExist at workflow::walk")
             logger.critical(traceback.format_exc())
+            self.save()
             print traceback.format_exc()
             transaction.commit()
             raise
         except Exception,e:
             self.status = STATUS_ERROR
-            self.save()
             logger.critical("Exception raised in workflow::walk")
             logger.critical(traceback.format_exc())
-            print traceback.format_exc()
+            #transaction.rollback()
+            
+            self.save()
             transaction.commit()
+            print traceback.format_exc()
             raise
 
     def change_tags(self, taglist):

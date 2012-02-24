@@ -1,4 +1,6 @@
 .*\.pyc$
+.*\.log$
+.*\.pid$
 
 ^yabife/yabife/virt_yabife
 ^yabife/yabife/scratch
@@ -8,7 +10,11 @@
 ^yabiadmin/yabiadmin/.yabi
 ^yabiadmin/yabiadmin/celerybeat-schedule
 ^yabiadmin/yabiadmin/yabiadmin.sqlite3
+^yabiadmin/yabiadmin/scratch
 
 ^yabibe/yabibe/virt_yabibe
 
 ^yabish/virt_yabish
+
+^yabitests/virt_yabitests
+^yabitests/.httplib2_workdir
