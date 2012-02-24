@@ -37,7 +37,7 @@ ENV_CHECK = []
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "localex"
 
-DEBUG = False
+DEBUG = True
 
 from twistedweb2 import http, responsecode, http_headers, stream
 
@@ -127,7 +127,7 @@ class BaseShell(object):
         """execute a command using a process protocol"""
         
         lexer = shlex.shlex(command, posix=True)
-        lexer.wordchars += r"-.:;/"
+        lexer.wordchars += r"-.:;/="
         arguments = list(lexer)
         
         subenv = self._make_env()
