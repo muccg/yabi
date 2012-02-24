@@ -1,4 +1,5 @@
 from fabric.api import local, lcd, run, prefix
+import os
 
 ADMIN = {
     "dir": "yabiadmin/yabiadmin",
@@ -22,6 +23,12 @@ TESTS = {
 }
 
 STACKLESS_PYTHON = '/usr/local/bin/spython'
+
+def clean():
+    '''Clean all virtual environment directories'''
+    for proj in(FE, ADMIN, BE, YABISH, TESTS):
+        virtenvdir = os.path.join(proj['dir'], proj['virtenvdir'])
+        local("rm -rf %s" % virtenvdir)
 
 def admin_bootstrap():
     '''Bootstrap the yabiadmin project'''
