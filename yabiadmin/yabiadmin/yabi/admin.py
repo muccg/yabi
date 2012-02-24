@@ -125,6 +125,7 @@ class CredentialAdmin(AdminBase):
     list_display = ['description', 'user', 'username', 'is_cached']
     list_filter = ['user']
     actions = ['duplicate_credential','cache_credential','decache_credential']
+    search_fields = ['description', 'username']
 
     def duplicate_credential(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)        
@@ -164,6 +165,7 @@ class BackendCredentialAdmin(AdminBase):
     form = BackendCredentialForm
     list_display = ['backend', 'credential', 'homedir', 'visible', 'default_stageout']
     list_filter = ['credential__user']
+    raw_id_fields = ['credential']
     
 class ParameterSwitchUseAdmin(AdminBase):
     list_display = ['display_text', 'formatstring', 'description']
