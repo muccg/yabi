@@ -36,9 +36,9 @@ class FileUploadTest(YabiTestCase, FileUtils):
         FileUtils.tearDown(self)
 
     def test_cksum_of_large_file(self):
-        #FIVE_GB = 5 * 1024 * 1024 * 1024
+        FIVE_GB = 5 * 1024 * 1024 * 1024
         # passes with this
-        FIVE_GB = 5 * 1024 * 1024
+        #FIVE_GB = 5 * 1024 * 1024
         filename = self.create_tempfile(size=FIVE_GB)
         result = self.yabi.run('cksum %s' % filename)
 
@@ -87,9 +87,9 @@ class FileUploadAndDownloadTest(YabiTestCase, FileUtils):
         FileUtils.tearDown(self)
 
     def test_dd(self):
-        #ONE_GB = 1024 * 1024 * 1024
+        ONE_GB = 1024 * 1024 * 1024
         # passes with this
-        ONE_GB = 1024 * 1024
+        #ONE_GB = 1024 * 1024
         filename = self.create_tempfile(size=ONE_GB)
         result = self.yabi.run('dd if=%s of=output_file' % filename)
 
