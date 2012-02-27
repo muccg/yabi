@@ -187,12 +187,14 @@ class ParamDef(object):
                     value_start += 1
                 self.value = [argument[value_start:]]
                 self.original_arg = argument
+                self.original_value = self.value[0]
                 return True
         return False 
 
     def consume_values(self, arguments):
         '''WARNING! This changes the passed in arguments list in place! '''
-        self.original_value = None
+        if self.switch_use not in ('combined', 'combined with equals'):
+            self.original_value = None 
         if self.switch_use == 'switchOnly':
             self.value = ['Yes']
             return 
