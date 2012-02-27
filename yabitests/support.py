@@ -1,6 +1,7 @@
 import subprocess, os, shutil, glob, time
 import config
 import unittest
+from collections import namedtuple
 
 DEBUG = False
 CONFIG_SECTION= os.environ.get('TEST_CONFIG_SECTION','quickstart_tests')
@@ -16,7 +17,6 @@ class Result(object):
         self.stderr = stderr
         self.yabi = runner
         self._id = None
-        self._workflow_status = None
 
         if DEBUG:
             print self.status
@@ -34,27 +34,59 @@ class Result(object):
             raise ValueError("Id not found in stdout: %s", self.stdout)
         return self._id
 
-    @property
-    def workflow_status(self):
-        if not self._workflow_status:
-            result = self.yabi.run('status %s' % self.id)
-            self._workflow_status = result.stdout
-        return self._workflow_status
-
-    @property
-    def stageout_dir(self):
-        for line in self.workflow_status.split('\n'):
-            if 'stageout' in line:
-                key, value = line.split(':', 1)
-                return "%s/" % value.rsplit('/', 2)[0] # the stageout is for a job, get dir above that
-        raise ValueError('No stageout directory found in workflow status\n%s' % self.workflow_status)
-
     def cleanup(self):
         result = self.yabi.run('rm "%s"' % self.stageout_dir)
         if result.status != 0:
             print result.status
             print result.stdout
             print result.stderr
+
+class StatusResult(Result):
+    '''Decorates a normal Result with methods to access Worflow properties from yabish status output'''
+    WORKFLOW_PROPERTIES = ['id', 'status', 'name', 'stageout', 'jobs']
+    Workflow = namedtuple('Workflow', WORKFLOW_PROPERTIES)
+    Job = namedtuple('Job', ['id', 'status', 'toolname'])
+    
+    def __init__(self, result):
+        self.result = result
+        self.status = self.result.status
+        self.stdout = self.result.stdout
+        self.stderr = self.result.stderr
+        self.yabi = self.result.yabi
+
+        self.workflow = self.create_workflow_from_stdout()
+        
+    def extract_jobs(self, jobs_text):
+        jobs_text = jobs_text.split("\n")[3:] # skip header and separator
+        jobs = []
+        for line in filter(lambda l: l.strip(), jobs_text):
+            jobs.append(StatusResult.Job(*line.split()))
+        return jobs    
+
+    def extract_workflow_properties(self, wfl_text):
+        props = dict.fromkeys(StatusResult.WORKFLOW_PROPERTIES)
+        for line in filter(lambda l: l.strip(), wfl_text.split("\n")):
+            name, value = line.split(":", 1)
+            if name in StatusResult.WORKFLOW_PROPERTIES:
+                props[name] = value
+        return props
+
+    def create_workflow_from_stdout(self):
+        if self.status != 0:
+            raise StandardException('yabish status returned non zero code')
+        wfl_text, jobs_text = self.stdout.split('=== JOBS ===')
+        jobs = self.extract_jobs(jobs_text)
+        workflow_props = self.extract_workflow_properties(wfl_text)
+        workflow_props['jobs'] = jobs
+        workflow = StatusResult.Workflow(**workflow_props)
+        return workflow
+
+    @property
+    def id(self):
+        return self.result.id
+
+    def cleanup(self):
+        self.result.cleanup()
 
 
 class Yabi(object):
@@ -141,3 +173,47 @@ class YabiTestCase(unittest.TestCase):
         self.yabi.purge()
         self._teardown_admin()
 
+
+class FileUtils(object):
+    def setUp(self):
+        self.tempfiles = []
+
+    def tearDown(self):
+        for f in self.tempfiles:
+            os.unlink(f)
+
+    def create_tempfile(self, size = 1024, parentdir = None):
+        import tempfile
+        import stat
+        import random as rand
+        CHUNK_SIZE = 1024
+        def data(length, random=False):
+            if not random:
+                return "a" * length
+            data = ""
+            for i in range(length):
+                data += rand.choice('abcdefghijklmnopqrstuvwxyz')
+            return data
+        with tempfile.NamedTemporaryFile(prefix='fake_fasta_', suffix='.fa', delete=False) as f:
+            chunks = size / CHUNK_SIZE
+            remaining = size % CHUNK_SIZE
+            for i in range(chunks):
+                if i == 0:
+                    f.write(data(1024, random=True))
+                else:
+                    f.write(data(1024))
+            f.write(data(remaining,random=True))
+        filename = f.name
+        
+        self.tempfiles.append(filename)
+        return filename       
+
+    def run_cksum_locally(self, filename):
+        import subprocess
+        cmd = subprocess.Popen('cksum %s' % filename, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        status = cmd.wait()
+        assert status == 0, 'ERROR: ' + cmd.stderr.read()
+        output = cmd.stdout.read()
+        our_line = filter(lambda l: filename in l, output.split("\n"))[0]
+        expected_cksum, expected_size, rest = our_line.split()
+        return expected_cksum, expected_size

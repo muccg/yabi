@@ -45,6 +45,10 @@ class Migration(DataMigration):
    
         yabi_filetype_1 = yabi_filetype('fasta','Fasta bioinformatics file format', [yabi_fileextension_2, yabi_fileextension_3, yabi_fileextension_4, yabi_fileextension_5, yabi_fileextension_6, yabi_fileextension_7])
         yabi_filetype_1.save()
+
+        yabi_filetype_2 = yabi_filetype('all files','All files', [yabi_fileextension_1])
+        yabi_filetype_2.save()
+   
    
         yabi_backend_1=yabi_backend('nullbackend','Use this backend when tools should not be run ie fileselector','null','localhost.localdomain',None,'/')
         yabi_backend_1.save()
