@@ -173,3 +173,47 @@ class YabiTestCase(unittest.TestCase):
         self.yabi.purge()
         self._teardown_admin()
 
+
+class FileUtils(object):
+    def setUp(self):
+        self.tempfiles = []
+
+    def tearDown(self):
+        for f in self.tempfiles:
+            os.unlink(f)
+
+    def create_tempfile(self, size = 1024, parentdir = None):
+        import tempfile
+        import stat
+        import random as rand
+        CHUNK_SIZE = 1024
+        def data(length, random=False):
+            if not random:
+                return "a" * length
+            data = ""
+            for i in range(length):
+                data += rand.choice('abcdefghijklmnopqrstuvwxyz')
+            return data
+        with tempfile.NamedTemporaryFile(prefix='fake_fasta_', suffix='.fa', delete=False) as f:
+            chunks = size / CHUNK_SIZE
+            remaining = size % CHUNK_SIZE
+            for i in range(chunks):
+                if i == 0:
+                    f.write(data(1024, random=True))
+                else:
+                    f.write(data(1024))
+            f.write(data(remaining,random=True))
+        filename = f.name
+        
+        self.tempfiles.append(filename)
+        return filename       
+
+    def run_cksum_locally(self, filename):
+        import subprocess
+        cmd = subprocess.Popen('cksum %s' % filename, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        status = cmd.wait()
+        assert status == 0, 'ERROR: ' + cmd.stderr.read()
+        output = cmd.stdout.read()
+        our_line = filter(lambda l: filename in l, output.split("\n"))[0]
+        expected_cksum, expected_size, rest = our_line.split()
+        return expected_cksum, expected_size

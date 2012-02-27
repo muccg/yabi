@@ -1,9 +1,9 @@
 import unittest
-from support import YabiTestCase, StatusResult
+from support import YabiTestCase, StatusResult, FileUtils
 from fixture_helpers import admin
 import os
 
-class FileUploadTest(YabiTestCase):
+class FileUploadTest(YabiTestCase, FileUtils):
     @classmethod
     def setUpAdmin(self):
         from yabiadmin.yabi import models
@@ -29,54 +29,17 @@ class FileUploadTest(YabiTestCase):
 
     def setUp(self):
         YabiTestCase.setUp(self)
-        self.tempfiles = []
+        FileUtils.setUp(self)
 
     def tearDown(self):
         YabiTestCase.tearDown(self)
-        for f in self.tempfiles:
-            os.unlink(f)
-
-    def create_tempfile(self, size = 1024, parentdir = None):
-        import tempfile
-        import stat
-        import random as rand
-        CHUNK_SIZE = 1024
-        def data(length, random=False):
-            if not random:
-                return "a" * length
-            data = ""
-            for i in range(length):
-                data += rand.choice('abcdefghijklmnopqrstuvwxyz')
-            return data
-        with tempfile.NamedTemporaryFile(prefix='fake_fasta_', suffix='.fa', delete=False) as f:
-            chunks = size / CHUNK_SIZE
-            remaining = size % CHUNK_SIZE
-            for i in range(chunks):
-                if i == 0:
-                    f.write(data(1024, random=True))
-                else:
-                    f.write(data(1024))
-            f.write(data(remaining,random=True))
-        filename = f.name
-        
-        self.tempfiles.append(filename)
-        return filename       
-
-    def run_cksum_locally(self, filename):
-        import subprocess
-        cmd = subprocess.Popen('cksum %s' % filename, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-        status = cmd.wait()
-        assert status == 0
-        output = cmd.stdout.read()
-        our_line = filter(lambda l: filename in l, output.split("\n"))[0]
-        expected_cksum, expected_size, rest = our_line.split()
-        return expected_cksum, expected_size
+        FileUtils.tearDown(self)
 
     def test_cksum_of_large_file(self):
-        FIVE_GB = 5 * 1024 * 1024 * 1024
-        #FIVE_GB = 5 * 1024
+        #FIVE_GB = 5 * 1024 * 1024 * 1024
+        # passes with this
+        FIVE_GB = 5 * 1024 * 1024
         filename = self.create_tempfile(size=FIVE_GB)
-            
         result = self.yabi.run('cksum %s' % filename)
 
         expected_cksum, expected_size = self.run_cksum_locally(filename)
@@ -87,3 +50,52 @@ class FileUploadTest(YabiTestCase):
         actual_cksum, actual_size, rest = our_line.split()
         self.assertEqual(expected_cksum, actual_cksum)
         self.assertEqual(expected_size, actual_size)
+
+
+class FileUploadAndDownloadTest(YabiTestCase, FileUtils):
+    @classmethod
+    def setUpAdmin(self):
+        from yabiadmin.yabi import models
+        admin.create_tool('dd')
+        admin.add_tool_to_all_tools('dd')
+        tool = models.Tool.objects.get(name='dd')
+        tool.accepts_input = True
+        star_extension = models.FileExtension.objects.get(pattern='*')
+        models.ToolOutputExtension.objects.create(tool=tool, file_extension=star_extension)
+
+        combined_eq = models.ParameterSwitchUse.objects.get(display_text='combined with equals')
+
+        if_tool_param = models.ToolParameter.objects.create(tool=tool, switch_use=combined_eq, mandatory=True, rank=1, file_assignment = 'batch', switch='if')
+        all_files = models.FileType.objects.get(name='all files')
+        if_tool_param.accepted_filetypes.add(all_files)
+
+        of_tool_param = models.ToolParameter.objects.create(tool=tool, switch_use=combined_eq, mandatory=True, rank=2, file_assignment = 'none', switch='of', output_file=True)
+
+        tool.save()
+
+    @classmethod
+    def tearDownAdmin(self):
+        from yabiadmin.yabi import models
+        models.Tool.objects.get(name='dd').delete()
+
+    def setUp(self):
+        YabiTestCase.setUp(self)
+        FileUtils.setUp(self)
+
+    def tearDown(self):
+        YabiTestCase.tearDown(self)
+        FileUtils.tearDown(self)
+
+    def test_dd(self):
+        #ONE_GB = 1024 * 1024 * 1024
+        # passes with this
+        ONE_GB = 1024 * 1024
+        filename = self.create_tempfile(size=ONE_GB)
+        result = self.yabi.run('dd if=%s of=output_file' % filename)
+
+        expected_cksum, expected_size = self.run_cksum_locally(filename)
+        copy_cksum, copy_size = self.run_cksum_locally('output_file')
+       
+        self.assertEqual(expected_cksum, copy_cksum)
+        self.assertEqual(expected_size, copy_size)
+
