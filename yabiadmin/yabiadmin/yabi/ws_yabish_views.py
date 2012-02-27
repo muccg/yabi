@@ -206,7 +206,7 @@ class ParamDef(object):
             self.value = [v1, v2]
             self.original_value = '%s %s' % (v1, v2)
 
-        if self.switch_use not in ('combined', 'combined_with_equals'):
+        if self.switch_use not in ('combined', 'combined with equals'):
             if not arguments:
                 raise ParsingError('Option %s requires an argument' % self.name)
             v = arguments.pop(0)
