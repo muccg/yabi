@@ -13,7 +13,7 @@ from yabishell import actions
 from yabishell.utils import human_readable_size
 
 # TODO config file
-YABI_DEFAULT_URL = 'https://faramir/yabife/snapshot/'
+YABI_DEFAULT_URL = os.environ.get('YABISH_YABI_URL', 'https://faramir/yabife/snapshot/')
 #YABI_DEFAULT_URL = 'https://ccg.murdoch.edu.au/yabi/'
 
 
@@ -274,13 +274,21 @@ class CommandLineArguments(object):
 
     @property
     def local_files(self):
-        return filter(lambda arg: os.path.isfile(arg) or os.path.isdir(arg), self.args)
+        # if argument has "=" return right side else return argument
+        args_and_values = map(lambda a: a.split('=', 1)[1] if '=' in a else a, self.args)
+        return filter(lambda arg: os.path.isfile(arg) or os.path.isdir(arg), args_and_values)
 
     def substitute_file_urls(self, urls):
         def file_to_url(arg):
             new_arg = arg
             if os.path.isfile(arg) or os.path.isdir(arg):
                 new_arg = urls.get(os.path.basename(arg), arg)
+            else:
+                # also try right-side of = to handle combined with equals with file values
+                if '=' in arg:
+                    name,value = arg.split('=', 1)
+                    if os.path.isfile(value) or os.path.isdir(value):
+                        new_arg = "%s=%s" % (name, urls.get(os.path.basename(value), value))
             return new_arg 
         self.args = map(file_to_url, self.args)
 

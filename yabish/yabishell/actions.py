@@ -257,9 +257,19 @@ class Status(Action):
             for key in ['status', 'name', 'tags', 'id', 'created_on', 'last_modified_on']:
                 print "%s:%s" % (key, response[key])
             print 'stageout:%s' % response['json']['jobs'][0]['stageout']
+            print "=== JOBS ==="
+            print "%4s %20s   %s" % ('ID', 'Status', 'Toolname')
+            print "=" * 80
+            for job in response['json']['jobs']:
+                tool_name = job['toolName']
+                if len(tool_name) > 50: 
+                    tool_name = tool_name[:47] + '...'
+                print "%4s %20s   %s" % (job['jobId'], job['status'], tool_name) 
 
         except Exception, e:
             print "Unable to load job status: %s" % e
+
+
             
 class Cp(Action, FileDownload):
     def __init__(self, *args, **kwargs):
@@ -321,3 +331,28 @@ class Purge(Action):
         if shutil.os.path.isfile(what):
             shutil.os.unlink(what)
         
+class Submitworkflow(Action):
+    def __init__(self, *args, **kwargs):
+        Action.__init__(self, *args, **kwargs)
+        self.attacher = Attach(*args, **kwargs)
+        self.url = 'ws/workflows/submit/'
+
+    def submit_json(self, args):
+        json_file = args[0]
+        with open(json_file) as f:
+            wfjson = f.read()
+        resp, json_response = self.yabi.post(self.url, {'workflowjson':wfjson})
+        decoded_resp = self.decode_json(json_response)
+        if not decoded_resp['id']:
+            raise errors.RemoteError(decoded_resp.get('msg', 'Unknown error'))
+        wfid = decoded_resp['id']
+        print 'Running your job on the server. Id: %s' % wfid
+        return wfid 
+
+    def process(self, args):
+        wfid = self.submit_json(args)
+        self.attacher.process([wfid])
+
+    def stagein_required(self):
+        return False
+
