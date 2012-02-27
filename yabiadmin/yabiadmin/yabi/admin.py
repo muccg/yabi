@@ -89,6 +89,7 @@ class ToolParameterInline(admin.StackedInline):
     model = ToolParameter
     formset = ToolParameterFormset
     extra = 3
+    filter_horizontal = ['accepted_filetypes']
 
 class ToolAdmin(AdminBase):
     form = ToolForm
@@ -107,6 +108,7 @@ class ToolGroupAdmin(AdminBase):
     
 class ToolSetAdmin(AdminBase):
     list_display = ['name', 'users_str']
+    filter_horizontal = ['users']
 
 class FileTypeAdmin(AdminBase):
     list_display = ['name', 'file_extensions_text']
@@ -123,6 +125,7 @@ class CredentialAdmin(AdminBase):
     list_display = ['description', 'user', 'username', 'is_cached']
     list_filter = ['user']
     actions = ['duplicate_credential','cache_credential','decache_credential']
+    search_fields = ['description', 'username']
 
     def duplicate_credential(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)        
@@ -162,6 +165,7 @@ class BackendCredentialAdmin(AdminBase):
     form = BackendCredentialForm
     list_display = ['backend', 'credential', 'homedir', 'visible', 'default_stageout']
     list_filter = ['credential__user']
+    raw_id_fields = ['credential']
     
 class ParameterSwitchUseAdmin(AdminBase):
     list_display = ['display_text', 'formatstring', 'description']
