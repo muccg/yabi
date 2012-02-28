@@ -197,6 +197,7 @@ class FileUtils(object):
             for i in range(length):
                 data += rand.choice('abcdefghijklmnopqrstuvwxyz')
             return data
+        extra_args = {}
         if parentdir is not None:
             extra_args = {'dir': parentdir}
         with tempfile.NamedTemporaryFile(prefix='fake_fasta_', suffix='.fa', delete=False, **extra_args) as f:
