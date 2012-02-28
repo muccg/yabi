@@ -62,6 +62,8 @@ from SubmissionTemplate import make_script
 
 from twisted.python import log
 
+from decorators import conf_retry
+
 sshauth = ssh.SSHAuth.SSHAuth()
 
 # for Job status updates, poll this often
@@ -88,6 +90,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         configdir = config.config['backend']['certificates']
         ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
     
+    @conf_retry()
     def _ssh_qsub(self, yabiusername, creds, command, working, username, host, remoteurl, submission, stdout, stderr, modules, walltime=None, memory=None, cpus=None, queue=None ):
         """This submits via ssh the qsub command. This returns the jobid, or raises an exception on an error"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
@@ -145,6 +148,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         else:
             raise SSHQsubException("SSHQsub error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
     
+    @conf_retry()
     def _ssh_qstat(self, yabiusername, creds, command, working, username, host, stdout, stderr, modules, jobid):
         """This submits via ssh the qstat command. This takes the jobid"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
