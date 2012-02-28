@@ -424,7 +424,12 @@ def submit_workflow(request):
     workflow_dict["name"] = munge_name(yabiusername, workflow_dict["name"])
    
     workflow_json = json.dumps(workflow_dict)
-    workflow = EngineWorkflow(name=workflow_dict["name"], user=user, json=workflow_json, original_json=received_json)
+    workflow = EngineWorkflow(name=workflow_dict["name"],
+                              user=user,
+                              json=workflow_json,
+                              original_json=received_json,
+                              start_time=datetime.now()
+                              )
     workflow.save()
 
     # always commit transactions before sending tasks depending on state from the current transaction http://docs.celeryq.org/en/latest/userguide/tasks.html
