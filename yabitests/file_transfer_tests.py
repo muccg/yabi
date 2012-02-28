@@ -45,12 +45,11 @@ class FileUploadTest(YabiTestCase, FileUtils):
         expected_cksum, expected_size = self.run_cksum_locally(filename)
        
         returned_lines = filter(lambda l: l.startswith(expected_cksum), result.stdout.split("\n"))
-        self.assertEqual(len(returned_lines), 1, 'Cksum result not returned or checksum is incorrect')
+        self.assertEqual(len(returned_lines), 1, 'Expected cksum %s result not returned or checksum is incorrect' % expected_cksum)
         our_line = returned_lines[0]
         actual_cksum, actual_size, rest = our_line.split()
         self.assertEqual(expected_cksum, actual_cksum)
         self.assertEqual(expected_size, actual_size)
-
 
 class FileUploadAndDownloadTest(YabiTestCase, FileUtils):
     @classmethod
@@ -99,6 +98,36 @@ class FileUploadAndDownloadTest(YabiTestCase, FileUtils):
         self.assertEqual(expected_cksum, copy_cksum)
         self.assertEqual(expected_size, copy_size)
 
+class FileUploadAndDownloadTestNoLinkAndLCopy(FileUploadAndDownloadTest):
+    @classmethod
+    def setUpAdmin(self):
+        from yabiadmin.yabi import models
+        FileUploadAndDownloadTest.setUpAdmin()
+        dd = models.Tool.objects.get(name='dd')
+        dd.lcopy_supported = False
+        dd.link_supported = False
+        dd.save()
+
+class FileUploadAndDownloadTestJustLCopy(FileUploadAndDownloadTest):
+    @classmethod
+    def setUpAdmin(self):
+        from yabiadmin.yabi import models
+        FileUploadAndDownloadTest.setUpAdmin()
+        dd = models.Tool.objects.get(name='dd')
+        dd.lcopy_supported = True
+        dd.link_supported = False
+        dd.save()
+
+class FileUploadAndDownloadTestJustLink(FileUploadAndDownloadTest):
+    @classmethod
+    def setUpAdmin(self):
+        from yabiadmin.yabi import models
+        FileUploadAndDownloadTest.setUpAdmin()
+        dd = models.Tool.objects.get(name='dd')
+        dd.lcopy_supported = False
+        dd.link_supported = True
+        dd.save()
+
 class FileUploadSmallFilesTest(YabiTestCase, FileUtils):
     @classmethod
     def setUpAdmin(self):
@@ -107,8 +136,6 @@ class FileUploadSmallFilesTest(YabiTestCase, FileUtils):
         admin.add_tool_to_all_tools('tar') 
         tool = models.Tool.objects.get(name='tar')
         tool.accepts_input = True
-        #star_extension = models.FileExtension.objects.get(pattern='*')
-        #models.ToolOutputExtension.objects.create(tool=tool, file_extension=star_extension)
         
         value_only = models.ParameterSwitchUse.objects.get(display_text='valueOnly')
         both = models.ParameterSwitchUse.objects.get(display_text='both')
