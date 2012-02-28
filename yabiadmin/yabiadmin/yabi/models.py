@@ -369,6 +369,10 @@ class ToolGrouping(Base):
     tool_set = models.ForeignKey('ToolSet')
     tool_group = models.ForeignKey(ToolGroup)
 
+    def __unicode__(self):
+        return "Tool: %s, Toolset: %s and Toolgroup: %s" % (self.tool, self.tool_set, self.tool_set)
+
+
 class ToolSet(Base):
     name = models.CharField(max_length=50, unique=True)
     users = models.ManyToManyField("User", related_name='users', db_table='yabi_user_toolsets', blank=True)
