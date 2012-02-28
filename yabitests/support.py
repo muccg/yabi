@@ -180,7 +180,10 @@ class FileUtils(object):
 
     def tearDown(self):
         for f in self.tempfiles:
-            os.unlink(f)
+            if os.path.isdir(f):
+                shutil.rmtree(f)
+            elif os.path.isfile(f):
+                os.unlink(f)
 
     def create_tempfile(self, size = 1024, parentdir = None):
         import tempfile
@@ -194,7 +197,9 @@ class FileUtils(object):
             for i in range(length):
                 data += rand.choice('abcdefghijklmnopqrstuvwxyz')
             return data
-        with tempfile.NamedTemporaryFile(prefix='fake_fasta_', suffix='.fa', delete=False) as f:
+        if parentdir is not None:
+            extra_args = {'dir': parentdir}
+        with tempfile.NamedTemporaryFile(prefix='fake_fasta_', suffix='.fa', delete=False, **extra_args) as f:
             chunks = size / CHUNK_SIZE
             remaining = size % CHUNK_SIZE
             for i in range(chunks):
@@ -208,6 +213,12 @@ class FileUtils(object):
         self.tempfiles.append(filename)
         return filename       
 
+    def create_tempdir(self):
+        import tempfile
+        dirname = tempfile.mkdtemp()
+        self.tempfiles.append(dirname)
+        return dirname
+        
     def run_cksum_locally(self, filename):
         import subprocess
         cmd = subprocess.Popen('cksum %s' % filename, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
