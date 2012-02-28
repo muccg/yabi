@@ -372,12 +372,11 @@ def create_tool(request, tool_dict):
 
         toolparameter.save()
 
-
     # we need to do this in a separate loop otherwise the param we want to refer to doesn't exist yet
     for parameter in tool_dict["parameter_list"]:
 
         # add use_output_filename
-        if "use_output_filename__switch" in parameter:
+        if "use_output_filename__switch" in parameter and parameter['use_output_filename__switch']:
             try:
                 outputfilename_toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["use_output_filename__switch"])
                 toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["switch"])
