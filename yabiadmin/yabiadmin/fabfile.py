@@ -140,7 +140,7 @@ def runserver(bg=False):
     """
     cmd = "gunicorn_django -b "+ env.gunicorn_listening_on
     if bg:
-        cmd += " -D"
+        cmd += " >yabiadmin.log 2>&1 &"
     os.environ["PROJECT_DIRECTORY"] = "." 
     local(cmd, capture=False)
 
@@ -202,7 +202,7 @@ def _celeryd_quickstart(bg=False):
     _celery_env()
     cmd = "python -m celery.bin.celeryd " + env.celeryd_options
     if bg:
-        cmd += " >/dev/null 2>&1 &"
+        cmd += " >celery.log 2>&1 &"
     print local(cmd, capture=False)
 
 def _django_env():

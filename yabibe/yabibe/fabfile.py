@@ -75,7 +75,7 @@ def backend(bg=False):
     #print local("/usr/local/stackless/bin/twistd -noy server.py --logfile=-", capture=False)
     cmd = "nice twistd -noy server.py --logfile=-"
     if bg:
-        cmd += " >/dev/null 2>&1 &"
+        cmd += " >yabibe.log 2>&1 &"
     print local(cmd, capture=False)
 
 def killbackend():
