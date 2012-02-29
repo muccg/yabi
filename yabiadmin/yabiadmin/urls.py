@@ -36,6 +36,7 @@ djangoadmin.autodiscover()
 urlpatterns = patterns('yabiadmin.yabi.views',
     (r'^ws/', include('yabiadmin.yabi.wsurls'), {'SSL':True}),
     (r'^engine/', include('yabiadmin.yabiengine.urls')),
+    url(r'^status_page[/]*$', 'status_page', name='status_page'),
     (r'^admin/', include('yabiadmin.yabi.adminurls'), {'SSL':True}),
     (r'^admin/', include(admin.site.urls), {'SSL':True})
 )

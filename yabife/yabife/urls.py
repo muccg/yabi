@@ -31,10 +31,9 @@ from django.conf import settings
 from django.conf.urls.defaults import *
 from yabife import admin
 from ccg.utils.webhelpers import url as webhelper_url
-from ccg.views import status_view
 
 urlpatterns = patterns('yabife.yabifeapp.views',
-    (r'^status[/]*$', status_view, {'SSL': True}),
+    url(r'^status_page[/]*$', 'status_page', name='status_page'),
     (r'^(?P<url>engine/job/.*)$', 'adminproxy'),
     (r'^(?P<url>ws/account/credential.*)$', 'credentialproxy'),
     (r'^(?P<url>ws/fs/put)/(?P<session>[0-9a-f]{32})$', 'fileupload_session'),

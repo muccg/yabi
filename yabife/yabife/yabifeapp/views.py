@@ -540,3 +540,26 @@ def yabiadmin_login(request, username, password):
 def exception_view(request):
     logger.debug("test exception view")
     raise Exception("This is a test exception.")
+
+def status_page(request):
+    """Availability page to be called to see if yabife is running. Should return HttpResponse with status 200"""
+    logger.info('')
+
+    # make a db connection
+    u = User.objects.filter(user__username='')
+    len(u) # so it is evaluated
+
+    # write a file
+    with open(os.path.join(settings.WRITABLE_DIRECTORY, 'status_page_testfile.txt'), 'w') as f:
+         f.write("testing file write")
+
+    # read it again
+    with open(os.path.join(settings.WRITABLE_DIRECTORY, 'status_page_testfile.txt'), 'r') as f:
+         contents = f.read()
+         assert 'testing file write' in contents
+
+    # delete the file
+    os.unlink(os.path.join(settings.WRITABLE_DIRECTORY, 'status_page_testfile.txt'))
+
+    return HttpResponse('Status OK')
+
