@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#-*- coding: utf-8 -*-
 ### BEGIN COPYRIGHT ###
 #
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
@@ -635,8 +635,7 @@ class Credential(Base):
 
     def on_login(self, username, password):
         """When a user logs in, this method is called on every one of their credentials, and gets passed their login password"""
-        
-        #print "on_login(",self,username,password,")"
+        logger.debug("Decrypting %s" % self)
         
         # is it not encrypted at all?
         if self.is_plaintext:
