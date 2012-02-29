@@ -114,7 +114,10 @@ def runserver(bg=False):
     """
     cmd = "gunicorn_django -w 5 -b "+ env.gunicorn_listening_on
     if bg:
-        cmd += " -D"
+        # This doesn't seem to log our application level logging
+        # cmd += " -D --log-level=debug --log-file=yabife.log"
+        # So we just run in foreground and redirect STDOUT and STDERR
+        cmd += " >yabife.log 2>&1 &"
     os.environ['PROJECT_DIRECTORY'] = '.'
     local(cmd, capture=False)
 
