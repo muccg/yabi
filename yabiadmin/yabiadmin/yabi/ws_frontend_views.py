@@ -130,14 +130,22 @@ def login(request):
             }
             
             # for every credential for this user, call the login hook
+            # currently creds will raise an exception if they can't be decrypted
             creds = Credential.objects.filter(user__name=username)
-            for cred in creds:
-                cred.on_login( username,password )
-                
-            response = {
-                "success": False,
-                "message": "One or more of the credentials failed to decrypt with your password. Please see your system administrator."
-            }
+            try:
+                for cred in creds:
+                    cred.on_login( username,password )
+
+                response = {
+                    "success": True,
+                    "message": "All credentials were successfully decrypted."
+                }
+            except DecryptException, e:
+                message = 'Unable to decrypt credential "%s" with your password. Please see your system administrator.' % cred.description
+                response = {
+                    "success": False,
+                    "message": message
+                }
         else:
             response = {
                 "success": False,
@@ -148,8 +156,7 @@ def login(request):
             "success": False,
             "message": "The user name and password are incorrect.",
         }
-        
-    return HttpResponse(content=json.dumps(response))
+    return HttpResponse(content=json.dumps(response)) if response['success'] else HttpResponseForbidden(content=json.dumps(response))
 
 def logout(request):
     auth.logout(request)
