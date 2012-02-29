@@ -24,13 +24,13 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # 
 ### END COPYRIGHT ###
+import os
 from django.conf.urls.defaults import *
 from django.conf import settings
 from django.core import urlresolvers
-
+from django.contrib import admin as djangoadmin
 from yabiadmin import admin
-
-import os
+djangoadmin.autodiscover()
 
 # dispatch to either webservice, admin or general
 urlpatterns = patterns('yabiadmin.yabi.views',
@@ -38,6 +38,10 @@ urlpatterns = patterns('yabiadmin.yabi.views',
     (r'^engine/', include('yabiadmin.yabiengine.urls')),
     (r'^admin/', include('yabiadmin.yabi.adminurls'), {'SSL':True}),
     (r'^admin/', include(admin.site.urls), {'SSL':True})
+)
+
+urlpatterns += patterns('yabiadmin.yabi.views',
+    (r'^djcelery-admin/', include(djangoadmin.site.urls), {'SSL':True}),
 )
 
 # redirect / to /admin

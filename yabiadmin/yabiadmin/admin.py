@@ -59,11 +59,13 @@ site = admin.AdminSite()
 site.register(django.contrib.auth.models.Group, GroupAdmin)
 site.register(django.contrib.auth.models.User, UserAdmin)
 
-# Django Sites.
-site.register(django.contrib.sites.models.Site, django.contrib.sites.admin.SiteAdmin)
+# Django Sites, we're not using sites but you can turn them on here
+# site.register(django.contrib.sites.models.Site, django.contrib.sites.admin.SiteAdmin)
 
 # Yabi Admin. 
 yabiadmin.yabi.admin.register(site)
 
 # Yabi Engine.
 yabiadmin.yabiengine.admin.register(site)
+
+

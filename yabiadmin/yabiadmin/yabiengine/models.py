@@ -39,6 +39,7 @@ from ccg.utils.webhelpers import url
 import httplib, os
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
 from urllib import urlencode
+from datetime import datetime
 
 import logging
 logger = logging.getLogger(__name__)
@@ -185,6 +186,10 @@ class Job(models.Model, Editable, Status):
                     self.status = STATUS_RUNNING
                 else:
                     self.status = status
+
+                # fill end_time if finished
+                if status == STATUS_COMPLETE:
+                    self.end_time = datetime.now()
                 
                 assert(self.status in STATUS)
                 return

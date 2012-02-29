@@ -196,7 +196,6 @@ def menu(request):
         # used by the front end so no changes are needed there
         # toolsets are dev, marine science, ccg etc, not used on the front end
         # toolgroups are for example genomics, select data, mapreduce        
-
         output = {}
         output['menu'] = {}
         output['menu']['toolsets'] = []
@@ -208,13 +207,14 @@ def menu(request):
         all_tools_toolset["toolgroups"] = []
 
 
-        for key, toolgroup in all_tools.iteritems():
+        for key in sorted(all_tools.iterkeys()):
+            toolgroup = all_tools[key]
             tg = {}
             tg['name'] = key
             tg['tools'] = []
 
-            for toolname, tool in toolgroup.iteritems():
-                tg['tools'].append(tool)
+            for toolname in sorted(toolgroup.iterkeys()):
+                tg['tools'].append(toolgroup[toolname])
 
             all_tools_toolset["toolgroups"].append(tg)
 
@@ -424,7 +424,12 @@ def submit_workflow(request):
     workflow_dict["name"] = munge_name(yabiusername, workflow_dict["name"])
    
     workflow_json = json.dumps(workflow_dict)
-    workflow = EngineWorkflow(name=workflow_dict["name"], user=user, json=workflow_json, original_json=received_json)
+    workflow = EngineWorkflow(name=workflow_dict["name"],
+                              user=user,
+                              json=workflow_json,
+                              original_json=received_json,
+                              start_time=datetime.now()
+                              )
     workflow.save()
 
     # always commit transactions before sending tasks depending on state from the current transaction http://docs.celeryq.org/en/latest/userguide/tasks.html
