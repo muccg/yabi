@@ -30,6 +30,7 @@ from django.conf import settings
 from django.core import urlresolvers
 from django.contrib import admin as djangoadmin
 from yabiadmin import admin
+djangoadmin.autodiscover()
 
 # dispatch to either webservice, admin or general
 urlpatterns = patterns('yabiadmin.yabi.views',
