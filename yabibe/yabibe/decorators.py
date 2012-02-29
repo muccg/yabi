@@ -71,7 +71,7 @@ def timed_retry(total_time=600.,ignored=[]):
     def timed_retry_decorator(f):
         def new_func(*args, **kwargs):
             time_waited = 0.
-            gen = default_delay_generator(total_time)
+            gen = default_delay_generator()
             while time_waited<total_time:
                 try:
                     return f(*args, **kwargs)               # exits on success
