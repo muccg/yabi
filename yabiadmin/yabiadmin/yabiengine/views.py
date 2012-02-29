@@ -26,6 +26,7 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
+from datetime import datetime
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseServerError
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
@@ -143,6 +144,12 @@ def status(request, model, id):
             obj.status=status
             if status != STATUS_BLOCKED and status!= STATUS_RESUME:
                 obj.percent_complete = STATUS_PROGRESS_MAP[status]
+
+            # this will probably only apply to tasks but if it is called on other
+            # objects it should be fine also
+            if status == STATUS_COMPLETE:
+                obj.end_time = datetime.now()
+                
             obj.save()
 
             # update the job status when the task status changes

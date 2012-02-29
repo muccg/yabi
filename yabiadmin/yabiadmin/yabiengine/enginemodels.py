@@ -152,6 +152,7 @@ class EngineWorkflow(Workflow):
             incomplete_jobs = Job.objects.filter(workflow=self).exclude(status=STATUS_COMPLETE)
             if not len(incomplete_jobs):
                 self.status = STATUS_COMPLETE
+                self.end_time = datetime.datetime.now()
                 self.save()
                 
             # we may get here, with no more tasks or jobs running, but only after a lengthy walk.   
@@ -167,6 +168,7 @@ class EngineWorkflow(Workflow):
             error_jobs = Job.objects.filter(workflow=self).filter(status=STATUS_ERROR)
             if len(error_jobs):
                 self.status = STATUS_ERROR
+                self.end_time = datetime.datetime.now()                
                 self.save()
 
         except ObjectDoesNotExist,e:
@@ -412,7 +414,7 @@ class EngineJob(Job):
             job = task_data[0]
             # remove job from task_data as we now are going to call method on job TODO maybe use pop(0) here
             del(task_data[0]) 
-            task = EngineTask(job=job, status=STATUS_PENDING)
+            task = EngineTask(job=job, status=STATUS_PENDING, start_time=datetime.datetime.now())
             #print "ADD TASK: %s"%(str(task_data+[name]))
             task.add_task(*(task_data+[name]))
             num,name = buildname(num)

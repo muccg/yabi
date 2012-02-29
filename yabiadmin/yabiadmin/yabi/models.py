@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#-*- coding: utf-8 -*-
 ### BEGIN COPYRIGHT ###
 #
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
@@ -369,6 +369,10 @@ class ToolGrouping(Base):
     tool_set = models.ForeignKey('ToolSet')
     tool_group = models.ForeignKey(ToolGroup)
 
+    def __unicode__(self):
+        return "Tool: %s, Toolset: %s and Toolgroup: %s" % (self.tool, self.tool_set, self.tool_set)
+
+
 class ToolSet(Base):
     name = models.CharField(max_length=50, unique=True)
     users = models.ManyToManyField("User", related_name='users', db_table='yabi_user_toolsets', blank=True)
@@ -631,8 +635,7 @@ class Credential(Base):
 
     def on_login(self, username, password):
         """When a user logs in, this method is called on every one of their credentials, and gets passed their login password"""
-        
-        #print "on_login(",self,username,password,")"
+        logger.debug("Decrypting %s" % self)
         
         # is it not encrypted at all?
         if self.is_plaintext:

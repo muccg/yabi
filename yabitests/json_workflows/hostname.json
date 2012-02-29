@@ -1,0 +1,12 @@
+{
+    "name": "hostname", 
+    "tags": [], 
+    "jobs": [{
+        "toolName":"hostname", 
+        "jobId":1, 
+        "valid":true, 
+        "parameterList":{
+            "parameter":[]
+        }
+    }]
+}

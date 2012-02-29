@@ -328,10 +328,6 @@ def create_tool(request, tool_dict):
     # add the tool parameters
     for parameter in tool_dict["parameter_list"]:
 
-        switch_use, created = ParameterSwitchUse.objects.get_or_create(display_text=parameter["switch_use__display_text"],
-                                                                       formatstring=parameter["switch_use__formatstring"],
-                                                                       description=parameter["switch_use__description"])
-
         toolparameter = ToolParameter(tool=tool,
                                       rank=parameter["rank"],
                                       mandatory=parameter["mandatory"],
@@ -351,7 +347,9 @@ def create_tool(request, tool_dict):
                                                                            description=parameter["switch_use__description"])
         else:
             # default to use "both" tool switch
-            switch_use = ParameterSwitchUse.objects.get(display_text='both')
+            switch_use, created = ParameterSwitchUse.objects.get_or_create(display_text='both',
+                                                                           formatstring=r'%(switch)s %(value)s',
+                                                                           description='Both the switch and the value will be passed in the argument list. They will be separated by a space.')
 
         toolparameter.switch_use=switch_use
         toolparameter.save() # so we can add many-to-many on accepted_filetypes
@@ -372,12 +370,11 @@ def create_tool(request, tool_dict):
 
         toolparameter.save()
 
-
     # we need to do this in a separate loop otherwise the param we want to refer to doesn't exist yet
     for parameter in tool_dict["parameter_list"]:
 
         # add use_output_filename
-        if "use_output_filename__switch" in parameter:
+        if "use_output_filename__switch" in parameter and parameter['use_output_filename__switch']:
             try:
                 outputfilename_toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["use_output_filename__switch"])
                 toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["switch"])

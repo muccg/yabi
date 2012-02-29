@@ -138,3 +138,12 @@ class LDAPBackendUser(User):
         self.user.save()
 
         return (True, "Password changed successfully")
+
+
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        User.objects.create(user=instance, user_option_access=True, credential_access=False)
+
+# connect up signals
+from django.db.models.signals import post_save
+post_save.connect(create_user_profile, sender=DjangoUser)

@@ -233,13 +233,10 @@ def login(request):
             if user is not None:
                 if user.is_active:
                     django_login(request, user)
-                    yabiadmin_login(request, username, password)
+                    success, message = yabiadmin_login(request, username, password)
 
-                    # TODO need to be able to get this message to frontend, not so easily done using decorator
-                    # but don't want to duplicate decorator code here just to get this message in
-                    #  success, message = yabiadmin_login(request, username, password)
-                    # if not success:
-                    #     return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':message})
+                    if not success:
+                        return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':message})
 
                     return HttpResponseRedirect(webhelpers.url("/"))
 
@@ -524,20 +521,45 @@ def yabiadmin_login(request, username, password):
         'username': username, 'password': password})
     http = memcache_http(request)
     resp, contents = http.make_request(login_request)
-    if resp.status != 200: 
-        return False, "System Error:"+contents
-    json_resp = json.loads(contents)
     http.finish_session()
-    
-    success = json_resp.get('success', False)
-    message = json_resp.get('message', "System Error")
+
+    try:
+        json_resp = json.loads(contents)
+        success = json_resp.get('success', False)
+        message = json_resp.get('message', "System Error")
+    except ValueError:
+        success = False
+        message = "Unknown error, unable to interpret json response from admin server."
+        
+    if resp.status != 200:
+        success = False
     
     return success, message
-
-
-
 
 @login_required
 def exception_view(request):
     logger.debug("test exception view")
     raise Exception("This is a test exception.")
+
+def status_page(request):
+    """Availability page to be called to see if yabife is running. Should return HttpResponse with status 200"""
+    logger.info('')
+
+    # make a db connection
+    u = User.objects.filter(user__username='')
+    len(u) # so it is evaluated
+
+    # write a file
+    with open(os.path.join(settings.WRITABLE_DIRECTORY, 'status_page_testfile.txt'), 'w') as f:
+         f.write("testing file write")
+
+    # read it again
+    with open(os.path.join(settings.WRITABLE_DIRECTORY, 'status_page_testfile.txt'), 'r') as f:
+         contents = f.read()
+         assert 'testing file write' in contents
+
+    # delete the file
+    os.unlink(os.path.join(settings.WRITABLE_DIRECTORY, 'status_page_testfile.txt'))
+
+    return HttpResponse('Status OK')
+
