@@ -57,10 +57,16 @@ class Request(models.Model):
         password = DjangoUser.objects.make_random_password()
 
         self.user.is_active = True
-        self.user.get_profile().set_ldap_password(current_password="",
-                                                  new_password=password,
-                                                  bind_userdn=settings.AUTH_LDAP_PASSWORD_CHANGE_USERDN,
-                                                  bind_password=settings.AUTH_LDAP_PASSWORD_CHANGE_PASSWORD)
+
+        # TODO rewrite this to use set_password
+        # change the profiles to set password in the correct way ie model vs ldap
+        assert False, "Not yet implemented"
+        
+##        self.user.get_profile().set_ldap_password(current_password="",
+##                                                  new_password=password,
+##                                                  bind_userdn=settings.AUTH_LDAP_PASSWORD_CHANGE_USERDN,
+##                                                  bind_password=settings.AUTH_LDAP_PASSWORD_CHANGE_PASSWORD)
+
         self.user.save()
 
         message = render_to_string("registration/email/approved.txt", {
