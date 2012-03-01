@@ -81,7 +81,7 @@ def timed_retry(total_time=600.,ignored=[]):
                     
                     if time_waited<total_time:
                         delay = gen.next()
-                        print "WARNING: retry-function",f,"raised exception",exc,"... waiting",delay,"seconds and retrying",num,"more times..."
+                        print "WARNING: retry-function",f,"raised exception",exc,"... waiting",delay,"seconds and retrying..."
                         sleep(delay)
                     else:
                         raise                               # out of retries... fail
