@@ -34,10 +34,11 @@ import os
 from django.conf.urls.defaults import *
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
-from django.shortcuts import render_to_response, get_object_or_404, render_mako
+from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from ccg.utils import webhelpers
 from django import forms
+from yabi.models import FileExtension
 
 import logging
 logger = logging.getLogger(__name__)
@@ -89,3 +90,25 @@ from decorators import memcache
 def storeproxy(request, url):
     logger.debug('')
     return proxy(request, url, settings.YABISTORE_SERVER, settings.YABISTORE_BASE)
+
+
+def status_page(request):
+    """Availability page to be called to see if yabiadmin is running. Should return HttpResponse with status 200"""
+    logger.info('')
+
+    # make a db connection
+    exts = FileExtension.objects.all()
+
+    # write a file
+    with open(os.path.join(settings.WRITABLE_DIRECTORY, 'status_page_testfile.txt'), 'w') as f:
+         f.write("testing file write")
+
+    # read it again
+    with open(os.path.join(settings.WRITABLE_DIRECTORY, 'status_page_testfile.txt'), 'r') as f:
+         contents = f.read()
+         assert 'testing file write' in contents
+
+    # delete the file
+    os.unlink(os.path.join(settings.WRITABLE_DIRECTORY, 'status_page_testfile.txt'))
+
+    return HttpResponse('Status OK')
