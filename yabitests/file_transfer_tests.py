@@ -41,6 +41,7 @@ class FileUploadTest(YabiTestCase, FileUtils):
         #FIVE_GB = 5 * 1024 * 1024
         filename = self.create_tempfile(size=FIVE_GB)
         result = self.yabi.run('cksum %s' % filename)
+        self.assertTrue(result.status == 0, "Yabish command shouldn't return error!")
 
         expected_cksum, expected_size = self.run_cksum_locally(filename)
        
@@ -80,6 +81,8 @@ class FileUploadAndDownloadTest(YabiTestCase, FileUtils):
     def setUp(self):
         YabiTestCase.setUp(self)
         FileUtils.setUp(self)
+        if os.path.isfile('output_file'):
+            os.unlink('output_file')
 
     def tearDown(self):
         YabiTestCase.tearDown(self)
@@ -91,12 +94,13 @@ class FileUploadAndDownloadTest(YabiTestCase, FileUtils):
         #ONE_GB = 1024 * 1024
         filename = self.create_tempfile(size=ONE_GB)
         result = self.yabi.run('dd if=%s of=output_file' % filename)
+        self.assertTrue(result.status == 0, "Yabish command shouldn't return error!")
 
         expected_cksum, expected_size = self.run_cksum_locally(filename)
         copy_cksum, copy_size = self.run_cksum_locally('output_file')
        
-        self.assertEqual(expected_cksum, copy_cksum)
         self.assertEqual(expected_size, copy_size)
+        self.assertEqual(expected_cksum, copy_cksum)
 
 class FileUploadAndDownloadTestNoLinkAndLCopy(FileUploadAndDownloadTest):
     @classmethod
@@ -173,6 +177,7 @@ class FileUploadSmallFilesTest(YabiTestCase, FileUtils):
         files = dict([(os.path.basename(f), f) for f in (file1, file2, file3)])
 
         result = self.yabi.run('tar -c -f file_1_2_3.tar %s' % dirname)
+        self.assertTrue(result.status == 0, "Yabish command shouldn't return error!")
 
         extract_dirname = self.create_tempdir()
         tar = tarfile.TarFile('file_1_2_3.tar')

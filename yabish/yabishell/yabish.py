@@ -22,10 +22,7 @@ def main():
     yabi = None
     stagein = None
     try:
-        help_desc = """Run the yabish command followed by the Yabi tool or command you wish to run ie:
-        yabish blast -i myseqs.fa -p blastn -d nt"""
-        
-        argparser = ArgumentParser(description=help_desc, add_help=False)
+        argparser = ArgumentParser(add_help=False)
         argparser.add_argument("--yabi-debug", action='store_true', help="Run in debug mode")
         argparser.add_argument("--yabi-bg", action='store_true', help="Run in background")
         argparser.add_argument("--yabi-url", help="The URL of the YABI server", default=YABI_DEFAULT_URL)
@@ -35,7 +32,7 @@ def main():
 
         if args.no_arguments or args.first_argument in ('-h', '--help'):
 
-            argparser.print_help()
+            print_help()
             return
 
         if args.first_argument in ('-v', '--version'):
@@ -59,6 +56,11 @@ def main():
     finally:
         if yabi is not None:
             yabi.session_finished()
+
+def print_help():
+    help_file = os.path.join(os.path.dirname(__file__), 'help/main')
+    with open(help_file) as f:
+        print f.read()
 
 class StageIn(object):
     def __init__(self, yabi, args):
