@@ -24,15 +24,20 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # 
 ### END COPYRIGHT ###
+import traceback, hashlib, base64
 from yabiadmin import settings
 from yabiadmin.ldapclient import LDAPClient
-
+from django.conf import settings
 
 class LdapUser:
     def __init__(self, uid, dn, full_name):
         self.uid = uid
         self.dn = dn
         self.full_name = full_name
+
+
+class LDAPUserDoesNotExist(ObjectDoesNotExist):
+    pass
 
 
 def get_all_users():
@@ -54,6 +59,8 @@ def get_userdn_of(username):
     result = ldapclient.search(settings.AUTH_LDAP_USER_BASE, userfilter, ['dn'])
     if result and len(result) == 1:
         return result[0][0]
+    else:
+        raise LDAPUserDoesNotExist
 
 def can_bind_as(userdn, password):
     ldapclient = LDAPClient(settings.AUTH_LDAP_SERVER)
@@ -72,5 +79,32 @@ def is_user_member_of(userdn, groupname):
 def format(dn, ldap_user):
     return LdapUser(ldap_user['uid'][0], dn, ldap_user['cn'][0])
 
+def set_ldap_password(user, current_password, new_password, bind_userdn=None, bind_password=None):
+    userdn = get_userdn_of(user.username)
+    client = LDAPClient(settings.AUTH_LDAP_SERVER)
 
+    if bind_userdn and bind_password:
+        client.bind_as(bind_userdn, bind_password)
+    else:
+        client.bind_as(userdn, current_password)
 
+    md5 = hashlib.md5(new_password).digest()
+    modlist = (
+        (MOD_REPLACE, "userPassword", "{MD5}%s" % (base64.encodestring(md5).strip(), )),
+    )
+    client.modify(userdn, modlist)
+    client.unbind()
+
+def passchange(currentPassword, newPassword):
+    logger.debug('')
+
+    assert currentPassword, "No currentPassword was supplied."
+    assert newPassword, "No newPassword was supplied."
+
+    try:
+        set_ldap_password(currentPassword, newPassword)
+        return True
+    except (AttributeError, LDAPError), e:
+        logger.critical("Unable to change password on ldap server.")
+        logger.critical(e)
+        return False
