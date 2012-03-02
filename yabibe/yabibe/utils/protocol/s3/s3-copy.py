@@ -32,7 +32,8 @@
 
 import sys, re, os, time
 from optparse import OptionParser
-import S3
+from boto.s3.connection import S3Connection 
+from boto.s3.key import Key
 
 def eprint(text):
     sys.stderr.write(text)
@@ -102,18 +103,19 @@ if direction == L2R:
         path = path[1:]
     
     # create a connection object
-    conn = S3.AWSAuthConnection(accesskey, secretkey)
-    data = open(infile,"rb").read()
-    response = conn.put(bucket,path,data,headers={'Content-Length':str(len(data))})
+    conn = S3Connection(accesskey, secretkey)
     
-    if response.http_response.status == 200:
-        # success.
-        eprint("OK")
-        sys.exit(0)
+    k = Key(bucket)
+    k.key = path
+    k.set_contents_from_filename(infile)
+    
+    # success.
+    eprint("OK")
+    sys.exit(0)
         
     # report error
-    eprint("copy to s3 bucket '%s' on host '%s' key '%s' from local file '%s' failed: %s"%(bucket,host,path,infile,response.message))
-    sys.exit(1)
+    #eprint("copy to s3 bucket '%s' on host '%s' key '%s' from local file '%s' failed: %s"%(bucket,host,path,infile,response.message))
+    #sys.exit(1)
     
 elif direction == R2L:
     #
@@ -128,28 +130,18 @@ elif direction == R2L:
         path = path[1:]
     
     # create connection
-    conn = S3.AWSAuthConnection(accesskey,secretkey)
-    response = conn.get(bucket,path,headers={'Content-Length':'0'})
+    conn = S3Connection(accesskey,secretkey)
     
-    if response.http_response.status == 200:
-        # success
-        fh = os.open(outfile,os.O_WRONLY )
-        
-        data = response.body
-        while len(data):
-            if len(data)>CHUNKSIZE:
-                chunk = data[:CHUNKSIZE]
-            else:
-                chunk = data
-            data = data[len(chunk):]
-            os.write(fh,chunk)
-        os.close(fh)
-        eprint("OK")
-        sys.exit(0)
+    k = Key(bucket)
+    k.key = path
+    k.get_contents_to_filename(outfile)
+    
+    eprint("OK")
+    sys.exit(0)
         
     #report error
-    eprint("copy from s3 bucket '%s' on host '%s' key '%s' to local file '%s' failed: %s"%(bucket,host,path,outfile,response.message))
-    sys.exit(1)
+    #eprint("copy from s3 bucket '%s' on host '%s' key '%s' to local file '%s' failed: %s"%(bucket,host,path,outfile,response.message))
+    #sys.exit(1)
         
             
           
