@@ -27,6 +27,14 @@
 from yabiadmin import settings
 from yabiadmin.ldapclient import LDAPClient
 
+
+class LdapUser:
+    def __init__(self, uid, dn, full_name):
+        self.uid = uid
+        self.dn = dn
+        self.full_name = full_name
+
+
 def get_all_users():
     ldapclient = LDAPClient(settings.AUTH_LDAP_SERVER)
     filter = "(objectclass=person)"
@@ -36,7 +44,7 @@ def get_all_users():
 
 def get_yabi_userids():
     ldapclient = LDAPClient(settings.AUTH_LDAP_SERVER)
-    filter = "(cn=%s)" % settings.AUTH_LDAP_USER_GROUP
+    filter = "(cn=%s)" % settings.AUTH_LDAP_GROUP
     result = ldapclient.search(settings.AUTH_LDAP_GROUP_BASE, filter, [ 'uniqueMember'] )
     return set(result[0][1]['uniqueMember'])
       
@@ -60,4 +68,9 @@ def is_user_member_of(userdn, groupname):
     groupfilter = '(&(objectClass=groupofuniquenames)(uniqueMember=%s)(cn=%s))' % (userdn, groupname)
     result = ldapclient.search(settings.AUTH_LDAP_GROUP_BASE, groupfilter, ['cn'])
     return len(result) == 1
+
+def format(dn, ldap_user):
+    return LdapUser(ldap_user['uid'][0], dn, ldap_user['cn'][0])
+
+
 
