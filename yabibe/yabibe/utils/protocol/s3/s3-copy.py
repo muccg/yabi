@@ -104,8 +104,8 @@ if direction == L2R:
     
     # create a connection object
     conn = S3Connection(accesskey, secretkey)
-    
-    k = Key(bucket)
+    b = conn.get_bucket(bucket)
+    k = Key(b)
     k.key = path
     k.set_contents_from_filename(infile)
     
@@ -131,8 +131,8 @@ elif direction == R2L:
     
     # create connection
     conn = S3Connection(accesskey,secretkey)
-    
-    k = Key(bucket)
+    b = conn.get_bucket(bucket)
+    k = Key(b)
     k.key = path
     k.get_contents_to_filename(outfile)
     
