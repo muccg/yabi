@@ -895,7 +895,7 @@ class LDAPBackendUserProfile(UserProfile):
         newPassword = request.POST.get("newPassword", None)
 
         # if we manage to change the userpassword, then reencrypt the creds
-        if ldaputils.passchange(self.user, currentPassword, newPassword):
+        if ldaputils.set_ldap_password(self.user, currentPassword, newPassword):
             self.reencrypt_user_credentials(request)
             (status, message) = (True, 'Password successfully changed.')
         else:
