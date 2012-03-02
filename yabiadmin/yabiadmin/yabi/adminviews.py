@@ -49,8 +49,10 @@ logger = logging.getLogger(__name__)
 
 try:
     from yabiadmin import ldaputils
+    LDAP_IN_USE = True
 except ImportError, e:
-    logger.warn("Unable to load ldaputils: %s" % e)
+    LDAP_IN_USE = False    
+    logger.info("LDAP modules not imported. If you are not using LDAP this is not a problem.")
 
 
 class AddToolForm(forms.Form):
@@ -113,7 +115,6 @@ class ToolParamView:
         return props
 
 def format_params(tool_parameters):
-    logger.debug('')
     for param in tool_parameters:        
         yield ToolParamView(param)
 
@@ -168,33 +169,51 @@ def user_backends(request, user_id):
         'backendcredentials': becs
         })
 
-class LdapUser:
-    def __init__(self, uid, dn, full_name):
-        logger.debug('')
-        self.uid = uid
-        self.dn = dn
-        self.full_name = full_name
 
-def format(dn, ldap_user):
-    logger.debug('')
-    return LdapUser(ldap_user['uid'][0], dn, ldap_user['cn'][0])
 
-def register_users(uids):
+def register_users(request):
+    """
+    Take a list of names and add them to the Auth User table
+    """
     logger.debug('')
+    uids = request.POST.keys()
+
     for uid in uids:
-        user = User(name=uid)
-        user.save()
+
+        try:
+            # save in auth user
+            username = uid.replace('uid=','')
+            user, created = DjangoUser.objects.get_or_create(username=username)
+            logger.debug("Django user %s for %s" % ("created" if created else 'already existed', username))
+
+            #save in yabi user
+            user, created = User.objects.get_or_create(name=username)
+            logger.debug("Yabi user %s for %s" % ("created" if created else 'already existed', username))
+            
+        except Exception, e:
+            logger.critical("Users not registered because of %s" % e)
+            pass
 
 @staff_member_required
 def ldap_users(request):
+    """
+    Display a list of users in the Yabi ldap group that are not in database. Allow users to automatically add them to the database
+    """
     logger.debug('')
+
+    if not LDAP_IN_USE:
+        return render_to_response("yabi/ldap_not_in_use.html", {
+            'user':request.user,
+            'root_path':urlresolvers.reverse('admin:index'),
+            })
+    
     if request.method == 'POST':
-        register_users(request.POST.keys())
+        register_users(request)
 
     all_ldap_users = ldaputils.get_all_users()
     yabi_userids = ldaputils.get_yabi_userids()
 
-    ldap_yabi_users = [format(entry[0],entry[1]) for entry in 
+    ldap_yabi_users = [ldaputils.format(entry[0],entry[1]) for entry in 
             all_ldap_users.items() if entry[0] in yabi_userids ]
     
     db_user_names = [user.name for user in User.objects.all()]
@@ -204,6 +223,7 @@ def ldap_users(request):
     unexisting_ldap_users = [user for user in ldap_yabi_users if not user_in_db(user) ]
  
     return render_to_response("yabi/ldap_users.html", {
+        'user':request.user,
         'unexisting_ldap_users': unexisting_ldap_users,
         'existing_ldap_users': existing_ldap_users,
         'root_path':urlresolvers.reverse('admin:index'),
