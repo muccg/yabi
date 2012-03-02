@@ -153,6 +153,36 @@ def killservers():
     admin_killcelery()
     be_killserver()
 
+def admin_list_configs():
+    '''Displays available configs for Yabi Admin'''
+
+    _virtualenv(ADMIN, "fab list_configs")
+
+def admin_active_config():
+    '''Displays the active Yabi Admin config'''
+
+    _virtualenv(ADMIN, "fab active_config")
+
+def admin_activate_config(config):
+    '''Activate the passed in Yabi admin config'''
+
+    _virtualenv(ADMIN, "fab activate_config:%s" % config)
+
+def admin_deactivate_config():
+    '''Deactivates the active Yabi Admin config'''
+
+    _virtualenv(ADMIN, "fab deactivate_config")
+
+
+def runtests():
+    '''Run end to end YABI tests in the yabitests project'''
+    killservers()
+    admin_activate_config('testdb')
+    runservers()
+    tests()
+    killservers()
+    admin_deactivate_config()
+
 def tests(dryrun=False):
     '''Run end to end YABI tests in the yabitests project'''
     cmd = "nosetests -v"

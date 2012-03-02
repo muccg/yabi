@@ -20,6 +20,10 @@ env.ccg_pip_options = "--download-cache=/tmp --use-mirrors --no-index --mirrors=
 
 env.gunicorn_listening_on = "127.0.0.1:8001"
 
+# Used by config related tasks
+CONFS_DIR = 'appsettings_dir'
+CONF_LN_NAME = 'appsettings'
+
 class LocalPaths():
 
     target = env.username
@@ -193,6 +197,49 @@ def runserver_plus(*args):
 def manage(*args):
     _django_env()
     print local(localPaths.getVirtualPython() + " " + localPaths.getProjectDir() + "/manage.py " + " ".join(args), capture=False)
+
+def list_configs():
+    '''display the available configurations'''
+
+    configs = sorted(filter(lambda i: os.path.isdir(os.path.join(CONFS_DIR, i)), os.listdir(CONFS_DIR)))
+    if not configs:
+        print "No configurations are available"
+        return
+
+    print "Available configurations:"
+    for c in configs:
+        config = c
+        if os.path.exists(CONF_LN_NAME) and os.path.samefile(CONF_LN_NAME, os.path.join(CONFS_DIR, c)):
+            config = config + " (ACTIVE)"
+        print '\t' + config
+
+def active_config():
+    '''display the currently active configuration'''
+
+    config = "No config activated"
+    if os.path.islink(CONF_LN_NAME) and os.path.samefile(os.path.dirname(os.readlink(CONF_LN_NAME)), CONFS_DIR):
+        config = os.path.basename(os.readlink(CONF_LN_NAME))
+
+    print '\t' + config
+
+def activate_config(config_dir):
+    '''activate the passed in configuration'''
+
+    full_dir = os.path.join(CONFS_DIR, config_dir)
+    if not (os.path.exists(full_dir)):
+        print "Invalid config (for a list of available configs use fab list_configs)"
+        return
+    if os.path.exists(CONF_LN_NAME) and not os.path.islink(CONF_LN_NAME):
+        raise StandardError("Can't create symlink %s, because %s already exists" % (CONF_LN_NAME, CONF_LN_NAME))
+    if os.path.islink(CONF_LN_NAME):
+        os.unlink(CONF_LN_NAME)
+    local("ln -s %s %s" % (full_dir, CONF_LN_NAME))
+
+def deactivate_config():
+    '''deactivate the current configuration'''
+
+    if os.path.islink(CONF_LN_NAME):
+        os.unlink(CONF_LN_NAME)
 
 def _celeryd():
     _django_env()
