@@ -55,7 +55,7 @@ try:
     from yabiadmin.ldapclient import LDAPClient
     from yabiadmin.ldaputils import get_userdn_of       
 except ImportError, e:
-    logger.info("LDAP modules not imported.")
+    logger.info("LDAP modules not imported. If you are not using LDAP this is not a problem.")
 
 
 class Base(models.Model):
@@ -877,7 +877,7 @@ class ModelBackendUserProfile(UserProfile):
             return (True, "Password successfully changed")
         except AttributeError, e:
             # Send back something fairly generic.
-            logger.debug("Error changing password in LDAP server: %s" % str(e))
+            logger.debug("Error changing password in database server: %s" % str(e))
             return (False, "Error changing password")
 
 
@@ -966,6 +966,7 @@ def signal_tool_post_save(sender, **kwargs):
 
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
+        logger.debug('Creating user profile for %s' % instance.username)
         UserProfile.objects.create(user=instance)
 
  

@@ -1,10 +1,12 @@
-{% extends "admin/base_site.html" %}
-{% load adminmedia admin_list i18n %}
+<%inherit file="admin/base_site.html"/>
+<%namespace name="admin" module="django.contrib.admin.templatetags.adminmedia" />
 
-{% if not is_popup %}{% block breadcrumbs %}<div class="breadcrumbs"><a href="${root_path}">{% trans "Home" %}</a> &rsaquo; LDAP Users</div>{% endblock %}{% endif %}
+% if not is_popup:
+${self.block_breadcrumbs()}<%def name="block_breadcrumbs()"><div class="breadcrumbs"><a href="${root_path}">${trans("Home")}</a> &rsaquo; LDAP Users</div></%def>
+% endif
 
-{% block extrahead %}
 
+${self.block_extrahead()}<%def name="block_extrahead()">
 <script type="text/javascript">
 function SetAllCheckBoxes(form_name, value) {
     form = document.getElementById(form_name);
@@ -17,16 +19,16 @@ function SetAllCheckBoxes(form_name, value) {
     }
 }
 </script>
-{% endblock %}
+</%def>
 
-{% block content %}
+${self.block_content()}<%def name="block_content()">
 <div id="content-main">
 
 <h2>
 Unregistered users
 </h2>
 
-{% if unexisting_ldap_users %}
+% if unexisting_ldap_users:
 
 <p>
 The following users are in the LDAP YABI group, but <strong>NOT</strong> in the DB:
@@ -43,25 +45,25 @@ The following users are in the LDAP YABI group, but <strong>NOT</strong> in the 
         <th>User ID</th>
         <th>User LDAP DN</th>
     </tr>
-{% for user in unexisting_ldap_users %}
+% for ldapuser in unexisting_ldap_users:
     <tr>
-        <td><input type="checkbox" name="{{ user.uid }}" value="{{ user.dn }}"/></td>
-        <td>{{ user.full_name }}</td>
-        <td>{{ user.uid }}</td>
-        <td>{{ user.dn }}</td>
+        <td><input type="checkbox" name="${ldapuser.uid}" value="${ ldapuser.dn}"/></td>
+        <td>${ldapuser.full_name}</td>
+        <td>${ldapuser.uid}</td>
+        <td>${ldapuser.dn}</td>
     </tr>
-{% endfor %}
+% endfor
 </table>
 <input type="button" value="Select All" onclick="SetAllCheckBoxes('unregistered_users',true)" />
 <input type="button" value="Unselect All" onclick="SetAllCheckBoxes('unregistered_users',false)" />
 <input type="submit" value="Register users"/>
 </form>
 
-{% else %}
+% else:
 
 <p>All users in the LDAP YABI group are registered in the DB.</p>
 
-{% endif %}
+% endif
 
 <h2>
 Registered users
@@ -75,15 +77,16 @@ The following users are in the LDAP YABI group <em>AND</em> in the DB:
         <th>User ID</th>
         <th>User LDAP DN</th>
     </tr>
-{% for user in existing_ldap_users %}
+% for ldapuser in existing_ldap_users:
     <tr>
-        <td>{{ user.full_name }}</td>
-        <td>{{ user.uid }}</td>
-        <td>{{ user.dn }}</td>
+        <td>${ldapuser.full_name}</td>
+        <td>${ldapuser.uid}</td>
+        <td>${ldapuser.dn}</td>
     </tr>
-{% endfor %}
+% endfor
 </table>
 
 
 </div>
-{% endblock %}
+
+</%def>
