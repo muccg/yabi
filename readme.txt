@@ -145,5 +145,62 @@ Or if you want to stop the servers after you ran the tests:
 
     $ fab runservers tests killservers
 
+Important Note:
 
+By default the tests assume that you have a clean database - a database you have run fab admin_initdb on and you haven't modified any of the data.
+One way to assure this is to always drop the yabiadmin database, create it again and run fab admin_initdb before you run the tests.
+If you would like to keep the data in your local database, but run the tests, you could create another database just for testing.
+
+YABI provides different configurations and top level fab commands to make this easier.
+
+Look in yabiadmin/yabiadmin/appsettings_dir to see some of the pre-configured database configurations. You would probably see there directories for at least: sqlite_test, postgres and postgres_test.
+For example if you would like to set up a local Postgres database for testing:
+ 
+    - install Postgres
+    - create a Postgres user ex. yabminapp
+    - create a Postgres database owned by the user ex. test_yabi
+    - make sure the the yabiadmin/yabiadmin/appsettings_dir/postgres_test/yabiadmin.py is set up with the DB setting (by default it uses the values above)
+
+To activate the Postgres Test configuration use:
+
+    $ fab admin_activate_config postgres_test
+
+Now
+
+    $ fab admin_active_config 
+
+will show the active configuration in this case postgres_test
+
+
+The fab command admin_list_active_configs will display all available configurations.
+
+To deactivate the active configuration (makes the default settings in setting.py active) use
+
+    $ fab admin_deactivate_config
+
+Running the tests automatically on a test DB:
+---------------------------------------------
+
+If you would like to regularly run the tests on a test db, but then use the DB defined in your settings.py file, you could do the following.
+
+Decide which configuration would you like to use as a test DB. For example postgres_test.
+Create a symlink called testdb in appsettings_dir pointing to this configuration:
+
+    $ cd yabiadmin/yabiadmin/appsettings_dir
+    $ ln -s postgres_test testdb
+
+Use the command 
+
+    $ fab runtests
+
+to run the tests.
+
+The runtests command will:
+
+    - kill all yabi servers (fab killservers)
+    - switch the Yabiadmin configuration to the special testdb (fab admin_activate_config testdb
+    - run all the yabi servers (fab runservers)
+    - run all the tests (fab tests)
+    - kill all yabi servers
+    - deactivate the testdb configuration (ie. switches you back to your settings.py)
 
