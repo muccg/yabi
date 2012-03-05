@@ -211,8 +211,7 @@ class Tool(Base):
                 
         return tool_dict
     
-    def json(self):
-
+    def decode_embedded_json(self):
         # the possible_values field has json in it so we need to make it decode
         # or it will be double encoded
         output = self.tool_dict()
@@ -221,18 +220,14 @@ class Tool(Base):
             if "possible_values" in plist and plist["possible_values"]:
                 plist["possible_values"] = json.loads(plist["possible_values"])
 
+        return output
+
+    def json(self):
+        output = self.decode_embedded_json()
         return json.dumps({'tool':output})
 
     def json_pretty(self):
-
-        # the possible_values field has json in it so we need to make it decode
-        # or it will be double encoded
-        output = self.tool_dict()
-
-        for plist in output["parameter_list"]:
-            if "possible_values" in plist and plist["possible_values"]:
-                plist["possible_values"] = json.loads(plist["possible_values"])
-
+        output = self.decode_embedded_json()
         return json.dumps({'tool':output}, indent=4)
         
     def purge_from_memcache(self):
