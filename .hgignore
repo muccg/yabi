@@ -12,6 +12,7 @@
 ^yabiadmin/yabiadmin/yabiadmin.sqlite3
 ^yabiadmin/yabiadmin/scratch
 ^yabiadmin/yabiadmin/appsettings
+^yabiadmin/yabiadmin/appsettings_dir/testdb
 
 ^yabibe/yabibe/virt_yabibe
 

@@ -60,17 +60,10 @@ from django.contrib import auth
 from yabiadmin.decorators import memcache, authentication_required, profile_required
 from yabiadmin.yabistoreapp import db
 from yabiadmin.utils import using_dev_settings
+from UploadStreamer import UploadStreamer
 
 import logging
 logger = logging.getLogger(__name__)
-
-
-try:
-    from ccg.auth.ldap_helper import LDAPSearchResult, LDAPHandler
-except ImportError, e:
-    logger.warn("Unable to load ldaphelper: %s" % e)
-
-from UploadStreamer import UploadStreamer
 
 DATE_FORMAT = '%Y-%m-%d'
 
