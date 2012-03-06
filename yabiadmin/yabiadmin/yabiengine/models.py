@@ -85,7 +85,6 @@ class Workflow(models.Model, Editable, Status):
     created_on = models.DateTimeField(auto_now_add=True, editable=False, db_index=True)
     status = models.TextField(max_length=64, blank=True)
     stageout = models.CharField(max_length=1000)
-    json = models.TextField()
     original_json = models.TextField()
 
     def __unicode__(self):

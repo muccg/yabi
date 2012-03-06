@@ -40,7 +40,6 @@ from ccg.utils.webhelpers import url
 
 from yabiadmin.yabi.models import Backend, BackendCredential, Tool, User
 from yabiadmin.yabiengine import backendhelper
-from yabiadmin.yabiengine.models import Workflow, Task, Job
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
 
 import pickle
