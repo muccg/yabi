@@ -58,6 +58,29 @@ from boto.s3.connection import S3Connection
 class S3Error(Exception):
     pass
 
+  
+def make_fs_struct((bucket, path, ACCESSKEYID, SECRETKEYID):
+    assert '\n' not in ACCESSKEYID
+    assert '\r' not in ACCESSKEYID
+    assert '\n' not in SECRETKEYID
+    assert '\r' not in SECRETKEYID
+    
+    # path separator
+    SEP = '/'
+    
+    #if there are MULTIPLE seperators on the end, remove all but one
+    # TODO: fix the extra / on initial root directory listings
+    while len(path)>=2 and path[-2:] == (SEP*2):
+        path=path[:-1]
+    
+    conn = S3Connection(ACCESSKEYID, SECRETKEYID)
+    b = conn.get_bucket(bucket)
+    list_response = b.list()
+
+    rawtree = [(obj.name,obj) for obj in list_response]
+    return s3utils.make_tree(rawtree)
+    
+
 def mkdir(bucket, path, ACCESSKEYID, SECRETKEYID):
     assert path[-1]=='/', "Path needs to end in a slash"
     
@@ -102,28 +125,6 @@ def rmrf(bucket, path, ACCESSKEYID, SECRETKEYID):
     #print "DEL3",path
     rm(bucket, path, ACCESSKEYID, SECRETKEYID)
   
-  
-def make_fs_struct((bucket, path, ACCESSKEYID, SECRETKEYID):
-    assert '\n' not in ACCESSKEYID
-    assert '\r' not in ACCESSKEYID
-    assert '\n' not in SECRETKEYID
-    assert '\r' not in SECRETKEYID
-    
-    # path separator
-    SEP = '/'
-    
-    #if there are MULTIPLE seperators on the end, remove all but one
-    # TODO: fix the extra / on initial root directory listings
-    while len(path)>=2 and path[-2:] == (SEP*2):
-        path=path[:-1]
-    
-    conn = S3Connection(ACCESSKEYID, SECRETKEYID)
-    b = conn.get_bucket(bucket)
-    list_response = b.list()
-
-    rawtree = [(obj.name,obj) for obj in list_response]
-    return s3utils.make_tree(rawtree)
-    
 def ls(bucket, path, ACCESSKEYID, SECRETKEYID):
     tree=make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID)
     
