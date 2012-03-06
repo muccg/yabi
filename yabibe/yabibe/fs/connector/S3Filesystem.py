@@ -59,7 +59,7 @@ class S3Error(Exception):
     pass
 
   
-def make_fs_struct((bucket, path, ACCESSKEYID, SECRETKEYID):
+def make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID):
     assert '\n' not in ACCESSKEYID
     assert '\r' not in ACCESSKEYID
     assert '\n' not in SECRETKEYID
