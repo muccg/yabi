@@ -233,7 +233,7 @@ def handle_connection(closure):
     except PermissionDenied, pd:
         return JsonMessageResponseNotFound("You do not have permissions to access this file or directory")
     except FileNotFound, fnf:
-        return JsonMessageResponseNotFound("The requested directory either doesn't exist")
+        return JsonMessageResponseNotFound("The requested directory does not exist")
     except BackendStatusCodeError, bsce:
         return JsonMessageResponseNotFound("The yabi backend returned an inapropriate status code: %s"%(str(bsce)))
     except BackendRefusedConnection, e:
