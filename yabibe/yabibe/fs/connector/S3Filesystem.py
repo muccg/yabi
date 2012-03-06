@@ -110,8 +110,11 @@ def rmrf(bucket, path, ACCESSKEYID, SECRETKEYID):
     
 
 def ls(bucket, path, ACCESSKEYID, SECRETKEYID):
-    print "ACC:",ACCESSKEYID
-    print "SEC:",SECRETKEYID
+    assert '\n' not in ACCESSKEYID
+    assert '\r' not in ACCESSKEYID
+    assert '\n' not in SECRETKEYID
+    assert '\r' not in SECRETKEYID
+    
     # path separator
     SEP = '/'
     
@@ -120,30 +123,26 @@ def ls(bucket, path, ACCESSKEYID, SECRETKEYID):
     while len(path)>=2 and path[-2:] == (SEP*2):
         path=path[:-1]
     
-    conn = S3Connection(ACCESSKEYID, SECRETKEYID, host="s3-ap-southeast-1.amazonaws.com")
-    print "conn",conn
-    print "bucket",bucket
+    conn = S3Connection(ACCESSKEYID, SECRETKEYID)
     b = conn.get_bucket('yabi-sing')
     list_response = b.list()
 
-    print list_response
+    rawtree = [(obj.name,obj) for obj in list_response]
+    tree=s3utils.make_tree(rawtree)
     
-    import sys
-    sys.exit()
-
-    #if not (200 <= response.http_response.status <300):
-        #raise S3Error("Could not list bucket '%s': %s"%(bucket,response.message))
-   
-    #tree = s3utils.make_tree([(OBJ.key,OBJ) for OBJ in response.entries])
-    ##tree.dump()
-    #try:
-        #lsdata = tree.ls(path)
-    #except s3utils.NodeNotFound:
-        #raise InvalidPath("No such file or directory\n")
+    try:
+        lsdata = tree.ls(path)
+    except s3utils.NodeNotFound:
+        raise InvalidPath("No such file or directory\n")
     
-    #return lsdata
-
+    return lsdata
+    
 def lsrecurse(bucket, path, ACCESSKEYID, SECRETKEYID):
+    assert '\n' not in ACCESSKEYID
+    assert '\r' not in ACCESSKEYID
+    assert '\n' not in SECRETKEYID
+    assert '\r' not in SECRETKEYID
+    
     # path separator
     SEP = '/'
     
