@@ -57,8 +57,7 @@ from twisted.internet import reactor
 
 import random
 
-possible_delay_sets = 
-    [
+possible_delay_sets = [
          # normal   
          [   
             (10.0, "Unsubmitted"),

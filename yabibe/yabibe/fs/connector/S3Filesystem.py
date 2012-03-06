@@ -57,7 +57,6 @@ from boto.s3.connection import S3Connection
     
 class S3Error(Exception):
     pass
-
   
 def make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID):
     assert '\n' not in ACCESSKEYID
