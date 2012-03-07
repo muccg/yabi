@@ -163,7 +163,7 @@ For example if you would like to set up a local Postgres database for testing:
 
 To activate the Postgres Test configuration use:
 
-    $ fab admin_activate_config postgres_test
+    $ fab admin_activate_config:postgres_test
 
 Now
 
