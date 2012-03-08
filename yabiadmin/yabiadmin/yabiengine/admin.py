@@ -65,6 +65,19 @@ link_to_syslog_from_task.allow_tags = True
 link_to_syslog_from_task.short_description = "Syslog"
 
 
+class BaseModelAdmin(admin.ModelAdmin):
+    """
+    Allows for whitelisting filters to be passed in via query string
+    See: http://www.hoboes.com/Mimsy/hacks/fixing-django-124s-suspiciousoperation-filtering/
+    """
+    valid_lookups = ()
+
+    def lookup_allowed(self, lookup, *args, **kwargs):
+        if lookup.startswith(self.valid_lookups):
+            return True
+        return super(BaseModelAdmin, self).lookup_allowed(lookup, *args, **kwargs)
+
+
 class WorkflowAdmin(admin.ModelAdmin):
     list_display = ['name', 'status', 'stageout', link_to_jobs, link_to_tasks, link_to_stageins, 'summary_link']
     list_filter = ['status', 'user']
@@ -122,7 +135,9 @@ class JobAdmin(admin.ModelAdmin):
     )
     raw_id_fields = ['workflow']
 
-class TaskAdmin(admin.ModelAdmin):
+
+class TaskAdmin(BaseModelAdmin):
+    valid_lookups = ('job__workflow__exact',)
 
     def workflow_name(obj):
         return obj.job.workflow.name
@@ -131,10 +146,12 @@ class TaskAdmin(admin.ModelAdmin):
     list_filter = ['status', 'job__workflow__user']
     raw_id_fields = ['job']
 
-    
-class StageInAdmin(admin.ModelAdmin):
+
+class StageInAdmin(BaseModelAdmin):
+    valid_lookups = ('task__job__workflow__exact',)
     list_display = ['src', 'dst', 'order','method']
     raw_id_fields = ['task']
+
 
 def register(site):
     site.register(Workflow, WorkflowAdmin)

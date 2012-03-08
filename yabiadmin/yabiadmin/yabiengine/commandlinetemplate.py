@@ -407,8 +407,12 @@ class CommandTemplate(object):
                 #print "argument: %s"%(argument)
                 #print "flag: %s"%(argument.flag)
                 # render all in a list
-                output += " "+argument.render([self._convert(X) for X in batchfiles[argument.flag]])
-                #output += " ".join([argument.render(self._convert(X)) for X in batchfiles[argument.flag]])
+                try:
+                    output += " "+argument.render([self._convert(X) for X in batchfiles[argument.flag]])
+                except KeyError:
+                    logger.critical("Unable to find files for parameter %s" % argument.flag)
+                    raise
+
             elif argument.takes_output_file:
                 # find the base filename this switch requires
                 #print "argument.source_switch=%s"%(argument.source_switch)

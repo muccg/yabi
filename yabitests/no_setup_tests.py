@@ -11,7 +11,7 @@ class NotLoggedInTest(YabiTestCase):
 
     def test_run_yabish_no_args(self):
         result = self.yabi.run()
-        self.assertTrue('usage:' in result.stdout)
+        self.assertTrue('Usage:' in result.stdout)
 
     def test_unsuccessful_login(self):
         self.assertTrue(not self.yabi.login('tszabo', 'INVALID_PASS'))

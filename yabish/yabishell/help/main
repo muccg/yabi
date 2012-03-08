@@ -1,0 +1,41 @@
+
+Usage: yabish COMMAND [COMMAND_ARGUMENTS...] [OPTIONS...]
+
+COMMAND is either a command (ex. ls, jobs, attach ex.) or the name of a Tool you want to run on a YABI server.
+
+Yabish can be used mainly to run jobs on a YABI server by specifying the name of the tool and any arguments you might want to pass in to it on the command line. 
+For example, to run a blast using yabish:
+
+    $ yabish blast -i myseqs.fa -p blastn -d nt
+
+Additionally, you can use Yabish to get information about jobs you are running on the server and for filesystem operations on your Filesystem Backends by running Yabish commands detailed below.
+
+
+Yabish commands:
+
+    jobs [START_DATE] - list all the jobs of the current user on the server. The optional START_DATE (by default today) can be used to go back in history until a given date. Format of the date is YYYY-MM-DD.
+
+    status WORKFLOW_ID - display status information about the YABI job identified by worfklow id WORKFLOW_ID.
+
+    attach WORKFLOW_ID - attach yabish to a job running on the YABI server. Yabish will wait until the job finishes or you interrupt it by CTRL+C.
+
+    ls [URI] - list the directories and files of your filesystem backends configured in YABI. The optional URI is the URI of a directory you would like to list.
+
+    cp SRC [DEST] - copy a file from a filesystem backend to the local filesystem. SRC is the URI of the file on a filesystem backend. The optional DEST (by default working directory) is a local directory or filename you want the SRC to be copied to.
+
+    rm URI - remove a file from a filesystem backend. SRC is the URI of the file you would like to delete.
+
+    login USERNAME PASSWORD - login into Yabi with USERNAME/PASSWORD. This command is meant to be used only from automated scripts to avoid Yabish to prompt for the username and password
+
+    logout - logout a user from Yabi.
+
+
+Environment variables:
+
+  YABISH_YABI_URL : set to the URL of the YABI server you would like Yabish to run your remote commands on (ex. https://ccg.murdoch.edu.au/yabi)
+
+Options:
+  --yabi-bg            Run the yabish remote job in the background 
+  --yabi-url YABI_URL  The URL of the YABI server (ex. https://ccg.murdoch.edu.au/yabi). Alternatively, you can set this by the YABISH_YABI_URL environment variable
+  --yabi-debug         Run in debug mode - used by developers only to test yabish 
+

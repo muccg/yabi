@@ -86,6 +86,7 @@ class FileUploadStreamer(UploadStreamer):
     def file_complete(self, file_size):
         """individual file upload complete"""
         #print "file_complete",file_size
+        logger.info("Streaming through of file %s has been completed. %d bytes have been transferred." % (self._present_file, file_size))
         return self.end_file()
     
     def new_file(self, field_name, file_name, content_type, content_length, charset):
@@ -232,7 +233,7 @@ def handle_connection(closure):
     except PermissionDenied, pd:
         return JsonMessageResponseNotFound("You do not have permissions to access this file or directory")
     except FileNotFound, fnf:
-        return JsonMessageResponseNotFound("The requested directory either doesn't exist")
+        return JsonMessageResponseNotFound("The requested directory does not exist")
     except BackendStatusCodeError, bsce:
         return JsonMessageResponseNotFound("The yabi backend returned an inapropriate status code: %s"%(str(bsce)))
     except BackendRefusedConnection, e:

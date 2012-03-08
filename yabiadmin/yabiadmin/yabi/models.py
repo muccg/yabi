@@ -211,8 +211,7 @@ class Tool(Base):
                 
         return tool_dict
     
-    def json(self):
-
+    def decode_embedded_json(self):
         # the possible_values field has json in it so we need to make it decode
         # or it will be double encoded
         output = self.tool_dict()
@@ -221,18 +220,14 @@ class Tool(Base):
             if "possible_values" in plist and plist["possible_values"]:
                 plist["possible_values"] = json.loads(plist["possible_values"])
 
+        return output
+
+    def json(self):
+        output = self.decode_embedded_json()
         return json.dumps({'tool':output})
 
     def json_pretty(self):
-
-        # the possible_values field has json in it so we need to make it decode
-        # or it will be double encoded
-        output = self.tool_dict()
-
-        for plist in output["parameter_list"]:
-            if "possible_values" in plist and plist["possible_values"]:
-                plist["possible_values"] = json.loads(plist["possible_values"])
-
+        output = self.decode_embedded_json()
         return json.dumps({'tool':output}, indent=4)
         
     def purge_from_memcache(self):
@@ -435,8 +430,6 @@ class Credential(Base):
     user.help_text="Yabi username."
 
     def __unicode__(self):
-        if settings.DEBUG:
-            return "<id=%s description=%s username=%s user=%s backends=%s>" % (self.id, self.description if len(self.description)<20 else self.description[:20], self.username, self.user.name, self.backends.all())
         return "%s username:%s for yabiuser:%s"%(self.description,self.username,self.user.name)
     
     def encrypt(self, key):
@@ -728,8 +721,6 @@ class Backend(Base):
         return urlunparse((self.scheme, netloc, self.path, '', '', ''))
 
     def __unicode__(self):
-        if settings.DEBUG:
-            return "<%s name=%s scheme=%s hostname=%s port=%s path=%s>"%(self.id, self.name,self.scheme,self.hostname,self.port,self.path)
         return "%s - %s://%s:%s%s"%(self.name,self.scheme,self.hostname,self.port,self.path)
 
     @models.permalink
@@ -760,8 +751,6 @@ class BackendCredential(Base):
     submission.help_text="Mako script to be used to generate a custom submission script. (Variables: walltime, memory, cpus, working, modules, command)"
     
     def __unicode__(self):
-        if settings.DEBUG:
-            return "BackendCredential <%s backend.id=%s credential.id=%s homedir=%s visbile=%s>"%(self.id,self.backend.id,self.credential.id,self.homedir,str(self.visible))
         return "BackendCredential %s"%(self.id)
 
     def json(self):
