@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 
 from constants import *
 
-def task(request):
+def request_next_task(request, status):
     if "tasktag" not in request.REQUEST:
         return HttpResponseServerError("Error requesting task. No tasktag identifier set.")
     
@@ -56,17 +56,18 @@ def task(request):
         return HttpResponseServerError("Error requesting task. Tasktag incorrect. This is not the admin you are looking for.")
        
     try:
-        # only expose tasks that are ready and are intended for the expeceted backend
-        tasks = Task.objects.filter(status=STATUS_READY, tasktag=tasktag)
+        # only expose tasks that are ready and are intended for the expected backend
+        tasks = Task.objects.filter(status=status, tasktag=tasktag)
 
-        if tasks:
-            task = tasks[0]
-            task.status=STATUS_REQUESTED
-            task.save()
-            logger.debug('requested task id: %s command: %s' % (task.id, task.command))
-            return HttpResponse(task.json())
-        else:
-            raise ObjectDoesNotExist("No more tasks")  
+        # Optimistic locking
+        # Update and return task only if another thread hasn't updated and returned it before us
+        for task in tasks:
+            updated = Task.objects.filter(id=task.id, status=status).update(status=STATUS_REQUESTED)
+            if updated == 1:
+                logger.debug('requested %s task id: %s command: %s' % (status, task.id, task.command))
+                return HttpResponse(task.json())
+
+        raise ObjectDoesNotExist("No more tasks")  
         
     except ObjectDoesNotExist:
         return HttpResponseNotFound("Object not found.")
@@ -77,40 +78,11 @@ def task(request):
         logger.critical(traceback.format_exc())
         return HttpResponseServerError("Error requesting task.")
 
+def task(request):
+    return request_next_task(request, status=STATUS_READY)
+
 def blockedtask(request):
-    if "tasktag" not in request.REQUEST:
-        return HttpResponseServerError("Error requesting task. No tasktag identifier set.")
-    
-    # verify that the requesters tasktag is correct
-    tasktag = request.REQUEST["tasktag"]
-    if tasktag != settings.TASKTAG:
-        logger.critical("Task requested  had incorrect identifier set. Expected tasktag %s but got %s instead." % (settings.TASKTAG, tasktag))
-        return HttpResponseServerError("Error requesting task. Tasktag incorrect. This is not the admin you are looking for.")
-       
-    try:
-        # only expose tasks that are ready and are intended for the expeceted backend
-        tasks = Task.objects.filter(status=STATUS_RESUME, tasktag=tasktag)
-
-        print "TASKS",tasks
-
-        if tasks:
-            task = tasks[0]
-            task.status=STATUS_REQUESTED
-            task.save()
-            logger.debug('requested resumption task id: %s command: %s' % (task.id, task.command))
-            return HttpResponse(task.json())
-        else:
-            raise ObjectDoesNotExist("No more tasks")  
-        
-    except ObjectDoesNotExist:
-        return HttpResponseNotFound("Object not found. Bleck!")
-    except Exception, e:
-        logger.critical("Caught Exception:")
-        import traceback
-        logger.critical(e)
-        logger.critical(traceback.format_exc())
-        return HttpResponseServerError("Error requesting task.")
-
+    return request_next_task(request, status=STATUS_RESUME)
 
 def status(request, model, id):
     logger.debug('model: %s id: %s' % (model, id))
