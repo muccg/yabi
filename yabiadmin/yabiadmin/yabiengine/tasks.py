@@ -48,7 +48,6 @@ def build(workflow_id):
 class walk(Task):
     ignore_result = True
 
-    @transaction.commit_on_success
     def run(self, workflow_id, **kwargs):
         print "WALK:",workflow_id
         assert(workflow_id)
@@ -65,13 +64,3 @@ class walk(Task):
             raise
         return workflow_id
 
-class update_workflow_json(Task):
-    ignore_result = True
-
-    @transaction.commit_on_success
-    def run(self, workflow_id):
-        print "UPDATE_WORKFLOW_JSON:",workflow_id
-        assert(workflow_id)
-        eworkflow = EngineWorkflow.objects.get(id=workflow_id)
-        eworkflow.update_json_to_db()
-        return workflow_id

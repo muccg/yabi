@@ -111,7 +111,7 @@ def blockedtask(request):
         logger.critical(traceback.format_exc())
         return HttpResponseServerError("Error requesting task.")
 
-@transaction.commit_on_success
+
 def status(request, model, id):
     logger.debug('model: %s id: %s' % (model, id))
     models = {'task':EngineTask, 'job':EngineJob, 'workflow':EngineWorkflow}
@@ -120,59 +120,72 @@ def status(request, model, id):
     if model.lower() not in models.keys():
         raise ObjectDoesNotExist()
 
-    try:
-        if request.method == "GET":
+    if request.method == "GET":
+        try:
             m = models[model.lower()]
             obj = m.objects.get(id=id)
             return HttpResponse(json.dumps({"status":obj.status}))
+        except ObjectDoesNotExist, e:
+            return HttpResponseNotFound("Object not found")
+    elif request.method == "POST":
+        if "status" not in request.POST:
+            return HttpResponseServerError("POST request to status service should contain 'status' parameter\n")
 
-        else:
-            if "status" not in request.POST:
-                return HttpResponseServerError("POST request to status service should contain 'status' parameter\n")
-
+        try:
             model = str(model).lower()
             id = int(id)
             status = str(request.POST["status"])
 
+            if model != "task":
+                return HttpResponseServerError("Only the status of Tasks is allowed to be changed\n")
+
             logger.debug("status="+request.POST['status'])
 
+            # TODO TSZ maybe raise exception instead?
             # truncate status to 64 chars to avoid any sql field length errors
             status = status[:64]
+            task = EngineTask.objects.get(pk=id)
+        except (ObjectDoesNotExist,ValueError):
+            return HttpResponseNotFound("Object not found")
+
+        try:
+            update_task_status(task, status)
+        except Exception, e:
+            return HttpResponseServerError(e)
+
+        return HttpResponse("")
+
+@transaction.commit_manually
+def update_task_status(task, status):
+    try:
+        task.status = status
+
+        if status != STATUS_BLOCKED and status!= STATUS_RESUME:
+            task.percent_complete = STATUS_PROGRESS_MAP[status]
+
+        if status == STATUS_COMPLETE:
+            task.end_time = datetime.now()
                 
-            m = models[model]
-            obj = m.objects.get(id=id)
-            obj.status=status
-            if status != STATUS_BLOCKED and status!= STATUS_RESUME:
-                obj.percent_complete = STATUS_PROGRESS_MAP[status]
+        task.save()
 
-            # this will probably only apply to tasks but if it is called on other
-            # objects it should be fine also
-            if status == STATUS_COMPLETE:
-                obj.end_time = datetime.now()
-                
-            obj.save()
+        # update the job status when the task status changes
+        task.job.update_status()
+        job_cur_status = task.job.status
 
-            # update the job status when the task status changes
-            if (model == 'task'):
-                obj.job.update_status()
-                obj.job.save()
+        transaction.commit()
 
-            if status in [STATUS_READY, STATUS_COMPLETE, STATUS_ERROR]:
-                # always commit transactions before sending tasks depending on state from the current transaction http://docs.celeryq.org/en/latest/userguide/tasks.html
-                transaction.commit()
-
+        if job_cur_status in [STATUS_READY, STATUS_COMPLETE, STATUS_ERROR]:
+            workflow = EngineWorkflow.objects.get(pk=task.workflow_id)
+            if workflow.needs_walking():
                 # trigger a walk via celery 
-                walk.delay(workflow_id=obj.workflow_id)
-
-            return HttpResponse("")
-
-    except (ObjectDoesNotExist,ValueError):
-        return HttpResponseNotFound("Object not found")
+                walk.delay(workflow_id=workflow.pk)
+        transaction.commit()
     except Exception, e:
+        transaction.rollback()
         import traceback
         logger.critical(traceback.format_exc())
         logger.critical("Caught Exception: %s" % e)
-        return HttpResponseServerError(e)
+        raise
 
 def remote_id(request,id):
     logger.debug('remote_task_id> %s'%id)

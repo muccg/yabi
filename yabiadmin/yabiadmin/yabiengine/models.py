@@ -120,6 +120,18 @@ class Workflow(models.Model, Editable, Status):
     def get_job(self, order):
         return self.job_set.get(order=order)
 
+    def update_status(self):
+        job_statuses = [x['status'] for x in Job.objects.filter(workflow=self).values('status')]
+        if STATUS_ERROR in job_statuses:
+            self.status = STATUS_ERROR
+            self.end_time = datetime.now()
+            self.save()
+            return
+        if len(filter(lambda s: s != STATUS_COMPLETE, job_statuses)) == 0:
+            self.status = STATUS_COMPLETE
+            self.end_time = datetime.now()
+            self.save()
+
 class Tag(models.Model):
     value = models.CharField(max_length=255)
 
@@ -176,6 +188,7 @@ class Job(models.Model, Editable, Status):
         Checks all the tasks for a job and sets the job status based on precedence of the task status.
         The order of the list being checked is therefore important.
         '''
+        cur_status = self.status
         for status in [STATUS_ERROR, 'exec:error', 'pending', 'requested', 'stagein', 'mkdir', 'exec', 'exec:active', 'exec:pending', 'exec:unsubmitted', 'exec:running', 'exec:cleanup', 'exec:done', 'stageout', 'cleaning', STATUS_BLOCKED, STATUS_READY, STATUS_COMPLETE]:
             if Task.objects.filter(job=self, status=status):
                 # we need to map the task status values to valid job status values
@@ -191,8 +204,10 @@ class Job(models.Model, Editable, Status):
                     self.end_time = datetime.now()
                 
                 assert(self.status in STATUS)
-                return
-
+                self.save()
+                break
+        if self.status != cur_status and self.status in (STATUS_ERROR, STATUS_COMPLETE):
+            self.workflow.update_status()
 
 class Task(models.Model, Editable, Status):
     job = models.ForeignKey(Job)

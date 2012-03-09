@@ -111,24 +111,26 @@ class EngineWorkflow(Workflow):
                 job = EngineJob(workflow=self, order=i, start_time=datetime.datetime.now())
                 job.add_job(job_dict)
 
-        except (AssertionError, ObjectDoesNotExist, KeyError, Exception) , e:
+        except Exception, e:
+            self.rollback()
+
             self.status = STATUS_ERROR
             self.save()
+            transaction.commit()
+
             logger.critical(e)
             logger.critical(traceback.format_exc())
-            print traceback.format_exc()  
-            transaction.commit()
+
             raise
     
-    #@transaction.commit_on_success
-    def update_json_to_db(self):
-        jobset = [X for X in EngineJob.objects.filter(workflow=self).order_by("order")]
-        for job in jobset:
-            job.update_status()     
-            job.save()
+    def jobs_that_need_walking(self):
+        return [j for j in EngineJob.objects.filter(workflow=self).order_by("order") if j.total_tasks() == 0 and not j.has_incomplete_dependencies()]
+
+    def needs_walking(self):
+        return (len(self.jobs_that_need_walking()) > 0)
 
     # NOTE: this is a load bearing decorator. Do not remove it or the roof will fall in. (it stops locking nightmares)
-    @transaction.commit_on_success
+    @transaction.commit_manually
     def walk(self):
         '''
         Walk through the jobs for this workflow and prepare jobs and tasks,
@@ -151,13 +153,19 @@ class EngineWorkflow(Workflow):
                     logger.info('job %s has incomplete dependencies, skipping walk' % job.id)
                     continue
 
+                # This will open up a new transaction for creating all the tasks of a Job
+                # TODO TSZ - it might make sense to change all this code to walk jobs instead
+                # Walking one job (ie. creating tasks for it) seems to be the unit of work here
                 job.create_tasks()
 
                 # there must be at least one task for every job
                 if not job.total_tasks():
                     logger.critical('No tasks for job: %s' % job.id)
                     job.status = STATUS_ERROR
+                    self.status = STATUS_ERROR
                     job.save()
+                    self.save()
+                    transaction.commit()
                     continue
             
                 # mark job as ready so it can be requested by a backend
@@ -165,47 +173,20 @@ class EngineWorkflow(Workflow):
                 job.save()
 
                 job.make_tasks_ready()          
+                transaction.commit()
 
-            # check all the jobs are complete, if so, changes status on workflow
-            incomplete_jobs = Job.objects.filter(workflow=self).exclude(status=STATUS_COMPLETE)
-            if not len(incomplete_jobs):
-                self.status = STATUS_COMPLETE
-                self.end_time = datetime.datetime.now()
-                self.save()
-                
-            # we may get here, with no more tasks or jobs running, but only after a lengthy walk.   
-            # so all the jobs are marked as "STATUS_COMPLETE" in the database, but not necessarily in the json representation.      
-            # so lets make sure the json fully reflects our new complete state      
-
-            # now we just need to make sure all the jobs json reflects the database state. 
-            # we get celery to do this later, so we don't tie up locks
-            from yabiadmin.yabiengine.tasks import update_workflow_json
-            update_workflow_json.delay(workflow_id=self.id)
-            
-            # check for error jobs, if so, change status on workflow
-            error_jobs = Job.objects.filter(workflow=self).filter(status=STATUS_ERROR)
-            if len(error_jobs):
-                self.status = STATUS_ERROR
-                self.end_time = datetime.datetime.now()                
-                self.save()
-
-        except ObjectDoesNotExist,e:
-            self.status = STATUS_ERROR
-            logger.critical("ObjectDoesNotExist at workflow::walk")
-            logger.critical(traceback.format_exc())
-            self.save()
-            print traceback.format_exc()
             transaction.commit()
-            raise
+
         except Exception,e:
+            transaction.rollback()
+
             self.status = STATUS_ERROR
+            self.save()
+            transaction.commit()
+
             logger.critical("Exception raised in workflow::walk")
             logger.critical(traceback.format_exc())
-            #transaction.rollback()
-            
-            self.save()
-            transaction.commit()
-            print traceback.format_exc()
+
             raise
 
     def change_tags(self, taglist):
@@ -302,14 +283,12 @@ class EngineJob(Job):
         self.template.update_dependencies(self.workflow, ignore_glob_list=FNMATCH_EXCLUDE_GLOBS)
         return self.template.dependencies!=0
 
-    @transaction.commit_on_success
     def make_tasks_ready(self): 
         tasks = EngineTask.objects.filter(job=self)
         for task in tasks:
             task.status = STATUS_READY
             task.save()
 
-    #@transaction.commit_on_success
     def add_job(self, job_dict):
         assert(job_dict)
         assert(job_dict["toolName"])
