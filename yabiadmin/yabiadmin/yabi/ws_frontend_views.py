@@ -382,11 +382,70 @@ def put(request):
         bc = get_fs_backendcredential_for_uri(yabiusername, uri)
         decrypt_cred = bc.credential.get()
         
-        resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))
+#        resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))
+        resource = "%s?uri=%s" % ('fs/put', quote(uri))
         
         # TODO: the following is using GET parameters to push the decrypt creds onto the backend. This will probably make them show up in the backend logs
         # we should push them via POST parameters, or at least not log them in the backend.
         resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(decrypt_cred['username']),quote(decrypt_cred['password']),quote( decrypt_cred['cert']),quote(decrypt_cred['key']))
+
+
+
+
+
+
+
+        logger.debug("+++++++++++++++++++++++++++++++++++++++++++++")
+
+        from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
+        from yaphc.memcache_persister import MemcacheCookiePersister
+
+        print request.FILES
+
+        (key, file) = request.FILES.items()[0]
+        print file.name
+        print file.temporary_file_path()
+        file_details = (file.name, file.name, file.temporary_file_path())
+
+
+        files = []
+        files.append(file_details)
+
+        logger.debug("+++++++++++++++++++++++++++++++++++++++++++++")
+
+        print files
+
+        print resource
+
+        from yabiengine.backendhelper import make_hmac
+        
+        # todo why does this need slash in front here but not a part of resource
+        upload_request = PostRequest(resource, params={}, headers={'Hmac-digest': make_hmac('/' + resource)}, files=files)
+
+        print upload_request.headers  
+        #http = memcache_http(request)
+
+        base_url = "http://%s" % settings.YABIBACKEND_SERVER
+
+        http = Http(base_url=base_url)
+
+        resp, contents = http.make_request(upload_request)
+        print resp        
+        logger.debug("+++++++++++++++++++++++++++++++++++++++++++++")
+        http.finish_session()
+
+
+        logger.debug(resp)
+        logger.debug(contents)
+
+        assert False
+
+
+
+
+
+
+
 
         streamer = FileUploadStreamer(host=settings.BACKEND_IP, port=settings.BACKEND_PORT, selector=resource, cookies=[], fields=[])
         request.upload_handlers = [ streamer ]

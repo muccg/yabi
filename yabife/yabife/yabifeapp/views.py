@@ -496,22 +496,61 @@ def upload_file(request, user):
     cookie_string = jar.cookies_to_send_header(settings.YABIADMIN_SERVER)['Cookie']
     
     streamer = FileUploadStreamer(host=host, port=port or 80, selector=upload_path+"/ws/fs/put?uri=%s"%quote(upload_uri), cookies=[cookie_string], fields=[])
-    request.upload_handlers = [ streamer ]
+    #request.upload_handlers = [ streamer ]
     
     # evaluating POST triggers the processing of the request body
-    request.POST
+    print request.FILES
+
+    file1 = request.FILES['file1']
+    print dir(file1)
+    print file1.name
+    print file1.temporary_file_path()
+    path = '/home/andrew/Desktop/images/output.jpg'
+    #file_details = (file1.name, file1.name, path)
+    file_details = (file1.name, file1.name, file1.temporary_file_path())
+
+
+    files = []
+    files.append(file_details)
+
+
+
+
+    upload_request = PostRequest("ws/fs/put?uri=%s" % quote(upload_uri), params={}, files=files)
+    http = memcache_http(request)
+    resp, contents = http.make_request(upload_request)
+    http.finish_session()
+
+
+    #print resp
+    #print contents
+
+
+
+
+
+##    from http_upload import post_multipart
+
+##    files = []
+##    files.append(file_details)
+
+##    #post_multipart(host, selector, fields, files, cookies=None)
     
-    result=streamer.stream.getresponse()
+##    result = post_multipart(host, port or 80, upload_path+"/ws/fs/put?uri=%s"%quote(upload_uri), [], files)
+
+
+
+##    print "RESULT IS: %s" % result.getresponse()
     
-    content=result.read()
-    status=int(result.status)
-    reason = result.reason
+##    content=result.read()
+##    status=int(result.status)
+##    reason = result.reason
     
-    #print "passing back",status,reason,"in json snippet"
-    
+##    print "passing back",status,reason,"in json snippet"
+
     response = {
-        "level":"success" if status==200 else "failure",
-        "message":content
+        "level":"success" if resp.status==200 else "failure",
+        "message":contents
         }
     return HttpResponse(content=json.dumps(response))
 

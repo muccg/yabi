@@ -32,7 +32,7 @@ import djcelery
 import logging
 import logging.handlers
 
-PROJECT_DIRECTORY = os.environ['PROJECT_DIRECTORY']
+PROJECT_DIRECTORY = os.environ.get('PROJECT_DIRECTORY', os.path.abspath('.'))
 
 # setting to control ccg ssl middleware
 # see http://code.google.com/p/ccg-django-extras/source/browse/
