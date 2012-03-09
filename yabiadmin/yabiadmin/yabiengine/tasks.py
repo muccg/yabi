@@ -41,7 +41,7 @@ def build(workflow_id):
     print "building...",eworkflow
     eworkflow.build()
     print "------------->"
-    eworkflow.walk()
+    walk.delay(workflow_id=workflow_id)
     return workflow_id
 
 #@task(name="yabiadmin.yabiengine.tasks.walk")
