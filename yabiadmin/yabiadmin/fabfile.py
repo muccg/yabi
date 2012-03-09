@@ -1,4 +1,4 @@
-from fabric.api import env, local
+from fabric.api import env, local, lcd
 from ccgfab.base import *
 
 import os
@@ -23,6 +23,7 @@ env.gunicorn_listening_on = "127.0.0.1:8001"
 # Used by config related tasks
 CONFS_DIR = 'appsettings_dir'
 CONF_LN_NAME = 'appsettings'
+TEST_CONF_LN_NAME = os.path.join(CONFS_DIR, 'testdb')
 
 class LocalPaths():
 
@@ -240,6 +241,49 @@ def deactivate_config():
 
     if os.path.islink(CONF_LN_NAME):
         os.unlink(CONF_LN_NAME)
+
+def _get_selected_test_config():
+    config = None
+    if os.path.islink(TEST_CONF_LN_NAME):
+        target = os.readlink(TEST_CONF_LN_NAME)
+        if target.endswith('/'): target = target[:-1]
+        config = os.path.basename(target)
+    return config
+
+def assert_test_config_is_selected():
+    '''fails if the test configuration isn't set'''
+    config = _get_selected_test_config()
+    if config is None:
+        print '\n\tNo configuration is selected for running tests. Please use select_test_config to select one.\n'
+        raise Exception('No configuration is selected for running tests. Please use select_test_config to select one.')
+
+
+def selected_test_config():
+    '''displays the configuration used for running tests'''
+
+    config = _get_selected_test_config()
+    if config is None:
+        config = "No test config activated"
+    print '\t' + config
+ 
+def select_test_config(config_dir):
+    '''selects the passed in configuration to be used for running tests'''
+
+    if config_dir == os.path.basename(TEST_CONF_LN_NAME):
+        print "You can't set %s to point to itself!" % os.path.basename(TEST_CONF_LN_NAME)
+        return
+
+    full_dir = os.path.join(CONFS_DIR, config_dir)
+    if not (os.path.exists(full_dir)):
+        print "Invalid config (for a list of available configs use fab list_configs)"
+        return
+    if os.path.exists(TEST_CONF_LN_NAME) and not os.path.islink(TEST_CONF_LN_NAME):
+        raise StandardError("Can't create symlink %s, because %s already exists" % (TEST_CONF_LN_NAME, TEST_CONF_LN_NAME))
+    if os.path.islink(TEST_CONF_LN_NAME):
+        os.unlink(TEST_CONF_LN_NAME)
+    with lcd(CONFS_DIR):
+        local("ln -s %s %s" % (config_dir, os.path.basename(TEST_CONF_LN_NAME)))
+
 
 def _celeryd():
     _django_env()
