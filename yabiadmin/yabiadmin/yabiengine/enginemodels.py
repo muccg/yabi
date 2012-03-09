@@ -174,6 +174,8 @@ class EngineWorkflow(Workflow):
                 job.make_tasks_ready()          
                 transaction.commit()
 
+            # Making sure the transactions opened in the loop are closed
+            # ex. job.total_tasks() opens a transaction, then it could exit the loop with continue    
             transaction.commit()
 
         except Exception,e:
