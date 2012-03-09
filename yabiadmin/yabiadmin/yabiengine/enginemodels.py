@@ -112,7 +112,7 @@ class EngineWorkflow(Workflow):
                 job.add_job(job_dict)
 
         except Exception, e:
-            self.rollback()
+            transaction.rollback()
 
             self.status = STATUS_ERROR
             self.save()
