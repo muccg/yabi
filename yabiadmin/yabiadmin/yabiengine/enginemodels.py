@@ -129,7 +129,6 @@ class EngineWorkflow(Workflow):
     def needs_walking(self):
         return (len(self.jobs_that_need_walking()) > 0)
 
-    # NOTE: this is a load bearing decorator. Do not remove it or the roof will fall in. (it stops locking nightmares)
     @transaction.commit_manually
     def walk(self):
         '''
