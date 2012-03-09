@@ -46,7 +46,7 @@ from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-
+from django.contrib import auth
 from crypto import DecryptException
 
 from yabiadmin.yabiengine import storehelper as StoreHelper
@@ -56,11 +56,12 @@ from yabiadmin.yabiengine.models import WorkflowTag
 from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_fs_backendcredential_for_uri, copy_file, rcopy_file, rm_file, send_upload_hash
 from yabiadmin.responses import *
 from yabi.file_upload import *
-from django.contrib import auth
 from yabiadmin.decorators import memcache, authentication_required, profile_required
 from yabiadmin.yabistoreapp import db
 from yabiadmin.utils import using_dev_settings
-from UploadStreamer import UploadStreamer
+from yabiengine.backendhelper import make_hmac
+
+from yaphc import Http, PostRequest, UnauthorizedError
 
 import logging
 logger = logging.getLogger(__name__)
@@ -69,40 +70,6 @@ DATE_FORMAT = '%Y-%m-%d'
 
 BACKEND_REFUSED_CONNECTION_MESSAGE = "The backend server is refusing connections. Check that the backend server at %s on port %s is running and answering requests."%(settings.BACKEND_IP,settings.BACKEND_PORT) 
 BACKEND_HOST_UNREACHABLE_MESSAGE = "The backend server is unreachable. Check that the backend server setting is correct. It is presently configured to %s."%(settings.BACKEND_IP) 
-
-class FileUploadStreamer(UploadStreamer):
-    def __init__(self, host, port, selector, cookies, fields):
-        UploadStreamer.__init__(self)
-        self._host = host
-        self._port = port
-        self._selector = selector
-        self._fields = fields
-        self._cookies = cookies
-    
-    def receive_data_chunk(self, raw_data, start):
-        #print "receive_data_chunk", len(raw_data), start
-        return self.file_data(raw_data)
-    
-    def file_complete(self, file_size):
-        """individual file upload complete"""
-        #print "file_complete",file_size
-        logger.info("Streaming through of file %s has been completed. %d bytes have been transferred." % (self._present_file, file_size))
-        return self.end_file()
-    
-    def new_file(self, field_name, file_name, content_type, content_length, charset):
-        """beginning of new file in upload"""
-        #print "new_file",field_name, file_name, content_type, content_length, charset
-        return UploadStreamer.new_file(self,file_name)
-    
-    def upload_complete(self):
-        """all files completely uploaded"""
-        #print "upload_complete"
-        return self.end_connection()
-    
-    def handle_raw_input(self, input_data, META, content_length, boundary, encoding, chunked):
-        """raw input"""
-        # this is called right at the beginning. So we grab the uri detail here and initialise the outgoing POST
-        self.post_multipart(host=self._host, port=self._port, selector=self._selector, cookies=self._cookies )
 
 def login(request):
 
@@ -381,84 +348,25 @@ def put(request):
 
         bc = get_fs_backendcredential_for_uri(yabiusername, uri)
         decrypt_cred = bc.credential.get()
-        
-#        resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))
-        resource = "%s?uri=%s" % ('fs/put', quote(uri))
-        
+        resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))
+
         # TODO: the following is using GET parameters to push the decrypt creds onto the backend. This will probably make them show up in the backend logs
         # we should push them via POST parameters, or at least not log them in the backend.
         resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(decrypt_cred['username']),quote(decrypt_cred['password']),quote( decrypt_cred['cert']),quote(decrypt_cred['key']))
 
-
-
-
-
-
-
-        logger.debug("+++++++++++++++++++++++++++++++++++++++++++++")
-
-        from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
-        from yaphc.memcache_persister import MemcacheCookiePersister
-
-        print request.FILES
-
-        (key, file) = request.FILES.items()[0]
-        print file.name
-        print file.temporary_file_path()
-        file_details = (file.name, file.name, file.temporary_file_path())
-
-
+        (key, f) = request.FILES.items()[0]
+        file_details = (f.name, f.name, f.temporary_file_path())
         files = []
         files.append(file_details)
 
-        logger.debug("+++++++++++++++++++++++++++++++++++++++++++++")
-
-        print files
-
-        print resource
-
-        from yabiengine.backendhelper import make_hmac
-        
-        # todo why does this need slash in front here but not a part of resource
-        upload_request = PostRequest(resource, params={}, headers={'Hmac-digest': make_hmac('/' + resource)}, files=files)
-
-        print upload_request.headers  
-        #http = memcache_http(request)
-
+        # PostRequest doesn't like having leading slash on this resource, so strip it off
+        upload_request = PostRequest(resource.strip('/'), params={}, headers={'Hmac-digest': make_hmac(resource)}, files=files)
         base_url = "http://%s" % settings.YABIBACKEND_SERVER
-
         http = Http(base_url=base_url)
-
         resp, contents = http.make_request(upload_request)
-        print resp        
-        logger.debug("+++++++++++++++++++++++++++++++++++++++++++++")
         http.finish_session()
-
-
-        logger.debug(resp)
-        logger.debug(contents)
-
-        assert False
-
-
-
-
-
-
-
-
-        streamer = FileUploadStreamer(host=settings.BACKEND_IP, port=settings.BACKEND_PORT, selector=resource, cookies=[], fields=[])
-        request.upload_handlers = [ streamer ]
         
-        # evaluating POST triggers the processing of the request body
-        request.POST
-
-        result = streamer.stream.getresponse()
-        content=result.read()
-        status=int(result.status)
-        reason = result.reason
-        
-        return HttpResponse(content=content,status=status)
+        return HttpResponse(content=contents,status=resp.status)
         
     except BackendRefusedConnection, e:
         return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
@@ -468,6 +376,10 @@ def put(request):
     except httplib.CannotSendRequest, e:
         logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
         raise
+    except UnauthorizedError, e:
+        logger.critical("Unauthorized Error connecting to %s: %s. Is the HMAC set correctly?" % (settings.YABIBACKEND_SERVER, e.message))
+        raise
+
 
 @authentication_required
 @transaction.commit_on_success
