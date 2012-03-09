@@ -461,10 +461,12 @@ def upload_file(request, user):
     
     # examine cookie jar for our admin session cookie
     http = memcache_http(request)
-    f = request.FILES['file1']
-    file_details = (f.name, f.name, f.temporary_file_path())
+
     files = []
-    files.append(file_details)
+    for key, f in request.FILES.items():
+        file_details = (f.name, f.name, f.temporary_file_path())
+        files.append(file_details)
+
     upload_request = PostRequest("ws/fs/put?uri=%s" % quote(upload_uri), params={}, files=files)
     resp, contents = http.make_request(upload_request)
     http.finish_session()
