@@ -64,13 +64,11 @@ class RetryController(object):
                     return SOFT
                     
         return self.default
-             
-    
-    
-class PbsProRetryController(RetryController):
+              
+class TorqueQsubRetryController(RetryController):
     default = SOFT
-    hard_exit_codes = [1]
-    soft_exit_codes = [188]
+    hard_exit_codes = []
+    soft_exit_codes = []
     
     hard_exit_regexps = {   2: [
                                 r'a single - is no a valid option',                       #typo exists in error code in torque sourcecode
@@ -83,13 +81,43 @@ class PbsProRetryController(RetryController):
                                 r'The -J option can only be used in conjunction with -P',
                                 r'index issues',
                                 r'qsub: Failed to get xauth data',
-                                r'qsub: cannot form a valid job name from the script name'
+                                r'qsub: cannot form a valid job name from the script name',
+                                r'qsub: listen on interactive socket',
+                                r'qsub: unable to get terminal settings',
+                                r'qsub: unable to get cwd:',
+                                r'qsub: cannot chdir to',
+                                r'qsub: Must be the super user to submit a proxy job',
+                                r"qsub: User isn't a member of one or more groups",
+                                r'qsub: Invalid umask value, too many digits',
+                                r'qsub: invalid .+ value:',
+                                r'qsub: invalid attribute flag',
+                                #r'qsub: could not create tmp job file'                 # retry this one so sysadmin can go behind scenes and reconf
                             ],
                             1: [
+                                r'qsub: file must be an ascii script',
+                                r'qsub: Your job has been administratively rejected by the queueing system\.',
+                                r'qsub: submit filter returned an error code, aborting job submission\.',
+                                r'qsub: could not open filter o/p',
+                                r'qsub: unmatched ',
+                            ],
+                            3: [
+                                r'qsub: cannot get \(full\) local host name',
+                                r'qsub: cannot get full server host name',
                             ]
                         }
     
     
     
-    
+class TorqueQstatRetryController(RetryController):
+    default = SOFT
+    hard_exit_codes = [2]
+    soft_exit_codes = [1]
+
+class PbsproQsubRetryController( TorqueQsubRetryController ):
+    pass
+
+class PbsproQstatRetryController( TorqueQstatRetryController ):
+    pass
+
+      
 

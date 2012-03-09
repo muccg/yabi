@@ -54,6 +54,7 @@ import tempfile
 
 from utils.stacklesstools import sleep
 from utils.protocol import ssh
+from utils.RetryController import PbsproQsubRetryController, PbsproQstatRetryController, HARD, SOFT
 
 from conf import config
 
@@ -63,6 +64,8 @@ from SubmissionTemplate import make_script
 from twisted.python import log
 
 sshauth = ssh.SSHAuth.SSHAuth()
+qsubretry = PbsproQsubRetryController()
+qstatretry = PbsproQstatRetryController()
 
 # for Job status updates, poll this often
 def JobPollGeneratorDefault():
@@ -75,11 +78,23 @@ def JobPollGeneratorDefault():
     while True:
         yield 60.0
 
+# two classes of exception. one gets caught and retried, the other does not.
+# controlling command connection problems should be retried
+# remote command failure needs to be propagated upwards 
+# (sometimes... I bet qsub and qstat sometimes exit non zero for temporary problems, like queue full or something)
+class TransportException(Exception): pass
+class CommandException(Exception): pass
 
-class SSHQsubException(Exception):
-    pass
-class SSHQstatException(Exception):
-    pass
+# now we inherit our particular errors
+class SSHQsubException(CommandException): pass
+class SSHQstatException(CommandException): pass
+class SSHTransportException(TransportException): pass
+
+# and further inherit hard and soft under those
+class SSHQsubHardException(SSHQsubException): pass
+class SSHQsubSoftException(SSHQsubException): pass
+class SSHQstatHardException(SSHQstatException): pass
+class SSHQstatSoftException(SSHQstatException): pass
 
 class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
     def __init__(self):
@@ -143,8 +158,19 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
             # success
             return pp.out.strip().split("\n")[-1]
         else:
-            raise SSHQsubException("SSHQsub error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
-    
+            # so the process has exited non zero. If the exit code is 255 its a transport error... we should retry.
+            if pp.exitcode==255:
+                raise SSHTransportException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
+            
+            # otherwise we need to analyse the result to see if its a hard or soft failure
+            error_type = qsubretry.test(pp.exitcode, pp.err)
+            if error_type == HARD:
+                # hard error.
+                raise SSHQsubHardException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
+            
+        # everything else is soft
+        raise SSHQsubSoftException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
+                
     def _ssh_qstat(self, yabiusername, creds, command, working, username, host, stdout, stderr, modules, jobid):
         """This submits via ssh the qstat command. This takes the jobid"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
@@ -186,8 +212,19 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
                     
             return {jobid:output}
         else:
-            raise SSHQstatException("SSHQstat error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
-
+            # so the process has exited non zero. If the exit code is 255 its a transport error... we should retry.
+            if pp.exitcode==255:
+                raise SSHTransportException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
+            
+            # otherwise we need to analyse the result to see if its a hard or soft failure
+            error_type = qstatretry.test(pp.exitcode, pp.err)
+            if error_type == HARD:
+                # hard error.
+                raise SSHQstatHardException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
+            
+        # everything else is soft
+        raise SSHQstatSoftException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
+            
     def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
         try:
             modules = [] if not module else [X.strip() for X in module.split(",")]

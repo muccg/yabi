@@ -301,5 +301,11 @@ def execute(ssh,options,shell=True):
                 
         return stdout.channel.exit_status
 
-
-main()
+try:
+    main()
+except Exception, e:
+    # all exceptions mean a problem with the SSH code or the paramiko
+    # we print the error and exit 255
+    import traceback
+    traceback.print_exc()
+    sys.exit(255)
