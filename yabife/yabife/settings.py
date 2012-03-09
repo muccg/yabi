@@ -141,6 +141,7 @@ CAPTCHA_URL = os.path.join(MEDIA_URL, 'captchas')
 CAPTCHA_IMAGES = os.path.join(WRITABLE_DIRECTORY, "captcha")
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#file-upload-max-memory-size
+# this also ensures that files are always written to disk so we can access them via temporary_file_path
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#template-debug

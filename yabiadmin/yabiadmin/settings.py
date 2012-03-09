@@ -237,6 +237,7 @@ MEMCACHE_KEYSPACE = "yabiadmin"
 
 # uploads are currently written to disk and double handled, setting a limit will break things
 # see https://docs.djangoproject.com/en/dev/ref/settings/#file-upload-max-memory-size
+# this also ensures that files are always written to disk so we can access them via temporary_file_path
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
 
