@@ -27,7 +27,6 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import traceback, hashlib, base64
-
 from django.db import models, transaction
 from django import forms
 from django.contrib.auth.models import User as DjangoUser
@@ -39,23 +38,20 @@ from urlparse import urlparse, urlunparse
 from crypto import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, DecryptException, AESTEMP
 from ccg.memcache import KeyspacedMemcacheClient
 from yabiadmin.decorators import func_create_memcache_keyname
-
 from constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK
-
-DEBUG = False
-
-class DecryptedCredentialNotAvailable(Exception): pass
 
 import logging
 logger = logging.getLogger(__name__)
 
-# conditionally import ldap code as we may not be using ldap
 try:
-    from ldap import LDAPError, MOD_REPLACE
-    from yabiadmin.ldapclient import LDAPClient
-    from yabiadmin.ldaputils import get_userdn_of       
+    from yabiadmin import ldaputils
+    LDAP_IN_USE = True
 except ImportError, e:
-    logger.info("LDAP modules not imported.")
+    LDAP_IN_USE = False    
+    logger.info("LDAP modules not imported. If you are not using LDAP this is not a problem.")
+
+
+class DecryptedCredentialNotAvailable(Exception): pass
 
 
 class Base(models.Model):
@@ -215,8 +211,7 @@ class Tool(Base):
                 
         return tool_dict
     
-    def json(self):
-
+    def decode_embedded_json(self):
         # the possible_values field has json in it so we need to make it decode
         # or it will be double encoded
         output = self.tool_dict()
@@ -225,18 +220,14 @@ class Tool(Base):
             if "possible_values" in plist and plist["possible_values"]:
                 plist["possible_values"] = json.loads(plist["possible_values"])
 
+        return output
+
+    def json(self):
+        output = self.decode_embedded_json()
         return json.dumps({'tool':output})
 
     def json_pretty(self):
-
-        # the possible_values field has json in it so we need to make it decode
-        # or it will be double encoded
-        output = self.tool_dict()
-
-        for plist in output["parameter_list"]:
-            if "possible_values" in plist and plist["possible_values"]:
-                plist["possible_values"] = json.loads(plist["possible_values"])
-
+        output = self.decode_embedded_json()
         return json.dumps({'tool':output}, indent=4)
         
     def purge_from_memcache(self):
@@ -439,8 +430,6 @@ class Credential(Base):
     user.help_text="Yabi username."
 
     def __unicode__(self):
-        if DEBUG:
-            return "<id=%s description=%s username=%s user=%s backends=%s>" % (self.id, self.description if len(self.description)<20 else self.description[:20], self.username, self.user.name, self.backends.all())
         return "%s username:%s for yabiuser:%s"%(self.description,self.username,self.user.name)
     
     def encrypt(self, key):
@@ -732,8 +721,6 @@ class Backend(Base):
         return urlunparse((self.scheme, netloc, self.path, '', '', ''))
 
     def __unicode__(self):
-        if DEBUG:
-            return "<%s name=%s scheme=%s hostname=%s port=%s path=%s>"%(self.id, self.name,self.scheme,self.hostname,self.port,self.path)
         return "%s - %s://%s:%s%s"%(self.name,self.scheme,self.hostname,self.port,self.path)
 
     @models.permalink
@@ -764,8 +751,6 @@ class BackendCredential(Base):
     submission.help_text="Mako script to be used to generate a custom submission script. (Variables: walltime, memory, cpus, working, modules, command)"
     
     def __unicode__(self):
-        if DEBUG:
-            return "BackendCredential <%s backend.id=%s credential.id=%s homedir=%s visbile=%s>"%(self.id,self.backend.id,self.credential.id,self.homedir,str(self.visible))
         return "BackendCredential %s"%(self.id)
 
     def json(self):
@@ -880,45 +865,17 @@ class ModelBackendUserProfile(UserProfile):
             return (True, "Password successfully changed")
         except AttributeError, e:
             # Send back something fairly generic.
-            logger.debug("Error changing password in LDAP server: %s" % str(e))
+            logger.debug("Error changing password in database server: %s" % str(e))
             return (False, "Error changing password")
 
 
 class LDAPBackendUserProfile(UserProfile):
-
+    
     def __init__(self, *args, **kwargs):
         UserProfile.__init__(self,*args, **kwargs)
 
     class Meta:
         proxy = True
-
-    class LDAPUserDoesNotExist(ObjectDoesNotExist):
-        pass
-
-    def get_userdn(self):
-        userdn = get_userdn_of(self.user.username)
-
-        if not userdn:
-            raise LDAPBackendUserProfile.LDAPUserDoesNotExist
-
-        return userdn
-
-    def set_ldap_password(self, current_password, new_password, bind_userdn=None, bind_password=None):
-        userdn = self.get_userdn()
-        client = LDAPClient(settings.AUTH_LDAP_SERVER)
-
-        if bind_userdn and bind_password:
-            client.bind_as(bind_userdn, bind_password)
-        else:
-            client.bind_as(userdn, current_password)
-
-        md5 = hashlib.md5(new_password).digest()
-        modlist = (
-            (MOD_REPLACE, "userPassword", "{MD5}%s" % (base64.encodestring(md5).strip(), )),
-        )
-        client.modify(userdn, modlist)
-
-        client.unbind()
 
 
     def passchange(self, request):
@@ -926,17 +883,15 @@ class LDAPBackendUserProfile(UserProfile):
         currentPassword = request.POST.get("currentPassword", None)
         newPassword = request.POST.get("newPassword", None)
 
-        assert currentPassword, "No currentPassword was found in the request."
-        assert newPassword, "No newPassword was found in the request."
-
-        try:
-            self.set_ldap_password(currentPassword, newPassword)
+        # if we manage to change the userpassword, then reencrypt the creds
+        if ldaputils.set_ldap_password(self.user, currentPassword, newPassword):
             self.reencrypt_user_credentials(request)
-            return (True, "Password successfully changed")
-        except (AttributeError, LDAPError), e:
-            # Send back something fairly generic.
-            logger.debug("Error changing password in LDAP server: %s" % str(e))
-            return (False, "Error changing password")
+            (status, message) = (True, 'Password successfully changed.')
+        else:
+            (status, message) = (False, 'Error changing password on LDAP server.')
+
+        return (status, message)
+
 
 
 ##
@@ -969,6 +924,7 @@ def signal_tool_post_save(sender, **kwargs):
 
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
+        logger.debug('Creating user profile for %s' % instance.username)
         UserProfile.objects.create(user=instance)
 
  

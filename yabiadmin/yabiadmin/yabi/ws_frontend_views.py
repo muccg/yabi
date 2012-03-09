@@ -60,17 +60,10 @@ from django.contrib import auth
 from yabiadmin.decorators import memcache, authentication_required, profile_required
 from yabiadmin.yabistoreapp import db
 from yabiadmin.utils import using_dev_settings
+from UploadStreamer import UploadStreamer
 
 import logging
 logger = logging.getLogger(__name__)
-
-
-try:
-    from ccg.auth.ldap_helper import LDAPSearchResult, LDAPHandler
-except ImportError, e:
-    logger.warn("Unable to load ldaphelper: %s" % e)
-
-from UploadStreamer import UploadStreamer
 
 DATE_FORMAT = '%Y-%m-%d'
 
@@ -240,7 +233,7 @@ def handle_connection(closure):
     except PermissionDenied, pd:
         return JsonMessageResponseNotFound("You do not have permissions to access this file or directory")
     except FileNotFound, fnf:
-        return JsonMessageResponseNotFound("The requested directory either doesn't exist")
+        return JsonMessageResponseNotFound("The requested directory does not exist")
     except BackendStatusCodeError, bsce:
         return JsonMessageResponseNotFound("The yabi backend returned an inapropriate status code: %s"%(str(bsce)))
     except BackendRefusedConnection, e:
