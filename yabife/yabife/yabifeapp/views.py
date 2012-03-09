@@ -443,6 +443,10 @@ def error_500(request):
 
 @profile_required
 def upload_file(request, user):
+    """
+    NB: if anyone changes FILE_UPLOAD_MAX_MEMORY_SIZE in the settings to be greater than zero
+    this function will not work as it calls temporary_file_path
+    """
     logger.debug('')
 
     host = urlparse(settings.YABIADMIN_SERVER).hostname

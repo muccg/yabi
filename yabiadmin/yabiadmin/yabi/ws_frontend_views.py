@@ -336,6 +336,9 @@ def get(request):
 def put(request):
     """
     Uploads a file to the supplied URI
+
+    NB: if anyone changes FILE_UPLOAD_MAX_MEMORY_SIZE in the settings to be greater than zero
+    this function will not work as it calls temporary_file_path
     """
     import socket
     import httplib
