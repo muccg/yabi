@@ -19,6 +19,9 @@ env.celeryd_options = "--config=settings -l debug -E -B"
 env.ccg_pip_options = "--download-cache=/tmp --use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors=http://d.pypi.python.org/ --mirrors=http://e.pypi.python.org/"
 
 env.gunicorn_listening_on = "127.0.0.1:8001"
+env.gunicorn_workers = 5
+env.gunicorn_worker_timeout = 300
+
 
 # Used by config related tasks
 CONFS_DIR = 'appsettings_dir'
@@ -142,7 +145,7 @@ def runserver(bg=False):
     """
     Runs the gunicorn server for local development
     """
-    cmd = "gunicorn_django -b "+ env.gunicorn_listening_on
+    cmd = "gunicorn_django -w %s -b %s -t %s" % (env.gunicorn_workers, env.gunicorn_listening_on, env.gunicorn_worker_timeout)
     if bg:
         cmd += " >yabiadmin.log 2>&1 &"
     os.environ["PROJECT_DIRECTORY"] = "." 
