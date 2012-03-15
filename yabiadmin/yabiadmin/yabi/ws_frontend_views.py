@@ -363,16 +363,10 @@ def put(request):
             file_details = (f.name, f.name, f.temporary_file_path())
             files.append(file_details)
 
-
-##        (key, f) = request.FILES.items()[0]
-##        file_details = (f.name, f.name, f.temporary_file_path())
-##        files = []
-##        files.append(file_details)
-
         # PostRequest doesn't like having leading slash on this resource, so strip it off
         upload_request = PostRequest(resource.strip('/'), params={}, headers={'Hmac-digest': make_hmac(resource)}, files=files)
         base_url = "http://%s" % settings.YABIBACKEND_SERVER
-        http = Http(base_url=base_url)
+        http = Http(base_url=base_url, workdir=settings.WRITABLE_DIRECTORY)
         resp, contents = http.make_request(upload_request)
         http.finish_session()
         
