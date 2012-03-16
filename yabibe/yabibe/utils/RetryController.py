@@ -27,7 +27,7 @@ class RetryController(object):
     soft_exit_regexps = {}
     
     def __init__(self):
-        pass
+        self.compile_all_regexps()
 
     def compile_all_regexps(self):
         self.hard_exit_regexps = self.compile_regexps(self.hard_exit_regexps)
@@ -35,7 +35,7 @@ class RetryController(object):
         
     def compile_regexps(self, struct, flags=0):
         out = {}
-        for code,regexp_list in struct:
+        for code,regexp_list in struct.iteritems():
             out[code] = []
             for re_item in regexp_list:
                 out[code].append( re.compile( re_item, flags ) )
@@ -119,5 +119,14 @@ class PbsproQsubRetryController( TorqueQsubRetryController ):
 class PbsproQstatRetryController( TorqueQstatRetryController ):
     pass
 
-      
-
+class SSHRetryController(RetryController):
+    default = SOFT
+    hard_exit_codes = []
+    soft_exit_codes = []
+    
+    hard_exit_regexps = {   255: [
+                                r'Unable to parse key file',
+                                
+                           ],
+                        }
+    
