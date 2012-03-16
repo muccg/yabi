@@ -46,3 +46,4 @@ South>=0.7.3
 django-extensions>=0.7.1
 pycrypto>=1.9
 psutil
+nose
