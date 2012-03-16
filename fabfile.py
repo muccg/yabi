@@ -67,6 +67,11 @@ def admin_quickstart(bg=False):
     admin_initdb()
     admin_runserver(bg)
 
+def admin_tests():
+    '''Runs all the tests in the Yabiadmin project'''
+
+    _virtualenv(ADMIN, "fab tests")
+
 def fe_bootstrap():
     '''Bootstrap the yabife project'''
     with lcd(FE['dir']):
@@ -188,11 +193,12 @@ def _assert_test_config_is_selected():
     print _virtualenv(ADMIN, "fab assert_test_config_is_selected")
 
 def runtests():
-    '''Run end to end YABI tests in the yabitests project'''
+    '''Run all the YABI tests'''
     _assert_test_config_is_selected() 
     killservers()
     admin_activate_config('testdb')
     runservers()
+    admin_tests()
     tests()
     killservers()
     admin_deactivate_config()
