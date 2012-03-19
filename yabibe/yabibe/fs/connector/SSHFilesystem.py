@@ -190,7 +190,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         return out
     
     #@lock
-    @retry(5,(InvalidPath,PermissionDenied, SSHHardError))
+    @retry(5,(InvalidPath,PermissionDenied, SSHHardError))                            
     #@call_count
     def ls(self, host, username, path, port=22, yabiusername=None, recurse=False, culldots=True, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
@@ -239,7 +239,10 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
                 else:
                     raise SSHSoftError(err)
         
-        ls_data = json.loads(out)
+        try:
+            ls_data = json.loads(out)
+        except ValueError, ve:
+            raise SSHHardError("Could not list directory: Paramiko script returned malformed JSON data.")
         
         if usercert:
             os.unlink(usercert)

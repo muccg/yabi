@@ -126,7 +126,8 @@ class SSHRetryController(RetryController):
     
     hard_exit_regexps = {   255: [
                                 r'Unable to parse key file',
-                                
+                                r'Private key file is encrypted',
+                                r'not a valid DSA private key file',
                            ],
                         }
     

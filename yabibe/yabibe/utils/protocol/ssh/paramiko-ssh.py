@@ -207,7 +207,6 @@ def ssh_connect_login(options, known_hosts):
 def transport_connect_login(options, known_hosts):
     if options.identity:
         ssh = paramiko.Transport((options.hostname, 22))
-                
         try:
             mykey = get_rsa_key(options)
         except paramiko.SSHException, pe:
