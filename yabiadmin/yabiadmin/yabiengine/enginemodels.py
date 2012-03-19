@@ -75,15 +75,31 @@ class EngineWorkflow(Workflow):
     def json(self): 
         return json.dumps(self.as_dict()) 
  
+    def errored_in_build(self):
+        if self.status != STATUS_ERROR:
+            return False
+        # if the Workflow status is error and we have less jobs than we received in the JSON
+        # it means we couldn't build() all jobs from the request -> we had an error during build()
+        received_json = json.loads(self.original_json)
+        if 'jobs' not in received_json:
+            return False
+        received_jobs_count = len(received_json['jobs'])
+        return (received_jobs_count > self.job_set.count())
+
     def as_dict(self): 
         d = { 
                 "name": self.name, 
                 "tags": [] # TODO probably can be removed 
             }  
         jobs = [] 
-        for job in self.get_jobs(): 
-            jobs.append(job.as_dict()) 
-        d['jobs'] = jobs 
+        if self.errored_in_build():
+            # We have to do this to allow the FE to reuse the Workflow
+            # If build() failed there would be no jobs
+            d['jobs'] = json.loads(self.original_json)['jobs']
+        else: 
+            for job in self.get_jobs(): 
+                jobs.append(job.as_dict()) 
+            d['jobs'] = jobs 
         return d 
 
     def get_jobs(self):
