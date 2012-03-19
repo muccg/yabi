@@ -128,6 +128,15 @@ class SSHRetryController(RetryController):
                                 r'Unable to parse key file',
                                 r'Private key file is encrypted',
                                 r'not a valid DSA private key file',
+                                r'Invalid key',
+                                r'Authentication failed',
+                                r'Expected name response',
+                                r'Expected handle',
+                                r'Expected attributes',
+                                r'Readlink returned \d+ results',
+                                r'Realpath returned \d+ results',
+                                r'size mismatch in put!',
+                                r'size mismatch in get!'
                            ],
                         }
     
