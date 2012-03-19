@@ -592,8 +592,8 @@ class Credential(Base):
         return Task.objects.filter(job__workflow__user=self.user).filter(status=STATUS_BLOCKED)
         
     def rewalk_workflows(self):
-        from yabiengine.models import Workflow
-        return Workflow.objects.filter(user=self.user).filter(status=STATUS_REWALK)
+        from yabiengine.enginemodels import EngineWorkflow
+        return EngineWorkflow.objects.filter(user=self.user).filter(status=STATUS_REWALK)
                 
     def unblock_all_blocked_tasks(self):
         """Set the status on all tasks blocked for this user to 'resume' so they can resume"""

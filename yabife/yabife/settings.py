@@ -48,9 +48,10 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.transaction.TransactionMiddleware',
     'django.middleware.doc.XViewMiddleware',
     'ccg.middleware.ssl.SSLRedirect',
-    'django.contrib.messages.middleware.MessageMiddleware',
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
