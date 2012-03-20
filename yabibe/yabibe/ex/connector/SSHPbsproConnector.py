@@ -91,10 +91,20 @@ class SSHQstatException(CommandException): pass
 class SSHTransportException(TransportException): pass
 
 # and further inherit hard and soft under those
-class SSHQsubHardException(SSHQsubException): pass
-class SSHQsubSoftException(SSHQsubException): pass
-class SSHQstatHardException(SSHQstatException): pass
-class SSHQstatSoftException(SSHQstatException): pass
+class SSHQsubSoftException(Exception): pass
+class SSHQstatSoftException(Exception): pass
+
+def rerun_delays():
+    # when our retry system is fully expressed (no corner cases) we could potentially make this an infinite generator
+    delay = 5.0
+    while delay<300.0:
+        yield delay
+        delay *= 2.0
+    totaltime=0.0
+    while totaltime<21600.0:                    # 6 hours
+        totaltime+=300.0
+        yield 300.0
+        
 
 class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
     def __init__(self):
@@ -166,7 +176,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
             error_type = qsubretry.test(pp.exitcode, pp.err)
             if error_type == HARD:
                 # hard error.
-                raise SSHQsubHardException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
+                raise SSHQsubException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
             
         # everything else is soft
         raise SSHQsubSoftException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
@@ -226,13 +236,25 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         raise SSHQstatSoftException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
             
     def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
-        try:
-            modules = [] if not module else [X.strip() for X in module.split(",")]
-            jobid = self._ssh_qsub(yabiusername,creds,command,working,username,host,remoteurl,submission,stdout,stderr,modules,walltime,memory,cpus,queue)
-        except (SSHQsubException, ExecutionError), ee:
-            channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = str(ee) ))
-            return
-        
+        modules = [] if not module else [X.strip() for X in module.split(",")]    
+        delay_gen = rerun_delays()
+
+        while True:                 # retry on soft failure
+            try:
+                jobid = self._ssh_qsub(yabiusername,creds,command,working,username,host,remoteurl,submission,stdout,stderr,modules,walltime,memory,cpus,queue)
+                break               # success... now we continue
+            except (SSHQsubException, ExecutionError), ee:
+                channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = str(ee) ))
+                return
+            except (SSHQsubSoftException, SSHTransportException), softexc:
+                # delay and then retry
+                try:
+                    sleep(delay_gen.next())
+                except StopIteration:
+                    # run our of retries.
+                    channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = str(softexc) ))
+                    return
+                
         # send an OK message, but leave the stream open
         client_stream = stream.ProducerStream()
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
@@ -281,7 +303,19 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
             # pause
             sleep(delay.next())
             
-            jobsummary = self._ssh_qstat(yabiusername, creds, command, working, username, host, stdout, stderr, modules, jobid)
+            delay_gen = rerun_delays()
+            while True:
+                try:
+                    jobsummary = self._ssh_qstat(yabiusername, creds, command, working, username, host, stdout, stderr, modules, jobid)
+                    break               # success... now we continue
+                except (SSHQstatSoftException, SSHTransportException), softexc:
+                    # delay and then retry
+                    try:
+                        sleep(delay_gen.next())
+                    except StopIteration:
+                        # run out of retries.
+                        raise softexc
+            
             self.update_running(jobid,jobsummary)
             
             if jobid in jobsummary:
