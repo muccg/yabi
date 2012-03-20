@@ -6,21 +6,7 @@ import os
 class FileUploadTest(YabiTestCase, FileUtils):
     @classmethod
     def setUpAdmin(self):
-        from yabiadmin.yabi import models
-        admin.create_tool('cksum')
-        admin.add_tool_to_all_tools('cksum') 
-        tool = models.Tool.objects.get(name='cksum')
-        tool.accepts_input = True
-        star_extension = models.FileExtension.objects.get(pattern='*')
-        models.ToolOutputExtension.objects.create(tool=tool, file_extension=star_extension)
-        
-        value_only = models.ParameterSwitchUse.objects.get(display_text='valueOnly')
-
-        tool_param = models.ToolParameter.objects.create(tool=tool, switch_use=value_only, mandatory=True, rank=99, file_assignment = 'all', switch='files')
-        all_files = models.FileType.objects.get(name='all files')
-        tool_param.accepted_filetypes.add(all_files)
-
-        tool.save()
+        admin.create_tool_cksum()
 
     @classmethod
     def tearDownAdmin(self):
@@ -56,22 +42,7 @@ class FileUploadAndDownloadTest(YabiTestCase, FileUtils):
     @classmethod
     def setUpAdmin(self):
         from yabiadmin.yabi import models
-        admin.create_tool('dd')
-        admin.add_tool_to_all_tools('dd')
-        tool = models.Tool.objects.get(name='dd')
-        tool.accepts_input = True
-        star_extension = models.FileExtension.objects.get(pattern='*')
-        models.ToolOutputExtension.objects.create(tool=tool, file_extension=star_extension)
-
-        combined_eq = models.ParameterSwitchUse.objects.get(display_text='combined with equals')
-
-        if_tool_param = models.ToolParameter.objects.create(tool=tool, switch_use=combined_eq, mandatory=True, rank=1, file_assignment = 'batch', switch='if')
-        all_files = models.FileType.objects.get(name='all files')
-        if_tool_param.accepted_filetypes.add(all_files)
-
-        of_tool_param = models.ToolParameter.objects.create(tool=tool, switch_use=combined_eq, mandatory=True, rank=2, file_assignment = 'none', switch='of', output_file=True)
-
-        tool.save()
+        admin.create_tool_dd()
 
     @classmethod
     def tearDownAdmin(self):
