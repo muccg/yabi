@@ -1,18 +1,8 @@
 import unittest
-from support import YabiTestCase, StatusResult
+from support import YabiTestCase, StatusResult, all_items, json_path
 from fixture_helpers import admin
 import os
 import time
-
-JSON_DIR = os.path.join(os.getcwd(), 'json_workflows')
-def json_path(name):
-    return os.path.join(JSON_DIR, name + '.json')
-
-def all_items(fn, items):
-    for i in items:
-        if not fn(i):
-            return False
-    return True
 
 class HostnameTest(YabiTestCase):
     @classmethod
