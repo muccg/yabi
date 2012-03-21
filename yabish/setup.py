@@ -13,7 +13,7 @@ setup(name='yabish',
      packages = find_packages(),
 
      package_data = {
-        'help': ['*'],
+        '': ['help/*'],
      },
      scripts = ['yabish'],
      install_requires = ['argparse', 'yaphc'],
