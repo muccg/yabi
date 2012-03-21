@@ -197,7 +197,7 @@ def SmartCopy(preferred,src,dst,retry=LCOPY_RETRY, log_callback=None, **kwargs):
     if srcaddress.hostname != dstaddress.hostname or srcaddress.username != dstaddress.username or preferred == 'copy':
         return Copy(src,dst,retry=retry,log_callback=log_callback,**kwargs)
     else:
-        return LCopy(src,dst,retry=retry,log_callback=log_callback**kwargs)
+        return LCopy(src,dst,retry=retry,log_callback=log_callback,**kwargs)
                     
 def Log(logpath,message):
     """Report an error to the webservice"""
