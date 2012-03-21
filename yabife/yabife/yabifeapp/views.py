@@ -57,7 +57,6 @@ from django.utils import simplejson as json
 from django.utils.importlib import import_module
 
 from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
-from yaphc.memcache_persister import MemcacheCookiePersister
 
 from yabife.yabifeapp.models import User
 from yabife.responses import *
