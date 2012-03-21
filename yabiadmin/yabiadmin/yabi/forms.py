@@ -126,8 +126,15 @@ class ToolParameterForm(forms.ModelForm):
                 
             # go back a frame
             f_search = f_search.f_back
-        
+       
+        tool_param = None
+        if 'instance' in kwargs:
+            tool_param = kwargs['instance']
+ 
         if tool_object:
-            self.fields["use_output_filename"].queryset = ToolParameter.objects.filter(tool=tool_object)
+            if tool_param is None:
+                self.fields["use_output_filename"].queryset = ToolParameter.objects.filter(tool=tool_object)
+            else:
+                self.fields["use_output_filename"].queryset = ToolParameter.objects.filter(tool=tool_object).exclude(pk=tool_param.pk)
 
     

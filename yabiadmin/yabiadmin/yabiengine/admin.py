@@ -27,6 +27,7 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 from yabiadmin.yabiengine.models import *
+from yabiadmin.yabiengine.enginemodels import *
 
 from django.contrib import admin
 from django.contrib import messages
@@ -93,7 +94,7 @@ class WorkflowAdmin(admin.ModelAdmin):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
 
         for id in selected:
-            wf = Workflow.objects.get(id=id)
+            wf = EngineWorkflow.objects.get(id=id)
             success = StoreHelper.archiveWorkflow(wf)
 
         if success:
@@ -154,7 +155,7 @@ class StageInAdmin(BaseModelAdmin):
 
 
 def register(site):
-    site.register(Workflow, WorkflowAdmin)
+    site.register(EngineWorkflow, WorkflowAdmin)
     site.register(QueuedWorkflow, QueuedWorkflowAdmin)
     site.register(Syslog, SyslogAdmin)
     site.register(Job, JobAdmin)

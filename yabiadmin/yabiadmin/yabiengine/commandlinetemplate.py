@@ -40,7 +40,6 @@ from ccg.utils.webhelpers import url
 
 from yabiadmin.yabi.models import Backend, BackendCredential, Tool, User
 from yabiadmin.yabiengine import backendhelper
-from yabiadmin.yabiengine.models import Workflow, Task, Job
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
 
 import pickle
@@ -515,7 +514,7 @@ class CommandTemplate(object):
                                     if tp.extension_param:
                                         value = SwitchFilename(default=value, template=make_fname, source_switch=tp.use_output_filename.switch, extension=tp.extension_param.extension() )
                                     else:
-                                        value = SwitchFilename(default=value, source_switch=tp.use_output_filename.switch)
+                                        value = SwitchFilename(default=value, template=make_fname, source_switch=tp.use_output_filename.switch)
                                 
                             self.arguments.append( Switch( tp.switch, value, switchuse=tp.switch_use.formatstring ) )
     

@@ -67,6 +67,11 @@ def admin_quickstart(bg=False):
     admin_initdb()
     admin_runserver(bg)
 
+def admin_tests():
+    '''Runs all the tests in the Yabiadmin project'''
+
+    _virtualenv(ADMIN, "fab tests")
+
 def fe_bootstrap():
     '''Bootstrap the yabife project'''
     with lcd(FE['dir']):
@@ -173,12 +178,27 @@ def admin_deactivate_config():
 
     _virtualenv(ADMIN, "fab deactivate_config")
 
+def admin_selected_test_config():
+    '''Displays the configuration used for running tests'''
+
+    _virtualenv(ADMIN, "fab selected_test_config")
+
+def admin_select_test_config(config):
+    '''Select the passed in config to be used when running tests'''
+
+    _virtualenv(ADMIN, "fab select_test_config:%s" % config)
+
+def _assert_test_config_is_selected():
+    # unfortunately the errors displayed by a nested fab aren't displayed
+    print _virtualenv(ADMIN, "fab assert_test_config_is_selected")
 
 def runtests():
-    '''Run end to end YABI tests in the yabitests project'''
+    '''Run all the YABI tests'''
+    _assert_test_config_is_selected() 
     killservers()
     admin_activate_config('testdb')
     runservers()
+    admin_tests()
     tests()
     killservers()
     admin_deactivate_config()

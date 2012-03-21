@@ -32,7 +32,6 @@ from urllib import urlencode
 from os.path import splitext
 
 from django.conf import settings
-from django.utils import simplejson as json
 
 from yabiadmin.yabistoreapp import db
 

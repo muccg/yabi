@@ -1,4 +1,4 @@
-from fabric.api import env, local
+from fabric.api import env, local, lcd
 from ccgfab.base import *
 
 import os
@@ -19,10 +19,14 @@ env.celeryd_options = "--config=settings -l debug -E -B"
 env.ccg_pip_options = "--download-cache=/tmp --use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors=http://d.pypi.python.org/ --mirrors=http://e.pypi.python.org/"
 
 env.gunicorn_listening_on = "127.0.0.1:8001"
+env.gunicorn_workers = 5
+env.gunicorn_worker_timeout = 300
+
 
 # Used by config related tasks
 CONFS_DIR = 'appsettings_dir'
 CONF_LN_NAME = 'appsettings'
+TEST_CONF_LN_NAME = os.path.join(CONFS_DIR, 'testdb')
 
 class LocalPaths():
 
@@ -142,7 +146,7 @@ def runserver(bg=False):
     """
     Runs the gunicorn server for local development
     """
-    cmd = "gunicorn_django -b "+ env.gunicorn_listening_on
+    cmd = "gunicorn_django -w %s -b %s -t %s" % (env.gunicorn_workers, env.gunicorn_listening_on, env.gunicorn_worker_timeout)
     if bg:
         cmd += " >yabiadmin.log 2>&1 &"
     os.environ["PROJECT_DIRECTORY"] = "." 
@@ -241,6 +245,55 @@ def deactivate_config():
     if os.path.islink(CONF_LN_NAME):
         os.unlink(CONF_LN_NAME)
 
+def _get_selected_test_config():
+    config = None
+    if os.path.islink(TEST_CONF_LN_NAME):
+        target = os.readlink(TEST_CONF_LN_NAME)
+        if target.endswith('/'): target = target[:-1]
+        config = os.path.basename(target)
+    return config
+
+def assert_test_config_is_selected():
+    '''fails if the test configuration isn't set'''
+    config = _get_selected_test_config()
+    if config is None:
+        print '\n\tNo configuration is selected for running tests. Please use select_test_config to select one.\n'
+        raise Exception('No configuration is selected for running tests. Please use select_test_config to select one.')
+
+
+def selected_test_config():
+    '''displays the configuration used for running tests'''
+
+    config = _get_selected_test_config()
+    if config is None:
+        config = "No test config activated"
+    print '\t' + config
+ 
+def select_test_config(config_dir):
+    '''selects the passed in configuration to be used for running tests'''
+
+    if config_dir == os.path.basename(TEST_CONF_LN_NAME):
+        print "You can't set %s to point to itself!" % os.path.basename(TEST_CONF_LN_NAME)
+        return
+
+    full_dir = os.path.join(CONFS_DIR, config_dir)
+    if not (os.path.exists(full_dir)):
+        print "Invalid config (for a list of available configs use fab list_configs)"
+        return
+    if os.path.exists(TEST_CONF_LN_NAME) and not os.path.islink(TEST_CONF_LN_NAME):
+        raise StandardError("Can't create symlink %s, because %s already exists" % (TEST_CONF_LN_NAME, TEST_CONF_LN_NAME))
+    if os.path.islink(TEST_CONF_LN_NAME):
+        os.unlink(TEST_CONF_LN_NAME)
+    with lcd(CONFS_DIR):
+        local("ln -s %s %s" % (config_dir, os.path.basename(TEST_CONF_LN_NAME)))
+
+
+def tests():
+    '''runs all the tests in the Yabiadmin project'''
+
+    _local_env()
+    local("nosetests -v")
+
 def _celeryd():
     _django_env()
     print local("python -m celery.bin.celeryd " + env.celeryd_options, capture=False)
@@ -260,10 +313,13 @@ def _django_env():
     os.environ["PYTHONPATH"] = "/usr/local/etc/ccgapps/:" + localPaths.getProjectDir() + ":" + localPaths.getParentDir()
     os.environ["PROJECT_DIRECTORY"] = localPaths.getProjectDir()
 
-def _celery_env(): 
+def _local_env():
     os.environ["DJANGO_SETTINGS_MODULE"]="settings" 
     os.environ["DJANGO_PROJECT_DIR"]="." 
-    os.environ["CELERY_LOADER"]="django" 
-    os.environ["CELERY_CHDIR"]="." 
     os.environ["PROJECT_DIRECTORY"] = "." 
     os.environ["PYTHONPATH"] = ".:.."
+
+def _celery_env(): 
+    _local_env()
+    os.environ["CELERY_LOADER"]="django" 
+    os.environ["CELERY_CHDIR"]="." 
