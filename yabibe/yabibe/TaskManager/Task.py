@@ -157,9 +157,6 @@ class NullBackendTask(Task):
         assert scheme.lower() == "null"
     
     def main(self):
-        
-        print "MAIN"
-        
         if self.stage == 0:
             self.log("null backend... skipping task and copying files")
            
@@ -194,8 +191,6 @@ class NullBackendTask(Task):
         status = self.status
         log = self.log
         
-        print "STAGEIN"
-        
         # for each stagein, copy to stageout NOT the stagein destination
         for copy in self.json['stagein']:
             src = copy['src']
@@ -227,9 +222,6 @@ class NullBackendTask(Task):
                     Mkdir(remotedir, yabiusername=self.yabiusername)
                 except GETFailure, gf:
                     raise BlockingException("Make directory failed: %s"%gf.message[2])
-            
-            print "SRC:",src
-            print "DST:",dst
             
             if src.endswith("/"):
                 log("RCopying %s to %s..."%(src,dst))
