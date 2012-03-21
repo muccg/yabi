@@ -333,6 +333,8 @@ class CommandTemplate(object):
         """
         setup the command template as per the job passed in and the parameter dictionary passed in
         """
+        if DEBUG:
+            print "commandtemplate::setup(",job,",",job_dict,")"
         # input
         self.job = job
         self.job_dict = job_dict
@@ -356,6 +358,9 @@ class CommandTemplate(object):
         
         # pack incoming params into dictionary
         self.params = dict( [(p['switchName'],p) for p in parameters] )
+        
+        if DEBUG:
+            print "params:",self.params
             
     def dump(self):
         print str(self)
@@ -632,6 +637,9 @@ class CommandTemplate(object):
         """Look through the command and compile a list of file uri's that need to be 'aquired' by the stagein process"""
         for selection in self.files:
             for file in self.parse_param_value(selection):
+                if DEBUG:
+                    print "Other Files:",file
+                    
                 yield file
         
     def batch_files(self):
@@ -640,6 +648,8 @@ class CommandTemplate(object):
         """
         #print "Batchfiles=%s"%(self.batchfiles)
         for key,selection in self.batchfiles.items():
+            if DEBUG:
+                print "Batch File:",key,selection
             yield key,selection
             
     def all_files(self):
@@ -776,10 +786,15 @@ class CommandTemplate(object):
         if item['type'] == 'file':
             # decode file params
             return [self.parse_param_file_value(item)]
-                
+        
         elif item['type'] == 'directory':
-            # decode directory
-            return [file for file in self.parse_param_directory_value(item)]
+            # if we are not select file
+            if not self.command.is_select_file:
+                # decode directory
+                return [file for file in self.parse_param_directory_value(item)]
+            else:
+                # select file returns the directory itself, so rcopy can be used on the backend to preserve directory structures
+                return [item['root']+item['filename']+"/"]
     
     def parse_param_file_value(self, item):
         path = ''

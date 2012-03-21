@@ -158,6 +158,8 @@ class NullBackendTask(Task):
     
     def main(self):
         
+        print "MAIN"
+        
         if self.stage == 0:
             self.log("null backend... skipping task and copying files")
            
@@ -192,6 +194,8 @@ class NullBackendTask(Task):
         status = self.status
         log = self.log
         
+        print "STAGEIN"
+        
         # for each stagein, copy to stageout NOT the stagein destination
         for copy in self.json['stagein']:
             src = copy['src']
@@ -224,10 +228,13 @@ class NullBackendTask(Task):
                 except GETFailure, gf:
                     raise BlockingException("Make directory failed: %s"%gf.message[2])
             
+            print "SRC:",src
+            print "DST:",dst
+            
             if src.endswith("/"):
                 log("RCopying %s to %s..."%(src,dst))
                 try:
-                    RCopy(src,dst, yabiusername=self.yabiusername)
+                    RCopy(src,dst, yabiusername=self.yabiusername,log_callback=log)
                     log("RCopying %s to %s Success"%(src,dst))
                 except GETFailure, error:
                     # error copying!
@@ -571,7 +578,7 @@ class MainTask(Task):
             try:
                 if DEBUG:
                     print "RCopy(",outputuri,",",task['stageout'],",",self.yabiusername,")"
-                RCopy(outputuri,task['stageout'],yabiusername=self.yabiusername,contents=True)
+                RCopy(outputuri,task['stageout'],yabiusername=self.yabiusername,contents=True,log_callback=self.log)
                 self.log("Files successfuly staged out")
             except GETFailure, error:
                 if "503" in error.message[1]:
