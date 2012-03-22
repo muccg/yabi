@@ -62,7 +62,7 @@ from yabife.yabifeapp.models import User
 from yabife.responses import *
 from yabife.preview import html
 
-from utils import memcache_client, memcache_http, make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout, using_dev_settings
+from utils import memcache_client, yabiadmin_client, make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout, using_dev_settings
 
 import logging
 logger = logging.getLogger(__name__)
@@ -321,7 +321,7 @@ def preview(request):
 
     # Get the actual file size.
     ls_request = GetRequest("ws/fs/ls", { "uri": uri })
-    http = memcache_http(request)
+    http = yabiadmin_client(request)
     resp, content = http.make_request(ls_request)
 
     if resp.status != 200:
@@ -459,7 +459,7 @@ def upload_file(request, user):
     upload_uri = request.GET['uri']
     
     # examine cookie jar for our admin session cookie
-    http = memcache_http(request)
+    http = yabiadmin_client(request)
 
     files = []
     for key, f in request.FILES.items():
@@ -481,7 +481,7 @@ def yabiadmin_login(request, username, password):
     # TODO get the url from somewhere
     login_request = PostRequest('ws/login', params= {
         'username': username, 'password': password})
-    http = memcache_http(request)
+    http = yabiadmin_client(request)
     resp, contents = http.make_request(login_request)
     http.finish_session()
 

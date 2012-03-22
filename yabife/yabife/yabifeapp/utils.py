@@ -49,8 +49,7 @@ def memcache_client():
     return memcache.Client(settings.MEMCACHE_SERVERS)
 
 
-def memcache_http(request):
-    '''Have altered this to fall back to FileCookiePersister when no memcache is available. TODO refactor to call this something different'''
+def yabiadmin_client(request):
     user = request.user
 
     if settings.MEMCACHE_SERVERS:
@@ -66,7 +65,7 @@ def memcache_http(request):
 
 def make_http_request(request, original_request, ajax_call):
     try:
-        with memcache_http(original_request) as http:
+        with yabiadmin_client(original_request) as http:
             try:
                 resp, contents = http.make_request(request)
                 logger.debug("response status is: %d"%(resp.status))
@@ -122,7 +121,7 @@ def preview_key(uri):
 
 def yabiadmin_passchange(request, currentPassword, newPassword):
     enc_request = PostRequest("ws/account/passchange", params={ "currentPassword": currentPassword, "newPassword": newPassword })
-    http = memcache_http(request)
+    http = yabiadmin_client(request)
     resp, content = http.make_request(enc_request)
     assert resp['status']=='200', (resp['status'], content)
 
@@ -137,7 +136,7 @@ def yabiadmin_logout(request):
     # TODO get the url from somewhere
     logout_request = PostRequest('ws/logout')
     try:
-        with memcache_http(request) as http:
+        with yabiadmin_client(request) as http:
             resp, contents = http.make_request(logout_request)
             if resp.status != 200: 
                 return False
