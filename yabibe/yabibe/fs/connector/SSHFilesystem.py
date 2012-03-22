@@ -54,9 +54,15 @@ DEBUG = False
 
 MAX_SSH_CONNECTIONS = 15                                     # zero is unlimited
     
-from decorators import conf_retry, call_count
+from decorators import retry, call_count
 from LockQueue import LockQueue
 from utils.stacklesstools import sleep
+from utils.RetryController import SSHRetryController, HARD, SOFT
+
+sshretry = SSHRetryController()
+
+class SSHHardError(Exception): pass
+class SSHSoftError(Exception): pass
 
 class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
     """This is the resource that connects to the ssh backends"""
@@ -80,7 +86,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
     def unlock(self, tag):
         return self.lockqueue.unlock(tag)
         
-    @conf_retry((InvalidPath,PermissionDenied))
+    @retry(5,(InvalidPath,PermissionDenied, SSHHardError))
     #@call_count
     def mkdir(self, host, username, path, port=22, yabiusername=None, creds={},priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
@@ -114,8 +120,13 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             elif "No such file or directory" in err:
                 raise InvalidPath("No such file or directory\n")
             else:
-                print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
-                raise Exception(err)
+                # hard or soft error?
+                error_type = sshretry.test(pp.exitcode, pp.err)
+                if error_type == HARD:
+                    print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
+                    raise SSHHardError(err)
+                else:
+                    raise SSHSoftError(err)
         
         if DEBUG:
             print "mkdir_data=",out
@@ -127,7 +138,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         return out
         
     #@lock
-    @conf_retry((InvalidPath,PermissionDenied))
+    @retry(5,(InvalidPath,PermissionDenied, SSHHardError))
     #@call_count
     def rm(self, host, username, path, port=22, yabiusername=None, recurse=False, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
@@ -161,8 +172,13 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             elif "No such file or directory" in err:
                 raise InvalidPath("No such file or directory\n")
             else:
-                print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
-                raise Exception(err)
+                # hard or soft error?
+                error_type = sshretry.test(pp.exitcode, pp.err)
+                if error_type == HARD:
+                    print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
+                    raise SSHHardError(err)
+                else:
+                    raise SSHSoftError(err)
         
         if DEBUG:
             print "rm_data=",out
@@ -174,7 +190,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         return out
     
     #@lock
-    @conf_retry((InvalidPath,PermissionDenied))
+    @retry(5,(InvalidPath,PermissionDenied, SSHHardError))                            
     #@call_count
     def ls(self, host, username, path, port=22, yabiusername=None, recurse=False, culldots=True, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
@@ -215,17 +231,25 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             elif "No such file" in err:
                 raise InvalidPath("No such file or directory\n")
             else:
-                print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
-                raise Exception(err)
+                # hard or soft error?
+                error_type = sshretry.test(pp.exitcode, pp.err)
+                if error_type == HARD:
+                    print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
+                    raise SSHHardError(err)
+                else:
+                    raise SSHSoftError(err)
         
-        ls_data = json.loads(out)
+        try:
+            ls_data = json.loads(out)
+        except ValueError, ve:
+            raise SSHHardError("Could not list directory: Paramiko script returned malformed JSON data.")
         
         if usercert:
             os.unlink(usercert)
                         
         return ls_data
         
-    @conf_retry((InvalidPath,PermissionDenied))
+    @retry(5,(InvalidPath,PermissionDenied, SSHHardError))
     #@call_count
     def ln(self, host, username, target, link, port=22, yabiusername=None, creds={},priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
@@ -259,8 +283,13 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             elif "No such file or directory" in err:
                 raise InvalidPath("No such file or directory\n")
             else:
-                print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
-                raise Exception(err)
+                # hard or soft error?
+                error_type = sshretry.test(pp.exitcode, pp.err)
+                if error_type == HARD:
+                    print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
+                    raise SSHHardError(err)
+                else:
+                    raise SSHSoftError(err)
         
         if DEBUG:
             print "ln_data=",out
@@ -271,7 +300,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         
         return out
         
-    @conf_retry((InvalidPath,PermissionDenied))
+    @retry(5,(InvalidPath,PermissionDenied, SSHHardError))
     #@call_count
     def cp(self, host, username, src, dst, port=22, yabiusername=None, recurse=False, creds={},priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
@@ -306,8 +335,13 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
                 if not ("cp: cannot stat" in str(err) and "*': No such file or directory" in str(err) and recurse==True):
                     raise InvalidPath("No such file or directory\n")
             else:
-                print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
-                raise Exception(err)
+                # hard or soft error?
+                error_type = sshretry.test(pp.exitcode, pp.err)
+                if error_type == HARD:
+                    print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
+                    raise SSHHardError(err)
+                else:
+                    raise SSHSoftError(err)
         
         if DEBUG:
             print "cp_data=",out

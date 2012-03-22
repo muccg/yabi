@@ -54,6 +54,7 @@ import tempfile
 
 from utils.stacklesstools import sleep
 from utils.protocol import ssh
+from utils.RetryController import PbsproQsubRetryController, PbsproQstatRetryController, HARD, SOFT
 
 from conf import config
 
@@ -65,6 +66,8 @@ from twisted.python import log
 from decorators import conf_retry
 
 sshauth = ssh.SSHAuth.SSHAuth()
+qsubretry = PbsproQsubRetryController()
+qstatretry = PbsproQstatRetryController()
 
 # for Job status updates, poll this often
 def JobPollGeneratorDefault():
@@ -77,6 +80,12 @@ def JobPollGeneratorDefault():
     while True:
         yield 60.0
 
+# two classes of exception. one gets caught and retried, the other does not.
+# controlling command connection problems should be retried
+# remote command failure needs to be propagated upwards 
+# (sometimes... I bet qsub and qstat sometimes exit non zero for temporary problems, like queue full or something)
+class TransportException(Exception): pass
+class CommandException(Exception): pass
 
 class SSHQsubException(Exception):
     pass
@@ -90,7 +99,6 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         configdir = config.config['backend']['certificates']
         ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
     
-    @conf_retry()
     def _ssh_qsub(self, yabiusername, creds, command, working, username, host, remoteurl, submission, stdout, stderr, modules, walltime=None, memory=None, cpus=None, queue=None ):
         """This submits via ssh the qsub command. This returns the jobid, or raises an exception on an error"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
@@ -102,7 +110,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         # build up our remote qsub command
         ssh_command = "cat >'%s' && "%(submission_script)
         ssh_command += "qsub -N '%s' -e '%s' -o '%s' '%s'"%(
-                                                                        "yabi-"+remoteurl.rsplit('/')[-1],
+                                                                        "yabi"+remoteurl.rsplit('/')[-1],
                                                                         os.path.join(working,stderr),
                                                                         os.path.join(working,stdout),
                                                                         submission_script
@@ -146,9 +154,19 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
             # success
             return pp.out.strip().split("\n")[-1]
         else:
-            raise SSHQsubException("SSHQsub error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
-    
-    @conf_retry()
+            # so the process has exited non zero. If the exit code is 255 its a transport error... we should retry.
+            if pp.exitcode==255:
+                raise SSHTransportException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
+            
+            # otherwise we need to analyse the result to see if its a hard or soft failure
+            error_type = qsubretry.test(pp.exitcode, pp.err)
+            if error_type == HARD:
+                # hard error.
+                raise SSHQsubException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
+            
+        # everything else is soft
+        raise SSHQsubSoftException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
+                
     def _ssh_qstat(self, yabiusername, creds, command, working, username, host, stdout, stderr, modules, jobid):
         """This submits via ssh the qstat command. This takes the jobid"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
@@ -190,16 +208,43 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
                     
             return {jobid:output}
         else:
-            raise SSHQstatException("SSHQstat error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
+            # so the process has exited non zero. If the exit code is 255 its a transport error... we should retry.
+            if pp.exitcode==255:
+                raise SSHTransportException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
+            
+            # otherwise we need to analyse the result to see if its a hard or soft failure
+            error_type = qstatretry.test(pp.exitcode, pp.err)
+            if error_type == HARD:
+                # hard error.
+                raise SSHQstatHardException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
+            
+        # everything else is soft
+        raise SSHQstatSoftException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
+            
+    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+        modules = [] if not module else [X.strip() for X in module.split(",")]    
+        delay_gen = rerun_delays()
 
     def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
-        try:
-            modules = [] if not module else [X.strip() for X in module.split(",")]
-            jobid = self._ssh_qsub(yabiusername,creds,command,working,username,host,remoteurl,submission,stdout,stderr,modules,walltime,memory,cpus,queue)
-        except (SSHQsubException, ExecutionError), ee:
-            channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = str(ee) ))
-            return
-        
+        modules = [] if not module else [X.strip() for X in module.split(",")]    
+        delay_gen = rerun_delays()
+
+        while True:                 # retry on soft failure
+            try:
+                jobid = self._ssh_qsub(yabiusername,creds,command,working,username,host,remoteurl,submission,stdout,stderr,modules,walltime,memory,cpus,queue)
+                break               # success... now we continue
+            except (SSHQsubException, ExecutionError), ee:
+                channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = str(ee) ))
+                return
+            except (SSHQsubSoftException, SSHTransportException), softexc:
+                # delay and then retry
+                try:
+                    sleep(delay_gen.next())
+                except StopIteration:
+                    # run our of retries.
+                    channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = str(softexc) ))
+                    return
+                
         # send an OK message, but leave the stream open
         client_stream = stream.ProducerStream()
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
@@ -248,7 +293,19 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
             # pause
             sleep(delay.next())
             
-            jobsummary = self._ssh_qstat(yabiusername, creds, command, working, username, host, stdout, stderr, modules, jobid)
+            delay_gen = rerun_delays()
+            while True:
+                try:
+                    jobsummary = self._ssh_qstat(yabiusername, creds, command, working, username, host, stdout, stderr, modules, jobid)
+                    break               # success... now we continue
+                except (SSHQstatSoftException, SSHTransportException), softexc:
+                    # delay and then retry
+                    try:
+                        sleep(delay_gen.next())
+                    except StopIteration:
+                        # run out of retries.
+                        raise softexc
+            
             self.update_running(jobid,jobsummary)
             
             if jobid in jobsummary:

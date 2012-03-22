@@ -19,4 +19,4 @@ Fabric==1.2.2
 http://ccg-python-build.googlecode.com/files/ccg-python-build-2.3.3.tar.gz
 virtualenv==1.6.4
 pycrypto>=1.9
-
+psutil

@@ -26,6 +26,7 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
+from datetime import datetime
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseServerError
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
@@ -44,7 +45,7 @@ logger = logging.getLogger(__name__)
 
 from constants import *
 
-def task(request):
+def request_next_task(request, status):
     if "tasktag" not in request.REQUEST:
         return HttpResponseServerError("Error requesting task. No tasktag identifier set.")
     
@@ -55,17 +56,18 @@ def task(request):
         return HttpResponseServerError("Error requesting task. Tasktag incorrect. This is not the admin you are looking for.")
        
     try:
-        # only expose tasks that are ready and are intended for the expeceted backend
-        tasks = Task.objects.filter(status=STATUS_READY, tasktag=tasktag)
+        # only expose tasks that are ready and are intended for the expected backend
+        tasks = Task.objects.filter(status=status, tasktag=tasktag)
 
-        if tasks:
-            task = tasks[0]
-            task.status=STATUS_REQUESTED
-            task.save()
-            logger.debug('requested task id: %s command: %s' % (task.id, task.command))
-            return HttpResponse(task.json())
-        else:
-            raise ObjectDoesNotExist("No more tasks")  
+        # Optimistic locking
+        # Update and return task only if another thread hasn't updated and returned it before us
+        for task in tasks:
+            updated = Task.objects.filter(id=task.id, status=status).update(status=STATUS_REQUESTED)
+            if updated == 1:
+                logger.debug('requested %s task id: %s command: %s' % (status, task.id, task.command))
+                return HttpResponse(task.json())
+
+        raise ObjectDoesNotExist("No more tasks")  
         
     except ObjectDoesNotExist:
         return HttpResponseNotFound("Object not found.")
@@ -76,41 +78,12 @@ def task(request):
         logger.critical(traceback.format_exc())
         return HttpResponseServerError("Error requesting task.")
 
+def task(request):
+    return request_next_task(request, status=STATUS_READY)
+
 def blockedtask(request):
-    if "tasktag" not in request.REQUEST:
-        return HttpResponseServerError("Error requesting task. No tasktag identifier set.")
-    
-    # verify that the requesters tasktag is correct
-    tasktag = request.REQUEST["tasktag"]
-    if tasktag != settings.TASKTAG:
-        logger.critical("Task requested  had incorrect identifier set. Expected tasktag %s but got %s instead." % (settings.TASKTAG, tasktag))
-        return HttpResponseServerError("Error requesting task. Tasktag incorrect. This is not the admin you are looking for.")
-       
-    try:
-        # only expose tasks that are ready and are intended for the expeceted backend
-        tasks = Task.objects.filter(status=STATUS_RESUME, tasktag=tasktag)
+    return request_next_task(request, status=STATUS_RESUME)
 
-        print "TASKS",tasks
-
-        if tasks:
-            task = tasks[0]
-            task.status=STATUS_REQUESTED
-            task.save()
-            logger.debug('requested resumption task id: %s command: %s' % (task.id, task.command))
-            return HttpResponse(task.json())
-        else:
-            raise ObjectDoesNotExist("No more tasks")  
-        
-    except ObjectDoesNotExist:
-        return HttpResponseNotFound("Object not found. Bleck!")
-    except Exception, e:
-        logger.critical("Caught Exception:")
-        import traceback
-        logger.critical(e)
-        logger.critical(traceback.format_exc())
-        return HttpResponseServerError("Error requesting task.")
-
-@transaction.commit_on_success
 def status(request, model, id):
     logger.debug('model: %s id: %s' % (model, id))
     models = {'task':EngineTask, 'job':EngineJob, 'workflow':EngineWorkflow}
@@ -119,53 +92,72 @@ def status(request, model, id):
     if model.lower() not in models.keys():
         raise ObjectDoesNotExist()
 
-    try:
-        if request.method == "GET":
+    if request.method == "GET":
+        try:
             m = models[model.lower()]
             obj = m.objects.get(id=id)
             return HttpResponse(json.dumps({"status":obj.status}))
+        except ObjectDoesNotExist, e:
+            return HttpResponseNotFound("Object not found")
+    elif request.method == "POST":
+        if "status" not in request.POST:
+            return HttpResponseServerError("POST request to status service should contain 'status' parameter\n")
 
-        else:
-            if "status" not in request.POST:
-                return HttpResponseServerError("POST request to status service should contain 'status' parameter\n")
-
+        try:
             model = str(model).lower()
             id = int(id)
             status = str(request.POST["status"])
 
+            if model != "task":
+                return HttpResponseServerError("Only the status of Tasks is allowed to be changed\n")
+
             logger.debug("status="+request.POST['status'])
 
+            # TODO TSZ maybe raise exception instead?
             # truncate status to 64 chars to avoid any sql field length errors
             status = status[:64]
+            task = EngineTask.objects.get(pk=id)
+        except (ObjectDoesNotExist,ValueError):
+            return HttpResponseNotFound("Object not found")
+
+        try:
+            update_task_status(task, status)
+        except Exception, e:
+            return HttpResponseServerError(e)
+
+        return HttpResponse("")
+
+@transaction.commit_manually
+def update_task_status(task, status):
+    try:
+        task.status = status
+
+        if status != STATUS_BLOCKED and status!= STATUS_RESUME:
+            task.percent_complete = STATUS_PROGRESS_MAP[status]
+
+        if status == STATUS_COMPLETE:
+            task.end_time = datetime.now()
                 
-            m = models[model]
-            obj = m.objects.get(id=id)
-            obj.status=status
-            if status != STATUS_BLOCKED and status!= STATUS_RESUME:
-                obj.percent_complete = STATUS_PROGRESS_MAP[status]
-            obj.save()
+        task.save()
 
-            # update the job status when the task status changes
-            if (model == 'task'):
-                obj.job.update_status()
-                obj.job.save()
+        # update the job status when the task status changes
+        task.job.update_status()
+        job_cur_status = task.job.status
 
-            if status in [STATUS_READY, STATUS_COMPLETE, STATUS_ERROR]:
-                # always commit transactions before sending tasks depending on state from the current transaction http://docs.celeryq.org/en/latest/userguide/tasks.html
-                transaction.commit()
+        transaction.commit()
 
+        if job_cur_status in [STATUS_READY, STATUS_COMPLETE, STATUS_ERROR]:
+            workflow = EngineWorkflow.objects.get(pk=task.workflow_id)
+            if workflow.needs_walking():
                 # trigger a walk via celery 
-                walk.delay(workflow_id=obj.workflow_id)
-
-            return HttpResponse("")
-
-    except (ObjectDoesNotExist,ValueError):
-        return HttpResponseNotFound("Object not found")
+                walk.delay(workflow_id=workflow.pk)
+        transaction.commit()
     except Exception, e:
+        transaction.rollback()
         import traceback
         logger.critical(traceback.format_exc())
         logger.critical("Caught Exception: %s" % e)
-        return HttpResponseServerError(e)
+        raise
 
 def remote_id(request,id):
     logger.debug('remote_task_id> %s'%id)
@@ -306,7 +298,7 @@ def task_json(request, task):
 def workflow_summary(request, workflow_id):
     logger.debug('')
 
-    workflow = get_object_or_404(Workflow, pk=workflow_id)
+    workflow = get_object_or_404(EngineWorkflow, pk=workflow_id)
    
     return render_to_response('yabiengine/workflow_summary.html', {
         'w': workflow,

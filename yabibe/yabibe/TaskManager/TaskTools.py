@@ -64,7 +64,7 @@ def Sleep(seconds):
 
 class CopyError(Exception): pass
 
-def Copy(src,dst,retry=COPY_RETRY, **kwargs):
+def Copy(src,dst,retry=COPY_RETRY, log_callback=None, **kwargs):
     """Copy src (url) to dst (url) using the fileservice"""
     if DEBUG:
         print "Copying %s to %s"%(src,dst)
@@ -78,7 +78,6 @@ def Copy(src,dst,retry=COPY_RETRY, **kwargs):
                 print "code=",repr(code)
             if int(code)==200:
                 # success!
-                #print "SUCC"
                 return True
             else:
                 #print "FAIL"
@@ -89,15 +88,22 @@ def Copy(src,dst,retry=COPY_RETRY, **kwargs):
     
     raise err
     
-def RCopy(src, dst, **kwargs):
+def RCopy(src, dst, log_callback=None, **kwargs):
     #print "RCopying %s to %s"%(src,dst)
     if 'priority' not in kwargs:
         kwargs['priority']=str(DEFAULT_TASK_PRIORITY)
 
     try:
         #print "POSTING",RCOPY_PATH,src,dst,DEFAULT_TASK_PRIORITY,"kwargs:",kwargs
-        POST(RCOPY_PATH,src=src,dst=dst, **kwargs)
+        code, message, data = POST(RCOPY_PATH,src=src,dst=dst, **kwargs)
         # success!
+        # the returned data line should contain a summary of the copying
+        assert code==200, "Success part of RCopy got non 200 return code"        
+                
+        # log the response if we've been asked to        
+        if log_callback:
+            log_callback( data )       
+        
         return True
     except GETFailure, err:
         print "Warning: Copy failed with error:",err
@@ -131,7 +137,7 @@ def Rm(path, recurse=False, **kwargs):
     
 class LinkError(Exception): pass
     
-def Ln(target,link,retry=LINK_RETRY, **kwargs):
+def Ln(target,link,retry=LINK_RETRY, log_callback=None, **kwargs):
     """Copy src (url) to dst (url) using the fileservice"""
     if DEBUG:
         print "linking %s from %s"%(target,link)
@@ -153,7 +159,7 @@ def Ln(target,link,retry=LINK_RETRY, **kwargs):
     
     raise err
 
-def LCopy(src,dst,retry=LCOPY_RETRY, **kwargs):
+def LCopy(src,dst,retry=LCOPY_RETRY, log_callback=None, **kwargs):
     """Copy src (url) to dst (url) using the fileservice"""
     if DEBUG:
         print "Local-Copying %s to %s"%(src,dst)
@@ -178,7 +184,7 @@ def LCopy(src,dst,retry=LCOPY_RETRY, **kwargs):
     
     raise err
 
-def SmartCopy(preferred,src,dst,retry=LCOPY_RETRY, **kwargs):
+def SmartCopy(preferred,src,dst,retry=LCOPY_RETRY, log_callback=None, **kwargs):
     if DEBUG:
         print "Smart-Copying %s to %s"%(src,dst)
     
@@ -186,9 +192,9 @@ def SmartCopy(preferred,src,dst,retry=LCOPY_RETRY, **kwargs):
     dstscheme, dstaddress = parse_url(dst)
     
     if srcaddress.hostname != dstaddress.hostname or srcaddress.username != dstaddress.username or preferred == 'copy':
-        return Copy(src,dst,retry=retry,**kwargs)
+        return Copy(src,dst,retry=retry,log_callback=log_callback,**kwargs)
     else:
-        return LCopy(src,dst,retry=retry,**kwargs)
+        return LCopy(src,dst,retry=retry,log_callback=log_callback,**kwargs)
                     
 def Log(logpath,message):
     """Report an error to the webservice"""

@@ -51,6 +51,10 @@ class PermissionDenied(Exception):
 class FileNotFound(Exception):
     pass
 
+class BackendServerError(Exception):
+    """A 500 from the backend"""
+    pass
+
 class BackendStatusCodeError(Exception):
     pass
 
@@ -264,6 +268,9 @@ def handle_connection(func,*args,**kwargs):
         elif r.status == 404:
             # not found
             raise FileNotFound("File or directory not found.")
+        elif r.status == 500:
+            # server error. Report the error forwards
+            raise BackendServerError(r.read())
         else:
             # other error
             raise BackendStatusCodeError("Request to backend for resource: %s returned unhandled status code: %d" % (args[0],r.status))

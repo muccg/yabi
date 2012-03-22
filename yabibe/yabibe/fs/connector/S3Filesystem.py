@@ -51,38 +51,56 @@ SCHEMA = "s3"
 DEBUG = False
 
 # helper utilities for s3
-from utils.protocol.s3 import S3
 from utils.protocol.s3 import s3utils
+    
+from boto.s3.connection import S3Connection
     
 class S3Error(Exception):
     pass
+  
+def make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID):
+    assert '\n' not in ACCESSKEYID
+    assert '\r' not in ACCESSKEYID
+    assert '\n' not in SECRETKEYID
+    assert '\r' not in SECRETKEYID
+    
+    # path separator
+    SEP = '/'
+    
+    #if there are MULTIPLE seperators on the end, remove all but one
+    # TODO: fix the extra / on initial root directory listings
+    while len(path)>=2 and path[-2:] == (SEP*2):
+        path=path[:-1]
+    
+    conn = S3Connection(ACCESSKEYID, SECRETKEYID)
+    b = conn.get_bucket(bucket)
+    list_response = b.list()
+
+    rawtree = [(obj.name,obj) for obj in list_response]
+    return s3utils.make_tree(rawtree)
+    
 
 def mkdir(bucket, path, ACCESSKEYID, SECRETKEYID):
     assert path[-1]=='/', "Path needs to end in a slash"
     
-    obj = S3.S3Object( data='', metadata={  's3-console-folder': 'true',
-                                            's3-console-metadata-version': '2010-03-09' } )
-    conn = S3.AWSAuthConnection(ACCESSKEYID, SECRETKEYID)
-    response = conn.put(bucket,path,obj,headers={"Content-Length":"0"})
+    conn = S3Connection(ACCESSKEYID, SECRETKEYID)
+    b = conn.get_bucket(bucket)
     
-    if not (200 <= response.http_response.status <300):
-        raise S3Error("Could not create directory '%s' in bucket '%s': %s"%(path, bucket, response.message))
-
+    obj = Key(b)
+    obj.key = path
+    obj.set_metadata('s3-console-folder', 'true')
+    obj.set_metadata('s3-console-metadata-version', '2010-03-09')
+    
 def rm(bucket, path, ACCESSKEYID, SECRETKEYID):
-    conn = S3.AWSAuthConnection(ACCESSKEYID, SECRETKEYID)
-    #print "RM",path
-    response = conn.delete(bucket,path)
-    if not (200 <= response.http_response.status <300):
-        raise S3Error("Could not delete key '%s' in bucket '%s': %s"%(path, bucket, response.message))
+    conn = S3Connection(ACCESSKEYID, SECRETKEYID)
+    b = conn.get_bucket(bucket)
+    
+    obj = Key(b)
+    obj.key = path
+    obj.delete()
 
 def rmrf(bucket, path, ACCESSKEYID, SECRETKEYID):
-    conn = S3.AWSAuthConnection(ACCESSKEYID, SECRETKEYID)
-    response = conn.list_bucket(bucket)
-    
-    if not (200 <= response.http_response.status <300):
-        raise S3Error("Could recursive delete because could not list bucket '%s': %s"%(bucket,response.message))
-   
-    tree = s3utils.make_tree([(OBJ.key,OBJ) for OBJ in response.entries])
+    tree = make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID)
     
     # find the child node
     treenode = tree.find_node(path)
@@ -105,48 +123,20 @@ def rmrf(bucket, path, ACCESSKEYID, SECRETKEYID):
     # delete this node now
     #print "DEL3",path
     rm(bucket, path, ACCESSKEYID, SECRETKEYID)
-    
-
+  
 def ls(bucket, path, ACCESSKEYID, SECRETKEYID):
-    # path separator
-    SEP = '/'
+    tree=make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID)
     
-    #if there are MULTIPLE seperators on the end, remove all but one
-    # TODO: fix the extra / on initial root directory listings
-    while len(path)>=2 and path[-2:] == (SEP*2):
-        path=path[:-1]
-    
-    conn = S3.AWSAuthConnection(ACCESSKEYID, SECRETKEYID)
-    response = conn.list_bucket(bucket)
-    
-    if not (200 <= response.http_response.status <300):
-        raise S3Error("Could not list bucket '%s': %s"%(bucket,response.message))
-   
-    tree = s3utils.make_tree([(OBJ.key,OBJ) for OBJ in response.entries])
-    #tree.dump()
     try:
         lsdata = tree.ls(path)
     except s3utils.NodeNotFound:
         raise InvalidPath("No such file or directory\n")
     
     return lsdata
-
+    
 def lsrecurse(bucket, path, ACCESSKEYID, SECRETKEYID):
-    # path separator
-    SEP = '/'
-    
-    #if there are MULTIPLE seperators on the end, remove all but one
-    # TODO: fix the extra / on initial root directory listings
-    while len(path)>=2 and path[-2:] == (SEP*2):
-        path=path[:-1]
-    
-    conn = S3.AWSAuthConnection(ACCESSKEYID, SECRETKEYID)
-    response = conn.list_bucket(bucket)
-    
-    if not (200 <= response.http_response.status <300):
-        raise S3Error("Could not list bucket '%s': %s"%(bucket,response.message))
+    tree=make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID)
    
-    tree = s3utils.make_tree([(OBJ.key,OBJ) for OBJ in response.entries])
     directory = tree.find_node(path)
     
     def get_ls_data(lpath,ldirectory):

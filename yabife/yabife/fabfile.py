@@ -42,6 +42,8 @@ env.auto_confirm_purge = False #controls whether the confirmation prompt for pur
 env.ccg_pip_options = "--download-cache=/tmp --use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors=http://d.pypi.python.org/ --mirrors=http://e.pypi.python.org/"
 
 env.gunicorn_listening_on = "127.0.0.1:8000"
+env.gunicorn_workers = 5
+env.gunicorn_worker_timeout = 300
 
 def deploy(auto_confirm_purge=False, migration=True):
     """
@@ -112,9 +114,12 @@ def runserver(bg=False):
     """
     Runs the gunicorn server for local development
     """
-    cmd = "gunicorn_django -w 5 -b "+ env.gunicorn_listening_on
+    cmd = "gunicorn_django -w %s -b %s -t %s" % (env.gunicorn_workers, env.gunicorn_listening_on, env.gunicorn_worker_timeout)
     if bg:
-        cmd += " -D"
+        # This doesn't seem to log our application level logging
+        # cmd += " -D --log-level=debug --log-file=yabife.log"
+        # So we just run in foreground and redirect STDOUT and STDERR
+        cmd += " >yabife.log 2>&1 &"
     os.environ['PROJECT_DIRECTORY'] = '.'
     local(cmd, capture=False)
 

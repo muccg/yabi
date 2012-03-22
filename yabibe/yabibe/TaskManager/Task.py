@@ -157,7 +157,6 @@ class NullBackendTask(Task):
         assert scheme.lower() == "null"
     
     def main(self):
-        
         if self.stage == 0:
             self.log("null backend... skipping task and copying files")
            
@@ -227,7 +226,7 @@ class NullBackendTask(Task):
             if src.endswith("/"):
                 log("RCopying %s to %s..."%(src,dst))
                 try:
-                    RCopy(src,dst, yabiusername=self.yabiusername)
+                    RCopy(src,dst, yabiusername=self.yabiusername,log_callback=log)
                     log("RCopying %s to %s Success"%(src,dst))
                 except GETFailure, error:
                     # error copying!
@@ -565,7 +564,7 @@ class MainTask(Task):
             try:
                 if DEBUG:
                     print "RCopy(",outputuri,",",task['stageout'],",",self.yabiusername,")"
-                RCopy(outputuri,task['stageout'],yabiusername=self.yabiusername,contents=True)
+                RCopy(outputuri,task['stageout'],yabiusername=self.yabiusername,contents=True,log_callback=self.log)
                 self.log("Files successfuly staged out")
             except GETFailure, error:
                 if "503" in error.message[1]:

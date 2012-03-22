@@ -55,19 +55,67 @@ from SubmissionTemplate import make_script
 from twisted.internet import protocol
 from twisted.internet import reactor
 
+import random
 
-            #delay, response
-times = [   (10.0, "Unsubmitted"),
+possible_delay_sets = [
+         # normal   
+         [   
+            (10.0, "Unsubmitted"),
             (10.0, "Pending"),
             (10.0, "Running"),
             (30.0, "Error")
+         ],
+         
+         # no pending
+         [   
+            (10.0, "Unsubmitted"),
+            (10.0, "Running"),
+            (30.0, "Error")
+         ],
+         
+         # no running
+         [   
+            (10.0, "Unsubmitted"),
+            (10.0, "Pending"),
+            (30.0, "Error")
+         ],
+         
+         # straight to error
+         [   
+            (10.0, "Unsubmitted"),
+            (30.0, "Error")
+         ],
+         
+         # nothing but error
+         [   
+            (10.0, "Error")
+         ],
+         
+         # speed run
+         [   
+            (0.1, "Unsubmitted"),
+            (0.1, "Pending"),
+            (0.1, "Running"),
+            (0.1, "Error")
+         ],
+         
+         # speed bomb
+         [
+            (0.1, "Unsubmitted"),
+            (0.1, "Pending"),
+            (0.1, "Running"),
+            (0.1, "Error")
          ]
-
+    ]
+             
+         
 class ExplodingConnector(ExecConnector):    
     def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
         client_stream = stream.ProducerStream()
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
         gevent.sleep()
+        
+        times = random.choice(possible_delay_sets)
         
         for delay, message in times:
             sleep(delay)

@@ -1,4 +1,5 @@
 from fabric.api import local, lcd, run, prefix
+import os
 
 ADMIN = {
     "dir": "yabiadmin/yabiadmin",
@@ -20,6 +21,13 @@ TESTS = {
     "dir": "yabitests",
     "virtenvdir": "virt_yabitests"
 }
+
+
+def clean():
+    '''Clean all virtual environment directories'''
+    for proj in(FE, ADMIN, BE, YABISH, TESTS):
+        virtenvdir = os.path.join(proj['dir'], proj['virtenvdir'])
+        local("rm -rf %s" % virtenvdir)
 
 def admin_bootstrap():
     '''Bootstrap the yabiadmin project'''
@@ -57,6 +65,11 @@ def admin_quickstart(bg=False):
     admin_bootstrap()
     admin_initdb()
     admin_runserver(bg)
+
+def admin_tests():
+    '''Runs all the tests in the Yabiadmin project'''
+
+    _virtualenv(ADMIN, "fab tests")
 
 def fe_bootstrap():
     '''Bootstrap the yabife project'''
@@ -143,6 +156,51 @@ def killservers():
     admin_killserver()
     admin_killcelery()
     be_killserver()
+
+def admin_list_configs():
+    '''Displays available configs for Yabi Admin'''
+
+    _virtualenv(ADMIN, "fab list_configs")
+
+def admin_active_config():
+    '''Displays the active Yabi Admin config'''
+
+    _virtualenv(ADMIN, "fab active_config")
+
+def admin_activate_config(config):
+    '''Activate the passed in Yabi admin config'''
+
+    _virtualenv(ADMIN, "fab activate_config:%s" % config)
+
+def admin_deactivate_config():
+    '''Deactivates the active Yabi Admin config'''
+
+    _virtualenv(ADMIN, "fab deactivate_config")
+
+def admin_selected_test_config():
+    '''Displays the configuration used for running tests'''
+
+    _virtualenv(ADMIN, "fab selected_test_config")
+
+def admin_select_test_config(config):
+    '''Select the passed in config to be used when running tests'''
+
+    _virtualenv(ADMIN, "fab select_test_config:%s" % config)
+
+def _assert_test_config_is_selected():
+    # unfortunately the errors displayed by a nested fab aren't displayed
+    print _virtualenv(ADMIN, "fab assert_test_config_is_selected")
+
+def runtests():
+    '''Run all the YABI tests'''
+    _assert_test_config_is_selected() 
+    killservers()
+    admin_activate_config('testdb')
+    runservers()
+    admin_tests()
+    tests()
+    killservers()
+    admin_deactivate_config()
 
 def tests(dryrun=False):
     '''Run end to end YABI tests in the yabitests project'''

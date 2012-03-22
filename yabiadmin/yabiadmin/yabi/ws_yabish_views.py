@@ -71,7 +71,6 @@ def is_stagein_required(request):
     return HttpResponse(json.dumps(resp))
 
 @authentication_required
-@transaction.commit_on_success
 def submitjob(request):
     logger.debug(request.user.username)
 
@@ -187,12 +186,14 @@ class ParamDef(object):
                     value_start += 1
                 self.value = [argument[value_start:]]
                 self.original_arg = argument
+                self.original_value = self.value[0]
                 return True
         return False 
 
     def consume_values(self, arguments):
         '''WARNING! This changes the passed in arguments list in place! '''
-        self.original_value = None
+        if self.switch_use not in ('combined', 'combined with equals'):
+            self.original_value = None 
         if self.switch_use == 'switchOnly':
             self.value = ['Yes']
             return 
@@ -206,7 +207,7 @@ class ParamDef(object):
             self.value = [v1, v2]
             self.original_value = '%s %s' % (v1, v2)
 
-        if self.switch_use not in ('combined', 'combined_with_equals'):
+        if self.switch_use not in ('combined', 'combined with equals'):
             if not arguments:
                 raise ParsingError('Option %s requires an argument' % self.name)
             v = arguments.pop(0)
