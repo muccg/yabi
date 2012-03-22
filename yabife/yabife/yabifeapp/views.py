@@ -68,43 +68,8 @@ from utils import memcache_client, memcache_http, make_http_request, make_reques
 import logging
 logger = logging.getLogger(__name__)
 
-from UploadStreamer import UploadStreamer
 from django.views.decorators.csrf import csrf_exempt
 
-class FileUploadStreamer(UploadStreamer):
-    def __init__(self, host, port, selector, cookies, fields):
-        UploadStreamer.__init__(self)
-        self._host = host
-        self._port = port
-        self._selector = selector
-        self._fields = fields
-        self._cookies = cookies
-    
-    def receive_data_chunk(self, raw_data, start):
-        #print "receive_data_chunk", len(raw_data), start
-        return self.file_data(raw_data)
-    
-    def file_complete(self, file_size):
-        """individual file upload complete"""
-        #print "file_complete",file_size
-        logger.info("Streaming through of file %s has been completed. %d bytes have been transferred." % (self._present_file, file_size))
-        return self.end_file()
-    
-    def new_file(self, field_name, file_name, content_type, content_length, charset):
-        """beginning of new file in upload"""
-        #print "new_file",field_name, file_name, content_type, content_length, charset
-        return UploadStreamer.new_file(self,file_name)
-    
-    def upload_complete(self):
-        """all files completely uploaded"""
-        #print "upload_complete"
-        return self.end_connection()
-    
-    def handle_raw_input(self, input_data, META, content_length, boundary, encoding, chunked):
-        """raw input"""
-        # this is called right at the beginning. So we grab the uri detail here and initialise the outgoing POST
-        self.post_multipart(host=self._host, port=self._port, selector=self._selector, cookies=self._cookies )
-        
 @authentication_required
 def fileupload(request, url):
     return upload_file(request, request.user)
@@ -478,6 +443,10 @@ def error_500(request):
 
 @profile_required
 def upload_file(request, user):
+    """
+    NB: if anyone changes FILE_UPLOAD_MAX_MEMORY_SIZE in the settings to be greater than zero
+    this function will not work as it calls temporary_file_path
+    """
     logger.debug('')
 
     host = urlparse(settings.YABIADMIN_SERVER).hostname
@@ -492,26 +461,19 @@ def upload_file(request, user):
     
     # examine cookie jar for our admin session cookie
     http = memcache_http(request)
-    jar = http.cookie_jar
-    cookie_string = jar.cookies_to_send_header(settings.YABIADMIN_SERVER)['Cookie']
-    
-    streamer = FileUploadStreamer(host=host, port=port or 80, selector=upload_path+"/ws/fs/put?uri=%s"%quote(upload_uri), cookies=[cookie_string], fields=[])
-    request.upload_handlers = [ streamer ]
-    
-    # evaluating POST triggers the processing of the request body
-    request.POST
-    
-    result=streamer.stream.getresponse()
-    
-    content=result.read()
-    status=int(result.status)
-    reason = result.reason
-    
-    #print "passing back",status,reason,"in json snippet"
-    
+
+    files = []
+    for key, f in request.FILES.items():
+        file_details = (f.name, f.name, f.temporary_file_path())
+        files.append(file_details)
+
+    upload_request = PostRequest("ws/fs/put?uri=%s" % quote(upload_uri), params={}, files=files)
+    resp, contents = http.make_request(upload_request)
+    http.finish_session()
+
     response = {
-        "level":"success" if status==200 else "failure",
-        "message":content
+        "level":"success" if resp.status==200 else "failure",
+        "message":contents
         }
     return HttpResponse(content=json.dumps(response))
 
