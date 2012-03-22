@@ -26,7 +26,7 @@
 # 
 ### END COPYRIGHT ###
 
-import memcache, hashlib, os
+import hashlib, os
 
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
 from ccg.http import HttpResponseUnauthorized
@@ -44,9 +44,6 @@ from yaphc.cookies import FileCookiePersister
 
 import logging
 logger = logging.getLogger(__name__)
-
-def memcache_client():
-    return memcache.Client(settings.MEMCACHE_SERVERS)
 
 def yabiadmin_client(request):
     user = request.user
@@ -111,7 +108,7 @@ def preview_key(uri):
     # 250 character limit memcache imposes on key names. As a result, we'll
     # hash the file name and accept the (extremely slight) risk of collisions.
     file_hash = hashlib.sha512(uri).hexdigest()
-    return str("%s-preview-%s" % (settings.MEMCACHE_KEYSPACE, file_hash))
+    return str("-preview-%s" % file_hash)
 
 
 def yabiadmin_passchange(request, currentPassword, newPassword):

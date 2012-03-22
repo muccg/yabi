@@ -203,19 +203,9 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
         'LOCATION': 'localhost.localdomain:11211',
-        'KEYSPACE': "yabife_new"
+        'KEYSPACE': "yabife"
     }
 }
-
-
-# memcache server list
-# add a list of your memcache servers
-MEMCACHE_SERVERS = ['localhost.localdomain:11211']
-MEMCACHE_KEYSPACE = "yabife"
-
-# file cookie persisting for connection between yabife and yabiadmin, this is not used if memcache is turned on
-#FILE_COOKIE_DIR = WRITABLE_DIRECTORY
-#FILE_COOKIE_NAME = 'yabife_cookie.txt'
 
 # email settings so yabi can send email error alerts etc
 # see https://docs.djangoproject.com/en/dev/ref/settings/#email-host
