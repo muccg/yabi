@@ -190,7 +190,7 @@ def menu(request):
     except ObjectDoesNotExist:
         return JsonMessageResponseNotFound("Object not found")
 
-from yabiadmin.yabiengine.backendhelper import BackendRefusedConnection, BackendHostUnreachable, PermissionDenied, FileNotFound, BackendStatusCodeError
+from yabiadmin.yabiengine.backendhelper import BackendRefusedConnection, BackendHostUnreachable, PermissionDenied, FileNotFound, BackendStatusCodeError, BackendServerError
 
 def handle_connection(closure):
     try:
@@ -201,6 +201,17 @@ def handle_connection(closure):
         return JsonMessageResponseNotFound("You do not have permissions to access this file or directory")
     except FileNotFound, fnf:
         return JsonMessageResponseNotFound("The requested directory does not exist")
+    except BackendServerError, bse:
+        # the str() of the exception here contains the full traceback... not just the summary
+        # as it was passed forwards in body of HTTP response
+        # so we get the last full line and report it
+        lines = str(bse).split("\n")
+        
+        # cull blank lines on end
+        while lines and not lines[-1]:
+            lines = lines[:-1]
+            
+        return JsonMessageResponseNotFound(lines[-1] if lines else "Empty bodied http 500 response from backend")
     except BackendStatusCodeError, bsce:
         return JsonMessageResponseNotFound("The yabi backend returned an inapropriate status code: %s"%(str(bsce)))
     except BackendRefusedConnection, e:
