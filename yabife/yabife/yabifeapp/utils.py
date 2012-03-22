@@ -39,7 +39,7 @@ from django.template.loader import render_to_string
 from django.utils import simplejson as json
 
 from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
-from yaphc.memcache_persister import MemcacheCookiePersister
+from yaphc.django_cache_persister import DjangoCacheCookiePersister
 from yaphc.cookies import FileCookiePersister
 
 import logging
@@ -48,19 +48,14 @@ logger = logging.getLogger(__name__)
 def memcache_client():
     return memcache.Client(settings.MEMCACHE_SERVERS)
 
-
 def yabiadmin_client(request):
     user = request.user
 
-    if settings.MEMCACHE_SERVERS:
-        mp = MemcacheCookiePersister(settings.MEMCACHE_SERVERS,
-                key='%s-cookies-%s' %(settings.MEMCACHE_KEYSPACE, request.session.session_key),
-                cache_time=settings.SESSION_COOKIE_AGE)
-    else:
-        mp = FileCookiePersister(os.path.join(settings.FILE_COOKIE_DIR, settings.FILE_COOKIE_NAME))
-
+    persister = DjangoCacheCookiePersister(
+                        key='cookies-%s' % request.session.session_key,
+                        cache_time=settings.SESSION_COOKIE_AGE)
     yabiadmin = settings.YABIADMIN_SERVER
-    return Http(base_url=yabiadmin, cache=False, cookie_persister=mp)
+    return Http(base_url=yabiadmin, cache=False, cookie_persister=persister)
 
 
 def make_http_request(request, original_request, ajax_call):

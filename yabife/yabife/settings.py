@@ -199,6 +199,14 @@ SECRET_KEY = 'set_this'
 #AUTH_LDAP_MEMBERATTR = 'uniqueMember'
 #AUTH_LDAP_USERDN = 'ou=People'
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': 'localhost.localdomain:11211',
+        'KEYSPACE': "yabife_new"
+    }
+}
+
 
 # memcache server list
 # add a list of your memcache servers

@@ -33,7 +33,7 @@ pygooglechart==0.2.1
 python-memcached==1.47
 virtualenv==1.6.4
 wsgiref==0.1.2
-http://yaphc.googlecode.com/files/yaphc-v0_1_3.tgz
+http://yaphc.googlecode.com/files/yaphc-v0_1_5.tgz
 Mako>=0.5.0
 South>=0.7.3
 django-extensions>=0.7.1
