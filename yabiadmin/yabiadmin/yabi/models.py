@@ -34,10 +34,10 @@ from django.utils import simplejson as json
 from django.core import urlresolvers
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.cache import cache
 from urlparse import urlparse, urlunparse
 from crypto import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, DecryptException, AESTEMP
 from ccg.memcache import KeyspacedMemcacheClient
-from yabiadmin.decorators import func_create_memcache_keyname
 from constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK
 
 import logging
@@ -230,12 +230,9 @@ class Tool(Base):
         output = self.decode_embedded_json()
         return json.dumps({'tool':output}, indent=4)
         
-    def purge_from_memcache(self):
+    def purge_from_cache(self):
         """Purge this tools entry description from memcache"""
-        keyname = func_create_memcache_keyname("tool",{'toolname':self.name},['toolname'])
-        mc = KeyspacedMemcacheClient()
-        mc.delete(keyname)
-        mc.disconnect_all()
+        cache.delete(self.name)
 
     def __unicode__(self):
         return self.name
@@ -913,8 +910,8 @@ def signal_tool_post_save(sender, **kwargs):
 
     try:
         tool = kwargs['instance']
-        logger.debug("purging tool %s from memcache"%str(tool))
-        tool.purge_from_memcache()
+        logger.debug("purging tool %s from cache" % str(tool))
+        tool.purge_from_cache()
 
     except Exception, e:
         logger.critical(e)

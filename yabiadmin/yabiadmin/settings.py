@@ -230,11 +230,17 @@ MANAGERS = ADMINS
 MEMCACHE_SERVERS = ['localhost.localdomain:11211']
 MEMCACHE_KEYSPACE = "yabiadmin"
 
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': MEMCACHE_SERVERS,
+        'KEYSPACE': "yabiadmin_new_"
+    }
+}
+
 # uncomment to use memcache for sessions, be sure to have uncommented memcache settings above
 # see https://docs.djangoproject.com/en/dev/ref/settings/#session-engine
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-CACHE_BACKEND = 'memcached://'+(';'.join(MEMCACHE_SERVERS))+"/"
-MEMCACHE_KEYSPACE = "yabiadmin"
 
 # uploads are currently written to disk and double handled, setting a limit will break things
 # see https://docs.djangoproject.com/en/dev/ref/settings/#file-upload-max-memory-size
