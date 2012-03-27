@@ -43,9 +43,6 @@ env.content_includes.extend([]) # add quoted patterns here for extra rsync inclu
 
 env.ccg_pip_options = "--download-cache=/tmp --use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors=http://d.pypi.python.org/ --mirrors=http://e.pypi.python.org/"
 
-env.ccg_python = '/usr/local/stackless/bin/python'
-env.ccg_virtualenv = '/usr/local/stackless/bin/virtualenv'
-
 class LocalPaths():
 
     target = env.username
