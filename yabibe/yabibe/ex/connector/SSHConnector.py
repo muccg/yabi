@@ -42,7 +42,7 @@ DEBUG = False
 from twistedweb2 import http, responsecode, http_headers, stream
 
 import shlex
-import stackless
+import gevent
 import tempfile
 
 from utils.stacklesstools import sleep
@@ -65,16 +65,16 @@ class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
         
         client_stream = stream.ProducerStream()
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
-        stackless.schedule()
+        gevent.sleep()
         
         try:
             if DEBUG:
                 print "SSH",command,"WORKING:",working,"CREDS passed in:%s"%(creds)    
             client_stream.write("Unsubmitted\n")
-            stackless.schedule()
+            gevent.sleep()
             
             client_stream.write("Pending\n")
-            stackless.schedule()
+            gevent.sleep()
             
             if not creds:
                 creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, "/")
@@ -94,10 +94,10 @@ class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
                 print "password:",creds['password']
             pp = ssh.Run.run(usercert,command,username,host,working,port="22",stdout=stdout,stderr=stderr,password=creds['password'], modules=modules)
             client_stream.write("Running\n")
-            stackless.schedule()
+            gevent.sleep()
             
             while not pp.isDone():
-                stackless.schedule()
+                gevent.sleep()
                 
             if pp.exitcode==0:
                 # success

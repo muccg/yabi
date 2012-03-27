@@ -49,7 +49,7 @@ import os
 import uuid
 import json
 from utils.protocol import globus
-import stackless
+import gevent
 import tempfile
 
 from utils.stacklesstools import sleep
@@ -62,6 +62,8 @@ from TaskManager.TaskTools import RemoteInfo
 from SubmissionTemplate import make_script
 
 from twisted.python import log
+
+from decorators import conf_retry
 
 sshauth = ssh.SSHAuth.SSHAuth()
 qsubretry = PbsproQsubRetryController()
@@ -85,26 +87,10 @@ def JobPollGeneratorDefault():
 class TransportException(Exception): pass
 class CommandException(Exception): pass
 
-# now we inherit our particular errors
-class SSHQsubException(CommandException): pass
-class SSHQstatException(CommandException): pass
-class SSHTransportException(TransportException): pass
-
-# and further inherit hard and soft under those
-class SSHQsubSoftException(Exception): pass
-class SSHQstatSoftException(Exception): pass
-
-def rerun_delays():
-    # when our retry system is fully expressed (no corner cases) we could potentially make this an infinite generator
-    delay = 5.0
-    while delay<300.0:
-        yield delay
-        delay *= 2.0
-    totaltime=0.0
-    while totaltime<21600.0:                    # 6 hours
-        totaltime+=300.0
-        yield 300.0
-        
+class SSHQsubException(Exception):
+    pass
+class SSHQstatException(Exception):
+    pass
 
 class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
     def __init__(self):
@@ -157,7 +143,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
             
         pp = ssh.Run.run(usercert,ssh_command,username,host,working=None,port="22",stdout=None,stderr=None,password=creds['password'], modules=modules, streamin=script_string)
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
           
         if DEBUG:
             print "EXITCODE:",pp.exitcode
@@ -208,7 +194,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
             
         pp = ssh.Run.run(usercert,ssh_command,username,host,working=None,port="22",stdout=None,stderr=None,password=creds['password'], modules=modules )
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         if pp.exitcode==0:
             # success. lets process our qstat results
@@ -235,6 +221,10 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         # everything else is soft
         raise SSHQstatSoftException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
             
+    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+        modules = [] if not module else [X.strip() for X in module.split(",")]    
+        delay_gen = rerun_delays()
+
     def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
         modules = [] if not module else [X.strip() for X in module.split(",")]    
         delay_gen = rerun_delays()
