@@ -121,7 +121,7 @@ class FilePutResource(resource.PostableResource):
                     ##print "DATA:",WaitForDeferredData(reader)
                     #gevent.sleep()
                 
-                raise Exception, "Unallowed mediatype in POST upload file header"
+                raise Exception, "Unallowed mediatype '%s' subtype '%s' in POST upload file header"%(ctype.mediaType,ctype.mediaSubtype)
             elif (ctype.mediaType == 'multipart' and ctype.mediaSubtype == 'form-data'):
                 boundary = ctype.params.get('boundary')
                 if boundary is None:
