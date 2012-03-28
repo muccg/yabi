@@ -38,7 +38,7 @@ urlpatterns = patterns('yabiadmin.yabi.ws_frontend_views',
 
     url(r'^fs/ls[/]*$', 'ls', name='ls'),
     url(r'^fs/get[/]*$', 'get', name='get'),
-    url(r'^fs/put[/]*$', 'put', {'SSL':False}, name='put'),
+    url(r'^fs/put[/]*$', 'put', name='put'),
     url(r'^fs/copy[/]*$', 'copy', name='copy'),
     url(r'^fs/rcopy[/]*$', 'rcopy', name='rcopy'),
     url(r'^fs/rm[/]*$', 'rm', name='rm'),

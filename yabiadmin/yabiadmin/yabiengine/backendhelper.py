@@ -51,6 +51,10 @@ class PermissionDenied(Exception):
 class FileNotFound(Exception):
     pass
 
+class BackendServerError(Exception):
+    """A 500 from the backend"""
+    pass
+
 class BackendStatusCodeError(Exception):
     pass
 
@@ -74,12 +78,12 @@ def get_exec_backendcredential_for_uri(yabiusername, uri):
     # enforce FS scehmas only
     if schema not in settings.EXEC_SCHEMES:
         logger.error("get_exec_backendcredential_for_uri was asked to get an fs schema! This is forbidden.")
-        raise ValueError("Invalid schema in uri passed to get_exec_backendcredential_for_uri")
+        raise ValueError("Invalid schema in uri passed to get_exec_backendcredential_for_uri: asked for %s"%schema)
     
     path = rest.path
     if path!="/":
         logger.error("get_exec_backendcredential_for_uri was passed a uri with a path! This is forbidden. Path must be / for exec backends")
-        raise ValueError("Invalid path in uri passed to get_exec_backendcredential_for_uri")
+        raise ValueError("Invalid path in uri passed to get_exec_backendcredential_for_uri: path passed in was: %s"%path)
 
     # get our set of credential candidates
     bcs = BackendCredential.objects.filter(credential__user__name=yabiusername,
@@ -108,7 +112,7 @@ def get_fs_backendcredential_for_uri(yabiusername, uri):
     # enforce FS scehmas only
     if schema not in settings.FS_SCHEMES:
         logger.error("get_fs_backendcredential_for_uri was asked to get an executions schema! This is forbidden.")
-        raise ValueError("Invalid schema in uri passed to get_fs_backendcredential_for_uri")
+        raise ValueError("Invalid schema in uri passed to get_fs_backendcredential_for_uri: schema passed in was %s"%schema)
     
     path = os.path.normpath(rest.path)                      # normalise path to get rid of ../../ style exploits
 
@@ -264,6 +268,9 @@ def handle_connection(func,*args,**kwargs):
         elif r.status == 404:
             # not found
             raise FileNotFound("File or directory not found.")
+        elif r.status == 500:
+            # server error. Report the error forwards
+            raise BackendServerError(r.read())
         else:
             # other error
             raise BackendStatusCodeError("Request to backend for resource: %s returned unhandled status code: %d" % (args[0],r.status))

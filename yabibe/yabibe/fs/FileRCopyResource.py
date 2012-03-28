@@ -33,7 +33,7 @@ import weakref
 import sys, os
 
 import gevent
-from TaskManager.TaskTools import Sleep, Copy, List, Mkdir, GETFailure
+from TaskManager.TaskTools import Sleep, Copy, List, Mkdir, GETFailure, CopyError
 
 from utils.parsers import parse_url
 from utils.stacklesstools import GETFailure
@@ -146,6 +146,10 @@ class FileRCopyResource(resource.PostableResource):
                     # remember the directories we make so we only make them once
                     created=[]
                     
+                    # count the files we copy
+                    file_count = 0
+                    folder_count = 0
+                    
                     for directory in sorted(fsystem.keys()):
                         # make directory
                         destpath = directory[len(src_path)+1:]              # the subpath part
@@ -153,9 +157,10 @@ class FileRCopyResource(resource.PostableResource):
                             destpath += '/'
                         #print "D:",dst,":",destpath,";",src_path
                         if dst+destination_dir_name+destpath not in created:
-                            print dst+destination_dir_name+destpath,"not in",created
+                            #print dst+destination_dir_name+destpath,"not in",created
                             try:
                                 Mkdir(dst+destination_dir_name+destpath,yabiusername=yabiusername)
+                                folder_count += 1
                             except BlockingException, be:
                                 print traceback.format_exc()
                                 result_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(be)) )    
@@ -174,11 +179,16 @@ class FileRCopyResource(resource.PostableResource):
                             if DEBUG:
                                 print "Copy(",src_uri,",",dst_uri,")"
                             #print "Copy(",sbend+directory+"/"+file,",",dst+destpath+'/'+file,")"
-                            Copy(src_uri,dst_uri,yabiusername=yabiusername,priority=priority)
+                            try:
+                                Copy(src_uri,dst_uri,yabiusername=yabiusername,priority=priority)
+                                file_count += 1
+                            except CopyError, ce:
+                                print "RCOPY: Continuing after failed copy %s => %s : %s"%(src_uri,dst_uri,str(ce))
                             Sleep(0.1)
                     
                     result_channel.callback(
-                                                    http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Copied successfuly\n")
+                                                    http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, 
+                                                    "%d files %d folders copied successfuly\n"%(file_count, folder_count) )
                                 )
                 except BlockingException, be:
                     print traceback.format_exc()

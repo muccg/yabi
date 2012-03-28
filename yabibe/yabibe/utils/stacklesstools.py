@@ -272,8 +272,6 @@ def GET(path, scheme=None, host=None, port=None, factory_class=RememberingHTTPCl
 
 def POST(path,**kws):
     """Stackless integrated twisted webclient POST"""
-    print "POST",path
-    
     if 'scheme' in kws:
         scheme = kws['scheme']
         del kws['scheme']

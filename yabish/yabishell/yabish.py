@@ -13,7 +13,7 @@ from yabishell import actions
 from yabishell.utils import human_readable_size
 
 # TODO config file
-YABI_DEFAULT_URL = 'https://faramir/yabife/snapshot/'
+YABI_DEFAULT_URL = os.environ.get('YABISH_YABI_URL', 'https://faramir/yabife/snapshot/')
 #YABI_DEFAULT_URL = 'https://ccg.murdoch.edu.au/yabi/'
 
 
@@ -22,10 +22,7 @@ def main():
     yabi = None
     stagein = None
     try:
-        help_desc = """Run the yabish command followed by the Yabi tool or command you wish to run ie:
-        yabish blast -i myseqs.fa -p blastn -d nt"""
-        
-        argparser = ArgumentParser(description=help_desc, add_help=False)
+        argparser = ArgumentParser(add_help=False)
         argparser.add_argument("--yabi-debug", action='store_true', help="Run in debug mode")
         argparser.add_argument("--yabi-bg", action='store_true', help="Run in background")
         argparser.add_argument("--yabi-url", help="The URL of the YABI server", default=YABI_DEFAULT_URL)
@@ -35,7 +32,7 @@ def main():
 
         if args.no_arguments or args.first_argument in ('-h', '--help'):
 
-            argparser.print_help()
+            print_help()
             return
 
         if args.first_argument in ('-v', '--version'):
@@ -59,6 +56,11 @@ def main():
     finally:
         if yabi is not None:
             yabi.session_finished()
+
+def print_help():
+    help_file = os.path.join(os.path.dirname(__file__), 'help/main')
+    with open(help_file) as f:
+        print f.read()
 
 class StageIn(object):
     def __init__(self, yabi, args):
@@ -274,13 +276,21 @@ class CommandLineArguments(object):
 
     @property
     def local_files(self):
-        return filter(lambda arg: os.path.isfile(arg) or os.path.isdir(arg), self.args)
+        # if argument has "=" return right side else return argument
+        args_and_values = map(lambda a: a.split('=', 1)[1] if '=' in a else a, self.args)
+        return filter(lambda arg: os.path.isfile(arg) or os.path.isdir(arg), args_and_values)
 
     def substitute_file_urls(self, urls):
         def file_to_url(arg):
             new_arg = arg
             if os.path.isfile(arg) or os.path.isdir(arg):
                 new_arg = urls.get(os.path.basename(arg), arg)
+            else:
+                # also try right-side of = to handle combined with equals with file values
+                if '=' in arg:
+                    name,value = arg.split('=', 1)
+                    if os.path.isfile(value) or os.path.isdir(value):
+                        new_arg = "%s=%s" % (name, urls.get(os.path.basename(value), value))
             return new_arg 
         self.args = map(file_to_url, self.args)
 

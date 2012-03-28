@@ -45,6 +45,10 @@ class Migration(DataMigration):
    
         yabi_filetype_1 = yabi_filetype('fasta','Fasta bioinformatics file format', [yabi_fileextension_2, yabi_fileextension_3, yabi_fileextension_4, yabi_fileextension_5, yabi_fileextension_6, yabi_fileextension_7])
         yabi_filetype_1.save()
+
+        yabi_filetype_2 = yabi_filetype('all files','All files', [yabi_fileextension_1])
+        yabi_filetype_2.save()
+   
    
         yabi_backend_1=yabi_backend('nullbackend','Use this backend when tools should not be run ie fileselector','null','localhost.localdomain',None,'/')
         yabi_backend_1.save()
@@ -63,7 +67,10 @@ class Migration(DataMigration):
 
         yabi_toolset_1 = yabi_toolset('alltools')
         yabi_toolset_1.save()
-       
+      
+        yabi_user_1.users.add(yabi_toolset_1)
+        yabi_user_2.users.add(yabi_toolset_1)
+ 
         yabi_toolgrouping_1 = yabi_toolgrouping( yabi_toolgroup_1, yabi_tool_1, yabi_toolset_1 )
         yabi_toolgrouping_1.save()
 
@@ -75,7 +82,7 @@ class Migration(DataMigration):
         yabi_backend_2 = yabi_backend('Local Filesystem','This backend gives access to the file system on the machine running Yabi.','localfs','localhost',None,'/')
         yabi_backend_2.save()
 
-        yabi_backend_3 = yabi_backend('Local Execution','This backend gives access to execution on the machine running Yabi.','localex','localhost',None,'/')
+        yabi_backend_3 = yabi_backend('Local Execution','This backend gives access to execution on the machine running Yabi.','localex','localhost',None, '/', submission='${command}\n')
         yabi_backend_3.save()
 
         yabi_backendcredential_1 = yabi_backendcredential(yabi_backend_1, yabi_credential_1, homedir='')
@@ -146,7 +153,7 @@ class Migration(DataMigration):
 
         # set the backend credentials to the user's homedir
         ex_bec = orm.BackendCredential.objects.get(id=2)
-        ex_bec.homedir = "%s%s" % (os.environ['HOME'], '/')
+        ex_bec.homedir = ""                                         # exec backends have no path
         ex_bec.save()
         fs_bec = orm.BackendCredential.objects.get(id=3)
         fs_bec.homedir = "%s%s" % (os.environ['HOME'], '/')

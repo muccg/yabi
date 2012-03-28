@@ -71,12 +71,46 @@ class EngineWorkflow(Workflow):
     def workflow_id(self):
         return self.id
 
+    @property 
+    def json(self): 
+        return json.dumps(self.as_dict()) 
+ 
+    def errored_in_build(self):
+        if self.status != STATUS_ERROR:
+            return False
+        # if the Workflow status is error and we have less jobs than we received in the JSON
+        # it means we couldn't build() all jobs from the request -> we had an error during build()
+        received_json = json.loads(self.original_json)
+        if 'jobs' not in received_json:
+            return False
+        received_jobs_count = len(received_json['jobs'])
+        return (received_jobs_count > self.job_set.count())
+
+    def as_dict(self): 
+        d = { 
+                "name": self.name, 
+                "tags": [] # TODO probably can be removed 
+            }  
+        jobs = [] 
+        if self.errored_in_build():
+            # We have to do this to allow the FE to reuse the Workflow
+            # If build() failed there would be no jobs
+            d['jobs'] = json.loads(self.original_json)['jobs']
+        else: 
+            for job in self.get_jobs(): 
+                jobs.append(job.as_dict()) 
+            d['jobs'] = jobs 
+        return d 
+
+    def get_jobs(self):
+        return EngineJob.objects.filter(workflow=self).order_by("order") 
+
     @transaction.commit_on_success
     def build(self):
         logger.debug('----- Building workflow id %d -----' % self.id)
 
         try:
-            workflow_dict = json.loads(self.json)
+            workflow_dict = json.loads(self.original_json)
             
             # sort out the stageout directory
             if 'default_stageout' in workflow_dict and workflow_dict['default_stageout']:
@@ -93,17 +127,25 @@ class EngineWorkflow(Workflow):
                 job = EngineJob(workflow=self, order=i, start_time=datetime.datetime.now())
                 job.add_job(job_dict)
 
-        except (AssertionError, ObjectDoesNotExist, KeyError, Exception) , e:
+        except Exception, e:
+            transaction.rollback()
+
             self.status = STATUS_ERROR
             self.save()
+            transaction.commit()
+
             logger.critical(e)
             logger.critical(traceback.format_exc())
-            print traceback.format_exc()  
-            transaction.commit()
-            raise
 
-    # NOTE: this is a load bearing decorator. Do not remove it or the roof will fall in. (it stops locking nightmares)
-    @transaction.commit_on_success
+            raise
+    
+    def jobs_that_need_walking(self):
+        return [j for j in EngineJob.objects.filter(workflow=self).order_by("order") if j.total_tasks() == 0 and not j.has_incomplete_dependencies()]
+
+    def needs_walking(self):
+        return (len(self.jobs_that_need_walking()) > 0)
+
+    @transaction.commit_manually
     def walk(self):
         '''
         Walk through the jobs for this workflow and prepare jobs and tasks,
@@ -126,13 +168,19 @@ class EngineWorkflow(Workflow):
                     logger.info('job %s has incomplete dependencies, skipping walk' % job.id)
                     continue
 
+                # This will open up a new transaction for creating all the tasks of a Job
+                # TODO TSZ - it might make sense to change all this code to walk jobs instead
+                # Walking one job (ie. creating tasks for it) seems to be the unit of work here
                 job.create_tasks()
 
                 # there must be at least one task for every job
                 if not job.total_tasks():
                     logger.critical('No tasks for job: %s' % job.id)
                     job.status = STATUS_ERROR
+                    self.status = STATUS_ERROR
                     job.save()
+                    self.save()
+                    transaction.commit()
                     continue
             
                 # mark job as ready so it can be requested by a backend
@@ -140,43 +188,22 @@ class EngineWorkflow(Workflow):
                 job.save()
 
                 job.make_tasks_ready()          
+                transaction.commit()
 
-            # check all the jobs are complete, if so, changes status on workflow
-            incomplete_jobs = Job.objects.filter(workflow=self).exclude(status=STATUS_COMPLETE)
-            if not len(incomplete_jobs):
-                self.status = STATUS_COMPLETE
-                self.save()
-                
-            # we may get here, with no more tasks or jobs running, but only after a lengthy walk.   
-            # so all the jobs are marked as "STATUS_COMPLETE" in the database, but not necessarily in the json representation.      
-            # so lets make sure the json fully reflects our new complete state      
-
-            # TODO: make this happen in a minimal way. fo now, just recheck one more time   
-            for job in jobset:      
-                job.update_status()     
-                job.save()
-                
-            # check for error jobs, if so, change status on workflow
-            error_jobs = Job.objects.filter(workflow=self).filter(status=STATUS_ERROR)
-            if len(error_jobs):
-                self.status = STATUS_ERROR
-                self.save()
-
-        except ObjectDoesNotExist,e:
-            self.status = STATUS_ERROR
-            self.save()
-            logger.critical("ObjectDoesNotExist at workflow::walk")
-            logger.critical(traceback.format_exc())
-            print traceback.format_exc()
+            # Making sure the transactions opened in the loop are closed
+            # ex. job.total_tasks() opens a transaction, then it could exit the loop with continue    
             transaction.commit()
-            raise
+
         except Exception,e:
+            transaction.rollback()
+
             self.status = STATUS_ERROR
             self.save()
+            transaction.commit()
+
             logger.critical("Exception raised in workflow::walk")
             logger.critical(traceback.format_exc())
-            print traceback.format_exc()
-            transaction.commit()
+
             raise
 
     def change_tags(self, taglist):
@@ -197,6 +224,11 @@ class EngineWorkflow(Workflow):
             if not wft.tag.workflowtag_set.exists():
                 wft.tag.delete()
 
+    def get_jobs(self):
+        return EngineJob.objects.filter(workflow=self).order_by("order")
+
+    def get_job(self, order):
+        return EngineJob.objects.get(order=order)
 
 
 class EngineJob(Job):
@@ -268,14 +300,12 @@ class EngineJob(Job):
         self.template.update_dependencies(self.workflow, ignore_glob_list=FNMATCH_EXCLUDE_GLOBS)
         return self.template.dependencies!=0
 
-    @transaction.commit_on_success
     def make_tasks_ready(self): 
         tasks = EngineTask.objects.filter(job=self)
         for task in tasks:
             task.status = STATUS_READY
             task.save()
 
-    #@transaction.commit_on_success
     def add_job(self, job_dict):
         assert(job_dict)
         assert(job_dict["toolName"])
@@ -403,7 +433,7 @@ class EngineJob(Job):
             job = task_data[0]
             # remove job from task_data as we now are going to call method on job TODO maybe use pop(0) here
             del(task_data[0]) 
-            task = EngineTask(job=job, status=STATUS_PENDING)
+            task = EngineTask(job=job, status=STATUS_PENDING, start_time=datetime.datetime.now())
             #print "ADD TASK: %s"%(str(task_data+[name]))
             task.add_task(*(task_data+[name]))
             num,name = buildname(num)
@@ -430,21 +460,25 @@ class EngineJob(Job):
     def get_errored_tasks_messages(self):
         return [X.error_msg for X in Task.objects.filter(job=self) if X.status == STATUS_ERROR]
 
-    def updateJson(self, snippet={}):
-        json_object = json.loads(self.workflow.json)
-
+    def as_dict(self):
+        # TODO This will have to be able to generate the full JSON
+        # In this step of the refactoring it will just get it's json from the workflow
+        workflow_dict = json.loads(self.workflow.original_json)
         job_id = int(self.order)
-        assert json_object['jobs'][job_id]['jobId'] == job_id + 1 # jobs are 1 indexed in json
+        job_dict = workflow_dict['jobs'][job_id]
+        assert job_dict['jobId'] == job_id + 1 # jobs are 1 indexed in json
 
-        json_object['jobs'][job_id]['status'] = self.status
-        for key in snippet:
-           json_object['jobs'][job_id][key] = snippet[key]
+        job_dict['status'] = self.status
+        job_dict['tasksComplete'] = float(self.progress_score())
+        job_dict['tasksTotal'] = float(self.total_tasks())
+
+        if self.status == STATUS_ERROR:
+            job_dict['errorMessage'] = str(self.get_errored_tasks_messages())
 
         if self.stageout:
-            json_object['jobs'][job_id]['stageout'] = self.stageout
+            job_dict['stageout'] = self.stageout
+        return job_dict
 
-        self.workflow.json = json.dumps(json_object)
-        self.workflow.save()
 
 class EngineTask(Task):
 
@@ -529,37 +563,3 @@ class EngineTask(Task):
         logger.debug("Stagein: %s <=> %s (%s): %s " % (s.src, s.dst, method, "created" if created else "reused"))
         s.save()
 
-
-# Django signals. These are only used to update the store. It should stay this way,
-# please refrain from adding anything here other than store updates.
-
-def signal_job_post_save(sender, **kwargs):
-    logger.debug("job post_save signal")
-
-    try:
-        job = kwargs['instance']
-
-        # we need an EngineJob so get that from the job.id
-        ejob = EngineJob.objects.get(id=job.id)
-        score = ejob.progress_score()
-        total = ejob.total_tasks()
-
-        # now update the json with the appropriate values
-        data = {'tasksComplete':float(score),
-                'tasksTotal':float(total)
-                }
-        if ejob.status == STATUS_ERROR:
-            data['errorMessage'] = str(ejob.get_errored_tasks_messages())
-        logger.debug("Updating job "+str(ejob)+" with "+str(data))
-        ejob.updateJson(data)
-
-    except Exception, e:
-        logger.critical(e)
-        logger.critical(traceback.format_exc())
-        raise
-   
-
- 
-# connect up django signals
-post_save.connect(signal_job_post_save, sender=Job)
-post_save.connect(signal_job_post_save, sender=EngineJob)

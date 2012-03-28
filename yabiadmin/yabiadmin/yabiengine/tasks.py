@@ -41,14 +41,13 @@ def build(workflow_id):
     print "building...",eworkflow
     eworkflow.build()
     print "------------->"
-    eworkflow.walk()
+    walk.delay(workflow_id=workflow_id)
     return workflow_id
 
 #@task(name="yabiadmin.yabiengine.tasks.walk")
 class walk(Task):
     ignore_result = True
 
-    @transaction.commit_on_success
     def run(self, workflow_id, **kwargs):
         print "WALK:",workflow_id
         assert(workflow_id)
@@ -64,3 +63,4 @@ class walk(Task):
             eworkflow.save()
             raise
         return workflow_id
+

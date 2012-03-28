@@ -56,10 +56,11 @@ MKDIR_PATH = '/bin/mkdir'
 RM_PATH = '/bin/rm'
 LN_PATH = '/bin/ln'
 CP_PATH = '/bin/cp'
+SH_PATH = '/bin/sh'
 
 LS_TIME_STYLE = r"+%b %d  %Y"
 
-DEBUG = True
+DEBUG = False
  
 from decorators import retry, call_count
 from LockQueue import LockQueue
@@ -193,7 +194,7 @@ class LocalShell(object):
     def cp(self, src, dst, args=None):
         # if the coipy is recursive, and the src ends in a slash, then we should add a wildcard '*' to the src to make it copy the contents of the directory
         if args is not None and "r" in args and src.endswith("/"):
-            return self.execute(LocalShellProcessProtocol(),command=[CP_PATH]+ ([args] if args else []) +[self._make_echo(src)+"*",self._make_echo(dst)])
+            return self.execute(LocalShellProcessProtocol(),command=[SH_PATH,'-c',"%s %s '%s'* '%s'"%(CP_PATH, args, self._make_echo(src),self._make_echo(dst) )])
         else:
             return self.execute(LocalShellProcessProtocol(),command=[CP_PATH]+ ([args] if args else []) +[self._make_echo(src),self._make_echo(dst)])
 

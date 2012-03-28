@@ -1,0 +1,17 @@
+<%inherit file="admin/base_site.html"/>
+<%namespace name="admin" module="django.contrib.admin.templatetags.adminmedia" />
+
+% if not is_popup:
+${self.block_breadcrumbs()}<%def name="block_breadcrumbs()"><div class="breadcrumbs"><a href="${root_path}">${trans("Home")}</a> &rsaquo; LDAP Users</div></%def>
+% endif
+
+
+${self.block_content()}<%def name="block_content()">
+<div id="content-main">
+
+<h2>
+You do not have LDAP configured for use.
+</h2>
+
+</div>
+</%def>

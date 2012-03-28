@@ -32,7 +32,7 @@ import djcelery
 import logging
 import logging.handlers
 
-PROJECT_DIRECTORY = os.environ['PROJECT_DIRECTORY']
+PROJECT_DIRECTORY = os.environ.get('PROJECT_DIRECTORY', os.path.abspath('.'))
 
 # setting to control ccg ssl middleware
 # see http://code.google.com/p/ccg-django-extras/source/browse/
@@ -50,6 +50,7 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.middleware.transaction.TransactionMiddleware',
     'django.middleware.doc.XViewMiddleware',
     'ccg.middleware.ssl.SSLRedirect'
 ]
@@ -133,7 +134,7 @@ APPEND_SLASH = True
 SITE_NAME = 'yabiadmin'
 
 # validation settings, these reflect the types of backend that yabi can handle
-EXEC_SCHEMES = ['globus', 'sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 'localex','null']
+EXEC_SCHEMES = ['globus', 'sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex','explode','null']
 FS_SCHEMES = ['http', 'https', 'gridftp', 'yabifs', 'scp', 's3', 'localfs','null']
 VALID_SCHEMES = EXEC_SCHEMES + FS_SCHEMES
 
@@ -237,6 +238,7 @@ MEMCACHE_KEYSPACE = "yabiadmin"
 
 # uploads are currently written to disk and double handled, setting a limit will break things
 # see https://docs.djangoproject.com/en/dev/ref/settings/#file-upload-max-memory-size
+# this also ensures that files are always written to disk so we can access them via temporary_file_path
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
 

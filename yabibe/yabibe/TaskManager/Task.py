@@ -227,7 +227,7 @@ class NullBackendTask(Task):
             if src.endswith("/"):
                 log("RCopying %s to %s..."%(src,dst))
                 try:
-                    RCopy(src,dst, yabiusername=self.yabiusername)
+                    RCopy(src,dst, yabiusername=self.yabiusername,log_callback=log)
                     log("RCopying %s to %s Success"%(src,dst))
                 except GETFailure, error:
                     # error copying!
@@ -432,7 +432,7 @@ class MainTask(Task):
         # get our credential working directory. We lookup the execution backends auth proxy cache, and get the users home directory from that
         # this comes from their credentials.
         scheme, address = parse_url(task['exec']['backend'])
-        usercreds = UserCreds(self.yabiusername, task['exec']['backend'],credtype="exec")
+        usercreds = UserCreds(self.yabiusername, task['exec']['backend'], credtype="exec")
         workingdir = task['exec']['workingdir']
         
         assert address.path=="/", "Error. JSON[exec][backend] has a path. Execution backend URI's must not have a path (path is %s)"%address.path 
@@ -477,7 +477,7 @@ class MainTask(Task):
             retry=False
             
             try:
-                exec_status = [None]
+                self.exec_status = [None]
                 
                 # callback for job execution status change messages
                 def _task_status_change(line):
@@ -496,8 +496,8 @@ class MainTask(Task):
                         self._jobid = value
                         #self.remote_id(value)                           # TODO:send this id back to the middleware
                     else:
-                        exec_status[0] = line.lower()
-                        self.status("exec:%s"%(exec_status[0]))
+                        self.exec_status[0] = line.lower()
+                        self.status("exec:%s"%(self.exec_status[0]))
                 
                 # submit the job to the execution middle ware
                 self.log("Submitting to %s command: %s"%(task['exec']['backend'],task['exec']['command']))
@@ -514,12 +514,19 @@ class MainTask(Task):
                     
                     #print "callfunc is",callfunc
                     callfunc(uri, command=task['exec']['command'], remote_info=task['remoteinfourl'], submission=self.submission, stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)     # this blocks untill the command is complete. or the execution errored
-                    while exec_status[0]==None:
+                    while self.exec_status[0]==None or self.exec_status[0]=="pending" or self.exec_status[0]=="unsubmitted" or self.exec_status[0]=="running":
                         gevent.sleep()
-                    if exec_status[0] and 'error' in exec_status[0]:
+                    
+                    #DEBUG
+                    from twisted.python import log
+                    exec_status_message = "exec_status is %r"%(self.exec_status)
+                    self.log(exec_status_message)
+                    log.msg(exec_status_message)
+                    
+                    if self.exec_status[0] and 'error' in self.exec_status[0]:
                         print "TASK[%s]: Execution failed!"%(self.taskid)
                         self.status("error")
-                        self.log("Execution of %s on %s failed with status %s"%(task['exec']['command'],task['exec']['backend'],exec_status[0]))
+                        self.log("Execution of %s on %s failed with status %s"%(task['exec']['command'],task['exec']['backend'],self.exec_status[0]))
                         
                         # finish task
                         raise TaskFailed("Execution failed")
@@ -564,7 +571,7 @@ class MainTask(Task):
             try:
                 if DEBUG:
                     print "RCopy(",outputuri,",",task['stageout'],",",self.yabiusername,")"
-                RCopy(outputuri,task['stageout'],yabiusername=self.yabiusername,contents=True)
+                RCopy(outputuri,task['stageout'],yabiusername=self.yabiusername,contents=True,log_callback=self.log)
                 self.log("Files successfuly staged out")
             except GETFailure, error:
                 if "503" in error.message[1]:

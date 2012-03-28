@@ -55,7 +55,9 @@ from ex.connector.TorqueConnector import TorqueConnector
 from ex.connector.SSHConnector import SSHConnector
 from ex.connector.SSHTorqueConnector import SSHTorqueConnector
 from ex.connector.SSHPbsproConnector import SSHPbsproConnector
+from ex.connector.SSHSGEConnector import SSHSGEConnector
 from ex.connector.LocalConnector import LocalConnector
+from ex.connector.ExplodingConnector import ExplodingConnector
 
 # taskmanager debug
 from TaskManager import TaskManagerResource, TaskManagerPickleResource

@@ -207,7 +207,6 @@ def ssh_connect_login(options, known_hosts):
 def transport_connect_login(options, known_hosts):
     if options.identity:
         ssh = paramiko.Transport((options.hostname, 22))
-                
         try:
             mykey = get_rsa_key(options)
         except paramiko.SSHException, pe:
@@ -265,7 +264,7 @@ def execute(ssh,options,shell=True):
         
         if shell:
             ex = options.execute.replace("'","'\\''")        # escape any single quotes
-            stdin, stdout, stderr = ssh.exec_command("bash -i -c '"+ex+"'")
+            stdin, stdout, stderr = ssh.exec_command("bash -c '"+ex+"'")
         else:
             stdin, stdout, stderr = ssh.exec_command(options.execute)
     
@@ -301,5 +300,11 @@ def execute(ssh,options,shell=True):
                 
         return stdout.channel.exit_status
 
-
-main()
+try:
+    main()
+except Exception, e:
+    # all exceptions mean a problem with the SSH code or the paramiko
+    # we print the error and exit 255
+    import traceback
+    traceback.print_exc()
+    sys.exit(255)

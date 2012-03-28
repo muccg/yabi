@@ -27,6 +27,8 @@ virtualenv==1.6.4
 wsgiref==0.1.2
 zope.interface==3.6.3
 Mercurial>=1.9.3
+psutil
+boto==2.2.2
 gevent
 greenlet>=0.3.3
 

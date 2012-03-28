@@ -68,42 +68,8 @@ from utils import memcache_client, memcache_http, make_http_request, make_reques
 import logging
 logger = logging.getLogger(__name__)
 
-from UploadStreamer import UploadStreamer
 from django.views.decorators.csrf import csrf_exempt
 
-class FileUploadStreamer(UploadStreamer):
-    def __init__(self, host, port, selector, cookies, fields):
-        UploadStreamer.__init__(self)
-        self._host = host
-        self._port = port
-        self._selector = selector
-        self._fields = fields
-        self._cookies = cookies
-    
-    def receive_data_chunk(self, raw_data, start):
-        #print "receive_data_chunk", len(raw_data), start
-        return self.file_data(raw_data)
-    
-    def file_complete(self, file_size):
-        """individual file upload complete"""
-        #print "file_complete",file_size
-        return self.end_file()
-    
-    def new_file(self, field_name, file_name, content_type, content_length, charset):
-        """beginning of new file in upload"""
-        #print "new_file",field_name, file_name, content_type, content_length, charset
-        return UploadStreamer.new_file(self,file_name)
-    
-    def upload_complete(self):
-        """all files completely uploaded"""
-        #print "upload_complete"
-        return self.end_connection()
-    
-    def handle_raw_input(self, input_data, META, content_length, boundary, encoding, chunked):
-        """raw input"""
-        # this is called right at the beginning. So we grab the uri detail here and initialise the outgoing POST
-        self.post_multipart(host=self._host, port=self._port, selector=self._selector, cookies=self._cookies )
-        
 @authentication_required
 def fileupload(request, url):
     return upload_file(request, request.user)
@@ -233,13 +199,10 @@ def login(request):
             if user is not None:
                 if user.is_active:
                     django_login(request, user)
-                    yabiadmin_login(request, username, password)
+                    success, message = yabiadmin_login(request, username, password)
 
-                    # TODO need to be able to get this message to frontend, not so easily done using decorator
-                    # but don't want to duplicate decorator code here just to get this message in
-                    #  success, message = yabiadmin_login(request, username, password)
-                    # if not success:
-                    #     return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':message})
+                    if not success:
+                        return render_to_response('login.html', {'h':webhelpers, 'form':form, 'error':message})
 
                     return HttpResponseRedirect(webhelpers.url("/"))
 
@@ -480,6 +443,10 @@ def error_500(request):
 
 @profile_required
 def upload_file(request, user):
+    """
+    NB: if anyone changes FILE_UPLOAD_MAX_MEMORY_SIZE in the settings to be greater than zero
+    this function will not work as it calls temporary_file_path
+    """
     logger.debug('')
 
     host = urlparse(settings.YABIADMIN_SERVER).hostname
@@ -494,26 +461,19 @@ def upload_file(request, user):
     
     # examine cookie jar for our admin session cookie
     http = memcache_http(request)
-    jar = http.cookie_jar
-    cookie_string = jar.cookies_to_send_header(settings.YABIADMIN_SERVER)['Cookie']
-    
-    streamer = FileUploadStreamer(host=host, port=port or 80, selector=upload_path+"/ws/fs/put?uri=%s"%quote(upload_uri), cookies=[cookie_string], fields=[])
-    request.upload_handlers = [ streamer ]
-    
-    # evaluating POST triggers the processing of the request body
-    request.POST
-    
-    result=streamer.stream.getresponse()
-    
-    content=result.read()
-    status=int(result.status)
-    reason = result.reason
-    
-    #print "passing back",status,reason,"in json snippet"
-    
+
+    files = []
+    for key, f in request.FILES.items():
+        file_details = (f.name, f.name, f.temporary_file_path())
+        files.append(file_details)
+
+    upload_request = PostRequest("ws/fs/put?uri=%s" % quote(upload_uri), params={}, files=files)
+    resp, contents = http.make_request(upload_request)
+    http.finish_session()
+
     response = {
-        "level":"success" if status==200 else "failure",
-        "message":content
+        "level":"success" if resp.status==200 else "failure",
+        "message":contents
         }
     return HttpResponse(content=json.dumps(response))
 
@@ -524,20 +484,45 @@ def yabiadmin_login(request, username, password):
         'username': username, 'password': password})
     http = memcache_http(request)
     resp, contents = http.make_request(login_request)
-    if resp.status != 200: 
-        return False, "System Error:"+contents
-    json_resp = json.loads(contents)
     http.finish_session()
-    
-    success = json_resp.get('success', False)
-    message = json_resp.get('message', "System Error")
+
+    try:
+        json_resp = json.loads(contents)
+        success = json_resp.get('success', False)
+        message = json_resp.get('message', "System Error")
+    except ValueError:
+        success = False
+        message = "Unknown error, unable to interpret json response from admin server."
+        
+    if resp.status != 200:
+        success = False
     
     return success, message
-
-
-
 
 @login_required
 def exception_view(request):
     logger.debug("test exception view")
     raise Exception("This is a test exception.")
+
+def status_page(request):
+    """Availability page to be called to see if yabife is running. Should return HttpResponse with status 200"""
+    logger.info('')
+
+    # make a db connection
+    u = User.objects.filter(user__username='')
+    len(u) # so it is evaluated
+
+    # write a file
+    with open(os.path.join(settings.WRITABLE_DIRECTORY, 'status_page_testfile.txt'), 'w') as f:
+         f.write("testing file write")
+
+    # read it again
+    with open(os.path.join(settings.WRITABLE_DIRECTORY, 'status_page_testfile.txt'), 'r') as f:
+         contents = f.read()
+         assert 'testing file write' in contents
+
+    # delete the file
+    os.unlink(os.path.join(settings.WRITABLE_DIRECTORY, 'status_page_testfile.txt'))
+
+    return HttpResponse('Status OK')
+

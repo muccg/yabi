@@ -197,7 +197,7 @@ YabiWorkflow.prototype.setStatus = function(statusText) {
     }
     
     var loadImg;
-    if (this.status !== "complete" && this.status !== "error") {
+    if (this.status !== "complete") {
         if (YAHOO.lang.isUndefined(this.loadingEl) || this.loadingEl === null) {
             this.loadingEl = document.createElement("div");
             this.loadingEl.className = "workflowLoading";
@@ -725,7 +725,7 @@ YabiWorkflow.prototype.solidify = function(obj) {
  */
 YabiWorkflow.prototype.fetchProgress = function(callback) {
     //console.log("fetch progress");
-    if (this.status.toLowerCase() !== "completed" && this.status.toLowerCase() !== "error") {
+    if (this.status.toLowerCase() !== "completed") {
         this.hydrate(this.workflowId);
     } 
     
