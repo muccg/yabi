@@ -114,7 +114,7 @@ def release(*args, **kwargs):
     tag = kwargs.get("tag", None)
     env.ccg_requirements = requirements
     env.auto_confirm=False
-    _ccg_deploy_release(tag=tag)
+    _ccg_deploy_release(tag=tag,migration=False)
 
 def createdirs():
     """
