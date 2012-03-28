@@ -225,16 +225,11 @@ MANAGERS = ADMINS
 #AUTH_LDAP_USERDN = 'ou=People'
 
 
-# memcache server list
-# add a list of your memcache servers
-MEMCACHE_SERVERS = ['localhost.localdomain:11211']
-MEMCACHE_KEYSPACE = "yabiadmin"
-
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': MEMCACHE_SERVERS,
-        'KEYSPACE': "yabiadmin_new_"
+        'LOCATION': 'localhost.localdomain:11211',
+        'KEYSPACE': "yabiadmin"
     }
 }
 

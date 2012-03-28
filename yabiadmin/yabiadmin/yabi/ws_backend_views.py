@@ -43,7 +43,7 @@ from yabiadmin.yabiengine import backendhelper
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.responses import *
 
-from yabiadmin.decorators import authentication_required, profile_required, hmac_authenticated
+from yabiadmin.decorators import authentication_required, hmac_authenticated
 
 import logging
 logger = logging.getLogger(__name__)
