@@ -930,10 +930,10 @@ def create_user_profile(sender, instance, created, **kwargs):
  
 # connect up signals
 from django.db.models.signals import post_save, pre_save,post_init
-post_save.connect(signal_tool_post_save, sender=Tool)
-post_save.connect(create_user_profile, sender=DjangoUser)
-pre_save.connect(signal_credential_pre_save, sender=Credential)
-post_init.connect(signal_credential_post_init, sender=Credential)
+post_save.connect(signal_tool_post_save, sender=Tool, dispatch_uid="signal_tool_post_save")
+post_save.connect(create_user_profile, sender=DjangoUser, dispatch_uid="create_user_profile")
+pre_save.connect(signal_credential_pre_save, sender=Credential, dispatch_uid="signal_credential_pre_save")
+post_init.connect(signal_credential_post_init, sender=Credential, dispatch_uid="signal_credential_post_init")
 
 
 
