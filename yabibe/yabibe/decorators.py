@@ -33,9 +33,11 @@ DEFAULT_FUNCTION_RETRY = 3
 
 def default_delay_generator():
     delay = 5.0
-    while True:
+    while delay<300.:
         yield delay
         delay *= 2.0
+    while True:
+        yield 300.          # five minutes forever more
     
 def retry(num_retries = DEFAULT_FUNCTION_RETRY, ignored=[], delay_func = None):
     """num_retries is how often to retry the function.
@@ -63,7 +65,34 @@ def retry(num_retries = DEFAULT_FUNCTION_RETRY, ignored=[], delay_func = None):
                     else:
                         raise                               # out of retries... fail
         return new_func
-    return retry_decorator
+    return retry_decorator    
+
+def timed_retry(total_time=600.,ignored=[]):
+    def timed_retry_decorator(f):
+        def new_func(*args, **kwargs):
+            time_waited = 0.
+            gen = default_delay_generator()
+            while time_waited<total_time:
+                try:
+                    return f(*args, **kwargs)               # exits on success
+                except Exception, exc:
+                    if True in [isinstance(exc,E) for E in ignored]:                # is this an exception we should ignore
+                        raise                                                       # raise the exception
+                    
+                    if time_waited<total_time:
+                        delay = gen.next()
+                        print "WARNING: retry-function",f,"raised exception",exc,"... waiting",delay,"seconds and retrying",num,"more times..."
+                        sleep(delay)
+                    else:
+                        raise                               # out of retries... fail
+                        
+        return new_func
+    return timed_retry_decorator    
+    
+from conf import config
+
+def conf_retry(ignored=[]):
+    return timed_retry(config.config["taskmanager"]["retrywindow"], ignored)
 
 def lock(maximum):
     def lock_decorator(f):

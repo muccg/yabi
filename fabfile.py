@@ -22,7 +22,6 @@ TESTS = {
     "virtenvdir": "virt_yabitests"
 }
 
-STACKLESS_PYTHON = '/usr/local/bin/spython'
 
 def clean():
     '''Clean all virtual environment directories'''
@@ -102,7 +101,7 @@ def fe_quickstart(bg=False):
 def be_bootstrap():
     '''Bootstrap the yabibe project'''
     with lcd(BE['dir']):
-        local("sh ../../bootstrap.sh -p %s -r requirements.txt" % STACKLESS_PYTHON)
+        local("sh ../../bootstrap.sh -r requirements.txt")
 
 def be_createdirs():
     '''Creates necessary directories for the yabibe project'''

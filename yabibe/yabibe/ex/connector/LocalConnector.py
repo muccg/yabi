@@ -110,7 +110,7 @@ class BaseShellProcessProtocol(protocol.ProcessProtocol):
         
     def isFailed(self):
         return self.isDone() and self.exitcode != 0
-
+        
 class BaseShell(object):
     def __init__(self):
         pass
@@ -174,12 +174,11 @@ class LocalConnector(ExecConnector):
         try:
             if DEBUG:
                 print "LOCAL",command,"WORKING:",working,"CREDS passed in:%s"%(creds)    
-            client_stream.write("Unsubmitted\n")
-            gevent.sleep()
-            
+            client_stream.write("Unsubmitted\r\n")
+            gevent.sleep(1.0)
             
             client_stream.write("Pending\r\n")
-            gevent.sleep()
+            gevent.sleep(1.0)
             
             script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue, stdout, stderr)    
             
@@ -197,7 +196,7 @@ class LocalConnector(ExecConnector):
                 
             pp = LocalRun().run(None,command,username,host,working,port="22",stdout=stdout,stderr=stderr,password=None, modules=modules)
             client_stream.write("Running\r\n")
-            gevent.sleep()
+            gevent.sleep(1.0)
             
             while not pp.isDone():
                 gevent.sleep()
