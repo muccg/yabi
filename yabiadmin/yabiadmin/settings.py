@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
     'yabiadmin.yabistoreapp',
+    'yabiadmin.uploader',
     'djcelery',
     'djkombu',
     'django_extensions',
