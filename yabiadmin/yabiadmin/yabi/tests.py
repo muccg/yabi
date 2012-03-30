@@ -2,6 +2,8 @@
 
 from django.utils import unittest as unittest
 from django.test.client import Client
+from django.contrib.auth.models import User as DjangoUser
+from yabiadmin.yabi.models import UserProfile
 
 from django.contrib.auth.models import User as DjangoUser
 from yabiadmin.yabi.models import Credential, User
@@ -13,6 +15,31 @@ class StatusPageTest(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue("Status OK" in response.content)
 
+class CreateUserFromAdminTest(unittest.TestCase):
+    TEST_USER = 'a_test_user'
+
+    def setUp(self):
+        self.client = Client()
+
+    def tearDown(self):
+        DjangoUser.objects.filter(username=self.TEST_USER).delete()
+
+    # TODO refactor when we add more tests
+    def login_admin(self):
+        response = self.client.post('/admin/', 
+                {'username': 'admin', 'password': 'admin', 
+                 'this_is_the_login_form': 1, 'next': '/admin'})
+        # This assert might be a bit fragile
+        assert response.status_code == 302, "Couldn't log in admin user"
+
+    def test_user_creation(self):
+        self.login_admin()
+        response = self.client.post('/admin/auth/user/add/',
+                {'username': self.TEST_USER, 'password1': 'test', 'password2': 'test', '_save': 'Save'})
+        self.assertEqual(response.status_code, 302, 'Should redirect to User List page')
+        self.assertTrue(DjangoUser.objects.filter(username=self.TEST_USER).exists(), 'Should create Django User')
+        self.assertTrue(UserProfile.objects.filter(user__username=self.TEST_USER).exists(), 'Should create User Profile for user')
+
 class CredentialTests(unittest.TestCase):
     def setUp(self):
         self.user = User.objects.create(name=u'győzike')
@@ -20,7 +47,7 @@ class CredentialTests(unittest.TestCase):
         self.django_user.set_password('pass')
         self.django_user.save()
         self.credential = Credential.objects.create(description='null credential', username=self.user.name, user=self.user)
-       
+
     def tearDown(self):
         self.credential.clear_cache()
         self.credential.delete()
@@ -52,7 +79,7 @@ class CredentialTests(unittest.TestCase):
 
     def test_login_decrypts_credential(self):
         client = Client()
-        response = client.post('/ws/login/', 
+        response = client.post('/ws/login/',
                 {'username': self.django_user.username, 'password': 'pass'})
         self.assertEqual(response.status_code, 200)
         self.assertTrue("All credentials were successfully decrypted" in response.content)

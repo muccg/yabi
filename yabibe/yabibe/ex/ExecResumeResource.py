@@ -31,7 +31,7 @@ from twisted.internet import defer
 
 import weakref
 import os
-import stackless
+import gevent
 import traceback
 
 from utils.parsers import parse_url
@@ -115,9 +115,7 @@ class ExecResumeResource(resource.PostableResource):
 
         print "resume func:",bend.resume
 
-        task = stackless.tasklet(bend.resume)
-        task.setup(jobid, yabiusername, None, command, basepath, scheme, username, hostname, None, client_deferred, **kwargs)                   # TODO: remember and pass through remote_url
-        task.run()
+        task = gevent.spawn(bend.resume,jobid, yabiusername, None, command, basepath, scheme, username, hostname, None, client_deferred, **kwargs)                   # TODO: remember and pass through remote_url
         
         return client_deferred
         #return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream )

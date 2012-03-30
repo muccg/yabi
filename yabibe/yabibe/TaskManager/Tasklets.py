@@ -30,7 +30,7 @@
 import pickle
 import os
 import dircache
-import stackless
+import gevent
 
 from TaskTools import CloseConnections
 
@@ -102,9 +102,7 @@ class Tasklets(object):
                     os.unlink(path)
                 
                     # lets try and start the task up
-                    runner = stackless.tasklet(task.run)
-                    runner.setup()
-                    runner.run()
+                    runner = gevent.spawn(task.run)
                     
                     self.tasks[id]=task
                 except EOFError, eofe:

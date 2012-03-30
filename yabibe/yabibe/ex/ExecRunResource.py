@@ -31,7 +31,7 @@ from twisted.internet import defer
 
 import weakref
 import os
-import stackless
+import gevent
 import traceback
 
 from utils.parsers import parse_url
@@ -121,11 +121,9 @@ class ExecRunResource(resource.PostableResource):
         if DEBUG:
             print "starting tasklet",bend.run
             print "KWARGS:",kwargs
-        task = stackless.tasklet(bend.run)
-        task.setup(yabiusername, None, command, basepath, scheme, username, hostname, remote_info_url, client_deferred, submission, **kwargs)
+        task = gevent.spawn(bend.run,yabiusername, None, command, basepath, scheme, username, hostname, remote_info_url, client_deferred, submission, **kwargs)
         if DEBUG:
             print "running tasklet",task,"with inputs",(yabiusername, command, basepath, scheme, username, hostname, remote_info_url, client_deferred, submission, kwargs)
-        task.run()
         
         return client_deferred
         #return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream )
