@@ -207,6 +207,8 @@ CACHES = {
     }
 }
 
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+
 # email settings so yabi can send email error alerts etc
 # see https://docs.djangoproject.com/en/dev/ref/settings/#email-host
 EMAIL_HOST = 'set_this'
