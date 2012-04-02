@@ -52,7 +52,7 @@ from utils.protocol import globus
 import gevent
 import tempfile
 
-from utils.stacklesstools import sleep
+from utils.geventtools import sleep
 from utils.protocol import ssh
 
 from conf import config

@@ -47,7 +47,7 @@ from utils.protocol import globus
 import gevent
 import tempfile
 
-from utils.stacklesstools import sleep
+from utils.geventtools import sleep
 
 from conf import config
 from SubmissionTemplate import make_script

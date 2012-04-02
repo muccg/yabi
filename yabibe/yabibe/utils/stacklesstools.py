@@ -166,7 +166,7 @@ class HTTPConnection(object):
                 raise GETFailure(self.get_failed[0])
             elif self.get_failed[0]==True:
                 # failed by tasklet serialisation and restoration
-                raise GETFailed("Base stacklesstools HTTPConnection does not support tasklet deserialisation")
+                raise GETFailed("Base geventtools HTTPConnection does not support tasklet deserialisation")
             else:
                 #print "GETFailed=",get_failed
                 assert False, "got unknown GET failure response"

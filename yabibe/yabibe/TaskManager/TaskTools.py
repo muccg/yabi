@@ -56,7 +56,7 @@ DEBUG = False
 
 DEFAULT_TASK_PRIORITY = 100
 
-from utils.stacklesstools import GET, POST, GETFailure, CloseConnections, RetryGET, RetryPOST
+from utils.geventtools import GET, POST, GETFailure, CloseConnections, RetryGET, RetryPOST
 
 def Sleep(seconds):
     """sleep tasklet for this many seconds. seconds is a float"""
