@@ -69,7 +69,6 @@ def backend(bg=False):
     """
     run the twisted backend on the terminal without forking, unless bg=True which runs it in background
     """
-    #print local("/usr/local/stackless/bin/twistd -noy server.py --logfile=-", capture=False)
     cmd = "nice twistd -noy server.py --logfile=-"
     if bg:
         cmd += " >yabibe.log 2>&1 &"
