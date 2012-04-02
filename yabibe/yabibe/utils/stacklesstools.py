@@ -26,8 +26,8 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-"""A suite of tools for using twisted with stackless python. Turns the twisted callback methods into
-functions that block a stackless tasklet.
+"""A suite of tools for using twisted with gevent. Turns the twisted callback methods into
+functions that block a gevent thread.
 """
 
 from twisted.web import client
