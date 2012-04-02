@@ -80,17 +80,29 @@ def JobPollGeneratorDefault():
     while True:
         yield 60.0
 
-# two classes of exception. one gets caught and retried, the other does not.
-# controlling command connection problems should be retried
-# remote command failure needs to be propagated upwards 
-# (sometimes... I bet qsub and qstat sometimes exit non zero for temporary problems, like queue full or something)
-class TransportException(Exception): pass
-class CommandException(Exception): pass
+# now we inherit our particular errors
+class SSHQsubException(Exception): pass
+class SSHQstatException(Exception): pass
+class SSHTransportException(Exception): pass
 
-class SSHQsubException(Exception):
-    pass
-class SSHQstatException(Exception):
-    pass
+# and further inherit hard and soft under those
+class SSHQsubSoftException(Exception): pass
+class SSHQstatSoftException(Exception): pass
+class SSHQsubHardException(Exception): pass
+class SSHQstatHardException(Exception): pass
+
+
+def rerun_delays():
+    # when our retry system is fully expressed (no corner cases) we could potentially make this an infinite generator
+    delay = 5.0
+    while delay<300.0:
+        yield delay
+        delay *= 2.0
+    totaltime=0.0
+    while totaltime<21600.0:                    # 6 hours
+        totaltime+=300.0
+        yield 300.0
+
 
 class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
     def __init__(self):
@@ -162,7 +174,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
             error_type = qsubretry.test(pp.exitcode, pp.err)
             if error_type == HARD:
                 # hard error.
-                raise SSHQsubException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
+                raise SSHQsubHardException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
             
         # everything else is soft
         raise SSHQsubSoftException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
@@ -225,15 +237,11 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         modules = [] if not module else [X.strip() for X in module.split(",")]    
         delay_gen = rerun_delays()
 
-    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
-        modules = [] if not module else [X.strip() for X in module.split(",")]    
-        delay_gen = rerun_delays()
-
         while True:                 # retry on soft failure
             try:
                 jobid = self._ssh_qsub(yabiusername,creds,command,working,username,host,remoteurl,submission,stdout,stderr,modules,walltime,memory,cpus,queue)
                 break               # success... now we continue
-            except (SSHQsubException, ExecutionError), ee:
+            except (SSHQsubHardException, ExecutionError), ee:
                 channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = str(ee) ))
                 return
             except (SSHQsubSoftException, SSHTransportException), softexc:
