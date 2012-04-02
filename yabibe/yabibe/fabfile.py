@@ -106,15 +106,15 @@ def restart():
     """
     print local("./init_scripts/centos/yabibe restart")
 
-def release(*args):
+def release(*args, **kwargs):
     """
     Make a release deployment
     """
+    requirements = kwargs.get("requirements", "requirements.txt")
+    tag = kwargs.get("tag", None)
+    env.ccg_requirements = requirements
     env.auto_confirm=False
-    if len(args):
-        _ccg_deploy_release(tag=args[0], apacheDeployment=False, migration=False)
-    else:
-        _ccg_deploy_release(apacheDeployment=False, migration=False)
+    _ccg_deploy_release(tag=tag, migration=False, apacheDeployment=False)
 
 def createdirs():
     """
