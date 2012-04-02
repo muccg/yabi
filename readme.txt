@@ -8,6 +8,7 @@ Dependencies
     Memcached running on the local machine (or change the yabi settings to point at your memcached server)
     sqlite3 (or other database supported by Django)
     Mercurial
+    libevent
 
 
 Checkout source code
