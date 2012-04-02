@@ -9,6 +9,7 @@ Dependencies
     sqlite3 (or other database supported by Django)
     Mercurial
     libevent
+    libevent include headers ( 'libevent-dev' package on many distributions )
 
 
 Checkout source code
