@@ -26,14 +26,14 @@ http://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.2.tar.gz
 http://ccg-python-build.googlecode.com/files/ccg-python-build-2.3.3.tar.gz
 cssutils==0.9.7
 django-templatetag-sugar==0.1
-httplib2==0.6.0
+httplib2==0.7.4
 paramiko==1.7.7.1
 pycrypto==2.3
 pygooglechart==0.2.1
 python-memcached==1.47
 virtualenv==1.6.4
 wsgiref==0.1.2
-http://yaphc.googlecode.com/files/yaphc-v0_1_3.tgz
+http://yaphc.googlecode.com/files/yaphc-v0_1_5.tgz
 Mako>=0.5.0
 South>=0.7.3
 django-extensions>=0.7.1
