@@ -5,7 +5,6 @@ Dependencies
 
     Python
     python include headers
-    Stackless Python setup as per BuildingStacklessPython
     Memcached running on the local machine (or change the yabi settings to point at your memcached server)
     sqlite3 (or other database supported by Django)
     Mercurial
@@ -66,8 +65,6 @@ In a new terminal run
     $ fab admin_quickstart
 
 In a new terminal run
-
-Note: If you haven't followed the recommended way to install Stackless Python (BuildingStacklessPython) make sure that you edit fabfile.py at the top level and change the variable STACKLESS_PYTHON to point to your stackless python binary.
 
     $ fab be_quickstart
 
