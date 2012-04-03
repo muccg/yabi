@@ -27,7 +27,7 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import gevent
-from utils.stacklesstools import sleep
+from utils.geventtools import sleep
 
 DEFAULT_FUNCTION_RETRY = 3
 

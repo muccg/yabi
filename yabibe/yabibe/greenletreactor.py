@@ -29,8 +29,6 @@
 # Use epoll() as our base reactor
 from twisted.internet.epollreactor import EPollReactor as GreenletBaseReactor
 
-#import stackless
-
 # seconds between running the greenthreads. 0.0 for flat out 100% CPU
 GREENLET_MAX_PUMP_RATE = 0.01
 
