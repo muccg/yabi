@@ -445,7 +445,6 @@ class MainTask(Task):
         outputuri = fsbackend + ("/" if not fsbackend.endswith('/') else "") + "output/"
         outputdir = workingdir + ("/" if not workingdir.endswith('/') else "") + "output/"
         
-        #self._tasks[stackless.getcurrent()]=workingdir
         try:
             Mkdir(outputuri, yabiusername=self.yabiusername)
         except GETFailure, error:

@@ -38,7 +38,7 @@ import traceback
 
 from Exceptions import PermissionDenied, InvalidPath, NoCredentials, ProxyInitError
 
-from utils.stacklesstools import WaitForDeferredData
+from utils.geventtools import WaitForDeferredData
 from utils.parsers import parse_url
 
 from twisted.internet.defer import Deferred
