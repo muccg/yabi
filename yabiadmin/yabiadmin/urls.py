@@ -29,7 +29,7 @@ from django.conf.urls.defaults import *
 from django.conf import settings
 from django.core import urlresolvers
 from django.contrib import admin as djangoadmin
-from yabiadmin import admin
+from yabiadmin import admin, uploader
 djangoadmin.autodiscover()
 
 # dispatch to either webservice, admin or general
@@ -39,6 +39,11 @@ urlpatterns = patterns('yabiadmin.yabi.views',
     url(r'^status_page[/]*$', 'status_page', name='status_page'),
     (r'^admin/', include('yabiadmin.yabi.adminurls'), {'SSL':True}),
     (r'^admin/', include(admin.site.urls), {'SSL':True})
+)
+
+# temporary url for file upload direct
+urlpatterns += patterns('yabiadmin.uploader.views',
+    (r'^upload/', include("yabiadmin.uploader.urls"))
 )
 
 urlpatterns += patterns('yabiadmin.yabi.views',

@@ -342,7 +342,9 @@ YAHOO.ccgyabi.widget.Upload.Flash.prototype.showProgress = function (name, progr
  */
 YAHOO.ccgyabi.widget.Upload.Flash.prototype.upload = function (uri) {
     if (this.selectedFile) {
-        var target = appURL + "ws/fs/put/" + this.session + "?uri=" + 
+//         var target = appURL + "ws/fs/put/" + this.session + "?uri=" + 
+//                      encodeURIComponent(uri).replace(/%20/g, "+");
+        var target = "http://localhost:8001/ws/fs/put/" + this.session + "?uri=" + 
                      encodeURIComponent(uri).replace(/%20/g, "+");
 
         this.uploader.setUploadURL(target);
@@ -422,8 +424,9 @@ YAHOO.ccgyabi.widget.Upload.HTML.prototype.destroy = function () {};
  */
 YAHOO.ccgyabi.widget.Upload.HTML.prototype.upload = function (uri) {
     var self = this;
-    var target = appURL + "ws/fs/put?uri=" + escape(uri);
-
+//     var target = appURL + "ws/fs/put?uri=" + escape(uri);
+    var target = "http://localhost:8001/ws/fs/put/" + escape(uri);
+    
     var callbacks = {
         upload: function (o) {
             self.uploadResponse(o);
@@ -666,7 +669,8 @@ YAHOO.ccgyabi.widget.Upload.HTML5.prototype.upload = function (uri) {
     var formData = new FormData();
     formData.append("file1", this.file);
 
-    var target = appURL + "ws/fs/put?uri=" + escape(uri);
+//     var target = appURL + "ws/fs/put?uri=" + escape(uri);
+    var target = "http://localhost:8001/upload/demo?uri=" + escape(uri);
     this.xhr.open("POST", target, true);
 
     /* Set up the event handlers for the request object. We need to attach the

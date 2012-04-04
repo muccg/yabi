@@ -1,8 +1,17 @@
 # Create your views here.
 
-from UploadStreamer import UploadStreamer
+from yabi.UploadStreamer import UploadStreamer
 from yabiengine.backendhelper import make_hmac
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
+from urlparse import urlparse
+from django.conf import settings
 
+from yaphc import Http, PostRequest, UnauthorizedError
+from yabiadmin.yabiengine.backendhelper import BackendRefusedConnection, BackendHostUnreachable, PermissionDenied, FileNotFound, BackendStatusCodeError
+from yabiadmin.yabiengine.backendhelper import get_fs_backendcredential_for_uri
+
+import logging
+logger = logging.getLogger(__name__)
 
 DEBUG_UPLOAD_STREAMER = True
 
@@ -48,6 +57,57 @@ class FileUploadStreamer(UploadStreamer):
         self.post_multipart(host=self._host, port=self._port, selector=self._selector, cookies=self._cookies )
 
 #@authentication_required
+def put(request, yabiusername):
+    """
+    Uploads a file to the supplied URI
+    """
+    import socket
+    import httplib
+
+    try:
+        logger.debug("uri: %s" %(request.GET['uri']))
+        uri = request.GET['uri']
+
+        bc = get_fs_backendcredential_for_uri(yabiusername, uri)
+        decrypt_cred = bc.credential.get()
+        resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))
+
+        # TODO: the following is using GET parameters to push the decrypt creds onto the backend. This will probably make them show up in the backend logs
+        # we should push them via POST parameters, or at least not log them in the backend.
+        resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(decrypt_cred['username']),quote(decrypt_cred['password']),quote( decrypt_cred['cert']),quote(decrypt_cred['key']))
+
+        (key, f) = request.FILES.items()[0]
+        file_details = (f.name, f.name, f.temporary_file_path())
+        files = []
+        files.append(file_details)
+
+        # PostRequest doesn't like having leading slash on this resource, so strip it off
+        upload_request = PostRequest(resource.strip('/'), params={}, headers={'Hmac-digest': make_hmac(resource)}, files=files)
+        base_url = "http://%s" % settings.YABIBACKEND_SERVER
+        http = Http(base_url=base_url)
+        resp, contents = http.make_request(upload_request)
+        http.finish_session()
+        
+        return HttpResponse(content=contents,status=resp.status)
+        
+    except BackendRefusedConnection, e:
+        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
+    except socket.error, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
+        raise
+    except httplib.CannotSendRequest, e:
+        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
+        raise
+    except UnauthorizedError, e:
+        logger.critical("Unauthorized Error connecting to %s: %s. Is the HMAC set correctly?" % (settings.YABIBACKEND_SERVER, e.message))
+        raise
+
+
+
+
+
+
+#@authentication_required
 def fileupload(request, url):
     return upload_file(request, request.user)
 
@@ -82,7 +142,7 @@ def fileupload_session(request, url, session):
 
     return upload_file(request, user)
     
-@profile_required
+#@profile_required
 def upload_file(request, user):
     logger.debug('')
 
@@ -121,7 +181,8 @@ def upload_file(request, user):
         }
     return HttpResponse(content=json.dumps(response))
 
-
+def bing(request):
+    return HttpResponse(content="bing")
 
 ##    from http_upload import post_multipart
     
