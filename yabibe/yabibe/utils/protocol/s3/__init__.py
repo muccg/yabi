@@ -27,7 +27,6 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import S3Copy
-import S3
 import S3Auth
 
 # module level "singletons"

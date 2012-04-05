@@ -178,16 +178,20 @@ To deactivate the active configuration (makes the default settings in setting.py
 
     $ fab admin_deactivate_config
 
+
 Running the tests automatically on a test DB:
 ---------------------------------------------
 
 If you would like to regularly run the tests on a test db, but then use the DB defined in your settings.py file, you could do the following.
 
 Decide which configuration would you like to use as a test DB. For example postgres_test.
-Create a symlink called testdb in appsettings_dir pointing to this configuration:
+Select the designated config to run tests against:
 
-    $ cd yabiadmin/yabiadmin/appsettings_dir
-    $ ln -s postgres_test testdb
+    $ fab admin_select_test_config:postgres_test
+
+If this worked the following command should display your chosen configuration:
+
+    $ fab admin_selected_test_config
 
 Use the command 
 

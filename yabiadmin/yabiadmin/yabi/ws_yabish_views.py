@@ -71,7 +71,6 @@ def is_stagein_required(request):
     return HttpResponse(json.dumps(resp))
 
 @authentication_required
-@transaction.commit_on_success
 def submitjob(request):
     logger.debug(request.user.username)
 
