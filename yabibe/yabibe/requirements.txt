@@ -19,7 +19,7 @@ http://yabi.googlecode.com/files/paramiko-1.7.7.1-fifopatch.tar.gz
 Fabric==1.2.2
 Mako==0.4.2
 MarkupSafe==0.9.3
-Twisted==11.0.0
+Twisted==12.0.0
 eggs/TwistedWeb2.tar.gz
 http://ccg-python-build.googlecode.com/files/ccg-python-build-2.2.9.tar.gz
 setproctitle==1.1.2
