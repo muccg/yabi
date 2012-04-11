@@ -48,3 +48,5 @@ pycrypto>=1.9
 psutil
 nose
 http://yaphc.googlecode.com/files/yaphc-v0_1_3.tgz
+BeautifulSoup==3.2.0
+cssutils==0.9.7

@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.staticfiles',
+    'yabiadmin.yabifeapp',
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
     'yabiadmin.yabistoreapp',
@@ -108,9 +109,8 @@ LANGUAGE_CODE = 'en-us'
 USE_I18N = True
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#login-url
-LOGIN_URL = url('/accounts/login/')
-LOGOUT_URL = url('/accounts/logout/')
-
+LOGIN_URL = url('/login/')
+LOGOUT_URL = url('/logout/')
 
 ### static file management ###
 # see: https://docs.djangoproject.com/en/dev/howto/static-files/

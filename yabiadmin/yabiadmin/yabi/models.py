@@ -845,6 +845,46 @@ class UserProfile(models.Model):
             cred.save()
 
 
+    def __unicode__(self):
+        return "%s" % self.user.username
+
+    # TODO - fix these - they have come from FE
+    def has_account_tab(self):
+        return False
+        return self.user_option_access or self.credential_access
+
+    def validate(self, request):
+
+        currentPassword = request.POST.get("currentPassword", None)
+        newPassword = request.POST.get("newPassword", None)
+        confirmPassword = request.POST.get("confirmPassword", None)
+
+        # check the user is allowed to change password
+        if not self.user_option_access:
+            return (False, "You do not have access to this web service")
+
+        # check we have everything
+        if not currentPassword or not newPassword or not confirmPassword:
+            return (False, "Either the current, new or confirmation password is missing from request.")
+
+        # check the current password
+        if not authenticate(username=request.user.username, password=currentPassword):
+            return (False, "Current password is incorrect")
+
+        # the new passwords should at least match and meet whatever rules we decide
+        # to impose (currently a minimum six character length)
+        if newPassword != confirmPassword:
+            return (False, "The new passwords must match")
+
+        if len(newPassword) < 6:
+            return (False, "The new password must be at least 6 characters in length")
+
+        return (True, "Password valid.")
+
+
+
+
+
 class ModelBackendUserProfile(UserProfile):
 
     class Meta:
