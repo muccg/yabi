@@ -48,6 +48,8 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib import auth
 from crypto import DecryptException
+from django.views.decorators.cache import cache_page
+from django.core.cache import cache
 
 from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.yabiengine.tasks import build
@@ -56,7 +58,7 @@ from yabiadmin.yabiengine.models import WorkflowTag
 from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_fs_backendcredential_for_uri, copy_file, rcopy_file, rm_file, send_upload_hash
 from yabiadmin.responses import *
 from yabi.file_upload import *
-from yabiadmin.decorators import memcache, authentication_required, profile_required
+from yabiadmin.decorators import authentication_required, profile_required
 from yabiadmin.yabistoreapp import db
 from yabiadmin.utils import using_dev_settings
 from yabiengine.backendhelper import make_hmac
@@ -126,21 +128,25 @@ def logout(request):
     }
     return HttpResponse(content=json.dumps(response))
 
-@authentication_required
-@memcache("tool",kwargkeylist=['toolname'],timeout=30,refresh=True,request_specific=False,user_specific=False)                # global app tool cache
 def tool(request, toolname):
     logger.debug(toolname)
+    page = cache.get(toolname)
+
+    if page:
+        logger.debug("Returning cached page for tool: " + toolname)
+        return page
 
     try:
         tool = Tool.objects.get(name=toolname, enabled=True)
-        return HttpResponse(tool.json_pretty(), content_type="text/plain; charset=UTF-8")
+
+        response = HttpResponse(tool.json_pretty(), content_type="text/plain; charset=UTF-8")
+        cache.set(toolname, response, 30)
+        return response
     except ObjectDoesNotExist:
         return JsonMessageResponseNotFound("Object not found")
 
-
-
 @authentication_required
-@memcache("menu",timeout=300)
+@cache_page(300)
 def menu(request):
     username = request.user.username
     logger.debug('Username: ' + username)
@@ -186,7 +192,9 @@ def menu(request):
 
             all_tools_toolset["toolgroups"].append(tg)
 
-        return HttpResponse(json.dumps(output))
+        response = HttpResponse(json.dumps(output))
+#        response["Vary"] = "Cookie" # cache this page per session
+        return response
     except ObjectDoesNotExist:
         return JsonMessageResponseNotFound("Object not found")
 

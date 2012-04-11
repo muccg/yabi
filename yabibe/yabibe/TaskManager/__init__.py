@@ -35,7 +35,7 @@ from Tasklets import tasklets
 
 from conf import config
 
-import stackless
+import gevent
 
 def startup():
     """Start up the TaskManager, so it can go and get some jobs..."""
@@ -79,6 +79,6 @@ class TaskManagerPickleResource(resource.Resource):
     
     def render(self, request):
         tasklets.purge()
-        stackless.schedule()
+        gevent.sleep()
         return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, tasklets.pickle())
     

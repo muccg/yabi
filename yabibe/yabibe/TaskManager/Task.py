@@ -27,7 +27,7 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import json
-import stackless
+import gevent
 import random
 import os
 import pickle
@@ -444,7 +444,6 @@ class MainTask(Task):
         outputuri = fsbackend + ("/" if not fsbackend.endswith('/') else "") + "output/"
         outputdir = workingdir + ("/" if not workingdir.endswith('/') else "") + "output/"
         
-        #self._tasks[stackless.getcurrent()]=workingdir
         try:
             Mkdir(outputuri, yabiusername=self.yabiusername)
         except GETFailure, error:
@@ -514,13 +513,7 @@ class MainTask(Task):
                     #print "callfunc is",callfunc
                     callfunc(uri, command=task['exec']['command'], remote_info=task['remoteinfourl'], submission=self.submission, stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)     # this blocks untill the command is complete. or the execution errored
                     while self.exec_status[0]==None or self.exec_status[0]=="pending" or self.exec_status[0]=="unsubmitted" or self.exec_status[0]=="running":
-                        stackless.schedule()
-                    
-                    #DEBUG
-                    from twisted.python import log
-                    exec_status_message = "exec_status is %r"%(self.exec_status)
-                    self.log(exec_status_message)
-                    log.msg(exec_status_message)
+                        gevent.sleep()
                     
                     if self.exec_status[0] and 'error' in self.exec_status[0]:
                         print "TASK[%s]: Execution failed!"%(self.taskid)
@@ -545,7 +538,7 @@ class MainTask(Task):
             except CloseConnections, cc:
                 retry=True
                 
-            stackless.schedule()
+            gevent.sleep()
         
     def execute(self, outputdir):
         return self.do(outputdir, Exec)

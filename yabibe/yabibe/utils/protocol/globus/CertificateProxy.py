@@ -44,7 +44,7 @@ from twisted.internet import reactor
 
 from conf import config
 
-import stackless
+import gevent
 
 DEBUG = False
 
@@ -109,7 +109,7 @@ class CertificateProxy(object):
             self.tempdir=storage
         self.SetExpiryTime(expiry)
         
-        self.pp_info = {}                           # info about process protocol for a grid-proxy-init possibly running in another stackless thread
+        self.pp_info = {}                           # info about process protocol for a grid-proxy-init possibly running in another gevent thread
     
     def SetExpiryTime(self, expiry):
         self.CERTIFICATE_EXPIRY_MINUTES = expiry
@@ -169,7 +169,7 @@ class CertificateProxy(object):
             pp = self.pp_info[username]
             # we are already decrypting the proxy cert elsewhere. Lets just wait until that job is done and then return it.
             while not pp.isDone():
-                stackless.schedule()
+                gevent.sleep()
 
             if pp.exitcode:
                 # cert generation errored out
@@ -224,7 +224,7 @@ class CertificateProxy(object):
                             )
         
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
 
         code = pp.exitcode
         

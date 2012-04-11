@@ -28,7 +28,7 @@
 # -*- coding: utf-8 -*-
 import FSConnector
 from utils.protocol import globus
-import stackless
+import gevent
 from utils.parsers import *
 from Exceptions import PermissionDenied, InvalidPath
 from FifoPool import Fifos
@@ -85,7 +85,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         pp = globus.Shell.mkdir(usercert,host,path)
         
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         err, mkdir_data = pp.err, pp.out
         
@@ -116,7 +116,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         pp = globus.Shell.rm(usercert,host,path,args="-rf" if recurse else "-f")
         
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         err, rm_data = pp.err, pp.out
         
@@ -151,7 +151,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         pp = globus.Shell.ls(usercert,host,path, args="-lFR" if recurse else "-lF" )
         
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         err, out = pp.err, pp.out
         
@@ -195,7 +195,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         pp = globus.Shell.ln(usercert,host,target, link, port=port)
         
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         err, out = pp.err, pp.out
         
@@ -230,7 +230,7 @@ class GridFTP(FSConnector.FSConnector, globus.Auth.GlobusAuth):
         pp = globus.Shell.cp(usercert,host,src,dst,args="-r" if recurse else None, port=port)
         
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         err, out = pp.err, pp.out
         

@@ -36,7 +36,7 @@ import os, types
 
 from conf import config
 
-from stackless import tasklet
+import gevent
 
 DEBUG = False
 
@@ -124,9 +124,7 @@ class CallbackHTTPClient(client.HTTPPageGetter):
             #assert len(chunk)==chunk_size, "Chunked transfer decoding error. Chunk size mismatch"
             
             # run the callback in a tasklet!!! Stops scheduler getting into a looped blocking state
-            reporter=tasklet(self.callback)
-            reporter.setup(chunk)
-            reporter.run()
+            reporter=gevent.spawn(self.callback,chunk)
             
         else:
             pass

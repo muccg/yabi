@@ -26,8 +26,8 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-"""A suite of tools for using twisted with stackless python. Turns the twisted callback methods into
-functions that block a stackless tasklet.
+"""A suite of tools for using twisted with gevent. Turns the twisted callback methods into
+functions that block a gevent thread.
 """
 
 from twisted.web import client
@@ -41,7 +41,7 @@ import time
 import json
 import os, types
 
-from stackless import schedule, tasklet
+import gevent
 
 from CallbackHTTPClient import CallbackHTTPClient, CallbackHTTPClientFactory, CallbackHTTPDownloader
 from RememberingHTTPClient import RememberingHTTPClient, RememberingHTTPClientFactory, RememberingHTTPDownloader
@@ -66,9 +66,7 @@ class CloseConnections(Exception):
 
 def sleep(seconds):
     """Sleep the tasklet for this many seconds"""
-    wakeup = time.time()+seconds
-    while time.time()<wakeup:
-        schedule()
+    gevent.sleep(seconds)
 
 import urllib
 
@@ -153,7 +151,7 @@ class HTTPConnection(object):
     def getresponse(self):
         # now we schedule this thread until the task is complete
         while not self.get_complete[0] and not self.get_failed[0]:
-            schedule()
+            gevent.sleep()
         
         if self.connect_failed[0]:
             if DEBUG:
@@ -168,7 +166,7 @@ class HTTPConnection(object):
                 raise GETFailure(self.get_failed[0])
             elif self.get_failed[0]==True:
                 # failed by tasklet serialisation and restoration
-                raise GETFailed("Base stacklesstools HTTPConnection does not support tasklet deserialisation")
+                raise GETFailed("Base geventtools HTTPConnection does not support tasklet deserialisation")
             else:
                 #print "GETFailed=",get_failed
                 assert False, "got unknown GET failure response"
@@ -250,7 +248,7 @@ def GET(path, scheme=None, host=None, port=None, factory_class=RememberingHTTPCl
             pass
             #print "G",get_complete[0],"G2",get_failed[0],"CF",connect_failed[0]
         # has out actual initial connection failed?
-        schedule()
+        gevent.sleep()
         
     if connect_failed[0]:
         if DEBUG:
@@ -363,7 +361,7 @@ def POST(path,**kws):
     
     # now we schedule this thread until the task is complete
     while not get_complete[0] and not get_failed[0] and not connect_failed[0]:
-        schedule()
+        gevent.sleep()
 
     if connect_failed[0]:
         if DEBUG:
@@ -409,7 +407,7 @@ def WaitForDeferredData(deferred):
     deferred.addCallback(_cont)     # trigger our callback on data
     
     while not cont[0]:
-        schedule()                  # sleep the thread until we are asked to continue
+        gevent.sleep()                  # sleep the thread until we are asked to continue
         
     if err[0]:
         raise DeferredError, err[0]

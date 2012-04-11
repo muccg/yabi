@@ -26,7 +26,7 @@
 # 
 ### END COPYRIGHT ###
 
-import memcache, hashlib, os
+import hashlib, os
 
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
 from ccg.http import HttpResponseUnauthorized
@@ -39,34 +39,25 @@ from django.template.loader import render_to_string
 from django.utils import simplejson as json
 
 from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
-from yaphc.memcache_persister import MemcacheCookiePersister
+from yaphc.django_cache_persister import DjangoCacheCookiePersister
 from yaphc.cookies import FileCookiePersister
 
 import logging
 logger = logging.getLogger(__name__)
 
-def memcache_client():
-    return memcache.Client(settings.MEMCACHE_SERVERS)
-
-
-def memcache_http(request):
-    '''Have altered this to fall back to FileCookiePersister when no memcache is available. TODO refactor to call this something different'''
+def yabiadmin_client(request):
     user = request.user
 
-    if settings.MEMCACHE_SERVERS:
-        mp = MemcacheCookiePersister(settings.MEMCACHE_SERVERS,
-                key='%s-cookies-%s' %(settings.MEMCACHE_KEYSPACE, request.session.session_key),
-                cache_time=settings.SESSION_COOKIE_AGE)
-    else:
-        mp = FileCookiePersister(os.path.join(settings.FILE_COOKIE_DIR, settings.FILE_COOKIE_NAME))
-
+    persister = DjangoCacheCookiePersister(
+                        key='cookies-%s' % request.session.session_key,
+                        cache_time=settings.SESSION_COOKIE_AGE)
     yabiadmin = settings.YABIADMIN_SERVER
-    return Http(base_url=yabiadmin, cache=False, cookie_persister=mp)
+    return Http(base_url=yabiadmin, cache=False, cookie_persister=persister)
 
 
 def make_http_request(request, original_request, ajax_call):
     try:
-        with memcache_http(original_request) as http:
+        with yabiadmin_client(original_request) as http:
             try:
                 resp, contents = http.make_request(request)
                 logger.debug("response status is: %d"%(resp.status))
@@ -117,12 +108,12 @@ def preview_key(uri):
     # 250 character limit memcache imposes on key names. As a result, we'll
     # hash the file name and accept the (extremely slight) risk of collisions.
     file_hash = hashlib.sha512(uri).hexdigest()
-    return str("%s-preview-%s" % (settings.MEMCACHE_KEYSPACE, file_hash))
+    return str("-preview-%s" % file_hash)
 
 
 def yabiadmin_passchange(request, currentPassword, newPassword):
     enc_request = PostRequest("ws/account/passchange", params={ "currentPassword": currentPassword, "newPassword": newPassword })
-    http = memcache_http(request)
+    http = yabiadmin_client(request)
     resp, content = http.make_request(enc_request)
     assert resp['status']=='200', (resp['status'], content)
 
@@ -137,7 +128,7 @@ def yabiadmin_logout(request):
     # TODO get the url from somewhere
     logout_request = PostRequest('ws/logout')
     try:
-        with memcache_http(request) as http:
+        with yabiadmin_client(request) as http:
             resp, contents = http.make_request(logout_request)
             if resp.status != 200: 
                 return False

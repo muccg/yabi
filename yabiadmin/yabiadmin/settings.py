@@ -225,16 +225,17 @@ MANAGERS = ADMINS
 #AUTH_LDAP_USERDN = 'ou=People'
 
 
-# memcache server list
-# add a list of your memcache servers
-MEMCACHE_SERVERS = ['localhost.localdomain:11211']
-MEMCACHE_KEYSPACE = "yabiadmin"
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': 'localhost.localdomain:11211',
+        'KEYSPACE': "yabiadmin"
+    }
+}
 
 # uncomment to use memcache for sessions, be sure to have uncommented memcache settings above
 # see https://docs.djangoproject.com/en/dev/ref/settings/#session-engine
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-CACHE_BACKEND = 'memcached://'+(';'.join(MEMCACHE_SERVERS))+"/"
-MEMCACHE_KEYSPACE = "yabiadmin"
 
 # uploads are currently written to disk and double handled, setting a limit will break things
 # see https://docs.djangoproject.com/en/dev/ref/settings/#file-upload-max-memory-size
@@ -286,6 +287,41 @@ CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
 CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
 CELERY_IMPORTS = ("yabiadmin.yabiengine.tasks",)
 BROKER_TRANSPORT = "djkombu.transport.DatabaseTransport"
+
+
+
+### PREVIEW SETTINGS
+
+# The truncate key controls whether the file may be previewed in truncated form
+# (ie the first "size" bytes returned). If set to false, files beyond the size
+# limit simply won't be available for preview.
+#
+# The override_mime_type key will set the content type that's sent in the
+# response to the browser, replacing the content type received from Admin.
+#
+# MIME types not in this list will result in the preview being unavailable.
+PREVIEW_SETTINGS = {
+    # Text formats.
+    "text/plain": { "truncate": True },
+
+    # Structured markup formats.
+    "text/html": { "truncate": False, "sanitise": True },
+    "application/xhtml+xml": { "truncate": False, "sanitise": True },
+    "text/svg+xml": { "truncate": True, "override_mime_type": "text/plain" },
+    "text/xml": { "truncate": True, "override_mime_type": "text/plain" },
+    "application/xml": { "truncate": True, "override_mime_type": "text/plain" },
+
+    # Image formats.
+    "image/gif": { "truncate": False },
+    "image/jpeg": { "truncate": False },
+    "image/png": { "truncate": False },
+}
+
+# The length of time preview metadata will be cached, in seconds.
+PREVIEW_METADATA_EXPIRY = 60
+
+# The maximum file size that can be previewed.
+PREVIEW_SIZE_LIMIT = 1048576
 
 
 ### LOGGING SETUP ###

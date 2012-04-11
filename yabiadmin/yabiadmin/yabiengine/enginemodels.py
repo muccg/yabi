@@ -37,7 +37,6 @@ from django.db.transaction import enter_transaction_management, leave_transactio
 from django.conf import settings
 from django.utils import simplejson as json
 from ccg.utils import webhelpers
-from django.db.models.signals import post_save
 from ccg.utils.webhelpers import url
 
 from django.db.transaction import TransactionManagementError

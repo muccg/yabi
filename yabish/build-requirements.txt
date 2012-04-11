@@ -15,4 +15,4 @@
 #
 
 argparse==1.1
-http://yaphc.googlecode.com/files/yaphc-v0_1_4.tgz
+http://yaphc.googlecode.com/files/yaphc-v0_1_5.tgz

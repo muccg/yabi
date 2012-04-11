@@ -34,10 +34,10 @@ from django.utils import simplejson as json
 from django.core import urlresolvers
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.cache import cache
+from django.utils.encoding import smart_str
 from urlparse import urlparse, urlunparse
 from crypto import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, DecryptException, AESTEMP
-from ccg.memcache import KeyspacedMemcacheClient
-from yabiadmin.decorators import func_create_memcache_keyname
 from constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK
 
 import logging
@@ -230,12 +230,9 @@ class Tool(Base):
         output = self.decode_embedded_json()
         return json.dumps({'tool':output}, indent=4)
         
-    def purge_from_memcache(self):
-        """Purge this tools entry description from memcache"""
-        keyname = func_create_memcache_keyname("tool",{'toolname':self.name},['toolname'])
-        mc = KeyspacedMemcacheClient()
-        mc.delete(keyname)
-        mc.disconnect_all()
+    def purge_from_cache(self):
+        """Purge this tools entry description from cache"""
+        cache.delete(self.name)
 
     def __unicode__(self):
         return self.name
@@ -485,28 +482,24 @@ class Credential(Base):
         self.decrypt(key)
         self.protect()
 
-    def memcache_keyname(self):
-        """return the memcache key for this credential"""
-        return "-cred-%s-%d"%(self.user.name.encode("utf-8"),self.id)              # TODO: memcache keys dont support unicode. user.name may contain unicode
+    def cache_keyname(self):
+        """return the cache key for this credential"""
+        # smart_str takes care of non-ascii characters (memcache doesn't support Unicode in keys)
+        return smart_str("-cred-%s-%d" % (self.user.name, self.id))
         
-    def send_to_memcache(self, memcache=None, time_to_cache=None ):
-        """This method stores the key as it is in memcache"""
-        # set up defaults if they aren't set
-        memcache = memcache or "localhost.localdomain"
+    def send_to_cache(self, time_to_cache=None):
+        """This method stores the key as it is in cache"""
         time_to_cache = time_to_cache or settings.DEFAULT_CRED_CACHE_TIME
                 
-        mckey = self.memcache_keyname()
-        mcval = json.dumps( {
+        key = self.cache_keyname()
+        val = json.dumps( {
             'password': self.password,
             'cert': self.cert,
             'key': self.key
         } )
         
-        # push the credential to memcache server
-        ksc = KeyspacedMemcacheClient()
-        ksc.add(key=mckey, val=mcval, time=time_to_cache)
-        ksc.disconnect_all()
-        
+        cache.set(key, val, time_to_cache)
+ 
         # unblock our blocked tasks
         self.unblock_all_blocked_tasks()
         
@@ -523,8 +516,8 @@ class Credential(Base):
             print "WALK----------->",id
             walk.delay(workflow_id=id)
             
-    def get_from_memcache(self):
-        result = self.get_memcache()
+    def get_from_cache(self):
+        result = self.get_cache()
         self.password = result['password']
         self.cert = result['cert']
         self.key = result['key']
@@ -536,8 +529,8 @@ class Credential(Base):
                     #('cert', self.cert),
                     #('key', self.key)])
         
-        if self.is_memcached():
-            self.get_from_memcache()
+        if self.is_cached:
+            self.get_from_cache()
             self.unprotect()
             return dict([('username', self.username),
                     ('password', self.password),
@@ -547,43 +540,31 @@ class Credential(Base):
         # encrypted but not cached. ERROR!
         raise DecryptedCredentialNotAvailable("Credential for yabiuser: %s id: %d is not available in a decrypted form"%(self.user.name, self.id))
         
-    def is_memcached(self):
-        """return true if there is a decypted cert in memcache"""
-        kmc = KeyspacedMemcacheClient()
-        truth = bool(kmc.get(self.memcache_keyname()))
-        kmc.disconnect_all()
-        return truth
-        
-    def get_memcache_json(self):
-        """return the memcached credential"""
-        kmc = KeyspacedMemcacheClient()
-        truth = kmc.get(self.memcache_keyname())
-        kmc.disconnect_all()
-        return truth
-        
-    def get_memcache(self):
-        """return the decoded memcached credentials"""
-        return json.loads(self.get_memcache_json())
-        
-    def refresh_memcache(self, time_to_cache=None):
-        """refresh the memcache version with a new timeout"""
-        time_to_cache = time_to_cache or settings.DEFAULT_CRED_CACHE_TIME
-        mc = KeyspacedMemcacheClient()
-        name = self.memcache_keyname()
-        cred = mc.get( name )
-        assert cred, "tried to refresh a non-cached credential"
-        mc.set(name, cred, time=time_to_cache)
-        mc.disconnect_all()
-        
-    def clear_memcache(self):
-        mc = KeyspacedMemcacheClient()
-        name = self.memcache_keyname()
-        mc.delete( name )
-        mc.disconnect_all()
-        
     @property
     def is_cached(self):
-        return self.is_memcached()
+        """return true if there is a decypted cert in cache"""
+        return cache.has_key(self.cache_keyname())
+        
+    def get_cache_json(self):
+        """return the cached credential"""
+        credential = cache.get(self.cache_keyname())
+        return credential
+        
+    def get_cache(self):
+        """return the decoded cached credentials"""
+        return json.loads(self.get_cache_json())
+        
+    def refresh_cache(self, time_to_cache=None):
+        """refresh the cache version with a new timeout"""
+        time_to_cache = time_to_cache or settings.DEFAULT_CRED_CACHE_TIME
+        name = self.cache_keyname()
+        cred = cache.get( name )
+        assert cred, "tried to refresh a non-cached credential"
+        cache.set(name, cred, time_to_cache)
+        
+    def clear_cache(self):
+        name = self.cache_keyname()
+        cache.delete( name )
         
     def blocked_tasks(self):
         """This looks at all the blocked tasks for the user this credential belongs to
@@ -643,7 +624,7 @@ class Credential(Base):
             self.protect()
             
             # dont save
-            self.send_to_memcache()
+            self.send_to_cache()
         except DecryptException, de:
             # decrypt with password failed
             # 2. try to decrypt with symetric key
@@ -654,39 +635,17 @@ class Credential(Base):
                 self.encrypt(password)
                 self.save()
                 
-                # now decrypt and protect and save to memcache
+                # now decrypt and protect and save to cache
                 self.decrypt(password)
                 
                 self.protect()
 
                 # dont save
-                self.send_to_memcache()
+                self.send_to_cache()
             except DecryptException, de:
                 # failed to decrypt with users key or symetric key
                 raise DecryptException("Failed to decrypt %s with users key or symetric key!"%(self))
             
-            
-            
-def deprecated_ensure_encrypted(username, password):
-    """returns true on successful encryption. false on failure to decrypt"""
-    # find the unencrypted credentials for this user that should be ecrypted and encrypt with the passed in CORRECT password
-    creds = Credential.objects.filter(user__name=username).filter(encrypt_on_login=True).filter(encrypted=False)
-    for cred in creds:
-        cred.encrypt(password)
-        cred.save()
-        
-    # decrypt all encrypted credentials and store in memcache
-    creds = Credential.objects.filter(user__name=username, encrypted=True)
-    try:
-        for cred in creds:
-            cred.send_to_memcache(password)
-    except DecryptException, de:
-        return False
-
-    return True                 #success
-    
-
-
 class Backend(Base):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=512, blank=True)
@@ -769,7 +728,7 @@ class BackendCredential(Base):
         parts = cred.get()
         
         # refresh its time stamp
-        cred.refresh_memcache()
+        cred.refresh_cache()
                 
         # add in the decrypted cred parts
         output.update(parts)
@@ -953,8 +912,8 @@ def signal_tool_post_save(sender, **kwargs):
 
     try:
         tool = kwargs['instance']
-        logger.debug("purging tool %s from memcache"%str(tool))
-        tool.purge_from_memcache()
+        logger.debug("purging tool %s from cache" % str(tool))
+        tool.purge_from_cache()
 
     except Exception, e:
         logger.critical(e)
@@ -970,10 +929,10 @@ def create_user_profile(sender, instance, created, **kwargs):
  
 # connect up signals
 from django.db.models.signals import post_save, pre_save,post_init
-post_save.connect(signal_tool_post_save, sender=Tool)
-post_save.connect(create_user_profile, sender=DjangoUser)
-pre_save.connect(signal_credential_pre_save, sender=Credential)
-post_init.connect(signal_credential_post_init, sender=Credential)
+post_save.connect(signal_tool_post_save, sender=Tool, dispatch_uid="signal_tool_post_save")
+post_save.connect(create_user_profile, sender=DjangoUser, dispatch_uid="create_user_profile")
+pre_save.connect(signal_credential_pre_save, sender=Credential, dispatch_uid="signal_credential_pre_save")
+post_init.connect(signal_credential_post_init, sender=Credential, dispatch_uid="signal_credential_post_init")
 
 
 
