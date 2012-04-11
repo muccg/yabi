@@ -56,7 +56,7 @@ MAX_SSH_CONNECTIONS = 15                                     # zero is unlimited
     
 from decorators import retry, call_count
 from LockQueue import LockQueue
-from utils.stacklesstools import sleep
+from utils.geventtools import sleep
 from utils.RetryController import SSHRetryController, HARD, SOFT
 
 sshretry = SSHRetryController()

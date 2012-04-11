@@ -36,7 +36,7 @@ import gevent
 from TaskManager.TaskTools import Sleep, Copy, List, Mkdir, GETFailure, CopyError
 
 from utils.parsers import parse_url
-from utils.stacklesstools import GETFailure
+from utils.geventtools import GETFailure
 
 from Exceptions import BlockingException
 import traceback

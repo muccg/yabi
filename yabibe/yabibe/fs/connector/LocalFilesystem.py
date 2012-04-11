@@ -64,7 +64,7 @@ DEBUG = False
  
 from decorators import conf_retry, call_count
 from LockQueue import LockQueue
-from utils.stacklesstools import sleep
+from utils.geventtools import sleep
 
 def convert_filename_to_encoded_for_echo(filename):
     """This function takes a filename, and encodes the whole thing to a back ticked eval command.

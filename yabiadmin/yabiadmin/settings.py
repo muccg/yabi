@@ -225,16 +225,17 @@ MANAGERS = ADMINS
 #AUTH_LDAP_USERDN = 'ou=People'
 
 
-# memcache server list
-# add a list of your memcache servers
-MEMCACHE_SERVERS = ['localhost.localdomain:11211']
-MEMCACHE_KEYSPACE = "yabiadmin"
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+        'LOCATION': 'localhost.localdomain:11211',
+        'KEYSPACE': "yabiadmin"
+    }
+}
 
 # uncomment to use memcache for sessions, be sure to have uncommented memcache settings above
 # see https://docs.djangoproject.com/en/dev/ref/settings/#session-engine
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
-CACHE_BACKEND = 'memcached://'+(';'.join(MEMCACHE_SERVERS))+"/"
-MEMCACHE_KEYSPACE = "yabiadmin"
 
 # uploads are currently written to disk and double handled, setting a limit will break things
 # see https://docs.djangoproject.com/en/dev/ref/settings/#file-upload-max-memory-size
