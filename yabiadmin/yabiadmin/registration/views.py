@@ -32,7 +32,7 @@ from django.template.loader import render_to_string
 from ccg.utils import webhelpers
 from django.conf import settings
 
-from yabiadmin.yabifeapp.models import User
+from yabiadmin.yabi.models import User
 
 from forms import RegistrationForm
 from models import Request

@@ -57,7 +57,7 @@ from django.utils import simplejson as json
 from django.utils.importlib import import_module
 from django.core.cache import cache
 from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
-from yabiadmin.yabifeapp.models import User
+from yabiadmin.yabi.models import User
 from yabiadmin.responses import *
 from yabiadmin.preview import html
 from yabiadmin.yabi.models import Credential
@@ -69,65 +69,6 @@ import logging
 logger = logging.getLogger(__name__)
 
 from django.views.decorators.csrf import csrf_exempt
-
-@authentication_required
-def fileupload(request, url):
-    return upload_file(request, request.user)
-
-def fileupload_session(request, url, session):
-    def response(message, level=ERROR, status=500):
-        return HttpResponse(status=status, content=json.dumps({
-            "level": level,
-            "message": message,
-        }))
-
-    # Get the user out of the session. Annoyingly, we'll have to do our own
-    # session handling here.
-    try:
-        session = Session.objects.get(pk=session)
-        
-        # Check expiry date.
-        if session.expire_date < datetime.datetime.now():
-            return response("Session expired")
-
-        # Get the user, if set.
-        request.user = user = DjangoUser.objects.get(pk=session.get_decoded()["_auth_user_id"])
-
-        # Update the session object in the request.
-        engine = import_module(settings.SESSION_ENGINE)
-        request.session = engine.SessionStore(session.pk)
-    except DjangoUser.DoesNotExist:
-        return response("User not found", status=403)
-    except KeyError:
-        return response("User not logged in", status=403)
-    except Session.DoesNotExist:
-        return response("Unable to read session")
-
-    return upload_file(request, user)
-    
-# proxy view to pass through all requests set up in urls.py
-def proxy(request, url, base):
-    logger.debug(url)
-    logger.debug(base)
-    
-    target_url = os.path.join(base, url)
-    target_request = make_request_object(target_url, request)
-    return make_http_request(target_request, request, request.is_ajax())
-
-@authentication_required
-@profile_required
-def adminproxy(request, url):
-    logger.debug('')
-    return proxy(request, quote(url), settings.YABIADMIN_SERVER)
-
-@authentication_required
-def adminproxy_cache(request, url):
-    response = adminproxy(request, url)
-
-    expiry = datetime.datetime.now() + datetime.timedelta(hours=1)
-    response["Expires"] = formatdate(timeval=mktime(expiry.timetuple()), usegmt=True)
-
-    return response
 
 # forms
 class LoginForm(forms.Form):

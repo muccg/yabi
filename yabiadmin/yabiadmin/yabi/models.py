@@ -30,6 +30,7 @@ import traceback, hashlib, base64
 from django.db import models, transaction
 from django import forms
 from django.contrib.auth.models import User as DjangoUser
+from django.contrib.auth import authenticate
 from django.utils import simplejson as json
 from django.core import urlresolvers
 from django.conf import settings
@@ -789,6 +790,14 @@ class BackendCredential(Base):
 
 class UserProfile(models.Model):
     user = models.OneToOneField(DjangoUser)
+    user_option_access = models.BooleanField(default=True)
+    credential_access = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["user__username"]
+    
+    def __unicode__(self):
+        return "%s" % self.user.username
 
     def reencrypt_user_credentials(self, request):
         logger.debug("")
@@ -804,16 +813,14 @@ class UserProfile(models.Model):
             cred.save()
 
 
-    def __unicode__(self):
-        return "%s" % self.user.username
 
     # TODO - fix these - they have come from FE
     def has_account_tab(self):
-        return False
+        return True
         return self.user_option_access or self.credential_access
 
     def validate(self, request):
-
+        logger.debug("")
         currentPassword = request.POST.get("currentPassword", None)
         newPassword = request.POST.get("newPassword", None)
         confirmPassword = request.POST.get("confirmPassword", None)
@@ -849,13 +856,17 @@ class ModelBackendUserProfile(UserProfile):
     class Meta:
         proxy = True
 
-    def passchange(self, request):
+    def change_password(self, request):
         logger.debug("passchange in ModelBackendUserProfile")        
         currentPassword = request.POST.get("currentPassword", None)
         newPassword = request.POST.get("newPassword", None)
 
         assert currentPassword, "No currentPassword was found in the request."
         assert newPassword, "No newPassword was found in the request."
+
+        (valid, message) = self.validate(request)
+        if not valid:
+            return (valid, message)
 
         try:
             self.user.set_password(newPassword)
@@ -877,10 +888,14 @@ class LDAPBackendUserProfile(UserProfile):
         proxy = True
 
 
-    def passchange(self, request):
+    def change_password(self, request):
         logger.debug("passchange in LDAPBackendUserProfile")
         currentPassword = request.POST.get("currentPassword", None)
         newPassword = request.POST.get("newPassword", None)
+
+        (valid, message) = self.validate(request)
+        if not valid:
+            return (valid, message)
 
         # if we manage to change the userpassword, then reencrypt the creds
         if ldaputils.set_ldap_password(self.user, currentPassword, newPassword):
