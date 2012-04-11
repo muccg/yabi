@@ -64,7 +64,7 @@ from yabiadmin.yabi.models import Credential
 
 from crypto import DecryptException
 
-from utils import yabiadmin_client, make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout, using_dev_settings
+from utils import make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout, using_dev_settings
 import logging
 logger = logging.getLogger(__name__)
 
@@ -409,74 +409,12 @@ def preview_metadata(request):
 
     return JsonMessageResponseNotFound("Metadata not in cache")
 
-
 # Error page views.
 def error_404(request):
     return render_page("fe/errors/404.html", request, response=HttpResponseNotFound())
 
 def error_500(request):
     return render_page("fe/errors/500.html", request, response=HttpResponseServerError())
-
-    
-# Implementation methods
-
-@profile_required
-def upload_file(request, user):
-    """
-    NB: if anyone changes FILE_UPLOAD_MAX_MEMORY_SIZE in the settings to be greater than zero
-    this function will not work as it calls temporary_file_path
-    """
-    logger.debug('')
-
-    host = urlparse(settings.YABIADMIN_SERVER).hostname
-    port = urlparse(settings.YABIADMIN_SERVER).port
-    upload_path = urlparse(settings.YABIADMIN_SERVER).path
-
-    while len(upload_path) and upload_path[-1]=='/':
-        upload_path = upload_path[:-1]
-        
-    # we parse the GET portion of the request to find the passed in URI before we access the request object more deeply and trigger the processing
-    upload_uri = request.GET['uri']
-    
-    # examine cookie jar for our admin session cookie
-    http = yabiadmin_client(request)
-
-    files = []
-    for key, f in request.FILES.items():
-        file_details = (f.name, f.name, f.temporary_file_path())
-        files.append(file_details)
-
-    upload_request = PostRequest("ws/fs/put?uri=%s" % quote(upload_uri), params={}, files=files)
-    resp, contents = http.make_request(upload_request)
-    http.finish_session()
-
-    response = {
-        "level":"success" if resp.status==200 else "failure",
-        "message":contents
-        }
-    return HttpResponse(content=json.dumps(response))
-
-@profile_required
-def yabiadmin_login(request, username, password):
-    # TODO get the url from somewhere
-    login_request = PostRequest('ws/login', params= {
-        'username': username, 'password': password})
-    http = yabiadmin_client(request)
-    resp, contents = http.make_request(login_request)
-    http.finish_session()
-
-    try:
-        json_resp = json.loads(contents)
-        success = json_resp.get('success', False)
-        message = json_resp.get('message', "System Error")
-    except ValueError:
-        success = False
-        message = "Unknown error, unable to interpret json response from admin server."
-        
-    if resp.status != 200:
-        success = False
-    
-    return success, message
 
 @login_required
 def exception_view(request):
@@ -488,7 +426,7 @@ def status_page(request):
     logger.info('')
 
     # make a db connection
-    u = User.objects.filter(user__username='')
+    u = User.objects.filter(name='')
     len(u) # so it is evaluated
 
     # write a file
