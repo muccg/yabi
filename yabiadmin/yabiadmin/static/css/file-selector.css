@@ -1,0 +1,401 @@
+.fileSelector {
+    margin-left: 114px;
+}
+
+.selectedFile {
+    background-color: #ebf0f3;
+    border: 1px solid #b7c9e6;
+    padding: 1px;
+    padding-left: 8px;
+    padding-right: 20px;
+    margin-right: 4px;
+    color: #666;
+    position: relative;
+
+    border-radius: 8px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+}
+
+.filePadding {
+    padding-bottom: 10px;
+}
+
+.fileSelectorBreadcrumb {
+    color: #000;
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+    height: 1.2em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: baseline;
+    white-space: nowrap;
+
+    background: #eee url(../images/breadcrumb_bg.png) repeat-x;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#eeeeee');
+    background: -moz-linear-gradient(top, #fff, #eee);
+    background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+
+    border-radius-top-left: 4px;
+    border-radius-top-right: 4px;
+    -webkit-border-top-left-radius:4px;
+    -webkit-border-top-right-radius:4px;
+    -moz-border-radius-topleft:4px;
+    -moz-border-radius-topright:4px;
+}
+
+.fileSelectorBreadcrumb span {
+    padding: 3px;
+    padding-top:4px;
+    padding-bottom:2px;
+    cursor: pointer;
+    font-size:90%;
+    background:url(../images/bc_left.png) no-repeat;
+    padding-left:12px;
+    position:relative;
+}
+
+.fileSelectorRoot {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+}
+
+.fileSelectorPath {
+    position: absolute;
+    top: 1.6em;
+    left: 0;
+    right: 0;
+}
+
+.fileSelectorListing {
+    background-color: #f6f6f6;
+    overflow: auto;
+    border:1px solid white;
+    padding-bottom:20px;
+    position: absolute;
+    top: 3.2em;
+    bottom: 2.1em;
+    left: 0;
+    right: 0;
+}
+
+.fileSelectorListing .fileItem {
+    display: block;
+    font-size:90%;
+    color: #666;
+    padding: 3px;
+    padding-left: 22px;
+    border: 1px solid white;
+    cursor: pointer;
+    background:#fff url(../images/file.png) 2px 2px no-repeat;
+    position:relative;
+}
+
+.fileSelectorListing .fileLink {
+    background:#fff url(../images/file-link.png) 2px 2px no-repeat;
+}
+
+.fileSelectorListing .fileItem:hover {
+    text-decoration: none;
+}
+
+.fileSelectorListing .fileItem .download {
+    position:absolute;
+    right:0px;
+    top: 4px;
+}
+
+.fileSelectorListing .fileItem .preview {
+    position: absolute;
+    right: 16px;
+    top: 4px;
+}
+
+.fileSelectorListing .fileItem .deleteFile {
+    position:absolute;
+    right:88px;
+    top: 4px;
+}
+
+.fileSelectorListing .fileItem .fileSize {
+    position:absolute;
+    right:32px;
+    top: 4px;
+    color: #999;
+    font-size:90%;
+}
+
+.fileSelectorListing .dirItem {
+    color: #666;
+    font-size:90%;
+    padding: 3px;
+    padding-left: 22px;
+    border: 1px solid white;
+    cursor: pointer;
+    background:#fff url(../images/folder.png) 2px 2px no-repeat;
+    position:relative;
+}
+
+.fileSelectorListing .dirItem.hover, .fileSelectorListing .dirItem:hover {
+    background:#fff url(../images/folder_open.png) 2px 2px no-repeat;
+}
+
+.fileSelectorListing .dirLink {
+    background:#fff url(../images/folder-link.png) 2px 2px no-repeat;
+}
+
+.fileSelectorListing .dirLink.hover, .fileSelectorListing .dirLink:hover {
+    background:#fff url(../images/folder_open-link.png) 2px 2px no-repeat;
+}
+
+.fileSelectorListing .dirItem a {
+    position:absolute;
+    top:1px;
+    right:1px;
+}
+
+.fileSelectorListing .dirItem .deleteFile {
+    position:absolute;
+    right:88px;
+    top: 4px;
+}
+
+.fileSelectorBrowse {
+    position: relative;
+    background-color: #eee;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    min-height: 310px;
+}
+
+.fileSelectorUpload {
+    position: absolute;
+    border-top: 1px solid #eee;
+    color: #000;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    background-color: #eee;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#eeeeee');
+    background: -moz-linear-gradient(top, #fff, #eee);
+    background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+
+    padding: 0.25em;
+    height: 1.6em;
+    line-height: 1.6em;
+    vertical-align: middle;
+}
+
+.fileSelectorUpload input {
+    height: auto;
+}
+
+.uploadingMask {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
+
+.fileCopyStatusPane {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
+.fileSelectorPreview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+
+.fileSelectorPreviewControls {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 24px;
+
+    background-color: #f7f7f7;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#eeeeee');
+    background: -moz-linear-gradient(top, #fff, #eee);
+    background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+
+    border-radius-top-left: 4px;
+    border-radius-top-right: 4px;
+    -webkit-border-top-left-radius:4px;
+    -webkit-border-top-right-radius:4px;
+    -moz-border-radius-topleft:4px;
+    -moz-border-radius-topright:4px;
+}
+
+.fileSelectorPreviewMetadata {
+    color: #666;
+}
+
+.fileSelectorPreviewMetadata:before {
+    color: #666;
+    content: " (";
+}
+
+.fileSelectorPreviewMetadata:after {
+    color: #666;
+    content: ")";
+}
+
+.fileSelectorPreviewTitle {
+    position: absolute;
+    overflow: hidden;
+    top: 4px;
+    left: 4px;
+    right: 24px;
+    height: 24px;
+    font-size: 90%;
+}
+
+.fileSelectorPreviewTitle:before {
+    font-weight: bold;
+    content: "Preview: ";
+}
+
+.fileSelectorPreviewTruncated {
+    color: #3879e5;
+    border-bottom: dotted 1px #3879e5;
+}
+
+.fileSelectorPreviewControls .controlButton {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 1px solid #ccc;
+
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+
+    border-radius: 4px;
+    -webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+}
+
+.fileSelectorPreviewControls .controlButton.enabled {
+    cursor: pointer;
+}
+
+.fileSelectorPreviewControls .controlButton.enabled:hover {
+    /* IE gradient filter explicitly omitted, since it causes problems with the
+     * background-image. */
+    background-color: #3879e5;
+    background-color: -moz-linear-gradient(bottom, #5aa4fb, #3879e5);
+    background-color: -webkit-gradient(linear, left bottom, left top, from(#5aa4fb), to(#3879e5));
+    border: solid 1px #3879e5;
+}
+
+.fileSelectorPreviewClose {
+    top: 3px;
+    right: 3px;
+    background-image: url(../images/close.png);
+}
+
+.fileSelectorPreviewClose:hover {
+    background-image: url(../images/close-hover.png);
+}
+
+.fileSelectorPreviewDownload {
+    top: 3px;
+    right: 63px;
+    background-image: url(../images/preview-download.png);
+}
+
+.fileSelectorPreviewDownload.enabled:hover {
+    background-image: url(../images/preview-download-hover.png);
+}
+
+.fileSelectorPreviewPrevious {
+    top: 3px;
+    right: 43px;
+    background-image: url(../images/previous.png);
+}
+
+.fileSelectorPreviewPrevious.enabled:hover {
+    background-image: url(../images/previous-hover.png);
+}
+
+.fileSelectorPreviewNext {
+    top: 3px;
+    right: 23px;
+    background-image: url(../images/next.png);
+}
+
+.fileSelectorPreviewNext.enabled:hover {
+    background-image: url(../images/next-hover.png);
+}
+
+.fileSelectorPreviewFrameContainer {
+    position: absolute;
+    top: 24px;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    opacity: 0.9;
+    filter: alpha(opacity=90);
+}
+
+.fileSelectorPreview iframe {
+    height: 100%;
+    width: 100%;
+    border: none;
+    background: white;
+}
+
+.fileSelectorPreview iframe.loading {
+    background-color: white;
+    background-image: url(../images/largeLoading.gif);
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+}
+
+.fileSelectorListing .listingLoading {
+    padding-top: 124px;
+}
+
+/* Flash related rules. */
+.fileSelectorUpload .placeholder {
+    position: absolute;
+    top: 0.3em;
+    left: 0.3em;
+}
+
+.fileSelectorUpload .selectButton {
+    position: absolute;
+    top: 0.3em;
+    left: 0.3em;
+}
+
+.swfupload {
+    position: absolute;
+    z-index: 1;
+}
+
+.uploadProgress {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    background-color: #eee;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#ffffff', EndColorStr='#eeeeee');
+    background: -moz-linear-gradient(top, #fff, #eee);
+    background: -webkit-gradient(linear, left top, left bottom, from(#fff), to(#eee));
+    padding: 0.3em;
+}

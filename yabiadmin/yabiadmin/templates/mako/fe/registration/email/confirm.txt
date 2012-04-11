@@ -1,0 +1,14 @@
+Hi ${first_name},
+
+We've received a request to create a YABI account for your e-mail
+address. To confirm your request, please click on the link below or copy
+and paste it into your browser:
+
+${url}
+
+If you don't know what this e-mail is about, or have decided not to
+proceed with your request, please ignore this e-mail.
+
+Yours,
+
+YABI Administrators

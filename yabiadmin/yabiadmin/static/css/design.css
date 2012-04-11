@@ -1,0 +1,85 @@
+#yabi-tabs #yabi-tabs-design {
+    color: white;
+    font-size: 133%;
+    text-shadow: 0px -1px 1px #666;
+
+    background: #3879e5 url(../images/selectedWFbg.png) repeat-x;
+    filter: progid:DXImageTransform.Microsoft.Gradient(GradientType=0, StartColorStr='#5aa4fb', EndColorStr='#3879e5');
+    background: -moz-linear-gradient(top, #5aa4fb, #3879e5);
+    background: -webkit-gradient(linear, left top, left bottom, from(#5aa4fb), to(#3879e5));
+
+    border-top: 1px solid #3879e5;
+    border-left: 1px solid #3879e5;
+    border-right: 1px solid #3879e5;
+}
+
+.workflowName {
+    width:200px;
+    padding-left:6px;
+}
+
+.yabiRightColumn {
+    right: 0;
+    min-width: 0;
+    padding: 15px;
+}
+
+#optionsDiv {
+    padding: 0;
+}
+
+.jobOptionsContainer {
+    width: auto;
+}
+
+.fileSelectorBrowse {
+}
+
+
+/* Move the valid/invalid file listings. */
+.fileSelector > div:first-child {
+    position: absolute;
+    top: 2.5em;
+    left: 0;
+    width: 109px;
+    padding: 2px 0;
+}
+
+.fileSelector > div:first-child .acceptedExtension {
+    display: block;
+    line-height: inherit;
+    padding: 1px 6px;
+    width: 97px;
+}
+
+.fileSelector > div:first-child .selectedFile {
+    display: inline-block;
+    width: 80px;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    border: none;
+    position: static;
+}
+
+.fileSelector > div:first-child .filePadding {
+    padding: 1px 6px;
+    margin: 0 0 5px 0;
+
+    position: relative;
+
+    background-color: #ebf0f3;
+    border: 1px solid #b7c9e6;
+    color: #666;
+
+    border-radius: 8px;
+    -webkit-border-radius: 8px;
+    -moz-border-radius: 8px;
+}
+
+/* Fix the positioning of the upload button. */
+.jobParam .fileSelectorUpload input {
+    left: 4px;
+}

@@ -1,0 +1,122 @@
+<%! import django.core.exceptions %>
+
+<%def name="yui(name)">
+% if debug:
+    <script src="${h.url('/static/javascript/yui-2.4.1/' + name + '-debug.js')}" type="text/javascript"></script>
+% else:
+    <script src="${h.url('/static/javascript/yui-2.4.1/' + name + '-min.js')}" type="text/javascript"></script>
+% endif
+</%def>
+
+<%def name="tabs()">
+    <div id="yabi-tabs">
+        <a href="${h.url('/jobs')}" id="yabi-tabs-jobs">jobs</a>
+        <a href="${h.url('/design')}" id="yabi-tabs-design">design</a>
+        <a href="${h.url('/files')}" id="yabi-tabs-files">files</a>
+% try:
+%    if request.user.get_profile().has_account_tab():
+        <a href="${h.url('/account')}" id="yabi-tabs-account">account</a>
+%    endif
+% except django.core.exceptions.ObjectDoesNotExist:
+        
+% endtry
+    </div>
+</%def>
+
+<%def name="bodyhd()">
+    <div id="hd">
+        <p>
+            <img src="${h.url('/static/images/yabi-logo.png')}" alt="Yabi-logo" height="60" width="198" />
+        </p>
+
+        <div id="yabi-message"></div>
+
+        ${self.tabs()}
+
+        <div id="userinfo">
+            <a href="${h.url('/logout')}" class="fakeButton">log out ${request.user.username}</a>        
+        </div>
+    </div>
+</%def>
+
+<%def name="copyright()">
+    <div class="copyright">&copy; 2006, 2011 CCG, Murdoch University</div>
+</%def>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" class="no-js">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="title" content="Y A B I" />
+<meta name="robots" content="index, follow" />
+<meta name="description" content="Yabi" />
+<meta name="keywords" content="yabi, bioinformatics" />
+<meta name="language" content="en" />
+
+<title>Y A B I</title>
+
+<link rel="shortcut icon" href="${h.url('favicon.ico')}" />
+
+${self.yui("yahoo/yahoo")}
+
+${self.yui("event/event")}
+${self.yui("connection/connection")}
+
+${self.yui("dom/dom")}
+${self.yui("dragdrop/dragdrop")}
+${self.yui("animation/animation")}
+${self.yui("slider/slider")}
+${self.yui("json/json-beta")}
+${self.yui("element/element-beta")}
+
+% if debug:
+    ${self.yui("logger/logger")}
+    <script type="text/javascript" src="${h.url('/static/javascript/YabiDebug.js?20101201')}"></script>
+% endif
+
+<script type="text/javascript">
+    YAHOO.namespace("ccgyabi");
+    var appURL = "${h.url('/')}";
+% if request:
+    YAHOO.ccgyabi.username = '${request.user.username}';
+% endif
+</script>
+
+<script type="text/javascript" src="${h.url('/static/javascript/fbd/fbd.js')}"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/swfupload-2.5.0b3/swfupload.js')}"></script>
+
+<script type="text/javascript" src="${h.url('/static/javascript/modernizr-1.7.min.js')}"></script>
+
+<script type="text/javascript" src="${h.url('/static/javascript/YabiCommon.js?20110208')}"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiAcceptedExtensionList.js?20110111')}"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiFileSelector.js?20110110')}"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiJob.js?20110427')}"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiJobFileValue.js?20101201')}"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiJobParam.js?20110111')}"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiSimpleFileValue.js?20101201')}"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiTool.js?20110107')}"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiToolCollection.js?20110428')}"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiWorkflow.js?20110428')}"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiWorkflowCollection.js?20110428')}"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiWorkflowProxy.js?20110208')}"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/YabiMessageManager.js?20101201')}"></script>
+
+<script type="text/javascript" src="${h.url('/static/javascript/widget/event.js?20110105')}"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/widget/loading.js?20101201')}"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/widget/message.js?20101213')}"></script>
+<script type="text/javascript" src="${h.url('/static/javascript/widget/upload.js?20110110')}"></script>
+
+
+<link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/main.css?20101201')}" />
+<link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/reset-fonts-grids-min.css')}" />
+<link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/file-selector.css?20110107')}" />
+<link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/yabi.css?20110427')}" />
+
+<link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/widget/message.css?20101201')}" />
+
+${ next.header() }
+</head>
+<body>
+${ next.body() }
+</body>
+</html>

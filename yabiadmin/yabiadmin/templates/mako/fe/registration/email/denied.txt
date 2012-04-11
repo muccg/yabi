@@ -1,0 +1,12 @@
+Hi ${user.first_name},
+
+We're sorry, but your YABI account has been denied. If you feel this is
+in error, please contact one of the following administrators:
+
+% for email in emails:
+* ${email[0]} <${email[1]}>
+% endfor
+
+Thanks,
+
+YABI Administrators

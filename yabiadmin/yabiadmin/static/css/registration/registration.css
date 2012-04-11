@@ -1,0 +1,27 @@
+body {
+    background-image: url(../../images/yabi-logo.png);
+    background-position: left top;
+    background-repeat: no-repeat;
+    border-top: solid 3px #3879e5;
+    margin-top: 60px;
+    padding: 10px 15px;
+    text-align: left;
+}
+
+h1 {
+    color: #3879e5;
+    font-size: 17.2px;
+    font-weight: bold;
+
+    position: absolute;
+    left: 250px;
+    top: -28px;
+    height: 25px;
+
+    line-height: 25px;
+    vertical-align: bottom;
+}
+
+.copyright {
+    top: -57px;
+}

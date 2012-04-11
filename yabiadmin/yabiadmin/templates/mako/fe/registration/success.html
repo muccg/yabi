@@ -1,0 +1,23 @@
+<%inherit file="base.html"/>
+
+<%def name="header()">
+    <link rel="stylesheet" type="text/css" href="${h.url('/static/css/registration/registration.css')}" />
+
+    <style type="text/css">
+        .email {
+            font-style: italic;
+        }
+    </style>
+</%def>
+
+<%def name="body()">
+    <h1>Request an Account</h1>
+
+    <p>
+        Your request has been received. You will shortly receive a confirmation
+        e-mail to <span class="email">${email|escape}</span> to confirm that the e-mail
+        address is correct.
+    </p>
+
+    ${self.copyright()}
+</%def>

@@ -1,0 +1,14 @@
+Dear Admin,
+
+${user.username} has attempted to log into YABI without having a profile
+defined for them, and hence is unable to log in at present.
+
+The user's details are:
+
+Username: ${user.username}
+Name:     ${user.first_name} ${user.last_name}
+E-mail:   ${user.email}
+
+Share and enjoy,
+
+YABI
