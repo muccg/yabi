@@ -180,6 +180,9 @@ DATABASES = {
         'PASSWORD': '', 
         'HOST': '',                    
         'PORT': '',
+        'OPTIONS': {
+            'timeout': 20,
+        }
     }
 }
 
