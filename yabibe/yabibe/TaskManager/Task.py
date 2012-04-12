@@ -157,6 +157,7 @@ class NullBackendTask(Task):
         assert scheme.lower() == "null"
     
     def main(self):
+        
         if self.stage == 0:
             self.log("null backend... skipping task and copying files")
            
@@ -514,6 +515,12 @@ class MainTask(Task):
                     callfunc(uri, command=task['exec']['command'], remote_info=task['remoteinfourl'], submission=self.submission, stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)     # this blocks untill the command is complete. or the execution errored
                     while self.exec_status[0]==None or self.exec_status[0]=="pending" or self.exec_status[0]=="unsubmitted" or self.exec_status[0]=="running":
                         gevent.sleep()
+                    
+                    #DEBUG
+                    from twisted.python import log
+                    exec_status_message = "exec_status is %r"%(self.exec_status)
+                    self.log(exec_status_message)
+                    log.msg(exec_status_message)
                     
                     if self.exec_status[0] and 'error' in self.exec_status[0]:
                         print "TASK[%s]: Execution failed!"%(self.taskid)
