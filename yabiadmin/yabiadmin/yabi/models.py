@@ -787,15 +787,15 @@ class BackendCredential(Base):
     backend_cred_test_link.allow_tags = True
 
 
-
 class UserProfile(models.Model):
-    user = models.OneToOneField(DjangoUser)
-    user_option_access = models.BooleanField(default=True)
-    credential_access = models.BooleanField(default=True)
-
     class Meta:
         ordering = ["user__username"]
-    
+        verbose_name_plural = "User Profiles"
+
+    user = models.OneToOneField(DjangoUser)
+    user_option_access = models.BooleanField(default=True)
+    credential_access = models.BooleanField(default=False)
+
     def __unicode__(self):
         return "%s" % self.user.username
 
@@ -812,22 +812,20 @@ class UserProfile(models.Model):
             cred.recrypt(currentPassword, newPassword)
             cred.save()
 
-
-
-    # TODO - fix these - they have come from FE
     def has_account_tab(self):
-        return True
+        logger.debug('')        
         return self.user_option_access or self.credential_access
 
     def validate(self, request):
-        logger.debug("")
+        logger.debug('')
+        
         currentPassword = request.POST.get("currentPassword", None)
         newPassword = request.POST.get("newPassword", None)
         confirmPassword = request.POST.get("confirmPassword", None)
 
         # check the user is allowed to change password
         if not self.user_option_access:
-            return (False, "You do not have access to this web service")
+            return (False, "You do not have permission to change the password.")
 
         # check we have everything
         if not currentPassword or not newPassword or not confirmPassword:
@@ -846,9 +844,6 @@ class UserProfile(models.Model):
             return (False, "The new password must be at least 6 characters in length")
 
         return (True, "Password valid.")
-
-
-
 
 
 class ModelBackendUserProfile(UserProfile):

@@ -9,7 +9,7 @@ class Migration(SchemaMigration):
     def forwards(self, orm):
         
         # Adding field 'UserProfile.user_option_access'
-        db.add_column('yabi_userprofile', 'user_option_access', self.gf('django.db.models.fields.BooleanField')(default=False))
+        db.add_column('yabi_userprofile', 'user_option_access', self.gf('django.db.models.fields.BooleanField')(default=True))
 
         # Adding field 'UserProfile.credential_access'
         db.add_column('yabi_userprofile', 'credential_access', self.gf('django.db.models.fields.BooleanField')(default=False))

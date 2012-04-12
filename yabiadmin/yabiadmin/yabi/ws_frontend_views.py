@@ -310,7 +310,7 @@ def rm(request):
     return handle_connection(closure)
 
 @authentication_required
-def get(request):
+def get(request, bytes=None):
     """
     Returns the requested uri. get_file returns an httplib response wrapped in a FileIterWrapper. This can then be read
     by HttpResponse
@@ -326,7 +326,6 @@ def get(request):
             logger.critical('Unable to get filename from uri: %s' % uri)
             filename = 'default.txt'
 
-        bytes = request.GET.get("bytes", None)
         if bytes is not None:
             try:
                 bytes = int(bytes)

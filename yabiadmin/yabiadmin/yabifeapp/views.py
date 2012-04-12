@@ -26,7 +26,6 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-
 import httplib
 from urllib import urlencode, unquote, quote
 import copy
@@ -40,13 +39,10 @@ from urlparse import urlparse
 from django.conf.urls.defaults import *
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
-from ccg.http import HttpResponseUnauthorized
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
-from ccg.utils import webhelpers
 from django.contrib.auth.decorators import login_required
-from yabiadmin.decorators import authentication_required, profile_required
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate
 from django.contrib.auth.models import SiteProfileNotAvailable, User as DjangoUser
 from django.contrib.sessions.models import Session
@@ -56,19 +52,24 @@ from django.template.loader import get_template
 from django.utils import simplejson as json
 from django.utils.importlib import import_module
 from django.core.cache import cache
+from django.views.decorators.csrf import csrf_exempt
+
+from ccg.http import HttpResponseUnauthorized
+from ccg.utils import webhelpers
+
 from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
+
 from yabiadmin.yabi.models import User
 from yabiadmin.responses import *
 from yabiadmin.preview import html
 from yabiadmin.yabi.models import Credential
-
+from yabiadmin.decorators import authentication_required, profile_required
 from crypto import DecryptException
-
+from yabiadmin.yabi.ws_frontend_views import ls, get
 from utils import make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout, using_dev_settings
+
 import logging
 logger = logging.getLogger(__name__)
-
-from django.views.decorators.csrf import csrf_exempt
 
 # forms
 class LoginForm(forms.Form):
@@ -141,35 +142,17 @@ def login(request):
                 if user.is_active:
                     django_login(request, user)
 
-
-                    # TODO bring all login cases over from admin
-                    # TODO tidy this - work out what to do with the messages
                     # for every credential for this user, call the login hook
                     # currently creds will raise an exception if they can't be decrypted
+                    # this is logged but user can still log in as they may have other creds
+                    # that are still usable
                     creds = Credential.objects.filter(user__name=username)
                     try:
                         for cred in creds:
                             cred.on_login(username,password )
 
-                        response = {
-                            "success": True,
-                            "message": "All credentials were successfully decrypted."
-                        }
                     except DecryptException, e:
-                        message = 'Unable to decrypt credential "%s" with your password. Please see your system administrator.' % cred.description
-                        response = {
-                            "success": False,
-                            "message": message
-                        }
-
-
-                    
-
-
-                    #success, message = yabiadmin_login(request, username, password)
-
-                    #if not success:
-                    #    return render_to_response('fe/login.html', {'h':webhelpers, 'form':form, 'error':message})
+                        logger.error('Unable to decrypt credential %s' % cred.description)
 
                     return HttpResponseRedirect(webhelpers.url("/"))
 
@@ -198,8 +181,6 @@ def wslogin(request):
     if user is not None: 
         if user.is_active:
             django_login(request, user)
-
-            yabiadmin_login(request, username, password)
             response = {
                 "success": True
                 }
@@ -218,30 +199,11 @@ def wslogin(request):
     return HttpResponse(content=json.dumps(response))
 
 def wslogout(request):
-    yabiadmin_logout(request)
     django_logout(request)
     response = {
         "success": True,
     }
     return HttpResponse(content=json.dumps(response))
-
-@authentication_required
-def credentialproxy(request, url):
-    #TODO MOVE this check on credential access to ADMIN
-    try:
-        if request.user.get_profile().credential_access:
-            return adminproxy(request, url)
-    except ObjectDoesNotExist:
-        mail_admins_no_profile(request.user)
-        return JsonMessageResponseUnauthorized("User does not have a profile or user record.")
-    except AttributeError:
-        return JsonMessageResponseUnauthorized("You do not have access to this Web service")
-
-    return JsonMessageResponseForbidden("You do not have access to this Web service")
-
-@login_required
-def explode(request):
-    raise Exception("KA BLAM")
 
 
 @login_required
@@ -289,19 +251,7 @@ def preview(request):
     content_type = "application/octet-stream"
 
     # Get the actual file size.
-
-
-
-    # TODO move ls and get to this file
-    from yabiadmin.yabi.ws_frontend_views import ls, get
-##    ls_request = GetRequest("ws/fs/ls", { "uri": uri })
-##    http = yabiadmin_client(request)
-##    resp, content = http.make_request(ls_request)
-
-
     resp = ls(request)
-
-
     if resp.status_code != 200:
         logger.warning("Attempted to preview inaccessible URI '%s'", uri)
         return unavailable("No preview is available as the requested file is inaccessible.")
@@ -313,17 +263,7 @@ def preview(request):
         return unavailable()
 
     size = result.values()[0]["files"][0][1]
-
-    # Now get the file contents.
-    params = {
-        "uri": uri,
-        "bytes": min(size, settings.PREVIEW_SIZE_LIMIT),
-    }
-
-    #get_request = GetRequest("ws/fs/get", params)
-    #resp, content = http.make_request(get_request)
-
-    resp = get(request)
+    resp = get(request, bytes=min(size, settings.PREVIEW_SIZE_LIMIT))
 
     if resp.status_code != 200:
         logger.warning("Attempted to preview inaccessible URI '%s'", uri)
@@ -343,13 +283,16 @@ def preview(request):
     type_settings = settings.PREVIEW_SETTINGS[content_type]
     content_type = type_settings.get("override_mime_type", content_type)
 
+    # now work with the resulting file
+    content = resp.content
+
     # If the file is beyond the size limit, we'll need to check whether to
     # truncate it or not.
     truncated = False
     if size > settings.PREVIEW_SIZE_LIMIT:
         if type_settings.get("truncate", False):
             logger.debug("URI '%s' is too large: size %d > limit %d; truncating", uri, size, settings.PREVIEW_SIZE_LIMIT)
-            content = resp.content[0:settings.PREVIEW_SIZE_LIMIT]
+            content = content[0:settings.PREVIEW_SIZE_LIMIT]
             truncated = True
         else:
             logger.debug("URI '%s' is too large: size %d > limit %d", uri, size, settings.PREVIEW_SIZE_LIMIT)
@@ -381,13 +324,13 @@ def preview(request):
     # best we can with the extension.
     if type_settings.get("sanitise"):
         try:
-            response.write(html.sanitise(resp.content))
+            response.write(html.sanitise(content))
         except RuntimeError:
             return unavailable("This HTML file is too deeply nested to be previewed.")
         except UnicodeEncodeError:
             return unavailable("This HTML file includes malformed Unicode, and hence can't be previewed.")
     else:
-        response.write(resp.content)
+        response.write(content)
 
     return response
 
