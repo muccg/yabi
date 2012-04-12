@@ -36,6 +36,7 @@ from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
 from ccg.utils import webhelpers
+from yabiadmin.utils import detect_rdbms
 from yabiadmin.yabiengine.tasks import walk
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
 from yabiadmin.yabiengine.enginemodels import EngineTask, EngineJob, EngineWorkflow
@@ -121,15 +122,45 @@ def status(request, model, id):
             return HttpResponseNotFound("Object not found")
 
         try:
-            update_task_status(task, status)
+            update_task_status(task.pk, status)
         except Exception, e:
             return HttpResponseServerError(e)
 
         return HttpResponse("")
 
+def select_task_for_update(task_id):
+    # TODO: Django 1.4 replace with EngineTask.objects.select_for_update()
+    rdbms = detect_rdbms()
+    if rdbms in ('postgres', 'mysql'):
+        return EngineTask.objects.raw("SELECT * FROM %s WHERE id = %s FOR UPDATE" % (EngineTask._meta.db_table, task_id))[0]
+    else:
+        return EngineTask.objects.get(pk=task_id)
+
 @transaction.commit_manually
-def update_task_status(task, status):
+def update_task_status(task_id, status):
     try:
+        def log_ignored():
+            logger.warning('Ignoring status update of task %s from %s to %s' % (task.pk, task.status, status))
+
+        task = select_task_for_update(task_id)
+
+        # terminating statuses from BE's point of view. BLOCKED is included because BE should never RESUME
+        terminating_statuses = [STATUS_ERROR, STATUS_EXEC_ERROR, STATUS_COMPLETE, STATUS_BLOCKED]
+
+        if task.status in terminating_statuses:
+            # Never change from terminating status
+            log_ignored()
+            transaction.rollback()
+            return False
+
+        if status not in terminating_statuses:
+            # Always change to a terminating status
+            if task.status and STATUS_PROGRESS_MAP[task.status] > STATUS_PROGRESS_MAP[status]:
+                # ... but otherwise only go forwards
+                log_ignored()
+                transaction.rollback()
+                return False
+
         task.status = status
 
         if status != STATUS_BLOCKED and status!= STATUS_RESUME:

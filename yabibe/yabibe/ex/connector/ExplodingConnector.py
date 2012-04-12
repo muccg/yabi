@@ -115,8 +115,7 @@ class ExplodingConnector(ExecConnector):
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
         gevent.sleep()
         
-        #times = random.choice(possible_delay_sets)
-        times = possible_delay_sets[-1]
+        times = random.choice(possible_delay_sets)
 
         print "Exploding Connector: command %s, remoteurl %s, delay_set %s" % (command, remoteurl, str(times))
         

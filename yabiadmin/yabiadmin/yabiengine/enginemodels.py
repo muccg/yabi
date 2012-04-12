@@ -38,6 +38,7 @@ from django.conf import settings
 from django.utils import simplejson as json
 from ccg.utils import webhelpers
 from ccg.utils.webhelpers import url
+from yabiadmin.utils import detect_rdbms
 
 from django.db.transaction import TransactionManagementError
 
@@ -342,7 +343,6 @@ class EngineJob(Job):
 
         self.save()
 
-
     def create_tasks(self):
         tasks = self._prepare_tasks()
         #print "_prepare_tasks returned: %s"%(str(tasks))
@@ -362,13 +362,12 @@ class EngineJob(Job):
             from django.db import connection
             cursor = connection.cursor()
             logger.debug("Acquiring lock on %s for job %s" % (Task._meta.db_table, self.id))
-            assert(settings.DATABASES.has_key('default'))
-            assert(settings.DATABASES['default'].has_key('ENGINE'))
-            if (settings.DATABASES['default']['ENGINE'] == 'django.db.backends.postgresql_psycopg2'):
+            rdbms = detect_rdbms()
+            if rdbms == 'postgres':
                 cursor.execute('LOCK TABLE %s IN ACCESS EXCLUSIVE MODE' % Task._meta.db_table)
-            elif (settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql'):
+            elif rdbms == 'mysql':
                 cursor.execute('LOCK TABLES %s WRITE, %s WRITE' % (Task._meta.db_table, StageIn._meta.db_table))
-            elif (settings.DATABASES['default']['ENGINE'] == 'django.db.backends.sqlite3'):
+            elif rdbms == 'sqlite':
                 # don't do anything!
                 pass
             else:
