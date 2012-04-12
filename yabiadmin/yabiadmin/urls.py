@@ -52,7 +52,10 @@ urlpatterns = patterns('yabiadmin.yabifeapp.views',
     (r'^exception[/]*$', 'exception_view'),
 )
 
-
+# temporary url for file upload direct
+urlpatterns += patterns('yabiadmin.uploader.views',
+    (r'^ws/fs/put[/]*$', 'put')
+)
 
 # dispatch to either webservice, admin or general
 urlpatterns += patterns('yabiadmin.yabi.views',
@@ -61,11 +64,6 @@ urlpatterns += patterns('yabiadmin.yabi.views',
     url(r'^status_page[/]*$', 'status_page', name='status_page'),
     (r'^admin/', include('yabiadmin.yabi.adminurls'), {'SSL':True}),
     (r'^admin/', include(admin.site.urls), {'SSL':True})
-)
-
-# temporary url for file upload direct
-urlpatterns += patterns('yabiadmin.uploader.views',
-    (r'^upload/', include("yabiadmin.uploader.urls"))
 )
 
 urlpatterns += patterns('yabiadmin.yabi.views',

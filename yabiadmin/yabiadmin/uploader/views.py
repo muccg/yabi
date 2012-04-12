@@ -60,13 +60,15 @@ class FileUploadStreamer(UploadStreamer):
         # this is called right at the beginning. So we grab the uri detail here and initialise the outgoing POST
         self.post_multipart(host=self._host, port=self._port, selector=self._selector, cookies=self._cookies )
 
-#@authentication_required
-def put(request, yabiusername):
+@authentication_required
+def put(request):
     """
     Uploads a file to the supplied URI
     """
     import socket
     import httplib
+
+    yabiusername = request.user.name
 
     try:
         logger.debug("uri: %s" %(request.GET['uri']))
