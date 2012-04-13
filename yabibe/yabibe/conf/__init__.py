@@ -187,7 +187,7 @@ class Configuration(object):
         name = "execution"
         if conf_parser.has_section(name):
             for part in ('logcommand','logscripts'):
-                self.config[name][part] = conf_parser.get(name,part)
+                self.config[name][part] = boolean_proc(conf_parser.get(name,part))
             
              
         # backend section

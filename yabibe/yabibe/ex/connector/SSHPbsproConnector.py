@@ -37,12 +37,6 @@ ENV_CHECK = []
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "ssh+pbspro"
 
-# should we log the qsub command to the logfile?
-LOG_QSUB = True
-
-# should we log the qsub submission scripts contents to the logfile?
-LOG_SUBMISSION_SCRIPT = True
-
 DEBUG = False
 
 # where we temporarily store the submission scripts on the submission host
@@ -125,14 +119,16 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         if DEBUG:
             print "submission script path is %s"%(submission_script)
         
-        # build up our remote qsub command
-        ssh_command = "cat >'%s' && "%(submission_script)
-        ssh_command += "qsub -N '%s' -e '%s' -o '%s' '%s'"%(
+        qsub_submission_script = "qsub -N '%s' -e '%s' -o '%s' '%s'"%(
                                                                         "yabi"+remoteurl.rsplit('/')[-1],
                                                                         os.path.join(working,stderr),
                                                                         os.path.join(working,stdout),
                                                                         submission_script
                                                                     )
+        
+        # build up our remote qsub command
+        ssh_command = "cat >'%s' && "%(submission_script)
+        ssh_command += qsub_submission_script
         ssh_command += " ; EXIT=$? "
         ssh_command += " ; rm '%s'"%(submission_script)
         #ssh_command += " ; echo $EXIT"
@@ -144,7 +140,16 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         usercert = self.save_identity(creds['key'])
         
         script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue, stdout, stderr)    
+        
+        # hande log setting
+        if config.config['execution']['logcommand']:
+            print SCHEMA+" attempting submission command: "+qsub_submission_script
             
+        if config.config['execution']['logscript']:
+            print SCHEMA+" submission script:"
+            print script_string
+            
+        
         if DEBUG:
             print "_ssh_qsub"
             print "usercert:",usercert
