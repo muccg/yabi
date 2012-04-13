@@ -69,7 +69,7 @@ def put(request):
     import socket
     import httplib
 
-    yabiusername = request.user.name
+    yabiusername = request.user.username
 
     try:
         logger.debug("uri: %s" %(request.GET['uri']))
