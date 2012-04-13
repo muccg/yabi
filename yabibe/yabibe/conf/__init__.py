@@ -138,6 +138,10 @@ class Configuration(object):
                         'qsub':'qsub',
                         'qacct':'qacct',
                     },
+        'execution':{
+                        'logcommand':'true',
+                        'logscripts':'true'
+                    },
     }
     
     def read_from_data(self,dat):
@@ -179,7 +183,13 @@ class Configuration(object):
             self.config[name]['qsub'] = conf_parser.get(name,'qsub')
             self.config[name]['qacct'] = conf_parser.get(name,'qacct')
             
+        # execution section
+        name = "execution"
+        if conf_parser.has_section(name):
+            for part in ('logcommand','logscripts'):
+                self.config[name][part] = conf_parser.get(name,part)
             
+             
         # backend section
         name = "backend"
         if conf_parser.has_section(name):

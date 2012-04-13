@@ -37,6 +37,12 @@ ENV_CHECK = []
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "ssh+pbspro"
 
+# should we log the qsub command to the logfile?
+LOG_QSUB = True
+
+# should we log the qsub submission scripts contents to the logfile?
+LOG_SUBMISSION_SCRIPT = True
+
 DEBUG = False
 
 # where we temporarily store the submission scripts on the submission host

@@ -98,3 +98,4 @@ class ExecConnector(object):
         """Pass in the environment setup you want any child processes to inherit"""
         self.childenv = env.copy()
         
+        
