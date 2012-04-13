@@ -86,7 +86,7 @@ def blockedtask(request):
     return request_next_task(request, status=STATUS_RESUME)
 
 def status(request, model, id):
-    logger.debug('model: %s id: %s' % (model, id))
+    logger.debug('model: %s id: %s method: %s' % (model, id, request.method))
     models = {'task':EngineTask, 'job':EngineJob, 'workflow':EngineWorkflow}
 
     # sanity checks
@@ -112,7 +112,7 @@ def status(request, model, id):
             if model != "task":
                 return HttpResponseServerError("Only the status of Tasks is allowed to be changed\n")
 
-            logger.debug("status="+request.POST['status'])
+            logger.debug("task id: %s status=%s" % (id, request.POST['status']))
 
             # TODO TSZ maybe raise exception instead?
             # truncate status to 64 chars to avoid any sql field length errors
