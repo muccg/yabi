@@ -11,6 +11,7 @@ from django.conf import settings
 from yaphc import Http, PostRequest, UnauthorizedError
 from yabiadmin.yabiengine.backendhelper import BackendRefusedConnection, BackendHostUnreachable, PermissionDenied, FileNotFound, BackendStatusCodeError
 from yabiadmin.yabiengine.backendhelper import get_fs_backendcredential_for_uri
+from yabiadmin.decorators import authentication_required
 
 import logging
 logger = logging.getLogger(__name__)
