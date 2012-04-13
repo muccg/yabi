@@ -14,4 +14,6 @@
 # http://www.pip-installer.org/en/latest/requirement-format.html
 #
 gunicorn==0.13.4
+psycopg2==2.0.8
+MySQL-python==1.2.3
 -r base-requirements.txt
