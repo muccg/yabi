@@ -63,9 +63,11 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.staticfiles',
+    'yabiadmin.yabifeapp',
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
     'yabiadmin.yabistoreapp',
+    'yabiadmin.uploader',
     'djcelery',
     'djkombu',
     'django_extensions',
@@ -92,11 +94,11 @@ AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
 # you SHOULD change the cookie to use HTTPONLY and SECURE when in production
 SESSION_COOKIE_AGE = 60*60
 SESSION_COOKIE_PATH = url('/')
-SESSION_COOKIE_NAME = 'yabiadmin_sessionid'
+SESSION_COOKIE_NAME = 'yabi_sessionid'
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_HTTPONLY = False 
 SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_NAME = "csrftoken_yabiadmin"
+CSRF_COOKIE_NAME = "csrftoken_yabi"
 
 
 # Locale
@@ -108,9 +110,8 @@ LANGUAGE_CODE = 'en-us'
 USE_I18N = True
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#login-url
-LOGIN_URL = url('/accounts/login/')
-LOGOUT_URL = url('/accounts/logout/')
-
+LOGIN_URL = url('/login/')
+LOGOUT_URL = url('/logout/')
 
 ### static file management ###
 # see: https://docs.djangoproject.com/en/dev/howto/static-files/
@@ -129,9 +130,6 @@ WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#append-slash
 APPEND_SLASH = True
-
-# TODO: probably deprecated
-SITE_NAME = 'yabiadmin'
 
 # validation settings, these reflect the types of backend that yabi can handle
 EXEC_SCHEMES = ['globus', 'sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex','explode','null']
@@ -290,6 +288,41 @@ CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
 CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
 CELERY_IMPORTS = ("yabiadmin.yabiengine.tasks",)
 BROKER_TRANSPORT = "djkombu.transport.DatabaseTransport"
+
+
+
+### PREVIEW SETTINGS
+
+# The truncate key controls whether the file may be previewed in truncated form
+# (ie the first "size" bytes returned). If set to false, files beyond the size
+# limit simply won't be available for preview.
+#
+# The override_mime_type key will set the content type that's sent in the
+# response to the browser, replacing the content type received from Admin.
+#
+# MIME types not in this list will result in the preview being unavailable.
+PREVIEW_SETTINGS = {
+    # Text formats.
+    "text/plain": { "truncate": True },
+
+    # Structured markup formats.
+    "text/html": { "truncate": False, "sanitise": True },
+    "application/xhtml+xml": { "truncate": False, "sanitise": True },
+    "text/svg+xml": { "truncate": True, "override_mime_type": "text/plain" },
+    "text/xml": { "truncate": True, "override_mime_type": "text/plain" },
+    "application/xml": { "truncate": True, "override_mime_type": "text/plain" },
+
+    # Image formats.
+    "image/gif": { "truncate": False },
+    "image/jpeg": { "truncate": False },
+    "image/png": { "truncate": False },
+}
+
+# The length of time preview metadata will be cached, in seconds.
+PREVIEW_METADATA_EXPIRY = 60
+
+# The maximum file size that can be previewed.
+PREVIEW_SIZE_LIMIT = 1048576
 
 
 ### LOGGING SETUP ###

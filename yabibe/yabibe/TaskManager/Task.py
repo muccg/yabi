@@ -157,6 +157,7 @@ class NullBackendTask(Task):
         assert scheme.lower() == "null"
     
     def main(self):
+        
         if self.stage == 0:
             self.log("null backend... skipping task and copying files")
            
