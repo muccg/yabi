@@ -44,10 +44,10 @@ from twistedweb2 import http, responsecode, http_headers, stream
 import shlex
 import os
 from utils.protocol import globus
-import stackless
+import gevent
 import tempfile
 
-from utils.stacklesstools import sleep
+from utils.geventtools import sleep
 
 from conf import config
 from SubmissionTemplate import make_script
@@ -101,10 +101,10 @@ possible_delay_sets = [
          
          # speed bomb
          [
-            (0.1, "Unsubmitted"),
-            (0.1, "Pending"),
-            (0.1, "Running"),
-            (0.1, "Error")
+            (0, "Unsubmitted"),
+            (0, "Pending"),
+            (0, "Running"),
+            (0, "Error")
          ]
     ]
              
@@ -113,12 +113,15 @@ class ExplodingConnector(ExecConnector):
     def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
         client_stream = stream.ProducerStream()
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
-        stackless.schedule()
+        gevent.sleep()
         
         times = random.choice(possible_delay_sets)
+
+        print "Exploding Connector: command %s, remoteurl %s, delay_set %s" % (command, remoteurl, str(times))
         
         for delay, message in times:
             sleep(delay)
+            print "Exploding Connector: remoteurl %s, message %s" % (remoteurl, message)
             client_stream.write("%s\r\n"%message)
         
         client_stream.finish()

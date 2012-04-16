@@ -54,7 +54,7 @@ def close_connection(**kwargs):
     for connection in _connections.itervalues():
         connection.close()
     _connections = {}
-signals.request_finished.connect(close_connection)
+signals.request_finished.connect(close_connection, dispatch_uid="close_connection")
 
 class MultiDBManager(models.Manager):
     @staticmethod

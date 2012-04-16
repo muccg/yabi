@@ -50,8 +50,8 @@ assert config.config['backend']['hmackey'], "[backend] section of yabi.conf has 
 
 from urlparse import urlparse
 
-import stacklessreactor
-stacklessreactor.install()
+import geventreactor
+geventreactor.install()
 
 from twistedweb2 import log
 from twisted.internet import reactor

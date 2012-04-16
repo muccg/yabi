@@ -32,11 +32,11 @@ from utils.submit_helpers import parsePOSTDataRemoteWriter
 import weakref
 import sys, os
 
-import stackless
+import gevent
 from TaskManager.TaskTools import Sleep, Copy, List, Mkdir, GETFailure, CopyError
 
 from utils.parsers import parse_url
-from utils.stacklesstools import GETFailure
+from utils.geventtools import GETFailure
 
 from Exceptions import BlockingException
 import traceback
@@ -206,9 +206,7 @@ class FileRCopyResource(resource.PostableResource):
                                 )
                     return
 
-            copier = stackless.tasklet(rcopy_runner_thread)
-            copier.setup()
-            copier.run()
+            copier = gevent.spawn(rcopy_runner_thread)
             
             return result_channel
             

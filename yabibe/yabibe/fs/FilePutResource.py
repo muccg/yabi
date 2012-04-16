@@ -31,13 +31,13 @@ from twisted.internet import defer, reactor
 
 import weakref
 import sys, os, errno
-import stackless
+import gevent
 import json
 from MimeStreamDecoder import MimeStreamDecoder, no_intr
 
 from Exceptions import PermissionDenied, InvalidPath, NoCredentials, ProxyInitError
 
-from utils.stacklesstools import WaitForDeferredData
+from utils.geventtools import WaitForDeferredData
 from utils.parsers import parse_url
 
 from twisted.internet.defer import Deferred
@@ -119,9 +119,9 @@ class FilePutResource(resource.PostableResource):
                 
                 #while True:
                     ##print "DATA:",WaitForDeferredData(reader)
-                    #stackless.schedule()
+                    #gevent.sleep()
                 
-                raise Exception, "Unallowed mediatype in POST upload file header"
+                raise Exception, "Unallowed mediatype '%s' subtype '%s' in POST upload file header"%(ctype.mediaType,ctype.mediaSubtype)
             elif (ctype.mediaType == 'multipart' and ctype.mediaSubtype == 'form-data'):
                 boundary = ctype.params.get('boundary')
                 if boundary is None:
@@ -145,15 +145,15 @@ class FilePutResource(resource.PostableResource):
                         channel.addCallback(fifo_cleanup)
                         
                         # give the engine a chance to fire up the process
-                        stackless.schedule()
+                        gevent.sleep()
                         
                         while not self.procproto.isStarted():
                             print "."
-                            stackless.schedule()
+                            gevent.sleep()
                     
                         # once its started wait one engine cycle before opening fifo.
                         for i in range(100):
-                            stackless.schedule()
+                            gevent.sleep()
                         
                         while True:
                             try:
@@ -166,7 +166,7 @@ class FilePutResource(resource.PostableResource):
                             except (OSError, IOError), e:
                                 print traceback.format_exc()
                                 if e.errno == errno.EINTR or e.errno == errno.EAGAIN:
-                                    stackless.schedule()
+                                    gevent.sleep()
                                 else:
                                     raise
                         
@@ -176,7 +176,7 @@ class FilePutResource(resource.PostableResource):
                         
                         # wait for copy fifo process to exit
                         while not self.procproto.isDone():
-                            stackless.schedule()
+                            gevent.sleep()
                         
                         # if in error state, report error
                         if self.procproto.exitcode:
@@ -197,13 +197,13 @@ class FilePutResource(resource.PostableResource):
                         parser.feed(dat)
                         
                         reader = req.stream.read()
-                        stackless.schedule()
+                        gevent.sleep()
                 except IOError, ioe:
                     #print "IOError!!!",ioe
                     # sleep until the task finished
                     print traceback.format_exc()
                     while not parser.procproto.isDone():
-                        stackless.schedule()
+                        gevent.sleep()
                     return channel.callback(http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "File upload failed: %s\n"%parser.procproto.err))
                 except Exception, ex:
                     print traceback.format_exc()
@@ -216,8 +216,6 @@ class FilePutResource(resource.PostableResource):
                 return channel.callback(http.Response( responsecode.BAD_REQUEST, "Invalid content-type: %s/%s" % (ctype.mediaType, ctype.mediaSubtype)))
             
         
-        tasklet = stackless.tasklet(upload_tasklet)
-        tasklet.setup( request, client_channel )
-        tasklet.run()
+        tasklet = gevent.spawn(upload_tasklet, request, client_channel )
         
         return client_channel

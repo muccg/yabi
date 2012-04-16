@@ -26,10 +26,7 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-#
-# Memcache stuff for this set of webservices
-# lets help make the frontend more snappy
-#
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest
 from ccg.http import HttpResponseUnauthorized
@@ -40,58 +37,11 @@ import hmac
 import logging
 logger = logging.getLogger(__name__)
 
-from ccg.memcache import KeyspacedMemcacheClient
-mc = KeyspacedMemcacheClient()
-
 import pickle
 
 import settings
 
 HTTP_HMAC_KEY = 'HTTP_HMAC_DIGEST'
-
-def req_to_str(request):
-    s = request.path
-    for k in sorted(request.REQUEST):
-        s += '-' + request.REQUEST[k]
-    return s
-    
-def func_create_memcache_keyname(basekey, kwargs, kwargkeylist, request_specific=None, user_specific=None):
-    keylist = sorted(kwargs.keys()) if kwargkeylist=='*' else kwargkeylist
-    
-    parts = [basekey]
-    if request_specific is not None:
-        parts += [req_to_str(request_specific)]
-    if user_specific is not None:
-        parts += [user_specific]
-    parts += [str(kwargs[X]) for X in keylist]
-    
-    keyname = "-".join(parts)
-    return keyname.encode()              # make sure its ascii if its unicode
-
-def memcache(basekey,kwargkeylist=[],timeout=120,refresh=False,request_specific=True,user_specific=True):
-    """refresh is if you want to refresh memcache with a fresh timeout on cache hit, or if you want to leave it and let it expire as per before cache hit"""
-    def memcache_decorator(func):
-        def memcache_decorated_func(request, *args, **kwargs):
-            keyname = func_create_memcache_keyname(basekey,kwargs,kwargkeylist,request if request_specific else None, request.user.username if user_specific else None)
-            cached_result = mc.get(keyname)
-            if cached_result:
-                if refresh:
-                    logger.debug("updating cached timestamp for %s"%keyname)
-                    mc.set(keyname,cached_result,timeout)
-                logger.debug("returning cached result for %s"%keyname)
-                return pickle.loads(cached_result)
-            
-            # not cached. get real result.
-            logger.debug("result not cached... caching %s"%keyname)
-            result = func(request, *args, **kwargs)
-            mc.set(keyname,pickle.dumps(result),timeout)
-            return result
-        if hasattr(settings, 'MEMCACHE_SERVERS'):        
-            return memcache_decorated_func
-        else:
-            return func
-    return memcache_decorator
-            
 
 def authentication_required(f):
     """

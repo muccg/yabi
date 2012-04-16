@@ -30,7 +30,7 @@ from twistedweb2 import resource, http_headers, responsecode, http, server
 from twisted.internet import defer, reactor
 import weakref, json
 import sys, os, signal
-import stackless
+import gevent
 import traceback
 from Exceptions import BlockingException
 
@@ -215,7 +215,7 @@ class FileCopyResource(resource.PostableResource):
                        
             # wait for one to finish
             while not readproto.isDone() and not writeproto.isDone():
-                stackless.schedule()
+                gevent.sleep()
             
             # if one died and not the other, then kill the non dead one
             if readproto.isDone() and readproto.exitcode!=0 and not writeproto.isDone():
@@ -225,21 +225,21 @@ class FileCopyResource(resource.PostableResource):
                 print "read failed. attempting os.kill(",writeproto.transport.pid,",",signal.SIGKILL,")",type(writeproto.transport.pid),type(signal.SIGKILL)
                 while writeproto.transport.pid==None:
                     #print "writeproto transport pid not set. waiting for setting..."
-                    stackless.schedule()
+                    gevent.sleep()
                 os.kill(writeproto.transport.pid, signal.SIGKILL)
             else:
                 # wait for write to finish
                 if DEBUG:
                     print "WFW",readproto.exitcode,writeproto.exitcode
                 while writeproto.exitcode == None:
-                    stackless.schedule()
+                    gevent.sleep()
                 
                 # did write succeed?
                 if writeproto.exitcode == 0:
                     if DEBUG:
                         print "WFR",readproto.exitcode,writeproto.exitcode
                     while readproto.exitcode == None:
-                        stackless.schedule()
+                        gevent.sleep()
             
             if readproto.exitcode==0 and writeproto.exitcode==0:
                 if DEBUG:
@@ -266,10 +266,8 @@ class FileCopyResource(resource.PostableResource):
             
         client_channel = defer.Deferred()
         
-        tasklet = stackless.tasklet(copy)
-        tasklet.setup(client_channel)
-        tasklet.run()
-            
+        tasklet = gevent.spawn(copy,client_channel)
+        
         return client_channel
             
     def http_POST(self, request):
