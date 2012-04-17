@@ -34,6 +34,18 @@ def admin_initdb():
     '''Initialise the DB of Yabiadmin'''
     _virtualenv(ADMIN, 'fab initdb')
 
+def admin_createdb():
+    '''Create the DB of Yabiadmin'''
+    _virtualenv(ADMIN, 'fab createdb')
+
+def admin_dropdb():
+    '''Drop the DB of Yabiadmin'''
+    _virtualenv(ADMIN, 'fab dropdb')
+
+def admin_recreatedb():
+    '''Recreate (drop then create) the DB of Yabiadmin'''
+    _virtualenv(ADMIN, 'fab recreatedb')
+
 def admin_runserver(bg=False):
     '''Run the yabiadmin server for local dev (:bg for background)'''
     cmd = "fab runserver"
