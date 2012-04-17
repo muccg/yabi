@@ -79,10 +79,9 @@ class CredentialTests(unittest.TestCase):
 
     def test_login_decrypts_credential(self):
         client = Client()
-        response = client.post('/ws/login/',
+        response = client.post('/wslogin/',
                 {'username': self.django_user.username, 'password': 'pass'})
         self.assertEqual(response.status_code, 200)
-        self.assertTrue("All credentials were successfully decrypted" in response.content)
         self.assertTrue(self.credential.is_cached)
 
 
