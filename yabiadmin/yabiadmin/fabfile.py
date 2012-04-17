@@ -135,6 +135,27 @@ def initdb():
     local("python manage.py syncdb --noinput")
     migrate()
 
+def dropdb():
+    """
+    Drops the DB used by the application
+    """
+    _local_env()
+    local("python db_utils.py dropdb")
+
+def createdb():
+    """
+    Creates the DB used by the application
+    """
+    _local_env()
+    local("python db_utils.py createdb")
+
+def recreatedb():
+    """
+    Recreates (dropdb then createdb) the DB used by the application
+    """
+    _local_env()
+    local("python db_utils.py recreatedb")
+
 def migrate():
     """
     Runs the DB migrations
