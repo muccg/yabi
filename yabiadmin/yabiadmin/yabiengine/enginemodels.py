@@ -66,6 +66,8 @@ class EngineWorkflow(Workflow):
 
     class Meta:
         proxy = True
+        verbose_name = 'workflow'
+        verbose_name_plural = 'workflows'
 
     @property
     def workflow_id(self):

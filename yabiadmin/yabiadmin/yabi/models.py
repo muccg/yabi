@@ -30,6 +30,7 @@ import traceback, hashlib, base64
 from django.db import models, transaction
 from django import forms
 from django.contrib.auth.models import User as DjangoUser
+from django.contrib.auth import authenticate
 from django.utils import simplejson as json
 from django.core import urlresolvers
 from django.conf import settings
@@ -786,9 +787,17 @@ class BackendCredential(Base):
     backend_cred_test_link.allow_tags = True
 
 
-
 class UserProfile(models.Model):
+    class Meta:
+        ordering = ["user__username"]
+        verbose_name_plural = "User Profiles"
+
     user = models.OneToOneField(DjangoUser)
+    user_option_access = models.BooleanField(default=True)
+    credential_access = models.BooleanField(default=False)
+
+    def __unicode__(self):
+        return "%s" % self.user.username
 
     def reencrypt_user_credentials(self, request):
         logger.debug("")
@@ -803,19 +812,56 @@ class UserProfile(models.Model):
             cred.recrypt(currentPassword, newPassword)
             cred.save()
 
+    def has_account_tab(self):
+        logger.debug('')        
+        return self.user_option_access or self.credential_access
+
+    def validate(self, request):
+        logger.debug('')
+        
+        currentPassword = request.POST.get("currentPassword", None)
+        newPassword = request.POST.get("newPassword", None)
+        confirmPassword = request.POST.get("confirmPassword", None)
+
+        # check the user is allowed to change password
+        if not self.user_option_access:
+            return (False, "You do not have permission to change the password.")
+
+        # check we have everything
+        if not currentPassword or not newPassword or not confirmPassword:
+            return (False, "Either the current, new or confirmation password is missing from request.")
+
+        # check the current password
+        if not authenticate(username=request.user.username, password=currentPassword):
+            return (False, "Current password is incorrect")
+
+        # the new passwords should at least match and meet whatever rules we decide
+        # to impose (currently a minimum six character length)
+        if newPassword != confirmPassword:
+            return (False, "The new passwords must match")
+
+        if len(newPassword) < 6:
+            return (False, "The new password must be at least 6 characters in length")
+
+        return (True, "Password valid.")
+
 
 class ModelBackendUserProfile(UserProfile):
 
     class Meta:
         proxy = True
 
-    def passchange(self, request):
+    def change_password(self, request):
         logger.debug("passchange in ModelBackendUserProfile")        
         currentPassword = request.POST.get("currentPassword", None)
         newPassword = request.POST.get("newPassword", None)
 
         assert currentPassword, "No currentPassword was found in the request."
         assert newPassword, "No newPassword was found in the request."
+
+        (valid, message) = self.validate(request)
+        if not valid:
+            return (valid, message)
 
         try:
             self.user.set_password(newPassword)
@@ -837,10 +883,14 @@ class LDAPBackendUserProfile(UserProfile):
         proxy = True
 
 
-    def passchange(self, request):
+    def change_password(self, request):
         logger.debug("passchange in LDAPBackendUserProfile")
         currentPassword = request.POST.get("currentPassword", None)
         newPassword = request.POST.get("newPassword", None)
+
+        (valid, message) = self.validate(request)
+        if not valid:
+            return (valid, message)
 
         # if we manage to change the userpassword, then reencrypt the creds
         if ldaputils.set_ldap_password(self.user, currentPassword, newPassword):

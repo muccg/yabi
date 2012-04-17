@@ -159,7 +159,8 @@ class BackendAdmin(AdminBase):
     list_display = ['name', 'description', 'scheme', 'hostname', 'port', 'path', 'uri', 'backend_summary_link']
 
 class UserAdmin(AdminBase):
-    list_display = ['name', 'toolsets_str', 'tools_link', 'backends_link']
+    list_display = ['user', 'user_option_access','credential_access']
+    list_editable = ['user_option_access', 'credential_access']
 
 class BackendCredentialAdmin(AdminBase):
     form = BackendCredentialForm
@@ -180,7 +181,7 @@ def register(site):
     site.register(Tool, ToolAdmin)
     site.register(ToolGroup, ToolGroupAdmin)
     site.register(ToolSet, ToolSetAdmin)
-    site.register(User, UserAdmin)
+    site.register(UserProfile, UserAdmin)
     site.register(Credential, CredentialAdmin)
     site.register(BackendCredential, BackendCredentialAdmin)
     site.register(Backend, BackendAdmin)

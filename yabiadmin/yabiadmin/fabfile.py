@@ -18,7 +18,7 @@ env.auto_confirm_purge = False #controls whether the confirmation prompt for pur
 env.celeryd_options = "--config=settings -l debug -E -B"
 env.ccg_pip_options = "--download-cache=/tmp --use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors=http://d.pypi.python.org/ --mirrors=http://e.pypi.python.org/"
 
-env.gunicorn_listening_on = "127.0.0.1:8001"
+env.gunicorn_listening_on = "127.0.0.1:8000"
 env.gunicorn_workers = 5
 env.gunicorn_worker_timeout = 300
 
