@@ -30,6 +30,10 @@ def admin_bootstrap():
     with lcd(ADMIN['dir']):
         local("sh ../../bootstrap.sh -r quickstart.txt")
 
+def admin_require(requirements_file):
+    '''Install additional requirements into the yabiadmin project'''
+    _virtualenv(ADMIN, 'fab require:%s' % requirements_file)
+
 def admin_initdb():
     '''Initialise the DB of Yabiadmin'''
     _virtualenv(ADMIN, 'fab initdb')

@@ -315,6 +315,10 @@ def tests():
     _local_env()
     local("nosetests -v")
 
+def require(requirements_file):
+    '''pip installs the requirements specified in the passed in file'''
+    local("pip install -r %s" % requirements_file)
+
 def _celeryd():
     _django_env()
     print local("python -m celery.bin.celeryd " + env.celeryd_options, capture=False)
