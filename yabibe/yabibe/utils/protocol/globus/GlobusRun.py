@@ -36,6 +36,8 @@ from twisted.internet import protocol
 from twisted.internet import reactor
 import re
 
+from conf import config
+
 DEBUG = False
 
 re_jobid = re.compile(r"Job ID: uuid:([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})")
@@ -84,8 +86,7 @@ class GlobusRun(BaseShell):
 
     def run(self, certfile, rslfile, host="xe-gt4.ivec.org", factorytype="PBS"):
         """Spawn a process to run an xml job. return the process handler"""
-        return BaseShell.execute(self,GlobusRunWSProcessProtocol, certfile,
-            [
+        globus_command = [
                 self.globusrun_ws,
                 "-F", host, 
                 "-Ft", factorytype,
@@ -94,7 +95,17 @@ class GlobusRun(BaseShell):
                 "-job-description-file",
                 rslfile,
             ]
-        )
+        
+        # hande log setting
+        if config.config['execution']['logcommand']:
+            print "Globus attempting submission command: "+ (" ".join(globus_command))
+            
+        if config.config['execution']['logscript']:
+            print "Globus submission script:"
+            with open(rslfile) as fh:
+                print fh.read()
+                
+        return BaseShell.execute(self,GlobusRunWSProcessProtocol, certfile, globus_command )
     
     def status(self, certfile, eprfile, host="xe-gt4.ivec.org", factorytype="PBS"):
         return BaseShell.execute(self, GlobusStatusWSProcessProtocol, certfile,

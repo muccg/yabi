@@ -81,6 +81,14 @@ class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
         
             usercert = self.save_identity(creds['key'])
             
+            # hande log setting
+            if config.config['execution']['logcommand']:
+                print SCHEMA+" running command: "+command
+                
+            if config.config['execution']['logscript']:
+                print SCHEMA+" submission script:"
+                print script_string
+                
             if DEBUG:
                 print "usercert:",usercert
                 print "command:",command

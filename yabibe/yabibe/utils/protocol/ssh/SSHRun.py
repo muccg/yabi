@@ -36,6 +36,8 @@ from FifoPool import Fifos
 
 from BaseShell import BaseShell, BaseShellProcessProtocol
 
+from conf import config
+
 DEBUG = False
 
 class SSHExecProcessProtocolParamiko(BaseShellProcessProtocol):
@@ -80,5 +82,13 @@ class SSHRun(BaseShell):
         
         if DEBUG:      
             print "COMMAND:",command
+            
+        # hande log setting
+        if config.config['execution']['logcommand']:
+            print "ssh running command: "+command
+            
+        if config.config['execution']['logscript']:
+            print "ssh attempting remote command: "+remote_command
+            
             
         return BaseShell.execute(self,SSHExecProcessProtocolParamiko(streamin),command)

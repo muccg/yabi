@@ -94,15 +94,17 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
         
         submission_script = os.path.join(TMP_DIR,str(uuid.uuid4())+".sh")
         
-        # build up our remote qsub command
-        ssh_command = "cat >'%s' && "%(submission_script)
-        ssh_command += "qsub -N '%s' -e '%s' -o '%s' -d '%s' '%s'"%(    
+        qsub_submission_script = "qsub -N '%s' -e '%s' -o '%s' -d '%s' '%s'"%(    
                                                                         "yabi-"+remoteurl.rsplit('/')[-1],
                                                                         os.path.join(working,stderr),
                                                                         os.path.join(working,stdout),
                                                                         working,
                                                                         submission_script
                                                                     )
+                                                                    
+        # build up our remote qsub command
+        ssh_command = "cat >'%s' && "%(submission_script)
+        ssh_command += qsub_submission_script
         ssh_command += " ; EXIT=$? "
         ssh_command += " ; rm '%s'"%(submission_script)
         #ssh_command += " ; echo $EXIT"
@@ -117,6 +119,14 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
         script = ["module load %s"%mod for mod in modules or []]
         script.append( command )
         script_string = "\n".join(script)+"\n"
+        
+        # hande log setting
+        if config.config['execution']['logcommand']:
+            print SCHEMA+" attempting submission command: "+qsub_submission_script
+            
+        if config.config['execution']['logscript']:
+            print SCHEMA+" submission script:"
+            print script_string
         
         if DEBUG:
             print "usercert:",usercert
