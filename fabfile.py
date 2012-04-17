@@ -173,11 +173,16 @@ def _assert_test_config_is_selected():
     # unfortunately the errors displayed by a nested fab aren't displayed
     print _virtualenv(ADMIN, "fab assert_test_config_is_selected")
 
-def runtests():
+def runtests(config=None):
     '''Run all the YABI tests'''
-    _assert_test_config_is_selected() 
+    if config is None:
+        _assert_test_config_is_selected()
+    else:
+        admin_select_test_config(config)
     killservers()
     admin_activate_config('testdb')
+    admin_recreatedb()
+    admin_initdb()
     runservers()
     admin_tests()
     tests()
