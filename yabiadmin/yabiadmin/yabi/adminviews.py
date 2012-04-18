@@ -474,7 +474,7 @@ def duplicate_credential(request):
             for id in ids:
                 cred = Credential.objects.get(id=id)
                 try:
-                    cred.send_to_memcache()
+                    cred.send_to_cache()
                     success += 1
                 except DecryptException, de:
                     # failed decrypt. not saved.
