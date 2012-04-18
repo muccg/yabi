@@ -300,7 +300,7 @@ def select_test_config(config_dir):
     full_dir = os.path.join(CONFS_DIR, config_dir)
     if not (os.path.exists(full_dir)):
         print "Invalid config (for a list of available configs use fab list_configs)"
-        return
+        raise StandardError("Invalid config (for a list of available configs use fab list_configs)")
     if os.path.exists(TEST_CONF_LN_NAME) and not os.path.islink(TEST_CONF_LN_NAME):
         raise StandardError("Can't create symlink %s, because %s already exists" % (TEST_CONF_LN_NAME, TEST_CONF_LN_NAME))
     if os.path.islink(TEST_CONF_LN_NAME):
