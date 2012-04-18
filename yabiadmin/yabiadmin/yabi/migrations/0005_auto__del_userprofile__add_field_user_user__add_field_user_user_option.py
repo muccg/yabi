@@ -8,20 +8,36 @@ class Migration(SchemaMigration):
 
     def forwards(self, orm):
         
-        # Adding field 'UserProfile.user_option_access'
-        db.add_column('yabi_userprofile', 'user_option_access', self.gf('django.db.models.fields.BooleanField')(default=True))
+        # Deleting model 'UserProfile'
+        #db.delete_table('yabi_userprofile')
 
-        # Adding field 'UserProfile.credential_access'
-        db.add_column('yabi_userprofile', 'credential_access', self.gf('django.db.models.fields.BooleanField')(default=False))
+        # Adding field 'User.user'
+        db.add_column('yabi_user', 'user', self.gf('django.db.models.fields.related.OneToOneField')(default=None, to=orm['auth.User'], unique=False, null=True), keep_default=False)
+
+        # Adding field 'User.user_option_access'
+        db.add_column('yabi_user', 'user_option_access', self.gf('django.db.models.fields.BooleanField')(default=True), keep_default=False)
+
+        # Adding field 'User.credential_access'
+        db.add_column('yabi_user', 'credential_access', self.gf('django.db.models.fields.BooleanField')(default=False), keep_default=False)
 
 
     def backwards(self, orm):
         
-        # Deleting field 'UserProfile.user_option_access'
-        db.delete_column('yabi_userprofile', 'user_option_access')
+        # Adding model 'UserProfile'
+        db.create_table('yabi_userprofile', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('user', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True)),
+        ))
+        db.send_create_signal('yabi', ['UserProfile'])
 
-        # Deleting field 'UserProfile.credential_access'
-        db.delete_column('yabi_userprofile', 'credential_access')
+        # Deleting field 'User.user'
+        db.delete_column('yabi_user', 'user_id')
+
+        # Deleting field 'User.user_option_access'
+        db.delete_column('yabi_user', 'user_option_access')
+
+        # Deleting field 'User.credential_access'
+        db.delete_column('yabi_user', 'credential_access')
 
 
     models = {
@@ -235,15 +251,11 @@ class Migration(SchemaMigration):
             'Meta': {'ordering': "('name',)", 'object_name': 'User'},
             'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'user_creators'", 'null': 'True', 'to': "orm['auth.User']"}),
             'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'credential_access': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'user_modifiers'", 'null': 'True', 'to': "orm['auth.User']"}),
             'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '50'})
-        },
-        'yabi.userprofile': {
-            'Meta': {'ordering': "['user__username']", 'object_name': 'UserProfile'},
-            'credential_access': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '50'}),
             'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['auth.User']", 'unique': 'True'}),
             'user_option_access': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
         }

@@ -181,7 +181,7 @@ def register(site):
     site.register(Tool, ToolAdmin)
     site.register(ToolGroup, ToolGroupAdmin)
     site.register(ToolSet, ToolSetAdmin)
-    site.register(UserProfile, UserAdmin)
+    site.register(User, UserAdmin)
     site.register(Credential, CredentialAdmin)
     site.register(BackendCredential, BackendCredentialAdmin)
     site.register(Backend, BackendAdmin)
