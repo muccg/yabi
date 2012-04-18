@@ -921,7 +921,7 @@ def signal_tool_post_save(sender, **kwargs):
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         logger.debug('Creating user profile for %s' % instance.username)
-        User.objects.create(user=instance)
+        User.objects.create(user=instance, name=instance.username)
 
  
 # connect up signals
