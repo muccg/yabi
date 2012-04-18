@@ -23,6 +23,11 @@ def create_exploding_backend():
     null_credential = models.Credential.objects.get(description='null credential')
     models.BackendCredential.objects.create(backend=exploding_backend, credential=null_credential, homedir='')
 
+def create_backend(scheme="ssh", hostname="localhost.localdomain",path="/",submission="${command}"):
+    from yabiadmin.yabi import models
+    backend = models.Backend.objects.create(name='Test %s Backend'%scheme.upper(), scheme=scheme, hostname=hostname, path=path, submission=submission)
+    # continue this...
+
 def create_tool_cksum():
     from yabiadmin.yabi import models
     create_tool('cksum')
