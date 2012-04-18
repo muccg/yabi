@@ -47,7 +47,6 @@ urlpatterns = patterns('yabiadmin.yabifeapp.views',
     (r'^logout[/]*$', 'logout'),
     (r'^wslogin[/]*$', 'wslogin', {'SSL':True}),
     (r'^wslogout[/]*$', 'wslogout'),
-    (r'^admin/', include(admin.site.urls), {'SSL': True}),
     (r'^registration/', include('yabiadmin.registration.urls'), {'SSL': True}),
     (r'^exception[/]*$', 'exception_view'),
 )
