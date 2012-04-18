@@ -159,7 +159,7 @@ class BackendAdmin(AdminBase):
     list_display = ['name', 'description', 'scheme', 'hostname', 'port', 'path', 'uri', 'backend_summary_link']
 
 class UserAdmin(AdminBase):
-    list_display = ['user', 'user_option_access','credential_access']
+    list_display = ['user', 'user_option_access','credential_access', 'toolsets_str', 'tools_link', 'backends_link']
     list_editable = ['user_option_access', 'credential_access']
 
 class BackendCredentialAdmin(AdminBase):
