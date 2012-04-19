@@ -12,7 +12,7 @@ class Migration(SchemaMigration):
         db.delete_table('yabi_userprofile')
 
         # update user.user to be not null
-        db.alter_column('yabi_user', 'user_id', models.ForeignKey(orm['auth.User'], null=True, blank=True))
+        db.alter_column('yabi_user', 'user_id', models.ForeignKey(orm['auth.User'], null=False, blank=False, unique=True))
 
     def backwards(self, orm):
         pass
