@@ -3,7 +3,7 @@
 from django.utils import unittest as unittest
 from django.test.client import Client
 from django.contrib.auth.models import User as DjangoUser
-from yabiadmin.yabi.models import UserProfile
+from yabiadmin.yabi.models import User
 
 from django.contrib.auth.models import User as DjangoUser
 from yabiadmin.yabi.models import Credential, User
@@ -38,20 +38,19 @@ class CreateUserFromAdminTest(unittest.TestCase):
                 {'username': self.TEST_USER, 'password1': 'test', 'password2': 'test', '_save': 'Save'})
         self.assertEqual(response.status_code, 302, 'Should redirect to User List page')
         self.assertTrue(DjangoUser.objects.filter(username=self.TEST_USER).exists(), 'Should create Django User')
-        self.assertTrue(UserProfile.objects.filter(user__username=self.TEST_USER).exists(), 'Should create User Profile for user')
+        self.assertTrue(User.objects.filter(user__username=self.TEST_USER).exists(), 'Should create User Profile for user')
 
 class CredentialTests(unittest.TestCase):
     def setUp(self):
-        self.user = User.objects.create(name=u'győzike')
         self.django_user = DjangoUser.objects.create(username=u'győzike')
         self.django_user.set_password('pass')
         self.django_user.save()
+        self.user = self.django_user.get_profile()
         self.credential = Credential.objects.create(description='null credential', username=self.user.name, user=self.user)
 
     def tearDown(self):
         self.credential.clear_cache()
         self.credential.delete()
-        self.user.delete()
         self.django_user.delete()
 
     def test_cache_keyname_replaces_unicode_character(self):
