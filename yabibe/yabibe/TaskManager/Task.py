@@ -330,7 +330,7 @@ class MainTask(Task):
                 self.log('Task has failed. Staging out any job remnants...')
             
             self._set_stage(self.STAGEOUT)
-        
+ 
         if self.stage == self.STAGEOUT:
             # stageout
             self.log("Staging out results")
@@ -475,7 +475,7 @@ class MainTask(Task):
             retry=False
             
             try:
-                self.exec_status = [None]
+                self.exec_status = []
                 
                 # callback for job execution status change messages
                 def _task_status_change(line):
@@ -494,8 +494,9 @@ class MainTask(Task):
                         self._jobid = value
                         #self.remote_id(value)                           # TODO:send this id back to the middleware
                     else:
-                        self.exec_status[0] = line.lower()
-                        self.status("exec:%s"%(self.exec_status[0]))
+                        status = line.lower()
+                        self.exec_status.append(status)
+                        self.status("exec:%s"%(status))
                 
                 # submit the job to the execution middle ware
                 self.log("Submitting to %s command: %s"%(task['exec']['backend'],task['exec']['command']))
@@ -512,10 +513,14 @@ class MainTask(Task):
                     
                     #print "callfunc is",callfunc
                     callfunc(uri, command=task['exec']['command'], remote_info=task['remoteinfourl'], submission=self.submission, stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)     # this blocks untill the command is complete. or the execution errored
-                    while self.exec_status[0]==None or self.exec_status[0]=="pending" or self.exec_status[0]=="unsubmitted" or self.exec_status[0]=="running":
+                    unfinished = set(("pending", "unsubmitted", "running"))
+                    received_so_far = set(self.exec_status)
+                    # Loop while all statuses received so far are unfinished
+                    while len(received_so_far - unfinished) == 0:
                         gevent.sleep()
-                    
-                    if self.exec_status[0] and 'error' in self.exec_status[0]:
+                        received_so_far = set(self.exec_status)
+
+                    if filter(lambda s: 'error' in s, self.exec_status):
                         print "TASK[%s]: Execution failed!"%(self.taskid)
                         self.status("error")
                         self.log("Execution of %s on %s failed with status %s"%(task['exec']['command'],task['exec']['backend'],self.exec_status[0]))

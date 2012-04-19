@@ -61,3 +61,13 @@ def using_dev_settings():
 
     return using_dev_settings
 
+def detect_rdbms():
+    assert(settings.DATABASES.has_key('default'))
+    assert(settings.DATABASES['default'].has_key('ENGINE'))
+    mapping = {
+            'django.db.backends.postgresql_psycopg2': 'postgres',
+            'django.db.backends.mysql': 'mysql',
+            'django.db.backends.sqlite3': 'sqlite',
+    }
+    return mapping.get(settings.DATABASES['default']['ENGINE'], 'unknown')
+

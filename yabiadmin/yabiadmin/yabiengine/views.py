@@ -36,6 +36,7 @@ from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
 from ccg.utils import webhelpers
+from yabiadmin.utils import detect_rdbms
 from yabiadmin.yabiengine.tasks import walk
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
 from yabiadmin.yabiengine.enginemodels import EngineTask, EngineJob, EngineWorkflow
@@ -85,7 +86,7 @@ def blockedtask(request):
     return request_next_task(request, status=STATUS_RESUME)
 
 def status(request, model, id):
-    logger.debug('model: %s id: %s' % (model, id))
+    logger.debug('model: %s id: %s method: %s' % (model, id, request.method))
     models = {'task':EngineTask, 'job':EngineJob, 'workflow':EngineWorkflow}
 
     # sanity checks
@@ -111,7 +112,7 @@ def status(request, model, id):
             if model != "task":
                 return HttpResponseServerError("Only the status of Tasks is allowed to be changed\n")
 
-            logger.debug("status="+request.POST['status'])
+            logger.debug("task id: %s status=%s" % (id, request.POST['status']))
 
             # TODO TSZ maybe raise exception instead?
             # truncate status to 64 chars to avoid any sql field length errors
@@ -129,7 +130,11 @@ def status(request, model, id):
 
 def select_task_for_update(task_id):
     # TODO: Django 1.4 replace with EngineTask.objects.select_for_update()
-    return EngineTask.objects.raw("SELECT * FROM %s WHERE id = %s FOR UPDATE" % (EngineTask._meta.db_table, task_id))[0]
+    rdbms = detect_rdbms()
+    if rdbms in ('postgres', 'mysql'):
+        return EngineTask.objects.raw("SELECT * FROM %s WHERE id = %s FOR UPDATE" % (EngineTask._meta.db_table, task_id))[0]
+    else:
+        return EngineTask.objects.get(pk=task_id)
 
 @transaction.commit_manually
 def update_task_status(task_id, status):

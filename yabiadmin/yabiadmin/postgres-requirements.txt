@@ -14,4 +14,4 @@
 # http://www.pip-installer.org/en/latest/requirement-format.html
 #
 -r base-requirements.txt
--r mysql.txt
+-r postgres.txt
