@@ -83,6 +83,11 @@ def admin_tests():
 
     _virtualenv(ADMIN, "fab tests")
 
+def admin_jslint():
+    '''Runs Google Closure Linter on JavaScript in Yabiadmin project'''
+
+    _virtualenv(ADMIN, "fab jslint")
+
 def be_bootstrap():
     '''Bootstrap the yabibe project'''
     with lcd(BE['dir']):
