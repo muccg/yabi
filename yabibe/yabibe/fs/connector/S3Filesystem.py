@@ -54,6 +54,7 @@ DEBUG = False
 from utils.protocol.s3 import s3utils
     
 from boto.s3.connection import S3Connection
+from boto.s3.key import Key
     
 class S3Error(Exception):
     pass
@@ -253,4 +254,4 @@ class S3Filesystem(FSConnector.FSConnector, object):
             print "S3::GetReadFifo returning",pp,fifo
         
         return pp, fifo
-       
+
