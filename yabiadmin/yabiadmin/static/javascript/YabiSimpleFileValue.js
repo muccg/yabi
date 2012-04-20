@@ -1,4 +1,4 @@
-// $Id: YabiSimpleFileValue.js 4322 2009-03-17 06:18:36Z ntakayama $
+
 
 /**
  * YabiSimpleFileValue
