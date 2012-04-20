@@ -2,7 +2,7 @@
 Module providing helper methods for creating data in yabi admin from tests
 '''
 
-def create_tool(name, display_name=None, path=None, backend_name='Local Execution', fs_backend_name='Local Filesystem'):
+def create_tool(name, display_name=None, path=None, backend_name='Local Execution', fs_backend_name='Yabi Data Local Filesystem'):
     from yabiadmin.yabi import models
     if display_name is None: display_name = name
     if path is None: path = name
