@@ -166,7 +166,7 @@ def jslint():
     """
     Runs Google Closure Linter on our JavaScript
     """
-    local("gjslint --nojsdoc -r static/javascript/ --exclude_directories lib")
+    local("gjslint --nojsdoc --strict -r static/javascript/ --exclude_directories lib")
 
 def runserver(bg=False):
     """
