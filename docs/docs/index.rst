@@ -16,7 +16,9 @@ Yabi Documentation
     addingusers
     backends
     credentials
-
+    backendcredentials
+    tools
+    faq
 
 
 

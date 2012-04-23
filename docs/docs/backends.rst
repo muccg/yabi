@@ -24,6 +24,9 @@ Click on Backends under Yabi heading and add a backend, using `scp` as the schem
     Port            22
     Path            /home/
 
+
+.. _a_note_about_the_path_field:
+
 A note about the Path field
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -43,6 +46,8 @@ So when Yabi needs to access files on that backend it combines the fields from t
 
 
 **Please note:** While Yabi refers to the directory on the Backend Credential record as User Directory this can really point to any directory the user has access to.
+
+.. _localcopyandlink:
 
 Additional Fields
 ^^^^^^^^^^^^^^^^^
@@ -96,3 +101,23 @@ looks like this:
 This submission template uses the `Mako templating system <http://www.makotemplates.org/>`_ and in this case represents the qsub script
 that will be used by Yabi to submit the job. The variables in the template are pulled from each tool that we configure (See :ref:`tools`).
 This provides a powerful mechanism for determining the scripts submitted to each backend.
+
+.. _nullbackend:
+
+Null Backend
+------------
+An evolutionary quirk of Yabi is that the system requires what we call a null backend for tools that should not be
+executed, such as a file selection tool. We hope to remove this branch of code in a future release. To add a null 
+backend follow the steps above for adding an execution backend and use these values:
+
+::
+
+    Name            Null Backend
+    Description     Use this null backend when tools should not be executed.
+    Scheme          null
+    Hostname        localhost.localdomain
+    Port            
+    Path            /
+
+Now add a Backend Credential (see :ref:`backendcredentials`) for the null backend. It does not matter which credential 
+you associate with the Null Backend as it will not be used.

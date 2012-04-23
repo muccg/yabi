@@ -10,4 +10,4 @@ From there the install process will create the schema, insert setup data, create
 initial users etc.
 
 To change the database that Yabi points at you will need to alter the DATABASES section
-in the Django settings file. For more details see :ref:`configuration`.
+in the Django settings file. For more details see :ref:`settings`.
