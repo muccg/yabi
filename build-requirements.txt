@@ -14,4 +14,3 @@
 # http://www.pip-installer.org/en/latest/requirement-format.html
 #
 Fabric==1.0.1
-Sphinx
