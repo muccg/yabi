@@ -22,5 +22,5 @@
 ^yabitests/.httplib2_workdir
 
 ^virt_yabi
-
-^docs/_build
+^docs/virt_docs
+^docs/docs/_build
