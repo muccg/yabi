@@ -240,3 +240,7 @@ texinfo_documents = [
 
 # How to display URL addresses: 'footnote', 'no', or 'inline'.
 #texinfo_show_urls = 'footnote'
+
+# List of directories, relative to source directory, that shouldn't be searched
+# for source files.
+exclude_trees = ['_build', 'virt_docs', '_theme']

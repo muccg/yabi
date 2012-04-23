@@ -15,9 +15,10 @@ The Auth User is the main authentication table used by Django Auth to store user
 ensuring that the Active checkbox is ticked and the Staff and Superuser checkboxes are **not** ticked.
 
 When you create an Auth User record you will find that a corresponding Yabi User record is automatically created. This 
-is where additional user information can be stored. If you edit the Yabi User record you will see two options
- * User option access - controls whether the Account and Change Password screens are available to the user
- * Credential access - determines whether the Credential modification screen is available to the user
+is where additional user information can be stored. If you edit the Yabi User record you will see two options:
+
+* User option access - controls whether the Account and Change Password screens are available to the user
+* Credential access - determines whether the Credential modification screen is available to the user
 
 Using Different Authentication Backends
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
