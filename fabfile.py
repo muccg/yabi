@@ -30,6 +30,10 @@ def admin_bootstrap():
     with lcd(ADMIN['dir']):
         local("sh ../../bootstrap.sh -r quickstart.txt")
 
+def admin_require(requirements_file):
+    '''Install additional requirements into the yabiadmin project'''
+    _virtualenv(ADMIN, 'fab require:%s' % requirements_file)
+
 def admin_initdb():
     '''Initialise the DB of Yabiadmin'''
     _virtualenv(ADMIN, 'fab initdb')
@@ -169,11 +173,16 @@ def _assert_test_config_is_selected():
     # unfortunately the errors displayed by a nested fab aren't displayed
     print _virtualenv(ADMIN, "fab assert_test_config_is_selected")
 
-def runtests():
+def runtests(config=None):
     '''Run all the YABI tests'''
-    _assert_test_config_is_selected() 
+    if config is None:
+        _assert_test_config_is_selected()
+    else:
+        admin_select_test_config(config)
     killservers()
     admin_activate_config('testdb')
+    admin_recreatedb()
+    admin_initdb()
     runservers()
     admin_tests()
     tests()
