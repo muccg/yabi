@@ -34,3 +34,24 @@ and Superuser checkboxes are ticked.
 
 If you wish to you could use the Django Permissions system to give finer grained permissions to users i.e. 
 permission to add tools only.
+
+
+Viewing a User's Setup
+----------------------
+
+There are a couple of admin tools that allow an administrator to view a users setup. First click on Users under the Yabi section 
+(**not** under the Auth section). This will show you a list of users you have added to Yabi. Clicking on the ``Tools`` 
+or ``Backend`` links will give you further detail.
+
+User Tools
+^^^^^^^^^^
+
+This listing will show you all the tools a user has access to and the tool groups the tools belong to.
+
+User Backends
+^^^^^^^^^^^^^
+
+This listing will show you all the execution and filesystem backend credentials set up for the user. NB the filesystem 
+backends have a ``Test`` link beside them that will cause Yabi to request a file listing for the backend. The user must
+be logged through the Yabi front end for these test links to work. If the test link is successful then the credential 
+for the user must be working.

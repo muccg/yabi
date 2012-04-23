@@ -18,8 +18,9 @@ Yabi Documentation
     credentials
     backendcredentials
     tools
+    tool_import_export
+    toolsets_and_toolgroups
     faq
-
 
 
 Indices and tables
