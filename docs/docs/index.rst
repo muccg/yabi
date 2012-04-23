@@ -22,11 +22,3 @@ Yabi Documentation
     toolsets_and_toolgroups
     faq
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
