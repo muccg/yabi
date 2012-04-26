@@ -107,7 +107,7 @@ if direction == L2R:
     b = conn.get_bucket(bucket)
     k = Key(b)
     k.key = path
-    k.set_contents_from_filename(infile)
+    k.set_contents_from_filename(infile, md5=False)
     
     # success.
     eprint("OK")
