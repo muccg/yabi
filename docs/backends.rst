@@ -102,6 +102,13 @@ This submission template uses the `Mako templating system <http://www.makotempla
 that will be used by Yabi to submit the job. The variables in the template are pulled from each tool that we configure (See :ref:`tools`).
 This provides a powerful mechanism for determining the scripts submitted to each backend.
 
+Troubleshooting SSH
+-------------------
+
+Take a look at these FAQs
+ - :ref:`ssh_troubleshooting`
+ - :ref:`known_hosts`
+
 .. _nullbackend:
 
 Null Backend

@@ -37,6 +37,8 @@ If you wish to you could use the Django Permissions system to give finer grained
 permission to add tools only.
 
 
+.. _viewing_a_users_setup:
+
 Viewing a User's Setup
 ----------------------
 

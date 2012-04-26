@@ -6,7 +6,8 @@ Frequently Asked Questions
 What backend should a file select tool use or why won't my file select run?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You have run into an evolutionary quirk of Yabi. See :ref:`nullbackend`.
+You have run into an evolutionary quirk of Yabi. See :ref:`nullbackend`. If you set up Yabi from the Google Code repository
+you will find a `file select` tool was installed by default for you to use.
 
 What is the default stageout field for?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -43,3 +44,31 @@ the inputdir to be ``.`` The other option is to use this in the command field:
 ``cp ../input/* . ; command_to_be_run``
 
 We would typically then set the tool up so the parameter specifying ``.`` as the working directory was hidden to the user.
+
+.. _ssh_troubleshooting:
+
+I'm having trouble setting up an SSH backend, what am I doing wrong?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To troubleshoot setting up a backend with SSH here is what we normally do:
+
+1. On the box running Yabi, as the user running Yabi, we will try to ssh to the backend resource. If we want to do that from Yabi with a private key 
+we'll try to use that key i.e.  `ssh -i my_priv_key user@hostname`.
+
+2. As long as that works we will then paste the plain text of the key into the correct credential in Yabi.
+Note that if the private key has a password, then it is this password that goes in the credential record, **not** the 
+user's password for the backend resource.
+
+3. From there we'll log into the front end as the user and see if we can use the files tab. If we're logged in the front end 
+we can also check in the admin under Yabi Users whether we can access the backend (see :ref:`viewing_a_users_setup`).
+
+Using just a password for ssh (not a private key) should be the same steps.
+
+.. _known_hosts:
+
+I seem to have SSH backend setup but am getting nothing, why?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+On the box running Yabi, as the user Yabi, try SSHing to the backend resource. When asked the question "The authenticity of host...", 
+answer Yes to add the host to the list of known_hosts. You don't actually have to connect, you just need to ensure the host is in known_hosts. Now
+try connecting through Yabi again. 
