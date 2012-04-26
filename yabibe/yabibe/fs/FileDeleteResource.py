@@ -29,7 +29,8 @@
 from twistedweb2 import resource, http_headers, responsecode, http, server
 from twisted.internet import defer, reactor
 import weakref
-import sys, os, json, stackless
+import sys, os, json
+import gevent
 
 from Exceptions import PermissionDenied, InvalidPath, BlockingException, NoCredentials, ProxyInitError
 
@@ -128,9 +129,7 @@ class FileDeleteResource(resource.PostableResource):
                 print traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))    
             
-        tasklet = stackless.tasklet(do_rm)
-        tasklet.setup()
-        tasklet.run()
+        tasklet = gevent.spawn(do_rm)
         
         return client_channel
 

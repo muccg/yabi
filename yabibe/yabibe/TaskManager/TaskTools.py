@@ -28,7 +28,7 @@
 # -*- coding: utf-8 -*-
 """All these funcs are done in a blocking manner using a stackless aproach. Not your normal funcs"""
 
-from stackless import schedule, tasklet
+import gevent
 from twisted.web import client
 from twisted.internet import reactor
 import time
@@ -56,14 +56,11 @@ DEBUG = False
 
 DEFAULT_TASK_PRIORITY = 100
 
-from utils.stacklesstools import GET, POST, GETFailure, CloseConnections, RetryGET, RetryPOST
+from utils.geventtools import GET, POST, GETFailure, CloseConnections, RetryGET, RetryPOST
 
 def Sleep(seconds):
     """sleep tasklet for this many seconds. seconds is a float"""
-    now = time.time()
-    then = now+seconds
-    while time.time()<then:
-        schedule()
+    gevent.sleep(seconds)
 
 class CopyError(Exception): pass
 
@@ -197,7 +194,7 @@ def SmartCopy(preferred,src,dst,retry=LCOPY_RETRY, log_callback=None, **kwargs):
     if srcaddress.hostname != dstaddress.hostname or srcaddress.username != dstaddress.username or preferred == 'copy':
         return Copy(src,dst,retry=retry,log_callback=log_callback,**kwargs)
     else:
-        return LCopy(src,dst,retry=retry,log_callback=log_callback**kwargs)
+        return LCopy(src,dst,retry=retry,log_callback=log_callback,**kwargs)
                     
 def Log(logpath,message):
     """Report an error to the webservice"""
@@ -219,7 +216,7 @@ def Log(logpath,message):
     
 def Status(statuspath, message):
     """Report some status to the webservice"""
-    #print "Reporting status to %s"%(statuspath)
+    #print('Reporting status %s to statuspath %s' % (message, statuspath))
     if DEBUG:
         print "status=",message
     

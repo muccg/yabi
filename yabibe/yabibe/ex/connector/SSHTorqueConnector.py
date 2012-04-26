@@ -49,15 +49,17 @@ import os
 import uuid
 import json
 from utils.protocol import globus
-import stackless
+import gevent
 import tempfile
 
-from utils.stacklesstools import sleep
+from utils.geventtools import sleep
 from utils.protocol import ssh
 
 from conf import config
 
 from TaskManager.TaskTools import RemoteInfo
+
+from decorators import conf_retry
 
 sshauth = ssh.SSHAuth.SSHAuth()
 
@@ -85,6 +87,7 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
         configdir = config.config['backend']['certificates']
         ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
     
+    @conf_retry()
     def _ssh_qsub(self, yabiusername, creds, command, working, username, host, remoteurl, stdout, stderr, modules ):
         """This submits via ssh the qsub command. This returns the jobid, or raises an exception on an error"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
@@ -94,7 +97,7 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
         # build up our remote qsub command
         ssh_command = "cat >'%s' && "%(submission_script)
         ssh_command += "qsub -N '%s' -e '%s' -o '%s' -d '%s' '%s'"%(    
-                                                                        "yabi-task-"+remoteurl.rsplit('/')[-1],
+                                                                        "yabi-"+remoteurl.rsplit('/')[-1],
                                                                         os.path.join(working,stderr),
                                                                         os.path.join(working,stdout),
                                                                         working,
@@ -130,7 +133,7 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
             
         pp = ssh.Run.run(usercert,ssh_command,username,host,working=None,port="22",stdout=None,stderr=None,password=creds['password'], modules=modules, streamin=script_string)
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         if pp.exitcode==0:
             # success
@@ -138,6 +141,7 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
         else:
             raise SSHQsubException("SSHQsub error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
             
+    @conf_retry()
     def _ssh_qstat(self, yabiusername, creds, command, working, username, host, stdout, stderr, modules, jobid):
         """This submits via ssh the qstat command. This takes the jobid"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
@@ -163,7 +167,7 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
             
         pp = ssh.Run.run(usercert,ssh_command,username,host,working=None,port="22",stdout=None,stderr=None,password=creds['password'], modules=modules )
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         if pp.exitcode==0:
             # success. lets process our qstat results

@@ -32,6 +32,8 @@ from twisted.internet import reactor
 
 from BaseShell import BaseShell, BaseShellProcessProtocol
 
+from decorators import conf_retry
+
 DEBUG = False
 
 def convert_filename_to_encoded_for_echo(filename):
@@ -67,18 +69,24 @@ class GlobusShell(BaseShell):
         return BaseShell.execute(self,GlobusShellProcessProtocol,certfile,
             com
         )
+        
+    @conf_retry
     def ls(self, certfile, host, directory, args="-lFR", port=None):
         return self.execute(certfile,host,command=["ls",args,self._make_echo(directory)])
-      
+    
+    @conf_retry
     def mkdir(self, certfile, host, directory, args="-p", port=None):
         return self.execute(certfile,host,command=["mkdir",args,self._make_echo(directory)])
       
+    @conf_retry
     def rm(self, certfile, host, directory, args=None, port=None):
         return self.execute(certfile,host,command=["rm",args,self._make_echo(directory)]) if args else self.execute(certfile,host,command=["rm",self._make_echo(directory)]) 
 
+    @conf_retry
     def ln(self, certfile, host, target, link, args="-s", port=None):
         return self.execute(certfile,host,command=["ln",args,self._make_echo(target),self._make_echo(link)], port=port) if args else self.execute(certfile,host,command=["ln",self._make_echo(target),self._make_echo(link)], port=port)
         
+    @conf_retry
     def cp(self, certfile, host, src, dst, args=None, port=None):
         # TODO: if the coipy is recursive, and the src ends in a slash, then we should add a wildcard '*' to the src to make it copy the contents of the directory
         if args is not None and "r" in args and src.endswith("/"):

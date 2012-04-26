@@ -32,7 +32,7 @@ from twisted.internet import protocol
 from twisted.internet import reactor
 
 import re
-import stackless
+import gevent
 from tempfile import mktemp
 import os
 
@@ -147,7 +147,7 @@ def qsub(jobname, command, user="yabi", workingdir="/home/yabi", stdout="STDOUT.
     pp = qsub_spawn(jobname,tempfile,user=user,workingdir=workingdir)
     
     while not pp.isDone():
-        stackless.schedule()
+        gevent.sleep()
         
     if pp.exitcode!=0:
         err = pp.err
@@ -438,7 +438,7 @@ def qstat(user="yabi"):
     pp = qstat_spawn(user)
     
     while not pp.isDone():
-        stackless.schedule()
+        gevent.sleep()
         
     if pp.exitcode!=0:
         err = pp.err
@@ -449,7 +449,7 @@ def qstat(user="yabi"):
         pp = qstat_verbose_spawn(pp.jobs,user,jobnum)
 
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
 
         if pp.exitcode!=0:
             err = pp.err
@@ -462,7 +462,7 @@ def qacct(jobid):
     pp = qacct_spawn(jobid)
     
     while not pp.isDone():
-        stackless.schedule()
+        gevent.sleep()
         
     if pp.exitcode!=0:
         err = pp.err

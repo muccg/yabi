@@ -49,10 +49,10 @@ import os
 import uuid
 import json
 from utils.protocol import globus
-import stackless
+import gevent
 import tempfile
 
-from utils.stacklesstools import sleep
+from utils.geventtools import sleep
 from utils.protocol import ssh
 
 from conf import config
@@ -95,7 +95,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
         ssh_command = "cat >'%s' && "%(submission_script)
         ssh_command += "'%s' -N '%s' -e '%s' -o '%s' -wd '%s' '%s'"%(    
                                                                         config.config['ssh+sge']['qsub'],
-                                                                        "yabi-task-"+remoteurl.rsplit('/')[-1],
+                                                                        "yabi-"+remoteurl.rsplit('/')[-1],
                                                                         os.path.join(working,stderr),
                                                                         os.path.join(working,stdout),
                                                                         working,
@@ -134,7 +134,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
             
         pp = ssh.Run.run(usercert,ssh_command,username,host,working=None,port="22",stdout=None,stderr=None,password=creds['password'], modules=modules, streamin=script_string)
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         if pp.exitcode==0:
             # success
@@ -168,7 +168,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
             
         pp = ssh.Run.run(usercert,ssh_command,username,host,working=None,port="22",stdout=None,stderr=None,password=creds['password'], modules=modules )
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         if pp.exitcode==0:
             # success. lets process our qstat results
@@ -209,7 +209,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
             
         pp = ssh.Run.run(usercert,ssh_command,username,host,working=None,port="22",stdout=None,stderr=None,password=creds['password'], modules=modules )
         while not pp.isDone():
-            stackless.schedule()
+            gevent.sleep()
             
         if pp.exitcode==0:
             # success. lets process our qstat results

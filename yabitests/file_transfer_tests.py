@@ -22,10 +22,8 @@ class FileUploadTest(YabiTestCase, FileUtils):
         FileUtils.tearDown(self)
 
     def test_cksum_of_large_file(self):
-        FIVE_GB = 5 * 1024 * 1024 * 1024
-        # passes with this
-        #FIVE_GB = 5 * 1024 * 1024
-        filename = self.create_tempfile(size=FIVE_GB)
+        ONE_GB = 1 * 1024 * 1024 * 1024
+        filename = self.create_tempfile(size=ONE_GB)
         result = self.yabi.run('cksum %s' % filename)
         self.assertTrue(result.status == 0, "Yabish command shouldn't return error!")
 

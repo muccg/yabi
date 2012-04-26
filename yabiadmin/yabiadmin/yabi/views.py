@@ -84,14 +84,6 @@ def proxy(request, url, server, base):
 
     return response
 
-from decorators import memcache
-
-@memcache("store",timeout=5)
-def storeproxy(request, url):
-    logger.debug('')
-    return proxy(request, url, settings.YABISTORE_SERVER, settings.YABISTORE_BASE)
-
-
 def status_page(request):
     """Availability page to be called to see if yabiadmin is running. Should return HttpResponse with status 200"""
     logger.info('')

@@ -42,7 +42,7 @@ from yabiadmin.yabiengine.tasks import build
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine import backendhelper
 
-from yabiadmin.decorators import memcache, authentication_required
+from yabiadmin.decorators import authentication_required
 
 from collections import namedtuple
 

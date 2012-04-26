@@ -28,7 +28,7 @@
 # -*- coding: utf-8 -*-
 """Encapsulation of globus Authentication proxies as a mixin"""
 
-from utils.stacklesstools import RetryGET, GETFailure, sleep
+from utils.geventtools import RetryGET, GETFailure, sleep
 import json, os
 from Exceptions import NoCredentials, AuthException
 from conf import config

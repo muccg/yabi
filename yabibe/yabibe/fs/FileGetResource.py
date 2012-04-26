@@ -31,14 +31,14 @@ from twisted.internet import defer, reactor
 
 import weakref
 import sys, os
-import stackless
+import gevent
 import json
 from MimeStreamDecoder import MimeStreamDecoder, no_intr
 import traceback
 
 from Exceptions import PermissionDenied, InvalidPath, NoCredentials, ProxyInitError
 
-from utils.stacklesstools import WaitForDeferredData
+from utils.geventtools import WaitForDeferredData
 from utils.parsers import parse_url
 
 from twisted.internet.defer import Deferred
@@ -122,12 +122,12 @@ class FileGetResource(resource.PostableResource):
             
             # give the engine a chance to fire up the process
             while not procproto.isStarted():
-                stackless.schedule()
+                gevent.sleep()
             
             # nonblocking open the fifo
             fd = no_intr(os.open,fifo,os.O_RDONLY | os.O_NONBLOCK )
             file = os.fdopen(fd)
-         
+        
             # make sure file handle is non blocking
             import fcntl, errno
             fcntl.fcntl(file.fileno(), fcntl.F_SETFL, os.O_NONBLOCK) 
@@ -139,7 +139,6 @@ class FileGetResource(resource.PostableResource):
             while data:
                 # because this is nonblocking, it might raise IOError 11
                 data = no_intr(file.read,DOWNLOAD_BLOCK_SIZE)
-                #data = file.read(DOWNLOAD_BLOCK_SIZE)
                 
                 if data != True:
                     if len(data):
@@ -154,30 +153,26 @@ class FileGetResource(resource.PostableResource):
                         
                         # Did we error out? Wait until task is finished
                         while not procproto.isDone():
-                            # let the "isDone" propagate. This stops some race conditions where
-                            stackless.schedule()
-                            
                             data = no_intr(file.read,DOWNLOAD_BLOCK_SIZE)
                             if len(data):
                                 datastream = FifoStream(file, truncate=bytes_to_read)
                                 datastream.prepush(data)
                                 return channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('application', 'data')}, stream=datastream ))
-                            stackless.schedule()
+                            gevent.sleep()
                         
                         if procproto.exitcode:
                             return channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Get failed: %s\n"%procproto.err ))
                         else:
-                            # empty file successfully transfered
-                            return channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('application', 'data')}, stream=data ))
+                            # transfer the file
+                            datastream = FifoStream(file, truncate=bytes_to_read)
+                            return channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('application', 'data')}, stream=datastream ))
                     
-                stackless.schedule()
+                gevent.sleep()
                 
             return channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Catastrophic codepath violation. This error should never happen. It's a bug!" ))
 
         
-        tasklet = stackless.tasklet(download_tasklet)
-        tasklet.setup( request, client_channel )
-        tasklet.run()
+        tasklet = gevent.spawn(download_tasklet, request, client_channel )
         
         return client_channel
     

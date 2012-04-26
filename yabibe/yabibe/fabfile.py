@@ -43,9 +43,6 @@ env.content_includes.extend([]) # add quoted patterns here for extra rsync inclu
 
 env.ccg_pip_options = "--download-cache=/tmp --use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors=http://d.pypi.python.org/ --mirrors=http://e.pypi.python.org/"
 
-env.ccg_python = '/usr/local/stackless/bin/python'
-env.ccg_virtualenv = '/usr/local/stackless/bin/virtualenv'
-
 class LocalPaths():
 
     target = env.username
@@ -72,7 +69,6 @@ def backend(bg=False):
     """
     run the twisted backend on the terminal without forking, unless bg=True which runs it in background
     """
-    #print local("/usr/local/stackless/bin/twistd -noy server.py --logfile=-", capture=False)
     cmd = "nice twistd -noy server.py --logfile=-"
     if bg:
         cmd += " >yabibe.log 2>&1 &"
@@ -109,15 +105,15 @@ def restart():
     """
     print local("./init_scripts/centos/yabibe restart")
 
-def release(*args):
+def release(*args, **kwargs):
     """
     Make a release deployment
     """
+    requirements = kwargs.get("requirements", "requirements.txt")
+    tag = kwargs.get("tag", None)
+    env.ccg_requirements = requirements
     env.auto_confirm=False
-    if len(args):
-        _ccg_deploy_release(tag=args[0], apacheDeployment=False, migration=False)
-    else:
-        _ccg_deploy_release(apacheDeployment=False, migration=False)
+    _ccg_deploy_release(tag=tag, migration=False, apacheDeployment=False)
 
 def createdirs():
     """

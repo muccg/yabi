@@ -26,7 +26,7 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-import stackless
+import gevent
 import errno
 
 def no_intr(func, *args, **kw):
@@ -36,7 +36,7 @@ def no_intr(func, *args, **kw):
             return res
         except (OSError, IOError), e:
             if e.errno == errno.EINTR or e.errno == errno.EAGAIN:
-                stackless.schedule()
+                gevent.sleep()
             else:
                 raise
         

@@ -29,7 +29,7 @@
 from twisted.web import client
 from twisted.internet import reactor
 import json
-import stackless
+import gevent
 import random
 import os
 import pickle
@@ -42,7 +42,10 @@ from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Mkdir, Rm, List, Us
 DEBUG = False
 
 # if this is true the backend constantly rants about when it collects the next task
-VERBOSE = True
+VERBOSE = False
+
+# set this to true to make sure theres a heartbeat in the logs... so you know that things are working. 
+HEARTBEAT = False
 
 import traceback
 
@@ -53,34 +56,7 @@ from Task import NullBackendTask, MainTask
 
 from ServerContextFactory import ServerContextFactory
 
-class CustomTasklet(stackless.tasklet):
-    # When this is present, it is called in lieu of __reduce__.
-    # As the base tasklet class provides it, we need to as well.
-    def __reduce_ex__(self, pickleVersion):
-        return self.__reduce__()
-
-    def __reduce__(self):
-        # Get into the list that will eventually be returned to
-        # __setstate__ and append our own entry into it (the
-        # dictionary of instance variables).
-        ret = list(stackless.tasklet.__reduce__(self))
-        l = list(ret[2])
-        l.append(self.__dict__)
-        ret[2] = tuple(l)
-        result = tuple(ret)
-        return result
-
-    def __setstate__(self, l):
-        # Update the instance dictionary with the value we added in.
-        self.__dict__.update(l[-1])
-        # Let the tasklet get on with being reconstituted by giving
-        # it the original list (removing our addition).
-        return stackless.tasklet.__setstate__(self, l[:-1])
-
-#class CustomTasklet(stackless.tasklet):
-    #pass
-
-#CustomTasklet = stackless.tasklet
+from geventreactor import waitForDeferred
 
 class TaskManager(object):
     TASK_HOST = "localhost"
@@ -92,36 +68,33 @@ class TaskManager(object):
     JOB_PAUSE = 0.0                     # wait this long when you successfully got a job, to get the next job
     
     def __init__(self):
-        self.pausechannel_task = stackless.channel()
-        self.pausechannel_unblock = stackless.channel()
+        #self.pausechannel_task = gevent.queue.Queue(maxsize=0)          # a channel
+        #self.pausechannel_unblock = gevent.queue.Queue(maxsize=0)       # a channel
         
         self.tasks = []                 # store all the tasks currently being executed in a list
     
     def start(self):
         """Begin the task manager tasklet. This tasklet continually pops tasks from yabiadmin and sets them up for running"""
-        self.runner_thread_task = stackless.tasklet(self.runner)
-        self.runner_thread_task.setup()
-        self.runner_thread_task.run()
-        
-        self.runner_thread_unblock = stackless.tasklet(self.unblocker)
-        self.runner_thread_unblock.setup()
-        self.runner_thread_unblock.run()
+        self.runner_thread_task = gevent.spawn(self.runner)
+        self.runner_thread_unblock = gevent.spawn(self.unblocker)
                 
     def runner(self):
         """The green task that starts up jobs"""
         while True:                 # do forever.
-            self.get_next_task()
+            while waitForDeferred(self.get_next_task()):
+                Sleep(self.JOB_PAUSE)
             
             # wait for this task to start or fail
-            Sleep(self.pausechannel_task.receive())
-            
+            Sleep(self.JOBLESS_PAUSE)
+                        
     def unblocker(self):
         """green task that checks for blocked jobs that need unblocking"""
         while True:
-            self.get_next_unblocked()
+            while waitForDeferred(self.get_next_unblocked()):
+                Sleep(self.JOB_PAUSE)
             
             # wait for this task to start or fail
-            Sleep(self.pausechannel_unblock.receive())
+            Sleep(self.JOBLESS_PAUSE)
         
     def start_task(self, data):
         try:
@@ -143,15 +116,13 @@ class TaskManager(object):
                 runner_object = MainTask(taskdescription)
             
             # make the task and run it
-            tasklet = CustomTasklet(runner_object.run)
-            tasklet.setup()
+            tasklet = gevent.spawn(runner_object.run)
             
             #add to save list
             tasklets.add(runner_object, taskdescription['taskid'])
-            tasklet.run()
             
-            # Lets try and start anotherone.
-            self.pausechannel_task.send(self.JOB_PAUSE)
+            # mark as successful so we can immediately get another
+            return True
             
         except Exception, e:
             # log any exception
@@ -173,12 +144,10 @@ class TaskManager(object):
             runner_object.unblock()
            
             # make the task and run it
-            tasklet = CustomTasklet(runner_object.run)
-            tasklet.setup()
-            tasklet.run()
+            tasklet = gevent.spawn(runner_object.run)
             
-            # Lets try and start anotherone.
-            self.pausechannel_unblock.send(self.JOB_PAUSE)
+            # mark as successful so we can immediately get another
+            return True
             
         except Exception, e:
             # log any exception
@@ -193,7 +162,7 @@ class TaskManager(object):
         task_tag = "?tasktag=%s" % (config.config['taskmanager']['tasktag'])
         task_url = task_server + task_path + task_tag
 
-        if VERBOSE:
+        if HEARTBEAT:
             print "Getting next task from:",task_url
 
         factory = client.HTTPClientFactory(
@@ -218,7 +187,7 @@ class TaskManager(object):
             if VERBOSE:
                 print "No more jobs. Sleeping for",self.JOBLESS_PAUSE
             # no more tasks. we should wait for the next task.
-            self.pausechannel_task.send(self.JOBLESS_PAUSE)
+            #self.pausechannel_task.put(self.JOBLESS_PAUSE)
             
         d = factory.deferred.addCallback(self.start_task).addErrback(_doFailure)
         return d
@@ -229,6 +198,9 @@ class TaskManager(object):
         task_path = os.path.join(config.yabiadminpath, self.BLOCKED_URL)
         task_tag = "?tasktag=%s" % (config.config['taskmanager']['tasktag'])
         task_url = task_server + task_path + task_tag
+
+        if HEARTBEAT:
+            print "Getting next unblock request from:",task_url
 
         factory = client.HTTPClientFactory(
             url = task_url,
@@ -252,7 +224,7 @@ class TaskManager(object):
             if VERBOSE:
                 print "No more unblock requests. Sleeping for",self.JOBLESS_PAUSE
             # no more tasks. we should wait for the next task.
-            self.pausechannel_unblock.send(self.JOBLESS_PAUSE)
+            #self.pausechannel_unblock.put(self.JOBLESS_PAUSE)
             
         d = factory.deferred.addCallback(self.start_unblock).addErrback(_doFailure)
         return d

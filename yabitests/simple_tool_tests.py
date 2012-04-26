@@ -26,7 +26,7 @@ class HostnameTest(YabiTestCase):
         self.assertTrue(gethostname() in result.stdout)
 
     def test_submit_json_directly_larger_workflow(self):
-        result = self.yabi.run('submitworkflow %s' % json_path('hostname_fifty_times'))
+        result = self.yabi.run('submitworkflow %s' % json_path('hostname_hundred_times'))
         # doesn't cause problems with this    
         #result = self.yabi.run('submitworkflow %s' % json_path('hostname_five_times'))
         wfl_id = result.id
@@ -54,7 +54,7 @@ class ExplodingBackendTest(YabiTestCase):
         self.assertTrue('Error running workflow' in result.stderr)
 
     def test_submit_json_directly_larger_workflow(self):
-        result = self.yabi.run('submitworkflow %s' % json_path('hostname_fifty_times'))
+        result = self.yabi.run('submitworkflow %s' % json_path('hostname_hundred_times'))
         # doesn't cause problems with this    
         #result = self.yabi.run('submitworkflow %s' % json_path('hostname_five_times'))
         wfl_id = result.id

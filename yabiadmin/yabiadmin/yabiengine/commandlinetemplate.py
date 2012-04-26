@@ -35,7 +35,6 @@ from django.db.models import Q
 from django.conf import settings
 from django.utils import simplejson as json
 from ccg.utils import webhelpers
-from django.db.models.signals import post_save
 from ccg.utils.webhelpers import url
 
 from yabiadmin.yabi.models import Backend, BackendCredential, Tool, User

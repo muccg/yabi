@@ -82,21 +82,34 @@ class Migration(DataMigration):
         yabi_backend_2 = yabi_backend('Local Filesystem','This backend gives access to the file system on the machine running Yabi.','localfs','localhost',None,'/')
         yabi_backend_2.save()
 
-        yabi_backend_3 = yabi_backend('Local Execution','This backend gives access to execution on the machine running Yabi.','localex','localhost',None, '/', submission='${command}\n')
+        yabi_backend_3 = yabi_backend('Stageout Local Filesystem','This backend is to set up a Stagout Dir.','localfs','localhost',None,'/')
         yabi_backend_3.save()
+
+        yabi_backend_4 = yabi_backend('Local Execution','This backend gives access to execution on the machine running Yabi.','localex','localhost',None, '/', submission='${command}\n')
+        yabi_backend_4.save()
 
         yabi_backendcredential_1 = yabi_backendcredential(yabi_backend_1, yabi_credential_1, homedir='')
         yabi_backendcredential_1.save()
 
-        yabi_backendcredential_2 = yabi_backendcredential(yabi_backend_3, yabi_credential_1, 'home')
+        user_homedir = "%s%s" % (os.environ['HOME'], '/')
+        stageout_dir = user_homedir + "yabi_stageoutdir/"
+
+        yabi_backendcredential_2 = yabi_backendcredential(yabi_backend_4, yabi_credential_1, user_homedir)
         yabi_backendcredential_2.save()
 
-        yabi_backendcredential_3 = yabi_backendcredential(yabi_backend_2, yabi_credential_1, 'home', visible=True, default_stageout=True)
+        yabi_backendcredential_3 = yabi_backendcredential(yabi_backend_2, yabi_credential_1, user_homedir, visible=True, default_stageout=False)
         yabi_backendcredential_3.save()
+
+        yabi_backendcredential_4 = yabi_backendcredential(yabi_backend_3, yabi_credential_1, stageout_dir, default_stageout=True)
+        yabi_backendcredential_4.save()
 
         yabi_userprofile_1 = orm.UserProfile()
         yabi_userprofile_1.user = django_user_1
         yabi_userprofile_1.save()
+
+        yabi_userprofile_2 = orm.UserProfile()
+        yabi_userprofile_2.user = django_user_2
+        yabi_userprofile_2.save()
 
         yabi_parameterswitchuse_1 = yabi_parameterswitchuse('switchOnly','%(switch)s','Only the switch will be passed in the argument list.')
         yabi_parameterswitchuse_1.save()

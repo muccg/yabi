@@ -44,10 +44,10 @@ from twistedweb2 import http, responsecode, http_headers, stream
 import shlex
 import os
 from utils.protocol import globus
-import stackless
+import gevent
 import tempfile
 
-from utils.stacklesstools import sleep
+from utils.geventtools import sleep
 
 from conf import config
 from SubmissionTemplate import make_script
@@ -110,7 +110,7 @@ class BaseShellProcessProtocol(protocol.ProcessProtocol):
         
     def isFailed(self):
         return self.isDone() and self.exitcode != 0
-
+        
 class BaseShell(object):
     def __init__(self):
         pass
@@ -169,16 +169,16 @@ class LocalConnector(ExecConnector):
         
         client_stream = stream.ProducerStream()
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
-        stackless.schedule()
+        gevent.sleep()
         
         try:
             if DEBUG:
                 print "LOCAL",command,"WORKING:",working,"CREDS passed in:%s"%(creds)    
             client_stream.write("Unsubmitted\r\n")
-            stackless.schedule()
+            gevent.sleep(1.0)
             
             client_stream.write("Pending\r\n")
-            stackless.schedule()
+            gevent.sleep(1.0)
             
             script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue, stdout, stderr)    
             
@@ -196,10 +196,10 @@ class LocalConnector(ExecConnector):
                 
             pp = LocalRun().run(None,command,username,host,working,port="22",stdout=stdout,stderr=stderr,password=None, modules=modules)
             client_stream.write("Running\r\n")
-            stackless.schedule()
+            gevent.sleep(1.0)
             
             while not pp.isDone():
-                stackless.schedule()
+                gevent.sleep()
                 
             # write out stdout and stderr.
             # TODO: make this streaming

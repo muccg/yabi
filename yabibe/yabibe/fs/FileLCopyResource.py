@@ -31,7 +31,7 @@ from twisted.internet import defer, reactor
 import weakref
 import sys, os, json
 
-import stackless
+import gevent
 from Exceptions import PermissionDenied, InvalidPath, BlockingException, NoCredentials, AuthException, ProxyInitError
 
 from utils.parsers import parse_url
@@ -128,9 +128,7 @@ class FileLCopyResource(resource.PostableResource):
                 print traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(e)))
             
-        tasklet = stackless.tasklet(do_lcopy)
-        tasklet.setup()
-        tasklet.run()
+        tasklet = gevent.spawn(do_lcopy)
         
         return client_channel
     

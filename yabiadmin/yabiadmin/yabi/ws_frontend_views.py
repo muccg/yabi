@@ -48,6 +48,8 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib import auth
 from crypto import DecryptException
+from django.views.decorators.cache import cache_page
+from django.core.cache import cache
 
 from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.yabiengine.tasks import build
@@ -56,7 +58,7 @@ from yabiadmin.yabiengine.models import WorkflowTag
 from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_fs_backendcredential_for_uri, copy_file, rcopy_file, rm_file, send_upload_hash
 from yabiadmin.responses import *
 from yabi.file_upload import *
-from yabiadmin.decorators import memcache, authentication_required, profile_required
+from yabiadmin.decorators import authentication_required, profile_required
 from yabiadmin.yabistoreapp import db
 from yabiadmin.utils import using_dev_settings
 from yabiengine.backendhelper import make_hmac
@@ -71,76 +73,26 @@ DATE_FORMAT = '%Y-%m-%d'
 BACKEND_REFUSED_CONNECTION_MESSAGE = "The backend server is refusing connections. Check that the backend server at %s on port %s is running and answering requests."%(settings.BACKEND_IP,settings.BACKEND_PORT) 
 BACKEND_HOST_UNREACHABLE_MESSAGE = "The backend server is unreachable. Check that the backend server setting is correct. It is presently configured to %s."%(settings.BACKEND_IP) 
 
-def login(request):
-
-    if using_dev_settings():
-        logger.warning("Development settings are in use, DO NOT USE IN PRODUCTION ENVIRONMENT without changing settings.")
-
-    if request.method != "POST":
-        return HttpResponseNotAllowed(["POST"])
-    username = request.POST.get('username')
-    password = request.POST.get('password')
-    if not (username and password):
-        return HttpResponseBadRequest()
-    user = auth.authenticate(username=username, password=password)
-    if user is not None:
-        if user.is_active:
-            auth.login(request, user)
-            response = {
-                "success": True
-            }
-            
-            # for every credential for this user, call the login hook
-            # currently creds will raise an exception if they can't be decrypted
-            creds = Credential.objects.filter(user__name=username)
-            try:
-                for cred in creds:
-                    cred.on_login( username,password )
-
-                response = {
-                    "success": True,
-                    "message": "All credentials were successfully decrypted."
-                }
-            except DecryptException, e:
-                message = 'Unable to decrypt credential "%s" with your password. Please see your system administrator.' % cred.description
-                response = {
-                    "success": False,
-                    "message": message
-                }
-        else:
-            response = {
-                "success": False,
-                "message": "The account has been disabled.",
-            }
-    else:
-        response = {
-            "success": False,
-            "message": "The user name and password are incorrect.",
-        }
-    return HttpResponse(content=json.dumps(response)) if response['success'] else HttpResponseForbidden(content=json.dumps(response))
-
-def logout(request):
-    auth.logout(request)
-    response = {
-        "success": True,
-    }
-    return HttpResponse(content=json.dumps(response))
-
 @authentication_required
-@memcache("tool",kwargkeylist=['toolname'],timeout=30,refresh=True,request_specific=False,user_specific=False)                # global app tool cache
 def tool(request, toolname):
     logger.debug(toolname)
+    page = cache.get(toolname)
+
+    if page:
+        logger.debug("Returning cached page for tool: " + toolname)
+        return page
 
     try:
         tool = Tool.objects.get(name=toolname, enabled=True)
-        return HttpResponse(tool.json_pretty(), content_type="text/plain; charset=UTF-8")
+
+        response = HttpResponse(tool.json_pretty(), content_type="text/plain; charset=UTF-8")
+        cache.set(toolname, response, 30)
+        return response
     except ObjectDoesNotExist:
         return JsonMessageResponseNotFound("Object not found")
 
-
-
 @authentication_required
-@memcache("menu",timeout=300)
+@cache_page(300)
 def menu(request):
     username = request.user.username
     logger.debug('Username: ' + username)
@@ -186,7 +138,9 @@ def menu(request):
 
             all_tools_toolset["toolgroups"].append(tg)
 
-        return HttpResponse(json.dumps(output))
+        response = HttpResponse(json.dumps(output))
+#        response["Vary"] = "Cookie" # cache this page per session
+        return response
     except ObjectDoesNotExist:
         return JsonMessageResponseNotFound("Object not found")
 
@@ -302,7 +256,7 @@ def rm(request):
     return handle_connection(closure)
 
 @authentication_required
-def get(request):
+def get(request, bytes=None):
     """
     Returns the requested uri. get_file returns an httplib response wrapped in a FileIterWrapper. This can then be read
     by HttpResponse
@@ -318,7 +272,6 @@ def get(request):
             logger.critical('Unable to get filename from uri: %s' % uri)
             filename = 'default.txt'
 
-        bytes = request.GET.get("bytes", None)
         if bytes is not None:
             try:
                 bytes = int(bytes)

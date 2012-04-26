@@ -34,7 +34,6 @@ from yabiadmin.yabiengine import backendhelper
 from yabiadmin.yabiengine.urihelper import uriparse
 from django.utils import simplejson as json
 from ccg.utils import webhelpers
-from django.db.models.signals import post_save
 from ccg.utils.webhelpers import url
 import httplib, os
 from yabiadmin.yabiengine.urihelper import uriparse, url_join

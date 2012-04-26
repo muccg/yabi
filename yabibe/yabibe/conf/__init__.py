@@ -131,6 +131,7 @@ class Configuration(object):
                         'polldelay':'5',
                         'startup':'true',
                         "tasktag":None,
+                        "retrywindow":60,           # default is to retry for 1 minute. This is for dev and testing. production should up this value.
                     },
         'ssh+sge':{
                         'qstat':'qstat',
@@ -168,6 +169,8 @@ class Configuration(object):
             self.config[name]['startup'] = boolean_proc(conf_parser.get(name,'startup'))
             if conf_parser.has_option(name,'tasktag'):
                 self.config[name]['tasktag'] = conf_parser.get(name,'tasktag')
+            if conf_parser.has_option(name,'retrywindow'):
+                self.config[name]['retrywindow'] = conf_parser.get(name,'retrywindow')
                 
         # ssh+sge section
         name = "sge+ssh"

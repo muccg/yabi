@@ -34,7 +34,7 @@ import weakref
 from utils.submit_helpers import parsePOSTDataRemoteWriter
 
 from TaskManager.Tasklets import tasklets
-import stackless
+import gevent
 from utils.parsers import parse_url
 
 import json
@@ -98,10 +98,8 @@ class ExecInfoResource(resource.PostableResource):
             client_stream.write(json.dumps(bend.get_running(task._jobid)))
             client_stream.finish()
 
-        info_task = stackless.tasklet(report_task_info)
-        info_task.setup(client_deferred, taskid)
-        info_task.run()
-
+        info_task = gevent.spawn(report_task_info,client_deferred, taskid)
+        
         return client_deferred
         #return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream )
 
