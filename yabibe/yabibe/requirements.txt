@@ -30,4 +30,5 @@ Mercurial==1.9.3
 gevent
 greenlet==0.3.3
 psutil
-boto==2.2.2
+#boto==2.2.2
+https://github.com/retrogradeorbit/boto/tarball/develop

@@ -29,11 +29,35 @@ from django.conf.urls.defaults import *
 from django.conf import settings
 from django.core import urlresolvers
 from django.contrib import admin as djangoadmin
-from yabiadmin import admin
+from yabiadmin import admin, uploader
 djangoadmin.autodiscover()
 
+urlpatterns = patterns('yabiadmin.yabifeapp.views',
+    url(r'^status_page[/]*$', 'status_page', name='status_page'),
+    (r'^preview/metadata[/]*$', 'preview_metadata'),
+    (r'^preview[/]*$', 'preview'),
+    (r'^[/]*$', 'design'),
+    (r'^account/password[/]*$', 'password'),
+    (r'^account[/]*$', 'account'),
+    (r'^design/reuse/(?P<id>.*)[/]*$', 'design'),
+    (r'^design[/]*$', 'design'),
+    (r'^jobs[/]*$', 'jobs'),
+    (r'^files[/]*$', 'files'),
+    (r'^login[/]*$', 'login', {'SSL':True}),
+    (r'^logout[/]*$', 'logout'),
+    (r'^wslogin[/]*$', 'wslogin', {'SSL':True}),
+    (r'^wslogout[/]*$', 'wslogout'),
+    (r'^registration/', include('yabiadmin.registration.urls'), {'SSL': True}),
+    (r'^exception[/]*$', 'exception_view'),
+)
+
+# temporary url for file upload direct
+urlpatterns += patterns('yabiadmin.uploader.views',
+    (r'^ws/fs/put[/]*$', 'put')
+)
+
 # dispatch to either webservice, admin or general
-urlpatterns = patterns('yabiadmin.yabi.views',
+urlpatterns += patterns('yabiadmin.yabi.views',
     (r'^ws/', include('yabiadmin.yabi.wsurls'), {'SSL':True}),
     (r'^engine/', include('yabiadmin.yabiengine.urls')),
     url(r'^status_page[/]*$', 'status_page', name='status_page'),

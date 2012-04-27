@@ -13,5 +13,5 @@
 #
 # http://www.pip-installer.org/en/latest/requirement-format.html
 #
-MySQL-python==1.2.3
 -r base-requirements.txt
+-r mysql.txt

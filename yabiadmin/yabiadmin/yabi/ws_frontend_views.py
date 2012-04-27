@@ -73,61 +73,7 @@ DATE_FORMAT = '%Y-%m-%d'
 BACKEND_REFUSED_CONNECTION_MESSAGE = "The backend server is refusing connections. Check that the backend server at %s on port %s is running and answering requests."%(settings.BACKEND_IP,settings.BACKEND_PORT) 
 BACKEND_HOST_UNREACHABLE_MESSAGE = "The backend server is unreachable. Check that the backend server setting is correct. It is presently configured to %s."%(settings.BACKEND_IP) 
 
-def login(request):
-
-    if using_dev_settings():
-        logger.warning("Development settings are in use, DO NOT USE IN PRODUCTION ENVIRONMENT without changing settings.")
-
-    if request.method != "POST":
-        return HttpResponseNotAllowed(["POST"])
-    username = request.POST.get('username')
-    password = request.POST.get('password')
-    if not (username and password):
-        return HttpResponseBadRequest()
-    user = auth.authenticate(username=username, password=password)
-    if user is not None:
-        if user.is_active:
-            auth.login(request, user)
-            response = {
-                "success": True
-            }
-            
-            # for every credential for this user, call the login hook
-            # currently creds will raise an exception if they can't be decrypted
-            creds = Credential.objects.filter(user__name=username)
-            try:
-                for cred in creds:
-                    cred.on_login( username,password )
-
-                response = {
-                    "success": True,
-                    "message": "All credentials were successfully decrypted."
-                }
-            except DecryptException, e:
-                message = 'Unable to decrypt credential "%s" with your password. Please see your system administrator.' % cred.description
-                response = {
-                    "success": False,
-                    "message": message
-                }
-        else:
-            response = {
-                "success": False,
-                "message": "The account has been disabled.",
-            }
-    else:
-        response = {
-            "success": False,
-            "message": "The user name and password are incorrect.",
-        }
-    return HttpResponse(content=json.dumps(response)) if response['success'] else HttpResponseForbidden(content=json.dumps(response))
-
-def logout(request):
-    auth.logout(request)
-    response = {
-        "success": True,
-    }
-    return HttpResponse(content=json.dumps(response))
-
+@authentication_required
 def tool(request, toolname):
     logger.debug(toolname)
     page = cache.get(toolname)
@@ -310,7 +256,7 @@ def rm(request):
     return handle_connection(closure)
 
 @authentication_required
-def get(request):
+def get(request, bytes=None):
     """
     Returns the requested uri. get_file returns an httplib response wrapped in a FileIterWrapper. This can then be read
     by HttpResponse
@@ -326,7 +272,6 @@ def get(request):
             logger.critical('Unable to get filename from uri: %s' % uri)
             filename = 'default.txt'
 
-        bytes = request.GET.get("bytes", None)
         if bytes is not None:
             try:
                 bytes = int(bytes)

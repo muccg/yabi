@@ -107,6 +107,10 @@ class Migration(DataMigration):
         yabi_userprofile_1.user = django_user_1
         yabi_userprofile_1.save()
 
+        yabi_userprofile_2 = orm.UserProfile()
+        yabi_userprofile_2.user = django_user_2
+        yabi_userprofile_2.save()
+
         yabi_parameterswitchuse_1 = yabi_parameterswitchuse('switchOnly','%(switch)s','Only the switch will be passed in the argument list.')
         yabi_parameterswitchuse_1.save()
 

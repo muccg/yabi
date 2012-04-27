@@ -30,8 +30,6 @@ from django.conf.urls.defaults import *
 
 # frontend webservices
 urlpatterns = patterns('yabiadmin.yabi.ws_frontend_views',
-    url(r'^login[/]*$', 'login'),
-    url(r'^logout[/]*$', 'logout'),
 
     url(r'^tool/(?P<toolname>[^/]+)[/]*$', 'tool', name='tool'),
     url(r'^menu[/]*$', 'menu', name='menu'),
