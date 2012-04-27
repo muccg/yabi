@@ -35,13 +35,17 @@ from optparse import OptionParser
 from boto.s3.connection import S3Connection 
 from boto.s3.key import Key
 
+from StringIO import StringIO
+
 def eprint(text):
     sys.stderr.write(text)
     sys.stderr.write("\n")
 
 DEBUG = True
 
-CHUNKSIZE = 4096
+KB = 1024
+MB = 1024 * KB
+CHUNKSIZE = 8 * MB
 
 L2R = 1
 R2L = 2
@@ -105,9 +109,25 @@ if direction == L2R:
     # create a connection object
     conn = S3Connection(accesskey, secretkey)
     b = conn.get_bucket(bucket)
-    k = Key(b)
-    k.key = path
-    k.set_contents_from_filename(infile, md5=False)
+    
+    count = 1
+    mp = b.initiate_multipart_upload(path)
+    
+    with open(infile,'rb') as fh:
+        while True:
+            data = fh.read( CHUNKSIZE )
+            if not len(data):
+                break
+            buff = StringIO( data )
+            mp.upload_part_from_file(buff,count)
+            buff.close()
+            count += 1
+    
+    mp.complete_upload()
+    
+    #k = Key(b)
+    #k.key = path
+    #k.set_contents_from_filename(infile, md5=False)
     
     # success.
     eprint("OK")
