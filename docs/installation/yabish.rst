@@ -1,3 +1,6 @@
+.. index::
+   pair: yabish; command line 
+
 Setting up Yabish
 -----------------
 

@@ -1,3 +1,6 @@
+.. index::
+    single: django
+    single: settings.py
 
 .. _settings:
 
@@ -137,6 +140,10 @@ An example of the settings that we keep in this private settings file follows:
     YABIBACKEND_SERVER = BACKEND_IP + ':' +  BACKEND_PORT
     YABISTORE_HOME = 'set_this'
     BACKEND_UPLOAD = 'http://'+BACKEND_IP+':'+BACKEND_PORT+BACKEND_BASE+"fs/ticket"
+
+
+.. index::
+    single: backend; configuration
 
 
 Yabi Backend Configuration
