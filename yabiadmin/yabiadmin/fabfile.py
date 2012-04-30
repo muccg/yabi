@@ -107,6 +107,9 @@ def purge_snapshot(auto_confirm_purge = False):
     env.auto_confirm_purge = auto_confirm_purge
     _ccg_purge_snapshot()
 
+def make_live(tag=env.user):
+    _make_live_symlinks(tag)
+
 def celeryd():
     """
     Foreground celeryd using your deployment of admin
