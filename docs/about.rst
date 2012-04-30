@@ -18,12 +18,20 @@ Yabi has a few key features:
  - handling of disparate compute and storage resouces ie PBSPro, Globus, GridFTP, SSH, Amazon S3
  - easy and powerful workflow creation environment
 
+
+.. index::
+    single: yabi; history
+    single: Centre for Comparative Genomics
+
 A brief history
 ---------------
 
 The Centre for Comparative Genomics has been addressing the problem of facilitating transparent access to HPC for over a decade. As technologies have advanced we have gone
 through various iterations to address this issue. Now we have drawn on our experience in HPC and Internet based solutions to produce Yabi, an intuitive abstraction of compute
 and data environments.
+
+.. index::
+    single: yabi; architecture
 
 Architecture
 ------------
@@ -47,6 +55,9 @@ with the front end application in the same way as a web browser, that is:
  * all traffic is via HTTPS
  * users are required to log in to activate a session
 
+.. index::
+   single: yabi; application
+
 Yabi Application
 ^^^^^^^^^^^^^^^^
 
@@ -56,6 +67,9 @@ will insist on HTTPS and redirect any HTTP requests to HTTPS. The application ru
 The Yabi application is intended to be run on an Internet facing server as it serves the HTML/CSS/Javascript application that users typically interact 
 with as well as a REST style interface for the command line client. Naturally, it can be deployed on an 
 internal network if access over the Internet is not desired. 
+
+.. index::
+   single: yabi; backend
 
 Yabi Backend
 ^^^^^^^^^^^^

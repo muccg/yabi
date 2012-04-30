@@ -1,3 +1,6 @@
+.. index::
+   single: logging
+
 .. _logging:
 
 Logging

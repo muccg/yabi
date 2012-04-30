@@ -97,6 +97,8 @@ Change back into the directory where you cloned Yabi earlier, then:
 
 Again you will be asked to specify a release tag.
 
+.. index::
+    single: celery
 
 Start Celery
 ------------
@@ -112,6 +114,8 @@ Restart apache
 For changes to take effect restart apache.
 
 
+.. index::
+    single: apache; configuration
 
 Sample Apache Configuration
 ===========================

@@ -1,3 +1,7 @@
+.. index::
+    single: tools; import and export
+    single: json
+
 .. _tool_import_export:
 
 Importing and Exporting Tools

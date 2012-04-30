@@ -1,3 +1,6 @@
+.. index::
+   single: tools; adding
+
 .. _tools:
 
 Adding Tools

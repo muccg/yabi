@@ -1,8 +1,13 @@
+.. index::
+    pair: database; postgres
+    pair: database; mysql
+    pair: database; sqlite
+
 Database Setup
 ==============
 
 By default when running a :ref:`quickstart` installation of Yabi the database used is SQLite.
-However, for production systems we reccomend using Postgres or MySQL.
+However, for production systems we recommend using Postgres or MySQL.
 
 The Yabi codebase employs `South <http://south.aeracode.org/>`_ to manage schema and data migrations. Because of this when initially setting
 up your database you need only create an empty data base called yabi_live and grant access.

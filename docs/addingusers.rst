@@ -1,9 +1,16 @@
 .. _addingusers:
 
+.. index::
+   single: users
+   single: users; adding
+
 Adding Users
 ============
 
 To add users to the Yabi system you will need to be logged into the Adminstration part of the application.
+
+.. index::
+   single: users; regular
 
 Adding Regular Users
 --------------------
@@ -20,12 +27,19 @@ is where additional user information can be stored. If you edit the Yabi User re
 * User option access - controls whether the Account and Change Password screens are available to the user
 * Credential access - determines whether the Credential modification screen is available to the user
 
+.. index::
+    single: ldap
+    single: authentication
+
 Using Different Authentication Backends
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you are using a different authentication method such as LDAP then you will need to set up the Auth
 User record as above but **replace the password field with '!'**. This means Django will not attempt to use
 the password field for authentication.
+
+.. index::
+   single: users; administrator
 
 Adding Adminstrator Users
 -------------------------
@@ -36,6 +50,8 @@ and Superuser checkboxes are ticked.
 If you wish to you could use the Django Permissions system to give finer grained permissions to users i.e. 
 permission to add tools only.
 
+.. index::
+   single: users; setup
 
 .. _viewing_a_users_setup:
 
