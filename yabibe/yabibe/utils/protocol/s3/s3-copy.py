@@ -117,6 +117,13 @@ if direction == L2R:
         while True:
             data = fh.read( CHUNKSIZE )
             if not len(data):
+                # If we are breaking now on the first chunk, then this is a zero length file
+                # we must send a chunk
+                if count==1:
+                    buff = StringIO( "" )
+                    mp.upload_part_from_file(buff,count)
+                    buff.close()
+                    
                 break
             buff = StringIO( data )
             mp.upload_part_from_file(buff,count)
