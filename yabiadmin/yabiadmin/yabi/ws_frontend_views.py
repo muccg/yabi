@@ -62,7 +62,7 @@ from yabiadmin.decorators import authentication_required, profile_required
 from yabiadmin.yabistoreapp import db
 from yabiadmin.utils import using_dev_settings
 from yabiengine.backendhelper import make_hmac
-
+from yabiadmin.utils import cache_keyname
 from yaphc import Http, PostRequest, UnauthorizedError
 
 import logging
@@ -76,17 +76,18 @@ BACKEND_HOST_UNREACHABLE_MESSAGE = "The backend server is unreachable. Check tha
 @authentication_required
 def tool(request, toolname):
     logger.debug(toolname)
-    page = cache.get(toolname)
+    toolname_key = cache_keyname(toolname)
+    page = cache.get(toolname_key)
 
     if page:
-        logger.debug("Returning cached page for tool: " + toolname)
+        logger.debug("Returning cached page for tool:%s using key:%s " % (toolname, toolname_key))
         return page
 
     try:
         tool = Tool.objects.get(name=toolname, enabled=True)
 
         response = HttpResponse(tool.json_pretty(), content_type="text/plain; charset=UTF-8")
-        cache.set(toolname, response, 30)
+        cache.set(toolname_key, response, 30)
         return response
     except ObjectDoesNotExist:
         return JsonMessageResponseNotFound("Object not found")
