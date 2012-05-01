@@ -1,3 +1,5 @@
+.. index::
+   single: backend credentials
 
 .. _backendcredentials:
 
@@ -7,6 +9,9 @@ Backend Credentials
 Backend Credentials is a linking table between a Credential and a Backend, used simply because a user 
 may have one credential (say an SSH key) that is valid across multiple backends.
 
+.. index::
+   single: backend credentials; adding
+
 Adding Backend Credentials
 --------------------------
 
@@ -15,6 +20,9 @@ Adding Backend Credentials
  * Check `Visible` so the backend will appear to the user.
  * Select Default Stageout to indicate that this user's job results should stageout to this filesystem
 
+
+.. index::
+   single: backend credentials; default stageout 
 
 .. _defaultstageout:
 

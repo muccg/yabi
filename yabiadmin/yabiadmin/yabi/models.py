@@ -40,6 +40,7 @@ from django.utils.encoding import smart_str
 from urlparse import urlparse, urlunparse
 from crypto import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, DecryptException, AESTEMP
 from constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK
+from yabiadmin.utils import cache_keyname
 
 import logging
 logger = logging.getLogger(__name__)
@@ -233,7 +234,7 @@ class Tool(Base):
         
     def purge_from_cache(self):
         """Purge this tools entry description from cache"""
-        cache.delete(self.name)
+        cache.delete(cache_keyname(self.name))
 
     def __unicode__(self):
         return self.name
@@ -536,7 +537,8 @@ class Credential(Base):
     def cache_keyname(self):
         """return the cache key for this credential"""
         # smart_str takes care of non-ascii characters (memcache doesn't support Unicode in keys)
-        return smart_str("-cred-%s-%d" % (self.user.name, self.id))
+        # memcache also doesn't like spaces
+        return cache_keyname("-cred-%s-%d" % (self.user.name, self.id))
         
     def send_to_cache(self, time_to_cache=None):
         """This method stores the key as it is in cache"""

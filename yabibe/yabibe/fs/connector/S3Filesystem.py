@@ -82,7 +82,8 @@ def make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID):
     
 
 def mkdir(bucket, path, ACCESSKEYID, SECRETKEYID):
-    assert path[-1]=='/', "Path needs to end in a slash"
+    if path[-1]!='/':
+        path = path + '/'
     
     conn = S3Connection(ACCESSKEYID, SECRETKEYID)
     b = conn.get_bucket(bucket)

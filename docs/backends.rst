@@ -10,6 +10,9 @@ To get things up and running the best idea is to set up your first backend to a 
 Before trying to add the backend to Yabi you should be able to connect to it via the command line using 
 ssh keys from the box running Yabi.
 
+.. index::
+   single: SSH
+
 Setting up an SSH File System Backend
 -------------------------------------
 
@@ -24,6 +27,9 @@ Click on Backends under Yabi heading and add a backend, using `scp` as the schem
     Port            22
     Path            /home/
 
+
+.. index::
+   single: backend; path field
 
 .. _a_note_about_the_path_field:
 
@@ -46,6 +52,10 @@ So when Yabi needs to access files on that backend it combines the fields from t
 
 
 **Please note:** While Yabi refers to the directory on the Backend Credential record as User Directory this can really point to any directory the user has access to.
+
+.. index::
+   pair: backend; local copy
+   pair: backend; symbolic link
 
 .. _localcopyandlink:
 
@@ -74,6 +84,10 @@ Again, click on Backends under Yabi heading and add a backend, this time using `
     Port            22
     Path            /
 
+.. index::
+    pair: backend; qsub;
+    pair: backend; submission script
+
 Submission Field
 ^^^^^^^^^^^^^^^^
 
@@ -101,6 +115,16 @@ looks like this:
 This submission template uses the `Mako templating system <http://www.makotemplates.org/>`_ and in this case represents the qsub script
 that will be used by Yabi to submit the job. The variables in the template are pulled from each tool that we configure (See :ref:`tools`).
 This provides a powerful mechanism for determining the scripts submitted to each backend.
+
+Troubleshooting SSH
+-------------------
+
+Take a look at these FAQs
+ - :ref:`ssh_troubleshooting`
+ - :ref:`known_hosts`
+
+.. index::
+   pair: backend; null backend
 
 .. _nullbackend:
 

@@ -1,3 +1,7 @@
+.. index::
+    single: tools; toolsets
+    single: tools; toolgroups
+
 .. _toolsets_and_toolgroups:
 
 Toolsets and Toolgroups

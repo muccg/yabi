@@ -1,3 +1,6 @@
+.. index::
+   single: credentials
+
 .. _credentials:
 
 Credentials
@@ -5,6 +8,9 @@ Credentials
 
 Any tasks carried out by Yabi are always run **as the user** not as Yabi. For this reason Yabi needs to be able
 store and make use of user credentials.
+
+.. index::
+   single: encryption
 
 A note about encryption
 ^^^^^^^^^^^^^^^^^^^^^^^
