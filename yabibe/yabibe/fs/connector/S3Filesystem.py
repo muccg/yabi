@@ -58,8 +58,18 @@ from boto.s3.key import Key
     
 class S3Error(Exception):
     pass
-  
-def make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID):
+
+def get_s3_connection_bucket(ACCESSKEYID, SECRETKEYID, domain, port):
+    if domain=="amazonws.com":
+        # AMAZON bucket
+        conn = S3Connection(ACCESSKEYID, SECRETKEYID)
+        b = conn.get_bucket(bucket)
+        list_response = b.list()
+    else:
+        conn = S3Connection(ACCESSKEYID, SECRETKEYID, host=domain, port=port, is_secure=False)
+        b = conn.get_bucket("")
+
+def make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID, domain, port=None):
     assert '\n' not in ACCESSKEYID
     assert '\r' not in ACCESSKEYID
     assert '\n' not in SECRETKEYID
@@ -73,20 +83,22 @@ def make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID):
     while len(path)>=2 and path[-2:] == (SEP*2):
         path=path[:-1]
     
-    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-    conn = S3Connection(ACCESSKEYID, SECRETKEYID, host="127.0.0.1", port=8080, is_secure=False)
-    print "CONN:",conn
-    #b = conn.get_bucket(bucket)
-    b = conn.get_bucket("")
-    print "bucket:",b
+    if domain=="amazonws.com":
+        # AMAZON bucket
+        conn = S3Connection(ACCESSKEYID, SECRETKEYID)
+        b = conn.get_bucket(bucket)
+        list_response = b.list()
+    else:
+        conn = S3Connection(ACCESSKEYID, SECRETKEYID, host=domain, port=port, is_secure=False)
+        b = conn.get_bucket("")
+     
     list_response = b.list()
-    print "list:",list_response
-
+    
     rawtree = [(obj.name,obj) for obj in list_response]
     return s3utils.make_tree(rawtree)
     
 
-def mkdir(bucket, path, ACCESSKEYID, SECRETKEYID):
+def mkdir(bucket, path, ACCESSKEYID, SECRETKEYID, domain, port=None):
     if path[-1]!='/':
         path = path + '/'
     
@@ -98,7 +110,7 @@ def mkdir(bucket, path, ACCESSKEYID, SECRETKEYID):
     obj.set_metadata('s3-console-folder', 'true')
     obj.set_metadata('s3-console-metadata-version', '2010-03-09')
     
-def rm(bucket, path, ACCESSKEYID, SECRETKEYID):
+def rm(bucket, path, ACCESSKEYID, SECRETKEYID, domain, port=None):
     conn = S3Connection(ACCESSKEYID, SECRETKEYID, host="localhost.localdomain", port=8080, is_secure=False, calling_format=OrdinaryCallingFormat())
     b = conn.get_bucket(bucket)
     
@@ -106,7 +118,7 @@ def rm(bucket, path, ACCESSKEYID, SECRETKEYID):
     obj.key = path
     obj.delete()
 
-def rmrf(bucket, path, ACCESSKEYID, SECRETKEYID):
+def rmrf(bucket, path, ACCESSKEYID, SECRETKEYID, domain, port=None):
     tree = make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID)
     
     # find the child node
@@ -129,9 +141,9 @@ def rmrf(bucket, path, ACCESSKEYID, SECRETKEYID):
     
     # delete this node now
     #print "DEL3",path
-    rm(bucket, path, ACCESSKEYID, SECRETKEYID)
+    rm(bucket, path, ACCESSKEYID, SECRETKEYID, domain, port)
   
-def ls(bucket, path, ACCESSKEYID, SECRETKEYID):
+def ls(bucket, path, ACCESSKEYID, SECRETKEYID, domain, port=None):
     tree=make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID)
     
     try:
@@ -141,7 +153,7 @@ def ls(bucket, path, ACCESSKEYID, SECRETKEYID):
     
     return lsdata
     
-def lsrecurse(bucket, path, ACCESSKEYID, SECRETKEYID):
+def lsrecurse(bucket, path, ACCESSKEYID, SECRETKEYID, port=None):
     tree=make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID)
    
     directory = tree.find_node(path)
@@ -165,11 +177,11 @@ class S3Filesystem(FSConnector.FSConnector, object):
         FSConnector.FSConnector.__init__(self)
         #ssh.KeyStore.KeyStore.__init__(self)
         
-    def _decode_bucket(self, host, username, path, yabiusername=None, creds={}):
+    def _decode_bucket(self, host, port, username, path, yabiusername=None, creds={}):
         """return the bucket and actual credentials for a request"""
-        bucket = host.split(".")[0]
+        bucket,domain = host.split(".",1)
         
-        # remove prefixed '/'s from path
+        # remove suffixed '/'s from path
         while len(path) and path[0]=='/':
             path = path[1:]
        
@@ -179,26 +191,26 @@ class S3Filesystem(FSConnector.FSConnector, object):
             creds = s3auth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
         
         # return everything
-        return bucket, path, creds['cert'],creds['key']
+        return bucket, path, creds['cert'],creds['key'], domain, port
         
     def mkdir(self, host, username, path, port=None, yabiusername=None, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
-        mkdir(*self._decode_bucket(host, username, path, yabiusername, creds))
+        mkdir(*self._decode_bucket(host, port, username, path, yabiusername, creds))
         return "OK"
         
     def rm(self, host, username, path, port=None, yabiusername=None, recurse=False, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         if recurse:
-            rmrf( *self._decode_bucket(host, username, path, yabiusername, creds) )
+            rmrf( *self._decode_bucket(host, port, username, path, yabiusername, creds) )
         else:
-            rm( *self._decode_bucket(host, username, path, yabiusername, creds) )
+            rm( *self._decode_bucket(host, port, username, path, yabiusername, creds) )
         return "OK"
     
     def ls(self, host, username, path, port=None, yabiusername=None, recurse=False, culldots=True, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
         
         if not recurse:
-            files,folders = ls(*self._decode_bucket(host, username, path, yabiusername, creds))
+            files,folders = ls(*self._decode_bucket(host, port, username, path, yabiusername, creds))
                 
             return {
                 path : {
@@ -207,7 +219,7 @@ class S3Filesystem(FSConnector.FSConnector, object):
                 }
             }
         else:
-            return lsrecurse(*self._decode_bucket(host, username, path, yabiusername, creds))
+            return lsrecurse(*self._decode_bucket(host, port, username, path, yabiusername, creds))
         
     def GetWriteFifo(self, host=None, username=None, path=None, port=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         """sets up the chain needed to setup a write fifo from a remote path as a certain user.
