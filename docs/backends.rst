@@ -156,6 +156,6 @@ Usually, the full amazonws bucket name is used as the hostname. For example ``my
 ``mybucket`` on amazon.
 
 In setting up the credential for access to S3, your remote username is ignored, so you can place any text in here you like. You will need to 
-fill in three fields: password, cert, and key. Into the password box put the Amazon access key password. Into the yabi key field put the Amazon ACCESS ID.
-Into the yabi cert field put the Amazon SECRET KEY.
+fill in three fields: password, cert, and key. Into the password box put the Amazon access key *password* . Into the yabi cert field put the Amazon ACCESS ID.
+Into the yabi key field put the Amazon SECRET KEY.
 
