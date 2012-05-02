@@ -181,6 +181,19 @@ def wslogin(request):
     if user is not None: 
         if user.is_active:
             django_login(request, user)
+
+            # for every credential for this user, call the login hook
+            # currently creds will raise an exception if they can't be decrypted
+            # this is logged but user can still log in as they may have other creds
+            # that are still usable
+            creds = Credential.objects.filter(user__name=username)
+            try:
+                for cred in creds:
+                    cred.on_login(username,password )
+
+            except DecryptException, e:
+                logger.error('Unable to decrypt credential %s' % cred.description)
+
             response = {
                 "success": True
                 }

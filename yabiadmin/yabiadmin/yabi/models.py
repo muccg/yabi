@@ -40,6 +40,7 @@ from django.utils.encoding import smart_str
 from urlparse import urlparse, urlunparse
 from crypto import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, DecryptException, AESTEMP
 from constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK
+from yabiadmin.utils import cache_keyname
 
 import logging
 logger = logging.getLogger(__name__)
@@ -233,7 +234,7 @@ class Tool(Base):
         
     def purge_from_cache(self):
         """Purge this tools entry description from cache"""
-        cache.delete(self.name)
+        cache.delete(cache_keyname(self.name))
 
     def __unicode__(self):
         return self.name
@@ -378,6 +379,59 @@ class User(Base):
         ordering = ("name",)
 
     name = models.CharField(max_length=50, unique=True)
+    user = models.OneToOneField(DjangoUser, null=False)
+    user_option_access = models.BooleanField(default=True)
+    credential_access = models.BooleanField(default=False)
+
+    def __unicode__(self):
+        return "%s" % self.user.username
+
+    def reencrypt_user_credentials(self, request):
+        logger.debug("")
+        yabiuser = User.objects.get(name=request.user.username)
+
+        currentPassword = request.POST['currentPassword']
+        newPassword = request.POST['newPassword']
+    
+        # get all creds for this user that are encrypted
+        creds = Credential.objects.filter(user=yabiuser)
+        for cred in creds:
+            cred.recrypt(currentPassword, newPassword)
+            cred.save()
+
+    def has_account_tab(self):
+        logger.debug('')        
+        return self.user_option_access or self.credential_access
+
+    def validate(self, request):
+        logger.debug('')
+        
+        currentPassword = request.POST.get("currentPassword", None)
+        newPassword = request.POST.get("newPassword", None)
+        confirmPassword = request.POST.get("confirmPassword", None)
+
+        # check the user is allowed to change password
+        if not self.user_option_access:
+            return (False, "You do not have permission to change the password.")
+
+        # check we have everything
+        if not currentPassword or not newPassword or not confirmPassword:
+            return (False, "Either the current, new or confirmation password is missing from request.")
+
+        # check the current password
+        if not authenticate(username=request.user.username, password=currentPassword):
+            return (False, "Current password is incorrect")
+
+        # the new passwords should at least match and meet whatever rules we decide
+        # to impose (currently a minimum six character length)
+        if newPassword != confirmPassword:
+            return (False, "The new passwords must match")
+
+        if len(newPassword) < 6:
+            return (False, "The new password must be at least 6 characters in length")
+
+        return (True, "Password valid.")
+
 
     def toolsets_str(self):
         return ",".join([str(role) for role in self.users.all()])
@@ -400,9 +454,6 @@ class User(Base):
         return '<a href="%s">Backends</a>' % self.backends_url()
     backends_link.short_description = 'Backends'
     backends_link.allow_tags = True
-
-    def __unicode__(self):
-        return self.name
 
     @property
     def default_stageout(self):
@@ -486,7 +537,8 @@ class Credential(Base):
     def cache_keyname(self):
         """return the cache key for this credential"""
         # smart_str takes care of non-ascii characters (memcache doesn't support Unicode in keys)
-        return smart_str("-cred-%s-%d" % (self.user.name, self.id))
+        # memcache also doesn't like spaces
+        return cache_keyname("-cred-%s-%d" % (self.user.name, self.id))
         
     def send_to_cache(self, time_to_cache=None):
         """This method stores the key as it is in cache"""
@@ -787,66 +839,7 @@ class BackendCredential(Base):
     backend_cred_test_link.allow_tags = True
 
 
-class UserProfile(models.Model):
-    class Meta:
-        ordering = ["user__username"]
-        verbose_name_plural = "User Profiles"
-
-    user = models.OneToOneField(DjangoUser)
-    user_option_access = models.BooleanField(default=True)
-    credential_access = models.BooleanField(default=False)
-
-    def __unicode__(self):
-        return "%s" % self.user.username
-
-    def reencrypt_user_credentials(self, request):
-        logger.debug("")
-        yabiuser = User.objects.get(name=request.user.username)
-
-        currentPassword = request.POST['currentPassword']
-        newPassword = request.POST['newPassword']
-    
-        # get all creds for this user that are encrypted
-        creds = Credential.objects.filter(user=yabiuser)
-        for cred in creds:
-            cred.recrypt(currentPassword, newPassword)
-            cred.save()
-
-    def has_account_tab(self):
-        logger.debug('')        
-        return self.user_option_access or self.credential_access
-
-    def validate(self, request):
-        logger.debug('')
-        
-        currentPassword = request.POST.get("currentPassword", None)
-        newPassword = request.POST.get("newPassword", None)
-        confirmPassword = request.POST.get("confirmPassword", None)
-
-        # check the user is allowed to change password
-        if not self.user_option_access:
-            return (False, "You do not have permission to change the password.")
-
-        # check we have everything
-        if not currentPassword or not newPassword or not confirmPassword:
-            return (False, "Either the current, new or confirmation password is missing from request.")
-
-        # check the current password
-        if not authenticate(username=request.user.username, password=currentPassword):
-            return (False, "Current password is incorrect")
-
-        # the new passwords should at least match and meet whatever rules we decide
-        # to impose (currently a minimum six character length)
-        if newPassword != confirmPassword:
-            return (False, "The new passwords must match")
-
-        if len(newPassword) < 6:
-            return (False, "The new password must be at least 6 characters in length")
-
-        return (True, "Password valid.")
-
-
-class ModelBackendUserProfile(UserProfile):
+class ModelBackendUserProfile(User):
 
     class Meta:
         proxy = True
@@ -874,14 +867,10 @@ class ModelBackendUserProfile(UserProfile):
             return (False, "Error changing password")
 
 
-class LDAPBackendUserProfile(UserProfile):
+class LDAPBackendUserProfile(User):
     
-    def __init__(self, *args, **kwargs):
-        UserProfile.__init__(self,*args, **kwargs)
-
     class Meta:
         proxy = True
-
 
     def change_password(self, request):
         logger.debug("passchange in LDAPBackendUserProfile")
@@ -934,7 +923,7 @@ def signal_tool_post_save(sender, **kwargs):
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         logger.debug('Creating user profile for %s' % instance.username)
-        UserProfile.objects.create(user=instance)
+        User.objects.create(user=instance, name=instance.username)
 
  
 # connect up signals

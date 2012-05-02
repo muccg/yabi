@@ -107,6 +107,9 @@ def purge_snapshot(auto_confirm_purge = False):
     env.auto_confirm_purge = auto_confirm_purge
     _ccg_purge_snapshot()
 
+def make_live(tag=env.user):
+    _make_live_symlinks(tag)
+
 def celeryd():
     """
     Foreground celeryd using your deployment of admin
@@ -134,6 +137,27 @@ def initdb():
     """
     local("python manage.py syncdb --noinput")
     migrate()
+
+def dropdb():
+    """
+    Drops the DB used by the application
+    """
+    _local_env()
+    local("python db_utils.py dropdb")
+
+def createdb():
+    """
+    Creates the DB used by the application
+    """
+    _local_env()
+    local("python db_utils.py createdb")
+
+def recreatedb():
+    """
+    Recreates (dropdb then createdb) the DB used by the application
+    """
+    _local_env()
+    local("python db_utils.py recreatedb")
 
 def migrate():
     """
@@ -279,7 +303,7 @@ def select_test_config(config_dir):
     full_dir = os.path.join(CONFS_DIR, config_dir)
     if not (os.path.exists(full_dir)):
         print "Invalid config (for a list of available configs use fab list_configs)"
-        return
+        raise StandardError("Invalid config (for a list of available configs use fab list_configs)")
     if os.path.exists(TEST_CONF_LN_NAME) and not os.path.islink(TEST_CONF_LN_NAME):
         raise StandardError("Can't create symlink %s, because %s already exists" % (TEST_CONF_LN_NAME, TEST_CONF_LN_NAME))
     if os.path.islink(TEST_CONF_LN_NAME):
@@ -293,6 +317,10 @@ def tests():
 
     _local_env()
     local("nosetests -v")
+
+def require(requirements_file):
+    '''pip installs the requirements specified in the passed in file'''
+    local("pip install -r %s" % requirements_file)
 
 def _celeryd():
     _django_env()

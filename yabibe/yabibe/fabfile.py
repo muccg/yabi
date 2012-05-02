@@ -115,6 +115,9 @@ def release(*args, **kwargs):
     env.auto_confirm=False
     _ccg_deploy_release(tag=tag, migration=False, apacheDeployment=False)
 
+def make_live(tag=env.user):
+    _make_live_symlinks(tag)
+
 def createdirs():
     """
     Create essential directories in home directory of user running the backend

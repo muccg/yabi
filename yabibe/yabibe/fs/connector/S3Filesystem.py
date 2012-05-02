@@ -54,6 +54,7 @@ DEBUG = False
 from utils.protocol.s3 import s3utils
     
 from boto.s3.connection import S3Connection, OrdinaryCallingFormat
+from boto.s3.key import Key
     
 class S3Error(Exception):
     pass
@@ -86,7 +87,8 @@ def make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID):
     
 
 def mkdir(bucket, path, ACCESSKEYID, SECRETKEYID):
-    assert path[-1]=='/', "Path needs to end in a slash"
+    if path[-1]!='/':
+        path = path + '/'
     
     conn = S3Connection(ACCESSKEYID, SECRETKEYID, host="127.0.0.1", port=8080, is_secure=False)
     b = conn.get_bucket(bucket)
