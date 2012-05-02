@@ -7,7 +7,7 @@ DEBUG = False
 CONFIG_SECTION= os.environ.get('TEST_CONFIG_SECTION','quickstart_tests')
 YABI_DIR = os.environ.get('YABI_DIR', '..')
 JSON_DIR = os.path.join(os.getcwd(), 'json_workflows')
-TMP_DIR = os.environ['TEST_TMP'] if 'TEST_TMP' in os.environ else None                  # None means system default (/tmp on unix)
+TMP_DIR = os.environ.get('YABI_DIR', None)                 # None means system default (/tmp on unix)
 
 def yabipath(relpath):
     return os.path.join(YABI_DIR, relpath)

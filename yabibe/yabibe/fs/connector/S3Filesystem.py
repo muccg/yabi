@@ -53,7 +53,7 @@ DEBUG = False
 # helper utilities for s3
 from utils.protocol.s3 import s3utils
     
-from boto.s3.connection import S3Connection
+from boto.s3.connection import S3Connection, OrdinaryCallingFormat
     
 class S3Error(Exception):
     pass
@@ -72,9 +72,14 @@ def make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID):
     while len(path)>=2 and path[-2:] == (SEP*2):
         path=path[:-1]
     
-    conn = S3Connection(ACCESSKEYID, SECRETKEYID)
-    b = conn.get_bucket(bucket)
+    print "!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+    conn = S3Connection(ACCESSKEYID, SECRETKEYID, host="127.0.0.1", port=8080, is_secure=False)
+    print "CONN:",conn
+    #b = conn.get_bucket(bucket)
+    b = conn.get_bucket("")
+    print "bucket:",b
     list_response = b.list()
+    print "list:",list_response
 
     rawtree = [(obj.name,obj) for obj in list_response]
     return s3utils.make_tree(rawtree)
@@ -83,7 +88,7 @@ def make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID):
 def mkdir(bucket, path, ACCESSKEYID, SECRETKEYID):
     assert path[-1]=='/', "Path needs to end in a slash"
     
-    conn = S3Connection(ACCESSKEYID, SECRETKEYID)
+    conn = S3Connection(ACCESSKEYID, SECRETKEYID, host="127.0.0.1", port=8080, is_secure=False)
     b = conn.get_bucket(bucket)
     
     obj = Key(b)
@@ -92,7 +97,7 @@ def mkdir(bucket, path, ACCESSKEYID, SECRETKEYID):
     obj.set_metadata('s3-console-metadata-version', '2010-03-09')
     
 def rm(bucket, path, ACCESSKEYID, SECRETKEYID):
-    conn = S3Connection(ACCESSKEYID, SECRETKEYID)
+    conn = S3Connection(ACCESSKEYID, SECRETKEYID, host="localhost.localdomain", port=8080, is_secure=False, calling_format=OrdinaryCallingFormat())
     b = conn.get_bucket(bucket)
     
     obj = Key(b)

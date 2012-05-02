@@ -20,4 +20,4 @@ nose
 pyOpenSSL==0.12
 pycrypto==2.3
 http://yabi.googlecode.com/files/paramiko-1.7.7.1-fifopatch.tar.gz
-
+requests==0.11.2

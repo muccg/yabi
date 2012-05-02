@@ -27,6 +27,36 @@ def create_backend(scheme="ssh", hostname="localhost.localdomain",path="/",submi
     from yabiadmin.yabi import models
     backend = models.Backend.objects.create(name='Test %s Backend'%scheme.upper(), scheme=scheme, hostname=hostname, path=path, submission=submission)
     # continue this...
+    
+def create_fs_backend(scheme="s3", hostname="localhost.localdomain", path="/" ):
+    from yabiadmin.yabi import models
+    backend = models.Backend.objects.create(
+        name='Test %s Backend'%scheme.upper(),
+        description="Test %s Backend"%scheme.upper(),
+        scheme=scheme, 
+        hostname=hostname, 
+        path=path, 
+        submission=""
+    )
+    cred = models.Credential.objects.create( 
+        description='Test %s Credential'%scheme.upper(), 
+        username='username',
+        password='password',
+        cert='cert',
+        key='key',
+        user=models.User.objects.get(name="demo")
+    )
+    
+    #join them
+    backend_cred = models.BackendCredential.objects.create(
+        backend = backend,
+        credential = cred,
+        homedir = "",
+        visible = True,
+        default_stageout = False,
+        submission = ""
+    )
+        
 
 def create_tool_cksum():
     from yabiadmin.yabi import models
