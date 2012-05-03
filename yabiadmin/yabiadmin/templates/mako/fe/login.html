@@ -37,6 +37,14 @@
       <div class="row">
         <div class="span8">
           <div style="text-align:center">
+
+            %if show_dev_warning:
+            <div>
+              <strong style="color:red;">Warning: Development settings in use.</strong><br/>Change your settings files before deployment to production servers.
+            </div>
+            %endif
+
+
           <p><a href="${h.url('/')}"><img src="${h.url('/static/images/yabi-logo.png')}" alt="Yabi-logo" height="60" width="198" /></a></p>
           <h1>Workflows made easy.</h1>
           <p></p>
@@ -235,5 +243,19 @@
       $('#testimonial').randomTestimonial( textArray, 10000 ); // ( array, interval, ["reload text or html"] )
       });
     </script>
+
+    <!-- analytics -->
+    <script type="text/javascript">
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-24602306-1']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+          var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+          ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+          var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+</script>
+
   </body>
 </html>
