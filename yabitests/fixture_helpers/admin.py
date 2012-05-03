@@ -28,13 +28,14 @@ def create_backend(scheme="ssh", hostname="localhost.localdomain",path="/",submi
     backend = models.Backend.objects.create(name='Test %s Backend'%scheme.upper(), scheme=scheme, hostname=hostname, path=path, submission=submission)
     # continue this...
     
-def create_fs_backend(scheme="s3", hostname="localhost.localdomain", path="/" ):
+def create_fakes3_backend(scheme="s3", hostname="localhost.localdomain", path="/" ):
     from yabiadmin.yabi import models
     backend = models.Backend.objects.create(
         name='Test %s Backend'%scheme.upper(),
         description="Test %s Backend"%scheme.upper(),
         scheme=scheme, 
-        hostname=hostname, 
+        hostname=hostname,
+        port=8080,
         path=path, 
         submission=""
     )

@@ -59,17 +59,19 @@ from boto.s3.key import Key
 class S3Error(Exception):
     pass
 
-def get_s3_connection_bucket(ACCESSKEYID, SECRETKEYID, domain, port):
+def get_s3_connection_bucket(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     if domain=="amazonws.com":
         # AMAZON bucket
         conn = S3Connection(ACCESSKEYID, SECRETKEYID)
         b = conn.get_bucket(bucket)
         list_response = b.list()
     else:
-        conn = S3Connection(ACCESSKEYID, SECRETKEYID, host=domain, port=port, is_secure=False)
+        print "connecting to:",domain,port
+        conn = S3Connection(ACCESSKEYID, SECRETKEYID, host=bucket+"."+domain, port=port, is_secure=False)
         b = conn.get_bucket("")
+    return b
 
-def make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID, domain, port=None):
+def make_fs_struct(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     assert '\n' not in ACCESSKEYID
     assert '\r' not in ACCESSKEYID
     assert '\n' not in SECRETKEYID
@@ -83,22 +85,15 @@ def make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID, domain, port=None):
     while len(path)>=2 and path[-2:] == (SEP*2):
         path=path[:-1]
     
-    if domain=="amazonws.com":
-        # AMAZON bucket
-        conn = S3Connection(ACCESSKEYID, SECRETKEYID)
-        b = conn.get_bucket(bucket)
-        list_response = b.list()
-    else:
-        conn = S3Connection(ACCESSKEYID, SECRETKEYID, host=domain, port=port, is_secure=False)
-        b = conn.get_bucket("")
-     
-    list_response = b.list()
+    bucket = get_s3_connection_bucket(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID)
+    list_response = bucket.list()
     
     rawtree = [(obj.name,obj) for obj in list_response]
     return s3utils.make_tree(rawtree)
     
 
-def mkdir(bucket, path, ACCESSKEYID, SECRETKEYID, domain, port=None):
+def mkdir(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
+    # trim suffixed '/'s
     if path[-1]!='/':
         path = path + '/'
     
@@ -110,7 +105,7 @@ def mkdir(bucket, path, ACCESSKEYID, SECRETKEYID, domain, port=None):
     obj.set_metadata('s3-console-folder', 'true')
     obj.set_metadata('s3-console-metadata-version', '2010-03-09')
     
-def rm(bucket, path, ACCESSKEYID, SECRETKEYID, domain, port=None):
+def rm(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     conn = S3Connection(ACCESSKEYID, SECRETKEYID, host="localhost.localdomain", port=8080, is_secure=False, calling_format=OrdinaryCallingFormat())
     b = conn.get_bucket(bucket)
     
@@ -118,8 +113,8 @@ def rm(bucket, path, ACCESSKEYID, SECRETKEYID, domain, port=None):
     obj.key = path
     obj.delete()
 
-def rmrf(bucket, path, ACCESSKEYID, SECRETKEYID, domain, port=None):
-    tree = make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID)
+def rmrf(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
+    tree = make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID, domain)
     
     # find the child node
     treenode = tree.find_node(path)
@@ -143,8 +138,8 @@ def rmrf(bucket, path, ACCESSKEYID, SECRETKEYID, domain, port=None):
     #print "DEL3",path
     rm(bucket, path, ACCESSKEYID, SECRETKEYID, domain, port)
   
-def ls(bucket, path, ACCESSKEYID, SECRETKEYID, domain, port=None):
-    tree=make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID)
+def ls(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
+    tree=make_fs_struct(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID)
     
     try:
         lsdata = tree.ls(path)
@@ -153,7 +148,7 @@ def ls(bucket, path, ACCESSKEYID, SECRETKEYID, domain, port=None):
     
     return lsdata
     
-def lsrecurse(bucket, path, ACCESSKEYID, SECRETKEYID, port=None):
+def lsrecurse(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     tree=make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID)
    
     directory = tree.find_node(path)
@@ -181,7 +176,7 @@ class S3Filesystem(FSConnector.FSConnector, object):
         """return the bucket and actual credentials for a request"""
         bucket,domain = host.split(".",1)
         
-        # remove suffixed '/'s from path
+        # remove prefixed '/'s from path
         while len(path) and path[0]=='/':
             path = path[1:]
        
@@ -191,7 +186,7 @@ class S3Filesystem(FSConnector.FSConnector, object):
             creds = s3auth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
         
         # return everything
-        return bucket, path, creds['cert'],creds['key'], domain, port
+        return bucket, domain, port, path, creds['cert'],creds['key']
         
     def mkdir(self, host, username, path, port=None, yabiusername=None, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"

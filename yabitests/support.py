@@ -8,6 +8,7 @@ CONFIG_SECTION= os.environ.get('TEST_CONFIG_SECTION','quickstart_tests')
 YABI_DIR = os.environ.get('YABI_DIR', '..')
 JSON_DIR = os.path.join(os.getcwd(), 'json_workflows')
 TMP_DIR = os.environ.get('YABI_DIR', None)                 # None means system default (/tmp on unix)
+YABI_FE = "http://localhost.localdomain:8000"
 
 def yabipath(relpath):
     return os.path.join(YABI_DIR, relpath)
