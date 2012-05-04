@@ -63,9 +63,13 @@ class LocalfsFileTests(YabiTestCase, FileUtils):
         self.assertTrue('files' in data["/tmp/yabi-localfs-test/"])
         self.assertTrue('directories' in data["/tmp/yabi-localfs-test/"])
         
-    def test_localfs_file_upload(self):
+    def test_localfs_file_upload_and_download(self):
+        import random
+        length = random.randint(200,10000)
+        content = "".join([random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789)!@#$%^&*()`~-_=+[{]}\\|;:'\",<.>/?") for I in range(length)])
+
         from StringIO import StringIO
-        contents=StringIO("This is a test file\nOk!\n")
+        contents=StringIO(content)
         filename="test.txt"
         
         import requests
@@ -77,7 +81,7 @@ class LocalfsFileTests(YabiTestCase, FileUtils):
         self.assertTrue(r.status_code == 200, "Could not login to frontend. Frontend returned: %d"%(r.status_code))
 
         # upload
-        files = {'file': ("file.txt", open(__file__, 'rb'))}
+        files = {'file': ("file.txt", contents)}
         r = s.post( url = YABI_FE+"/ws/fs/put?uri=%s"%(QUOTED_TEST_LOCALFS_SERVER),
                     files = files
                    )
@@ -89,7 +93,27 @@ class LocalfsFileTests(YabiTestCase, FileUtils):
         self.assertTrue(r.status_code==200, "Could not list localfs backend contents")
         import json
         data = json.loads(r.text)
+        
         #sys.stderr.write("=> %s\n\n"%(str(data)))
+        
+        files = data["/tmp/yabi-localfs-test/"]["files"]
+        self.assertTrue(len(files)==1)
+        
+        filename,filesize,filedate,symlink = files[0]
+        self.assertTrue(symlink==False)
+        self.assertTrue(filename=='file.txt')
+        
+        #sys.stderr.write("=> %d != %d\n\n"%(filesize,length))
+        self.assertTrue(filesize==length)
+        
+        # get the file so we can compare
+        r = s.get( url = YABI_FE+"/ws/fs/get?uri=%sfile.txt"%(QUOTED_TEST_LOCALFS_SERVER) )
+        #sys.stderr.write("code => %d\n"%(r.status_code))
+        #sys.stderr.write("text => %s\n"%(r.text))
+        
+        self.assertTrue( len(r.text) == filesize )
+        self.assertTrue( r.text == content )
+        
         
         
         
