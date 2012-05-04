@@ -12,7 +12,7 @@ GB = 1024 * MB
 # to test s3, the default setup is to setup a fakes3 server on localhost on port 8080
 # and to test against that. To change the server you are testing against change the 
 # admin setup to connect to it and then change the following:
-TEST_S3_SERVER = "s3://username@localhost.localdomain:8080/"
+TEST_S3_SERVER = "s3://username@localhost.localdomain:8080"
 
 # to run a fakes3 server, install fakes3 then make an empty directory to server
 # then run with something like:
@@ -61,7 +61,7 @@ class S3FileUploadTest(YabiTestCase, FileUtils):
         self.assertTrue('files' in data['/'])
         self.assertTrue('directories' in data['/'])
         
-    def test_zzz_s3_file_upload(self):
+    def notest_zzz_s3_file_upload(self):
         from StringIO import StringIO
         contents=StringIO("This is a test file\nOk!\n")
         filename="test.txt"

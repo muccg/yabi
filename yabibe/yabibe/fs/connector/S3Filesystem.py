@@ -66,8 +66,8 @@ def get_s3_connection_bucket(bucket, domain, port, path, ACCESSKEYID, SECRETKEYI
         b = conn.get_bucket(bucket)
         list_response = b.list()
     else:
-        print "connecting to:",domain,port
-        conn = S3Connection(ACCESSKEYID, SECRETKEYID, host=bucket+"."+domain, port=port, is_secure=False)
+        #print "connecting to:",domain,port
+        conn = S3Connection(ACCESSKEYID, SECRETKEYID, host=bucket+"."+domain, port=port, is_secure=False, calling_format=OrdinaryCallingFormat())
         # is_secure=False, calling_format=OrdinaryCallingFormat()
         b = conn.get_bucket("")
     return b
@@ -98,19 +98,17 @@ def mkdir(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     if path[-1]!='/':
         path = path + '/'
     
-    conn = S3Connection(ACCESSKEYID, SECRETKEYID, host=domain, port=port)
-    b = conn.get_bucket(bucket)
+    bucket = get_s3_connection_bucket(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID)
     
-    obj = Key(b)
+    obj = Key(bucket)
     obj.key = path
     obj.set_metadata('s3-console-folder', 'true')
     obj.set_metadata('s3-console-metadata-version', '2010-03-09')
     
 def rm(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
-    conn = S3Connection(ACCESSKEYID, SECRETKEYID, host=domain, port=port)
-    b = conn.get_bucket(bucket)
+    bucket = get_s3_connection_bucket(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID)
     
-    obj = Key(b)
+    obj = Key(bucket)
     obj.key = path
     obj.delete()
 

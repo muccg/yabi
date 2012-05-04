@@ -28,6 +28,75 @@ def create_backend(scheme="ssh", hostname="localhost.localdomain",path="/",submi
     backend = models.Backend.objects.create(name='Test %s Backend'%scheme.upper(), scheme=scheme, hostname=hostname, path=path, submission=submission)
     # continue this...
     
+def create_localfs_backend(scheme="localfs", hostname="localhost.localdomain", path="/tmp/yabi-localfs-test/"):
+    from yabiadmin.yabi import models
+    backend = models.Backend.objects.create(
+        name='Test %s Backend'%scheme.upper(),
+        description="Test %s Backend"%scheme.upper(),
+        scheme=scheme, 
+        hostname=hostname,
+        port=None,
+        path=path, 
+        submission=""
+    )
+    cred = models.Credential.objects.create( 
+        description='Test %s Credential'%scheme.upper(), 
+        username='username',
+        password='password',
+        cert='cert',
+        key='key',
+        user=models.User.objects.get(name="demo")
+    )
+    
+    #join them
+    backend_cred = models.BackendCredential.objects.create(
+        backend = backend,
+        credential = cred,
+        homedir = "",
+        visible = True,
+        default_stageout = False,
+        submission = ""
+    )
+    import os
+    try:
+        os.mkdir("/tmp/yabi-localfs-test/")
+    except OSError, ose:
+        if ose.errno != 17:
+            raise
+        #directory already exists... leave it
+    
+def destroy_localfs_backend(scheme="localfs", hostname="localhost.localdomain", path="/tmp/yabi-localfs-test/"):
+    from yabiadmin.yabi import models
+    backend = models.Backend.objects.filter(
+        name='Test %s Backend'%scheme.upper(),
+        description="Test %s Backend"%scheme.upper(),
+        scheme=scheme, 
+        hostname=hostname,
+        port=None,
+        path=path, 
+        submission=""
+    ).delete()
+    cred = models.Credential.objects.filter( 
+        description='Test %s Credential'%scheme.upper(), 
+        username='username',
+        password='password',
+        cert='cert',
+        key='key',
+        user=models.User.objects.get(name="demo")
+    ).delete()
+    
+    #join them
+    backend_cred = models.BackendCredential.objects.filter(
+        backend = backend,
+        credential = cred,
+        homedir = "",
+        visible = True,
+        default_stageout = False,
+        submission = ""
+    ).delete()
+    import shutil
+    shutil.rmtree("/tmp/yabi-localfs-test/")    
+    
 def create_fakes3_backend(scheme="s3", hostname="localhost.localdomain", path="/" ):
     from yabiadmin.yabi import models
     backend = models.Backend.objects.create(

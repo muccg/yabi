@@ -9,6 +9,8 @@ YABI_DIR = os.environ.get('YABI_DIR', '..')
 JSON_DIR = os.path.join(os.getcwd(), 'json_workflows')
 TMP_DIR = os.environ.get('YABI_DIR', None)                 # None means system default (/tmp on unix)
 YABI_FE = "http://localhost.localdomain:8000"
+TEST_USERNAME = "demo"
+TEST_PASSWORD = "demo"
 
 def yabipath(relpath):
     return os.path.join(YABI_DIR, relpath)
