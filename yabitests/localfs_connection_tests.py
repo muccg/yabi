@@ -27,7 +27,7 @@ from urllib import quote
 
 QUOTED_TEST_LOCALFS_SERVER = quote(TEST_LOCALFS_SERVER)
 
-class LocalfsFileUploadTest(YabiTestCase, FileUtils):
+class LocalfsFileTests(YabiTestCase, FileUtils):
     @classmethod
     def setUpAdmin(self):
         admin.create_localfs_backend()
@@ -62,6 +62,34 @@ class LocalfsFileUploadTest(YabiTestCase, FileUtils):
         self.assertTrue("/tmp/yabi-localfs-test/" in data)
         self.assertTrue('files' in data["/tmp/yabi-localfs-test/"])
         self.assertTrue('directories' in data["/tmp/yabi-localfs-test/"])
+        
+    def test_localfs_file_upload(self):
+        from StringIO import StringIO
+        contents=StringIO("This is a test file\nOk!\n")
+        filename="test.txt"
+        
+        import requests
+        
+        # login
+        s = requests.session()
+        r = s.post(YABI_FE+"/login", data=logindetails)
+        
+        self.assertTrue(r.status_code == 200, "Could not login to frontend. Frontend returned: %d"%(r.status_code))
+
+        # upload
+        files = {'file': ("file.txt", open(__file__, 'rb'))}
+        r = s.post( url = YABI_FE+"/ws/fs/put?uri=%s"%(QUOTED_TEST_LOCALFS_SERVER),
+                    files = files
+                   )
+        
+        #sys.stderr.write("%d...\n"%r.status_code)
+        
+        r = s.get(YABI_FE+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_LOCALFS_SERVER))
+
+        self.assertTrue(r.status_code==200, "Could not list localfs backend contents")
+        import json
+        data = json.loads(r.text)
+        #sys.stderr.write("=> %s\n\n"%(str(data)))
         
         
         
