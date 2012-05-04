@@ -9,6 +9,21 @@ KB = 1024
 MB = 1024 * KB
 GB = 1024 * MB
 
+# to test s3, the default setup is to setup a fakes3 server on localhost on port 8080
+# and to test against that. To change the server you are testing against change the 
+# admin setup to connect to it and then change the following:
+TEST_S3_SERVER = "s3://username@localhost.localdomain:8080/"
+
+# to run a fakes3 server, install fakes3 then make an empty directory to server
+# then run with something like:
+#
+# /var/lib/gems/1.8/bin/fakes3 -r ./fakes3 -p 8080
+#
+
+from urllib import quote
+
+QUOTED_TEST_S3_SERVER = quote(TEST_S3_SERVER)
+
 class S3FileUploadTest(YabiTestCase, FileUtils):
     @classmethod
     def setUpAdmin(self):
@@ -37,7 +52,7 @@ class S3FileUploadTest(YabiTestCase, FileUtils):
         
         self.assertTrue(r.status_code == 200, "Could not login to frontend. Frontend returned: %d"%(r.status_code))
 
-        r = s.get(YABI_FE+"/ws/fs/ls?uri=s3%3A//username@localhost.localdomain:8080/")
+        r = s.get(YABI_FE+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_S3_SERVER) )
 
         self.assertTrue(r.status_code==200, "Could not list S3 backend contents")
         import json
@@ -60,14 +75,15 @@ class S3FileUploadTest(YabiTestCase, FileUtils):
         self.assertTrue(r.status_code == 200, "Could not login to frontend. Frontend returned: %d"%(r.status_code))
 
         # upload
-        r = s.post( url = YABI_FE+"/ws/fs/put?uri=s3%3A//username@localhost.localdomain%3A8080/",
-                    files = {__file__: open(__file__, 'rb')}
+        files = {'file': ("file.txt", open(__file__, 'rb'))}
+        r = s.post( url = YABI_FE+"/ws/fs/put?uri=%s"%(QUOTED_TEST_S3_SERVER),
+                    files = files
                    )
         
         print r.status
         
 
-        r = s.get(YABI_FE+"/ws/fs/ls?uri=s3%3A//username@localhost.localdomain:8080/")
+        r = s.get(YABI_FE+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_S3_SERVER))
 
         self.assertTrue(r.status_code==200, "Could not list S3 backend contents")
         import json
@@ -85,7 +101,7 @@ class S3FileUploadTest(YabiTestCase, FileUtils):
         
         self.assertTrue(r.status_code == 200, "Could not login to frontend. Frontend returned: %d"%(r.status_code))
 
-        r = s.get(YABI_FE+"/ws/fs/rm?uri=s3%3A//username@localhost.localdomain:8080/DONT_EXIST.dat")
+        r = s.get(YABI_FE+"/ws/fs/rm?uri=%s/DONT_EXIST.dat"%(QUOTED_TEST_S3_SERVER))
 
         self.assertTrue(r.status_code == 404, "Incorrect status code returned. Should be 404. Returns %d instead!"%r.status_code)
 
@@ -106,7 +122,7 @@ class S3FileUploadTest(YabiTestCase, FileUtils):
         
         self.assertTrue(r.status_code == 200, "Could not login to frontend. Frontend returned: %d"%(r.status_code))
 
-        r = s.get(YABI_FE+"/ws/fs/mkdir?uri=s3%3A//username@localhost.localdomain:8080/directory")
+        r = s.get(YABI_FE+"/ws/fs/mkdir?uri=%s/directory"%(QUOTED_TEST_S3_SERVER))
 
         #sys.stderr.write("status: %d\n"%r.status_code)
         #sys.stderr.write("headers: %s\n"%str(r.headers))
