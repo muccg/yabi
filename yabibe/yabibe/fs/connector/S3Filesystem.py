@@ -68,6 +68,7 @@ def get_s3_connection_bucket(bucket, domain, port, path, ACCESSKEYID, SECRETKEYI
     else:
         print "connecting to:",domain,port
         conn = S3Connection(ACCESSKEYID, SECRETKEYID, host=bucket+"."+domain, port=port, is_secure=False)
+        # is_secure=False, calling_format=OrdinaryCallingFormat()
         b = conn.get_bucket("")
     return b
 
@@ -97,7 +98,7 @@ def mkdir(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     if path[-1]!='/':
         path = path + '/'
     
-    conn = S3Connection(ACCESSKEYID, SECRETKEYID, host="127.0.0.1", port=8080, is_secure=False)
+    conn = S3Connection(ACCESSKEYID, SECRETKEYID, host=domain, port=port)
     b = conn.get_bucket(bucket)
     
     obj = Key(b)
@@ -106,7 +107,7 @@ def mkdir(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     obj.set_metadata('s3-console-metadata-version', '2010-03-09')
     
 def rm(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
-    conn = S3Connection(ACCESSKEYID, SECRETKEYID, host="localhost.localdomain", port=8080, is_secure=False, calling_format=OrdinaryCallingFormat())
+    conn = S3Connection(ACCESSKEYID, SECRETKEYID, host=domain, port=port)
     b = conn.get_bucket(bucket)
     
     obj = Key(b)
@@ -114,7 +115,7 @@ def rm(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     obj.delete()
 
 def rmrf(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
-    tree = make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID, domain)
+    tree = make_fs_struct(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID)
     
     # find the child node
     treenode = tree.find_node(path)
@@ -149,7 +150,7 @@ def ls(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     return lsdata
     
 def lsrecurse(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
-    tree=make_fs_struct(bucket, path, ACCESSKEYID, SECRETKEYID)
+    tree=make_fs_struct(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID)
    
     directory = tree.find_node(path)
     
