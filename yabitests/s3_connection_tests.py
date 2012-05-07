@@ -1,6 +1,7 @@
 import unittest
 from support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, YABI_FE
 from fixture_helpers import admin
+from request_test_base import RequestTest
 import os
 import time
 import sys
@@ -24,7 +25,7 @@ from urllib import quote
 
 QUOTED_TEST_S3_SERVER = quote(TEST_S3_SERVER)
 
-class S3FileUploadTest(YabiTestCase, FileUtils):
+class S3FileUploadTest(RequestTest):
     @classmethod
     def setUpAdmin(self):
         #admin.create_tool_cksum()
@@ -35,26 +36,13 @@ class S3FileUploadTest(YabiTestCase, FileUtils):
         from yabiadmin.yabi import models
         #models.Tool.objects.get(name='cksum').delete()
 
-    def setUp(self):
-        YabiTestCase.setUp(self)
-        #FileUtils.setUp(self)
-
-    def tearDown(self):
-        YabiTestCase.tearDown(self)
-        #FileUtils.tearDown(self)
-
     def test_s3_files_list(self):
         import requests
         
-        # login
-        s = requests.session()
-        r = s.post(YABI_FE+"/login", data={'username':'demo','password':'demo'})
-        
-        self.assertTrue(r.status_code == 200, "Could not login to frontend. Frontend returned: %d"%(r.status_code))
-
-        r = s.get(YABI_FE+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_S3_SERVER) )
+        r = self.session.get(YABI_FE+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_S3_SERVER) )
 
         self.assertTrue(r.status_code==200, "Could not list S3 backend contents")
+        
         import json
         data = json.loads(r.text)
         self.assertTrue('/' in data)
@@ -67,23 +55,17 @@ class S3FileUploadTest(YabiTestCase, FileUtils):
         filename="test.txt"
         
         import requests
-        
-        # login
-        s = requests.session()
-        r = s.post(YABI_FE+"/login", data={'username':'demo','password':'demo'})
-        
-        self.assertTrue(r.status_code == 200, "Could not login to frontend. Frontend returned: %d"%(r.status_code))
-
+       
         # upload
         files = {'file': ("file.txt", open(__file__, 'rb'))}
-        r = s.post( url = YABI_FE+"/ws/fs/put?uri=%s"%(QUOTED_TEST_S3_SERVER),
+        r = self.session.post( url = YABI_FE+"/ws/fs/put?uri=%s"%(QUOTED_TEST_S3_SERVER),
                     files = files
                    )
         
         print r.status
         
 
-        r = s.get(YABI_FE+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_S3_SERVER))
+        r = self.session.get(YABI_FE+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_S3_SERVER))
 
         self.assertTrue(r.status_code==200, "Could not list S3 backend contents")
         import json
@@ -95,13 +77,7 @@ class S3FileUploadTest(YabiTestCase, FileUtils):
     def test_s3_files_deletion_non_existent(self):
         import requests
         
-        # login
-        s = requests.session()
-        r = s.post(YABI_FE+"/login", data={'username':'demo','password':'demo'})
-        
-        self.assertTrue(r.status_code == 200, "Could not login to frontend. Frontend returned: %d"%(r.status_code))
-
-        r = s.get(YABI_FE+"/ws/fs/rm?uri=%s/DONT_EXIST.dat"%(QUOTED_TEST_S3_SERVER))
+        r = self.session.get(YABI_FE+"/ws/fs/rm?uri=%s/DONT_EXIST.dat"%(QUOTED_TEST_S3_SERVER))
 
         self.assertTrue(r.status_code == 404, "Incorrect status code returned. Should be 404. Returns %d instead!"%r.status_code)
 
@@ -116,13 +92,7 @@ class S3FileUploadTest(YabiTestCase, FileUtils):
     def test_s3_mkdir(self):
         import requests
         
-        # login
-        s = requests.session()
-        r = s.post(YABI_FE+"/login", data={'username':'demo','password':'demo'})
-        
-        self.assertTrue(r.status_code == 200, "Could not login to frontend. Frontend returned: %d"%(r.status_code))
-
-        r = s.get(YABI_FE+"/ws/fs/mkdir?uri=%s/directory"%(QUOTED_TEST_S3_SERVER))
+        r = self.session.get(YABI_FE+"/ws/fs/mkdir?uri=%s/directory"%(QUOTED_TEST_S3_SERVER))
 
         #sys.stderr.write("status: %d\n"%r.status_code)
         #sys.stderr.write("headers: %s\n"%str(r.headers))
