@@ -68,6 +68,10 @@ Running the tests automatically on a test database
 
 If you would like to regularly run the tests on a test db, but then use the DB defined in your settings.py file, you could do the following.
 
+
+Designate a test DB
+^^^^^^^^^^^^^^^^^^^
+
 Decide which configuration would you like to use as a test DB. For example postgres_test.
 Select the designated config to run tests against:
 
@@ -77,6 +81,10 @@ If this worked the following command should display your chosen configuration:
 
     $ fab admin_selected_test_config
 
+
+Running the tests against the designated test DB
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Use the command 
 
     $ fab runtests
@@ -85,9 +93,73 @@ to run the tests.
 
 The runtests command will:
 
+    - run the Google Closure Linter against all the JavaScript in the project
     - kill all yabi servers (fab killservers)
-    - switch the Yabiadmin configuration to the special testdb (fab admin_activate_config testdb
+    - switch the Yabiadmin configuration to the special testdb (fab admin_activate_config testdb)
+    - recreate the test database from scratch
     - run all the yabi servers (fab runservers)
     - run all the tests (fab tests)
     - kill all yabi servers
     - deactivate the testdb configuration (ie. switches you back to your settings.py)
+
+Designate a test DB and running all the tests in one step
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+A quicker way to select a test DB and run all tests against it is to pass in the config as an argument to runtests:
+
+    $ fab runtests:postgres_test
+
+This will select postgres_test as your test DB and then run all the tests against it.
+
+From then on you can just run
+
+    $ fab runtests
+
+as long as you would like to run the tests against the same DB.
+
+
+Tasks used by runtests
+----------------------
+
+Some of the tasks used by the "fab runtests" command could be used on their during developement.
+
+Drop/create database
+^^^^^^^^^^^^^^^^^^^^
+
+The following commands will try to create/drop the database defined in your settings file.
+The commands issued are RDBMS specific, currently sqlite3, mysql and postgres are supported.
+
+In order for this to work the user defined in your setting has to have rights to drop and create databases.
+
+WARNING! This commands will operate on the currently active DB, so make sure that you know which DB you are running them against. Starting with
+
+    $ fab admin_active_config
+
+is probably good practice.
+
+    $ fab admin_dropdb
+
+will drop the currently active DB.
+
+    $ fab admin_createdb
+
+will create the currently active DB.
+
+    $ fab admin_recreatedb
+
+will drop and then create your active DB (same as "fab admin_dropdb admin_createdb")
+
+When you recreate the DB it will have no schema and initial data so you would normally want to follow a recreation with
+
+    $ fab admin_initdb
+
+this will create the schema and import the initial data into the DB.
+
+
+JSLint
+^^^^^^
+
+The tests will fail if our JavaScript isn't passing the Google Closure Linter tests. You can run the Linter against all our JavaScript by:
+
+    $ fab admin_jslint
+
