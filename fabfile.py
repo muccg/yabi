@@ -180,6 +180,7 @@ def _assert_test_config_is_selected():
 
 def runtests(config=None):
     '''Run all the YABI tests'''
+    admin_jslint()
     if config is None:
         _assert_test_config_is_selected()
     else:
