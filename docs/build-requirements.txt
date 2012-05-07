@@ -1,5 +1,5 @@
 #
-# Build requirements for Yabibe
+# Requirements for Yabitests
 #
 # To see what requirements your current virtualenv is using type:
 #
@@ -13,10 +13,4 @@
 #
 # http://www.pip-installer.org/en/latest/requirement-format.html
 #
-# used patched paramiko for fifos
-http://yabi.googlecode.com/files/paramiko-1.7.7.1-fifopatch.tar.gz
-Fabric==1.2.2
-http://ccg-python-build.googlecode.com/files/ccg-python-build-2.4.1.tar.gz
-virtualenv==1.6.4
-pycrypto>=1.9
-psutil
+Sphinx
