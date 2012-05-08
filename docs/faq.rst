@@ -6,6 +6,13 @@ Frequently Asked Questions
 Admin
 -----
 
+I've installed Yabi but when I try to login why do I see this error "Unable to create a new session key."?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This is most likely because you do not have caching set up and Django cannot write its session information to cache. If 
+you are running memcached caching have you started memcached? If you are using file based caching, is the cache directory
+writable and readable by Yabi?
+
 What backend should a file select tool use or why won't my file select run?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
