@@ -14,4 +14,5 @@
 # http://www.pip-installer.org/en/latest/requirement-format.html
 #
 gunicorn==0.13.4
+http://closure-linter.googlecode.com/files/closure_linter-latest.tar.gz
 -r base-requirements.txt

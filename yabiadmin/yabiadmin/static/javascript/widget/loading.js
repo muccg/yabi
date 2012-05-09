@@ -1,4 +1,6 @@
-YAHOO.namespace("ccgyabi.widget");
+YAHOO.namespace('ccgyabi.widget');
+
+
 
 /**
  * Constructs a new loading widget. This widget provides a simple overlay that
@@ -13,40 +15,43 @@ YAHOO.namespace("ccgyabi.widget");
  * @param {Element} container The container to attach the loading overlay to.
  */
 YAHOO.ccgyabi.widget.Loading = function(container) {
-    this.container = container;
+  this.container = container;
 
-    this.element = document.createElement("div");
-    this.element.className = "listingLoading";
+  this.element = document.createElement('div');
+  this.element.className = 'listingLoading';
 
-    this.image = document.createElement("img");
-    this.image.src = appURL + "static/images/largeLoading.gif";
+  this.image = document.createElement('img');
+  this.image.src = appURL + 'static/images/largeLoading.gif';
 
-    this.hide();
+  this.hide();
 
-    this.element.appendChild(this.image);
-    this.container.appendChild(this.element);
+  this.element.appendChild(this.image);
+  this.container.appendChild(this.element);
 };
+
 
 /**
  * Destroys the loading widget by removing it entirely from the DOM.
  *
- * @warning Don't call the {@link #hide} or {@link #show} methods after calling
- *          this method unless you like code blowing up.
+ * Warning Don't call the {@link #hide} or {@link #show} methods after calling
+ *         this method unless you like code blowing up.
  */
-YAHOO.ccgyabi.widget.Loading.prototype.destroy = function () {
-    this.container.removeChild(this.element);
+YAHOO.ccgyabi.widget.Loading.prototype.destroy = function() {
+  this.container.removeChild(this.element);
 };
+
 
 /**
  * Hides the loading widget.
  */
-YAHOO.ccgyabi.widget.Loading.prototype.hide = function () {
-    this.element.style.display = "none";
+YAHOO.ccgyabi.widget.Loading.prototype.hide = function() {
+  this.element.style.display = 'none';
 };
+
 
 /**
  * Shows the loading widget.
  */
-YAHOO.ccgyabi.widget.Loading.prototype.show = function () {
-    this.element.style.display = "block";
+YAHOO.ccgyabi.widget.Loading.prototype.show = function() {
+  this.element.style.display = 'block';
 };

@@ -165,6 +165,11 @@ def migrate():
     """
     local("python manage.py migrate")
 
+def jslint():
+    """
+    Runs Google Closure Linter on our JavaScript
+    """
+    local("gjslint --nojsdoc --strict -r static/javascript/ --exclude_directories lib")
 
 def runserver(bg=False):
     """
