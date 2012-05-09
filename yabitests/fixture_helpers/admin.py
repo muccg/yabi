@@ -207,7 +207,7 @@ def create_ssh_exec_backend(scheme="ssh", hostname="localhost.localdomain", path
             #raise
         #directory already exists... leave it
         
-    create_tool("hostname","hostname",path,backend_name='Test %s Backend'%scheme.upper(), fs_backend_name='Local Filesystem')
+    create_tool("hostname","hostname","/bin/hostname",backend_name='Test %s Backend'%scheme.upper(), fs_backend_name='Local Filesystem')
     add_tool_to_all_tools('hostname')
 
     tool = models.Tool.objects.get(name='hostname')

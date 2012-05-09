@@ -125,7 +125,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
         if config.config['execution']['logcommand']:
             print SCHEMA+" attempting submission command: "+qsub_submission_script
             
-        if config.config['execution']['logscript']:
+        if config.config['execution']['logscripts']:
             print SCHEMA+" submission script:"
             print script_string
         

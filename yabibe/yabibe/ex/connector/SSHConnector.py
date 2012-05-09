@@ -37,7 +37,7 @@ ENV_CHECK = []
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "ssh"
 
-DEBUG = False
+DEBUG = True
 
 from twistedweb2 import http, responsecode, http_headers, stream
 
@@ -50,6 +50,8 @@ from utils.protocol import ssh
 
 from conf import config
 
+from SubmissionTemplate import make_script
+
 sshauth = ssh.SSHAuth.SSHAuth()
 
 class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
@@ -59,13 +61,15 @@ class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
         configdir = config.config['backend']['certificates']
         ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
     
-    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
         # preprocess some stuff
         modules = [] if not module else [X.strip() for X in module.split(",")]
         
         client_stream = stream.ProducerStream()
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
         gevent.sleep()
+        
+        script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue, stdout, stderr)    
         
         try:
             if DEBUG:
@@ -77,7 +81,7 @@ class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
             gevent.sleep()
             
             if not creds:
-                creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, "/")
+                creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, "/", credtype="exec")
         
             usercert = self.save_identity(creds['key'])
             
@@ -85,7 +89,7 @@ class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
             if config.config['execution']['logcommand']:
                 print SCHEMA+" running command: "+command
                 
-            if config.config['execution']['logscript']:
+            if config.config['execution']['logscripts']:
                 print SCHEMA+" submission script:"
                 print script_string
                 
@@ -100,7 +104,7 @@ class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
                 print "stderr:",stderr
                 print "modules",modules
                 print "password:",creds['password']
-            pp = ssh.Run.run(usercert,command,username,host,working,port="22",stdout=stdout,stderr=stderr,password=creds['password'], modules=modules)
+            pp = ssh.Run.run(usercert,script_string,username,host,working,port="22",stdout=stdout,stderr=stderr,password=creds['password'], modules=modules)
             client_stream.write("Running\n")
             gevent.sleep()
             

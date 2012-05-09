@@ -38,7 +38,7 @@ from BaseShell import BaseShell, BaseShellProcessProtocol
 
 from conf import config
 
-DEBUG = False
+DEBUG = True
 
 class SSHExecProcessProtocolParamiko(BaseShellProcessProtocol):
     def __init__(self, stdin_data=None):
@@ -85,9 +85,9 @@ class SSHRun(BaseShell):
             
         # hande log setting
         if config.config['execution']['logcommand']:
-            print "ssh running command: "+command
+            print "ssh running command: "+str(command)
             
-        if config.config['execution']['logscript']:
+        if config.config['execution']['logscripts']:
             print "ssh attempting remote command: "+remote_command
             
             

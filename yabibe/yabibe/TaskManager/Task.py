@@ -39,7 +39,7 @@ from TaskTools import Copy, Ln, LCopy, RCopy, SmartCopy, Sleep, Log, Status, Exe
 import traceback
 from Exceptions import BlockingException
 
-DEBUG = False
+DEBUG = True
 
 class TaskFailed(Exception):
     pass
