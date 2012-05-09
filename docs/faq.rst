@@ -3,6 +3,16 @@
 Frequently Asked Questions
 ==========================
 
+Admin
+-----
+
+I've installed Yabi but when I try to login why do I see this error "Unable to create a new session key."?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This is most likely because you do not have caching set up and Django cannot write its session information to cache. If 
+you are running memcached caching have you started memcached? If you are using file based caching, is the cache directory
+writable and readable by Yabi?
+
 What backend should a file select tool use or why won't my file select run?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -72,3 +82,41 @@ I seem to have SSH backend setup but am getting nothing, why?
 On the box running Yabi, as the user Yabi, try SSHing to the backend resource. When asked the question "The authenticity of host...", 
 answer Yes to add the host to the list of known_hosts. You don't actually have to connect, you just need to ensure the host is in known_hosts. Now
 try connecting through Yabi again. 
+
+
+Backend
+-------
+
+Why do I get compile errors from gevent when setting up the backend?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you are getting errors that look like this:
+
+::
+
+    gevent/core.c:15914: warning: implicit declaration of function 'evhttp_accept_socket'
+    gevent/core.c: At top level:
+    gevent/core.c:21272: error: expected ')' before 'val'
+    error: command 'gcc' failed with exit status 1
+
+Then you need to install libevent and libevent-dev before trying to install Yabi. Yabi backend uses gevent which depends on libevent.
+
+
+Why am I getting pyOpenSSL errors when running the backend?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you are getting this error:
+
+::
+
+    from OpenSSL import crypto 
+    exceptions.ImportError: cannot import name crypto 
+
+You are most likely running on Python 2.7. The version of pyOpenSSL that we are including works with Python 2.6. To fix this you just need to
+install the latest version of pyOpenSSL into the backend virtualenv:
+
+::
+
+    cd yabibe/yabibe 
+    source virt_yabibe/bin/activate 
+    pip install -U pyOpenSSL 
