@@ -170,7 +170,10 @@ def create_ssh_exec_backend(scheme="ssh", hostname="localhost.localdomain", path
     from yabiadmin.yabi import models
     
     if submission == None:
-        submission = "#!/bin/sh\n\n${command}\n\n"
+        submission = """#!/bin/bash
+cd ${working}
+${command} 1>${stdout} 2>${stderr}
+"""
     
     backend = models.Backend.objects.create(
         name='Test %s Backend'%scheme.upper(),
@@ -183,8 +186,8 @@ def create_ssh_exec_backend(scheme="ssh", hostname="localhost.localdomain", path
     )
     cred = models.Credential.objects.create( 
         description='Test %s Credential'%scheme.upper(), 
-        username='sshuser',
-        password='sshpass',
+        username='user',
+        password='pass',
         cert='',
         key='',
         user=models.User.objects.get(name="demo")
@@ -233,8 +236,8 @@ def destroy_ssh_exec_backend(scheme="ssh", hostname="localhost.localdomain", pat
     ).delete()
     models.Credential.objects.filter( 
         description='Test %s Credential'%scheme.upper(), 
-        username='sshuser',
-        password='sshpass',
+        username='user',
+        password='pass',
         cert='',
         key='',
         user=models.User.objects.get(name="demo")
