@@ -21,6 +21,7 @@ def main():
     debug = False
     yabi = None
     stagein = None
+    exit_code = 0
     try:
         argparser = ArgumentParser(add_help=False)
         argparser.add_argument("--yabi-debug", action='store_true', help="Run in debug mode")
@@ -53,9 +54,12 @@ def main():
 
     except Exception, e:
         print_error(e, debug)
+        exit_code = 1
     finally:
         if yabi is not None:
             yabi.session_finished()
+            
+    exit(exit_code)
 
 def print_help():
     help_file = os.path.join(os.path.dirname(__file__), 'help/main')
