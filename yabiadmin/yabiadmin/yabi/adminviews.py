@@ -27,6 +27,7 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import sys
+import psutil
 from urllib import quote
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
@@ -500,12 +501,12 @@ def test_exception(request):
 @staff_member_required
 def status(request):
 
-    import psi.process
-    celery_procs = []
-    for p in psi.process.ProcessTable().values():
-        if 'celery' in p.command.lower():
-            celery_procs.append(p)
+    def anyfn(fn, iterable):
+        for e in iterable:
+            if fn(e): return True
+        return False
 
+    celery_procs = [p for p in psutil.process_iter() if anyfn(lambda arg: 'celery' in arg.lower(), p.cmdline)]
 
     render_data = {
         'request':request,
