@@ -79,7 +79,7 @@ def main():
         ssh = ssh_connect_login(options, known_hosts)
         if options.execute:
             exit_status = execute(ssh, options)
-        else if options.script:
+        elif options.script:
             exit_status = execute(ssh, options, ex="bash -c \"%s\""%(remote_script))
             remote_unlink(options, known_hosts, remote_script)
     ssh.close()
