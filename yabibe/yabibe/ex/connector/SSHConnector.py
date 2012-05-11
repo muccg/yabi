@@ -37,7 +37,7 @@ ENV_CHECK = []
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "ssh"
 
-DEBUG = True
+DEBUG = False
 
 from twistedweb2 import http, responsecode, http_headers, stream
 
