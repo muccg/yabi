@@ -40,7 +40,9 @@ KNOWN_HOSTS_FILE = "~/.ssh/known_hosts"
 
 CHECK_KNOWN_HOSTS = False
 
-del os.environ['SSH_AUTH_SOCK']
+#disable any SSH agent that was lingering on the terminal when this is run
+if 'SSH_AUTH_SOCK' in os.environ:
+    del os.environ['SSH_AUTH_SOCK']
 
 def main():
     options, arguments = parse_args()
