@@ -65,16 +65,15 @@ def main():
 
     # execute our remote command joining pipes with present shell
     # connect and authenticate
+    exit_status = 0
     if options.listfolder:
         ssh = transport_connect_login(options, known_hosts)
         output = list_folder(ssh, options)
         print json.dumps(output)
-        exit_status = 0
     elif options.listfolderrecurse:
         ssh = transport_connect_login(options, known_hosts)
         output = list_folder_recurse(ssh, options)
         print json.dumps(output)
-        exit_status = 0
     else:
         ssh = ssh_connect_login(options, known_hosts)
         if options.execute:
