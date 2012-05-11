@@ -3,20 +3,32 @@ import datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
-from django.core.management import call_command
-from django.db.utils import DatabaseError
-from south.db import db
 
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        try:
-            call_command("createcachetable", "yabi_cache")
-        except DatabaseError, e:
-            print "Cache table already exists."
+        
+        # Adding model 'HostKey'
+        db.create_table('yabi_hostkey', (
+            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
+            ('last_modified_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name='hostkey_modifiers', null=True, to=orm['auth.User'])),
+            ('last_modified_on', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, null=True, blank=True)),
+            ('created_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name='hostkey_creators', null=True, to=orm['auth.User'])),
+            ('created_on', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
+            ('backend', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['yabi.Backend'])),
+            ('key_type', self.gf('django.db.models.fields.CharField')(max_length=32)),
+            ('message', self.gf('django.db.models.fields.CharField')(max_length=1024)),
+            ('data', self.gf('django.db.models.fields.CharField')(max_length=16384)),
+            ('allowed', self.gf('django.db.models.fields.BooleanField')(default=False)),
+        ))
+        db.send_create_signal('yabi', ['HostKey'])
+
 
     def backwards(self, orm):
-        db.delete_table('yabi_cache', cascade=True)
+        
+        # Deleting model 'HostKey'
+        db.delete_table('yabi_hostkey')
+
 
     models = {
         'auth.group': {
@@ -122,6 +134,19 @@ class Migration(SchemaMigration):
             'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'filetype_modifiers'", 'null': 'True', 'to': "orm['auth.User']"}),
             'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'})
+        },
+        'yabi.hostkey': {
+            'Meta': {'object_name': 'HostKey'},
+            'allowed': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'backend': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['yabi.Backend']"}),
+            'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'hostkey_creators'", 'null': 'True', 'to': "orm['auth.User']"}),
+            'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'data': ('django.db.models.fields.CharField', [], {'max_length': '16384'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'key_type': ('django.db.models.fields.CharField', [], {'max_length': '32'}),
+            'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'hostkey_modifiers'", 'null': 'True', 'to': "orm['auth.User']"}),
+            'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
+            'message': ('django.db.models.fields.CharField', [], {'max_length': '1024'})
         },
         'yabi.parameterswitchuse': {
             'Meta': {'object_name': 'ParameterSwitchUse'},
@@ -238,6 +263,5 @@ class Migration(SchemaMigration):
             'user_option_access': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
         }
     }
-
 
     complete_apps = ['yabi']

@@ -744,7 +744,26 @@ class Backend(Base):
         return '<a href="%s">View</a>' % self.get_absolute_url()
     backend_summary_link.short_description = 'Summary'
     backend_summary_link.allow_tags = True
-
+    
+class HostKey(Base):
+    backend = models.ForeignKey(Backend)
+    key_type = models.CharField(max_length=32, blank=False, null=False)
+    message = models.CharField(max_length=1024, blank=False, null=False)                # some SSH handshakes send a SSH "message" associated with the key
+    data = models.CharField(max_length=16384, blank=False, null=False)    
+    allowed = models.BooleanField(default=False)
+    
+    def __unicode__(self):
+        return "%s hostkey for %s"%(self.key_type, self.backend.hostname)
+        
+    def make_hash(self):
+        """return the contents of this hostkey as a python dictionary"""
+        return {
+            'type':self.key_type,
+            'message':self.message,
+            'data':self.data,
+            'allowed':self.allowed
+        }
+            
 class BackendCredential(Base):
     class Meta:
         verbose_name_plural = "Backend Credentials"

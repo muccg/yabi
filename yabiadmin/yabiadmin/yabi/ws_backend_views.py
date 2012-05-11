@@ -37,7 +37,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
-from yabiadmin.yabi.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential
+from yabiadmin.yabi.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential, HostKey
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from yabiadmin.yabiengine import backendhelper
 from yabiadmin.yabiengine.urihelper import uriparse
@@ -87,6 +87,19 @@ def exec_credential_uri(request, yabiusername):
     except DecryptedCredentialNotAvailable, dcna:
         return JsonMessageResponseServerError("Decrypted Credential Not Available: %s" % dcna, status=503)
 
+@hmac_authenticated
+def get_hostkeys(request):
+    if 'uri' not in request.REQUEST:
+        return HttpResponse("Request must contain parameter 'uri' in the GET or POST parameters.")
+        
+    uri = request.REQUEST['uri']
+    logger.debug('uri: %s'%(uri))
+    
+    host_keys = backendhelper.get_hostkeys_by_uri(uri).filter(allowed=True)
+    
+    data = [key.make_hash() for key in host_keys]
+    return json.dumps(data)
+        
 def backend_connection_limit(request,scheme,hostname):
     filt = Q(scheme=scheme) & Q(hostname=hostname)
     if 'port' in request.REQUEST:

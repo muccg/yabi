@@ -62,6 +62,17 @@ class BackendStatusCodeError(Exception):
 import logging
 logger = logging.getLogger(__name__)
   
+def get_backend_by_uri(uri):
+    """
+    Looks up a backend object purely by uri. Ignored username. Thus diesnt consider credentials.
+    Just pure hostname/portnumber. Used by HostKey system for find what hostkeys are allowed
+    """
+    schema, rest = uriparse(uri)
+    
+    return Backend.objects.filter(scheme=schema, hostname=uri.hostname, port=uri.port)
+    
+def get_hostkeys_by_uri(uri):
+    return Backend.objects.filter(backend__in=get_backend_by_uri(uri))
 
 def get_exec_backendcredential_for_uri(yabiusername, uri):
     """
