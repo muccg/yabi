@@ -78,3 +78,26 @@ Yabi Backend is a backend server daemon written in which makes use of the Twiste
 and is **not** intended to be network accessible by users.
 
 The Yabi Backend server is responsible for the communication with individual data and compute resources.
+
+Licence
+-------
+GNU GPL v3 for non-commercial use only. Please contact the Centre for Comparative Genomics if you require a licence other than GPL for legal or commercial reasons.
+
+Authors
+-------
+Yabi is developed at the `Center for Comparative Genomics <http://ccg.murdoch.edu.au>`_ at `Murdoch University <http://www.murdoch.edu.au>`_ under the direction 
+of Professor Matthew Bellgard. Developers working on the project are Adam Hunter, Andrew Macgregor, Crispin Wellington and Tamas Szabo.
+
+Acknowledgements
+----------------
+We would like to acknowledge the valuable contributions from the following groups and individuals:
+
+ - Dr Paula Moolhuijzen, Adam Harvey, Nick Takayama, David Schibeci, Mark O'Shea and Brett Chapman, Centre for Comparative Genomics (CCG).
+ - Dr Cas Simons, Pierre-Alain Chaumeil, Nick Rhodes, Queensland Facility for Advanced Bioinformatics (QFAB)
+ - Professor Andreas Wicenec, Research Associate Professor Kevin Vinsen, International Centre for Radio Astronomy Research (ICRAR)
+ - Australian Research Collaboration Service
+ - Australian National Data Service
+ - Bioplatforms Australia
+ - National Collaborative Research Infrastructure Strategy Program
+ - Education Investment Fund Super Science Initiative
+ - iVEC
