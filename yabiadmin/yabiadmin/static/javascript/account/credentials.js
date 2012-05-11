@@ -30,29 +30,37 @@ YabiAccountCredentials.prototype.createList = function(id) {
   this.list = new RadioList(container);
   this.list.list.className += ' credentials';
 
-  var callback = {
-    success: function(o) {
-      var credentials = YAHOO.lang.JSON.parse(o.responseText);
+  Y.use('*', function(Y) {
+    var callback = {
+      success: function(trans_id, o) {
+        var credentials;
 
-      for (var i = 0; i < credentials.length; i++) {
-        var credential = new YabiCredential(self, credentials[i]);
-        self.credentials.push(credential);
+        credentials = Y.JSON.parse(o.responseText);
 
-        if (id && credentials[i].id == id) {
-          self.list.selectItem(credential.item);
+        for (var i = 0; i < credentials.length; i++) {
+          var credential = new YabiCredential(self, credentials[i]);
+          self.credentials.push(credential);
+
+          if (id && credentials[i].id == id) {
+            self.list.selectItem(credential.item);
+          }
         }
+
+        loading.hide();
+      },
+      failure: function(trans_id, o) {
+        YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
+        loading.hide();
       }
+    };
 
-      loading.hide();
-    },
-    failure: function(o) {
-      YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
-      loading.hide();
-    }
-  };
+    Y.on('io:success', callback.success, Y);
+    Y.on('io:failure', callback.failure, Y);
 
-  connection = YAHOO.util.Connect.asyncRequest(
-      'GET', appURL + 'ws/account/credential', callback);
+    Y.io(appURL + 'ws/account/credential');
+  });
+  
+
 };
 
 YabiAccountCredentials.prototype.destroyList = function() {
@@ -131,9 +139,10 @@ YabiCredential.prototype.createForm = function() {
   );
 
   // Hide the confirm password box until the password is actually changed.
-  var form_select = this.form.querySelector;
-  var confirmPasswordContainer = form_select('.confirm-password-container');
-  var confirmPasswordInput = form_select('.password-container input');
+  var confirmPasswordContainer = this.form.querySelector(
+                                     '.confirm-password-container');
+  var confirmPasswordInput = this.form.querySelector(
+                                     '.password-container input');
   confirmPasswordContainer.style.display = 'none';
 
   var showConfirmPassword = function(e) {

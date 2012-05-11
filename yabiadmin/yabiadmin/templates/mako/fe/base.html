@@ -74,12 +74,15 @@ ${self.yui("element/element-beta")}
     <script type="text/javascript" src="${h.url('/static/javascript/YabiDebug.js?20101201')}"></script>
 % endif
 
+<script src="http://yui.yahooapis.com/3.5.1/build/yui/yui-min.js"></script>
+
 <script type="text/javascript">
     YAHOO.namespace("ccgyabi");
     var appURL = "${h.url('/')}";
 % if request:
     YAHOO.ccgyabi.username = '${request.user.username}';
 % endif
+    var Y = YUI().use('node', 'event', 'io-form', 'json-parse', function(Y) {});
 </script>
 
 <script type="text/javascript" src="${h.url('/static/javascript/lib/fbd/fbd.js')}"></script>

@@ -43,6 +43,18 @@ RadioList.prototype.createItem = function(label) {
   this.items.push(item);
   this.list.appendChild(item.element);
 
+  Y.use('*', function(Y) {
+    var node = Y.one(item.element);
+    node.on('click', function() {
+      if (item.selected) {
+        item.deselect();
+      }
+      else {
+        self.selectItem(item);
+      }
+    });
+  });
+/*
   YAHOO.util.Event.addListener(item.element, 'click', function() {
     if (item.selected) {
       item.deselect();
@@ -51,10 +63,10 @@ RadioList.prototype.createItem = function(label) {
       self.selectItem(item);
     }
   });
+*/
 
   return item;
 };
-
 
 /**
  * Destroys the radio list and removes it from the DOM.
