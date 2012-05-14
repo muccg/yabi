@@ -54,10 +54,7 @@ YabiAccountCredentials.prototype.createList = function(id) {
       }
     };
 
-    Y.on('io:success', callback.success, Y);
-    Y.on('io:failure', callback.failure, Y);
-
-    Y.io(appURL + 'ws/account/credential');
+    Y.io(appURL + 'ws/account/credential', {on: callback});
   });
   
 
@@ -297,10 +294,9 @@ YabiCredential.prototype.save = function() {
 
     var cfg = {
       method: 'POST',
-      data: data
+      data: data,
+      on: callback
     };
-    Y.once('io:success', callback.success, Y);
-    Y.once('io:failure', callback.failure, Y);
 
     var request = Y.io(appURL + 'ws/account/credential/' + this.credential.id, cfg);
 

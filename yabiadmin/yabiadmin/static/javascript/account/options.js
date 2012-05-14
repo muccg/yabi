@@ -90,10 +90,9 @@ var YabiAccountPassword = function(options) {
 
             var cfg = {
               method: 'POST',
-              form: { id: self.container.querySelector('form') }
+              form: { id: self.container.querySelector('form') },
+              on: callback
             };
-            Y.on('io:success', callback.success, Y);
-            Y.on('io:failure', callback.failure, Y);
 
             var request = Y.io(appURL + 'account/password', cfg);
 
