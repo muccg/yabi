@@ -399,3 +399,8 @@ def status_page(request):
 
     return HttpResponse('Status OK')
 
+def handler404(request):
+    return render_to_response('404.html', {'h':webhelpers})
+
+def handler500(request):
+    return render_to_response('500.html', {'h':webhelpers})
