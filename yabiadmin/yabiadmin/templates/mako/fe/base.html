@@ -82,7 +82,7 @@ ${self.yui("element/element-beta")}
 % if request:
     YAHOO.ccgyabi.username = '${request.user.username}';
 % endif
-    var Y = YUI().use('node', 'event', 'io-form', 'json-parse', function(Y) {});
+    var Y = YUI().use('node', 'event', 'io-form', 'json-parse', 'anim', function(Y) {});
 </script>
 
 <script type="text/javascript" src="${h.url('/static/javascript/lib/fbd/fbd.js')}"></script>
