@@ -52,7 +52,8 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
     'django.middleware.doc.XViewMiddleware',
-    'ccg.middleware.ssl.SSLRedirect'
+    'ccg.middleware.ssl.SSLRedirect',
+    'django.contrib.messages.middleware.MessageMiddleware'    
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -63,6 +64,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.staticfiles',
+    'django.contrib.messages',
     'yabiadmin.yabifeapp',
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',

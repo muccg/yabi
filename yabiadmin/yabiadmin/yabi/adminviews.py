@@ -44,6 +44,7 @@ from django.conf import settings
 from django import forms
 from django.forms.util import ErrorList
 from django.views.debug import get_safe_settings
+from django.contrib import messages
 
 import logging
 logger = logging.getLogger(__name__)
@@ -447,8 +448,7 @@ def duplicate_credential(request):
 
         # bail early if canceled
         if 'button' in request.POST and request.POST['button'] == "Cancel":
-            message = "No changes made."
-            request.user.message_set.create(message=message)
+            messages.info(request, "No changes made.")
             return HttpResponseRedirect(webhelpers.url("/admin/yabi/credential/?ids=%s" % (request.POST['ids'])))
 
         ids = [int(X) for X in request.POST.get('ids', '').split(',')]     
@@ -481,10 +481,21 @@ def duplicate_credential(request):
                     # failed decrypt. not saved.
                     fail += 1
 
-        msg = "%s credential%s successful. %s credential%s failed." %   (success, "s" if success != 1 else "", fail, "s" if fail != 1 else "")           
+        msg = "%s credential%s successful. %s credential%s failed." %   (success, "s" if success != 1 else "", fail, "s" if fail != 1 else "")
 
-        if success or fail:
-            request.user.message_set.create(message=msg)
+        # default is all successful
+        level = messages.SUCCESS
+
+        # no successes
+        if fail and not success:
+            level = messages.ERROR
+
+        # some success
+        if fail and success:
+            level = messages.WARNING
+
+        messages.add_message(request, level, msg)
+
 
         return HttpResponseRedirect(webhelpers.url("/admin/yabi/credential/?ids=%s" % (request.POST['ids'])))
 
