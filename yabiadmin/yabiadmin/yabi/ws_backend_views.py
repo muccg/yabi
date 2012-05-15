@@ -99,6 +99,15 @@ def get_hostkeys(request):
     
     data = [key.make_hash() for key in host_keys]
     return json.dumps(data)
+    
+@hmac_authenticated
+def report_denied_hostkey(request):
+    if 'uri' not in request.REQUEST:
+        return HttpResponse("Request must contain parameter 'uri' in the GET or POST parameters.")
+    
+    uri = request.REQUEST['uri']
+    logger.debug('uri: %s'%(uri))
+    
         
 def backend_connection_limit(request,scheme,hostname):
     filt = Q(scheme=scheme) & Q(hostname=hostname)
