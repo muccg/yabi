@@ -38,7 +38,7 @@ from BaseShell import BaseShell, BaseShellProcessProtocol
 
 from conf import config
 
-DEBUG = True
+DEBUG = False
 
 class SSHExecProcessProtocolParamiko(BaseShellProcessProtocol):
     def __init__(self, stdin_data=None):

@@ -41,7 +41,7 @@ def eprint(text):
     sys.stderr.write(text)
     sys.stderr.write("\n")
 
-DEBUG = True
+DEBUG = False
 
 KB = 1024
 MB = 1024 * KB

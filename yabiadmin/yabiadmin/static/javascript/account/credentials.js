@@ -131,9 +131,10 @@ YabiCredential.prototype.createForm = function() {
   );
 
   // Hide the confirm password box until the password is actually changed.
-  var form_select = this.form.querySelector;
-  var confirmPasswordContainer = form_select('.confirm-password-container');
-  var confirmPasswordInput = form_select('.password-container input');
+  var confirmPasswordContainer = this.form.querySelector(
+      '.confirm-password-container');
+  var confirmPasswordInput = this.form.querySelector(
+      '.password-container input');
   confirmPasswordContainer.style.display = 'none';
 
   var showConfirmPassword = function(e) {

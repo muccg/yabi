@@ -40,7 +40,9 @@ KNOWN_HOSTS_FILE = "~/.ssh/known_hosts"
 
 CHECK_KNOWN_HOSTS = False
 
-del os.environ['SSH_AUTH_SOCK']
+#disable any SSH agent that was lingering on the terminal when this is run
+if 'SSH_AUTH_SOCK' in os.environ:
+    del os.environ['SSH_AUTH_SOCK']
 
 def main():
     options, arguments = parse_args()
@@ -63,21 +65,20 @@ def main():
 
     # execute our remote command joining pipes with present shell
     # connect and authenticate
+    exit_status = 0
     if options.listfolder:
         ssh = transport_connect_login(options, known_hosts)
         output = list_folder(ssh, options)
         print json.dumps(output)
-        exit_status = 0
     elif options.listfolderrecurse:
         ssh = transport_connect_login(options, known_hosts)
         output = list_folder_recurse(ssh, options)
         print json.dumps(output)
-        exit_status = 0
     else:
         ssh = ssh_connect_login(options, known_hosts)
         if options.execute:
             exit_status = execute(ssh, options)
-        else:
+        elif options.script:
             exit_status = execute(ssh, options, ex="bash -c \"%s\""%(remote_script))
             remote_unlink(options, known_hosts, remote_script)
     ssh.close()
