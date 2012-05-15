@@ -54,16 +54,6 @@ RadioList.prototype.createItem = function(label) {
       }
     });
   });
-/*
-  YAHOO.util.Event.addListener(item.element, 'click', function() {
-    if (item.selected) {
-      item.deselect();
-    }
-    else {
-      self.selectItem(item);
-    }
-  });
-*/
 
   return item;
 };
