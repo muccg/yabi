@@ -32,6 +32,7 @@ setproctitle.setproctitle("yabi-ssh startup...")
 
 import paramiko
 import os, sys, select, stat, time, json, uuid
+import requests
 
 # read() blocksize
 BLOCK_SIZE = 512
@@ -43,6 +44,9 @@ CHECK_KNOWN_HOSTS = False
 #disable any SSH agent that was lingering on the terminal when this is run
 if 'SSH_AUTH_SOCK' in os.environ:
     del os.environ['SSH_AUTH_SOCK']
+    
+# get the yabiadmin url to connect to if its present
+yabiadmin = os.environ.get('YABIADMIN',None)
 
 def main():
     options, arguments = parse_args()
@@ -93,6 +97,22 @@ def load_known_hosts(filename):
     """Load the known hosts file into the paramiko object"""
     return paramiko.hostkeys.HostKeys(filename)
 
+def load_known_hosts_from_admin():
+    """Contact yabiadmin and get the known hosts from it"""
+    url = yabiadmin + "gethostkeys"
+    r = requests.get( url )
+    
+def add_rejected_key_to_admin(hostkey, hostname, port):
+    """send the rejected key to yabiadmin"""
+    url = yabiadmin + "hostkey"
+    r = requests.post( url,
+        data = {
+            'key': str(hostkey),
+            'hostname': hostname,
+            'port':port
+        }
+    )
+    
 def parse_args():
     from optparse import OptionParser
     parser = OptionParser()

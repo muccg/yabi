@@ -68,8 +68,13 @@ def get_backend_by_uri(uri):
     Just pure hostname/portnumber. Used by HostKey system for find what hostkeys are allowed
     """
     schema, rest = uriparse(uri)
+    netloc = rest.netloc
+    if ':' in netloc:
+        host,port = netloc.split(':')
+    else:
+        host,port = netloc, None
     
-    return Backend.objects.filter(scheme=schema, hostname=uri.hostname, port=uri.port)
+    return Backend.objects.filter(scheme=schema, hostname=host, port=port)
     
 def get_hostkeys_by_uri(uri):
     return Backend.objects.filter(backend__in=get_backend_by_uri(uri))
