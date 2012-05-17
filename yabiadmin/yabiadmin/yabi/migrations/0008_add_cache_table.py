@@ -10,10 +10,17 @@ from south.db import db
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+
+
+        db.commit_transaction()     # Commit the first transaction
+
         try:
             call_command("createcachetable", "yabi_cache")
         except DatabaseError, e:
             print "Cache table already exists."
+
+        db.start_transaction()      # Start the second, committed on completion
+
 
     def backwards(self, orm):
         db.delete_table('yabi_cache', cascade=True)
