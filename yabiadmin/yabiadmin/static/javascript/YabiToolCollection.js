@@ -132,17 +132,18 @@ YabiToolCollection.prototype.solidify = function(obj) {
  *
  */
 YabiToolCollection.prototype.hydrate = function() {
-  var baseURL = appURL + 'ws/menu/';
+  var self = this;
+  var url = appURL + 'ws/menu/';
 
-  //load json
-  var jsUrl, jsCallback, jsTransaction;
-  jsUrl = baseURL;
-  jsCallback = {
-    success: this.hydrateResponse,
-    failure: this.hydrateResponse,
-    argument: [this] };
-  jsTransaction = YAHOO.util.Connect.asyncRequest('GET',
-      jsUrl, jsCallback, null);
+  Y.use('*', function(Y) {
+    var cfg = {
+      on: { complete: self.hydrateResponse },
+      arguments: self
+    };
+
+    Y.io(url, cfg);
+  });
+
 };
 
 YabiToolCollection.prototype.toString = function() {
@@ -260,15 +261,13 @@ YabiToolCollection.prototype.addCallback = function(e, obj) {
  * handle the response
  * parse json, store internally
  */
-YabiToolCollection.prototype.hydrateResponse = function(o) {
+YabiToolCollection.prototype.hydrateResponse = function(transId, o, target) {
   var i, json;
 
   try {
     json = o.responseText;
 
-    target = o.argument[0];
-
-    target.solidify(YAHOO.lang.JSON.parse(json));
+    target.solidify(Y.JSON.parse(json));
   } catch (e) {
     YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
     target.solidify({'menu': {'toolsets': []}});

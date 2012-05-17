@@ -6,7 +6,6 @@
     <script language="javascript">
         YAHOO.util.Event.onDOMReady(function() {
             initFileSelector();
-            initMessageManager();
         });
 
         var leftfileselector, rightfileselector, messageManager;
@@ -17,10 +16,6 @@
             
             document.getElementById("leftContainer").appendChild(leftfileselector.containerEl);
             document.getElementById("rightContainer").appendChild(rightfileselector.containerEl);
-        }
-
-        function initMessageManager() {
-            messageManager = new YabiMessageManager("fileOperationStatus");
         }
     </script>
 </%def>

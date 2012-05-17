@@ -6,6 +6,7 @@
  * or via upload
  */
 function YabiFileSelector(param, isBrowseMode, filePath, readOnly) {
+  var self = this;
   this.selectedFiles = [];
   this.pathComponents = [];
   this.browseListing = [];
@@ -38,7 +39,7 @@ function YabiFileSelector(param, isBrowseMode, filePath, readOnly) {
   homeImg.title = homeImg.alt;
   homeImg.src = appURL + 'static/images/home.png';
   this.homeEl.appendChild(homeImg);
-  YAHOO.util.Event.addListener(this.homeEl, 'click', this.goToRoot, this);
+  Y.one(self.homeEl).on('click', self.goToRoot, self);
   this.toplevelEl.appendChild(this.homeEl);
   this.browseEl.appendChild(this.toplevelEl);
 
@@ -62,9 +63,14 @@ function YabiFileSelector(param, isBrowseMode, filePath, readOnly) {
   this.upload = null;
 
   this.ddTarget = new YAHOO.util.DDTarget(this.fileListEl, 'files', {});
+  /*
+  this.ddTarget = new Y.DD.Drop({
+        node: this.fileListEl
+  });
+  */
 
   // update the browser
-  if (YAHOO.lang.isUndefined(filePath) || filePath === null) {
+  if (Y.Lang.isUndefined(filePath) || filePath === null) {
     filePath = new YabiSimpleFileValue([], '');
   }
   this.updateBrowser(filePath);
@@ -85,7 +91,7 @@ YabiFileSelector.prototype.updateBrowser = function(location) {
 
   //clear existing files
   while (this.fileListEl.firstChild) {
-    YAHOO.util.Event.purgeElement(this.fileListEl.firstChild);
+    Y.one(this.fileListEl.firstChild).detachAll();
     this.fileListEl.removeChild(this.fileListEl.firstChild);
   }
 
@@ -191,7 +197,7 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
 
   //clear existing files
   while (this.fileListEl.firstChild) {
-    YAHOO.util.Event.purgeElement(this.fileListEl.firstChild);
+    Y.one(this.fileListEl.firstChild).detachAll();
     this.fileListEl.removeChild(this.fileListEl.firstChild);
   }
 
@@ -217,15 +223,13 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
                       'directory')
       };
 
-      YAHOO.util.Event.addListener(fileEl, 'click',
-                                   this.expandCallback, invoker);
+      Y.one(fileEl).on('click', this.expandCallback, null, invoker);
 
       if (!this.isBrowseMode && this.pathComponents.length > 0) {
         selectEl = document.createElement('a');
         selectEl.appendChild(document.createTextNode('(select)'));
         fileEl.appendChild(selectEl);
-        YAHOO.util.Event.addListener(selectEl, 'click',
-                                     this.selectFileCallback, invoker);
+        Y.one(selectEl).on('click', this.selectFileCallback, null, invoker);
       } else if (this.isBrowseMode) {
         if (this.pathComponents.length > 0) {
           deleteEl = document.createElement('div');
@@ -236,8 +240,7 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
           deleteImg.src = appURL + 'static/images/delete.png';
           deleteEl.appendChild(deleteImg);
           fileEl.appendChild(deleteEl);
-          YAHOO.util.Event.addListener(deleteEl, 'click',
-                                       this.deleteRemoteFileCallback, invoker);
+          Y.one(deleteEl).on('click', this.deleteRemoteFileCallback, null, invoker);
         }
 
         tempDD = new YAHOO.util.DDProxy(fileEl, 'files', {isTarget: true});
@@ -307,15 +310,12 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
       previewEl.appendChild(previewImg);
 
       if (!this.isBrowseMode) {
-        YAHOO.util.Event.addListener(fileEl, 'click',
-                                     this.selectFileCallback, invoker);
+        Y.one(fileEl).on('click', this.selectFileCallback, null, invoker);
 
         fileEl.appendChild(previewEl);
-        YAHOO.util.Event.addListener(previewEl, 'click',
-                                     this.previewFileCallback, invoker);
+        Y.one(previewEl).on('click', this.previewFileCallback, null, invoker);
       } else {
-        YAHOO.util.Event.addListener(fileEl, 'click',
-                                     this.previewFileCallback, invoker);
+        Y.one(fileEl).on('click', this.previewFileCallback, null, invoker);
 
         deleteEl = document.createElement('div');
         deleteEl.className = 'deleteFile';
@@ -325,12 +325,11 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
         deleteImg.src = appURL + 'static/images/delete.png';
         deleteEl.appendChild(deleteImg);
         fileEl.appendChild(deleteEl);
-        YAHOO.util.Event.addListener(deleteEl, 'click',
-                                     this.deleteRemoteFileCallback, invoker);
+        Y.one(deleteEl).on('click', this.deleteRemoteFileCallback,
+            null, invoker);
 
         fileEl.appendChild(previewEl);
-        YAHOO.util.Event.addListener(previewEl, 'click',
-                                     this.previewFileCallback, invoker);
+        Y.one(previewEl).on('click', this.previewFileCallback, null, invoker);
 
         downloadEl = document.createElement('div');
         downloadEl.className = 'download';
@@ -340,8 +339,7 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
         downloadImg.src = appURL + 'static/images/download.png';
         downloadEl.appendChild(downloadImg);
         fileEl.appendChild(downloadEl);
-        YAHOO.util.Event.addListener(downloadEl, 'click',
-                                     this.downloadFileCallback, invoker);
+        Y.one(downloadEl).on('click', this.downloadFileCallback, null, invoker);
 
         tempDD = new YAHOO.util.DDProxy(fileEl, 'files', {isTarget: false});
         tempDD.overCount = 0;
@@ -394,21 +392,11 @@ YabiFileSelector.prototype.handleDrop = function(src, dest,
     success: this.copyResponse,
     failure: function(o) {
       YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
-
-      if (!YAHOO.lang.isUndefined(messageManager)) {
-        messageManager.removeMessage(o);
-      }
     },
     argument: [destFileselector] };
   jsTransaction = YAHOO.util.Connect.asyncRequest('GET',
                                                   jsUrl, jsCallback, null);
-
-  if (!YAHOO.lang.isUndefined(messageManager)) {
-    messageManager.addMessage(jsTransaction,
-        'Copying ' + src + ' to ' + dest, 'fileOperationMessage');
-  }
-
-  // make copying spinner appear
+  //alert(src + ' -> ' + dest);
 };
 
 
@@ -426,7 +414,7 @@ YabiFileSelector.prototype.updateBreadcrumbs = function() {
   }
 
   if (this.rootEl.firstChild) {
-    YAHOO.util.Event.purgeElement(this.rootEl);
+    Y.one(this.rootEl).detachAll();
     this.rootEl.removeChild(this.rootEl.firstChild);
   }
 
@@ -454,7 +442,7 @@ YabiFileSelector.prototype.updateBreadcrumbs = function() {
       'object': new YabiSimpleFileValue(prevpath.slice(),
                                         this.pathComponents[index])};
 
-    YAHOO.util.Event.addListener(spanEl, 'click', this.expandCallback, invoker);
+    Y.one(spanEl).on('click', this.expandCallback, null, invoker);
 
     prevpath.push(this.pathComponents[index]);
   }
@@ -651,8 +639,7 @@ YabiFileSelector.prototype.renderSelectedFiles = function() {
     fileEl.appendChild(delEl);
 
     invoker = {'target': this, 'object': index};
-    YAHOO.util.Event.addListener(delEl, 'click',
-                                 this.unselectFileCallback, invoker);
+    Y.one(delEl).on('click', this.unselectFileCallback, null, invoker);
 
     wrapperEl.appendChild(fileEl);
 
@@ -701,7 +688,7 @@ YabiFileSelector.prototype.hydrate = function(path) {
  * humanReadableSizeFromBytes
  */
 YabiFileSelector.prototype.humanReadableSizeFromBytes = function(bytes) {
-  if (!YAHOO.lang.isNumber(bytes)) {
+  if (!Y.Lang.isNumber(bytes)) {
     return bytes;
   }
 
@@ -743,29 +730,23 @@ YabiFileSelector.prototype.goToRoot = function(e, target) {
 };
 
 YabiFileSelector.prototype.selectFileCallback = function(e, invoker) {
+  e.halt(true);
   var target = invoker.target;
   target.selectFile(invoker.object);
-
-  //prevent propagation from passing on to expand
-  YAHOO.util.Event.stopEvent(e);
 };
 
 YabiFileSelector.prototype.downloadFileCallback = function(e, invoker) {
+  e.halt(true);
   var target = invoker.target;
   target.downloadFile(invoker.object);
-
-  //prevent propagation from passing on to expand
-  YAHOO.util.Event.stopEvent(e);
 };
 
 YabiFileSelector.prototype.deleteRemoteFileCallback = function(e, invoker) {
+  e.halt(true);
   var target = invoker.target;
 
   //file deletion
   target.deleteRemoteFile(invoker.object);
-
-  //prevent propagation from passing on to expand
-  YAHOO.util.Event.stopEvent(e);
 };
 
 YabiFileSelector.prototype.unselectFileCallback = function(e, invoker) {
@@ -774,18 +755,15 @@ YabiFileSelector.prototype.unselectFileCallback = function(e, invoker) {
 };
 
 YabiFileSelector.prototype.expandCallback = function(e, invoker) {
+  e.halt(true);
   var target = invoker.target;
   target.updateBrowser(invoker.object);
-
-  //prevent propagation from passing on to selectFileCallback
-  YAHOO.util.Event.stopEvent(e);
 };
 
 YabiFileSelector.prototype.previewFileCallback = function(e, invoker) {
+  e.halt(true);
   var target = invoker.target;
   target.previewFile(invoker.object, invoker.topLevelIndex);
-
-  YAHOO.util.Event.stopEvent(e);
 };
 
 YabiFileSelector.prototype.deleteRemoteResponse = function(o) {
@@ -819,10 +797,6 @@ YabiFileSelector.prototype.copyResponse = function(o) {
 
   //invoke refresh on component
   target.updateBrowser(new YabiSimpleFileValue(target.pathComponents, ''));
-
-  if (!YAHOO.lang.isUndefined(messageManager)) {
-    messageManager.removeMessage(o);
-  }
 };
 
 // drag n drop
@@ -905,7 +879,7 @@ YabiFileSelectorPreview.prototype.createControlButton = function(className,
   if (onClick) {
     button.className += ' enabled';
 
-    YAHOO.util.Event.addListener(button, 'click', onClick);
+    Y.one(button).on('click', onClick);
   }
   else {
     button.className += ' disabled';
@@ -991,10 +965,9 @@ YabiFileSelectorPreview.prototype.createIFrame = function() {
   this.iframeEl.frameBorder = 0;
   this.iframeEl.src = this.uri;
 
-  YAHOO.util.Event.addListener(this.iframeEl, 'load', function(e) {
+  Y.one(this.iframeEl).on('load', function(e) {
     self.loadCallback();
-  });
-
+  }, self);
   container.appendChild(this.iframeEl);
   this.previewEl.appendChild(container);
 };
@@ -1026,14 +999,16 @@ YabiFileSelectorPreview.prototype.loadCallback = function() {
   this.iframeEl.className = '';
 
   var callbacks = {
-    success: function(o) {
+    success: function(transId, o) {
       self.metadataCallback(o);
     },
-    failure: YAHOO.ccgyabi.widget.YabiMessage.handleResponse
+    failure: function(transId, o) {
+      YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
+    }
   };
 
   var url = appURL + 'preview/metadata?uri=' + escape(this.file.toString());
-  YAHOO.util.Connect.asyncRequest('GET', url, callbacks);
+  Y.io(url, { on: callbacks });
 };
 
 
@@ -1043,7 +1018,7 @@ YabiFileSelectorPreview.prototype.loadCallback = function() {
  * Handler called when preview metadata is available.
  */
 YabiFileSelectorPreview.prototype.metadataCallback = function(o) {
-  var metadata = YAHOO.lang.JSON.parse(o.responseText);
+  var metadata = Y.JSON.parse(o.responseText);
 
   var span = document.createElement('span');
   span.className = 'fileSelectorPreviewMetadata';
