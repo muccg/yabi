@@ -95,7 +95,7 @@ class Arg(object):
 
 class SwitchFilename(object):
     """represents the filename that the render() was run with. It is at template time, unknown. It is filled in with render"""
-    def __init__(self,default="unkown",template=None, source_switch=None, extension=None):
+    def __init__(self,default="unknown",template=None, source_switch=None, extension=None):
         """template is a fucntion to call with the filename, and the new filename is returned"""
         self.filename = default
         self.template = template
