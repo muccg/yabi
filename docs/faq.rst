@@ -87,6 +87,18 @@ try connecting through Yabi again.
 Backend
 -------
 
+How do I know if the backend is running?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+If you can browse files in the Files tab of Yabi then the backend is running. If you are still not sure then visit the url 
+for the backend i.e. http://127.0.0.1:9001/ and you should see:
+
+::
+
+    Twisted Yabi Core: 0.2
+
+NB: If you have set a different port in the yabi.conf file for the backend the url will be different.
+
+
 Why do I get compile errors from gevent when setting up the backend?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -120,3 +132,4 @@ install the latest version of pyOpenSSL into the backend virtualenv:
     cd yabibe/yabibe 
     source virt_yabibe/bin/activate 
     pip install -U pyOpenSSL 
+

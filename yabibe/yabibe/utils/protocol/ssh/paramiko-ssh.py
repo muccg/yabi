@@ -31,12 +31,18 @@ import setproctitle
 setproctitle.setproctitle("yabi-ssh startup...")
 
 import paramiko
-import os, sys, select, stat, time, json
+import os, sys, select, stat, time, json, uuid
 
 # read() blocksize
 BLOCK_SIZE = 512
 
 KNOWN_HOSTS_FILE = "~/.ssh/known_hosts"
+
+CHECK_KNOWN_HOSTS = False
+
+#disable any SSH agent that was lingering on the terminal when this is run
+if 'SSH_AUTH_SOCK' in os.environ:
+    del os.environ['SSH_AUTH_SOCK']
 
 def main():
     options, arguments = parse_args()
@@ -47,22 +53,34 @@ def main():
 
     # pre copy local to remote
     precopy(options, known_hosts)
+    
+    # make sure both script and exec is not set simultaneously
+    if options.script is not None and options.execute is not None:
+        sys.stderr.write("-x (--exec) and -s (--script) set simultaneously. Must choose one or the other.\n")
+        sys.exit(3)
+
+    # if we are running a script... copy it...
+    if options.script:
+        remote_script_path=precopy_script(options, known_hosts)
 
     # execute our remote command joining pipes with present shell
     # connect and authenticate
+    exit_status = 0
     if options.listfolder:
         ssh = transport_connect_login(options, known_hosts)
         output = list_folder(ssh, options)
         print json.dumps(output)
-        exit_status = 0
     elif options.listfolderrecurse:
         ssh = transport_connect_login(options, known_hosts)
         output = list_folder_recurse(ssh, options)
         print json.dumps(output)
-        exit_status = 0
     else:
         ssh = ssh_connect_login(options, known_hosts)
-        exit_status = execute(ssh, options)
+        if options.execute:
+            exit_status = execute(ssh, options)
+        elif options.script:
+            exit_status = execute(ssh, options, ex="bash -c \"%s\""%(remote_script))
+            remote_unlink(options, known_hosts, remote_script)
     ssh.close()
     
     # post copy remote to local
@@ -82,7 +100,8 @@ def parse_args():
     parser.add_option( "-p", "--password", dest="password", help="Login using only this password. If -i is also specified, login using only the RSA key but use this as the passphrase" )
     parser.add_option( "-u", "--username", dest="username", help="Login as this remote user")
     parser.add_option( "-H", "--hostname", dest="hostname", help="Login to this hostname")
-    parser.add_option( "-x", "--exec", dest="execute", help="Execute this remote command")
+    parser.add_option( "-x", "--exec", dest="execute", help="Execute this remote command", default=None)
+    parser.add_option( "-s", "--script", dest="script", help="Execute this local script file on the remote machine", default=None)
     parser.add_option( "-l", "--prelocal", dest="prelocal", help="Pre-copy prelocal to preremote")
     parser.add_option( "-r", "--preremote", dest="preremote", help="Pre-copy prelocal to preremote")
     parser.add_option( "-L", "--postlocal", dest="postlocal", help="Post-copy postremote to postlocal")
@@ -173,7 +192,10 @@ def get_dsa_key(options):
 def ssh_connect_login(options, known_hosts):
     if options.identity:
         ssh = paramiko.SSHClient()
-        ssh._system_host_keys = known_hosts
+        if CHECK_KNOWN_HOSTS:
+            ssh._system_host_keys = known_hosts
+        else:
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         
         try:
             mykey = get_rsa_key(options)
@@ -191,7 +213,10 @@ def ssh_connect_login(options, known_hosts):
                
     elif options.password:
         ssh = paramiko.SSHClient()
-        ssh._system_host_keys = known_hosts
+        if CHECK_KNOWN_HOSTS:
+            ssh._system_host_keys = known_hosts
+        else:
+            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         
         try:
             ssh.connect(options.hostname, username=options.username, password=options.password)
@@ -214,12 +239,13 @@ def transport_connect_login(options, known_hosts):
         
         ssh.connect(username=options.username, pkey=mykey)
         
-        # check remote host key with known_hosts...
-        remote_key = ssh.get_remote_server_key()
-        known = known_hosts.check(options.hostname,  remote_key)
-        
-        if not known:
-            raise Exception("Trying to connect to unknown host. Remote host key not found in %s"%(KNOWN_HOSTS_FILE))
+        if CHECK_KNOWN_HOSTS:
+            # check remote host key with known_hosts...
+            remote_key = ssh.get_remote_server_key()
+            known = known_hosts.check(options.hostname,  remote_key)
+            
+            if not known:
+                raise Exception("Trying to connect to unknown host. Remote host key not found in %s"%(KNOWN_HOSTS_FILE))
         
         return ssh
                
@@ -229,13 +255,14 @@ def transport_connect_login(options, known_hosts):
         # establish connection
         ssh.connect(username=options.username, password=options.password)
         
-        # check remote host key with known_hosts...
-        remote_key = ssh.get_remote_server_key()
-        known = known_hosts.check(options.hostname,  remote_key)
-        
-        if not known:
-            raise Exception("Trying to connect to unknown host. Remote host key not found in %s"%(KNOWN_HOSTS_FILE))
-        
+        if CHECK_KNOWN_HOSTS:
+            # check remote host key with known_hosts...
+            remote_key = ssh.get_remote_server_key()
+            known = known_hosts.check(options.hostname,  remote_key)
+            
+            if not known:
+                raise Exception("Trying to connect to unknown host. Remote host key not found in %s"%(KNOWN_HOSTS_FILE))
+            
         return ssh
         
     raise Exception("Unknown login method. Both identity and password are unset")
@@ -248,6 +275,25 @@ def precopy(options, known_hosts):
         sftp.put(options.prelocal,options.preremote,confirm=False)
         sftp.close()
         transport.close()
+        
+def precopy_script(options, known_hosts):
+    # copy the named script file to a temporary place on the remote filesystem
+    remotepath = "/tmp/"+uuid.uuid4()+".sh"
+    setproctitle.setproctitle("yabi-ssh %s@%s copy local script %s to remote path %s"%(options.username,options.hostname,options.script,remotepath))
+    transport = transport_connect_login(options, known_hosts)
+    sftp = paramiko.SFTPClient.from_transport(transport)
+    sftp.put(options.script,options.remotepath,confirm=False)
+    sftp.close()
+    transport.close()
+    return remotepath
+
+def remote_unlink(options,remote):
+    transport = transport_connect_login(options, known_hosts)
+    sftp = paramiko.SFTPClient.from_transport(transport)
+    sftp.unlink(remote)
+    sftp.close()
+    transport.close()
+    
 
 def postcopy(options, known_hosts):
     if options.postremote and options.postlocal:
@@ -258,15 +304,17 @@ def postcopy(options, known_hosts):
         sftp.close()
         transport.close()
 
-def execute(ssh,options,shell=True):
+def execute(ssh,options,shell=True, ex=None):
     if options.execute:
         setproctitle.setproctitle("yabi-ssh %s@%s exec %s"%(options.username, options.hostname, options.execute))
         
+        execute = ex or options.execute
+        
         if shell:
-            ex = options.execute.replace("'","'\\''")        # escape any single quotes
+            ex = execute.replace("'","'\\''")        # escape any single quotes
             stdin, stdout, stderr = ssh.exec_command("bash -c '"+ex+"'")
         else:
-            stdin, stdout, stderr = ssh.exec_command(options.execute)
+            stdin, stdout, stderr = ssh.exec_command(execute)
     
         readlist = [sys.stdin,stdout.channel,stderr.channel]
         while not stdout.channel.exit_status_ready():
