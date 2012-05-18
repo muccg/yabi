@@ -100,7 +100,7 @@ def get_hostkeys(request):
     data = [key.make_hash() for key in host_keys]
     return json.dumps(data)
     
-#@hmac_authenticated
+@hmac_authenticated
 def report_denied_hostkey(request):
     if 'uri' not in request.REQUEST:
         return HttpResponse("Request must contain parameter 'uri' in the GET or POST parameters.")
@@ -114,7 +114,7 @@ def report_denied_hostkey(request):
     key_type = request.REQUEST['key_type']
     fingerprint = request.REQUEST['fingerprint']
     
-    hostkey = HostKey(backend = backends[0], key_type=key_type, message=fingerprint, data=key, allowed=False)
+    hostkey = HostKey(backend = backends[0], key_type=key_type, fingerprint=fingerprint, data=key, allowed=False)
     hostkey.save()
     
     return HttpResponse(str(backends))

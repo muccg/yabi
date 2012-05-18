@@ -746,7 +746,11 @@ class Backend(Base):
     backend_summary_link.allow_tags = True
     
 class HostKey(Base):
-    backend = models.ForeignKey(Backend)
+    #backend = models.ForeignKey(Backend)
+    scheme = models.CharField(max_length=64)
+    hostname = models.CharField(max_length=512)
+    port = models.IntegerField(null=True, blank=True)
+    
     key_type = models.CharField(max_length=32, blank=False, null=False)
     fingerprint = models.CharField(max_length=64, blank=False, null=False)                # some SSH handshakes send a SSH "message" associated with the key
     data = models.CharField(max_length=16384, blank=False, null=False)    

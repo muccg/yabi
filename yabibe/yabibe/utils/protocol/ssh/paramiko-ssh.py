@@ -122,6 +122,9 @@ def add_rejected_key_to_admin(uri, hostkey):
             )             # encodes fingerprint into colon seperated hex style of 'ae:52:f4:54:0a:4b:f0:11:ae:52:f4:54:0a:4b:f0:11'
         }
     )
+    
+    if r.status_code==400:
+        raise ...
     print url
     print r.status_code
     print r.text
