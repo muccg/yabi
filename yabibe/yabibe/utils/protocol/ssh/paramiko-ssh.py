@@ -33,13 +33,14 @@ setproctitle.setproctitle("yabi-ssh startup...")
 import paramiko
 import os, sys, select, stat, time, json, uuid
 import requests
+import binascii
 
 # read() blocksize
 BLOCK_SIZE = 512
 
 KNOWN_HOSTS_FILE = "~/.ssh/known_hosts"
 
-CHECK_KNOWN_HOSTS = False
+CHECK_KNOWN_HOSTS = True
 
 #disable any SSH agent that was lingering on the terminal when this is run
 if 'SSH_AUTH_SOCK' in os.environ:
@@ -99,19 +100,32 @@ def load_known_hosts(filename):
 
 def load_known_hosts_from_admin():
     """Contact yabiadmin and get the known hosts from it"""
+    assert yabiadmin
     url = yabiadmin + "gethostkeys"
     r = requests.get( url )
-    
-def add_rejected_key_to_admin(hostkey, hostname, port):
+
+def chunks(l, n):
+    return [l[i:i+n] for i in range(0, len(l), n)]
+
+def add_rejected_key_to_admin(uri, hostkey):
     """send the rejected key to yabiadmin"""
-    url = yabiadmin + "hostkey"
+    assert yabiadmin
+    url = yabiadmin + "/ws/hostkey/deny?uri=null://localhost.localdomain/"
     r = requests.post( url,
         data = {
-            'key': str(hostkey),
-            'hostname': hostname,
-            'port':port
+            'uri': "null://localhost.localdomain/",
+            'key': hostkey.get_base64(),
+            'key_type': hostkey.get_name(),
+            'fingerprint':':'.join(
+                (lambda l,n:[l[i:i+n] for i in range(0, len(l), n)])
+                (binascii.hexlify(hostkey.get_fingerprint()),2)
+            )             # encodes fingerprint into colon seperated hex style of 'ae:52:f4:54:0a:4b:f0:11:ae:52:f4:54:0a:4b:f0:11'
         }
     )
+    print url
+    print r.status_code
+    print r.text
+    assert r.status_code==200
     
 def parse_args():
     from optparse import OptionParser
@@ -210,13 +224,31 @@ def get_dsa_key(options):
     return paramiko.DSSKey.from_private_key_file(privatekeyfile, password=options.password)
 
 def ssh_connect_login(options, known_hosts):
-    if options.identity:
-        ssh = paramiko.SSHClient()
-        if CHECK_KNOWN_HOSTS:
-            ssh._system_host_keys = known_hosts
-        else:
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh = paramiko.SSHClient()
+    if CHECK_KNOWN_HOSTS:
+        ssh._system_host_keys = known_hosts
         
+        class ReportMissingKeyToAdminPolicy(paramiko.MissingHostKeyPolicy):
+            def missing_host_key(self, client, hostname, key):
+                print "client:",client
+                print "hostname:",hostname
+                print "key:",key.get_name()
+                print "p",key.p
+                print "q",key.q
+                print "n",key.n
+                print "e",key.e
+                print "d",key.d
+                print "base64",key.get_base64()
+                
+                add_rejected_key_to_admin("null://localhost.localdomain/", key)
+                
+                raise paramiko.SSHException("BAM")
+            
+        ssh.set_missing_host_key_policy(ReportMissingKeyToAdminPolicy())
+    else:
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    
+    if options.identity:
         try:
             mykey = get_rsa_key(options)
         except paramiko.SSHException, pe:
@@ -224,25 +256,21 @@ def ssh_connect_login(options, known_hosts):
         
         try:
             ssh.connect(options.hostname, username=options.username, pkey=mykey)
-        except paramiko.SSHException, ex:
+        except paramiko.BadHostKeyException, ex:
             if "Unknown server" in ex.message:
                 # key failure
+                #add_rejected_key_to_admin("null://localhost.localdomain/", ex.key)
                 raise Exception("Trying to connect to unknown host. Remote host key not found in %s"%(KNOWN_HOSTS_FILE))
             raise ex
         return ssh
                
     elif options.password:
-        ssh = paramiko.SSHClient()
-        if CHECK_KNOWN_HOSTS:
-            ssh._system_host_keys = known_hosts
-        else:
-            ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        
         try:
             ssh.connect(options.hostname, username=options.username, password=options.password)
         except paramiko.SSHException, ex:
             if "Unknown server" in ex.message:
                 # key failure
+                #add_rejected_key_to_admin("null://localhost.localdomain/", ex.key)
                 raise Exception("Trying to connect to unknown host. Remote host key not found in %s"%(KNOWN_HOSTS_FILE))
             raise ex
         return ssh

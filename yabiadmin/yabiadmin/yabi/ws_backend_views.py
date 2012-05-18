@@ -110,6 +110,13 @@ def report_denied_hostkey(request):
     
     backends = backendhelper.get_backend_by_uri(uri)
     
+    key = request.REQUEST['key']
+    key_type = request.REQUEST['key_type']
+    fingerprint = request.REQUEST['fingerprint']
+    
+    hostkey = HostKey(backend = backends[0], key_type=key_type, message=fingerprint, data=key, allowed=False)
+    hostkey.save()
+    
     return HttpResponse(str(backends))
         
 def backend_connection_limit(request,scheme,hostname):
