@@ -80,7 +80,13 @@ def levenshtein(a,b):
 def make_fname(fname, ext):
     if not ext or fname.endswith(".%s"%(ext)):
         return fname
+
+    # remove previous extension
+    if '.' in fname:
+        fname = fname[0:fname.rfind('.')]
+    
     return "%s.%s"%(fname,ext)
+
 
 class Arg(object):
     """An argument to the command line"""

@@ -6,6 +6,7 @@ from datetime import datetime
 from yabiadmin.test_utils import override_settings
 
 from yabiadmin.yabiengine import enginemodels as emodels
+from yabiengine.commandlinetemplate import SwitchFilename, make_fname
 from yabiadmin.constants import *
 
 class TaskViewNoTasksTest(unittest.TestCase):
@@ -50,5 +51,18 @@ class TaskViewWithTasksTest(unittest.TestCase):
         self.assertTrue('Object not found' in response.content)
 
 
+class CommandLineTemplateTest(unittest.TestCase):
 
-
+    def test_switch_filename(self):
+        s = SwitchFilename(template=make_fname, extension='bls')
+        s.set('test.txt')
+        self.assertEquals('"test.bls"', '%s' % s)
+        s.set('test.bls') 
+        self.assertEquals('"test.bls"', '%s' % s)
+        s.set('test.fa.txt')
+        self.assertEquals('"test.fa.bls"', '%s' % s)        
+        s = SwitchFilename(template=make_fname)
+        s.set('test.txt')
+        self.assertEquals('"test.txt"', '%s' % s)
+        s.set('test')
+        self.assertEquals('"test"', '%s' % s)        
