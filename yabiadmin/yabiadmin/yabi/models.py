@@ -747,22 +747,23 @@ class Backend(Base):
     
 class HostKey(Base):
     #backend = models.ForeignKey(Backend)
-    scheme = models.CharField(max_length=64)
+    #scheme = models.CharField(max_length=64)
     hostname = models.CharField(max_length=512)
-    port = models.IntegerField(null=True, blank=True)
+    #port = models.IntegerField(null=True, blank=True)
     
     key_type = models.CharField(max_length=32, blank=False, null=False)
     fingerprint = models.CharField(max_length=64, blank=False, null=False)                # some SSH handshakes send a SSH "message" associated with the key
-    data = models.CharField(max_length=16384, blank=False, null=False)    
+    data = models.TextField(max_length=16384, blank=False, null=False)    
     allowed = models.BooleanField(default=False)
     
     def __unicode__(self):
-        return "%s hostkey for %s"%(self.key_type, self.backend.hostname)
+        return "%s hostkey for %s"%(self.key_type, self.hostname)
         
     def make_hash(self):
         """return the contents of this hostkey as a python dictionary"""
         return {
-            'type':self.key_type,
+            'hostname':self.hostname,
+            'key_type':self.key_type,
             'fingerprint':self.fingerprint,
             'data':self.data,
             'allowed':self.allowed

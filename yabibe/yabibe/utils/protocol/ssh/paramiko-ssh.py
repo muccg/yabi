@@ -34,6 +34,7 @@ import paramiko
 import os, sys, select, stat, time, json, uuid
 import requests
 import binascii
+import base64
 
 # read() blocksize
 BLOCK_SIZE = 512
@@ -54,7 +55,10 @@ def main():
     sanity_check(options)
     
     # load our known hosts
-    known_hosts = load_known_hosts(os.path.expanduser(KNOWN_HOSTS_FILE))
+    if yabiadmin:
+        known_hosts = load_known_hosts_from_admin(options.hostname)
+    else:
+        known_hosts = load_known_hosts(os.path.expanduser(KNOWN_HOSTS_FILE))
 
     # pre copy local to remote
     precopy(options, known_hosts)
@@ -97,23 +101,37 @@ def main():
 def load_known_hosts(filename):
     """Load the known hosts file into the paramiko object"""
     return paramiko.hostkeys.HostKeys(filename)
-
-def load_known_hosts_from_admin():
+    
+def make_known_hosts(keylist):
+    """Make a known hosts paramiko object from an array of hashes describing the known host keys"""
+    hosts = paramiko.hostkeys.HostKeys()
+    for key in keylist:
+        hostname = key['hostname']
+        key_type = key['key_type']
+        hosts.add(hostname, key_type, {'ssh-rsa':paramiko.rsakey.RSAKey, 'ssh-dss':paramiko.dsskey.DSSKey}[key_type](data=base64.decodestring(key['data'])))
+    return hosts
+    
+def load_known_hosts_from_admin(hostname):
     """Contact yabiadmin and get the known hosts from it"""
     assert yabiadmin
-    url = yabiadmin + "gethostkeys"
+    url = yabiadmin + "/ws/hostkeys?hostname=%s"%hostname
     r = requests.get( url )
-
+    
+    assert r.status_code == 200
+    
+    keys = json.loads(r.text)
+    return make_known_hosts(keys)
+    
 def chunks(l, n):
     return [l[i:i+n] for i in range(0, len(l), n)]
 
-def add_rejected_key_to_admin(uri, hostkey):
+def add_rejected_key_to_admin(hostname, hostkey):
     """send the rejected key to yabiadmin"""
     assert yabiadmin
-    url = yabiadmin + "/ws/hostkey/deny?uri=null://localhost.localdomain/"
+    url = yabiadmin + "/ws/hostkey/deny"
     r = requests.post( url,
         data = {
-            'uri': "null://localhost.localdomain/",
+            'hostname': hostname,
             'key': hostkey.get_base64(),
             'key_type': hostkey.get_name(),
             'fingerprint':':'.join(
@@ -124,10 +142,8 @@ def add_rejected_key_to_admin(uri, hostkey):
     )
     
     if r.status_code==400:
-        raise ...
-    print url
-    print r.status_code
-    print r.text
+        raise Exception("Incorrect HMAC")
+    
     assert r.status_code==200
     
 def parse_args():
@@ -233,19 +249,8 @@ def ssh_connect_login(options, known_hosts):
         
         class ReportMissingKeyToAdminPolicy(paramiko.MissingHostKeyPolicy):
             def missing_host_key(self, client, hostname, key):
-                print "client:",client
-                print "hostname:",hostname
-                print "key:",key.get_name()
-                print "p",key.p
-                print "q",key.q
-                print "n",key.n
-                print "e",key.e
-                print "d",key.d
-                print "base64",key.get_base64()
-                
-                add_rejected_key_to_admin("null://localhost.localdomain/", key)
-                
-                raise paramiko.SSHException("BAM")
+                add_rejected_key_to_admin(hostname, key)
+                raise paramiko.SSHException("Remote host key is denied. Please verify fingerprint and mark as allowed in admin to allow a connection to the host.")
             
         ssh.set_missing_host_key_policy(ReportMissingKeyToAdminPolicy())
     else:
@@ -281,8 +286,9 @@ def ssh_connect_login(options, known_hosts):
     raise Exception("Unknown login method. Both identity and password are unset")
 
 def transport_connect_login(options, known_hosts):
-    if options.identity:
-        ssh = paramiko.Transport((options.hostname, 22))
+    ssh = paramiko.Transport((options.hostname, 22))
+    
+    if options.identity:    
         try:
             mykey = get_rsa_key(options)
         except paramiko.SSHException, pe:
@@ -291,29 +297,33 @@ def transport_connect_login(options, known_hosts):
         ssh.connect(username=options.username, pkey=mykey)
         
         if CHECK_KNOWN_HOSTS:
-            # check remote host key with known_hosts...
             remote_key = ssh.get_remote_server_key()
             known = known_hosts.check(options.hostname,  remote_key)
             
             if not known:
-                raise Exception("Trying to connect to unknown host. Remote host key not found in %s"%(KNOWN_HOSTS_FILE))
+                add_rejected_key_to_admin(options.hostname, remote_key)
+                if yabiadmin:
+                    raise paramiko.SSHException("Remote host key is denied. Please verify fingerprint and mark as allowed in admin to allow a connection to the host.")
+                else:
+                    raise paramiko.SSHException("Trying to connect to unknown host. Remote host key not found in %s"%(KNOWN_HOSTS_FILE))
         
         return ssh
                
     elif options.password:
-        ssh = paramiko.Transport((options.hostname, 22))
-        
         # establish connection
         ssh.connect(username=options.username, password=options.password)
         
         if CHECK_KNOWN_HOSTS:
-            # check remote host key with known_hosts...
             remote_key = ssh.get_remote_server_key()
             known = known_hosts.check(options.hostname,  remote_key)
             
             if not known:
-                raise Exception("Trying to connect to unknown host. Remote host key not found in %s"%(KNOWN_HOSTS_FILE))
-            
+                add_rejected_key_to_admin(options.hostname, remote_key)
+                if yabiadmin:
+                    raise paramiko.SSHException("Remote host key is denied. Please verify fingerprint and mark as allowed in admin to allow a connection to the host.")
+                else:
+                    raise paramiko.SSHException("Trying to connect to unknown host. Remote host key not found in %s"%(KNOWN_HOSTS_FILE))
+           
         return ssh
         
     raise Exception("Unknown login method. Both identity and password are unset")

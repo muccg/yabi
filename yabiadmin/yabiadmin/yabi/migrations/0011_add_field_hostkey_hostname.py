@@ -11,30 +11,16 @@ class Migration(SchemaMigration):
         # Deleting field 'HostKey.backend'
         db.delete_column('yabi_hostkey', 'backend_id')
 
-        # Adding field 'HostKey.scheme'
-        db.add_column('yabi_hostkey', 'scheme', self.gf('django.db.models.fields.CharField')(default='null', max_length=64), keep_default=False)
-
         # Adding field 'HostKey.hostname'
         db.add_column('yabi_hostkey', 'hostname', self.gf('django.db.models.fields.CharField')(default='localhost', max_length=512), keep_default=False)
-
-        # Adding field 'HostKey.port'
-        db.add_column('yabi_hostkey', 'port', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True), keep_default=False)
-
 
     def backwards(self, orm):
         
         # User chose to not deal with backwards NULL issues for 'HostKey.backend'
         raise RuntimeError("Cannot reverse this migration. 'HostKey.backend' and its values cannot be restored.")
 
-        # Deleting field 'HostKey.scheme'
-        db.delete_column('yabi_hostkey', 'scheme')
-
         # Deleting field 'HostKey.hostname'
         db.delete_column('yabi_hostkey', 'hostname')
-
-        # Deleting field 'HostKey.port'
-        db.delete_column('yabi_hostkey', 'port')
-
 
     models = {
         'auth.group': {
@@ -153,8 +139,6 @@ class Migration(SchemaMigration):
             'key_type': ('django.db.models.fields.CharField', [], {'max_length': '32'}),
             'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'hostkey_modifiers'", 'null': 'True', 'to': "orm['auth.User']"}),
             'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
-            'port': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
-            'scheme': ('django.db.models.fields.CharField', [], {'max_length': '64'})
         },
         'yabi.parameterswitchuse': {
             'Meta': {'object_name': 'ParameterSwitchUse'},

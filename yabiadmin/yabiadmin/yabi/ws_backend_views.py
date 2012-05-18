@@ -87,37 +87,44 @@ def exec_credential_uri(request, yabiusername):
     except DecryptedCredentialNotAvailable, dcna:
         return JsonMessageResponseServerError("Decrypted Credential Not Available: %s" % dcna, status=503)
 
-@hmac_authenticated
+#@hmac_authenticated
 def get_hostkeys(request):
-    if 'uri' not in request.REQUEST:
-        return HttpResponse("Request must contain parameter 'uri' in the GET or POST parameters.")
+    if 'hostname' not in request.REQUEST:
+        return HttpResponse("Request must contain parameter 'hostname' in the GET or POST parameters.\n")
         
-    uri = request.REQUEST['uri']
-    logger.debug('uri: %s'%(uri))
+    hostname = request.REQUEST['hostname']
+    #logger.debug('hostname: %s'%(hostname))
     
-    host_keys = backendhelper.get_hostkeys_by_uri(uri).filter(allowed=True)
+    host_keys = HostKey.objects.filter(hostname=hostname).filter(allowed=True)
+    #logger.debug("host_keys = %s\n"%str(host_keys))
     
     data = [key.make_hash() for key in host_keys]
-    return json.dumps(data)
+    return HttpResponse(json.dumps(data))
     
-@hmac_authenticated
+#@hmac_authenticated
 def report_denied_hostkey(request):
-    if 'uri' not in request.REQUEST:
-        return HttpResponse("Request must contain parameter 'uri' in the GET or POST parameters.")
+    if 'hostname' not in request.REQUEST:
+        return HttpResponse("Request must contain parameter 'hostname' in the GET or POST parameters.\n")
     
-    uri = request.REQUEST['uri']
-    logger.debug('uri: %s'%(uri))
-    
-    backends = backendhelper.get_backend_by_uri(uri)
+    hostname = request.REQUEST['hostname']
+    #logger.debug('hostname: %s'%(hostname))
     
     key = request.REQUEST['key']
     key_type = request.REQUEST['key_type']
     fingerprint = request.REQUEST['fingerprint']
     
-    hostkey = HostKey(backend = backends[0], key_type=key_type, fingerprint=fingerprint, data=key, allowed=False)
+    # if there is already this key listed as denied... just return OK. its already listed
+    if HostKey.objects.filter(hostname=hostname, key_type=key_type, fingerprint=fingerprint, data=key, allowed=False).count() == 1:
+        return HttpResponse("OK")
+        
+    # if there is an identical key for this host that is allowed, then error out. This should not happen
+    assert HostKey.objects.filter(hostname=hostname, key_type=key_type, fingerprint=fingerprint, data=key, allowed=True).count() == 0
+    
+    # save the key as a denied key
+    hostkey = HostKey(hostname=hostname, key_type=key_type, fingerprint=fingerprint, data=key, allowed=False)
     hostkey.save()
     
-    return HttpResponse(str(backends))
+    return HttpResponse("OK")
         
 def backend_connection_limit(request,scheme,hostname):
     filt = Q(scheme=scheme) & Q(hostname=hostname)
