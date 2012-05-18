@@ -748,7 +748,7 @@ class Backend(Base):
 class HostKey(Base):
     backend = models.ForeignKey(Backend)
     key_type = models.CharField(max_length=32, blank=False, null=False)
-    message = models.CharField(max_length=1024, blank=False, null=False)                # some SSH handshakes send a SSH "message" associated with the key
+    fingerprint = models.CharField(max_length=64, blank=False, null=False)                # some SSH handshakes send a SSH "message" associated with the key
     data = models.CharField(max_length=16384, blank=False, null=False)    
     allowed = models.BooleanField(default=False)
     
@@ -759,7 +759,7 @@ class HostKey(Base):
         """return the contents of this hostkey as a python dictionary"""
         return {
             'type':self.key_type,
-            'message':self.message,
+            'fingerprint':self.fingerprint,
             'data':self.data,
             'allowed':self.allowed
         }

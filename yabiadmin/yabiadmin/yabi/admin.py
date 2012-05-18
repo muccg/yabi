@@ -174,7 +174,7 @@ class ParameterSwitchUseAdmin(AdminBase):
 
 
 class HostKeyAdmin(AdminBase):
-    list_display = ['backend', 'key_type', 'message', 'data', 'allowed']
+    list_display = ['backend', 'key_type', 'fingerprint', 'allowed']
     
 def register(site):
     site.register(FileExtension, FileExtensionAdmin)
