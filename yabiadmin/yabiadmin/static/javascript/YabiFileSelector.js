@@ -381,8 +381,7 @@ YabiFileSelector.prototype.setUpDragAndDrop = function() {
    
     src = e.target.get('data').invoker.object;
     dst = targetInvoker.object; 
-    // TODO is this a good solution for GC Issue 28
-    // YAHOO.ccgyabi.widget.YabiMessage.success('Copying ' + src + ' to ' + dst);
+    YAHOO.ccgyabi.widget.YabiMessage.success('Copying ' + src + ' to ' + dst);
     self.handleDrop(src, dst, targetInvoker.target);
   });
 
@@ -864,6 +863,8 @@ YabiFileSelector.prototype.hydrateResponse = function(transId, o, args) {
 };
 
 YabiFileSelector.prototype.copyResponse = function(transId, o, args) {
+  YAHOO.ccgyabi.widget.YabiMessage.success('Copying finished');
+
   var json = o.responseText;
 
   //invoke refresh on component
