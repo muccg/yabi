@@ -1,4 +1,4 @@
-import subprocess, os, shutil, glob, time
+import subprocess, os, shutil, glob, time, sys
 import config
 import unittest
 from collections import namedtuple
@@ -7,7 +7,10 @@ DEBUG = False
 CONFIG_SECTION= os.environ.get('TEST_CONFIG_SECTION','quickstart_tests')
 YABI_DIR = os.environ.get('YABI_DIR', '..')
 JSON_DIR = os.path.join(os.getcwd(), 'json_workflows')
-TMP_DIR = os.environ['TEST_TMP'] if 'TEST_TMP' in os.environ else None                  # None means system default (/tmp on unix)
+TMP_DIR = os.environ.get('YABI_DIR', None)                 # None means system default (/tmp on unix)
+YABI_FE = "http://localhost.localdomain:8000"
+TEST_USERNAME = "demo"
+TEST_PASSWORD = "demo"
 
 def yabipath(relpath):
     return os.path.join(YABI_DIR, relpath)
@@ -100,6 +103,9 @@ class StatusResult(Result):
         self.result.cleanup()
 
 
+class YabiTimeoutException(Exception):
+    pass
+
 class Yabi(object):
     def __init__(self, yabish=yabipath('yabish/yabish')):
         self.conf = config.Configuration(section=CONFIG_SECTION)
@@ -120,11 +126,20 @@ class Yabi(object):
         if not os.path.exists(self.test_data_dir):
             assert False, "Test data directory does not exist: %s" % self.test_data_dir
 
-    def run(self, args=''):
+    def run(self, args='', timeout=30.0):
+        sys.stderr.write("run(%s)\n"%(args))
         command = self.command + ' ' + args
         prefix = '. %s && ' % yabipath('yabish/virt_yabish/bin/activate')
+        starttime = time.time()
         cmd = subprocess.Popen(prefix + command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-        status = cmd.wait()
+        status = None
+        while status==None:
+            status = cmd.poll()
+            time.sleep(1.0)
+            
+            if time.time()-starttime > timeout:
+                raise YabiTimeoutException()
+        
         return Result(status, cmd.stdout.read(), cmd.stderr.read(), runner=self)
 
     def login(self, username=None, password=None):

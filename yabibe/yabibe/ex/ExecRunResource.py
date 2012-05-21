@@ -120,6 +120,7 @@ class ExecRunResource(resource.PostableResource):
         
         if DEBUG:
             print "starting tasklet",bend.run
+            print "COMMAND:",command
             print "KWARGS:",kwargs
         task = gevent.spawn(bend.run,yabiusername, None, command, basepath, scheme, username, hostname, remote_info_url, client_deferred, submission, **kwargs)
         if DEBUG:

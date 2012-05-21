@@ -83,6 +83,11 @@ def admin_tests():
 
     _virtualenv(ADMIN, "fab tests")
 
+def admin_jslint():
+    '''Runs Google Closure Linter on JavaScript in Yabiadmin project'''
+
+    _virtualenv(ADMIN, "fab jslint")
+
 def be_bootstrap():
     '''Bootstrap the yabibe project'''
     with lcd(BE['dir']):
@@ -175,6 +180,7 @@ def _assert_test_config_is_selected():
 
 def runtests(config=None):
     '''Run all the YABI tests'''
+    admin_jslint()
     if config is None:
         _assert_test_config_is_selected()
     else:
