@@ -1,11 +1,11 @@
-
+YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse', function(Y) {
 
 /**
  * YabiFileSelector
  * create a new file selector object, to allow selection of files from yabi,
  * or via upload
  */
-function YabiFileSelector(param, isBrowseMode, filePath, readOnly) {
+YabiFileSelector = function(param, isBrowseMode, filePath, readOnly) {
   var self = this;
   this.selectedFiles = [];
   this.pathComponents = [];
@@ -62,12 +62,11 @@ function YabiFileSelector(param, isBrowseMode, filePath, readOnly) {
 
   this.upload = null;
 
-  this.ddTarget = new YAHOO.util.DDTarget(this.fileListEl, 'files', {});
-  /*
   this.ddTarget = new Y.DD.Drop({
-        node: this.fileListEl
+    node: this.fileListEl
   });
-  */
+
+  this.setUpDragAndDrop();
 
   // update the browser
   if (Y.Lang.isUndefined(filePath) || filePath === null) {
@@ -100,20 +99,21 @@ YabiFileSelector.prototype.updateBrowser = function(location) {
   this.loading.show();
   this.fileListEl.scrollTop = 0;
 
-  //disable drop target if location is empty (ie. the root)
-  //disable uploader as well
-  if (location.toString() === '') {
-    this.ddTarget.lock();
-    this.disableUpload();
-  } else {
-    this.ddTarget.unlock();
-    this.enableUpload();
-  }
-
   this.ddTarget.invoker = {
     'object': new YabiSimpleFileValue(this.pathComponents, ''),
     'target': this
   };
+
+  //disable drop target if location is empty (ie. the root)
+  //disable uploader as well
+  if (location.toString() === '') {
+    this.ddTarget.lock = true;
+    this.disableUpload();
+  } else {
+    this.ddTarget.lock = false;
+    this.enableUpload();
+  }
+
   this.hydrate(location.toString());
 
   this.updateBreadcrumbs();
@@ -185,15 +185,6 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
   this.browseListing = jsonObj;
   var fileEl, invoker, selectEl, downloadEl, downloadImg;
   var sizeEl, fileSize, index;
-  var handleDrop = function(srcDD, destid) {
-    var target = YAHOO.util.DragDropMgr.getDDById(destid);
-    var src, dest;
-    src = srcDD.invoker.object;
-    dest = target.invoker.object;
-
-    srcDD.invoker.target.handleDrop(src, dest,
-        srcDD.invoker.target, target.invoker.target);
-  };
 
   //clear existing files
   while (this.fileListEl.firstChild) {
@@ -212,8 +203,13 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
         // this is a symlink, so change the icon image
         fileEl.className += ' dirLink';
       }
-      fileEl.appendChild(document.createTextNode(
+
+      var fileNameSpan = document.createElement('span');
+      fileNameSpan.appendChild(document.createTextNode(
           this.browseListing[toplevelindex].directories[index][0]));
+      fileNameSpan.className = 'fileName';
+      fileEl.appendChild(fileNameSpan);
+
       this.fileListEl.appendChild(fileEl);
 
       invoker = {
@@ -231,7 +227,7 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
         fileEl.appendChild(selectEl);
         Y.one(selectEl).on('click', this.selectFileCallback, null, invoker);
       } else if (this.isBrowseMode) {
-        if (this.pathComponents.length > 0) {
+        if (this.pathComponents.length > 0) { // not top-level
           deleteEl = document.createElement('div');
           deleteEl.className = 'deleteFile';
           deleteImg = new Image();
@@ -241,41 +237,34 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
           deleteEl.appendChild(deleteImg);
           fileEl.appendChild(deleteEl);
           Y.one(deleteEl).on('click', this.deleteRemoteFileCallback, null, invoker);
-        }
 
-        tempDD = new YAHOO.util.DDProxy(fileEl, 'files', {isTarget: true});
-        tempDD.overCount = 0;
-        tempDD.endDrag = this.movelessDrop;
-        // TODO make this function determine where it was dropped and issue
-        //      an ajax call to move the file, then refresh the browsers
-        //      that are affected
-        tempDD.onDragDrop = function(e, id) {
-          if (this.overCount === 1) {
-            handleDrop(this, id);
-          }
-          this.overCount -= 1;
-          document.getElementById(id).style.borderColor = 'white';
-        };
-        tempDD.onDragEnter = function(e, id) {
-          this.overCount += 1;
-          document.getElementById(id).style.borderColor = '#3879e6';
-        };
-        tempDD.onDragOut = function(e, id) {
-          this.overCount -= 1;
-          document.getElementById(id).style.borderColor = 'white';
-        };
-        tempDD.invoker = invoker;
+          var dd = new Y.DD.Drag({
+                node: fileEl,
+                target: {},
+                startCentered: true,
+                data: {
+                    filename: this.browseListing[toplevelindex].directories[index][0],
+                    invoker: invoker
+                }
+            }).plug(Y.Plugin.DDProxy, {
+                    moveOnEnd: false
+            });
+        }
       }
     }
     for (index in this.browseListing[toplevelindex].files) {
-      fileEl = document.createElement('a');
+      fileEl = document.createElement('div');
       fileEl.className = 'fileItem';
       if (this.browseListing[toplevelindex].files[index][3]) {
         // this is a symlink, so change the icon image
         fileEl.className += ' fileLink';
       }
-      fileEl.appendChild(document.createTextNode(
+      var fileNameSpan = document.createElement('span');
+      fileNameSpan.appendChild(document.createTextNode(
           this.browseListing[toplevelindex].files[index][0]));
+      fileNameSpan.className = 'fileName';
+      fileEl.appendChild(fileNameSpan);
+
       this.fileListEl.appendChild(fileEl);
 
       //file size
@@ -341,28 +330,17 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
         fileEl.appendChild(downloadEl);
         Y.one(downloadEl).on('click', this.downloadFileCallback, null, invoker);
 
-        tempDD = new YAHOO.util.DDProxy(fileEl, 'files', {isTarget: false});
-        tempDD.overCount = 0;
-        tempDD.endDrag = this.movelessDrop;
-        tempDD.onDragDrop = function(e, id) {
-          try {
-            if (this.overCount === 1) {
-              handleDrop(this, id);
+        var dd = new Y.DD.Drag({
+            node: fileEl,
+            target: {},
+            startCentered: true,
+            data: {
+                filename: this.browseListing[toplevelindex].files[index][0],
+                invoker: invoker
             }
-            this.overCount -= 1;
-            document.getElementById(id).style.borderColor = 'white';
-          } catch (e) { }
-        };
-        tempDD.onDragEnter = function(e, id) {
-          this.overCount += 1;
-          document.getElementById(id).style.borderColor = '#3879e6';
-        };
-        tempDD.onDragOut = function(e, id) {
-          this.overCount -= 1;
-          document.getElementById(id).style.borderColor = 'white';
-        };
-        tempDD.invoker = invoker;
-        tempDD.clickValidator = function(e) { return true; };
+        }).plug(Y.Plugin.DDProxy, {
+            moveOnEnd: false
+        });
       }
     }
   }
@@ -370,11 +348,90 @@ YabiFileSelector.prototype.hydrateProcess = function(jsonObj) {
 };
 
 
+YabiFileSelector.prototype.setUpDragAndDrop = function() {
+  var self = this;
+
+  function droppedOnPane(e) {
+    var drop = e.drop.get('node');
+    return (drop.get('className').indexOf('fileSelectorListing') != -1);
+  };
+
+  Y.DD.DDM.on('drag:drophit', function(e) {
+    e.halt(true);
+    var drop = e.drop;
+    var dropNode = e.drop.get('node');
+    var targetInvoker;
+    var src, dst;
+
+    if (droppedOnPane(e)) {
+      // TODO
+      // Setting drop.lock to true when the file panel is the root panel
+      // doesn't seem to prevent droping on the file panel, so we just return
+      // here for now
+      if (drop.lock) {
+        return;
+      }
+      targetInvoker = drop.invoker; 
+    } else {
+      targetInvoker = dropNode.dd.get('data').invoker;
+
+      var fileName = dropNode.getElementsByTagName('span');
+      fileName.removeClass('dropTarget');
+    }
+   
+    src = e.target.get('data').invoker.object;
+    dst = targetInvoker.object; 
+    // TODO is this a good solution for GC Issue 28
+    // YAHOO.ccgyabi.widget.YabiMessage.success('Copying ' + src + ' to ' + dst);
+    self.handleDrop(src, dst, targetInvoker.target);
+  });
+
+  Y.DD.DDM.on('drag:start', function(e) {
+    var sourceNode = e.target.get('node');
+    var fileNameNode = sourceNode.getElementsByTagName('span');
+
+    var dragNode = e.target.get('dragNode');
+
+    fileNameNode.addClass('dragSource');
+
+    dragNode.set('innerHTML', e.target.get('data').filename);
+    dragNode.setStyles({
+        'opacity': '.5',
+        'borderColor': '#FFFFFF',
+        'backgroundColor':'#FFFFFF',
+        'width': ''
+    });
+  });
+
+  Y.DD.DDM.on('drag:end', function(e) {
+    var sourceNode = e.target.get('node');
+    var fileNameNode = sourceNode.getElementsByTagName('span');
+    fileNameNode.removeClass('dragSource');
+  });
+
+  Y.DD.DDM.on('drop:enter', function(e) {
+    var drop = e.target.get('node');
+    if (droppedOnPane(e)) {
+      return;
+    }
+    var fileName = drop.getElementsByTagName('span');
+    fileName.addClass('dropTarget');
+  });
+
+  Y.DD.DDM.on('drop:exit', function(e) {
+    var drop = e.target.get('node');
+    if (droppedOnPane(e)) {
+      return;
+    }
+    var fileName = drop.getElementsByTagName('span');
+    fileName.removeClass('dropTarget');
+  });
+};
+
 /**
  * handleDrop
  */
-YabiFileSelector.prototype.handleDrop = function(src, dest, 
-                                            srcFileSelector, destFileselector) {
+YabiFileSelector.prototype.handleDrop = function(src, dest, target) {
   // default is normal copy
   var baseURL = appURL + 'ws/fs/copy';
 
@@ -390,13 +447,18 @@ YabiFileSelector.prototype.handleDrop = function(src, dest,
   jsUrl = baseURL + '?src=' + escape(src) + '&dst=' + escape(dest);
   jsCallback = {
     success: this.copyResponse,
-    failure: function(o) {
+    failure: function(transId, o) {
       YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
-    },
-    argument: [destFileselector] };
-  jsTransaction = YAHOO.util.Connect.asyncRequest('GET',
-                                                  jsUrl, jsCallback, null);
-  //alert(src + ' -> ' + dest);
+    }
+  }
+
+  var cfg = {
+    on: jsCallback,
+    "arguments": {
+        target: target
+    }
+  };
+  Y.io(jsUrl, cfg);
 };
 
 
@@ -583,10 +645,17 @@ YabiFileSelector.prototype.deleteRemoteFile = function(file) {
   jsUrl = baseURL + '?uri=' + escape(file.toString());
   jsCallback = {
     success: this.deleteRemoteResponse,
-    failure: YAHOO.ccgyabi.widget.YabiMessage.handleResponse,
-    argument: [this] };
-  jsTransaction = YAHOO.util.Connect.asyncRequest('GET',
-                                                  jsUrl, jsCallback, null);
+    failure: function(transId, o) {
+      YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
+    }
+  };
+  var cfg = {
+    on: jsCallback,
+    "arguments": {
+        target: this
+    }
+  };
+  Y.io(jsUrl, cfg);
 };
 
 
@@ -660,9 +729,8 @@ YabiFileSelector.prototype.hydrate = function(path) {
   var baseURL = appURL + 'ws/fs/ls';
 
   // cancel previous transaction if it exists
-  if (this.jsTransaction !== null &&
-      YAHOO.util.Connect.isCallInProgress(this.jsTransaction)) {
-    YAHOO.util.Connect.abort(this.jsTransaction, null, false);
+  if (this.jsTransaction !== null && this.jsTransaction.isInProgress()) {
+    this.jsTransaction.abort();
   }
 
   //load json
@@ -674,13 +742,18 @@ YabiFileSelector.prototype.hydrate = function(path) {
   jsUrl = baseURL + '?uri=' + escape(path);
   jsCallback = {
     success: this.hydrateResponse,
-    failure: function(o) {
+    failure: function(transId, o, args) {
       YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
-      o.argument[0].loading.hide();
-    },
-    argument: [this] };
-  this.jsTransaction = YAHOO.util.Connect.asyncRequest('GET',
-                                       jsUrl, jsCallback, null);
+      args.target.loading.hide();
+    }
+  };
+  var cfg = {
+    on: jsCallback,
+    "arguments": {
+        target: this
+    }
+  };
+  this.jsTransaction = Y.io(jsUrl, cfg);
 };
 
 
@@ -766,21 +839,21 @@ YabiFileSelector.prototype.previewFileCallback = function(e, invoker) {
   target.previewFile(invoker.object, invoker.topLevelIndex);
 };
 
-YabiFileSelector.prototype.deleteRemoteResponse = function(o) {
+YabiFileSelector.prototype.deleteRemoteResponse = function(transId, o, args) {
   var json = o.responseText;
 
-  target = o.argument[0];
+  var target = args.target;
 
   target.updateBrowser(new YabiSimpleFileValue(target.pathComponents, ''));
 };
 
-YabiFileSelector.prototype.hydrateResponse = function(o) {
+YabiFileSelector.prototype.hydrateResponse = function(transId, o, args) {
   var json = o.responseText;
 
   try {
-    target = o.argument[0];
+    var target = args.target;
 
-    target.hydrateProcess(YAHOO.lang.JSON.parse(json));
+    target.hydrateProcess(Y.JSON.parse(json));
   } catch (e) {
     YAHOO.ccgyabi.widget.YabiMessage.fail('Error loading file listing');
 
@@ -790,37 +863,13 @@ YabiFileSelector.prototype.hydrateResponse = function(o) {
   }
 };
 
-YabiFileSelector.prototype.copyResponse = function(o) {
+YabiFileSelector.prototype.copyResponse = function(transId, o, args) {
   var json = o.responseText;
 
-  var target = o.argument[0];
-
   //invoke refresh on component
+  var target = args.target;
   target.updateBrowser(new YabiSimpleFileValue(target.pathComponents, ''));
 };
-
-// drag n drop
-YabiFileSelector.prototype.movelessDrop = function(e) {
-  var DOM = YAHOO.util.Dom;
-  var lel = this.getEl();
-  var del = this.getDragEl();
-
-  // Show the drag frame briefly so we can get its position
-  // del.style.visibility = "";
-  DOM.setStyle(del, 'visibility', '');
-
-  // Hide the linked element before the move to get around a Safari
-  // rendering bug.
-  //lel.style.visibility = "hidden";
-  DOM.setStyle(lel, 'visibility', 'hidden');
-  //disable the move-to-el
-  //YAHOO.util.DDM.moveToEl(lel, del);
-  //del.style.visibility = "hidden";
-  DOM.setStyle(del, 'visibility', 'hidden');
-  //lel.style.visibility = "";
-  DOM.setStyle(lel, 'visibility', '');
-};
-
 
 /**
  * YabiFileCopyStatusPane
@@ -1096,3 +1145,6 @@ YabiFileSelectorPreview.prototype.getNext = function() {
 
   return null;
 };
+
+
+}); // end of YUI().use()

@@ -4,8 +4,10 @@
     <link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/files.css?20101201')}" />
 
     <script language="javascript">
-        YAHOO.util.Event.onDOMReady(function() {
-            initFileSelector();
+        Y.use('*', function(Y) {
+            Y.on('domready', function() {
+                initFileSelector();
+            });
         });
 
         var leftfileselector, rightfileselector, messageManager;
@@ -25,9 +27,10 @@
         <div id="yabi-files-mode">
             ${self.bodyhd()}
 
-            <div id="leftContainer"></div>
-
-            <div id="rightContainer"></div>
+            <div id="containers">
+                <div id="leftContainer"></div>
+                <div id="rightContainer"></div>
+            </div>
         </div>
     </div>
 

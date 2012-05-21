@@ -78,6 +78,7 @@ ${self.yui("element/element-beta")}
 
 <script type="text/javascript">
     YAHOO.namespace("ccgyabi");
+    //YAHOO = {ccgyabi:{} };
     var appURL = "${h.url('/')}";
 % if request:
     YAHOO.ccgyabi.username = '${request.user.username}';
