@@ -60,7 +60,7 @@ class S3Error(Exception):
     pass
 
 def get_s3_connection_bucket(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
-    if domain=="amazonws.com":
+    if domain=="amazonaws.com":
         # AMAZON bucket
         conn = S3Connection(ACCESSKEYID, SECRETKEYID)
         b = conn.get_bucket(bucket)
