@@ -915,6 +915,18 @@ class LDAPBackendUserProfile(User):
         return (status, message)
 
 
+class YabiCache(models.Model):
+    """
+    This model is here to make explicit the table created by running the command python manage.py createcachetable.
+    It is used by django caching mechanism.
+    """
+    class Meta:
+        db_table = 'yabi_cache'
+        
+    cache_key = models.CharField(max_length=255, unique=True, primary_key=True)
+    value = models.TextField()
+    expires = models.DateTimeField(db_index=True)
+
 
 ##
 ## Django Signals

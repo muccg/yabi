@@ -3,20 +3,25 @@ import datetime
 from south.db import db
 from south.v2 import SchemaMigration
 from django.db import models
-from django.core.management import call_command
 from django.db.utils import DatabaseError
-from south.db import db
 
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        try:
-            call_command("createcachetable", "yabi_cache")
-        except DatabaseError, e:
-            print "Cache table already exists."
+        
+        # Adding model 'YabiCache'
+        db.create_table('yabi_cache', (
+            ('cache_key', self.gf('django.db.models.fields.CharField')(unique=True, max_length=255, primary_key=True)),
+            ('value', self.gf('django.db.models.fields.TextField')()),
+            ('expires', self.gf('django.db.models.fields.DateTimeField')(db_index=True)),
+        ))
+        db.send_create_signal('yabi', ['YabiCache'])
 
     def backwards(self, orm):
-        db.delete_table('yabi_cache', cascade=True)
+        
+        # Deleting model 'YabiCache'
+        db.delete_table('yabi_cache')
+
 
     models = {
         'auth.group': {
@@ -236,8 +241,13 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '50'}),
             'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['auth.User']", 'unique': 'True'}),
             'user_option_access': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
+        },
+        'yabi.yabicache': {
+            'Meta': {'object_name': 'YabiCache', 'db_table': "'yabi_cache'"},
+            'cache_key': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255', 'primary_key': 'True'}),
+            'expires': ('django.db.models.fields.DateTimeField', [], {'db_index': 'True'}),
+            'value': ('django.db.models.fields.TextField', [], {})
         }
     }
-
 
     complete_apps = ['yabi']

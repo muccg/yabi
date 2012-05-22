@@ -14,7 +14,5 @@
 # http://www.pip-installer.org/en/latest/requirement-format.html
 #
 gunicorn==0.13.4
-psycopg2==2.0.8
-MySQL-python==1.2.3
 http://closure-linter.googlecode.com/files/closure_linter-latest.tar.gz
 -r base-requirements.txt
