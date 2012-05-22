@@ -50,6 +50,8 @@ if 'SSH_AUTH_SOCK' in os.environ:
 # get the yabiadmin url to connect to if its present
 yabiadmin = os.environ.get('YABIADMIN',None)
 
+assert 'HMAC' in os.environ
+
 def main():
     options, arguments = parse_args()
     sanity_check(options)

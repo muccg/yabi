@@ -67,6 +67,9 @@ class SSHRun(BaseShell):
         """Spawn a process to run a remote ssh job. return the process handler"""
         subenv = self._make_env()
         
+        subenv['YABIADMIN'] = config.yabiadmin
+        subenv['HMAC'] = config.config['backend']['hmackey']
+        
         if modules:
             remote_command = "&&".join(["module load %s"%module for module in modules]+[remote_command])
         
