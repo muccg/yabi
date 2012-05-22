@@ -100,10 +100,10 @@ class BaseShell(object):
         subenv = environ.copy() if environ!=None else os.environ.copy()
         return subenv    
 
-    def execute(self, pp, command):
+    def execute(self, pp, command, env=None):
         """execute a command using a process protocol"""
 
-        subenv = self._make_env()
+        subenv = env or self._make_env()
         if DEBUG:
             print "env",subenv
             print "exec:",command

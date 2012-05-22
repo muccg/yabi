@@ -87,7 +87,7 @@ def exec_credential_uri(request, yabiusername):
     except DecryptedCredentialNotAvailable, dcna:
         return JsonMessageResponseServerError("Decrypted Credential Not Available: %s" % dcna, status=503)
 
-#@hmac_authenticated
+@hmac_authenticated
 def get_hostkeys(request):
     if 'hostname' not in request.REQUEST:
         return HttpResponse("Request must contain parameter 'hostname' in the GET or POST parameters.\n")
@@ -101,7 +101,7 @@ def get_hostkeys(request):
     data = [key.make_hash() for key in host_keys]
     return HttpResponse(json.dumps(data))
     
-#@hmac_authenticated
+@hmac_authenticated
 def report_denied_hostkey(request):
     if 'hostname' not in request.REQUEST:
         return HttpResponse("Request must contain parameter 'hostname' in the GET or POST parameters.\n")

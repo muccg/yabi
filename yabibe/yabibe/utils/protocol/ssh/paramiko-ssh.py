@@ -35,7 +35,8 @@ import os, sys, select, stat, time, json, uuid
 import requests
 import binascii
 import base64
-
+import hmac
+   
 # read() blocksize
 BLOCK_SIZE = 512
 
@@ -51,6 +52,7 @@ if 'SSH_AUTH_SOCK' in os.environ:
 yabiadmin = os.environ.get('YABIADMIN',None)
 
 assert 'HMAC' in os.environ
+hmac_key = os.environ['HMAC']
 
 def main():
     options, arguments = parse_args()
@@ -112,12 +114,18 @@ def make_known_hosts(keylist):
         key_type = key['key_type']
         hosts.add(hostname, key_type, {'ssh-rsa':paramiko.rsakey.RSAKey, 'ssh-dss':paramiko.dsskey.DSSKey}[key_type](data=base64.decodestring(key['data'])))
     return hosts
-    
+
+def sign_uri(uri):
+    hmac_digest = hmac.new(hmac_key)
+    hmac_digest.update(uri)
+    return hmac_digest.hexdigest()
+
 def load_known_hosts_from_admin(hostname):
     """Contact yabiadmin and get the known hosts from it"""
     assert yabiadmin
-    url = yabiadmin + "/ws/hostkeys?hostname=%s"%hostname
-    r = requests.get( url )
+    path = "ws/hostkeys?hostname=%s"%hostname
+    url = yabiadmin + path
+    r = requests.get( url, headers={'Hmac-digest':sign_uri("/"+path)} )
     
     assert r.status_code == 200
     
@@ -130,7 +138,7 @@ def chunks(l, n):
 def add_rejected_key_to_admin(hostname, hostkey):
     """send the rejected key to yabiadmin"""
     assert yabiadmin
-    url = yabiadmin + "/ws/hostkey/deny"
+    url = yabiadmin + "ws/hostkey/deny"
     r = requests.post( url,
         data = {
             'hostname': hostname,
@@ -140,6 +148,9 @@ def add_rejected_key_to_admin(hostname, hostkey):
                 (lambda l,n:[l[i:i+n] for i in range(0, len(l), n)])
                 (binascii.hexlify(hostkey.get_fingerprint()),2)
             )             # encodes fingerprint into colon seperated hex style of 'ae:52:f4:54:0a:4b:f0:11:ae:52:f4:54:0a:4b:f0:11'
+        },
+        headers = {
+            'Hmac-digest':sign_uri("/ws/hostkey/deny")
         }
     )
     

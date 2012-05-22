@@ -93,5 +93,4 @@ class SSHRun(BaseShell):
         if config.config['execution']['logscripts']:
             print "ssh attempting remote command: "+remote_command
             
-            
-        return BaseShell.execute(self,SSHExecProcessProtocolParamiko(streamin),command)
+        return BaseShell.execute(self,SSHExecProcessProtocolParamiko(streamin),command,subenv)
