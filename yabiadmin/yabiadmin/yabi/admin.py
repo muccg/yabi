@@ -173,6 +173,14 @@ class ParameterSwitchUseAdmin(AdminBase):
     list_display = ['display_text', 'formatstring', 'description']
     search_fields = ['display_text', 'description']
 
+
+class HostKeyAdmin(AdminBase):
+    list_display = ['hostname', 'key_type', 'fingerprint', 'allowed']
+    search_fields = ['hostname','key_type','fingerprint']
+    list_filter = ['hostname', 'key_type']
+    fields = ['hostname','allowed','key_type','data']
+
+
 def register(site):
     site.register(FileExtension, FileExtensionAdmin)
     site.register(ParameterSwitchUse, ParameterSwitchUseAdmin)
@@ -186,3 +194,6 @@ def register(site):
     site.register(Credential, CredentialAdmin)
     site.register(BackendCredential, BackendCredentialAdmin)
     site.register(Backend, BackendAdmin)
+    site.register(HostKey, HostKeyAdmin)
+    
+

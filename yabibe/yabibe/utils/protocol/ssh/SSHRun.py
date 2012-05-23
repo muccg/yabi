@@ -67,6 +67,9 @@ class SSHRun(BaseShell):
         """Spawn a process to run a remote ssh job. return the process handler"""
         subenv = self._make_env()
         
+        subenv['YABIADMIN'] = config.yabiadmin
+        subenv['HMAC'] = config.config['backend']['hmackey']
+        
         if modules:
             remote_command = "&&".join(["module load %s"%module for module in modules]+[remote_command])
         
@@ -90,5 +93,4 @@ class SSHRun(BaseShell):
         if config.config['execution']['logscripts']:
             print "ssh attempting remote command: "+remote_command
             
-            
-        return BaseShell.execute(self,SSHExecProcessProtocolParamiko(streamin),command)
+        return BaseShell.execute(self,SSHExecProcessProtocolParamiko(streamin),command,subenv)

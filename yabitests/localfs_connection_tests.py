@@ -15,6 +15,8 @@ TEST_LOCALFS_SERVER = "localfs://username@localhost.localdomain/tmp/yabi-localfs
 QUOTED_TEST_LOCALFS_SERVER = quote(TEST_LOCALFS_SERVER)
 
 class LocalfsFileTests(RequestTest):
+    TIMEOUT = 30.0
+    
     @classmethod
     def setUpAdmin(self):
         admin.create_localfs_backend()
