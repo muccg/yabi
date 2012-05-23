@@ -128,6 +128,11 @@ MEDIA_URL = url('/static/media/')
 # a directory that will be writable by the webserver, for storing various files...
 WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
 
+# put our temporary uploads directory inside WRITABLE_DIRECTORY
+FILE_UPLOAD_TEMP_DIR = os.path.join(WRITABLE_DIRECTORY,".uploads")
+if not os.path.exists(FILE_UPLOAD_TEMP_DIR):
+    os.mkdir(FILE_UPLOAD_TEMP_DIR)
+
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#append-slash
 APPEND_SLASH = True
 

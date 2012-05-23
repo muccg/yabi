@@ -1,4 +1,4 @@
-import subprocess, os, shutil, glob, time, sys
+import subprocess, os, shutil, glob, time
 import config
 import unittest
 from collections import namedtuple
@@ -11,6 +11,8 @@ TMP_DIR = os.environ.get('YABI_DIR', None)                 # None means system d
 YABI_FE = "http://localhost.localdomain:8000"
 TEST_USERNAME = "demo"
 TEST_PASSWORD = "demo"
+
+DEFAULT_TIMEOUT = 60.0 * 10.0                           # 10 minutes. This is how long some of the tests take. this is WAY TOO LONG.
 
 def yabipath(relpath):
     return os.path.join(YABI_DIR, relpath)
@@ -107,6 +109,8 @@ class YabiTimeoutException(Exception):
     pass
 
 class Yabi(object):
+    TIMEOUT = DEFAULT_TIMEOUT
+    
     def __init__(self, yabish=yabipath('yabish/yabish')):
         self.conf = config.Configuration(section=CONFIG_SECTION)
 
@@ -114,6 +118,9 @@ class Yabi(object):
         if self.conf.yabiurl:
             self.command += '--yabi-url="%s"' % self.conf.yabiurl
         self.setup_data_dir()
+
+    def set_timeout(self, timeout):
+        self.TIMEOUT = timeout
 
     def setup_data_dir(self):
 
@@ -126,8 +133,8 @@ class Yabi(object):
         if not os.path.exists(self.test_data_dir):
             assert False, "Test data directory does not exist: %s" % self.test_data_dir
 
-    def run(self, args='', timeout=30.0):
-        sys.stderr.write("run(%s)\n"%(args))
+    def run(self, args='', timeout=None):
+        timeout = timeout or self.TIMEOUT
         command = self.command + ' ' + args
         prefix = '. %s && ' % yabipath('yabish/virt_yabish/bin/activate')
         starttime = time.time()
@@ -174,6 +181,7 @@ def run_yabiadmin_script(script, *args):
 
 
 class YabiTestCase(unittest.TestCase):
+    TIMEOUT = DEFAULT_TIMEOUT
 
     runner = Yabi
 
@@ -191,6 +199,7 @@ class YabiTestCase(unittest.TestCase):
 
     def setUp(self):
         self.yabi = self.runner()
+        self.yabi.set_timeout(self.TIMEOUT)
         self.yabi.login()
         self._setup_admin()
 

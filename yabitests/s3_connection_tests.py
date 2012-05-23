@@ -36,7 +36,7 @@ class S3FileUploadTest(RequestTest):
         from yabiadmin.yabi import models
         #models.Tool.objects.get(name='cksum').delete()
 
-    def test_s3_files_list(self):
+    def notest_s3_files_list(self):
         import requests
         
         r = self.session.get(YABI_FE+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_S3_SERVER) )
@@ -74,7 +74,7 @@ class S3FileUploadTest(RequestTest):
         self.assertTrue('files' in data['/'])
         self.assertTrue('directories' in data['/'])
         
-    def test_s3_files_deletion_non_existent(self):
+    def notest_s3_files_deletion_non_existent(self):
         import requests
         
         r = self.session.get(YABI_FE+"/ws/fs/rm?uri=%s/DONT_EXIST.dat"%(QUOTED_TEST_S3_SERVER))
@@ -89,7 +89,7 @@ class S3FileUploadTest(RequestTest):
         self.assertTrue("not found" in error['message'].lower())
 
         
-    def test_s3_mkdir(self):
+    def notest_s3_mkdir(self):
         import requests
         
         r = self.session.get(YABI_FE+"/ws/fs/mkdir?uri=%s/directory"%(QUOTED_TEST_S3_SERVER))

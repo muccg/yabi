@@ -42,7 +42,8 @@ class SqliteDB(DB):
         
     def dropdb(self):
         print 'Unlinking ' + self.filename
-        os.unlink(self.filename) 
+        if os.path.isfile(self.filename):
+            os.unlink(self.filename) 
 
     def createdb(self):
         print 'Touching ' + self.filename

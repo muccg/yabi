@@ -5,7 +5,7 @@ import sys
 
 import paramiko
 
-from sftpserver.stub_sftp import StubServer, StubSFTPServer
+#from sftpserver.stub_sftp import StubServer, StubSFTPServer
 
 HOST, PORT = 'localhost', 3373
 QUEUE = 10
