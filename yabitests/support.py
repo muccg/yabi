@@ -1,4 +1,4 @@
-import subprocess, os, shutil, glob, time, sys
+import subprocess, os, shutil, glob, time
 import config
 import unittest
 from collections import namedtuple
@@ -127,7 +127,6 @@ class Yabi(object):
             assert False, "Test data directory does not exist: %s" % self.test_data_dir
 
     def run(self, args='', timeout=30.0):
-        sys.stderr.write("run(%s)\n"%(args))
         command = self.command + ' ' + args
         prefix = '. %s && ' % yabipath('yabish/virt_yabish/bin/activate')
         starttime = time.time()
