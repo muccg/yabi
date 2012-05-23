@@ -297,6 +297,10 @@ def get_listing(yabiusername, uri, recurse=False):
     """
     Return a listing from backend
     """
+    # clean up any trailing double slashes that will confuse s3 or key-based storage systems
+    if uri.endswith('//'):
+        uri = uri[0:len(uri)-1]
+        
     logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
     resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, quote(uri))
     if recurse:

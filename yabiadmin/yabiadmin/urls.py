@@ -30,6 +30,8 @@ from django.conf import settings
 from django.core import urlresolvers
 from django.contrib import admin as djangoadmin
 from yabiadmin import admin, uploader
+from yabiadmin.yabifeapp.views import handler404, handler500
+
 djangoadmin.autodiscover()
 
 urlpatterns = patterns('yabiadmin.yabifeapp.views',

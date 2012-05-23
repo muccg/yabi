@@ -60,9 +60,9 @@ class Base(models.Model):
     class Meta:
         abstract = True
 
-    last_modified_by = models.ForeignKey(DjangoUser, editable=False, related_name="%(class)s_modifiers", null=True)
+    last_modified_by = models.ForeignKey(DjangoUser, editable=False, related_name="%(class)s_modifiers", null=True, on_delete=models.SET_NULL)
     last_modified_on = models.DateTimeField(null=True, auto_now=True, editable=False)
-    created_by = models.ForeignKey(DjangoUser, editable=False, related_name="%(class)s_creators",null=True)
+    created_by = models.ForeignKey(DjangoUser, editable=False, related_name="%(class)s_creators", null=True, on_delete=models.SET_NULL)
     created_on = models.DateTimeField(auto_now_add=True, editable=False)
 
 

@@ -104,7 +104,6 @@ class WorkflowAdmin(admin.ModelAdmin):
                 else:
                     message_bit = "%s workflows were archived." % len(selected)
                 
-                #self.message_user(request, message_bit)
                 messages.success(request, message_bit)
         else:
             messages.error(request, "Couldn't archive workflow(s)!")
