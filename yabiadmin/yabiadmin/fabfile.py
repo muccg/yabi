@@ -298,8 +298,13 @@ def selected_test_config():
         config = "No test config activated"
     print '\t' + config
  
-def select_test_config(config_dir):
+def select_test_config(config_dir=None):
     '''selects the passed in configuration to be used for running tests'''
+
+    if config_dir is None:
+        print "You have to invoke target with a valid config name"
+        list_configs()
+        return
 
     if config_dir == os.path.basename(TEST_CONF_LN_NAME):
         print "You can't set %s to point to itself!" % os.path.basename(TEST_CONF_LN_NAME)

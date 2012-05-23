@@ -169,21 +169,28 @@ def admin_selected_test_config():
 
     _virtualenv(ADMIN, "fab selected_test_config")
 
-def admin_select_test_config(config):
+def admin_select_test_config(config=None):
     '''Select the passed in config to be used when running tests'''
 
-    _virtualenv(ADMIN, "fab select_test_config:%s" % config)
+    cmd = "fab select_test_config"
+    if config is not None:
+        cmd += ":" + config
+    _virtualenv(ADMIN, cmd)
 
-def _assert_test_config_is_selected():
+def _no_test_config_selected():
     # unfortunately the errors displayed by a nested fab aren't displayed
-    print _virtualenv(ADMIN, "fab assert_test_config_is_selected")
+    try:
+       _virtualenv(ADMIN, "fab assert_test_config_is_selected")
+    except:
+        return False
+    return True
 
 def runtests(config=None):
     '''Run all the YABI tests'''
     admin_jslint()
-    if config is None:
-        _assert_test_config_is_selected()
-    else:
+    if config is None and not _no_test_config_selected():
+        config = "sqlite_test"
+    if config is not None:
         admin_select_test_config(config)
     killservers()
     admin_activate_config('testdb')
