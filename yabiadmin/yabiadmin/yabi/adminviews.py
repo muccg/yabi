@@ -252,22 +252,52 @@ def backend_cred_test(request, backend_cred_id):
 
     from yabiadmin.yabiengine import backendhelper
 
-    try:
-        rawdata = backendhelper.get_listing(bec.credential.user.name, bec.homedir_uri)
-        listing = json.loads(rawdata)
-        error = None
-    except ValueError, e:
-        listing = None
-        error = rawdata
-        
-    return render_to_response('yabi/backend_cred_test.html', {
+    template_vars = {
         'bec': bec,
         'user':request.user,
         'title': 'Backend Credential Test',
         'root_path':urlresolvers.reverse('admin:index'),
-        'listing':listing,
-        'error':error
-        })
+        'listing':None,
+        'error':None,
+        'error_help': None
+        }
+
+    dict_join = lambda a,b: a.update(b) or a
+
+    try:
+        rawdata = backendhelper.get_listing(bec.credential.user.name, bec.homedir_uri)
+        
+        try:
+            # successful listing
+            return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars,{
+                'listing':json.loads(rawdata)
+            }))
+            
+        except ValueError, e:
+            # value error report
+            return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars,{
+                'error':"Value Error",
+                'error_help':"<pre>"+rawdata+"</pre>"
+            }))
+            
+    except backendhelper.BackendServerError, bse:
+        if "authentication failed" in str(bse).lower():
+            # auth failed
+            cred_url = '%syabi/credential/%d'%(urlresolvers.reverse('admin:index'),bec.credential.id)               # TODO... construct this more 'correctly'
+            return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars,{
+                'error':"Authentication Failed",
+                'error_help': "The authentication of the test has failed. The <a href='%s'>credential used</a> is most likely incorrect. Please ensure the <a href='%s'>credential</a> is correct."%(cred_url,cred_url)
+                }))
+        
+        else:
+            # overall exception
+            return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars,{
+                'error':"Backend Server Error",
+                'error_help':"<pre>"+str(bse)+"</pre>"
+            }))
+    
+    # we should not get here
+    assert False, "Unreachable codepoint reached. Something wicked happened"
 
 
 @staff_member_required
