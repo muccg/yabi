@@ -649,6 +649,9 @@ class Credential(Base):
             # temporarily protect this for saving
             self.protect()
             
+            # cache the protected form while we have it
+            self.send_to_cache()
+            
     def on_post_init(self):
         if not self.is_plaintext:
             # ciphertext... lets look at its tag
