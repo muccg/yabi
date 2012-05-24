@@ -288,6 +288,28 @@ def backend_cred_test(request, backend_cred_id):
                 'error':"Authentication Failed",
                 'error_help': "The authentication of the test has failed. The <a href='%s'>credential used</a> is most likely incorrect. Please ensure the <a href='%s'>credential</a> is correct."%(cred_url,cred_url)
                 }))
+                
+        elif "remote host key is denied" in str(bse).lower():
+            # remote host key denied.
+            
+            # work out which hostkey this is...
+            keys = HostKey.objects.filter(hostname=bec.backend.hostname)
+            
+            assert keys, "No key found for hostname"
+            
+            if len(keys)>1:
+                # link to host key page
+                link = '%syabi/hostkey/?hostname=%s'%(urlresolvers.reverse('admin:index'),bec.backend.hostname)     # TODO... construct this more 'correctly'
+            else:
+                # link to changelist page
+                link = '%syabi/hostkey/%d'%(urlresolvers.reverse('admin:index'),keys[0].id)
+            
+            logger.info("backend_cred_test tried to test BackendCredential %d and received a denied host key exception [hostname: %s]."%(bec.id,bec.backend.hostname))
+            
+            return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars,{
+                'error':"Remote Host Key Denied",
+                'error_help':"The remote host key has been denied. Please <a href='%s'>check the hostkey</a>'s fingerprint and if it is the correct key, mark it as accepted."%link
+            }))
         
         else:
             # overall exception

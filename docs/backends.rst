@@ -27,7 +27,6 @@ Click on Backends under Yabi heading and add a backend, using `scp` as the schem
     Port            22
     Path            /home/
 
-
 .. index::
    single: backend; path field
 
@@ -148,11 +147,11 @@ you associate with the Null Backend as it will not be used.
 
 S3 Backend
 ----------
-An S3 filesystem backend can be created by using the schema ``s3``. If the hostname ends with ``amazonws.com`` then the backend operation is 
+An S3 filesystem backend can be created by using the schema ``s3``. If the hostname ends with ``amazonaws.com`` then the backend operation is 
 pointed at Amazon S3. If the hostname doesn't end in this domain, then the backend operation is pointed at that host on the specified port.
 In this way you can use the S3 protocol to connect to third party S3 services that talk the S3 protocol.
 
-Usually, the full amazonws bucket name is used as the hostname. For example ``mybucket.amazonws.com`` as the hostname will access the bucket
+Usually, the full amazonws bucket name is used as the hostname. For example ``mybucket.amazonaws.com`` as the hostname will access the bucket
 ``mybucket`` on amazon.
 
 In setting up the credential for access to S3, your remote username is ignored, so you can place any text in here you like. You will need to 
