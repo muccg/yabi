@@ -1,4 +1,4 @@
-
+YUI().use('node', 'event', 'dd-drag', 'dd-proxy', 'dd-drop', 'io', 'json', 'anim', function(Y) {
 
 /**
  * YabiWorkflow
@@ -6,7 +6,7 @@
  * as ordering/sequencing and ensuring that file inputs are
  * managed in a sequential, logical manner
  */
-function YabiWorkflow(editable) {
+YabiWorkflow = function(editable) {
   this.payload = {};
   this.isPropagating = false; //recursion protection
   this.tags = [];
@@ -59,14 +59,10 @@ function YabiWorkflow(editable) {
     this.nameEl.id = 'titleDiv';
     this.nameEl.value = this.name;
 
-    YAHOO.util.Event.addListener(this.nameEl, 'blur',
-                                 this.nameBlurCallback, this);
-    YAHOO.util.Event.addListener(this.nameEl, 'keyup',
-                                 this.nameChangeCallback, this);
-    YAHOO.util.Event.addListener(this.nameEl, 'change',
-                                 this.nameChangeCallback, this);
-    YAHOO.util.Event.addListener(this.nameEl, 'click',
-                                 this.nameFocusCallback, this);
+    Y.one(this.nameEl).on('blur', this.nameBlurCallback, null, this);
+    Y.one(this.nameEl).on('keyup', this.nameChangeCallback, null, this);
+    Y.one(this.nameEl).on('change', this.nameChangeCallback, null, this);
+    Y.one(this.nameEl).on('click', this.nameFocusCallback, null, this);
   } else {
     this.nameEl = document.createElement('div');
     this.nameEl.className = 'workflowName';
@@ -90,8 +86,7 @@ function YabiWorkflow(editable) {
 
   this.tagAddLink = document.createElement('div');
   this.tagAddLink.className = 'tagAddLink';
-  YAHOO.util.Event.addListener(this.tagAddLink, 'click',
-                               this.addTagCallback, this);
+  Y.one(this.tagAddLink).on('click', this.addTagCallback, null, this);
   this.tagEl.appendChild(this.tagAddLink);
 
   this.tagHintDiv = document.createElement('div');
@@ -100,14 +95,12 @@ function YabiWorkflow(editable) {
   this.tagCancelEl = document.createElement('span');
   this.tagCancelEl.className = 'fakeButton';
   this.tagCancelEl.appendChild(document.createTextNode('cancel'));
-  YAHOO.util.Event.addListener(this.tagCancelEl, 'click',
-                               this.cancelTagsCallback, this);
+  Y.one(this.tagCancelEl).on('click', this.cancelTagsCallback, null, this);
 
   this.tagSaveEl = document.createElement('span');
   this.tagSaveEl.className = 'fakeButton';
   this.tagSaveEl.appendChild(document.createTextNode('save'));
-  YAHOO.util.Event.addListener(this.tagSaveEl, 'click',
-                               this.saveTagsCallback, this);
+  Y.one(this.tagSaveEl).on('click', this.saveTagsCallback, null, this);
 
   this.tagHintDiv.appendChild(this.tagCancelEl);
   this.tagHintDiv.appendChild(this.tagSaveEl);
@@ -120,15 +113,18 @@ function YabiWorkflow(editable) {
   helpImg.src = appURL + 'static/images/tagHelp.png';
   this.tagHelpEl.appendChild(helpImg);
   this.tagEl.appendChild(this.tagHelpEl);
-  YAHOO.util.Event.addListener(this.tagHelpEl, 'click',
-      function(e, obj) {
-        var myAnim = new YAHOO.util.Anim(obj.tagHelpEl, { opacity: { to: 0 } },
-                                         0.5, YAHOO.util.Easing.easeOut);
-        myAnim.onComplete.subscribe(function() {
-          this.getEl().style.display = 'none';
-        });
-        myAnim.animate();
-      }, this);
+  Y.one(this.tagHelpEl).on('click', function(e, obj) {
+    var myAnim = new Y.Anim({
+        node: Y.one(obj.tagHelpEl),
+        to: { opacity: 0 },
+        easing: 'easeOut',
+        duration: 0.5
+    });
+    myAnim.on('end', function() {
+        obj.tagHelpEl.style.display = 'none';
+    }, this);
+    myAnim.run();
+  }, null, this);
 
 
   this.mainEl.appendChild(this.tagEl);
@@ -142,8 +138,7 @@ function YabiWorkflow(editable) {
     this.reuseButtonEl = document.createElement('span');
     this.reuseButtonEl.className = 'fakeButton';
     this.reuseButtonEl.appendChild(document.createTextNode('re-use'));
-    YAHOO.util.Event.addListener(this.reuseButtonEl, 'click',
-                                 this.reuseCallback, this);
+    Y.one(this.reuseButtonEl).on('click', this.reuseCallback, null, this);
     this.toolbarEl.appendChild(this.reuseButtonEl);
   }
 
@@ -171,7 +166,13 @@ function YabiWorkflow(editable) {
   this.mainEl.appendChild(this.endEl);
 
   if (this.editable) {
-    this.dd = new YAHOO.util.DDTarget(this.containerEl);
+    this.dd = new Y.DD.Drop({
+        node: this.containerEl
+    });
+    this.dd.on('drop:over', this.onDragOverJobCallback);
+
+    // TODO - see other registerDDTarget for TODO expl.
+    YabiToolCollection.registerDDTarget(this.containerEl);
   }
 
   this.optionsEl = document.createElement('div');
@@ -197,12 +198,12 @@ function YabiWorkflow(editable) {
   }
 
   //add an enter key listener for the tags field
-  var enterTags = new YAHOO.util.KeyListener(this.tagInputEl,
-      { ctrl: false, keys: 13 },
-      { fn: this.saveTags,
-        scope: this,
-        correctScope: true });
-  enterTags.enable();
+  Y.one(this.tagInputEl).on('keypress', function(e) {
+    if (e.keyCode !== 13) {
+      return;
+    }
+    this.saveTags();
+  }, this);
 }
 
 YabiWorkflow.prototype.setStatus = function(statusText) {
@@ -222,7 +223,7 @@ YabiWorkflow.prototype.setStatus = function(statusText) {
 
   var loadImg;
   if (this.status !== 'complete') {
-    if (YAHOO.lang.isUndefined(this.loadingEl) || this.loadingEl === null) {
+    if (Y.Lang.isUndefined(this.loadingEl) || this.loadingEl === null) {
       this.loadingEl = document.createElement('div');
       this.loadingEl.className = 'workflowLoading';
       loadImg = new Image();
@@ -239,7 +240,7 @@ YabiWorkflow.prototype.setStatus = function(statusText) {
     this.mainEl.appendChild(this.loadingEl);
   } else {
     //completed or error, remove the loadingEl
-    if (YAHOO.lang.isUndefined(this.loadingEl) ||
+    if (Y.Lang.isUndefined(this.loadingEl) ||
         this.loadingEl === null) {
     } else {
       this.mainEl.removeChild(this.loadingEl);
@@ -280,8 +281,7 @@ YabiWorkflow.prototype.addJob = function(toolName,
   if (!this.editable) {
     //attach events
     invoke = {'target': this, 'object': job};
-    YAHOO.util.Event.addListener(job.containerEl, 'click',
-                                 this.selectJobCallback, invoke);
+    Y.one(job.containerEl).on('click', this.selectJobCallback, null, invoke);
 
     //don't select any job (ie select null)
     this.selectJob(null);
@@ -298,23 +298,33 @@ YabiWorkflow.prototype.addJob = function(toolName,
 
     //attach events
     invoke = {'target': this, 'object': job};
-    YAHOO.util.Event.addListener(destroyEl, 'click',
-                                 this.delJobCallback, invoke);
-    YAHOO.util.Event.addListener(job.containerEl, 'click',
-                                 this.selectJobCallback, invoke);
+    Y.one(destroyEl).on('click', this.delJobCallback, null, invoke);
+    Y.one(job.containerEl).on('click', this.selectJobCallback, null, invoke);
 
     //drag drop
-    job.dd = new YAHOO.util.DDProxy(job.containerEl);
-    job.dd.startDrag = this.startDragJobCallback;
-    job.dd.endDrag = this.endDragJobCallback;
-    job.dd.onDrag = this.onDragJobCallback;
-    job.dd.onDragOver = this.onDragOverJobCallback;
+    job.dd = new Y.DD.Drag({
+        node: job.containerEl,
+        target: {}
+    }).plug(Y.Plugin.DDProxy, {
+        moveOnEnd:false
+    });
 
-    //select the new item but only if we are editable
+    // TODO
+    // We are registering this as DD.Drops in the YUI instance of the tool
+    // collection, otherwise the tools can't be dropped on top of the job
+    // elements. There has to be a better way to do this!
+    YabiToolCollection.registerDDTarget(job.containerEl);
+
+    job.dd.on('drag:start', this.startDragJobCallback);
+    job.dd.on('drag:end', this.endDragJobCallback);
+    job.dd.on('drag:drag', this.onDragJobCallback);
+    job.dd.on('drag:over', this.onDragOverJobCallback);
+
+   //select the new item but only if we are editable
     this.selectJob(job);
   }
 
-  if (YAHOO.lang.isUndefined(shouldFadeIn)) {
+  if (Y.Lang.isUndefined(shouldFadeIn)) {
     shouldFadeIn = true;
   }
 
@@ -330,10 +340,12 @@ YabiWorkflow.prototype.addJob = function(toolName,
 
   var anim;
   if (shouldFadeIn) {
-    anim = new YAHOO.util.Anim(job.containerEl,
-                               { opacity: { from: 0.0, to: 1.0 } },
-                               1.0, YAHOO.util.Easing.Linear);
-    anim.animate();
+    var anim = new Y.Anim({
+        node: Y.one(job.containerEl),
+        to: { opacity: 1.0 },
+        duration: 1.0
+    });
+    anim.run();
   }
 
   this.processing = false;
@@ -387,7 +399,7 @@ YabiWorkflow.prototype.deleteJob = function(job) {
   this.optionsEl.removeChild(job.optionsEl);
   this.statusEl.removeChild(job.statusEl);
 
-  YAHOO.util.Event.purgeElement(job.containerEl);
+  Y.one(job.containerEl).detachAll();
 
   //force propagate
   this.propagateFiles();
@@ -428,7 +440,7 @@ YabiWorkflow.prototype.propagateFiles = function(sender) {
   var emittedKeys = []; //used for duplicate protection
   var foundSender = false;
   //if we have no sender, then we are propagating the whole workflow
-  if (YAHOO.lang.isUndefined(sender)) {
+  if (Y.Lang.isUndefined(sender)) {
     foundSender = true;
   }
 
@@ -458,8 +470,8 @@ YabiWorkflow.prototype.propagateFiles = function(sender) {
   this.isPropagating = false;
 
   //afterPropagate call for other objects to hook in to
-  if (!YAHOO.lang.isUndefined(this.afterPropagate) &&
-      !YAHOO.lang.isUndefined(sender)) {
+  if (!Y.Lang.isUndefined(this.afterPropagate) &&
+      !Y.Lang.isUndefined(sender)) {
     this.afterPropagate(sender);
   }
 };
@@ -486,7 +498,7 @@ YabiWorkflow.prototype.selectJob = function(object) {
 
         // callback hook to allow other elements to hook in when jobs are
         // selected/deselected
-        if (!YAHOO.lang.isUndefined(this.afterSelectJob) && object.loaded) {
+        if (!Y.Lang.isUndefined(this.afterSelectJob) && object.loaded) {
           this.afterSelectJob(null);
         }
       } else {
@@ -506,14 +518,14 @@ YabiWorkflow.prototype.selectJob = function(object) {
     this.selectedJob = object;
 
     if (!this.editable &&
-        !YAHOO.lang.isUndefined(this.payload.jobs[selectedIndex].stageout)) {
+        !Y.Lang.isUndefined(this.payload.jobs[selectedIndex].stageout)) {
       this.fileOutputsSelector.updateBrowser(new YabiSimpleFileValue(
           [this.payload.jobs[selectedIndex].stageout], ''));
     }
 
     // callback hook to allow other elements to hook in when jobs are
     // selected/deselected
-    if (!YAHOO.lang.isUndefined(this.afterSelectJob) && object.loaded) {
+    if (!Y.Lang.isUndefined(this.afterSelectJob) && object.loaded) {
       this.afterSelectJob(object);
     }
   }
@@ -652,7 +664,7 @@ YabiWorkflow.prototype.toJSON = function() {
   }
 
   result.jobs = jobs;
-  return YAHOO.lang.JSON.stringify(result);
+  return Y.JSON.stringify(result);
 };
 
 
@@ -664,7 +676,7 @@ YabiWorkflow.prototype.toJSON = function() {
 YabiWorkflow.prototype.hydrate = function(workflowId) {
   var loadImg;
 
-  if (YAHOO.lang.isUndefined(this.workflowId)) {
+  if (Y.Lang.isUndefined(this.workflowId)) {
     this.hydrateDiv = document.createElement('div');
     this.hydrateDiv.className = 'workflowHydrating';
     loadImg = new Image();
@@ -681,22 +693,31 @@ YabiWorkflow.prototype.hydrate = function(workflowId) {
   jsUrl = baseURL;
   jsCallback = {
     success: this.hydrateCallback,
-    failure: YAHOO.ccgyabi.widget.YabiMessage.handleResponse,
-    argument: [this] };
-  this.jsTransaction = YAHOO.util.Connect.asyncRequest('GET',
-      jsUrl, jsCallback, null);
+    failure: function(transId, o) {
+      YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
+    }
+  };
+  var cfg = {
+    on: jsCallback,
+    "arguments": {
+        target: this
+    }
+  };
+  this.jsTransaction = Y.io(jsUrl, cfg);
 
 };
 
 YabiWorkflow.prototype.fadeHydratingDiv = function() {
   //fade out and remove the loading element
-  var anim = new YAHOO.util.Anim(this.hydrateDiv, { opacity: { to: 0.0 } },
-                                 0.3, YAHOO.util.Easing.Linear);
-  anim.onComplete.subscribe(function() {
-    document.body.removeChild(this.getEl());
+  var anim = new Y.Anim({
+      node: Y.one(this.hydrateDiv),
+      to: { opacity: 0 },
+      duration: 0.3
   });
-  anim.animate();
-
+//  anim.on('end', function() {
+//    document.body.removeChild(this.hydrateDiv);
+//  }, this);
+  anim.run();
 };
 
 
@@ -720,7 +741,7 @@ YabiWorkflow.prototype.reuse = function() {
 YabiWorkflow.prototype.saveTags = function(postRelocate) {
   this.tagInputEl.blur();
 
-  if (YAHOO.lang.isUndefined(this.workflowId)) {
+  if (Y.Lang.isUndefined(this.workflowId)) {
     this.tagsFinishedSaving();
     return;
   }
@@ -732,12 +753,20 @@ YabiWorkflow.prototype.saveTags = function(postRelocate) {
   jsUrl = baseURL;
   jsCallback = {
     success: this.saveTagsResponseCallback,
-    failure: function(o) { YAHOO.ccgyabi.widget.YabiMessage.fail(
-        'Error saving tags'); },
-    argument: [this, postRelocate]
+    failure: function(transId, o) { 
+        YAHOO.ccgyabi.widget.YabiMessage.fail(
+            'Error saving tags'); }
   };
-  jsTransaction = YAHOO.util.Connect.asyncRequest('POST',
-      jsUrl, jsCallback, 'taglist=' + escape(this.tagInputEl.value));
+  var cfg = {
+    method: 'POST',
+    data: 'taglist=' + escape(this.tagInputEl.value),
+    on: jsCallback,
+    "arguments": {
+        target: this,
+        callback: postRelocate
+    }
+  };
+  Y.io(jsUrl, cfg);
 };
 
 
@@ -827,12 +856,16 @@ YabiWorkflow.prototype.cancelTagEditing = function() {
   this.tagInputEl.style.display = 'none';
   this.tagListEl.style.display = 'inline';
   this.tagAddLink.style.display = 'block';
-  var myAnim = new YAHOO.util.Anim(this.tagHelpEl, { opacity: { to: 0 } },
-                                   0.5, YAHOO.util.Easing.easeOut);
-  myAnim.onComplete.subscribe(function() {
-    this.getEl().style.display = 'none';
+  var anim = new Y.Anim({
+      node: Y.one(this.tagHelpEl),
+      to: { opacity: 0 },
+      easing: 'easeOut',
+      duration: 0.5
   });
-  myAnim.animate();
+  anim.on('end', function() {
+    this.tagHelpEl.style.display = 'none';
+  }, this);
+  anim.run();
 };
 
 
@@ -857,15 +890,19 @@ YabiWorkflow.prototype.tagsFinishedSaving = function(postRelocate) {
   this.tagInputEl.style.display = 'none';
   this.tagListEl.style.display = 'inline';
   this.tagAddLink.style.display = 'block';
-  var myAnim = new YAHOO.util.Anim(this.tagHelpEl, { opacity: { to: 0 } },
-                                   0.5, YAHOO.util.Easing.easeOut);
-  myAnim.onComplete.subscribe(function() {
-    this.getEl().style.display = 'none';
+  var anim = new Y.Anim({
+      node: Y.one(this.tagHelpEl),
+      to: { opacity: 0 },
+      easing: 'easeOut',
+      duration: 0.5
   });
-  myAnim.animate();
+  anim.on('end', function() {
+    this.tagHelpEl.style.display = 'none';
+  }, this);
+  anim.run();
 
   //if postRelocate != undefined then redirect user to the jobs tab
-  if (!YAHOO.lang.isUndefined(postRelocate)) {
+  if (!Y.Lang.isUndefined(postRelocate)) {
     postRelocate(this.workflowId);
   }
 };
@@ -877,8 +914,9 @@ YabiWorkflow.prototype.tagsFinishedSaving = function(postRelocate) {
  * delete any internal variables and dom handlers
  */
 YabiWorkflow.prototype.destroy = function() {
-  if (YAHOO.util.Connect.isCallInProgress(this.jsTransaction)) {
-    YAHOO.util.Connect.abort(this.jsTransaction, null, false);
+  if (!Y.Lang.isUndefined(this.jsTransaction) && 
+      this.jsTransaction.isInProgress()) {
+    this.jsTransaction.abort();
   }
 
   var job;
@@ -892,20 +930,20 @@ YabiWorkflow.prototype.destroy = function() {
     this.optionsEl.removeChild(job.optionsEl);
     this.statusEl.removeChild(job.statusEl);
 
-    YAHOO.util.Event.purgeElement(job.containerEl);
+    Y.one(job.containerEl).detachAll();
   }
 
   //purge all listeners on nameEl
-  YAHOO.util.Event.purgeElement(this.nameEl);
+  Y.one(this.nameEl).detachAll();
 
   //remove the workflow from its container
   this.mainEl.parentNode.removeChild(this.mainEl);
 
-  if (!YAHOO.lang.isUndefined(this.fileOutputsEl)) {
+  if (!Y.Lang.isUndefined(this.fileOutputsEl)) {
     this.fileOutputsEl.parentNode.removeChild(this.fileOutputsEl);
   }
 
-  if (!YAHOO.lang.isUndefined(this.hydrateDiv)) {
+  if (!Y.Lang.isUndefined(this.hydrateDiv)) {
     try {
       document.body.removeChild(this.hydrateDiv);
       this.hydrateDiv = null;
@@ -914,16 +952,16 @@ YabiWorkflow.prototype.destroy = function() {
 };
 
 //---- CALLBACKS ----
-YabiWorkflow.prototype.hydrateCallback = function(o) {
+YabiWorkflow.prototype.hydrateCallback = function(transId, o, args) {
   var json = o.responseText;
   var i;
   var obj;
 
-  o.argument[0].fadeHydratingDiv();
+  args.target.fadeHydratingDiv();
 
-  target = o.argument[0];
+  target = args.target;
 
-  obj = YAHOO.lang.JSON.parse(json);
+  obj = Y.JSON.parse(json);
 
   //preprocess wrapper meta data
   target.setTags(obj.tags);
@@ -934,45 +972,54 @@ YabiWorkflow.prototype.hydrateCallback = function(o) {
 };
 
 YabiWorkflow.prototype.delJobCallback = function(e, invoke) {
+  e.halt(true);
   invoke.target.deleteJob(invoke.object);
   //prevent propagation of the event to select/deselecting the job
-  YAHOO.util.Event.stopEvent(e);
 };
 
 YabiWorkflow.prototype.selectJobCallback = function(e, invoke) {
+  e.halt(true);
   var workflow = invoke.target;
 
   workflow.selectJob(invoke.object);
 
-  YAHOO.util.Event.stopEvent(e);
 };
 
-YabiWorkflow.prototype.startDragJobCallback = function(x, y) {
-  this.getEl().style.visibility = 'hidden';
-  this.getDragEl().style.border = 'none';
-  this.getDragEl().style.textAlign = 'left';
-  this.getDragEl().innerHTML = this.getEl().innerHTML;
+YabiWorkflow.prototype.startDragJobCallback = function(e) {
+  var dragNode = e.target.get('dragNode');
+  var node = e.target.get('node');
+
+  node.setStyle('visibility', 'hidden');
+  dragNode.set('innerHTML', node.get('innerHTML'));
+  dragNode.setStyles({
+        border: 'none',
+        textAlign: 'left'
+  });
 
   this.dragType = 'job';
-  this.lastY = y;
+  this.lastY = dragNode.getY();
 };
 
 YabiWorkflow.prototype.endDragJobCallback = function(e) {
   var anim;
+  var drag = e.target.get('node');
 
   if (this.dragType == 'job') {
-    this.getEl().style.visibility = '';
+    drag.setStyle('visibility', '');
   } else {
     this.jobEl.style.visibility = '';
     //this.jobEl.style.opacity = "1.0";
 
-    anim = new YAHOO.util.Anim(this.jobEl, { opacity: { to: 1.0 } },
-                               0.3, YAHOO.util.Easing.Linear);
-    anim.animate();
+    var anim = new Y.Anim({
+      node: Y.one(this.jobEl),
+      to: { opacity: 1.0 },
+      duration: 0.3
+    });
+    anim.run();
 
     this.optionsEl.style.display = 'block';
   }
-  this.getDragEl().style.visibility = 'hidden';
+  //this.getDragEl().style.visibility = 'hidden';
 
   // identify the new location, recreating the jobs array based on
   // current div locations
@@ -1000,7 +1047,7 @@ YabiWorkflow.prototype.endDragJobCallback = function(e) {
 
 YabiWorkflow.prototype.onDragJobCallback = function(e) {
   // Keep track of the direction of the drag for use during onDragOver
-  var y = YAHOO.util.Event.getPageY(e);
+  var y = e.target.get('dragNode').getY();
 
   if (y < this.lastY) {
     this.goingUp = true;
@@ -1011,21 +1058,24 @@ YabiWorkflow.prototype.onDragJobCallback = function(e) {
 };
 
 
-YabiWorkflow.prototype.onDragOverJobCallback = function(e, id) {
-  var destEl = YAHOO.util.Dom.get(id);
-  var srcEl, midY;
-  if (this.dragType == 'job') {
-    srcEl = this.getEl();
-  } else {
-    srcEl = this.jobEl;
-  }
+YabiWorkflow.prototype.onDragOverJobCallback = function(e) {
+  e.halt(true);
+  var drag = e.drag.get('node'),
+      drop = e.drop.get('node');
 
-  if (destEl.className == 'jobSuperContainer') {
-    if (this.goingUp) {
-      srcEl.parentNode.insertBefore(srcEl, destEl);
-    } else {
-      srcEl.parentNode.insertBefore(srcEl, destEl.nextSibling);
-    }
+  if (this.dragType !== 'job') {
+    drag = Y.one(this.jobEl);
+  }  
+  
+  if (drop.hasClass('jobSuperContainer')) {
+        //Are we not going up?
+      if (!this.goingUp) {
+        drop = drop.get('nextSibling');
+      }
+      //Add the node to this list
+      e.drop.get('node').get('parentNode').insertBefore(drag, drop);
+      //Resize this nodes shim, so we can drop on it later.
+      e.drop.sizeShim();
   }
 };
 
@@ -1055,9 +1105,13 @@ YabiWorkflow.prototype.addTagCallback = function(e, obj) {
   obj.tagInputEl.style.display = 'inline';
   obj.tagHintDiv.className = 'tagHint';
   obj.tagHelpEl.style.display = 'block';
-  var myAnim = new YAHOO.util.Anim(obj.tagHelpEl, { opacity: { to: 1 } },
-                                   0.5, YAHOO.util.Easing.easeOut);
-  myAnim.animate();
+  var anim = new Y.Anim({
+      node: Y.one(obj.tagHelpEl),
+      to: { opacity: 1 },
+      easing: 'easeOut',
+      duration: 0.5
+  });
+  anim.run();
   obj.tagInputEl.focus();
 };
 
@@ -1075,14 +1129,14 @@ YabiWorkflow.prototype.reuseCallback = function(e, obj) {
   obj.reuse();
 };
 
-YabiWorkflow.prototype.saveTagsResponseCallback = function(o) {
+YabiWorkflow.prototype.saveTagsResponseCallback = function(transId, o, args) {
   //do stuff
   YAHOO.ccgyabi.widget.YabiMessage.success('tags saved');
   var obj;
 
   try {
-    obj = o.argument[0];
-    obj.tagsFinishedSaving(o.argument[1]);
+    obj = args.target;
+    obj.tagsFinishedSaving(args.callback);
   } catch (e) {
     //do nothing
   }
@@ -1097,10 +1151,10 @@ YabiWorkflow.prototype.submitSuccessCallback = function(o,
   try {
     target = o.argument[0];
 
-    obj = YAHOO.lang.JSON.parse(json);
+    obj = Y.JSON.parse(json);
 
     //we should have received an id
-    if (!YAHOO.lang.isUndefined(obj.id)) {
+    if (!Y.Lang.isUndefined(obj.id)) {
       target.workflowId = obj.id;
 
       target.saveTags(postRelocateCallback);
@@ -1110,3 +1164,5 @@ YabiWorkflow.prototype.submitSuccessCallback = function(o,
     YAHOO.ccgyabi.widget.YabiMessage.fail('Error loading workflow');
   }
 };
+
+}); // end of YUI().use(...

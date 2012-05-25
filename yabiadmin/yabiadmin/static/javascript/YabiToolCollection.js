@@ -1,10 +1,11 @@
-
+ToolCollectionYUI = YUI().use('node', 'event', 'dd-drag', 'dd-proxy', 'dd-drop', 'io', 'json-parse', function(Y) {
 
 /**
  * YabiToolCollection
  * fetch and render listing/grouping/smart filtering of tools
  */
-function YabiToolCollection() {
+YabiToolCollection = function() {
+  var self = this;
   this.tools = [];
   this.groupEls = [];
   this.autofilter = true;
@@ -24,14 +25,11 @@ function YabiToolCollection() {
   this.searchEl.className = 'toolSearchField';
 
   //attach key events for changes/keypresses
-  YAHOO.util.Event.addListener(this.searchEl, 'blur',
-                               this.filterCallback, this);
-  YAHOO.util.Event.addListener(this.searchEl, 'keyup',
-                               this.filterCallback, this);
-  YAHOO.util.Event.addListener(this.searchEl, 'change',
-                               this.filterCallback, this);
-  YAHOO.util.Event.addListener(this.searchEl, 'search',
-                               this.filterCallback, this);
+  Y.one(self.searchEl).on('blur', self.filterCallback, null, self);
+  Y.one(self.searchEl).on('keyup', self.filterCallback, null, self);
+  Y.one(self.searchEl).on('change', self.filterCallback, null, self);
+  Y.one(self.searchEl).on('search', self.filterCallback, null, self);
+
 
   this.filterEl.appendChild(this.searchEl);
 
@@ -39,8 +37,7 @@ function YabiToolCollection() {
   this.clearFilterEl.className = 'fakeButton';
   this.clearFilterEl.appendChild(document.createTextNode('show all'));
   this.clearFilterEl.style.visibility = 'hidden';
-  YAHOO.util.Event.addListener(this.clearFilterEl, 'click',
-                               this.clearFilterCallback, this);
+  Y.one(self.clearFilterEl).on('click', self.clearFilterCallback, null, self);
 
   this.filterEl.appendChild(this.clearFilterEl);
 
@@ -54,8 +51,7 @@ function YabiToolCollection() {
   this.autofilterEl.className = 'virtualCheckboxOn';
   this.autofilterEl.appendChild(document.createTextNode('on'));
 
-  YAHOO.util.Event.addListener(this.autofilterEl, 'click',
-                               this.autofilterCallback, this);
+  Y.one(self.autofilterEl).on('click', self.autofilterCallback, null, self);
   this.autofilterContainer.appendChild(this.autofilterEl);
 
   this.filterEl.appendChild(this.autofilterContainer);
@@ -81,6 +77,12 @@ function YabiToolCollection() {
 
   this.hydrate();
 }
+
+YabiToolCollection.registerDDTarget = function(el) {
+  new Y.DD.Drop({ 
+    node: Y.one(el)
+  });
+};
 
 YabiToolCollection.prototype.solidify = function(obj) {
   var tempTool;
@@ -109,11 +111,20 @@ YabiToolCollection.prototype.solidify = function(obj) {
         this.listingEl.appendChild(tempTool.el);
 
         //drag drop
-        tempTool.dd = new YAHOO.util.DDProxy(tempTool.el);
-        tempTool.dd.startDrag = this.startDragToolCallback;
-        tempTool.dd.endDrag = workflow.endDragJobCallback;
-        tempTool.dd.onDrag = workflow.onDragJobCallback;
-        tempTool.dd.onDragOver = workflow.onDragOverJobCallback;
+        var dd = new Y.DD.Drag({
+            node: tempTool.el,
+            data: {
+                tool: tempTool
+            }
+            //startCentered: true,
+        }).plug(Y.Plugin.DDProxy, {
+            moveOnEnd: false
+        });
+
+        dd.on('drag:start', this.startDragToolCallback);
+        dd.on('drag:end', workflow.endDragJobCallback);
+        dd.on('drag:drag', workflow.onDragJobCallback);
+        dd.on('drag:over', workflow.onDragOverJobCallback);
 
         this.tools.push(tempTool);
 
@@ -135,14 +146,12 @@ YabiToolCollection.prototype.hydrate = function() {
   var self = this;
   var url = appURL + 'ws/menu/';
 
-  Y.use('*', function(Y) {
-    var cfg = {
-      on: { complete: self.hydrateResponse },
-      arguments: self
-    };
+  var cfg = {
+    on: { complete: self.hydrateResponse },
+    "arguments": self
+  };
 
-    Y.io(url, cfg);
-  });
+  Y.io(url, cfg);
 
 };
 
@@ -274,37 +283,36 @@ YabiToolCollection.prototype.hydrateResponse = function(transId, o, target) {
   }
 };
 
-YabiToolCollection.prototype.startDragToolCallback = function(x, y) {
+YabiToolCollection.prototype.startDragToolCallback = function(e) {
   var tool;
 
   //work out which tool it is
-  for (var index in tools.tools) {
-    //console.log("comparing "+tools.tools[index].toString());
-    if (this.getEl() == tools.tools[index].el) {
-      tool = tools.tools[index];
-      break;
-    }
-  }
+  tool = e.target.get('data').tool;
 
-  if (YAHOO.lang.isUndefined(tool)) {
+  if (Y.Lang.isUndefined(tool)) {
     YAHOO.ccgyabi.widget.YabiMessage.fail('Failed to find tool');
     return false;
   }
 
   var job = workflow.addJob(tool.toString(), undefined, false);
-  //job.containerEl.style.visibility = "hidden";
   job.containerEl.style.opacity = '0.1';
   job.optionsEl.style.display = 'none';
 
   this.jobEl = job.containerEl;
   this.optionsEl = job.optionsEl;
 
-  this.getDragEl().style.border = 'none';
-  this.getDragEl().style.textAlign = 'left';
-  this.getDragEl().innerHTML = this.getEl().innerHTML;
+  var dragNode = e.target.get('dragNode');
+  dragNode.set('innerHTML', e.target.get('node').get('innerHTML'));
+  dragNode.setStyles({
+    border: 'none',
+    textAlign: 'left'
+  });
   // remove the 'add' image from the dragged item
-  this.getDragEl().removeChild(YAHOO.util.Dom.getLastChild(this.getDragEl()));
+  dragNode.removeChild(dragNode.get('children').slice(-1).item(0));
 
   this.dragType = 'tool';
-  this.lastY = y;
+  this.lastY = dragNode.getY();
 };
+
+
+}); // end of YUI().use(

@@ -4,7 +4,11 @@
     <link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/design.css?20101201')}" />
 
     <script type="text/javascript">
-        YAHOO.util.Event.onDOMReady(initWorkflow);
+        Y.use('*', function(Y) {
+            Y.on('domready', function() {
+                initWorkflow();
+            });
+        });
 
         var workflow;
         var tools;
