@@ -1,6 +1,3 @@
-YAHOO.namespace('ccgyabi.widget');
-
-
 
 /**
  * An upload widget designed for use with YabiFileSelector objects.

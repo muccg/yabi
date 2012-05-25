@@ -1,6 +1,3 @@
-YAHOO.namespace('ccgyabi.widget');
-
-
 
 /**
  * Constructs a new loading widget. This widget provides a simple overlay that

@@ -1,4 +1,3 @@
-YAHOO.namespace('ccgyabi.widget');
 
 Y.use('*', function(Y) {
   Y.on('domready', function() {

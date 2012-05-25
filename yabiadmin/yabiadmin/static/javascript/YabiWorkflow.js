@@ -1143,14 +1143,12 @@ YabiWorkflow.prototype.saveTagsResponseCallback = function(transId, o, args) {
 };
 
 YabiWorkflow.prototype.submitSuccessCallback = function(o,
-                                                        postRelocateCallback) {
+    postRelocateCallback, target) {
   var json = o.responseText;
   var i;
   var obj;
 
   try {
-    target = o.argument[0];
-
     obj = Y.JSON.parse(json);
 
     //we should have received an id

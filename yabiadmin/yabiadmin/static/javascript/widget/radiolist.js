@@ -1,7 +1,3 @@
-YAHOO.namespace('ccgyabi.widget');
-
-
-
 /**
  * A basic radio list element: this constructs an unordered list with the
  * appropriate event handlers to ensure that only one list item is selected at
