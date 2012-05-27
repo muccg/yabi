@@ -1,3 +1,6 @@
+
+
+
 /**
  * A basic radio list element: this constructs an unordered list with the
  * appropriate event handlers to ensure that only one list item is selected at
@@ -53,6 +56,7 @@ RadioList.prototype.createItem = function(label) {
 
   return item;
 };
+
 
 /**
  * Destroys the radio list and removes it from the DOM.

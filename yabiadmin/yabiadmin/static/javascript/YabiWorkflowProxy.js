@@ -46,7 +46,7 @@ function YabiWorkflowProxy(obj, collection) {
   this.tagEl.appendChild(document.createTextNode(this.payload.tags));
   this.proxyEl.appendChild(this.tagEl);
 
-  
+
   Y.one(this.proxyEl).on('click', collection.selectWorkflowCallback, null,
       {'id': this.payload.id, 'wfCollection': collection}
   );

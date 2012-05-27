@@ -56,7 +56,7 @@ YabiAccountCredentials.prototype.createList = function(id) {
 
     Y.io(appURL + 'ws/account/credential', {on: callback});
   });
-  
+
 
 };
 
@@ -140,9 +140,9 @@ YabiCredential.prototype.createForm = function() {
 
   // Hide the confirm password box until the password is actually changed.
   var confirmPasswordContainer = this.form.querySelector(
-                                     '.confirm-password-container');
+                                        '.confirm-password-container');
   var confirmPasswordInput = this.form.querySelector(
-                                     '.password-container input');
+                                        '.password-container input');
   confirmPasswordContainer.style.display = 'none';
 
   var showConfirmPassword = function(e) {
@@ -152,7 +152,7 @@ YabiCredential.prototype.createForm = function() {
     confirmPasswordContainer.style.height = 0;
     confirmPasswordContainer.style.marginBottom = 0;
     confirmPasswordContainer.style.display = 'block';
-    
+
     Y.use('*', function(Y) {
       var anim = new Y.Anim({
         node: Y.one(confirmPasswordContainer),
@@ -163,7 +163,7 @@ YabiCredential.prototype.createForm = function() {
         easing: 'easeOut',
         duration: 0.4
 
-      }); 
+      });
 
       anim.run();
     });
@@ -205,7 +205,7 @@ YabiCredential.prototype.createForm = function() {
     var formNode = Y.one(form);
     formNode.on('submit', function(e) {
       e.halt(true);
-      self.save()
+      self.save();
     });
   });
 };
@@ -298,7 +298,8 @@ YabiCredential.prototype.save = function() {
       on: callback
     };
 
-    var request = Y.io(appURL + 'ws/account/credential/' + this.credential.id, cfg);
+    var request = Y.io(appURL + 'ws/account/credential/' +
+        this.credential.id, cfg);
 
     self.disableForm();
   }
