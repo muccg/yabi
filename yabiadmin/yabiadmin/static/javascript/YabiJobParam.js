@@ -257,7 +257,9 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
  * purges event handlers, deletes dom related things that need to be cleared out
  */
 YabiJobParam.prototype.destroy = function() {
-  Y.one(this.inputEl).detachAll();
+  if (!Y.Lang.isUndefined(this.inputEl)) {
+    Y.one(this.inputEl).detachAll();
+  }
 };
 
 

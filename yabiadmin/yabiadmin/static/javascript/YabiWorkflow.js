@@ -709,14 +709,17 @@ YabiWorkflow.prototype.hydrate = function(workflowId) {
 
 YabiWorkflow.prototype.fadeHydratingDiv = function() {
   //fade out and remove the loading element
+  if (!Y.one(document.body).contains(this.hydrateDiv)) {
+    return;
+  }
   var anim = new Y.Anim({
       node: Y.one(this.hydrateDiv),
       to: { opacity: 0 },
       duration: 0.3
   });
-//  anim.on('end', function() {
-//    document.body.removeChild(this.hydrateDiv);
-//  }, this);
+  anim.on('end', function() {
+    document.body.removeChild(this.hydrateDiv);
+  }, this);
   anim.run();
 };
 

@@ -39,7 +39,7 @@ YabiFileSelector = function(param, isBrowseMode, filePath, readOnly) {
   homeImg.title = homeImg.alt;
   homeImg.src = appURL + 'static/images/home.png';
   this.homeEl.appendChild(homeImg);
-  Y.one(self.homeEl).on('click', self.goToRoot, self);
+  Y.one(self.homeEl).on('click', self.goToRoot, null, self);
   this.toplevelEl.appendChild(this.homeEl);
   this.browseEl.appendChild(this.toplevelEl);
 
