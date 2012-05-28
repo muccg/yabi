@@ -398,26 +398,3 @@ def rcopy_file(yabiusername, src, dst):
     r = handle_connection(POST,resource,data)
     data=r.read()
     return r.status, data
-
-def send_upload_hash(yabiusername,uri,uuid):
-    """Send an upload has to the backend. Returns the url returned by the backend for uploading"""
-    logger.debug('yabiusername: %s uri: %s uuid: %s'%(yabiusername,uri,uuid))
-    
-    resource = "%s?uri=%s&uuid=%s&yabiusername=%s"%(settings.YABIBACKEND_UPLOAD,quote(uri),quote(uuid),quote(yabiusername))
-    
-    # get credentials for uri destination backend
-    data = get_fs_credential_for_uri(yabiusername, uri).get()
-            
-    resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(cred['username']),quote(cred['password']),quote(cred['cert']),quote(cred['key']))
-    logger.debug('server: %s resource: %s'%(settings.YABIBACKEND_SERVER, resource))
-                
-    logger.debug( "POST"+resource )
-    logger.debug( "DATA"+str(data) )
-                
-    r = handle_connection(POST,resource, data)
-    result = r.read()
-    logger.debug("status:"+str(r.status))
-    logger.debug("data:"+str(result))
-    decoded = json.loads(result)
-    return decoded
-    
