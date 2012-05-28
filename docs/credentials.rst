@@ -50,6 +50,23 @@ For example in Yabi my username may be andrew while on a cluster my username may
 
 **Expires On:** An expiry date for the credential. At the moment the expiry date is required. If the key does not have one just pick a date far in the future.
 
+Credentials for SSH and SCP Backends
+""""""""""""""""""""""""""""""""""""
+
+The SSH protocol supports a number of ways to authenticate yourself to a remote host. This simplest is by a password. You can also authenticate via a RSA or DSS
+private/public keypair. The private side of this keypair has the option of being protected by a passphrase. All of these authentication styles are supported by
+yabi via the same Credential object. The way that is attempted is dependent on which fields of the Credential object are filled. The following applies:
+
++--------------------------+------------------+------------+------------------------------+
+| Authentication Type      | Password field   | Cert field | Key field                    | 
++==========================+==================+============+==============================+
+| Password                 | Account password | empty      | empty                        |
++--------------------------+------------------+------------+------------------------------+
+| Passphraseless key       | empty            | empty      | the private keyfile contents |
++--------------------------+------------------+------------+------------------------------+
+| Passphrase protected key | Key passphrase   | empty      | the private keyfile contents |
++--------------------------+------------------+------------+------------------------------+
+
 Credential Actions
 ------------------
 

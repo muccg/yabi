@@ -77,7 +77,8 @@ ${self.block_content()}<%def name="block_content()">
     % endfor
 </table>
 % else:
-<h3>${error}</h3>
+<h3 class="error">${error}</h3>
+<p>${error_help}</p>
 % endif
 </div>
 </%def>

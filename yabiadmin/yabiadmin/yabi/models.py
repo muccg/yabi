@@ -38,7 +38,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.cache import cache
 from django.utils.encoding import smart_str
 from urlparse import urlparse, urlunparse
-from crypto import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, DecryptException, AESTEMP
+from crypto import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, deannotate, DecryptException, AESTEMP
 from constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK
 from yabiadmin.utils import cache_keyname
 
@@ -638,6 +638,16 @@ class Credential(Base):
         """We assume its plaintext if it fails the crypto looks_like_annotated_block() function"""
         return not (looks_like_annotated_block(self.password) and looks_like_annotated_block(self.key) and looks_like_annotated_block(self.cert))
         
+    @property
+    def is_protected(self):
+        """Is this cred a temporarily protected one?"""
+        return not (self.is_plaintext or not deannotate(self.password)[0]==AESTEMP)
+    
+    @property
+    def is_encrypted(self):
+        """Is this cred fully encrypted with user pass?"""
+        return not (self.is_plaintext or not deannotate(self.password)[0]!=AESTEMP)
+        
     def is_only_hex(self):
         """This is a legacy function to help migrating old encrypted creds to new creds.
         It returns true if the key, cert and password fields are soley composed of hex characters.
@@ -648,6 +658,11 @@ class Credential(Base):
         if self.is_plaintext:
             # temporarily protect this for saving
             self.protect()
+            
+    def on_post_save(self):
+        if self.is_protected:
+            # cache the protected form while we have it
+            self.send_to_cache()
             
     def on_post_init(self):
         if not self.is_plaintext:
@@ -936,7 +951,12 @@ def signal_credential_pre_save(sender, instance, **kwargs):
     logger.debug("credential pre_save signal")
     
     instance.on_pre_save()
-        
+
+def signal_credential_post_save(sender, instance, **kwargs):
+    logger.debug("credential post_save signal")
+    
+    instance.on_post_save()
+       
 def signal_credential_post_init(sender, instance, **kwargs):
     logger.debug("credential post_init signal")
 
@@ -967,6 +987,7 @@ from django.db.models.signals import post_save, pre_save,post_init
 post_save.connect(signal_tool_post_save, sender=Tool, dispatch_uid="signal_tool_post_save")
 post_save.connect(create_user_profile, sender=DjangoUser, dispatch_uid="create_user_profile")
 pre_save.connect(signal_credential_pre_save, sender=Credential, dispatch_uid="signal_credential_pre_save")
+post_save.connect(signal_credential_post_save, sender=Credential, dispatch_uid="signal_credential_post_save")
 post_init.connect(signal_credential_post_init, sender=Credential, dispatch_uid="signal_credential_post_init")
 
 

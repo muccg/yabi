@@ -49,6 +49,7 @@ from django.conf import settings
 from django.contrib import auth
 from crypto import DecryptException
 from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
 
 from yabiadmin.yabiengine import storehelper as StoreHelper
@@ -93,6 +94,7 @@ def tool(request, toolname):
         return JsonMessageResponseNotFound("Object not found")
 
 @authentication_required
+@vary_on_cookie
 @cache_page(300)
 def menu(request):
     username = request.user.username
