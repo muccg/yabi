@@ -349,7 +349,8 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
                     log.msg(log_msg + "thus setting job state to: %s"%newstate)
                     
                 else:
-                    newstate = "Done"
+                    print "Error! We atempted to qstat the job <%s>, the call was successful, but we got no data at all. The job just VANISHED! We are marking this job as errored"%jobid
+                    newstate = "Error"                  # we cannot determine the remote execution status
                 
                 
             else:
