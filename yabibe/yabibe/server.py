@@ -72,25 +72,18 @@ from BaseResource import BaseResource
 # Twisted Application Framework setup:
 application = service.Application('yabibe')
 
-# set up twisted logging
-from twisted.python.log import ILogObserver, FileLogObserver
-from twisted.python.logfile import DailyLogFile
+if "--syslog" in sys.argv:
+    # set up twisted logging
+    from twisted.python.log import ILogObserver, FileLogObserver
+    from twisted.python.logfile import DailyLogFile
 
-LOG_STDOUT = "--logfile=-" in sys.argv or "-l-" in sys.argv
-LOG_FILE = False                                                                                    # False, log to syslog. True, log to file.
+    SYSLOG_PREFIX = config.config['backend']['syslog_prefix'] % {  'username':pwd.getpwuid(os.getuid()).pw_name,
+                                                        'pid':os.getpid()
+                                                     }
+    SYSLOG_FACILITY = config.config['backend']['syslog_facility']
 
-SYSLOG_PREFIX = "YABI [yabibe:%s]" % pwd.getpwuid(os.getuid()).pw_name
-SYSLOG_FACILITY = syslog.syslog.LOG_LOCAL4
-
-if not LOG_STDOUT:
-    path, fname = [ os.path.expanduser(X) for X in os.path.split(logfile)]
-    logfileobj = DailyLogFile(fname, path)
-    
-    if LOG_FILE:
-        application.setComponent(ILogObserver, FileLogObserver(logfileobj).emit)
-    else:
-        # log to syslog
-        application.setComponent(ILogObserver, syslog.SyslogObserver(prefix=SYSLOG_PREFIX, facility=SYSLOG_FACILITY).emit)
+    # log to syslog
+    application.setComponent(ILogObserver, syslog.SyslogObserver(prefix=SYSLOG_PREFIX, facility=SYSLOG_FACILITY).emit)
 
 # Create the resource we will be serving
 base = BaseResource()
