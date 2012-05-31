@@ -83,6 +83,21 @@ On the box running Yabi, as the user Yabi, try SSHing to the backend resource. W
 answer Yes to add the host to the list of known_hosts. You don't actually have to connect, you just need to ensure the host is in known_hosts. Now
 try connecting through Yabi again. 
 
+How do I get symlinking working?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The backend will use symlinks if these conditions are met:
+ - the File System backend has Link Supported enabled
+ - the tools in the workflow have Link Supported enabled
+ - all the tools use the same File System backend
+
+A gotcha here is that by default the File Select tool uses nullbackend for the File System backend and Execution backend.
+Make sure that you change the File System backend on File Select to be localfs or scp etc, the same as the tools that will follow it.
+This should ensure symlinks are used rather than copying input files.
+
+Of course, if you select a file from a file system that is separate from the execution file 
+system then Yabi has to make a copy to stage it in.
+
 
 Backend
 -------
