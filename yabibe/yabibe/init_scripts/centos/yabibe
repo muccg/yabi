@@ -9,6 +9,8 @@
 #              make use of the RPC mechanism.
 # processname: portmap
 
+set -e
+
 NAME="yabibe"
 #TWISTDLIST="/usr/local/yabi/src/yabi-be-twisted/release/mypython/bin/twistd"
 #TWISTDLIST="virt_yabi-be-twisted/bin/twistd"
@@ -44,22 +46,11 @@ fi
 
 # INI file parser
 cfg.parser () {
-    IFS=$'\n' && ini=( $(<$1) )                 # convert to line-array
-    ini=( ${ini[*]//;*/} )                      # remove comments ‘;’
-    ini=( ${ini[*]//\#*/} )                     # remove comments ‘#’
-    ini=( ${ini[*]/:/ \=} )                     # convert : to =
-    ini=( ${ini[*]/\ =\ /=} )                   # remove anything with a space around ‘ = ‘
-    ini=( ${ini[*]/#[/\}$'\n'cfg.section.} )    # set section prefix
-    ini=( ${ini[*]/%]/ \(} )                    # convert text2function (1)
-    ini=( ${ini[*]/=/=\( } )                    # convert item to array
-    ini=( ${ini[*]/%/ \)} )                     # close array parenthesis
-    ini=( ${ini[*]/%\( \)/\(\) \{} )            # convert text2function (2)
-    ini=( ${ini[*]/%\} \)/\}} )                 # remove extra parenthesis
-    ini=( ${ini[*]/#\ */} )                     # remove blank lines
-    ini=( ${ini[*]/#\ */} )                     # remove blank lines with tabs
-    ini[0]=''                                   # remove first element
-    ini[${#ini[*]} + 1]='}'                     # add the last brace
-    eval "$(echo "${ini[*]}")"                  # eval the result
+    CONFIG_FILE = $1
+    runningdir=`cat "$CONFIG_FILE" | grep -i '^runningdir' | head -1 | cut -d '#' -f 1 | cut -d ':'  -f 2`
+    logfile=`cat "$CONFIG_FILE" 1| grep -i 'logfile' | head -1 | cut -d '#' -f 1 | cut -d ':'  -f 2`
+    pidfile=`cat "$CONFIG_FILE" 1| grep -i 'pidfile' | head -1 | cut -d '#' -f 1 | cut -d ':'  -f 2`
+    source=`cat "$CONFIG_FILE" 1| grep -i 'source' | head -1 | cut -d '#' -f 1 | cut -d ':'  -f 2`
 }
         
 # search a path for a file
