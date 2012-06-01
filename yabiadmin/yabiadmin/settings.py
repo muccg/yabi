@@ -71,7 +71,8 @@ INSTALLED_APPS = [
     'djcelery',
     'djkombu',
     'django_extensions',
-    'south'    
+    'south',
+    'djamboloader'
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
@@ -324,6 +325,15 @@ PREVIEW_METADATA_EXPIRY = 60
 # The maximum file size that can be previewed.
 PREVIEW_SIZE_LIMIT = 1048576
 
+# Used by djamboloader to combo load the YUI JS files
+JAVASCRIPT_LIBRARIES = {
+  "yui3": {
+    "path": "static/javascript/lib/yui-3.5.1/build/",
+  },
+  "yui2in3": {
+    "path": "static/javascript/lib/yui-2in3/dist/2.9.0/build/",
+  },
+}
 
 ### LOGGING SETUP ###
 # see https://docs.djangoproject.com/en/dev/topics/logging/
@@ -365,6 +375,11 @@ LOGGING = {
         },
         'django.request': {
             'handlers': ['console', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'djamboloader': {
+            'handlers': ['console'],
             'level': 'ERROR',
             'propagate': False,
         },

@@ -62,6 +62,11 @@
         } 
     };
     var appURL = "${h.url('/')}";
+
+    // Set this to false if you want to get each YUI JS file on its own
+    // for debugging YUI itself.
+    YAHOO.ccgyabi.combineJS = true;
+
 % if request:
     YAHOO.ccgyabi.username = '${request.user.username}';
 % endif
@@ -71,8 +76,10 @@
                 base: 'static/javascript/lib/yui-2in3/dist/2.9.0/build/',
 
                 // If you have a combo service, you can configure that as well
-                // combine: true,
+                combine: YAHOO.ccgyabi.combineJS,
                 // comboBase: 'http://myserver.com/combo?',
+                comboBase: 'djamboloader/yui2in3/combo?',
+                root: '',
                 // root: '/2in3/build/',
 
                 patterns: {
@@ -87,7 +94,10 @@
                     }
                 }
             }
-        }
+        },
+        combine: YAHOO.ccgyabi.combineJS,
+        comboBase: 'djamboloader/yui3/combo?',
+        root: ''
     };
 
     var Y = YUI().use('node', 'event', 'io-form', 'json', 'anim', 'io-upload-iframe', 'dd', function(Y) {});

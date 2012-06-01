@@ -30,6 +30,7 @@ from django.conf import settings
 from django.core import urlresolvers
 from django.contrib import admin as djangoadmin
 from yabiadmin import admin, uploader
+
 djangoadmin.autodiscover()
 
 urlpatterns = patterns('yabiadmin.yabifeapp.views',
@@ -88,3 +89,8 @@ if settings.DEBUG:
 urlpatterns += patterns('django.views.generic.simple',
     (r'^favicon\.ico', 'redirect_to', {'url': '/static/images/favicon.ico'}),
     )
+
+urlpatterns += patterns('',
+    url(r'^djamboloader/', include('djamboloader.urls')),
+)
+
