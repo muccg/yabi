@@ -170,8 +170,8 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
 
       for (index in this.payload.possible_values.filterGroup) {
         var possibleValues = this.payload.possible_values.filterGroup[index];
-        var key = this.payload.possible_values.filterGroup[index].key;
-        this.filterGroupHash[key] = possibleValues;
+        var fgkey = this.payload.possible_values.filterGroup[index].key;
+        this.filterGroupHash[fgkey] = possibleValues;
       }
 
       //set default

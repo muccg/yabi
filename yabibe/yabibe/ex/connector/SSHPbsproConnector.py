@@ -119,14 +119,16 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         if DEBUG:
             print "submission script path is %s"%(submission_script)
         
-        # build up our remote qsub command
-        ssh_command = "cat >'%s' && "%(submission_script)
-        ssh_command += "qsub -N '%s' -e '%s' -o '%s' '%s'"%(
+        qsub_submission_script = "qsub -N '%s' -e '%s' -o '%s' '%s'"%(
                                                                         "yabi"+remoteurl.rsplit('/')[-1],
                                                                         os.path.join(working,stderr),
                                                                         os.path.join(working,stdout),
                                                                         submission_script
                                                                     )
+        
+        # build up our remote qsub command
+        ssh_command = "cat >'%s' && "%(submission_script)
+        ssh_command += qsub_submission_script
         ssh_command += " ; EXIT=$? "
         ssh_command += " ; rm '%s'"%(submission_script)
         #ssh_command += " ; echo $EXIT"
@@ -138,7 +140,16 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         usercert = self.save_identity(creds['key'])
         
         script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue, stdout, stderr)    
+        
+        # hande log setting
+        if config.config['execution']['logcommand']:
+            print SCHEMA+" attempting submission command: "+qsub_submission_script
             
+        if config.config['execution']['logscripts']:
+            print SCHEMA+" submission script:"
+            print script_string
+            
+        
         if DEBUG:
             print "_ssh_qsub"
             print "usercert:",usercert
@@ -338,7 +349,8 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
                     log.msg(log_msg + "thus setting job state to: %s"%newstate)
                     
                 else:
-                    newstate = "Done"
+                    print "Error! We atempted to qstat the job <%s>, the call was successful, but we got no data at all. The job just VANISHED! We are marking this job as errored"%jobid
+                    newstate = "Error"                  # we cannot determine the remote execution status
                 
                 
             else:

@@ -136,7 +136,8 @@ class SSHRetryController(RetryController):
                                 r'Readlink returned \d+ results',
                                 r'Realpath returned \d+ results',
                                 r'size mismatch in put!',
-                                r'size mismatch in get!'
+                                r'size mismatch in get!',
+                                r'Remote host key is denied'
                            ],
                         }
     

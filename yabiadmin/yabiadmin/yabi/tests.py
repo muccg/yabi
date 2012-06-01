@@ -56,11 +56,7 @@ class CredentialTests(unittest.TestCase):
     def test_cache_keyname_replaces_unicode_character(self):
         self.assertTrue('\xc5\x91' in self.credential.cache_keyname())
 
-    def test_not_cached(self):
-        self.assertFalse(self.credential.is_cached)
-
     def test_cache(self):
-        self.credential.send_to_cache()
         self.assertTrue(self.credential.is_cached)
         self.assertEqual(self.credential.get_from_cache(), None)
 

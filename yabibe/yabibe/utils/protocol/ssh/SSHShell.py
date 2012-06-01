@@ -34,6 +34,8 @@ from twisted.internet import reactor
 from BaseShell import BaseShell, BaseShellProcessProtocol
 from SSHRun import  SSHExecProcessProtocolParamiko 
 
+from conf import config
+
 DEBUG = False
 
 def convert_filename_to_encoded_for_echo(filename):
@@ -66,6 +68,8 @@ class SSHShell(BaseShell):
             print "PASSWORD:","*"*len(password)
         
         subenv = self._make_env()
+        subenv['YABIADMIN'] = config.yabiadmin
+        subenv['HMAC'] = config.config['backend']['hmackey']
         
         sshcommand = [self.python, self.ssh_exec ]
         sshcommand += ["-i",certfile] if certfile else []
@@ -76,9 +80,8 @@ class SSHShell(BaseShell):
         
         if DEBUG:
             print "SSHShell Running:",sshcommand
-         
-        
-        return BaseShell.execute(self,SSHExecProcessProtocolParamiko(),sshcommand)
+                
+        return BaseShell.execute(self,SSHExecProcessProtocolParamiko(),sshcommand, subenv)
 
     def execute_list(self, certfile, host, path, username, password, recurse=False, port=None):
         """Spawn a process to run a remote ssh job. return the process handler"""
@@ -92,6 +95,9 @@ class SSHShell(BaseShell):
         
         subenv = self._make_env()
         
+        subenv['YABIADMIN'] = config.yabiadmin
+        subenv['HMAC'] = config.config['backend']['hmackey']
+        
         sshcommand = [self.python, self.ssh_exec ]
         sshcommand += ["-i",certfile] if certfile else []
         sshcommand += ["-p",password] if password else []
@@ -103,7 +109,7 @@ class SSHShell(BaseShell):
             print "SSHShell Running:",sshcommand
          
         
-        return BaseShell.execute(self,SSHExecProcessProtocolParamiko(),sshcommand)
+        return BaseShell.execute(self,SSHExecProcessProtocolParamiko(),sshcommand,subenv)
 
       
     def ls(self, certfile, host, directory,username, password, recurse=False, port=None):

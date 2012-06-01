@@ -3,6 +3,16 @@
 Frequently Asked Questions
 ==========================
 
+Admin
+-----
+
+I've installed Yabi but when I try to login why do I see this error "Unable to create a new session key."?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This is most likely because you do not have caching set up and Django cannot write its session information to cache. If 
+you are running memcached caching have you started memcached? If you are using file based caching, is the cache directory
+writable and readable by Yabi?
+
 What backend should a file select tool use or why won't my file select run?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -69,6 +79,58 @@ Using just a password for ssh (not a private key) should be the same steps.
 I seem to have SSH backend setup but am getting nothing, why?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-On the box running Yabi, as the user Yabi, try SSHing to the backend resource. When asked the question "The authenticity of host...", 
-answer Yes to add the host to the list of known_hosts. You don't actually have to connect, you just need to ensure the host is in known_hosts. Now
-try connecting through Yabi again. 
+When a connection is first made to an unknown SSH backend, it will be denied. This is because the SSH Host Key sent by the server is unknown.
+Yabi stores its known host keys inside its database. It **does not** utilise the system ``~/.ssh/known_hosts`` file at all. After the initial connection
+is refused, you may go to the Known Hosts section of yabi admin. Here you will see the denied key and its fingerprint. Verify the fingerprint,
+and if it is correct, mark the key as accepted. Do this by clicking on the hostname portion of the line to take yourself to the Host Key editing page.
+Then mark the *Accepted* checkbox. Then click *Save*. Now try reconnecting to the server via Yabi.
+
+Backend
+-------
+
+How do I know if the backend is running?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+If you can browse files in the Files tab of Yabi then the backend is running. If you are still not sure then visit the url 
+for the backend i.e. http://127.0.0.1:9001/ and you should see:
+
+::
+
+    Twisted Yabi Core: 0.2
+
+NB: If you have set a different port in the yabi.conf file for the backend the url will be different.
+
+
+Why do I get compile errors from gevent when setting up the backend?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you are getting errors that look like this:
+
+::
+
+    gevent/core.c:15914: warning: implicit declaration of function 'evhttp_accept_socket'
+    gevent/core.c: At top level:
+    gevent/core.c:21272: error: expected ')' before 'val'
+    error: command 'gcc' failed with exit status 1
+
+Then you need to install libevent and libevent-dev before trying to install Yabi. Yabi backend uses gevent which depends on libevent.
+
+
+Why am I getting pyOpenSSL errors when running the backend?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you are getting this error:
+
+::
+
+    from OpenSSL import crypto 
+    exceptions.ImportError: cannot import name crypto 
+
+You are most likely running on Python 2.7. The version of pyOpenSSL that we are including works with Python 2.6. To fix this you just need to
+install the latest version of pyOpenSSL into the backend virtualenv:
+
+::
+
+    cd yabibe/yabibe 
+    source virt_yabibe/bin/activate 
+    pip install -U pyOpenSSL 
+

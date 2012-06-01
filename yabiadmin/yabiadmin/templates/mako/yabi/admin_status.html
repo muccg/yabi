@@ -24,7 +24,7 @@ ${self.block_branding()}<%def name="block_branding()">
       <tr>
         <td>${item.pid}</td>
         <td>${item.name}</td>
-        <td>${item.command}</td>
+        <td>${" ".join(item.cmdline)}</td>
       </tr>
       % endfor
 % else:

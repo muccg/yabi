@@ -256,7 +256,7 @@ class FileCopyResource(resource.PostableResource):
                 rexit = "Killed" if readproto.exitcode==None else str(readproto.exitcode)
                 wexit = "Killed" if writeproto.exitcode==None else str(writeproto.exitcode)
                 
-                msg = ("Copy failed:\n\nRead process: %s\n"+readproto.err+"\n\nWrite process: %s\n"+writeproto.err+"\n")%(rexit,wexit)
+                msg = "Copy failed:\n\nRead process: "+rexit+"\n"+readproto.err+"\n\nWrite process: "+wexit+"\n"+writeproto.err+"\n"
                 #print "MSG",msg
                 channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, msg))
                 

@@ -52,7 +52,8 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
     'django.middleware.doc.XViewMiddleware',
-    'ccg.middleware.ssl.SSLRedirect'
+    'ccg.middleware.ssl.SSLRedirect',
+    'django.contrib.messages.middleware.MessageMiddleware'    
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -63,6 +64,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.staticfiles',
+    'django.contrib.messages',
     'yabiadmin.yabifeapp',
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
@@ -128,6 +130,11 @@ MEDIA_URL = url('/static/media/')
 
 # a directory that will be writable by the webserver, for storing various files...
 WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
+
+# put our temporary uploads directory inside WRITABLE_DIRECTORY
+FILE_UPLOAD_TEMP_DIR = os.path.join(WRITABLE_DIRECTORY,".uploads")
+if not os.path.exists(FILE_UPLOAD_TEMP_DIR):
+    os.mkdir(FILE_UPLOAD_TEMP_DIR)
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#append-slash
 APPEND_SLASH = True
@@ -226,18 +233,22 @@ MANAGERS = ADMINS
 #AUTH_LDAP_MEMBERATTR = 'uniqueMember'
 #AUTH_LDAP_USERDN = 'ou=People'
 
-
+# set up caching. For production you should probably use memcached
+# see https://docs.djangoproject.com/en/dev/topics/cache/
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': 'localhost.localdomain:11211',
-        'KEYSPACE': "yabiadmin"
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'yabi_cache',
+        'TIMEOUT': 3600,
+        'MAX_ENTRIES': 600
     }
 }
 
-# uncomment to use memcache for sessions, be sure to have uncommented memcache settings above
 # see https://docs.djangoproject.com/en/dev/ref/settings/#session-engine
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+# https://docs.djangoproject.com/en/1.3/ref/settings/#std:setting-SESSION_FILE_PATH
+# in production we would suggest using memcached for your session engine
+SESSION_ENGINE = 'django.contrib.sessions.backends.file'
+SESSION_FILE_PATH = WRITABLE_DIRECTORY
 
 # uploads are currently written to disk and double handled, setting a limit will break things
 # see https://docs.djangoproject.com/en/dev/ref/settings/#file-upload-max-memory-size
