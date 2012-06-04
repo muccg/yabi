@@ -85,6 +85,22 @@ is refused, you may go to the Known Hosts section of yabi admin. Here you will s
 and if it is correct, mark the key as accepted. Do this by clicking on the hostname portion of the line to take yourself to the Host Key editing page.
 Then mark the *Accepted* checkbox. Then click *Save*. Now try reconnecting to the server via Yabi.
 
+How do I get symlinking working?
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The backend will use symlinks if these conditions are met:
+ - the File System backend has Link Supported enabled
+ - the tools in the workflow have Link Supported enabled
+ - all the tools use the same File System backend
+
+A gotcha here is that by default the File Select tool uses nullbackend for the File System backend and Execution backend.
+Make sure that you change the File System backend on File Select to be localfs or scp etc, the same as the tools that will follow it.
+This should ensure symlinks are used rather than copying input files.
+
+Of course, if you select a file from a file system that is separate from the execution file 
+system then Yabi has to make a copy to stage it in.
+
+
 Backend
 -------
 
