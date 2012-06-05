@@ -15,10 +15,10 @@ class Migration(SchemaMigration):
             ('last_modified_on', self.gf('django.db.models.fields.DateTimeField')(auto_now=True, null=True, blank=True)),
             ('created_by', self.gf('django.db.models.fields.related.ForeignKey')(related_name='hostkey_creators', null=True, to=orm['auth.User'])),
             ('created_on', self.gf('django.db.models.fields.DateTimeField')(auto_now_add=True, blank=True)),
-            ('backend', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['yabi.Backend'])),
+            ('hostname', self.gf('django.db.models.fields.CharField')(max_length=512)),
             ('key_type', self.gf('django.db.models.fields.CharField')(max_length=32)),
-            ('message', self.gf('django.db.models.fields.CharField')(max_length=1024)),
-            ('data', self.gf('django.db.models.fields.CharField')(max_length=16384)),
+            ('fingerprint', self.gf('django.db.models.fields.CharField')(max_length=64)),
+            ('data', self.gf('django.db.models.fields.TextField')(max_length=16384)),
             ('allowed', self.gf('django.db.models.fields.BooleanField')(default=False)),
         ))
         db.send_create_signal('yabi', ['HostKey'])
@@ -138,15 +138,15 @@ class Migration(SchemaMigration):
         'yabi.hostkey': {
             'Meta': {'object_name': 'HostKey'},
             'allowed': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
-            'backend': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['yabi.Backend']"}),
             'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'hostkey_creators'", 'null': 'True', 'to': "orm['auth.User']"}),
             'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
-            'data': ('django.db.models.fields.CharField', [], {'max_length': '16384'}),
+            'data': ('django.db.models.fields.TextField', [], {'max_length': '16384'}),
+            'fingerprint': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
+            'hostname': ('django.db.models.fields.CharField', [], {'max_length': '512'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'key_type': ('django.db.models.fields.CharField', [], {'max_length': '32'}),
             'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'hostkey_modifiers'", 'null': 'True', 'to': "orm['auth.User']"}),
-            'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
-            'message': ('django.db.models.fields.CharField', [], {'max_length': '1024'})
+            'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'})
         },
         'yabi.parameterswitchuse': {
             'Meta': {'object_name': 'ParameterSwitchUse'},
@@ -261,6 +261,12 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '50'}),
             'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['auth.User']", 'unique': 'True'}),
             'user_option_access': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
+        },
+        'yabi.yabicache': {
+            'Meta': {'object_name': 'YabiCache', 'db_table': "'yabi_cache'"},
+            'cache_key': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255', 'primary_key': 'True'}),
+            'expires': ('django.db.models.fields.DateTimeField', [], {'db_index': 'True'}),
+            'value': ('django.db.models.fields.TextField', [], {})
         }
     }
 
