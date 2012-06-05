@@ -124,7 +124,7 @@ def sign_uri(uri):
     return hmac_digest.hexdigest()
 
 def make_path(uri):
-    parse = urlparse.urlparse(url)
+    parse = urlparse.urlparse(uri)
     return parse.path + "?" + parse.query
 
 def load_known_hosts_from_admin(hostname):
