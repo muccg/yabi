@@ -31,7 +31,7 @@ import setproctitle
 setproctitle.setproctitle("yabi-ssh startup...")
 
 import paramiko
-import os, sys, select, stat, time, json, uuid
+import os, sys, select, stat, time, json, uuid, urlparse
 import requests
 import binascii
 import base64
@@ -128,7 +128,7 @@ def load_known_hosts_from_admin(hostname):
     assert yabiadmin
     path = "ws/hostkeys?hostname=%s"%hostname
     url = yabiadmin + path
-    r = requests.get( url, headers={'Hmac-digest':sign_uri(url)}, verify=SSL_CERT_CHECK )
+    r = requests.get( url, headers={'Hmac-digest':sign_uri( urlparse.urlparse(url).path )}, verify=SSL_CERT_CHECK )
     
     assert r.status_code == 200
     
@@ -153,7 +153,7 @@ def add_rejected_key_to_admin(hostname, hostkey):
             )             # encodes fingerprint into colon seperated hex style of 'ae:52:f4:54:0a:4b:f0:11:ae:52:f4:54:0a:4b:f0:11'
         },
         headers = {
-            'Hmac-digest':sign_uri(url)
+            'Hmac-digest':sign_uri( urlparse.urlparse(url).path )
         },
         verify=SSL_CERT_CHECK
     )
