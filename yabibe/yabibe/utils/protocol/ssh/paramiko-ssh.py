@@ -52,7 +52,7 @@ if 'SSH_AUTH_SOCK' in os.environ:
 yabiadmin = os.environ.get('YABIADMIN',None)
 
 # get the setting that tells us to check the ssl cert chain or to ignore it
-SSL_CERT_CHECK = os.environ.get("SSL_CERT_CHECK",True)
+SSL_CERT_CHECK = bool(os.environ.get("SSL_CERT_CHECK",True))
 
 assert 'HMAC' in os.environ
 hmac_key = os.environ['HMAC']
