@@ -52,6 +52,7 @@ class SSHCopy(BaseShell):
         subenv = self._make_env()
         subenv['YABIADMIN'] = config.yabiadmin
         subenv['HMAC'] = config.config['backend']['hmackey']
+        subenv['SSL_CERT_CHECK'] = config.config['backend']['admin_cert_check']
         
         port = port or 22
         

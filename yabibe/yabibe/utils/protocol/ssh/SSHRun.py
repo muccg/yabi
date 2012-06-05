@@ -69,6 +69,7 @@ class SSHRun(BaseShell):
         
         subenv['YABIADMIN'] = config.yabiadmin
         subenv['HMAC'] = config.config['backend']['hmackey']
+        subenv['SSL_CERT_CHECK'] = config.config['backend']['admin_cert_check']
         
         if modules:
             remote_command = "&&".join(["module load %s"%module for module in modules]+[remote_command])

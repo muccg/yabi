@@ -51,6 +51,9 @@ if 'SSH_AUTH_SOCK' in os.environ:
 # get the yabiadmin url to connect to if its present
 yabiadmin = os.environ.get('YABIADMIN',None)
 
+# get the setting that tells us to check the ssl cert chain or to ignore it
+SSL_CERT_CHECK = os.environ.get("SSL_CERT_CHECK",True)
+
 assert 'HMAC' in os.environ
 hmac_key = os.environ['HMAC']
 
@@ -125,7 +128,7 @@ def load_known_hosts_from_admin(hostname):
     assert yabiadmin
     path = "ws/hostkeys?hostname=%s"%hostname
     url = yabiadmin + path
-    r = requests.get( url, headers={'Hmac-digest':sign_uri("/"+path)} )
+    r = requests.get( url, headers={'Hmac-digest':sign_uri("/"+path)}, verify=SSL_CERT_CHECK )
     
     assert r.status_code == 200
     
@@ -151,7 +154,8 @@ def add_rejected_key_to_admin(hostname, hostkey):
         },
         headers = {
             'Hmac-digest':sign_uri("/ws/hostkey/deny")
-        }
+        },
+        verify=SSL_CERT_CHECK
     )
     
     if r.status_code==400:

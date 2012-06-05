@@ -148,6 +148,7 @@ class Configuration(object):
                         "hmackey":None,
                                                 
                         "admin":None,
+                        "admin_cert_check":True,
                         
                         "syslog_facility":syslog.LOG_DAEMON,
                         "syslog_prefix":r"YABI [yabibe:%(username)s]",
@@ -237,6 +238,8 @@ class Configuration(object):
                 self.config[name]['syslog_facility'] = syslog_facilities[ conf_parser.get(name,'syslog_facility').upper() ]
             if conf_parser.has_option(name,'syslog_prefix'):
                 self.config[name]['syslog_prefix'] = conf_parser.get(name,'syslog_prefix').replace('{',r'%(').replace('}',')s')
+            if conf_parser.has_option(name,'admin_cert_check'):
+                self.config[name]['admin_cert_check'] = boolean_proc(conf_parser.get(name,'admin_cert_check'))
             
 
     def read_config(self, search=SEARCH_PATH):
