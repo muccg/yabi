@@ -125,7 +125,10 @@ def sign_uri(uri):
 
 def make_path(uri):
     parse = urlparse.urlparse(uri)
-    return parse.path + "?" + parse.query
+    if parse.query:
+        return parse.path + "?" + parse.query
+    else:
+        return parse.path
 
 def load_known_hosts_from_admin(hostname):
     """Contact yabiadmin and get the known hosts from it"""
