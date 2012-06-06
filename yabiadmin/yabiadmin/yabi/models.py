@@ -38,7 +38,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.cache import cache
 from django.utils.encoding import smart_str
 from urlparse import urlparse, urlunparse
-from crypto import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, DecryptException, AESTEMP
+from crypto import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, deannotate, DecryptException, AESTEMP
 from constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK
 from yabiadmin.utils import cache_keyname
 
@@ -638,6 +638,16 @@ class Credential(Base):
         """We assume its plaintext if it fails the crypto looks_like_annotated_block() function"""
         return not (looks_like_annotated_block(self.password) and looks_like_annotated_block(self.key) and looks_like_annotated_block(self.cert))
         
+    @property
+    def is_protected(self):
+        """Is this cred a temporarily protected one?"""
+        return not (self.is_plaintext or not deannotate(self.password)[0]==AESTEMP)
+    
+    @property
+    def is_encrypted(self):
+        """Is this cred fully encrypted with user pass?"""
+        return not (self.is_plaintext or not deannotate(self.password)[0]!=AESTEMP)
+        
     def is_only_hex(self):
         """This is a legacy function to help migrating old encrypted creds to new creds.
         It returns true if the key, cert and password fields are soley composed of hex characters.
@@ -648,6 +658,11 @@ class Credential(Base):
         if self.is_plaintext:
             # temporarily protect this for saving
             self.protect()
+            
+    def on_post_save(self):
+        if self.is_protected:
+            # cache the protected form while we have it
+            self.send_to_cache()
             
     def on_post_init(self):
         if not self.is_plaintext:
@@ -744,7 +759,31 @@ class Backend(Base):
         return '<a href="%s">View</a>' % self.get_absolute_url()
     backend_summary_link.short_description = 'Summary'
     backend_summary_link.allow_tags = True
-
+    
+class HostKey(Base):
+    #backend = models.ForeignKey(Backend)
+    #scheme = models.CharField(max_length=64)
+    hostname = models.CharField(max_length=512)
+    #port = models.IntegerField(null=True, blank=True)
+    
+    key_type = models.CharField(max_length=32, blank=False, null=False)
+    fingerprint = models.CharField(max_length=64, blank=False, null=False)                # some SSH handshakes send a SSH "message" associated with the key
+    data = models.TextField(max_length=16384, blank=False, null=False)    
+    allowed = models.BooleanField(default=False)
+    
+    def __unicode__(self):
+        return "%s hostkey for %s"%(self.key_type, self.hostname)
+        
+    def make_hash(self):
+        """return the contents of this hostkey as a python dictionary"""
+        return {
+            'hostname':self.hostname,
+            'key_type':self.key_type,
+            'fingerprint':self.fingerprint,
+            'data':self.data,
+            'allowed':self.allowed
+        }
+            
 class BackendCredential(Base):
     class Meta:
         verbose_name_plural = "Backend Credentials"
@@ -912,7 +951,12 @@ def signal_credential_pre_save(sender, instance, **kwargs):
     logger.debug("credential pre_save signal")
     
     instance.on_pre_save()
-        
+
+def signal_credential_post_save(sender, instance, **kwargs):
+    logger.debug("credential post_save signal")
+    
+    instance.on_post_save()
+       
 def signal_credential_post_init(sender, instance, **kwargs):
     logger.debug("credential post_init signal")
 
@@ -943,6 +987,7 @@ from django.db.models.signals import post_save, pre_save,post_init
 post_save.connect(signal_tool_post_save, sender=Tool, dispatch_uid="signal_tool_post_save")
 post_save.connect(create_user_profile, sender=DjangoUser, dispatch_uid="create_user_profile")
 pre_save.connect(signal_credential_pre_save, sender=Credential, dispatch_uid="signal_credential_pre_save")
+post_save.connect(signal_credential_post_save, sender=Credential, dispatch_uid="signal_credential_post_save")
 post_init.connect(signal_credential_post_init, sender=Credential, dispatch_uid="signal_credential_post_init")
 
 

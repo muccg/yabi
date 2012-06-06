@@ -49,6 +49,7 @@ from django.conf import settings
 from django.contrib import auth
 from crypto import DecryptException
 from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
 
 from yabiadmin.yabiengine import storehelper as StoreHelper
@@ -94,6 +95,7 @@ def tool(request, toolname):
 
 @authentication_required
 @cache_page(300)
+@vary_on_cookie
 def menu(request):
     username = request.user.username
     logger.debug('Username: ' + username)
