@@ -94,8 +94,8 @@ def tool(request, toolname):
         return JsonMessageResponseNotFound("Object not found")
 
 @authentication_required
-@vary_on_cookie
 @cache_page(300)
+@vary_on_cookie
 def menu(request):
     username = request.user.username
     logger.debug('Username: ' + username)
