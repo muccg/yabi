@@ -1,4 +1,3 @@
-YAHOO.namespace('ccgyabi.widget');
 
 
 
@@ -64,9 +63,12 @@ upload.prototype.addEventListeners = function() {
   var self = this;
 
   // Start the upload process when the Upload button is clicked.
-  YAHOO.util.Event.addListener(this.uploadButton, 'click', function(e) {
-    YAHOO.util.Event.stopEvent(e);
-    self.upload();
+  Y.use('*', function(Y) {
+    Y.one(self.uploadButton).on('click', function(e) {
+      e.halt(true);
+      self.upload();
+    });
+
   });
 
   // Handle events emitted from the specific implementation.
@@ -137,7 +139,10 @@ upload.prototype.remove = function(file) {
     };
 
     var uri = appURL + 'ws/fs/rm?uri=' + escape(this.uri + '/' + file);
-    YAHOO.util.Connect.asyncRequest('GET', uri, callbacks);
+
+    Y.use('*', function(Y) {
+      Y.io(uri, { on: callbacks });
+    });
   }
 };
 
@@ -203,10 +208,13 @@ upload.Flash.prototype.addEventListeners = function() {
      * createElements(), since they can only be attached when the object is
      * constructed. */
 
-  YAHOO.util.Event.addListener(this.cancel, 'click', function(e) {
-    self.uploader.cancelUpload(self.selectedFile.id, true);
-    self.sendEvent('remove', self.selectedFile.name);
+  Y.use('*', function(Y) {
+    Y.one(self.cancel).on('click', function(e) {
+      self.uploader.cancelUpload(self.selectedFile.id, true);
+      self.sendEvent('remove', self.selectedFile.name);
+    });
   });
+
 };
 
 
@@ -215,7 +223,7 @@ upload.Flash.prototype.addEventListeners = function() {
  */
 upload.Flash.prototype.createElements = function(container) {
   var self = this;
-  var swfUploadBase = appURL + 'static/javascript/swfupload-2.5.0b3/';
+  var swfUploadBase = appURL + 'static/javascript/lib/swfupload-2.5.0b3/';
 
   this.container = document.createElement('div');
 
@@ -395,9 +403,11 @@ upload.HTML.prototype.addEventListeners = function() {
      * represent the control), so we need to capture it and dispatch the
      * appropriate event to avoid the form submission working in the normal
      * way. */
-  YAHOO.util.Event.addListener(this.form, 'submit', function(e) {
-    YAHOO.util.Event.stopEvent(e);
-    self.sendEvent('uploadRequested');
+  Y.use('*', function(Y) {
+    Y.one(self.form).on('submit', function(e) {
+      e.halt(true);
+      self.sendEvent('uploadRequested');
+    });
   });
 };
 
@@ -438,7 +448,7 @@ upload.HTML.prototype.upload = function(uri) {
   var target = appURL + 'ws/fs/put?uri=' + escape(uri);
 
   var callbacks = {
-    upload: function(o) {
+    upload: function(transId, o) {
       self.uploadResponse(o);
     }
   };
@@ -446,13 +456,27 @@ upload.HTML.prototype.upload = function(uri) {
   this.file.style.display = 'none';
   this.progress.appendChild(document.createTextNode('Uploading file...'));
 
-  YAHOO.util.Connect.setForm(this.form, true);
-  YAHOO.util.Connect.asyncRequest('POST', target, callbacks);
+
+  Y.use('io-upload-iframe', function(Y) {
+    var cfg = {
+      method: 'POST',
+      form: {
+        id: self.form,
+        upload: true
+      },
+      on: {
+        complete: callbacks.upload
+      }
+    };
+
+    Y.io(target, cfg);
+  });
+
 };
 
 
 /**
- * Response handler for the YAHOO.util.Connect upload implementation.
+ * Response handler for the YAHOO.io upload complete implementation.
  * @param {Object} o The event object.
  */
 upload.HTML.prototype.uploadResponse = function(o) {
@@ -468,7 +492,11 @@ upload.HTML.prototype.uploadResponse = function(o) {
      * other headers) available, we'll have to try to decode the JSON that was
      * (hopefully) received and go from there. */
   try {
-    var json = YAHOO.lang.JSON.parse(o.responseText);
+    var json;
+
+    Y.use('*', function(Y) {
+      json = Y.JSON.parse(o.responseText);
+    });
 
     if (json.level != 'success') {
       /* It's not a real response object, it's simply something
@@ -529,25 +557,28 @@ upload.HTML5.prototype = new EventEmitter();
 upload.HTML5.prototype.addEventListeners = function() {
   var self = this;
 
-  YAHOO.util.Event.addListener(this.cancel, 'click', function(e) {
-    YAHOO.util.Event.stopEvent(e);
-    if (self.xhr) {
-      self.xhr.abort();
-    }
-  });
+  Y.use('*', function(Y) {
 
-  YAHOO.util.Event.addListener(this.select, 'click', function(e) {
-    YAHOO.util.Event.stopEvent(e);
-    self.input.click();
-  });
+    Y.one(self.cancel).on('click', function(e) {
+      e.halt(true);
+      if (self.xhr) {
+        self.xhr.abort();
+      }
+    });
 
-  YAHOO.util.Event.addListener(this.input, 'change', function(e) {
-    self.setFile(this.files[0]);
-  });
+    Y.one(self.select).on('click', function(e) {
+      e.halt(true);
+      self.input.click();
+    });
 
-  YAHOO.util.Event.addListener(this.form, 'submit', function(e) {
-    YAHOO.util.Event.stopEvent(e);
-    self.sendEvent('uploadRequested');
+    Y.one(self.input).on('change', function(e) {
+      self.setFile(self.form.file1.files[0]);
+    });
+
+    Y.one(self.form).on('submit', function(e) {
+      e.halt(true);
+      self.sendEvent('uploadRequested');
+    });
   });
 };
 
@@ -754,7 +785,10 @@ upload.HTML5.prototype.uploadResponse = function(e) {
   }
   else {
     try {
-      var json = YAHOO.lang.JSON.parse(o.responseText);
+      var json;
+      Y.use('*', function(Y) {
+        json = Y.JSON.parse(o.responseText);
+      });
       this.sendEvent('fail', json.message);
     }
     catch (e) {
@@ -768,50 +802,52 @@ upload.HTML5.prototype.uploadResponse = function(e) {
 
 /* Detect what we can use in terms of uploading technology. The preference list
  * goes HTML5 > Flash > traditional HTML. */
-YAHOO.util.Event.onDOMReady(function() {
-  if (('upload' in new XMLHttpRequest) &&
-      !!window.FormData &&
-      (typeof FileReader != 'undefined')) {
-    upload.supportedImplementation = upload.HTML5;
-    return;
-  }
+Y.use('*', function(Y) {
+  Y.on('domready', function() {
+    if (('upload' in new XMLHttpRequest) &&
+        !!window.FormData &&
+        (typeof FileReader != 'undefined')) {
+      upload.supportedImplementation = upload.HTML5;
+      return;
+    }
 
-  var useFlash = false;
+    var useFlash = false;
 
-  if (!useFlash) {
-    upload.supportedImplementation = upload.HTML;
-  } else {
+    if (!useFlash) {
+      upload.supportedImplementation = upload.HTML;
+    } else {
 
-    var testFlash = function() {
-      upload.supportedImplementation = upload.Flash;
+      var testFlash = function() {
+        upload.supportedImplementation = upload.Flash;
 
-      FBD.initialize(function(blocked) {
-        if (blocked) {
-          upload.supportedImplementation = upload.HTML;
+        FBD.initialize(function(blocked) {
+          if (blocked) {
+            upload.supportedImplementation = upload.HTML;
+          }
+        });
+      };
+
+      upload.supportedImplementation = upload.HTML;
+
+      if (navigator.plugins && navigator.plugins['Shockwave Flash']) {
+        testFlash();
+      }
+      else if (navigator.mimeTypes &&
+               navigator.mimeTypes['application/x-shockwave-flash']) {
+        var flash = navigator.mimeTypes['application/x-shockwave-flash'];
+        if (flash && flash.enabledPlugin) {
+          testFlash();
         }
-      });
-    };
-
-    upload.supportedImplementation = upload.HTML;
-
-    if (navigator.plugins && navigator.plugins['Shockwave Flash']) {
-      testFlash();
-    }
-    else if (navigator.mimeTypes &&
-             navigator.mimeTypes['application/x-shockwave-flash']) {
-      var flash = navigator.mimeTypes['application/x-shockwave-flash'];
-      if (flash && flash.enabledPlugin) {
-        testFlash();
+      }
+      else {
+        // IE. We'll only look for Flash 9 or later.
+        try {
+          console.log('IE test');
+          new ActiveXObject('ShockwaveFlash.ShockwaveFlash.9');
+          testFlash();
+        }
+        catch (e) {}
       }
     }
-    else {
-      // IE. We'll only look for Flash 9 or later.
-      try {
-        console.log('IE test');
-        new ActiveXObject('ShockwaveFlash.ShockwaveFlash.9');
-        testFlash();
-      }
-      catch (e) {}
-    }
-  }
+  });
 });

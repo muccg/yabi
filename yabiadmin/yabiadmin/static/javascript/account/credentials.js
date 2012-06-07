@@ -30,29 +30,34 @@ YabiAccountCredentials.prototype.createList = function(id) {
   this.list = new RadioList(container);
   this.list.list.className += ' credentials';
 
-  var callback = {
-    success: function(o) {
-      var credentials = YAHOO.lang.JSON.parse(o.responseText);
+  Y.use('*', function(Y) {
+    var callback = {
+      success: function(trans_id, o) {
+        var credentials;
 
-      for (var i = 0; i < credentials.length; i++) {
-        var credential = new YabiCredential(self, credentials[i]);
-        self.credentials.push(credential);
+        credentials = Y.JSON.parse(o.responseText);
 
-        if (id && credentials[i].id == id) {
-          self.list.selectItem(credential.item);
+        for (var i = 0; i < credentials.length; i++) {
+          var credential = new YabiCredential(self, credentials[i]);
+          self.credentials.push(credential);
+
+          if (id && credentials[i].id == id) {
+            self.list.selectItem(credential.item);
+          }
         }
+
+        loading.hide();
+      },
+      failure: function(trans_id, o) {
+        YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
+        loading.hide();
       }
+    };
 
-      loading.hide();
-    },
-    failure: function(o) {
-      YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
-      loading.hide();
-    }
-  };
+    Y.io(appURL + 'ws/account/credential', {on: callback});
+  });
 
-  connection = YAHOO.util.Connect.asyncRequest(
-      'GET', appURL + 'ws/account/credential', callback);
+
 };
 
 YabiAccountCredentials.prototype.destroyList = function() {
@@ -106,9 +111,12 @@ YabiCredential.prototype.createForm = function() {
     input.className = 'placeholder';
     input.value = value ? setPlaceholder : unsetPlaceholder;
 
-    YAHOO.util.Event.addListener(input, 'focus', function(e) {
-      input.className = '';
-      input.value = '';
+    Y.use('*', function(Y) {
+      var inputNode = Y.one(input);
+      inputNode.on('focus', function(e) {
+        input.className = '';
+        input.value = '';
+      });
     });
 
     if (value) {
@@ -132,9 +140,9 @@ YabiCredential.prototype.createForm = function() {
 
   // Hide the confirm password box until the password is actually changed.
   var confirmPasswordContainer = this.form.querySelector(
-      '.confirm-password-container');
+                                        '.confirm-password-container');
   var confirmPasswordInput = this.form.querySelector(
-      '.password-container input');
+                                        '.password-container input');
   confirmPasswordContainer.style.display = 'none';
 
   var showConfirmPassword = function(e) {
@@ -145,19 +153,26 @@ YabiCredential.prototype.createForm = function() {
     confirmPasswordContainer.style.marginBottom = 0;
     confirmPasswordContainer.style.display = 'block';
 
-    var anim = new YAHOO.util.Anim(confirmPasswordContainer, {
-      height: { to: 20 },
-      marginBottom: { to: 9 }
-    }, 0.4, YAHOO.util.Easing.easeOut);
+    Y.use('*', function(Y) {
+      var anim = new Y.Anim({
+        node: Y.one(confirmPasswordContainer),
+        to: {
+          height: 20,
+          marginBottom: 9
+        },
+        easing: 'easeOut',
+        duration: 0.4
 
-    anim.animate();
+      });
 
-    YAHOO.util.Event.removeListener(confirmPasswordInput, 'focus',
-                                    showConfirmPassword);
+      anim.run();
+    });
   };
 
-  YAHOO.util.Event.addListener(confirmPasswordInput, 'focus',
-                               showConfirmPassword);
+  Y.use('*', function(Y) {
+    var node = Y.one(confirmPasswordInput);
+    node.once('focus', showConfirmPassword);
+  });
 
   isOnRecord(
       this.credential.certificate,
@@ -185,10 +200,14 @@ YabiCredential.prototype.createForm = function() {
 
   document.querySelector('.yabiRightColumn').appendChild(this.container);
 
-  YAHOO.util.Event.addListener(this.form, 'submit', function(e) {
-    YAHOO.util.Event.stopEvent(e);
-    self.save();
-  }, false);
+  var form = this.form;
+  Y.use('*', function(Y) {
+    var formNode = Y.one(form);
+    formNode.on('submit', function(e) {
+      e.halt(true);
+      self.save();
+    });
+  });
 };
 
 YabiCredential.prototype.createLabel = function() {
@@ -261,20 +280,26 @@ YabiCredential.prototype.save = function() {
 
   if (data) {
     var callback = {
-      success: function(o) {
+      success: function(transId, o) {
         YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
 
         document.querySelector('.yabiRightColumn').removeChild(self.container);
         self.credentials.createList(self.credential.id);
       },
-      failure: function(o) {
+      failure: function(transId, o) {
         YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
         self.enableForm();
       }
     };
 
-    var credentialURL = appURL + 'ws/account/credential/' + this.credential.id;
-    YAHOO.util.Connect.asyncRequest('POST', credentialURL, callback, data);
+    var cfg = {
+      method: 'POST',
+      data: data,
+      on: callback
+    };
+
+    var request = Y.io(appURL + 'ws/account/credential/' +
+        this.credential.id, cfg);
 
     self.disableForm();
   }

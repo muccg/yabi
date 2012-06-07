@@ -25,7 +25,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
   var tempEl, namePlaceholderEl;
 
   this.displayName = obj.displayName;
-  if (! YAHOO.lang.hasOwnProperty(obj, 'displayName')) {
+  if (! obj.hasOwnProperty('displayName')) {
     this.displayName = obj['switch'];
   }
 
@@ -80,7 +80,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
     this.containerEl.appendChild(this.valueEl);
 
     for (index in this.defaultValue) {
-      if (!YAHOO.lang.isObject(this.defaultValue[index])) {
+      if (!Y.Lang.isObject(this.defaultValue[index])) {
         this.valueEl.appendChild(document.createTextNode(
             this.defaultValue[index]));
       } else {
@@ -149,7 +149,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
     //possible sub-elements are 'values' or 'filterGroup'
     if (this.payload.possible_values.value) {
       //coerce single values into an array
-      if (!YAHOO.lang.isArray(this.payload.possible_values.value)) {
+      if (!Y.Lang.isArray(this.payload.possible_values.value)) {
         this.possibleValues = [this.payload.possible_values.value];
       }
 
@@ -163,7 +163,7 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
             this.payload.possible_values.filteredBySwitch);
       }
 
-      if (!YAHOO.lang.isArray(this.payload.possible_values.filterGroup)) {
+      if (!Y.Lang.isArray(this.payload.possible_values.filterGroup)) {
         var possibleValues = [this.payload.possible_values.filterGroup];
         this.payload.possible_values.filterGroup = possibleValues;
       }
@@ -230,9 +230,9 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
   this.setHelpText();
 
   //attach key events for changes/keypresses
-  YAHOO.util.Event.addListener(this.inputEl, 'blur', this.userValidate, this);
-  YAHOO.util.Event.addListener(this.inputEl, 'keyup', this.userValidate, this);
-  YAHOO.util.Event.addListener(this.inputEl, 'change', this.userValidate, this);
+  Y.one(this.inputEl).on('blur', this.userValidate, this);
+  Y.one(this.inputEl).on('keyup', this.userValidate, this);
+  Y.one(this.inputEl).on('change', this.userValidate, this);
 
   //run an initial validation on the default value
   this.validate();
@@ -257,7 +257,9 @@ function YabiJobParam(job, obj, allowsBatching, editable, preloadValue) {
  * purges event handlers, deletes dom related things that need to be cleared out
  */
 YabiJobParam.prototype.destroy = function() {
-  YAHOO.util.Event.purgeElement(this.inputEl);
+  if (!Y.Lang.isUndefined(this.inputEl)) {
+    Y.one(this.inputEl).detachAll();
+  }
 };
 
 
@@ -324,7 +326,7 @@ YabiJobParam.prototype.emittedFiles = function() {
   var value = this.getValue();
 
   if ((this.isInputFile) && (value !== '')) {
-    if (YAHOO.lang.isArray(value)) {
+    if (Y.Lang.isArray(value)) {
       return value;
     } else {
       return [value];
@@ -549,12 +551,12 @@ YabiJobParam.prototype.toJSON = function() {
     return null;
   }
 
-  if (!YAHOO.lang.isArray(value)) {
+  if (!Y.Lang.isArray(value)) {
     value = [value];
   }
 
   for (var index in value) {
-    if (!YAHOO.lang.isObject(value[index])) {
+    if (!Y.Lang.isObject(value[index])) {
       values.push(value[index]);
     } else {
       if (value[index] instanceof YabiSimpleFileValue) {

@@ -4,7 +4,11 @@
     <link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/design.css?20101201')}" />
 
     <script type="text/javascript">
-        YAHOO.util.Event.onDOMReady(initWorkflow);
+        Y.use('*', function(Y) {
+            Y.on('domready', function() {
+                initWorkflow();
+            });
+        });
 
         var workflow;
         var tools;
@@ -51,7 +55,7 @@
             document.getElementById("container").appendChild(workflow.mainEl);
             document.getElementById("optionsDiv").appendChild(workflow.optionsEl);
             
-            YAHOO.util.Event.addListener("submitButton", "click", submitCallback, workflow);
+            Y.one("#submitButton").on("click", submitCallback, null, workflow);
         }
 
         //this function is used after a workflow is submitted, 
@@ -64,7 +68,7 @@
         function submitCallback(e, wf) {
             
             // TODO add decent callbacks
-            YAHOO.util.Event.stopEvent(e);
+            e.halt(true);
             
             if (!wf.isValid()) {
                 YAHOO.ccgyabi.widget.YabiMessage.fail("Workflow is missing required inputs. Please correct before submitting.");
@@ -73,17 +77,24 @@
                 var baseURL = appURL + "ws/workflows/submit/";
                 
                 jsCallback = {
-                    success: function (obj) {
+                    success: function (transId, obj, args) {
                         YAHOO.ccgyabi.widget.YabiMessage.success("Success on submit!");
-                        workflow.submitSuccessCallback(obj, summonJobsView);
+                        workflow.submitSuccessCallback(obj, summonJobsView, args.target);
                     },
-                    failure: function (obj) {
+                    failure: function (transId, obj) {
                         YAHOO.ccgyabi.widget.YabiMessage.fail("Fail on submit!");
-                    },
-                    argument: [wf] };
+                    }
+                };
                 var data = "username=${request.user.username}&workflowjson=" + encodeURIComponent(wf.toJSON());
-                jsTransaction = YAHOO.util.Connect.asyncRequest('POST', baseURL, jsCallback, data);
-                
+                var cfg = {
+                    method: 'POST',
+                    on: jsCallback,
+                    data: data,
+                    "arguments": {
+                        target: wf
+                    }
+                };
+                jsTransaction = Y.io(baseURL, cfg);
             }
         }
 
