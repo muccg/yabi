@@ -33,6 +33,7 @@ How to install
     apache
     settings
     database
+    yabibackend
     authentication
     caching
     yabish

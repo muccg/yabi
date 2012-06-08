@@ -121,16 +121,11 @@ def rmrf(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     for obj in treenode.walk():
         try:
             #print "DEL1",obj.key
-            response = conn.delete(bucket,obj.key)
-            if not (200 <= response.http_response.status <300):
-                raise S3Error("Aborting recursive delete because could not delete key '%s' in bucket '%s': %s"%(path, bucket, response.message))
+            rm(bucket,domain,port,obj.key,ACCESSKEYID, SECRETKEYID)
         except AttributeError:
             #print "SKIP",obj.s3folder
             if obj.s3folder:
-                #print "DEL2",obj.s3folder.key
-                response = conn.delete(bucket,obj.s3folder.key)
-                if not (200 <= response.http_response.status <300):
-                    raise S3Error("Aborting recursive delete because could not delete key '%s' in bucket '%s': %s"%(path, bucket, response.message))
+                rm(bucket,domain,port,obj.s3folder.key,ACCESSKEYID, SECRETKEYID)
     
     # delete this node now
     #print "DEL3",path
