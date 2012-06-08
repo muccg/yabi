@@ -103,7 +103,7 @@ def mkdir(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     obj.key = path
     obj.set_metadata('s3-console-folder', 'true')
     obj.set_metadata('s3-console-metadata-version', '2010-03-09')
-    
+
 def rm(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     bucket = get_s3_connection_bucket(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID)
     
@@ -134,7 +134,7 @@ def rmrf(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     
     # delete this node now
     #print "DEL3",path
-    rm(bucket, path, ACCESSKEYID, SECRETKEYID, domain, port)
+    rm(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID)
   
 def ls(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     tree=make_fs_struct(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID)
