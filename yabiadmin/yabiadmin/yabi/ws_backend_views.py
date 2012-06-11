@@ -37,7 +37,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
-from yabiadmin.yabi.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential
+from yabiadmin.yabi.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential, HostKey
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from yabiadmin.yabiengine import backendhelper
 from yabiadmin.yabiengine.urihelper import uriparse
@@ -87,6 +87,45 @@ def exec_credential_uri(request, yabiusername):
     except DecryptedCredentialNotAvailable, dcna:
         return JsonMessageResponseServerError("Decrypted Credential Not Available: %s" % dcna, status=503)
 
+@hmac_authenticated
+def get_hostkeys(request):
+    if 'hostname' not in request.REQUEST:
+        return HttpResponse("Request must contain parameter 'hostname' in the GET or POST parameters.\n")
+        
+    hostname = request.REQUEST['hostname']
+    #logger.debug('hostname: %s'%(hostname))
+    
+    host_keys = HostKey.objects.filter(hostname=hostname).filter(allowed=True)
+    #logger.debug("host_keys = %s\n"%str(host_keys))
+    
+    data = [key.make_hash() for key in host_keys]
+    return HttpResponse(json.dumps(data))
+    
+@hmac_authenticated
+def report_denied_hostkey(request):
+    if 'hostname' not in request.REQUEST:
+        return HttpResponse("Request must contain parameter 'hostname' in the GET or POST parameters.\n")
+    
+    hostname = request.REQUEST['hostname']
+    #logger.debug('hostname: %s'%(hostname))
+    
+    key = request.REQUEST['key']
+    key_type = request.REQUEST['key_type']
+    fingerprint = request.REQUEST['fingerprint']
+    
+    # if there is already this key listed as denied... just return OK. its already listed
+    if HostKey.objects.filter(hostname=hostname, key_type=key_type, fingerprint=fingerprint, data=key, allowed=False).count() == 1:
+        return HttpResponse("OK")
+        
+    # if there is an identical key for this host that is allowed, then error out. This should not happen
+    assert HostKey.objects.filter(hostname=hostname, key_type=key_type, fingerprint=fingerprint, data=key, allowed=True).count() == 0
+    
+    # save the key as a denied key
+    hostkey = HostKey(hostname=hostname, key_type=key_type, fingerprint=fingerprint, data=key, allowed=False)
+    hostkey.save()
+    
+    return HttpResponse("OK")
+        
 def backend_connection_limit(request,scheme,hostname):
     filt = Q(scheme=scheme) & Q(hostname=hostname)
     if 'port' in request.REQUEST:

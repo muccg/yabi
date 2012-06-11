@@ -62,6 +62,22 @@ class BackendStatusCodeError(Exception):
 import logging
 logger = logging.getLogger(__name__)
   
+def get_backend_by_uri(uri):
+    """
+    Looks up a backend object purely by uri. Ignored username. Thus diesnt consider credentials.
+    Just pure hostname/portnumber. Used by HostKey system for find what hostkeys are allowed
+    """
+    schema, rest = uriparse(uri)
+    netloc = rest.netloc
+    if ':' in netloc:
+        host,port = netloc.split(':')
+    else:
+        host,port = netloc, None
+    
+    return Backend.objects.filter(scheme=schema, hostname=host, port=port)
+    
+def get_hostkeys_by_uri(uri):
+    return Backend.objects.filter(backend__in=get_backend_by_uri(uri))
 
 def get_exec_backendcredential_for_uri(yabiusername, uri):
     """
@@ -281,6 +297,10 @@ def get_listing(yabiusername, uri, recurse=False):
     """
     Return a listing from backend
     """
+    # clean up any trailing double slashes that will confuse s3 or key-based storage systems
+    if uri.endswith('//'):
+        uri = uri[0:len(uri)-1]
+        
     logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
     resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, quote(uri))
     if recurse:

@@ -64,7 +64,6 @@ def get_s3_connection_bucket(bucket, domain, port, path, ACCESSKEYID, SECRETKEYI
         # AMAZON bucket
         conn = S3Connection(ACCESSKEYID, SECRETKEYID)
         b = conn.get_bucket(bucket)
-        list_response = b.list()
     else:
         #print "connecting to:",domain,port
         conn = S3Connection(ACCESSKEYID, SECRETKEYID, host=bucket+"."+domain, port=port, is_secure=False, calling_format=OrdinaryCallingFormat())
@@ -104,7 +103,7 @@ def mkdir(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     obj.key = path
     obj.set_metadata('s3-console-folder', 'true')
     obj.set_metadata('s3-console-metadata-version', '2010-03-09')
-    
+
 def rm(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     bucket = get_s3_connection_bucket(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID)
     
@@ -122,20 +121,15 @@ def rmrf(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     for obj in treenode.walk():
         try:
             #print "DEL1",obj.key
-            response = conn.delete(bucket,obj.key)
-            if not (200 <= response.http_response.status <300):
-                raise S3Error("Aborting recursive delete because could not delete key '%s' in bucket '%s': %s"%(path, bucket, response.message))
+            rm(bucket,domain,port,obj.key,ACCESSKEYID, SECRETKEYID)
         except AttributeError:
             #print "SKIP",obj.s3folder
             if obj.s3folder:
-                #print "DEL2",obj.s3folder.key
-                response = conn.delete(bucket,obj.s3folder.key)
-                if not (200 <= response.http_response.status <300):
-                    raise S3Error("Aborting recursive delete because could not delete key '%s' in bucket '%s': %s"%(path, bucket, response.message))
+                rm(bucket,domain,port,obj.s3folder.key,ACCESSKEYID, SECRETKEYID)
     
     # delete this node now
     #print "DEL3",path
-    rm(bucket, path, ACCESSKEYID, SECRETKEYID, domain, port)
+    rm(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID)
   
 def ls(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     tree=make_fs_struct(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID)

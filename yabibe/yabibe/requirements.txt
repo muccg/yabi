@@ -31,4 +31,5 @@ gevent
 greenlet==0.3.3
 psutil
 boto==2.3.0
+requests==0.11.2
 
