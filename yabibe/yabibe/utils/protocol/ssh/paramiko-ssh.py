@@ -31,7 +31,7 @@ import setproctitle
 setproctitle.setproctitle("yabi-ssh startup...")
 
 import paramiko
-import os, sys, select, stat, time, json, uuid
+import os, sys, select, stat, time, json, uuid, urlparse
 import requests
 import binascii
 import base64
@@ -50,6 +50,9 @@ if 'SSH_AUTH_SOCK' in os.environ:
     
 # get the yabiadmin url to connect to if its present
 yabiadmin = os.environ.get('YABIADMIN',None)
+
+# get the setting that tells us to check the ssl cert chain or to ignore it
+SSL_CERT_CHECK = os.environ.get("SSL_CERT_CHECK","true").lower() == "true"
 
 assert 'HMAC' in os.environ
 hmac_key = os.environ['HMAC']
@@ -117,15 +120,22 @@ def make_known_hosts(keylist):
 
 def sign_uri(uri):
     hmac_digest = hmac.new(hmac_key)
-    hmac_digest.update(uri)
+    hmac_digest.update( make_path(uri) )
     return hmac_digest.hexdigest()
+
+def make_path(uri):
+    parse = urlparse.urlparse(uri)
+    if parse.query:
+        return parse.path + "?" + parse.query
+    else:
+        return parse.path
 
 def load_known_hosts_from_admin(hostname):
     """Contact yabiadmin and get the known hosts from it"""
     assert yabiadmin
     path = "ws/hostkeys?hostname=%s"%hostname
     url = yabiadmin + path
-    r = requests.get( url, headers={'Hmac-digest':sign_uri("/"+path)} )
+    r = requests.get( url, headers={'Hmac-digest':sign_uri( url )}, verify=SSL_CERT_CHECK )
     
     assert r.status_code == 200
     
@@ -150,8 +160,9 @@ def add_rejected_key_to_admin(hostname, hostkey):
             )             # encodes fingerprint into colon seperated hex style of 'ae:52:f4:54:0a:4b:f0:11:ae:52:f4:54:0a:4b:f0:11'
         },
         headers = {
-            'Hmac-digest':sign_uri("/ws/hostkey/deny")
-        }
+            'Hmac-digest':sign_uri( url )
+        },
+        verify=SSL_CERT_CHECK
     )
     
     if r.status_code==400:
