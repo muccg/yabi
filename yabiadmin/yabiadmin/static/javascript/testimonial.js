@@ -19,10 +19,9 @@ $.fn.randomTestimonial = function(testimonials, interval, prevText) {
     textCont.fadeIn('slow');
     prevText = randobj;
   });
-  timeOut = setTimeout(
-      function() {
-        obj.randomTestimonial(testimonials, interval, prevText);
-      }, interval);
+  timeOut = setTimeout(function() {
+    obj.randomTestimonial(testimonials, interval, prevText);
+  }, interval);
 };
 
 function randomise(a) {

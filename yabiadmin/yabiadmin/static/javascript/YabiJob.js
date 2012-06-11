@@ -11,7 +11,7 @@ function YabiJob(toolName, jobId, preloadValues) {
   this.jobId = jobId;
   this.payload = {};
   this.preloadValues = preloadValues;
-  if (this.preloadValues !== null && !YAHOO.lang.isArray(this.preloadValues)) {
+  if (this.preloadValues !== null && !Y.Lang.isArray(this.preloadValues)) {
     this.preloadValues = [this.preloadValues];
   }
   this.params = [];
@@ -59,8 +59,8 @@ function YabiJob(toolName, jobId, preloadValues) {
   this.optionsToggleEl = document.createElement('div');
   this.optionsToggleEl.className = 'optionsToggle fakeButton';
   this.optionsToggleEl.appendChild(document.createTextNode('show all options'));
-  YAHOO.util.Event.addListener(this.optionsToggleEl, 'click',
-                               this.toggleOptionsCallback, this);
+  Y.one(this.optionsToggleEl).on('click',
+      this.toggleOptionsCallback, null, this);
   this.optionsEl.appendChild(this.optionsToggleEl);
 
   this.optionsTitlePlaceholderEl = document.createTextNode('...');
@@ -185,7 +185,7 @@ YabiJob.prototype.updateTitle = function() {
                             this.titleEl.firstChild);
 
   // update our name dependents and clear them
-  if (!YAHOO.lang.isUndefined(this.nameDependents)) {
+  if (!Y.Lang.isUndefined(this.nameDependents)) {
     for (var index in this.nameDependents) {
       this.nameDependents[index].appendChild(
           document.createTextNode(updatedTitle));
@@ -284,8 +284,8 @@ YabiJob.prototype.selectJob = function() {
     this.statusEl.style.display = 'none';
   }
   else {
-    (new YAHOO.util.Element(this.optionsEl)).addClass('active');
-    (new YAHOO.util.Element(this.statusEl)).addClass('active');
+    Y.one(this.optionsEl).addClass('active');
+    Y.one(this.statusEl).addClass('active');
   }
 
   //put focus on the first invalid param
@@ -329,8 +329,8 @@ YabiJob.prototype.deselectJob = function() {
     this.statusEl.style.display = 'none';
   }
   else {
-    (new YAHOO.util.Element(this.optionsEl)).removeClass('active');
-    (new YAHOO.util.Element(this.statusEl)).removeClass('active');
+    Y.one(this.optionsEl).removeClass('active');
+    Y.one(this.statusEl).removeClass('active');
   }
 };
 
@@ -370,10 +370,6 @@ YabiJob.prototype.renderLoadFailJob = function() {
  * cleans up properly
  */
 YabiJob.prototype.destroy = function() {
-  if (YAHOO.util.Connect.isCallInProgress(this.jsTransaction)) {
-    YAHOO.util.Connect.abort(this.jsTransaction, null, false);
-  }
-
   for (var param in this.params) {
     this.params[param].destroy();
   }
@@ -479,11 +475,11 @@ YabiJob.prototype.renderJobStatus = function() {
   var self = this;
 
   var callbacks = {
-    success: function(o) {
-      var obj = YAHOO.lang.JSON.parse(o.responseText);
+    success: function(transId, o) {
+      var obj = Y.JSON.parse(o.responseText);
       self.renderJobStatusResponse(obj);
     },
-    failure: function(o) {
+    failure: function(transId, o) {
       self.renderJobStatusError();
     }
   };
@@ -494,7 +490,7 @@ YabiJob.prototype.renderJobStatus = function() {
   this.statusLoading.show();
 
   var url = 'engine/job/' + this.workflow.workflowId + '/' + (this.jobId - 1);
-  var req = YAHOO.util.Connect.asyncRequest('GET', url, callbacks);
+  Y.io(url, {on: callbacks});
 };
 
 
@@ -527,7 +523,7 @@ YabiJob.prototype.renderJobStatusResponse = function(obj) {
     var keys = [];
 
     for (var key in task.remote_info) {
-      if (YAHOO.lang.hasOwnProperty(task.remote_info, key)) {
+      if (task.remote_info.hasOwnProperty(key)) {
         keys.push(key);
       }
     }
@@ -535,7 +531,7 @@ YabiJob.prototype.renderJobStatusResponse = function(obj) {
     keys.sort();
 
     for (var i in keys) {
-      if (YAHOO.lang.hasOwnProperty(keys, i)) {
+      if (keys.hasOwnProperty(i)) {
         (function() {
           var key = keys[i];
 
@@ -568,7 +564,7 @@ YabiJob.prototype.renderJobStatusResponse = function(obj) {
  * render progress bar/badges
  */
 YabiJob.prototype.renderProgress = function(status, completed, total, message) {
-  if (YAHOO.lang.isUndefined(status)) {
+  if (Y.Lang.isUndefined(status)) {
     return;
   }
 
@@ -595,12 +591,12 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
 
   //if error
   if (status == 'error') {
-    if (YAHOO.lang.isUndefined(message)) {
+    if (Y.Lang.isUndefined(message)) {
       message = '';
     } else {
       message = '\n' + message;
     }
-    if (YAHOO.lang.isUndefined(this.errorEl)) {
+    if (Y.Lang.isUndefined(this.errorEl)) {
       this.errorEl = document.createElement('div');
       this.errorEl.className = 'jobErrorMsg';
       this.errorEl.appendChild(document.createTextNode(
@@ -609,7 +605,7 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
     }
   }
 
-  if (YAHOO.lang.isUndefined(completed) || YAHOO.lang.isUndefined(total)) {
+  if (Y.Lang.isUndefined(completed) || Y.Lang.isUndefined(total)) {
     return;
   }
 
@@ -672,7 +668,7 @@ YabiJob.prototype.solidify = function(obj) {
   this.acceptedExtensionEl.setAttribute('class', 'acceptedExtensionList');
   this.inputsEl.appendChild(this.acceptedExtensionEl);
 
-  if (!YAHOO.lang.isArray(this.payload.tool.inputExtensions)) {
+  if (!Y.Lang.isArray(this.payload.tool.inputExtensions)) {
     this.payload.tool.inputExtensions = [this.payload.tool.inputExtensions];
   }
 
@@ -706,9 +702,9 @@ YabiJob.prototype.solidify = function(obj) {
   this.outputExtensionEl.setAttribute('class', 'acceptedExtensionList');
   this.outputsEl.appendChild(this.outputExtensionEl);
 
-  if (! YAHOO.lang.isUndefined(this.payload.tool.outputExtensions)) {
+  if (! Y.Lang.isUndefined(this.payload.tool.outputExtensions)) {
 
-    if (!YAHOO.lang.isArray(this.payload.tool.outputExtensions)) {
+    if (!Y.Lang.isArray(this.payload.tool.outputExtensions)) {
       this.payload.tool.outputExtensions = [this.payload.tool.outputExtensions];
     }
 
@@ -731,7 +727,7 @@ YabiJob.prototype.solidify = function(obj) {
   }
 
   //batch on parameter
-  if (! YAHOO.lang.isUndefined(this.payload.tool.batch_on_param)) {
+  if (! Y.Lang.isUndefined(this.payload.tool.batch_on_param)) {
     this.batchParameter = this.payload.tool.batch_on_param;
   }
 
@@ -744,7 +740,7 @@ YabiJob.prototype.solidify = function(obj) {
   var params = this.payload.tool.parameter_list; //array
 
   var allMandatory = true;
-  if (YAHOO.lang.isArray(params)) {
+  if (Y.Lang.isArray(params)) {
     for (paramIndex in params) {
       var preloadValue = this.preloadValueFor(params[paramIndex]['switch']);
 
@@ -817,7 +813,7 @@ YabiJob.prototype.solidify = function(obj) {
  * of this job when it has loaded properly
  */
 YabiJob.prototype.registerNameDependency = function(element) {
-  if (YAHOO.lang.isUndefined(this.nameDependents)) {
+  if (Y.Lang.isUndefined(this.nameDependents)) {
     this.nameDependents = [];
   }
 
@@ -831,10 +827,10 @@ YabiJob.prototype.registerNameDependency = function(element) {
  * identifies the preload values for a given parameter
  */
 YabiJob.prototype.preloadValueFor = function(switchName) {
-  if (! YAHOO.lang.isUndefined(this.preloadValues) &&
+  if (! Y.Lang.isUndefined(this.preloadValues) &&
       this.preloadValues.length > 0) {
     for (var index in this.preloadValues) {
-      if (! YAHOO.lang.isUndefined(this.preloadValues[index]) &&
+      if (! Y.Lang.isUndefined(this.preloadValues[index]) &&
           this.preloadValues[index].switchName == switchName) {
         return this.preloadValues[index].value;
       }
@@ -859,7 +855,7 @@ YabiJob.prototype.hydrateResponse = function(o) {
   try {
     json = o.responseText;
 
-    this.solidify(YAHOO.lang.JSON.parse(json));
+    this.solidify(Y.JSON.parse(json));
     this.failLoad = false;
   } catch (e) {
     this.valid = false;

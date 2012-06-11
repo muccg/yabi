@@ -21,8 +21,7 @@ function YabiTool(obj, collection, groupEl) {
 
   var addEl = document.createElement('div');
   addEl.className = 'addLink';
-  YAHOO.util.Event.addListener(addEl, 'click',
-                               collection.addCallback, this.payload.name);
+  Y.one(addEl).on('click', collection.addCallback, null, this.payload.name);
   this.el.appendChild(addEl);
 
   this.descriptionEl = document.createElement('div');
@@ -39,7 +38,7 @@ function YabiTool(obj, collection, groupEl) {
   this.acceptedExtensionEl.setAttribute('class', 'acceptedExtensionList');
   this.inputsEl.appendChild(this.acceptedExtensionEl);
 
-  if (!YAHOO.lang.isArray(this.payload.inputExtensions)) {
+  if (!Y.Lang.isArray(this.payload.inputExtensions)) {
     this.payload.inputExtensions = [this.payload.inputExtensions];
   }
 
@@ -62,9 +61,9 @@ function YabiTool(obj, collection, groupEl) {
   this.outputExtensionEl.setAttribute('class', 'acceptedExtensionList');
   this.outputsEl.appendChild(this.outputExtensionEl);
 
-  if (! YAHOO.lang.isUndefined(this.payload.outputExtensions)) {
+  if (! Y.Lang.isUndefined(this.payload.outputExtensions)) {
 
-    if (!YAHOO.lang.isArray(this.payload.outputExtensions)) {
+    if (!Y.Lang.isArray(this.payload.outputExtensions)) {
       this.payload.outputExtensions = [this.payload.outputExtensions];
     }
 
@@ -84,8 +83,7 @@ function YabiTool(obj, collection, groupEl) {
 
   this.toolEl.appendChild(this.descriptionEl);
 
-  YAHOO.util.Event.addListener(this.toolEl, 'click',
-                               this.descriptionCallback, this);
+  Y.one(this.toolEl).on('click', this.descriptionCallback, null, this);
 }
 
 YabiTool.prototype.toString = function() {
@@ -177,16 +175,16 @@ var YabiToolCache = (function() {
       } else {
         var url = appURL + 'ws/tool/' + escape(name);
         var callbacks = {
-          success: function(o) {
+          success: function(transId, o) {
             tools[name] = o;
             success(o);
           },
-          failure: function(o) {
+          failure: function(transId, o) {
             failure(o);
           }
         };
 
-        YAHOO.util.Connect.asyncRequest('GET', url, callbacks);
+        Y.io(url, {on: callbacks});
       }
     }
   };
