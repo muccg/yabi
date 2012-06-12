@@ -295,9 +295,7 @@ def backend_cred_test(request, backend_cred_id):
             # work out which hostkey this is...
             keys = HostKey.objects.filter(hostname=bec.backend.hostname)
             
-            assert keys, "No key found for hostname"
-            
-            if len(keys)>1:
+            if not keys or len(keys)>1:
                 # link to host key page
                 link = '%syabi/hostkey/?hostname=%s'%(urlresolvers.reverse('admin:index'),bec.backend.hostname)     # TODO... construct this more 'correctly'
             else:

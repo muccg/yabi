@@ -48,14 +48,10 @@
 <title>Y A B I</title>
 
 <link rel="shortcut icon" href="${h.url('favicon.ico')}" />
-<!--
-<script src="http://yui.yahooapis.com/3.5.1/build/yui/yui-min.js"></script>
--->
 
-<script src="static/javascript/lib/yui-3.5.1/build/yui/yui-min.js"></script>
+<script src="${h.url('/static/javascript/lib/yui-3.5.1/build/yui/yui-min.js')}"></script>
 
 <script type="text/javascript">
-    //YAHOO.namespace("ccgyabi");
     YAHOO = {
         ccgyabi:{
             widget: {}
@@ -73,12 +69,12 @@
     YUI_config = {
         groups: {
             yui2: {
-                base: 'static/javascript/lib/yui-2in3/dist/2.9.0/build/',
+                base: '${h.url("/static/javascript/lib/yui-2in3/dist/2.9.0/build/")}',
 
                 // If you have a combo service, you can configure that as well
                 combine: YAHOO.ccgyabi.combineJS,
                 // comboBase: 'http://myserver.com/combo?',
-                comboBase: 'djamboloader/yui2in3_2_9_0/combo?',
+                comboBase: '${h.url("/djamboloader/yui2in3_2_9_0/combo?")}',
                 root: '',
                 // root: '/2in3/build/',
 
@@ -96,7 +92,7 @@
             }
         },
         combine: YAHOO.ccgyabi.combineJS,
-        comboBase: 'djamboloader/yui_3_5_1/combo?',
+        comboBase: '${h.url("/djamboloader/yui_3_5_1/combo?")}',
         root: ''
     };
 
