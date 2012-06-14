@@ -1,0 +1,18 @@
+<%inherit file="base.html"/>
+
+<%def name="header()">
+    <link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/admin.css?20101201')}" />
+
+</%def>
+
+<%def name="body()">
+    <div id="doc3" class="yui-t1" style="height:100%;background-color:#fff;">
+        <div id="yabi-files-mode">
+            ${self.bodyhd()}
+
+            <iframe src="admin-pane" width="100%" height="100%" frameborder="0"/>
+        </div>
+    </div>
+  
+    ${self.copyright()}
+</%def>
