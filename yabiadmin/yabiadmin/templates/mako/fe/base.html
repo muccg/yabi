@@ -12,6 +12,11 @@
 % except django.core.exceptions.ObjectDoesNotExist:
         
 % endtry
+
+% if request.user.is_staff:
+        <a href="${h.url('/admin')}" id="yabi-tabs-admin">admin</a>
+% endif
+
     </div>
 </%def>
 
