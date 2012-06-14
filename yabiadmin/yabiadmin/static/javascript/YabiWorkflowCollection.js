@@ -413,5 +413,12 @@ YUI().use('node', 'event', 'io', 'json-parse', 'yui2-slider', function(Y) {
     }
   };
 
+  // TODO this doesn't seem to be the right thing to do
+  // Doing it on domready as we used to fails on Chrome because this file
+  // is loaded after domready and YabiWorkflowCollection is undefined.
+  if (typeof this.initWorkflowListing != 'undefined') {
+    initWorkflowListing();
+  }
+
 }); // end of YUI().use(...
 
