@@ -717,14 +717,14 @@ YabiJobParam.prototype.renderSelect = function(allowDefault) {
  *
  * fires on user intervention
  */
-YabiJobParam.prototype.userValidate = function(e, obj) {
-  obj.validate();
+YabiJobParam.prototype.userValidate = function(e) {
+  this.validate();
 
   //propagate to subscribed params
-  for (var index in obj.subscribedParams) {
-    obj.subscribedParams[index].updatePossibleValues(obj.getValue());
+  for (var index in this.subscribedParams) {
+    this.subscribedParams[index].updatePossibleValues(this.getValue());
   }
 
   //notify job of validation, propagating the validation from top to bottom
-  obj.job.checkValid(true);
+  this.job.checkValid(true);
 };

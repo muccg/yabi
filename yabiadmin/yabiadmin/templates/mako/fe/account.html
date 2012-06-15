@@ -15,8 +15,7 @@
     <script type="text/javascript">
         var account;
 
-        Y.use('*', function(Y) {
-          Y.on('domready', function() {
+        function onDOMReady() {
 % if profile.user_option_access:
             var userOption = true;
 % else:
@@ -30,8 +29,7 @@
 % endif
 
             account = new YabiAccount(${dumps(request.user.username)}, userOption, credential);
-          });
-        });
+        }
     </script>
 </%def>
 
