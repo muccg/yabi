@@ -96,7 +96,14 @@
         root: ''
     };
 
-    var Y = YUI().use('node', 'event', 'io-form', 'json', 'anim', 'io-upload-iframe', 'dd', function(Y) {});
+    // Override in child templates if needed
+    function onDOMReady() {};
+
+    var Y = YUI().use('node', 'event', 'io-form', 'json', 'anim', 'io-upload-iframe', 'dd', 'yui2-slider', 
+        function(Y) {
+          onDOMReady();
+        }
+    );
 </script>
 
 <script type="text/javascript" src="${h.url('/static/javascript/lib/fbd/fbd.js')}"></script>
