@@ -499,7 +499,7 @@ def duplicate_credential(request):
         # bail early if canceled
         if 'button' in request.POST and request.POST['button'] == "Cancel":
             messages.info(request, "No changes made.")
-            return HttpResponseRedirect(webhelpers.url("/admin/yabi/credential/?ids=%s" % (request.POST['ids'])))
+            return HttpResponseRedirect(webhelpers.url("/admin-pane/yabi/credential/?ids=%s" % (request.POST['ids'])))
 
         ids = [int(X) for X in request.POST.get('ids', '').split(',')]     
         action = request.POST.get('action',None)
@@ -547,7 +547,7 @@ def duplicate_credential(request):
         messages.add_message(request, level, msg)
 
 
-        return HttpResponseRedirect(webhelpers.url("/admin/yabi/credential/?ids=%s" % (request.POST['ids'])))
+        return HttpResponseRedirect(webhelpers.url("/admin-pane/yabi/credential/?ids=%s" % (request.POST['ids'])))
 
     else:
         return render_cred_password_form(request)

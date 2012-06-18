@@ -310,7 +310,7 @@ class Task(models.Model, Editable, Status):
     link_to_json.short_description = "JSON"
 
     def link_to_syslog(self):
-        return '<a href="%s?table_name=task&table_id=%d">%s</a>' % (url('/admin/yabiengine/syslog/'), self.id, "Syslog")
+        return '<a href="%s?table_name=task&table_id=%d">%s</a>' % (url('/admin-pane/yabiengine/syslog/'), self.id, "Syslog")
     link_to_syslog.allow_tags = True
     link_to_syslog.short_description = "Syslog"
 
