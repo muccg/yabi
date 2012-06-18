@@ -137,7 +137,8 @@ class SSHRetryController(RetryController):
                                 r'Realpath returned \d+ results',
                                 r'size mismatch in put!',
                                 r'size mismatch in get!',
-                                r'Remote host key is denied'
+                                r'Remote host key is denied',
+                                r'certificate verify failed'
                            ],
                         }
     

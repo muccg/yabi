@@ -45,6 +45,28 @@ import urlparse
 import re
 re_url_schema = re.compile(r'\w+')
 
+import syslog
+syslog_facilities = {
+    'LOG_KERN':syslog.LOG_KERN,
+    'LOG_USER':syslog.LOG_USER,
+    'LOG_MAIL':syslog.LOG_MAIL,
+    'LOG_DAEMON':syslog.LOG_DAEMON,
+    'LOG_AUTH':syslog.LOG_AUTH,
+    'LOG_LPR':syslog.LOG_LPR,
+    'LOG_NEWS':syslog.LOG_NEWS,
+    'LOG_UUCP':syslog.LOG_UUCP,
+    'LOG_CRON':syslog.LOG_CRON,
+    'LOG_SYSLOG':syslog.LOG_SYSLOG,
+    'LOG_LOCAL0':syslog.LOG_LOCAL0,
+    'LOG_LOCAL1':syslog.LOG_LOCAL1,
+    'LOG_LOCAL2':syslog.LOG_LOCAL2,
+    'LOG_LOCAL3':syslog.LOG_LOCAL3,
+    'LOG_LOCAL4':syslog.LOG_LOCAL4,
+    'LOG_LOCAL5':syslog.LOG_LOCAL5,
+    'LOG_LOCAL6':syslog.LOG_LOCAL6,
+    'LOG_LOCAL7':syslog.LOG_LOCAL7
+}
+
 def parse_url(uri):
     """Parse a url via the inbuilt urlparse. But this is slightly different
     as it can handle non-standard schemas. returns the schema and then the
@@ -125,7 +147,11 @@ class Configuration(object):
                         
                         "hmackey":None,
                                                 
-                        "admin":None                # none means "use the one provided here"
+                        "admin":None,
+                        "admin_cert_check":True,
+                        
+                        "syslog_facility":syslog.LOG_DAEMON,
+                        "syslog_prefix":r"YABI [yabibe:%(username)s]",
                     },
         'taskmanager':{
                         'polldelay':'5',
@@ -208,6 +234,12 @@ class Configuration(object):
                 self.config[name]['certfile'] = path_sanitise(conf_parser.get(name,'certfile'))
             if conf_parser.has_option(name,'hmackey'):
                 self.config[name]['hmackey'] = conf_parser.get(name,'hmackey')
+            if conf_parser.has_option(name,'syslog_facility'):
+                self.config[name]['syslog_facility'] = syslog_facilities[ conf_parser.get(name,'syslog_facility').upper() ]
+            if conf_parser.has_option(name,'syslog_prefix'):
+                self.config[name]['syslog_prefix'] = conf_parser.get(name,'syslog_prefix').replace('{',r'%(').replace('}',')s')
+            if conf_parser.has_option(name,'admin_cert_check'):
+                self.config[name]['admin_cert_check'] = boolean_proc(conf_parser.get(name,'admin_cert_check'))
             
 
     def read_config(self, search=SEARCH_PATH):

@@ -70,6 +70,7 @@ class SSHShell(BaseShell):
         subenv = self._make_env()
         subenv['YABIADMIN'] = config.yabiadmin
         subenv['HMAC'] = config.config['backend']['hmackey']
+        subenv['SSL_CERT_CHECK'] = str(config.config['backend']['admin_cert_check'])
         
         sshcommand = [self.python, self.ssh_exec ]
         sshcommand += ["-i",certfile] if certfile else []
@@ -97,6 +98,7 @@ class SSHShell(BaseShell):
         
         subenv['YABIADMIN'] = config.yabiadmin
         subenv['HMAC'] = config.config['backend']['hmackey']
+        subenv['SSL_CERT_CHECK'] = str(config.config['backend']['admin_cert_check'])
         
         sshcommand = [self.python, self.ssh_exec ]
         sshcommand += ["-i",certfile] if certfile else []
