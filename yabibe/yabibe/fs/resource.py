@@ -42,7 +42,6 @@ from FileLinkResource import FileLinkResource
 from FileLCopyResource import FileLCopyResource
 from FilePutResource import FilePutResource
 from FileGetResource import FileGetResource
-from FileUploadResource import UploadTicket, FileUploadResource, UploadStatus
 
 from utils.BackendResource import BackendResource
 

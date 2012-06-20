@@ -45,6 +45,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 from constants import *
+from random import shuffle
 
 def request_next_task(request, status):
     if "tasktag" not in request.REQUEST:
@@ -55,7 +56,21 @@ def request_next_task(request, status):
     if tasktag != settings.TASKTAG:
         logger.critical("Task requested  had incorrect identifier set. Expected tasktag %s but got %s instead." % (settings.TASKTAG, tasktag))
         return HttpResponseServerError("Error requesting task. Tasktag incorrect. This is not the admin you are looking for.")
-       
+    
+    # we assemble a list of backendcredentials. This way we can rate control the jobs a particular backend user and backend sees to
+    # prevent overload of the scheduler, which is what a job scheduler should deal with, with something like, you know, a queue. but most of them
+    # don't. cause they're mostly rubbish.
+    backend_user_pairs = [bec for bec in BackendCredential.objects.all()]
+    
+    # we shuffle this list to try to prevent any starvation of later backend/user pairs
+    shuffle(backend_user_pairs)
+    
+    # for each backend/user pair, we count how many submitted jobs there are
+    for bec in backend_user_pairs:
+        remote_tasks = Task.objects.filter(execution_backend_credential=bec).exclude(status=STATUS_READY).exclude(status=STATUS_ERROR).exclude(status=STATUS_EXEC_ERROR).exclude(status=STATUS_COMPLETE)
+                                  
+                                  
+    
     try:
         # only expose tasks that are ready and are intended for the expected backend
         tasks = Task.objects.filter(status=status, tasktag=tasktag)

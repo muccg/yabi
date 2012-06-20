@@ -29,7 +29,7 @@
 from django.db import models
 from django.db.models import Q
 from django.conf import settings
-from yabiadmin.yabi.models import User
+from yabiadmin.yabi.models import User, BackendCredential
 from yabiadmin.yabiengine import backendhelper
 from yabiadmin.yabiengine.urihelper import uriparse
 from django.utils import simplejson as json
@@ -226,6 +226,12 @@ class Task(models.Model, Editable, Status):
     working_dir = models.CharField(max_length=256, null=True, blank=True)
     name = models.CharField(max_length=256, null=True, blank=True)                  # if we are null, we behave the old way and use our task.id
     tasktag = models.CharField(max_length=256, null=True, blank=True)           # if we are null, we behave the old way and use our task.id
+
+    # the following field is a convenience pointer (not normalised) to the backendcredential table row used for the execution credential
+    # they are used by the task view to help group and count the tasks quickly and efficiently to load control the backend executer
+    # you should NOT reference these table links unless absolutely necessary. Use the uri fields exec_backend and fs_backend instead as these are serialised and permanent
+    # there are helper funtions to process those uri's (but they don't help us with complex SQL queries)
+    execution_backend_credential = models.ForeignKey(BackendCredential)
 
     def json(self):
         # formulate our status url and our error url

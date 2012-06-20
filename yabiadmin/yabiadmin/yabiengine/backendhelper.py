@@ -91,7 +91,7 @@ def get_exec_backendcredential_for_uri(yabiusername, uri):
 
     logger.debug('yabiusername: %s schema: %s usernamea :%s hostnamea :%s patha :%s'%(yabiusername,schema,rest.username,rest.hostname,rest.path))
     
-    # enforce FS scehmas only
+    # enforce Exec scehmas only
     if schema not in settings.EXEC_SCHEMES:
         logger.error("get_exec_backendcredential_for_uri was asked to get an fs schema! This is forbidden.")
         raise ValueError("Invalid schema in uri passed to get_exec_backendcredential_for_uri: asked for %s"%schema)
