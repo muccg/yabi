@@ -214,8 +214,6 @@ class Task(models.Model, Editable, Status):
     end_time = models.DateTimeField(null=True, blank=True)
     job_identifier = models.TextField(blank=True)
     command = models.TextField(blank=True)
-    exec_backend = models.CharField(max_length=256, blank=True)
-    fs_backend = models.CharField(max_length=256, blank=True)
     error_msg = models.CharField(max_length=1000, null=True, blank=True)
 
     status = models.CharField(max_length=64, blank=True)
@@ -231,7 +229,7 @@ class Task(models.Model, Editable, Status):
     # they are used by the task view to help group and count the tasks quickly and efficiently to load control the backend executer
     # you should NOT reference these table links unless absolutely necessary. Use the uri fields exec_backend and fs_backend instead as these are serialised and permanent
     # there are helper funtions to process those uri's (but they don't help us with complex SQL queries)
-    execution_backend_credential = models.ForeignKey(BackendCredential)
+    execution_backend_credential = models.ForeignKey(BackendCredential, null=True)
 
     def json(self):
         # formulate our status url and our error url

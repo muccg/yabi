@@ -40,6 +40,7 @@ from yabiadmin.utils import detect_rdbms
 from yabiadmin.yabiengine.tasks import walk
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
 from yabiadmin.yabiengine.enginemodels import EngineTask, EngineJob, EngineWorkflow
+from yabiadmin.yabi.models import BackendCredential
 
 import logging
 logger = logging.getLogger(__name__)
@@ -66,8 +67,8 @@ def request_next_task(request, status):
     shuffle(backend_user_pairs)
     
     # for each backend/user pair, we count how many submitted jobs there are
-    for bec in backend_user_pairs:
-        remote_tasks = Task.objects.filter(execution_backend_credential=bec).exclude(status=STATUS_READY).exclude(status=STATUS_ERROR).exclude(status=STATUS_EXEC_ERROR).exclude(status=STATUS_COMPLETE)
+    #for bec in backend_user_pairs:
+        #remote_tasks = Task.objects.filter(execution_backend_credential=bec).exclude(status=STATUS_READY).exclude(status=STATUS_ERROR).exclude(status=STATUS_EXEC_ERROR).exclude(status=STATUS_COMPLETE)
                                   
                                   
     
