@@ -66,34 +66,36 @@ def request_next_task(request, status):
     # we shuffle this list to try to prevent any starvation of later backend/user pairs
     shuffle(backend_user_pairs)
     
-    # for each backend/user pair, we count how many submitted jobs there are
-    #for bec in backend_user_pairs:
-        #remote_tasks = Task.objects.filter(execution_backend_credential=bec).exclude(status=STATUS_READY).exclude(status=STATUS_ERROR).exclude(status=STATUS_EXEC_ERROR).exclude(status=STATUS_COMPLETE)
-                                  
-                                  
-    
-    try:
-        # only expose tasks that are ready and are intended for the expected backend
-        tasks = Task.objects.filter(status=status, tasktag=tasktag)
-
-        # Optimistic locking
-        # Update and return task only if another thread hasn't updated and returned it before us
-        for task in tasks:
-            updated = Task.objects.filter(id=task.id, status=status).update(status=STATUS_REQUESTED)
-            if updated == 1:
-                logger.debug('requested %s task id: %s command: %s' % (status, task.id, task.command))
-                return HttpResponse(task.json())
-
-        raise ObjectDoesNotExist("No more tasks")  
+    # for each backend/user pair, we count how many submitted jobs there are. Those with no bec setting are always done first.
+    # this enables us later to allow a backend task to be submitted no matter what the remote backend is doing, simply by leaving the column null
+    for bec in [None]+backend_user_pairs:
+        # the following collects the list of tasks for this bec that are already running on the remote
+        remote_tasks = Task.objects.filter(execution_backend_credential=bec).exclude(status=STATUS_READY).exclude(status=STATUS_ERROR).exclude(status=STATUS_EXEC_ERROR).exclude(status=STATUS_COMPLETE)
         
-    except ObjectDoesNotExist:
-        return HttpResponseNotFound("Object not found.")
-    except Exception, e:
-        logger.critical("Caught Exception:")
-        import traceback
-        logger.critical(e)
-        logger.critical(traceback.format_exc())
-        return HttpResponseServerError("Error requesting task.")
+        tasks_per_user = settings.BACKEND_QUEUE_TASKS_PER_USER if not bec or bec.backend.tasks_per_user==None else bec.backend.tasks_per_user
+        
+        #logger.debug("%d remote tasks running for this bec (%s)"%(len(remote_tasks),bec))
+        #logger.debug("tasks_per_user = %d\n"%(tasks_per_user))
+        
+        if len(remote_tasks) < tasks_per_user:
+            # we can return a task for this bec if one exists
+            try:
+                tasks = Task.objects.filter(execution_backend_credential=bec).filter(status=status, tasktag=tasktag)
+                
+                # Optimistic locking
+                # Update and return task only if another thread hasn't updated and returned it before us
+                for task in tasks:
+                    updated = Task.objects.filter(id=task.id, status=status).update(status=STATUS_REQUESTED)
+                    if updated == 1:
+                        logger.debug('requested %s task id: %s command: %s' % (status, task.id, task.command))
+                        return HttpResponse(task.json())
+
+            except ObjectDoesNotExist:
+                # this bec has no jobs... continue to try the next one...
+                pass
+            
+    logger.debug("no more tasks")
+    raise ObjectDoesNotExist("No more tasks")  
 
 def task(request):
     return request_next_task(request, status=STATUS_READY)

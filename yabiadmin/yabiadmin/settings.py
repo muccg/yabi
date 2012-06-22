@@ -143,6 +143,8 @@ EXEC_SCHEMES = ['globus', 'sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 's
 FS_SCHEMES = ['http', 'https', 'gridftp', 'yabifs', 'scp', 's3', 'localfs','null']
 VALID_SCHEMES = EXEC_SCHEMES + FS_SCHEMES
 
+# the default number of 
+BACKEND_QUEUE_TASKS_PER_USER = 32
 
 ##
 ## CAPTCHA settings

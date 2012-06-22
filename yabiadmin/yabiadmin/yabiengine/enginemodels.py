@@ -52,6 +52,8 @@ from yabiadmin.yabiengine.YabiJobException import YabiJobException
 
 from yabiadmin.yabistoreapp import db
 
+from backendhelper import get_exec_backendcredential_for_uri
+
 import logging
 logger = logging.getLogger(__name__)
 
@@ -433,7 +435,10 @@ class EngineJob(Job):
             job = task_data[0]
             # remove job from task_data as we now are going to call method on job TODO maybe use pop(0) here
             del(task_data[0]) 
-            task = EngineTask(job=job, status=STATUS_PENDING, start_time=datetime.datetime.now())
+            
+            be = get_exec_backendcredential_for_uri(self.workflow.user.name, self.exec_backend)
+            task = EngineTask(job=job, status=STATUS_PENDING, start_time=datetime.datetime.now(), execution_backend_credential=be)
+            
             #print "ADD TASK: %s"%(str(task_data+[name]))
             task.add_task(*(task_data+[name]))
             num,name = buildname(num)
