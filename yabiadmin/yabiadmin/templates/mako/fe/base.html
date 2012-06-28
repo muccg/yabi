@@ -106,7 +106,9 @@
 
     var Y = YUI().use('node', 'event', 'io-form', 'json', 'anim', 'io-upload-iframe', 'dd', 'yui2-slider', 
         function(Y) {
-          onDOMReady();
+          Y.on('domready', function() {
+            onDOMReady();
+          });
         }
     );
 </script>
