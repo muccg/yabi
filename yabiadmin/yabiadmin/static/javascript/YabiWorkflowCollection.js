@@ -401,6 +401,10 @@ YabiWorkflowCollection.prototype.hydrateResponse = function(
     transId, o, args) {
   var i, json;
 
+  if (o.statusText === 'abort') {
+    return;
+  }
+
   try {
     json = o.responseText;
 
