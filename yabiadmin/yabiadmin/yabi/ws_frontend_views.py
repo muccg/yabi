@@ -207,6 +207,11 @@ def copy(request):
     
     def closure():
         src,dst = request.GET['src'],request.GET['dst']
+
+        # check that src does not match dst
+        srcpath, srcfile = src.rsplit('/', 1)
+        assert srcpath != dst, "dst must not be the same as src"
+        
         # src must not be directory
         assert src[-1]!='/', "src malformed. Either no length or not trailing with slash '/'"
         # TODO: This needs to be fixed in the FRONTEND, by sending the right url through as destination. For now we just make sure it ends in a slash
@@ -229,6 +234,10 @@ def rcopy(request):
         
     def closure():
         src,dst = request.GET['src'],request.GET['dst']
+
+        # check that src does not match dst
+        srcpath, srcfile = src.rstrip('/').rsplit('/', 1)
+        assert srcpath != dst, "dst must not be the same as src"
         
         # src must be directory
         assert src[-1]=='/', "src malformed. Not directory."

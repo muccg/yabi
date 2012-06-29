@@ -391,8 +391,6 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
 
           src = e.target.get('data').invoker.object;
           dst = targetInvoker.object;
-          YAHOO.ccgyabi.widget.YabiMessage.success(
-              'Copying ' + src + ' to ' + dst);
           self.handleDrop(src, dst, targetInvoker.target);
         });
 
@@ -438,10 +436,26 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         });
       };
 
+      YabiFileSelector.prototype.srcSameAsDest = function(src, dest) {
+        var sep = '/';
+        var srcBasePath = src.pathComponents.join(sep);
+        var destBasePath = dest.pathComponents.join(sep);
+        if (srcBasePath !== destBasePath) {
+          return false;
+        }
+        if (src.filename === dest.filename || dest.filename === '') {
+          return true;
+        }
+        return false;
+      }
+
       /**
        * handleDrop
        */
       YabiFileSelector.prototype.handleDrop = function(src, dest, target) {
+        if (this.srcSameAsDest(src, dest)) {
+          return;
+        }
         // default is normal copy
         var baseURL = appURL + 'ws/fs/copy';
 
@@ -452,7 +466,9 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
           baseURL = appURL + 'ws/fs/rcopy';
         }
 
-        //load json
+        YAHOO.ccgyabi.widget.YabiMessage.success(
+            'Copying ' + src + ' to ' + dest);
+
         var jsUrl, jsCallback, jsTransaction;
         jsUrl = baseURL + '?src=' + escape(src) + '&dst=' + escape(dest);
         jsCallback = {
