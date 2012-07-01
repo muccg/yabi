@@ -342,7 +342,6 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
 
               var dd = new Y.DD.Drag({
                 node: fileEl,
-                target: {},
                 startCentered: true,
                 data: {
                   filename: this.browseListing[toplevelindex].files[index][0],
