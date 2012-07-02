@@ -38,11 +38,17 @@ YabiAccount.prototype.solidify = function() {
 YabiAccount.prototype.destroyRightColumn = function() {
   var column = document.querySelector('.yabiRightColumn');
   var elements = column.childNodes;
+  var toRemove = [];
 
   for (var i = 0; i < elements.length; i++) {
     if (!('className' in elements[i]) ||
         elements[i].className.indexOf('template') == -1) {
-      column.removeChild(elements[i]);
+      toRemove.push(elements[i]);
     }
   }
+
+  for (i = 0; i < toRemove.length; i++) {
+    column.removeChild(toRemove[i]);
+  }
+
 };

@@ -85,7 +85,7 @@ class Request(models.Model):
         self.save()
 
         message = render_to_string("registration/email/approve.txt", {
-            "base": request.build_absolute_uri(webhelpers.url("/admin/registration/request/")),
+            "base": request.build_absolute_uri(webhelpers.url("/admin-pane/registration/request/")),
             "request": self,
             "user": self.user,
         })

@@ -1,4 +1,3 @@
-YAHOO.namespace('ccgyabi.widget');
 
 
 

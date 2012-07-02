@@ -1,25 +1,22 @@
 <%! import django.core.exceptions %>
 
-<%def name="yui(name)">
-% if debug:
-    <script src="${h.url('/static/javascript/lib/yui-2.4.1/' + name + '-debug.js')}" type="text/javascript"></script>
-% else:
-    <script src="${h.url('/static/javascript/lib/yui-2.4.1/' + name + '-min.js')}" type="text/javascript"></script>
-% endif
-</%def>
-
 <%def name="tabs()">
     <div id="yabi-tabs">
-        <a href="${h.url('/jobs')}" id="yabi-tabs-jobs">jobs</a>
-        <a href="${h.url('/design')}" id="yabi-tabs-design">design</a>
-        <a href="${h.url('/files')}" id="yabi-tabs-files">files</a>
+        <a href="${h.url('/jobs')}" id="yabi-tabs-jobs" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">jobs</a>
+        <a href="${h.url('/design')}" id="yabi-tabs-design" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">design</a>
+        <a href="${h.url('/files')}" id="yabi-tabs-files" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">files</a>
 % try:
 %    if request.user.get_profile().has_account_tab():
-        <a href="${h.url('/account')}" id="yabi-tabs-account">account</a>
+        <a href="${h.url('/account')}" id="yabi-tabs-account" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">account</a>
 %    endif
 % except django.core.exceptions.ObjectDoesNotExist:
         
 % endtry
+
+% if request.user.is_staff:
+        <a href="${h.url('/admin')}" id="yabi-tabs-admin" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">admin</a>
+% endif
+
     </div>
 </%def>
 
@@ -40,7 +37,7 @@
 </%def>
 
 <%def name="copyright()">
-    <div class="copyright">&copy; 2006, 2011 CCG, Murdoch University</div>
+    <div class="copyright">&copy; 2006, 2012 CCG, Murdoch University</div>
 </%def>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -57,29 +54,63 @@
 
 <link rel="shortcut icon" href="${h.url('favicon.ico')}" />
 
-${self.yui("yahoo/yahoo")}
-
-${self.yui("event/event")}
-${self.yui("connection/connection")}
-
-${self.yui("dom/dom")}
-${self.yui("dragdrop/dragdrop")}
-${self.yui("animation/animation")}
-${self.yui("slider/slider")}
-${self.yui("json/json-beta")}
-${self.yui("element/element-beta")}
-
-% if debug:
-    ${self.yui("logger/logger")}
-    <script type="text/javascript" src="${h.url('/static/javascript/YabiDebug.js?20101201')}"></script>
-% endif
+<script src="${h.url('/static/javascript/lib/yui-3.5.1/build/yui/yui-min.js')}"></script>
 
 <script type="text/javascript">
-    YAHOO.namespace("ccgyabi");
+    YAHOO = {
+        ccgyabi:{
+            widget: {}
+        } 
+    };
     var appURL = "${h.url('/')}";
+
+    // Set this to false if you want to get each YUI JS file on its own
+    // for debugging YUI itself.
+    YAHOO.ccgyabi.combineJS = true;
+
 % if request:
     YAHOO.ccgyabi.username = '${request.user.username}';
 % endif
+    YUI_config = {
+        groups: {
+            yui2: {
+                base: '${h.url("/static/javascript/lib/yui-2in3/dist/2.9.0/build/")}',
+
+                // If you have a combo service, you can configure that as well
+                combine: YAHOO.ccgyabi.combineJS,
+                // comboBase: 'http://myserver.com/combo?',
+                comboBase: '${h.url("/djamboloader/yui2in3_2_9_0/combo?")}',
+                root: '',
+                // root: '/2in3/build/',
+
+                patterns: {
+                    'yui2-': {
+                        configFn: function(me) {
+                            if(/-skin|reset|fonts|grids|base/.test(me.name)) {
+                                me.type = 'css';
+                                me.path = me.path.replace(/\.js/, '.css');
+                                me.path = me.path.replace(/\/yui2-skin/, '/assets/skins/sam/yui2-skin');
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        combine: YAHOO.ccgyabi.combineJS,
+        comboBase: '${h.url("/djamboloader/yui_3_5_1/combo?")}',
+        root: ''
+    };
+
+    // Override in child templates if needed
+    function onDOMReady() {};
+
+    var Y = YUI().use('node', 'event', 'io-form', 'json', 'anim', 'io-upload-iframe', 'dd', 'yui2-slider', 
+        function(Y) {
+          Y.on('domready', function() {
+            onDOMReady();
+          });
+        }
+    );
 </script>
 
 <script type="text/javascript" src="${h.url('/static/javascript/lib/fbd/fbd.js')}"></script>
@@ -99,7 +130,6 @@ ${self.yui("element/element-beta")}
 <script type="text/javascript" src="${h.url('/static/javascript/YabiWorkflow.js?20110428')}"></script>
 <script type="text/javascript" src="${h.url('/static/javascript/YabiWorkflowCollection.js?20110428')}"></script>
 <script type="text/javascript" src="${h.url('/static/javascript/YabiWorkflowProxy.js?20110208')}"></script>
-<script type="text/javascript" src="${h.url('/static/javascript/YabiMessageManager.js?20101201')}"></script>
 
 <script type="text/javascript" src="${h.url('/static/javascript/widget/event.js?20110105')}"></script>
 <script type="text/javascript" src="${h.url('/static/javascript/widget/loading.js?20101201')}"></script>

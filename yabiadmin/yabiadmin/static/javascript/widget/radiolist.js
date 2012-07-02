@@ -1,4 +1,3 @@
-YAHOO.namespace('ccgyabi.widget');
 
 
 
@@ -43,13 +42,16 @@ RadioList.prototype.createItem = function(label) {
   this.items.push(item);
   this.list.appendChild(item.element);
 
-  YAHOO.util.Event.addListener(item.element, 'click', function() {
-    if (item.selected) {
-      item.deselect();
-    }
-    else {
-      self.selectItem(item);
-    }
+  Y.use('*', function(Y) {
+    var node = Y.one(item.element);
+    node.on('click', function() {
+      if (item.selected) {
+        item.deselect();
+      }
+      else {
+        self.selectItem(item);
+      }
+    });
   });
 
   return item;

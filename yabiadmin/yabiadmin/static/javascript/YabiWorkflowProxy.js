@@ -24,7 +24,7 @@ function YabiWorkflowProxy(obj, collection) {
   //parse a better name
   try {
     if (this.payload.json instanceof String) {
-      this.detailsPayload = YAHOO.lang.JSON.parse(this.payload.json);
+      this.detailsPayload = Y.JSON.parse(this.payload.json);
     }
   } catch (e) {}
 
@@ -46,8 +46,8 @@ function YabiWorkflowProxy(obj, collection) {
   this.tagEl.appendChild(document.createTextNode(this.payload.tags));
   this.proxyEl.appendChild(this.tagEl);
 
-  YAHOO.util.Event.addListener(this.proxyEl, 'click',
-      collection.selectWorkflowCallback,
+
+  Y.one(this.proxyEl).on('click', collection.selectWorkflowCallback, null,
       {'id': this.payload.id, 'wfCollection': collection}
   );
 }
@@ -57,7 +57,7 @@ YabiWorkflowProxy.prototype.toString = function() {
 };
 
 YabiWorkflowProxy.prototype.destroy = function() {
-  YAHOO.util.Event.purgeElement(this.proxyEl);
+  Y.one(this.proxyEl).detachAll();
 };
 
 YabiWorkflowProxy.prototype.setSelected = function(state) {

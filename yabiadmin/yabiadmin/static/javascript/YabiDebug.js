@@ -1,1 +1,1 @@
-YAHOO.widget.Logger.enableBrowserConsole();
+//YAHOO.widget.Logger.enableBrowserConsole();

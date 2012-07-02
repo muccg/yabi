@@ -60,46 +60,52 @@ var YabiAccountPassword = function(options) {
 
     document.querySelector('.yabiRightColumn').appendChild(self.container);
 
-    YAHOO.util.Event.addListener(self.container, 'submit', function(e) {
-      YAHOO.util.Event.stopEvent(e);
+    Y.use('*', function(Y) {
+      var containerNode = Y.one(self.container);
 
-      var currentPassword = self.container.querySelector(
-                                "input[name='currentPassword']").value;
-      var newPassword = self.container.querySelector(
-                                "input[name='newPassword']").value;
-      var confirmPassword = self.container.querySelector(
-                                "input[name='confirmPassword']").value;
+      Y.on('submit', function(e) {
+        e.preventDefault();
 
-      if (newPassword == confirmPassword) {
-        if (newPassword.length >= 6) {
-          var callback = {
-            success: function(o) {
-              YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
+        var currentPassword = self.container.querySelector(
+            "input[name='currentPassword']").value;
+        var newPassword = self.container.querySelector(
+            "input[name='newPassword']").value;
+        var confirmPassword = self.container.querySelector(
+            "input[name='confirmPassword']").value;
 
-              self.enableForm();
-              self.form.reset();
-            },
-            failure: function(o) {
-              YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
-              self.enableForm();
-            }
-          };
+        if (newPassword == confirmPassword) {
+          if (newPassword.length >= 6) {
+            var callback = {
+              success: function(trans_id, o) {
+                YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
 
-          YAHOO.util.Connect.setForm(self.container.querySelector('form'));
-          YAHOO.util.Connect.asyncRequest(
-              'POST', appURL + 'account/password', callback);
+                self.enableForm();
+                self.form.reset();
+              },
+              failure: function(trans_id, o) {
+                YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
+                self.enableForm();
+              }
+            };
 
-          self.disableForm();
+            var cfg = {
+              method: 'POST',
+              form: { id: self.container.querySelector('form') },
+              on: callback
+            };
+
+            var request = Y.io(appURL + 'account/password', cfg);
+
+            self.disableForm();
+          } else {
+            YAHOO.ccgyabi.widget.YabiMessage.fail(
+                'The new password must be at least 6 characters in length');
+          }
+        } else {
+          YAHOO.ccgyabi.widget.YabiMessage.fail('The new passwords must match');
         }
-        else {
-          YAHOO.ccgyabi.widget.YabiMessage.fail(
-              'The new password must be at least 6 characters in length');
-        }
-      }
-      else {
-        YAHOO.ccgyabi.widget.YabiMessage.fail('The new passwords must match');
-      }
-    }, false);
+      });
+    });
   });
 };
 

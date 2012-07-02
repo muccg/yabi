@@ -126,7 +126,7 @@ class CredentialAdmin(AdminBase):
     list_display = ['description', 'user', 'username', 'is_cached']
     list_filter = ['user']
     actions = ['duplicate_credential','cache_credential','decache_credential']
-    search_fields = ['description', 'username']
+    search_fields = ['description', 'username', 'user__user__username']
 
     def duplicate_credential(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)        
