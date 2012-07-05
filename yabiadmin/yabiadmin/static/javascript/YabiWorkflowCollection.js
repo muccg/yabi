@@ -1,10 +1,10 @@
 
 
 /**
- * YabiWorkflowCollection
- * fetch and render listing/grouping/smart filtering of workflows
- */
-function YabiWorkflowCollection() {
+   * YabiWorkflowCollection
+   * fetch and render listing/grouping/smart filtering of workflows
+   */
+YabiWorkflowCollection = function() {
   this.workflows = [];
 
   //util fn
@@ -18,8 +18,8 @@ function YabiWorkflowCollection() {
   var defaultStartDate = new Date();
   defaultStartDate.setDate(defaultStartDate.getDate() - 7);
   this.dateStart = defaultStartDate.getFullYear() + '-' +
-                   dblzeropad(defaultStartDate.getMonth() + 1) + '-' +
-                   dblzeropad(defaultStartDate.getDate());
+      dblzeropad(defaultStartDate.getMonth() + 1) + '-' +
+      dblzeropad(defaultStartDate.getDate());
 
   this.loadedWorkflow = null;
   this.loadedWorkflowEl = document.createElement('div');
@@ -42,14 +42,10 @@ function YabiWorkflowCollection() {
   this.searchEl.className = 'toolSearchField';
 
   //attach key events for changes/keypresses
-  YAHOO.util.Event.addListener(this.searchEl, 'blur',
-                               this.filterCallback, this);
-  YAHOO.util.Event.addListener(this.searchEl, 'keyup',
-                               this.filterCallback, this);
-  YAHOO.util.Event.addListener(this.searchEl, 'change',
-                               this.filterCallback, this);
-  YAHOO.util.Event.addListener(this.searchEl, 'search',
-                               this.filterCallback, this);
+  Y.one(this.searchEl).on('blur', this.filterCallback, null, this);
+  Y.one(this.searchEl).on('keyup', this.filterCallback, null, this);
+  Y.one(this.searchEl).on('change', this.filterCallback, null, this);
+  Y.one(this.searchEl).on('search', this.filterCallback, null, this);
 
   this.filterEl.appendChild(this.searchEl);
 
@@ -57,8 +53,7 @@ function YabiWorkflowCollection() {
   this.clearFilterEl.className = 'fakeButton';
   this.clearFilterEl.appendChild(document.createTextNode('show all'));
   this.clearFilterEl.style.visibility = 'hidden';
-  YAHOO.util.Event.addListener(this.clearFilterEl, 'click',
-                               this.clearFilterCallback, this);
+  Y.one(this.clearFilterEl).on('click', this.clearFilterCallback, null, this);
 
   this.filterEl.appendChild(this.clearFilterEl);
 
@@ -66,10 +61,16 @@ function YabiWorkflowCollection() {
   this.sliderContainerEl = document.createElement('div');
   this.sliderContainerEl.className = 'sliderContainer';
   var labelDiv = document.createElement('div');
+  //this.sliderContainerEl.className = 'sliderContainer yui3-skin-sam';
+  //var labelDiv = document.createElement('span');
   labelDiv.className = 'sliderLabel';
   labelDiv.appendChild(document.createTextNode('Date range:'));
   this.sliderContainerEl.appendChild(labelDiv);
+  //this.sliderEl = document.createElement('span');
   this.sliderEl = document.createElement('div');
+  //Y.one(this.sliderEl).setStyles({'left': '150px'});
+  //this.sliderContainerEl.appendChild(this.sliderEl);
+
   this.sliderEl.className = 'yui-h-slider slider-bg';
   this.slideThumbEl = document.createElement('div');
   this.slideThumbEl.className = 'yui-slider-thumb slider-thumb';
@@ -82,11 +83,15 @@ function YabiWorkflowCollection() {
 
   this.filterEl.appendChild(this.sliderContainerEl);
 
-  this.slider = YAHOO.widget.Slider.getHorizSlider(this.sliderEl,
+  this.slider = Y.YUI2.widget.Slider.getHorizSlider(this.sliderEl,
       this.slideThumbEl, 0, 160, 40);
   this.slider.animate = true;
   this.slider.setValue(40, true, false, true);
 
+
+  //this.slider = new Y.Slider();
+  //this.slider.render(this.sliderEl);
+  //this.slider.syncUI();
 
   this.statusFilterContainer = document.createElement('div');
   this.statusFilterContainer.className = 'filterStatus';
@@ -100,7 +105,7 @@ function YabiWorkflowCollection() {
     tmpItem.className = 'statusFilter';
     tmpItem.appendChild(document.createTextNode(statuses[index]));
     this.statusFilterContainer.appendChild(tmpItem);
-    YAHOO.util.Event.addListener(tmpItem, 'click', this.statusFilterCallback,
+    Y.one(tmpItem).on('click', this.statusFilterCallback, null,
         {'target': this, 'value': statuses[index], 'el': tmpItem});
 
     this.statusEls[statuses[index]] = tmpItem;
@@ -125,8 +130,9 @@ function YabiWorkflowCollection() {
   this.noSelectionDiv = document.createElement('div');
   this.noSelectionDiv.className = 'wfSelectionHint';
   this.noSelectionDiv.innerHTML =
-      '<div><span>click the design tab to design a new workflow</span></div>' +
-      '<div><span>or find and click on a workflow to view it here</span></div>';
+      '<div><span>click the design tab to design a new workflow' +
+      '</span></div><div><span>' +
+      'or find and click on a workflow to view it here</span></div>';
 
   this.listingEl = document.createElement('div');
   this.listingEl.className = 'workflowListing';
@@ -137,7 +143,7 @@ function YabiWorkflowCollection() {
   this.containerEl.appendChild(this.listingEl);
 
   this.hydrate();
-}
+};
 
 YabiWorkflowCollection.prototype.changeDateRange = function() {
   var value = Math.floor((this.slider.getValue() - 10) / 40);
@@ -177,8 +183,8 @@ YabiWorkflowCollection.prototype.changeDateRange = function() {
   }
 
   this.dateStart = filterDate.getFullYear() + '-' +
-                   dblzeropad(filterDate.getMonth() + 1) + '-' +
-                   dblzeropad(filterDate.getDate());
+      dblzeropad(filterDate.getMonth() + 1) + '-' +
+      dblzeropad(filterDate.getDate());
 
   // reload
   this.hydrate();
@@ -222,14 +228,15 @@ YabiWorkflowCollection.prototype.solidify = function(obj) {
 
 
 /**
- * hydrate
- *
- * performs an AJAX json fetch of all the workflow listing details and data
- *
- */
+   * hydrate
+   *
+   * performs an AJAX json fetch of all the workflow listing details and data
+   *
+   */
 YabiWorkflowCollection.prototype.hydrate = function() {
-  if (YAHOO.util.Connect.isCallInProgress(this.jsTransaction)) {
-    YAHOO.util.Connect.abort(this.jsTransaction, null, false);
+  if (!Y.Lang.isUndefined(this.jsTransaction) &&
+      this.jsTransaction.isInProgress()) {
+    this.jsTransaction.abort();
   }
 
   var baseURL = appURL + 'ws/workflows/datesearch?start=' + this.dateStart;
@@ -241,8 +248,13 @@ YabiWorkflowCollection.prototype.hydrate = function() {
     success: this.hydrateResponse,
     failure: this.hydrateResponse,
     argument: [this] };
-  this.jsTransaction = YAHOO.util.Connect.asyncRequest('GET',
-      jsUrl, jsCallback, null);
+  var cfg = {
+    on: jsCallback,
+    'arguments': {
+      target: this
+    }
+  };
+  this.jsTransaction = Y.io(jsUrl, cfg);
 };
 
 YabiWorkflowCollection.prototype.toString = function() {
@@ -251,10 +263,10 @@ YabiWorkflowCollection.prototype.toString = function() {
 
 
 /**
- * filter
- *
- * use the search field to limit visible tools
- */
+   * filter
+   *
+   * use the search field to limit visible tools
+   */
 YabiWorkflowCollection.prototype.filter = function() {
   var filterVal = this.searchEl.value;
   var statusFilterVal = this.statusFilterValue;
@@ -284,8 +296,8 @@ YabiWorkflowCollection.prototype.filter = function() {
 
 
 /**
- * clearFilter
- */
+   * clearFilter
+   */
 YabiWorkflowCollection.prototype.clearFilter = function() {
   this.searchEl.value = '';
   this.filter();
@@ -293,8 +305,8 @@ YabiWorkflowCollection.prototype.clearFilter = function() {
 
 
 /**
- * statusFilter
- */
+   * statusFilter
+   */
 YabiWorkflowCollection.prototype.statusFilter = function(value, el) {
   this.statusFilterValue = value;
 
@@ -337,64 +349,71 @@ YabiWorkflowCollection.prototype.select = function(id) {
   }
 };
 
-// --------- callback methods, these require a target via their inputs --------
+// ------- callback methods, these require a target via their inputs ------
 
 
 /**
- * filterCallback
- *
- */
+   * filterCallback
+   *
+   */
 YabiWorkflowCollection.prototype.filterCallback = function(e, target) {
   target.filter();
 };
 
 
 /**
- * statusFilterCallback
- *
- */
+   * statusFilterCallback
+   *
+   */
 YabiWorkflowCollection.prototype.statusFilterCallback = function(e, invoker) {
   invoker.target.statusFilter(invoker.value, invoker.el);
 };
 
 
 /**
- * clearFilterCallback
- *
- */
+   * clearFilterCallback
+   *
+   */
 YabiWorkflowCollection.prototype.clearFilterCallback = function(e, target) {
   target.clearFilter();
 };
 
 
 /**
- * selectWorkflowCallback
- *
- * callback for selecting a workflow proxy object (and hence,
- * loading the workflow)
- */
-YabiWorkflowCollection.prototype.selectWorkflowCallback = function(e, invoker) {
+   * selectWorkflowCallback
+   *
+   * callback for selecting a workflow proxy object (and hence,
+   * loading the workflow)
+   */
+YabiWorkflowCollection.prototype.selectWorkflowCallback = function(
+    e, invoker) {
   invoker.wfCollection.select(invoker.id);
 };
 
 
 /**
- * hydrateResponse
- *
- * handle the response
- * parse json, store internally
- */
-YabiWorkflowCollection.prototype.hydrateResponse = function(o) {
+   * hydrateResponse
+   *
+   * handle the response
+   * parse json, store internally
+   */
+YabiWorkflowCollection.prototype.hydrateResponse = function(
+    transId, o, args) {
   var i, json;
+
+  if (o.statusText === 'abort') {
+    return;
+  }
 
   try {
     json = o.responseText;
 
-    target = o.argument[0];
+    target = args.target;
 
-    target.solidify(YAHOO.lang.JSON.parse(json));
+    target.solidify(Y.JSON.parse(json));
   } catch (e) {
     YAHOO.ccgyabi.widget.YabiMessage.handleResponse(o);
     target.solidify([]);
   }
 };
+

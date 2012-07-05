@@ -57,7 +57,7 @@ class RequestAdmin(ModelAdmin):
         req.approve(request)
 
         self.message_user(request, "Request for %s approved." % unicode(req))
-        return HttpResponseRedirect(webhelpers.url("/admin/registration/request/"))
+        return HttpResponseRedirect(webhelpers.url("/admin-pane/registration/request/"))
 
     @transaction.commit_on_success
     def deny_view(self, request, id):
@@ -65,7 +65,7 @@ class RequestAdmin(ModelAdmin):
         req.deny(request)
 
         self.message_user(request, "Request for %s denied." % unicode(req))
-        return HttpResponseRedirect(webhelpers.url("/admin/registration/request/"))
+        return HttpResponseRedirect(webhelpers.url("/admin-pane/registration/request/"))
 
     # Admin actions allowing bulk approval or denial.
     def get_actions(self, request):

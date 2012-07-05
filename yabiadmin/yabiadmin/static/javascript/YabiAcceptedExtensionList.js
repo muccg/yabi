@@ -16,8 +16,8 @@ function YabiAcceptedExtensionList(obj) {
   this.acceptedExtensions = [];
   this.acceptedExtensionEls = [];
 
-  if (!YAHOO.lang.isUndefined(obj)) {
-    if (YAHOO.lang.isArray(obj)) {
+  if (!Y.Lang.isUndefined(obj)) {
+    if (Y.Lang.isArray(obj)) {
       // this.containerEl.appendChild(document.createTextNode(" accepts "));
 
       for (index in this.payload) {
@@ -64,19 +64,19 @@ YabiAcceptedExtensionList.prototype.validForValue = function(value) {
 
   //if we have no accepted extensions, then we allow everything
   if (this.acceptedExtensions === null ||
-      !YAHOO.lang.isArray(this.acceptedExtensions) ||
+      !Y.Lang.isArray(this.acceptedExtensions) ||
       this.acceptedExtensions.length === 0) {
     return true;
   }
 
   // cast YabiJobFileValues as strings, to allow the same code
   // to be used further down
-  if (YAHOO.lang.isObject(value) && value instanceof YabiJobFileValue) {
+  if (Y.Lang.isObject(value) && value instanceof YabiJobFileValue) {
     value = value.filename;
   }
 
   //if it is a job, then examine its output filetypes and allow if any pass
-  if (YAHOO.lang.isObject(value) && value instanceof YabiJob) {
+  if (Y.Lang.isObject(value) && value instanceof YabiJob) {
     //console.log(value + " is object");
 
     // Allow a job which presently emits no files to pass validation.
@@ -85,7 +85,7 @@ YabiAcceptedExtensionList.prototype.validForValue = function(value) {
     }
 
     extensions = value.outputExtensions;
-    if (!YAHOO.lang.isArray(extensions)) {
+    if (!Y.Lang.isArray(extensions)) {
       extensions = [extensions];
     }
 
@@ -102,7 +102,7 @@ YabiAcceptedExtensionList.prototype.validForValue = function(value) {
             continue;
           }
 
-          if (YAHOO.lang.isArray(value.params[bindex].emittedFiles())) {
+          if (Y.Lang.isArray(value.params[bindex].emittedFiles())) {
             for (var subindex in value.params[bindex].emittedFiles()) {
               arr = value.params[bindex].emittedFiles();
               if (this.validForValue(arr[subindex])) {
@@ -129,7 +129,7 @@ YabiAcceptedExtensionList.prototype.validForValue = function(value) {
     //if we fall through to here, return false
     return false;
   } else {
-    if (YAHOO.lang.isUndefined(value) || value === null) {
+    if (Y.Lang.isUndefined(value) || value === null) {
       return false;
     }
 

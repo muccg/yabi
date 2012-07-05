@@ -1,15 +1,14 @@
 YabiGlobalEventHandler = {
-  failure: function(eventType, args) {
-    if (args[0].status == 401) {
+  failure: function(transId, response) {
+    if (response.status == 401) {
       document.location.href = appURL + 'login?error=' +
           'Could+not+connect+to+yabiadmin+server:+401+Unauthorised+returned';
     }
   }
 };
-if (typeof(YAHOO) !== 'undefined') {
-  YAHOO.util.Connect.failureEvent.subscribe(
-      YabiGlobalEventHandler.failure, YabiGlobalEventHandler);
-}
+Y.use('*', function(Y) {
+  Y.on('io:failure', YabiGlobalEventHandler.failure, Y);
+});
 
 // Utility function namespaces.
 Yabi = {

@@ -15,7 +15,7 @@
     <script type="text/javascript">
         var account;
 
-        YAHOO.util.Event.onDOMReady(function() {
+        function onDOMReady() {
 % if profile.user_option_access:
             var userOption = true;
 % else:
@@ -29,7 +29,7 @@
 % endif
 
             account = new YabiAccount(${dumps(request.user.username)}, userOption, credential);
-        });
+        }
     </script>
 </%def>
 

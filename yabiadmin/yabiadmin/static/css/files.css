@@ -52,3 +52,21 @@ h1 {
     left: 50%;
     right: 0;
 }
+
+.fileName {
+    border-color: #FFFFFF;
+    border-style: solid;
+    border-width: 1px;
+    padding: 3px;
+}
+
+.dragSource {
+    opacity: 0.3;
+    font-weight: bold;
+}
+
+.dropTarget {
+    background-color: #5AA4FB;
+    color: #FFFFFF;
+}
+

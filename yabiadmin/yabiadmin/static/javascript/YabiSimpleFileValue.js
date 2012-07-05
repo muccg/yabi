@@ -5,7 +5,7 @@
  * create a new file value which represents the path and relevant filename
  */
 function YabiSimpleFileValue(path, filename, type) {
-  if (!YAHOO.lang.isArray(path)) {
+  if (!Y.Lang.isArray(path)) {
     path = [path];
   }
   this.pathComponents = path.slice();
@@ -25,7 +25,7 @@ YabiSimpleFileValue.prototype.toString = function() {
     optionalSlash = '/';
   }
 
-  if (YAHOO.lang.isUndefined(this.root)) {
+  if (Y.Lang.isUndefined(this.root)) {
     return this.filename + optionalSlash;
   }
 
