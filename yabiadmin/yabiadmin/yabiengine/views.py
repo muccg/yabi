@@ -94,8 +94,8 @@ def request_next_task(request, status):
                 # this bec has no jobs... continue to try the next one...
                 pass
             
-    logger.debug("no more tasks")
-    raise ObjectDoesNotExist("No more tasks")  
+    logger.debug("No more tasks.")
+    return HttpResponseNotFound("No more tasks.")
 
 def task(request):
     return request_next_task(request, status=STATUS_READY)
