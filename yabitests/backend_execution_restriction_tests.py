@@ -77,6 +77,8 @@ class BackendRateLimitTest(RequestTestWithAdmin):
             runs, status = self.count_running(workflow_url)
             self.assertTrue(runs<=concurrent)
             
+        self.change_backend_concurrent(None)
+            
     def test_throttled_single_backend(self):
         return self.run_concurrent_backend(5,1)
         
@@ -168,4 +170,5 @@ class BackendRateLimitTest(RequestTestWithAdmin):
             time.sleep(1)
             runs, status = self.count_running(workflow_url)
             self.assertTrue(runs<=20)
-   
+            
+        self.change_backend_concurrent(None)
