@@ -1,20 +1,78 @@
 # encoding: utf-8
 import datetime
 from south.db import db
-from south.v2 import SchemaMigration
+from south.v2 import DataMigration
 from django.db import models
 
-class Migration(SchemaMigration):
+# hardcopied functions to help with migration...
+from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
+
+import re
+re_url_schema = re.compile(r'\w+')
+
+from urlparse import urlparse
+def uriparse(uri):
+    """
+    This function returns a tuple containing the scheme and the ParseResult object.
+    It is done this way as urlparse only accepts a specific list of url schemes
+    and yabi:// is not one of them. The ParseResult object is read-only so
+    we cannot inject the scheme back into it.
+    A copy of this function is in yabi-sh.
+    """
+    print "uri is:",uri
+    scheme, rest = uri.split(":",1)
+    assert re_url_schema.match(scheme)        
+    return (scheme, urlparse(rest))
+   
+def get_exec_backendcredential_for_uri(yabiusername, uri, orm):
+    """
+    Looks up a backend credential based on the supplied uri, which should include a username.
+    Returns bc, will log and reraise ObjectDoesNotExist and MultipleObjectsReturned exceptions if more than one credential
+    """
+    #logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
+
+    # parse the URI into chunks
+    schema, rest = uriparse(uri)
+
+    #logger.debug('yabiusername: %s schema: %s usernamea :%s hostnamea :%s patha :%s'%(yabiusername,schema,rest.username,rest.hostname,rest.path))
+    
+    # enforce Exec scehmas only
+    if schema not in ['globus', 'sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex','explode','null']:
+        #logger.error("get_exec_backendcredential_for_uri was asked to get an fs schema! This is forbidden.")
+        raise ValueError("Invalid exec schema in uri passed to get_exec_backendcredential_for_uri: asked for %s"%schema)
+    
+    path = rest.path
+    if path!="/":
+        #logger.error("get_exec_backendcredential_for_uri was passed a uri with a path! This is forbidden. Path must be / for exec backends")
+        raise ValueError("Invalid path in uri passed to get_exec_backendcredential_for_uri: path passed in was: %s"%path)
+
+    # get our set of credential candidates
+    bcs = orm['yabi.BackendCredential'].objects.filter(credential__user__name=yabiusername,
+                                           backend__scheme=schema,
+                                           credential__username=rest.username,
+                                           backend__hostname=rest.hostname)
+    
+    # there must only be one valid exec credential
+    if len(bcs)==1:
+        return bcs[0]
+    
+    raise ObjectDoesNotExist("Could not find backendcredential")
+
+class Migration(DataMigration):
 
     def forwards(self, orm):
-        
-        # Adding field 'Task.execution_backend_credential'
-        db.add_column('yabiengine_task', 'execution_backend_credential', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['yabi.BackendCredential'], null=True), keep_default=False)
+        "Write your forwards methods here."
+        # we need to fill in all the backendcredential fields to point to the correct table rows.
+        for task in orm.Task.objects.all():
+            print "task:",task.id
+            try:
+                task.execution_backend_credential = get_exec_backendcredential_for_uri( task.job.workflow.user.name, task.job.exec_backend, orm )
+            except ValueError, ve:
+                task.execution_backend_credential = None
+            task.save()
 
     def backwards(self, orm):
-        
-        # Deleting field 'Task.execution_backend_credential'
-        db.delete_column('yabiengine_task', 'execution_backend_credential_id')
+        "Write your backwards methods here."
 
 
     models = {
@@ -70,7 +128,8 @@ class Migration(SchemaMigration):
             'path': ('django.db.models.fields.CharField', [], {'max_length': '512'}),
             'port': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'scheme': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
-            'submission': ('django.db.models.fields.TextField', [], {'blank': 'True'})
+            'submission': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'tasks_per_user': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'})
         },
         'yabi.backendcredential': {
             'Meta': {'object_name': 'BackendCredential'},
@@ -169,9 +228,7 @@ class Migration(SchemaMigration):
             'command': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
             'end_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'error_msg': ('django.db.models.fields.CharField', [], {'max_length': '1000', 'null': 'True', 'blank': 'True'}),
-            'exec_backend': ('django.db.models.fields.CharField', [], {'max_length': '256', 'blank': 'True'}),
             'execution_backend_credential': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['yabi.BackendCredential']", 'null': 'True'}),
-            'fs_backend': ('django.db.models.fields.CharField', [], {'max_length': '256', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'job': ('django.db.models.fields.related.ForeignKey', [], {'to': "orm['yabiengine.Job']"}),
             'job_identifier': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
