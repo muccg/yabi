@@ -100,13 +100,13 @@ if [ "${sourcedir}X" = "X" ]; then SOURCE="${HOME}/yabi/yabi-be-twisted"; else S
 TAP="${SOURCE}/server.py"
 
 #  set up run directory if necessary
-if [ ! -d "${RUNNING_DIR}" ]
+if [ ! -d ${RUNNING_DIR} ]
 then
         echo "$0: Aborting, running directory $RUNNING_DIR does not exist."
         exit 0
 fi
 
-if [ ! -f "${TAP}" ]
+if [ ! -f ${TAP} ]
 then
         echo "$0: Aborting, tap file ${TAP} not found."
         exit 0
