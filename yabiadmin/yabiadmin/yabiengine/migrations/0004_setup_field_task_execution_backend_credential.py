@@ -67,7 +67,7 @@ class Migration(DataMigration):
             print "task:",task.id
             try:
                 task.execution_backend_credential = get_exec_backendcredential_for_uri( task.job.workflow.user.name, task.job.exec_backend, orm )
-            except ValueError, ve:
+            except (ValueError, ObjectDoesNotExist), ve:
                 task.execution_backend_credential = None
             task.save()
 
