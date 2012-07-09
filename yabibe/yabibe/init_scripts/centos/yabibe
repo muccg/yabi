@@ -50,9 +50,9 @@ set -e
 cfg.parser () {
     CONFIG_FILE=$1
     runningdir=`cat "$CONFIG_FILE" | grep -i '^runningdir' | head -1 | cut -d '#' -f 1 | cut -d ':'  -f 2`
-    logfile=`cat "$CONFIG_FILE" 1| grep -i 'logfile' | head -1 | cut -d '#' -f 1 | cut -d ':'  -f 2`
-    pidfile=`cat "$CONFIG_FILE" 1| grep -i 'pidfile' | head -1 | cut -d '#' -f 1 | cut -d ':'  -f 2`
-    sourcedir=`cat "$CONFIG_FILE" 1| grep -i 'source' | head -1 | cut -d '#' -f 1 | cut -d ':'  -f 2`
+    logfile=`cat "$CONFIG_FILE" | grep -i 'logfile' | head -1 | cut -d '#' -f 1 | cut -d ':'  -f 2`
+    pidfile=`cat "$CONFIG_FILE" | grep -i 'pidfile' | head -1 | cut -d '#' -f 1 | cut -d ':'  -f 2`
+    sourcedir=`cat "$CONFIG_FILE" | grep -i 'source' | head -1 | cut -d '#' -f 1 | cut -d ':'  -f 2`
 }
         
 # search a path for a file
