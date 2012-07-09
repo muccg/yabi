@@ -41,8 +41,10 @@ if [ "$LANG" = "ja" -o "$LANG" = "ja_JP.eucJP" ]; then
     fi
 fi
 
-# Source function library.
+# Source function library. Cannot be run reliable set -e
+set +e
 . /etc/init.d/functions
+set -e
 
 # INI file parser
 cfg.parser () {
@@ -50,7 +52,7 @@ cfg.parser () {
     runningdir=`cat "$CONFIG_FILE" | grep -i '^runningdir' | head -1 | cut -d '#' -f 1 | cut -d ':'  -f 2`
     logfile=`cat "$CONFIG_FILE" 1| grep -i 'logfile' | head -1 | cut -d '#' -f 1 | cut -d ':'  -f 2`
     pidfile=`cat "$CONFIG_FILE" 1| grep -i 'pidfile' | head -1 | cut -d '#' -f 1 | cut -d ':'  -f 2`
-    source=`cat "$CONFIG_FILE" 1| grep -i 'source' | head -1 | cut -d '#' -f 1 | cut -d ':'  -f 2`
+    sourcedir=`cat "$CONFIG_FILE" 1| grep -i 'source' | head -1 | cut -d '#' -f 1 | cut -d ':'  -f 2`
 }
         
 # search a path for a file
@@ -88,13 +90,12 @@ fi
 
 # read configuration.
 cfg.parser $YABICONF
-cfg.section.backend
 
 # setup parameters
 if [ "${runningdir}X" = "X" ]; then RUNNING_DIR="/var/run/yabi/backend"; else RUNNING_DIR=$runningdir; fi
 if [ "${logfile}X" = "X" ]; then LOG_FILE="/var/log/yabi/backend.log"; else LOG_FILE=$logfile; fi
 if [ "${pidfile}X" = "X" ]; then PID_FILE="/var/run/yabi/backend.pid"; else PID_FILE=$pidfile; fi
-if [ "${source}X" = "X" ]; then SOURCE="${HOME}/yabi/yabi-be-twisted"; else SOURCE=$source; fi
+if [ "${sourcedir}X" = "X" ]; then SOURCE="${HOME}/yabi/yabi-be-twisted"; else SOURCE=$sourcedir; fi
 
 TAP="${SOURCE}/server.py"
 
