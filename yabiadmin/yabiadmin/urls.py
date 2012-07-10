@@ -30,20 +30,41 @@ from django.conf import settings
 from django.core import urlresolvers
 from django.contrib import admin as djangoadmin
 from yabiadmin import admin, uploader
+from yabiadmin.yabifeapp.views import handler404, handler500
 djangoadmin.autodiscover()
 
-# dispatch to either webservice, admin or general
-urlpatterns = patterns('yabiadmin.yabi.views',
-    (r'^ws/', include('yabiadmin.yabi.wsurls'), {'SSL':True}),
-    (r'^engine/', include('yabiadmin.yabiengine.urls')),
+urlpatterns = patterns('yabiadmin.yabifeapp.views',
     url(r'^status_page[/]*$', 'status_page', name='status_page'),
-    (r'^admin/', include('yabiadmin.yabi.adminurls'), {'SSL':True}),
-    (r'^admin/', include(admin.site.urls), {'SSL':True})
+    (r'^preview/metadata[/]*$', 'preview_metadata'),
+    (r'^preview[/]*$', 'preview'),
+    (r'^[/]*$', 'design'),
+    (r'^account/password[/]*$', 'password'),
+    (r'^account[/]*$', 'account'),
+    (r'^design/reuse/(?P<id>.*)[/]*$', 'design'),
+    (r'^design[/]*$', 'design'),
+    (r'^jobs[/]*$', 'jobs'),
+    (r'^files[/]*$', 'files'),
+    (r'^admin[/]*$', 'admin'),
+    (r'^login[/]*$', 'login', {'SSL':True}),
+    (r'^logout[/]*$', 'logout'),
+    (r'^wslogin[/]*$', 'wslogin', {'SSL':True}),
+    (r'^wslogout[/]*$', 'wslogout'),
+    (r'^registration/', include('yabiadmin.registration.urls'), {'SSL': True}),
+    (r'^exception[/]*$', 'exception_view'),
 )
 
 # temporary url for file upload direct
 urlpatterns += patterns('yabiadmin.uploader.views',
-    (r'^upload/', include("yabiadmin.uploader.urls"))
+    (r'^ws/fs/put[/]*$', 'put')
+)
+
+# dispatch to either webservice, admin or general
+urlpatterns += patterns('yabiadmin.yabi.views',
+    (r'^ws/', include('yabiadmin.yabi.wsurls'), {'SSL':True}),
+    (r'^engine/', include('yabiadmin.yabiengine.urls')),
+    url(r'^status_page[/]*$', 'status_page', name='status_page'),
+    (r'^admin-pane/', include('yabiadmin.yabi.adminurls'), {'SSL':True}),
+    (r'^admin-pane/', include(admin.site.urls), {'SSL':True})
 )
 
 urlpatterns += patterns('yabiadmin.yabi.views',
@@ -69,3 +90,8 @@ if settings.DEBUG:
 urlpatterns += patterns('django.views.generic.simple',
     (r'^favicon\.ico', 'redirect_to', {'url': '/static/images/favicon.ico'}),
     )
+
+urlpatterns += patterns('',
+    url(r'^djamboloader/', include('djamboloader.urls')),
+)
+

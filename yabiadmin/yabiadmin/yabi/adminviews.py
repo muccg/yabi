@@ -27,11 +27,13 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import sys
+import psutil
 from urllib import quote
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.db import connection
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import ObjectDoesNotExist
 from django.core import urlresolvers
 from yabiadmin.yabi.models import *
@@ -43,6 +45,7 @@ from django.conf import settings
 from django import forms
 from django.forms.util import ErrorList
 from django.views.debug import get_safe_settings
+from django.contrib import messages
 
 import logging
 logger = logging.getLogger(__name__)
@@ -133,6 +136,29 @@ def tool(request, tool_id):
         'json_url': webhelpers.url('/ws/tool/' + quote(tool.name)),
         'tool_params': format_params(tool.toolparameter_set.order_by('id')),
         })
+
+@staff_member_required
+def modify_backend_by_id(request,id):
+    """This is used primarily by test harness to modify backend settings mid test"""
+    be = Backend.objects.get(id=id)
+    for key,val in request.REQUEST.iteritems():
+        print key,"=",val
+        setattr(be,key,None if val=="None" else val)
+    be.save()
+    
+    return HttpResponse("OK")
+
+@staff_member_required
+def modify_backend_by_name(request,scheme,hostname):
+    """This is used primarily by test harness to modify backend settings mid test"""
+    be = Backend.objects.get(scheme=scheme,hostname=hostname)
+    for key,val in request.REQUEST.iteritems():
+        print key,"=",val
+        setattr(be,key,None if val=="None" else val)
+    be.save()
+    
+    return HttpResponse("OK")
+
 
 
 @staff_member_required
@@ -250,22 +276,72 @@ def backend_cred_test(request, backend_cred_id):
 
     from yabiadmin.yabiengine import backendhelper
 
-    try:
-        rawdata = backendhelper.get_listing(bec.credential.user.name, bec.homedir_uri)
-        listing = json.loads(rawdata)
-        error = None
-    except ValueError, e:
-        listing = None
-        error = rawdata
-        
-    return render_to_response('yabi/backend_cred_test.html', {
+    template_vars = {
         'bec': bec,
         'user':request.user,
         'title': 'Backend Credential Test',
         'root_path':urlresolvers.reverse('admin:index'),
-        'listing':listing,
-        'error':error
-        })
+        'listing':None,
+        'error':None,
+        'error_help': None
+        }
+
+    dict_join = lambda a,b: a.update(b) or a
+
+    try:
+        rawdata = backendhelper.get_listing(bec.credential.user.name, bec.homedir_uri)
+        
+        try:
+            # successful listing
+            return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars,{
+                'listing':json.loads(rawdata)
+            }))
+            
+        except ValueError, e:
+            # value error report
+            return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars,{
+                'error':"Value Error",
+                'error_help':"<pre>"+rawdata+"</pre>"
+            }))
+            
+    except backendhelper.BackendServerError, bse:
+        if "authentication failed" in str(bse).lower():
+            # auth failed
+            cred_url = '%syabi/credential/%d'%(urlresolvers.reverse('admin:index'),bec.credential.id)               # TODO... construct this more 'correctly'
+            return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars,{
+                'error':"Authentication Failed",
+                'error_help': "The authentication of the test has failed. The <a href='%s'>credential used</a> is most likely incorrect. Please ensure the <a href='%s'>credential</a> is correct."%(cred_url,cred_url)
+                }))
+                
+        elif "remote host key is denied" in str(bse).lower():
+            # remote host key denied.
+            
+            # work out which hostkey this is...
+            keys = HostKey.objects.filter(hostname=bec.backend.hostname)
+            
+            if not keys or len(keys)>1:
+                # link to host key page
+                link = '%syabi/hostkey/?hostname=%s'%(urlresolvers.reverse('admin:index'),bec.backend.hostname)     # TODO... construct this more 'correctly'
+            else:
+                # link to changelist page
+                link = '%syabi/hostkey/%d'%(urlresolvers.reverse('admin:index'),keys[0].id)
+            
+            logger.info("backend_cred_test tried to test BackendCredential %d and received a denied host key exception [hostname: %s]."%(bec.id,bec.backend.hostname))
+            
+            return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars,{
+                'error':"Remote Host Key Denied",
+                'error_help':"The remote host key has been denied. Please <a href='%s'>check the hostkey</a>'s fingerprint and if it is the correct key, mark it as accepted."%link
+            }))
+        
+        else:
+            # overall exception
+            return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars,{
+                'error':"Backend Server Error",
+                'error_help':"<pre>"+str(bse)+"</pre>"
+            }))
+    
+    # we should not get here
+    assert False, "Unreachable codepoint reached. Something wicked happened"
 
 
 @staff_member_required
@@ -446,9 +522,8 @@ def duplicate_credential(request):
 
         # bail early if canceled
         if 'button' in request.POST and request.POST['button'] == "Cancel":
-            message = "No changes made."
-            request.user.message_set.create(message=message)
-            return HttpResponseRedirect(webhelpers.url("/admin/yabi/credential/?ids=%s" % (request.POST['ids'])))
+            messages.info(request, "No changes made.")
+            return HttpResponseRedirect(webhelpers.url("/admin-pane/yabi/credential/?ids=%s" % (request.POST['ids'])))
 
         ids = [int(X) for X in request.POST.get('ids', '').split(',')]     
         action = request.POST.get('action',None)
@@ -480,12 +555,23 @@ def duplicate_credential(request):
                     # failed decrypt. not saved.
                     fail += 1
 
-        msg = "%s credential%s successful. %s credential%s failed." %   (success, "s" if success != 1 else "", fail, "s" if fail != 1 else "")           
+        msg = "%s credential%s successful. %s credential%s failed." %   (success, "s" if success != 1 else "", fail, "s" if fail != 1 else "")
 
-        if success or fail:
-            request.user.message_set.create(message=msg)
+        # default is all successful
+        level = messages.SUCCESS
 
-        return HttpResponseRedirect(webhelpers.url("/admin/yabi/credential/?ids=%s" % (request.POST['ids'])))
+        # no successes
+        if fail and not success:
+            level = messages.ERROR
+
+        # some success
+        if fail and success:
+            level = messages.WARNING
+
+        messages.add_message(request, level, msg)
+
+
+        return HttpResponseRedirect(webhelpers.url("/admin-pane/yabi/credential/?ids=%s" % (request.POST['ids'])))
 
     else:
         return render_cred_password_form(request)
@@ -500,12 +586,12 @@ def test_exception(request):
 @staff_member_required
 def status(request):
 
-    import psi.process
-    celery_procs = []
-    for p in psi.process.ProcessTable().values():
-        if 'celery' in p.command.lower():
-            celery_procs.append(p)
+    def anyfn(fn, iterable):
+        for e in iterable:
+            if fn(e): return True
+        return False
 
+    celery_procs = [p for p in psutil.process_iter() if anyfn(lambda arg: 'celery' in arg.lower(), p.cmdline)]
 
     render_data = {
         'request':request,

@@ -62,6 +62,22 @@ class BackendStatusCodeError(Exception):
 import logging
 logger = logging.getLogger(__name__)
   
+def get_backend_by_uri(uri):
+    """
+    Looks up a backend object purely by uri. Ignored username. Thus diesnt consider credentials.
+    Just pure hostname/portnumber. Used by HostKey system for find what hostkeys are allowed
+    """
+    schema, rest = uriparse(uri)
+    netloc = rest.netloc
+    if ':' in netloc:
+        host,port = netloc.split(':')
+    else:
+        host,port = netloc, None
+    
+    return Backend.objects.filter(scheme=schema, hostname=host, port=port)
+    
+def get_hostkeys_by_uri(uri):
+    return Backend.objects.filter(backend__in=get_backend_by_uri(uri))
 
 def get_exec_backendcredential_for_uri(yabiusername, uri):
     """
@@ -75,7 +91,7 @@ def get_exec_backendcredential_for_uri(yabiusername, uri):
 
     logger.debug('yabiusername: %s schema: %s usernamea :%s hostnamea :%s patha :%s'%(yabiusername,schema,rest.username,rest.hostname,rest.path))
     
-    # enforce FS scehmas only
+    # enforce Exec scehmas only
     if schema not in settings.EXEC_SCHEMES:
         logger.error("get_exec_backendcredential_for_uri was asked to get an fs schema! This is forbidden.")
         raise ValueError("Invalid schema in uri passed to get_exec_backendcredential_for_uri: asked for %s"%schema)
@@ -281,6 +297,10 @@ def get_listing(yabiusername, uri, recurse=False):
     """
     Return a listing from backend
     """
+    # clean up any trailing double slashes that will confuse s3 or key-based storage systems
+    if uri.endswith('//'):
+        uri = uri[0:len(uri)-1]
+        
     logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
     resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, quote(uri))
     if recurse:
@@ -378,26 +398,3 @@ def rcopy_file(yabiusername, src, dst):
     r = handle_connection(POST,resource,data)
     data=r.read()
     return r.status, data
-
-def send_upload_hash(yabiusername,uri,uuid):
-    """Send an upload has to the backend. Returns the url returned by the backend for uploading"""
-    logger.debug('yabiusername: %s uri: %s uuid: %s'%(yabiusername,uri,uuid))
-    
-    resource = "%s?uri=%s&uuid=%s&yabiusername=%s"%(settings.YABIBACKEND_UPLOAD,quote(uri),quote(uuid),quote(yabiusername))
-    
-    # get credentials for uri destination backend
-    data = get_fs_credential_for_uri(yabiusername, uri).get()
-            
-    resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(cred['username']),quote(cred['password']),quote(cred['cert']),quote(cred['key']))
-    logger.debug('server: %s resource: %s'%(settings.YABIBACKEND_SERVER, resource))
-                
-    logger.debug( "POST"+resource )
-    logger.debug( "DATA"+str(data) )
-                
-    r = handle_connection(POST,resource, data)
-    result = r.read()
-    logger.debug("status:"+str(r.status))
-    logger.debug("data:"+str(result))
-    decoded = json.loads(result)
-    return decoded
-    

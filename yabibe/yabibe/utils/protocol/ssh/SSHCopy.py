@@ -37,6 +37,8 @@ from FifoPool import Fifos
 from BaseShell import BaseShell
 from SSHRun import SSHExecProcessProtocolParamiko
 
+from conf import config
+
 DEBUG = False
         
 class SCPError(Exception):
@@ -48,6 +50,9 @@ class SSHCopy(BaseShell):
     
     def WriteToRemote(self, certfile, remoteurl, port=None, password="",fifo=None):
         subenv = self._make_env()
+        subenv['YABIADMIN'] = config.yabiadmin
+        subenv['HMAC'] = config.config['backend']['hmackey']
+        subenv['SSL_CERT_CHECK'] = str(config.config['backend']['admin_cert_check'])
         
         port = port or 22
         
@@ -76,11 +81,14 @@ class SSHCopy(BaseShell):
             print "COMMAND",command
             
         return BaseShell.execute(self,SSHExecProcessProtocolParamiko(),
-            command
+            command, subenv
         ), fifo
         
     def ReadFromRemote(self,certfile,remoteurl,port=None,password="",fifo=None):
         subenv = self._make_env()
+        subenv['YABIADMIN'] = config.yabiadmin
+        subenv['HMAC'] = config.config['backend']['hmackey']
+        subenv['SSL_CERT_CHECK'] = str(config.config['backend']['admin_cert_check'])
         
         port = port or 22
         
@@ -110,6 +118,6 @@ class SSHCopy(BaseShell):
             print "COMMAND",command
         
         return BaseShell.execute(self,SSHExecProcessProtocolParamiko(),
-            command
+            command, subenv
         ), fifo
         

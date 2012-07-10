@@ -58,14 +58,14 @@ def authentication_required(f):
 
 
 def profile_required(func):
-    from yabi.models import UserProfile
+    from yabi.models import User
     def newfunc(request,*args,**kwargs):
         # Check if the user has a profile; if not, nothing's going to work anyway,
         # so we might as well fail more spectacularly.
         try:
             request.user.get_profile()
         except ObjectDoesNotExist:
-            UserProfile.objects.create(user=request.user)
+            User.objects.create(user=request.user)
 
         return func(request, *args, **kwargs)    
             

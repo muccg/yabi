@@ -5,10 +5,6 @@ ADMIN = {
     "dir": "yabiadmin/yabiadmin",
     "virtenvdir": "virt_yabiadmin"
 }
-FE = {
-    "dir": "yabife/yabife",
-    "virtenvdir": "virt_yabife"
-}
 BE = {
     "dir": "yabibe/yabibe",
     "virtenvdir": "virt_yabibe"
@@ -25,7 +21,7 @@ TESTS = {
 
 def clean():
     '''Clean all virtual environment directories'''
-    for proj in(FE, ADMIN, BE, YABISH, TESTS):
+    for proj in(ADMIN, BE, YABISH, TESTS):
         virtenvdir = os.path.join(proj['dir'], proj['virtenvdir'])
         local("rm -rf %s" % virtenvdir)
 
@@ -34,9 +30,25 @@ def admin_bootstrap():
     with lcd(ADMIN['dir']):
         local("sh ../../bootstrap.sh -r quickstart.txt")
 
+def admin_require(requirements_file):
+    '''Install additional requirements into the yabiadmin project'''
+    _virtualenv(ADMIN, 'fab require:%s' % requirements_file)
+
 def admin_initdb():
     '''Initialise the DB of Yabiadmin'''
     _virtualenv(ADMIN, 'fab initdb')
+
+def admin_createdb():
+    '''Create the DB of Yabiadmin'''
+    _virtualenv(ADMIN, 'fab createdb')
+
+def admin_dropdb():
+    '''Drop the DB of Yabiadmin'''
+    _virtualenv(ADMIN, 'fab dropdb')
+
+def admin_recreatedb():
+    '''Recreate (drop then create) the DB of Yabiadmin'''
+    _virtualenv(ADMIN, 'fab recreatedb')
 
 def admin_runserver(bg=False):
     '''Run the yabiadmin server for local dev (:bg for background)'''
@@ -71,32 +83,10 @@ def admin_tests():
 
     _virtualenv(ADMIN, "fab tests")
 
-def fe_bootstrap():
-    '''Bootstrap the yabife project'''
-    with lcd(FE['dir']):
-        local("sh ../../bootstrap.sh -r quickstart.txt")
+def admin_jslint():
+    '''Runs Google Closure Linter on JavaScript in Yabiadmin project'''
 
-def fe_initdb():
-    '''Initialise the DB of Yabife'''
-    _virtualenv(FE, 'fab initdb')
-
-def fe_runserver(bg=False):
-    '''Run the yabife server for local dev (:bg for background)'''
-    cmd = "fab runserver"
-    if bg:
-        cmd += ":bg"
-    _virtualenv(FE, cmd)
-
-def fe_killserver():
-    '''Kill the yabife local server'''
-    _virtualenv(FE, "fab killserver")
-
-def fe_quickstart(bg=False):
-    '''Quickstart the yabife project (bootstrap, initdb, runserver)'''
-    fe_bootstrap()
-    fe_initdb()
-    fe_runserver(bg)
-
+    _virtualenv(ADMIN, "fab jslint")
 
 def be_bootstrap():
     '''Bootstrap the yabibe project'''
@@ -135,8 +125,7 @@ def tests_bootstrap():
         local("sh ../bootstrap.sh")
 
 def quickstart():
-    '''Quickstart the whole YABI stack (fe, admin, be, yabish, tests)'''
-    fe_quickstart(bg=True)
+    '''Quickstart the whole YABI stack (admin, be, yabish, tests)'''
     admin_quickstart(bg=True)
     admin_runcelery(bg=True)
     be_quickstart(bg=True)
@@ -144,15 +133,13 @@ def quickstart():
     tests_bootstrap()
 
 def runservers():
-    '''Run all servers in the YABI stack for local dev in the background (fe, admin, be)'''
-    fe_runserver(bg=True)
+    '''Run all servers in the YABI stack for local dev in the background (admin, be)'''
     admin_runserver(bg=True)
     admin_runcelery(bg=True)
     be_runserver(bg=True)
 
 def killservers():
-    '''Kills all the local development servers in the YABI stack (fe, admin, be)'''
-    fe_killserver()
+    '''Kills all the local development servers in the YABI stack (admin, be)'''
     admin_killserver()
     admin_killcelery()
     be_killserver()
@@ -182,20 +169,33 @@ def admin_selected_test_config():
 
     _virtualenv(ADMIN, "fab selected_test_config")
 
-def admin_select_test_config(config):
+def admin_select_test_config(config=None):
     '''Select the passed in config to be used when running tests'''
 
-    _virtualenv(ADMIN, "fab select_test_config:%s" % config)
+    cmd = "fab select_test_config"
+    if config is not None:
+        cmd += ":" + config
+    _virtualenv(ADMIN, cmd)
 
-def _assert_test_config_is_selected():
+def _no_test_config_selected():
     # unfortunately the errors displayed by a nested fab aren't displayed
-    print _virtualenv(ADMIN, "fab assert_test_config_is_selected")
+    try:
+       _virtualenv(ADMIN, "fab assert_test_config_is_selected")
+    except:
+        return False
+    return True
 
-def runtests():
+def runtests(config=None):
     '''Run all the YABI tests'''
-    _assert_test_config_is_selected() 
+    admin_jslint()
+    if config is None and not _no_test_config_selected():
+        config = "sqlite_test"
+    if config is not None:
+        admin_select_test_config(config)
     killservers()
     admin_activate_config('testdb')
+    admin_recreatedb()
+    admin_initdb()
     runservers()
     admin_tests()
     tests()

@@ -70,6 +70,10 @@ h3 {
     font-weight: bold;
 }
 
+h3.error {
+    color: red;
+}
+
 h4 {
     font-size: 12px;
     margin: 1em 0 .8em 0;

@@ -114,17 +114,13 @@ class CallbackHTTPClient(client.HTTPPageGetter):
             
         elif self.callback:
             # hook in here to process chunked updates
-            lines=data.split("\r\n")
+            lines = data.split("\r\n")
             if DEBUG:
                 print "LINES",[lines]
-            #chunk_size = int(lines[0].split(';')[0],16)
-            #chunk = lines[1]
-            chunk = lines[0]
-            
-            #assert len(chunk)==chunk_size, "Chunked transfer decoding error. Chunk size mismatch"
             
             # run the callback in a tasklet!!! Stops scheduler getting into a looped blocking state
-            reporter=gevent.spawn(self.callback,chunk)
+            for chunk in filter(lambda l: l.strip() != '', lines):
+                reporter=gevent.spawn(self.callback,chunk)
             
         else:
             pass

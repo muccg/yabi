@@ -72,6 +72,7 @@ class ToolGroupingInline(admin.TabularInline):
 
 class ToolOutputExtensionInline(admin.TabularInline):
     model = ToolOutputExtension
+    form = ToolOutputExtensionForm
     extra = 1
     fields = ['file_extension']
 
@@ -125,7 +126,7 @@ class CredentialAdmin(AdminBase):
     list_display = ['description', 'user', 'username', 'is_cached']
     list_filter = ['user']
     actions = ['duplicate_credential','cache_credential','decache_credential']
-    search_fields = ['description', 'username']
+    search_fields = ['description', 'username', 'user__user__username']
 
     def duplicate_credential(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)        
@@ -159,7 +160,8 @@ class BackendAdmin(AdminBase):
     list_display = ['name', 'description', 'scheme', 'hostname', 'port', 'path', 'uri', 'backend_summary_link']
 
 class UserAdmin(AdminBase):
-    list_display = ['name', 'toolsets_str', 'tools_link', 'backends_link']
+    list_display = ['user', 'user_option_access','credential_access', 'toolsets_str', 'tools_link', 'backends_link']
+    list_editable = ['user_option_access', 'credential_access']
 
 class BackendCredentialAdmin(AdminBase):
     form = BackendCredentialForm
@@ -170,6 +172,14 @@ class BackendCredentialAdmin(AdminBase):
 class ParameterSwitchUseAdmin(AdminBase):
     list_display = ['display_text', 'formatstring', 'description']
     search_fields = ['display_text', 'description']
+
+
+class HostKeyAdmin(AdminBase):
+    list_display = ['hostname', 'key_type', 'fingerprint', 'allowed']
+    search_fields = ['hostname','key_type','fingerprint']
+    list_filter = ['hostname', 'key_type']
+    fields = ['hostname','allowed','key_type','data']
+
 
 def register(site):
     site.register(FileExtension, FileExtensionAdmin)
@@ -184,3 +194,6 @@ def register(site):
     site.register(Credential, CredentialAdmin)
     site.register(BackendCredential, BackendCredentialAdmin)
     site.register(Backend, BackendAdmin)
+    site.register(HostKey, HostKeyAdmin)
+    
+

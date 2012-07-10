@@ -36,32 +36,32 @@ from yabiadmin.yabiengine import storehelper as StoreHelper
 
 
 def link_to_jobs(obj):
-    return '<a href="%s?workflow__exact=%d">%s</a>' % (url('/admin/yabiengine/job/'), obj.workflowid, "Jobs")
+    return '<a href="%s?workflow__exact=%d">%s</a>' % (url('/admin-pane/yabiengine/job/'), obj.workflowid, "Jobs")
 link_to_jobs.allow_tags = True
 link_to_jobs.short_description = "Jobs"
 
 def link_to_tasks(obj):
-    return '<a href="%s?job__workflow__exact=%d">%s</a>' % (url('/admin/yabiengine/task/'), obj.workflowid, "Tasks")
+    return '<a href="%s?job__workflow__exact=%d">%s</a>' % (url('/admin-pane/yabiengine/task/'), obj.workflowid, "Tasks")
 link_to_tasks.allow_tags = True
 link_to_tasks.short_description = "Tasks"
 
 def link_to_tasks_from_job(obj):
-    return '<a href="%s?job__workflow__exact=%d&job__exact=%d">%s</a>' % (url('/admin/yabiengine/task/'), obj.workflowid, obj.id, "Tasks")
+    return '<a href="%s?job__workflow__exact=%d&job__exact=%d">%s</a>' % (url('/admin-pane/yabiengine/task/'), obj.workflowid, obj.id, "Tasks")
 link_to_tasks_from_job.allow_tags = True
 link_to_tasks_from_job.short_description = "Tasks"
 
 def link_to_stageins(obj):
-    return '<a href="%s?task__job__workflow__exact=%d">%s</a>' % (url('/admin/yabiengine/stagein/'), obj.workflowid, "Stageins")
+    return '<a href="%s?task__job__workflow__exact=%d">%s</a>' % (url('/admin-pane/yabiengine/stagein/'), obj.workflowid, "Stageins")
 link_to_stageins.allow_tags = True
 link_to_stageins.short_description = "Stageins"
 
 def link_to_stageins_from_task(obj):
-    return '<a href="%s?task__job__workflow__exact=%d&task__exact=%d">%s</a>' % (url('/admin/yabiengine/stagein/'), obj.workflowid, obj.id, "Stageins")
+    return '<a href="%s?task__job__workflow__exact=%d&task__exact=%d">%s</a>' % (url('/admin-pane/yabiengine/stagein/'), obj.workflowid, obj.id, "Stageins")
 link_to_stageins_from_task.allow_tags = True
 link_to_stageins_from_task.short_description = "Stageins"
 
 def link_to_syslog_from_task(obj):
-    return '<a href="%s?table_name=task&table_id=%d">%s</a>' % (url('/admin/yabiengine/syslog/'), obj.id, "Syslog")
+    return '<a href="%s?table_name=task&table_id=%d">%s</a>' % (url('/admin-pane/yabiengine/syslog/'), obj.id, "Syslog")
 link_to_syslog_from_task.allow_tags = True
 link_to_syslog_from_task.short_description = "Syslog"
 
@@ -104,7 +104,6 @@ class WorkflowAdmin(admin.ModelAdmin):
                 else:
                     message_bit = "%s workflows were archived." % len(selected)
                 
-                #self.message_user(request, message_bit)
                 messages.success(request, message_bit)
         else:
             messages.error(request, "Couldn't archive workflow(s)!")

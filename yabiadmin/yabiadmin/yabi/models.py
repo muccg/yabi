@@ -30,6 +30,7 @@ import traceback, hashlib, base64
 from django.db import models, transaction
 from django import forms
 from django.contrib.auth.models import User as DjangoUser
+from django.contrib.auth import authenticate
 from django.utils import simplejson as json
 from django.core import urlresolvers
 from django.conf import settings
@@ -37,8 +38,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.cache import cache
 from django.utils.encoding import smart_str
 from urlparse import urlparse, urlunparse
-from crypto import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, DecryptException, AESTEMP
+from crypto import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, deannotate, DecryptException, AESTEMP
 from constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK
+from yabiadmin.utils import cache_keyname
 
 import logging
 logger = logging.getLogger(__name__)
@@ -58,9 +60,9 @@ class Base(models.Model):
     class Meta:
         abstract = True
 
-    last_modified_by = models.ForeignKey(DjangoUser, editable=False, related_name="%(class)s_modifiers", null=True)
+    last_modified_by = models.ForeignKey(DjangoUser, editable=False, related_name="%(class)s_modifiers", null=True, on_delete=models.SET_NULL)
     last_modified_on = models.DateTimeField(null=True, auto_now=True, editable=False)
-    created_by = models.ForeignKey(DjangoUser, editable=False, related_name="%(class)s_creators",null=True)
+    created_by = models.ForeignKey(DjangoUser, editable=False, related_name="%(class)s_creators", null=True, on_delete=models.SET_NULL)
     created_on = models.DateTimeField(auto_now_add=True, editable=False)
 
 
@@ -232,7 +234,7 @@ class Tool(Base):
         
     def purge_from_cache(self):
         """Purge this tools entry description from cache"""
-        cache.delete(self.name)
+        cache.delete(cache_keyname(self.name))
 
     def __unicode__(self):
         return self.name
@@ -377,6 +379,59 @@ class User(Base):
         ordering = ("name",)
 
     name = models.CharField(max_length=50, unique=True)
+    user = models.OneToOneField(DjangoUser, null=False)
+    user_option_access = models.BooleanField(default=True)
+    credential_access = models.BooleanField(default=False)
+
+    def __unicode__(self):
+        return "%s" % self.user.username
+
+    def reencrypt_user_credentials(self, request):
+        logger.debug("")
+        yabiuser = User.objects.get(name=request.user.username)
+
+        currentPassword = request.POST['currentPassword']
+        newPassword = request.POST['newPassword']
+    
+        # get all creds for this user that are encrypted
+        creds = Credential.objects.filter(user=yabiuser)
+        for cred in creds:
+            cred.recrypt(currentPassword, newPassword)
+            cred.save()
+
+    def has_account_tab(self):
+        logger.debug('')        
+        return self.user_option_access or self.credential_access
+
+    def validate(self, request):
+        logger.debug('')
+        
+        currentPassword = request.POST.get("currentPassword", None)
+        newPassword = request.POST.get("newPassword", None)
+        confirmPassword = request.POST.get("confirmPassword", None)
+
+        # check the user is allowed to change password
+        if not self.user_option_access:
+            return (False, "You do not have permission to change the password.")
+
+        # check we have everything
+        if not currentPassword or not newPassword or not confirmPassword:
+            return (False, "Either the current, new or confirmation password is missing from request.")
+
+        # check the current password
+        if not authenticate(username=request.user.username, password=currentPassword):
+            return (False, "Current password is incorrect")
+
+        # the new passwords should at least match and meet whatever rules we decide
+        # to impose (currently a minimum six character length)
+        if newPassword != confirmPassword:
+            return (False, "The new passwords must match")
+
+        if len(newPassword) < 6:
+            return (False, "The new password must be at least 6 characters in length")
+
+        return (True, "Password valid.")
+
 
     def toolsets_str(self):
         return ",".join([str(role) for role in self.users.all()])
@@ -399,9 +454,6 @@ class User(Base):
         return '<a href="%s">Backends</a>' % self.backends_url()
     backends_link.short_description = 'Backends'
     backends_link.allow_tags = True
-
-    def __unicode__(self):
-        return self.name
 
     @property
     def default_stageout(self):
@@ -485,7 +537,8 @@ class Credential(Base):
     def cache_keyname(self):
         """return the cache key for this credential"""
         # smart_str takes care of non-ascii characters (memcache doesn't support Unicode in keys)
-        return smart_str("-cred-%s-%d" % (self.user.name, self.id))
+        # memcache also doesn't like spaces
+        return cache_keyname("-cred-%s-%d" % (self.user.name, self.id))
         
     def send_to_cache(self, time_to_cache=None):
         """This method stores the key as it is in cache"""
@@ -585,6 +638,16 @@ class Credential(Base):
         """We assume its plaintext if it fails the crypto looks_like_annotated_block() function"""
         return not (looks_like_annotated_block(self.password) and looks_like_annotated_block(self.key) and looks_like_annotated_block(self.cert))
         
+    @property
+    def is_protected(self):
+        """Is this cred a temporarily protected one?"""
+        return not (self.is_plaintext or not deannotate(self.password)[0]==AESTEMP)
+    
+    @property
+    def is_encrypted(self):
+        """Is this cred fully encrypted with user pass?"""
+        return not (self.is_plaintext or not deannotate(self.password)[0]!=AESTEMP)
+        
     def is_only_hex(self):
         """This is a legacy function to help migrating old encrypted creds to new creds.
         It returns true if the key, cert and password fields are soley composed of hex characters.
@@ -595,6 +658,11 @@ class Credential(Base):
         if self.is_plaintext:
             # temporarily protect this for saving
             self.protect()
+            
+    def on_post_save(self):
+        if self.is_protected:
+            # cache the protected form while we have it
+            self.send_to_cache()
             
     def on_post_init(self):
         if not self.is_plaintext:
@@ -658,6 +726,8 @@ class Backend(Base):
     link_supported = models.BooleanField(default=True)
 
     submission = models.TextField(blank=True)
+    
+    tasks_per_user = models.IntegerField(null=True, blank=True)
 
     scheme.help_text="Must be one of %s." % ", ".join(settings.VALID_SCHEMES)
     hostname.help_text="Hostname must not end with a /."
@@ -670,6 +740,8 @@ class Backend(Base):
     link_supported.help_text="Backend supports 'ln' localised symlinking."
 
     submission.help_text="Mako script to be used to generate the submission script. (Variables: walltime, memory, cpus, working, modules, command)"
+
+    tasks_per_user.help_text="The number of simultaneous tasks the backends should execute for each remote backend user. 0 means do not execute jobs for this backend. Blank means no limits."
 
     @property
     def uri(self):
@@ -691,7 +763,31 @@ class Backend(Base):
         return '<a href="%s">View</a>' % self.get_absolute_url()
     backend_summary_link.short_description = 'Summary'
     backend_summary_link.allow_tags = True
-
+    
+class HostKey(Base):
+    #backend = models.ForeignKey(Backend)
+    #scheme = models.CharField(max_length=64)
+    hostname = models.CharField(max_length=512)
+    #port = models.IntegerField(null=True, blank=True)
+    
+    key_type = models.CharField(max_length=32, blank=False, null=False)
+    fingerprint = models.CharField(max_length=64, blank=False, null=False)                # some SSH handshakes send a SSH "message" associated with the key
+    data = models.TextField(max_length=16384, blank=False, null=False)    
+    allowed = models.BooleanField(default=False)
+    
+    def __unicode__(self):
+        return "%s hostkey for %s"%(self.key_type, self.hostname)
+        
+    def make_hash(self):
+        """return the contents of this hostkey as a python dictionary"""
+        return {
+            'hostname':self.hostname,
+            'key_type':self.key_type,
+            'fingerprint':self.fingerprint,
+            'data':self.data,
+            'allowed':self.allowed
+        }
+            
 class BackendCredential(Base):
     class Meta:
         verbose_name_plural = "Backend Credentials"
@@ -786,36 +882,22 @@ class BackendCredential(Base):
     backend_cred_test_link.allow_tags = True
 
 
-
-class UserProfile(models.Model):
-    user = models.OneToOneField(DjangoUser)
-
-    def reencrypt_user_credentials(self, request):
-        logger.debug("")
-        yabiuser = User.objects.get(name=request.user.username)
-
-        currentPassword = request.POST['currentPassword']
-        newPassword = request.POST['newPassword']
-    
-        # get all creds for this user that are encrypted
-        creds = Credential.objects.filter(user=yabiuser)
-        for cred in creds:
-            cred.recrypt(currentPassword, newPassword)
-            cred.save()
-
-
-class ModelBackendUserProfile(UserProfile):
+class ModelBackendUserProfile(User):
 
     class Meta:
         proxy = True
 
-    def passchange(self, request):
+    def change_password(self, request):
         logger.debug("passchange in ModelBackendUserProfile")        
         currentPassword = request.POST.get("currentPassword", None)
         newPassword = request.POST.get("newPassword", None)
 
         assert currentPassword, "No currentPassword was found in the request."
         assert newPassword, "No newPassword was found in the request."
+
+        (valid, message) = self.validate(request)
+        if not valid:
+            return (valid, message)
 
         try:
             self.user.set_password(newPassword)
@@ -828,19 +910,19 @@ class ModelBackendUserProfile(UserProfile):
             return (False, "Error changing password")
 
 
-class LDAPBackendUserProfile(UserProfile):
+class LDAPBackendUserProfile(User):
     
-    def __init__(self, *args, **kwargs):
-        UserProfile.__init__(self,*args, **kwargs)
-
     class Meta:
         proxy = True
 
-
-    def passchange(self, request):
+    def change_password(self, request):
         logger.debug("passchange in LDAPBackendUserProfile")
         currentPassword = request.POST.get("currentPassword", None)
         newPassword = request.POST.get("newPassword", None)
+
+        (valid, message) = self.validate(request)
+        if not valid:
+            return (valid, message)
 
         # if we manage to change the userpassword, then reencrypt the creds
         if ldaputils.set_ldap_password(self.user, currentPassword, newPassword):
@@ -852,6 +934,18 @@ class LDAPBackendUserProfile(UserProfile):
         return (status, message)
 
 
+class YabiCache(models.Model):
+    """
+    This model is here to make explicit the table created by running the command python manage.py createcachetable.
+    It is used by django caching mechanism.
+    """
+    class Meta:
+        db_table = 'yabi_cache'
+        
+    cache_key = models.CharField(max_length=255, unique=True, primary_key=True)
+    value = models.TextField()
+    expires = models.DateTimeField(db_index=True)
+
 
 ##
 ## Django Signals
@@ -861,7 +955,12 @@ def signal_credential_pre_save(sender, instance, **kwargs):
     logger.debug("credential pre_save signal")
     
     instance.on_pre_save()
-        
+
+def signal_credential_post_save(sender, instance, **kwargs):
+    logger.debug("credential post_save signal")
+    
+    instance.on_post_save()
+       
 def signal_credential_post_init(sender, instance, **kwargs):
     logger.debug("credential post_init signal")
 
@@ -884,7 +983,7 @@ def signal_tool_post_save(sender, **kwargs):
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         logger.debug('Creating user profile for %s' % instance.username)
-        UserProfile.objects.create(user=instance)
+        User.objects.create(user=instance, name=instance.username)
 
  
 # connect up signals
@@ -892,6 +991,7 @@ from django.db.models.signals import post_save, pre_save,post_init
 post_save.connect(signal_tool_post_save, sender=Tool, dispatch_uid="signal_tool_post_save")
 post_save.connect(create_user_profile, sender=DjangoUser, dispatch_uid="create_user_profile")
 pre_save.connect(signal_credential_pre_save, sender=Credential, dispatch_uid="signal_credential_pre_save")
+post_save.connect(signal_credential_post_save, sender=Credential, dispatch_uid="signal_credential_post_save")
 post_init.connect(signal_credential_post_init, sender=Credential, dispatch_uid="signal_credential_post_init")
 
 

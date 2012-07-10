@@ -26,6 +26,7 @@
 ### END COPYRIGHT ###
 from django.utils import simplejson as json
 from django.conf import settings
+from django.utils.encoding import smart_str
 
 def json_error(message):
     if type(message) is str:
@@ -60,4 +61,21 @@ def using_dev_settings():
         using_dev_settings = True
 
     return using_dev_settings
+
+def detect_rdbms():
+    assert(settings.DATABASES.has_key('default'))
+    assert(settings.DATABASES['default'].has_key('ENGINE'))
+    mapping = {
+            'django.db.backends.postgresql_psycopg2': 'postgres',
+            'django.db.backends.mysql': 'mysql',
+            'django.db.backends.sqlite3': 'sqlite',
+    }
+    return mapping.get(settings.DATABASES['default']['ENGINE'], 'unknown')
+
+def cache_keyname(key):
+    """return a safe cache key"""
+    # smart_str takes care of non-ascii characters (memcache doesn't support Unicode in keys)
+    # memcache also doesn't like spaces
+    return smart_str(key).replace(' ', '_')
+
 

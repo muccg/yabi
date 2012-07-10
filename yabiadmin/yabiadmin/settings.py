@@ -52,7 +52,8 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
     'django.middleware.doc.XViewMiddleware',
-    'ccg.middleware.ssl.SSLRedirect'
+    'ccg.middleware.ssl.SSLRedirect',
+    'django.contrib.messages.middleware.MessageMiddleware'    
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -63,6 +64,8 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django.contrib.admin',
     'django.contrib.staticfiles',
+    'django.contrib.messages',
+    'yabiadmin.yabifeapp',
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
     'yabiadmin.yabistoreapp',
@@ -70,7 +73,8 @@ INSTALLED_APPS = [
     'djcelery',
     'djkombu',
     'django_extensions',
-    'south'    
+    'south',
+    'djamboloader'
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
@@ -93,11 +97,11 @@ AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
 # you SHOULD change the cookie to use HTTPONLY and SECURE when in production
 SESSION_COOKIE_AGE = 60*60
 SESSION_COOKIE_PATH = url('/')
-SESSION_COOKIE_NAME = 'yabiadmin_sessionid'
+SESSION_COOKIE_NAME = 'yabi_sessionid'
 SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_HTTPONLY = False 
 SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_NAME = "csrftoken_yabiadmin"
+CSRF_COOKIE_NAME = "csrftoken_yabi"
 
 
 # Locale
@@ -109,9 +113,8 @@ LANGUAGE_CODE = 'en-us'
 USE_I18N = True
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#login-url
-LOGIN_URL = url('/accounts/login/')
-LOGOUT_URL = url('/accounts/logout/')
-
+LOGIN_URL = url('/login/')
+LOGOUT_URL = url('/logout/')
 
 ### static file management ###
 # see: https://docs.djangoproject.com/en/dev/howto/static-files/
@@ -128,17 +131,18 @@ MEDIA_URL = url('/static/media/')
 # a directory that will be writable by the webserver, for storing various files...
 WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
 
+# put our temporary uploads directory inside WRITABLE_DIRECTORY
+FILE_UPLOAD_TEMP_DIR = os.path.join(WRITABLE_DIRECTORY,".uploads")
+if not os.path.exists(FILE_UPLOAD_TEMP_DIR):
+    os.mkdir(FILE_UPLOAD_TEMP_DIR)
+
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#append-slash
 APPEND_SLASH = True
-
-# TODO: probably deprecated
-SITE_NAME = 'yabiadmin'
 
 # validation settings, these reflect the types of backend that yabi can handle
 EXEC_SCHEMES = ['globus', 'sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex','explode','null']
 FS_SCHEMES = ['http', 'https', 'gridftp', 'yabifs', 'scp', 's3', 'localfs','null']
 VALID_SCHEMES = EXEC_SCHEMES + FS_SCHEMES
-
 
 ##
 ## CAPTCHA settings
@@ -189,6 +193,9 @@ DATABASES = {
         'PASSWORD': '', 
         'HOST': '',                    
         'PORT': '',
+        'OPTIONS': {
+            'timeout': 20,
+        }
     }
 }
 
@@ -225,18 +232,22 @@ MANAGERS = ADMINS
 #AUTH_LDAP_MEMBERATTR = 'uniqueMember'
 #AUTH_LDAP_USERDN = 'ou=People'
 
-
+# set up caching. For production you should probably use memcached
+# see https://docs.djangoproject.com/en/dev/topics/cache/
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
-        'LOCATION': 'localhost.localdomain:11211',
-        'KEYSPACE': "yabiadmin"
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'yabi_cache',
+        'TIMEOUT': 3600,
+        'MAX_ENTRIES': 600
     }
 }
 
-# uncomment to use memcache for sessions, be sure to have uncommented memcache settings above
 # see https://docs.djangoproject.com/en/dev/ref/settings/#session-engine
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+# https://docs.djangoproject.com/en/1.3/ref/settings/#std:setting-SESSION_FILE_PATH
+# in production we would suggest using memcached for your session engine
+SESSION_ENGINE = 'django.contrib.sessions.backends.file'
+SESSION_FILE_PATH = WRITABLE_DIRECTORY
 
 # uploads are currently written to disk and double handled, setting a limit will break things
 # see https://docs.djangoproject.com/en/dev/ref/settings/#file-upload-max-memory-size
@@ -252,7 +263,6 @@ BACKEND_BASE = '/'
 TASKTAG = 'set_this' # this must be the same in the yabi.conf for the backend that will consume tasks from this admin
 YABIBACKEND_SERVER = BACKEND_IP + ':' +  BACKEND_PORT
 YABISTORE_HOME = '.yabi/run/store/'
-BACKEND_UPLOAD = 'http://'+BACKEND_IP+':'+BACKEND_PORT+BACKEND_BASE+"fs/ticket"
 
 YABIBACKEND_COPY = '/fs/copy'
 YABIBACKEND_RCOPY = '/fs/rcopy'
@@ -289,6 +299,53 @@ CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
 CELERY_IMPORTS = ("yabiadmin.yabiengine.tasks",)
 BROKER_TRANSPORT = "djkombu.transport.DatabaseTransport"
 
+
+
+### PREVIEW SETTINGS
+
+# The truncate key controls whether the file may be previewed in truncated form
+# (ie the first "size" bytes returned). If set to false, files beyond the size
+# limit simply won't be available for preview.
+#
+# The override_mime_type key will set the content type that's sent in the
+# response to the browser, replacing the content type received from Admin.
+#
+# MIME types not in this list will result in the preview being unavailable.
+PREVIEW_SETTINGS = {
+    # Text formats.
+    "text/plain": { "truncate": True },
+
+    # Structured markup formats.
+    "text/html": { "truncate": False, "sanitise": True },
+    "application/xhtml+xml": { "truncate": False, "sanitise": True },
+    "text/svg+xml": { "truncate": True, "override_mime_type": "text/plain" },
+    "text/xml": { "truncate": True, "override_mime_type": "text/plain" },
+    "application/xml": { "truncate": True, "override_mime_type": "text/plain" },
+
+    # Image formats.
+    "image/gif": { "truncate": False },
+    "image/jpeg": { "truncate": False },
+    "image/png": { "truncate": False },
+}
+
+# The length of time preview metadata will be cached, in seconds.
+PREVIEW_METADATA_EXPIRY = 60
+
+# The maximum file size that can be previewed.
+PREVIEW_SIZE_LIMIT = 1048576
+
+# Used by djamboloader to combo load the YUI JS files
+THIRTY_DAYS = 30 * 24 * 60 * 60
+JAVASCRIPT_LIBRARIES = {
+  "yui_3_5_1": {
+    "path": os.path.join(PROJECT_DIRECTORY, "static/javascript/lib/yui-3.5.1/build/"),
+    "cache_for": THIRTY_DAYS, 
+  },
+  "yui2in3_2_9_0": {
+    "path": os.path.join(PROJECT_DIRECTORY, "static/javascript/lib/yui-2in3/dist/2.9.0/build/"),
+    "cache_for": THIRTY_DAYS,
+  },
+}
 
 ### LOGGING SETUP ###
 # see https://docs.djangoproject.com/en/dev/topics/logging/
@@ -330,6 +387,11 @@ LOGGING = {
         },
         'django.request': {
             'handlers': ['console', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+        'djamboloader': {
+            'handlers': ['console'],
             'level': 'ERROR',
             'propagate': False,
         },

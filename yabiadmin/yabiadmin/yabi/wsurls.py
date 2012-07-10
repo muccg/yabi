@@ -30,8 +30,6 @@ from django.conf.urls.defaults import *
 
 # frontend webservices
 urlpatterns = patterns('yabiadmin.yabi.ws_frontend_views',
-    url(r'^login[/]*$', 'login'),
-    url(r'^logout[/]*$', 'logout'),
 
     url(r'^tool/(?P<toolname>[^/]+)[/]*$', 'tool', name='tool'),
     url(r'^menu[/]*$', 'menu', name='menu'),
@@ -42,8 +40,6 @@ urlpatterns = patterns('yabiadmin.yabi.ws_frontend_views',
     url(r'^fs/copy[/]*$', 'copy', name='copy'),
     url(r'^fs/rcopy[/]*$', 'rcopy', name='rcopy'),
     url(r'^fs/rm[/]*$', 'rm', name='rm'),
-    url(r'^fs/getuploadurl/*$', 'getuploadurl', name='getuploadurl'),
-
 
     url(r'^workflows/submit[/]*$', 'submit_workflow'),
     url(r'^workflows/get/(?P<workflow_id>\d+)[/]*$', 'get_workflow'),
@@ -57,7 +53,9 @@ urlpatterns = patterns('yabiadmin.yabi.ws_frontend_views',
 
 # admin support pages
 urlpatterns += patterns('yabiadmin.yabi.adminviews',
-    url(r'^manage_credential[/]*$', 'duplicate_credential')                        
+    url(r'^manage_credential[/]*$', 'duplicate_credential'),
+    url(r'^modify_backend/id/(?P<id>\d+)[/]*$', 'modify_backend_by_id'),
+    url(r'^modify_backend/name/(?P<scheme>[a-zA-Z_]*[a-zA-Z0-9_\-\.]*)/(?P<hostname>[a-zA-Z_]*[a-zA-Z0-9_\-\.]*)[/]*$', 'modify_backend_by_name'), 
 )
 
 # backend webservices
@@ -66,7 +64,9 @@ urlpatterns += patterns('yabiadmin.yabi.adminviews',
 urlpatterns += patterns('yabiadmin.yabi.ws_backend_views',
     url(r'^credential/fs/(?P<yabiusername>[a-zA-Z_][a-zA-Z0-9_\-\.]*)[/]*$', 'fs_credential_uri', {'SSL':True}, name='credential_uri'),
     url(r'^credential/exec/(?P<yabiusername>[a-zA-Z_][a-zA-Z0-9_\-\.]*)[/]*$', 'exec_credential_uri', {'SSL':True}, name='credential_uri'),
-    url(r'^backend/(?P<scheme>\w+)/(?P<hostname>[\w\.0-9\-]+)[/]*$', 'backend_connection_limit', {'SSL':False}, name='backend_connection_limit'),
+    url(r'^backend/(?P<scheme>\w+)/(?P<hostname>[\w\.0-9\-]+)[/]*$', 'backend_connection_limit', name='backend_connection_limit'),
+    url(r'^hostkeys[/]*$','get_hostkeys', name='get_hostkeys'),
+    url(r'^hostkey/deny[/]*$','report_denied_hostkey', name='report_denied_hostkey'),
     #url(r'^backend/(?P<scheme>\w+)/(?P<hostname>\w+)/(?P<port>\w+)/(?P<path>\w+)', 'backend_connection_limit', {'SSL':False}, name='backend_connection_limit'),
     #url(r'^credential_deprecated/(?P<yabiusername>\w+)/(?P<scheme>\w+)/(?P<username>\w+)/(?P<hostname>[\w\-.]+)/(?P<detail>\w+)[/]*$', 'credential_detail', name='credential_detail'),                       
     #url(r'^credential/(?P<yabiusername>\w+)/(?P<scheme>\w+)/(?P<username>\w+)/(?P<hostname>[\w\-.]+)[/]*$', 'credential', name='credential'),

@@ -137,4 +137,8 @@ class ToolParameterForm(forms.ModelForm):
             else:
                 self.fields["use_output_filename"].queryset = ToolParameter.objects.filter(tool=tool_object).exclude(pk=tool_param.pk)
 
-    
+
+class ToolOutputExtensionForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super (ToolOutputExtensionForm,self ).__init__(*args,**kwargs)
+        self.fields['file_extension'].queryset = FileExtension.objects.all().order_by('pattern')

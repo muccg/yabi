@@ -1,0 +1,35 @@
+<%inherit file="base.html"/>
+
+<%def name="header()">
+    <link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/admin.css?20101201')}" />
+
+    <script language="JavaScript">
+    <!--
+    function calcHeight()
+    {
+        //find the height of the internal page
+        var the_height=document.getElementById('admin-iframe').contentWindow.document.body.scrollHeight;
+
+        //change the height of the iframe
+        document.getElementById('admin-iframe').height=the_height;
+    }
+
+     setInterval(calcHeight, 1000);         // when the internal admin frame opens up sections we need to respond by recalculating height
+    -->
+    </script>
+        
+</%def>
+
+<%def name="body()">
+    <div id="doc3" class="yui-t1" style="height:100%;background-color:#fff;">
+        <div id="yabi-files-mode">
+            ${self.bodyhd()}
+
+            <iframe src="${h.url('/admin-pane')}" id="admin-iframe" width="100%" height="1" frameborder="0" onLoad="calcHeight();" scrolling="no">
+                An iframe capable browser is required for inframe access to admin. <a href="admin-pane">Go to the full admin page instead.</a>
+            </iframe>
+        </div>
+    </div>
+  
+    ${self.copyright()}
+</%def>

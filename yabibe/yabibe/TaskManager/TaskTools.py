@@ -216,7 +216,7 @@ def Log(logpath,message):
     
 def Status(statuspath, message):
     """Report some status to the webservice"""
-    #print "Reporting status to %s"%(statuspath)
+    #print('Reporting status %s to statuspath %s' % (message, statuspath))
     if DEBUG:
         print "status=",message
     

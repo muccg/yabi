@@ -49,20 +49,20 @@ from django.conf import settings
 from django.contrib import auth
 from crypto import DecryptException
 from django.views.decorators.cache import cache_page
+from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
 
 from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.yabiengine.tasks import build
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import WorkflowTag
-from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_fs_backendcredential_for_uri, copy_file, rcopy_file, rm_file, send_upload_hash
+from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_fs_backendcredential_for_uri, copy_file, rcopy_file, rm_file
 from yabiadmin.responses import *
-from yabi.file_upload import *
 from yabiadmin.decorators import authentication_required, profile_required
 from yabiadmin.yabistoreapp import db
 from yabiadmin.utils import using_dev_settings
 from yabiengine.backendhelper import make_hmac
-
+from yabiadmin.utils import cache_keyname
 from yaphc import Http, PostRequest, UnauthorizedError
 
 import logging
@@ -73,80 +73,28 @@ DATE_FORMAT = '%Y-%m-%d'
 BACKEND_REFUSED_CONNECTION_MESSAGE = "The backend server is refusing connections. Check that the backend server at %s on port %s is running and answering requests."%(settings.BACKEND_IP,settings.BACKEND_PORT) 
 BACKEND_HOST_UNREACHABLE_MESSAGE = "The backend server is unreachable. Check that the backend server setting is correct. It is presently configured to %s."%(settings.BACKEND_IP) 
 
-def login(request):
-
-    if using_dev_settings():
-        logger.warning("Development settings are in use, DO NOT USE IN PRODUCTION ENVIRONMENT without changing settings.")
-
-    if request.method != "POST":
-        return HttpResponseNotAllowed(["POST"])
-    username = request.POST.get('username')
-    password = request.POST.get('password')
-    if not (username and password):
-        return HttpResponseBadRequest()
-    user = auth.authenticate(username=username, password=password)
-    if user is not None:
-        if user.is_active:
-            auth.login(request, user)
-            response = {
-                "success": True
-            }
-            
-            # for every credential for this user, call the login hook
-            # currently creds will raise an exception if they can't be decrypted
-            creds = Credential.objects.filter(user__name=username)
-            try:
-                for cred in creds:
-                    cred.on_login( username,password )
-
-                response = {
-                    "success": True,
-                    "message": "All credentials were successfully decrypted."
-                }
-            except DecryptException, e:
-                message = 'Unable to decrypt credential "%s" with your password. Please see your system administrator.' % cred.description
-                response = {
-                    "success": False,
-                    "message": message
-                }
-        else:
-            response = {
-                "success": False,
-                "message": "The account has been disabled.",
-            }
-    else:
-        response = {
-            "success": False,
-            "message": "The user name and password are incorrect.",
-        }
-    return HttpResponse(content=json.dumps(response)) if response['success'] else HttpResponseForbidden(content=json.dumps(response))
-
-def logout(request):
-    auth.logout(request)
-    response = {
-        "success": True,
-    }
-    return HttpResponse(content=json.dumps(response))
-
+@authentication_required
 def tool(request, toolname):
     logger.debug(toolname)
-    page = cache.get(toolname)
+    toolname_key = cache_keyname(toolname)
+    page = cache.get(toolname_key)
 
     if page:
-        logger.debug("Returning cached page for tool: " + toolname)
+        logger.debug("Returning cached page for tool:%s using key:%s " % (toolname, toolname_key))
         return page
 
     try:
         tool = Tool.objects.get(name=toolname, enabled=True)
 
         response = HttpResponse(tool.json_pretty(), content_type="text/plain; charset=UTF-8")
-        cache.set(toolname, response, 30)
+        cache.set(toolname_key, response, 30)
         return response
     except ObjectDoesNotExist:
         return JsonMessageResponseNotFound("Object not found")
 
 @authentication_required
 @cache_page(300)
+@vary_on_cookie
 def menu(request):
     username = request.user.username
     logger.debug('Username: ' + username)
@@ -258,6 +206,11 @@ def copy(request):
     
     def closure():
         src,dst = request.GET['src'],request.GET['dst']
+
+        # check that src does not match dst
+        srcpath, srcfile = src.rsplit('/', 1)
+        assert srcpath != dst, "dst must not be the same as src"
+        
         # src must not be directory
         assert src[-1]!='/', "src malformed. Either no length or not trailing with slash '/'"
         # TODO: This needs to be fixed in the FRONTEND, by sending the right url through as destination. For now we just make sure it ends in a slash
@@ -280,6 +233,10 @@ def rcopy(request):
         
     def closure():
         src,dst = request.GET['src'],request.GET['dst']
+
+        # check that src does not match dst
+        srcpath, srcfile = src.rstrip('/').rsplit('/', 1)
+        assert srcpath != dst, "dst must not be the same as src"
         
         # src must be directory
         assert src[-1]=='/', "src malformed. Not directory."
@@ -310,7 +267,7 @@ def rm(request):
     return handle_connection(closure)
 
 @authentication_required
-def get(request):
+def get(request, bytes=None):
     """
     Returns the requested uri. get_file returns an httplib response wrapped in a FileIterWrapper. This can then be read
     by HttpResponse
@@ -326,7 +283,6 @@ def get(request):
             logger.critical('Unable to get filename from uri: %s' % uri)
             filename = 'default.txt'
 
-        bytes = request.GET.get("bytes", None)
         if bytes is not None:
             try:
                 bytes = int(bytes)
@@ -577,31 +533,6 @@ def workflow_change_tags(request, id=None):
     else:
         workflow.change_tags(taglist)
     return HttpResponse("Success")
-
-#@authentication_required
-def getuploadurl(request):
-    raise Exception, "test explosion"
-    
-    if 'uri' not in request.REQUEST:
-        return HttpResponseBadRequest("uri needs to be passed in\n")
-    
-    yabiusername = request.user.username
-    uri = request.REQUEST['uri']
-    
-    uploadhash = str(uuid.uuid4())
-        
-    # now send this hash to the back end to inform it of the soon to be incomming upload
-    upload_url = send_upload_hash(yabiusername,uri,uploadhash)
-    
-    # at the moment we can just return the URL for the backend upload. Todo. return a hash based URL
-    #schema = "http"
-    #host = request.META['SERVER_NAME']
-    #port = int(request.META['SERVER_PORT'])
-    #path = "/fs/put?uri=%s&yabiusername=%s"%(request.REQUEST['uri'], request.REQUEST['yabiusername'])
-    
-    return HttpResponse(
-        json.dumps(upload_url)
-    )
 
 @authentication_required
 @profile_required

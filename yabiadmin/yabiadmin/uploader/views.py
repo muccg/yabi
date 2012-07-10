@@ -11,6 +11,7 @@ from django.conf import settings
 from yaphc import Http, PostRequest, UnauthorizedError
 from yabiadmin.yabiengine.backendhelper import BackendRefusedConnection, BackendHostUnreachable, PermissionDenied, FileNotFound, BackendStatusCodeError
 from yabiadmin.yabiengine.backendhelper import get_fs_backendcredential_for_uri
+from yabiadmin.decorators import authentication_required
 
 import logging
 logger = logging.getLogger(__name__)
@@ -60,13 +61,15 @@ class FileUploadStreamer(UploadStreamer):
         # this is called right at the beginning. So we grab the uri detail here and initialise the outgoing POST
         self.post_multipart(host=self._host, port=self._port, selector=self._selector, cookies=self._cookies )
 
-#@authentication_required
-def put(request, yabiusername):
+@authentication_required
+def put(request):
     """
     Uploads a file to the supplied URI
     """
     import socket
     import httplib
+
+    yabiusername = request.user.username
 
     try:
         logger.debug("uri: %s" %(request.GET['uri']))

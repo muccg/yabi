@@ -101,10 +101,10 @@ possible_delay_sets = [
          
          # speed bomb
          [
-            (0.1, "Unsubmitted"),
-            (0.1, "Pending"),
-            (0.1, "Running"),
-            (0.1, "Error")
+            (0, "Unsubmitted"),
+            (0, "Pending"),
+            (0, "Running"),
+            (0, "Error")
          ]
     ]
              
@@ -116,9 +116,12 @@ class ExplodingConnector(ExecConnector):
         gevent.sleep()
         
         times = random.choice(possible_delay_sets)
+
+        print "Exploding Connector: command %s, remoteurl %s, delay_set %s" % (command, remoteurl, str(times))
         
         for delay, message in times:
             sleep(delay)
+            print "Exploding Connector: remoteurl %s, message %s" % (remoteurl, message)
             client_stream.write("%s\r\n"%message)
         
         client_stream.finish()

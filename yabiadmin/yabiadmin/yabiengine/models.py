@@ -29,7 +29,7 @@
 from django.db import models
 from django.db.models import Q
 from django.conf import settings
-from yabiadmin.yabi.models import User
+from yabiadmin.yabi.models import User, BackendCredential
 from yabiadmin.yabiengine import backendhelper
 from yabiadmin.yabiengine.urihelper import uriparse
 from django.utils import simplejson as json
@@ -214,8 +214,6 @@ class Task(models.Model, Editable, Status):
     end_time = models.DateTimeField(null=True, blank=True)
     job_identifier = models.TextField(blank=True)
     command = models.TextField(blank=True)
-    exec_backend = models.CharField(max_length=256, blank=True)
-    fs_backend = models.CharField(max_length=256, blank=True)
     error_msg = models.CharField(max_length=1000, null=True, blank=True)
 
     status = models.CharField(max_length=64, blank=True)
@@ -226,6 +224,12 @@ class Task(models.Model, Editable, Status):
     working_dir = models.CharField(max_length=256, null=True, blank=True)
     name = models.CharField(max_length=256, null=True, blank=True)                  # if we are null, we behave the old way and use our task.id
     tasktag = models.CharField(max_length=256, null=True, blank=True)           # if we are null, we behave the old way and use our task.id
+
+    # the following field is a convenience pointer (not normalised) to the backendcredential table row used for the execution credential
+    # they are used by the task view to help group and count the tasks quickly and efficiently to load control the backend executer
+    # you should NOT reference these table links unless absolutely necessary. Use the uri fields exec_backend and fs_backend instead as these are serialised and permanent
+    # there are helper funtions to process those uri's (but they don't help us with complex SQL queries)
+    execution_backend_credential = models.ForeignKey(BackendCredential, null=True)
 
     def json(self):
         # formulate our status url and our error url
@@ -310,7 +314,7 @@ class Task(models.Model, Editable, Status):
     link_to_json.short_description = "JSON"
 
     def link_to_syslog(self):
-        return '<a href="%s?table_name=task&table_id=%d">%s</a>' % (url('/admin/yabiengine/syslog/'), self.id, "Syslog")
+        return '<a href="%s?table_name=task&table_id=%d">%s</a>' % (url('/admin-pane/yabiengine/syslog/'), self.id, "Syslog")
     link_to_syslog.allow_tags = True
     link_to_syslog.short_description = "Syslog"
 

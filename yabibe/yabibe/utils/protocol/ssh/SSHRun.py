@@ -36,6 +36,8 @@ from FifoPool import Fifos
 
 from BaseShell import BaseShell, BaseShellProcessProtocol
 
+from conf import config
+
 DEBUG = False
 
 class SSHExecProcessProtocolParamiko(BaseShellProcessProtocol):
@@ -65,6 +67,10 @@ class SSHRun(BaseShell):
         """Spawn a process to run a remote ssh job. return the process handler"""
         subenv = self._make_env()
         
+        subenv['YABIADMIN'] = config.yabiadmin
+        subenv['HMAC'] = config.config['backend']['hmackey']
+        subenv['SSL_CERT_CHECK'] = str(config.config['backend']['admin_cert_check'])
+        
         if modules:
             remote_command = "&&".join(["module load %s"%module for module in modules]+[remote_command])
         
@@ -81,4 +87,11 @@ class SSHRun(BaseShell):
         if DEBUG:      
             print "COMMAND:",command
             
-        return BaseShell.execute(self,SSHExecProcessProtocolParamiko(streamin),command)
+        # hande log setting
+        if config.config['execution']['logcommand']:
+            print "ssh running command: "+str(command)
+            
+        if config.config['execution']['logscripts']:
+            print "ssh attempting remote command: "+remote_command
+            
+        return BaseShell.execute(self,SSHExecProcessProtocolParamiko(streamin),command,subenv)
