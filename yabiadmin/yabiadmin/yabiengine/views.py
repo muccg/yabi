@@ -156,6 +156,7 @@ def select_task_for_update(task_id):
 
 @transaction.commit_manually
 def update_task_status(task_id, status):
+    logger.warning("Entry update_task_status %d with status %s"%(task_id,status))
     try:
         def log_ignored():
             logger.warning('Ignoring status update of task %s from %s to %s' % (task.pk, task.status, status))
