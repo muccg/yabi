@@ -741,7 +741,7 @@ class Backend(Base):
 
     submission.help_text="Mako script to be used to generate the submission script. (Variables: walltime, memory, cpus, working, modules, command)"
 
-    tasks_per_user.help_text="The number of simultaneous tasks the backends should execute for each remote backend user. 0 means do not execute jobs for this backend. Blank means use the default setting (%d simultaneous jobs per user)"%(settings.BACKEND_QUEUE_TASKS_PER_USER)
+    tasks_per_user.help_text="The number of simultaneous tasks the backends should execute for each remote backend user. 0 means do not execute jobs for this backend. Blank means no limits."
 
     @property
     def uri(self):

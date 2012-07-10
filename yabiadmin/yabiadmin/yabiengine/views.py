@@ -72,12 +72,12 @@ def request_next_task(request, status):
         # the following collects the list of tasks for this bec that are already running on the remote
         remote_tasks = Task.objects.filter(execution_backend_credential=bec).exclude(status=STATUS_READY).exclude(status=STATUS_ERROR).exclude(status=STATUS_EXEC_ERROR).exclude(status=STATUS_COMPLETE)
         
-        tasks_per_user = settings.BACKEND_QUEUE_TASKS_PER_USER if not bec or bec.backend.tasks_per_user==None else bec.backend.tasks_per_user
+        tasks_per_user = None if not bec or bec.backend.tasks_per_user==None else bec.backend.tasks_per_user
         
         #logger.debug("%d remote tasks running for this bec (%s)"%(len(remote_tasks),bec))
         #logger.debug("tasks_per_user = %d\n"%(tasks_per_user))
         
-        if len(remote_tasks) < tasks_per_user:
+        if tasks_per_user==None or len(remote_tasks) < tasks_per_user:
             # we can return a task for this bec if one exists
             try:
                 tasks = Task.objects.filter(execution_backend_credential=bec).filter(status=status, tasktag=tasktag)
