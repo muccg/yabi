@@ -180,6 +180,8 @@ def update_task_status(task_id, status):
                 transaction.rollback()
                 return False
 
+        logger.warning("update_task_status %d forward moving checks complete"%(task_id))
+
         task.status = status
 
         if status != STATUS_BLOCKED and status!= STATUS_RESUME:
@@ -187,21 +189,27 @@ def update_task_status(task_id, status):
 
         if status == STATUS_COMPLETE:
             task.end_time = datetime.now()
-                
+            
+        logger.warning("update_task_status %d presave"%(task_id))
         task.save()
+        logger.warning("update_task_status %d postsave"%(task_id))
 
         # update the job status when the task status changes
         task.job.update_status()
         job_cur_status = task.job.status
 
+        logger.warning("update_task_status %d precommit 1"%(task_id))
         transaction.commit()
+        logger.warning("update_task_status %d postcommit 1"%(task_id))
 
         if job_cur_status in [STATUS_READY, STATUS_COMPLETE, STATUS_ERROR]:
             workflow = EngineWorkflow.objects.get(pk=task.workflow_id)
             if workflow.needs_walking():
                 # trigger a walk via celery 
                 walk.delay(workflow_id=workflow.pk)
+        logger.warning("update_task_status %d precommit 2"%(task_id))
         transaction.commit()
+        logger.warning("update_task_status %d postcommit 2"%(task_id))
     except Exception, e:
         transaction.rollback()
         import traceback
