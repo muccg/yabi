@@ -57,8 +57,9 @@ from twisted.internet import defer, reactor
 import weakref
 import sys, os
 
+## TODO: refactor and clean this up. Is it all still needed?
 class TaskManagerResource(resource.Resource):
-    """This is the resource that connects to all the filesystem backends"""
+    """When this resource is hit... tasklets are purged"""
     VERSION=0.2
     addSlash = True
     
@@ -66,8 +67,9 @@ class TaskManagerResource(resource.Resource):
         resource.Resource.__init__(self,*args,**kwargs)
     
     def render(self, request):
-        tasklets.purge()
-        return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, tasklets.debug())
+        #tasklets.purge()
+        
+        return http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, tasklets.debug_json())
 
 class TaskManagerPickleResource(resource.Resource):
     """This is the resource that connects to all the filesystem backends"""
