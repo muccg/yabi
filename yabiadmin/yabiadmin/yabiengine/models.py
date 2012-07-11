@@ -216,7 +216,7 @@ class Task(models.Model, Editable, Status):
     command = models.TextField(blank=True)
     error_msg = models.CharField(max_length=1000, null=True, blank=True)
 
-    status = models.CharField(max_length=64, blank=True)
+    #status = models.CharField(max_length=64, blank=True)
     
     # new status boolean like fields:
     # these are set to the date and time of when the status is changed to this value.
@@ -330,6 +330,26 @@ class Task(models.Model, Editable, Status):
     @property
     def workflowid(self):
         return self.job.workflow.id
+
+    def set_status(self, status):
+        # set the requested status to 'now'
+        varname = "status_"+status.replace(':','_')
+        setattr(self,varname,datetime.now())
+    
+    def get_status(self):
+        # find the most recently datestamped status and return it
+        timestamp = datetime.min                    # epoch
+        outstatus = ''
+        for status in STATUS_PROGRESS_MAP.keys():
+            varname = "status_"+status.replace(':','_')
+            stamp = getattr(self, varname)                              # TODO: this could be database heavy... we should ensure this data is preselected in one query
+            if stamp > timestamp:
+                timestamp = stamp
+                outstatus = status
+        return outstatus
+       
+    # status is a property that sets or gets the present status
+    status = property( get_status, set_status )
 
     def link_to_json(self):
         return '<a href="%s%d">%s</a>' % (url('/engine/task_json/'), self.id, "JSON")
