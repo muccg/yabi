@@ -28,7 +28,7 @@ class TaskViewNoTasksTest(unittest.TestCase):
     def test_task_no_ready_tasks(self):
         response = self.client.get('/engine/task', {'tasktag': 'test_tasktag'})
         self.assertEqual(response.status_code, 404)
-        self.assertTrue('Object not found' in response.content)
+        self.assertTrue('No more tasks' in response.content)
 
 class TaskViewWithTasksTest(unittest.TestCase):
     def setUp(self):

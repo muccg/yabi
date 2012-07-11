@@ -40,8 +40,6 @@ urlpatterns = patterns('yabiadmin.yabi.ws_frontend_views',
     url(r'^fs/copy[/]*$', 'copy', name='copy'),
     url(r'^fs/rcopy[/]*$', 'rcopy', name='rcopy'),
     url(r'^fs/rm[/]*$', 'rm', name='rm'),
-    url(r'^fs/getuploadurl/*$', 'getuploadurl', name='getuploadurl'),
-
 
     url(r'^workflows/submit[/]*$', 'submit_workflow'),
     url(r'^workflows/get/(?P<workflow_id>\d+)[/]*$', 'get_workflow'),
@@ -55,7 +53,9 @@ urlpatterns = patterns('yabiadmin.yabi.ws_frontend_views',
 
 # admin support pages
 urlpatterns += patterns('yabiadmin.yabi.adminviews',
-    url(r'^manage_credential[/]*$', 'duplicate_credential')                        
+    url(r'^manage_credential[/]*$', 'duplicate_credential'),
+    url(r'^modify_backend/id/(?P<id>\d+)[/]*$', 'modify_backend_by_id'),
+    url(r'^modify_backend/name/(?P<scheme>[a-zA-Z_]*[a-zA-Z0-9_\-\.]*)/(?P<hostname>[a-zA-Z_]*[a-zA-Z0-9_\-\.]*)[/]*$', 'modify_backend_by_name'), 
 )
 
 # backend webservices

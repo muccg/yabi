@@ -245,3 +245,13 @@ def destroy_ssh_exec_backend(scheme="ssh", hostname="localhost.localdomain", pat
     
     #import shutil
     #shutil.rmtree(path)    
+
+def modify_backend(scheme="localex",hostname="localhost",**kwargs):
+    """Apply kwargs to modify the matching backend"""
+    from yabiadmin.yabi import models
+    backend = models.Backend.objects.get(scheme=scheme,hostname=hostname)
+    for key,arg in kwargs.iteritems():
+        setattr(backend,key,arg)
+    backend.save()
+    
+    
