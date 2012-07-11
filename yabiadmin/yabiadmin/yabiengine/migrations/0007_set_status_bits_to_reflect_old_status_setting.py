@@ -35,7 +35,7 @@ class Migration(DataMigration):
             print "processing task:",task.id,'...',
             task_status = task.status
             
-            if 'error' not in task_status:
+            if 'error' not in task_status and 'blocked' not in task_status:
                 #normal status
                 statuses = STATUS_PROGRESS_ORDER[:STATUS_PROGRESS_ORDER.index(task_status)+1]
                 timestamps = {}
@@ -69,10 +69,14 @@ class Migration(DataMigration):
                     # mark this status boolean with now.
                     varname = "status_"+prestat.replace(':','_')
                     setattr(task,varname,timestamps[ prestat ])
-            else:
+            elif 'error' in task_status:
                 # handle errors... we just mark the error state (cause we don't actually know how we came to this error)
                 print "setting error time"
                 task.status_error = task.end_time
+            else:
+                # handle blocked tasks
+                print "setting blocked time"
+                task.status_blocked = task.start_time       # just use start time for simplicity
                 
             # save the task
             task.save()
@@ -246,6 +250,7 @@ class Migration(DataMigration):
             'remote_info': ('django.db.models.fields.CharField', [], {'max_length': '2048', 'null': 'True', 'blank': 'True'}),
             'start_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'status': ('django.db.models.fields.CharField', [], {'max_length': '64', 'blank': 'True'}),
+            'status_blocked': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'status_cleaning': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'status_complete': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'status_error': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),

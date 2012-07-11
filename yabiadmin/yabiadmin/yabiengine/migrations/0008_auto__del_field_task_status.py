@@ -180,6 +180,7 @@ class Migration(SchemaMigration):
             'remote_id': ('django.db.models.fields.CharField', [], {'max_length': '256', 'null': 'True', 'blank': 'True'}),
             'remote_info': ('django.db.models.fields.CharField', [], {'max_length': '2048', 'null': 'True', 'blank': 'True'}),
             'start_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
+            'status_blocked': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'status_cleaning': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'status_complete': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'status_error': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),

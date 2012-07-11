@@ -239,6 +239,7 @@ class Task(models.Model, Editable, Status):
     status_cleaning = models.DateTimeField(null=True, blank=True)
     status_complete = models.DateTimeField(null=True, blank=True)
     status_error = models.DateTimeField(null=True, blank=True)
+    status_blocked = models.DateTimeField(null=True, blank=True)
     
     percent_complete = models.FloatField(blank=True, null=True)                     # This is between 0.0 and 1.0. if we are null, then the task has not begun at all
     remote_id = models.CharField(max_length=256, blank=True, null=True)             # when the backend actually starts the task, this will be set to the task id
@@ -340,12 +341,13 @@ class Task(models.Model, Editable, Status):
         # find the most recently datestamped status and return it
         timestamp = datetime.min                    # epoch
         outstatus = ''
-        for status in STATUS_PROGRESS_MAP.keys():
-            varname = "status_"+status.replace(':','_')
-            stamp = getattr(self, varname)                              # TODO: this could be database heavy... we should ensure this data is preselected in one query
-            if stamp > timestamp:
-                timestamp = stamp
-                outstatus = status
+        for status in STATUS_PROGRESS_MAP.keys()+[STATUS_BLOCKED]:
+            if status:                      # ignore ''
+                varname = "status_"+status.replace(':','_')
+                stamp = getattr(self, varname)                              # TODO: this could be database heavy... we should ensure this data is preselected in one query
+                if stamp and stamp > timestamp:
+                    timestamp = stamp
+                    outstatus = status
         return outstatus
        
     # status is a property that sets or gets the present status

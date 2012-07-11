@@ -59,6 +59,9 @@ class Migration(SchemaMigration):
         # Adding field 'Task.status_error'
         db.add_column('yabiengine_task', 'status_error', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True), keep_default=False)
 
+        # Adding field 'Task.status_blocked'
+        db.add_column('yabiengine_task', 'status_blocked', self.gf('django.db.models.fields.DateTimeField')(null=True, blank=True), keep_default=False)
+
 
     def backwards(self, orm):
         
@@ -112,6 +115,9 @@ class Migration(SchemaMigration):
 
         # Deleting field 'Task.status_error'
         db.delete_column('yabiengine_task', 'status_error')
+
+        # Deleting field 'Task.status_error'
+        db.delete_column('yabiengine_task', 'status_blocked')
 
 
     models = {
@@ -277,6 +283,7 @@ class Migration(SchemaMigration):
             'remote_info': ('django.db.models.fields.CharField', [], {'max_length': '2048', 'null': 'True', 'blank': 'True'}),
             'start_time': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'status': ('django.db.models.fields.CharField', [], {'max_length': '64', 'blank': 'True'}),
+            'status_blocked': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'status_cleaning': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'status_complete': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),
             'status_error': ('django.db.models.fields.DateTimeField', [], {'null': 'True', 'blank': 'True'}),

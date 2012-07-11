@@ -560,7 +560,9 @@ class Credential(Base):
         from yabiadmin.yabiengine.tasks import walk
         wfs=self.rewalk_workflows()
         ids = [W.id for W in wfs]
-        wfs.update(status=STATUS_READY)
+        for wf in wfs:
+            wf.status=STATUS_READY
+            wf.save()
 
         # always commit transactions before sending tasks depending on state from the current transaction http://docs.celeryq.org/en/latest/userguide/tasks.html
         transaction.commit()
@@ -623,15 +625,22 @@ class Credential(Base):
         """This looks at all the blocked tasks for the user this credential belongs to
         and returns a queryset of all the tasks in a blocked status for that user"""
         from yabiengine.models import Task
-        return Task.objects.filter(job__workflow__user=self.user).filter(status=STATUS_BLOCKED)
+        #return Task.objects.filter(job__workflow__user=self.user).filter(status=STATUS_BLOCKED)
+        users_tasks = Task.objects.filter(job__workflow__user=self.user).filter(status_blocked__isnull=False)
+        return [T for T in users_tasks if T.status==STATUS_BLOCKED]
         
     def rewalk_workflows(self):
         from yabiengine.enginemodels import EngineWorkflow
         return EngineWorkflow.objects.filter(user=self.user).filter(status=STATUS_REWALK)
+        #users_wfs = EngineWorkflow.objects.filter(user=self.user).filter(status_rewalk__isnull=False)
+        #return [W for W in users_wfs if W.status==STATUS_REWALK]
                 
     def unblock_all_blocked_tasks(self):
         """Set the status on all tasks blocked for this user to 'resume' so they can resume"""
-        self.blocked_tasks().update(status=STATUS_RESUME)     
+        #self.blocked_tasks().update(status=STATUS_RESUME)    
+        for task in self.blocked_tasks():
+            task.status=STATUS_RESUME
+            task.save()
 
     @property
     def is_plaintext(self):
