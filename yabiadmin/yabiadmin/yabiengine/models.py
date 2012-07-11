@@ -217,6 +217,29 @@ class Task(models.Model, Editable, Status):
     error_msg = models.CharField(max_length=1000, null=True, blank=True)
 
     status = models.CharField(max_length=64, blank=True)
+    
+    # new status boolean like fields:
+    # these are set to the date and time of when the status is changed to this value.
+    # this is to decouple the status updates in time
+    # if null then the task has never held this status
+    status_pending = models.DateTimeField(null=True, blank=True)
+    status_ready = models.DateTimeField(null=True, blank=True)
+    status_requested = models.DateTimeField(null=True, blank=True)
+    status_stagein = models.DateTimeField(null=True, blank=True)
+    status_mkdir = models.DateTimeField(null=True, blank=True)
+    status_exec = models.DateTimeField(null=True, blank=True)
+    status_exec_unsubmitted = models.DateTimeField(null=True, blank=True)
+    status_exec_pending = models.DateTimeField(null=True, blank=True)
+    status_exec_active = models.DateTimeField(null=True, blank=True)
+    status_exec_running = models.DateTimeField(null=True, blank=True)
+    status_exec_cleanup = models.DateTimeField(null=True, blank=True)
+    status_exec_done = models.DateTimeField(null=True, blank=True)
+    status_exec_error = models.DateTimeField(null=True, blank=True)
+    status_stageout = models.DateTimeField(null=True, blank=True)
+    status_cleaning = models.DateTimeField(null=True, blank=True)
+    status_complete = models.DateTimeField(null=True, blank=True)
+    status_error = models.DateTimeField(null=True, blank=True)
+    
     percent_complete = models.FloatField(blank=True, null=True)                     # This is between 0.0 and 1.0. if we are null, then the task has not begun at all
     remote_id = models.CharField(max_length=256, blank=True, null=True)             # when the backend actually starts the task, this will be set to the task id
     remote_info = models.CharField(max_length=2048, blank=True, null=True)          # this will contain json describing the remote task information

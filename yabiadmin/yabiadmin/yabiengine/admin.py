@@ -145,7 +145,21 @@ class TaskAdmin(BaseModelAdmin):
     list_display = [workflow_name, 'status', 'start_time', 'end_time', 'job_identifier', 'error_msg', 'command', link_to_stageins_from_task, link_to_syslog_from_task]        
     list_filter = ['status', 'job__workflow__user']
     raw_id_fields = ['job']
-
+    fieldsets = (
+        (None, {
+            'fields': ('job','start_time','end_time','job_identifier','command','error_msg')
+        }),
+        ('Remote Information',{
+            'classes':('collapse',),
+            'fields':('remote_id','remote_info','working_dir','name','tasktag')
+        }),
+        ('Status Information',{
+            'classes':('collapse',),
+            'fields':(  'status_pending','status_ready','status_requested','status_stagein','status_mkdir','status_exec',
+                        'status_exec_unsubmitted','status_exec_pending','status_exec_active','status_exec_running','status_exec_cleanup',
+                        'status_exec_done','status_exec_error','status_stageout','status_cleaning','status_complete','status_error' )
+        }),
+    )
 
 class StageInAdmin(BaseModelAdmin):
     valid_lookups = ('task__job__workflow__exact',)
