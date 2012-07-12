@@ -42,7 +42,7 @@ from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Mkdir, Rm, List, Us
 DEBUG = False
 
 # if this is true the backend constantly rants about when it collects the next task
-VERBOSE = False
+VERBOSE = False  
 
 # set this to true to make sure theres a heartbeat in the logs... so you know that things are working. 
 HEARTBEAT = False

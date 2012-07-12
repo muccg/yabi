@@ -33,6 +33,7 @@ from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
 from django.db import connection
 from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import ObjectDoesNotExist
 from django.core import urlresolvers
 from yabiadmin.yabi.models import *
@@ -135,6 +136,29 @@ def tool(request, tool_id):
         'json_url': webhelpers.url('/ws/tool/' + quote(tool.name)),
         'tool_params': format_params(tool.toolparameter_set.order_by('id')),
         })
+
+@staff_member_required
+def modify_backend_by_id(request,id):
+    """This is used primarily by test harness to modify backend settings mid test"""
+    be = Backend.objects.get(id=id)
+    for key,val in request.REQUEST.iteritems():
+        print key,"=",val
+        setattr(be,key,None if val=="None" else val)
+    be.save()
+    
+    return HttpResponse("OK")
+
+@staff_member_required
+def modify_backend_by_name(request,scheme,hostname):
+    """This is used primarily by test harness to modify backend settings mid test"""
+    be = Backend.objects.get(scheme=scheme,hostname=hostname)
+    for key,val in request.REQUEST.iteritems():
+        print key,"=",val
+        setattr(be,key,None if val=="None" else val)
+    be.save()
+    
+    return HttpResponse("OK")
+
 
 
 @staff_member_required
