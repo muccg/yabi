@@ -189,7 +189,7 @@ class Job(models.Model, Editable, Status):
         '''
         cur_status = self.status
         for status in [STATUS_ERROR, 'exec:error', 'pending', 'requested', 'stagein', 'mkdir', 'exec', 'exec:active', 'exec:pending', 'exec:unsubmitted', 'exec:running', 'exec:cleanup', 'exec:done', 'stageout', 'cleaning', STATUS_BLOCKED, STATUS_READY, STATUS_COMPLETE]:
-            if Task.objects.filter(job=self, status=status):
+            if [T for T in Task.objects.filter(job=self) if T.status==status]:
                 # we need to map the task status values to valid job status values
                 if status == 'exec:error':
                     self.status = STATUS_ERROR

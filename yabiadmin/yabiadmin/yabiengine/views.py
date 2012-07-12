@@ -70,13 +70,17 @@ def request_next_task(request, status):
     # this enables us later to allow a backend task to be submitted no matter what the remote backend is doing, simply by leaving the column null
     for bec in [None]+backend_user_pairs:
         # the following collects the list of tasks for this bec that are already running on the remote
-        remote_task_candidates = Task.objects.filter(execution_backend_credential=bec).exclude(job__workflow__status=STATUS_READY).exclude(job__workflow__status=STATUS_ERROR).exclude(job__workflow__status=STATUS_EXEC_ERROR).exclude(job__workflow__status=STATUS_COMPLETE)
+        #logger.warning("bec: %s tasktag: %s"%(str(bec),str(tasktag)))
+        remote_task_candidates = Task.objects.filter(execution_backend_credential=bec).filter(tasktag=tasktag).exclude(job__workflow__status=STATUS_READY).exclude(job__workflow__status=STATUS_ERROR).exclude(job__workflow__status=STATUS_EXEC_ERROR).exclude(job__workflow__status=STATUS_COMPLETE)
+        #logger.warning("candidates: %s"%(str(remote_task_candidates)))
         
         remote_tasks = []
         for t in remote_task_candidates:
             status = t.status
             if t not in [STATUS_READY, STATUS_ERROR, STATUS_EXEC_ERROR, STATUS_COMPLETE]:
                 remote_tasks.append(t)
+        
+        #logger.warning("remote_tasks: %s"%(str(remote_tasks)))
         
         tasks_per_user = None if not bec or bec.backend.tasks_per_user==None else bec.backend.tasks_per_user
         
@@ -88,16 +92,19 @@ def request_next_task(request, status):
             try:
                 tasks = [T for T in Task.objects.filter(execution_backend_credential=bec).filter(tasktag=tasktag) if T.status==status]
                 
+                #logger.warning("FOUND %s: %s"%(status,tasks))
+                
                 # Optimistic locking
                 # Update and return task only if another thread hasn't updated and returned it before us
                 for task in tasks:
-                    updated = Task.objects.filter(id=task.id, status=status).update(status=STATUS_REQUESTED)
+                    updated = Task.objects.filter(id=task.id,status_requested__isnull=True).update(status_requested=datetime.now())
                     if updated == 1:
                         logger.debug('requested %s task id: %s command: %s' % (status, task.id, task.command))
                         return HttpResponse(task.json())
 
             except ObjectDoesNotExist:
                 # this bec has no jobs... continue to try the next one...
+                #logger.warning("ODNE")
                 pass
             
     logger.debug("No more tasks.")
