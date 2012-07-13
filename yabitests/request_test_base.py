@@ -13,6 +13,9 @@ GB = 1024 * MB
 TEST_USER = "demo"
 TEST_PASSWORD = "demo"
 
+ADMIN_USER = "admin"
+ADMIN_PASSWORD = "admin"
+
 from urllib import quote
 
 try:
@@ -25,13 +28,26 @@ class RequestTest(YabiTestCase):
     def setUp(self):
         YabiTestCase.setUp(self)
         
-        # login
+        # demo login session
         self.session = requests.session()
         r = self.session.post(YABI_FE+"/login", data={'username':TEST_USER,'password':TEST_PASSWORD})
         self.assertTrue(r.status_code == 200, "Could not login to frontend. Frontend returned: %d"%(r.status_code))
 
     def tearDown(self):
         YabiTestCase.tearDown(self)
+        
+        
+class RequestTestWithAdmin(RequestTest):
+    """This baseclass logs in as the user to perform testing on the yabi frontend"""
+    def setUp(self):
+        RequestTest.setUp(self)
+        
+        # demo login session
+        self.adminsession = requests.session()
+        r = self.adminsession.post(YABI_FE+"/login", data={'username':ADMIN_USER,'password':ADMIN_PASSWORD})
+        self.assertTrue(r.status_code == 200, "Could not login as admin to frontend. Frontend returned: %d"%(r.status_code))
 
+    def tearDown(self):
+        RequestTest.tearDown(self)
 
     

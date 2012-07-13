@@ -56,9 +56,8 @@ from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.yabiengine.tasks import build
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import WorkflowTag
-from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_fs_backendcredential_for_uri, copy_file, rcopy_file, rm_file, send_upload_hash
+from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_fs_backendcredential_for_uri, copy_file, rcopy_file, rm_file
 from yabiadmin.responses import *
-from yabi.file_upload import *
 from yabiadmin.decorators import authentication_required, profile_required
 from yabiadmin.yabistoreapp import db
 from yabiadmin.utils import using_dev_settings
@@ -534,31 +533,6 @@ def workflow_change_tags(request, id=None):
     else:
         workflow.change_tags(taglist)
     return HttpResponse("Success")
-
-#@authentication_required
-def getuploadurl(request):
-    raise Exception, "test explosion"
-    
-    if 'uri' not in request.REQUEST:
-        return HttpResponseBadRequest("uri needs to be passed in\n")
-    
-    yabiusername = request.user.username
-    uri = request.REQUEST['uri']
-    
-    uploadhash = str(uuid.uuid4())
-        
-    # now send this hash to the back end to inform it of the soon to be incomming upload
-    upload_url = send_upload_hash(yabiusername,uri,uploadhash)
-    
-    # at the moment we can just return the URL for the backend upload. Todo. return a hash based URL
-    #schema = "http"
-    #host = request.META['SERVER_NAME']
-    #port = int(request.META['SERVER_PORT'])
-    #path = "/fs/put?uri=%s&yabiusername=%s"%(request.REQUEST['uri'], request.REQUEST['yabiusername'])
-    
-    return HttpResponse(
-        json.dumps(upload_url)
-    )
 
 @authentication_required
 @profile_required

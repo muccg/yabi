@@ -91,7 +91,7 @@ def get_exec_backendcredential_for_uri(yabiusername, uri):
 
     logger.debug('yabiusername: %s schema: %s usernamea :%s hostnamea :%s patha :%s'%(yabiusername,schema,rest.username,rest.hostname,rest.path))
     
-    # enforce FS scehmas only
+    # enforce Exec scehmas only
     if schema not in settings.EXEC_SCHEMES:
         logger.error("get_exec_backendcredential_for_uri was asked to get an fs schema! This is forbidden.")
         raise ValueError("Invalid schema in uri passed to get_exec_backendcredential_for_uri: asked for %s"%schema)
@@ -398,26 +398,3 @@ def rcopy_file(yabiusername, src, dst):
     r = handle_connection(POST,resource,data)
     data=r.read()
     return r.status, data
-
-def send_upload_hash(yabiusername,uri,uuid):
-    """Send an upload has to the backend. Returns the url returned by the backend for uploading"""
-    logger.debug('yabiusername: %s uri: %s uuid: %s'%(yabiusername,uri,uuid))
-    
-    resource = "%s?uri=%s&uuid=%s&yabiusername=%s"%(settings.YABIBACKEND_UPLOAD,quote(uri),quote(uuid),quote(yabiusername))
-    
-    # get credentials for uri destination backend
-    data = get_fs_credential_for_uri(yabiusername, uri).get()
-            
-    resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(cred['username']),quote(cred['password']),quote(cred['cert']),quote(cred['key']))
-    logger.debug('server: %s resource: %s'%(settings.YABIBACKEND_SERVER, resource))
-                
-    logger.debug( "POST"+resource )
-    logger.debug( "DATA"+str(data) )
-                
-    r = handle_connection(POST,resource, data)
-    result = r.read()
-    logger.debug("status:"+str(r.status))
-    logger.debug("data:"+str(result))
-    decoded = json.loads(result)
-    return decoded
-    

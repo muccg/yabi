@@ -1,13 +1,5 @@
 #! /bin/bash
 #
-# portmap       Start/Stop RPC portmapper
-#
-# chkconfig: 345 13 87
-# description: The portmapper manages RPC connections, which are used by \
-#              protocols such as NFS and NIS. The portmap server must be \
-#              running on machines which act as servers for protocols which \
-#              make use of the RPC mechanism.
-# processname: portmap
 
 NAME="yabibe"
 #TWISTDLIST="/usr/local/yabi/src/yabi-be-twisted/release/mypython/bin/twistd"

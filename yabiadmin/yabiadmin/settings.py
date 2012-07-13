@@ -144,7 +144,6 @@ EXEC_SCHEMES = ['globus', 'sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 's
 FS_SCHEMES = ['http', 'https', 'gridftp', 'yabifs', 'scp', 's3', 'localfs','null']
 VALID_SCHEMES = EXEC_SCHEMES + FS_SCHEMES
 
-
 ##
 ## CAPTCHA settings
 ##
@@ -264,7 +263,6 @@ BACKEND_BASE = '/'
 TASKTAG = 'set_this' # this must be the same in the yabi.conf for the backend that will consume tasks from this admin
 YABIBACKEND_SERVER = BACKEND_IP + ':' +  BACKEND_PORT
 YABISTORE_HOME = '.yabi/run/store/'
-BACKEND_UPLOAD = 'http://'+BACKEND_IP+':'+BACKEND_PORT+BACKEND_BASE+"fs/ticket"
 
 YABIBACKEND_COPY = '/fs/copy'
 YABIBACKEND_RCOPY = '/fs/rcopy'
