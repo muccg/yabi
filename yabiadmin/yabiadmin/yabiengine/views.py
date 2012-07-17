@@ -71,13 +71,14 @@ def request_next_task(request, status):
     for bec in [None]+backend_user_pairs:
         # the following collects the list of tasks for this bec that are already running on the remote
         #logger.warning("bec: %s tasktag: %s"%(str(bec),str(tasktag)))
-        remote_task_candidates = Task.objects.filter(execution_backend_credential=bec).filter(tasktag=tasktag).exclude(job__workflow__status=STATUS_READY).exclude(job__workflow__status=STATUS_ERROR).exclude(job__workflow__status=STATUS_EXEC_ERROR).exclude(job__workflow__status=STATUS_COMPLETE)
+        remote_task_candidates = Task.objects.filter(execution_backend_credential=bec).filter(tasktag=tasktag).exclude(job__workflow__status=STATUS_ERROR).exclude(job__workflow__status=STATUS_EXEC_ERROR).exclude(job__workflow__status=STATUS_COMPLETE)
         #logger.warning("candidates: %s"%(str(remote_task_candidates)))
         
         remote_tasks = []
-        for t in remote_task_candidates:
+        for n,t in enumerate(remote_task_candidates):
             status = t.status
-            if t not in [STATUS_READY, STATUS_ERROR, STATUS_EXEC_ERROR, STATUS_COMPLETE]:
+            #logger.warning("status for %d is: %s"%(n,status))
+            if status not in [STATUS_READY, STATUS_ERROR, STATUS_EXEC_ERROR, STATUS_COMPLETE]:
                 remote_tasks.append(t)
         
         #logger.warning("remote_tasks: %s"%(str(remote_tasks)))
@@ -85,14 +86,14 @@ def request_next_task(request, status):
         tasks_per_user = None if not bec or bec.backend.tasks_per_user==None else bec.backend.tasks_per_user
         
         #logger.debug("%d remote tasks running for this bec (%s)"%(len(remote_tasks),bec))
-        #logger.debug("tasks_per_user = %d\n"%(tasks_per_user))
+        #logger.debug("tasks_per_user = %s\n"%(tasks_per_user))
         
         if tasks_per_user==None or len(remote_tasks) < tasks_per_user:
             # we can return a task for this bec if one exists
             try:
                 tasks = [T for T in Task.objects.filter(execution_backend_credential=bec).filter(tasktag=tasktag) if T.status==status]
                 
-                #logger.warning("FOUND %s: %s"%(status,tasks))
+                #logger.warning("FOUND %s: (%d tasks) %s"%(status,len(tasks),tasks))
                 
                 # Optimistic locking
                 # Update and return task only if another thread hasn't updated and returned it before us
