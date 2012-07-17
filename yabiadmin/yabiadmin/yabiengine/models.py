@@ -338,17 +338,11 @@ class Task(models.Model, Editable, Status):
         setattr(self,varname,datetime.now())
     
     def get_status(self):
-        # find the most recently datestamped status and return it
-        timestamp = datetime.min                    # epoch
-        outstatus = ''
-        for status in STATUS_PROGRESS_MAP.keys()+[STATUS_BLOCKED]:
-            if status:                      # ignore ''
-                varname = "status_"+status.replace(':','_')
-                stamp = getattr(self, varname)                              # TODO: this could be database heavy... we should ensure this data is preselected in one query
-                if stamp and stamp > timestamp:
-                    timestamp = stamp
-                    outstatus = status
-        return outstatus
+        for status in STATUSES_REVERSE_ORDER:
+            varname = "status_" + status.replace(':', '_')
+            if getattr(self, varname):
+                return status
+        return ''
        
     # status is a property that sets or gets the present status
     status = property( get_status, set_status )
