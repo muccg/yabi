@@ -47,7 +47,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib import auth
-from crypto import DecryptException
+from crypto_utils import DecryptException
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
