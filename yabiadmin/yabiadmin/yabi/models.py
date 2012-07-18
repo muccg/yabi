@@ -38,7 +38,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.cache import cache
 from django.utils.encoding import smart_str
 from urlparse import urlparse, urlunparse
-from crypto import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, deannotate, DecryptException, AESTEMP
+from crypto_utils import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, deannotate, DecryptException, AESTEMP
 from constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK
 from yabiadmin.utils import cache_keyname
 
@@ -635,7 +635,7 @@ class Credential(Base):
 
     @property
     def is_plaintext(self):
-        """We assume its plaintext if it fails the crypto looks_like_annotated_block() function"""
+        """We assume its plaintext if it fails the crypto_utils looks_like_annotated_block() function"""
         return not (looks_like_annotated_block(self.password) and looks_like_annotated_block(self.key) and looks_like_annotated_block(self.cert))
         
     @property
