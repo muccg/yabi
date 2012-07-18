@@ -76,9 +76,9 @@ def request_next_task(request, status):
         
         remote_tasks = []
         for n,t in enumerate(remote_task_candidates):
-            status = t.status
+            s = t.status
             #logger.warning("status for %d is: %s"%(n,status))
-            if status not in [STATUS_READY, STATUS_ERROR, STATUS_EXEC_ERROR, STATUS_COMPLETE]:
+            if s not in [STATUS_READY, STATUS_ERROR, STATUS_EXEC_ERROR, STATUS_COMPLETE]:
                 remote_tasks.append(t)
         
         #logger.warning("remote_tasks: %s"%(str(remote_tasks)))
