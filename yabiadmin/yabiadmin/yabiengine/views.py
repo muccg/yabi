@@ -167,12 +167,13 @@ def update_task_status(task_id, status):
         def log_ignored():
             logger.warning('Ignoring status update of task %s from %s to %s' % (task.pk, task.status, status))
 
-        task = Task.objects.get(id=task_id)
-        
         logger.warning("task: %d updating to: %s"%(task_id,status))
 
         logger.warning("task: %d updating.status to: %s"%(task_id,status))
-        task.status = status
+        #task.status = status
+        kwargs = {Task.status_attr(status): datetime.now()}
+        Task.objects.filter(id=task_id).update(**kwargs)
+        task = Task.objects.get(id=task_id)
 
         if status != STATUS_BLOCKED and status!= STATUS_RESUME:
             task.percent_complete = STATUS_PROGRESS_MAP[status]
