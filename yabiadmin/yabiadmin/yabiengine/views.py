@@ -71,13 +71,14 @@ def request_next_task(request, status):
     for bec in [None]+backend_user_pairs:
         # the following collects the list of tasks for this bec that are already running on the remote
         #logger.warning("bec: %s tasktag: %s"%(str(bec),str(tasktag)))
-        remote_task_candidates = Task.objects.filter(execution_backend_credential=bec).filter(tasktag=tasktag).exclude(job__workflow__status=STATUS_READY).exclude(job__workflow__status=STATUS_ERROR).exclude(job__workflow__status=STATUS_EXEC_ERROR).exclude(job__workflow__status=STATUS_COMPLETE)
+        remote_task_candidates = Task.objects.filter(execution_backend_credential=bec).filter(tasktag=tasktag).exclude(job__workflow__status=STATUS_ERROR).exclude(job__workflow__status=STATUS_EXEC_ERROR).exclude(job__workflow__status=STATUS_COMPLETE)
         #logger.warning("candidates: %s"%(str(remote_task_candidates)))
         
         remote_tasks = []
-        for t in remote_task_candidates:
-            status = t.status
-            if t not in [STATUS_READY, STATUS_ERROR, STATUS_EXEC_ERROR, STATUS_COMPLETE]:
+        for n,t in enumerate(remote_task_candidates):
+            s = t.status
+            #logger.warning("status for %d is: %s"%(n,status))
+            if s not in [STATUS_READY, STATUS_ERROR, STATUS_EXEC_ERROR, STATUS_COMPLETE]:
                 remote_tasks.append(t)
         
         #logger.warning("remote_tasks: %s"%(str(remote_tasks)))
@@ -85,14 +86,14 @@ def request_next_task(request, status):
         tasks_per_user = None if not bec or bec.backend.tasks_per_user==None else bec.backend.tasks_per_user
         
         #logger.debug("%d remote tasks running for this bec (%s)"%(len(remote_tasks),bec))
-        #logger.debug("tasks_per_user = %d\n"%(tasks_per_user))
+        #logger.debug("tasks_per_user = %s\n"%(tasks_per_user))
         
         if tasks_per_user==None or len(remote_tasks) < tasks_per_user:
             # we can return a task for this bec if one exists
             try:
                 tasks = [T for T in Task.objects.filter(execution_backend_credential=bec).filter(tasktag=tasktag) if T.status==status]
                 
-                #logger.warning("FOUND %s: %s"%(status,tasks))
+                #logger.warning("FOUND %s: (%d tasks) %s"%(status,len(tasks),tasks))
                 
                 # Optimistic locking
                 # Update and return task only if another thread hasn't updated and returned it before us
@@ -159,14 +160,6 @@ def status(request, model, id):
 
         return HttpResponse("")
 
-def select_task_for_update(task_id):
-    # TODO: Django 1.4 replace with EngineTask.objects.select_for_update()
-    rdbms = detect_rdbms()
-    if rdbms in ('postgres', 'mysql'):
-        return EngineTask.objects.raw("SELECT * FROM %s WHERE id = %s FOR UPDATE" % (EngineTask._meta.db_table, task_id))[0]
-    else:
-        return EngineTask.objects.get(pk=task_id)
-
 @transaction.commit_manually
 def update_task_status(task_id, status):
     #logger.warning("Entry update_task_status %d with status %s"%(task_id,status))
@@ -174,25 +167,11 @@ def update_task_status(task_id, status):
         def log_ignored():
             logger.warning('Ignoring status update of task %s from %s to %s' % (task.pk, task.status, status))
 
-        task = select_task_for_update(task_id)
+        task = Task.objects.get(id=task_id)
+        
+        logger.warning("task: %d updating to: %s"%(task_id,status))
 
-        # terminating statuses from BE's point of view. BLOCKED is included because BE should never RESUME
-        terminating_statuses = [STATUS_ERROR, STATUS_EXEC_ERROR, STATUS_COMPLETE, STATUS_BLOCKED]
-
-        if task.status in terminating_statuses:
-            # Never change from terminating status
-            log_ignored()
-            transaction.rollback()
-            return False
-
-        if status not in terminating_statuses:
-            # Always change to a terminating status
-            if task.status and STATUS_PROGRESS_MAP[task.status] > STATUS_PROGRESS_MAP[status]:
-                # ... but otherwise only go forwards
-                log_ignored()
-                transaction.rollback()
-                return False
-
+        logger.warning("task: %d updating.status to: %s"%(task_id,status))
         task.status = status
 
         if status != STATUS_BLOCKED and status!= STATUS_RESUME:
@@ -200,17 +179,21 @@ def update_task_status(task_id, status):
 
         if status == STATUS_COMPLETE:
             task.end_time = datetime.now()
-            
+        
+        logger.warning("task: %d updating to: %s presave"%(task_id,status))
         task.save()
+        logger.warning("task: %d updating to: %s postsave"%(task_id,status))
         
         # update the job status when the task status changes
         task.job.update_status()
         job_cur_status = task.job.status
 
+        logger.warning("task: %d updating to: %s precommit"%(task_id,status))
         transaction.commit()
+        logger.warning("task: %d updating to: %s postcommit"%(task_id,status))
         
         if job_cur_status in [STATUS_READY, STATUS_COMPLETE, STATUS_ERROR]:
-            workflow = EngineWorkflow.objects.get(pk=task.workflow_id)
+            workflow = EngineWorkflow.objects.get(pk=task.job.workflow.id)
             if workflow.needs_walking():
                 # trigger a walk via celery 
                 walk.delay(workflow_id=workflow.pk)

@@ -539,7 +539,8 @@ class Credential(Base):
         # smart_str takes care of non-ascii characters (memcache doesn't support Unicode in keys)
         # memcache also doesn't like spaces
         return cache_keyname("-cred-%s-%d" % (self.user.name, self.id))
-        
+    
+    @transaction.commit_manually
     def send_to_cache(self, time_to_cache=None):
         """This method stores the key as it is in cache"""
         time_to_cache = time_to_cache or settings.DEFAULT_CRED_CACHE_TIME
@@ -553,23 +554,27 @@ class Credential(Base):
         
         cache.set(key, val, time_to_cache)
  
-        # unblock our blocked tasks
-        self.unblock_all_blocked_tasks()
-        
-        # rewalk any of this users workflows that are marked for rewalking
-        from yabiadmin.yabiengine.tasks import walk
-        wfs=self.rewalk_workflows()
-        ids = [W.id for W in wfs]
-        for wf in wfs:
-            wf.status=STATUS_READY
-            wf.save()
+        try:
+            # unblock our blocked tasks
+            self.unblock_all_blocked_tasks()
+            
+            # rewalk any of this users workflows that are marked for rewalking
+            from yabiadmin.yabiengine.tasks import walk
+            wfs=self.rewalk_workflows()
+            ids = [W.id for W in wfs]
+            for wf in wfs:
+                wf.status=STATUS_READY
+                wf.save()
+        except:
+            transaction.rollback()
+            raise
+        else:
+            # always commit transactions before sending tasks depending on state from the current transaction http://docs.celeryq.org/en/latest/userguide/tasks.html
+            transaction.commit()
 
-        # always commit transactions before sending tasks depending on state from the current transaction http://docs.celeryq.org/en/latest/userguide/tasks.html
-        transaction.commit()
-
-        for id in ids:
-            print "WALK----------->",id
-            walk.delay(workflow_id=id)
+            for id in ids:
+                print "WALK----------->",id
+                walk.delay(workflow_id=id)
             
     def get_from_cache(self):
         result = self.get_cache()
