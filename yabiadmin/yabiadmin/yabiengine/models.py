@@ -332,14 +332,18 @@ class Task(models.Model, Editable, Status):
     def workflowid(self):
         return self.job.workflow.id
 
+    @staticmethod
+    def status_attr(status):
+        return "status_" + status.replace(':','_')
+
     def set_status(self, status):
         # set the requested status to 'now'
-        varname = "status_"+status.replace(':','_')
+        varname = self.status_attr(status)
         setattr(self,varname,datetime.now())
     
     def get_status(self):
         for status in STATUSES_REVERSE_ORDER:
-            varname = "status_" + status.replace(':', '_')
+            varname = self.status_attr(status)
             if getattr(self, varname):
                 return status
         return ''
