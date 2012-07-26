@@ -117,7 +117,7 @@ class Migration(DataMigration):
                 #print "enc"
                 assert cred_is_only_hex(cred), "Credential id %d: %s marked as encrypted yet contains non hex characters"%(cred.id,str(cred))
                 
-                from crypto import annotate, joiner, AESHEXTAG
+                from crypto_utils import annotate, joiner, AESHEXTAG
                 print "Annotating credential %d..."%(cred.id)
                 cred.password = annotate(AESHEXTAG,joiner(cred.password))
                 cred.cert = annotate(AESHEXTAG,joiner(cred.cert))
