@@ -216,8 +216,6 @@ class Task(models.Model, Editable, Status):
     command = models.TextField(blank=True)
     error_msg = models.CharField(max_length=1000, null=True, blank=True)
 
-    #status = models.CharField(max_length=64, blank=True)
-    
     # new status boolean like fields:
     # these are set to the date and time of when the status is changed to this value.
     # this is to decouple the status updates in time
