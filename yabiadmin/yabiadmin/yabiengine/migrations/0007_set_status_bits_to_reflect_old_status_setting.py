@@ -36,7 +36,7 @@ class Migration(DataMigration):
             task_status = task.status
             
             if task.status:
-                if 'error' not in task_status and 'blocked' not in task_status:
+                if 'error' not in task_status and 'blocked' not in task_status and 'resume' not in task_status:
                     #normal status
                     statuses = STATUS_PROGRESS_ORDER[:STATUS_PROGRESS_ORDER.index(task_status)+1]
                     timestamps = {}
