@@ -35,51 +35,52 @@ class Migration(DataMigration):
             print "processing task:",task.id,'...',
             task_status = task.status
             
-            if 'error' not in task_status and 'blocked' not in task_status:
-                #normal status
-                statuses = STATUS_PROGRESS_ORDER[:STATUS_PROGRESS_ORDER.index(task_status)+1]
-                timestamps = {}
-                
-                if len(statuses):
-                    # set the first time stamp to start time if there is one
-                    timestamps[ statuses[0] ] = task.start_time or datetime.datetime.now()
-                
-                if len(statuses)>1:
-                    # set the last time stamp to end time if there is one
-                    timestamps[ statuses[-1] ] = task.end_time or datetime.datetime.now()
+            if task.status:
+                if 'error' not in task_status and 'blocked' not in task_status:
+                    #normal status
+                    statuses = STATUS_PROGRESS_ORDER[:STATUS_PROGRESS_ORDER.index(task_status)+1]
+                    timestamps = {}
                     
-                if len(statuses)>2:
-                    if task.end_time:
-                        # fill in the intermediate points with an even distribution of fake timestamps
-                        delta = (task.end_time - task.start_time)/(len(statuses)-1)
+                    if len(statuses):
+                        # set the first time stamp to start time if there is one
+                        timestamps[ statuses[0] ] = task.start_time or datetime.datetime.now()
+                    
+                    if len(statuses)>1:
+                        # set the last time stamp to end time if there is one
+                        timestamps[ statuses[-1] ] = task.end_time or datetime.datetime.now()
+                        
+                    if len(statuses)>2:
+                        if task.end_time:
+                            # fill in the intermediate points with an even distribution of fake timestamps
+                            delta = (task.end_time - task.start_time)/(len(statuses)-1)
+                        else:
+                            delta = datetime.timedelta(seconds=1.0)
+                        
+                        print 'spreadying status timestamps using delta %s'%(str(delta))
+                        
+                        # fill in the times
+                        t = timestamps[ statuses[0] ]
+                        for key in statuses[1:-1]:
+                            t+=delta
+                            timestamps[ key ] = t
                     else:
-                        delta = datetime.timedelta(seconds=1.0)
-                    
-                    print 'spreadying status timestamps using delta %s'%(str(delta))
-                    
-                    # fill in the times
-                    t = timestamps[ statuses[0] ]
-                    for key in statuses[1:-1]:
-                        t+=delta
-                        timestamps[ key ] = t
+                        print 'setting start/stop times'
+                        
+                    for prestat in statuses:
+                        # mark this status boolean with now.
+                        varname = "status_"+prestat.replace(':','_')
+                        setattr(task,varname,timestamps[ prestat ])
+                elif 'error' in task_status:
+                    # handle errors... we just mark the error state (cause we don't actually know how we came to this error)
+                    print "setting error time"
+                    task.status_error = task.end_time
                 else:
-                    print 'setting start/stop times'
+                    # handle blocked tasks
+                    print "setting blocked time"
+                    task.status_blocked = task.start_time       # just use start time for simplicity
                     
-                for prestat in statuses:
-                    # mark this status boolean with now.
-                    varname = "status_"+prestat.replace(':','_')
-                    setattr(task,varname,timestamps[ prestat ])
-            elif 'error' in task_status:
-                # handle errors... we just mark the error state (cause we don't actually know how we came to this error)
-                print "setting error time"
-                task.status_error = task.end_time
-            else:
-                # handle blocked tasks
-                print "setting blocked time"
-                task.status_blocked = task.start_time       # just use start time for simplicity
-                
-            # save the task
-            task.save()
+                # save the task
+                task.save()
                     
     def backwards(self, orm):
         "Write your backwards methods here."
