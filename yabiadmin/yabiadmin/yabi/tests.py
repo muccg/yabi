@@ -29,15 +29,15 @@ class CreateUserFromAdminTest(unittest.TestCase):
 
     # TODO refactor when we add more tests
     def login_admin(self):
-        response = self.client.post('/admin/', 
+        response = self.client.post('/admin-pane/', 
                 {'username': 'admin', 'password': 'admin', 
-                 'this_is_the_login_form': 1, 'next': '/admin'})
+                 'this_is_the_login_form': 1, 'next': '/admin-pane/'})
         # This assert might be a bit fragile
         assert response.status_code == 302, "Couldn't log in admin user"
 
     def test_user_creation(self):
         self.login_admin()
-        response = self.client.post('/admin/auth/user/add/',
+        response = self.client.post('/admin-pane/auth/user/add/',
                 {'username': self.TEST_USER, 'password1': 'test', 'password2': 'test', '_save': 'Save'})
         self.assertEqual(response.status_code, 302, 'Should redirect to User List page')
         self.assertTrue(DjangoUser.objects.filter(username=self.TEST_USER).exists(), 'Should create Django User')

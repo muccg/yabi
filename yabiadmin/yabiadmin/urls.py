@@ -44,6 +44,7 @@ urlpatterns = patterns('yabiadmin.yabifeapp.views',
     (r'^design[/]*$', 'design'),
     (r'^jobs[/]*$', 'jobs'),
     (r'^files[/]*$', 'files'),
+    (r'^admin[/]*$', 'admin'),
     (r'^login[/]*$', 'login', {'SSL':True}),
     (r'^logout[/]*$', 'logout'),
     (r'^wslogin[/]*$', 'wslogin', {'SSL':True}),
@@ -62,8 +63,8 @@ urlpatterns += patterns('yabiadmin.yabi.views',
     (r'^ws/', include('yabiadmin.yabi.wsurls'), {'SSL':True}),
     (r'^engine/', include('yabiadmin.yabiengine.urls')),
     url(r'^status_page[/]*$', 'status_page', name='status_page'),
-    (r'^admin/', include('yabiadmin.yabi.adminurls'), {'SSL':True}),
-    (r'^admin/', include(admin.site.urls), {'SSL':True})
+    (r'^admin-pane/', include('yabiadmin.yabi.adminurls'), {'SSL':True}),
+    (r'^admin-pane/', include(admin.site.urls), {'SSL':True})
 )
 
 urlpatterns += patterns('yabiadmin.yabi.views',

@@ -1,138 +1,21 @@
-# -*- coding: utf-8 -*-
 # encoding: utf-8
 import datetime
 from south.db import db
-from south.v2 import DataMigration
+from south.v2 import SchemaMigration
 from django.db import models
 
-import settings
-
-from Crypto.Hash import SHA256
-from Crypto.Cipher import AES
-import math
-import binascii
-
-#
-# this is a chunking lambda generator
-#
-chunkify = lambda v, l: (v[i*l:(i+1)*l] for i in range(int(math.ceil(len(v)/float(l)))))
-
-#
-# this annotates a string with the 
-#
-annotate = lambda tag,ciphertext: "$%s$%s$"%(tag,ciphertext)
-
-#
-# join a split string together and de CR LF it
-#
-joiner = lambda data: "".join("".join(data.split("\n")).split("\r"))
-
-#
-# this deannotates the string
-#
-def deannotate( string ):
-    try:
-        dummy,tag,cipher,dummy2 = string.split('$')
-    except ValueError, ve:
-        raise DecryptException("Invalid input string to deannotator")
-    
-    if dummy or dummy2:
-        raise DecryptException("Invalid input string to deannotator")
-    
-    return tag, cipher
-
-# known tags
-AESHEXTAG = 'AES'
-AESTEMP = "AESTEMP"                     # tag for temporary decryption of aes for protection in memecache and on DB prior to user key encryption
-
-def aes_enc(data,key):
-    if not data:
-        return data                         # encrypt nothing. get nothing.
-        
-    assert data[-1]!='\0', "encrypt/decrypt implementation uses null padding and cant reliably decrypt a binary string that ends in \\0"
-    
-    #
-    # Our AES Cipher
-    #
-    key_hash = SHA256.new(key)
-    aes = AES.new(key_hash.digest())
-    
-    # pad to nearest 16.
-    data += '\0'*(16-(len(data)%16))
-    
-    # take chunks of 16
-    output = ""
-    for chunk in chunkify(data,16):
-        output += aes.encrypt(chunk)
-        
-    return output
-
-def aes_enc_hex(data,key,linelength=None, tag=AESHEXTAG):
-    """DO an aes encrypt, but return data as base64 encoded"""
-    enc = aes_enc(data,key)
-    encoded = annotate(tag,binascii.hexlify(enc))
-    
-    if linelength:
-        encoded = "\n".join(chunkify(encoded,linelength))
-    
-    return encoded
-
-def looks_like_hex_ciphertext(data):
-    """returns true if the string 'data' looks like it is 
-    actually cipher text. Of course we can not be 100% sure... but it makes a best guess attempt
-    """
-    CIPHER_CHARS = '0123456789ABCDEFabcdef\n\r\t '
-    for char in data:
-        if char not in CIPHER_CHARS:
-            return False
-            
-    return True
-    
-def cred_is_only_hex(self):
-    """This is a legacy function to help migrating old encrypted creds to new creds.
-    It returns true if the key, cert and password fields are soley composed of hex characters.
-    """
-    return looks_like_hex_ciphertext(self.password) and looks_like_hex_ciphertext(self.key) and looks_like_hex_ciphertext(self.cert)
-    
-def cred_protect(self):
-    """temporarily protects a key by encrypting it with the secret django key"""
-    self.password = aes_enc_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
-    self.cert = aes_enc_hex(self.cert, settings.SECRET_KEY,tag=AESTEMP)
-    self.key = aes_enc_hex(self.key, settings.SECRET_KEY,tag=AESTEMP)
-
-class Migration(DataMigration):
-
-    def protect(self,record):
-        annotate = lambda tag,ciphertext: "$%s$%s$"%(tag,ciphertext)
-        joiner = lambda data: "".join("".join(data.split("\n")).split("\r"))
-
-        return annotate("AES",joiner(record))
+class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        "Write your forwards methods here."
-        print "Migrating credentials..."
-        for cred in orm.Credential.objects.all():
-            #print "cred...",dir(cred)
-            if cred.encrypted:
-                #print "enc"
-                assert cred_is_only_hex(cred), "Credential id %d: %s marked as encrypted yet contains non hex characters"%(cred.id,str(cred))
-                
-                from crypto_utils import annotate, joiner, AESHEXTAG
-                print "Annotating credential %d..."%(cred.id)
-                cred.password = annotate(AESHEXTAG,joiner(cred.password))
-                cred.cert = annotate(AESHEXTAG,joiner(cred.cert))
-                cred.key = annotate(AESHEXTAG,joiner(cred.key))
-                cred.save()
-                
-            else:
-                #print "plain"
-                #cred is plaintext. protect it and resave
-                print "Encrypting credential %d using key %r ..."%(cred.id,settings.SECRET_KEY)
-                cred_protect(cred)
-                cred.save()
         
+        # Adding field 'Backend.tasks_per_user'
+        db.add_column('yabi_backend', 'tasks_per_user', self.gf('django.db.models.fields.IntegerField')(null=True, blank=True), keep_default=False)
+
+
     def backwards(self, orm):
-        "Write your backwards methods here."
+        
+        # Deleting field 'Backend.tasks_per_user'
+        db.delete_column('yabi_backend', 'tasks_per_user')
 
 
     models = {
@@ -153,17 +36,17 @@ class Migration(DataMigration):
             'Meta': {'object_name': 'User'},
             'date_joined': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
             'email': ('django.db.models.fields.EmailField', [], {'max_length': '75', 'blank': 'True'}),
-            'first_name': ('django.db.models.fields.CharField', [], {'max_length': '256', 'blank': 'True'}),
+            'first_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
             'groups': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Group']", 'symmetrical': 'False', 'blank': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'is_active': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
             'is_staff': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'is_superuser': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'last_login': ('django.db.models.fields.DateTimeField', [], {'default': 'datetime.datetime.now'}),
-            'last_name': ('django.db.models.fields.CharField', [], {'max_length': '256', 'blank': 'True'}),
+            'last_name': ('django.db.models.fields.CharField', [], {'max_length': '30', 'blank': 'True'}),
             'password': ('django.db.models.fields.CharField', [], {'max_length': '128'}),
             'user_permissions': ('django.db.models.fields.related.ManyToManyField', [], {'to': "orm['auth.Permission']", 'symmetrical': 'False', 'blank': 'True'}),
-            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'})
+            'username': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '30'})
         },
         'contenttypes.contenttype': {
             'Meta': {'ordering': "('name',)", 'unique_together': "(('app_label', 'model'),)", 'object_name': 'ContentType', 'db_table': "'django_content_type'"},
@@ -188,7 +71,8 @@ class Migration(DataMigration):
             'path': ('django.db.models.fields.CharField', [], {'max_length': '512'}),
             'port': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
             'scheme': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
-            'submission': ('django.db.models.fields.TextField', [], {'blank': 'True'})
+            'submission': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
+            'tasks_per_user': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'})
         },
         'yabi.backendcredential': {
             'Meta': {'object_name': 'BackendCredential'},
@@ -211,8 +95,6 @@ class Migration(DataMigration):
             'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'credential_creators'", 'null': 'True', 'to': "orm['auth.User']"}),
             'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
             'description': ('django.db.models.fields.CharField', [], {'max_length': '512', 'blank': 'True'}),
-            'encrypt_on_login': ('django.db.models.fields.BooleanField', [], {'default': 'True'}),
-            'encrypted': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'expires_on': ('django.db.models.fields.DateTimeField', [], {'null': 'True'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'key': ('django.db.models.fields.TextField', [], {'blank': 'True'}),
@@ -241,6 +123,19 @@ class Migration(DataMigration):
             'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'filetype_modifiers'", 'null': 'True', 'to': "orm['auth.User']"}),
             'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255'})
+        },
+        'yabi.hostkey': {
+            'Meta': {'object_name': 'HostKey'},
+            'allowed': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
+            'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'hostkey_creators'", 'null': 'True', 'to': "orm['auth.User']"}),
+            'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'data': ('django.db.models.fields.TextField', [], {'max_length': '16384'}),
+            'fingerprint': ('django.db.models.fields.CharField', [], {'max_length': '64'}),
+            'hostname': ('django.db.models.fields.CharField', [], {'max_length': '512'}),
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'key_type': ('django.db.models.fields.CharField', [], {'max_length': '32'}),
+            'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'hostkey_modifiers'", 'null': 'True', 'to': "orm['auth.User']"}),
+            'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'})
         },
         'yabi.parameterswitchuse': {
             'Meta': {'object_name': 'ParameterSwitchUse'},
@@ -345,18 +240,22 @@ class Migration(DataMigration):
             'users': ('django.db.models.fields.related.ManyToManyField', [], {'symmetrical': 'False', 'related_name': "'users'", 'blank': 'True', 'db_table': "'yabi_user_toolsets'", 'to': "orm['yabi.User']"})
         },
         'yabi.user': {
-            'Meta': {'object_name': 'User'},
+            'Meta': {'ordering': "('name',)", 'object_name': 'User'},
             'created_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'user_creators'", 'null': 'True', 'to': "orm['auth.User']"}),
             'created_on': ('django.db.models.fields.DateTimeField', [], {'auto_now_add': 'True', 'blank': 'True'}),
+            'credential_access': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
             'last_modified_by': ('django.db.models.fields.related.ForeignKey', [], {'related_name': "'user_modifiers'", 'null': 'True', 'to': "orm['auth.User']"}),
             'last_modified_on': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'null': 'True', 'blank': 'True'}),
-            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '50'})
+            'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '50'}),
+            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['auth.User']", 'unique': 'True'}),
+            'user_option_access': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
         },
-        'yabi.userprofile': {
-            'Meta': {'object_name': 'UserProfile'},
-            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['auth.User']", 'unique': 'True'})
+        'yabi.yabicache': {
+            'Meta': {'object_name': 'YabiCache', 'db_table': "'yabi_cache'"},
+            'cache_key': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '255', 'primary_key': 'True'}),
+            'expires': ('django.db.models.fields.DateTimeField', [], {'db_index': 'True'}),
+            'value': ('django.db.models.fields.TextField', [], {})
         }
     }
 

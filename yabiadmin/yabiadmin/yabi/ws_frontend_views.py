@@ -47,7 +47,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib import auth
-from crypto import DecryptException
+from crypto_utils import DecryptException
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
@@ -56,9 +56,8 @@ from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.yabiengine.tasks import build
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import WorkflowTag
-from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_fs_backendcredential_for_uri, copy_file, rcopy_file, rm_file, send_upload_hash
+from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, get_fs_backendcredential_for_uri, copy_file, rcopy_file, rm_file
 from yabiadmin.responses import *
-from yabi.file_upload import *
 from yabiadmin.decorators import authentication_required, profile_required
 from yabiadmin.yabistoreapp import db
 from yabiadmin.utils import using_dev_settings
@@ -207,6 +206,11 @@ def copy(request):
     
     def closure():
         src,dst = request.GET['src'],request.GET['dst']
+
+        # check that src does not match dst
+        srcpath, srcfile = src.rsplit('/', 1)
+        assert srcpath != dst, "dst must not be the same as src"
+        
         # src must not be directory
         assert src[-1]!='/', "src malformed. Either no length or not trailing with slash '/'"
         # TODO: This needs to be fixed in the FRONTEND, by sending the right url through as destination. For now we just make sure it ends in a slash
@@ -229,6 +233,10 @@ def rcopy(request):
         
     def closure():
         src,dst = request.GET['src'],request.GET['dst']
+
+        # check that src does not match dst
+        srcpath, srcfile = src.rstrip('/').rsplit('/', 1)
+        assert srcpath != dst, "dst must not be the same as src"
         
         # src must be directory
         assert src[-1]=='/', "src malformed. Not directory."
@@ -525,31 +533,6 @@ def workflow_change_tags(request, id=None):
     else:
         workflow.change_tags(taglist)
     return HttpResponse("Success")
-
-#@authentication_required
-def getuploadurl(request):
-    raise Exception, "test explosion"
-    
-    if 'uri' not in request.REQUEST:
-        return HttpResponseBadRequest("uri needs to be passed in\n")
-    
-    yabiusername = request.user.username
-    uri = request.REQUEST['uri']
-    
-    uploadhash = str(uuid.uuid4())
-        
-    # now send this hash to the back end to inform it of the soon to be incomming upload
-    upload_url = send_upload_hash(yabiusername,uri,uploadhash)
-    
-    # at the moment we can just return the URL for the backend upload. Todo. return a hash based URL
-    #schema = "http"
-    #host = request.META['SERVER_NAME']
-    #port = int(request.META['SERVER_PORT'])
-    #path = "/fs/put?uri=%s&yabiusername=%s"%(request.REQUEST['uri'], request.REQUEST['yabiusername'])
-    
-    return HttpResponse(
-        json.dumps(upload_url)
-    )
 
 @authentication_required
 @profile_required

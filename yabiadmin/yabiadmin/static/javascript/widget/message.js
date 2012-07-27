@@ -34,6 +34,9 @@ Y.use('*', function(Y) {
 
       // Internal function to actually show a message with a given CSS class.
       var show = function(cls, message) {
+        if (publicMethods.disabled) {
+          return;
+        }
         el.className = cls;
 
         while (text.childNodes.length > 0) {
@@ -54,6 +57,7 @@ Y.use('*', function(Y) {
 
       // The object containing the available methods to be returned.
       var publicMethods = {
+        disabled: false,
         close: function() {
           var anim = new Y.Anim({
             node: Y.one(el),
@@ -68,6 +72,9 @@ Y.use('*', function(Y) {
           anim.run();
         },
         handleResponse: function(response) {
+          if (response.statusText === 'abort') {
+            return;
+          }
           var message, level = guessErrorLevel(response.status);
 
           try {
@@ -98,7 +105,10 @@ Y.use('*', function(Y) {
         },
         fail: function(message) { show('fail', message); },
         success: function(message) { show('success', message); },
-        warn: function(message) { show('warn', message); }
+        warn: function(message) { show('warn', message); },
+
+        enable: function(message) { this.disabled = false; },
+        disable: function(message) { this.disabled = true; }
       };
 
       // Set up listeners.

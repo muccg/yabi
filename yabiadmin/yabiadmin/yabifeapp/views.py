@@ -42,7 +42,7 @@ from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbid
 from django.shortcuts import render_to_response, get_object_or_404
 from django.template.loader import render_to_string
 from django.core.exceptions import ObjectDoesNotExist
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate
 from django.contrib.auth.models import SiteProfileNotAvailable, User as DjangoUser
 from django.contrib.sessions.models import Session
@@ -64,7 +64,7 @@ from yabiadmin.responses import *
 from yabiadmin.preview import html
 from yabiadmin.yabi.models import Credential
 from yabiadmin.decorators import authentication_required, profile_required
-from crypto import DecryptException
+from crypto_utils import DecryptException
 from yabiadmin.yabi.ws_frontend_views import ls, get
 from utils import make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout, using_dev_settings
 
@@ -114,7 +114,13 @@ def design(request, id=None):
 @profile_required
 def jobs(request):
     return render_page("fe/jobs.html", request)
-
+    
+@login_required
+@profile_required
+@user_passes_test( lambda user: user.is_staff )
+def admin(request):
+    return render_page("fe/admin.html", request)
+    
 @login_required
 @profile_required
 def account(request):

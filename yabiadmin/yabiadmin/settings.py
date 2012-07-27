@@ -144,7 +144,6 @@ EXEC_SCHEMES = ['globus', 'sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 's
 FS_SCHEMES = ['http', 'https', 'gridftp', 'yabifs', 'scp', 's3', 'localfs','null']
 VALID_SCHEMES = EXEC_SCHEMES + FS_SCHEMES
 
-
 ##
 ## CAPTCHA settings
 ##
@@ -264,7 +263,6 @@ BACKEND_BASE = '/'
 TASKTAG = 'set_this' # this must be the same in the yabi.conf for the backend that will consume tasks from this admin
 YABIBACKEND_SERVER = BACKEND_IP + ':' +  BACKEND_PORT
 YABISTORE_HOME = '.yabi/run/store/'
-BACKEND_UPLOAD = 'http://'+BACKEND_IP+':'+BACKEND_PORT+BACKEND_BASE+"fs/ticket"
 
 YABIBACKEND_COPY = '/fs/copy'
 YABIBACKEND_RCOPY = '/fs/rcopy'
@@ -340,11 +338,11 @@ PREVIEW_SIZE_LIMIT = 1048576
 THIRTY_DAYS = 30 * 24 * 60 * 60
 JAVASCRIPT_LIBRARIES = {
   "yui_3_5_1": {
-    "path": "static/javascript/lib/yui-3.5.1/build/",
+    "path": os.path.join(PROJECT_DIRECTORY, "static/javascript/lib/yui-3.5.1/build/"),
     "cache_for": THIRTY_DAYS, 
   },
   "yui2in3_2_9_0": {
-    "path": "static/javascript/lib/yui-2in3/dist/2.9.0/build/",
+    "path": os.path.join(PROJECT_DIRECTORY, "static/javascript/lib/yui-2in3/dist/2.9.0/build/"),
     "cache_for": THIRTY_DAYS,
   },
 }
