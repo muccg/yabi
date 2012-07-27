@@ -41,12 +41,12 @@ class Migration(DataMigration):
                 timestamps = {}
                 
                 if len(statuses):
-                    # set the first time stamp to start time
-                    timestamps[ statuses[0] ] = task.start_time
+                    # set the first time stamp to start time if there is one
+                    timestamps[ statuses[0] ] = task.start_time or datetime.datetime.now()
                 
                 if len(statuses)>1:
-                    # set the last time stamp to end time 
-                    timestamps[ statuses[-1] ] = task.end_time
+                    # set the last time stamp to end time if there is one
+                    timestamps[ statuses[-1] ] = task.end_time or datetime.datetime.now()
                     
                 if len(statuses)>2:
                     if task.end_time:
