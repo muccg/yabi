@@ -56,7 +56,7 @@ class Migration(DataMigration):
                         else:
                             delta = datetime.timedelta(seconds=1.0)
                         
-                        print 'spreadying status timestamps using delta %s'%(str(delta))
+                        print 'spreading status timestamps using delta %s'%(str(delta))
                         
                         # fill in the times
                         t = timestamps[ statuses[0] ]
