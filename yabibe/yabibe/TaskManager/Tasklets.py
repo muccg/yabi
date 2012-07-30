@@ -111,8 +111,8 @@ class Tasklets(object):
                     self.tasks[id]=task
                 except EOFError, eofe:
                     print "WARNING: damaged task file: %s"%path
-                    
-                print "task",task,"loaded"
+                else:
+                    print "task",task,"loaded"
            
     def debug(self):
         

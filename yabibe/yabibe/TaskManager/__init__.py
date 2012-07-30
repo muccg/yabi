@@ -57,7 +57,7 @@ from twisted.internet import defer, reactor
 import weakref
 import sys, os
 
-## TODO: refactor and clean this up. Is it all still needed?
+# the following is used for the yabitests backend start stop tests, to check that serialised tasks are resumed correctly
 class TaskManagerResource(resource.Resource):
     """When this resource is hit... tasklets are purged"""
     VERSION=0.2
