@@ -363,34 +363,18 @@ class EngineJob(Job):
 
             assert is_managed() == True
 
-            from django.db import connection
-            cursor = connection.cursor()
-            logger.debug("Acquiring lock on %s for job %s" % (Task._meta.db_table, self.id))
-            rdbms = detect_rdbms()
-            if rdbms == 'postgres':
-                cursor.execute('LOCK TABLE %s IN ACCESS EXCLUSIVE MODE' % Task._meta.db_table)
-            elif rdbms == 'mysql':
-                cursor.execute('LOCK TABLES %s WRITE, %s WRITE' % (Task._meta.db_table, StageIn._meta.db_table))
-            elif rdbms == 'sqlite':
-                # don't do anything!
-                pass
-            else:
-                assert("Locking code not implemented for db backend %s " % settings.DATABASES['default']['ENGINE'])
-
             if (self.total_tasks() == 0):
                 logger.debug("job %s is having tasks created" % self.id) 
                 self._create_tasks(tasks, be)
             else:
                 logger.debug("job %s has tasks, skipping create_tasks" % self.id)
 
-            if (settings.DATABASES['default']['ENGINE'] == 'django.db.backends.mysql'):
-                cursor.execute('UNLOCK TABLES')
             transaction.commit()
-            logger.debug('Committed, released lock')
+            logger.debug('Committed')
         except:
             logger.critical(traceback.format_exc())
             transaction.rollback()
-            logger.debug('Rollback, released lock')
+            logger.debug('Rollback')
             raise
         finally:
             leave_transaction_management()

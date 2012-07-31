@@ -47,23 +47,6 @@ ${self.block_bodyclass()}<%def name="block_bodyclass()"></%def>">
         <div id="branding">
         ${self.block_branding()}<%def name="block_branding()"></%def>
         </div>
-        
-% if user.is_authenticated and user.is_staff:
-
-        <div id="user-tools">${ trans('Welcome,') } <strong>
-% if user.first_name:
-${user.first_name}
-% else:
-${user.username}
-% endif
-</strong>. ${self.block_userlinks()}<%def name="block_userlinks()">
-% if docsroot:
-<a href="${docsroot}">${trans('Documentation')}</a> / 
-% endif
-<a href="${url('/admin/password_change')}">${trans('Change password')}</a> / <a href="${ (root_path+'logout/') if not resolvers.reverse('admin:logout') else resolvers.reverse('admin:logout') }">${trans('Log out')}</a></%def></div>
-        
-% endif
-
         ${self.block_nav_global()}<%def name="block_nav_global()"></%def>
     </div>
     <!-- END Header -->
