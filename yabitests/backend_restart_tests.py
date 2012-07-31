@@ -42,12 +42,31 @@ class BackendRestartTest(RequestTestWithAdmin):
         
         r = self.adminsession.post( YABI_FE+"/ws/modify_backend/name/localex/localhost", data={ 'tasks_per_user':concurrent } )
         self.assertTrue(r.status_code==200, "could not set the tasks_per_user on the backend localex://localhost. remote returned: %d"%r.status_code)
-
+    
+    def count_running(self,workflow_url):
+        r = self.session.get( workflow_url )
+        self.assertTrue(r.status_code==200, "Checking status of workflow failed")
+        
+        data = json.loads(r.text)
+        status = data['status']
+        
+        # all the task statuses
+        statuses = [job['status'] for job in data['json']['jobs']] 
+        
+        # count the occurances of tasks that aren't pending, ready, complete or error (and are thus running)
+        return [X not in ['pending','ready','complete','error'] for X in statuses ].count(True), status
+    
+    def return_running(self,workflow_url):
+        r = self.session.get( workflow_url )
+        self.assertTrue(r.status_code==200, "Checking status of workflow failed")
+        
+        return json.loads(r.text)
+        
     def get_backend_task_debug(self):
         import requests
         
         r = requests.get( YABI_BE+"/debug" )
-        self.asssertTrue(r.status_code==200, "tried to access backend debug and got remote error: %d"%r.status_code)
+        self.assertTrue(r.status_code==200, "tried to access backend debug and got remote error: %d"%r.status_code)
         
         dat = json.loads(r.text)
         return dat
@@ -61,7 +80,7 @@ class BackendRestartTest(RequestTestWithAdmin):
     def test_single_task_restart(self):
         # run backend tasks one at a time so we can restart the backend during execution
         self.change_backend_concurrent(1) 
-        our_workflow = workflow(number=10)
+        our_workflow = workflow(number=30)
         
         r = self.session.post( YABI_FE+"/ws/workflows/submit", data = {'username':TEST_USER,'workflowjson':json.dumps(our_workflow)} )
         self.assertTrue(r.status_code==200, "Could not submit workflow")
@@ -72,11 +91,49 @@ class BackendRestartTest(RequestTestWithAdmin):
         
         workflow_url = YABI_FE+"/ws/workflows/get/%d"%jid
         
-        time.sleep(15)
+        #sys.stderr.write("counting... %s\n"%(self.count_running(workflow_url)[0]))
+        
+        # wait for one of the tasks to actually start up.
+        while self.count_running(workflow_url)[0]<1:
+            time.sleep(1)
+        
         self.stop_backend()
-        time.sleep(15)
+        self.change_backend_concurrent(10) 
+        time.sleep(10)
         self.start_backend()
         
-        sys.stderr.write(str(self.get_backend_task_debug())+"\n")
+        # wait for the count to get above 5
+        while self.count_running(workflow_url)[0]<=5:
+            sys.stderr.write(".")
+            time.sleep(1)
+            
+        self.stop_backend()
+        time.sleep(10)
+        self.start_backend()
+        
+        # make sure there are at least 5 restarted
+        dat = self.get_backend_task_debug()
+        
+        self.assertTrue(len(dat)>=5, "Less than 5 jobs restarted")
+        #pprint = json.dumps(dat, sort_keys=True, indent=4)
+        #sys.stderr.write(pprint+"\n")
+        
+        # wait for all the jobs to finish now
+        concurrent=10
+        self.change_backend_concurrent(concurrent)
+        
+        status = ""
+        while status != "complete" and status!="error":
+            sys.stderr.write(".")
+            time.sleep(1)
+            runs, status = self.count_running(workflow_url)
+            self.assertTrue(runs<=concurrent)
+            
+            # there is a bug where one task stays as 'requested'. if everything is 'complete' except for one.
+            data = self.return_running(workflow_url)
+            statuses = [job['status'] for job in data['json']['jobs']] 
+            if len([X for X in statuses if X!='complete' and X!='requested'])==0:
+                self.assertTrue(statuses.count('requested')==0, "possible frozen job in requested state. workflow: %d"%jid)
+                        
             
         self.change_backend_concurrent(None)
