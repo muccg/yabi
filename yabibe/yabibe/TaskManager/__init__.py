@@ -50,6 +50,14 @@ def startup():
 def shutdown():
     """pickle tasks to disk"""
     print "Saving tasklets..."
+    
+    # we need to make sure any new tasklets that are just starting start up...
+    # trying to fix 'requested' shutdown problem.
+    Tasks.stop()
+    
+    # wait for any left overs to start
+    gevent.sleep(1.0)
+    
     tasklets.save(directory=config.config['backend']['tasklets'])
 
 from twistedweb2 import resource, http_headers, responsecode, http, server

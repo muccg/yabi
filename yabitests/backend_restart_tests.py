@@ -132,8 +132,10 @@ class BackendRestartTest(RequestTestWithAdmin):
             # there is a bug where one task stays as 'requested'. if everything is 'complete' except for one.
             data = self.return_running(workflow_url)
             statuses = [job['status'] for job in data['json']['jobs']] 
-            if len([X for X in statuses if X!='complete' and X!='requested'])==0:
-                self.assertTrue(statuses.count('requested')==0, "possible frozen job in requested state. workflow: %d"%jid)
+            #statuses = [job for job in data['json']['jobs']] 
+            #sys.stderr.write("\n%s\n"%(str(statuses)))
+            if len([X for X in statuses if X!='complete' and X!='ready'])==0:
+                self.assertTrue(statuses.count('ready')==0, "possible frozen job in ready/requested state. workflow: %d"%jid)
                         
             
         self.change_backend_concurrent(None)
