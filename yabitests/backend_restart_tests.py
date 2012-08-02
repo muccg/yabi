@@ -1,5 +1,5 @@
 import unittest
-from support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, YABI_FE, YABI_BE
+from support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, YABI_FE, YABI_BE, YABI_DIR
 from fixture_helpers import admin
 from request_test_base import RequestTestWithAdmin, TEST_USER
 import os
@@ -72,10 +72,10 @@ class BackendRestartTest(RequestTestWithAdmin):
         return dat
 
     def stop_backend(self):
-        os.system("cd $YABI_DIR/yabibe/yabibe && . virt_yabibe/bin/activate && fab killbackend")
+        os.system("cd %s/yabibe/yabibe && . virt_yabibe/bin/activate && fab killbackend"%YABI_DIR)
     
     def start_backend(self):
-        os.system("cd $YABI_DIR/yabibe/yabibe && . virt_yabibe/bin/activate && fab backend:bg")
+        os.system("cd %s/yabibe/yabibe && . virt_yabibe/bin/activate && fab backend:bg"%YABI_DIR)
 
     def test_single_task_restart(self):
         # run backend tasks one at a time so we can restart the backend during execution
