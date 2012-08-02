@@ -77,11 +77,11 @@ class Task(object):
         self.log = lambda x: Log(self.errorurl,x)
         
     def get_pickle_data(self):
-        print
-        print dir(self)
-        for key in dir(self):
-            print key,"=>",getattr(self,key)
-        print
+        #print
+        #print dir(self)
+        #for key in dir(self):
+            #print key,"=>",getattr(self,key)
+        #print
         
         keynames = [ 'blocked_stage', 'errorurl', 'exec_status', 'json', 'outdir', 'outuri', 'stage', 'statusurl', 'submission', 'taskid', 'yabiusername' ]
         
