@@ -106,10 +106,10 @@ class FileCompressResource(resource.PostableResource):
         # our client channel
         client_channel = defer.Deferred()
         
-        def download_tasklet(req, channel):
+        def compress_tasklet(req, channel):
             """Tasklet to do file download"""
             try:
-                procproto, fifo = bend.GetReadFifo(hostname,username,basepath,port,filename,yabiusername=yabiusername,creds=creds, priority=priority)
+                procproto, fifo = bend.GetCompressedReadFifo(hostname,username,basepath,port,filename,yabiusername=yabiusername,creds=creds, priority=priority)
                 
                 def fifo_cleanup(response):
                     os.unlink(fifo)
@@ -122,7 +122,7 @@ class FileCompressResource(resource.PostableResource):
             
             # give the engine a chance to fire up the process
             while not procproto.isStarted():
-                gevent.sleep()
+                gevent.sleep(0.1)
             
             # nonblocking open the fifo
             fd = no_intr(os.open,fifo,os.O_RDONLY | os.O_NONBLOCK )
@@ -172,7 +172,7 @@ class FileCompressResource(resource.PostableResource):
             return channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Catastrophic codepath violation. This error should never happen. It's a bug!" ))
 
         
-        tasklet = gevent.spawn(download_tasklet, request, client_channel )
+        tasklet = gevent.spawn(compress_tasklet, request, client_channel )
         
         return client_channel
     

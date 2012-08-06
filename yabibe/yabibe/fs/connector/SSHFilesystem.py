@@ -409,3 +409,21 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         #print "read from remote returned"
         
         return pp, fifo
+
+    def GetCompressedReadFifo(self, host=None, username=None, path=None, port=22, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
+        """sets up the chain needed to setup a read fifo from a remote path as a certain user that streams in a compressed file archive"""
+        if DEBUG:
+            print "SSH::GetCompressedReadFifo(",host,username,path,filename,fifo,yabiusername,creds,")"
+        assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
+        dst = "%s@%s:%s"%(username,host,os.path.join(path,filename))
+        
+        # make sure we are authed
+        if not creds:
+            #print "get creds"
+            creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, path)
+            
+        usercert = self.save_identity(creds['key'])
+        
+        pp, fifo = ssh.Run.ReadCompressedFromRemote(usercert,dst,port=port,password=creds['password'],fifo=fifo)
+        
+        return pp, fifo
