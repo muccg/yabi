@@ -57,6 +57,7 @@ RM_PATH = '/bin/rm'
 LN_PATH = '/bin/ln'
 CP_PATH = '/bin/cp'
 SH_PATH = '/bin/sh'
+TAR_PATH = '/bin/tar'
 
 LS_TIME_STYLE = r"+%b %d  %Y"
 
@@ -213,7 +214,22 @@ class LocalShell(object):
             fifo = Fifos.Get()
                 
         return self.execute(LocalShellProcessProtocol(),command=[CP_PATH,self._make_echo(path),fifo]), fifo
+
+    def WriteCompressedToRemote(self,path,fifo=None):
+        subenv = self._make_env()
         
+        if not fifo:
+            fifo = Fifos.Get()
+        
+        return self.execute(LocalShellProcessProtocol(),command=[TAR_PATH,"--gzip","--create","--file",fifo,self._make_echo(path)]), fifo
+
+    def ReadCompressedFromRemote(self,path,fifo=None):
+        subenv = self._make_env()
+        
+        if not fifo:
+            fifo = Fifos.Get()
+                
+        return self.execute(LocalShellProcessProtocol(),command=[TAR_PATH,"--gzip","--extract","--directory",self._make_echo(path),"--file",fifo]), fifo
 
 class LocalFilesystem(FSConnector.FSConnector, object):
     """This is the resource that connects to the ssh backends"""
@@ -423,8 +439,6 @@ class LocalFilesystem(FSConnector.FSConnector, object):
 
         return out
         
-    
-        
     #@lock
     def GetWriteFifo(self, host=None, username=None, path=None, port=22, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         """sets up the chain needed to setup a write fifo from a remote path as a certain user.
@@ -464,3 +478,25 @@ class LocalFilesystem(FSConnector.FSConnector, object):
         #print "read from remote returned"
         
         return pp, fifo
+
+    #@lock
+    def GetCompressedWriteFifo(self, host=None, username=None, path=None, port=22, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
+        if DEBUG:
+            print "LocalFilesystem::GetWriteFifo( host:"+host,",username:",username,",path:",path,",filename:",filename,",fifo:",fifo,",yabiusername:",yabiusername,",creds:",creds,")"
+        
+        dst = os.path.join(path,filename)
+        
+        pp, fifo = LocalShell().WriteCompressedToRemote(dst,fifo=fifo)
+        
+        return pp, fifo
+    
+    #@lock
+    def GetCompressedReadFifo(self, host=None, username=None, path=None, port=22, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
+        if DEBUG:
+            print "LocalFilesystem::GetReadFifo(",host,username,path,filename,fifo,yabiusername,creds,")"
+        dst = os.path.join(path,filename)
+        
+        pp, fifo = LocalShell().ReadCompressedFromRemote(dst,fifo=fifo)
+        
+        return pp, fifo
+
