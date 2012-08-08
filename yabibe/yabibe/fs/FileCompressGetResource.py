@@ -65,7 +65,7 @@ class FileCompressGetResource(resource.PostableResource):
         self.fsresource = weakref.ref(fsresource)
         
     #@hmac_authenticated
-    def handle_compress(self, request):
+    def handle_compress_get(self, request):
         # override default priority
         priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_GET_PRIORITY
         
@@ -144,7 +144,7 @@ class FileCompressGetResource(resource.PostableResource):
                     if len(data):
                         # we have data
                         if not datastream:
-                            datastream = FifoStream(file, truncate=bytes_to_read)
+                            datastream = FifoStream(file)
                             datastream.prepush(data)
                             return channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('application', 'data')}, stream=datastream ))
                     else:
@@ -155,7 +155,7 @@ class FileCompressGetResource(resource.PostableResource):
                         while not procproto.isDone():
                             data = no_intr(file.read,DOWNLOAD_BLOCK_SIZE)
                             if len(data):
-                                datastream = FifoStream(file, truncate=bytes_to_read)
+                                datastream = FifoStream(file)
                                 datastream.prepush(data)
                                 return channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('application', 'data')}, stream=datastream ))
                             gevent.sleep()
@@ -164,7 +164,7 @@ class FileCompressGetResource(resource.PostableResource):
                             return channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Get failed: %s\n"%procproto.err ))
                         else:
                             # transfer the file
-                            datastream = FifoStream(file, truncate=bytes_to_read)
+                            datastream = FifoStream(file)
                             return channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('application', 'data')}, stream=datastream ))
                     
                 gevent.sleep()
@@ -187,7 +187,7 @@ class FileCompressGetResource(resource.PostableResource):
         deferred = parsePOSTData(request)
         
         def post_parsed(result):
-            return self.handle_compress(request)
+            return self.handle_compress_get(request)
         
         deferred.addCallback(post_parsed)
         deferred.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Job Submission Failed %s\n"%res) )
@@ -195,5 +195,5 @@ class FileCompressGetResource(resource.PostableResource):
         return deferred
 
     def http_GET(self, request):
-        return self.handle_compress(request)
+        return self.handle_compress_get(request)
    

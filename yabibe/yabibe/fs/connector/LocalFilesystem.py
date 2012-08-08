@@ -221,7 +221,8 @@ class LocalShell(object):
         if not fifo:
             fifo = Fifos.Get()
         
-        return self.execute(LocalShellProcessProtocol(),command=[TAR_PATH,"--gzip","--create","--file",fifo,self._make_echo(path)]), fifo
+        return self.execute(LocalShellProcessProtocol(),command=[TAR_PATH,"--gzip","--extract","--directory",self._make_echo(path),"--file",fifo]), fifo
+        #return self.execute(LocalShellProcessProtocol(),command=[TAR_PATH,"--gzip","--create","--file",fifo,self._make_echo(path)]), fifo
 
     def ReadCompressedFromRemote(self,path,fifo=None):
         subenv = self._make_env()
@@ -229,7 +230,9 @@ class LocalShell(object):
         if not fifo:
             fifo = Fifos.Get()
                 
-        return self.execute(LocalShellProcessProtocol(),command=[TAR_PATH,"--gzip","--extract","--directory",self._make_echo(path),"--file",fifo]), fifo
+        path,filename = os.path.split(path)
+                
+        return self.execute(LocalShellProcessProtocol(),command=[TAR_PATH,"--gzip","--directory",self._make_echo(path),"--create",filename if filename else ".","--file",fifo]), fifo
 
 class LocalFilesystem(FSConnector.FSConnector, object):
     """This is the resource that connects to the ssh backends"""

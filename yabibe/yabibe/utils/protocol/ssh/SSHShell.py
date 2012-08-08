@@ -138,5 +138,5 @@ class SSHShell(BaseShell):
         
         command = [ "tar", "c", path]
         
-        return self.execute(certfile, host, command=[
+        #return self.execute(certfile, host, command=[
         
