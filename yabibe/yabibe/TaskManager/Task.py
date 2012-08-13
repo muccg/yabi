@@ -540,7 +540,7 @@ class MainTask(Task):
                     received_so_far = set(self.exec_status)
                     # Loop while all statuses received so far are unfinished
                     while len(received_so_far - unfinished) == 0:
-                        gevent.sleep()
+                        gevent.sleep(1.0)
                         received_so_far = set(self.exec_status)
 
                     if filter(lambda s: 'error' in s, self.exec_status):
@@ -566,7 +566,7 @@ class MainTask(Task):
             except CloseConnections, cc:
                 retry=True
                 
-            gevent.sleep()
+            gevent.sleep(1.0)
         
     def execute(self, outputdir):
         return self.do(outputdir, Exec)
