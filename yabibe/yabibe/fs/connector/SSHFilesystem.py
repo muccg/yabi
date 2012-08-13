@@ -442,6 +442,6 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
             
         usercert = self.save_identity(creds['key'])
         
-        pp, fifo = ssh.Copy.WriteCompressedFromRemote(usercert,dst,port=port,password=creds['password'],fifo=fifo)
+        pp, fifo = ssh.Copy.WriteCompressedToRemote(usercert,dst,port=port,password=creds['password'],fifo=fifo)
         
         return pp, fifo

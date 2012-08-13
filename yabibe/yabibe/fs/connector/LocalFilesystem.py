@@ -221,9 +221,10 @@ class LocalShell(object):
         if not fifo:
             fifo = Fifos.Get()
         
+        path,filename = os.path.split(path)
+        
         return self.execute(LocalShellProcessProtocol(),command=[TAR_PATH,"--gzip","--extract","--directory",self._make_echo(path),"--file",fifo]), fifo
-        #return self.execute(LocalShellProcessProtocol(),command=[TAR_PATH,"--gzip","--create","--file",fifo,self._make_echo(path)]), fifo
-
+        
     def ReadCompressedFromRemote(self,path,fifo=None):
         subenv = self._make_env()
         

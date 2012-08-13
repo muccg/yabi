@@ -137,7 +137,7 @@ class FileCompressPutResource(resource.PostableResource):
                     """Override this class and put in our own file open methods"""
                     def open_write_stream(self, filename):
                         print "Uploading file:",filename
-                        self.procproto, fifo = bend.GetWriteFifo(hostname,username,path,port,filename, yabiusername=yabiusername,creds=creds, priority=priority)
+                        self.procproto, fifo = bend.GetCompressedWriteFifo(hostname,username,path,port,filename, yabiusername=yabiusername,creds=creds, priority=priority)
                         
                         def fifo_cleanup(response):
                             os.unlink(fifo)

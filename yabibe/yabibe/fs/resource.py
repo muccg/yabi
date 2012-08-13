@@ -43,6 +43,7 @@ from FileLCopyResource import FileLCopyResource
 from FilePutResource import FilePutResource
 from FileGetResource import FileGetResource
 from FileCompressGetResource import FileCompressGetResource
+from FileCompressPutResource import FileCompressPutResource
 
 from utils.BackendResource import BackendResource
 
@@ -115,5 +116,7 @@ class FSResource(resource.Resource, BackendResource):
             return FileUploadResource(request, segments, fsresource=self), segments[1:]
         elif segments[0]=="zget":
             return FileCompressGetResource(request, segments, fsresource=self), segments[1:]
+        elif segments[0]=="zput":
+            return FileCompressPutResource(request, segments, fsresource=self), segments[1:]
         
         return resource.Resource.locateChild(self,request,segments)

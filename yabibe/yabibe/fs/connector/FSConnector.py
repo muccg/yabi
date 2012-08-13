@@ -51,12 +51,12 @@ class FSConnector(object):
         """
         raise NotImplemented("GetWriteFifo not implemented")
     
-    def GetCompressedReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}):
+    def GetCompressedReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=None):
         """sets up the chain needed to setup a read fifo from a remote path as a certain user.
         """
         raise NotImplemented("GetCompressedReadFifo not implemented")
             
-    def GetCompressedWriteFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}):
+    def GetCompressedWriteFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=None):
         """sets up the chain needed to setup a write fifo to a remote path as a certain user.
         """
         raise NotImplemented("GetCompressedWriteFifo not implemented")

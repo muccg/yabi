@@ -134,13 +134,16 @@ class SSHCopy(BaseShell):
             
         remoteuserhost,remotepath = remoteurl.split(':',1)
         remoteuser, remotehost = remoteuserhost.split('@',1)
-            
+         
+        path,filename = os.path.split(remotepath)
+        print "REMOTEPATH",path,"===",filename
+        
         command  = [   self.python, self.scp ]
         command += [ "-i", certfile ] if certfile else []
         command += [ "-p", password ] if password else []
         command += [ "-u", remoteuser ] if remoteuser else []
         command += [ "-H", remotehost ] if remotehost else []
-        command += [ "-x", 'tar --gzip --extract --directory "%s"'%(remotepath) ]
+        command += [ "-x", 'tar --gzip --extract --directory "%s"'%(path) ]
         command += [ "-I", fifo ]
                 
         if DEBUG:
@@ -171,6 +174,8 @@ class SSHCopy(BaseShell):
                         
         remoteuserhost,remotepath = remoteurl.split(':',1)
         remoteuser, remotehost = remoteuserhost.split('@',1)
+        
+        print "REMOTEPATH",remotepath
             
         command  = [   self.python, self.scp ]
         command += [ "-i", certfile ] if certfile else []
