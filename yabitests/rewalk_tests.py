@@ -74,7 +74,7 @@ class RewalkTest(YabiTestCase, FileUtils):
         self.prepare_json(wfl_json_file, changed_json_file, {
             'DIR': localfs_dir, 'FILENAME': os.path.basename(filename)})
 
-        result = self.yabi.run('submitworkflow %s' % changed_json_file)
+        result = self.yabi.run('submitworkflow %s' % changed_json_file, timeout=1000)
         wfl_id = result.id
         result = StatusResult(self.yabi.run('status %s' % wfl_id))
         self.assertEqual(result.workflow.status, 'complete')
