@@ -493,7 +493,7 @@ def create_tool(request, tool_dict):
     tool.save()
     return tool
 
-from crypto import DecryptException
+from crypto_utils import DecryptException
 
 
 def render_cred_password_form(request):

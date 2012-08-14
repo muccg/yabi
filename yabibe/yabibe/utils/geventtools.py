@@ -51,7 +51,10 @@ DEBUG = False
 
 from conf import config
 
-USER_AGENT = "YabiStackless/0.1"
+USER_AGENT = "YabiGevent/0.1"
+
+# when tasklets need to sleep for an external event to occur, this is how long they sleep for. 0 causes immediate response but also 100% CPU.
+TIME_DELTA = 0.1
 
 ## errors
 class ConnectionFailure(Exception): pass
@@ -151,7 +154,7 @@ class HTTPConnection(object):
     def getresponse(self):
         # now we schedule this thread until the task is complete
         while not self.get_complete[0] and not self.get_failed[0]:
-            gevent.sleep()
+            gevent.sleep(TIME_DELTA)
         
         if self.connect_failed[0]:
             if DEBUG:
@@ -248,7 +251,7 @@ def GET(path, scheme=None, host=None, port=None, factory_class=RememberingHTTPCl
             pass
             #print "G",get_complete[0],"G2",get_failed[0],"CF",connect_failed[0]
         # has out actual initial connection failed?
-        gevent.sleep()
+        gevent.sleep(TIME_DELTA)
         
     if connect_failed[0]:
         if DEBUG:
@@ -361,7 +364,7 @@ def POST(path,**kws):
     
     # now we schedule this thread until the task is complete
     while not get_complete[0] and not get_failed[0] and not connect_failed[0]:
-        gevent.sleep()
+        gevent.sleep(TIME_DELTA)
 
     if connect_failed[0]:
         if DEBUG:
@@ -407,7 +410,7 @@ def WaitForDeferredData(deferred):
     deferred.addCallback(_cont)     # trigger our callback on data
     
     while not cont[0]:
-        gevent.sleep()                  # sleep the thread until we are asked to continue
+        gevent.sleep(TIME_DELTA)                  # sleep the thread until we are asked to continue
         
     if err[0]:
         raise DeferredError, err[0]
