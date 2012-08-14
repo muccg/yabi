@@ -415,7 +415,7 @@ def munge_name(user, workflow_name):
         munged_name = "%s (%d)" % (base, val)
         
     return munged_name
- 
+
 @authentication_required
 def get_workflow(request, workflow_id):
     yabiusername = request.user.username

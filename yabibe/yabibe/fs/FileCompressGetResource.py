@@ -48,6 +48,8 @@ from utils.submit_helpers import parsePOSTData
 
 from decorators import hmac_authenticated
 
+from connector.FSConnector import NotImplemented
+
 DEFAULT_GET_PRIORITY = 1
 
 DOWNLOAD_BLOCK_SIZE = 8192
@@ -119,6 +121,10 @@ class FileCompressGetResource(resource.PostableResource):
             except NoCredentials, nc:
                 print traceback.format_exc()
                 return channel.callback(http.Response( responsecode.UNAUTHORIZED, {'content-type': http_headers.MimeType('text', 'plain')}, str(nc) ))
+            
+            except NotImplemented, ni:
+                print traceback.format_exc()
+                return channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, "This backend does not support compressed get\n" ))
             
             # give the engine a chance to fire up the process
             while not procproto.isStarted():
