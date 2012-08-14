@@ -417,7 +417,7 @@ def munge_name(user, workflow_name):
     return munged_name
  
 @authentication_required
-@cache_page(300)
+@cache_page(20)
 def get_workflow(request, workflow_id):
     yabiusername = request.user.username
     logger.debug(yabiusername)
