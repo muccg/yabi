@@ -184,7 +184,11 @@ def update_task_status(task_id, status):
         logger.warning("task: %d updating to: %s presave"%(task_id,status))
         task.save()
         logger.warning("task: %d updating to: %s postsave"%(task_id,status))
-        
+       
+        # We have to commit the task status before calculating
+        # job status that is based on task statuses
+        transaction.commit()
+ 
         # update the job status when the task status changes
         task.job.update_status()
         job_cur_status = task.job.status
