@@ -287,7 +287,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
                 raise SSHTransportException("Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
             
             # otherwise we need to analyse the result to see if its a hard or soft failure
-            error_type = qstatretry.test(pp.exitcode, pp.err)
+            error_type = qacctretry.test(pp.exitcode, pp.err)
             if error_type == HARD:
                 # hard error.
                 raise SSHQacctHardException("SSHQacct Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
@@ -301,7 +301,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
             
         while True:        
             try:
-                jobid = self._ssh_qsub(yabiusername,creds,command,working,username,host,remoteurl,submission,stdout,stderr,modules,walltime,walltime,memory,cpus,queue)
+                jobid = self._ssh_qsub(yabiusername,creds,command,working,username,host,remoteurl,submission,stdout,stderr,modules,walltime,memory,cpus,queue)
                 break               # success... escape retry loop
             except (SSHQsubHardException, ExecutionError), ee:
                 channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = str(ee) ))
@@ -377,8 +377,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
                         # run out of retries.
                         raise softexc
                 
-                # FIXME: Make "Following jobs do not exist" hard error
-                except SSHQStatHardError, qse:
+                except SSHQstatHardException, qse:
                     if "Following jobs do not exist" in str(qse):
                         # job has errored or completed. We now search using qacct
                         qacctdelay_gen = rerun_delays()
@@ -395,6 +394,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
                                     raise softexc
                         
                         jobsummary[jobid]['job_state']='C'         # FIXME: make it to what old SGEs used to have so we dont have to cahnge the code below. fix this hack.
+                        break
             
             self.update_running(jobid, jobsummary)
             
