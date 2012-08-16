@@ -95,6 +95,7 @@ class BackendRestartTest(RequestTestWithAdmin):
         
         # wait for one of the tasks to actually start up.
         while self.count_running(workflow_url)[0]<1:
+            #sys.stderr.write(".")
             time.sleep(1)
         
         self.stop_backend()

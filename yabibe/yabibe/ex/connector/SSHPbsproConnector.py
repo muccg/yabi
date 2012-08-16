@@ -91,7 +91,6 @@ class SSHQstatSoftException(Exception): pass
 class SSHQsubHardException(Exception): pass
 class SSHQstatHardException(Exception): pass
 
-
 def rerun_delays():
     # when our retry system is fully expressed (no corner cases) we could potentially make this an infinite generator
     delay = 5.0
@@ -102,7 +101,6 @@ def rerun_delays():
     while totaltime<21600.0:                    # 6 hours
         totaltime+=300.0
         yield 300.0
-
 
 class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
     def __init__(self):
