@@ -73,6 +73,7 @@ class TaskManager(object):
         
         self.tasks = []                 # store all the tasks currently being executed in a list
         self.running = True
+        self.cookies = {}               # cookie jar for sessions
     
     def start(self):
         """Begin the task manager tasklet. This tasklet continually pops tasks from yabiadmin and sets them up for running"""
@@ -179,7 +180,8 @@ class TaskManager(object):
 
         factory = client.HTTPClientFactory(
             url = task_url,
-            agent = useragent
+            agent = useragent,
+            cookies = self.cookies
             )
         factory.noisy = False
         if VERBOSE:
@@ -216,7 +218,8 @@ class TaskManager(object):
 
         factory = client.HTTPClientFactory(
             url = task_url,
-            agent = useragent
+            agent = useragent,
+            cookies = self.cookies
             )
         factory.noisy = False
         if VERBOSE:
