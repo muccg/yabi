@@ -47,6 +47,8 @@ import traceback
 
 from decorators import hmac_authenticated
 
+from connector.FSConnector import NotImplemented
+
 DEFAULT_PUT_PRIORITY = 1
 
 UPLOAD_BLOCK_SIZE = 1024 * 256
@@ -205,6 +207,10 @@ class FileCompressPutResource(resource.PostableResource):
                     while not parser.procproto.isDone():
                         gevent.sleep()
                     return channel.callback(http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "File upload failed: %s\n"%parser.procproto.err))
+                except NotImplemented, ni:
+                    print traceback.format_exc()
+                    return channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, "This backend does not support compressed put\n" ))
+            
                 except Exception, ex:
                     print traceback.format_exc()
                     channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "File upload failed: %s\n"%(traceback.format_exc())))

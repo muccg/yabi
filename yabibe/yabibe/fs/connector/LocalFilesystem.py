@@ -488,23 +488,23 @@ class LocalFilesystem(FSConnector.FSConnector, object):
         return pp, fifo
 
     #@lock
-    #def GetCompressedWriteFifo(self, host=None, username=None, path=None, port=22, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
-        #if DEBUG:
-            #print "LocalFilesystem::GetWriteFifo( host:"+host,",username:",username,",path:",path,",filename:",filename,",fifo:",fifo,",yabiusername:",yabiusername,",creds:",creds,")"
+    def GetCompressedWriteFifo(self, host=None, username=None, path=None, port=22, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
+        if DEBUG:
+            print "LocalFilesystem::GetWriteFifo( host:"+host,",username:",username,",path:",path,",filename:",filename,",fifo:",fifo,",yabiusername:",yabiusername,",creds:",creds,")"
         
-        #dst = os.path.join(path,filename)
+        dst = os.path.join(path,filename)
         
-        #pp, fifo = LocalShell().WriteCompressedToRemote(dst,fifo=fifo)
+        pp, fifo = LocalShell().WriteCompressedToRemote(dst,fifo=fifo)
         
-        #return pp, fifo
+        return pp, fifo
     
-    ##@lock
-    #def GetCompressedReadFifo(self, host=None, username=None, path=None, port=22, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
-        #if DEBUG:
-            #print "LocalFilesystem::GetReadFifo(",host,username,path,filename,fifo,yabiusername,creds,")"
-        #dst = os.path.join(path,filename)
+    #@lock
+    def GetCompressedReadFifo(self, host=None, username=None, path=None, port=22, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
+        if DEBUG:
+            print "LocalFilesystem::GetReadFifo(",host,username,path,filename,fifo,yabiusername,creds,")"
+        dst = os.path.join(path,filename)
         
-        #pp, fifo = LocalShell().ReadCompressedFromRemote(dst,fifo=fifo)
+        pp, fifo = LocalShell().ReadCompressedFromRemote(dst,fifo=fifo)
         
-        #return pp, fifo
+        return pp, fifo
 
