@@ -488,7 +488,7 @@ class LocalFilesystem(FSConnector.FSConnector, object):
         return pp, fifo
 
     #@lock
-    def GetCompressedWriteFifo(self, host=None, username=None, path=None, port=22, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
+    #def GetCompressedWriteFifo(self, host=None, username=None, path=None, port=22, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         if DEBUG:
             print "LocalFilesystem::GetWriteFifo( host:"+host,",username:",username,",path:",path,",filename:",filename,",fifo:",fifo,",yabiusername:",yabiusername,",creds:",creds,")"
         

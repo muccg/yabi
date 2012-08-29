@@ -32,7 +32,7 @@ import os
 import re
 
 from datetime import datetime, timedelta
-from urllib import quote
+from urllib import quote, unquote
 from urlparse import urlparse, urlunparse
 
 from django.db import transaction
@@ -232,7 +232,7 @@ def rcopy(request):
     yabiusername = request.user.username
         
     def closure():
-        src,dst = request.GET['src'],request.GET['dst']
+        src,dst = unquote(request.REQUEST['src']), unquote(request.REQUEST['dst'])
 
         # check that src does not match dst
         srcpath, srcfile = src.rstrip('/').rsplit('/', 1)
