@@ -347,10 +347,8 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
                     log.msg(log_msg + "thus setting job state to: %s"%newstate)
                     
                 else:
-                    print "Error! We atempted to qstat the job <%s>, the call was successful, but we got no data at all. The job just VANISHED! We are marking this job as errored"%jobid
-                    newstate = "Error"                  # we cannot determine the remote execution status
-                
-                
+                    print "Error! We atempted to qstat the job <%s>, the call was successful, but we got no data at all. The job just VANISHED! We are ignoring this job at this time and will check again later"%jobid
+
             else:
                 # job has finished
                 sleep(15.0)                      # deal with SGE flush bizarreness (files dont flush from remote host immediately. Totally retarded)
