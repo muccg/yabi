@@ -122,9 +122,20 @@ case "$1" in
         stop)
                 echo -n "Stopping ${NAME}..."
                 kill `cat "${PID_FILE}"`
-                sleep 3
                 PID=`cat "${PID_FILE}" 2>/dev/null`
-                kill -9 $PID >& /dev/null
+                count=0
+                while ps -p ${PID} > /dev/null
+                do
+                    sleep 1
+                    echo -n '.'
+                    count=$[$count+1]
+                    if [ $count -ge 30 ]
+                    then
+                        kill -9 $PID >& /dev/null
+                        break
+                    fi
+                done
+
                 rm -f "${PID_FILE}" >& /dev/null
                 status -p $PID_FILE $NAME
                 ;;

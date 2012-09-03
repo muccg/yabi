@@ -796,10 +796,10 @@ class CommandTemplate(object):
             # if we are not select file
             if not self.command.is_select_file:
                 # decode directory
-                return [file for file in self.parse_param_directory_value(item)]
+                return [f for f in self.list_files_for_param_directory_value(item)]
             else:
                 # select file returns the directory itself, so rcopy can be used on the backend to preserve directory structures
-                return [item['root']+item['filename']+"/"]
+                return [self.parse_param_directory_value(item)]
     
     def parse_param_file_value(self, item):
         path = ''
@@ -808,11 +808,18 @@ class CommandTemplate(object):
             if not path.endswith(os.sep):
                     path = path + os.sep
         return '%s%s%s' % (item['root'], path, item['filename'])
-        
+
     def parse_param_directory_value(self, item):
-        fulluri = "".join(item['pathComponents'])+'/'+item['filename']+'/'
+        components = item['pathComponents'] + [item['filename']]
+        if components:
+            strippedComponents = [components[0].rstrip('/')] + [x.strip('/') for x in components[1:]]
+        fulluri = "/".join(strippedComponents) + '/'
+        return fulluri
+      
+    def list_files_for_param_directory(self, item):
+        fulluri = self.parse_param_directory_value(item)
 
         # get recursive directory listing
         filelist = backendhelper.get_file_list(self.username, fulluri, recurse=True)
         return [ fulluri + X[0] for X in filelist ] 
-     
+ 

@@ -71,23 +71,27 @@ class Tasklets(object):
     def save_task(self,task,filename):
         """Save the json and stage to a file"""
         with open(filename,"w") as fh:
-            fh.write(pickle.dumps(("V1",task.__class__.__name__,task)))
+            fh.write(pickle.dumps(("V2",task.__class__.__name__,task.get_pickle_data())))
   
     def load_task(self,filename):
         """Load the json from a file, create the right task object and return it"""
         from Task import NullBackendTask, MainTask
         
         with open(filename,'r') as fh:
-            version, objname, task = pickle.loads(fh.read())
+            version, objname, taskdata = pickle.loads(fh.read())
         
-        #print "L:",task
+        print "Loading:",taskdata
         
-        if version!="V1":
+        if version!="V2":
             raise FileVersionMismatch, "File Version Mismatch for %s"%(filename)
         
         # instantiate the object
-        #task = locals()[objname]()
-        #task.load_json(json, stage=stage)
+        task = locals()[objname]()
+        task.set_from_pickle_data(taskdata)
+        
+        # setup lambdas
+        task.setup_lambdas()
+        
         return task
             
     def load(self,directory):
@@ -107,8 +111,8 @@ class Tasklets(object):
                     self.tasks[id]=task
                 except EOFError, eofe:
                     print "WARNING: damaged task file: %s"%path
-                    
-                #print "task",task,"loaded"
+                else:
+                    print "task",task,"loaded"
            
     def debug(self):
         
@@ -129,6 +133,13 @@ class Tasklets(object):
             
             output = "%s%s\n"%(output,section)
         return output
+        
+    def debug_json(self):
+        import json
+        task_json = {}
+        for key in self.tasks.keys():
+            task_json[key]=self.tasks[key].get_pickle_data()
+        return json.dumps( task_json )
         
     def pickle(self):
         """ just try and serialise the objects"""

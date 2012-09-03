@@ -72,15 +72,28 @@ class TaskManager(object):
         #self.pausechannel_unblock = gevent.queue.Queue(maxsize=0)       # a channel
         
         self.tasks = []                 # store all the tasks currently being executed in a list
+        self.running = True
+        self.cookies = {}               # cookie jar for sessions
     
     def start(self):
         """Begin the task manager tasklet. This tasklet continually pops tasks from yabiadmin and sets them up for running"""
         self.runner_thread_task = gevent.spawn(self.runner)
         self.runner_thread_unblock = gevent.spawn(self.unblocker)
                 
+    def stop(self):
+        """Stop the task manager tasklets."""
+        self.running = False
+        
+        # wait for graceful shutdown
+        gevent.sleep(2.0)
+        
+        # now kill them if they're still running
+        for thread in (self.runner_thread_task,self.runner_thread_unblock):
+            thread.kill(block=True, timeout=5.0)
+                
     def runner(self):
         """The green task that starts up jobs"""
-        while True:                 # do forever.
+        while self.running:                 # do until we stop
             while waitForDeferred(self.get_next_task()):
                 Sleep(self.JOB_PAUSE)
             
@@ -89,7 +102,7 @@ class TaskManager(object):
                         
     def unblocker(self):
         """green task that checks for blocked jobs that need unblocking"""
-        while True:
+        while self.running:
             while waitForDeferred(self.get_next_unblocked()):
                 Sleep(self.JOB_PAUSE)
             
@@ -167,7 +180,8 @@ class TaskManager(object):
 
         factory = client.HTTPClientFactory(
             url = task_url,
-            agent = useragent
+            agent = useragent,
+            cookies = self.cookies
             )
         factory.noisy = False
         if VERBOSE:
@@ -204,7 +218,8 @@ class TaskManager(object):
 
         factory = client.HTTPClientFactory(
             url = task_url,
-            agent = useragent
+            agent = useragent,
+            cookies = self.cookies
             )
         factory.noisy = False
         if VERBOSE:
