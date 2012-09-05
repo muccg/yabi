@@ -37,8 +37,7 @@ import os, urllib
 from utils.parsers import parse_url
 from conf import config
 
-COPY_RETRY = 3
-LINK_RETRY = LCOPY_RETRY = 3
+COPY_RETRY = LINK_RETRY = LCOPY_RETRY = 5
 
 COPY_PATH = "/fs/copy"
 RCOPY_PATH = "/fs/rcopy"
@@ -58,6 +57,13 @@ DEFAULT_TASK_PRIORITY = 100
 
 from utils.geventtools import GET, POST, GETFailure, CloseConnections, RetryGET, RetryPOST
 
+def retry_delay_generator():
+    """this is the delay generator for the pausing between retrying failed copy/lcopy/links"""
+    delay = 2.*60.          # start with a decent time like 2 minutes
+    while True:
+        yield delay
+        delay *= 2.0        # double it
+
 def Sleep(seconds):
     """sleep tasklet for this many seconds. seconds is a float"""
     gevent.sleep(seconds)
@@ -66,12 +72,14 @@ class CopyError(Exception): pass
 
 def Copy(src,dst,retry=COPY_RETRY, log_callback=None, **kwargs):
     """Copy src (url) to dst (url) using the fileservice"""
+    delay_gen = retry_delay_generator()
     if DEBUG:
         print "Copying %s to %s"%(src,dst)
     if 'priority' not in kwargs:
         kwargs['priority']=str(DEFAULT_TASK_PRIORITY)
     for num in range(retry):
-        #print "retry num=",num
+        if num and log_callback:
+            log_callback("Retrying copy call. Attempt #%d"%(num+1))
         try:
             code,message,data = GET(COPY_PATH,src=src,dst=dst, **kwargs)
             if DEBUG:
@@ -81,12 +89,17 @@ def Copy(src,dst,retry=COPY_RETRY, log_callback=None, **kwargs):
                 return True
             else:
                 #print "FAIL"
-                raise CopyError(data)
+                if log_callback:
+                    log_callback("Copy %s to %s failed with %d:%s"%(src,dst,code,message))
+                
         except GETFailure, err:
-            print "Warning: Post failed with error:",err
-            Sleep(5.0)              
+            print "Warning: copy failed with error:",err
+            if log_callback:
+                log_callback("Warning: copy failed with error: %s"%(err))
+            
+        Sleep(delay_gen.next())                   
     
-    raise err
+    raise CopyError(data)
     
 def RCopy(src, dst, log_callback=None, **kwargs):
     #print "RCopying %s to %s"%(src,dst)
@@ -139,12 +152,14 @@ class LinkError(Exception): pass
     
 def Ln(target,link,retry=LINK_RETRY, log_callback=None, **kwargs):
     """Copy src (url) to dst (url) using the fileservice"""
+    delay_gen = retry_delay_generator()
     if DEBUG:
         print "linking %s from %s"%(target,link)
     if 'priority' not in kwargs:
         kwargs['priority']=str(DEFAULT_TASK_PRIORITY)
     for num in range(retry):
-        #print "retry num=",num
+        if num and log_callback:
+            log_callback("Retrying Ln call. Attempt #%d"%(num+1))
         try:
             code,message,data = GET(LINK_PATH,target=target,link=link, **kwargs)
             if DEBUG:
@@ -152,21 +167,28 @@ def Ln(target,link,retry=LINK_RETRY, log_callback=None, **kwargs):
             if int(code)==200:
                 return True
             else:
-                raise LinkError(data)
+                if log_callback:
+                    log_callback("Ln %s to %s failed with %d:%s"%(link,target,code,message))
+
         except GETFailure, err:
             print "Warning: Post failed with error:",err
-            Sleep(5.0)              
+            if log_callback:
+                log_callback("Ln %s to %s failed with error: %s"%(link,target,err))
     
-    raise err
+        Sleep(delay_gen.next())
+        
+    raise LinkError(data)
 
 def LCopy(src,dst,retry=LCOPY_RETRY, log_callback=None, **kwargs):
     """Copy src (url) to dst (url) using the fileservice"""
+    delay_gen = retry_delay_generator()
     if DEBUG:
         print "Local-Copying %s to %s"%(src,dst)
     if 'priority' not in kwargs:
         kwargs['priority']=str(DEFAULT_TASK_PRIORITY)
     for num in range(retry):
-        #print "retry num=",num
+        if num and log_callback:
+            log_callback("Retrying Lcopy call. Attempt #%d"%(num+1))
         try:
             code,message,data = GET(LCOPY_PATH,src=src,dst=dst, **kwargs)
             if DEBUG:
@@ -176,13 +198,17 @@ def LCopy(src,dst,retry=LCOPY_RETRY, log_callback=None, **kwargs):
                 #print "SUCC"
                 return True
             else:
-                #print "FAIL"
-                raise CopyError(data)
+                if log_callback:
+                    log_callback("Lcopy %s to %s failed with %d:%s"%(src,dst,code,message))
+                
         except GETFailure, err:
             print "Warning: Post failed with error:",err
-            Sleep(5.0)              
+            if log_callback:
+                log_callback("Ln %s to %s failed with error: %s"%(link,target,err)) 
     
-    raise err
+        Sleep(delay_gen.next())
+        
+    raise CopyError(data)
 
 def SmartCopy(preferred,src,dst,retry=LCOPY_RETRY, log_callback=None, **kwargs):
     if DEBUG:
