@@ -110,7 +110,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
         configdir = config.config['backend']['certificates']
         ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
     
-    def _ssh_qsub(self, yabiusername, creds, command, working, username, host, remoteurl, submission, stdout, stderr, modules, walltime, memory, cpus, queue ):
+    def _ssh_qsub(self, yabiusername, creds, command, working, username, host, remoteurl, submission, stdout, stderr, modules, walltime, memory, cpus, queue, tasknum, tasktotal ):
         """This submits via ssh the qsub command. This returns the jobid, or raises an exception on an error"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
         
@@ -142,7 +142,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
         usercert = self.save_identity(creds['key'])
         
         # build our command script
-        script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue,stdout,stderr)
+        script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue,stdout,stderr,tasknum,tasktotal)
         
         # hande log setting
         if config.config['execution']['logcommand']:
@@ -295,13 +295,13 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
         # everything else is soft
         raise SSHQacctSoftException("SSHQacct Error: SSH exited %d with message %s"%(pp.exitcode,pp.err))
 
-    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None,tasknum=None,tasktotal=None):
         modules = [] if not module else [X.strip() for X in module.split(",")]
         delay_gen = rerun_delays()
             
         while True:        
             try:
-                jobid = self._ssh_qsub(yabiusername,creds,command,working,username,host,remoteurl,submission,stdout,stderr,modules,walltime,memory,cpus,queue)
+                jobid = self._ssh_qsub(yabiusername,creds,command,working,username,host,remoteurl,submission,stdout,stderr,modules,walltime,memory,cpus,queue,tasknum,tasktotal)
                 break               # success... escape retry loop
             except (SSHQsubHardException, ExecutionError), ee:
                 channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream = str(ee) ))
@@ -338,7 +338,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
             
             client_stream.finish()
             
-    def resume(self, jobid, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+    def resume(self, jobid, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None,tasknum=None,tasktotal=None):
         # send an OK message, but leave the stream open
         client_stream = stream.ProducerStream()
         modules = [] if not module else [X.strip() for X in module.split(",")]

@@ -163,7 +163,7 @@ class LocalRun(BaseShell):
         return BaseShell.execute(self,BaseShellProcessProtocol(streamin),remote_command,working)
 
 class LocalConnector(ExecConnector):    
-    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None,tasknum=None,tasktotal=None):
         # preprocess some stuff
         modules = [] if not module else [X.strip() for X in module.split(",")]
         
@@ -180,7 +180,7 @@ class LocalConnector(ExecConnector):
             client_stream.write("Pending\r\n")
             gevent.sleep(1.0)
             
-            script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue, stdout, stderr)    
+            script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue, stdout, stderr,tasknum,tasktotal)    
             
             if DEBUG:
                 print "command:",command
