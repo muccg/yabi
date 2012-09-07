@@ -47,10 +47,9 @@ class LocalfsFileTests(RequestTest):
         import requests
         
         # make some /tmp file structures
-        try:
-            os.mkdir("/tmp/yabi-localfs-test/")
-        except OSError, ose:
-            pass
+        import shutil
+        shutil.rmtree('/tmp/yabi-localfs-test/')
+        os.mkdir('/tmp/yabi-localfs-test/')
         
         dirs = [    "dir1",
                     "dir2",
@@ -68,7 +67,7 @@ class LocalfsFileTests(RequestTest):
             
             # bundle some random files into these dirs
             for filename in [ "file1.txt", "file2.dat", "file3.bing" ]:
-                with open(os.path.join(basedir,d,filename), 'w') as fh:
+                with open(os.path.join(basedir,d,filename), 'wb') as fh:
                     for num in range(20):
                         fh.write( make_random_string() )
             
@@ -83,14 +82,15 @@ class LocalfsFileTests(RequestTest):
         
         r = self.session.post(YABI_FE+"/ws/fs/rcopy", data=payload)
         import sys
-        #sys.stderr.write("error code: %d\n"%r.status_code)
-        #sys.stderr.write("error response: %s\n"%r.text)
         self.assertTrue(r.status_code==200, "Could not perform rcopy")
         
         # diff the two directories
-        result = os.system("diff -r '%s' '%s'"%(basedir,destdir))
-        sys.stderr.write("diff result: %s\n"%(result))
+        result = os.system("diff -r '%s' '%s'"%(basedir,destdir+"input-rcopy"))
         
+        self.assertTrue(result==0, "Diff between the input and output failed")
+        
+        # clean up
+        shutil.rmtree('/tmp/yabi-localfs-test/')
         
     def notest_localfs_file_upload_and_download(self):
         content = make_random_string()

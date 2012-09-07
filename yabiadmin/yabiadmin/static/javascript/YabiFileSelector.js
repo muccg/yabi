@@ -243,6 +243,17 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
                 Y.one(deleteEl).on('click', this.deleteRemoteFileCallback,
                     null, invoker);
 
+                downloadEl = document.createElement('div');
+                downloadEl.className = 'download';
+                downloadImg = new Image();
+                downloadImg.alt = 'download';
+                downloadImg.title = 'download';
+                downloadImg.src = appURL + 'static/images/download-tgz.png';
+                downloadEl.appendChild(downloadImg);
+                fileEl.appendChild(downloadEl);
+                Y.one(downloadEl).on('click', this.downloadDirectoryCallback,
+                    null, invoker);
+                    
                 var dd = new Y.DD.Drag({
                   node: fileEl,
                   target: {},
@@ -661,6 +672,15 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         window.location = appURL + 'ws/fs/get?uri=' + escape(file.toString());
       };
 
+      /**
+       * downloadDirectory
+       *
+       * download file via zget web service call
+       */
+      YabiFileSelector.prototype.downloadDirectory = function(directory) {
+        window.location = appURL + 'ws/fs/zget?uri=' + escape(directory.toString());
+      };
+
 
       /**
        * deleteRemoteFile
@@ -840,6 +860,12 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         e.halt(true);
         var target = invoker.target;
         target.downloadFile(invoker.object);
+      };
+      
+      YabiFileSelector.prototype.downloadDirectoryCallback = function(e, invoker) {
+        e.halt(true);
+        var target = invoker.target;
+        target.downloadDirectory(invoker.object);
       };
 
       YabiFileSelector.prototype.deleteRemoteFileCallback = function(

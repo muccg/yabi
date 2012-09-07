@@ -138,6 +138,12 @@
     position:relative;
 }
 
+.fileSelectorListing .dirItem .download {
+    position:absolute;
+    right:16px;
+    top: 4px;
+}
+
 .fileSelectorListing .dirItem.hover, .fileSelectorListing .dirItem:hover {
     background:#fff url(../images/folder_open.png) 2px 2px no-repeat;
 }

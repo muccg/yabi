@@ -271,6 +271,7 @@ YABIBACKEND_RM = '/fs/rm'
 YABIBACKEND_LIST = '/fs/ls'
 YABIBACKEND_PUT = '/fs/put'
 YABIBACKEND_GET = '/fs/get'
+YABIBACKEND_ZGET = '/fs/zget'
 
 DEFAULT_STAGEIN_DIRNAME = 'stagein/'
 

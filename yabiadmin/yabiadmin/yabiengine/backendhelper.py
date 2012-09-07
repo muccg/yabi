@@ -355,6 +355,17 @@ def get_file(yabiusername, uri, bytes=None):
     result = handle_connection(POST,resource,get_fs_credential_for_uri(yabiusername, uri).get())
     return FileWrapper(result, blksize=1024**2)
 
+def zget_file(yabiusername, uri):
+    """
+    Return a file at given uri
+    """
+    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
+    resource = "%s?uri=%s" % (settings.YABIBACKEND_ZGET, quote(uri))
+    logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
+    
+    result = handle_connection(POST,resource,get_fs_credential_for_uri(yabiusername, uri).get())
+    return FileWrapper(result, blksize=1024**2)
+
 def rm_file(yabiusername, uri):
     """
     Return a file at given uri
