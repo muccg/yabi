@@ -199,8 +199,10 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         // new style 20090921 has the path as the key for the top level, then
         // files as an array and directories as an array
         // each file and directory is an array of [fname, size in bytes, date]
+        var rownumber=0;
         for (var toplevelindex in this.browseListing) {
           for (index in this.browseListing[toplevelindex].directories) {
+            rownumber += 1;
             fileEl = document.createElement('div');
             fileEl.className = 'dirItem';
             fileName = this.browseListing[toplevelindex].directories[index][0];
@@ -208,6 +210,10 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
               // this is a symlink, so change the icon image
               fileEl.className += ' dirLink';
             }
+            
+            if(rownumber%2==0) {
+                fileEl.className += ' alternateLine';
+            }   
 
             var fileNameSpan = document.createElement('span');
             fileNameSpan.appendChild(document.createTextNode(fileName));
@@ -269,12 +275,17 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
             }
           }
           for (index in this.browseListing[toplevelindex].files) {
+            rownumber += 1;
             fileEl = document.createElement('div');
             fileEl.className = 'fileItem';
             if (this.browseListing[toplevelindex].files[index][3]) {
               // this is a symlink, so change the icon image
               fileEl.className += ' fileLink';
             }
+            if(rownumber%2==0) {
+                fileEl.className += ' alternateLine';
+            }   
+
             var fileNameSpan = document.createElement('span');
             fileNameSpan.appendChild(document.createTextNode(
                 this.browseListing[toplevelindex].files[index][0]));
