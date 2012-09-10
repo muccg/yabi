@@ -199,7 +199,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         // new style 20090921 has the path as the key for the top level, then
         // files as an array and directories as an array
         // each file and directory is an array of [fname, size in bytes, date]
-        var rownumber=0;
+        var rownumber = 0;
         for (var toplevelindex in this.browseListing) {
           for (index in this.browseListing[toplevelindex].directories) {
             rownumber += 1;
@@ -210,10 +210,10 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
               // this is a symlink, so change the icon image
               fileEl.className += ' dirLink';
             }
-            
-            if(rownumber%2==0) {
-                fileEl.className += ' alternateLine';
-            }   
+
+            if (rownumber % 2 == 0) {
+              fileEl.className += ' alternateLine';
+            }
 
             var fileNameSpan = document.createElement('span');
             fileNameSpan.appendChild(document.createTextNode(fileName));
@@ -259,7 +259,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
                 fileEl.appendChild(downloadEl);
                 Y.one(downloadEl).on('click', this.downloadDirectoryCallback,
                     null, invoker);
-                    
+
                 var dd = new Y.DD.Drag({
                   node: fileEl,
                   target: {},
@@ -282,9 +282,9 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
               // this is a symlink, so change the icon image
               fileEl.className += ' fileLink';
             }
-            if(rownumber%2==0) {
-                fileEl.className += ' alternateLine';
-            }   
+            if (rownumber % 2 == 0) {
+              fileEl.className += ' alternateLine';
+            }
 
             var fileNameSpan = document.createElement('span');
             fileNameSpan.appendChild(document.createTextNode(
@@ -689,7 +689,8 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
        * download file via zget web service call
        */
       YabiFileSelector.prototype.downloadDirectory = function(directory) {
-        window.location = appURL + 'ws/fs/zget?uri=' + escape(directory.toString());
+        window.location = appURL + 'ws/fs/zget?uri=' + escape(
+            directory.toString());
       };
 
 
@@ -872,8 +873,9 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         var target = invoker.target;
         target.downloadFile(invoker.object);
       };
-      
-      YabiFileSelector.prototype.downloadDirectoryCallback = function(e, invoker) {
+
+      YabiFileSelector.prototype.downloadDirectoryCallback =
+          function(e, invoker) {
         e.halt(true);
         var target = invoker.target;
         target.downloadDirectory(invoker.object);

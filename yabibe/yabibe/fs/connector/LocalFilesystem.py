@@ -237,7 +237,7 @@ class LocalShell(object):
         #return self.execute(LocalShellProcessProtocol(),command=[SH_PATH, "-c",TAR_PATH + " --gzip --directory "+self._make_echo(path)+" --create "+(filename if filename else ".")+" > "+fifo]), fifo
         
         # this one is 'better' even with the zero byte padding.
-        return self.execute(LocalShellProcessProtocol(),command=[TAR_PATH,"--gzip","--directory",self._make_echo(path),"--create",filename if filename else ".","--file",fifo]), fifo  
+        return self.execute(LocalShellProcessProtocol(),command=[TAR_PATH,"--absolute-names","--gzip","--directory",self._make_echo(path),"--create",filename if filename else ".","--file",fifo]), fifo  
 
 class LocalFilesystem(FSConnector.FSConnector, object):
     """This is the resource that connects to the ssh backends"""
