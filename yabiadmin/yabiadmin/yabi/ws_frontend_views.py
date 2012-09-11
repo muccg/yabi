@@ -342,10 +342,10 @@ def zget(request):
 
     except BackendRefusedConnection, e:
         return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
-    except Exception, e:
-        # The response from this view is displayed directly to the user, so
-        # we'll send a normal response rather than a JSON message.
-        raise Http404
+    #except Exception, e:
+        ## The response from this view is displayed directly to the user, so
+        ## we'll send a normal response rather than a JSON message.
+        #raise Http404
 
 @authentication_required
 def put(request):
