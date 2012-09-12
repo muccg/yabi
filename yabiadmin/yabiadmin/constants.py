@@ -79,3 +79,7 @@ _statuses_order = [st[0] for st in STATUS_MAP if st[0] != ''] + [STATUS_BLOCKED]
 _statuses_order.reverse()
 STATUSES_REVERSE_ORDER = _statuses_order
 
+# validation settings, these reflect the types of backend that yabi can handle
+EXEC_SCHEMES = ['globus', 'sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex','explode','null']
+FS_SCHEMES = ['http', 'https', 'gridftp', 'yabifs', 'scp', 's3', 'localfs','null']
+VALID_SCHEMES = EXEC_SCHEMES + FS_SCHEMES

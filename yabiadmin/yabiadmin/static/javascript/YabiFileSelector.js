@@ -249,16 +249,21 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
                 Y.one(deleteEl).on('click', this.deleteRemoteFileCallback,
                     null, invoker);
 
-                downloadEl = document.createElement('div');
-                downloadEl.className = 'download';
-                downloadImg = new Image();
-                downloadImg.alt = 'download';
-                downloadImg.title = 'download';
-                downloadImg.src = appURL + 'static/images/download-tgz.png';
-                downloadEl.appendChild(downloadImg);
-                fileEl.appendChild(downloadEl);
-                Y.one(downloadEl).on('click', this.downloadDirectoryCallback,
-                    null, invoker);
+                var schema = this.pathComponents[0].substring(0,
+                    this.pathComponents[0].indexOf('://'));
+                if (schema == 'scp' || schema == 'localfs')
+                {
+                  downloadEl = document.createElement('div');
+                  downloadEl.className = 'download';
+                  downloadImg = new Image();
+                  downloadImg.alt = 'download';
+                  downloadImg.title = 'download';
+                  downloadImg.src = appURL + 'static/images/download-tgz.png';
+                  downloadEl.appendChild(downloadImg);
+                  fileEl.appendChild(downloadEl);
+                  Y.one(downloadEl).on('click', this.downloadDirectoryCallback,
+                      null, invoker);
+                }
 
                 var dd = new Y.DD.Drag({
                   node: fileEl,
