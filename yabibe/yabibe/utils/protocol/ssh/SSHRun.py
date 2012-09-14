@@ -89,7 +89,11 @@ class SSHRun(BaseShell):
             
         # hande log setting
         if config.config['execution']['logcommand']:
-            print "ssh running command: "+str(command)
+            # screen out password from the command
+            command_log = command[:]
+            index = command_log.index("-p")+1
+            command_log[index]="*"*len(command_log[index])
+            print "ssh running command: "+str(command_log)
             
         if config.config['execution']['logscripts']:
             print "ssh attempting remote command: "+remote_command
