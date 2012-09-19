@@ -199,14 +199,20 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         // new style 20090921 has the path as the key for the top level, then
         // files as an array and directories as an array
         // each file and directory is an array of [fname, size in bytes, date]
+        var rownumber = 0;
         for (var toplevelindex in this.browseListing) {
           for (index in this.browseListing[toplevelindex].directories) {
+            rownumber += 1;
             fileEl = document.createElement('div');
             fileEl.className = 'dirItem';
             fileName = this.browseListing[toplevelindex].directories[index][0];
             if (this.browseListing[toplevelindex].directories[index][3]) {
               // this is a symlink, so change the icon image
               fileEl.className += ' dirLink';
+            }
+
+            if (rownumber % 2 == 0) {
+              fileEl.className += ' alternateLine';
             }
 
             var fileNameSpan = document.createElement('span');
@@ -243,6 +249,22 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
                 Y.one(deleteEl).on('click', this.deleteRemoteFileCallback,
                     null, invoker);
 
+                var schema = this.pathComponents[0].substring(0,
+                    this.pathComponents[0].indexOf('://'));
+                if (schema == 'scp' || schema == 'localfs')
+                {
+                  downloadEl = document.createElement('div');
+                  downloadEl.className = 'download';
+                  downloadImg = new Image();
+                  downloadImg.alt = 'download';
+                  downloadImg.title = 'download';
+                  downloadImg.src = appURL + 'static/images/download-tgz.png';
+                  downloadEl.appendChild(downloadImg);
+                  fileEl.appendChild(downloadEl);
+                  Y.one(downloadEl).on('click', this.downloadDirectoryCallback,
+                      null, invoker);
+                }
+
                 var dd = new Y.DD.Drag({
                   node: fileEl,
                   target: {},
@@ -258,12 +280,17 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
             }
           }
           for (index in this.browseListing[toplevelindex].files) {
+            rownumber += 1;
             fileEl = document.createElement('div');
             fileEl.className = 'fileItem';
             if (this.browseListing[toplevelindex].files[index][3]) {
               // this is a symlink, so change the icon image
               fileEl.className += ' fileLink';
             }
+            if (rownumber % 2 == 0) {
+              fileEl.className += ' alternateLine';
+            }
+
             var fileNameSpan = document.createElement('span');
             fileNameSpan.appendChild(document.createTextNode(
                 this.browseListing[toplevelindex].files[index][0]));
@@ -661,6 +688,16 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         window.location = appURL + 'ws/fs/get?uri=' + escape(file.toString());
       };
 
+      /**
+       * downloadDirectory
+       *
+       * download file via zget web service call
+       */
+      YabiFileSelector.prototype.downloadDirectory = function(directory) {
+        window.location = appURL + 'ws/fs/zget?uri=' + escape(
+            directory.toString());
+      };
+
 
       /**
        * deleteRemoteFile
@@ -840,6 +877,13 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         e.halt(true);
         var target = invoker.target;
         target.downloadFile(invoker.object);
+      };
+
+      YabiFileSelector.prototype.downloadDirectoryCallback =
+          function(e, invoker) {
+        e.halt(true);
+        var target = invoker.target;
+        target.downloadDirectory(invoker.object);
       };
 
       YabiFileSelector.prototype.deleteRemoteFileCallback = function(

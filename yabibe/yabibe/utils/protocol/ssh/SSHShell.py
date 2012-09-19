@@ -133,3 +133,10 @@ class SSHShell(BaseShell):
         else:
             return self.execute(certfile,host,command=["cp",args,self._make_echo(src),self._make_echo(dst)],username=username, password=password, port=port) if args else self.execute(certfile,host,command=["cp",self._make_echo(src),self._make_echo(dst)],username=username, password=password, port=port)
         
+    def compress(self, certfile, host, path, username, password, port=None, encoding="targz"):
+        assert encoding in ('targz','tar'), "Unknown encoding for compress"
+        
+        command = [ "tar", "c", path]
+        
+        #return self.execute(certfile, host, command=[
+        

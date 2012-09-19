@@ -451,6 +451,10 @@ class EngineJob(Job):
     def as_dict(self):
         # TODO This will have to be able to generate the full JSON
         # In this step of the refactoring it will just get it's json from the workflow
+        # UPDATE CW - the following json.loads line is failing with unwalked workflows. Refactoring needs to be completed
+        # HACK CW - short circuit the function so front end can get a response rather than an error.
+        if not self.workflow.original_json:
+            return {}
         workflow_dict = json.loads(self.workflow.original_json)
         job_id = int(self.order)
         job_dict = workflow_dict['jobs'][job_id]
