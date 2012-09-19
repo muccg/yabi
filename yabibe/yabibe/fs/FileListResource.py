@@ -65,7 +65,7 @@ class FileListResource(resource.PostableResource):
         # break our request path into parts
         return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be GET\n")
     
-    #@hmac_authenticated
+    @hmac_authenticated
     def handle_list(self, request):
         if "uri" not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided\n")

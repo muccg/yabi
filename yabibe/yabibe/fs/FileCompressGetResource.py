@@ -66,7 +66,7 @@ class FileCompressGetResource(resource.PostableResource):
         
         self.fsresource = weakref.ref(fsresource)
         
-    #@hmac_authenticated
+    @hmac_authenticated
     def handle_compress_get(self, request):
         # override default priority
         priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_GET_PRIORITY

@@ -67,7 +67,7 @@ class FileRCopyResource(resource.PostableResource):
         # break our request path into parts
         return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be POST\n")
 
-    #@hmac_authenticated
+    @hmac_authenticated
     def http_POST(self, request):
         """
         Respond to a POST request.
