@@ -103,7 +103,7 @@ def lock(maximum):
             # pre lock
             while f._CONNECTION_COUNT >= maximum:
                 print "WARNING: max connection count reached for",f,"(%d)"%maximum
-                gevent.sleep()
+                gevent.sleep(1.0)
                 
             f._CONNECTION_COUNT += 1
             
