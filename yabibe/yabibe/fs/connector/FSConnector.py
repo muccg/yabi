@@ -41,15 +41,25 @@ class FSConnector(object):
         """Pass in the environment setup you want any child processes to inherit"""
         self.childenv = env.copy()
     
-    def GetReadFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}):
+    def GetReadFifo(self, host=None, username=None, path=None, port=None, filename=None, fifo=None, yabiusername=None, creds={}):
         """sets up the chain needed to setup a read fifo from a remote path as a certain user.
         """
         raise NotImplemented("GetReadFifo not implemented")
             
-    def GetWriteFifo(self, host=None, username=None, path=None, filename=None, fifo=None, yabiusername=None, creds={}):
+    def GetWriteFifo(self, host=None, username=None, path=None, port=None, filename=None, fifo=None, yabiusername=None, creds={}):
         """sets up the chain needed to setup a write fifo to a remote path as a certain user.
         """
         raise NotImplemented("GetWriteFifo not implemented")
+    
+    def GetCompressedReadFifo(self, host=None, username=None, path=None, port=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=None):
+        """sets up the chain needed to setup a read fifo from a remote path as a certain user.
+        """
+        raise NotImplemented("GetCompressedReadFifo not implemented")
+            
+    def GetCompressedWriteFifo(self, host=None, username=None, path=None, port=None, filename=None, fifo=None, yabiusername=None, creds={}, priority=None):
+        """sets up the chain needed to setup a write fifo to a remote path as a certain user.
+        """
+        raise NotImplemented("GetCompressedWriteFifo not implemented")
         
     def ls(self, host, username, path, yabiusername=None, recurse=False, culldots=True, creds={}):
         raise NotImplemented("ls not implemented")

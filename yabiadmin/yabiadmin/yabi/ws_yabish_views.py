@@ -190,6 +190,8 @@ class ParamDef(object):
                 return True
         return False 
 
+       
+
     def consume_values(self, arguments):
         '''WARNING! This changes the passed in arguments list in place! '''
         if self.switch_use not in ('combined', 'combined with equals'):
@@ -202,7 +204,7 @@ class ParamDef(object):
                 raise ParsingError('Option %s requires 2 arguments' % self.name)
             v1 = arguments.pop(0)
             v2 = arguments.pop(0)
-            if v1.startswith('-') or v2.startswith('-'):
+            if is_option(v1) and is_option(v2):
                 raise ParsingError('Option %s requires 2 arguments' % self.name)
             self.value = [v1, v2]
             self.original_value = '%s %s' % (v1, v2)
@@ -211,7 +213,7 @@ class ParamDef(object):
             if not arguments:
                 raise ParsingError('Option %s requires an argument' % self.name)
             v = arguments.pop(0)
-            if v.startswith('-'):
+            if is_option(v):
                 raise ParsingError('Option %s requires an argument' % self.name)
             self.value = [v]
             self.original_value = v
@@ -244,7 +246,7 @@ class YabiArgumentParser(object):
         parsed_options, unhandled_args = self.parse_options(arguments_copy)
 
         # Error if any unhandled argument are options (ie. start with '-' or '--')
-        unknown_options = filter(lambda arg: arg.startswith('-'), [arg[0] for arg in unhandled_args])
+        unknown_options = filter(lambda arg: is_option(arg), [arg[0] for arg in unhandled_args])
         if unknown_options:
             raise ParsingError('Unknown option: %s' % ','.join(unknown_options))
 
@@ -371,4 +373,14 @@ def item_index(l, func):
     for i, item in enumerate(l):
         if func(item):
             return i
+
+def is_int(s):
+    try: 
+       int(s)
+       return True
+    except ValueError:
+       return False
+
+def is_option(s):
+    return s.startswith('-') and not is_int(s)
 
