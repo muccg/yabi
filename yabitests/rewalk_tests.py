@@ -72,6 +72,7 @@ class RewalkTest(YabiTestCase, FileUtils):
         changed_json_file = os.path.join(localfs_dir, 'dd_then_cksum.json')
         
         self.delete_on_exit(changed_json_file)
+
         self.prepare_json(wfl_json_file, changed_json_file, {
             'DIR': localfs_dir, 'FILENAME': os.path.basename(filename)})
         

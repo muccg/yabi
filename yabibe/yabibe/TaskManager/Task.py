@@ -65,13 +65,36 @@ class Task(object):
                         
         self.submission = json['exec']['submission']
                         
-        # shortcuts for our status and log calls
-        self.status = lambda x: Status(self.statusurl,x)
-        self.log = lambda x: Log(self.errorurl,x)
+        self.setup_lambdas()
         
         # stage keeps track of where we are in completing the tasklet, so if we need to restart we can skip
         # parts that are already completed
         self.stage = stage
+        
+    def setup_lambdas(self):
+        # shortcuts for our status and log calls
+        self.status = lambda x: Status(self.statusurl,x)
+        self.log = lambda x: Log(self.errorurl,x)
+        
+    def get_pickle_data(self):
+        #print
+        #print dir(self)
+        #for key in dir(self):
+            #print key,"=>",getattr(self,key)
+        #print
+        
+        keynames = [ 'blocked_stage', 'errorurl', 'exec_status', 'json', 'outdir', 'outuri', 'stage', 'statusurl', 'submission', 'taskid', 'yabiusername' ]
+        
+        output = {}
+        for key in keynames:
+            if hasattr(self,key):
+                output[key] = getattr(self,key)
+        
+        return output
+        
+    def set_from_pickle_data(self, data):
+        for key in data.keys():
+            setattr(self,key,data[key])
     
     def run(self):
         try:
@@ -240,7 +263,7 @@ class NullBackendTask(Task):
                 if method=='copy' or method=='lcopy':
                     self.log("Copying %s to %s using method %s..."%(src,dst,method))
                     try:
-                        SmartCopy(method,src,dst, yabiusername=self.yabiusername)
+                        SmartCopy(method,src,dst, yabiusername=self.yabiusername,log_callback=log)
                         self.log("Copying %s to %s Success"%(src,dst))
                     except GETFailure, error:
                         if "503" in error.message[1]:
@@ -256,7 +279,7 @@ class NullBackendTask(Task):
                 elif method=='link':
                     self.log("Linking %s to point to %s"%(dst,src))
                     try:
-                        Ln(src,dst,yabiusername=self.yabiusername)
+                        Ln(src,dst,yabiusername=self.yabiusername,log_callback=log)
                         self.log("Linking %s to point to %s success"%(dst,src))
                     except GETFailure, error:
                         if "503" in error.message[1]:
@@ -393,7 +416,7 @@ class MainTask(Task):
             if method=='copy' or method=='lcopy':
                 self.log("Copying %s to %s using method %s..."%(src,dst,method))
                 try:
-                    SmartCopy(method, src,dst, yabiusername=self.yabiusername)
+                    SmartCopy(method, src,dst, yabiusername=self.yabiusername,log_callback=self.log)
                     self.log("Copying %s to %s Success"%(src,dst))
                 except GETFailure, error:
                     if "503" in error.message[1]:
@@ -409,7 +432,7 @@ class MainTask(Task):
             elif method=='link':
                 self.log("Linking %s to point to %s"%(dst,src))
                 try:
-                    Ln(src,dst,yabiusername=self.yabiusername)
+                    Ln(src,dst,yabiusername=self.yabiusername,log_callback=self.log)
                     self.log("Linking %s to point to %s success"%(dst,src))
                 except GETFailure, error:
                     if "503" in error.message[1]:
@@ -517,7 +540,7 @@ class MainTask(Task):
                     received_so_far = set(self.exec_status)
                     # Loop while all statuses received so far are unfinished
                     while len(received_so_far - unfinished) == 0:
-                        gevent.sleep()
+                        gevent.sleep(1.0)
                         received_so_far = set(self.exec_status)
 
                     if filter(lambda s: 'error' in s, self.exec_status):
@@ -543,7 +566,7 @@ class MainTask(Task):
             except CloseConnections, cc:
                 retry=True
                 
-            gevent.sleep()
+            gevent.sleep(1.0)
         
     def execute(self, outputdir):
         return self.do(outputdir, Exec)
@@ -590,7 +613,7 @@ class MainTask(Task):
                 pass
             
             try:
-                SmartCopy('lcopy',outputuri,task['stageout'],yabiusername=self.yabiusername,recurse=True)
+                SmartCopy('lcopy',outputuri,task['stageout'],yabiusername=self.yabiusername,log_callback=self.log,recurse=True)
                 self.log("Files successfuly staged out")
             except GETFailure, error:
                 if "503" in error.message[1]:

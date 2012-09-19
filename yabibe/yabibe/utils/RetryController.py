@@ -8,6 +8,8 @@
 HARD = 1
 SOFT = 0
 
+# switch on syslog debugging
+DEBUG = True
 
 import re
 
@@ -41,12 +43,24 @@ class RetryController(object):
                 out[code].append( re.compile( re_item, flags ) )
         return out
         
-    def test(self, exit_code, stderr):
-        """Test the resturn values from a programme run and return HARD or SOFT"""
+    def test(self, exit_code, stderr, logger=None):
+        """Test the resturn values from a programme run and return HARD or SOFT
+        
+        if logger is passed in, then use it as a callable to report the result of the test.
+        This can be set to a method that sends it over HTTP to the middleware
+        """
+        def dlogger(message):
+            if DEBUG:
+                print message
+            if logger:
+                logger(message)
+        
         if exit_code in self.hard_exit_codes:
+            dlogger("%s [%d]:'%s' HARD exit based on exit code."%(self.__class__,exit_code,stderr))
             return HARD
         
         if exit_code in self.soft_exit_codes:
+            dlogger("%s [%d]:'%s' SOFT exit based on exit code."%(self.__class__,exit_code,stderr))
             return SOFT
             
         if exit_code in self.hard_exit_regexps:
@@ -54,6 +68,7 @@ class RetryController(object):
             for regexp in self.hard_exit_regexps[exit_code]:
                 match = regexp.search(stderr)
                 if match is not None:
+                    dlogger("%s [%d]:'%s' HARD exit based on hard exit regexps."%(self.__class__,exit_code,stderr))
                     return HARD
                     
         if exit_code in self.soft_exit_regexps:
@@ -61,8 +76,10 @@ class RetryController(object):
             for regexp in self.soft_exit_regexps[exit_code]:
                 match = regexp.search(stderr)
                 if match is not None:
+                    dlogger("%s [%d]:'%s' SOFT exit based on soft exit regexps."%(self.__class__,exit_code,stderr))
                     return SOFT
                     
+        dlogger("%s [%d]:'%s' %s exit based on default."%(self.__class__,exit_code,stderr,"HARD" if self.default==HARD else "SOFT"))
         return self.default
               
 class TorqueQsubRetryController(RetryController):
@@ -113,12 +130,6 @@ class TorqueQstatRetryController(RetryController):
     hard_exit_codes = [2]
     soft_exit_codes = [1]
 
-class PbsproQsubRetryController( TorqueQsubRetryController ):
-    pass
-
-class PbsproQstatRetryController( TorqueQstatRetryController ):
-    pass
-
 class SSHRetryController(RetryController):
     default = SOFT
     hard_exit_codes = []
@@ -142,3 +153,25 @@ class SSHRetryController(RetryController):
                            ],
                         }
     
+class PbsproQsubRetryController( TorqueQsubRetryController ):
+    pass
+
+class PbsproQstatRetryController( TorqueQstatRetryController ):
+    pass
+
+class SSHSGEQsubRetryController( TorqueQsubRetryController ):
+    pass
+
+class SSHSGEQstatRetryController( TorqueQstatRetryController ):
+    default = SOFT
+    hard_exit_codes = [2]
+    soft_exit_codes = []
+    
+    hard_exit_regexps = {   1 : [
+                                "Following jobs do not exist"
+                            ],
+                        }
+
+class SSHSGEQacctRetryController( RetryController ):
+    default = HARD
+

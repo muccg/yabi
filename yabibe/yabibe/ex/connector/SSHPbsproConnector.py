@@ -91,7 +91,6 @@ class SSHQstatSoftException(Exception): pass
 class SSHQsubHardException(Exception): pass
 class SSHQstatHardException(Exception): pass
 
-
 def rerun_delays():
     # when our retry system is fully expressed (no corner cases) we could potentially make this an infinite generator
     delay = 5.0
@@ -102,7 +101,6 @@ def rerun_delays():
     while totaltime<21600.0:                    # 6 hours
         totaltime+=300.0
         yield 300.0
-
 
 class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
     def __init__(self):
@@ -349,10 +347,8 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
                     log.msg(log_msg + "thus setting job state to: %s"%newstate)
                     
                 else:
-                    print "Error! We atempted to qstat the job <%s>, the call was successful, but we got no data at all. The job just VANISHED! We are marking this job as errored"%jobid
-                    newstate = "Error"                  # we cannot determine the remote execution status
-                
-                
+                    print "Error! We atempted to qstat the job <%s>, the call was successful, but we got no data at all. The job just VANISHED! We are ignoring this job at this time and will check again later"%jobid
+
             else:
                 # job has finished
                 sleep(15.0)                      # deal with SGE flush bizarreness (files dont flush from remote host immediately. Totally retarded)

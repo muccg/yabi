@@ -167,9 +167,9 @@ def update_task_status(task_id, status):
         def log_ignored():
             logger.warning('Ignoring status update of task %s from %s to %s' % (task.pk, task.status, status))
 
-        logger.warning("task: %d updating to: %s"%(task_id,status))
+        #logger.warning("task: %d updating to: %s"%(task_id,status))
 
-        logger.warning("task: %d updating.status to: %s"%(task_id,status))
+        #logger.warning("task: %d updating.status to: %s"%(task_id,status))
         #task.status = status
         kwargs = {Task.status_attr(status): datetime.now()}
         Task.objects.filter(id=task_id).update(**kwargs)
@@ -181,17 +181,21 @@ def update_task_status(task_id, status):
         if status == STATUS_COMPLETE:
             task.end_time = datetime.now()
         
-        logger.warning("task: %d updating to: %s presave"%(task_id,status))
+        #logger.warning("task: %d updating to: %s presave"%(task_id,status))
         task.save()
-        logger.warning("task: %d updating to: %s postsave"%(task_id,status))
-        
+        #logger.warning("task: %d updating to: %s postsave"%(task_id,status))
+       
+        # We have to commit the task status before calculating
+        # job status that is based on task statuses
+        transaction.commit()
+ 
         # update the job status when the task status changes
         task.job.update_status()
         job_cur_status = task.job.status
 
-        logger.warning("task: %d updating to: %s precommit"%(task_id,status))
+        #logger.warning("task: %d updating to: %s precommit"%(task_id,status))
         transaction.commit()
-        logger.warning("task: %d updating to: %s postcommit"%(task_id,status))
+        #logger.warning("task: %d updating to: %s postcommit"%(task_id,status))
         
         if job_cur_status in [STATUS_READY, STATUS_COMPLETE, STATUS_ERROR]:
             workflow = EngineWorkflow.objects.get(pk=task.job.workflow.id)
