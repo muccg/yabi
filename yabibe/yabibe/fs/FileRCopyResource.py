@@ -39,6 +39,7 @@ from utils.parsers import parse_url
 from utils.geventtools import GETFailure
 
 from Exceptions import BlockingException
+from connector.FSConnector import NotImplemented
 import traceback
 
 from decorators import hmac_authenticated
@@ -87,7 +88,7 @@ class FileRCopyResource(resource.PostableResource):
         def RCopyCommand(res):
             # source and destination
             if 'src' not in request.args or 'dst' not in request.args:
-                return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "copy must specify source 'src' and destination 'dst'\n")
+                return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "rcopy must specify source 'src' and destination 'dst'\n")
             
             # if 'contents' is set, then copy the contents of the source directory, not the directory itself (like going cp -r src/* dst/)
             copy_contents = 'contents' in request.args
@@ -100,7 +101,7 @@ class FileRCopyResource(resource.PostableResource):
             
             yabiusername = request.args['yabiusername'][0] if "yabiusername" in request.args else None
         
-            assert yabiusername, "You pass in a yabiusername so I can go get a credential."
+            assert yabiusername, "You must pass in a yabiusername so I can go get a credential."
             
             assert src.endswith('/'), "'src' path must end in a '/'"
             if not dst.endswith('/'):
@@ -133,6 +134,86 @@ class FileRCopyResource(resource.PostableResource):
             #
             def rcopy_runner_thread():
                 try:
+                    ##
+                    ## Try using zput/zget to do rcopy first
+                    ##
+                    try:
+                        writeproto, fifo = dbend.GetCompressedWriteFifo(dst_hostname, dst_username, dst_path, dst_port, dst_filename,yabiusername=yabiusername)
+                        readproto, fifo2 = sbend.GetCompressedReadFifo(src_hostname, src_username, src_path, src_port, src_filename, fifo,yabiusername=yabiusername)
+                        
+                        def fifo_cleanup(response):
+                            os.unlink(fifo)
+                            return response
+                        result_channel.addCallback(fifo_cleanup)
+                        
+                    except BlockingException, be:
+                        #sbend.unlock(locks[0])
+                        #if locks[1]:
+                            #dbend.unlock(locks[1])
+                        print traceback.format_exc()
+                        result_channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, str(be)))
+                        return
+                        
+                        
+                        
+                    if DEBUG:
+                        print "READ:",readproto,fifo2
+                        print "WRITE:",writeproto,fifo
+                            
+                    # wait for one to finish
+                    while not readproto.isDone() and not writeproto.isDone():
+                        gevent.sleep()
+                    
+                    # if one died and not the other, then kill the non dead one
+                    if readproto.isDone() and readproto.exitcode!=0 and not writeproto.isDone():
+                        # readproto failed. write proto is still running. Kill it
+                        if DEBUG:
+                            print "READ FAILED",readproto.exitcode,writeproto.exitcode
+                        print "read failed. attempting os.kill(",writeproto.transport.pid,",",signal.SIGKILL,")",type(writeproto.transport.pid),type(signal.SIGKILL)
+                        while writeproto.transport.pid==None:
+                            #print "writeproto transport pid not set. waiting for setting..."
+                            gevent.sleep()
+                        os.kill(writeproto.transport.pid, signal.SIGKILL)
+                    else:
+                        # wait for write to finish
+                        if DEBUG:
+                            print "WFW",readproto.exitcode,writeproto.exitcode
+                        while writeproto.exitcode == None:
+                            gevent.sleep()
+                        
+                        # did write succeed?
+                        if writeproto.exitcode == 0:
+                            if DEBUG:
+                                print "WFR",readproto.exitcode,writeproto.exitcode
+                            while readproto.exitcode == None:
+                                gevent.sleep()
+                    
+                    if readproto.exitcode==0 and writeproto.exitcode==0:
+                        if DEBUG:
+                            print "Copy finished exit codes 0"
+                            print "readproto:"
+                            print "ERR:",readproto.err
+                            print "OUT:",readproto.out
+                            print "writeproto:"
+                            print "ERR:",writeproto.err
+                            print "OUT:",writeproto.out
+                            
+                        result_channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, "Copy OK\n"))
+                        return
+                    else:
+                        rexit = "Killed" if readproto.exitcode==None else str(readproto.exitcode)
+                        wexit = "Killed" if writeproto.exitcode==None else str(writeproto.exitcode)
+                        
+                        msg = "Copy failed:\n\nRead process: "+rexit+"\n"+readproto.err+"\n\nWrite process: "+wexit+"\n"+writeproto.err+"\n"
+                        #print "MSG",msg
+                        result_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, msg))
+                        return
+                    
+                except NotImplemented, ni:    
+                    ##
+                    ## Fallback to old manual rcopy
+                    ##
+                    
                     # get a recursive listing of the source
                     try:
                         fsystem = List(path=src,recurse=True,yabiusername=yabiusername)

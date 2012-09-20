@@ -185,6 +185,8 @@ def parse_args():
     parser.add_option( "-R", "--postremote", dest="postremote", help="Post-copy postremote to postlocal")
     parser.add_option( "-f", "--list-folder", dest="listfolder", help="Do an ssh list operation on the specified folder")
     parser.add_option( "-F", "--list-folder-recurse", dest="listfolderrecurse", help="Do a recursive list operation on the specified folder")
+    parser.add_option( "-O", "--stdout", dest="stdout", help="redirect the --exec option output to local file specified here")
+    parser.add_option( "-I", "--stdin", dest="stdin", help="feed this file into stdin of the --exec option instead of reading from stdin")
     #parser.add_option( "-Y", "--yes-add-host-key", dest="addhostkey", help="Add unknown host keys to known_hosts")
     
     return parser.parse_args()
@@ -395,21 +397,31 @@ def execute(ssh,options,shell=True, ex=None):
         
         execute = ex or options.execute
         
+        if options.stdout:
+            stdout_channel = open(options.stdout,'wb')
+        else:
+            stdout_channel = sys.stdout
+            
+        if options.stdin:
+            stdin_channel = open(options.stdin,'rb')
+        else:
+            stdin_channel = sys.stdin
+        
         if shell:
             ex = execute.replace("'","'\\''")        # escape any single quotes
             stdin, stdout, stderr = ssh.exec_command("bash -c '"+ex+"'")
         else:
             stdin, stdout, stderr = ssh.exec_command(execute)
     
-        readlist = [sys.stdin,stdout.channel,stderr.channel]
+        readlist = [stdin_channel,stdout.channel,stderr.channel]
         while not stdout.channel.exit_status_ready():
-            rlist,wlist,elist = select.select(readlist,[stdin.channel],[sys.stdin,stdin.channel,stdout.channel,stderr.channel])
+            rlist,wlist,elist = select.select(readlist,[stdin.channel],[stdin_channel,stdin.channel,stdout.channel,stderr.channel])
             #print "r",rlist,"w",len(wlist),"e",len(elist)
-            if sys.stdin in rlist:
+            if stdin_channel in rlist:
                 # read stdin and pipe to process
-                input = sys.stdin.readline()
+                input = stdin_channel.readline()
                 if not input:
-                    readlist.remove(sys.stdin)
+                    readlist.remove(stdin_channel)
                     stdin.channel.shutdown(2)
                     stdin.close()
                 else:
@@ -418,7 +430,7 @@ def execute(ssh,options,shell=True, ex=None):
                     # stdin.close()?
                     
             if stdout.channel in rlist:
-                sys.stdout.write( stdout.read(512) )
+                stdout_channel.write( stdout.read(512) )
             if stderr.channel in rlist:
                 sys.stderr.write( stderr.read(512) )
             
@@ -429,7 +441,13 @@ def execute(ssh,options,shell=True, ex=None):
                 
         # exhaust stdout and stderr
         sys.stderr.write( stderr.read() )
-        sys.stdout.write( stdout.read() )
+        stdout_channel.write( stdout.read() )
+                
+        if options.stdout:
+            stdout_channel.close()
+            
+        if options.stdin:
+            stdin_channel.close()
                 
         return stdout.channel.exit_status
 
