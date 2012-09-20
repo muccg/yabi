@@ -81,7 +81,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         globus.Auth.GlobusAuth.__init__(self)
         self.CreateAuthProxy()
 
-    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None,tasknum=None,tasktotal=None):
         modules = [] if not module else [X.strip() for X in module.split(",")]
         
         submission_script = os.path.join(TMP_DIR,str(uuid.uuid4())+".rsl")
@@ -89,7 +89,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
             print "rsl submission script path is %s"%(submission_script)
             print "input script is",repr(submission)
         
-        script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue,stdout,stderr)    
+        script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue,stdout,stderr,tasknum,tasktotal)    
         
         if DEBUG:
             print "globus-run"
@@ -202,7 +202,7 @@ class GlobusConnector(ExecConnector, globus.Auth.GlobusAuth):
         self.del_running(job_id)
         os.unlink(eprfile)
                
-    def resume(self, jobid, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+    def resume(self, jobid, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None,tasknum=None,tasktotal=None):
         # first we need to auth the proxy
         try:
             if creds:

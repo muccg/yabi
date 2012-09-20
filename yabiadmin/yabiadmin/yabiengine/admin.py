@@ -130,7 +130,7 @@ class JobAdmin(admin.ModelAdmin):
     ordering = ['order']
     fieldsets = (
         (None, {
-            'fields': ('workflow','order','start_time','cpus','walltime','module','queue','max_memory','job_type','status','exec_backend','fs_backend','command','stageout','preferred_stagein_method','preferred_stageout_method')
+            'fields': ('workflow','order','start_time','cpus','walltime','module','queue','max_memory','job_type','status','exec_backend','fs_backend','command','stageout','preferred_stagein_method','preferred_stageout_method','task_total')
         }),
     )
     raw_id_fields = ['workflow']
@@ -147,7 +147,7 @@ class TaskAdmin(BaseModelAdmin):
     raw_id_fields = ['job']
     fieldsets = (
         (None, {
-            'fields': ('job','start_time','end_time','job_identifier','command','error_msg')
+            'fields': ('job','start_time','end_time','job_identifier','command','task_num','error_msg')
         }),
         ('Remote Information',{
             'classes':('collapse',),

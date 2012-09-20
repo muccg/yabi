@@ -152,6 +152,7 @@ class Job(models.Model, Editable, Status):
     status = models.CharField(max_length=64, blank=True)
     exec_backend = models.CharField(max_length=256)
     fs_backend = models.CharField(max_length=256)
+    task_total = models.IntegerField(null=True, blank=True)
     
     command = models.TextField()                # store here a string representation of the template
     command_template = models.TextField(null=True, blank=True)               # store here the serialised version of the template
@@ -215,6 +216,7 @@ class Task(models.Model, Editable, Status):
     job_identifier = models.TextField(blank=True)
     command = models.TextField(blank=True)
     error_msg = models.CharField(max_length=1000, null=True, blank=True)
+    task_num = models.IntegerField(null=True, blank=True)
 
     # new status boolean like fields:
     # these are set to the date and time of when the status is changed to this value.
@@ -304,6 +306,8 @@ class Task(models.Model, Editable, Status):
                 "queue": self.job.queue,
                 "memory":self.job.max_memory,
                 "jobtype":self.job.job_type,
+                "tasknum":self.task_num,
+                "tasktotal":self.job.task_total,
                 "submission":submission
                 
                 },
