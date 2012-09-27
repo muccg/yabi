@@ -67,7 +67,7 @@ class SSHCopy(BaseShell):
         command += [ "-p", password ] if password else []
         command += [ "-u", remoteuser ] if remoteuser else []
         command += [ "-H", remotehost ] if remotehost else []
-        command += [ "-l", fifo, "-r", remotepath ]
+        command += [ "-l", fifo, "-r", remotepath, "-N" ]
         
         if DEBUG:
             print "CERTFILE",certfile
@@ -104,7 +104,7 @@ class SSHCopy(BaseShell):
         command += [ "-p", password ] if password else []
         command += [ "-u", remoteuser ] if remoteuser else []
         command += [ "-H", remotehost ] if remotehost else []
-        command += [ "-L", fifo, "-R", remotepath ]
+        command += [ "-L", fifo, "-R", remotepath, "-N" ]
         
         if DEBUG:
             print "CERTFILE",certfile
