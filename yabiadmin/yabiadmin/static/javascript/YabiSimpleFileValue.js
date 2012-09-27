@@ -22,7 +22,7 @@ function YabiSimpleFileValue(path, filename, type) {
 YabiSimpleFileValue.prototype.toString = function() {
   var optionalSlash = '';
   if (this.type == 'directory') {
-    optionalSlash = '';
+    optionalSlash = '/';
   }
 
   if (Y.Lang.isUndefined(this.root)) {
