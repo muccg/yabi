@@ -415,10 +415,13 @@ def execute(ssh,options,shell=True, ex=None):
             stdin, stdout, stderr = ssh.exec_command(execute)
     
         readlist = [stdout.channel]
+        errlist = [stdin.channel,stdout.channel]
         if not options.nostdin:
             readlist.append(stdin_channel)
+            errlist.append(stdin_channel)
+            
         while not stdout.channel.exit_status_ready():
-            rlist,wlist,elist = select.select(readlist,[stdin.channel],[stdin_channel,stdin.channel,stdout.channel])
+            rlist,wlist,elist = select.select(readlist,[stdin.channel],errlist)
             #print "r",rlist,"w",len(wlist),"e",len(elist)
             if not options.nostdin and stdin_channel in rlist:
                 # read stdin and pipe to process
