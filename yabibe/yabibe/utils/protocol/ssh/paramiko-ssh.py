@@ -187,7 +187,7 @@ def parse_args():
     parser.add_option( "-F", "--list-folder-recurse", dest="listfolderrecurse", help="Do a recursive list operation on the specified folder")
     parser.add_option( "-O", "--stdout", dest="stdout", help="redirect the --exec option output to local file specified here")
     parser.add_option( "-I", "--stdin", dest="stdin", help="feed this file into stdin of the --exec option instead of reading from stdin")
-    parser.add_option( "-N", "--no-stdin", dest="nostdin", help="ignore stdin completely")
+    parser.add_option( "-N", "--no-stdin", dest="nostdin", help="ignore stdin completely", action="store_true", default=False)
     #parser.add_option( "-Y", "--yes-add-host-key", dest="addhostkey", help="Add unknown host keys to known_hosts")
     
     return parser.parse_args()
