@@ -413,9 +413,9 @@ def execute(ssh,options,shell=True, ex=None):
         else:
             stdin, stdout, stderr = ssh.exec_command(execute)
     
-        readlist = [stdin_channel,stdout.channel,stderr.channel]
+        readlist = [stdin_channel,stdout.channel]
         while not stdout.channel.exit_status_ready():
-            rlist,wlist,elist = select.select(readlist,[stdin.channel],[stdin_channel,stdin.channel,stdout.channel,stderr.channel])
+            rlist,wlist,elist = select.select(readlist,[stdin.channel],[stdin_channel,stdin.channel,stdout.channel])
             #print "r",rlist,"w",len(wlist),"e",len(elist)
             if stdin_channel in rlist:
                 # read stdin and pipe to process
@@ -430,17 +430,13 @@ def execute(ssh,options,shell=True, ex=None):
                     # stdin.close()?
                     
             if stdout.channel in rlist:
-                stdout_channel.write( stdout.read(512) )
-            if stderr.channel in rlist:
-                sys.stderr.write( stderr.read(512) )
-            
+                stdout_channel.write( stdout.read(BLOCK_SIZE) )
             if len(elist):
                 sys.stderr.write("error! ")
                 sys.stderr.write(repr(elist))
                 sys.stderr.write("\n")
                 
-        # exhaust stdout and stderr
-        sys.stderr.write( stderr.read() )
+        # exhaust stdout/stderr
         stdout_channel.write( stdout.read() )
                 
         if options.stdout:

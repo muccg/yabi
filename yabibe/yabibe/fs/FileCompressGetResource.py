@@ -164,7 +164,7 @@ class FileCompressGetResource(resource.PostableResource):
                                 datastream = FifoStream(file)
                                 datastream.prepush(data)
                                 return channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('application', 'data')}, stream=datastream ))
-                            gevent.sleep()
+                            gevent.sleep(0.1)
                         
                         if procproto.exitcode:
                             return channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Get failed: %s\n"%procproto.err ))

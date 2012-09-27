@@ -122,7 +122,7 @@ class FileGetResource(resource.PostableResource):
             
             # give the engine a chance to fire up the process
             while not procproto.isStarted():
-                gevent.sleep()
+                gevent.sleep(0.1)
             
             # nonblocking open the fifo
             fd = no_intr(os.open,fifo,os.O_RDONLY | os.O_NONBLOCK )
@@ -158,7 +158,7 @@ class FileGetResource(resource.PostableResource):
                                 datastream = FifoStream(file, truncate=bytes_to_read)
                                 datastream.prepush(data)
                                 return channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('application', 'data')}, stream=datastream ))
-                            gevent.sleep()
+                            gevent.sleep(0.1)
                         
                         if procproto.exitcode:
                             return channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Get failed: %s\n"%procproto.err ))
