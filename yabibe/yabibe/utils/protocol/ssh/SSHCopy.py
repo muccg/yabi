@@ -67,7 +67,7 @@ class SSHCopy(BaseShell):
         command += [ "-p", password ] if password else []
         command += [ "-u", remoteuser ] if remoteuser else []
         command += [ "-H", remotehost ] if remotehost else []
-        command += [ "-l", fifo, "-r", remotepath, "-N" ]
+        command += [ "-l", fifo, "-r", remotepath ]
         
         if DEBUG:
             print "CERTFILE",certfile
@@ -104,7 +104,7 @@ class SSHCopy(BaseShell):
         command += [ "-p", password ] if password else []
         command += [ "-u", remoteuser ] if remoteuser else []
         command += [ "-H", remotehost ] if remotehost else []
-        command += [ "-L", fifo, "-R", remotepath, "-N" ]
+        command += [ "-L", fifo, "-R", remotepath ]
         
         if DEBUG:
             print "CERTFILE",certfile
@@ -145,7 +145,6 @@ class SSHCopy(BaseShell):
         command += [ "-H", remotehost ] if remotehost else []
         command += [ "-x", 'tar --gzip --extract --directory "%s"'%(path) ]
         command += [ "-I", fifo ]
-        command += [ "-N" ]
                 
         if DEBUG:
             print "CERTFILE",certfile
