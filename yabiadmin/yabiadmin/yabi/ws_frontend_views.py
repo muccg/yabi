@@ -239,7 +239,7 @@ def rcopy(request):
         assert srcpath != dst, "dst must not be the same as src"
         
         # src must be directory
-        assert src[-1]=='/', "src malformed. Not directory."
+        #assert src[-1]=='/', "src malformed. Not directory."
         # TODO: This needs to be fixed in the FRONTEND, by sending the right url through as destination. For now we just make sure it ends in a slash
         if dst[-1]!='/':
             dst += '/'

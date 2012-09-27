@@ -495,8 +495,14 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         YAHOO.ccgyabi.widget.YabiMessage.success(
             'Copying ' + src + ' to ' + dest);
 
+        var srcstring = src.toString()
+        if ( srcstring.substr(srcstring.length-1,1) == '/' )
+        {
+            srcstring = srcstring.substring(0,srcstring.length-1);
+        }
+            
         var jsUrl, jsCallback, jsTransaction;
-        jsUrl = baseURL + '?src=' + escape(src) + '&dst=' + escape(dest);
+        jsUrl = baseURL + '?src=' + escape(srcstring) + '&dst=' + escape(dest);
         jsCallback = {
           success: this.copyResponse,
           failure: function(transId, o) {
