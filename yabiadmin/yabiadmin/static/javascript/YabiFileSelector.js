@@ -498,7 +498,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
         var jsUrl, jsCallback, jsTransaction;
         if (src.substr(src.length-1,1) == '/')
         {
-            src=src.substr(0,src.length-1);
+            src = src.substr(0,src.length-1);
         }
         jsUrl = baseURL + '?src=' + escape(src) + '&dst=' + escape(dest);
         jsCallback = {
