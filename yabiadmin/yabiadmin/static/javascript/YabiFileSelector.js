@@ -496,9 +496,9 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
             'Copying ' + src + ' to ' + dest);
 
         var srcstring = src.toString()
-        if ( srcstring.substr(srcstring.length-1,1) == '/' )
+        if (srcstring.substr(srcstring.length - 1, 1) == '/')
         {
-            srcstring = srcstring.substring(0,srcstring.length-1);
+            srcstring = srcstring.substring(0, srcstring.length - 1);
         }
             
         var jsUrl, jsCallback, jsTransaction;
