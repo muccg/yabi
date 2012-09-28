@@ -74,7 +74,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
           filePath = new YabiSimpleFileValue([], '');
         }
         this.updateBrowser(filePath);
-      }
+      };
 
 
       /**
@@ -473,7 +473,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
           return true;
         }
         return false;
-      }
+      };
 
       /**
        * handleDrop
