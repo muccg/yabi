@@ -32,7 +32,7 @@ django-celery==2.5.1
 http://yabi.googlecode.com/files/django-kombu-ccg-0.9.4.tar.gz
 django-picklefield==0.1.9
 django-templatetag-sugar==0.1
-kombu==2.1.1
+kombu==2.4.7
 ordereddict==1.1
 pygooglechart==0.2.1
 pyparsing==1.5.6
