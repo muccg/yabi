@@ -3,8 +3,6 @@ import os
 from setuptools import setup
 
 def main():
-    print all_requires('yabiadmin/base-requirements.txt','yabiadmin/requirements.txt')
-    
     setup(name='yabiadmin',
         version='0.1',
         description='Yabi Admin',
@@ -15,17 +13,7 @@ def main():
         zip_safe=False,
         install_requires=all_requires('yabiadmin/base-requirements.txt','yabiadmin/requirements.txt'),
     )
-    #setup(name='yabiextra',
-        #version='0.1',
-        #description='Yabi Admin',
-        #long_description='Yabi front end and administration web interface',
-        #author='Centre for Comparative Genomics',
-        #author_email='web@ccg.murdoch.edu.au',
-        #packages=['yabiadmin'],
-        #zip_safe=False,
-        #install_requires=build_requires('yabiadmin/base-requirements.txt','yabiadmin/requirements.txt'),
-    #)
-
+    
 #
 # Functional helpers to turn requirements.txt into package names and version strings
 # What is this? LISP?
@@ -71,7 +59,6 @@ make_package_version = lambda nameparts, versionparts: ('-'.join(nameparts),'-'.
 make_egg_versions = lambda filenames: [ make_package_version( *number_split(parts(name)) ) for name in filenames ]
 egg_versions = lambda *files: [ "%s==%s"%parts for parts in make_egg_versions(basefilenames(filenames(urls(build_requires(*files))))) ]
 pypy_eggs = lambda *files: noturls(build_requires(*files))
-
 all_requires = lambda *files: egg_versions(*files)+pypy_eggs(*files)
 
 if __name__ == "__main__":

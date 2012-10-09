@@ -46,7 +46,7 @@ django-extensions==0.7.1
 pycrypto>=1.9
 psutil
 nose
-http://yaphc.googlecode.com/files/yaphc-v0_1_5.tgz
+http://yaphc.googlecode.com/files/yaphc-0.1.5.tgz
 BeautifulSoup==3.2.0
 cssutils==0.9.7
 https://github.com/downloads/sztamas/djamboloader/djamboloader-0.1.2.tar.gz
