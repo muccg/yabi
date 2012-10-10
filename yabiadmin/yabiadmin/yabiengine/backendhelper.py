@@ -38,6 +38,7 @@ from yabiadmin.yabiengine.urihelper import uriparse, get_backend_userdir
 from yabiadmin.yabi.models import Backend, BackendCredential
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.servers.basehttp import FileWrapper
+from constants import EXEC_SCHEMES, FS_SCHEMES
 
 class BackendRefusedConnection(Exception):
     pass
@@ -92,7 +93,7 @@ def get_exec_backendcredential_for_uri(yabiusername, uri):
     logger.debug('yabiusername: %s schema: %s usernamea :%s hostnamea :%s patha :%s'%(yabiusername,schema,rest.username,rest.hostname,rest.path))
     
     # enforce Exec scehmas only
-    if schema not in settings.EXEC_SCHEMES:
+    if schema not in EXEC_SCHEMES:
         logger.error("get_exec_backendcredential_for_uri was asked to get an fs schema! This is forbidden.")
         raise ValueError("Invalid schema in uri passed to get_exec_backendcredential_for_uri: asked for %s"%schema)
     
@@ -126,7 +127,7 @@ def get_fs_backendcredential_for_uri(yabiusername, uri):
     logger.debug('yabiusername: %s schema: %s usernamea :%s hostnamea :%s patha :%s'%(yabiusername,schema,rest.username,rest.hostname,rest.path))
     
     # enforce FS scehmas only
-    if schema not in settings.FS_SCHEMES:
+    if schema not in FS_SCHEMES:
         logger.error("get_fs_backendcredential_for_uri was asked to get an executions schema! This is forbidden.")
         raise ValueError("Invalid schema in uri passed to get_fs_backendcredential_for_uri: schema passed in was %s"%schema)
     
@@ -350,6 +351,17 @@ def get_file(yabiusername, uri, bytes=None):
     if bytes is not None:
         resource += "&bytes=%d" % int(bytes)
 
+    logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
+    
+    result = handle_connection(POST,resource,get_fs_credential_for_uri(yabiusername, uri).get())
+    return FileWrapper(result, blksize=1024**2)
+
+def zget_file(yabiusername, uri):
+    """
+    Return a file at given uri
+    """
+    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
+    resource = "%s?uri=%s" % (settings.YABIBACKEND_ZGET, quote(uri))
     logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
     
     result = handle_connection(POST,resource,get_fs_credential_for_uri(yabiusername, uri).get())

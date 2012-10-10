@@ -81,7 +81,7 @@ ToolCollectionYUI = YUI().use(
         this.filter();
 
         this.hydrate();
-      }
+      };
 
       YabiToolCollection.registerDDTarget = function(el) {
         new Y.DD.Drop({

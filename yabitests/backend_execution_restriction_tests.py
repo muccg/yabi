@@ -88,11 +88,11 @@ class BackendRateLimitTest(RequestTestWithAdmin):
     def test_throttled_large_backend(self):
         return self.run_concurrent_backend(20,10)
     
-    def test_stop_start_backend_limiting_on_the_fly(self):
+    def __test_stop_start_backend_limiting_on_the_fly(self):
         import requests
           
         self.change_backend_concurrent(1)               # 1 job at a time
-        our_workflow = workflow(number=20)                     # 20 total in workflow
+        our_workflow = workflow(number=40)                     # 20 total in workflow
         
         r = self.session.post( YABI_FE+"/ws/workflows/submit", data = {'username':TEST_USER,'workflowjson':json.dumps(our_workflow)} )
         self.assertTrue(r.status_code==200, "Could not submit workflow")

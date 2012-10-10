@@ -61,7 +61,7 @@ class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
         configdir = config.config['backend']['certificates']
         ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
     
-    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None,tasknum=None,tasktotal=None):
         # preprocess some stuff
         modules = [] if not module else [X.strip() for X in module.split(",")]
         
@@ -69,7 +69,7 @@ class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
         channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('text', 'plain')}, stream = client_stream ))
         gevent.sleep()
         
-        script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue, stdout, stderr)    
+        script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue, stdout, stderr,tasknum,tasktotal)    
         
         try:
             if DEBUG:

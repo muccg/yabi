@@ -39,7 +39,7 @@ from django.core.cache import cache
 from django.utils.encoding import smart_str
 from urlparse import urlparse, urlunparse
 from crypto_utils import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, deannotate, DecryptException, AESTEMP
-from constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK
+from constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK, VALID_SCHEMES
 from yabiadmin.utils import cache_keyname
 
 import logging
@@ -743,7 +743,7 @@ class Backend(Base):
     
     tasks_per_user = models.IntegerField(null=True, blank=True)
 
-    scheme.help_text="Must be one of %s." % ", ".join(settings.VALID_SCHEMES)
+    scheme.help_text="Must be one of %s." % ", ".join(VALID_SCHEMES)
     hostname.help_text="Hostname must not end with a /."
     path.help_text="""Path must start and end with a /.<br/><br/>Execution backends must only have / in the path field.<br/><br/>
     For filesystem backends, Yabi will take the value in path and combine it with any path snippet in Backend Credential to form a URI. <br/>

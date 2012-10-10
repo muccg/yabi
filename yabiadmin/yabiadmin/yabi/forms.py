@@ -27,7 +27,7 @@
 from django import forms
 from django.conf import settings
 from yabiadmin.yabi.models import *
-
+import constants
 
 class BackendForm(forms.ModelForm):
     class Meta:
@@ -35,8 +35,8 @@ class BackendForm(forms.ModelForm):
 
     def clean_scheme(self):
         scheme = self.cleaned_data['scheme']
-        if scheme not in settings.VALID_SCHEMES:
-            raise forms.ValidationError("Scheme not valid. Options: %s" % ",".join(settings.VALID_SCHEMES))
+        if scheme not in constants.VALID_SCHEMES:
+            raise forms.ValidationError("Scheme not valid. Options: %s" % ",".join(constants.VALID_SCHEMES))
         return scheme
 
     def clean_hostname(self):

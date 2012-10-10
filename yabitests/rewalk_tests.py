@@ -12,7 +12,8 @@ class RewalkTest(YabiTestCase, FileUtils):
     Furthermore, the we will use has to be created in the /home/dir of the user so that the BE can access it.
     In order to make this all work on different machines/users we will replace variables in the JSON file at run time.
     '''
-
+    TIMEOUT = 60.0 * 20.0
+    
     @classmethod
     def setUpAdmin(self):
         from yabiadmin.yabi import models
@@ -58,7 +59,7 @@ class RewalkTest(YabiTestCase, FileUtils):
         with open(new_filename, 'w') as f :
             f.write(changed_content)
 
-    def test_dd_file_then_cksum_direct_json(self):
+    def notest_dd_file_then_cksum_direct_json(self):
         wfl_json_file = json_path('dd_then_cksum')
         localfs_dir = self.get_localfs_dir()
 
@@ -67,14 +68,15 @@ class RewalkTest(YabiTestCase, FileUtils):
         shutil.copy(filename, localfs_dir)
         filename = os.path.join(localfs_dir, os.path.basename(filename))
         self.delete_on_exit(filename)
-
+        
         changed_json_file = os.path.join(localfs_dir, 'dd_then_cksum.json')
+        
         self.delete_on_exit(changed_json_file)
 
         self.prepare_json(wfl_json_file, changed_json_file, {
             'DIR': localfs_dir, 'FILENAME': os.path.basename(filename)})
-
-        result = self.yabi.run('submitworkflow %s' % changed_json_file, timeout=1000)
+        
+        result = self.yabi.run('submitworkflow %s' % changed_json_file)
         wfl_id = result.id
         result = StatusResult(self.yabi.run('status %s' % wfl_id))
         self.assertEqual(result.workflow.status, 'complete')

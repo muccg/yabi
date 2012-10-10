@@ -64,7 +64,7 @@ class SGEConnector(ExecConnector):
         print "SGEConnector::__init__() debug setting is",DEBUG
         ExecConnector.__init__(self)
     
-    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None,tasknum=None,tasktotal=None):
         try:
             if DEBUG:
                 print "QSUB",command,"WORKING:",working
@@ -93,7 +93,7 @@ class SGEConnector(ExecConnector):
             
         client_stream.finish()
 
-    def resume(self, jobid, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+    def resume(self, jobid, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None,tasknum=None,tasktotal=None):
     #def resume(self,yabiusername, eprfile, scheme, username, host, **creds):
         # send an OK message, but leave the stream open
         client_stream = stream.ProducerStream()

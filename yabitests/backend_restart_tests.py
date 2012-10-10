@@ -111,6 +111,7 @@ class BackendRestartTest(RequestTestWithAdmin):
         self.stop_backend()
         time.sleep(10)
         self.start_backend()
+        time.sleep(5)
         
         # make sure there are at least 5 restarted
         dat = self.get_backend_task_debug()
