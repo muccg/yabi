@@ -32,7 +32,7 @@ import djcelery
 import logging
 import logging.handlers
 
-PROJECT_DIRECTORY = os.environ.get('PROJECT_DIRECTORY', os.path.abspath('.'))
+PROJECT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 # setting to control ccg ssl middleware
 # see http://code.google.com/p/ccg-django-extras/source/browse/
@@ -138,6 +138,11 @@ if not os.path.exists(FILE_UPLOAD_TEMP_DIR):
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#append-slash
 APPEND_SLASH = True
+
+# validation settings, these reflect the types of backend that yabi can handle
+EXEC_SCHEMES = ['globus', 'sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex','explode','null']
+FS_SCHEMES = ['http', 'https', 'gridftp', 'yabifs', 'scp', 's3', 'localfs','null']
+VALID_SCHEMES = EXEC_SCHEMES + FS_SCHEMES
 
 ##
 ## CAPTCHA settings
@@ -266,7 +271,6 @@ YABIBACKEND_RM = '/fs/rm'
 YABIBACKEND_LIST = '/fs/ls'
 YABIBACKEND_PUT = '/fs/put'
 YABIBACKEND_GET = '/fs/get'
-YABIBACKEND_ZGET = '/fs/zget'
 
 DEFAULT_STAGEIN_DIRNAME = 'stagein/'
 
