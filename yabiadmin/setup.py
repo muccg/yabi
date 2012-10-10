@@ -1,6 +1,6 @@
 import setuptools
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 def main():
     setup(name='yabiadmin',
@@ -9,7 +9,13 @@ def main():
         long_description='Yabi front end and administration web interface',
         author='Centre for Comparative Genomics',
         author_email='web@ccg.murdoch.edu.au',
-        packages=['yabiadmin'],
+        packages=find_packages(),
+        package_data={
+            '': [ "%s/%s"%(dirglob,fileglob)
+                    for dirglob in (["."] + [ '/'.join(['*']*num) for num in range(1,6) ])
+                    for fileglob in [ '*.mako', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi' ]
+                ]
+        },
         zip_safe=False,
         install_requires=all_requires('yabiadmin/base-requirements.txt','yabiadmin/requirements.txt'),
     )
