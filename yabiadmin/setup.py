@@ -9,11 +9,14 @@ def main():
         long_description='Yabi front end and administration web interface',
         author='Centre for Comparative Genomics',
         author_email='web@ccg.murdoch.edu.au',
-        packages=find_packages(),
+        packages=   ['yabiadmin'] + 
+                    [ 'yabiadmin.%s'%app for app in ['yabifeapp', 'yabistoreapp','yabiengine','yabi','uploader','preview','registration'] ] + 
+                    [ 'yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations' ]
+                    ,
         package_data={
             '': [ "%s/%s"%(dirglob,fileglob)
                     for dirglob in (["."] + [ '/'.join(['*']*num) for num in range(1,6) ])
-                    for fileglob in [ '*.mako', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi' ]
+                    for fileglob in [ '*.mako', '*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi' ]
                 ]
         },
         zip_safe=False,

@@ -57,8 +57,8 @@ from backendhelper import get_exec_backendcredential_for_uri
 import logging
 logger = logging.getLogger(__name__)
 
-from constants import *
-from yabistoreapp import db
+from yabiadmin.constants import *
+from yabiadmin.yabistoreapp import db
 
 FNMATCH_EXCLUDE_GLOBS = [ '*/STDOUT.txt', '*/STDERR.txt', 'STDOUT.txt', 'STDERR.txt' ]
 

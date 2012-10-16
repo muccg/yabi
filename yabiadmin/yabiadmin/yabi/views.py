@@ -38,7 +38,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from ccg.utils import webhelpers
 from django import forms
-from yabi.models import FileExtension
+from yabiadmin.yabi.models import FileExtension
 
 import logging
 logger = logging.getLogger(__name__)

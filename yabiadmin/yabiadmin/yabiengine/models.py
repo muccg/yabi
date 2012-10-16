@@ -43,7 +43,7 @@ from datetime import datetime
 import logging
 logger = logging.getLogger(__name__)
 
-from constants import *
+from yabiadmin.constants import *
 
 STAGING_COPY_CHOICES = (
     ( 'copy',   'remote copy' ),

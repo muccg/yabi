@@ -1,7 +1,7 @@
 # Create your views here.
 
-from yabi.UploadStreamer import UploadStreamer
-from yabiengine.backendhelper import make_hmac
+from yabiadmin.yabi.UploadStreamer import UploadStreamer
+from yabiadmin.yabiengine.backendhelper import make_hmac
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from urlparse import urlparse
 from urllib import quote

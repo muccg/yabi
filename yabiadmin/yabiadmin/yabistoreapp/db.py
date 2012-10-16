@@ -38,7 +38,7 @@ try:
 except ImportError, ie:
     import simplejson as json
 
-import settings
+from yabiadmin import settings
 
 USERS_HOME = settings.YABISTORE_HOME
     

@@ -45,7 +45,7 @@ from yabiadmin.yabi.models import BackendCredential
 import logging
 logger = logging.getLogger(__name__)
 
-from constants import *
+from yabiadmin.constants import *
 from random import shuffle
 
 def request_next_task(request, status):

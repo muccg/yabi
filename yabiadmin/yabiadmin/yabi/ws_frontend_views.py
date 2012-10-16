@@ -47,7 +47,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib import auth
-from crypto_utils import DecryptException
+from yabiadmin.crypto_utils import DecryptException
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
@@ -61,7 +61,7 @@ from yabiadmin.responses import *
 from yabiadmin.decorators import authentication_required, profile_required
 from yabiadmin.yabistoreapp import db
 from yabiadmin.utils import using_dev_settings
-from yabiengine.backendhelper import make_hmac
+from yabiadmin.yabiengine.backendhelper import make_hmac
 from yabiadmin.utils import cache_keyname
 from yaphc import Http, PostRequest, UnauthorizedError
 

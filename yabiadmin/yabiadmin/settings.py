@@ -32,7 +32,7 @@ import djcelery
 import logging
 import logging.handlers
 
-PROJECT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # setting to control ccg ssl middleware
 # see http://code.google.com/p/ccg-django-extras/source/browse/
@@ -119,8 +119,9 @@ LOGOUT_URL = url('/logout/')
 ### static file management ###
 # see: https://docs.djangoproject.com/en/dev/howto/static-files/
 # deployment uses an apache alias
-STATICFILES_DIRS = [os.path.join(PROJECT_DIRECTORY,"static")]
+# STATICFILES_DIRS = [os.path.join(PROJECT_DIRECTORY,"static")]
 STATIC_URL = url('/static/')
+STATIC_ROOT = os.path.join(PROJECT_DIRECTORY,"static")
 ADMIN_MEDIA_PREFIX = url('/static/admin/')
 
 # media directories
@@ -130,7 +131,9 @@ MEDIA_URL = url('/static/media/')
 
 # a directory that will be writable by the webserver, for storing various files...
 WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
-
+if not os.path.exists(WRITABLE_DIRECTORY):
+    os.mkdir(WRITABLE_DIRECTORY)
+    
 # put our temporary uploads directory inside WRITABLE_DIRECTORY
 FILE_UPLOAD_TEMP_DIR = os.path.join(WRITABLE_DIRECTORY,".uploads")
 if not os.path.exists(FILE_UPLOAD_TEMP_DIR):
