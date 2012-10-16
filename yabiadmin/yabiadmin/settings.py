@@ -166,7 +166,7 @@ TEMPLATE_DEBUG = DEBUG
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
 TEMPLATE_LOADERS = [
     #'django.template.loaders.filesystem.Loader',
-    'django.template.loaders.app_directories.Loader',
+    #'django.template.loaders.app_directories.Loader',
     'ccg.template.loaders.makoloader.filesystem.Loader'
 ]
 
