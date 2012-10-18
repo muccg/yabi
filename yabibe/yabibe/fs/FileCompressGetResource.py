@@ -48,11 +48,13 @@ from utils.submit_helpers import parsePOSTData
 
 from decorators import hmac_authenticated
 
+from connector.FSConnector import NotImplemented
+
 DEFAULT_GET_PRIORITY = 1
 
 DOWNLOAD_BLOCK_SIZE = 8192
 
-class FileGetResource(resource.PostableResource):
+class FileCompressGetResource(resource.PostableResource):
     VERSION=0.1
     
     def __init__(self,request=None, path=None, fsresource=None):
@@ -65,7 +67,7 @@ class FileGetResource(resource.PostableResource):
         self.fsresource = weakref.ref(fsresource)
         
     @hmac_authenticated
-    def handle_get(self, request):
+    def handle_compress_get(self, request):
         # override default priority
         priority = int(request.args['priority'][0]) if "priority" in request.args else DEFAULT_GET_PRIORITY
         
@@ -84,7 +86,7 @@ class FileGetResource(resource.PostableResource):
                 del request.args[varname]
         
         # how many bytes to truncate the GET at
-        bytes_to_read = int(request.args['bytes'][0]) if 'bytes' in request.args else None
+        #bytes_to_read = int(request.args['bytes'][0]) if 'bytes' in request.args else None
         
         if not hasattr(address,"username"):
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No username provided in uri\n")
@@ -106,10 +108,10 @@ class FileGetResource(resource.PostableResource):
         # our client channel
         client_channel = defer.Deferred()
         
-        def download_tasklet(req, channel):
+        def compress_tasklet(req, channel):
             """Tasklet to do file download"""
             try:
-                procproto, fifo = bend.GetReadFifo(hostname,username,basepath,port,filename,yabiusername=yabiusername,creds=creds, priority=priority)
+                procproto, fifo = bend.GetCompressedReadFifo(hostname,username,basepath,port,filename,yabiusername=yabiusername,creds=creds, priority=priority)
                 
                 def fifo_cleanup(response):
                     os.unlink(fifo)
@@ -119,6 +121,10 @@ class FileGetResource(resource.PostableResource):
             except NoCredentials, nc:
                 print traceback.format_exc()
                 return channel.callback(http.Response( responsecode.UNAUTHORIZED, {'content-type': http_headers.MimeType('text', 'plain')}, str(nc) ))
+            
+            except NotImplemented, ni:
+                print traceback.format_exc()
+                return channel.callback(http.Response( responsecode.SERVICE_UNAVAILABLE, {'content-type': http_headers.MimeType('text', 'plain')}, "This backend does not support compressed get\n" ))
             
             # give the engine a chance to fire up the process
             while not procproto.isStarted():
@@ -144,7 +150,7 @@ class FileGetResource(resource.PostableResource):
                     if len(data):
                         # we have data
                         if not datastream:
-                            datastream = FifoStream(file, truncate=bytes_to_read)
+                            datastream = FifoStream(file)
                             datastream.prepush(data)
                             return channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('application', 'data')}, stream=datastream ))
                     else:
@@ -155,7 +161,7 @@ class FileGetResource(resource.PostableResource):
                         while not procproto.isDone():
                             data = no_intr(file.read,DOWNLOAD_BLOCK_SIZE)
                             if len(data):
-                                datastream = FifoStream(file, truncate=bytes_to_read)
+                                datastream = FifoStream(file)
                                 datastream.prepush(data)
                                 return channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('application', 'data')}, stream=datastream ))
                             gevent.sleep(0.1)
@@ -164,7 +170,7 @@ class FileGetResource(resource.PostableResource):
                             return channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Get failed: %s\n"%procproto.err ))
                         else:
                             # transfer the file
-                            datastream = FifoStream(file, truncate=bytes_to_read)
+                            datastream = FifoStream(file)
                             return channel.callback(http.Response( responsecode.OK, {'content-type': http_headers.MimeType('application', 'data')}, stream=datastream ))
                     
                 gevent.sleep()
@@ -172,7 +178,7 @@ class FileGetResource(resource.PostableResource):
             return channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Catastrophic codepath violation. This error should never happen. It's a bug!" ))
 
         
-        tasklet = gevent.spawn(download_tasklet, request, client_channel )
+        tasklet = gevent.spawn(compress_tasklet, request, client_channel )
         
         return client_channel
     
@@ -187,7 +193,7 @@ class FileGetResource(resource.PostableResource):
         deferred = parsePOSTData(request)
         
         def post_parsed(result):
-            return self.handle_get(request)
+            return self.handle_compress_get(request)
         
         deferred.addCallback(post_parsed)
         deferred.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Job Submission Failed %s\n"%res) )
@@ -195,5 +201,5 @@ class FileGetResource(resource.PostableResource):
         return deferred
 
     def http_GET(self, request):
-        return self.handle_get(request)
+        return self.handle_compress_get(request)
    

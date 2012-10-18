@@ -142,11 +142,11 @@ Yabi.util.Glob.create = function(glob) {
       }
     }
     return new RegExp(regex);
-  }
+  };
 
   that.escapeCharacter = function(c) {
     return c.replace(that.ESCAPE_REGEX, '\\$&');
-  }
+  };
 
   return that;
 };

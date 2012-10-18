@@ -14,6 +14,12 @@ GB = 1024 * MB
 TEST_LOCALFS_SERVER = "localfs://username@localhost.localdomain/tmp/yabi-localfs-test/"
 QUOTED_TEST_LOCALFS_SERVER = quote(TEST_LOCALFS_SERVER)
 
+def make_random_string(length=None):
+    import random
+    if not length:
+        length = random.randint(200,10000)
+    return "".join([random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789)!@#$%^&*()`~-_=+[{]}\\|;:'\",<.>/?") for I in range(length)])
+
 class LocalfsFileTests(RequestTest):
     TIMEOUT = 30.0
     
@@ -24,6 +30,39 @@ class LocalfsFileTests(RequestTest):
     @classmethod
     def tearDownAdmin(self):
         admin.destroy_localfs_backend()
+
+    def build_file_archive(self, base='/tmp/yabi-localfs-test'):
+        """Builds a test directory nested full of files and directories to test archive stuff"""
+        # make some /tmp file structures
+        import shutil
+        try:
+            shutil.rmtree(base)
+        except OSError, ose:
+            pass
+        os.makedirs(base)
+        
+        dirs = [    "dir1",
+                    "dir2",
+                    "dir1/dir1-1",
+                    "dir1/dir1-2",
+                    "dir2/dir2-1",
+                    "dir2/dir2-2"
+                ]
+                
+        dirstruct = ["./"]
+                
+        for d in dirs:
+            os.mkdir(os.path.join(base,d))
+            dirstruct.append(os.path.join(".",d)+"/")
+            
+            # bundle some random files into these dirs
+            for filename in [ "file1.txt", "file2.dat", "file3.bing" ]:
+                dirstruct.append(os.path.join(".",d,filename))
+                with open(os.path.join(base,dirstruct[-1]), 'wb') as fh:
+                    for num in range(20):
+                        fh.write( make_random_string() )
+                   
+        return dirstruct
 
     def test_localfs_files_list(self):
         import requests
@@ -37,11 +76,87 @@ class LocalfsFileTests(RequestTest):
         self.assertTrue('files' in data["/tmp/yabi-localfs-test/"])
         self.assertTrue('directories' in data["/tmp/yabi-localfs-test/"])
         
-    def test_localfs_file_upload_and_download(self):
-        import random
-        length = random.randint(200,10000)
-        content = "".join([random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789)!@#$%^&*()`~-_=+[{]}\\|;:'\",<.>/?") for I in range(length)])
+    def test_localfs_rcopy(self):
+        import requests
+        
+        # make some /tmp file structures
+        basedir = '/tmp/yabi-localfs-test/input-rcopy'
+        dirs = self.build_file_archive(basedir)
+            
+        # now lets rcopy it to here:
+        destdir = "/tmp/yabi-localfs-test/output-rcopy/"
+        
+        payload = {
+            'yabiusername':TEST_USERNAME,
+            'src':TEST_LOCALFS_SERVER+"input-rcopy/",
+            'dst':TEST_LOCALFS_SERVER+"output-rcopy/"
+        }
+        
+        r = self.session.post(YABI_FE+"/ws/fs/rcopy", data=payload)
+        import sys
+        #sys.stderr.write(r.text)
+        self.assertTrue(r.status_code==200, "Could not perform rcopy")
+        
+        # diff the two directories
+        result = os.system("diff -r '%s' '%s'"%(basedir,destdir+"input-rcopy"))             # TODO: why is there a seperate dir?
+        
+        self.assertTrue(result==0, "Diff between the input and output failed")
+        
+        # clean up
+        import shutil
+        shutil.rmtree('/tmp/yabi-localfs-test/')
 
+    def test_localfs_zget(self):
+        import requests
+        
+        # make some /tmp file structures
+        dirs = self.build_file_archive('/tmp/yabi-localfs-test/')
+                    
+        payload = {
+            'yabiusername':TEST_USERNAME,
+            'uri':"localfs://username@localhost.localdomain/tmp/yabi-localfs-test/"
+            #'uri':TEST_LOCALFS_SERVER,
+        }
+        
+        r = self.session.get(YABI_FE+"/ws/fs/zget", params=payload)
+        import sys
+        self.assertTrue(r.status_code==200, "Could not perform zget. return code was: %d"%r.status_code)
+
+        # create a process to parse the tarball result
+        import subprocess
+        detar = subprocess.Popen(["tar","-tz"], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+
+        # get the payload and pipe it into tar 
+        rawdata = r.raw
+        read = " "
+        while len(read):
+            read = rawdata.read(1000)
+            detar.stdin.write(read)
+            
+        # close the input to the decoder
+        detar.stdin.close()
+        detar_result = [(X[:-1] if X[-1]=='\n' else X) for X in detar.stdout.readlines()]
+        
+        detar.wait()
+        
+        self.assertTrue(detar.returncode==0, "detar of returned result failed exit code: %d"%(detar.returncode))
+        
+        # check each entry is represented
+        for d in dirs:
+            self.assertTrue(d in detar_result, "entry '%s' not found in detar result"%d)
+            
+        # and the reverse. So that there are no extra entries
+        for d in detar_result:
+            self.assertTrue(d in dirs, "entry '%s' only found in detar result"%d)
+        
+        import shutil
+        shutil.rmtree('/tmp/yabi-localfs-test/')
+
+
+    def test_localfs_file_upload_and_download(self):
+        content = make_random_string()
+        length = len(content)
+        
         from StringIO import StringIO
         contents=StringIO(content)
         filename="test.txt"

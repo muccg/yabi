@@ -96,9 +96,14 @@ def destroy_localfs_backend(scheme="localfs", hostname="localhost.localdomain", 
         default_stageout = False,
         submission = ""
     ).delete()
-    import shutil
-    shutil.rmtree("/tmp/yabi-localfs-test/")    
     
+    import shutil
+    
+    try:
+        shutil.rmtree("/tmp/yabi-localfs-test/")    
+    except OSError, ose:
+        pass
+
 def create_fakes3_backend(scheme="s3", hostname="localhost.localdomain", path="/" ):
     from yabiadmin.yabi import models
     backend = models.Backend.objects.create(

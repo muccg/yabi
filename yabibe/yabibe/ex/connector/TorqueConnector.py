@@ -67,7 +67,7 @@ class TorqueConnector(ExecConnector):
         print "TorqueConnector::__init__() debug setting is",DEBUG
         ExecConnector.__init__(self)
     
-    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+    def run(self, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, submission, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None,tasknum=None,tasktotal=None):
         print "RUNNNNNN"
         modules = [] if not module else [X.strip() for X in module.split(",")]
         
@@ -76,7 +76,7 @@ class TorqueConnector(ExecConnector):
             print "submission script path is %s"%(submission_script)
             print "input script is",repr(submission)
         
-        script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue,stdout,stderr)    
+        script_string = make_script(submission,working,command,modules,cpus,memory,walltime,yabiusername,username,host,queue,stdout,stderr,tasknum,tasktotal)    
         
         if DEBUG:
             print "torque"
@@ -121,7 +121,7 @@ class TorqueConnector(ExecConnector):
             
         client_stream.finish()
 
-    def resume(self, jobid, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None):
+    def resume(self, jobid, yabiusername, creds, command, working, scheme, username, host, remoteurl, channel, stdout="STDOUT.txt", stderr="STDERR.txt", walltime=60, memory=1024, cpus=1, queue="testing", jobtype="single", module=None,tasknum=None,tasktotal=None):
     #def resume(self,yabiusername, eprfile, scheme, username, host, **creds):
         # send an OK message, but leave the stream open
         client_stream = stream.ProducerStream()

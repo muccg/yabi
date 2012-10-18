@@ -412,15 +412,18 @@ class EngineJob(Job):
         else:
             buildname = lambda n: (n+1, "")
 
+        #set total number of tasks on this job object
+        self.task_total = len(tasks_to_create)
+
         # build the first name
         num = 1
         num, name = buildname(num)
-        for task_data in tasks_to_create:
+        for task_num,task_data in enumerate(tasks_to_create):
             job = task_data[0]
             # remove job from task_data as we now are going to call method on job TODO maybe use pop(0) here
             del(task_data[0])
 
-            task = EngineTask(job=job, status=STATUS_PENDING, start_time=datetime.datetime.now(), execution_backend_credential=be)
+            task = EngineTask(job=job, status=STATUS_PENDING, start_time=datetime.datetime.now(), execution_backend_credential=be, task_num=task_num+1)
 
             #print "ADD TASK: %s"%(str(task_data+[name]))
             task.add_task(*(task_data+[name]))
@@ -451,6 +454,10 @@ class EngineJob(Job):
     def as_dict(self):
         # TODO This will have to be able to generate the full JSON
         # In this step of the refactoring it will just get it's json from the workflow
+        # UPDATE CW - the following json.loads line is failing with unwalked workflows. Refactoring needs to be completed
+        # HACK CW - short circuit the function so front end can get a response rather than an error.
+        if not self.workflow.original_json:
+            return {}
         workflow_dict = json.loads(self.workflow.original_json)
         job_id = int(self.order)
         job_dict = workflow_dict['jobs'][job_id]

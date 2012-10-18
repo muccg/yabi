@@ -87,8 +87,8 @@ Again, click on Backends under Yabi heading and add a backend, this time using `
     pair: backend; qsub;
     pair: backend; submission script
 
-Submission Field
-^^^^^^^^^^^^^^^^
+Submission Template Field
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 On an execution backend you can add a template for any submission scripts that will be used. In this case we can add a template that 
 looks like this:
@@ -109,11 +109,52 @@ looks like this:
         module load ${module}
     % endfor
     cd '${working}'
-    ${command}
+    ${command} 1>${stdout} 2>${stderr}
 
 This submission template uses the `Mako templating system <http://www.makotemplates.org/>`_ and in this case represents the qsub script
 that will be used by Yabi to submit the job. The variables in the template are pulled from each tool that we configure (See :ref:`tools`).
 This provides a powerful mechanism for determining the scripts submitted to each backend.
+
+Submission Template Keys
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following is a table of the keys available in the template, and their meaning. Keys are to be placed inside ${} in the template.
+
++--------------+----------------------------------------------------------------------------------------------------------+
+| Key          | Value                                                                                                    |
++==============+==========================================================================================================+
+| working      | The full path of the working directory for the job.                                                      |
++--------------+----------------------------------------------------------------------------------------------------------+
+| command      | The full command line for the final task. The executable and all its passed in arguments.                |
++--------------+----------------------------------------------------------------------------------------------------------+
+| modules      | A list of all the modules that need loading.                                                             |
++--------------+----------------------------------------------------------------------------------------------------------+
+| cpus         | Number of cpus that should be utilised.                                                                  |
++--------------+----------------------------------------------------------------------------------------------------------+
+| memory       | The amount of RAM that should be partitioned for the job.                                                |
++--------------+----------------------------------------------------------------------------------------------------------+
+| walltime     | The walltime for the job.                                                                                |
++--------------+----------------------------------------------------------------------------------------------------------+
+| yabiusername | The username of the yabi user that submitted the job. Can be different from the backend username.        |
++--------------+----------------------------------------------------------------------------------------------------------+
+| username     | The username the job is to be run as                                                                     |
++--------------+----------------------------------------------------------------------------------------------------------+
+| host         | The hostname the job is being run on                                                                     |
++--------------+----------------------------------------------------------------------------------------------------------+
+| queue        | The name of the queue the job should be submitted to                                                     |
++--------------+----------------------------------------------------------------------------------------------------------+
+| stdout       | The name of the yabi standard out file standard output should be directed to. Usually STDOUT.txt         |
++--------------+----------------------------------------------------------------------------------------------------------+
+| stderr       | The name of the yabi standard error file standard error should be directed to. Usually STDERR.txt        |
++--------------+----------------------------------------------------------------------------------------------------------+
+| arrayid      | The number (from 1 to arraysize) of this particular task in the job set.                                 |
++--------------+----------------------------------------------------------------------------------------------------------+
+| tasknum      | A synonym for arrayid.                                                                                   |
++--------------+----------------------------------------------------------------------------------------------------------+
+| arraysize    | The total number of tasks in the job set.                                                                |
++--------------+----------------------------------------------------------------------------------------------------------+
+| tasktotal    | A synonym for arraysize.                                                                                 |
++--------------+----------------------------------------------------------------------------------------------------------+
 
 Troubleshooting SSH
 -------------------

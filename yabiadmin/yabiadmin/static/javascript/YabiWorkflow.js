@@ -209,7 +209,7 @@ YUI().use(
           }
           this.saveTags();
         }, this);
-      }
+      };
 
       YabiWorkflow.prototype.setStatus = function(statusText) {
         this.status = statusText.toLowerCase();
