@@ -3,24 +3,20 @@ import os
 from setuptools import setup, find_packages
 
 def main():
-    setup(name='yabiadmin',
+    print all_requires('yabibe/requirements.txt')
+
+    setup(name='yabibe',
         version='0.1',
-        description='Yabi Admin',
-        long_description='Yabi front end and administration web interface',
+        description='Yabi Backend',
+        long_description='Yabi back end service',
         author='Centre for Comparative Genomics',
         author_email='web@ccg.murdoch.edu.au',
-        packages=   ['yabiadmin'] + 
-                    [ 'yabiadmin.%s'%app for app in ['yabifeapp', 'yabistoreapp','yabiengine','yabi','uploader','preview','registration'] ] + 
-                    [ 'yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations' ]
-                    ,
-        package_data={
-            '': [ "%s/%s"%(dirglob,fileglob)
-                    for dirglob in (["."] + [ '/'.join(['*']*num) for num in range(1,10) ])                         # yui is deeply nested
-                    for fileglob in [ '*.mako', '*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg' ]
-                ]
-        },
+        packages=['yabibe']+[
+            'yabibe.%s'%x for x in "conf ex FifoPool fs TaskManager utils".split()
+        ]+'yabibe.ex.connector yabibe.fs.connector yabibe.utils.pexpect yabibe.utils.protocol yabibe.utils.protocol.globus yabibe.utils.protocol.s3 yabibe.utils.protocol.ssh'.split(),
+        package_data={},
         zip_safe=False,
-        install_requires=all_requires('yabiadmin/base-requirements.txt','yabiadmin/requirements.txt'),
+        install_requires=all_requires('yabibe/requirements.txt'),
     )
     
 #

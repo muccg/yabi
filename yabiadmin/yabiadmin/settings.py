@@ -166,8 +166,8 @@ TEMPLATE_DEBUG = DEBUG
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
 TEMPLATE_LOADERS = [
     #'django.template.loaders.filesystem.Loader',
-    #'django.template.loaders.app_directories.Loader',
-    'ccg.template.loaders.makoloader.filesystem.Loader'
+    'ccg.template.loaders.makoloader.filesystem.Loader',
+    'django.template.loaders.app_directories.Loader'
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
@@ -188,17 +188,29 @@ MAKO_MODULENAME_CALLABLE = ''
 # these are the settings you will most likely change to reflect your setup
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#databases
+#DATABASES = {
+    #'default': {
+        #'ENGINE': 'django.db.backends.sqlite3',
+        #'USER': '',
+        #'NAME': 'yabiadmin.sqlite3',
+        #'PASSWORD': '', 
+        #'HOST': '',                    
+        #'PORT': '',
+        #'OPTIONS': {
+            #'timeout': 20,
+        #}
+    #}
+#}
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'USER': '',
-        'NAME': 'yabiadmin.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'USER': 'root',
+        'NAME': 'dev_yabi',
         'PASSWORD': '', 
-        'HOST': '',                    
+        'HOST': 'localhost',                    
         'PORT': '',
-        'OPTIONS': {
-            'timeout': 20,
-        }
+        'OPTIONS': {}
     }
 }
 
