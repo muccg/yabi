@@ -3,7 +3,10 @@ import os
 from setuptools import setup, find_packages
 
 def main():
-    print all_requires('yabibe/requirements.txt')
+    requires = all_requires('yabibe/requirements.txt')
+    requires.remove('==TwistedWeb2-10.2.0')
+    requires.append('TwistedWeb2==10.2.0')
+    print requires
 
     setup(name='yabibe',
         version='0.1',
@@ -12,11 +15,11 @@ def main():
         author='Centre for Comparative Genomics',
         author_email='web@ccg.murdoch.edu.au',
         packages=['yabibe']+[
-            'yabibe.%s'%x for x in "conf ex FifoPool fs TaskManager utils".split()
-        ]+'yabibe.ex.connector yabibe.fs.connector yabibe.utils.pexpect yabibe.utils.protocol yabibe.utils.protocol.globus yabibe.utils.protocol.s3 yabibe.utils.protocol.ssh'.split(),
+            'yabibe.%s'%x for x in "conf ex FifoPool fs TaskManager utils log".split()
+        ]+'yabibe.ex.connector yabibe.fs.connector yabibe.utils.protocol yabibe.utils.protocol.globus yabibe.utils.protocol.s3 yabibe.utils.protocol.ssh'.split(),
         package_data={},
         zip_safe=False,
-        install_requires=all_requires('yabibe/requirements.txt'),
+        install_requires=requires,
     )
     
 #

@@ -20,8 +20,8 @@ Fabric==1.2.2
 Mako==0.4.2
 MarkupSafe==0.9.3
 Twisted==12.0.0
-http://twisted-web2.googlecode.com/files/TwistedWeb-2.0.tar.gz
-http://ccg-python-build.googlecode.com/files/ccg-python-build-2.2.9.tar.gz
+http://twisted-web2.googlecode.com/files/TwistedWeb2-10.2.0.tar.gz
+#http://ccg-python-build.googlecode.com/files/ccg-python-build-2.2.9.tar.gz
 setproctitle==1.1.2
 virtualenv==1.6.4
 wsgiref==0.1.2
