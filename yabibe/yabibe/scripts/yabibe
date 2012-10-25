@@ -18,9 +18,15 @@ if hasattr(os, "getuid") and os.getuid() != 0:
 import yabibe.server
 serverfile = yabibe.server.__file__
 
-# now add this to out sys.argv
-sys.argv.append('--python=%s'%serverfile)
+if serverfile.endswith(".pyc"):
+    serverfile = serverfile[:-4]+".py"
 
-from twisted.scripts.twistd import run
-run()
+# python we're in
+python = os.path.realpath(sys.executable)
 
+# our twistd will be along side the python executable
+pythonbase = os.path.dirname(python)
+twistd = "%s/twistd"%(pythonbase)
+
+# now lets run our server
+os.execv(python,[python,twistd,"-y",serverfile]+sys.argv[1:])
