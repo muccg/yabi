@@ -20,6 +20,7 @@ def main():
         package_data={},
         zip_safe=False,
         install_requires=requires,
+        scripts=['yabibe/scripts/yabibe'],
     )
     
 #
