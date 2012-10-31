@@ -38,7 +38,7 @@ try:
 except ImportError, ie:
     import simplejson as json
 
-from yabiadmin import settings
+from django.conf import settings
 
 USERS_HOME = settings.YABISTORE_HOME
     
