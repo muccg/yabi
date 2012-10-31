@@ -91,8 +91,9 @@ class SSHRun(BaseShell):
         if config.config['execution']['logcommand']:
             # screen out password from the command
             command_log = command[:]
-            index = command_log.index("-p")+1
-            command_log[index]="*"*len(command_log[index])
+	    if "-p" in command_log:
+        	index = command_log.index("-p")+1
+        	command_log[index]="*"*len(command_log[index])
             print "ssh running command: "+str(command_log)
             
         if config.config['execution']['logscripts']:
