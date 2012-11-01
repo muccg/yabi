@@ -32,7 +32,7 @@ import djcelery
 import logging
 import logging.handlers
 
-PROJECT_DIRECTORY = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+WEBAPP_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # setting to control ccg ssl middleware
 # see http://code.google.com/p/ccg-django-extras/source/browse/
@@ -119,18 +119,18 @@ LOGOUT_URL = url('/logout/')
 ### static file management ###
 # see: https://docs.djangoproject.com/en/dev/howto/static-files/
 # deployment uses an apache alias
-# STATICFILES_DIRS = [os.path.join(PROJECT_DIRECTORY,"static")]
+# STATICFILES_DIRS = [os.path.join(WEBAPP_ROOT,"static")]
 STATIC_URL = url('/static/')
-STATIC_ROOT = os.path.join(PROJECT_DIRECTORY,"static")
+STATIC_ROOT = os.path.join(WEBAPP_ROOT,"static")
 ADMIN_MEDIA_PREFIX = url('/static/admin/')
 
 # media directories
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#media-root
-MEDIA_ROOT = os.path.join(PROJECT_DIRECTORY,"static","media")
+MEDIA_ROOT = os.path.join(WEBAPP_ROOT,"static","media")
 MEDIA_URL = url('/static/media/')
 
 # a directory that will be writable by the webserver, for storing various files...
-WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
+WRITABLE_DIRECTORY = os.path.join(WEBAPP_ROOT,"scratch")
 if not os.path.exists(WRITABLE_DIRECTORY):
     os.mkdir(WRITABLE_DIRECTORY)
     
@@ -172,7 +172,7 @@ TEMPLATE_LOADERS = [
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
 TEMPLATE_DIRS = [
-    os.path.join(PROJECT_DIRECTORY,"templates"),
+    os.path.join(WEBAPP_ROOT,"templates"),
 ]
 
 # mako compiled templates directory
@@ -353,11 +353,11 @@ PREVIEW_SIZE_LIMIT = 1048576
 THIRTY_DAYS = 30 * 24 * 60 * 60
 JAVASCRIPT_LIBRARIES = {
   "yui_3_5_1": {
-    "path": os.path.join(PROJECT_DIRECTORY, "static/javascript/lib/yui-3.5.1/build/"),
+    "path": os.path.join(WEBAPP_ROOT, "static/javascript/lib/yui-3.5.1/build/"),
     "cache_for": THIRTY_DAYS, 
   },
   "yui2in3_2_9_0": {
-    "path": os.path.join(PROJECT_DIRECTORY, "static/javascript/lib/yui-2in3/dist/2.9.0/build/"),
+    "path": os.path.join(WEBAPP_ROOT, "static/javascript/lib/yui-2in3/dist/2.9.0/build/"),
     "cache_for": THIRTY_DAYS,
   },
 }
