@@ -2,6 +2,19 @@ import setuptools
 import os
 from setuptools import setup, find_packages
 
+packages=   ['yabiadmin'] + [ 'yabiadmin.%s'%app for app in ['yabifeapp', 'yabistoreapp','yabiengine','yabi','uploader','preview','registration'] ] + [ 'yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations' ]
+                    
+data_files = {}
+start_dir = os.getcwd()
+for package in packages:
+    data_files[package] = []
+    path = package.replace('.','/')
+    os.chdir(path)
+    for data_dir in ('templates', 'static', 'migrations', 'fixtures'):
+        data_files[package].extend(
+            [os.path.join(subdir,f) for (subdir, dirs, files) in os.walk(data_dir) for f in files]) 
+    os.chdir(start_dir)
+
 def main():
     setup(name='yabiadmin',
         version='0.1',
@@ -9,20 +22,20 @@ def main():
         long_description='Yabi front end and administration web interface',
         author='Centre for Comparative Genomics',
         author_email='web@ccg.murdoch.edu.au',
-        packages=   ['yabiadmin'] + 
-                    [ 'yabiadmin.%s'%app for app in ['yabifeapp', 'yabistoreapp','yabiengine','yabi','uploader','preview','registration'] ] + 
-                    [ 'yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations' ]
-                    ,
-        package_data={
-            '': [ "%s/%s"%(dirglob,fileglob)
-                    for dirglob in (["."] + [ '/'.join(['*']*num) for num in range(1,10) ])                         # yui is deeply nested
-                    for fileglob in [ '*.mako', '*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg' ]
-                ]
-        },
+        #packages = find_packages(),
+        packages=packages,
+        package_data=data_files,
+        #package_data={
+            #'': [ "%s/%s"%(dirglob,fileglob)
+                    #for dirglob in (["."] + [ '/'.join(['*']*num) for num in range(1,10) ])                         # yui is deeply nested
+                    #for fileglob in [ '*.mako', '*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg' ]
+                #]
+        #},
         zip_safe=False,
         install_requires=all_requires('yabiadmin/base-requirements.txt','yabiadmin/requirements.txt'),
     )
-    
+
+
 #
 # Functional helpers to turn requirements.txt into package names and version strings
 # What is this? LISP?

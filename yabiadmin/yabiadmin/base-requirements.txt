@@ -13,6 +13,14 @@
 #
 # http://www.pip-installer.org/en/latest/requirement-format.html
 #
+#
+# Django SQLAlchemy amqplib anyjson carrot celery django-celery kombu django-picklefield
+# django-templatetag-sugar ordereddict pygooglechart pyparsing python-dateutil virtualenv
+# python-memcached Mako South django-extensions pycrypto psutil nose BeautifulSoup cssutils 
+# ccg-webservices ccg-registration ccg-makoloader ccg-introspect ccg-extras ccg-auth
+# ccg-python-build django-kombu httplib2 yaphc Djamboloader MarkupSafe
+#
+#
 Django==1.3.2
 http://ccg-django-extras.googlecode.com/files/ccg-webservices-0.1.2.tar.gz
 http://ccg-django-extras.googlecode.com/files/ccg-registration-0.8-alpha-1.tar.gz
@@ -49,4 +57,18 @@ nose
 http://yaphc.googlecode.com/files/yaphc-0.1.5.tgz
 BeautifulSoup==3.2.0
 cssutils==0.9.7
+http://ccg-django-extras.googlecode.com/files/ccg-webservices-0.1.2.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-registration-0.8-alpha-1.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-makoloader-0.2.4.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-introspect-0.1.2.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-extras-0.1.3.tar.gz
+http://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.2.tar.gz
+http://ccg-python-build.googlecode.com/files/ccg-python-build-2.3.3.tar.gz
+# Use a patched version of django-kombu that fixes a known bug
+#django-kombu==0.9.4
+http://yabi.googlecode.com/files/django-kombu-0.9.4.1.tar.gz
+httplib2==0.7.5
+http://yaphc.googlecode.com/files/yaphc-0.1.5.tgz
 https://github.com/downloads/sztamas/djamboloader/djamboloader-0.1.2.tar.gz
+MarkupSafe==0.15
+wsgiref==0.1.2
