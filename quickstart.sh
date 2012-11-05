@@ -11,6 +11,11 @@ then
     echo "stopping quickstart servers"
     killall gunicorn_django
     killall celeryd
+    kill `cat yabibe/yabibe-quickstart.pid` && rm yabibe/yabibe-quickstart.pid
+
+    # delay to allow file handles to free
+    sleep 3
+
     exit 0
 fi
 
@@ -23,7 +28,7 @@ which virtualenv >/dev/null
 export PYTHONPATH=`pwd`
 
 # additional URLs to search for eggs during install
-EASY_INSTALL="-f https://s3-ap-southeast-1.amazonaws.com/http-sing/python/centos/6/noarch/index.html"
+EASY_INSTALL="-f https://repo.ccgapps.com.au/http-sing/python/centos/6/noarch/index.html"
 
 # boostrap vp's
 for DIR in yabibe yabiadmin
@@ -36,44 +41,52 @@ do
     popd
 done
 
-# migrate sqlitedb
+#
+# gunicorn serving up yabiadmin
+#
 pushd yabiadmin
-export DJANGO_SETTINGS_MODULE="quickstartsettings"
+
+export DJANGO_SETTINGS_MODULE="yabiadmin.quickstartsettings"
 vp/bin/python vp/lib/python2.6/site-packages/yabiadmin-*.egg/yabiadmin/manage.py syncdb --noinput
 vp/bin/python vp/lib/python2.6/site-packages/yabiadmin-*.egg/yabiadmin/manage.py migrate
 
 # collect static
-vp/bin/python vp/lib/python2.6/site-packages/yabiadmin-*.egg/yabiadmin/manage.py collectstatic --noinput
+vp/bin/python vp/lib/python2.6/site-packages/yabiadmin-*.egg/yabiadmin/manage.py collectstatic --noinput 1> collectstatic.log
 
 # use gunicorn to fire up yabiadmin
 vp/bin/pip install gunicorn
 
 # launch yabiadmin via gunicorn
-vp/bin/gunicorn_django --log-file=gunicorn.log --daemon .quickstartsettings
+vp/bin/gunicorn_django --log-file=gunicorn.log --daemon yabiadmin.quickstartsettings
 
-# fire up celeryd
+# 
+# celeryd
+#
 CELERY_CONFIG_MODULE="quickstartsettings"
 CELERYD_CHDIR=`pwd`
-CELERYD_OPTS="-E -B --schedule=$CELERYD_CHDIR/logs/celerybeat-schedule"
-CELERYD_PID_FILE="$CELERYD_CHDIR/logs/celeryd.pid"
-CELERYD_LOG_FILE="$CELERYD_CHDIR/logs/celeryd.log"
-CELERYD_LOG_LEVEL="INFO"
-CELERYD="python -m celery.bin.celeryd_detach"
-CELERYD_USER="apache"
-CELERYD_GROUP="apache"
+CELERYD_OPTS="--logfile=celeryd-quickstart.log --pidfile=celeryd-quickstart.pid"
 CELERY_LOADER="django"
-
-VIRTUALENV="$CELERYD_CHDIR/vp"
 PYTHONPATH=$CELERYD_CHDIR
 DJANGO_SETTINGS_MODULE="quickstartsettings"
 DJANGO_PROJECT_DIR="$CELERYD_CHDIR"
 PROJECT_DIRECTORY="$CELERYD_CHDIR"
 
 export CELERY_CONFIG_MODULE DJANGO_SETTINGS_MODULE DJANGO_PROJECT_DIR CELERY_LOADER CELERY_CHDIR PYTHONPATH PROJECT_DIRECTORY CELERYD_CHDIR
-export
+# export
 
 # run celeryd
-vp/bin/celeryd $CELERYD_OPTS &
+vp/bin/celeryd $CELERYD_OPTS 1>/dev/null 2>/dev/null &
 
+popd
+
+#
+# yabibe 
+#
+pushd yabibe
+
+# start yabibe server in the background
+vp/bin/yabibe -l yabibe-quickstart.log --pidfile=yabibe-quickstart.pid
+
+popd
 
 
