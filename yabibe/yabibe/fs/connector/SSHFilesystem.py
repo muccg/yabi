@@ -235,9 +235,9 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
                 error_type = sshretry.test(pp.exitcode, pp.err)
                 if error_type == HARD:
                     print "SSH failed with exit code %d and output: %s"%(pp.exitcode,out)
-                    raise SSHHardError(err)
+                    raise SSHHardError(pp.err)
                 else:
-                    raise SSHSoftError(err)
+                    raise SSHSoftError(pp.err)
         
         try:
             ls_data = json.loads(out)

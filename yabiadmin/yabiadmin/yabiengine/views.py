@@ -91,7 +91,7 @@ def request_next_task(request, status):
         if tasks_per_user==None or len(remote_tasks) < tasks_per_user:
             # we can return a task for this bec if one exists
             try:
-                tasks = [T for T in Task.objects.filter(execution_backend_credential=bec).filter(tasktag=tasktag) if T.status==status]
+                tasks = [T for T in Task.objects.filter(execution_backend_credential=bec).filter(tasktag=tasktag).filter(status_requested__isnull=True) if T.status==status]
                 
                 #logger.warning("FOUND %s: (%d tasks) %s"%(status,len(tasks),tasks))
                 

@@ -65,7 +65,7 @@ class FileListResource(resource.PostableResource):
         # break our request path into parts
         return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "request must be GET\n")
     
-    @hmac_authenticated
+    #@hmac_authenticated
     def handle_list(self, request):
         if "uri" not in request.args:
             return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "No uri provided\n")
@@ -128,6 +128,7 @@ class FileListResource(resource.PostableResource):
                 print traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
             except Exception, e:
+                print "EXC"
                 print traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(e)))
             
