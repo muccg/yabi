@@ -128,7 +128,7 @@ class FileListResource(resource.PostableResource):
                 print traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
             except Exception, e:
-                print "EXC"
+                #print "EXC"
                 print traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(e)))
             
@@ -150,9 +150,13 @@ class FileListResource(resource.PostableResource):
             return self.handle_list(request)
         
         deferred.addCallback(post_parsed)
-        deferred.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "Job Submission Failed %s\n"%res) )
+        deferred.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, res) )
         
         return deferred
 
     def http_GET(self, request):
-        return self.handle_list(request)
+        try:
+            return self.handle_list(request)
+        except Exception, e:
+            print traceback.format_exc()
+            return http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, str(e))
