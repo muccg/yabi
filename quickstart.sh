@@ -28,7 +28,7 @@ which virtualenv >/dev/null
 export PYTHONPATH=`pwd`
 
 # additional URLs to search for eggs during install
-EASY_INSTALL="-f https://repo.ccgapps.com.au/http-sing/python/centos/6/noarch/index.html"
+EASY_INSTALL="-f https://s3-ap-southeast-1.amazonaws.com/http-sing/python/centos/6/noarch/index.html"
 
 # boostrap vp's
 for DIR in yabibe yabiadmin
