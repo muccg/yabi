@@ -24,13 +24,13 @@ def main():
         author_email='web@ccg.murdoch.edu.au',
         #packages = find_packages(),
         packages=packages,
-        package_data=data_files,
-        #package_data={
-            #'': [ "%s/%s"%(dirglob,fileglob)
-                    #for dirglob in (["."] + [ '/'.join(['*']*num) for num in range(1,10) ])                         # yui is deeply nested
-                    #for fileglob in [ '*.mako', '*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg' ]
-                #]
-        #},
+        #package_data=data_files,
+        package_data={
+            '': [ "%s/%s"%(dirglob,fileglob)
+                    for dirglob in (["."] + [ '/'.join(['*']*num) for num in range(1,10) ])                         # yui is deeply nested
+                    for fileglob in [ '*.mako', '*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg' ]
+                ]
+        },
         zip_safe=False,
         install_requires=all_requires('yabiadmin/base-requirements.txt','yabiadmin/requirements.txt'),
     )
