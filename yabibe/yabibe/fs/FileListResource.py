@@ -35,11 +35,8 @@ import json
 import traceback
 
 from Exceptions import PermissionDenied, InvalidPath, BlockingException, NoCredentials, AuthException, ProxyInitError
-
 from utils.parsers import parse_url
-
 from utils.submit_helpers import parsePOSTData
-
 from decorators import hmac_authenticated
 
 DEFAULT_LIST_PRIORITY = 0                   # immediate by default
@@ -128,7 +125,6 @@ class FileListResource(resource.PostableResource):
                 print traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.FORBIDDEN, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(exception)))
             except Exception, e:
-                #print "EXC"
                 print traceback.format_exc()
                 client_channel.callback(http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(e)))
             

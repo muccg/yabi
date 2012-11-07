@@ -25,7 +25,6 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # 
 ### END COPYRIGHT ###
-# -*- coding: utf-8 -*-
 from twistedweb2 import resource, http_headers, responsecode, http, server
 from twisted.internet import defer, reactor
 from utils.submit_helpers import parsePOSTDataRemoteWriter
@@ -88,7 +87,10 @@ class FileRCopyResource(resource.PostableResource):
         def RCopyCommand(res):
             # source and destination
             if 'src' not in request.args or 'dst' not in request.args:
-                return http.Response( responsecode.BAD_REQUEST, {'content-type': http_headers.MimeType('text', 'plain')}, "rcopy must specify source 'src' and destination 'dst'\n")
+                return http.Response( responsecode.BAD_REQUEST,
+                                      {'content-type': http_headers.MimeType('text', 'plain')},
+                                      "rcopy must specify source 'src' and destination 'dst'\n"
+                                    )
             
             # if 'contents' is set, then copy the contents of the source directory, not the directory itself (like going cp -r src/* dst/)
             copy_contents = 'contents' in request.args
@@ -100,10 +102,12 @@ class FileRCopyResource(resource.PostableResource):
             dst = request.args['dst'][0]
             
             yabiusername = request.args['yabiusername'][0] if "yabiusername" in request.args else None
-        
-            assert yabiusername, "You must pass in a yabiusername so I can go get a credential."
-            
-            #assert src.endswith('/'), "'src' path must end in a '/'"
+
+            if not yabiusername:
+                return http.Response( responsecode.BAD_REQUEST,
+                                      {'content-type':http_headers.MimeType('text', 'plain')},
+                                      "You must pass in a yabiusername so I can go get a credential.\n"
+                                    )
             
             if not dst.endswith('/'):
                 dst += '/'
@@ -125,8 +129,6 @@ class FileRCopyResource(resource.PostableResource):
             sbend = self.fsresource().GetBackend(src_scheme)
             dbend = self.fsresource().GetBackend(dst_scheme)
             
-            #print "RCopying from %s -> %s"%(src,dst)
-            
             #our http result channel. this stays open until the copy is finished
             result_channel = defer.Deferred()
             
@@ -139,7 +141,7 @@ class FileRCopyResource(resource.PostableResource):
                     ## Try using zput/zget to do rcopy first
                     ##
                     try:
-                        writeproto, fifo = dbend.GetCompressedWriteFifo(dst_hostname, dst_username, dst_path, dst_port, dst_filename,yabiusername=yabiusername)
+                        writeproto, fifo = dbend.GetCompressedWriteFifo( dst_hostname, dst_username, dst_path, dst_port, dst_filename,yabiusername=yabiusername)
                         readproto, fifo2 = sbend.GetCompressedReadFifo(src_hostname, src_username, src_path, src_port, src_filename, fifo,yabiusername=yabiusername)
                         
                         def fifo_cleanup(response):
@@ -299,7 +301,13 @@ class FileRCopyResource(resource.PostableResource):
         deferred.addCallback(RCopyCommand)
         
         # save failed
-        deferred.addErrback(lambda res: http.Response( responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, "NOT OK: %s\n"%str(res)) )
-        
+        def save_failed(result):
+            return http.Response( responsecode.INTERNAL_SERVER_ERROR,
+                                  {'content-type':http_headers.MimeType('text','plain')},
+                                  str(result)
+                                )
+
+        deferred.addErrback( save_failed )
+
         return deferred
         
