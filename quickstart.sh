@@ -47,17 +47,17 @@ done
 pushd yabiadmin
 
 export DJANGO_SETTINGS_MODULE="yabiadmin.quickstartsettings"
-vp/bin/python vp/lib/python2.6/site-packages/yabiadmin-*.egg/yabiadmin/manage.py syncdb --noinput
-vp/bin/python vp/lib/python2.6/site-packages/yabiadmin-*.egg/yabiadmin/manage.py migrate
+vp/bin/django-admin.py syncdb --noinput
+vp/bin/django-admin.py migrate
 
 # collect static
-vp/bin/python vp/lib/python2.6/site-packages/yabiadmin-*.egg/yabiadmin/manage.py collectstatic --noinput 1> collectstatic.log
+vp/bin/django-admin.py collectstatic --noinput 1> collectstatic.log
 
 # use gunicorn to fire up yabiadmin
 vp/bin/pip install gunicorn
 
 # launch yabiadmin via gunicorn
-vp/bin/gunicorn_django --log-file=gunicorn.log --daemon yabiadmin.quickstartsettings
+vp/bin/gunicorn_django -b 0.0.0.0:8000 --log-file=gunicorn.log --daemon yabiadmin.quickstartsettings
 
 # 
 # celeryd
