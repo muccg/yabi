@@ -62,7 +62,6 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
-    'django.contrib.admin',
     'django.contrib.staticfiles',
     'django.contrib.messages',
     'yabiadmin.yabifeapp',
@@ -74,7 +73,8 @@ INSTALLED_APPS = [
     'djkombu',
     'django_extensions',
     'south',
-    'djamboloader'
+    'djamboloader',
+    'django.contrib.admin',
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
