@@ -57,7 +57,7 @@ vp/bin/django-admin.py collectstatic --noinput 1> collectstatic.log
 vp/bin/pip install gunicorn
 
 # launch yabiadmin via gunicorn
-vp/bin/gunicorn_django -b 0.0.0.0:8000 --log-file=gunicorn.log --daemon yabiadmin.quickstartsettings -t 300
+vp/bin/gunicorn_django -b 0.0.0.0:8000 --log-file=gunicorn.log --daemon yabiadmin.quickstartsettings -t 300 -w 5
 
 # 
 # celeryd
