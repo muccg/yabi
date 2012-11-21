@@ -15,73 +15,64 @@ for package in packages:
             [os.path.join(subdir,f) for (subdir, dirs, files) in os.walk(data_dir) for f in files]) 
     os.chdir(start_dir)
 
-def main():
-    setup(name='yabiadmin',
-        version='0.1',
-        description='Yabi Admin',
-        long_description='Yabi front end and administration web interface',
-        author='Centre for Comparative Genomics',
-        author_email='web@ccg.murdoch.edu.au',
-        #packages = find_packages(),
-        packages=packages,
-        #package_data=data_files,
-        package_data={
-            '': [ "%s/%s"%(dirglob,fileglob)
-                    for dirglob in (["."] + [ '/'.join(['*']*num) for num in range(1,10) ])                         # yui is deeply nested
-                    for fileglob in [ '*.mako', '*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg' ]
-                ]
-        },
-        zip_safe=False,
-        install_requires=all_requires('yabiadmin/base-requirements.txt','yabiadmin/requirements.txt'),
-    )
-
-
-#
-# Functional helpers to turn requirements.txt into package names and version strings
-# What is this? LISP?
-#
-
-flatten = lambda listoflists: [ inner for outer in listoflists for inner in outer ]             # flatten a list of lists
-
-# take a list of .txt pip dependency filenames and flatten them into only the package dependency lines as a list.
-# take out comments and -r's
-build_requires = lambda *files: flatten(
-    [
-        [ 
-            line.strip() for line in open(file).readlines() 
-                if  line and 
-                not line.startswith('#') and 
-                not line.startswith('-r ')
+setup(name='yabiadmin',
+    version='0.1',
+    description='Yabi Admin',
+    long_description='Yabi front end and administration web interface',
+    author='Centre for Comparative Genomics',
+    author_email='web@ccg.murdoch.edu.au',
+    #packages = find_packages(),
+    packages=packages,
+    #package_data=data_files,
+    package_data={
+        '': [ "%s/%s"%(dirglob,fileglob)
+            for dirglob in (["."] + [ '/'.join(['*']*num) for num in range(1,10) ])                         # yui is deeply nested
+            for fileglob in [ '*.mako', '*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg' ]
         ]
-        for file in files
-    ]
+    },
+    zip_safe=False,
+    install_requires=[
+        'Django==1.3.2',
+        'ccg-webservices==0.1.2',
+        'ccg-registration==0.8-alpha-1',
+        'ccg-makoloader==0.2.4',
+        'ccg-introspect==0.1.2',
+        'ccg-extras==0.1.3',
+        'ccg-auth==0.3.2',
+        'SQLAlchemy==0.7.1',
+        'amqplib==1.0.2',
+        'anyjson==0.3.3',
+        'carrot==0.10.7',
+        'celery==2.5.1',
+        'django-celery==2.5.1',
+        # Use a pacthed version of django-kombu that fixes a known bug
+        #django-kombu==0.9.4
+        ##'http://yabi.googlecode.com/files/django-kombu-0.9.4.1.tar.gz',
+        'django-kombu==0.9.4.1',
+        'django-picklefield==0.2.0',
+        'django-templatetag-sugar==0.1',
+        'kombu==2.1.1',
+        'ordereddict==1.1',
+        'pygooglechart==0.2.1',
+        'pyparsing==1.5.6',
+        'python-dateutil==1.5',
+        'virtualenv==1.6.4',
+        'wsgiref==0.1.2',
+        'python-memcached==1.48',
+        'Mako==0.5.0',
+        'South==0.7.6',
+        'django-extensions==0.7.1',
+        'pycrypto>=1.9',
+        'psutil',
+        'nose',
+        ##'http://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
+        'yaphc==0.1.5',
+        'BeautifulSoup==3.2.0',
+        'cssutils==0.9.7',
+        'httplib2==0.7.5',
+        ##'https://github.com/downloads/sztamas/djamboloader/djamboloader-0.1.2.tar.gz',
+        'djamboloader==0.1.2',
+        'MarkupSafe==0.15',
+        'wsgiref==0.1.2',
+    ],
 )
-
-# lines that are urls or not
-urls = lambda lines: [ line for line in lines if line.startswith('http') ]
-noturls = lambda lines: [ line for line in lines if not line.startswith('http') ]
-filenames = lambda urls: [ url.rsplit('/',1)[-1] for url in urls ]              # munge into just package filenames
-
-# truncate package name
-basefilename = lambda filename: [ 
-    item for item in 
-    [ 
-        filename[:-len(ext)] if filename.endswith(ext) else None 
-        for ext in ['.tgz','.tar.gz'] 
-    ] 
-    if item is not None 
-]
-
-basefilenames = lambda filenames: flatten( [ basefilename(files) for files in filenames ] )
-parts = lambda filename: filename.split('-')                                # parts of a filename
-has_number = lambda string: True in [a in string for a in '0123456789']     # string has a number somewhere in it
-split_point = lambda parts: [ has_number(part) for part in parts ].index(True)          # the index of the earliest part with a number in it
-number_split = lambda parts: (parts[:split_point(parts)],parts[split_point(parts):])    # split a list of strings into two lists. the first part with a number becomes the list split point.
-make_package_version = lambda nameparts, versionparts: ('-'.join(nameparts),'-'.join(versionparts))         # package name, version part
-make_egg_versions = lambda filenames: [ make_package_version( *number_split(parts(name)) ) for name in filenames ]
-egg_versions = lambda *files: [ "%s==%s"%parts for parts in make_egg_versions(basefilenames(filenames(urls(build_requires(*files))))) ]
-pypy_eggs = lambda *files: noturls(build_requires(*files))
-all_requires = lambda *files: egg_versions(*files)+pypy_eggs(*files)
-
-if __name__ == "__main__":
-    main()
