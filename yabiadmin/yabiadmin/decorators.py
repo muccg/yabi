@@ -83,15 +83,15 @@ def hmac_authenticated(func):
         hmac_digest = hmac.new(settings.HMAC_KEY)
         hmac_digest.update(request.get_full_path())
         
-        logger.info("hmac incoming should be %s"%(hmac_digest.hexdigest()))
+        logger.debug("hmac incoming should be %s"%(hmac_digest.hexdigest()))
 
         if HTTP_HMAC_KEY not in request.META:
-            logger.info("Hmac-digest header not present in incoming request. Denying.")
+            logger.critical("Hmac-digest header not present in incoming request. Denying.")
             return HttpResponseBadRequest("Hmac-digest header not present in request\n")
             
         # check HMAC matches
         if request.META[HTTP_HMAC_KEY] != hmac_digest.hexdigest():
-            logger.info("Hmac-digest header does not match expected. Authentication denied.")
+            logger.critical("Hmac-digest header does not match expected. Authentication denied.")
             return HttpResponseUnauthorized("Hmac-digest authentication failed\n")
             
         return func(request, *args, **kwargs)
