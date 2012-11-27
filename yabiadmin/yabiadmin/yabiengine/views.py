@@ -284,6 +284,7 @@ def error(request, table, id):
             if "message" not in request.POST:
                 return HttpResponseServerError("POST request to error service should contain 'message' parameter\n")
 
+            logger.critical('table: %s id: %s message: %s' % (table, id, request.POST["message"]))
             syslog = Syslog(table_name=str(table),
                             table_id=int(id),
                             message=str(request.POST["message"])
@@ -293,7 +294,11 @@ def error(request, table, id):
 
             return HttpResponse("Thanks!")
 
-    except (ObjectDoesNotExist,ValueError):
+    except ObjectDoesNotExist, o:
+        logger.critical("Caught Exception: %s" % o.message)
+        return HttpResponseNotFound("Object not found")
+    except ValueError, ve:
+        logger.critical("Caught Exception: %s" % ve.message)
         return HttpResponseNotFound("Object not found")
     except Exception, e:
         logger.critical("Caught Exception: %s" % e.message)
