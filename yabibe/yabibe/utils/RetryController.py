@@ -173,5 +173,12 @@ class SSHSGEQstatRetryController( TorqueQstatRetryController ):
                         }
 
 class SSHSGEQacctRetryController( RetryController ):
-    default = HARD
+    default = SOFT
+    hard_exit_codes = []
+    soft_exit_codes = []
+    
+    hard_exit_regexps = {   1 : [
+                                r"error"
+                            ],
+                        }
 
