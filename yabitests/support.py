@@ -3,12 +3,13 @@ import config
 import unittest
 from collections import namedtuple
 
-DEBUG = False
+DEBUG = True
 CONFIG_SECTION= os.environ.get('TEST_CONFIG_SECTION','quickstart_tests')
 YABI_DIR = os.environ.get('YABI_DIR', '..')
 JSON_DIR = os.path.join(os.getcwd(), 'json_workflows')
 TMP_DIR = os.environ.get('YABI_DIR', None)                 # None means system default (/tmp on unix)
-YABI_FE = "http://localhost.localdomain:8000"
+#YABI_FE = "http://localhost.localdomain:8000"
+YABI_FE = "http://localhost/yabi"
 YABI_BE = "http://localhost.localdomain:9001"
 TEST_USERNAME = "demo"
 TEST_PASSWORD = "demo"
@@ -136,8 +137,8 @@ class Yabi(object):
 
     def run(self, args='', timeout=None):
         timeout = timeout or self.TIMEOUT
-        command = self.command + ' ' + args
-        prefix = '. %s && ' % yabipath('yabish/virt_yabish/bin/activate')
+        command = self.command + ' --yabi-debug ' + args
+        prefix = '. %s && ' % yabipath('virt_yabish/bin/activate')
         starttime = time.time()
         cmd = subprocess.Popen(prefix + command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         status = None
@@ -166,7 +167,7 @@ class Yabi(object):
 
 def run_yabiadmin_script(script, *args):
     prefix = 'cd %s && ' % yabipath('yabiadmin/yabiadmin')
-    prefix += '. %s && ' % 'virt_yabiadmin/bin/activate'
+    prefix += '. %s && ' % '../../virt_yabiadmin/bin/activate'
     command = 'python manage.py runscript %s --pythonpath ../.. --script-args="%s"' % (script, ','.join(args))
     cmd = subprocess.Popen(prefix + command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     status = cmd.wait()

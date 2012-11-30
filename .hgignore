@@ -2,11 +2,6 @@
 .*\.log$
 .*\.pid$
 
-^yabife/yabife/virt_yabife
-^yabife/yabife/scratch
-^yabife/yabife/yabife.sqlite3
-
-^yabiadmin/yabiadmin/virt_yabiadmin
 ^yabiadmin/yabiadmin/build
 ^yabiadmin/yabiadmin/.yabi
 ^yabiadmin/yabiadmin/celerybeat-schedule
@@ -14,14 +9,23 @@
 ^yabiadmin/yabiadmin/scratch
 ^yabiadmin/yabiadmin/appsettings
 ^yabiadmin/yabiadmin/appsettings_dir/testdb
+^yabiadmin/build/
+^yabiadmin/scratch/
+^yabiadmin/yabiadmin.egg-info/
 
-^yabibe/yabibe/virt_yabibe
+^yabibe/build/
+^yabibe/yabibe.egg-info/
 
 ^yabish/virt_yabish
+^yabish/build/
+^yabish/yabish.egg-info/
 
-^yabitests/virt_yabitests
 ^yabitests/.httplib2_workdir
-
 ^virt_yabi
 ^docs/virt_docs
 ^docs/_build
+
+^bootstrap/
+^.ccgplatform
+^.ipaddress
+^puppet-vm-share

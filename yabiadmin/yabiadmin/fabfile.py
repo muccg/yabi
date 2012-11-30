@@ -1,5 +1,4 @@
 from fabric.api import env, local, lcd
-from ccgfab.base import *
 
 import os
 
@@ -9,11 +8,6 @@ env.app_name = 'yabiadmin'
 env.repo_path = 'yabiadmin'
 env.app_install_names = ['yabiadmin'] # use app_name or list of names for each install
 env.vc = 'mercurial'
-
-env.writeable_dirs.extend([]) # add directories you wish to have created and made writeable
-env.content_excludes.extend([]) # add quoted patterns here for extra rsync excludes
-env.content_includes.extend([]) # add quoted patterns here for extra rsync includes
-env.auto_confirm_purge = False #controls whether the confirmation prompt for purge is used
 
 env.celeryd_options = "--config=settings -l debug -E -B"
 env.ccg_pip_options = "--download-cache=/tmp --use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors=http://d.pypi.python.org/ --mirrors=http://e.pypi.python.org/"
@@ -55,60 +49,6 @@ class LocalPaths():
 
 localPaths = LocalPaths()
 
-
-def deploy(auto_confirm_purge = False, migration = True):
-    """
-    Make a user deployment
-    """
-    env.auto_confirm_purge = auto_confirm_purge
-    _ccg_deploy_user(migration)
-
-def snapshot(auto_confirm_purge=False):
-    """
-    Make a snapshot deployment
-    """
-    env.auto_confirm_purge=auto_confirm_purge
-    _ccg_deploy_snapshot()
-    localPaths.target="snapshot"
-
-def release(*args, **kwargs):
-    """
-    Make a release deployment
-    """
-    migration = kwargs.get("migration", True)
-    requirements = kwargs.get("requirements", "requirements.txt")
-    tag = kwargs.get("tag", None)
-    env.ccg_requirements = requirements
-    env.auto_confirm=False
-    _ccg_deploy_release(tag=tag,migration=migration)
-
-def testrelease(*args, **kwargs):
-    """
-    Make a release deployment using the dev settings file
-    """
-    migration = kwargs.get("migration", True)
-    env.auto_confirm=False
-    if len(args):
-        _ccg_deploy_release(devrelease=True, tag=args[0], migration=migration)
-    else:
-        _ccg_deploy_release(devrelease=True, migration=migration)
-
-def purge(auto_confirm_purge=False):
-    """
-    Remove the user deployment
-    """
-    env.auto_confirm_purge = auto_confirm_purge
-    _ccg_purge_user()
-
-def purge_snapshot(auto_confirm_purge = False):
-    """
-    Remove the snapshot deployment
-    """
-    env.auto_confirm_purge = auto_confirm_purge
-    _ccg_purge_snapshot()
-
-def make_live(tag=env.user):
-    _make_live_symlinks(tag)
 
 def celeryd():
     """
@@ -175,14 +115,19 @@ def runserver(bg=False):
     """
     Runs the gunicorn server for local development
     """
-    cmd = "gunicorn_django -w %s -b %s -t %s" % (env.gunicorn_workers, env.gunicorn_listening_on, env.gunicorn_worker_timeout)
-    if bg:
-        cmd += " >yabiadmin.log 2>&1 &"
-    os.environ["PROJECT_DIRECTORY"] = "." 
+    #cmd = "gunicorn_django -w %s -b %s -t %s" % (env.gunicorn_workers, env.gunicorn_listening_on, env.gunicorn_worker_timeout)
+    #if bg:
+    #    cmd += " >yabiadmin.log 2>&1 &"
+    cmd = "/etc/init.d/httpd start"
+    #os.environ["PROJECT_DIRECTORY"] = "." 
     local(cmd, capture=False)
 
-
 def killserver():
+    cmd = "/etc/init.d/httpd stop"
+    #os.environ["PROJECT_DIRECTORY"] = "." 
+    local(cmd, capture=False)
+
+def _old_killserver():
     """
     Kills the gunicorn server for local development
     """

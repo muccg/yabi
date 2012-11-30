@@ -7,6 +7,12 @@ import os
 
 from ..migrationutils import *
 
+def homedir():
+    if os.environ['USER'] == 'root':
+        return '/home/yabi'
+    else:
+        return "%s%s" % (os.environ['HOME'], '/')
+
 class Migration(DataMigration):
 
     def forwards(self, orm):
@@ -91,7 +97,7 @@ class Migration(DataMigration):
         yabi_backendcredential_1 = yabi_backendcredential(yabi_backend_1, yabi_credential_1, homedir='')
         yabi_backendcredential_1.save()
 
-        user_homedir = "%s%s" % (os.environ['HOME'], '/')
+        user_homedir = homedir()
         stageout_dir = user_homedir + "yabi_data_dir/"
 
         yabi_backendcredential_2 = yabi_backendcredential(yabi_backend_4, yabi_credential_1, user_homedir)
@@ -169,7 +175,7 @@ class Migration(DataMigration):
         ex_bec.homedir = ""                                         # exec backends have no path
         ex_bec.save()
         fs_bec = orm.BackendCredential.objects.get(id=3)
-        fs_bec.homedir = "%s%s" % (os.environ['HOME'], '/')
+        fs_bec.homedir = homedir()
         fs_bec.save()
 
     def backwards(self, orm):

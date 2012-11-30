@@ -27,43 +27,7 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 from fabric.api import env, local
-from ccgfab.base import *
 import os
-
-env.username = os.environ["USER"]
-env.app_root = '/usr/local/python/ccgapps/'
-env.app_name = 'yabibe'
-env.repo_path = 'yabibe'
-env.app_install_names = ['yabibe'] # use app_name or list of names for each install
-env.vc = 'mercurial'
-
-env.writeable_dirs.extend([]) # add directories you wish to have created and made writeable
-env.content_excludes.extend([]) # add quoted patterns here for extra rsync excludes
-env.content_includes.extend([]) # add quoted patterns here for extra rsync includes
-
-env.ccg_pip_options = "--download-cache=/tmp --use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors=http://d.pypi.python.org/ --mirrors=http://e.pypi.python.org/"
-
-class LocalPaths():
-
-    target = env.username
-
-    def getSettings(self):
-        return os.path.join(env.app_root, env.app_install_names[0], self.target, env.app_name, "settings.py")
-
-    def getProjectDir(self):
-        return os.path.join(env.app_root, env.app_install_names[0], self.target, env.app_name)
-
-    def getParentDir(self):
-        return os.path.join(env.app_root, env.app_install_names[0], self.target)
-
-    def getCeleryd(self):
-        return os.path.join(self.getProjectDir(), 'virtualpython/bin/celeryd')
-
-    def getVirtualPython(self):
-        return os.path.join(self.getProjectDir(), 'virtualpython/bin/python')
-
-
-localPaths = LocalPaths()
 
 def backend(bg=False):
     """
@@ -86,37 +50,6 @@ def killbackend():
             counter += 1
             ps.terminate()
     print "%i processes terminated" % counter
-
-def start():
-    """
-    start the twistd server as a daemon
-    """
-    print local("./init_scripts/centos/yabibe start")
-
-def stop():
-    """
-    stop the twistd server
-    """
-    print local("./init_scripts/centos/yabibe stop")
-
-def restart():
-    """
-    restart the twistd server
-    """
-    print local("./init_scripts/centos/yabibe restart")
-
-def release(*args, **kwargs):
-    """
-    Make a release deployment
-    """
-    requirements = kwargs.get("requirements", "requirements.txt")
-    tag = kwargs.get("tag", None)
-    env.ccg_requirements = requirements
-    env.auto_confirm=False
-    _ccg_deploy_release(tag=tag, migration=False, apacheDeployment=False)
-
-def make_live(tag=env.user):
-    _make_live_symlinks(tag)
 
 def createdirs():
     """

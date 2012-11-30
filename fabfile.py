@@ -3,36 +3,20 @@ import os
 
 ADMIN = {
     "dir": "yabiadmin/yabiadmin",
-    "virtenvdir": "virt_yabiadmin"
+    "virtenvdir": "../../virt_yabiadmin"
 }
 BE = {
     "dir": "yabibe/yabibe",
-    "virtenvdir": "virt_yabibe"
+    "virtenvdir": "../../virt_yabibe"
 }
 YABISH = {
     "dir": "yabish",
-    "virtenvdir": "virt_yabish"
+    "virtenvdir": "../virt_yabish"
 }
 TESTS = {
     "dir": "yabitests",
-    "virtenvdir": "virt_yabitests"
 }
 
-
-def clean():
-    '''Clean all virtual environment directories'''
-    for proj in(ADMIN, BE, YABISH, TESTS):
-        virtenvdir = os.path.join(proj['dir'], proj['virtenvdir'])
-        local("rm -rf %s" % virtenvdir)
-
-def admin_bootstrap():
-    '''Bootstrap the yabiadmin project'''
-    with lcd(ADMIN['dir']):
-        local("sh ../../bootstrap.sh -r quickstart.txt")
-
-def admin_require(requirements_file):
-    '''Install additional requirements into the yabiadmin project'''
-    _virtualenv(ADMIN, 'fab require:%s' % requirements_file)
 
 def admin_initdb():
     '''Initialise the DB of Yabiadmin'''
@@ -72,12 +56,6 @@ def admin_killcelery():
     '''Kill the yabiadmin celery server'''
     _virtualenv(ADMIN, "fab killcelery")
 
-def admin_quickstart(bg=False):
-    '''Quickstart the yabiadmin project (bootstrap, initdb, runserver)'''
-    admin_bootstrap()
-    admin_initdb()
-    admin_runserver(bg)
-
 def admin_tests():
     '''Runs all the tests in the Yabiadmin project'''
 
@@ -87,11 +65,6 @@ def admin_jslint():
     '''Runs Google Closure Linter on JavaScript in Yabiadmin project'''
 
     _virtualenv(ADMIN, "fab jslint")
-
-def be_bootstrap():
-    '''Bootstrap the yabibe project'''
-    with lcd(BE['dir']):
-        local("sh ../../bootstrap.sh -r requirements.txt")
 
 def be_createdirs():
     '''Creates necessary directories for the yabibe project'''
@@ -107,30 +80,6 @@ def be_runserver(bg=False):
 def be_killserver():
     '''Kill the yabibe local server'''
     _virtualenv(BE, "fab killbackend")
-
-def be_quickstart(bg=False):
-    '''Quickstart the yabibe project (bootstrap, createdirs, runserver)'''
-    be_bootstrap()
-    be_createdirs()
-    be_runserver(bg)
-
-def yabish_bootstrap():
-    '''Bootstrap the yabish project'''
-    with lcd(YABISH['dir']):
-        local("sh ../bootstrap.sh")
-
-def tests_bootstrap():
-    '''Bootstrap the yabi tests project'''
-    with lcd(TESTS['dir']):
-        local("sh ../bootstrap.sh")
-
-def quickstart():
-    '''Quickstart the whole YABI stack (admin, be, yabish, tests)'''
-    admin_quickstart(bg=True)
-    admin_runcelery(bg=True)
-    be_quickstart(bg=True)
-    yabish_bootstrap()
-    tests_bootstrap()
 
 def runservers():
     '''Run all servers in the YABI stack for local dev in the background (admin, be)'''
@@ -207,9 +156,10 @@ def tests(dryrun=False):
     cmd = "nosetests -v"
     if dryrun:
         cmd += " --collect-only"
-    _virtualenv(TESTS, cmd)
+    with lcd(TESTS['dir']):
+        local(cmd)
 
 def _virtualenv(project, command):
     with lcd(project['dir']):
-        local(". %s/bin/activate && %s" % (project['virtenvdir'], command))
-   
+   	    local(". %s/bin/activate && %s" % (project['virtenvdir'], command))
+
