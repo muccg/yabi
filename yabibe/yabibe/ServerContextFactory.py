@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 from conf import config
-config.read_config()
+import os
+
+if "YABICONF" in os.environ:
+    config.read_from_file(os.environ['YABICONF'])
+else:
+    config.read_config()
 config.sanitise()
 
 # for SSL context
