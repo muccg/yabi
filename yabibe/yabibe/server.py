@@ -43,7 +43,11 @@ config.sanitise()
 
 # sanity check that temp directory is set
 assert config.config['backend'].has_key('temp'), "[backend] section of yabi.conf is missing 'temp' directory setting"
-logfile = config.config['backend']['logfile']
+
+if config.config['backend']['logfile']:
+    from twisted.python import log as twistedlog
+    logfile = config.config['backend']['logfile']
+    twistedlog.startLogging(open(logfile, 'w'))
 
 assert config.config['backend'].has_key('hmackey'), "[backend] section of yabi.conf is missing 'hmackey' setting"
 assert config.config['backend']['hmackey'], "[backend] section of yabi.conf has unset 'hmackey' value"
