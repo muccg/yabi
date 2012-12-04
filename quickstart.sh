@@ -34,7 +34,7 @@ then
 
     echo "Launch yabiadmin (frontend) http://localhost:8000"
     pushd yabiadmin
-    vp/bin/gunicorn_django -b 0.0.0.0:8000 --log-file=gunicorn.log --daemon yabiadmin.quickstartsettings -t 300 -w 5
+    vp/bin/gunicorn_django -b 0.0.0.0:8000 --log-file=yabiadmin-quickstart.log --daemon yabiadmin.quickstartsettings -t 300 -w 5
 
     echo "Launch celeryd (message queue)"
     CELERY_CONFIG_MODULE="quickstartsettings"
