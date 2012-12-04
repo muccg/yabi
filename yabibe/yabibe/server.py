@@ -44,12 +44,6 @@ config.sanitise()
 # sanity check that temp directory is set
 assert config.config['backend'].has_key('temp'), "[backend] section of yabi.conf is missing 'temp' directory setting"
 
-if config.config['backend']['logfile']:
-    from twisted.python import log as twistedlog
-    from twisted.python.logfile import DailyLogFile
-    logfile = config.config['backend']['logfile']
-    twistedlog.startLogging(DailyLogFile.fromFullPath(logfile))
-
 assert config.config['backend'].has_key('hmackey'), "[backend] section of yabi.conf is missing 'hmackey' setting"
 assert config.config['backend']['hmackey'], "[backend] section of yabi.conf has unset 'hmackey' value"
 
@@ -76,6 +70,12 @@ from BaseResource import BaseResource
 
 # Twisted Application Framework setup:
 application = service.Application('yabibe')
+
+if config.config['backend']['logfile']:
+    from twisted.python.log import ILogObserver, FileLogObserver
+    from twisted.python.logfile import DailyLogFile
+    logfile = DailyLogFile.fromFullPath(config.config['backend']['logfile'])
+    application.setComponent(ILogObserver, FileLogObserver(logfile).emit)
 
 if "--syslog" in sys.argv:
     # set up twisted logging
