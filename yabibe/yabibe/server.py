@@ -46,8 +46,9 @@ assert config.config['backend'].has_key('temp'), "[backend] section of yabi.conf
 
 if config.config['backend']['logfile']:
     from twisted.python import log as twistedlog
+    from twisted.python.logfile import DailyLogFile
     logfile = config.config['backend']['logfile']
-    twistedlog.startLogging(open(logfile, 'w'))
+    twistedlog.startLogging(DailyLogFile.fromFullPath(logfile))
 
 assert config.config['backend'].has_key('hmackey'), "[backend] section of yabi.conf is missing 'hmackey' setting"
 assert config.config['backend']['hmackey'], "[backend] section of yabi.conf has unset 'hmackey' value"
@@ -79,7 +80,6 @@ application = service.Application('yabibe')
 if "--syslog" in sys.argv:
     # set up twisted logging
     from twisted.python.log import ILogObserver, FileLogObserver
-    from twisted.python.logfile import DailyLogFile
 
     SYSLOG_PREFIX = config.config['backend']['syslog_prefix'] % {  'username':pwd.getpwuid(os.getuid()).pw_name,
                                                         'pid':os.getpid()
