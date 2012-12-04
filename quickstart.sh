@@ -34,16 +34,16 @@ EASY_INSTALL="-f https://s3-ap-southeast-2.amazonaws.com/http-syd/python/centos/
 echo "setting up yabiadmin..."
 pushd yabiadmin
 virtualenv vp
-echo vp/bin/easy_install $EASY_INSTALL yabiadmin==0.1
-vp/bin/easy_install $EASY_INSTALL yabiadmin==0.1
+echo vp/bin/easy_install $EASY_INSTALL yabiadmin==0.2
+vp/bin/easy_install $EASY_INSTALL yabiadmin==0.2
 popd
 
 # boostrap yabibe
 echo "setting up yabibe..."
 pushd yabibe
 virtualenv vp
-echo vp/bin/easy_install $EASY_INSTALL yabibe==0.1
-vp/bin/easy_install $EASY_INSTALL yabibe==0.1
+echo vp/bin/easy_install $EASY_INSTALL yabibe==0.2
+vp/bin/easy_install $EASY_INSTALL yabibe==0.2
 popd
 
 #
