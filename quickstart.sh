@@ -51,12 +51,13 @@ then
 
     echo "Launch yabibe (backend)"
     pushd yabibe
-    YABICONF="`pwd`/yabibe/yabibe-quickstart.conf" 
-    export YABICONF
-    echo $YABICONF
-    #vp/bin/yabibe --pidfile=yabibe/yabibe-quickstart.pid
-    #PYTHONPATH=yabibe vp/bin/python yabibe/scripts/yabibe
-    vp/bin/python yabibe/scripts/yabibe --pidfile=yabibe-quickstart.pid
+    mkdir -p /tmp/run/backend/certificates
+    mkdir -p /tmp/run/backend/fifos
+    mkdir -p /tmp/run/backend/tasklets
+    mkdir -p /tmp/run/backend/temp
+    export YABICONF="`pwd`/yabibe/yabibe-quickstart.conf" 
+    vp/bin/yabibe --pidfile=yabibe-quickstart.pid
+    #vp/bin/python yabibe/scripts/yabibe --pidfile=yabibe-quickstart.pid
     popd
 
     echo "To stop servers, run './quickstart stop'"
@@ -110,9 +111,10 @@ then
     rm -f yabiadmin_quickstart.sqlite3
     popd
 
-    echo "Removing YabiBe virtual python"
+    echo "Removing YabiBe virtual python and /tmp/run"
     pushd yabibe
     rm -rf vp
+    rm -rf /tmp/run
     popd
 
     echo "Vitual python directories and SQLite database for quickstart removed."
