@@ -192,7 +192,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'USER': '',
-        'NAME': 'yabiadmin_tests.sqlite3',
+        'NAME': 'yabiadmin_quickstart.sqlite3',
         'PASSWORD': '', 
         'HOST': '',                    
         'PORT': '',
