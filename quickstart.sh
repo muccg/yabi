@@ -20,7 +20,7 @@ then
     set +e
     killall gunicorn_django
     killall celeryd
-    kill `cat yabibe/yabibe-quickstart.pid` && rm yabibe/yabibe-quickstart.pid
+    kill `cat yabibe/yabibe-quickstart.pid` 
 
     # delay to allow file handles to free
     sleep 3
@@ -51,7 +51,12 @@ then
 
     echo "Launch yabibe (backend)"
     pushd yabibe
-    vp/bin/yabibe -l yabibe-quickstart.log --pidfile=yabibe-quickstart.pid
+    YABICONF="`pwd`/yabibe/yabibe-quickstart.conf" 
+    export YABICONF
+    echo $YABICONF
+    #vp/bin/yabibe --pidfile=yabibe/yabibe-quickstart.pid
+    #PYTHONPATH=yabibe vp/bin/python yabibe/scripts/yabibe
+    vp/bin/python yabibe/scripts/yabibe --pidfile=yabibe-quickstart.pid
     popd
 
     echo "To stop servers, run './quickstart stop'"

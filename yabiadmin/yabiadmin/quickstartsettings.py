@@ -217,7 +217,7 @@ DATABASES = {
 # Make this unique, and don't share it with anybody.
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = 'set_this'
-HMAC_KEY = 'set_this'
+HMAC_KEY = 'quickstart'
 
 # email settings so yabi can send email error alerts etc
 # see https://docs.djangoproject.com/en/dev/ref/settings/#email-host
@@ -275,7 +275,7 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 BACKEND_IP = '0.0.0.0'
 BACKEND_PORT = '9001'
 BACKEND_BASE = '/'
-TASKTAG = 'set_this' # this must be the same in the yabi.conf for the backend that will consume tasks from this admin
+TASKTAG = 'quickstart' # this must be the same in the yabi.conf for the backend that will consume tasks from this admin
 YABIBACKEND_SERVER = BACKEND_IP + ':' +  BACKEND_PORT
 YABISTORE_HOME = os.path.join(WRITABLE_DIRECTORY, 'store')
 
