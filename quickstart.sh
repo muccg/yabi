@@ -28,18 +28,23 @@ which virtualenv >/dev/null
 export PYTHONPATH=`pwd`
 
 # additional URLs to search for eggs during install
-EASY_INSTALL="-f https://s3-ap-southeast-1.amazonaws.com/http-sing/python/centos/6/noarch/index.html"
+EASY_INSTALL="-f https://s3-ap-southeast-2.amazonaws.com/http-syd/python/centos/6/noarch/index.html"
 
-# boostrap vp's
-for DIR in yabibe yabiadmin
-do
-    echo "setting up $DIR..."
-    pushd $DIR
-    virtualenv vp
-    echo vp/bin/easy_install $EASY_INSTALL .
-    vp/bin/easy_install $EASY_INSTALL .
-    popd
-done
+# boostrap yabiadmin
+echo "setting up yabiadmin..."
+pushd yabiadmin
+virtualenv vp
+echo vp/bin/easy_install $EASY_INSTALL yabiadmin==0.1
+vp/bin/easy_install $EASY_INSTALL yabiadmin==0.1
+popd
+
+# boostrap yabibe
+echo "setting up yabibe..."
+pushd yabibe
+virtualenv vp
+echo vp/bin/easy_install $EASY_INSTALL yabibe==0.1
+vp/bin/easy_install $EASY_INSTALL yabibe==0.1
+popd
 
 #
 # gunicorn serving up yabiadmin
