@@ -67,7 +67,7 @@ application = service.Application('yabibe')
 if config.config['backend']['logfile']:
     from twisted.python.log import ILogObserver, FileLogObserver
     from twisted.python.logfile import DailyLogFile
-    logfile = DailyLogFile.fromFullPath(config.config['backend']['logfile'])
+    logfile = DailyLogFile.fromFullPath(os.path.expanduser(config.config['backend']['logfile']))
     application.setComponent(ILogObserver, FileLogObserver(logfile).emit)
 
 if "--syslog" in sys.argv:
