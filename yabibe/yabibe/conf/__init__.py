@@ -173,7 +173,7 @@ class Configuration(object):
     def read_defaults(self):
         self.read_from_file(os.path.join(os.path.dirname(__file__),"yabi_defaults.conf"))
         if "YABICONF" in os.environ:
-            self.read_from_file(os.environ['YABICONF'])
+            self.read_from_file(os.path.expanduser(os.environ['YABICONF']))
         elif "QUICKSTART" in os.environ:
             self.read_from_file(os.path.join(os.path.dirname(__file__),"yabibe-quickstart.conf"))
         else:
