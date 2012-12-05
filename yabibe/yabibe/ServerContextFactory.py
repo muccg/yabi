@@ -2,11 +2,7 @@
 from conf import config
 import os
 
-if "YABICONF" in os.environ:
-    config.read_from_file(os.environ['YABICONF'])
-else:
-    config.read_config()
-config.sanitise()
+config.read_defaults()
 
 # for SSL context
 from OpenSSL import SSL

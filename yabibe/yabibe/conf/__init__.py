@@ -169,6 +169,16 @@ class Configuration(object):
                         'logscripts':'true'
                     },
     }
+
+    def read_defaults(self):
+        self.read_from_file(os.path.join(os.path.dirname(__file__),"yabi_defaults.conf"))
+        if "YABICONF" in os.environ:
+            self.read_from_file(os.environ['YABICONF'])
+        elif "QUICKSTART" in os.environ:
+            self.read_from_file(os.path.join(os.path.dirname(__file__),"yabibe-quickstart.conf"))
+        else:
+            self.read_config()
+        self.sanitise()
     
     def read_from_data(self,dat):
         return self.read_from_fp(StringIO.StringIO(dat))

@@ -31,15 +31,8 @@ sys.path.append(os.path.dirname(__file__))                  # add our base direc
 
 from conf import config
 
-#read default config
-config.read_from_file(os.path.join(os.path.dirname(__file__),"conf","yabi_defaults.conf"))
-
-if "YABICONF" in os.environ:
-    config.read_from_file(os.environ['YABICONF'])
-else:
-    config.read_config()
-
-config.sanitise()
+#read config
+config.read_defaults()
 
 # sanity check that temp directory is set
 assert config.config['backend'].has_key('temp'), "[backend] section of yabi.conf is missing 'temp' directory setting"
