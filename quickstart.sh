@@ -58,7 +58,7 @@ then
     export QUICKSTART="1" 
     virt_quickstart_yabibe/bin/yabibe --pidfile=yabibe-quickstart.pid
 
-    echo "To stop servers, run './quickstart stop'"
+    echo "To stop servers, run './quickstart.sh stop'"
 
     exit 0
 fi
@@ -91,7 +91,7 @@ then
     virtualenv virt_quickstart_yabibe
     virt_quickstart_yabibe/bin/easy_install -f $EASY_INSTALL_INDEX $YABI_BE_EGG
 
-    echo "To run servers, type './quickstart start'"
+    echo "To run servers, type './quickstart.sh start'"
 
     exit 0
 fi
@@ -113,4 +113,4 @@ then
 fi
 
 
-echo "Usage ./quickstart (install|clean|start|stop)"
+echo "Usage ./quickstart.sh (install|clean|start|stop)"
