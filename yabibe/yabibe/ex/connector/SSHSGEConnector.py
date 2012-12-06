@@ -368,6 +368,11 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
             while True:
                 try:
                     jobsummary = self._ssh_qstat(yabiusername, creds, command, working, username, host, stdout, stderr, modules, jobid)
+
+                    # TODO HACK FIXME: 
+                    # SGE code is broken, we don't get a job_state
+                    # setting to job_state R, then fall through to qacct when qstat can't find job
+                    jobsummary[jobid]['job_state']='R'         
                     break           # success
                 except (SSHQstatSoftException, SSHTransportException), softexc:
                     # delay and then retry
@@ -392,8 +397,16 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
                                 except StopIteration:
                                     # run out of retries.
                                     raise softexc
-                        
-                        jobsummary[jobid]['job_state']='C'         # FIXME: make it to what old SGEs used to have so we dont have to cahnge the code below. fix this hack.
+                       
+                        # TODO HACK FIXME: 
+                        # SGE code is broken, we don't get a job_state
+                        # setting to job_state R, then fall through to qacct when qstat can't find job
+                        if 'failed' in jobsummary[jobid] and 'exit_status' in jobsummary[jobid] and \
+                            jobsummary[jobid]['failed'] != 'undefined' and jobsummary[jobid]['exit_status'] != 'undefined':
+                            jobsummary[jobid]['job_state']='C'         
+                        else:
+                            jobsummary[jobid]['job_state']='R'         
+
                         break
             
             self.update_running(jobid, jobsummary)
