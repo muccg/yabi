@@ -26,7 +26,7 @@ then
 
     echo "Launch yabiadmin (frontend) http://localhost:8000"
     export PYTHON_PATH=yabiadmin
-    mkdir ~/yabi_data_dir
+    mkdir -p ~/yabi_data_dir
     virt_yabiadmin/bin/django-admin.py syncdb --noinput --settings=yabiadmin.settings 1> syncdb-devstack.log
     virt_yabiadmin/bin/django-admin.py migrate --settings=yabiadmin.settings 1> migrate-devstack.log
     virt_yabiadmin/bin/django-admin.py collectstatic --noinput --settings=yabiadmin.settings 1> collectstatic-devstack.log
