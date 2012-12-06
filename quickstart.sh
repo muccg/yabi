@@ -81,7 +81,7 @@ then
     virt_quickstart_yabiadmin/bin/django-admin.py migrate
 
     # collect static
-    virt_quickstart_yabiadmin/bin/django-admin.py collectstatic --noinput 1> collectstatic.log
+    virt_quickstart_yabiadmin/bin/django-admin.py collectstatic --noinput 1> collectstatic-quickstart.log
 
     echo "Install yabibe ($YABI_BE_EGG) from $EASY_INSTALL_INDEX"
     virtualenv virt_quickstart_yabibe
