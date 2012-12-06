@@ -32,8 +32,8 @@ fi
 if [ "x$1" == "xstart" ]
 then
 
-    echo "Launch yabiadmin (frontend) http://localhost:8000"
-    virt_quickstart_yabiadmin/bin/gunicorn_django -b 0.0.0.0:8000 --log-file=yabiadmin-quickstart.log --daemon yabiadmin.quickstartsettings -t 300 -w 5
+    echo "Launch yabiadmin (frontend) http://localhost:8080"
+    virt_quickstart_yabiadmin/bin/gunicorn_django -b 0.0.0.0:8080 --log-file=yabiadmin-quickstart.log --daemon yabiadmin.quickstartsettings -t 300 -w 5
 
     echo "Launch celeryd (message queue)"
     CELERY_CONFIG_MODULE="quickstartsettings"
@@ -48,10 +48,10 @@ then
     virt_quickstart_yabiadmin/bin/celeryd $CELERYD_OPTS 1>/dev/null 2>/dev/null &
 
     echo "Launch yabibe (backend)"
-    mkdir -p /tmp/run/backend/certificates
-    mkdir -p /tmp/run/backend/fifos
-    mkdir -p /tmp/run/backend/tasklets
-    mkdir -p /tmp/run/backend/temp
+    mkdir -p /tmp/yabibe-quickstart/run/backend/certificates
+    mkdir -p /tmp/yabibe-quickstart/run/backend/fifos
+    mkdir -p /tmp/yabibe-quickstart/run/backend/tasklets
+    mkdir -p /tmp/yabibe-quickstart/run/backend/temp
 
     unset YABICONF
     export QUICKSTART="1" 
@@ -101,7 +101,7 @@ then
 
     echo "Removing YabiBe virtual python and /tmp/run"
     rm -rf virt_quickstart_yabibe
-    rm -rf /tmp/run
+    rm -rf /tmp/yabibe-quickstart
 
     echo "Vitual python directories and SQLite database for quickstart removed."
 
