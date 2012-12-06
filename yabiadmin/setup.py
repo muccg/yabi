@@ -73,5 +73,6 @@ setup(name='yabiadmin',
         'djamboloader==0.1.2',
         'MarkupSafe==0.15',
         'wsgiref==0.1.2',
+        'gunicorn'
     ],
 )

@@ -76,9 +76,6 @@ then
     virtualenv virt_quickstart_yabiadmin
     virt_quickstart_yabiadmin/bin/easy_install -f $EASY_INSTALL_INDEX $YABI_ADMIN_EGG
 
-    # use gunicorn to fire up yabiadmin
-    virt_quickstart_yabiadmin/bin/pip install gunicorn
-
     # database migrations
     export DJANGO_SETTINGS_MODULE="yabiadmin.quickstartsettings"
     virt_quickstart_yabiadmin/bin/django-admin.py syncdb --noinput
