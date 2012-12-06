@@ -74,6 +74,7 @@ then
     echo "Install yabiadmin ($YABI_ADMIN_EGG) from $EASY_INSTALL_INDEX"
     virtualenv virt_quickstart_yabiadmin
     virt_quickstart_yabiadmin/bin/easy_install -f $EASY_INSTALL_INDEX $YABI_ADMIN_EGG
+    mkdir ~/yabi_data_dir
 
     # database migrations
     export DJANGO_SETTINGS_MODULE="yabiadmin.quickstartsettings"
