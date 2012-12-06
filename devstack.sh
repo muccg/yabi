@@ -10,8 +10,8 @@ if [ "x$1" == "xstop" ]
 then
     echo "Stopping devstack servers"
     set +e
-    killall gunicorn_django
-    killall celeryd
+    kill `cat yabiadmin-devstack.pid`
+    kill `cat celeryd-quickstart.pid`
     kill `cat yabibe-devstack.pid` 
 
     # delay to allow file handles to free
@@ -26,7 +26,7 @@ then
 
     echo "Launch yabiadmin (frontend) http://localhost:8000"
     export PYTHON_PATH=yabiadmin
-    virt_yabiadmin/bin/gunicorn_django -b 0.0.0.0:8000 --log-file=yabiadmin-devstack.log --daemon yabiadmin.settings -t 300 -w 5
+    virt_yabiadmin/bin/gunicorn_django -b 0.0.0.0:8000 --pid=yabiadmin-devstack.pid --log-file=yabiadmin-devstack.log --daemon yabiadmin.settings -t 300 -w 5
 
     echo "Launch celeryd (message queue)"
     CELERY_CONFIG_MODULE="settings"

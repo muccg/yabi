@@ -18,8 +18,8 @@ if [ "x$1" == "xstop" ]
 then
     echo "Stopping quickstart servers"
     set +e
-    killall gunicorn_django
-    killall celeryd
+    kill `cat yabiadmin-quickstart.pid`
+    kill `cat celeryd-quickstart.pid`
     kill `cat yabibe-quickstart.pid` 
 
     # delay to allow file handles to free
@@ -33,7 +33,7 @@ if [ "x$1" == "xstart" ]
 then
 
     echo "Launch yabiadmin (frontend) http://localhost:8080"
-    virt_quickstart_yabiadmin/bin/gunicorn_django -b 0.0.0.0:8080 --log-file=yabiadmin-quickstart.log --daemon yabiadmin.quickstartsettings -t 300 -w 5
+    virt_quickstart_yabiadmin/bin/gunicorn_django -b 0.0.0.0:8080 --pid=yabiadmin-quickstart.pid --log-file=yabiadmin-quickstart.log --daemon yabiadmin.quickstartsettings -t 300 -w 5
 
     echo "Launch celeryd (message queue)"
     CELERY_CONFIG_MODULE="quickstartsettings"
