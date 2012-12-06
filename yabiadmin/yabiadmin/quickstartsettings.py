@@ -14,7 +14,9 @@ DATABASES = {
     }
 }
 
-BACKEND_PORT = '8001'
+BACKEND_IP = '0.0.0.0'
+BACKEND_PORT = '9001'
+YABIBACKEND_SERVER = BACKEND_IP + ':' +  BACKEND_PORT
 
 HMAC_KEY = 'quickstart'
 TASKTAG = 'quickstart' 
