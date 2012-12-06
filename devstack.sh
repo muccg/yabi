@@ -44,10 +44,10 @@ then
     virt_yabiadmin/bin/celeryd $CELERYD_OPTS 1>/dev/null 2>/dev/null &
 
     echo "Launch yabibe (backend)"
-    mkdir -p /tmp/run/backend/certificates
-    mkdir -p /tmp/run/backend/fifos
-    mkdir -p /tmp/run/backend/tasklets
-    mkdir -p /tmp/run/backend/temp
+    mkdir -p ~/.yabi/run/backend/certificates
+    mkdir -p ~/.yabi/run/backend/fifos
+    mkdir -p ~/.yabi/run/backend/tasklets
+    mkdir -p ~/.yabi/run/backend/temp
 
     export PYTHON_PATH=yabibe
     export YABICONF="~/.yabi/yabi.conf"
