@@ -53,7 +53,6 @@ then
     mkdir -p /tmp/run/backend/tasklets
     mkdir -p /tmp/run/backend/temp
 
-    # TODO pull from egg
     unset YABICONF
     export QUICKSTART="1" 
     virt_quickstart_yabibe/bin/yabibe --pidfile=yabibe-quickstart.pid
