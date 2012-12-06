@@ -11,7 +11,7 @@ then
     echo "Stopping devstack servers"
     set +e
     kill `cat yabiadmin-devstack.pid`
-    kill `cat celeryd-quickstart.pid`
+    kill `cat celeryd-devstack.pid`
     kill `cat yabibe-devstack.pid` 
 
     # delay to allow file handles to free
@@ -26,6 +26,7 @@ then
 
     echo "Launch yabiadmin (frontend) http://localhost:8000"
     export PYTHON_PATH=yabiadmin
+    virt_yabiadmin/bin/django-admin.py collectstatic --noinput --settings=yabiadmin.settings 1> collectstatic-devstack.log
     virt_yabiadmin/bin/gunicorn_django -b 0.0.0.0:8000 --pid=yabiadmin-devstack.pid --log-file=yabiadmin-devstack.log --daemon yabiadmin.settings -t 300 -w 5
 
     echo "Launch celeryd (message queue)"
