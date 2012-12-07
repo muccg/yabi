@@ -11,15 +11,28 @@ EASY_INSTALL="https://s3-ap-southeast-1.amazonaws.com/http-sing/python/centos/6/
 ARGV="$@"
 
 function stopyabiadmin() {
-    kill `cat yabiadmin-yabictl.pid`
+    if test -e yabiadmin-yabictl.pid; then
+        kill `cat yabiadmin-yabictl.pid`
+        return
+    fi
+    echo "no pid file for yabiadmin"
 }
 
 function stopceleryd() {
-    kill `cat celeryd-yabictl.pid`
+    if test -e celeryd-yabictl.pid; then
+        kill `cat celeryd-yabictl.pid`
+        return
+    fi
+    echo "no pid file for celeryd"
 }
 
 function stopyabibe() {
-    kill `cat yabibe-yabictl.pid`
+    if test -e yabibe-yabictl.pid; then
+        kill `cat yabibe-yabictl.pid`
+        sleep 3
+        return
+    fi
+    echo "no pid file for yabibe"
 }
 
 function stop() {
@@ -46,6 +59,11 @@ function install() {
 }
 
 function startyabiadmin() {
+    if test -e yabiadmin-yabictl.pid; then
+        echo "pid file exists for yabiadmin"
+        return
+    fi
+
     echo "Launch yabiadmin (frontend) http://localhost:8000"
     export PYTHON_PATH=yabiadmin
     mkdir -p ~/yabi_data_dir
@@ -56,6 +74,11 @@ function startyabiadmin() {
 }
 
 function startceleryd() {
+    if test -e celeryd-yabictl.pid; then
+        echo "pid file exists for celeryd"
+        return
+    fi
+
     echo "Launch celeryd (message queue)"
     CELERY_CONFIG_MODULE="settings"
     CELERYD_CHDIR=`pwd`
@@ -69,6 +92,11 @@ function startceleryd() {
 }
 
 function startyabibe() {
+    if test -e yabibe-yabictl.pid; then
+        echo "pid file exists for yabibe"
+        return
+    fi
+
     echo "Launch yabibe (backend)"
     mkdir -p ~/.yabi/run/backend/certificates
     mkdir -p ~/.yabi/run/backend/fifos
@@ -78,8 +106,6 @@ function startyabibe() {
     export PYTHON_PATH=yabibe
     export YABICONF="~/.yabi/yabi.conf"
     virt_yabiadmin/bin/yabibe --pidfile=yabibe-yabictl.pid
-
-    sleep 3
 }
 
 function start() {
