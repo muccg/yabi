@@ -160,6 +160,10 @@ start)
 status)
     status
     ;;
+install)
+    stop
+    install
+    ;;
 *)
     echo "Usage ./yabictl.sh (status|start|startyabibe|startyabiadmin|startceleryd|stop|stopyabibe|stopyabiadmin|stopceleryd|install)"
 esac
