@@ -51,7 +51,7 @@ function install() {
     export PYTHONPATH=`pwd`
 
     echo "Install yabiadmin"
-    virtualenv virt_yabiadmin
+    virtualenv --system-site-packages virt_yabiadmin
     virt_yabiadmin/bin/easy_install -f $EASY_INSTALL yabiadmin/
 
     echo "Install yabibe"
