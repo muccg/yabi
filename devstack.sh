@@ -6,6 +6,9 @@
 # break on error
 set -e 
 
+EASY_INSTALL="https://s3-ap-southeast-1.amazonaws.com/http-sing/python/centos/6/noarch/index.html"
+
+
 if [ "x$1" == "xstop" ]
 then
     echo "Stopping devstack servers"
@@ -23,6 +26,21 @@ fi
 # start backend, celery and frontend
 if [ "x$1" == "xstart" ]
 then
+
+    # check requirements
+    which virtualenv >/dev/null
+
+    export PYTHONPATH=`pwd`
+
+    echo "Install yabiadmin"
+    virtualenv virt_yabiadmin
+    virt_yabiadmin/bin/easy_install -f $EASY_INSTALL yabiadmin/
+
+    echo "Install yabibe"
+    virt_yabiadmin/bin/easy_install -f $EASY_INSTALL yabibe/
+
+    echo "Install yabish"
+    virt_yabiadmin/bin/easy_install -f $EASY_INSTALL yabish/
 
     echo "Launch yabiadmin (frontend) http://localhost:8000"
     export PYTHON_PATH=yabiadmin
@@ -51,7 +69,7 @@ then
 
     export PYTHON_PATH=yabibe
     export YABICONF="~/.yabi/yabi.conf"
-    virt_yabibe/bin/yabibe --pidfile=yabibe-devstack.pid
+    virt_yabiadmin/bin/yabibe --pidfile=yabibe-devstack.pid
 
     echo "To stop servers, run './devstack.sh stop'"
 
