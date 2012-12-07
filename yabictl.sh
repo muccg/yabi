@@ -78,6 +78,8 @@ function startyabibe() {
     export PYTHON_PATH=yabibe
     export YABICONF="~/.yabi/yabi.conf"
     virt_yabiadmin/bin/yabibe --pidfile=yabibe-yabictl.pid
+
+    sleep 3
 }
 
 function start() {
@@ -87,7 +89,21 @@ function start() {
 }
 
 function status() {
-    echo "TODO"
+    if test -e yabibe-yabictl.pid; then
+        ps -f -p `cat yabibe-yabictl.pid`
+    else 
+        echo "No pid file for yabibe"
+    fi
+    if test -e yabiadmin-yabictl.pid; then
+        ps -f -p `cat yabiadmin-yabictl.pid`
+    else 
+        echo "No pid file for yabiadmin"
+    fi
+    if test -e celeryd-yabictl.pid; then
+        ps -f -p `cat celeryd-yabictl.pid`
+    else 
+        echo "No pid file for celeryd"
+    fi
 }
 
 case $ARGV in
