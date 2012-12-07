@@ -4,7 +4,7 @@ import unittest
 from collections import namedtuple
 
 DEBUG = True
-CONFIG_SECTION= os.environ.get('TEST_CONFIG_SECTION','quickstart_tests')
+CONFIG_SECTION= os.environ.get('TEST_CONFIG_SECTION','integration_tests')
 YABI_DIR = os.environ.get('YABI_DIR', '..')
 JSON_DIR = os.path.join(os.getcwd(), 'json_workflows')
 TMP_DIR = os.environ.get('YABI_DIR', None)                 # None means system default (/tmp on unix)
