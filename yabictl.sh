@@ -161,6 +161,6 @@ status)
     status
     ;;
 *)
-    echo "Usage ./yabictl.sh (status|start|startyabibe|startyabiadmin|startceleryd|stop|stopyabibe|stopyabiadmin|stopceleryd)"
+    echo "Usage ./yabictl.sh (status|start|startyabibe|startyabiadmin|startceleryd|stop|stopyabibe|stopyabiadmin|stopceleryd|install)"
 esac
 
