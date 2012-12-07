@@ -9,12 +9,11 @@ YABI_DIR = os.environ.get('YABI_DIR', '..')
 JSON_DIR = os.path.join(os.getcwd(), 'json_workflows')
 TMP_DIR = os.environ.get('YABI_DIR', None)                 # None means system default (/tmp on unix)
 YABI_FE = "http://localhost.localdomain:8000"
-#YABI_FE = "http://localhost/yabi"
 YABI_BE = "http://localhost.localdomain:9001"
 TEST_USERNAME = "demo"
 TEST_PASSWORD = "demo"
 
-DEFAULT_TIMEOUT = 60.0 * 10.0                           # 10 minutes. This is how long some of the tests take. this is WAY TOO LONG.
+DEFAULT_TIMEOUT = 60.0 * 5.0                           # 5 minutes. This is how long some of the tests take. this is WAY TOO LONG.
 
 def yabipath(relpath):
     return os.path.join(YABI_DIR, relpath)
@@ -138,9 +137,8 @@ class Yabi(object):
     def run(self, args='', timeout=None):
         timeout = timeout or self.TIMEOUT
         command = self.command + ' --yabi-debug ' + args
-        prefix = '. %s && ' % yabipath('virt_yabish/bin/activate')
         starttime = time.time()
-        cmd = subprocess.Popen(prefix + command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+        cmd = subprocess.Popen(command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         status = None
         while status==None:
             status = cmd.poll()
