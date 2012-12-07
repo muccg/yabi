@@ -164,16 +164,14 @@ class Yabi(object):
         result = self.run('purge')
 
 def run_yabiadmin_script(script, *args):
-    prefix = 'cd %s && ' % yabipath('yabiadmin/yabiadmin')
-    prefix += '. %s && ' % '../../virt_yabiadmin/bin/activate'
-    command = 'python manage.py runscript %s --pythonpath ../.. --script-args="%s"' % (script, ','.join(args))
-    cmd = subprocess.Popen(prefix + command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+    command = 'cd .. && pwd && ./yabictl.sh startyabibe'
+    cmd = subprocess.Popen(command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     status = cmd.wait()
     out = cmd.stdout.read()
     err = cmd.stdout.read()
     if status != 0 or err:
         print 'run_yabiadmin_script failed!'
-        print 'Command was: ' + prefix + command
+        print 'Command was: ' + command
         print 'STATUS was: %d' % status
         print 'STDERR was: \n' + err
         print 'STDOUT was: \n' + out

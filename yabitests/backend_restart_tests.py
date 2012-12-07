@@ -72,14 +72,10 @@ class BackendRestartTest(RequestTestWithAdmin):
         return dat
 
     def stop_backend(self):
-        # TODO FIXME
-        print "Not really stopping"
-        #os.system("cd %s/yabibe/yabibe && . virt_yabibe/bin/activate && fab killbackend"%YABI_DIR)
+        os.system("cd .. && pwd && ./yabictl.sh stopyabibe")
     
     def start_backend(self):
-        # TODO FIXME
-        print "Not really starting"
-        #os.system("cd %s/yabibe/yabibe && . virt_yabibe/bin/activate && fab backend:bg"%YABI_DIR)
+        os.system("cd .. && pwd && ./yabictl.sh startyabibe")
 
     def test_single_task_restart(self):
         # run backend tasks one at a time so we can restart the backend during execution
