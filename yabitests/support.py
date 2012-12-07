@@ -175,7 +175,7 @@ def yabictl(ctl):
         print 'Command was: ' + command
         print 'STATUS was: %d' % status
         print 'STDERR was: \n' + err
-        raise StandardError('yabictl FAILED')
+        raise StandardError('yabictl failed (%s)'%command)
 
 class YabiTestCase(unittest.TestCase):
     TIMEOUT = DEFAULT_TIMEOUT
