@@ -197,8 +197,8 @@ class YabiTestCase(unittest.TestCase):
     def setUp(self):
         self.yabi = self.runner()
         self.yabi.set_timeout(self.TIMEOUT)
-        self.yabi.login()
         self._setup_admin()
+        self.yabi.login()
 
     def tearDown(self):
         self.yabi.logout()
