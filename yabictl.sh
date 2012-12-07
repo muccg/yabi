@@ -12,6 +12,7 @@ ARGV="$@"
 
 function stopyabiadmin() {
     if test -e yabiadmin-yabictl.pid; then
+        echo "Stopping yabiadmin"
         kill `cat yabiadmin-yabictl.pid`
         return
     fi
@@ -20,6 +21,7 @@ function stopyabiadmin() {
 
 function stopceleryd() {
     if test -e celeryd-yabictl.pid; then
+        echo "Stopping celeryd"
         kill `cat celeryd-yabictl.pid`
         return
     fi
@@ -28,6 +30,7 @@ function stopceleryd() {
 
 function stopyabibe() {
     if test -e yabibe-yabictl.pid; then
+        echo "Stopping yabibe"
         kill `cat yabibe-yabictl.pid`
         sleep 3
         return
