@@ -159,7 +159,11 @@ install)
     stop
     install
     ;;
+clean)
+    stop
+    clean
+    ;;
 *)
-    echo "Usage ./quickstart.sh (status|start|stop|install)"
+    echo "Usage ./quickstart.sh (status|start|stop|install|clean)"
 esac
 
