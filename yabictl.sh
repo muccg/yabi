@@ -6,7 +6,7 @@
 # break on error
 set -e 
 
-EASY_INSTALL="https://s3-ap-southeast-1.amazonaws.com/http-sing/python/centos/6/noarch/index.html"
+EASY_INSTALL="http://s3-ap-southeast-2.amazonaws.com/http-syd/python/centos/6/noarch/index.html"
 
 ARGV="$@"
 
