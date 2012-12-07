@@ -163,20 +163,19 @@ class Yabi(object):
     def purge(self):
         result = self.run('purge')
 
-def run_yabiadmin_script(script, *args):
-    command = 'cd .. && pwd && ./yabictl.sh startyabibe'
+def yabictl(ctl):
+    command = 'cd .. && pwd && ./yabictl.sh %s'%ctl
     cmd = subprocess.Popen(command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     status = cmd.wait()
     out = cmd.stdout.read()
     err = cmd.stdout.read()
+    print out
     if status != 0 or err:
-        print 'run_yabiadmin_script failed!'
+        print 'yabictl failed!'
         print 'Command was: ' + command
         print 'STATUS was: %d' % status
         print 'STDERR was: \n' + err
-        print 'STDOUT was: \n' + out
-        raise StandardError('run_yabiadmin_script FAILED')
-
+        raise StandardError('yabictl FAILED')
 
 class YabiTestCase(unittest.TestCase):
     TIMEOUT = DEFAULT_TIMEOUT
@@ -189,11 +188,11 @@ class YabiTestCase(unittest.TestCase):
 
     def _setup_admin(self):
         if 'setUpAdmin' in dir(self.__class__):
-            run_yabiadmin_script('run_class_method', self.classname, 'setUpAdmin')
+            yabictl('start')
 
     def _teardown_admin(self):
         if 'tearDownAdmin' in dir(self.__class__):
-            run_yabiadmin_script('run_class_method', self.classname, 'tearDownAdmin')
+            yabictl('stop')
 
     def setUp(self):
         self.yabi = self.runner()
