@@ -136,7 +136,8 @@ class Yabi(object):
 
     def run(self, args='', timeout=None):
         timeout = timeout or self.TIMEOUT
-        command = self.command + ' --yabi-debug ' + args
+        #command = self.command + ' --yabi-debug ' + args
+        command = self.command + ' ' + args
         starttime = time.time()
         cmd = subprocess.Popen(command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         status = None
