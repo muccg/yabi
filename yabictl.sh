@@ -13,6 +13,7 @@ ARGV="$@"
 function stopyabiadmin() {
     if test -e yabiadmin-yabictl.pid; then
         echo "Stopping yabiadmin"
+        set +e
         kill `cat yabiadmin-yabictl.pid`
         return
     fi
@@ -22,7 +23,16 @@ function stopyabiadmin() {
 function stopceleryd() {
     if test -e celeryd-yabictl.pid; then
         echo "Stopping celeryd"
+        set +e
         kill `cat celeryd-yabictl.pid`
+        sleep 2
+
+        # I've seen it hang around after a kill
+        if test -e celeryd-yabictl.pid; then
+            kill -9 `cat celeryd-yabictl.pid`
+            rm -f celeryd-yabictl.pid
+            echo "Killed celery with kill -9"
+        fi
         return
     fi
     echo "no pid file for celeryd"
@@ -31,6 +41,7 @@ function stopceleryd() {
 function stopyabibe() {
     if test -e yabibe-yabictl.pid; then
         echo "Stopping yabibe"
+        set +e
         kill `cat yabibe-yabictl.pid`
         sleep 3
         return
@@ -135,6 +146,11 @@ function status() {
     fi
 }
 
+function clean() {
+    echo "rm -rf ~/.yabi/run/backend"
+    rm -rf ~/.yabi/run/backend
+}
+
 case $ARGV in
 stopyabiadmin)
     stopyabiadmin
@@ -167,7 +183,11 @@ install)
     stop
     install
     ;;
+clean)
+    stop
+    clean 
+    ;;
 *)
-    echo "Usage ./yabictl.sh (status|start|startyabibe|startyabiadmin|startceleryd|stop|stopyabibe|stopyabiadmin|stopceleryd|install)"
+    echo "Usage ./yabictl.sh (status|start|startyabibe|startyabiadmin|startceleryd|stop|stopyabibe|stopyabiadmin|stopceleryd|install|clean)"
 esac
 
