@@ -23,13 +23,13 @@ def make_random_string(length=None):
 class LocalfsFileTests(RequestTest):
     TIMEOUT = 30.0
     
-    @classmethod
-    def setUpAdmin(self):
+    def setUp(self):
+        RequestTest.setUp(self)
         admin.create_localfs_backend()
 
-    @classmethod
-    def tearDownAdmin(self):
+    def tearDown(self):
         admin.destroy_localfs_backend()
+        RequestTest.tearDown(self)
 
     def build_file_archive(self, base='/tmp/yabi-localfs-test'):
         """Builds a test directory nested full of files and directories to test archive stuff"""

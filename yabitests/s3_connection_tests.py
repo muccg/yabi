@@ -26,15 +26,17 @@ from urllib import quote
 QUOTED_TEST_S3_SERVER = quote(TEST_S3_SERVER)
 
 class S3FileUploadTest(RequestTest):
-    @classmethod
-    def setUpAdmin(self):
+
+    def setUp(self):
+        RequestTest.setUp(self)
         #admin.create_tool_cksum()
         admin.create_fakes3_backend()
 
-    @classmethod
-    def tearDownAdmin(self):
+
+    def tearDown(self):
         from yabiadmin.yabi import models
         #models.Tool.objects.get(name='cksum').delete()
+        RequestTest.tearDown(self)
 
     def notest_s3_files_list(self):
         import requests

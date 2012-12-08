@@ -36,9 +36,7 @@ class Result(object):
         self._id = None
 
         if DEBUG:
-            print self.status
-            print self.stdout
-            print self.stderr
+            print "Result (%s)(%s)(%s)"%(self.status, self.stdout, self.stderr)
 
     @property
     def id(self):
@@ -54,16 +52,14 @@ class Result(object):
     def cleanup(self):
         result = self.yabi.run('rm "%s"' % self.stageout_dir)
         if result.status != 0:
-            print result.status
-            print result.stdout
-            print result.stderr
+            print "Result (%s)(%s)(%s)"%(result.status, result.stdout, result.stderr)
 
 class StatusResult(Result):
     '''Decorates a normal Result with methods to access Worflow properties from yabish status output'''
     WORKFLOW_PROPERTIES = ['id', 'status', 'name', 'stageout', 'jobs']
     Workflow = namedtuple('Workflow', WORKFLOW_PROPERTIES)
     Job = namedtuple('Job', ['id', 'status', 'toolname'])
-    
+
     def __init__(self, result):
         self.result = result
         self.status = self.result.status
@@ -72,13 +68,13 @@ class StatusResult(Result):
         self.yabi = self.result.yabi
 
         self.workflow = self.create_workflow_from_stdout()
-        
+
     def extract_jobs(self, jobs_text):
         jobs_text = jobs_text.split("\n")[3:] # skip header and separator
         jobs = []
         for line in filter(lambda l: l.strip(), jobs_text):
             jobs.append(StatusResult.Job(*line.split()))
-        return jobs    
+        return jobs
 
     def extract_workflow_properties(self, wfl_text):
         props = dict.fromkeys(StatusResult.WORKFLOW_PROPERTIES)
@@ -111,7 +107,7 @@ class YabiTimeoutException(Exception):
 
 class Yabi(object):
     TIMEOUT = DEFAULT_TIMEOUT
-    
+
     def __init__(self, yabish=yabipath('yabish/yabish')):
         self.conf = config.Configuration(section=CONFIG_SECTION)
 
@@ -139,15 +135,17 @@ class Yabi(object):
         #command = self.command + ' --yabi-debug ' + args
         command = self.command + ' ' + args
         starttime = time.time()
+        if DEBUG:
+            print command
         cmd = subprocess.Popen(command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         status = None
         while status==None:
             status = cmd.poll()
             time.sleep(1.0)
-            
+
             if time.time()-starttime > timeout:
                 raise YabiTimeoutException()
-        
+
         return Result(status, cmd.stdout.read(), cmd.stderr.read(), runner=self)
 
     def login(self, username=None, password=None):
@@ -164,19 +162,18 @@ class Yabi(object):
     def purge(self):
         result = self.run('purge')
 
-def yabictl(ctl):
-    command = 'cd .. && pwd && ./yabictl.sh %s'%ctl
+def shell_command(command):
+    print command
     cmd = subprocess.Popen(command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     status = cmd.wait()
     out = cmd.stdout.read()
     err = cmd.stdout.read()
-    print out
     if status != 0 or err:
-        print 'yabictl failed!'
         print 'Command was: ' + command
         print 'STATUS was: %d' % status
+        print 'STDOUT was: \n' + out
         print 'STDERR was: \n' + err
-        raise StandardError('yabictl failed (%s)'%command)
+        raise StandardError('shell_command failed (%s)'%command)
 
 class YabiTestCase(unittest.TestCase):
     TIMEOUT = DEFAULT_TIMEOUT
@@ -187,25 +184,32 @@ class YabiTestCase(unittest.TestCase):
     def classname(self):
         return self.__module__ + '.' + self.__class__.__name__
 
-    def _setup_admin(self):
-        if 'setUpAdmin' in dir(self.__class__):
-            yabictl('start')
+    #def setUpAdmin(self):
+    #    shell_command('cd .. && ./yabictl.sh stop')
+    #    shell_command('cd .. && ./yabictl.sh clean')
+    #    shell_command('mysql -uroot -e "drop database dev_yabi;"')
+    #    shell_command('mysql -uroot -e "create database dev_yabi;"')
+    #    shell_command('cd .. && ./yabictl.sh start')
 
-    def _teardown_admin(self):
-        if 'tearDownAdmin' in dir(self.__class__):
-            yabictl('stop')
+
+    #def tearDownAdmin(self):
+    #    shell_command('cd .. && ./yabictl.sh stop')
+    #    shell_command('cd .. && ./yabictl.sh clean')
 
     def setUp(self):
+        shell_command('cd .. && ./yabictl.sh stop')
+        shell_command('cd .. && ./yabictl.sh clean')
+        shell_command('mysql -uroot -e "drop database dev_yabi; create database dev_yabi;"')
+        shell_command('cd .. && ./yabictl.sh start')
         self.yabi = self.runner()
         self.yabi.set_timeout(self.TIMEOUT)
-        self._setup_admin()
         self.yabi.login()
 
     def tearDown(self):
         self.yabi.logout()
         self.yabi.purge()
-        self._teardown_admin()
-
+        shell_command('cd .. && ./yabictl.sh stop')
+        shell_command('cd .. && ./yabictl.sh clean')
 
 class FileUtils(object):
     def setUp(self):
@@ -243,19 +247,19 @@ class FileUtils(object):
                     f.write(data(1024))
             f.write(data(remaining,random=True))
         filename = f.name
-        
+
         self.tempfiles.append(filename)
-        return filename       
+        return filename
 
     def create_tempdir(self):
         import tempfile
         dirname = tempfile.mkdtemp()
         self.tempfiles.append(dirname)
         return dirname
-      
+
     def delete_on_exit(self, filename):
         self.tempfiles.append(filename)
-  
+
     def run_cksum_locally(self, filename):
         import subprocess
         cmd = subprocess.Popen('cksum %s' % filename, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)

@@ -14,13 +14,11 @@ class RewalkTest(YabiTestCase, FileUtils):
     '''
     TIMEOUT = 60.0 * 20.0
     
-    @classmethod
     def setUpAdmin(self):
         from yabiadmin.yabi import models
         admin.create_tool_cksum()
         admin.create_tool_dd()
 
-    @classmethod
     def tearDownAdmin(self):
         from yabiadmin.yabi import models
         models.Tool.objects.get(name='cksum').delete()
@@ -29,8 +27,10 @@ class RewalkTest(YabiTestCase, FileUtils):
     def setUp(self):
         YabiTestCase.setUp(self)
         FileUtils.setUp(self)
+        self.setUpAdmin()
 
     def tearDown(self):
+        self.tearDownAdmin()
         YabiTestCase.tearDown(self)
         FileUtils.tearDown(self)
 

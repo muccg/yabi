@@ -25,16 +25,17 @@ def workflow(name="unnamed",toolname="hostname",number=5):
     return wf
 
 class BackendRateLimitTest(RequestTestWithAdmin):
-    @classmethod
-    def setUpAdmin(self):
+    
+    def setUp(self):
+        RequestTestWithAdmin.setUp(self)
         #admin.modify_backend("localex","localhost",tasks_per_user=CONCURRENT)
         admin.create_tool("hostname", display_name="hostname", path="hostname")
         admin.add_tool_to_all_tools("hostname")
 
-    @classmethod
-    def tearDownAdmin(self):
+    def tearDown(self):
         from yabiadmin.yabi import models
         models.Tool.objects.get(name='hostname').delete()
+        RequestTestWithAdmin.tearDown(self)
 
     def change_backend_concurrent(self, concurrent):
         #login as admin

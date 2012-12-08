@@ -25,16 +25,17 @@ def workflow(name="unnamed",toolname="hostname",number=5):
     return wf
 
 class BackendRestartTest(RequestTestWithAdmin):
-    @classmethod
-    def setUpAdmin(self):
+    
+    def setUp(self):
+        RequestTestWithAdmin.setUp(self)
         #admin.modify_backend("localex","localhost",tasks_per_user=CONCURRENT)
         admin.create_tool(name="hostname", display_name="hostname", path="hostname")
         admin.add_tool_to_all_tools("hostname")
 
-    @classmethod
-    def tearDownAdmin(self):
+    def tearDown(self):
         from yabiadmin.yabi import models
         models.Tool.objects.get(name='hostname').delete()
+        RequestTestWithAdmin.tearDown(self)
 
     def change_backend_concurrent(self, concurrent):
         #login as admin
@@ -51,7 +52,11 @@ class BackendRestartTest(RequestTestWithAdmin):
         status = data['status']
         
         # all the task statuses
-        statuses = [job['status'] for job in data['json']['jobs']] 
+        #statuses = [job['status'] for job in data['json']['jobs']] 
+        statuses = []
+        for job in data['json']['jobs']: 
+            if 'status' in job:
+                statuses.append(job['status'])
         
         # count the occurances of tasks that aren't pending, ready, complete or error (and are thus running)
         return [X not in ['pending','ready','complete','error'] for X in statuses ].count(True), status
@@ -84,11 +89,12 @@ class BackendRestartTest(RequestTestWithAdmin):
         
         r = self.session.post( YABI_FE+"/ws/workflows/submit", data = {'username':TEST_USER,'workflowjson':json.dumps(our_workflow)} )
         self.assertTrue(r.status_code==200, "Could not submit workflow")
+ 
+        print "posted workflow"
         
         # lets get our workflow
         result = json.loads(r.text)
         jid = result['id']
-        
         workflow_url = YABI_FE+"/ws/workflows/get/%d"%jid
         
         #sys.stderr.write("counting... %s\n"%(self.count_running(workflow_url)[0]))
@@ -139,5 +145,4 @@ class BackendRestartTest(RequestTestWithAdmin):
             if len([X for X in statuses if X!='complete' and X!='ready'])==0:
                 self.assertTrue(statuses.count('ready')==0, "possible frozen job in ready/requested state. workflow: %d"%jid)
                         
-            
         self.change_backend_concurrent(None)
