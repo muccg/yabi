@@ -1,5 +1,5 @@
 import unittest
-from support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, YABI_FE, TEST_USERNAME, TEST_PASSWORD
+from support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, conf
 from fixture_helpers import admin
 import os
 import time
@@ -66,7 +66,7 @@ class LocalfsFileTests(RequestTest):
 
     def test_localfs_files_list(self):
         import requests
-        r = self.session.get(YABI_FE+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_LOCALFS_SERVER) )
+        r = self.session.get(conf.yabiurl+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_LOCALFS_SERVER) )
 
         self.assertTrue(r.status_code==200, "Could not list localfs backend contents")
         import json
@@ -87,12 +87,12 @@ class LocalfsFileTests(RequestTest):
         destdir = "/tmp/yabi-localfs-test/output-rcopy/"
         
         payload = {
-            'yabiusername':TEST_USERNAME,
+            'yabiusername':conf.yabiusername,
             'src':TEST_LOCALFS_SERVER+"input-rcopy/",
             'dst':TEST_LOCALFS_SERVER+"output-rcopy/"
         }
         
-        r = self.session.post(YABI_FE+"/ws/fs/rcopy", data=payload)
+        r = self.session.post(conf.yabiurl+"/ws/fs/rcopy", data=payload)
         import sys
         #sys.stderr.write(r.text)
         self.assertTrue(r.status_code==200, "Could not perform rcopy")
@@ -113,12 +113,12 @@ class LocalfsFileTests(RequestTest):
         dirs = self.build_file_archive('/tmp/yabi-localfs-test/')
                     
         payload = {
-            'yabiusername':TEST_USERNAME,
+            'yabiusername':conf.yabiusername,
             'uri':"localfs://username@localhost.localdomain/tmp/yabi-localfs-test/"
             #'uri':TEST_LOCALFS_SERVER,
         }
         
-        r = self.session.get(YABI_FE+"/ws/fs/zget", params=payload)
+        r = self.session.get(conf.yabiurl+"/ws/fs/zget", params=payload)
         import sys
         self.assertTrue(r.status_code==200, "Could not perform zget. return code was: %d"%r.status_code)
 
@@ -165,13 +165,13 @@ class LocalfsFileTests(RequestTest):
         
         # upload
         files = {'file': ("file.txt", contents)}
-        r = self.session.post( url = YABI_FE+"/ws/fs/put?uri=%s"%(QUOTED_TEST_LOCALFS_SERVER),
+        r = self.session.post( url = conf.yabiurl+"/ws/fs/put?uri=%s"%(QUOTED_TEST_LOCALFS_SERVER),
                     files = files
                    )
         
         #sys.stderr.write("%d...\n"%r.status_code)
         
-        r = self.session.get(YABI_FE+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_LOCALFS_SERVER))
+        r = self.session.get(conf.yabiurl+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_LOCALFS_SERVER))
 
         self.assertTrue(r.status_code==200, "Could not list localfs backend contents")
         import json
@@ -190,7 +190,7 @@ class LocalfsFileTests(RequestTest):
         self.assertTrue(filesize==length)
         
         # get the file so we can compare
-        r = self.session.get( url = YABI_FE+"/ws/fs/get?uri=%sfile.txt"%(QUOTED_TEST_LOCALFS_SERVER) )
+        r = self.session.get( url = conf.yabiurl+"/ws/fs/get?uri=%sfile.txt"%(QUOTED_TEST_LOCALFS_SERVER) )
         #sys.stderr.write("code => %d\n"%(r.status_code))
         #sys.stderr.write("text => %s\n"%(r.text))
         

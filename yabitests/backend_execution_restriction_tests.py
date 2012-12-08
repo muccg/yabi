@@ -1,7 +1,7 @@
 import unittest
-from support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, YABI_FE
+from support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, conf
 from fixture_helpers import admin
-from request_test_base import RequestTestWithAdmin, TEST_USER
+from request_test_base import RequestTestWithAdmin
 import os
 import time
 import sys
@@ -41,7 +41,7 @@ class BackendRateLimitTest(RequestTestWithAdmin):
         #login as admin
         import requests
         
-        r = self.adminsession.post( YABI_FE+"/ws/modify_backend/name/localex/localhost", data={ 'tasks_per_user':concurrent } )
+        r = self.adminsession.post( conf.yabiurl+"/ws/modify_backend/name/localex/localhost", data={ 'tasks_per_user':concurrent } )
         self.assertTrue(r.status_code==200, "could not set the tasks_per_user on the backend localex://localhost. remote returned: %d"%r.status_code)
 
     def count_running(self,workflow_url):
@@ -63,14 +63,14 @@ class BackendRateLimitTest(RequestTestWithAdmin):
         self.change_backend_concurrent(concurrent)
         our_workflow = workflow(number=number)
         
-        r = self.session.post( YABI_FE+"/ws/workflows/submit", data = {'username':TEST_USER,'workflowjson':json.dumps(our_workflow)} )
+        r = self.session.post( conf.yabiurl+"/ws/workflows/submit", data = {'username':conf.yabiusername,'workflowjson':json.dumps(our_workflow)} )
         self.assertTrue(r.status_code==200, "Could not submit workflow")
         
         # lets get our workflow
         result = json.loads(r.text)
         jid = result['id']
         
-        workflow_url = YABI_FE+"/ws/workflows/get/%d"%jid
+        workflow_url = conf.yabiurl+"/ws/workflows/get/%d"%jid
         
         status = ""
         while status != "complete" and status!="error":
@@ -95,14 +95,14 @@ class BackendRateLimitTest(RequestTestWithAdmin):
         self.change_backend_concurrent(1)               # 1 job at a time
         our_workflow = workflow(number=40)                     # 20 total in workflow
         
-        r = self.session.post( YABI_FE+"/ws/workflows/submit", data = {'username':TEST_USER,'workflowjson':json.dumps(our_workflow)} )
+        r = self.session.post( conf.yabiurl+"/ws/workflows/submit", data = {'username':conf.yabiusername,'workflowjson':json.dumps(our_workflow)} )
         self.assertTrue(r.status_code==200, "Could not submit workflow")
         
         # lets get our workflow
         result = json.loads(r.text)
         jid = result['id']
         
-        workflow_url = YABI_FE+"/ws/workflows/get/%d"%jid
+        workflow_url = conf.yabiurl+"/ws/workflows/get/%d"%jid
         
         # wait for one task to start
         runs = 0

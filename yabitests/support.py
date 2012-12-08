@@ -4,22 +4,14 @@ import unittest
 from collections import namedtuple
 
 DEBUG = True
-CONFIG_SECTION= os.environ.get('TEST_CONFIG_SECTION','integration_tests')
-YABI_DIR = os.environ.get('YABI_DIR', '..')
-JSON_DIR = os.path.join(os.getcwd(), 'json_workflows')
-TMP_DIR = os.environ.get('YABI_DIR', None)                 # None means system default (/tmp on unix)
-YABI_FE = "http://localhost.localdomain:8000"
-YABI_BE = "http://localhost.localdomain:9001"
-TEST_USERNAME = "demo"
-TEST_PASSWORD = "demo"
-
-DEFAULT_TIMEOUT = 60.0 * 5.0                           # 5 minutes. This is how long some of the tests take. this is WAY TOO LONG.
+CONFIG_SECTION= os.environ.get('TEST_CONFIG','dev_mysql')
+conf = config.Configuration(section=CONFIG_SECTION)
 
 def yabipath(relpath):
-    return os.path.join(YABI_DIR, relpath)
+    return os.path.join(conf.yabidir, relpath)
 
 def json_path(name):
-    return os.path.join(JSON_DIR, name + '.json')
+    return os.path.join(conf.jsondir, name + '.json')
 
 def all_items(fn, items):
     for i in items:
@@ -106,26 +98,21 @@ class YabiTimeoutException(Exception):
     pass
 
 class Yabi(object):
-    TIMEOUT = DEFAULT_TIMEOUT
+    TIMEOUT = conf.timeout
 
-    def __init__(self, yabish=yabipath('yabish/yabish')):
-        self.conf = config.Configuration(section=CONFIG_SECTION)
+    def __init__(self):
+        yabish = yabipath(conf.yabish) 
 
         self.command = yabish + ' '
-        if self.conf.yabiurl:
-            self.command += '--yabi-url="%s"' % self.conf.yabiurl
+        if conf.yabiurl:
+            self.command += '--yabi-url="%s"' % conf.yabiurl
         self.setup_data_dir()
 
     def set_timeout(self, timeout):
         self.TIMEOUT = timeout
 
     def setup_data_dir(self):
-
-        # use data dir passed in from Hudson etc otherwise the one from conf
-        if not os.environ.get('TEST_DATA_DIR'):
-            self.test_data_dir = self.conf.test_data_dir
-        else:
-            self.test_data_dir = os.environ.get('TEST_DATA_DIR')
+        self.test_data_dir = conf.testdatadir
 
         if not os.path.exists(self.test_data_dir):
             assert False, "Test data directory does not exist: %s" % self.test_data_dir
@@ -148,11 +135,7 @@ class Yabi(object):
 
         return Result(status, cmd.stdout.read(), cmd.stderr.read(), runner=self)
 
-    def login(self, username=None, password=None):
-        if not username:
-            username = self.conf.username
-        if not password:
-            password = self.conf.password
+    def login(self, username=conf.yabiusername, password=conf.yabipassword):
         result = self.run('login %s %s' % (username, password))
         return 'Login unsuccessful' not in result.stderr
 
@@ -176,7 +159,7 @@ def shell_command(command):
         raise StandardError('shell_command failed (%s)'%command)
 
 class YabiTestCase(unittest.TestCase):
-    TIMEOUT = DEFAULT_TIMEOUT
+    TIMEOUT = conf.timeout
 
     runner = Yabi
 
@@ -184,22 +167,10 @@ class YabiTestCase(unittest.TestCase):
     def classname(self):
         return self.__module__ + '.' + self.__class__.__name__
 
-    #def setUpAdmin(self):
-    #    shell_command('cd .. && ./yabictl.sh stop')
-    #    shell_command('cd .. && ./yabictl.sh clean')
-    #    shell_command('mysql -uroot -e "drop database dev_yabi;"')
-    #    shell_command('mysql -uroot -e "create database dev_yabi;"')
-    #    shell_command('cd .. && ./yabictl.sh start')
-
-
-    #def tearDownAdmin(self):
-    #    shell_command('cd .. && ./yabictl.sh stop')
-    #    shell_command('cd .. && ./yabictl.sh clean')
-
     def setUp(self):
         shell_command('cd .. && ./yabictl.sh stop')
         shell_command('cd .. && ./yabictl.sh clean')
-        shell_command('mysql -uroot -e "drop database dev_yabi; create database dev_yabi;"')
+        shell_command(conf.dbrebuild)
         shell_command('cd .. && ./yabictl.sh start')
         self.yabi = self.runner()
         self.yabi.set_timeout(self.TIMEOUT)
@@ -222,7 +193,7 @@ class FileUtils(object):
             elif os.path.isfile(f):
                 os.unlink(f)
 
-    def create_tempfile(self, size = 1024, parentdir = TMP_DIR):
+    def create_tempfile(self, size = 1024, parentdir = conf.tmpdir):
         import tempfile
         import stat
         import random as rand

@@ -31,7 +31,14 @@ class HostnameTest(YabiTestCase):
         # doesn't cause problems with this    
         #result = self.yabi.run('submitworkflow %s' % json_path('hostname_five_times'))
         wfl_id = result.id
+
+        # TODO AH confirm this crude while is necessary
+        # perhaps status coming back as None is a bug
         result = StatusResult(self.yabi.run('status %s' % wfl_id))
+  
+        print result.status
+        print result.workflow
+
         self.assertEqual(result.workflow.status, 'complete')
         self.assertTrue(all_items(lambda j: j.status == 'complete', result.workflow.jobs))
 

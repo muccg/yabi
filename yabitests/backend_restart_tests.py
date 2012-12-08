@@ -1,7 +1,7 @@
 import unittest
-from support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, YABI_FE, YABI_BE, YABI_DIR
+from support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, conf
 from fixture_helpers import admin
-from request_test_base import RequestTestWithAdmin, TEST_USER
+from request_test_base import RequestTestWithAdmin
 import os
 import time
 import sys
@@ -41,7 +41,7 @@ class BackendRestartTest(RequestTestWithAdmin):
         #login as admin
         import requests
         
-        r = self.adminsession.post( YABI_FE+"/ws/modify_backend/name/localex/localhost", data={ 'tasks_per_user':concurrent } )
+        r = self.adminsession.post( conf.yabiurl+"/ws/modify_backend/name/localex/localhost", data={ 'tasks_per_user':concurrent } )
         self.assertTrue(r.status_code==200, "could not set the tasks_per_user on the backend localex://localhost. remote returned: %d"%r.status_code)
     
     def count_running(self,workflow_url):
@@ -70,7 +70,7 @@ class BackendRestartTest(RequestTestWithAdmin):
     def get_backend_task_debug(self):
         import requests
         
-        r = requests.get( YABI_BE+"/debug" )
+        r = requests.get( conf.yabibeurl+"/debug" )
         self.assertTrue(r.status_code==200, "tried to access backend debug and got remote error: %d"%r.status_code)
         
         dat = json.loads(r.text)
@@ -87,7 +87,7 @@ class BackendRestartTest(RequestTestWithAdmin):
         self.change_backend_concurrent(1) 
         our_workflow = workflow(number=30)
         
-        r = self.session.post( YABI_FE+"/ws/workflows/submit", data = {'username':TEST_USER,'workflowjson':json.dumps(our_workflow)} )
+        r = self.session.post( conf.yabiurl+"/ws/workflows/submit", data = {'username':conf.yabiusername,'workflowjson':json.dumps(our_workflow)} )
         self.assertTrue(r.status_code==200, "Could not submit workflow")
  
         print "posted workflow"
@@ -95,7 +95,7 @@ class BackendRestartTest(RequestTestWithAdmin):
         # lets get our workflow
         result = json.loads(r.text)
         jid = result['id']
-        workflow_url = YABI_FE+"/ws/workflows/get/%d"%jid
+        workflow_url = conf.yabiurl+"/ws/workflows/get/%d"%jid
         
         #sys.stderr.write("counting... %s\n"%(self.count_running(workflow_url)[0]))
         

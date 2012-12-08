@@ -1,5 +1,5 @@
 import unittest
-from support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, YABI_FE
+from support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, conf
 from fixture_helpers import admin
 from request_test_base import RequestTest
 import os
@@ -41,7 +41,7 @@ class S3FileUploadTest(RequestTest):
     def notest_s3_files_list(self):
         import requests
         
-        r = self.session.get(YABI_FE+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_S3_SERVER) )
+        r = self.session.get(conf.yabiurl+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_S3_SERVER) )
 
         self.assertTrue(r.status_code==200, "Could not list S3 backend contents")
         
@@ -60,14 +60,14 @@ class S3FileUploadTest(RequestTest):
        
         # upload
         files = {'file': ("file.txt", open(__file__, 'rb'))}
-        r = self.session.post( url = YABI_FE+"/ws/fs/put?uri=%s"%(QUOTED_TEST_S3_SERVER),
+        r = self.session.post( url = conf.yabiurl+"/ws/fs/put?uri=%s"%(QUOTED_TEST_S3_SERVER),
                     files = files
                    )
         
         print r.status
         
 
-        r = self.session.get(YABI_FE+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_S3_SERVER))
+        r = self.session.get(conf.yabiurl+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_S3_SERVER))
 
         self.assertTrue(r.status_code==200, "Could not list S3 backend contents")
         import json
@@ -79,7 +79,7 @@ class S3FileUploadTest(RequestTest):
     def notest_s3_files_deletion_non_existent(self):
         import requests
         
-        r = self.session.get(YABI_FE+"/ws/fs/rm?uri=%s/DONT_EXIST.dat"%(QUOTED_TEST_S3_SERVER))
+        r = self.session.get(conf.yabiurl+"/ws/fs/rm?uri=%s/DONT_EXIST.dat"%(QUOTED_TEST_S3_SERVER))
 
         self.assertTrue(r.status_code == 404, "Incorrect status code returned. Should be 404. Returns %d instead!"%r.status_code)
 
@@ -94,7 +94,7 @@ class S3FileUploadTest(RequestTest):
     def notest_s3_mkdir(self):
         import requests
         
-        r = self.session.get(YABI_FE+"/ws/fs/mkdir?uri=%s/directory"%(QUOTED_TEST_S3_SERVER))
+        r = self.session.get(conf.yabiurl+"/ws/fs/mkdir?uri=%s/directory"%(QUOTED_TEST_S3_SERVER))
 
         #sys.stderr.write("status: %d\n"%r.status_code)
         #sys.stderr.write("headers: %s\n"%str(r.headers))
