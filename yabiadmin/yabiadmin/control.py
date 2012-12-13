@@ -5,7 +5,7 @@
 #
 
 import django
-import settings
+from django.conf import settings
 
 def print_settings():
     db = settings.DATABASES['default']

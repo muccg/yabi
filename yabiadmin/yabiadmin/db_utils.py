@@ -1,6 +1,6 @@
 import sys
 import utils
-import settings
+from django.conf import settings
 import os
 import subprocess
 
