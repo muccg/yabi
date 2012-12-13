@@ -79,7 +79,7 @@ function startyabiadmin() {
     fi
 
     echo "Launch yabiadmin (frontend) http://localhost:8000"
-    export PYTHON_PATH=yabiadmin
+    export PYTHONPATH=yabiadmin
     mkdir -p ~/yabi_data_dir
     virt_yabiadmin/bin/django-admin.py syncdb --noinput --settings=yabiadmin.settings 1> syncdb-yabictl.log
     virt_yabiadmin/bin/django-admin.py migrate --settings=yabiadmin.settings 1> migrate-yabictl.log
@@ -117,7 +117,7 @@ function startyabibe() {
     mkdir -p ~/.yabi/run/backend/tasklets
     mkdir -p ~/.yabi/run/backend/temp
 
-    export PYTHON_PATH=yabibe
+    export PYTHONPATH=yabibe/yabibe
     export YABICONF="~/.yabi/yabi.conf"
     virt_yabiadmin/bin/yabibe --pidfile=yabibe-yabictl.pid
 }
