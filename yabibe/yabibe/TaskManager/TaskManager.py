@@ -38,11 +38,13 @@ from utils.parsers import parse_url
 
 from TaskTools import Copy, RCopy, Sleep, Log, Status, Exec, Mkdir, Rm, List, UserCreds, GETFailure, CloseConnections
 
+from utils.RememberingHTTPClient import RememberingHTTPClientFactory
+
 # if debug is on, full tracebacks are logged into yabiadmin
 DEBUG = False
 
 # if this is true the backend constantly rants about when it collects the next task
-VERBOSE = False  
+VERBOSE = False
 
 # set this to true to make sure theres a heartbeat in the logs... so you know that things are working. 
 HEARTBEAT = False
@@ -66,6 +68,8 @@ class TaskManager(object):
     
     JOBLESS_PAUSE = 5.0                 # wait this long when theres no more jobs, to try to get another job
     JOB_PAUSE = 0.0                     # wait this long when you successfully got a job, to get the next job
+
+    connect_failed = [False]
     
     def __init__(self):
         #self.pausechannel_task = gevent.queue.Queue(maxsize=0)          # a channel
@@ -170,31 +174,29 @@ class TaskManager(object):
     def get_next_task(self):
          
         useragent = "YabiExec/0.1"
-        task_server = "%s://%s:%s" % (config.yabiadminscheme, config.yabiadminserver, config.yabiadminport)
+        #task_server = "%s://%s:%s" % (config.yabiadminscheme, config.yabiadminserver, config.yabiadminport)
         task_path = os.path.join(config.yabiadminpath, self.TASK_URL)
         task_tag = "?tasktag=%s" % (config.config['taskmanager']['tasktag'])
-        task_url = task_server + task_path + task_tag
+        #task_url = task_server + task_path + task_tag
+        task_url = task_path + task_tag
 
         if HEARTBEAT:
             print "Getting next task from:",task_url
 
-        factory = client.HTTPClientFactory(
-            url = task_url,
-            agent = useragent,
-            cookies = self.cookies
-            )
+        fullpath = "%s://%s:%d%s"%(config.yabiadminscheme,config.yabiadminserver,config.yabiadminport,task_url)
+        factory = RememberingHTTPClientFactory( 
+            fullpath, 
+            method="GET", 
+            agent=useragent, 
+            connect_failed = self.connect_failed,
+        )
+
         factory.noisy = False
         if VERBOSE:
             if config.yabiadminscheme == 'https':
                 print "reactor.connectSSL(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.TASK_URL),")"
             else:
                 print "reactor.connectTCP(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.TASK_URL),")"
-        port = config.yabiadminport
-        
-        if config.yabiadminscheme == 'https':
-            reactor.connectSSL(config.yabiadminserver, port, factory, ServerContextFactory())
-        else:
-            reactor.connectTCP(config.yabiadminserver, port, factory)
 
         # now if the page fails for some reason. deal with it
         def _doFailure(data):
@@ -204,43 +206,50 @@ class TaskManager(object):
             #self.pausechannel_task.put(self.JOBLESS_PAUSE)
             
         d = factory.deferred.addCallback(self.start_task).addErrback(_doFailure)
+
+        if config.yabiadminscheme == 'https':
+            reactor.connectSSL(config.yabiadminserver, config.yabiadminport, factory, ServerContextFactory())
+        else:
+            reactor.connectTCP(config.yabiadminserver, config.yabiadminport, factory)
+
         return d
         
     def get_next_unblocked(self):
         useragent = "YabiExec/0.1"
-        task_server = "%s://%s:%s" % (config.yabiadminscheme, config.yabiadminserver, config.yabiadminport)
         task_path = os.path.join(config.yabiadminpath, self.BLOCKED_URL)
         task_tag = "?tasktag=%s" % (config.config['taskmanager']['tasktag'])
-        task_url = task_server + task_path + task_tag
+        task_url = task_path + task_tag
 
         if HEARTBEAT:
             print "Getting next unblock request from:",task_url
 
-        factory = client.HTTPClientFactory(
-            url = task_url,
-            agent = useragent,
-            cookies = self.cookies
-            )
+        fullpath = "%s://%s:%d%s"%(config.yabiadminscheme,config.yabiadminserver,config.yabiadminport,task_url)
+        factory = RememberingHTTPClientFactory(
+            fullpath,
+            method="GET",
+            agent=useragent,
+            connect_failed = self.connect_failed,
+        )
         factory.noisy = False
         if VERBOSE:
             if config.yabiadminscheme == 'https':
                 print "reactor.connectSSL(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.BLOCKED_URL),")"
             else:
                 print "reactor.connectTCP(",config.yabiadminserver,",",config.yabiadminport,",",os.path.join(config.yabiadminpath,self.BLOCKED_URL),")"
-        port = config.yabiadminport
         
-        if config.yabiadminscheme == 'https':
-            reactor.connectSSL(config.yabiadminserver, port, factory, ServerContextFactory())
-        else:
-            reactor.connectTCP(config.yabiadminserver, port, factory)
-
         # now if the page fails for some reason. deal with it
         def _doFailure(data):
             if VERBOSE:
                 print "No more unblock requests. Sleeping for",self.JOBLESS_PAUSE
             # no more tasks. we should wait for the next task.
             #self.pausechannel_unblock.put(self.JOBLESS_PAUSE)
-            
+
         d = factory.deferred.addCallback(self.start_unblock).addErrback(_doFailure)
+
+        if config.yabiadminscheme == 'https':
+            reactor.connectSSL(config.yabiadminserver, config.yabiadminport, factory, ServerContextFactory())
+        else:
+            reactor.connectTCP(config.yabiadminserver, config.yabiadminport, factory)
+            
         return d
         
