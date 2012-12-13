@@ -39,8 +39,6 @@ logger = logging.getLogger(__name__)
 
 import pickle
 
-import settings
-
 HTTP_HMAC_KEY = 'HTTP_HMAC_DIGEST'
 
 def authentication_required(f):
