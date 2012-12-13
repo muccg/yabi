@@ -41,6 +41,8 @@ from yabiadmin.yabiengine.tasks import walk
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
 from yabiadmin.yabiengine.enginemodels import EngineTask, EngineJob, EngineWorkflow
 from yabiadmin.yabi.models import BackendCredential
+from yabiadmin.decorators import authentication_required, hmac_authenticated
+
 
 import logging
 logger = logging.getLogger(__name__)
@@ -111,12 +113,15 @@ def request_next_task(request, status):
     logger.debug("No more tasks.")
     return HttpResponseNotFound("No more tasks.")
 
+@hmac_authenticated
 def task(request):
     return request_next_task(request, status=STATUS_READY)
 
+@hmac_authenticated
 def blockedtask(request):
     return request_next_task(request, status=STATUS_RESUME)
 
+@hmac_authenticated
 def status(request, model, id):
     logger.debug('model: %s id: %s method: %s' % (model, id, request.method))
     models = {'task':EngineTask, 'job':EngineJob, 'workflow':EngineWorkflow}
@@ -154,14 +159,14 @@ def status(request, model, id):
             return HttpResponseNotFound("Object not found")
 
         try:
-            update_task_status(task.pk, status)
+            _update_task_status(task.pk, status)
         except Exception, e:
             return HttpResponseServerError(e)
 
         return HttpResponse("")
 
 @transaction.commit_manually
-def update_task_status(task_id, status):
+def _update_task_status(task_id, status):
     #logger.warning("Entry update_task_status %d with status %s"%(task_id,status))
     try:
         def log_ignored():
@@ -210,6 +215,7 @@ def update_task_status(task_id, status):
         logger.critical("Caught Exception: %s" % e)
         raise
 
+@hmac_authenticated
 def remote_id(request,id):
     logger.debug('remote_task_id> %s'%id)
     try:
@@ -237,6 +243,7 @@ def remote_id(request,id):
         logger.critical("Caught Exception: %s" % e)
         return HttpResponseServerError(e)
 
+@hmac_authenticated
 def remote_info(request,id):
     logger.debug('remote_task_info> %s'%id)
     try:
@@ -264,6 +271,7 @@ def remote_info(request,id):
         logger.critical("Caught Exception: %s" % e)
         return HttpResponseServerError(e)
 
+@hmac_authenticated
 def error(request, table, id):
     logger.debug('table: %s id: %s' % (table, id))
     
@@ -305,6 +313,7 @@ def error(request, table, id):
         return HttpResponseNotFound("Object not found")
 
 
+@hmac_authenticated
 def job(request, workflow, order):
     try:
         workflow = EngineWorkflow.objects.get(id=int(workflow))
