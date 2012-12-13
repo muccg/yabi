@@ -68,10 +68,11 @@ function startyabiadmin() {
 
     echo "Launch yabiadmin (frontend) http://localhost:8080"
     mkdir -p ~/yabi_data_dir
+    export DJANGO_SETTINGS_MODULE="yabiadmin.quickstartsettings"
     virt_quickstart/bin/django-admin.py syncdb --noinput --settings=yabiadmin.quickstartsettings 1> syncdb-quickstart.log
     virt_quickstart/bin/django-admin.py migrate --settings=yabiadmin.quickstartsettings 1> migrate-quickstart.log
     virt_quickstart/bin/django-admin.py collectstatic --noinput --settings=yabiadmin.quickstartsettings 1> collectstatic-quickstart.log
-    virt_quickstart/bin/gunicorn_django -b 0.0.0.0:8080 --pid=yabiadmin-quickstart.pid --log-file=yabiadmin-quickstart.log --daemon yabiadmin.quickstartsettings -t 300 -w 5
+    virt_quickstart/bin/gunicorn_django -b 0.0.0.0:8080 --pid=yabiadmin-quickstart.pid --log-file=yabiadmin-quickstart.log --daemon --settings=yabiadmin.quickstartsettings -t 300 -w 5
 }
 
 function startceleryd() {
@@ -103,7 +104,6 @@ function startyabibe() {
     mkdir -p /tmp/yabibe-quickstart/run/backend/fifos
     mkdir -p /tmp/yabibe-quickstart/run/backend/tasklets
     mkdir -p /tmp/yabibe-quickstart/run/backend/temp
-    export PYTHON_PATH=yabibe
     unset YABICONF
     export QUICKSTART="1" 
     virt_quickstart/bin/yabibe --pidfile=yabibe-quickstart.pid
