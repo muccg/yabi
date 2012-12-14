@@ -22,3 +22,8 @@ class Configuration(object):
         self.timeout = cp.get(self.section, 'timeout')
         self.yabidir = cp.get(self.section, 'yabi_dir')
         self.yabish = cp.get(self.section, 'yabish')
+        self.startyabi = cp.get(self.section, 'startyabi')
+        self.stopyabi = cp.get(self.section, 'stopyabi')
+        self.stopyabibe = cp.get(self.section, 'stopyabibe')
+        self.startyabibe = cp.get(self.section, 'startyabibe')
+        self.cleanyabi = cp.get(self.section, 'cleanyabi')

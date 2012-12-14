@@ -70,7 +70,7 @@ class BackendRestartTest(RequestTestWithAdmin):
     def get_backend_task_debug(self):
         import requests
         
-        r = requests.get( conf.yabibeurl+"/debug" )
+        r = requests.get( conf.yabibeurl + "debug" )
         self.assertTrue(r.status_code==200, "tried to access backend debug and got remote error: %d"%r.status_code)
         
         dat = json.loads(r.text)
