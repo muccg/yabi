@@ -32,6 +32,8 @@ class HostnameTest(YabiTestCase):
         #result = self.yabi.run(['submitworkflow', json_path('hostname_five_times')])
         wfl_id = result.id
 
+        result = StatusResult(self.yabi.run(['status', wfl_id]))
+
         print result.status
         print result.workflow
 
