@@ -95,16 +95,16 @@ class Migration(DataMigration):
         yabi_backend_3 = yabi_backend('Yabi Data Local Filesystem','This backend is to be used for stageout and BE tool data.','localfs','localhost',None,'/')
         yabi_backend_3.save()
 
-        yabi_backend_1 = yabi_backend('Local Execution','This backend gives access to execution on the machine running Yabi.','localex','localhost',None, '/', submission='${command}\n')
-        yabi_backend_1.save()
-
-        yabi_backendcredential_1 = yabi_backendcredential(yabi_backend_1, yabi_credential_1, homedir='')
-        yabi_backendcredential_1.save()
+        yabi_backend_4 = yabi_backend('Local Execution','This backend gives access to execution on the machine running Yabi.','localex','localhost',None, '/', submission='${command}\n')
+        yabi_backend_4.save()
 
         user_homedir = homedir()
         stageout_dir = user_homedir + "yabi_data_dir/"
 
-        yabi_backendcredential_2 = yabi_backendcredential(yabi_backend_1, yabi_credential_1, user_homedir)
+        yabi_backendcredential_1 = yabi_backendcredential(yabi_backend_1, yabi_credential_1, homedir='')
+        yabi_backendcredential_1.save()
+
+        yabi_backendcredential_2 = yabi_backendcredential(yabi_backend_4, yabi_credential_1, user_homedir)
         yabi_backendcredential_2.save()
 
         yabi_backendcredential_3 = yabi_backendcredential(yabi_backend_2, yabi_credential_1, user_homedir, visible=True, default_stageout=False)
@@ -112,6 +112,7 @@ class Migration(DataMigration):
 
         yabi_backendcredential_4 = yabi_backendcredential(yabi_backend_3, yabi_credential_1, stageout_dir, default_stageout=True)
         yabi_backendcredential_4.save()
+
 
         yabi_userprofile_1 = orm.UserProfile()
         yabi_userprofile_1.user = django_user_1
@@ -192,7 +193,7 @@ class Migration(DataMigration):
                                   display_name='cat',
                                   path='cat',
                                   description='Concatenate two or more files together.',
-                                  backend=yabi_backend_1,
+                                  backend=yabi_backend_4,
                                   fs_backend=yabi_backend_2,
                                   accepts_input=True,
                                   cpus='',
@@ -239,7 +240,7 @@ class Migration(DataMigration):
                                   display_name='hostname',
                                   path='hostname',
                                   description='Output the hostname where run.',
-                                  backend=yabi_backend_1,
+                                  backend=yabi_backend_4,
                                   fs_backend=yabi_backend_2,
                                   accepts_input=False,
                                   cpus='',
@@ -263,7 +264,7 @@ class Migration(DataMigration):
             'h',
             yabi_parameterswitchuse_1,
             rank = 1,
-            mandatory = True,
+            mandatory = False,
             hidden = False,
             output_file = False,
             extension_param = None,
