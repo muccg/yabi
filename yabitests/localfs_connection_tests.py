@@ -80,12 +80,12 @@ class LocalfsFileTests(RequestTest):
         import requests
         
         # make some /tmp file structures
-        basedir = '/tmp/yabi-localfs-test/input-rcopy'
-        dirs = self.build_file_archive(basedir)
+        basedir = '/tmp/yabi-localfs-test/'
+        srcdir = basedir + "input-rcopy/"
+        destdir = basedir + "output-rcopy/"
+        dirs = self.build_file_archive(srcdir)
+        os.system("mkdir -p %s" % destdir)
             
-        # now lets rcopy it to here:
-        destdir = "/tmp/yabi-localfs-test/output-rcopy/"
-        
         payload = {
             'yabiusername':conf.yabiusername,
             'src':TEST_LOCALFS_SERVER+"input-rcopy/",
@@ -94,17 +94,17 @@ class LocalfsFileTests(RequestTest):
         
         r = self.session.post(conf.yabiurl+"/ws/fs/rcopy", data=payload)
         import sys
-        #sys.stderr.write(r.text)
+        sys.stderr.write(r.text)
         self.assertTrue(r.status_code==200, "Could not perform rcopy")
-        
+  
         # diff the two directories
-        result = os.system("diff -r '%s' '%s'"%(basedir,destdir+"input-rcopy"))             # TODO: why is there a seperate dir?
+        result = os.system("diff -r '%s' '%s'"%(srcdir, destdir))
         
         self.assertTrue(result==0, "Diff between the input and output failed")
         
         # clean up
         import shutil
-        shutil.rmtree('/tmp/yabi-localfs-test/')
+        shutil.rmtree(basedir)
 
     def test_localfs_zget(self):
         import requests
