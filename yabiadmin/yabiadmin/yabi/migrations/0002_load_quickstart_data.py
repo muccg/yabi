@@ -230,6 +230,10 @@ class Migration(DataMigration):
             )
         yabi_toolparameter_cat.save()
 
+        # add accepted filetypes for cat
+        yabi_toolparameter_cat.accepted_filetypes.add(yabi_filetype_2)
+        yabi_toolparameter_cat.save()
+        
         # add to tool groups
         yabi_toolgrouping_for_cat = yabi_toolgrouping( yabi_toolgroup_2, yabi_tool_cat, yabi_toolset_1 )
         yabi_toolgrouping_for_cat.save()
