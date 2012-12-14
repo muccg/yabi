@@ -42,13 +42,13 @@ class Result(object):
         return self._id
 
     def cleanup(self):
-        result = self.yabi.run('rm "%s"' % self.stageout_dir)
+        result = self.yabi.run(['rm', self.stageout_dir])
         if result.status != 0:
             print "Result (%s)(%s)(%s)"%(result.status, result.stdout, result.stderr)
 
 class StatusResult(Result):
     '''Decorates a normal Result with methods to access Worflow properties from yabish status output'''
-    WORKFLOW_PROPERTIES = ['id', 'status', 'name', 'stageout', 'jobs']
+    WORKFLOW_PROPERTIES = ['id', 'status', 'name', 'stageout', 'jobs', 'tags', 'created_on', 'last_modified_on']
     Workflow = namedtuple('Workflow', WORKFLOW_PROPERTIES)
     Job = namedtuple('Job', ['id', 'status', 'toolname'])
 
@@ -71,9 +71,10 @@ class StatusResult(Result):
     def extract_workflow_properties(self, wfl_text):
         props = dict.fromkeys(StatusResult.WORKFLOW_PROPERTIES)
         for line in filter(lambda l: l.strip(), wfl_text.split("\n")):
+            if '=== STATUS ===' in line:
+                continue
             name, value = line.split(":", 1)
-            if name in StatusResult.WORKFLOW_PROPERTIES:
-                props[name] = value
+            props[name] = value
         return props
 
     def create_workflow_from_stdout(self):
@@ -83,6 +84,7 @@ class StatusResult(Result):
         jobs = self.extract_jobs(jobs_text)
         workflow_props = self.extract_workflow_properties(wfl_text)
         workflow_props['jobs'] = jobs
+        print workflow_props
         workflow = StatusResult.Workflow(**workflow_props)
         return workflow
 
@@ -103,9 +105,9 @@ class Yabi(object):
     def __init__(self):
         yabish = yabipath(conf.yabish) 
 
-        self.command = yabish + ' '
+        self.command = [yabish] 
         if conf.yabiurl:
-            self.command += '--yabi-url="%s"' % conf.yabiurl
+            self.command.append('--yabi-url=%s' % conf.yabiurl)
         self.setup_data_dir()
 
     def set_timeout(self, timeout):
@@ -117,14 +119,13 @@ class Yabi(object):
         if not os.path.exists(self.test_data_dir):
             assert False, "Test data directory does not exist: %s" % self.test_data_dir
 
-    def run(self, args='', timeout=None):
+    def run(self, args=[], timeout=None):
         timeout = timeout or self.TIMEOUT
-        #command = self.command + ' --yabi-debug ' + args
-        command = self.command + ' ' + args
+        args = self.command + args
         starttime = time.time()
         if DEBUG:
-            print command
-        cmd = subprocess.Popen(command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+            print args
+        cmd = subprocess.Popen(args, shell=False, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         status = None
         while status==None:
             status = cmd.poll()
@@ -136,14 +137,14 @@ class Yabi(object):
         return Result(status, cmd.stdout.read(), cmd.stderr.read(), runner=self)
 
     def login(self, username=conf.yabiusername, password=conf.yabipassword):
-        result = self.run('login %s %s' % (username, password))
+        result = self.run(['login', username, password])
         return 'Login unsuccessful' not in result.stderr
 
     def logout(self):
-        result = self.run('logout')
+        result = self.run(['logout'])
 
     def purge(self):
-        result = self.run('purge')
+        result = self.run(['purge'])
 
 def shell_command(command):
     print command

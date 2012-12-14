@@ -36,7 +36,7 @@ class RewalkTest(YabiTestCase, FileUtils):
 
     def get_localfs_dir(self):
         LOCALFS_PREFIX = 'localfs://demo@localhost'
-        result = self.yabi.run('ls')
+        result = self.yabi.run(['ls'])
         assert result.status == 0, "yabi ls returned an error"
         localfs_line = None
         for line in result.stdout.split(os.linesep):
@@ -76,9 +76,9 @@ class RewalkTest(YabiTestCase, FileUtils):
         self.prepare_json(wfl_json_file, changed_json_file, {
             'DIR': localfs_dir, 'FILENAME': os.path.basename(filename)})
         
-        result = self.yabi.run('submitworkflow %s' % changed_json_file)
+        result = self.yabi.run(['submitworkflow', changed_json_file])
         wfl_id = result.id
-        result = StatusResult(self.yabi.run('status %s' % wfl_id))
+        result = StatusResult(self.yabi.run(['status', wfl_id]))
         self.assertEqual(result.workflow.status, 'complete')
         self.assertTrue(all_items(lambda j: j.status == 'complete', result.workflow.jobs))
 

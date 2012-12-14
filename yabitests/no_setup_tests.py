@@ -22,5 +22,5 @@ class NotLoggedInTest(YabiTestCase):
 
 class ToolNotSetupTest(YabiTestCase):
     def test_hostname_not_setup(self):
-        result = self.yabi.run('hostname')
+        result = self.yabi.run(['hostname'])
         self.assertTrue('Unknown tool name "hostname"' in result.stderr)

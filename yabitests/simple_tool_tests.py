@@ -18,24 +18,20 @@ class HostnameTest(YabiTestCase):
 
     def test_hostname(self):
         from socket import gethostname
-        result = self.yabi.run('hostname')
+        result = self.yabi.run(['hostname'])
         self.assertTrue(gethostname() in result.stdout)
 
     def test_submit_json_directly(self):
         from socket import gethostname
-        result = self.yabi.run('submitworkflow %s' % json_path('hostname'))
+        result = self.yabi.run(['submitworkflow', json_path('hostname')])
         self.assertTrue(gethostname() in result.stdout)
 
     def test_submit_json_directly_larger_workflow(self):
-        result = self.yabi.run('submitworkflow %s' % json_path('hostname_hundred_times'))
+        result = self.yabi.run(['submitworkflow', json_path('hostname_hundred_times')])
         # doesn't cause problems with this    
-        #result = self.yabi.run('submitworkflow %s' % json_path('hostname_five_times'))
+        #result = self.yabi.run(['submitworkflow', json_path('hostname_five_times')])
         wfl_id = result.id
 
-        # TODO AH confirm this crude while is necessary
-        # perhaps status coming back as None is a bug
-        result = StatusResult(self.yabi.run('status %s' % wfl_id))
-  
         print result.status
         print result.workflow
 
@@ -58,20 +54,19 @@ class ExplodingBackendTest(YabiTestCase):
 
     def test_hostname(self):
         from socket import gethostname
-        result = self.yabi.run('hostname')
+        result = self.yabi.run(['hostname'])
         self.assertTrue('Error running workflow' in result.stderr)
 
     def test_submit_json_directly_larger_workflow(self):
-        result = self.yabi.run('submitworkflow %s' % json_path('hostname_hundred_times'))
+        result = self.yabi.run(['submitworkflow', json_path('hostname_hundred_times')])
         # doesn't cause problems with this    
-        #result = self.yabi.run('submitworkflow %s' % json_path('hostname_five_times'))
+        #result = self.yabi.run(['submitworkflow', json_path('hostname_five_times')])
         wfl_id = result.id
         all_jobs_finished = False
         while not all_jobs_finished:
-            result = StatusResult(self.yabi.run('status %s' % wfl_id))
+            result = StatusResult(self.yabi.run(['status', wfl_id]))
             all_jobs_finished = all_items(lambda j: j.status in ('error', 'complete'), result.workflow.jobs)
             time.sleep(2)
+
         self.assertEqual(result.workflow.status, 'error')
         self.assertTrue(all_items(lambda j: j.status == 'error', result.workflow.jobs))
-
-  

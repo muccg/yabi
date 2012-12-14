@@ -27,7 +27,7 @@ class FileUploadTest(YabiTestCase, FileUtils):
     def test_cksum_of_large_file(self):
         FILESIZE = ONE_GB / 1024
         filename = self.create_tempfile(size=FILESIZE)
-        result = self.yabi.run('cksum %s' % filename)
+        result = self.yabi.run(['cksum', filename])
         self.assertTrue(result.status == 0, "Yabish command shouldn't return error!")
 
         expected_cksum, expected_size = self.run_cksum_locally(filename)
@@ -89,7 +89,7 @@ class FileUploadAndDownloadTest(YabiTestCase, FileUtils):
         self._test_dd()
 
     def _test_dd(self):
-        result = self.yabi.run('dd if=%s of=output_file' % self.filename)
+        result = self.yabi.run(['dd', 'if=%s'%self.filename, 'of=output_file'])
         self.assertTrue(result.status == 0, "Yabish command shouldn't return error!")
 
         expected_cksum, expected_size = self.run_cksum_locally(self.filename)
@@ -151,7 +151,7 @@ class FileUploadSmallFilesTest(YabiTestCase, FileUtils):
         file3 = self.create_tempfile(size=3 * MB, parentdir=dirname)
         files = dict([(os.path.basename(f), f) for f in (file1, file2, file3)])
 
-        result = self.yabi.run('tar -c -f file_1_2_3.tar %s' % dirname)
+        result = self.yabi.run(['tar', '-c', '-f', 'file_1_2_3.tar', dirname])
         self.assertTrue(result.status == 0, "Yabish command shouldn't return error!")
 
         extract_dirname = self.create_tempdir()
