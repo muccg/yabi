@@ -224,7 +224,7 @@ class Migration(DataMigration):
             default_value = u'selected files',
             helptext = None,
             batch_bundle_files = False,
-            file_assignment = 'batch',
+            file_assignment = 'all',
             use_output_filename = None
             )
         yabi_toolparameter_cat.save()
