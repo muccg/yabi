@@ -77,10 +77,10 @@ class BackendRestartTest(RequestTestWithAdmin):
         return dat
 
     def stop_backend(self):
-        os.system("cd .. && pwd && ./yabictl.sh stopyabibe")
+        os.system(conf.stopyabibe)
     
     def start_backend(self):
-        os.system("cd .. && pwd && ./yabictl.sh startyabibe")
+        os.system(conf.startyabibe)
 
     def test_single_task_restart(self):
         # run backend tasks one at a time so we can restart the backend during execution

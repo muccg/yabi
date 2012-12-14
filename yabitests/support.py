@@ -169,10 +169,10 @@ class YabiTestCase(unittest.TestCase):
         return self.__module__ + '.' + self.__class__.__name__
 
     def setUp(self):
-        shell_command('cd .. && ./yabictl.sh stop')
-        shell_command('cd .. && ./yabictl.sh clean')
+        shell_command(conf.stopyabi)
+        shell_command(conf.cleanyabi)
         shell_command(conf.dbrebuild)
-        shell_command('cd .. && ./yabictl.sh start')
+        shell_command(conf.startyabi)
         self.yabi = self.runner()
         self.yabi.set_timeout(self.TIMEOUT)
         self.yabi.login()
@@ -180,8 +180,8 @@ class YabiTestCase(unittest.TestCase):
     def tearDown(self):
         self.yabi.logout()
         self.yabi.purge()
-        shell_command('cd .. && ./yabictl.sh stop')
-        shell_command('cd .. && ./yabictl.sh clean')
+        shell_command(conf.stopyabi)
+        shell_command(conf.cleanyabi)
 
 class FileUtils(object):
     def setUp(self):
