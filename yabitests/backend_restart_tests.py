@@ -78,6 +78,7 @@ class BackendRestartTest(RequestTestWithAdmin):
 
     def stop_backend(self):
         os.system(conf.stopyabibe)
+        os.system(conf.yabistatus)
     
     def start_backend(self):
         os.system(conf.startyabibe)

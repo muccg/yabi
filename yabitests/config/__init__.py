@@ -27,3 +27,4 @@ class Configuration(object):
         self.stopyabibe = cp.get(self.section, 'stopyabibe')
         self.startyabibe = cp.get(self.section, 'startyabibe')
         self.cleanyabi = cp.get(self.section, 'cleanyabi')
+        self.yabistatus = cp.get(self.section, 'yabistatus')
