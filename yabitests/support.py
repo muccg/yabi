@@ -4,7 +4,7 @@ import unittest
 from collections import namedtuple
 
 DEBUG = True
-CONFIG_SECTION = os.environ.get('TEST_CONFIG')
+CONFIG_SECTION = os.environ.get('YABI_CONFIG')
 if CONFIG_SECTION:
     conf = config.Configuration(section=CONFIG_SECTION)
 else:

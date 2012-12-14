@@ -10,6 +10,27 @@ EASY_INSTALL="http://s3-ap-southeast-2.amazonaws.com/http-syd/python/centos/6/no
 
 ARGV="$@"
 
+if [$YABI_CONFIG = ""]; then
+    YABI_CONFIG="dev_mysql"
+fi
+
+case $YABI_CONFIG in
+dev_mysql)
+    DJANGO_SETTINGS_MODULE="yabiadmin.settings"
+    ;;
+dev_postgres)
+    DJANGO_SETTINGS_MODULE="yabiadmin.postgresqlsettings"
+    ;;
+quickstart)
+    echo "Can't use yabictl.sh with quickstart"
+    exit 1
+    ;;
+*)
+    echo "No YABI_CONFIG set, exiting"
+    exit 1
+esac
+
+
 function stopyabiadmin() {
     if test -e yabiadmin-yabictl.pid; then
         echo "Stopping yabiadmin"
@@ -81,10 +102,10 @@ function startyabiadmin() {
     echo "Launch yabiadmin (frontend) http://localhost:8000"
     export PYTHONPATH=yabiadmin
     mkdir -p ~/yabi_data_dir
-    virt_yabiadmin/bin/django-admin.py syncdb --noinput --settings=yabiadmin.settings 1> syncdb-yabictl.log
-    virt_yabiadmin/bin/django-admin.py migrate --settings=yabiadmin.settings 1> migrate-yabictl.log
-    virt_yabiadmin/bin/django-admin.py collectstatic --noinput --settings=yabiadmin.settings 1> collectstatic-yabictl.log
-    virt_yabiadmin/bin/gunicorn_django -b 0.0.0.0:8000 --pid=yabiadmin-yabictl.pid --log-file=yabiadmin-yabictl.log --daemon yabiadmin.settings -t 300 -w 5
+    virt_yabiadmin/bin/django-admin.py syncdb --noinput --settings=$DJANGO_SETTINGS_MODULEs 1> syncdb-yabictl.log
+    virt_yabiadmin/bin/django-admin.py migrate --settings=$DJANGO_SETTINGS_MODULE 1> migrate-yabictl.log
+    virt_yabiadmin/bin/django-admin.py collectstatic --noinput --settings=$DJANGO_SETTINGS_MODULE 1> collectstatic-yabictl.log
+    virt_yabiadmin/bin/gunicorn_django -b 0.0.0.0:8000 --pid=yabiadmin-yabictl.pid --log-file=yabiadmin-yabictl.log --daemon $DJANGO_SETTINGS_MODULE -t 300 -w 5
 }
 
 function startceleryd() {
@@ -98,7 +119,6 @@ function startceleryd() {
     CELERYD_CHDIR=`pwd`
     CELERYD_OPTS="--logfile=celeryd-yabictl.log --pidfile=celeryd-yabictl.pid"
     CELERY_LOADER="django"
-    DJANGO_SETTINGS_MODULE="yabiadmin.settings"
     DJANGO_PROJECT_DIR="$CELERYD_CHDIR"
     PROJECT_DIRECTORY="$CELERYD_CHDIR"
     export CELERY_CONFIG_MODULE DJANGO_SETTINGS_MODULE DJANGO_PROJECT_DIR CELERY_LOADER CELERY_CHDIR PROJECT_DIRECTORY CELERYD_CHDIR
