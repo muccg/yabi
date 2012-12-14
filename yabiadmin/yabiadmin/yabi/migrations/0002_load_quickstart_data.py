@@ -194,7 +194,7 @@ class Migration(DataMigration):
                                   description='Concatenate two or more files together.',
                                   backend=yabi_backend_1,
                                   fs_backend=yabi_backend_2,
-                                  accepts_input=False,
+                                  accepts_input=True,
                                   cpus='',
                                   walltime='',
                                   module='',
@@ -210,16 +210,11 @@ class Migration(DataMigration):
         yabi_tooloutputextension_for_cat = yabi_tooloutputextension( yabi_tool_cat, yabi_fileextension_1 )
         yabi_tooloutputextension_for_cat.save()
 
-
-        
-        #yabi_tool_cat.groups.add(yabi_toolgroup_2)
-        #yabi_tool_cat.output_filetypes.add(yabi_fileextension_1)
-
         # add the tool parameters
         yabi_toolparameter_cat = yabi_toolparameter(
             yabi_tool_cat,
             'files',
-            yabi_parameterswitchuse_1,
+            yabi_parameterswitchuse_2,
             rank = 1,
             mandatory = True,
             hidden = False,
@@ -237,6 +232,54 @@ class Migration(DataMigration):
         # add to tool groups
         yabi_toolgrouping_for_cat = yabi_toolgrouping( yabi_toolgroup_2, yabi_tool_cat, yabi_toolset_1 )
         yabi_toolgrouping_for_cat.save()
+
+
+        # add the hostname tool
+        yabi_tool_hostname = yabi_tool(name = 'hostname',
+                                  display_name='hostname',
+                                  path='hostname',
+                                  description='Output the hostname where run.',
+                                  backend=yabi_backend_1,
+                                  fs_backend=yabi_backend_2,
+                                  accepts_input=False,
+                                  cpus='',
+                                  walltime='',
+                                  module='',
+                                  queue='',
+                                  max_memory='',
+                                  job_type='',
+                                  lcopy=False,
+                                  link=False
+                                  )
+        yabi_tool_hostname.save()
+
+        # add output extension
+        yabi_tooloutputextension_for_hostname = yabi_tooloutputextension( yabi_tool_hostname, yabi_fileextension_1 )
+        yabi_tooloutputextension_for_hostname.save()
+
+        # add the tool parameters
+        yabi_toolparameter_hostname = yabi_toolparameter(
+            yabi_tool_hostname,
+            'h',
+            yabi_parameterswitchuse_1,
+            rank = 1,
+            mandatory = True,
+            hidden = False,
+            output_file = False,
+            extension_param = None,
+            possible_values = None,
+            default_value = u'',
+            helptext = None,
+            batch_bundle_files = False,
+            file_assignment = 'none',
+            use_output_filename = None
+            )
+        yabi_toolparameter_hostname.save()
+
+        # add to tool groups
+        yabi_toolgrouping_for_hostname = yabi_toolgrouping( yabi_toolgroup_2, yabi_tool_hostname, yabi_toolset_1 )
+        yabi_toolgrouping_for_hostname.save()
+
 
 
 
