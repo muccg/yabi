@@ -4,8 +4,11 @@ import unittest
 from collections import namedtuple
 
 DEBUG = True
-CONFIG_SECTION= os.environ.get('TEST_CONFIG','dev_mysql')
-conf = config.Configuration(section=CONFIG_SECTION)
+CONFIG_SECTION = os.environ.get('TEST_CONFIG')
+if CONFIG_SECTION:
+    conf = config.Configuration(section=CONFIG_SECTION)
+else:
+    conf = config.Configuration()
 
 def yabipath(relpath):
     return os.path.join(conf.yabidir, relpath)
