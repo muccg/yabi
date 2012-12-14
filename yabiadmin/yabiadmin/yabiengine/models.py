@@ -125,11 +125,12 @@ class Workflow(models.Model, Editable, Status):
             self.status = STATUS_ERROR
             self.end_time = datetime.now()
             self.save()
-            return
-        if len(filter(lambda s: s != STATUS_COMPLETE, job_statuses)) == 0:
+        elif len(filter(lambda s: s != STATUS_COMPLETE, job_statuses)) == 0:
             self.status = STATUS_COMPLETE
             self.end_time = datetime.now()
             self.save()
+
+        return self.status
 
 class Tag(models.Model):
     value = models.CharField(max_length=255)
@@ -206,8 +207,8 @@ class Job(models.Model, Editable, Status):
                 assert(self.status in STATUS)
                 self.save()
                 break
-        if self.status != cur_status and self.status in (STATUS_ERROR, STATUS_COMPLETE):
-            self.workflow.update_status()
+  
+        return self.status
 
 class Task(models.Model, Editable, Status):
     job = models.ForeignKey(Job)
