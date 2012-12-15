@@ -8,12 +8,9 @@ class HostnameTest(YabiTestCase):
 
     def setUp(self):
         YabiTestCase.setUp(self)
-        admin.create_tool('hostname')
         admin.add_tool_to_all_tools('hostname') 
 
     def tearDown(self):
-        from yabiadmin.yabi import models
-        models.Tool.objects.get(name='hostname').delete()
         YabiTestCase.tearDown(self)
 
     def test_hostname(self):
@@ -45,12 +42,12 @@ class ExplodingBackendTest(YabiTestCase):
     def setUp(self):
         YabiTestCase.setUp(self)
         admin.create_exploding_backend()
-        admin.create_tool('hostname', backend_name='Exploding Backend')
+        #admin.create_tool('hostname', backend_name='Exploding Backend')
         admin.add_tool_to_all_tools('hostname') 
 
     def tearDown(self):
         from yabiadmin.yabi import models
-        models.Tool.objects.get(name='hostname').delete()
+        #models.Tool.objects.get(name='hostname').delete()
         models.Backend.objects.get(name='Exploding Backend').delete()
         YabiTestCase.tearDown(self)
 

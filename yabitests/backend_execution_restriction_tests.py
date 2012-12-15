@@ -28,13 +28,9 @@ class BackendRateLimitTest(RequestTestWithAdmin):
     
     def setUp(self):
         RequestTestWithAdmin.setUp(self)
-        #admin.modify_backend("localex","localhost",tasks_per_user=CONCURRENT)
-        admin.create_tool("hostname", display_name="hostname", path="hostname")
         admin.add_tool_to_all_tools("hostname")
 
     def tearDown(self):
-        from yabiadmin.yabi import models
-        models.Tool.objects.get(name='hostname').delete()
         RequestTestWithAdmin.tearDown(self)
 
     def change_backend_concurrent(self, concurrent):

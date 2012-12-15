@@ -29,13 +29,10 @@ class S3FileUploadTest(RequestTest):
 
     def setUp(self):
         RequestTest.setUp(self)
-        #admin.create_tool_cksum()
         admin.create_fakes3_backend()
 
 
     def tearDown(self):
-        from yabiadmin.yabi import models
-        #models.Tool.objects.get(name='cksum').delete()
         RequestTest.tearDown(self)
 
     def notest_s3_files_list(self):

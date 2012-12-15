@@ -5,6 +5,7 @@ class Configuration(object):
 
     def __init__(self, section='DEFAULT'):
         self.config_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "tests.conf" )
+        print "Loading config section: %s" % section
         self.load(section)
 
     def load(self, section):
