@@ -6,20 +6,21 @@
 # break on error
 set -e 
 
-EASY_INSTALL="http://s3-ap-southeast-2.amazonaws.com/http-syd/python/centos/6/noarch/index.html"
+EASY_INSTALL_64="-f http://http-syd.s3.amazonaws.com/python/centos/6/x86_64/index.html" 
+EASY_INSTALL_NOARCH="-f http://s3-ap-southeast-2.amazonaws.com/http-syd/python/centos/6/noarch/index.html"
 
 ARGV="$@"
 
-if [$YABI_CONFIG = ""]; then
+if [ $YABI_CONFIG = "" ]; then
     YABI_CONFIG="dev_mysql"
 fi
 
 case $YABI_CONFIG in
 dev_mysql)
-    DJANGO_SETTINGS_MODULE="yabiadmin.settings"
+    export DJANGO_SETTINGS_MODULE="yabiadmin.settings"
     ;;
 dev_postgres)
-    DJANGO_SETTINGS_MODULE="yabiadmin.postgresqlsettings"
+    export DJANGO_SETTINGS_MODULE="yabiadmin.postgresqlsettings"
     ;;
 quickstart)
     echo "Can't use yabictl.sh with quickstart"
@@ -30,6 +31,8 @@ quickstart)
     exit 1
 esac
 
+echo "Config: $YABI_CONFIG"
+echo 
 
 function stopyabiadmin() {
     if test -e yabiadmin-yabictl.pid; then
@@ -84,13 +87,15 @@ function install() {
 
     echo "Install yabiadmin"
     virtualenv --system-site-packages virt_yabiadmin
-    virt_yabiadmin/bin/easy_install -f $EASY_INSTALL yabiadmin/
+    virt_yabiadmin/bin/easy_install $EASY_INSTALL_NOARCH yabiadmin/
+    virt_yabiadmin/bin/easy_install $EASY_INSTALL_64 MySQL-python==1.2.3
+    virt_yabiadmin/bin/easy_install $EASY_INSTALL_64 psycopg2==2.0.8
 
     echo "Install yabibe"
-    virt_yabiadmin/bin/easy_install -f $EASY_INSTALL yabibe/
+    virt_yabiadmin/bin/easy_install $EASY_INSTALL_NOARCH yabibe/
 
     echo "Install yabish"
-    virt_yabiadmin/bin/easy_install -f $EASY_INSTALL yabish/
+    virt_yabiadmin/bin/easy_install $EASY_INSTALL_NOARCH yabish/
 }
 
 function startyabiadmin() {
@@ -102,7 +107,7 @@ function startyabiadmin() {
     echo "Launch yabiadmin (frontend) http://localhost:8000"
     export PYTHONPATH=yabiadmin
     mkdir -p ~/yabi_data_dir
-    virt_yabiadmin/bin/django-admin.py syncdb --noinput --settings=$DJANGO_SETTINGS_MODULEs 1> syncdb-yabictl.log
+    virt_yabiadmin/bin/django-admin.py syncdb --noinput --settings=$DJANGO_SETTINGS_MODULE 1> syncdb-yabictl.log
     virt_yabiadmin/bin/django-admin.py migrate --settings=$DJANGO_SETTINGS_MODULE 1> migrate-yabictl.log
     virt_yabiadmin/bin/django-admin.py collectstatic --noinput --settings=$DJANGO_SETTINGS_MODULE 1> collectstatic-yabictl.log
     virt_yabiadmin/bin/gunicorn_django -b 0.0.0.0:8000 --pid=yabiadmin-yabictl.pid --log-file=yabiadmin-yabictl.log --daemon $DJANGO_SETTINGS_MODULE -t 300 -w 5
