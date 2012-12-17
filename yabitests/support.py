@@ -155,10 +155,10 @@ def shell_command(command):
     status = cmd.wait()
     out = cmd.stdout.read()
     err = cmd.stdout.read()
+    print out
     if status != 0 or err:
         print 'Command was: ' + command
         print 'STATUS was: %d' % status
-        print 'STDOUT was: \n' + out
         print 'STDERR was: \n' + err
         raise StandardError('shell_command failed (%s)'%command)
 
@@ -176,6 +176,7 @@ class YabiTestCase(unittest.TestCase):
         shell_command(conf.cleanyabi)
         shell_command(conf.dbrebuild)
         shell_command(conf.startyabi)
+        shell_command(conf.yabistatus)
         self.yabi = self.runner()
         self.yabi.set_timeout(self.TIMEOUT)
         self.yabi.login()
@@ -184,6 +185,7 @@ class YabiTestCase(unittest.TestCase):
         self.yabi.logout()
         self.yabi.purge()
         shell_command(conf.stopyabi)
+        shell_command(conf.yabistatus)
         shell_command(conf.cleanyabi)
 
 class FileUtils(object):
