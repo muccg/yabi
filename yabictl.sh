@@ -74,9 +74,9 @@ function stopyabibe() {
 }
 
 function stop() {
-    stopyabiadmin
-    stopceleryd
     stopyabibe
+    stopceleryd
+    stopyabiadmin
 }
 
 function install() {
