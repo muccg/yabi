@@ -36,12 +36,16 @@ echo
 
 function stopyabiadmin() {
     if test -e yabiadmin-yabictl.pid; then
-        echo "Stopping yabiadmin"
-        set +e
-        kill `cat yabiadmin-yabictl.pid`
-        return
+        while test -e yabiadmin-yabictl.pid
+        do
+            set +e
+            kill `cat yabiadmin-yabictl.pid`
+            echo "Stopping yabiadmin"
+            sleep 1    
+       done 
+    else
+        echo "No pid file for yabiadmin"
     fi
-    echo "no pid file for yabiadmin"
 }
 
 function stopceleryd() {
