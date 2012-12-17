@@ -51,11 +51,6 @@ class ExplodingBackendTest(YabiTestCase):
         models.Backend.objects.get(name='Exploding Backend').delete()
         YabiTestCase.tearDown(self)
 
-    def test_hostname(self):
-        from socket import gethostname
-        result = self.yabi.run(['hostname'])
-        self.assertTrue('Error running workflow' in result.stderr)
-
     def test_submit_json_directly_larger_workflow(self):
         result = self.yabi.run(['submitworkflow', json_path('hostname_hundred_times')])
         # doesn't cause problems with this    
