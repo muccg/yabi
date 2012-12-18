@@ -158,6 +158,7 @@ function start() {
 }
 
 function status() {
+    set +e
     if test -e yabibe-yabictl.pid; then
         ps -f -p `cat yabibe-yabictl.pid`
     else 
