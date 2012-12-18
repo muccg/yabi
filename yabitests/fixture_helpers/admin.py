@@ -8,7 +8,7 @@ def create_tool(name, display_name=None, path=None, backend_name='Local Executio
     if path is None: path = name
     lfs = models.Backend.objects.get(name=fs_backend_name)
     lex = models.Backend.objects.get(name=backend_name)
-    hostname = models.Tool.objects.create(name=name, display_name=display_name, path=path, backend=lex, fs_backend=lfs)
+    models.Tool.objects.create(name=name, display_name=display_name, path=path, backend=lex, fs_backend=lfs)
 
 def add_tool_to_all_tools(toolname):
     from yabiadmin.yabi import models

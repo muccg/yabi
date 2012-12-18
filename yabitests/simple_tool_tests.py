@@ -41,14 +41,22 @@ class ExplodingBackendTest(YabiTestCase):
 
     def setUp(self):
         YabiTestCase.setUp(self)
+
+        # hostname is already in the db, so remove it and re-add to exploding backend
+        from yabiadmin.yabi import models
+        models.Tool.objects.get(name='hostname').delete()
+
         admin.create_exploding_backend()
-        #admin.create_tool('hostname', backend_name='Exploding Backend')
+        admin.create_tool('hostname', backend_name='Exploding Backend')
         admin.add_tool_to_all_tools('hostname') 
 
     def tearDown(self):
         from yabiadmin.yabi import models
-        #models.Tool.objects.get(name='hostname').delete()
+        models.Tool.objects.get(name='hostname').delete()
         models.Backend.objects.get(name='Exploding Backend').delete()
+
+        # put normal hostname back to restore order
+        admin.create_tool('hostname')
         YabiTestCase.tearDown(self)
 
     def test_submit_json_directly_larger_workflow(self):
