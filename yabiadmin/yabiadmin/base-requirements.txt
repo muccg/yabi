@@ -58,6 +58,6 @@ http://ccg-python-build.googlecode.com/files/ccg-python-build-2.3.3.tar.gz
 http://yabi.googlecode.com/files/django-kombu-ccg-0.9.4.tar.gz
 httplib2==0.7.5
 http://yaphc.googlecode.com/files/yaphc-v0_1_5.tgz
-https://github.com/downloads/sztamas/djamboloader/djamboloader-0.1.2.tar.gz
+https://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz
 MarkupSafe==0.15
 wsgiref==0.1.2
