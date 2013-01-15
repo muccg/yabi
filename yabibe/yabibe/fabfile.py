@@ -39,7 +39,7 @@ env.vc = 'mercurial'
 
 env.writeable_dirs.extend([]) # add directories you wish to have created and made writeable
 env.content_excludes.extend([]) # add quoted patterns here for extra rsync excludes
-env.content_includes.extend([]) # add quoted patterns here for extra rsync includes
+env.content_includes.extend(["*.conf"]) # add quoted patterns here for extra rsync includes
 
 env.ccg_pip_options = "--download-cache=/tmp --use-mirrors --no-index --mirrors=http://c.pypi.python.org/ --mirrors=http://d.pypi.python.org/ --mirrors=http://e.pypi.python.org/"
 
