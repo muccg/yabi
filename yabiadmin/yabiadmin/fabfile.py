@@ -11,8 +11,8 @@ env.app_install_names = ['yabiadmin'] # use app_name or list of names for each i
 env.vc = 'mercurial'
 
 env.writeable_dirs.extend([]) # add directories you wish to have created and made writeable
-env.content_excludes.extend([]) # add quoted patterns here for extra rsync excludes
-env.content_includes.extend([]) # add quoted patterns here for extra rsync includes
+env.content_excludes = ["virt_*", "fabfile.py", "ccgfab", "*.pyc", ".DS_Store", ".hg", "tmp", "scratch", "virtualpython", "build-tmp", "*.log"]
+env.content_includes.extend(['*.conf']) # add quoted patterns here for extra rsync includes
 env.auto_confirm_purge = False #controls whether the confirmation prompt for purge is used
 
 env.celeryd_options = "--config=settings -l debug -E -B"
