@@ -9,15 +9,16 @@ Prerequisites
 
 There are build requirements on Linux systems that you may need. These commands will install them:
 
- $sudo yum install python-setuptools python-devel gcc openssl-devel.x86_64 postgresql84-devel
+``sudo yum install python-setuptools python-devel gcc openssl-devel.x86_64 postgresql84-devel httpd mod_wsgi rsync``
+``sudo yum install postgresql-devel libevent-devel openldap-devel sqlite-devel glibc-devel openssl-devel``
 
- $sudo easy_install Mercurial pip virtualenv
+``sudo easy_install Mercurial pip virtualenv``
 
 **NB:** You might need to change to the right postgres devel version 
 
 Check Mercurial is installed
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    $hg --version
+``hg --version``
 
 
 Add new directories as needed
@@ -25,7 +26,9 @@ Add new directories as needed
 
 Make a directory for storing wsgi conf files.
 
-    $sudo mkdir /usr/local/python/conf/ccg-wsgi/ -p
+``sudo mkdir /usr/local/python/conf/ccg-wsgi/ -p``
+
+``sudo chown -R <USER> /usr/local/python/conf/``
 
 Set up a clean python for WSGI to use
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -33,21 +36,19 @@ We set up a clean Python environment using `virtualenv <http://www.virtualenv.or
 application is operating in. We then use the `WSGIPythonHome <http://code.google.com/p/modwsgi/wiki/ConfigurationDirectives#WSGIPythonHome>`_ 
 directive to specify the cleanpython directory.
 
-    $sudo virtualenv -p /usr/local/python/bin/python --no-site-packages /usr/local/python/cleanpython/
-
-    $sudo /usr/local/python/cleanpython/bin/pip install virtualenv
+``sudo virtualenv --no-site-packages /usr/local/python/cleanpython/``
+``sudo /usr/local/python/cleanpython/bin/pip install virtualenv``
 
 
 Now check clean python is installed:
 
-    $ /usr/local/python/cleanpython/bin/python --version
+``/usr/local/python/cleanpython/bin/python --version``
 
-Change wsgi configuration in http.conf to include:
+Change wsgi configuration in http.conf (probably /etc/httpd/conf/httpd.conf) to include:
 
 ``WSGIPythonHome     /usr/local/python/cleanpython``
 
-
-Add an include line to mod_wsgi.conf to get the Yabi wsgi file from our ccg-wsgi directory:
+Add an include line to mod_wsgi.conf (probably /etc/httpd/conf.d/wsgi.conf) to get the Yabi wsgi file from our ccg-wsgi directory:
 
 ``Include /usr/local/python/conf/ccg-wsgi/``
 
@@ -57,29 +58,38 @@ Deploying Yabi
 
 Clone the repo:
 
-    $hg clone https://code.google.com/p/yabi/ 
+``hg clone https://code.google.com/p/yabi/``
 
 Deploy Yabi Application
 -----------------------
 
-Make sure you have changed into the directory that you just checked out then:
+Make sure you have changed into the directory that you just checked out (i.e. yabi), then:
 
-    $cd yabiadmin/yabiadmin/
+``cd yabiadmin/yabiadmin/``
 
-    $sh ../../bootstrap.sh
+``sh ../../bootstrap.sh``
 
-    $source virt_yabiadmin/bin/activate
+``source virt_yabiadmin/bin/activate``
 
-    $fab release
+Next you need to make the destination directory that yabi will be installed into and change ownership to your user:
+
+``sudo mkdir -p /usr/local/python/ccgapps``
+
+``sudo chown -R <USER> /usr/local/python/ccgapps``
+
+(You can change this destination by editing the env.app_root in the fabfile.py.)
+
+
+``fab release``
 
 This will ask you to specify the release tag and present you with a list of possibilities. It is also possible to supply
 a Mercurial revision such as 'default' and that will be released. 
 
 Next, make a symlink to point at the newly released yabiadmin i.e. for yabiadmin-release-5.14
 
-    $cd /usr/local/python/ccgapps/yabiadmin/
+``cd /usr/local/python/ccgapps/yabiadmin/``
 
-    $ln -s yabiadmin-release-5.14 release
+``ln -s yabiadmin-release-5.14 release``
 
 
 Deploy Yabi Backend
@@ -87,15 +97,23 @@ Deploy Yabi Backend
 
 Change back into the directory where you cloned Yabi earlier, then:
 
-    $cd yabibe/yabibe/
+``cd yabibe/yabibe/``
 
-    $sh ../../bootstrap.sh
+``sh ../../bootstrap.sh``
 
-    $fab release
+``source virt_yabibe/bin/activate``
 
-    $fab start
+``fab release``
 
 Again you will be asked to specify a release tag.
+
+Make the directories that Yabi Backend will require:
+
+``mkdir -p ~/.yabi/run/``
+
+Now you can start Yabi Backend using the supplied init.d script.
+
+``./init_scripts/centos/yabibe``
 
 .. index::
     single: celery
@@ -105,13 +123,19 @@ Start Celery
 
 `Celery <http://celeryproject.org/>`_ is an asynchronous task queue/job queue used by Yabi. It needs to be started separately.
 
-    $/etc/init.d/celeryd start
+``/etc/init.d/celeryd start``
 
 An example of our celeryd init script can be found in our `source code repository <http://code.google.com/p/yabi/source/browse/yabiadmin/admin_scripts/celeryd>`_.
 
-Restart apache
---------------
-For changes to take effect restart apache.
+Run application
+----------------
+Now in order to run the application under Apache and mod_wsgi you will need to change the permissions on the installation directory so that apache can read and write the files. For example:
+
+``sudo chown -R apache /usr/local/python/ccgapps/yabiadmin``
+
+Now, for all changes to take effect restart apache.
+
+``sudo service httpd restart``
 
 
 .. index::

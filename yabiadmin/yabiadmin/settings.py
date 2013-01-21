@@ -184,7 +184,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'USER': '',
-        'NAME': 'yabiadmin.sqlite3',
+        'NAME': os.path.join(PROJECT_DIRECTORY,"yabiadmin.sqlite3"),
         'PASSWORD': '', 
         'HOST': '',                    
         'PORT': '',
