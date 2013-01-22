@@ -257,8 +257,7 @@ BACKEND_PORT = '9001'
 BACKEND_BASE = '/'
 TASKTAG = 'set_this' # this must be the same in the yabi.conf for the backend that will consume tasks from this admin
 YABIBACKEND_SERVER = BACKEND_IP + ':' +  BACKEND_PORT
-YABISTORE_HOME = '.yabi/run/store/'
-
+YABISTORE_HOME = os.path.join(PROJECT_DIRECTORY,"../yabistore/run/store")
 YABIBACKEND_COPY = '/fs/copy'
 YABIBACKEND_RCOPY = '/fs/rcopy'
 YABIBACKEND_MKDIR = '/fs/mkdir'
