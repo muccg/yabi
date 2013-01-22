@@ -7,9 +7,10 @@ the use of SSH for application deployment or systems administration tasks. Fabri
 Prerequisites
 -------------
 
-There are build requirements on Linux systems that you may need. These commands will install them:
+There are build requirements on Linux systems that you may need. These commands will install them on the Centos system that we are using for an example:
 
 ``sudo yum install python-setuptools python-devel gcc openssl-devel.x86_64 postgresql84-devel httpd mod_wsgi rsync``
+
 ``sudo yum install postgresql-devel libevent-devel openldap-devel sqlite-devel glibc-devel openssl-devel``
 
 ``sudo easy_install Mercurial pip virtualenv``
@@ -37,6 +38,7 @@ application is operating in. We then use the `WSGIPythonHome <http://code.google
 directive to specify the cleanpython directory.
 
 ``sudo virtualenv --no-site-packages /usr/local/python/cleanpython/``
+
 ``sudo /usr/local/python/cleanpython/bin/pip install virtualenv``
 
 
@@ -111,6 +113,18 @@ Make the directories that Yabi Backend will require:
 
 ``mkdir -p ~/.yabi/run/``
 
+And a symlink like you did for Yabiadmin (remember to change the version here as needed).
+
+``ln -s yabibe-release-5.14 release``
+
+You will probably have to edit the default config file that was installed for the Backend, 
+in /usr/local/python/ccgapps/yabibe/release/yabibe/conf. At the very least you will likely
+need to edit the setting:
+
+``admin: http://127.0.0.1:8000/``
+
+to point at you installation of Yabiadmin (probably https://127.0.0.1/yabiadmin/<RELEASE_NAME> where release name is the tag you released).
+
 Now you can start Yabi Backend using the supplied init.d script.
 
 ``./init_scripts/centos/yabibe``
@@ -121,9 +135,9 @@ Now you can start Yabi Backend using the supplied init.d script.
 Start Celery
 ------------
 
-`Celery <http://celeryproject.org/>`_ is an asynchronous task queue/job queue used by Yabi. It needs to be started separately.
+`Celery <http://celeryproject.org/>`_ is an asynchronous task queue/job queue used by Yabi. It needs to be started separately. In the Yabiadmin directory there is a init script to start Celery.
 
-``/etc/init.d/celeryd start``
+``./init_scripts/centos/celerydrun``
 
 An example of our celeryd init script can be found in our `source code repository <http://code.google.com/p/yabi/source/browse/yabiadmin/admin_scripts/celeryd>`_.
 
@@ -137,6 +151,7 @@ Now, for all changes to take effect restart apache.
 
 ``sudo service httpd restart``
 
+A wsgi conf file is installed in the directory we created. (/usr/local/python/conf/ccg-wsgi/yabiadmin-default.conf or similar.) Take a look in that if you are unsure of what url to use to access Yabiadmin. In this example I installed "default" tag so I need to visit https://127.0.0.1/yabiadmin/default/.
 
 .. index::
     single: apache; configuration
