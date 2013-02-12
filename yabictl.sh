@@ -11,7 +11,7 @@ EASY_INSTALL_NOARCH="-f http://s3-ap-southeast-2.amazonaws.com/http-syd/python/c
 
 ARGV="$@"
 
-if [ $YABI_CONFIG = "" ]; then
+if [ "$YABI_CONFIG" = "" ]; then
     YABI_CONFIG="dev_mysql"
 fi
 

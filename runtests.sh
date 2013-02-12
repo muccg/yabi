@@ -1,7 +1,7 @@
 #!/bin/sh
 source virt_yabiadmin/bin/activate
 
-if [ $YABI_CONFIG = "" ]; then
+if [ "$YABI_CONFIG" = "" ]; then
     YABI_CONFIG="dev_mysql"
 fi
 
