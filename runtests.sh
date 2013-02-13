@@ -1,4 +1,9 @@
 #!/bin/sh
+#
+# ./runtests.sh -v -w yabitests
+# ./runtests.sh -v -w yabitests --collect-only
+# ./runtests.sh -v -w yabitests yabitests.backend_restart_tests
+#
 source virt_yabiadmin/bin/activate
 
 if [ "$YABI_CONFIG" = "" ]; then
