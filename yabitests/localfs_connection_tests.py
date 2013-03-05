@@ -118,7 +118,7 @@ class LocalfsFileTests(RequestTest):
             #'uri':TEST_LOCALFS_SERVER,
         }
         
-        r = self.session.get(conf.yabiurl+"/ws/fs/zget", params=payload)
+        r = self.session.get(conf.yabiurl+"/ws/fs/zget", params=payload, stream=True)
         import sys
         self.assertTrue(r.status_code==200, "Could not perform zget. return code was: %d"%r.status_code)
 
