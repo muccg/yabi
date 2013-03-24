@@ -81,8 +81,6 @@ def hmac_authenticated(func):
         hmac_digest = hmac.new(settings.HMAC_KEY)
         hmac_digest.update(request.get_full_path())
         
-        logger.debug("hmac incoming should be %s"%(hmac_digest.hexdigest()))
-
         if HTTP_HMAC_KEY not in request.META:
             logger.critical("Hmac-digest header not present in incoming request. Denying.")
             return HttpResponseBadRequest("Hmac-digest header not present in request\n")
