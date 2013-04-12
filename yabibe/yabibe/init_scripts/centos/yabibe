@@ -2,7 +2,9 @@
 #
 
 NAME="yabibe"
-TWISTDLIST=( "/usr/local/python/ccgapps/yabibe/release/yabibe/virtualpython/bin/twistd" )
+#TWISTDLIST="/usr/local/yabi/src/yabi-be-twisted/release/mypython/bin/twistd"
+#TWISTDLIST="virt_yabi-be-twisted/bin/twistd"
+TWISTDLIST=( "virt_yabibe/bin/twistd" "/usr/local/yabi/src/yabi-be-twisted/release/virt_release/bin/twistd" "twistd" "/usr/local/bin/twistd" "/usr/bin/twistd" )
 CONFFILE="yabi.conf"
 
 for T in "${TWISTDLIST[@]}"

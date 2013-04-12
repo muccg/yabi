@@ -37,6 +37,8 @@ import time
 import stat
 import sys
 
+import log
+
 from twisted.internet import protocol
 from twisted.internet import reactor
 
@@ -147,6 +149,7 @@ class CertificateProxy(object):
         directory = directory or config.config['backend']['certificates']
         
         self.tempdir = tempfile.mkdtemp(prefix="yabi-credentials-", dir=directory)
+        log.info("Certificate Proxy Store created in '%s'"%self.tempdir)
         
     def DestroyUserProxy(self, userid):
         os.unlink( self.ProxyFile(userid) )
