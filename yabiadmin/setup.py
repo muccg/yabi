@@ -43,15 +43,16 @@ setup(name='yabiadmin',
         'amqplib==1.0.2',
         'anyjson==0.3.3',
         'carrot==0.10.7',
-        'celery==2.5.1',
-        'django-celery==2.5.1',
+        'celery==2.5.5',
+        'django-celery==2.5.5',
         # Use a pacthed version of django-kombu that fixes a known bug
         #django-kombu==0.9.4
         ##'http://yabi.googlecode.com/files/django-kombu-0.9.4.1.tar.gz',
         'django-kombu==0.9.4.1',
         'django-picklefield==0.2.0',
         'django-templatetag-sugar==0.1',
-        'kombu==2.1.1',
+        # celery will pull this in
+        #'kombu==2.1.1',
         'ordereddict==1.1',
         'pygooglechart==0.2.1',
         'pyparsing==1.5.6',
@@ -73,6 +74,20 @@ setup(name='yabiadmin',
         'djamboloader==0.1.2',
         'MarkupSafe==0.15',
         'wsgiref==0.1.2',
-        'gunicorn'
+        'gunicorn',
+        'django-nose'
     ],
+
+    dependency_links = [
+          "http://repo.ccgapps.com.au",
+          'http://ccg-django-extras.googlecode.com/files/ccg-webservices-0.1.2.tar.gz',
+          'http://ccg-django-extras.googlecode.com/files/ccg-registration-0.8-alpha-1.tar.gz',
+          'http://ccg-django-extras.googlecode.com/files/ccg-makoloader-0.2.4.tar.gz',
+          'http://ccg-django-extras.googlecode.com/files/ccg-introspect-0.1.2.tar.gz',
+          'http://ccg-django-extras.googlecode.com/files/ccg-extras-0.1.3.tar.gz',
+          'http://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.2.tar.gz',
+          'http://yabi.googlecode.com/files/django-kombu-0.9.4.1.tar.gz',
+          'http://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
+          'https://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',
+    ]
 )
