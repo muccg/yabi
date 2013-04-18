@@ -26,6 +26,10 @@ function settings() {
     dev_postgresql)
         export DJANGO_SETTINGS_MODULE="yabiadmin.postgresqlsettings"
         ;;
+    quickstart)
+        echo "Can't use yabictl.sh with quickstart"
+        exit 1
+        ;;
     *)
         echo "No YABI_CONFIG set, exiting"
         exit 1
@@ -36,8 +40,12 @@ function settings() {
 
 function nose() {
     source virt_yabiadmin/bin/activate
+    # Runs the end-to-end tests in the Yabitests project
     virt_yabiadmin/bin/nosetests -v -w yabitests
     #virt_yabiadmin/bin/nosetests -v -w yabitests yabitests.backend_restart_tests
+
+    # Runs the unit tests in the Yabiadmin project
+    virt_yabiadmin/bin/nosetests -v -w yabiadmin/yabiadmin 
 }
 
 function nose_collect() {
@@ -48,19 +56,23 @@ function dropdb() {
 
     case $YABI_CONFIG in
     test_mysql)
-        mysql -v -uroot -e "drop database test_yabi; create database test_yabi;"
+        mysql -v -uroot -e "drop database test_yabi; create database test_yabi default charset=UTF8;"
         ;;
     test_postgresql)
         psql -aeE -U postgres -c "SELECT pg_terminate_backend(pg_stat_activity.procpid) FROM pg_stat_activity where pg_stat_activity.datname = 'test_yabi'" && psql -aeE -U postgres -c "alter user yabminapp createdb;" template1 && psql -aeE -U postgres -c "alter database test_yabi owner to yabminapp" template1 && psql -aeE -U yabminapp -c "drop database test_yabi" template1 && psql -aeE -U yabminapp -c "create database test_yabi;" template1
         ;;
     dev_mysql)
 	echo "Drop the dev database manually:"
-        echo "mysql -uroot -e \"drop database dev_yabi; create database dev_yabi;\""
+        echo "mysql -uroot -e \"drop database dev_yabi; create database dev_yabi default charset=UTF8;\""
         exit 1
         ;;
     dev_postgresql)
 	echo "Drop the dev database manually:"
         echo "psql -aeE -U postgres -c \"SELECT pg_terminate_backend(pg_stat_activity.procpid) FROM pg_stat_activity where pg_stat_activity.datname = 'dev_yabi'\" && psql -aeE -U postgres -c \"alter user yabminapp createdb;\" template1 && psql -aeE -U yabminapp -c \"drop database dev_yabi\" template1 && psql -aeE -U yabminapp -c \"create database dev_yabi;\" template1"
+        exit 1
+        ;;
+    quickstart)
+        echo "Can't use yabictl.sh with quickstart"
         exit 1
         ;;
     *)
