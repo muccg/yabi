@@ -24,53 +24,7 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # 
 ### END COPYRIGHT ###
-from django.utils import simplejson as json
-from django.conf import settings
 from django.utils.encoding import smart_str
-
-def json_error(message):
-    if type(message) is str:
-        return json.dumps({'error':message})
-    
-    import traceback
-    return json.dumps({'error':traceback.format_exc()})
-
-
-def using_dev_settings():
-    
-    using_dev_settings = False
-
-    # these should be true in production
-    for s in ['SSL_ENABLED', 'SESSION_COOKIE_SECURE', 'SESSION_COOKIE_HTTPONLY', ]:
-        if getattr(settings, s) == False:
-            using_dev_settings = True
-            break
-
-    # these should be false in production
-    for s in ['DEBUG']:
-        if getattr(settings, s) == True:
-            using_dev_settings = True
-            break
-
-    # SECRET_KEY
-    if settings.SECRET_KEY == 'set_this':
-        using_dev_settings = True
-
-    # HMAC_KEY
-    if settings.HMAC_KEY == 'set_this':
-        using_dev_settings = True
-
-    return using_dev_settings
-
-def detect_rdbms():
-    assert(settings.DATABASES.has_key('default'))
-    assert(settings.DATABASES['default'].has_key('ENGINE'))
-    mapping = {
-            'django.db.backends.postgresql_psycopg2': 'postgres',
-            'django.db.backends.mysql': 'mysql',
-            'django.db.backends.sqlite3': 'sqlite',
-    }
-    return mapping.get(settings.DATABASES['default']['ENGINE'], 'unknown')
 
 def cache_keyname(key):
     """return a safe cache key"""
