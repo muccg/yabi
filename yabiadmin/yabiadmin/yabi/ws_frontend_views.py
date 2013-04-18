@@ -60,7 +60,6 @@ from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, ge
 from yabiadmin.responses import *
 from yabiadmin.decorators import authentication_required, profile_required
 from yabiadmin.yabistoreapp import db
-from yabiadmin.utils import using_dev_settings
 from yabiadmin.yabiengine.backendhelper import make_hmac
 from yabiadmin.utils import cache_keyname
 from yaphc import Http, PostRequest, UnauthorizedError
