@@ -26,10 +26,6 @@ function settings() {
     dev_postgresql)
         export DJANGO_SETTINGS_MODULE="yabiadmin.postgresqlsettings"
         ;;
-    quickstart)
-        echo "Can't use yabictl.sh with quickstart"
-        exit 1
-        ;;
     *)
         echo "No YABI_CONFIG set, exiting"
         exit 1
@@ -65,10 +61,6 @@ function dropdb() {
     dev_postgresql)
 	echo "Drop the dev database manually:"
         echo "psql -aeE -U postgres -c \"SELECT pg_terminate_backend(pg_stat_activity.procpid) FROM pg_stat_activity where pg_stat_activity.datname = 'dev_yabi'\" && psql -aeE -U postgres -c \"alter user yabminapp createdb;\" template1 && psql -aeE -U yabminapp -c \"drop database dev_yabi\" template1 && psql -aeE -U yabminapp -c \"create database dev_yabi;\" template1"
-        exit 1
-        ;;
-    quickstart)
-        echo "Can't use yabictl.sh with quickstart"
         exit 1
         ;;
     *)
