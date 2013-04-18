@@ -30,9 +30,9 @@
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'USER': 'yabminapp',
+        'USER': 'root',
         'NAME': 'dev_yabi',
-        'PASSWORD': 'yabminapp', 
+        'PASSWORD': '', 
         'HOST': 'localhost.localdomain',                    
         'PORT': '',
     }

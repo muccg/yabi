@@ -6,33 +6,76 @@
 # break on error
 set -e 
 
-#EASY_INSTALL_64="-f http://http-syd.s3.amazonaws.com/python/centos/6/x86_64/index.html" 
-#EASY_INSTALL_NOARCH="-f http://s3-ap-southeast-2.amazonaws.com/http-syd/python/centos/6/noarch/index.html"
-
 ARGV="$@"
 
 if [ "$YABI_CONFIG" = "" ]; then
     YABI_CONFIG="dev_mysql"
 fi
 
-case $YABI_CONFIG in
-dev_mysql)
-    export DJANGO_SETTINGS_MODULE="yabiadmin.settings"
-    ;;
-dev_postgres)
-    export DJANGO_SETTINGS_MODULE="yabiadmin.postgresqlsettings"
-    ;;
-quickstart)
-    echo "Can't use yabictl.sh with quickstart"
-    exit 1
-    ;;
-*)
-    echo "No YABI_CONFIG set, exiting"
-    exit 1
-esac
+function settings() {
+    case $YABI_CONFIG in
+    test_mysql)
+        export DJANGO_SETTINGS_MODULE="yabiadmin.testmysqlsettings"
+        ;;
+    test_postgresql)
+        export DJANGO_SETTINGS_MODULE="yabiadmin.testpostgresqlsettings"
+        ;;
+    dev_mysql)
+        export DJANGO_SETTINGS_MODULE="yabiadmin.settings"
+        ;;
+    dev_postgresql)
+        export DJANGO_SETTINGS_MODULE="yabiadmin.postgresqlsettings"
+        ;;
+    quickstart)
+        echo "Can't use yabictl.sh with quickstart"
+        exit 1
+        ;;
+    *)
+        echo "No YABI_CONFIG set, exiting"
+        exit 1
+    esac
 
-echo "Config: $YABI_CONFIG"
-echo 
+    echo "Config: $YABI_CONFIG"
+}
+
+function nose() {
+    source virt_yabiadmin/bin/activate
+    virt_yabiadmin/bin/nosetests -v -w yabitests
+    #virt_yabiadmin/bin/nosetests -v -w yabitests yabitests.backend_restart_tests
+}
+
+function nose_collect() {
+    virt_yabiadmin/bin/nosetests -v -w yabitests --collect-only
+}
+
+function dropdb() {
+
+    case $YABI_CONFIG in
+    test_mysql)
+        mysql -v -uroot -e "drop database test_yabi; create database test_yabi;"
+        ;;
+    test_postgresql)
+        psql -aeE -U postgres -c "SELECT pg_terminate_backend(pg_stat_activity.procpid) FROM pg_stat_activity where pg_stat_activity.datname = 'test_yabi'" && psql -aeE -U postgres -c "alter user yabminapp createdb;" template1 && psql -aeE -U postgres -c "alter database test_yabi owner to yabminapp" template1 && psql -aeE -U yabminapp -c "drop database test_yabi" template1 && psql -aeE -U yabminapp -c "create database test_yabi;" template1
+        ;;
+    dev_mysql)
+	echo "Drop the dev database manually:"
+        echo "mysql -uroot -e \"drop database dev_yabi; create database dev_yabi;\""
+        exit 1
+        ;;
+    dev_postgresql)
+	echo "Drop the dev database manually:"
+        echo "psql -aeE -U postgres -c \"SELECT pg_terminate_backend(pg_stat_activity.procpid) FROM pg_stat_activity where pg_stat_activity.datname = 'dev_yabi'\" && psql -aeE -U postgres -c \"alter user yabminapp createdb;\" template1 && psql -aeE -U yabminapp -c \"drop database dev_yabi\" template1 && psql -aeE -U yabminapp -c \"create database dev_yabi;\" template1"
+        exit 1
+        ;;
+    quickstart)
+        echo "Can't use yabictl.sh with quickstart"
+        exit 1
+        ;;
+    *)
+        echo "No YABI_CONFIG set, exiting"
+        exit 1
+    esac
+}
 
 function stopyabiadmin() {
     if test -e yabiadmin-yabictl.pid; then
@@ -77,29 +120,34 @@ function stopyabibe() {
     echo "no pid file for yabibe"
 }
 
-function stop() {
-    stopyabibe
-    stopceleryd
+function stopall() {
     stopyabiadmin
+    stopceleryd
+    stopyabibe
 }
 
-function install() {
+function yabiinstall() {
     # check requirements
     which virtualenv >/dev/null
 
-    export PYTHONPATH=`pwd`
-
     echo "Install yabiadmin"
     virtualenv --system-site-packages virt_yabiadmin
-    virt_yabiadmin/bin/easy_install yabiadmin/
+    pushd yabiadmin
+    ../virt_yabiadmin/bin/python setup.py develop
+    popd
     virt_yabiadmin/bin/easy_install MySQL-python==1.2.3
     virt_yabiadmin/bin/easy_install psycopg2==2.0.8
 
     echo "Install yabibe"
-    virt_yabiadmin/bin/easy_install yabibe/
+    virtualenv --system-site-packages virt_yabibe
+    pushd yabibe
+    ../virt_yabibe/bin/python setup.py develop
+    popd
 
     echo "Install yabish"
-    virt_yabiadmin/bin/easy_install yabish/
+    pushd yabish
+    ../virt_yabiadmin/bin/python setup.py develop
+    popd
 }
 
 function startyabiadmin() {
@@ -109,7 +157,6 @@ function startyabiadmin() {
     fi
 
     echo "Launch yabiadmin (frontend) http://localhost:8000"
-    export PYTHONPATH=yabiadmin
     mkdir -p ~/yabi_data_dir
     virt_yabiadmin/bin/django-admin.py syncdb --noinput --settings=$DJANGO_SETTINGS_MODULE 1> syncdb-yabictl.log
     virt_yabiadmin/bin/django-admin.py migrate --settings=$DJANGO_SETTINGS_MODULE 1> migrate-yabictl.log
@@ -146,18 +193,16 @@ function startyabibe() {
     mkdir -p ~/.yabi/run/backend/tasklets
     mkdir -p ~/.yabi/run/backend/temp
 
-    export PYTHONPATH=yabibe/yabibe
-    export YABICONF="~/.yabi/yabi.conf"
-    virt_yabiadmin/bin/yabibe --pidfile=yabibe-yabictl.pid
+    virt_yabibe/bin/yabibe --pidfile=yabibe-yabictl.pid
 }
 
-function start() {
+function startall() {
     startyabiadmin
     startceleryd
     startyabibe
 }
 
-function status() {
+function yabistatus() {
     set +e
     if test -e yabibe-yabictl.pid; then
         ps -f -p `cat yabibe-yabictl.pid`
@@ -176,48 +221,79 @@ function status() {
     fi
 }
 
-function clean() {
+function yabiclean() {
     echo "rm -rf ~/.yabi/run/backend"
     rm -rf ~/.yabi/run/backend
 }
 
+function yabitest() {
+    settings
+    stopall
+    dropdb
+    startall
+    nose
+    stopall
+}
+
 case $ARGV in
+test_mysql)
+    YABI_CONFIG="test_mysql"
+    yabitest
+    ;;
+test_postgresql)
+    YABI_CONFIG="test_postgresql"
+    yabitest
+    ;;
+dropdb)
+    settings
+    dropdb
+    ;;
 stopyabiadmin)
+    settings
     stopyabiadmin
     ;;
 stopyabibe)
+    settings
     stopyabibe
     ;;
 stopceleryd)
+    settings
     stopceleryd
     ;;
-stop)
-    stop
+stopall)
+    settings
+    stopall
     ;;
 startyabiadmin)
+    settings
     startyabiadmin
     ;;
 startyabibe)
+    settings
     startyabibe
     ;;
 startceleryd)
+    settings
     startceleryd
     ;;
-start)
-    start
+startall)
+    settings
+    startall
     ;;
 status)
-    status
+    yabistatus
     ;;
 install)
-    stop
-    install
+    settings
+    stopall
+    yabiinstall
     ;;
 clean)
-    stop
-    clean 
+    settings
+    stopall
+    yabiclean 
     ;;
 *)
-    echo "Usage ./yabictl.sh (status|start|startyabibe|startyabiadmin|startceleryd|stop|stopyabibe|stopyabiadmin|stopceleryd|install|clean)"
+    echo "Usage ./yabictl.sh (status|test_mysql|test_postgresql|dropdb|startall|startyabibe|startyabiadmin|startceleryd|stopall|stopyabibe|stopyabiadmin|stopceleryd|install|clean)"
 esac
 

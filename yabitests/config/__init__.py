@@ -21,7 +21,6 @@ class Configuration(object):
         self.tmpdir = cp.get(section, 'tmp_dir')
         self.testdatadir = cp.get(section, 'test_data_dir')
         self.dbrebuild = cp.get(section, 'db_rebuild')
-        self.timeout = cp.get(section, 'timeout')
         self.yabidir = cp.get(section, 'yabi_dir')
         self.yabish = cp.get(section, 'yabish')
         self.startyabi = cp.get(section, 'startyabi')

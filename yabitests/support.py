@@ -103,7 +103,6 @@ class YabiTimeoutException(Exception):
     pass
 
 class Yabi(object):
-    TIMEOUT = conf.timeout
 
     def __init__(self):
         yabish = yabipath(conf.yabish) 
@@ -113,29 +112,18 @@ class Yabi(object):
             self.command.append('--yabi-url=%s' % conf.yabiurl)
         self.setup_data_dir()
 
-    def set_timeout(self, timeout):
-        self.TIMEOUT = timeout
-
     def setup_data_dir(self):
         self.test_data_dir = conf.testdatadir
 
         if not os.path.exists(self.test_data_dir):
             assert False, "Test data directory does not exist: %s" % self.test_data_dir
 
-    def run(self, args=[], timeout=None):
-        timeout = timeout or self.TIMEOUT
+    def run(self, args=[]):
         args = self.command + args
-        starttime = time.time()
         if DEBUG:
             print args
         cmd = subprocess.Popen(args, shell=False, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-        status = None
-        while status==None:
-            status = cmd.poll()
-            time.sleep(1.0)
-
-            if time.time()-starttime > timeout:
-                raise YabiTimeoutException()
+        status = cmd.wait()
 
         return Result(status, cmd.stdout.read(), cmd.stderr.read(), runner=self)
 
@@ -163,7 +151,6 @@ def shell_command(command):
         raise StandardError('shell_command failed (%s)'%command)
 
 class YabiTestCase(unittest.TestCase):
-    TIMEOUT = conf.timeout
 
     runner = Yabi
 
@@ -172,21 +159,12 @@ class YabiTestCase(unittest.TestCase):
         return self.__module__ + '.' + self.__class__.__name__
 
     def setUp(self):
-        shell_command(conf.stopyabi)
-        shell_command(conf.cleanyabi)
-        shell_command(conf.dbrebuild)
-        shell_command(conf.startyabi)
-        shell_command(conf.yabistatus)
         self.yabi = self.runner()
-        self.yabi.set_timeout(self.TIMEOUT)
         self.yabi.login()
 
     def tearDown(self):
         self.yabi.logout()
         self.yabi.purge()
-        shell_command(conf.stopyabi)
-        shell_command(conf.yabistatus)
-        shell_command(conf.cleanyabi)
 
 class FileUtils(object):
     def setUp(self):
