@@ -188,19 +188,6 @@ MAKO_MODULENAME_CALLABLE = ''
 # these are the settings you will most likely change to reflect your setup
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#databases
-#DATABASES = {
-    #'default': {
-        #'ENGINE': 'django.db.backends.sqlite3',
-        #'USER': '',
-        #'NAME': 'yabiadmin.sqlite3',
-        #'PASSWORD': '', 
-        #'HOST': '',                    
-        #'PORT': '',
-        #'OPTIONS': {
-            #'timeout': 20,
-        #}
-    #}
-#}
 
 DATABASES = {
     'default': {

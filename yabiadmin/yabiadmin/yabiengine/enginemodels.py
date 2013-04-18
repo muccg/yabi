@@ -38,7 +38,6 @@ from django.conf import settings
 from django.utils import simplejson as json
 from ccg.utils import webhelpers
 from ccg.utils.webhelpers import url
-from yabiadmin.utils import detect_rdbms
 
 from django.db.transaction import TransactionManagementError
 
