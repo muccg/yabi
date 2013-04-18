@@ -43,7 +43,6 @@ from twistedweb2 import http, responsecode, http_headers, stream
 
 import shlex
 import os
-from utils.protocol import globus
 import gevent
 import tempfile
 

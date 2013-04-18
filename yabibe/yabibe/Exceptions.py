@@ -49,7 +49,7 @@ class IsADirectory(Exception):
     pass
 
 class NoCredentials(BlockingException):
-    """User has no globus credentials for this server"""
+    """User has no credentials for this server"""
     pass
 
 class AuthException(BlockingException):

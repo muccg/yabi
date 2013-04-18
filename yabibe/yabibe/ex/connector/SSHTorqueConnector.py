@@ -48,7 +48,6 @@ import shlex
 import os
 import uuid
 import json
-from utils.protocol import globus
 import gevent
 import tempfile
 
