@@ -27,7 +27,6 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import FSConnector
-from utils.protocol import globus
 import gevent
 from utils.parsers import *
 from Exceptions import PermissionDenied, InvalidPath
@@ -156,7 +155,6 @@ def lsrecurse(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     return get_ls_data(path,directory)
     
 class S3Filesystem(FSConnector.FSConnector, object):
-    """This is the resource that connects to the globus gridftp backends"""
     VERSION=0.1
     NAME="S3 Filesystem"
     #copymode = "ssh"

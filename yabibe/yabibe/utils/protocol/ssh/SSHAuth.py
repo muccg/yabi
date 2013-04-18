@@ -26,7 +26,6 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-"""Encapsulation of globus Authentication proxies as a mixin"""
 
 from utils.geventtools import RetryGET,GET, GETFailure, sleep, ConnectionFailure
 import json, os
