@@ -82,7 +82,7 @@ class StatusResult(Result):
 
     def create_workflow_from_stdout(self):
         if self.status != 0:
-            raise StandardException('yabish status returned non zero code')
+            raise Exception('yabish status returned non zero code')
         wfl_text, jobs_text = self.stdout.split('=== JOBS ===')
         jobs = self.extract_jobs(jobs_text)
         workflow_props = self.extract_workflow_properties(wfl_text)
