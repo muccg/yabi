@@ -57,7 +57,6 @@ setup(name='yabiadmin',
         'django-extensions==0.7.1',
         'pycrypto>=2.6',
         'psutil',
-        'nose',
         'yaphc==0.1.5',
         'BeautifulSoup==3.2.0',
         'cssutils==0.9.7',
@@ -65,8 +64,10 @@ setup(name='yabiadmin',
         'djamboloader==0.1.2',
         'MarkupSafe==0.15',
         'wsgiref==0.1.2',
+        'requests==1.2.0',
         'gunicorn',
-        'django-nose'
+        'django-nose',
+        'nose'
     ],
 
     dependency_links = [
