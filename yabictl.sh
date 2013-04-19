@@ -81,7 +81,7 @@ function stopyabiadmin() {
             kill `cat yabiadmin-yabictl.pid`
             echo "Stopping yabiadmin"
             sleep 1    
-       done 
+        done 
     else
         echo "No pid file for yabiadmin"
     fi
@@ -89,31 +89,30 @@ function stopyabiadmin() {
 
 function stopceleryd() {
     if test -e celeryd-yabictl.pid; then
-        echo "Stopping celeryd"
-        set +e
-        kill `cat celeryd-yabictl.pid`
-        sleep 2
-
-        # I've seen it hang around after a kill
-        if test -e celeryd-yabictl.pid; then
-            kill -9 `cat celeryd-yabictl.pid`
-            rm -f celeryd-yabictl.pid
-            echo "Killed celery with kill -9"
-        fi
-        return
+        while test -e celeryd-yabictl.pid
+        do
+            set +e
+            kill `cat celeryd-yabictl.pid`
+            echo "Stopping celeryd"
+            sleep 1    
+        done 
+    else
+        echo "no pid file for celeryd"
     fi
-    echo "no pid file for celeryd"
 }
 
 function stopyabibe() {
     if test -e yabibe-yabictl.pid; then
-        echo "Stopping yabibe"
-        set +e
-        kill `cat yabibe-yabictl.pid`
-        sleep 3
-        return
+        while test -e yabibe-yabictl.pid
+        do
+            set +e
+            kill `cat yabibe-yabictl.pid`
+            echo "Stopping yabibe"
+            sleep 1
+        done
+    else 
+        echo "no pid file for yabibe"
     fi
-    echo "no pid file for yabibe"
 }
 
 function stopall() {
