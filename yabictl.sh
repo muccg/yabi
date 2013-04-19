@@ -75,43 +75,73 @@ function dropdb() {
 
 function stopyabiadmin() {
     if test -e yabiadmin-yabictl.pid; then
-        while test -e yabiadmin-yabictl.pid
-        do
-            set +e
-            kill `cat yabiadmin-yabictl.pid`
-            echo "Stopping yabiadmin"
-            sleep 1    
-        done 
-    else
-        echo "No pid file for yabiadmin"
+        set +e
+        kill `cat yabiadmin-yabictl.pid`
+        echo "Stopping yabiadmin"
+    fi
+    
+    for I in 1 .. 4
+    do
+        if test -e yabiadmin-yabictl.pid; then
+            sleep 1
+        else
+            break
+        fi
+    done
+
+    if test -e yabiadmin-yabictl.pid; then
+        set +e
+        kill -9 `cat yabiadmin-yabictl.pid`
+        rm -f yabiadmin-yabictl.pid
+        echo "Forced stopping yabiadmin"
     fi
 }
 
 function stopceleryd() {
     if test -e celeryd-yabictl.pid; then
-        while test -e celeryd-yabictl.pid
-        do
-            set +e
-            kill `cat celeryd-yabictl.pid`
-            echo "Stopping celeryd"
-            sleep 1    
-        done 
-    else
-        echo "no pid file for celeryd"
+        set +e
+        kill `cat celeryd-yabictl.pid`
+        echo "Stopping celeryd"
+    fi
+
+    for I in 1 .. 4
+    do
+        if test -e celeryd-yabictl.pid; then
+            sleep 1
+        else
+            break
+        fi
+    done
+
+    if test -e celeryd-yabictl.pid; then
+        set +e
+        kill -9 `cat celeryd-yabictl.pid`
+        rm -f celeryd-yabictl.pid
+        echo "Forced stopping celeryd"
     fi
 }
 
 function stopyabibe() {
     if test -e yabibe-yabictl.pid; then
-        while test -e yabibe-yabictl.pid
-        do
-            set +e
-            kill `cat yabibe-yabictl.pid`
-            echo "Stopping yabibe"
+        set +e
+        kill `cat yabibe-yabictl.pid`
+        echo "Stopping yabibe"
+    fi
+        
+    for I in 1 .. 4
+    do      
+        if test -e yabibe-yabictl.pid; then
             sleep 1
-        done
-    else 
-        echo "no pid file for yabibe"
+        else
+            break
+        fi
+    done
+
+    if test -e yabibe-yabictl.pid; then
+        set +e
+        kill -9 `cat yabibe-yabictl.pid`
+        rm -f yabibe-yabictl.pid
+        echo "Forced stopping yabibe"
     fi
 }
 
