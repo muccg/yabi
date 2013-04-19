@@ -17,13 +17,15 @@ def add_tool_to_all_tools(toolname):
     alltools = models.ToolSet.objects.get(name='alltools')
     tg.toolgrouping_set.create(tool=tool, tool_set=alltools)
 
+def remove_tool_from_all_tools(toolname):
+    from yabiadmin.yabi import models
+    models.ToolGrouping.objects.filter(tool__name=toolname, tool_set__name='alltools', tool_group__name='select data').delete()
+
 def create_exploding_backend():
     from yabiadmin.yabi import models
     exploding_backend = models.Backend.objects.create(name='Exploding Backend', scheme='explode', hostname='localhost.localdomain', path='/', submission='${command}\n')
     null_credential = models.Credential.objects.get(description='null credential')
     models.BackendCredential.objects.create(backend=exploding_backend, credential=null_credential, homedir='')
-    
-    
 
 def create_backend(scheme="ssh", hostname="localhost.localdomain",path="/",submission="${command}"):
     from yabiadmin.yabi import models

@@ -102,8 +102,8 @@ class WsMenuTest(unittest.TestCase):
         toolset = menu['toolsets'][0]
         self.assertEqual(toolset['name'], 'all_tools', "Toolset should be 'all_tools'")
         tools = toolset['toolgroups'][0]['tools']
-        self.assertEqual(len(tools), 2, "Should have 2 tools")
-        self.assertEqual(set([t['name'] for t in tools]), set(('fileselector', 'hostname')))
+        self.assertEqual(len(tools), 1, "Should have 1 tool (fileselector)")
+        self.assertEqual(tools[0]['name'], 'fileselector')
 
     def test_menu_is_cached(self):
         first_response = self.client.get('/ws/menu')
@@ -119,7 +119,7 @@ class WsMenuTest(unittest.TestCase):
         menu = json.loads(response.content)['menu']
         toolset = menu['toolsets'][0]
         tools = toolset['toolgroups'][0]['tools']
-        self.assertEqual(len(tools), 3, "Should have 3 tools")
+        self.assertEqual(len(tools), 2, "Should have 2 tools")
         tool_names = [t['name'] for t in tools]
         self.assertTrue('new-tool' in tool_names, 'Should return new tool')
 

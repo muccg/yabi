@@ -12,6 +12,7 @@ class HostnameTest(YabiTestCase):
 
     def tearDown(self):
         YabiTestCase.tearDown(self)
+        admin.remove_tool_from_all_tools('hostname') 
 
     def test_hostname(self):
         from socket import gethostname
