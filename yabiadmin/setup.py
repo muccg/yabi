@@ -16,14 +16,12 @@ for package in packages:
     os.chdir(start_dir)
 
 setup(name='yabiadmin',
-    version='0.2',
+    version='6.15.0',
     description='Yabi Admin',
     long_description='Yabi front end and administration web interface',
     author='Centre for Comparative Genomics',
     author_email='web@ccg.murdoch.edu.au',
-    #packages = find_packages(),
     packages=packages,
-    #package_data=data_files,
     package_data={
         '': [ "%s/%s"%(dirglob,fileglob)
             for dirglob in (["."] + [ '/'.join(['*']*num) for num in range(1,15) ])                         # yui is deeply nested
@@ -45,14 +43,9 @@ setup(name='yabiadmin',
         'carrot==0.10.7',
         'celery==2.5.5',
         'django-celery==2.5.5',
-        # Use a pacthed version of django-kombu that fixes a known bug
-        #django-kombu==0.9.4
-        ##'http://yabi.googlecode.com/files/django-kombu-0.9.4.1.tar.gz',
         'django-kombu==0.9.4.1',
         'django-picklefield==0.2.0',
         'django-templatetag-sugar==0.1',
-        # celery will pull this in
-        #'kombu==2.1.1',
         'ordereddict==1.1',
         'pygooglechart==0.2.1',
         'pyparsing==1.5.6',
@@ -65,12 +58,10 @@ setup(name='yabiadmin',
         'pycrypto>=2.6',
         'psutil',
         'nose',
-        ##'http://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
         'yaphc==0.1.5',
         'BeautifulSoup==3.2.0',
         'cssutils==0.9.7',
         'httplib2==0.7.5',
-        ##'https://github.com/downloads/sztamas/djamboloader/djamboloader-0.1.2.tar.gz',
         'djamboloader==0.1.2',
         'MarkupSafe==0.15',
         'wsgiref==0.1.2',
@@ -86,6 +77,7 @@ setup(name='yabiadmin',
           'http://ccg-django-extras.googlecode.com/files/ccg-introspect-0.1.2.tar.gz',
           'http://ccg-django-extras.googlecode.com/files/ccg-extras-0.1.3.tar.gz',
           'http://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.2.tar.gz',
+          # Use a patched version of django-kombu that fixes a known bug
           'http://yabi.googlecode.com/files/django-kombu-0.9.4.1.tar.gz',
           'http://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
           'https://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',

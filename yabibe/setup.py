@@ -3,7 +3,7 @@ import os
 from setuptools import setup, find_packages
 
 setup(name='yabibe',
-    version='0.2',
+    version='6.15.0',
     description='Yabi Backend',
     long_description='Yabi back end service',
     author='Centre for Comparative Genomics',
