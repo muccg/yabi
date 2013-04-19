@@ -73,76 +73,41 @@ function dropdb() {
     esac
 }
 
-function stopyabiadmin() {
-    if test -e yabiadmin-yabictl.pid; then
-        set +e
-        kill `cat yabiadmin-yabictl.pid`
-        echo "Stopping yabiadmin"
+function stopprocess() {
+    set +e
+    if test -e $1; then
+        kill `cat $1`
     fi
     
-    for I in 1 .. 4
+    for I in 1 .. 10 
     do
-        if test -e yabiadmin-yabictl.pid; then
+        if test -e $1; then
             sleep 1
         else
             break
         fi
     done
 
-    if test -e yabiadmin-yabictl.pid; then
-        set +e
-        kill -9 `cat yabiadmin-yabictl.pid`
-        rm -f yabiadmin-yabictl.pid
-        echo "Forced stopping yabiadmin"
+    if test -e $1; then
+        kill -9 `cat $1`
+        rm -f $1
+        echo "Forced stop"
     fi
+}
+
+function stopyabiadmin() {
+    echo "Stopping Yabi admin"
+    stopprocess yabiadmin-yabictl.pid
 }
 
 function stopceleryd() {
-    if test -e celeryd-yabictl.pid; then
-        set +e
-        kill `cat celeryd-yabictl.pid`
-        echo "Stopping celeryd"
-    fi
-
-    for I in 1 .. 4
-    do
-        if test -e celeryd-yabictl.pid; then
-            sleep 1
-        else
-            break
-        fi
-    done
-
-    if test -e celeryd-yabictl.pid; then
-        set +e
-        kill -9 `cat celeryd-yabictl.pid`
-        rm -f celeryd-yabictl.pid
-        echo "Forced stopping celeryd"
-    fi
+    echo "Stopping celeryd"
+    stopprocess celeryd-yabictl.pid
 }
 
 function stopyabibe() {
-    if test -e yabibe-yabictl.pid; then
-        set +e
-        kill `cat yabibe-yabictl.pid`
-        echo "Stopping yabibe"
-    fi
-        
-    for I in 1 .. 4
-    do      
-        if test -e yabibe-yabictl.pid; then
-            sleep 1
-        else
-            break
-        fi
-    done
-
-    if test -e yabibe-yabictl.pid; then
-        set +e
-        kill -9 `cat yabibe-yabictl.pid`
-        rm -f yabibe-yabictl.pid
-        echo "Forced stopping yabibe"
-    fi
+    echo "Stopping Yabi backend"
+    stopprocess yabibe-yabictl.pid
 }
 
 function stopall() {
