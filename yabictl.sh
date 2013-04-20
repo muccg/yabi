@@ -79,7 +79,7 @@ function stopprocess() {
         kill `cat $1`
     fi
     
-    for I in 1 .. 10 
+    for I in {1..10} 
     do
         if test -e $1; then
             sleep 1
