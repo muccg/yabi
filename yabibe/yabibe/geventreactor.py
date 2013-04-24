@@ -20,11 +20,12 @@
 ## OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 ## THE SOFTWARE.
 
-import sys, os, gevent
+import sys
+import gevent
+import traceback
 from bisect import insort
 from gevent import Greenlet, GreenletExit, socket
 from gevent.pool import Group
-from gevent.queue import Queue
 from gevent.event import Event, AsyncResult
 from twisted.python import log, failure, reflect, util
 from twisted.python.runtime import seconds as runtimeSeconds
@@ -34,120 +35,160 @@ from twisted.internet.threads import _runMultiple
 from twisted.persisted import styles
 from zope.interface import Interface, implements
 
+
+__all__ = [
+    'deferToGreenletPool',
+    'deferToGreenlet',
+    'callMultipleInGreenlet',
+    'waitForGreenlet',
+    'waitForDeferred',
+    'blockingCallFromGreenlet',
+    'IReactorGreenlets',
+    'GeventResolver',
+    'GeventReactor',
+    'install'
+]
+
+
 # Common exceptions raised by Stream
 _NO_FILENO = error.ConnectionFdescWentAway('Handler has no fileno method')
 _NO_FILEDESC = error.ConnectionFdescWentAway('Filedescriptor went away')
 
 """These (except for waitFor*) resemble the threading helpers from twisted.internet.threads"""
 
-def deferToGreenletPool(*args,**kwargs):
+
+def deferToGreenletPool(*args, **kwargs):
     """Call function using a greenlet from the given pool and return the result as a Deferred"""
     reactor = args[0]
     pool = args[1]
     func = args[2]
     d = defer.Deferred()
+
     def task():
         try:
-            reactor.callFromGreenlet(d.callback,func(*args[3:],**kwargs))
+            reactor.callFromGreenlet(d.callback, func(*args[3:], **kwargs))
         except:
-            reactor.callFromGreenlet(d.errback,failure.Failure())
-    pool.add(Greenlet.spawn_later(0,task))
+            reactor.callFromGreenlet(d.errback, failure.Failure())
+    pool.add(Greenlet.spawn_later(0, task))
     return d
 
-def deferToGreenlet(*args,**kwargs):
+
+def deferToGreenlet(*args, **kwargs):
     """Call function using a greenlet and return the result as a Deferred"""
     from twisted.internet import reactor
-    return deferToGreenletPool(reactor,reactor.getGreenletPool(),*args,**kwargs)
+    return deferToGreenletPool(reactor, reactor.getGreenletPool(), *args, **kwargs)
+
 
 def callMultipleInGreenlet(tupleList):
     """Call a list of functions in the same thread"""
     from twisted.internet import reactor
-    reactor.callInGreenlet(_runMultiple,tupleList)
+    reactor.callInGreenlet(_runMultiple, tupleList)
+
 
 def waitForGreenlet(g):
     """Link greenlet completion to Deferred"""
     d = defer.Deferred()
+
     def cb(g):
         try:
             d.callback(g.get())
         except:
             d.errback(failure.Failure())
+
     g.link(d)
     return d
 
-def waitForDeferred(d,result=None):
+
+def waitForDeferred(d, result=None):
     """Block current greenlet for Deferred, waiting until result is not a Deferred or a failure is encountered"""
     if result is None:
         result = AsyncResult()
+
     def cb(res):
-        if isinstance(res,defer.Deferred):
-            waitForDeferred(res,result)
+        if isinstance(res, defer.Deferred):
+            waitForDeferred(res, result)
         else:
             result.set(res)
+
     def eb(res):
         result.set_exception(res)
-    d.addCallbacks(cb,eb)
+
+    d.addCallbacks(cb, eb)
     try:
         return result.get()
-    except failure.Failure,ex:
+    except failure.Failure, ex:
         ex.raiseException()
 
-def blockingCallFromGreenlet(*args,**kwargs):
+
+def blockingCallFromGreenlet(*args, **kwargs):
     """Call function in reactor greenlet and block current greenlet waiting for the result"""
     reactor = args[0]
     func = args[1]
     result = AsyncResult()
+
     def task():
         try:
-            result.set(func(*args[2:],**kwargs))
-        except Exception,ex:
+            result.set(func(*args[2:], **kwargs))
+        except Exception, ex:
             result.set_exception(ex)
+
     reactor.callFromGreenlet(task)
     value = result.get()
-    if isinstance(value,defer.Deferred):
+    if isinstance(value, defer.Deferred):
         return waitForDeferred(value)
     else:
         return value
 
+
 class IReactorGreenlets(Interface):
     """Interface for reactor supporting greenlets"""
+
     def getGreenletPool(self):
         pass
-    def callInGreenlet(self,*args,**kwargs):
+
+    def callInGreenlet(self, *args, **kwargs):
         pass
-    def callFromGreenlet(self,*args,**kw):
+
+    def callFromGreenlet(self, *args, **kw):
         pass
-    def suggestGreenletPoolSize(self,size):
+
+    def suggestGreenletPoolSize(self, size):
         pass
-    def addToGreenletPool(self,g):
+
+    def addToGreenletPool(self, g):
         pass
+
 
 class Reschedule(Exception):
     """Event for IReactorTime"""
     pass
 
+
 class GeventResolver(ThreadedResolver):
     """Based on ThreadedResolver, GeventResolver uses gevent to perform name lookups."""
-    def getHostByName(self,name,timeout=(1,3,11,45)):
+
+    def getHostByName(self, name, timeout=(1, 3, 11, 45)):
         if timeout:
             timeoutDelay = sum(timeout)
         else:
             timeoutDelay = 60
         userDeferred = defer.Deferred()
         lookupDeferred = deferToGreenletPool(
-            self.reactor,self.reactor.getGreenletPool(),socket.gethostbyname,name)
+            self.reactor, self.reactor.getGreenletPool(), socket.gethostbyname, name)
         cancelCall = self.reactor.callLater(
-            timeoutDelay,self._cleanup,name,lookupDeferred)
-        self._runningQueries[lookupDeferred] = (userDeferred,cancelCall)
-        lookupDeferred.addBoth(self._checkTimeout,name,lookupDeferred)
+            timeoutDelay, self._cleanup, name, lookupDeferred)
+        self._runningQueries[lookupDeferred] = (userDeferred, cancelCall)
+        lookupDeferred.addBoth(self._checkTimeout, name, lookupDeferred)
         return userDeferred
+
 
 class DelayedCall(object):
     """Delayed call proxy for IReactorTime"""
     implements(IDelayedCall)
     debug = False
     _str = None
-    def __init__(self,caller,time,func,a,kw,seconds=runtimeSeconds):
+
+    def __init__(self, caller, time, func, a, kw, seconds=runtimeSeconds):
         self.caller = caller
         self.time = time
         self.func = func
@@ -157,13 +198,16 @@ class DelayedCall(object):
         self.cancelled = self.called = 0
         if self.debug:
             self.creator = traceback.format_stack()[:-2]
+
     def __call__(self):
         if not (self.called or self.cancelled):
             self.called = 1
-            self.func(*self.a,**self.kw)
-            del self.func,self.a,self.kw
+            self.func(*self.a, **self.kw)
+            del self.func, self.a, self.kw
+
     def getTime(self):
         return self.time
+
     def cancel(self):
         if self.cancelled:
             raise error.AlreadyCancelled
@@ -173,17 +217,19 @@ class DelayedCall(object):
             self.cancelled = 1
             if self.debug:
                 self._str = str(self)
-            del self.func,self.a,self.kw
+            del self.func, self.a, self.kw
             self.caller.cancelCallLater(self)
-    def reset(self,secondsFromNow):
+
+    def reset(self, secondsFromNow):
         if self.cancelled:
             raise error.AlreadyCancelled
         elif self.called:
             raise error.AlreadyCalled
         else:
-            self.time = self.seconds()+secondsFromNow
+            self.time = self.seconds() + secondsFromNow
             self.caller.callLater(self)
-    def delay(self,secondsFromLater):
+
+    def delay(self, secondsFromLater):
         if self.cancelled:
             raise error.AlreadyCancelled
         elif self.called:
@@ -191,12 +237,16 @@ class DelayedCall(object):
         else:
             self.time += secondsFromLater
             self.caller.callLater(self)
+
     def active(self):
         return not (self.cancelled or self.called)
-    def __le__(self,other):
+
+    def __le__(self, other):
         return self.time <= other.time
-    def __lt__(self,other):
+
+    def __lt__(self, other):
         return self.time < other.time
+
     def __str__(self):
         if self._str is not None:
             return self._str
@@ -211,8 +261,8 @@ class DelayedCall(object):
             func = None
         now = self.seconds()
         L = ['<DelayedCall 0x%x [%ss] called=%s cancelled=%s' % (
-                util.unsignedID(self), self.time - now, self.called,
-                self.cancelled)]
+            util.unsignedID(self), self.time - now, self.called,
+            self.cancelled)]
         if func is not None:
             L.extend((' ', func, '('))
             if self.a:
@@ -227,8 +277,10 @@ class DelayedCall(object):
         L.append('>')
         return ''.join(L)
 
-class Stream(Greenlet,styles.Ephemeral):
-    def __init__(self,reactor,selectable,method):
+
+class Stream(Greenlet, styles.Ephemeral):
+
+    def __init__(self, reactor, selectable, method):
         Greenlet.__init__(self)
         self.reactor = reactor
         self.selectable = selectable
@@ -237,10 +289,11 @@ class Stream(Greenlet,styles.Ephemeral):
         self.wake.set()
         self.pause = self.wake.clear
         self.resume = self.wake.set
+
     def _run(self):
         selectable = self.selectable
         method = self.method
-        wait = {'doRead':socket.wait_read,'doWrite':socket.wait_write}[method]
+        wait = {'doRead': socket.wait_read, 'doWrite': socket.wait_write}[method]
         try:
             fileno = selectable.fileno()
         except AttributeError:
@@ -255,21 +308,21 @@ class Stream(Greenlet,styles.Ephemeral):
             try:
                 while wake():
                     wait(fileno)
-                    why = getattr(selectable,method)()
+                    why = getattr(selectable, method)()
                     if why:
                         break
             except GreenletExit:
                 pass
-            except IOError: # fix
+            except IOError:  # fix
                 pass
-            except AttributeError: # fix
+            except AttributeError:  # fix
                 pass
             except:
                 why = sys.exc_info()[1]
                 log.err()
         if why:
             try:
-                self.reactor._disconnectSelectable(selectable,why,method=='doRead')
+                self.reactor._disconnectSelectable(selectable, why, method == 'doRead')
             except AttributeError:
                 pass
         if method == 'doRead':
@@ -277,10 +330,12 @@ class Stream(Greenlet,styles.Ephemeral):
         else:
             self.reactor.discardWriter(selectable)
 
+
 class GeventReactor(posixbase.PosixReactorBase):
     """Implement gevent-powered reactor based on PosixReactorBase."""
     implements(IReactorGreenlets)
-    def __init__(self,*args):
+
+    def __init__(self, *args):
         self.greenlet = None
         self.greenletpool = Group()
         self._reads = {}
@@ -290,10 +345,11 @@ class GeventReactor(posixbase.PosixReactorBase):
         self._wait = 0
         self.resolver = GeventResolver(self)
         self.addToGreenletPool = self.greenletpool.add
-        posixbase.PosixReactorBase.__init__(self,*args)
+        posixbase.PosixReactorBase.__init__(self, *args)
         self._initThreads()
         self._initThreadPool()
         self._initGreenletPool()
+
     def mainLoop(self):
         """This main loop yields to gevent until the end, handling function calls along the way."""
         self.greenlet = gevent.getcurrent()
@@ -307,11 +363,11 @@ class GeventReactor(posixbase.PosixReactorBase):
                     self._wake = delay = callqueue[0].time
                     delay -= now
                 else:
-                    self._wake = now+300
+                    self._wake = now + 300
                     delay = 300
                 try:
                     self._wait = 1
-                    gevent.sleep(max(0,delay))
+                    gevent.sleep(max(0, delay))
                     self._wait = 0
                 except Reschedule:
                     continue
@@ -332,25 +388,28 @@ class GeventReactor(posixbase.PosixReactorBase):
                             log.err()
                     else:
                         break
-        except (GreenletExit,KeyboardInterrupt):
+        except (GreenletExit, KeyboardInterrupt):
             pass
         log.msg('Main loop terminated.')
         self.fireSystemEvent('shutdown')
-    def addReader(self,selectable):
+
+    def addReader(self, selectable):
         """Add a FileDescriptor for notification of data available to read."""
         try:
             self._reads[selectable].resume()
         except KeyError:
-            self._reads[selectable] = g = Stream.spawn(self,selectable,'doRead')
+            self._reads[selectable] = g = Stream.spawn(self, selectable, 'doRead')
             self.addToGreenletPool(g)
-    def addWriter(self,selectable):
+
+    def addWriter(self, selectable):
         """Add a FileDescriptor for notification of data available to write."""
         try:
             self._writes[selectable].resume()
         except KeyError:
-            self._writes[selectable] = g = Stream.spawn(self,selectable,'doWrite')
+            self._writes[selectable] = g = Stream.spawn(self, selectable, 'doWrite')
             self.addToGreenletPool(g)
-    def removeReader(self,selectable):
+
+    def removeReader(self, selectable):
         """Remove a FileDescriptor for notification of data available to read."""
         try:
             if selectable.disconnected:
@@ -360,7 +419,8 @@ class GeventReactor(posixbase.PosixReactorBase):
                 self._reads[selectable].pause()
         except KeyError:
             pass
-    def removeWriter(self,selectable):
+
+    def removeWriter(self, selectable):
         """Remove a FileDescriptor for notification of data available to write."""
         try:
             if selectable.disconnected:
@@ -370,78 +430,97 @@ class GeventReactor(posixbase.PosixReactorBase):
                 self._writes[selectable].pause()
         except KeyError:
             pass
-    def discardReader(self,selectable):
+
+    def discardReader(self, selectable):
         """Remove a FileDescriptor without checking."""
         try:
             del self._reads[selectable]
         except KeyError:
             pass
-    def discardWriter(self,selectable):
+
+    def discardWriter(self, selectable):
         """Remove a FileDescriptor without checking."""
         try:
             del self._writes[selectable]
         except KeyError:
             pass
+
     def getReaders(self):
         return self._reads.keys()
+
     def getWriters(self):
         return self._writes.keys()
+
     def removeAll(self):
-        return self._removeAll(self._reads,self._writes)
+        return self._removeAll(self._reads, self._writes)
+
     # IReactorTime
     seconds = staticmethod(runtimeSeconds)
-    def callLater(self,*args,**kw):
-        if isinstance(args[0],DelayedCall):
+
+    def callLater(self, *args, **kw):
+        if isinstance(args[0], DelayedCall):
             c = args[0]
             try:
                 self._callqueue.remove(c)
             except ValueError:
                 return None
         else:
-            c = DelayedCall(self,self.seconds()+args[0],args[1],args[2:],kw,seconds=self.seconds)
-        insort(self._callqueue,c)
+            c = DelayedCall(self, self.seconds() + args[0], args[1], args[2:], kw, seconds=self.seconds)
+        insort(self._callqueue, c)
         self.reschedule()
         return c
+
     def getDelayedCalls(self):
         return list(self._callqueue)
-    def cancelCallLater(self,callID):   # deprecated
+
+    def cancelCallLater(self, callID):   # deprecated
         self._callqueue.remove(callID)
         self.reschedule()
+
     # IReactorGreenlets
     def _initGreenletPool(self):
-        self.greenletpoolShutdownID = self.addSystemEventTrigger('during','shutdown',self._stopGreenletPool)
+        self.greenletpoolShutdownID = self.addSystemEventTrigger('during', 'shutdown', self._stopGreenletPool)
+
     def _stopGreenletPool(self):
         self.greenletpool.kill()
+
     def getGreenletPool(self):
         return self.greenletpool
-    def callInGreenlet(self,*args,**kwargs):
-        self.addToGreenletPool(Greenlet.spawn_later(0,*args,**kwargs))
-    def callFromGreenlet(self,*args,**kw):
-        c = DelayedCall(self,self.seconds(),args[0],args[1:],kw,seconds=self.seconds)
-        insort(self._callqueue,c)
+
+    def callInGreenlet(self, *args, **kwargs):
+        self.addToGreenletPool(Greenlet.spawn_later(0, *args, **kwargs))
+
+    def callFromGreenlet(self, *args, **kw):
+        c = DelayedCall(self, self.seconds(), args[0], args[1:], kw, seconds=self.seconds)
+        insort(self._callqueue, c)
         self.reschedule()
         return c
-    def suggestGreenletPoolSize(self,size):
+
+    def suggestGreenletPoolSize(self, size):
         pass
-    def addToGreenletPool(self,g):
+
+    def addToGreenletPool(self, g):
         self.greenletpool.add(g)
+
     # IReactorThreads
-    def _initThreads(self): # do not initialize ThreadedResolver, since we are using GeventResolver
+    def _initThreads(self):  # do not initialize ThreadedResolver, since we are using GeventResolver
         self.usingThreads = True
+
     callFromThread = callFromGreenlet
+
     # IReactorCore
     def stop(self):
-        self._callqueue.insert(0,DelayedCall(self,0,gevent.sleep,(),{},seconds=self.seconds))
+        self._callqueue.insert(0, DelayedCall(self, 0, gevent.sleep, (), {}, seconds=self.seconds))
         gevent.kill(self.greenlet)
+
     def reschedule(self):
         if self._wait and len(self._callqueue) > 0 and self._callqueue[0].time < self._wake:
-            gevent.kill(self.greenlet,Reschedule)
+            gevent.kill(self.greenlet, Reschedule)
             self._wait = 0
+
 
 def install():
     """Configure the twisted mainloop to be run using geventreactor."""
     reactor = GeventReactor()
     from twisted.internet.main import installReactor
     installReactor(reactor)
-
-__all__ = ['deferToGreenletPool','deferToGreenlet','callMultipleInGreenlet','waitForGreenlet','waitForDeferred','blockingCallFromGreenlet','IReactorGreenlets','GeventResolver','GeventReactor','install']

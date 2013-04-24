@@ -1,8 +1,7 @@
-import setuptools
-import os
-from setuptools import setup, find_packages
+from setuptools import setup
 
-setup(name='yabibe',
+setup(
+    name='yabibe',
     version='6.15.0',
     description='Yabi Backend',
     long_description='Yabi back end service',
@@ -50,9 +49,9 @@ setup(name='yabibe',
         'nose',
         'pyaml',
     ],
-    dependency_links = [
-          "http://repo.ccgapps.com.au",
-          "http://yabi.googlecode.com/files/paramiko-1.7.7.1-fifopatch2.tar.gz",
-          "https://twisted-web2.googlecode.com/files/TwistedWeb2-1.0.0.tar.gz?"    # see: http://stackoverflow.com/questions/2653410/project-hosting-on-google-code-files-are-cached
-    ],      
+    dependency_links=[
+        "http://repo.ccgapps.com.au",
+        "http://yabi.googlecode.com/files/paramiko-1.7.7.1-fifopatch2.tar.gz",
+        "https://twisted-web2.googlecode.com/files/TwistedWeb2-1.0.0.tar.gz?"    # see: http://stackoverflow.com/questions/2653410/project-hosting-on-google-code-files-are-cached
+    ],
 )
