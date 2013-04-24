@@ -368,9 +368,10 @@ class GeventReactor(posixbase.PosixReactorBase):
                 try:
                     self._wait = 1
                     gevent.sleep(max(0, delay))
-                    self._wait = 0
                 except Reschedule:
                     continue
+                finally:
+                    self._wait = 0
                 now = seconds()
                 while 1:
                     try:
@@ -518,7 +519,6 @@ class GeventReactor(posixbase.PosixReactorBase):
     def reschedule(self):
         if self._wait and len(self._callqueue) > 0 and self._callqueue[0].time < self._wake:
             gevent.kill(self.greenlet, Reschedule)
-            self._wait = 0
 
 
 def install():
