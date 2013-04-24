@@ -335,7 +335,7 @@ class GeventReactor(posixbase.PosixReactorBase):
     """Implement gevent-powered reactor based on PosixReactorBase."""
     implements(IReactorGreenlets)
 
-    def __init__(self, *args):
+    def __init__(self, *args, **kwargs):
         self.greenlet = None
         self.greenletpool = Group()
         self._reads = {}
@@ -345,7 +345,7 @@ class GeventReactor(posixbase.PosixReactorBase):
         self._wait = 0
         self.resolver = GeventResolver(self)
         self.addToGreenletPool = self.greenletpool.add
-        posixbase.PosixReactorBase.__init__(self, *args)
+        posixbase.PosixReactorBase.__init__(self, *args, **kwargs)
         self._initThreads()
         self._initThreadPool()
         self._initGreenletPool()
