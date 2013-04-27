@@ -26,23 +26,23 @@
 #
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-import json
 import gevent
-import random
 import os
-import pickle
 
 from utils.parsers import parse_url
 
-from TaskTools import Copy, Ln, LCopy, RCopy, SmartCopy, Sleep, Log, Status, Exec, Resume, Mkdir, Rm, List, UserCreds, GETFailure, CloseConnections
+from TaskTools import Ln, RCopy, SmartCopy, Log, Status, Exec, Resume, Mkdir, Rm, List, UserCreds, GETFailure
+from utils.geventtools import CloseConnections
 
 import traceback
 from Exceptions import BlockingException
 
 DEBUG = False
 
+
 class TaskFailed(Exception):
     pass
+
 
 class Task(object):
     def __init__(self, json=None):
@@ -73,8 +73,8 @@ class Task(object):
 
     def setup_lambdas(self):
         # shortcuts for our status and log calls
-        self.status = lambda x: Status(self.statusurl,x)
-        self.log = lambda x: Log(self.errorurl,x)
+        self.status = lambda x: Status(self.statusurl, x)
+        self.log = lambda x: Log(self.errorurl, x)
 
     def get_pickle_data(self):
         #print
@@ -83,18 +83,18 @@ class Task(object):
             #print key,"=>",getattr(self,key)
         #print
 
-        keynames = [ 'blocked_stage', 'errorurl', 'exec_status', 'json', 'outdir', 'outuri', 'stage', 'statusurl', 'submission', 'taskid', 'yabiusername' ]
+        keynames = ['blocked_stage', 'errorurl', 'exec_status', 'json', 'outdir', 'outuri', 'stage', 'statusurl', 'submission', 'taskid', 'yabiusername']
 
         output = {}
         for key in keynames:
-            if hasattr(self,key):
-                output[key] = getattr(self,key)
+            if hasattr(self, key):
+                output[key] = getattr(self, key)
 
         return output
 
     def set_from_pickle_data(self, data):
         for key in data.keys():
-            setattr(self,key,data[key])
+            setattr(self, key, data[key])
 
     def run(self):
         try:
@@ -103,7 +103,7 @@ class Task(object):
             # this is to deal with a problem that is temporary and leads to a blocked status
             self._blocked()
             traceback.print_exc()
-            self.log("Task moved into blocking state: %s"%be)
+            self.log("Task moved into blocking state: %s" % be)
             self.status("blocked")
 
         except GETFailure, gf:
@@ -112,21 +112,20 @@ class Task(object):
                 #print "BLOCKED"
                 self._blocked()
                 traceback.print_exc()
-                self.log("Task moved into blocking state: %s"%gf)
+                self.log("Task moved into blocking state: %s" % gf)
                 self.status("blocked")
             else:
                 #print "ERROR"
                 self._errored()
                 traceback.print_exc()
-                self.log("Task raised GETFailure: %s"%gf)
+                self.log("Task raised GETFailure: %s" % gf)
                 self.status("error")
 
         except Exception, e:
             self._errored()
             traceback.print_exc()
-            self.log("Task raised exception: %s"%e)
+            self.log("Task raised exception: %s" % e)
             self.status("error")
-
 
     def _next_stage(self):
         """Move to the next stage of the tasklet"""
@@ -149,7 +148,7 @@ class Task(object):
 
     def unblock(self):
         # for a job that is sitting in blocking, move it back out and into its last execution stage
-        assert self.blocked_stage != None, "Trying to unblock a task that was never blocked"
+        assert self.blocked_stage is not None, "Trying to unblock a task that was never blocked"
         self.stage = self.blocked_stage
         self.blocked_stage = None
 
@@ -164,12 +163,13 @@ class Task(object):
 
     def _sanity_check(self):
         # sanity check...
-        for key in ['errorurl','exec','stagein','stageout','statusurl','taskid','yabiusername']:
-            assert key in self.json, "Task JSON description is missing a vital key '%s'"%key
+        for key in ['errorurl', 'exec', 'stagein', 'stageout', 'statusurl', 'taskid', 'yabiusername']:
+            assert key in self.json, "Task JSON description is missing a vital key '%s'" % key
 
         # check the exec section
         for key in ['backend', 'command', 'fsbackend', 'workingdir', 'submission']:
-            assert key in self.json['exec'], "Task JSON description is missing a vital key inside the 'exec' section. Key name is '%s'"%key
+            assert key in self.json['exec'], "Task JSON description is missing a vital key inside the 'exec' section. Key name is '%s'" % key
+
 
 class NullBackendTask(Task):
     def load_json(self, json, stage=0):
@@ -183,7 +183,7 @@ class NullBackendTask(Task):
         if self.stage == 0:
             self.log("null backend... skipping task and copying files")
 
-            self.log("making stageout directory %s"%self.json['stageout'])
+            self.log("making stageout directory %s" % self.json['stageout'])
             self.make_stageout()
 
             self._next_stage()
@@ -203,11 +203,11 @@ class NullBackendTask(Task):
         stageout = self.json['stageout']
 
         if DEBUG:
-            print "STAGEOUT:",stageout
+            print "STAGEOUT:", stageout
         try:
             Mkdir(stageout, yabiusername=self.yabiusername)
         except GETFailure, error:
-            raise BlockingException("Make directory failed: %s"%error.message[2])
+            raise BlockingException("Make directory failed: %s" % error.message[2])
 
     def stage_in_files(self):
         dst = self.json['stageout']
@@ -220,79 +220,80 @@ class NullBackendTask(Task):
             method = copy['method'] if 'method' in copy else 'copy'                     # copy or link
 
             # sanity check method and fail back to copy if needed
-            if method=='link' or method=='lcopy':
-                sscheme,sparse = parse_url(src)
-                dscheme,dparse = parse_url(dst)
-                if sscheme!=dscheme or sparse.hostname!=dparse.hostname or sparse.username!=dparse.username or sparse.port!=dparse.port:
+            if method == 'link' or method == 'lcopy':
+                sscheme, sparse = parse_url(src)
+                dscheme, dparse = parse_url(dst)
+                if sscheme != dscheme or sparse.hostname != dparse.hostname or sparse.username != dparse.username or sparse.port != dparse.port:
                     # fall back to copy
-                    method='copy'
+                    method = 'copy'
 
             # check that destination directory exists.
-            scheme,address = parse_url(dst)
+            scheme, address = parse_url(dst)
 
             directory, file = os.path.split(address.path)
-            remotedir = scheme+"://"+address.netloc+directory
+            remotedir = scheme + "://" + address.netloc + directory
             if DEBUG:
-                print "CHECKING remote:",remotedir
+                print "CHECKING remote:", remotedir
             try:
                 listing = List(remotedir, yabiusername=self.yabiusername)
                 if DEBUG:
                     print "list result:", listing
-            except Exception, error:
+            except Exception:
                 # directory does not exist
                 # make dir
                 try:
                     Mkdir(remotedir, yabiusername=self.yabiusername)
                 except GETFailure, gf:
-                    raise BlockingException("Make directory failed: %s"%gf.message[2])
+                    raise BlockingException("Make directory failed: %s" % gf.message[2])
 
             if src.endswith("/"):
-                log("RCopying %s to %s..."%(src,dst))
+                log("RCopying %s to %s..." % (src, dst))
                 try:
-                    RCopy(src,dst, yabiusername=self.yabiusername,log_callback=log)
-                    log("RCopying %s to %s Success"%(src,dst))
+                    RCopy(src, dst, yabiusername=self.yabiusername, log_callback=log)
+                    log("RCopying %s to %s Success" % (src, dst))
                 except GETFailure, error:
                     # error copying!
-                    print "TASK[%s]: RCopy %s to %s Error!"%(self.taskid,src,dst)
+                    print "TASK[%s]: RCopy %s to %s Error!" % (self.taskid, src, dst)
                     status("error")
-                    log("RCopying %s to %s failed: %s"%(src,dst, error))
+                    log("RCopying %s to %s failed: %s" % (src, dst, error))
                     return              # finish task
 
-                print "TASK[%s]: RCopy %s to %s Success!"%(self.taskid,src,dst)
+                print "TASK[%s]: RCopy %s to %s Success!" % (self.taskid, src, dst)
             else:
-                if method=='copy' or method=='lcopy':
-                    self.log("Copying %s to %s using method %s..."%(src,dst,method))
+                if method == 'copy' or method == 'lcopy':
+                    self.log("Copying %s to %s using method %s..." % (src, dst, method))
                     try:
-                        SmartCopy(method,src,dst, yabiusername=self.yabiusername,log_callback=log)
-                        self.log("Copying %s to %s Success"%(src,dst))
+                        SmartCopy(method, src, dst, yabiusername=self.yabiusername, log_callback=log)
+                        self.log("Copying %s to %s Success" % (src, dst))
                     except GETFailure, error:
                         if "503" in error.message[1]:
                             raise                               # reraise a blocking error so our top level catcher will catch it and block the task
                         # error copying!
-                        print "TASK[%s]: Copy %s to %s Error!"%(self.taskid,src,dst)
+                        print "TASK[%s]: Copy %s to %s Error!" % (self.taskid, src, dst)
                         self.status("error")
-                        self.log("Copying %s to %s failed: %s"%(src,dst, error))
+                        self.log("Copying %s to %s failed: %s" % (src, dst, error))
 
                         raise TaskFailed("Stage In failed")
 
-                    print "TASK[%s]: Copy %s to %s Success!"%(self.taskid,src,dst)
-                elif method=='link':
-                    self.log("Linking %s to point to %s"%(dst,src))
+                    print "TASK[%s]: Copy %s to %s Success!" % (self.taskid, src, dst)
+                elif method == 'link':
+                    self.log("Linking %s to point to %s" % (dst, src))
                     try:
-                        Ln(src,dst,yabiusername=self.yabiusername,log_callback=log)
-                        self.log("Linking %s to point to %s success"%(dst,src))
+                        Ln(src, dst, yabiusername=self.yabiusername, log_callback=log)
+                        self.log("Linking %s to point to %s success" % (dst, src))
                     except GETFailure, error:
                         if "503" in error.message[1]:
                             raise                               # reraise a blocking error so our top level catcher will catch it and block the task
                         # error copying!
-                        print "TASK[%s]: Link %s to point to %s Error!"%(self.taskid,dst,src)
+                        print "TASK[%s]: Link %s to point to %s Error!" % (self.taskid, dst, src)
                         self.status("error")
-                        self.log("Linking %s to point to %s failed: %s"%(dst, src, error))
+                        self.log("Linking %s to point to %s failed: %s" % (dst, src, error))
 
                         raise TaskFailed("Stage In failed")
 
                 else:
-                    raise TaskFailed("Stage in failed: unknown stage in method %s"%method)
+                    raise TaskFailed("Stage in failed: unknown stage in method %s" % method)
+
 
 class MainTask(Task):
     STAGEIN = 0
@@ -302,7 +303,7 @@ class MainTask(Task):
     CLEANUP = 4
 
     def __init__(self, json=None):
-        Task.__init__(self,json)
+        Task.__init__(self, json)
 
         # for resuming started backend execution jobs
         self._jobid = None
@@ -338,16 +339,16 @@ class MainTask(Task):
                 if self._jobid is None:
                     # start a fresh taskjob
                     if DEBUG:
-                        print "Executing fresh:",self._jobid
+                        print "Executing fresh:", self._jobid
                     self.execute(self.outdir)                        # TODO. implement picking up on this exec task without re-running it??
 
                 else:
                     # reconnect with this taskjob
                     if DEBUG:
-                        print "Reconnecting with taskjob:",self._jobid
+                        print "Reconnecting with taskjob:", self._jobid
                     self.resume(self.outdir)
 
-            except TaskFailed, ex:
+            except TaskFailed:
                 # task has errored. Lets stage out any remnants.
                 self._failed = True
                 self.log('Task has failed. Staging out any job remnants...')
@@ -360,10 +361,10 @@ class MainTask(Task):
             self.status('stageout')
 
             # recursively copy the working directory to our stageout area
-            self.log("Staging out remote %s to %s..."%(self.outdir,self.json['stageout']))
+            self.log("Staging out remote %s to %s..." % (self.outdir, self.json['stageout']))
 
             # make sure we have the stageout directory
-            self.log("making stageout directory %s"%self.json['stageout'])
+            self.log("making stageout directory %s" % self.json['stageout'])
             self.make_stageout()
 
             self.stageout(self.outuri)
@@ -395,61 +396,60 @@ class MainTask(Task):
             method = copy['method'] if 'method' in copy else 'copy'                     # copy or link
 
             # check that destination directory exists.
-            scheme,address = parse_url(dst)
+            scheme, address = parse_url(dst)
 
             directory, file = os.path.split(address.path)
-            remotedir = scheme+"://"+address.netloc+directory
+            remotedir = scheme + "://" + address.netloc + directory
             if DEBUG:
-                print "CHECKING remote:",remotedir
+                print "CHECKING remote:", remotedir
             try:
                 listing = List(remotedir, yabiusername=self.yabiusername)
                 if DEBUG:
                     print "list result:", listing
-            except Exception, error:
+            except Exception:
                 # directory does not exist
                 #make dir
                 try:
                     Mkdir(remotedir, yabiusername=self.yabiusername)
                 except GETFailure, gf:
-                    raise BlockingException("Make directory failed: %s"%gf.message[2])
+                    raise BlockingException("Make directory failed: %s" % gf.message[2])
 
-            if method=='copy' or method=='lcopy':
-                self.log("Copying %s to %s using method %s..."%(src,dst,method))
+            if method == 'copy' or method == 'lcopy':
+                self.log("Copying %s to %s using method %s..." % (src, dst, method))
                 try:
-                    SmartCopy(method, src,dst, yabiusername=self.yabiusername,log_callback=self.log)
-                    self.log("Copying %s to %s Success"%(src,dst))
+                    SmartCopy(method, src, dst, yabiusername=self.yabiusername, log_callback=self.log)
+                    self.log("Copying %s to %s Success" % (src, dst))
                 except GETFailure, error:
                     if "503" in error.message[1]:
                         raise                               # reraise a blocking error so our top level catcher will catch it and block the task
                     # error copying!
-                    print "TASK[%s]: Copy %s to %s Error!"%(self.taskid,src,dst)
+                    print "TASK[%s]: Copy %s to %s Error!" % (self.taskid, src, dst)
                     self.status("error")
-                    self.log("Copying %s to %s failed: %s"%(src,dst, error))
+                    self.log("Copying %s to %s failed: %s" % (src, dst, error))
 
                     raise TaskFailed("Stage In failed")
 
-                print "TASK[%s]: Copy %s to %s Success!"%(self.taskid,src,dst)
-            elif method=='link':
-                self.log("Linking %s to point to %s"%(dst,src))
+                print "TASK[%s]: Copy %s to %s Success!" % (self.taskid, src, dst)
+            elif method == 'link':
+                self.log("Linking %s to point to %s" % (dst, src))
                 try:
-                    Ln(src,dst,yabiusername=self.yabiusername,log_callback=self.log)
-                    self.log("Linking %s to point to %s success"%(dst,src))
+                    Ln(src, dst, yabiusername=self.yabiusername, log_callback=self.log)
+                    self.log("Linking %s to point to %s success" % (dst, src))
                 except GETFailure, error:
                     if "503" in error.message[1]:
                         raise                               # reraise a blocking error so our top level catcher will catch it and block the task
                     # error copying!
-                    print "TASK[%s]: Link %s to point to %s Error!"%(self.taskid,dst,src)
+                    print "TASK[%s]: Link %s to point to %s Error!" % (self.taskid, dst, src)
                     self.status("error")
-                    self.log("Linking %s to point to %s failed: %s"%(dst, src, error))
+                    self.log("Linking %s to point to %s failed: %s" % (dst, src, error))
 
                     raise TaskFailed("Stage In failed")
 
             else:
-                raise TaskFailed("Stage in failed: unknown stage in method %s"%method)
-
+                raise TaskFailed("Stage in failed: unknown stage in method %s" % method)
 
     def mkdir(self):
-        task=self.json
+        task = self.json
 
         # get our credential working directory. We lookup the execution backends auth proxy cache, and get the users home directory from that
         # this comes from their credentials.
@@ -457,10 +457,10 @@ class MainTask(Task):
         usercreds = UserCreds(self.yabiusername, task['exec']['backend'], credtype="exec")
         workingdir = task['exec']['workingdir']
 
-        assert address.path=="/", "Error. JSON[exec][backend] has a path. Execution backend URI's must not have a path (path is %s)"%address.path
+        assert address.path == "/", "Error. JSON[exec][backend] has a path. Execution backend URI's must not have a path (path is %s)" % address.path
 
         if DEBUG:
-            print "USERCREDS",usercreds
+            print "USERCREDS", usercreds
 
         fsbackend = task['exec']['fsbackend']
 
@@ -473,29 +473,29 @@ class MainTask(Task):
             if "503" in error.message[1]:
                     raise                               # reraise a blocking error so our top level catcher will catch it and block the task
             # error making directory
-            print "TASK[%s]:Mkdir failed!"%(self.taskid)
+            print "TASK[%s]:Mkdir failed!" % (self.taskid)
             self.status("error")
-            self.log("Making working directory of %s failed: %s"%(outputuri,error))
+            self.log("Making working directory of %s failed: %s" % (outputuri, error))
 
             raise TaskFailed("Mkdir failed")
 
-        return outputuri,outputdir
+        return outputuri, outputdir
 
     def make_stageout(self):
         stageout = self.json['stageout']
 
         if DEBUG:
-            print "STAGEOUT:",stageout
+            print "STAGEOUT:", stageout
         try:
             Mkdir(stageout, yabiusername=self.yabiusername)
         except GETFailure, error:
-            raise BlockingException("Make directory failed: %s"%error.message[2])
+            raise BlockingException("Make directory failed: %s" % error.message[2])
 
     def do(self, outputdir, callfunc):
-        task=self.json
-        retry=True
+        task = self.json
+        retry = True
         while retry:
-            retry=False
+            retry = False
 
             try:
                 self.exec_status = []
@@ -505,12 +505,12 @@ class MainTask(Task):
                     """Each line that comes back from the webservice gets passed into this callback"""
                     line = line.strip()
                     if DEBUG:
-                        print "_task_status_change(",line,")"
-                    self.log("Remote execution backend sent status message: %s"%(line))
+                        print "_task_status_change(", line, ")"
+                    self.log("Remote execution backend sent status message: %s" % (line))
 
                     # check for job id number
                     if line.startswith("id") and '=' in line:
-                        key,value = line.split("=")
+                        key, value = line.split("=")
                         value = value.strip()
 
                         #print "execution job given ID:",value
@@ -519,23 +519,34 @@ class MainTask(Task):
                     else:
                         status = line.lower()
                         self.exec_status.append(status)
-                        self.status("exec:%s"%(status))
+                        self.status("exec:%s" % (status))
 
                 # submit the job to the execution middle ware
-                self.log("Submitting to %s command: %s"%(task['exec']['backend'],task['exec']['command']))
+                self.log("Submitting to %s command: %s" % (task['exec']['backend'], task['exec']['command']))
 
                 try:
-                    cull_trailing_slash = lambda s: s[:-1] if (len(s) and s[-1]=='/') else s
-                    uri = cull_trailing_slash(task['exec']['backend'])+outputdir
+                    cull_trailing_slash = lambda s: s[:-1] if (len(s) and s[-1] == '/') else s
+                    uri = cull_trailing_slash(task['exec']['backend']) + outputdir
 
                     # create extra parameter list
                     extras = {}
-                    for key in [ 'cpus', 'jobtype', 'memory', 'module', 'queue', 'walltime', 'tasknum', 'tasktotal' ]:
+                    for key in ['cpus', 'jobtype', 'memory', 'module', 'queue', 'walltime', 'tasknum', 'tasktotal']:
                         if key in task['exec'] and task['exec'][key]:
-                            extras[key]=task['exec'][key]
+                            extras[key] = task['exec'][key]
 
                     #print "callfunc is",callfunc
-                    callfunc(uri, command=task['exec']['command'], remote_info=task['remoteinfourl'], submission=self.submission, stdout="STDOUT.txt",stderr="STDERR.txt", callbackfunc=_task_status_change, yabiusername=self.yabiusername, **extras)     # this blocks untill the command is complete. or the execution errored
+                    # this blocks untill the command is complete
+                    # or the execution errored
+                    callfunc(
+                        uri,
+                        command=task['exec']['command'],
+                        remote_info=task['remoteinfourl'],
+                        submission=self.submission,
+                        stdout="STDOUT.txt",
+                        stderr="STDERR.txt",
+                        callbackfunc=_task_status_change,
+                        yabiusername=self.yabiusername,
+                        **extras)
                     unfinished = set(("pending", "unsubmitted", "running"))
                     received_so_far = set(self.exec_status)
                     # Loop while all statuses received so far are unfinished
@@ -544,9 +555,9 @@ class MainTask(Task):
                         received_so_far = set(self.exec_status)
 
                     if filter(lambda s: 'error' in s, self.exec_status):
-                        print "TASK[%s]: Execution failed!"%(self.taskid)
+                        print "TASK[%s]: Execution failed!" % (self.taskid)
                         self.status("error")
-                        self.log("Execution of %s on %s failed with status %s"%(task['exec']['command'],task['exec']['backend'],self.exec_status[0]))
+                        self.log("Execution of %s on %s failed with status %s" % (task['exec']['command'], task['exec']['backend'], self.exec_status[0]))
 
                         # finish task
                         raise TaskFailed("Execution failed")
@@ -556,15 +567,15 @@ class MainTask(Task):
                     if "503" in error.message[1]:
                         raise                               # reraise a blocking error so our top level catcher will catch it and block the task
                     # error executing
-                    print "TASK[%s]: Execution failed!"%(self.taskid)
+                    print "TASK[%s]: Execution failed!" % (self.taskid)
                     self.status("error")
-                    self.log("Execution of %s on %s failed: %s"%(task['exec']['command'],task['exec']['backend'],error))
+                    self.log("Execution of %s on %s failed: %s" % (task['exec']['command'], task['exec']['backend'], error))
 
                     # finish task
                     raise TaskFailed("Execution failed")
 
-            except CloseConnections, cc:
-                retry=True
+            except CloseConnections:
+                retry = True
 
             gevent.sleep(1.0)
 
@@ -573,99 +584,98 @@ class MainTask(Task):
 
     def resume(self, outputdir):
         # curry resume into the do method
-        return self.do(outputdir, lambda *x, **y: Resume( self._jobid, *x, **y))
+        return self.do(outputdir, lambda *x, **y: Resume(self._jobid, *x, **y))
 
-    def stageout(self,outputuri):
-        task=self.json
+    def stageout(self, outputuri):
+        task = self.json
         if DEBUG:
-            print "STAGEOUT:",task['stageout'],"METHOD:",task['stageout_method']
+            print "STAGEOUT:", task['stageout'], "METHOD:", task['stageout_method']
 
-        if task['stageout_method']=='copy':
+        if task['stageout_method'] == 'copy':
             try:
                 if DEBUG:
-                    print "Mkdir(",task['stageout'],",",self.yabiusername,")"
+                    print "Mkdir(", task['stageout'], ",", self.yabiusername, ")"
                 Mkdir(task['stageout'], yabiusername=self.yabiusername)
-            except GETFailure, error:
+            except GETFailure:
                 pass
 
             try:
                 if DEBUG:
-                    print "RCopy(",outputuri,",",task['stageout'],",",self.yabiusername,")"
-                RCopy(outputuri,task['stageout'],yabiusername=self.yabiusername,contents=True,log_callback=self.log)
+                    print "RCopy(", outputuri, ",", task['stageout'], ",", self.yabiusername, ")"
+                RCopy(outputuri, task['stageout'], yabiusername=self.yabiusername, contents=True, log_callback=self.log)
                 self.log("Files successfuly staged out")
             except GETFailure, error:
                 if "503" in error.message[1]:
                         raise                               # reraise a blocking error so our top level catcher will catch it and block the task
                 # error executing
-                print "TASK[%s]: Stageout failed!"%(self.taskid)
+                print "TASK[%s]: Stageout failed!" % (self.taskid)
                 self.status("error")
                 if DEBUG:
-                    self.log("Staging out remote %s to %s failed... \n%s"%(outputuri,task['stageout'],traceback.format_exc()))
+                    self.log("Staging out remote %s to %s failed... \n%s" % (outputuri, task['stageout'], traceback.format_exc()))
                 else:
-                    self.log("Staging out remote %s to %s failed... %s"%(outputuri,task['stageout'],error))
+                    self.log("Staging out remote %s to %s failed... %s" % (outputuri, task['stageout'], error))
 
                 # finish task
                 raise TaskFailed("Stageout failed")
-        elif task['stageout_method']=='lcopy':
+        elif task['stageout_method'] == 'lcopy':
             try:
                 Mkdir(task['stageout'], yabiusername=self.yabiusername)
-            except GETFailure, error:
+            except GETFailure:
                 pass
 
             try:
-                SmartCopy('lcopy',outputuri,task['stageout'],yabiusername=self.yabiusername,log_callback=self.log,recurse=True)
+                SmartCopy('lcopy', outputuri, task['stageout'], yabiusername=self.yabiusername, log_callback=self.log, recurse=True)
                 self.log("Files successfuly staged out")
             except GETFailure, error:
                 if "503" in error.message[1]:
                         raise                               # reraise a blocking error so our top level catcher will catch it and block the task
                 # error executing
-                print "TASK[%s]: Stageout failed!"%(self.taskid)
+                print "TASK[%s]: Stageout failed!" % (self.taskid)
                 self.status("error")
                 if DEBUG:
-                    self.log("Staging out remote %s to %s failed... \n%s"%(outputuri,task['stageout'],traceback.format_exc()))
+                    self.log("Staging out remote %s to %s failed... \n%s" % (outputuri, task['stageout'], traceback.format_exc()))
                 else:
-                    self.log("Staging out remote %s to %s failed... %s"%(outputuri,task['stageout'],error))
+                    self.log("Staging out remote %s to %s failed... %s" % (outputuri, task['stageout'], error))
 
                 # finish task
                 raise TaskFailed("Stageout failed")
         else:
-            raise TaskFailed("Unsupported stageout method %s"%task['stageout_method'])
+            raise TaskFailed("Unsupported stageout method %s" % task['stageout_method'])
 
     def cleanup(self):
-        task=self.json
+        task = self.json
         # cleanup working dir
         for copy in self.json['stagein']:
             dst_url = copy['dst']
-            self.log("Deleting %s..."%(dst_url))
+            self.log("Deleting %s..." % (dst_url))
             try:
                 if DEBUG:
-                    print "RM1:",dst_url
+                    print "RM1:", dst_url
                 Rm(dst_url, yabiusername=self.yabiusername, recurse=True)
             except GETFailure, error:
                 if "503" in error.message[1]:
                     raise                               # reraise a blocking error so our top level catcher will catch it and block the task
                 # error deleting. This is logged but is non fatal
-                print "TASK[%s]: Delete %s Error!"%(self.taskid, dst_url)
+                print "TASK[%s]: Delete %s Error!" % (self.taskid, dst_url)
                 #status("error")
-                self.log("Deleting %s failed: %s"%(dst_url, error))
+                self.log("Deleting %s failed: %s" % (dst_url, error))
 
                 # finish task
                 raise TaskFailed("Cleanup failed")
 
         dst_url = task['exec']['fsbackend']
-        self.log("Deleting containing folder %s..."%(dst_url))
+        self.log("Deleting containing folder %s..." % (dst_url))
         try:
             if DEBUG:
-                print "RM2:",dst_url
+                print "RM2:", dst_url
             Rm(dst_url, yabiusername=self.yabiusername, recurse=True)
         except GETFailure, error:
             if "503" in error.message[1]:
                     raise                               # reraise a blocking error so our top level catcher will catch it and block the task
             # error deleting. This is logged but is non fatal
-            print "TASK[%s]: Delete %s Error!"%(self.taskid, dst_url)
+            print "TASK[%s]: Delete %s Error!" % (self.taskid, dst_url)
             #status("error")
-            self.log("Deleting %s failed: %s"%(dst_url, error))
+            self.log("Deleting %s failed: %s" % (dst_url, error))
 
             # finish task
             raise TaskFailed("Cleanup failed")
-

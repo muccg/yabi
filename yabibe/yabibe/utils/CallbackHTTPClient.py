@@ -1,38 +1,41 @@
 # -*- coding: utf-8 -*-
+#
+# Derived from http://twistedmatrix.com/trac/browser/tags/releases/twisted-12.3.0/twisted/web/client.py
+# Copyright (c) Twisted Matrix Laboratories.
+#
 ### BEGIN COPYRIGHT ###
 #
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 from twisted.web import client
-from twisted.web.client import HTTPPageDownloader
-from twisted.internet import reactor
-from twisted.internet.defer import Deferred
 from twisted.python import failure, log
+from twisted.web import http
 
-import os, types
+import os
+import types
 
 from conf import config
 
@@ -44,24 +47,27 @@ import hmac
 
 HMAC_SECRET = config.config['backend']['hmackey']
 
+
 def sign_uri(uri):
     hmac_digest = hmac.new(HMAC_SECRET)
     hmac_digest.update(uri)
     return hmac_digest.hexdigest()
 
+
 class CallbackHTTPClient(client.HTTPPageGetter):
+
     def __init__(self, *args, **kwargs):
         self.callback = None
         self.errordata = None
-    
+
     def SetCallback(self, callback):
         self.callback = callback
-        
+
     def connectionMade(self):
         method = getattr(self.factory, 'method', 'GET')
         if DEBUG:
-            print "METHOD:",method
-            print "TRANSPORT",self.transport
+            print "METHOD:", method
+            print "TRANSPORT", self.transport
         self.sendCommand(method, self.factory.path)
         if self.factory.scheme == 'http' and self.factory.port != 80:
             host = '%s:%s' % (self.factory.host, self.factory.port)
@@ -72,7 +78,7 @@ class CallbackHTTPClient(client.HTTPPageGetter):
         self.sendHeader('Host', self.factory.headers.get("host", host))
         self.sendHeader('User-Agent', self.factory.agent)
         self.sendHeader('Hmac-digest', sign_uri(self.factory.path))
-        
+
         data = getattr(self.factory, 'postdata', None)
         if data is not None:
             self.sendHeader("Content-Length", str(len(data)))
@@ -93,57 +99,59 @@ class CallbackHTTPClient(client.HTTPPageGetter):
 
         if data is not None:
             self.transport.write(data)
+
     #def lineReceived(self, line):
         #print "LINE_RECEIVED:",line
         #return client.HTTPPageGetter.lineReceived(self,line)
-    
+
     # ask for page as HTTP/1.1 so we get chunked response
     def sendCommand(self, command, path):
         self.transport.write('%s %s HTTP/1.0\r\n' % (command, path))
-        
+
     # capture "connection:close" so we stay HTTP/1.1 keep alive!
     def sendHeader(self, name, value):
-        if name.lower()=="connection" and value.lower()=="close":
-            return 
-        return client.HTTPPageGetter.sendHeader(self,name,value)
-    
+        if name.lower() == "connection" and value.lower() == "close":
+            return
+        return client.HTTPPageGetter.sendHeader(self, name, value)
+
     def rawDataReceived(self, data):
         if int(self.status) != 200:
             # we got an error. TODO: something graceful here
-            self.errordata=data
-            
+            self.errordata = data
+
         elif self.callback:
             # hook in here to process chunked updates
             lines = data.split("\r\n")
             if DEBUG:
-                print "LINES",[lines]
-            
+                print "LINES", [lines]
+
             # run the callback in a tasklet!!! Stops scheduler getting into a looped blocking state
             for chunk in filter(lambda l: l.strip() != '', lines):
-                reporter=gevent.spawn(self.callback,chunk)
-            
+                gevent.spawn(self.callback, chunk)
+
         else:
             pass
         #print "RECV",data
-        return client.HTTPPageGetter.rawDataReceived(self,data)
+        return client.HTTPPageGetter.rawDataReceived(self, data)
 
-class CallbackHTTPPageGetter(client.HTTPPageGetter,CallbackHTTPClient):
+
+class CallbackHTTPPageGetter(client.HTTPPageGetter, CallbackHTTPClient):
     pass
 
 
-class CallbackHTTPPageDownloader(client.HTTPPageDownloader,CallbackHTTPClient):
+class CallbackHTTPPageDownloader(client.HTTPPageDownloader, CallbackHTTPClient):
     pass
 
 
 class CallbackHTTPClientFactory(client.HTTPClientFactory):
     protocol = CallbackHTTPClient
-    
+
     def __init__(self, url, method='GET', postdata=None, headers=None,
                  agent="Twisted PageGetter", timeout=0, cookies=None,
                  followRedirect=True, redirectLimit=20, callback=None):
-        self._callback=callback
+        self._callback = callback
         return client.HTTPClientFactory.__init__(self, url, method, postdata, headers, agent, timeout, cookies, followRedirect, redirectLimit)
-    
+
     def buildProtocol(self, addr):
         #print "bp",addr
         p = client.HTTPClientFactory.buildProtocol(self, addr)
@@ -152,7 +160,8 @@ class CallbackHTTPClientFactory(client.HTTPClientFactory):
         return p
 
     def SetCallback(self, callback):
-        self._callback=callback
+        self._callback = callback
+
 
 class CallbackHTTPDownloader(CallbackHTTPClientFactory):
     """Download to a file."""
@@ -173,7 +182,7 @@ class CallbackHTTPDownloader(CallbackHTTPClientFactory):
                 fileLength = os.path.getsize(self.fileName)
                 if fileLength:
                     self.requestedPartial = fileLength
-                    if headers == None:
+                    if headers is None:
                         headers = {}
                     headers["range"] = "bytes=%d-" % fileLength
         else:
@@ -182,7 +191,6 @@ class CallbackHTTPDownloader(CallbackHTTPClientFactory):
             self, url, method=method, postdata=postdata, headers=headers,
             agent=agent, timeout=timeout, cookies=cookies,
             followRedirect=followRedirect, redirectLimit=redirectLimit)
-
 
     def gotHeaders(self, headers):
         CallbackHTTPClientFactory.gotHeaders(self, headers)
@@ -196,7 +204,6 @@ class CallbackHTTPDownloader(CallbackHTTPClientFactory):
             if start != self.requestedPartial:
                 # server is acting wierdly
                 self.requestedPartial = 0
-
 
     def openFile(self, partialContent):
         if partialContent:
@@ -212,7 +219,7 @@ class CallbackHTTPDownloader(CallbackHTTPClientFactory):
         @param partialContent: tells us if the download is partial download we requested.
         """
         if partialContent and not self.requestedPartial:
-            raise ValueError, "we shouldn't get partial content response if we didn't want it!"
+            raise ValueError("we shouldn't get partial content response if we didn't want it!")
         if self.waiting:
             try:
                 if not self.file:
@@ -230,7 +237,6 @@ class CallbackHTTPDownloader(CallbackHTTPClientFactory):
             #raise
             self.file = None
             self.deferred.errback(failure.Failure())
-            
 
     def noPage(self, reason):
         """
@@ -246,7 +252,6 @@ class CallbackHTTPDownloader(CallbackHTTPClientFactory):
                     log.err(None, "Error closing HTTPDownloader file")
             self.deferred.errback(reason)
 
-
     def pageEnd(self):
         self.waiting = 0
         if not self.file:
@@ -257,4 +262,3 @@ class CallbackHTTPDownloader(CallbackHTTPClientFactory):
             self.deferred.errback(failure.Failure())
             return
         self.deferred.callback(self.value)
-

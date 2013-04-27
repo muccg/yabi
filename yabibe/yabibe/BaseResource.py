@@ -33,19 +33,19 @@ from fs.resource import FSResource
 from ex.resource import ExecResource
 
 # backends
-from fs.connector.SSHFilesystem import SSHFilesystem
-from fs.connector.S3Filesystem import S3Filesystem
-from fs.connector.LocalFilesystem import LocalFilesystem
+from fs.connector.SSHFilesystem import SSHFilesystem  # noqa
+from fs.connector.S3Filesystem import S3Filesystem  # noqa
+from fs.connector.LocalFilesystem import LocalFilesystem  # noqa
 
 # backends
-from ex.connector.SGEConnector import SGEConnector
-from ex.connector.TorqueConnector import TorqueConnector
-from ex.connector.SSHConnector import SSHConnector
-from ex.connector.SSHTorqueConnector import SSHTorqueConnector
-from ex.connector.SSHPbsproConnector import SSHPbsproConnector
-from ex.connector.SSHSGEConnector import SSHSGEConnector
-from ex.connector.LocalConnector import LocalConnector
-from ex.connector.ExplodingConnector import ExplodingConnector
+from ex.connector.SGEConnector import SGEConnector  # noqa
+from ex.connector.TorqueConnector import TorqueConnector  # noqa
+from ex.connector.SSHConnector import SSHConnector  # noqa
+from ex.connector.SSHTorqueConnector import SSHTorqueConnector  # noqa
+from ex.connector.SSHPbsproConnector import SSHPbsproConnector  # noqa
+from ex.connector.SSHSGEConnector import SSHSGEConnector  # noqa
+from ex.connector.LocalConnector import LocalConnector  # noqa
+from ex.connector.ExplodingConnector import ExplodingConnector  # noqa
 
 # taskmanager debug
 from TaskManager import TaskManagerResource, TaskManagerPickleResource

@@ -1,3 +1,4 @@
+# flake8: noqa
 ### BEGIN COPYRIGHT ###
 #
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.

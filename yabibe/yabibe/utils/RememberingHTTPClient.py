@@ -4,41 +4,41 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 from twisted.web import client
-from twisted.web.client import HTTPPageDownloader
-from twisted.internet import reactor
-from twisted.internet.defer import Deferred
 from twisted.python import failure, log
+from twisted.web import http
 
 from conf import config
 
-import os, types
+import os
+import types
 
 import hmac
 
 HMAC_SECRET = config.config['backend']['hmackey']
+
 
 def sign_uri(uri):
     hmac_digest = hmac.new(HMAC_SECRET)
@@ -47,15 +47,16 @@ def sign_uri(uri):
 
 DEBUG = False
 
+
 class RememberingHTTPClient(client.HTTPPageGetter):
-    errordata=None
+    errordata = None
     _specialHeaders = set(('host', 'user-agent', 'cookie'))
-    
+
     def connectionMade(self):
         method = getattr(self.factory, 'method', 'GET')
         if DEBUG:
-            print "METHOD:",method
-            print "TRANSPORT",self.transport
+            print "METHOD:", method
+            print "TRANSPORT", self.transport
         self.sendCommand(method, self.factory.path)
         if self.factory.scheme == 'http' and self.factory.port != 80:
             host = '%s:%s' % (self.factory.host, self.factory.port)
@@ -66,7 +67,7 @@ class RememberingHTTPClient(client.HTTPPageGetter):
         self.sendHeader('Host', self.factory.headers.get("host", host))
         self.sendHeader('User-Agent', self.factory.agent)
         self.sendHeader('Hmac-digest', sign_uri(self.factory.path))
-        
+
         data = getattr(self.factory, 'postdata', None)
         if data is not None:
             self.sendHeader("Content-Length", str(len(data)))
@@ -87,63 +88,65 @@ class RememberingHTTPClient(client.HTTPPageGetter):
 
         if data is not None:
             self.transport.write(data)
-            
+
     #def connectionLost(self,reason):
         #print "LOST",reason
         #return client.HTTPPageGetter.connectionLost(self,reason)
 
-    def sendHeader(self,*args,**kwargs):
+    def sendHeader(self, *args, **kwargs):
         if DEBUG:
-            print "sendHeader",args,kwargs
-        return client.HTTPPageGetter.sendHeader(self,*args, **kwargs)
-    
+            print "sendHeader", args, kwargs
+        return client.HTTPPageGetter.sendHeader(self, *args, **kwargs)
+
     def rawDataReceived(self, data):
         if DEBUG:
-            print "rawDataReceived %d bytes"%len(data)
+            print "rawDataReceived %d bytes" % len(data)
         if not (200 <= int(self.status) < 300):
             # we got an error. TODO: something graceful here
             #print "ERROR. NON 200 CODE RETURNED FOR JOB EXEC STATUS"
-            self.errordata=data
+            self.errordata = data
             #print "errordata",data
-        return client.HTTPPageGetter.rawDataReceived(self,data)        
-    
+        return client.HTTPPageGetter.rawDataReceived(self, data)
+
     handleStatus_204 = lambda self: self.handleStatus_200()
-    
+
+
 class RememberingHTTPClientFactory(client.HTTPClientFactory):
     protocol = RememberingHTTPClient
-    
+
     def __init__(self, *args, **kwargs):
         self.connect_failed = kwargs['connect_failed']
         del kwargs['connect_failed']
-        client.HTTPClientFactory.__init__(self,*args,**kwargs)
-        
-    
+        client.HTTPClientFactory.__init__(self, *args, **kwargs)
+
     def buildProtocol(self, addr):
         self.last_client = client.HTTPClientFactory.buildProtocol(self, addr)
         return self.last_client
-    
+
     #def connectionLost(self, reason):
         #print "connectionLost",reason
         #return client.HTTPClientFactory.connectionLost(self, reason)
-            
+
     #def clientConnectionLost(self, connector, reason):
         #print "clientConnectionLost",connector, reason
         #return client.HTTPClientFactory.clientConnectionLost(self, connector, reason)
-  
+
     def clientConnectionFailed(self, connector, reason):
         if DEBUG:
-            print "clientConnectionFailed",connector, reason, self.connect_failed
-        self.connect_failed[0]=reason
+            print "clientConnectionFailed", connector, reason, self.connect_failed
+        self.connect_failed[0] = reason
         if DEBUG:
-            print "Set to",self.connect_failed
+            print "Set to", self.connect_failed
         return client.HTTPClientFactory.clientConnectionFailed(self, connector, reason)
 
-class RememberingHTTPPageGetter(client.HTTPPageGetter,RememberingHTTPClient):
+
+class RememberingHTTPPageGetter(client.HTTPPageGetter, RememberingHTTPClient):
     pass
 
 
-class RememberingHTTPPageDownloader(client.HTTPPageDownloader,RememberingHTTPClient):
+class RememberingHTTPPageDownloader(client.HTTPPageDownloader, RememberingHTTPClient):
     pass
+
 
 class RememberingHTTPDownloader(RememberingHTTPClientFactory):
     """Download to a file."""
@@ -164,7 +167,7 @@ class RememberingHTTPDownloader(RememberingHTTPClientFactory):
                 fileLength = os.path.getsize(self.fileName)
                 if fileLength:
                     self.requestedPartial = fileLength
-                    if headers == None:
+                    if headers is None:
                         headers = {}
                     headers["range"] = "bytes=%d-" % fileLength
         else:
@@ -173,7 +176,6 @@ class RememberingHTTPDownloader(RememberingHTTPClientFactory):
             self, url, method=method, postdata=postdata, headers=headers,
             agent=agent, timeout=timeout, cookies=cookies,
             followRedirect=followRedirect, redirectLimit=redirectLimit)
-
 
     def gotHeaders(self, headers):
         RememberingHTTPClientFactory.gotHeaders(self, headers)
@@ -187,7 +189,6 @@ class RememberingHTTPDownloader(RememberingHTTPClientFactory):
             if start != self.requestedPartial:
                 # server is acting wierdly
                 self.requestedPartial = 0
-
 
     def openFile(self, partialContent):
         if partialContent:
@@ -203,7 +204,7 @@ class RememberingHTTPDownloader(RememberingHTTPClientFactory):
         @param partialContent: tells us if the download is partial download we requested.
         """
         if partialContent and not self.requestedPartial:
-            raise ValueError, "we shouldn't get partial content response if we didn't want it!"
+            raise ValueError("we shouldn't get partial content response if we didn't want it!")
         if self.waiting:
             try:
                 if not self.file:
@@ -221,7 +222,6 @@ class RememberingHTTPDownloader(RememberingHTTPClientFactory):
             #raise
             self.file = None
             self.deferred.errback(failure.Failure())
-            
 
     def noPage(self, reason):
         """
@@ -237,7 +237,6 @@ class RememberingHTTPDownloader(RememberingHTTPClientFactory):
                     log.err(None, "Error closing HTTPDownloader file")
             self.deferred.errback(reason)
 
-
     def pageEnd(self):
         self.waiting = 0
         if not self.file:
@@ -248,4 +247,3 @@ class RememberingHTTPDownloader(RememberingHTTPClientFactory):
             self.deferred.errback(failure.Failure())
             return
         self.deferred.callback(self.value)
-     
