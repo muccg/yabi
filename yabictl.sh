@@ -214,6 +214,10 @@ function yabistatus() {
 function yabiclean() {
     echo "rm -rf ~/.yabi/run/backend"
     rm -rf ~/.yabi/run/backend
+    find yabibe -name "*.pyc" -exec rm -rf {} \;
+    find yabiadmin -name "*.pyc" -exec rm -rf {} \;
+    find yabish -name "*.pyc" -exec rm -rf {} \;
+    find yabitests -name "*.pyc" -exec rm -rf {} \;
 }
 
 function yabitest() {
