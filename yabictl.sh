@@ -220,6 +220,12 @@ function yabiclean() {
     find yabitests -name "*.pyc" -exec rm -rf {} \;
 }
 
+function yabipurge() {
+    rm -rf virt_yabiadmin
+    rm -rf virt_yabibe
+    rm *.log
+}
+
 function yabitest() {
     settings
     stopall
@@ -286,6 +292,12 @@ clean)
     settings
     stopall
     yabiclean 
+    ;;
+purge)
+    settings
+    stopall
+    yabiclean
+    yabipurge
     ;;
 *)
     echo "Usage ./yabictl.sh (status|test_mysql|test_postgresql|dropdb|startall|startyabibe|startyabiadmin|startceleryd|stopall|stopyabibe|stopyabiadmin|stopceleryd|install|clean)"
