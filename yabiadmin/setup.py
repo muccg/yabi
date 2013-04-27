@@ -76,7 +76,7 @@ setup(name='yabiadmin',
           'http://ccg-django-extras.googlecode.com/files/ccg-registration-0.8-alpha-1.tar.gz',
           'http://ccg-django-extras.googlecode.com/files/ccg-makoloader-0.2.4.tar.gz',
           'http://ccg-django-extras.googlecode.com/files/ccg-introspect-0.1.2.tar.gz',
-          'http://ccg-django-extras.googlecode.com/files/ccg-extras-0.1.3.tar.gz',
+          'http://ccg-django-extras.googlecode.com/files/ccg-extras-0.1.5.tar.gz',
           'http://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.2.tar.gz',
           # Use a patched version of django-kombu that fixes a known bug
           'http://yabi.googlecode.com/files/django-kombu-0.9.4.1.tar.gz',
