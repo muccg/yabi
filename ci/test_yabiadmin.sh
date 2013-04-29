@@ -1,4 +1,5 @@
-#!/bin/bash -ex
+#!/bin/bash 
+set -ex
 echo $BASH_SOURCE
 echo $-
 ./yabictl.sh install
