@@ -34,14 +34,16 @@ function settings() {
     echo "Config: $YABI_CONFIG"
 }
 
-function nose() {
-    source virt_yabiadmin/bin/activate
+function noseyabitests() {
     # Runs the end-to-end tests in the Yabitests project
-    virt_yabiadmin/bin/nosetests -v -w yabitests
+    virt_yabiadmin/bin/nosetests --with-xunit -v -w yabitests
     #virt_yabiadmin/bin/nosetests -v -w yabitests yabitests.backend_restart_tests
+}
 
+function noseyabiadmin() {
+    source virt_yabiadmin/bin/activate
     # Runs the unit tests in the Yabiadmin project
-    virt_yabiadmin/bin/nosetests -v -w yabiadmin/yabiadmin 
+    virt_yabiadmin/bin/nosetests --with-xunit -v -w yabiadmin/yabiadmin 
 }
 
 function nose_collect() {
@@ -226,23 +228,27 @@ function yabipurge() {
     rm *.log
 }
 
-function yabitest() {
+function dbtest() {
     settings
     stopall
     dropdb
     startall
-    nose
+    noseyabitests
     stopall
 }
 
 case $ARGV in
 test_mysql)
     YABI_CONFIG="test_mysql"
-    yabitest
+    dbtest
     ;;
 test_postgresql)
     YABI_CONFIG="test_postgresql"
-    yabitest
+    dbtest
+    ;;
+test_yabiadmin)
+    settings
+    noseyabiadmin
     ;;
 dropdb)
     settings
@@ -300,6 +306,6 @@ purge)
     yabipurge
     ;;
 *)
-    echo "Usage ./yabictl.sh (status|test_mysql|test_postgresql|dropdb|startall|startyabibe|startyabiadmin|startceleryd|stopall|stopyabibe|stopyabiadmin|stopceleryd|install|clean)"
+    echo "Usage ./yabictl.sh (status|test_mysql|test_postgresql|test_yabiadmin|dropdb|startall|startyabibe|startyabiadmin|startceleryd|stopall|stopyabibe|stopyabiadmin|stopceleryd|install|clean)"
 esac
 
