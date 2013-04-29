@@ -81,6 +81,6 @@ setup(name='yabiadmin',
           # Use a patched version of django-kombu that fixes a known bug
           'http://yabi.googlecode.com/files/django-kombu-0.9.4.1.tar.gz',
           'http://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
-          'https://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',
+          'http://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',
     ]
 )
