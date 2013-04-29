@@ -54,7 +54,8 @@ function dropdb() {
 
     case $YABI_CONFIG in
     test_mysql)
-        mysql -v -uroot -e "drop database test_yabi; create database test_yabi default charset=UTF8;"
+        mysql -v -uroot -e "drop database test_yabi;" || true
+        mysql -v -uroot -e "create database test_yabi default charset=UTF8;" || true
         ;;
     test_postgresql)
         psql -aeE -U postgres -c "SELECT pg_terminate_backend(pg_stat_activity.procpid) FROM pg_stat_activity where pg_stat_activity.datname = 'test_yabi'" && psql -aeE -U postgres -c "alter user yabminapp createdb;" template1 && psql -aeE -U postgres -c "alter database test_yabi owner to yabminapp" template1 && psql -aeE -U yabminapp -c "drop database test_yabi" template1 && psql -aeE -U yabminapp -c "create database test_yabi;" template1
