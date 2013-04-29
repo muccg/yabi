@@ -229,7 +229,6 @@ function yabipurge() {
 }
 
 function dbtest() {
-    settings
     stopall
     dropdb
     startall
@@ -237,18 +236,29 @@ function dbtest() {
     stopall
 }
 
+function yabiadmintest() {
+    stopall
+    dropdb
+    startall
+    noseyabiadmin
+    stopall
+}
+
 case $ARGV in
 test_mysql)
     YABI_CONFIG="test_mysql"
+    settings
     dbtest
     ;;
 test_postgresql)
     YABI_CONFIG="test_postgresql"
+    settings
     dbtest
     ;;
-test_yabiadmin)
+test_yabiadmin_mysql)
+    YABI_CONFIG="test_mysql"
     settings
-    noseyabiadmin
+    yabiadmintest
     ;;
 dropdb)
     settings
