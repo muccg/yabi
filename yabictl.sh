@@ -268,7 +268,7 @@ yabiadminpipfreeze)
     yabiadminpipfreeze
     ;;
 yabibepipfreeze)
-    yabiadminpipfreeze
+    yabibepipfreeze
     ;;
 test_mysql)
     YABI_CONFIG="test_mysql"
