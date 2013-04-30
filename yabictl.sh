@@ -216,6 +216,19 @@ function yabistatus() {
     set -e
 }
 
+function pythonversion() {
+    virt_yabiadmin/bin/python -V
+    virt_yabibe/bin/python -V
+}
+
+function yabiadminpipfreeze() {
+    virt_yabiadmin/bin/pip freeze
+}
+
+function yabibepipfreeze() {
+    virt_yabiadmin/bin/pip freeze
+}
+
 function yabiclean() {
     echo "rm -rf ~/.yabi/run/backend"
     rm -rf ~/.yabi/run/backend
@@ -248,6 +261,15 @@ function yabiadmintest() {
 }
 
 case $ARGV in
+pythonversion)
+    pythonversion
+    ;;
+yabiadminpipfreeze)
+    yabiadminpipfreeze
+    ;;
+yabibepipfreeze)
+    yabiadminpipfreeze
+    ;;
 test_mysql)
     YABI_CONFIG="test_mysql"
     settings
@@ -319,6 +341,6 @@ purge)
     yabipurge
     ;;
 *)
-    echo "Usage ./yabictl.sh (status|test_mysql|test_postgresql|test_yabiadmin|dropdb|startall|startyabibe|startyabiadmin|startceleryd|stopall|stopyabibe|stopyabiadmin|stopceleryd|install|clean)"
+    echo "Usage ./yabictl.sh (status|test_mysql|test_postgresql|test_yabiadmin|dropdb|startall|startyabibe|startyabiadmin|startceleryd|stopall|stopyabibe|stopyabiadmin|stopceleryd|install|clean|purge|yabiadminpipfreeze|yabibepipfreeze|pythonversion)"
 esac
 
