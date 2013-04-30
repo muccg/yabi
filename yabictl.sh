@@ -37,14 +37,14 @@ function settings() {
 function noseyabitests() {
     source virt_yabiadmin/bin/activate
     # Runs the end-to-end tests in the Yabitests project
-    virt_yabiadmin/bin/nosetests --with-xunit -v -w yabitests
+    virt_yabiadmin/bin/nosetests --with-xunit --xunit-file=yabitests.xml -v -w yabitests
     #virt_yabiadmin/bin/nosetests -v -w yabitests yabitests.backend_restart_tests
 }
 
 function noseyabiadmin() {
     source virt_yabiadmin/bin/activate
     # Runs the unit tests in the Yabiadmin project
-    virt_yabiadmin/bin/nosetests --with-xunit -v -w yabiadmin/yabiadmin 
+    virt_yabiadmin/bin/nosetests --with-xunit --xunit-file=yabiadmin.xml -v -w yabiadmin/yabiadmin 
 }
 
 function nose_collect() {
