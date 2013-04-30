@@ -35,6 +35,7 @@ function settings() {
 }
 
 function noseyabitests() {
+    source virt_yabiadmin/bin/activate
     # Runs the end-to-end tests in the Yabitests project
     virt_yabiadmin/bin/nosetests --with-xunit -v -w yabitests
     #virt_yabiadmin/bin/nosetests -v -w yabitests yabitests.backend_restart_tests
@@ -47,6 +48,7 @@ function noseyabiadmin() {
 }
 
 function nose_collect() {
+    source virt_yabiadmin/bin/activate
     virt_yabiadmin/bin/nosetests -v -w yabitests --collect-only
 }
 
