@@ -96,6 +96,7 @@ function stopprocess() {
         rm -f $1
         echo "Forced stop"
     fi
+    set -e
 }
 
 function stopyabiadmin() {
@@ -212,6 +213,7 @@ function yabistatus() {
     else 
         echo "No pid file for celeryd"
     fi
+    set -e
 }
 
 function yabiclean() {
