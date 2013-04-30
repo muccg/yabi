@@ -226,7 +226,7 @@ function yabiadminpipfreeze() {
 }
 
 function yabibepipfreeze() {
-    virt_yabiadmin/bin/pip freeze
+    virt_yabibe/bin/pip freeze
 }
 
 function yabiclean() {
