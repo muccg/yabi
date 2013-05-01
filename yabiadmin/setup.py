@@ -31,6 +31,7 @@ setup(name='yabiadmin',
     zip_safe=False,
     install_requires=[
         'Django==1.3.7',
+        #'kombu',
         'ccg-webservices==0.1.2',
         'ccg-registration==0.8-alpha-1',
         'ccg-makoloader==0.2.4',
@@ -43,7 +44,6 @@ setup(name='yabiadmin',
         'carrot==0.10.7',
         'celery==2.5.5',
         'django-celery==2.5.5',
-        'django-kombu==0.9.4.1',
         'django-picklefield==0.2.0',
         'django-templatetag-sugar==0.1',
         'ordereddict==1.1',
@@ -71,16 +71,9 @@ setup(name='yabiadmin',
     ],
 
     dependency_links = [
-          "http://repo.ccgapps.com.au",
-          'http://ccg-django-extras.googlecode.com/files/ccg-webservices-0.1.2.tar.gz',
-          'http://ccg-django-extras.googlecode.com/files/ccg-registration-0.8-alpha-1.tar.gz',
-          'http://ccg-django-extras.googlecode.com/files/ccg-makoloader-0.2.4.tar.gz',
-          'http://ccg-django-extras.googlecode.com/files/ccg-introspect-0.1.2.tar.gz',
-          'http://ccg-django-extras.googlecode.com/files/ccg-extras-0.1.5.tar.gz',
-          'http://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.2.tar.gz',
-          # Use a patched version of django-kombu that fixes a known bug
-          'http://yabi.googlecode.com/files/django-kombu-0.9.4.1.tar.gz',
-          'http://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
-          'http://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',
+          "http://bitbucket.org/ccgmurdoch/yabi/downloads",
+          "http://code.google.com/p/ccg-django-extras/downloads/list",
+          "http://code.google.com/p/yaphc/downloads/list",
+          'http://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz'
     ]
 )

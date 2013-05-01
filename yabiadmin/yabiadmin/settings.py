@@ -70,7 +70,7 @@ INSTALLED_APPS = [
     'yabiadmin.yabistoreapp',
     'yabiadmin.uploader',
     'djcelery',
-    'djkombu',
+    'kombu.transport.django',
     'django_extensions',
     'south',
     'djamboloader',
@@ -300,7 +300,7 @@ CELERY_QUEUES = {
 CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
 CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
 CELERY_IMPORTS = ("yabiadmin.yabiengine.tasks",)
-BROKER_TRANSPORT = "djkombu.transport.DatabaseTransport"
+BROKER_TRANSPORT = "kombu.transport.django.Transport"
 
 
 

@@ -37,23 +37,22 @@ setup(
         'zope.interface==4.0.5',
         'gevent==0.13.8',
         'geventreactor==0.1.0',
-        'greenlet==0.4.0',
         'psutil==0.6.1',
         'boto==2.3.0',
         'grequests==0.2.0',
         'requests==1.2.0',
         'conditional==1.0',
-        'twisted==12.0.0',
+        'twisted==12.3.0',
         'unittest2',
         'coverage',
         'mock',
         'nose',
-        'pyaml',
+        'pyaml'
     ],
     dependency_links=[
-        "http://repo.ccgapps.com.au",
-        "https://github.com/jyio/geventreactor/tarball/master#egg=geventreactor-0.1.0",
-        "http://yabi.googlecode.com/files/paramiko-1.7.7.1-fifopatch2.tar.gz",
-        "https://twisted-web2.googlecode.com/files/TwistedWeb2-1.0.0.tar.gz?"    # see: http://stackoverflow.com/questions/2653410/project-hosting-on-google-code-files-are-cached
+        "http://bitbucket.org/ccgmurdoch/yabi/downloads",
+        "http://github.com/jyio/geventreactor/tarball/master#egg=geventreactor-0.1.0",
+        "http://code.google.com/p/yabi/downloads/list",
+        "http://code.google.com/p/twisted-web2/downloads/list"
     ],
 )
