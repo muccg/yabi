@@ -270,7 +270,7 @@ def remote_info(request,id):
         return HttpResponseServerError(e)
 
 @hmac_authenticated
-def error(request, table, id):
+def syslog(request, table, id):
     logger.debug('table: %s id: %s' % (table, id))
     
     try:
@@ -290,7 +290,7 @@ def error(request, table, id):
             if "message" not in request.POST:
                 return HttpResponseServerError("POST request to error service should contain 'message' parameter\n")
 
-            logger.critical('table: %s id: %s message: %s' % (table, id, request.POST["message"]))
+            logger.debug('table: %s id: %s message: %s' % (table, id, request.POST["message"]))
             syslog = Syslog(table_name=str(table),
                             table_id=int(id),
                             message=str(request.POST["message"])

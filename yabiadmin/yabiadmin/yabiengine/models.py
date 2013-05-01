@@ -260,7 +260,7 @@ class Task(models.Model, Editable, Status):
         # formulate our status url and our error url
         # use the yabiadmin embedded in this server
         statusurl = webhelpers.url("/engine/status/task/%d" % self.id)
-        errorurl = webhelpers.url("/engine/error/task/%d" % self.id)
+        syslogurl = webhelpers.url("/engine/syslog/task/%d" % self.id)
         remoteidurl = webhelpers.url("/engine/remote_id/%d" % self.id)
         remoteinfourl = webhelpers.url("/engine/remote_info/%d" % self.id)
 
@@ -292,7 +292,7 @@ class Task(models.Model, Editable, Status):
             "yabiusername":self.job.workflow.user.name,
             "taskid":self.id,
             "statusurl":statusurl,
-            "errorurl":errorurl,
+            "syslogurl":syslogurl,
             "remoteidurl":remoteidurl,
             "remoteinfourl":remoteinfourl,
             "stagein":[],

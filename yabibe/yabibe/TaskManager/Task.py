@@ -60,7 +60,7 @@ class Task(object):
 
         self.taskid = json['taskid']
         self.statusurl = json['statusurl']
-        self.errorurl = json['errorurl']
+        self.syslogurl = json['syslogurl']
         self.yabiusername = json['yabiusername']
 
         self.submission = json['exec']['submission']
@@ -74,7 +74,7 @@ class Task(object):
     def setup_lambdas(self):
         # shortcuts for our status and log calls
         self.status = lambda x: Status(self.statusurl, x)
-        self.log = lambda x: Log(self.errorurl, x)
+        self.log = lambda x: Log(self.syslogurl, x)
 
     def get_pickle_data(self):
         #print
@@ -83,7 +83,7 @@ class Task(object):
             #print key,"=>",getattr(self,key)
         #print
 
-        keynames = ['blocked_stage', 'errorurl', 'exec_status', 'json', 'outdir', 'outuri', 'stage', 'statusurl', 'submission', 'taskid', 'yabiusername']
+        keynames = ['blocked_stage', 'syslogurl', 'exec_status', 'json', 'outdir', 'outuri', 'stage', 'statusurl', 'submission', 'taskid', 'yabiusername']
 
         output = {}
         for key in keynames:
@@ -163,7 +163,7 @@ class Task(object):
 
     def _sanity_check(self):
         # sanity check...
-        for key in ['errorurl', 'exec', 'stagein', 'stageout', 'statusurl', 'taskid', 'yabiusername']:
+        for key in ['syslogurl', 'exec', 'stagein', 'stageout', 'statusurl', 'taskid', 'yabiusername']:
             assert key in self.json, "Task JSON description is missing a vital key '%s'" % key
 
         # check the exec section
