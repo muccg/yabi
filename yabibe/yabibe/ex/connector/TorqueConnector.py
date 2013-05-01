@@ -39,8 +39,6 @@ SCHEMA = "torque"
 
 DEBUG = False
 
-TMP_DIR = "/tmp"
-
 from twistedweb2 import http, responsecode, http_headers, stream
 
 from utils.geventtools import sleep
@@ -52,6 +50,11 @@ import os
 
 from SubmissionTemplate import make_script
 from TaskManager.TaskTools import RemoteInfo
+
+from conf import config
+
+# where we temporarily store the submission scripts on the submission host
+TMP_DIR = config.config['backend']['temp']
 
 
 # for Job status updates, poll this often

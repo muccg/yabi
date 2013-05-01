@@ -49,6 +49,9 @@ from SubmissionTemplate import make_script
 
 from twisted.internet import protocol
 from twisted.internet import reactor
+from conf import config
+
+TMP_DIR = config.config['backend']['temp']
 
 
 class BaseShellProcessProtocol(protocol.ProcessProtocol):
@@ -152,7 +155,7 @@ class LocalRun(BaseShell):
             remote_command="hostname",
             username="yabi",
             host="faramir.localdomain",
-            working="/tmp",
+            working=TMP_DIR,
             port="22",
             stdout="STDOUT.txt",
             stderr="STDERR.txt",

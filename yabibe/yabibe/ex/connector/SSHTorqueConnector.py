@@ -39,9 +39,6 @@ SCHEMA = "ssh+torque"
 
 DEBUG = False
 
-# where we temporarily store the submission scripts on the submission host
-TMP_DIR = "/tmp"
-
 from twistedweb2 import http, responsecode, http_headers, stream
 
 import os
@@ -53,6 +50,9 @@ from utils.protocol import ssh
 from conf import config
 from TaskManager.TaskTools import RemoteInfo
 from decorators import conf_retry
+
+# where we temporarily store the submission scripts on the submission host
+TMP_DIR = config.config['backend']['temp']
 
 sshauth = ssh.SSHAuth.SSHAuth()
 

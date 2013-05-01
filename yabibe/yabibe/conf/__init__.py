@@ -152,6 +152,7 @@ class Configuration(object):
 
             "fifos": None,
             "tasklets": None,
+            "temp": "~/.yabi/run/backend/temp/",
             "certificates": None,
 
             "certfile": "~/.yabi/servercert.pem",
@@ -186,8 +187,6 @@ class Configuration(object):
         self.read_from_file(os.path.join(os.path.dirname(__file__), "yabi_defaults.conf"))
         if "YABICONF" in os.environ:
             self.read_from_file(os.path.expanduser(os.environ['YABICONF']))
-        elif "QUICKSTART" in os.environ:
-            self.read_from_file(os.path.join(os.path.dirname(__file__), "yabibe-quickstart.conf"))
         else:
             self.read_config()
         self.sanitise()
@@ -196,7 +195,10 @@ class Configuration(object):
         return self.read_from_fp(StringIO.StringIO(dat))
 
     def read_from_file(self, filename):
-        return self.read_from_fp(open(filename)) if os.path.exists(filename) and os.path.isfile(filename) else None
+        if os.path.exists(filename) and os.path.isfile(filename):
+            print "Loading config file %s" % filename
+            return self.read_from_fp(open(filename))
+        return None
 
     def read_from_fp(self, fp):
         conf_parser = ConfigParser.ConfigParser()

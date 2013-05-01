@@ -39,9 +39,6 @@ SCHEMA = "ssh+pbspro"
 
 DEBUG = False
 
-# where we temporarily store the submission scripts on the submission host
-TMP_DIR = "/tmp"
-
 from twistedweb2 import http, responsecode, http_headers, stream
 import os
 import uuid
@@ -50,10 +47,13 @@ import gevent
 from utils.geventtools import sleep
 from utils.protocol import ssh
 from utils.RetryController import PbsproQsubRetryController, PbsproQstatRetryController, HARD
-from conf import config
 from TaskManager.TaskTools import RemoteInfo
 from SubmissionTemplate import make_script
 from twisted.python import log
+from conf import config
+
+# where we temporarily store the submission scripts on the submission host
+TMP_DIR = config.config['backend']['temp']
 
 sshauth = ssh.SSHAuth.SSHAuth()
 qsubretry = PbsproQsubRetryController()

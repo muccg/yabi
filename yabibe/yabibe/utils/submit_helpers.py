@@ -27,15 +27,14 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 #
-# support functions TODO: put in seperate file
-#
 import os.path
 from twisted.internet import defer
 from twistedweb2 import http, fileupload, responsecode
 from twistedweb2.stream import readStream
 from StringIO import StringIO
+from conf import config
 
-TMP_DIRECTORY = "/tmp"
+TMP_DIRECTORY = config.config['backend']['temp']
 
 
 @defer.deferredGenerator
@@ -97,7 +96,7 @@ def parseMultipartFormData(stream, boundary, maxMem=100 * 1024, maxFields=1024, 
     return
 
 
-def parsePOSTData(request, maxMem=100 * 1024, maxFields=1024, maxSize=10 * 1024 * 1024, basepath="/tmp/tmp"):
+def parsePOSTData(request, maxMem=100 * 1024, maxFields=1024, maxSize=10 * 1024 * 1024, basepath=TMP_DIRECTORY):
     """
     Parse data of a POST request.
 
@@ -155,6 +154,7 @@ def parsePOSTData(request, maxMem=100 * 1024, maxFields=1024, maxSize=10 * 1024 
             "Invalid content-type: %s/%s" % (ctype.mediaType, ctype.mediaSubtype))))
 
 
+# TODO FIXME defines varaibles that are not used
 def parsePUTData(request, maxMem=100 * 1024, maxFields=1024, maxSize=10 * 1024 * 1024, filename="/tmp/test.tmp"):
     """
     Parse data of a PUT request.

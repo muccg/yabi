@@ -39,9 +39,6 @@ SCHEMA = "ssh+sge"
 
 DEBUG = False
 
-# where we temporarily store the submission scripts on the submission host
-TMP_DIR = "/tmp"
-
 from twistedweb2 import http, responsecode, http_headers, stream
 
 import os
@@ -54,6 +51,9 @@ from utils.protocol import ssh
 from utils.RetryController import SSHSGEQsubRetryController, SSHSGEQstatRetryController, SSHSGEQacctRetryController, HARD
 
 from conf import config
+
+# where we temporarily store the submission scripts on the submission host
+TMP_DIR = config.config['backend']['temp']
 
 from TaskManager.TaskTools import RemoteInfo
 from SubmissionTemplate import make_script
