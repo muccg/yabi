@@ -104,6 +104,10 @@ install -D ../centos/%{webappname}.ccg %{buildroot}/etc/httpd/conf.d/%{webappnam
 install -D ../centos/django.wsgi %{buildinstalldir}/django.wsgi
 install -m 0755 -D ../centos/%{webappname}-manage.py %{buildroot}/%{_bindir}/%{webappname}
 
+# Install yabiadmin's celeryd init script system wide
+install -m 0755 -D init_scripts/centos/celeryd.init %{buildroot}/etc/init.d/celeryd
+install -m 0644 -D init_scripts/centos/celeryd.sysconfig %{buildroot}/etc/sysconfig/celeryd
+
 # At least one python package has hardcoded shebangs to /usr/local/bin/python
 find %{buildinstalldir} -name '*.py' -type f | xargs sed -i 's:^#!/usr/local/bin/python:#!/usr/bin/python:'
 find %{buildinstalldir} -name '*.py' -type f | xargs sed -i 's:^#!/usr/local/python:#!/usr/bin/python:'
@@ -138,6 +142,8 @@ touch ${installdir}/django.wsgi
 %attr(-,apache,,apache) %{webapps}/%{webappname}
 %attr(-,apache,,apache) /var/logs/%{webappname}
 %attr(-,apache,,apache) /var/lib/%{webappname}
+%attr(-,root,,root) /etc/init.d/celeryd
+%attr(-,root,,root) /etc/sysconfig/celeryd
 
 %files backend
 %defattr(-,yabi,yabi,-)
