@@ -20,9 +20,9 @@ WSGIDaemonProcess yabi processes=2 threads=15 display-name=%{GROUP}
     <Location /yabi>
     WSGIProcessGroup yabi
     </Location>
-      Alias /yabi/static /usr/local/webapps/yabi/static
-      Alias /yabi/images /usr/local/webapps/yabi/static/images
-      WSGIScriptAlias /yabi /usr/local/webapps/yabi/django.wsgi
+      Alias /yabi/static /usr/local/webapps/yabiadmin/static
+      Alias /yabi/images /usr/local/webapps/yabiadmin/static/images
+      WSGIScriptAlias /yabi /usr/local/webapps/yabiadmin/django.wsgi
 
 </VirtualHost>
 
@@ -52,7 +52,7 @@ WSGIDaemonProcess yabi processes=2 threads=15 display-name=%{GROUP}
     <Location /yabi>
     WSGIProcessGroup yabi
     </Location>
-      Alias /yabi/static /usr/local/webapps/yabi/static
-      Alias /yabi/images /usr/local/webapps/yabi/static/images
-      WSGIScriptAlias /yabi /usr/local/webapps/yabi/django.wsgi
+      Alias /yabi/static /usr/local/webapps/yabiadmin/static
+      Alias /yabi/images /usr/local/webapps/yabiadmin/static/images
+      WSGIScriptAlias /yabi /usr/local/webapps/yabiadmin/django.wsgi
 </VirtualHost>

@@ -37,7 +37,7 @@ prog="$(basename $0)"
 # on RHEL systems.
 [ -f "/etc/sysconfig/$prog" ] && . /etc/sysconfig/$prog
 
-CELERYD=${CELERYD:-"-m celery.bin.celeryd_detach"}
+CELERYD=${CELERYD:-"-mcelery.bin.celeryd_detach"}
 CELERYD_MULTI=${CELERYD_MULTI:-"/usr/bin/celeryd-multi"}
 CELERYD_PID_FILE=${CELERYD_PID_FILE:-"/var/run/celeryd/$prog.pid"}
 CELERYD_LOG_FILE=${CELERYD_LOG_FILE:-"/var/log/celeryd/$prog.log"}

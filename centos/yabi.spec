@@ -41,41 +41,35 @@ Prefix: %{_prefix}
 BuildArch: x86_64
 Vendor: Centre for Comparative Genomics <web@ccg.murdoch.edu.au>
 BuildRequires: python-setuptools openssl-devel libevent-devel python-devel
-Requires: openssl
+Requires: openssl python-setuptools python
 Requires(pre): shadow-utils
 
-%pre
-getent group yabi >/dev/null || groupadd -r yabi
-getent passwd yabi >/dev/null || useradd -r -g yabi -d /etc/yabi yabi
 
-%clean
-#rm -rf %{buildroot}
-
-%description
-Yabi master package, depends on yabibe, yabiadmin and yabish
-
-%package yabiadmin
+%package admin
 Summary: yabiadmin Django web application
 Group: Applications/Internet
 Requires: httpd mod_wsgi
 
-%description yabiadmin
+%description admin
 Django web application implementing the web front end for Yabi.
 
-%package yabibe
+%package backend
 Summary: yabi backend
 Group: Applications/Internet
-Requires: python-setuptools libevent
+Requires: libevent
 
-%description yabibe
+%description backend
 Yabi backend
 
-%package yabish
+%pre backend
+getent group yabi >/dev/null || groupadd -r yabi
+getent passwd yabi >/dev/null || useradd -r -g yabi -d /etc/yabi yabi
+
+%package shell
 Summary: yabi shell
 Group: Applications/Internet
-Requires: python-setuptools
 
-%description yabish
+%description shell
 Yabi command line shell
 
 
@@ -114,27 +108,30 @@ install -m 0755 -D ../centos/%{webappname}-manage.py %{buildroot}/%{_bindir}/%{w
 find %{buildinstalldir} -name '*.py' -type f | xargs sed -i 's:^#!/usr/local/bin/python:#!/usr/bin/python:'
 find %{buildinstalldir} -name '*.py' -type f | xargs sed -i 's:^#!/usr/local/python:#!/usr/bin/python:'
 
+# Fix paths for stuff in bin/
+sed -i '3i import sys; sys.path.insert(1, "${installdir}/lib")' %{buildinstalldir}/bin/*
+
 cd $CCGSOURCEDIR/yabibe
 export PYTHONPATH=%{bebuildinstalldir}/lib
 python /usr/bin/easy_install -O1 --prefix %{bebuildinstalldir} --install-dir %{bebuildinstalldir}/lib .
 install -m 0755 -D ../centos/yabibe-init %{buildroot}/etc/init.d/yabibe
 install -m 0644 -D ../centos/yabi.conf.dist %{bebuildconfdir}/yabi.conf.dist
-sed -i '3i import sys; sys.path.insert(1, "${beinstalldir}")' %{bebuildinstalldir}/bin/yabibe
+sed -i '3i import sys; sys.path.insert(1, "${beinstalldir}/lib")' %{bebuildinstalldir}/bin/*
 
 cd $CCGSOURCEDIR/yabish
 export PYTHONPATH=%{shbuildinstalldir}/lib
 python /usr/bin/easy_install -O1 --prefix %{shbuildinstalldir} --install-dir %{shbuildinstalldir}/lib .
-sed -i '3i import sys; sys.path.insert(1, "${shinstalldir}")' %{shbuildinstalldir}/bin/yabish
+sed -i '3i import sys; sys.path.insert(1, "%{shinstalldir}/lib")' %{shbuildinstalldir}/bin/*
 
 
-%post yabiadmin
-mamboms collectstatic --noinput > /dev/null
+%post admin
+yabiadmin collectstatic --noinput > /dev/null
 # Remove root-owned logged files just created by collectstatic
 rm -rf /var/logs/%{webappname}/*
 # Touch the wsgi file to get the app reloaded by mod_wsgi
 touch ${installdir}/django.wsgi
 
-%files yabiadmin
+%files admin
 %defattr(-,apache,apache,-)
 /etc/httpd/conf.d/*
 %{_bindir}/%{webappname}
@@ -142,13 +139,13 @@ touch ${installdir}/django.wsgi
 %attr(-,apache,,apache) /var/logs/%{webappname}
 %attr(-,apache,,apache) /var/lib/%{webappname}
 
-%files yabibe
+%files backend
 %defattr(-,yabi,yabi,-)
 %{beinstalldir}
 %{beconfdir}
 /etc/init.d/yabibe
 
-%files yabish
-%defattr(-,yabi,yabi,-)
+%files shell
+%defattr(-,root,root,-)
 %{shinstalldir}
 
