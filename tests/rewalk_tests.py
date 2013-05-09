@@ -59,7 +59,7 @@ class RewalkTest(YabiTestCase, FileUtils):
         with open(new_filename, 'w') as f :
             f.write(changed_content)
 
-    def notest_dd_file_then_cksum_direct_json(self):
+    def test_dd_file_then_cksum_direct_json(self):
         wfl_json_file = json_path('dd_then_cksum')
         localfs_dir = self.get_localfs_dir()
 
