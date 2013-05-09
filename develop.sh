@@ -34,6 +34,14 @@ function settings() {
     echo "Config: $YABI_CONFIG"
 }
 
+function jslint() {
+    JSFILES="yabiadmin/yabiadmin/yabifeapp/static/javascript/*.js yabiadmin/yabiadmin/yabifeapp/static/javascript/account/*.js"
+    for JS in $JSFILES
+    do
+        java -jar /usr/local/closure/compiler.jar --js $JS --js_output_file output.js --warning_level DEFAULT --summary_detail_level 3
+    done
+}
+
 function noseyabitests() {
     source virt_yabiadmin/bin/activate
     # Runs the end-to-end tests in the Yabitests project
@@ -287,6 +295,9 @@ test_yabiadmin_mysql)
     settings
     yabiadmintest
     ;;
+jslint)
+    jslint
+    ;;
 dropdb)
     settings
     dropdb
@@ -343,6 +354,6 @@ purge)
     yabipurge
     ;;
 *)
-    echo "Usage ./yabictl.sh (status|test_mysql|test_postgresql|test_yabiadmin|dropdb|startall|startyabibe|startyabiadmin|startceleryd|stopall|stopyabibe|stopyabiadmin|stopceleryd|install|clean|purge|yabiadminpipfreeze|yabibepipfreeze|pythonversion)"
+    echo "Usage ./yabictl.sh (status|test_mysql|test_postgresql|test_yabiadmin|jslint|dropdb|startall|startyabibe|startyabiadmin|startceleryd|stopall|stopyabibe|stopyabiadmin|stopceleryd|install|clean|purge|yabiadminpipfreeze|yabibepipfreeze|pythonversion)"
 esac
 
