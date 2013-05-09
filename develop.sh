@@ -111,17 +111,17 @@ function stopprocess() {
 
 function stopyabiadmin() {
     echo "Stopping Yabi admin"
-    stopprocess yabiadmin-yabictl.pid
+    stopprocess yabiadmin-develop.pid
 }
 
 function stopceleryd() {
     echo "Stopping celeryd"
-    stopprocess celeryd-yabictl.pid
+    stopprocess celeryd-develop.pid
 }
 
 function stopyabibe() {
     echo "Stopping Yabi backend"
-    stopprocess yabibe-yabictl.pid
+    stopprocess yabibe-develop.pid
 }
 
 function stopall() {
@@ -155,21 +155,21 @@ function yabiinstall() {
 }
 
 function startyabiadmin() {
-    if test -e yabiadmin-yabictl.pid; then
+    if test -e yabiadmin-develop.pid; then
         echo "pid file exists for yabiadmin"
         return
     fi
 
     echo "Launch yabiadmin (frontend) http://localhost:8000"
     mkdir -p ~/yabi_data_dir
-    virt_yabiadmin/bin/django-admin.py syncdb --noinput --settings=$DJANGO_SETTINGS_MODULE 1> syncdb-yabictl.log
-    virt_yabiadmin/bin/django-admin.py migrate --settings=$DJANGO_SETTINGS_MODULE 1> migrate-yabictl.log
-    virt_yabiadmin/bin/django-admin.py collectstatic --noinput --settings=$DJANGO_SETTINGS_MODULE 1> collectstatic-yabictl.log
-    virt_yabiadmin/bin/gunicorn_django -b 0.0.0.0:8000 --pid=yabiadmin-yabictl.pid --log-file=yabiadmin-yabictl.log --daemon $DJANGO_SETTINGS_MODULE -t 300 -w 5
+    virt_yabiadmin/bin/django-admin.py syncdb --noinput --settings=$DJANGO_SETTINGS_MODULE 1> syncdb-develop.log
+    virt_yabiadmin/bin/django-admin.py migrate --settings=$DJANGO_SETTINGS_MODULE 1> migrate-develop.log
+    virt_yabiadmin/bin/django-admin.py collectstatic --noinput --settings=$DJANGO_SETTINGS_MODULE 1> collectstatic-develop.log
+    virt_yabiadmin/bin/gunicorn_django -b 0.0.0.0:8000 --pid=yabiadmin-develop.pid --log-file=yabiadmin-develop.log --daemon $DJANGO_SETTINGS_MODULE -t 300 -w 5
 }
 
 function startceleryd() {
-    if test -e celeryd-yabictl.pid; then
+    if test -e celeryd-develop.pid; then
         echo "pid file exists for celeryd"
         return
     fi
@@ -177,7 +177,7 @@ function startceleryd() {
     echo "Launch celeryd (message queue)"
     CELERY_CONFIG_MODULE="settings"
     CELERYD_CHDIR=`pwd`
-    CELERYD_OPTS="--logfile=celeryd-yabictl.log --pidfile=celeryd-yabictl.pid"
+    CELERYD_OPTS="--logfile=celeryd-develop.log --pidfile=celeryd-develop.pid"
     CELERY_LOADER="django"
     DJANGO_PROJECT_DIR="$CELERYD_CHDIR"
     PROJECT_DIRECTORY="$CELERYD_CHDIR"
@@ -186,7 +186,7 @@ function startceleryd() {
 }
 
 function startyabibe() {
-    if test -e yabibe-yabictl.pid; then
+    if test -e yabibe-develop.pid; then
         echo "pid file exists for yabibe"
         return
     fi
@@ -197,7 +197,7 @@ function startyabibe() {
     mkdir -p ~/.yabi/run/backend/tasklets
     mkdir -p ~/.yabi/run/backend/temp
 
-    virt_yabibe/bin/yabibe --pidfile=yabibe-yabictl.pid
+    virt_yabibe/bin/yabibe --pidfile=yabibe-develop.pid
 }
 
 function startall() {
@@ -208,18 +208,18 @@ function startall() {
 
 function yabistatus() {
     set +e
-    if test -e yabibe-yabictl.pid; then
-        ps -f -p `cat yabibe-yabictl.pid`
+    if test -e yabibe-develop.pid; then
+        ps -f -p `cat yabibe-develop.pid`
     else 
         echo "No pid file for yabibe"
     fi
-    if test -e yabiadmin-yabictl.pid; then
-        ps -f -p `cat yabiadmin-yabictl.pid`
+    if test -e yabiadmin-develop.pid; then
+        ps -f -p `cat yabiadmin-develop.pid`
     else 
         echo "No pid file for yabiadmin"
     fi
-    if test -e celeryd-yabictl.pid; then
-        ps -f -p `cat celeryd-yabictl.pid`
+    if test -e celeryd-develop.pid; then
+        ps -f -p `cat celeryd-develop.pid`
     else 
         echo "No pid file for celeryd"
     fi
@@ -354,6 +354,6 @@ purge)
     yabipurge
     ;;
 *)
-    echo "Usage ./yabictl.sh (status|test_mysql|test_postgresql|test_yabiadmin|jslint|dropdb|startall|startyabibe|startyabiadmin|startceleryd|stopall|stopyabibe|stopyabiadmin|stopceleryd|install|clean|purge|yabiadminpipfreeze|yabibepipfreeze|pythonversion)"
+    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|jslint|dropdb|startall|startyabibe|startyabiadmin|startceleryd|stopall|stopyabibe|stopyabiadmin|stopceleryd|install|clean|purge|yabiadminpipfreeze|yabibepipfreeze|pythonversion)"
 esac
 

@@ -16,22 +16,22 @@ Running Yabi
 
 To run Yabi you need to start Yabi Admin, Yabi Backend and the Yabi Admin Celery server.
 
-All this components can be controlled from the top level directory using 'yabictl.sh'.
+All this components can be controlled from the top level directory using 'develop.sh'.
 
-    $ ./yabictl.sh 
-Usage ./yabictl.sh (status|test_mysql|test_postgresql|dropdb|startall|startyabibe|startyabiadmin|startceleryd|stopall|stopyabibe|stopyabiadmin|stopceleryd|install|clean)
+    $ ./develop.sh 
+Usage ./develop.sh (status|test_mysql|test_postgresql|dropdb|startall|startyabibe|startyabiadmin|startceleryd|stopall|stopyabibe|stopyabiadmin|stopceleryd|install|clean)
 
 To create virtual pythons for running a local development stack:
 
-    $ ./yabictl.sh install
+    $ ./develop.sh install
 
 To start:
 
-    $ ./yabictl.sh start
+    $ ./develop.sh start
 
 To stop:
 
-    $ ./yabictl.sh stop
+    $ ./develop.sh stop
 
 Access
 ------
@@ -46,4 +46,4 @@ Running Tests
 
 Yabi has an end to end test suite for testing the full Yabi stack. 
 
-    $ ./yabictl.sh test_mysql|test_postgresql
+    $ ./develop.sh test_mysql|test_postgresql
