@@ -2,10 +2,10 @@
 #CELERYD="-m celery.bin.celeryd_detach"
 
 # Path to the celerd multi
-#CELERYD_MULTI="/usr/bin/celeryd-multi"
+CELERYD_MULTI="/usr/local/webapps/yabiadmin/bin/celeryd-multi"
 
 # Sets the verbosity of the celeryd logging.
-CELERYD_LOG_LEVEL="INFO"
+CELERYD_LOG_LEVEL="DEBUG"
 
 # Define the loader that celeryd should use for loading in configs.
 CELERY_LOADER="django"
@@ -19,3 +19,6 @@ CELERYD_GROUP="apache"
 
 # Change to this directory first before launching celeryd.
 #CELERYD_CHDIR=""
+
+# CCG yabiadmin RPM requires this for celeryd to run
+export PYTHONPATH=/usr/local/webapps/yabiadmin/lib
