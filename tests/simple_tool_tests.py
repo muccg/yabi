@@ -48,7 +48,7 @@ class ExplodingBackendTest(YabiTestCase):
         models.Tool.objects.get(name='hostname').delete()
 
         admin.create_exploding_backend()
-        admin.create_tool('hostname', backend_name='Exploding Backend')
+        admin.create_tool('hostname', ex_backend_name='Exploding Backend')
         admin.add_tool_to_all_tools('hostname') 
 
     def tearDown(self):
