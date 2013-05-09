@@ -140,14 +140,14 @@ class Configuration(object):
     config = {
         'backend': {
             "port": "0.0.0.0:8000",
-            "start_http": "true",
+            "start_http": True,
 
             "sslport": "0.0.0.0:8443",
-            "start_https": "false",
+            "start_https": False,
 
             "path": "/",
 
-            "telnet": "false",
+            "telnet": False,
             "telnet_port": "0.0.0.0:8021",
 
             "fifos": None,
@@ -168,7 +168,7 @@ class Configuration(object):
         },
         'taskmanager': {
             'polldelay': '5',
-            'startup': 'true',
+            'startup': True,
             "tasktag": None,
             "retrywindow": 60,           # default is to retry for 1 minute. This is for dev and testing. production should up this value.
         },
@@ -180,6 +180,12 @@ class Configuration(object):
         'execution': {
             'logcommand': 'true',
             'logscripts': 'true'
+        },
+        'torque': {
+            'qstat': 'qstat-torque',
+            'qsub': 'qsub-torque',
+            'use_sudo': True,
+            'sudo': '/usr/bin/sudo',
         },
     }
 
@@ -225,6 +231,15 @@ class Configuration(object):
                 self.config[name]['tasktag'] = conf_parser.get(name, 'tasktag')
             if conf_parser.has_option(name, 'retrywindow'):
                 self.config[name]['retrywindow'] = conf_parser.get(name, 'retrywindow')
+
+        # torque section
+        name = "torque"
+        if conf_parser.has_section(name):
+            self.config[name]['qstat'] = conf_parser.get(name, 'qstat')
+            self.config[name]['qsub'] = conf_parser.get(name, 'qsub')
+            self.config[name]['sudo'] = conf_parser.get(name, 'sudo')
+            if conf_parser.has_option(name, 'use_sudo'):
+                self.config[name]['use_sudo'] = boolean_proc(conf_parser.get(name, 'use_sudo'))
 
         # ssh+sge section
         name = "sge+ssh"

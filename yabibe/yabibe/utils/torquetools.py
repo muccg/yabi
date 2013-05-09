@@ -36,12 +36,13 @@ import gevent
 import os
 from utils.geventtools import sleep
 from ex.connector.ExecConnector import ExecutionError
+from conf import config
 
-QSUB_COMMAND = "/opt/torque/2.3.13/bin/qsub"             # -N job-101 /home/yabi/test-remote
-QSTAT_COMMAND = "/opt/torque/2.3.13/bin/qstat"
 
-SUDO = "/usr/bin/sudo"
-USE_SUDO = True
+QSUB_COMMAND = config.config['torque']['qsub']
+QSTAT_COMMAND = config.config['torque']['qstat']
+SUDO = config.config['torque']['sudo']
+USE_SUDO = config.config['torque']['use_sudo']
 
 DEBUG = False
 
