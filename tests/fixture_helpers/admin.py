@@ -29,6 +29,25 @@ def create_exploding_backend():
     null_credential = models.Credential.objects.get(description='null credential')
     models.BackendCredential.objects.create(backend=exploding_backend, credential=null_credential, homedir='')
 
+def create_torque_backend():
+    from yabiadmin.yabi import models
+    torque_backend = models.Backend.objects.create(
+        name='Torque Backend', 
+        scheme='torque', 
+        hostname='localhost.localdomain', 
+        path='/', 
+        submission='${command}\n'
+    )
+    cred = models.Credential.objects.create( 
+        description='Test TORQUE Credential', 
+        username='ccg-user',
+        password='password',
+        cert='cert',
+        key='key',
+        user=models.User.objects.get(name='demo')
+    )
+    models.BackendCredential.objects.create(backend=torque_backend, credential=cred, homedir='')
+
 def create_backend(scheme="ssh", hostname="localhost.localdomain",path="/",submission="${command}"):
     from yabiadmin.yabi import models
     backend = models.Backend.objects.create(name='Test %s Backend'%scheme.upper(), scheme=scheme, hostname=hostname, path=path, submission=submission)
