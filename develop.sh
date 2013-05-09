@@ -47,6 +47,7 @@ function nosetests() {
     # Runs the end-to-end tests in the Yabitests project
     virt_yabiadmin/bin/nosetests --with-xunit --xunit-file=tests.xml -v -w tests
     #virt_yabiadmin/bin/nosetests -v -w tests tests.backend_restart_tests
+    #virt_yabiadmin/bin/nosetests -v -w tests  tests.s3_connection_tests
 }
 
 function noseyabiadmin() {

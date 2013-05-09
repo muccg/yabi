@@ -10,20 +10,15 @@ KB = 1024
 MB = 1024 * KB
 GB = 1024 * MB
 
-# to test s3, the default setup is to setup a fakes3 server on localhost on port 8080
-# and to test against that. To change the server you are testing against change the 
-# admin setup to connect to it and then change the following:
-TEST_S3_SERVER = "s3://username@localhost.localdomain:8080"
-
 # to run a fakes3 server, install fakes3 then make an empty directory to server
 # then run with something like:
 #
-# /var/lib/gems/1.8/bin/fakes3 -r ./fakes3 -p 8080
+# /var/lib/gems/1.8/bin/fakes3 -r ./fakes3 -p 8090
 #
 
 from urllib import quote
 
-QUOTED_TEST_S3_SERVER = quote(TEST_S3_SERVER)
+QUOTED_TEST_S3_SERVER = quote(conf.s3_server)
 
 class S3FileUploadTest(RequestTest):
 
@@ -39,6 +34,7 @@ class S3FileUploadTest(RequestTest):
         import requests
         
         r = self.session.get(conf.yabiurl+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_S3_SERVER) )
+        print r.text
 
         self.assertTrue(r.status_code==200, "Could not list S3 backend contents")
         

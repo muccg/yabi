@@ -29,3 +29,5 @@ class Configuration(object):
         self.startyabibe = cp.get(section, 'startyabibe')
         self.cleanyabi = cp.get(section, 'cleanyabi')
         self.yabistatus = cp.get(section, 'yabistatus')
+        self.s3_server = cp.get(section, 's3_server')
+        self.s3_port = cp.get(section, 's3_port')

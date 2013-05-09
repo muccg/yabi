@@ -1,3 +1,5 @@
+from tests.support import conf
+
 '''
 Module providing helper methods for creating data in yabi admin from tests
 '''
@@ -113,7 +115,7 @@ def create_fakes3_backend(scheme="s3", hostname="localhost.localdomain", path="/
         description="Test %s Backend"%scheme.upper(),
         scheme=scheme, 
         hostname=hostname,
-        port=8080,
+        port=conf.s3_port,
         path=path, 
         submission=""
     )
