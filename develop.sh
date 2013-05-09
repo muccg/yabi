@@ -42,11 +42,11 @@ function jslint() {
     done
 }
 
-function noseyabitests() {
+function nosetests() {
     source virt_yabiadmin/bin/activate
     # Runs the end-to-end tests in the Yabitests project
-    virt_yabiadmin/bin/nosetests --with-xunit --xunit-file=yabitests.xml -v -w yabitests
-    #virt_yabiadmin/bin/nosetests -v -w yabitests yabitests.backend_restart_tests
+    virt_yabiadmin/bin/nosetests --with-xunit --xunit-file=tests.xml -v -w tests
+    #virt_yabiadmin/bin/nosetests -v -w tests tests.backend_restart_tests
 }
 
 function noseyabiadmin() {
@@ -57,7 +57,7 @@ function noseyabiadmin() {
 
 function nose_collect() {
     source virt_yabiadmin/bin/activate
-    virt_yabiadmin/bin/nosetests -v -w yabitests --collect-only
+    virt_yabiadmin/bin/nosetests -v -w tests --collect-only
 }
 
 function dropdb() {
@@ -245,7 +245,7 @@ function yabiclean() {
     find yabibe -name "*.pyc" -exec rm -rf {} \;
     find yabiadmin -name "*.pyc" -exec rm -rf {} \;
     find yabish -name "*.pyc" -exec rm -rf {} \;
-    find yabitests -name "*.pyc" -exec rm -rf {} \;
+    find tests -name "*.pyc" -exec rm -rf {} \;
 }
 
 function yabipurge() {
@@ -258,7 +258,7 @@ function dbtest() {
     stopall
     dropdb
     startall
-    noseyabitests
+    nosetests
     stopall
 }
 

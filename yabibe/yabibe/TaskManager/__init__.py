@@ -65,7 +65,7 @@ def shutdown():
 from twistedweb2 import resource, http_headers, responsecode, http
 
 
-# the following is used for the yabitests backend start stop tests, to check that serialised tasks are resumed correctly
+# the following is used for the tests backend start stop tests, to check that serialised tasks are resumed correctly
 class TaskManagerResource(resource.Resource):
     """When this resource is hit... tasklets are purged"""
     VERSION = 0.2

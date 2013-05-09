@@ -1,4 +1,4 @@
-from yabitests.support import YabiTestCase
+from tests.support import YabiTestCase
 
 class ATestCase(YabiTestCase):
     @classmethod
