@@ -128,6 +128,7 @@ class TorqueConnector(ExecConnector):
                 print "JOB ID", jobid
 
         except ExecutionError, ee:
+            print 'Error: %s' % str(ee)
             channel.callback(http.Response(responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(ee)))
             return
 
@@ -189,19 +190,23 @@ class TorqueConnector(ExecConnector):
     def main_loop(self, client_stream, username, jobid, remoteurl=None):
         newstate = state = None
         delay = JobPollGeneratorDefault()
-        while state != "Done":
+        while state not in ('Done', 'Error'):
             # pause
             sleep(delay.next())
 
-            jobsummary = qstat(jobid, username)
+            # TODO FIXME
+            # No attempt made by TorqueConnector to deal with qstat failures
+            try:
+                jobsummary = qstat(jobid, username)
+            except ExecutionError, ee:
+                print 'ERROR: TorqueConnector does not handle qstat failures'
+                raise ee
             self.update_running(jobid, jobsummary)
 
             if jobid in jobsummary:
-                # job has not finished
                 status = jobsummary[jobid]['job_state']
 
                 if status == 'C':
-                    #print "STATUS IS C <=============================================================",jobsummary[jobid]['exit_status']
                     # state 'C' means complete OR error
                     if 'exit_status' in jobsummary[jobid] and jobsummary[jobid]['exit_status'] == '0':
                         newstate = "Done"
@@ -211,19 +216,14 @@ class TorqueConnector(ExecConnector):
                     newstate = dict(Q="Unsubmitted", E="Running", H="Pending", R="Running", T="Pending", W="Pending", S="Pending")[status]
 
             else:
-                # job has finished
-                sleep(15.0)                      # deal with SGE flush bizarreness (files dont flush from remote host immediately. Totally retarded)
                 print "ERROR: jobid %s not in jobsummary" % jobid
-                print "jobsummary is", jobsummary
-
-                # if there is standard error from the qstat command, report that!
                 newstate = "Error"
+
             if DEBUG:
                 print "Job summary:", jobsummary
 
             if state != newstate:
                 state = newstate
-                #print "Writing state",state
                 client_stream.write("%s\n" % state)
 
                 # report the full status to the remote_url
@@ -231,12 +231,8 @@ class TorqueConnector(ExecConnector):
                     if jobid in jobsummary:
                         RemoteInfo(remoteurl, json.dumps(jobsummary[jobid]))
                     else:
-                        print "Cannot call RemoteInfo call for job", jobid
+                        print 'Cannot call RemoteInfo call for job', jobid
 
-            if state == "Error":
-                #print "CLOSING STREAM"
-                client_stream.finish()
-                return
 
     def info(self, jobid, username):
         jobsummary = qstat(user=username)
