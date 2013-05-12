@@ -34,7 +34,7 @@ Summary: yabiadmin django webapp, yabi backend and yabi shell utility
 Name: yabi
 Version: %{version}
 Release: %{release}
-License: UNKNOWN
+License: GNU GPL v3
 Group: Applications/Internet
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
@@ -44,6 +44,8 @@ BuildRequires: python-setuptools openssl-devel libevent-devel python-devel
 Requires: openssl python-setuptools python
 Requires(pre): shadow-utils
 
+%description 
+Test.
 
 %package admin
 Summary: yabiadmin Django web application
@@ -75,8 +77,8 @@ Yabi command line shell
 
 %install
 
-for directory in "%{settingsdir} %{staticdir} %{logsdir} {scratchdir} %{mediadir} %{bebuildconfdir}"; do
-	mkdir -p $directory;
+for directory in "%{settingsdir} %{staticdir} %{logsdir} %{scratchdir} %{mediadir} %{bebuildconfdir}"; do
+    mkdir -p $directory;
 done;
 
 # Create python prefixes for packages
@@ -85,6 +87,10 @@ mkdir -p %{bebuildinstalldir}/{lib,bin,include}
 mkdir -p %{shbuildinstalldir}/{lib,bin,include}
 
 cd $CCGSOURCEDIR/yabiadmin
+
+if test -e $CCGSOURCEDIR/build-number-.txt; then
+    cp build-number.txt %{buildinstalldir}/
+fi
 
 # Install package into the prefix
 export PYTHONPATH=%{buildinstalldir}/lib
