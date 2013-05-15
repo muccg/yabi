@@ -34,6 +34,13 @@ function settings() {
     echo "Config: $YABI_CONFIG"
 }
 
+# ssh setup, make sure our ccg commands can run in an automated environment
+function ssh_agent() {
+    ssh-agent > agent.env.sh
+    source ./agent.env.sh
+    ssh-add ~/.ssh/ccg-syd-staging.pem
+}
+
 function jslint() {
     JSFILES="yabiadmin/yabiadmin/yabifeapp/static/javascript/*.js yabiadmin/yabiadmin/yabifeapp/static/javascript/account/*.js"
     for JS in $JSFILES
