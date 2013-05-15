@@ -35,10 +35,21 @@ function settings() {
 }
 
 # ssh setup, make sure our ccg commands can run in an automated environment
-function ssh_agent() {
-    ssh-agent > agent.env.sh
-    source ./agent.env.sh
+function ci_ssh_agent() {
+    ssh-agent > /tmp/agent.env.sh
+    source /tmp/agent.env.sh
     ssh-add ~/.ssh/ccg-syd-staging.pem
+}
+
+# build RPMs on a remote host from ci environment
+function ci_remote_build() {
+    EXCLUDES="('bootstrap'\, '.hg*'\, 'virt*'\, '*.log'\, '*.rpm')"
+    time ccg rpmbuild-centos6-aws puppet
+    ccg rpmbuild-centos6-aws dsudo:"chown ec2-user:ec2-user /usr/local/src"
+    time ccg rpmbuild-centos6-aws rsync_project:local_dir=./,remote_dir=/usr/local/src/,ssh_opts="-o StrictHostKeyChecking\=no",exclude="${EXCLUDES}",delete=True
+    time ccg rpmbuild-centos6-aws build_rpm:centos/yabi.spec
+    ccg rpmbuild-centos6-aws getfile:rpmbuild/RPMS/x86_64/*.rpm,.
+    time ccg rpmbuild-centos6-aws publish_rpm:rpmbuild/RPMS/x86_64/yabi*.rpm,release=6
 }
 
 function jslint() {
@@ -350,6 +361,10 @@ install)
     stopall
     yabiinstall
     ;;
+ci_remote_build)
+    ci_ssh_agent
+    ci_remote_build
+    ;;
 clean)
     settings
     stopall
@@ -362,6 +377,6 @@ purge)
     yabipurge
     ;;
 *)
-    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|jslint|dropdb|startall|startyabibe|startyabiadmin|startceleryd|stopall|stopyabibe|stopyabiadmin|stopceleryd|install|clean|purge|yabiadminpipfreeze|yabibepipfreeze|pythonversion)"
+    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|jslint|dropdb|startall|startyabibe|startyabiadmin|startceleryd|stopall|stopyabibe|stopyabiadmin|stopceleryd|install|clean|purge|yabiadminpipfreeze|yabibepipfreeze|pythonversion|ci_remote_build)"
 esac
 
