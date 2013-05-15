@@ -52,6 +52,10 @@ function ci_remote_build() {
     time ccg rpmbuild-centos6-aws publish_rpm:rpmbuild/RPMS/x86_64/yabi*.rpm,release=6
 }
 
+function ci_remote_destroy() {
+    ccg rpmbuild-centos6-aws destroy
+}
+
 function jslint() {
     JSFILES="yabiadmin/yabiadmin/yabifeapp/static/javascript/*.js yabiadmin/yabiadmin/yabifeapp/static/javascript/account/*.js"
     for JS in $JSFILES
@@ -365,6 +369,10 @@ ci_remote_build)
     ci_ssh_agent
     ci_remote_build
     ;;
+ci_remote_destroy)
+    ci_ssh_agent
+    ci_remote_destroy
+    ;;
 clean)
     settings
     stopall
@@ -377,6 +385,5 @@ purge)
     yabipurge
     ;;
 *)
-    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|jslint|dropdb|startall|startyabibe|startyabiadmin|startceleryd|stopall|stopyabibe|stopyabiadmin|stopceleryd|install|clean|purge|yabiadminpipfreeze|yabibepipfreeze|pythonversion|ci_remote_build)"
+    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|jslint|dropdb|startall|startyabibe|startyabiadmin|startceleryd|stopall|stopyabibe|stopyabiadmin|stopceleryd|install|clean|purge|yabiadminpipfreeze|yabibepipfreeze|pythonversion|ci_remote_build|ci_remote_destroy)"
 esac
-
