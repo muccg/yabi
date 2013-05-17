@@ -6,7 +6,8 @@
 # break on error
 set -e 
 
-ARGV="$@"
+ACTION="$1"
+PROJECT="$2"
 
 if [ "$YABI_CONFIG" = "" ]; then
     YABI_CONFIG="dev_mysql"
@@ -60,6 +61,17 @@ function ci_remote_build() {
 function ci_remote_destroy() {
     ccg rpmbuild-centos6-aws destroy
 }
+
+
+# lint using flake8
+function lint() {
+    if ! test ${PROJECT}; then
+        usage
+        exit 1
+    fi 
+    virt_yabiadmin/bin/flake8 ${PROJECT} --ignore=E501 --count
+}
+
 
 function jslint() {
     JSFILES="yabiadmin/yabiadmin/yabifeapp/static/javascript/*.js yabiadmin/yabiadmin/yabifeapp/static/javascript/account/*.js"
@@ -152,13 +164,29 @@ function stopyabibe() {
     stopprocess yabibe-develop.pid
 }
 
-function stopall() {
-    stopyabiadmin
-    stopceleryd
-    stopyabibe
+function stopyabi() {
+    case $PROJECT in
+    'yabiadmin')
+        stopyabiadmin
+        stopceleryd
+        ;;
+    'yabibe')
+        stopyabibe
+        ;;
+    '')
+        stopyabiadmin
+        stopceleryd
+        stopyabibe
+        ;;
+    *)
+        echo "Cannot stop ${PROJECT}"
+        usage
+        exit 1
+        ;;
+    esac
 }
 
-function yabiinstall() {
+function installyabi() {
     # check requirements
     which virtualenv >/dev/null
 
@@ -169,6 +197,7 @@ function yabiinstall() {
     popd
     virt_yabiadmin/bin/easy_install MySQL-python==1.2.3
     virt_yabiadmin/bin/easy_install psycopg2==2.0.8
+    virt_yabiadmin/bin/easy_install flake8
 
     echo "Install yabibe"
     virtualenv --system-site-packages virt_yabibe
@@ -228,10 +257,26 @@ function startyabibe() {
     virt_yabibe/bin/yabibe --pidfile=yabibe-develop.pid
 }
 
-function startall() {
-    startyabiadmin
-    startceleryd
-    startyabibe
+function startyabi() {
+    case $PROJECT in
+    'yabiadmin')
+        startyabiadmin
+        startceleryd
+        ;;
+    'yabibe')
+        startyabibe
+        ;;
+    '')
+        startyabiadmin
+        startceleryd
+        startyabibe
+        ;;
+    *)
+        echo "Cannot start ${PROJECT}"
+        usage
+        exit 1
+        ;;
+    esac
 }
 
 function yabistatus() {
@@ -259,11 +304,11 @@ function pythonversion() {
     virt_yabibe/bin/python -V
 }
 
-function yabiadminpipfreeze() {
+function pipfreeze() {
+    echo 'yabiadmin pip freeze'
     virt_yabiadmin/bin/pip freeze
-}
-
-function yabibepipfreeze() {
+    echo '' 
+    echo 'yabibe pip freeze' 
     virt_yabibe/bin/pip freeze
 }
 
@@ -283,30 +328,42 @@ function yabipurge() {
 }
 
 function dbtest() {
-    stopall
+    stopyabi
     dropdb
-    startall
+    startyabi
     nosetests
-    stopall
+    stopyabi
 }
 
 function yabiadmintest() {
-    stopall
+    stopyabi
     dropdb
-    startall
+    startyabi
     noseyabiadmin
-    stopall
+    stopyabi
 }
 
-case $ARGV in
+
+function usage() {
+    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|ci_remote_build|ci_remote_destroy) (yabiadmin|yabibe|yabish)"
+}
+
+
+case $PROJECT in
+'yabiadmin' | 'yabibe' | 'yabish' | '')
+    ;;
+*)
+    usage
+    exit 1
+    ;;
+esac
+
+case $ACTION in
 pythonversion)
     pythonversion
     ;;
-yabiadminpipfreeze)
-    yabiadminpipfreeze
-    ;;
-yabibepipfreeze)
-    yabibepipfreeze
+pipfreeze)
+    pipfreeze
     ;;
 test_mysql)
     YABI_CONFIG="test_mysql"
@@ -323,6 +380,9 @@ test_yabiadmin_mysql)
     settings
     yabiadmintest
     ;;
+lint)
+    lint
+    ;;
 jslint)
     jslint
     ;;
@@ -330,45 +390,21 @@ dropdb)
     settings
     dropdb
     ;;
-stopyabiadmin)
+stop)
     settings
-    stopyabiadmin
+    stopyabi
     ;;
-stopyabibe)
+start)
     settings
-    stopyabibe
-    ;;
-stopceleryd)
-    settings
-    stopceleryd
-    ;;
-stopall)
-    settings
-    stopall
-    ;;
-startyabiadmin)
-    settings
-    startyabiadmin
-    ;;
-startyabibe)
-    settings
-    startyabibe
-    ;;
-startceleryd)
-    settings
-    startceleryd
-    ;;
-startall)
-    settings
-    startall
+    startyabi
     ;;
 status)
     yabistatus
     ;;
 install)
     settings
-    stopall
-    yabiinstall
+    stopyabi
+    installyabi
     ;;
 ci_remote_build)
     ci_ssh_agent
@@ -380,15 +416,16 @@ ci_remote_destroy)
     ;;
 clean)
     settings
-    stopall
+    stopyabi
     yabiclean 
     ;;
 purge)
     settings
-    stopall
+    stopyabi
     yabiclean
     yabipurge
     ;;
 *)
-    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|jslint|dropdb|startall|startyabibe|startyabiadmin|startceleryd|stopall|stopyabibe|stopyabiadmin|stopceleryd|install|clean|purge|yabiadminpipfreeze|yabibepipfreeze|pythonversion|ci_remote_build|ci_remote_destroy)"
+    usage
+    ;;
 esac
