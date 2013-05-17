@@ -47,8 +47,8 @@ function ci_remote_build() {
     EXCLUDES="('bootstrap'\, '.hg*'\, 'virt*'\, '*.log'\, '*.rpm')"
     time ccg rpmbuild-centos6-aws puppet
     ccg rpmbuild-centos6-aws dsudo:"chown ec2-user:ec2-user /usr/local/src"
-    time ccg rpmbuild-centos6-aws rsync_project:local_dir=./,remote_dir=/usr/local/src/,ssh_opts="-o StrictHostKeyChecking\=no",exclude="${EXCLUDES}",delete=True
-    time ccg rpmbuild-centos6-aws build_rpm:centos/yabi.spec
+    time ccg rpmbuild-centos6-aws rsync_project:local_dir=./,remote_dir=/usr/local/src/yabi/,ssh_opts="-o StrictHostKeyChecking\=no",exclude="${EXCLUDES}",delete=True
+    time ccg rpmbuild-centos6-aws build_rpm:centos/yabi.spec,src='/usr/local/src/yabi'
 
     # the publish currently works from local files, so download the RPMs
     rm -rf build/*
