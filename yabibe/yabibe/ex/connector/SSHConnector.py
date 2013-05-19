@@ -26,6 +26,7 @@
 #
 ### END COPYRIGHT ###
 
+import os
 from ExecConnector import ExecConnector
 
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
@@ -126,6 +127,13 @@ class SSHConnector(ExecConnector, ssh.KeyStore.KeyStore):
 
             while not pp.isDone():
                 gevent.sleep()
+
+            # write out stdout and stderr.
+            # TODO: make this streaming
+            with open(os.path.join(working, stdout), 'w') as fh:
+                fh.write(pp.out)
+            with open(os.path.join(working, stderr), 'w') as fh:
+                fh.write(pp.err)
 
             if pp.exitcode == 0:
                 # success
