@@ -1,3 +1,4 @@
+import os
 from tests.support import conf
 
 '''
@@ -47,6 +48,25 @@ def create_torque_backend():
         user=models.User.objects.get(name='demo')
     )
     models.BackendCredential.objects.create(backend=torque_backend, credential=cred, homedir='')
+
+def create_ssh_backend():
+    from yabiadmin.yabi import models
+    ssh_backend = models.Backend.objects.create(
+        name='SSH Backend', 
+        scheme='ssh', 
+        hostname='localhost', 
+        path='/', 
+        submission='${command}'
+    )
+    cred = models.Credential.objects.create( 
+        description='Test SSH Credential', 
+        username=os.environ.get('USER'),
+        password='',
+        cert='cert',
+        key=private_key,
+        user=models.User.objects.get(name='demo')
+    )
+    models.BackendCredential.objects.create(backend=ssh_backend, credential=cred, homedir='')
 
 def create_backend(scheme="ssh", hostname="localhost.localdomain",path="/",submission="${command}"):
     from yabiadmin.yabi import models
@@ -282,4 +302,33 @@ def modify_backend(scheme="localex",hostname="localhost",**kwargs):
         setattr(backend,key,arg)
     backend.save()
     
+
+private_key = \
+"""-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEAuqrtex+43HRsh2gFZpcdkgJlLG7DyZyhbLLVZsKXPD3E4+a/
+YWSj/2iRL/95sYc0X4bCXrFkonVsSdOBawaNNDpx6V8zGgBCkpKtTn1OzgUb4BvZ
+b67/pMNsSYrwshvbjZ6xFhR8lt4LUThzl/FiBYItDzR3OhJ5SwWnG3LrFu8YZF/S
+oWl9iLS/YBOG1mBphG5ySr7SdNyImg5hzGzF5Q1b+EYSBDJPySgcL1I07GGcegbs
+exZftUD64Sjexlizzk+lV/2bmuT9SDPu7tUUhl0Pn6PhmSm+bkOuVwidQ96wLx2Y
+B9hJxvStS4bzxBWGZjIzb8/zlYEEq4gbHVhE0QIDAQABAoIBAGkXzIYSMQCk52lA
+jjHZCEPo508huUbr0RIiiPTGv2CiIhRxF/RcNdyY4YzVV400Yq8ZbprjYpX4aBQU
+aPt5f8wUz4clGt8boF9nBv12nQRuaeg9pag0LSd1AqVQ/Pw5pN1Rp7+XnyFNN6/t
+iV7U/mu9g2LZFfry5ajwMMnKZELPOQtM5nCQn2ddUNbuOw8fT0yjazKt7gNbCnIN
+PLUVvUlusx1pwNOlONOsjXG4+rJO4j1Juy+pZl5UBkA4lAqbL12SIdv2x8zUALeQ
+bYt+UXyh5jolRkkKbKUjPMs34Wyih0OLScprTxRgt0klHny5eg8FUWnPLYxMngZO
+ML3b40ECgYEA6ZKBWMHu6DcIwUpgmBf2/e5FnMsmWyVptmnlHEgy2GvCFArdvi3I
+qeSHOXuv5n9LDDaiQ56Ugw1CMRd85EzU5GMvd9chSZotqY4GCOm2Qbow8zeKsRII
+dyC5xd7EVLSgPy551yukv4yWgjj18EV7XxJJ6w9wvJ1Pw230+HUykbkCgYEAzJdz
+EvKu9dDp/4Mn8is4t8aRy/Upva0JuNlb8zhKiQHKPzD8oWzP+9LmDU625y7nVo6I
+00kylBrh+83GAkPYmHu0YeLoRQRjR8vnzQBTuHz0sHfdksHWHms9+f4bhhdWcsrE
+c3A94aNWeeDBCutmnjCsIdVsOnaLHdlg02+MN9kCgYEAyB/W442GfUBqJ/LqQGaI
+IZn92xHUk1PC96BTxZ+2sOfjKfkFdOUVgTtlAUOQuxVl39kPvpAo/wBlLlrJj3Kl
+FepFyZBx3PZVGWmukgRtPHOjbUCxfHXO+wL3KSptXYZFptzTWCD0z4pNitXzIyLl
+SdgJrXVVSsYeiXu04QzJf0ECgYEAhUvrap35RikePB5syUhFxN64ISWTU4RJAEmF
+shqr3UXwSmmVP2tQuua2glcVrdwOV4O4O8jGDl7Re6ie6NzhYr++T8Rxxn3MXXvJ
+g/RBl8K5/buq/jISWnFOyPE5Z40PAu1/PyMS/k7YScIYpA+pJUna7JRL1m9jxkfZ
+4QgdWEkCgYAQ5sNGuu+lOFW9h7icRUhJ0BbeVb61if8LBMpS8vfE+RrPaIElPByu
+2j2kx2wmXeVyLRzSuYRZa21ZqkQbKU8NRjccp1OxNNovP/QUm0hJBBrLXOzUqHob
+MtlxESvkl9Uthp61ciuoIDO5yfVyd++Mr+ssM/2J0ddbJiU3zhVIhw==
+-----END RSA PRIVATE KEY-----"""
     
