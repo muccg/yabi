@@ -44,15 +44,13 @@ setup(
         'conditional==1.0',
         'twisted==12.3.0',
         'unittest2',
-        'coverage',
-        'mock',
         'nose',
         'pyaml'
     ],
     dependency_links=[
-        "http://bitbucket.org/ccgmurdoch/yabi/downloads",
+        "https://bitbucket.org/ccgmurdoch/yabi/downloads/kombu-2.1.8.tar.gz",
         "http://github.com/jyio/geventreactor/tarball/master#egg=geventreactor-0.1.0",
-        "http://code.google.com/p/yabi/downloads/list",
-        "http://code.google.com/p/twisted-web2/downloads/list"
+        "https://yabi.googlecode.com/files/paramiko-1.7.7.1-fifopatch2.tar.gz",
+        "https://twisted-web2.googlecode.com/files/TwistedWeb2-1.0.0.tar.gz"
     ],
 )
