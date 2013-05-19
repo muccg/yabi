@@ -9,12 +9,37 @@ set -e
 ACTION="$1"
 PROJECT="$2"
 
-if [ "$YABI_CONFIG" = "" ]; then
+PORT='8000'
+
+PROJECT_NAME='yabi'
+AWS_BUILD_INSTANCE='rpmbuild-centos6-aws'
+TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
+CLOSURE="/usr/local/closure/compiler.jar"
+MODULES="MySQL-python==1.2.3 psycopg2==2.4.6 Werkzeug flake8"
+
+
+if [ "${YABI_CONFIG}" = "" ]; then
     YABI_CONFIG="dev_mysql"
 fi
 
+
+function usage() {
+    echo ""
+    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|ci_remote_build|ci_rpm_publish|ci_remote_destroy) (yabiadmin|yabibe|yabish)"
+    echo ""
+}
+
+
+function project_needed() {
+    if ! test ${PROJECT}; then
+        usage
+        exit 1
+    fi
+}
+
+
 function settings() {
-    case $YABI_CONFIG in
+    case ${YABI_CONFIG} in
     test_mysql)
         export DJANGO_SETTINGS_MODULE="yabiadmin.testmysqlsettings"
         ;;
@@ -32,8 +57,9 @@ function settings() {
         exit 1
     esac
 
-    echo "Config: $YABI_CONFIG"
+    echo "Config: ${YABI_CONFIG}"
 }
+
 
 # ssh setup, make sure our ccg commands can run in an automated environment
 function ci_ssh_agent() {
@@ -42,44 +68,54 @@ function ci_ssh_agent() {
     ssh-add ~/.ssh/ccg-syd-staging.pem
 }
 
+
 # build RPMs on a remote host from ci environment
 function ci_remote_build() {
+    project_required
+
+    time ccg ${AWS_BUILD_INSTANCE} puppet
+    time ccg ${AWS_BUILD_INSTANCE} shutdown:50
+
     EXCLUDES="('bootstrap'\, '.hg*'\, 'virt*'\, '*.log'\, '*.rpm')"
-    time ccg rpmbuild-centos6-aws puppet
-    ccg rpmbuild-centos6-aws dsudo:"chown ec2-user:ec2-user /usr/local/src"
-    time ccg rpmbuild-centos6-aws rsync_project:local_dir=./,remote_dir=/usr/local/src/yabi/,ssh_opts="-o StrictHostKeyChecking\=no",exclude="${EXCLUDES}",delete=True
-    time ccg rpmbuild-centos6-aws build_rpm:centos/yabi.spec,src='/usr/local/src/yabi'
+    SSH_OPTS="-o StrictHostKeyChecking\=no"
+    RSYNC_OPTS="-l"
+    time ccg ${AWS_BUILD_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",exclude="${EXCLUDES}",delete=True
+    time ccg ${AWS_BUILD_INSTANCE} build_rpm:centos/${PROJECT}/${PROJECT}.spec,src=${TARGET_DIR}
 
-    # the publish currently works from local files, so download the RPMs
-    rm -rf build/*
     mkdir -p build
-    ccg rpmbuild-centos6-aws getfile:rpmbuild/RPMS/x86_64/*.rpm,build/
-
-    time ccg rpmbuild-centos6-aws publish_rpm:build/yabi*.rpm,release=6
+    ccg ${AWS_BUILD_INSTANCE} getfile:rpmbuild/RPMS/x86_64/${PROJECT}*.rpm,build/
 }
 
+
+# publish rpms 
+function ci_rpm_publish() {
+    project_needed
+    time ccg ${AWS_BUILD_INSTANCE} publish_rpm:build/${PROJECT}*.rpm,release=6
+}
+
+
+# destroy our ci build server
 function ci_remote_destroy() {
-    ccg rpmbuild-centos6-aws destroy
+    ccg ${AWS_BUILD_INSTANCE} destroy
 }
 
 
 # lint using flake8
 function lint() {
-    if ! test ${PROJECT}; then
-        usage
-        exit 1
-    fi 
+    project_needed
     virt_yabiadmin/bin/flake8 ${PROJECT} --ignore=E501 --count
 }
 
 
+# lint js, assumes closure compiler
 function jslint() {
     JSFILES="yabiadmin/yabiadmin/yabifeapp/static/javascript/*.js yabiadmin/yabiadmin/yabifeapp/static/javascript/account/*.js"
     for JS in $JSFILES
     do
-        java -jar /usr/local/closure/compiler.jar --js $JS --js_output_file output.js --warning_level DEFAULT --summary_detail_level 3
+        java -jar ${CLOSURE} --js $JS --js_output_file output.js --warning_level DEFAULT --summary_detail_level 3
     done
 }
+
 
 function nosetests() {
     source virt_yabiadmin/bin/activate
@@ -89,11 +125,13 @@ function nosetests() {
     #virt_yabiadmin/bin/nosetests -v -w tests  tests.s3_connection_tests
 }
 
+
 function noseyabiadmin() {
     source virt_yabiadmin/bin/activate
     # Runs the unit tests in the Yabiadmin project
     virt_yabiadmin/bin/nosetests --with-xunit --xunit-file=yabiadmin.xml -v -w yabiadmin/yabiadmin 
 }
+
 
 function nose_collect() {
     source virt_yabiadmin/bin/activate
@@ -102,7 +140,7 @@ function nose_collect() {
 
 function dropdb() {
 
-    case $YABI_CONFIG in
+    case ${YABI_CONFIG} in
     test_mysql)
         mysql -v -uroot -e "drop database test_yabi;" || true
         mysql -v -uroot -e "create database test_yabi default charset=UTF8;" || true
@@ -125,6 +163,7 @@ function dropdb() {
         exit 1
     esac
 }
+
 
 function stopprocess() {
     set +e
@@ -149,23 +188,27 @@ function stopprocess() {
     set -e
 }
 
+
 function stopyabiadmin() {
     echo "Stopping Yabi admin"
     stopprocess yabiadmin-develop.pid
 }
+
 
 function stopceleryd() {
     echo "Stopping celeryd"
     stopprocess celeryd-develop.pid
 }
 
+
 function stopyabibe() {
     echo "Stopping Yabi backend"
     stopprocess yabibe-develop.pid
 }
 
+
 function stopyabi() {
-    case $PROJECT in
+    case ${PROJECT} in
     'yabiadmin')
         stopyabiadmin
         stopceleryd
@@ -186,6 +229,7 @@ function stopyabi() {
     esac
 }
 
+
 function installyabi() {
     # check requirements
     which virtualenv >/dev/null
@@ -195,9 +239,7 @@ function installyabi() {
     pushd yabiadmin
     ../virt_yabiadmin/bin/python setup.py develop
     popd
-    virt_yabiadmin/bin/easy_install MySQL-python==1.2.3
-    virt_yabiadmin/bin/easy_install psycopg2==2.0.8
-    virt_yabiadmin/bin/easy_install flake8
+    virt_yabiadmin/bin/easy_install ${MODULES}
 
     echo "Install yabibe"
     virtualenv --system-site-packages virt_yabibe
@@ -211,19 +253,21 @@ function installyabi() {
     popd
 }
 
+
 function startyabiadmin() {
     if test -e yabiadmin-develop.pid; then
         echo "pid file exists for yabiadmin"
         return
     fi
 
-    echo "Launch yabiadmin (frontend) http://localhost:8000"
+    echo "Launch yabiadmin (frontend) http://localhost:${PORT}"
     mkdir -p ~/yabi_data_dir
-    virt_yabiadmin/bin/django-admin.py syncdb --noinput --settings=$DJANGO_SETTINGS_MODULE 1> syncdb-develop.log
-    virt_yabiadmin/bin/django-admin.py migrate --settings=$DJANGO_SETTINGS_MODULE 1> migrate-develop.log
-    virt_yabiadmin/bin/django-admin.py collectstatic --noinput --settings=$DJANGO_SETTINGS_MODULE 1> collectstatic-develop.log
-    virt_yabiadmin/bin/gunicorn_django -b 0.0.0.0:8000 --pid=yabiadmin-develop.pid --log-file=yabiadmin-develop.log --daemon $DJANGO_SETTINGS_MODULE -t 300 -w 5
+    virt_yabiadmin/bin/django-admin.py syncdb --noinput --settings=${DJANGO_SETTINGS_MODULE} 1> syncdb-develop.log
+    virt_yabiadmin/bin/django-admin.py migrate --settings=${DJANGO_SETTINGS_MODULE} 1> migrate-develop.log
+    virt_yabiadmin/bin/django-admin.py collectstatic --noinput --settings=${DJANGO_SETTINGS_MODULE} 1> collectstatic-develop.log
+    virt_yabiadmin/bin/gunicorn_django -b 0.0.0.0:${PORT} --pid=yabiadmin-develop.pid --log-file=yabiadmin-develop.log --daemon ${DJANGO_SETTINGS_MODULE} -t 300 -w 5
 }
+
 
 function startceleryd() {
     if test -e celeryd-develop.pid; then
@@ -242,6 +286,7 @@ function startceleryd() {
     virt_yabiadmin/bin/celeryd $CELERYD_OPTS 1>/dev/null 2>/dev/null &
 }
 
+
 function startyabibe() {
     if test -e yabibe-develop.pid; then
         echo "pid file exists for yabibe"
@@ -257,8 +302,9 @@ function startyabibe() {
     virt_yabibe/bin/yabibe --pidfile=yabibe-develop.pid
 }
 
+
 function startyabi() {
-    case $PROJECT in
+    case ${PROJECT} in
     'yabiadmin')
         startyabiadmin
         startceleryd
@@ -278,6 +324,7 @@ function startyabi() {
         ;;
     esac
 }
+
 
 function yabistatus() {
     set +e
@@ -299,10 +346,12 @@ function yabistatus() {
     set -e
 }
 
+
 function pythonversion() {
     virt_yabiadmin/bin/python -V
     virt_yabibe/bin/python -V
 }
+
 
 function pipfreeze() {
     echo 'yabiadmin pip freeze'
@@ -311,6 +360,7 @@ function pipfreeze() {
     echo 'yabibe pip freeze' 
     virt_yabibe/bin/pip freeze
 }
+
 
 function yabiclean() {
     echo "rm -rf ~/.yabi/run/backend"
@@ -321,11 +371,13 @@ function yabiclean() {
     find tests -name "*.pyc" -exec rm -rf {} \;
 }
 
+
 function yabipurge() {
     rm -rf virt_yabiadmin
     rm -rf virt_yabibe
     rm *.log
 }
+
 
 function dbtest() {
     stopyabi
@@ -334,6 +386,7 @@ function dbtest() {
     nosetests
     stopyabi
 }
+
 
 function yabiadmintest() {
     stopyabi
@@ -344,12 +397,7 @@ function yabiadmintest() {
 }
 
 
-function usage() {
-    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|ci_remote_build|ci_remote_destroy) (yabiadmin|yabibe|yabish)"
-}
-
-
-case $PROJECT in
+case ${PROJECT} in
 'yabiadmin' | 'yabibe' | 'yabish' | '')
     ;;
 *)
@@ -413,6 +461,10 @@ ci_remote_build)
 ci_remote_destroy)
     ci_ssh_agent
     ci_remote_destroy
+    ;;
+ci_rpm_publish)
+    ci_ssh_agent
+    ci_rpm_publish
     ;;
 clean)
     settings
