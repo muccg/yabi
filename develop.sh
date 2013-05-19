@@ -26,7 +26,7 @@ fi
 
 function usage() {
     echo ""
-    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|ci_remote_build|ci_rpm_publish|ci_remote_destroy) (yabiadmin|yabibe|yabish)"
+    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|ci_remote_build|ci_rpm_publish|ci_remote_destroy|ci_authorized_keys) (yabiadmin|yabibe|yabish)"
     echo ""
 }
 
@@ -98,6 +98,12 @@ function ci_rpm_publish() {
 # destroy our ci build server
 function ci_remote_destroy() {
     ccg ${AWS_BUILD_INSTANCE} destroy
+}
+
+
+# we need authorized keys setup for ssh tests
+function ci_authorized_keys() {
+    cat tests/test_data/yabitests.pub >> ~/.ssh/authorized_keys
 }
 
 
@@ -469,6 +475,9 @@ ci_remote_destroy)
 ci_rpm_publish)
     ci_ssh_agent
     ci_rpm_publish
+    ;;
+ci_authorized_keys)
+    ci_authorized_keys
     ;;
 clean)
     settings
