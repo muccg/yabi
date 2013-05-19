@@ -17,7 +17,6 @@ setup(
               'yabibe.log',
               'yabibe.TaskManager',
               'yabibe.utils',
-              'yabibe.utils.pexpect',
               'yabibe.utils.protocol',
               'yabibe.utils.protocol.s3',
               'yabibe.utils.protocol.ssh'
@@ -28,7 +27,7 @@ setup(
     install_requires=[
         'pyOpenSSL==0.13',
         'pycrypto==2.3',
-        'paramiko==1.7.7.1-fifopatch2',
+        'paramiko==1.10.1',
         'Mako==0.7.3',
         'MarkupSafe==0.15',
         'TwistedWeb2==1.0.0',
@@ -50,7 +49,6 @@ setup(
     dependency_links=[
         "https://bitbucket.org/ccgmurdoch/yabi/downloads/kombu-2.1.8.tar.gz",
         "http://github.com/jyio/geventreactor/tarball/master#egg=geventreactor-0.1.0",
-        "https://yabi.googlecode.com/files/paramiko-1.7.7.1-fifopatch2.tar.gz",
         "https://twisted-web2.googlecode.com/files/TwistedWeb2-1.0.0.tar.gz"
     ],
 )

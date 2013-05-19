@@ -65,6 +65,38 @@ assert 'HMAC' in os.environ
 hmac_key = os.environ['HMAC']
 
 
+# extend the base Paramiko SFTPClient for FIFO (Don't check the file size at the end)
+class SFTPClient(paramiko.SFTPClient):
+
+    def get(self, remotepath, localpath, callback=None, confirm=True):
+        """
+        Copy a remote file (C{remotepath}) from the SFTP server to the local
+        host as C{localpath}.  Any exception raised by operations will be
+        passed through.  This method is primarily provided as a convenience.
+
+        @param remotepath: the remote file to copy
+        @type remotepath: str
+        @param localpath: the destination path on the local host
+        @type localpath: str
+        @param callback: optional callback function that accepts the bytes
+            transferred so far and the total bytes to be transferred
+            (since 1.7.4)
+        @type callback: function(int, int)
+
+        @since: 1.4
+        """
+        file_size = self.stat(remotepath).st_size
+        fl = file(localpath, 'wb')
+        try:
+            size = self.getfo(remotepath, fl, callback)
+        finally:
+            fl.close()
+        if confirm:
+            s = os.stat(localpath)
+            if s.st_size != size:
+                raise IOError('size mismatch in get!  %d != %d' % (s.st_size, size))
+
+
 def main():
     options, arguments = parse_args()
     sanity_check(options)
@@ -211,7 +243,7 @@ def parse_args():
 
 
 def list_folder(ssh, options):
-    sftp = paramiko.SFTPClient.from_transport(ssh)
+    sftp = SFTPClient.from_transport(ssh)
     return do_stat(sftp, options.listfolder) or {options.listfolder: do_ls(sftp, options.listfolder)}
 
 
@@ -236,7 +268,7 @@ def do_ls(sftp, path):
 
 
 def list_folder_recurse(ssh, options):
-    sftp = paramiko.SFTPClient.from_transport(ssh)
+    sftp = SFTPClient.from_transport(ssh)
     return do_stat(sftp, options.listfolderrecurse) or do_ls_r(sftp, options.listfolderrecurse, {})
 
 
@@ -388,7 +420,7 @@ def precopy(options, known_hosts):
     if options.preremote and options.prelocal:
         setproctitle.setproctitle("yabi-ssh %s@%s copy local %s to remote %s" % (options.username, options.hostname, options.prelocal, options.preremote))
         transport = transport_connect_login(options, known_hosts)
-        sftp = paramiko.SFTPClient.from_transport(transport)
+        sftp = SFTPClient.from_transport(transport)
         sftp.put(options.prelocal, options.preremote, confirm=False)
         sftp.close()
         transport.close()
@@ -399,7 +431,7 @@ def precopy_script(options, known_hosts):
     remotepath = "/tmp/" + uuid.uuid4() + ".sh"
     setproctitle.setproctitle("yabi-ssh %s@%s copy local script %s to remote path %s" % (options.username, options.hostname, options.script, remotepath))
     transport = transport_connect_login(options, known_hosts)
-    sftp = paramiko.SFTPClient.from_transport(transport)
+    sftp = SFTPClient.from_transport(transport)
     sftp.put(options.script, options.remotepath, confirm=False)
     sftp.close()
     transport.close()
@@ -408,7 +440,7 @@ def precopy_script(options, known_hosts):
 
 def remote_unlink(options, known_hosts, remote):
     transport = transport_connect_login(options, known_hosts)
-    sftp = paramiko.SFTPClient.from_transport(transport)
+    sftp = SFTPClient.from_transport(transport)
     sftp.unlink(remote)
     sftp.close()
     transport.close()
@@ -418,7 +450,7 @@ def postcopy(options, known_hosts):
     if options.postremote and options.postlocal:
         setproctitle.setproctitle("yabi-ssh %s@%s copy remote %s to local %s" % (options.username, options.hostname, options.postremote, options.postlocal))
         transport = transport_connect_login(options, known_hosts)
-        sftp = paramiko.SFTPClient.from_transport(transport)
+        sftp = SFTPClient.from_transport(transport)
         sftp.get(options.postremote, options.postlocal, confirm=False)
         sftp.close()
         transport.close()
