@@ -16,6 +16,7 @@ AWS_BUILD_INSTANCE='rpmbuild-centos6-aws'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
 CLOSURE="/usr/local/closure/compiler.jar"
 MODULES="MySQL-python==1.2.3 psycopg2==2.4.6 Werkzeug flake8"
+PIP_OPTS="-v -M --download-cache ~/.pip/cache"
 
 
 if [ "${YABI_CONFIG}" = "" ]; then
@@ -121,8 +122,10 @@ function nosetests() {
     source virt_yabiadmin/bin/activate
     # Runs the end-to-end tests in the Yabitests project
     virt_yabiadmin/bin/nosetests --with-xunit --xunit-file=tests.xml -I torque_tests.py -v -w tests
+
     #virt_yabiadmin/bin/nosetests -v -w tests tests.simple_tool_tests
     #virt_yabiadmin/bin/nosetests -v -w tests  tests.s3_connection_tests
+    #virt_yabiadmin/bin/nosetests -v -w tests  tests.ssh_tests
 }
 
 
@@ -137,6 +140,7 @@ function nose_collect() {
     source virt_yabiadmin/bin/activate
     virt_yabiadmin/bin/nosetests -v -w tests --collect-only
 }
+
 
 function dropdb() {
 
@@ -237,19 +241,19 @@ function installyabi() {
     echo "Install yabiadmin"
     virtualenv --system-site-packages virt_yabiadmin
     pushd yabiadmin
-    ../virt_yabiadmin/bin/python setup.py develop
+    ../virt_yabiadmin/bin/pip install ${PIP_OPTS} -e .
     popd
-    virt_yabiadmin/bin/easy_install ${MODULES}
+    virt_yabiadmin/bin/pip install ${PIP_OPTS} ${MODULES}
 
     echo "Install yabibe"
     virtualenv --system-site-packages virt_yabibe
     pushd yabibe
-    ../virt_yabibe/bin/python setup.py develop
+    ../virt_yabibe/bin/pip install ${PIP_OPTS} -e .
     popd
 
     echo "Install yabish"
     pushd yabish
-    ../virt_yabiadmin/bin/python setup.py develop
+    ../virt_yabibe/bin/pip install ${PIP_OPTS} -e .
     popd
 }
 
