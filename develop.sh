@@ -72,7 +72,7 @@ function ci_ssh_agent() {
 
 # build RPMs on a remote host from ci environment
 function ci_remote_build() {
-    project_required
+    project_needed
 
     time ccg ${AWS_BUILD_INSTANCE} puppet
     time ccg ${AWS_BUILD_INSTANCE} shutdown:50
