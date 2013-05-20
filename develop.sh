@@ -259,7 +259,7 @@ function installyabi() {
 
     echo "Install yabish"
     pushd yabish
-    ../virt_yabibe/bin/pip install ${PIP_OPTS} -e .
+    ../virt_yabiadmin/bin/pip install ${PIP_OPTS} -e .
     popd
 }
 
