@@ -72,8 +72,6 @@ function ci_ssh_agent() {
 
 # build RPMs on a remote host from ci environment
 function ci_remote_build() {
-    project_needed
-
     time ccg ${AWS_BUILD_INSTANCE} puppet
     time ccg ${AWS_BUILD_INSTANCE} shutdown:50
 
@@ -81,17 +79,16 @@ function ci_remote_build() {
     SSH_OPTS="-o StrictHostKeyChecking\=no"
     RSYNC_OPTS="-l"
     time ccg ${AWS_BUILD_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",exclude="${EXCLUDES}",delete=True
-    time ccg ${AWS_BUILD_INSTANCE} build_rpm:centos/${PROJECT}/${PROJECT}.spec,src=${TARGET_DIR}
+    time ccg ${AWS_BUILD_INSTANCE} build_rpm:centos/yabi.spec,src=${TARGET_DIR}
 
     mkdir -p build
-    ccg ${AWS_BUILD_INSTANCE} getfile:rpmbuild/RPMS/x86_64/${PROJECT}*.rpm,build/
+    ccg ${AWS_BUILD_INSTANCE} getfile:rpmbuild/RPMS/x86_64/yabi*.rpm,build/
 }
 
 
 # publish rpms 
 function ci_rpm_publish() {
-    project_needed
-    time ccg ${AWS_BUILD_INSTANCE} publish_rpm:build/${PROJECT}*.rpm,release=6
+    time ccg ${AWS_BUILD_INSTANCE} publish_rpm:build/yabi*.rpm,release=6
 }
 
 
