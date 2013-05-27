@@ -27,6 +27,7 @@
 ### END COPYRIGHT ###
 
 from ExecConnector import ExecConnector, ExecutionError
+import traceback
 
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
 ENV_CHILD_INHERIT = ['PATH']
@@ -38,6 +39,9 @@ ENV_CHECK = []
 SCHEMA = "ssh+pbspro"
 
 DEBUG = False
+
+# TODO FIXME We will need a way of controlling retry for ci tests
+RETRY = True
 
 from twistedweb2 import http, responsecode, http_headers, stream
 import os
@@ -103,6 +107,9 @@ class SSHQstatHardException(Exception):
 
 
 def rerun_delays():
+    if not RETRY:
+        return
+
     # when our retry system is fully expressed (no corner cases) we could potentially make this an infinite generator
     delay = 5.0
     while delay < 300.0:
@@ -130,7 +137,8 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         if DEBUG:
             print "submission script path is %s" % (submission_script)
 
-        qsub_submission_script = "qsub -N '%s' -e '%s' -o '%s' '%s'" % (
+        qsub_submission_script = "%s -N '%s' -e '%s' -o '%s' '%s'" % (
+            config.config[SCHEMA]['qsub'],
             "yabi" + remoteurl.rsplit('/')[-1],
             os.path.join(working, stderr),
             os.path.join(working, stdout),
@@ -204,7 +212,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         """This submits via ssh the qstat command. This takes the jobid"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
 
-        ssh_command = "cat > /dev/null && qstat -x -f '%s'" % (jobid)
+        ssh_command = "cat > /dev/null && %s -x -f '%s'" % (config.config[SCHEMA]['qstat'], jobid)
         ssh_command += " | sed -ne '1h;1!H;${;g;s/\\n\\t//g;p;}'"
 
         if not creds:
@@ -283,13 +291,16 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
                 jobid = self._ssh_qsub(yabiusername, creds, command, working, username, host, remoteurl, submission, stdout, stderr, modules, walltime, memory, cpus, queue, tasknum, tasktotal)
                 break               # success... now we continue
             except (SSHQsubHardException, ExecutionError), ee:
+                traceback.print_exc()
                 channel.callback(http.Response(responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(ee)))
                 return
             except (SSHQsubSoftException, SSHTransportException), softexc:
+                print softexc
                 # delay and then retry
                 try:
                     sleep(delay_gen.next())
                 except StopIteration:
+                    print "No more retries for soft exception"
                     # run our of retries.
                     channel.callback(http.Response(responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(softexc)))
                     return
@@ -307,7 +318,6 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         try:
             self.main_loop(yabiusername, creds, command, working, username, host, remoteurl, client_stream, stdout, stderr, modules, jobid)
         except (ExecutionError, SSHQstatException):
-            import traceback
             traceback.print_exc()
             client_stream.write("Error\n")
         finally:
