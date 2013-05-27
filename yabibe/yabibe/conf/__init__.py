@@ -177,6 +177,10 @@ class Configuration(object):
             'qsub': 'qsub',
             'qacct': 'qacct',
         },
+        'ssh+pbspro': {
+            'qstat': '/opt/pbs/default/bin/qstat',
+            'qsub': '/opt/pbs/default/bin/qsub',
+        },
         'execution': {
             'logcommand': 'true',
             'logscripts': 'true'
