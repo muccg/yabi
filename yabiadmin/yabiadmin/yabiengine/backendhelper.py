@@ -90,7 +90,7 @@ def get_exec_backendcredential_for_uri(yabiusername, uri):
     # parse the URI into chunks
     schema, rest = uriparse(uri)
 
-    logger.debug('yabiusername: %s schema: %s usernamea :%s hostnamea :%s patha :%s'%(yabiusername,schema,rest.username,rest.hostname,rest.path))
+    logger.debug('yabiusername: %s schema: %s username: %s hostname: %s path: %s' % (yabiusername,schema,rest.username,rest.hostname,rest.path))
     
     # enforce Exec scehmas only
     if schema not in EXEC_SCHEMES:
