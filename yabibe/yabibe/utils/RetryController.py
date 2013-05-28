@@ -86,7 +86,9 @@ class RetryController(object):
 class TorqueQsubRetryController(RetryController):
     default = SOFT
     hard_exit_codes = []
-    soft_exit_codes = []
+
+    # any paramiko ssh exceptions will return 255
+    soft_exit_codes = [255]
 
     hard_exit_regexps = {
         2: [
@@ -129,7 +131,9 @@ class TorqueQsubRetryController(RetryController):
 class TorqueQstatRetryController(RetryController):
     default = SOFT
     hard_exit_codes = [2]
-    soft_exit_codes = [1]
+
+    # any paramiko ssh exceptions will return 255
+    soft_exit_codes = [1, 255]
 
 
 class SSHRetryController(RetryController):

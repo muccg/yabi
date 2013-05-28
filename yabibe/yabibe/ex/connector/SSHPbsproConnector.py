@@ -38,10 +38,11 @@ ENV_CHECK = []
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "ssh+pbspro"
 
-DEBUG = False
+DEBUG = True
 
 # TODO FIXME We will need a way of controlling retry for ci tests
-RETRY = True
+# Actually we probably want the retry behaviour, even in tests, just need it to be tunable
+RETRY = False
 
 from twistedweb2 import http, responsecode, http_headers, stream
 import os
@@ -85,24 +86,20 @@ class SSHQstatException(Exception):
     pass
 
 
-class SSHTransportException(Exception):
-    pass
-
-
 # and further inherit hard and soft under those
-class SSHQsubSoftException(Exception):
+class SSHQsubSoftException(SSHQsubException):
     pass
 
 
-class SSHQstatSoftException(Exception):
+class SSHQstatSoftException(SSHQstatException):
     pass
 
 
-class SSHQsubHardException(Exception):
+class SSHQsubHardException(SSHQsubException):
     pass
 
 
-class SSHQstatHardException(Exception):
+class SSHQstatHardException(SSHQstatException):
     pass
 
 
@@ -195,11 +192,6 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
             # success
             return pp.out.strip().split("\n")[-1]
         else:
-            # so the process has exited non zero. If the exit code is 255 its a transport error... we should retry.
-            if pp.exitcode == 255:
-                raise SSHTransportException("Error: SSH exited %d with message %s" % (pp.exitcode, pp.err))
-
-            # otherwise we need to analyse the result to see if its a hard or soft failure
             error_type = qsubretry.test(pp.exitcode, pp.err)
             if error_type == HARD:
                 # hard error.
@@ -248,10 +240,6 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
 
             return {jobid: output}
         else:
-            # so the process has exited non zero. If the exit code is 255 its a transport error... we should retry.
-            if pp.exitcode == 255:
-                raise SSHTransportException("Error: SSH exited %d with message %s" % (pp.exitcode, pp.err))
-
             # otherwise we need to analyse the result to see if its a hard or soft failure
             error_type = qstatretry.test(pp.exitcode, pp.err)
             if error_type == HARD:
@@ -294,13 +282,13 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
                 traceback.print_exc()
                 channel.callback(http.Response(responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(ee)))
                 return
-            except (SSHQsubSoftException, SSHTransportException), softexc:
-                print softexc
+            except SSHQsubSoftException, softexc:
+                print "Retrying qsub " + str(softexc)
                 # delay and then retry
                 try:
                     sleep(delay_gen.next())
                 except StopIteration:
-                    print "No more retries for soft exception"
+                    print "No more retries for qsub soft exception"
                     # run our of retries.
                     channel.callback(http.Response(responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(softexc)))
                     return
@@ -362,7 +350,6 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
 
         # delete finished job
         self.del_running(jobid)
-
         client_stream.finish()
 
     def main_loop(self, yabiusername, creds, command, working, username, host, remoteurl, client_stream, stdout, stderr, modules, jobid):
@@ -377,12 +364,14 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
                 try:
                     jobsummary = self._ssh_qstat(yabiusername, creds, command, working, username, host, stdout, stderr, modules, jobid)
                     break               # success... now we continue
-                except (SSHQstatSoftException, SSHTransportException), softexc:
+                except SSHQstatSoftException, softexc:
+                    print "Retrying qstat " + str(softexc)
                     # delay and then retry
                     try:
                         sleep(delay_gen.next())
                     except StopIteration:
                         # run out of retries.
+                        print "No more retries for qstat soft exception"
                         raise softexc
 
             self.update_running(jobid, jobsummary)

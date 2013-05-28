@@ -55,10 +55,6 @@ class SSHExecProcessProtocolParamiko(BaseShellProcessProtocol):
         return self.started
 
 
-class SSHError(Exception):
-    pass
-
-
 class SSHRun(BaseShell):
     ssh_exec = os.path.join(os.path.dirname(os.path.realpath(__file__)), "paramiko-ssh.py")
     python = sys.executable                     # use the same python that yabi backend is running under
