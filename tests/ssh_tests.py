@@ -38,9 +38,10 @@ class SSHBackendTest(YabiTestCase):
         self.assertEqual(result.workflow.status, 'error')
 
         # now lets validate the host key
-        hostkey = models.HostKey.objects.get(hostname='localhost')
-        hostkey.allowed = True
-        hostkey.save()
+        query = models.HostKey.objects.all()
+        for hostkey in query:
+            hostkey.allowed = True
+            hostkey.save()
 
         # now run hostname again, it will pass
         result = self.yabi.run(['hostname'])

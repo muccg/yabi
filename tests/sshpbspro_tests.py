@@ -34,16 +34,17 @@ class SSHPBSProBackendTest(YabiTestCase):
         self.assertEqual(result.workflow.status, 'error')
 
         # now lets validate the host key
-        hostkey = models.HostKey.objects.get(hostname='localhost')
-        hostkey.allowed = True
-        hostkey.save()
+        query = models.HostKey.objects.all()
+        for hostkey in query:
+            hostkey.allowed = True
+            hostkey.save()
 
         # now run hostname again, it will pass
         result = self.yabi.run(['hostname'])
         self.assertTrue(gethostname() in result.stdout)
         result = StatusResult(self.yabi.run(['status', result.id]))
         self.assertEqual(result.workflow.status, 'complete')
-
+   
     def test_submit_json_directly_larger_workflow(self):
         result = self.yabi.run(['submitworkflow', json_path('hostname_hundred_times')])
         wfl_id = result.id
