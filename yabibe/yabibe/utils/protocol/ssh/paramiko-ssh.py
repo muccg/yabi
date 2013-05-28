@@ -64,6 +64,15 @@ SSL_CERT_CHECK = os.environ.get("SSL_CERT_CHECK", "true").lower() == "true"
 assert 'HMAC' in os.environ
 hmac_key = os.environ['HMAC']
 
+import logging
+logging.basicConfig(level=logging.WARNING)
+soh = logging.StreamHandler(sys.stdout)
+soh.setLevel(logging.WARNING)
+logger = logging.getLogger()
+logger.addHandler(soh)
+logging.getLogger("paramiko").setLevel(logging.WARNING)
+logging.getLogger("paramiko.transport").setLevel(logging.WARNING)
+
 
 # extend the base Paramiko SFTPClient for FIFO (Don't check the file size at the end)
 class SFTPClient(paramiko.SFTPClient):
