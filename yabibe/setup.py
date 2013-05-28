@@ -14,7 +14,6 @@ setup(
               'yabibe.FifoPool',
               'yabibe.fs',
               'yabibe.fs.connector',
-              'yabibe.log',
               'yabibe.TaskManager',
               'yabibe.utils',
               'yabibe.utils.protocol',
