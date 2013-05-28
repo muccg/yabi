@@ -38,11 +38,11 @@ ENV_CHECK = []
 # the schema we will be registered under. ie. schema://username@hostname:port/path/
 SCHEMA = "ssh+pbspro"
 
-DEBUG = True
+DEBUG = False
 
 # TODO FIXME We will need a way of controlling retry for ci tests
 # Actually we probably want the retry behaviour, even in tests, just need it to be tunable
-RETRY = False
+RETRY = True
 
 from twistedweb2 import http, responsecode, http_headers, stream
 import os
