@@ -124,12 +124,13 @@ function jslint() {
 
 function nosetests() {
     source virt_yabiadmin/bin/activate
-    # Runs the end-to-end tests in the Yabitests project
-    virt_yabiadmin/bin/nosetests --with-xunit --xunit-file=tests.xml -I torque_tests.py -v -w tests
 
+    # Runs the end-to-end tests in the Yabitests project
+    virt_yabiadmin/bin/nosetests --with-xunit --xunit-file=tests.xml -I torque_tests.py -I sshpbspro_tests.py -v -w tests
     #virt_yabiadmin/bin/nosetests -v -w tests tests.simple_tool_tests
     #virt_yabiadmin/bin/nosetests -v -w tests  tests.s3_connection_tests
     #virt_yabiadmin/bin/nosetests -v -w tests  tests.ssh_tests
+    #virt_yabiadmin/bin/nosetests -v -w tests  tests.sshpbspro_tests
 }
 
 
