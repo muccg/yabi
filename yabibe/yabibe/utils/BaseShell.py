@@ -27,6 +27,7 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import os
+import shlex
 from twisted.internet import protocol
 from twisted.internet import reactor
 
@@ -91,33 +92,43 @@ class BaseShellProcessProtocol(protocol.ProcessProtocol):
 
 
 class BaseShell(object):
+
+    wordchars = None
+
     def __init__(self):
         pass
-
-    def _make_path(self):
-        return "/usr/bin"
 
     def _make_env(self, environ=None):
         """Return a custom environment for the specified cert file"""
         subenv = environ.copy() if environ is not None else os.environ.copy()
         return subenv
 
-    def execute(self, pp, command, env=None):
+    def execute(self, pp, command, env=None, working="/usr/bin"):
         """execute a command using a process protocol"""
+     
+        arguments = command 
+        if self.wordchars is not None: 
+            lexer = shlex.shlex(command, posix=True)
+            #lexer.wordchars += r"-.:;/="
+            lexer.wordchars += self.wordchars
+            arguments = list(lexer)
 
-        subenv = env or self._make_env()
+        subenv = env
+        if subenv is None:
+            subenv = self._make_env()
+
         if DEBUG:
             print "env", subenv
             print "exec:", command
             print [pp,
-                   command[0],
-                   command,
+                   arguments[0],
+                   arguments,
                    subenv,
-                   self._make_path()]
+                   working]
 
         reactor.spawnProcess(pp,
-                             command[0],
-                             command,
+                             arguments[0],
+                             arguments,
                              env=subenv,
-                             path=self._make_path())
+                             path=working)
         return pp

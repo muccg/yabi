@@ -31,7 +31,7 @@
 import os
 import sys
 
-from BaseShell import BaseShell, BaseShellProcessProtocol
+from utils.BaseShell import BaseShell, BaseShellProcessProtocol
 
 from conf import config
 
@@ -95,4 +95,4 @@ class SSHRun(BaseShell):
         if config.config['execution']['logscripts']:
             print "ssh attempting remote command: " + remote_command
 
-        return BaseShell.execute(self, SSHExecProcessProtocolParamiko(streamin), command, subenv)
+        return BaseShell.execute(self, SSHExecProcessProtocolParamiko(streamin), command, env=subenv)

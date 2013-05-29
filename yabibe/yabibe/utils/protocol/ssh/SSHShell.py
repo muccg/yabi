@@ -82,7 +82,7 @@ class SSHShell(BaseShell):
         if DEBUG:
             print "SSHShell Running:", sshcommand
 
-        return BaseShell.execute(self, SSHExecProcessProtocolParamiko(), sshcommand, subenv)
+        return BaseShell.execute(self, SSHExecProcessProtocolParamiko(), sshcommand, env=subenv)
 
     def execute_list(self, certfile, host, path, username, password, recurse=False, port=None):
         """Spawn a process to run a remote ssh job. return the process handler"""
@@ -110,7 +110,7 @@ class SSHShell(BaseShell):
         if DEBUG:
             print "SSHShell Running:", sshcommand
 
-        return BaseShell.execute(self, SSHExecProcessProtocolParamiko(), sshcommand, subenv)
+        return BaseShell.execute(self, SSHExecProcessProtocolParamiko(), sshcommand, env=subenv)
 
     def ls(self, certfile, host, directory, username, password, recurse=False, port=None):
         return self.execute_list(certfile, host, directory, username, password, recurse, port)

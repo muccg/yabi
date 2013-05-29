@@ -27,7 +27,7 @@
 #
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-import BaseShell
+from utils.BaseShell import BaseShell, BaseShellProcessProtocol
 import KeyStore
 import SSHAuth
 import SSHShell

@@ -33,7 +33,7 @@ import sys
 
 from FifoPool import Fifos
 
-from BaseShell import BaseShell, BaseShellProcessProtocol
+from utils.BaseShell import BaseShell, BaseShellProcessProtocol
 
 
 class S3CopyProcessProtocol(BaseShellProcessProtocol):

@@ -81,7 +81,7 @@ class SSHCopy(BaseShell):
 
             print "COMMAND", command
 
-        return BaseShell.execute(self, SSHExecProcessProtocolParamiko(), command, subenv), fifo
+        return BaseShell.execute(self, SSHExecProcessProtocolParamiko(), command, env=subenv), fifo
 
     def ReadFromRemote(self, certfile, remoteurl, port=None, password="", fifo=None):
         subenv = self._make_env()
@@ -115,7 +115,7 @@ class SSHCopy(BaseShell):
 
             print "COMMAND", command
 
-        return BaseShell.execute(self, SSHExecProcessProtocolParamiko(), command, subenv), fifo
+        return BaseShell.execute(self, SSHExecProcessProtocolParamiko(), command, env=subenv), fifo
 
     def WriteCompressedToRemote(self, certfile, remoteurl, port=None, password="", fifo=None):
         subenv = self._make_env()
@@ -153,7 +153,7 @@ class SSHCopy(BaseShell):
 
             print "COMMAND", command
 
-        return BaseShell.execute(self, SSHExecProcessProtocolParamiko(), command, subenv), fifo
+        return BaseShell.execute(self, SSHExecProcessProtocolParamiko(), command, env=subenv), fifo
 
     def ReadCompressedFromRemote(self, certfile, remoteurl, port=None, password="", fifo=None):
         subenv = self._make_env()
@@ -192,4 +192,4 @@ class SSHCopy(BaseShell):
 
             print "COMMAND", command
 
-        return BaseShell.execute(self, SSHExecProcessProtocolParamiko(), command, subenv), fifo
+        return BaseShell.execute(self, SSHExecProcessProtocolParamiko(), command, env=subenv), fifo
