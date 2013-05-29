@@ -252,8 +252,6 @@ class LocalFilesystem(FSConnector.FSConnector, object):
     def unlock(self, tag):
         return self.lockqueue.unlock(tag)
 
-    #@conf_retry((InvalidPath,PermissionDenied))
-    #@call_count
     def mkdir(self, host, username, path, port=22, yabiusername=None, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
 
@@ -288,8 +286,6 @@ class LocalFilesystem(FSConnector.FSConnector, object):
 
         return out
 
-    #@conf_retry((InvalidPath,PermissionDenied, IsADirectory))
-    #@call_count
     def rm(self, host, username, path, port=22, yabiusername=None, recurse=False, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
 
@@ -325,8 +321,6 @@ class LocalFilesystem(FSConnector.FSConnector, object):
 
         return out
 
-    #@conf_retry((InvalidPath,PermissionDenied))
-    #@call_count
     def ls(self, host, username, path, port=22, yabiusername=None, recurse=False, culldots=True, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
 
@@ -373,8 +367,6 @@ class LocalFilesystem(FSConnector.FSConnector, object):
 
         return ls_data
 
-    #@conf_retry((InvalidPath,PermissionDenied))
-    #@call_count
     def ln(self, host, username, target, link, port=22, yabiusername=None, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
 
@@ -407,8 +399,6 @@ class LocalFilesystem(FSConnector.FSConnector, object):
 
         return out
 
-    #@conf_retry((InvalidPath,PermissionDenied))
-    #@call_count
     def cp(self, host, username, src, dst, port=22, yabiusername=None, recurse=False, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
 
