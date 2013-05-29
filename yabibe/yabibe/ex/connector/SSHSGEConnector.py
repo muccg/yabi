@@ -26,7 +26,8 @@
 #
 ### END COPYRIGHT ###
 
-from ExecConnector import ExecConnector, ExecutionError
+from ExecConnector import ExecConnector, ExecutionError, JobPollGeneratorDefault,rerun_delays
+import traceback
 
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
 ENV_CHILD_INHERIT = ['PATH']
@@ -64,18 +65,6 @@ sshauth = ssh.SSHAuth.SSHAuth()
 qsubretry = SSHSGEQsubRetryController()
 qstatretry = SSHSGEQstatRetryController()
 qacctretry = SSHSGEQacctRetryController()
-
-
-# for Job status updates, poll this often
-def JobPollGeneratorDefault():
-    """Generator for these MUST be infinite. Cause you don't know how long the job will take. Default is to hit it pretty hard."""
-    delay = 10.0
-    while delay < 60.0:
-        yield delay
-        delay *= 1.05           # increase by 5%
-
-    while True:
-        yield 60.0
 
 
 # now we inherit our particular errors
@@ -116,19 +105,8 @@ class SSHQacctHardException(Exception):
     pass
 
 
-def rerun_delays():
-    # when our retry system is fully expressed (no corner cases) we could potentially make this an infinite generator
-    delay = 5.0
-    while delay < 300.0:
-        yield delay
-        delay *= 2.0
-    totaltime = 0.0
-    while totaltime < 21600.0:                    # 6 hours
-        totaltime += 300.0
-        yield 300.0
-
-
 class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
+
     def __init__(self):
         ExecConnector.__init__(self)
 
@@ -159,7 +137,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
         submission_script = os.path.join(TMP_DIR, str(uuid.uuid4()) + ".sh")
 
         qsub_submission_script = "'%s' -N '%s' -e '%s' -o '%s' -wd '%s' '%s'" % (
-            config.config['ssh+sge']['qsub'],
+            config.config[SCHEMA]['qsub'],
             "yabi-" + remoteurl.rsplit('/')[-1],
             os.path.join(working, stderr),
             os.path.join(working, stdout),
@@ -175,15 +153,11 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
         #ssh_command += " ; echo $EXIT"
         ssh_command += " ; exit $EXIT"
 
-        if DEBUG:
-            print "ssh command:", ssh_command
-
         if not creds:
             creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, "/", credtype="exec")
 
         usercert = self.save_identity(creds['key'])
 
-        # build our command script
         script_string = make_script(submission, working, command, modules, cpus, memory, walltime, yabiusername, username, host, queue, stdout, stderr, tasknum, tasktotal)
 
         # hande log setting
@@ -221,24 +195,19 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
             jobid_string = pp.out.strip().split("\n")[-1]
             return jobid_string.split('("')[-1].split('")')[0]
         else:
-            # process has exited non-zero. 255 is transport error and should be retried
-            if pp.exitcode == 255:
-                raise SSHTransportException("Error: SSH exited %d with message %s" % (pp.exitcode, pp.err))
-
-            # else we need to analyse the result and decide on hard/soft
             error_type = qsubretry.test(pp.exitcode, pp.err)
             if error_type == HARD:
                 # hard error
-                raise SSHQsubHardException("SSHQsub error: SSH exited %d with message %s" % (pp.exitcode, pp.err))
+                raise SSHQsubHardException("Error: SSH exited %d with message %s" % (pp.exitcode, pp.err))
 
         #soft error
-        raise SSHQsubSoftException("SSHQsub error: SSH exited: %d with message %s" % (pp.exitcode, pp.err))
+        raise SSHQsubSoftException("Error: SSH exited: %d with message %s" % (pp.exitcode, pp.err))
 
     def _ssh_qstat(self, yabiusername, creds, command, working, username, host, stdout, stderr, modules, jobid):
         """This submits via ssh the qstat command. This takes the jobid"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
 
-        ssh_command = "cat > /dev/null && '%s' -f -j '%s'" % (config.config['ssh+sge']['qstat'], jobid)
+        ssh_command = "cat > /dev/null && '%s' -f -j '%s'" % (config.config[SCHEMA]['qstat'], jobid)
 
         if not creds:
             creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, "/", credtype="exec")
@@ -273,24 +242,20 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
 
             return {jobid: output}
         else:
-            # non zero. 255 is transport error
-            if pp.exitcode == 255:
-                raise SSHTransportException("Error: SSH exited %d with message %s" % (pp.exitcode, pp.err))
-
             # otherwise we need to analyse the result to see if its a hard or soft failure
             error_type = qstatretry.test(pp.exitcode, pp.err)
             if error_type == HARD:
                 # hard error.
-                raise SSHQstatHardException("SSHQstat Error: SSH exited %d with message %s" % (pp.exitcode, pp.err))
+                raise SSHQstatHardException("Error: SSH exited %d with message %s" % (pp.exitcode, pp.err))
 
         # everything else is soft
-        raise SSHQstatSoftException("SSHQstat Error: SSH exited %d with message %s" % (pp.exitcode, pp.err))
+        raise SSHQstatSoftException("Error: SSH exited %d with message %s" % (pp.exitcode, pp.err))
 
     def _ssh_qacct(self, yabiusername, creds, command, working, username, host, stdout, stderr, modules, jobid):
         """This submits via ssh the qstat command. This takes the jobid"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
 
-        ssh_command = "cat > /dev/null && '%s' -j '%s'" % (config.config['ssh+sge']['qacct'], jobid)
+        ssh_command = "cat > /dev/null && '%s' -j '%s'" % (config.config[SCHEMA]['qacct'], jobid)
 
         if not creds:
             creds = sshauth.AuthProxyUser(yabiusername, SCHEMA, username, host, "/", credtype="exec")
@@ -325,9 +290,6 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
 
             return {jobid: output}
         else:
-            if pp.exitcode == 255:
-                raise SSHTransportException("Error: SSH exited %d with message %s" % (pp.exitcode, pp.err))
-
             # otherwise we need to analyse the result to see if its a hard or soft failure
             error_type = qacctretry.test(pp.exitcode, pp.err)
             if error_type == HARD:
@@ -367,13 +329,16 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
                 jobid = self._ssh_qsub(yabiusername, creds, command, working, username, host, remoteurl, submission, stdout, stderr, modules, walltime, memory, cpus, queue, tasknum, tasktotal)
                 break               # success... escape retry loop
             except (SSHQsubHardException, ExecutionError), ee:
+                traceback.print_exc()
                 channel.callback(http.Response(responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(ee)))
                 return
-            except (SSHQsubSoftException, SSHTransportException), softexc:
+            except SSHQsubSoftException, softexc:
+                print "Retrying qsub " + str(softexc)
                 #delay then retry
                 try:
                     sleep(delay_gen.next())
                 except StopIteration:
+                    print "No more retries for qsub soft exception"
                     # run out of retries
                     channel.callback(http.Response(responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(softexc)))
                     return
@@ -391,7 +356,6 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
         try:
             self.main_loop(yabiusername, creds, command, working, username, host, remoteurl, client_stream, stdout, stderr, modules, jobid)
         except (ExecutionError, SSHQstatException):
-            import traceback
             traceback.print_exc()
             client_stream.write("Error\n")
         finally:

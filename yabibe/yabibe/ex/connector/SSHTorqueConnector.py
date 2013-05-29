@@ -26,7 +26,7 @@
 #
 ### END COPYRIGHT ###
 
-from ExecConnector import ExecConnector, ExecutionError
+from ExecConnector import ExecConnector, ExecutionError, JobPollGeneratorDefault
 
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
 ENV_CHILD_INHERIT = ['PATH']
@@ -55,18 +55,6 @@ from decorators import conf_retry
 TMP_DIR = config.config['backend']['temp']
 
 sshauth = ssh.SSHAuth.SSHAuth()
-
-
-# for Job status updates, poll this often
-def JobPollGeneratorDefault():
-    """Generator for these MUST be infinite. Cause you don't know how long the job will take. Default is to hit it pretty hard."""
-    delay = 10.0
-    while delay < 60.0:
-        yield delay
-        delay *= 1.05           # increase by 5%
-
-    while True:
-        yield 60.0
 
 
 class SSHQsubException(Exception):

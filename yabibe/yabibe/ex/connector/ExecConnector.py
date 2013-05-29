@@ -32,6 +32,32 @@ import pickle
 import os
 
 
+# for Job status updates, poll this often
+def JobPollGeneratorDefault():
+    """Generator for these MUST be infinite. Cause you don't know how long the job will take. Default is to hit it pretty hard."""
+    delay = 10.0
+    while delay < 60.0:
+        yield delay
+        delay *= 1.05           # increase by 5%
+
+    while True:
+        yield 60.0
+
+
+def rerun_delays():
+    return
+
+    # when our retry system is fully expressed (no corner cases) we could potentially make this an infinite generator
+    delay = 5.0
+    while delay < 300.0:
+        yield delay
+        delay *= 2.0
+    totaltime = 0.0
+    while totaltime < 21600.0:                    # 6 hours
+        totaltime += 300.0
+        yield 300.0
+
+
 class NotImplemented(Exception):
     """Exception to mark methods that haven't been overridden... yet..."""
     pass

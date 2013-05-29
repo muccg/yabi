@@ -26,7 +26,7 @@
 #
 ### END COPYRIGHT ###
 
-from ExecConnector import ExecConnector, ExecutionError
+from ExecConnector import ExecConnector, ExecutionError, JobPollGeneratorDefault,rerun_delays 
 import traceback
 
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
@@ -39,10 +39,6 @@ ENV_CHECK = []
 SCHEMA = "ssh+pbspro"
 
 DEBUG = False
-
-# TODO FIXME We will need a way of controlling retry for ci tests
-# Actually we probably want the retry behaviour, even in tests, just need it to be tunable
-RETRY = True
 
 from twistedweb2 import http, responsecode, http_headers, stream
 import os
@@ -63,18 +59,6 @@ TMP_DIR = config.config['backend']['temp']
 sshauth = ssh.SSHAuth.SSHAuth()
 qsubretry = PbsproQsubRetryController()
 qstatretry = PbsproQstatRetryController()
-
-
-# for Job status updates, poll this often
-def JobPollGeneratorDefault():
-    """Generator for these MUST be infinite. Cause you don't know how long the job will take. Default is to hit it pretty hard."""
-    delay = 10.0
-    while delay < 60.0:
-        yield delay
-        delay *= 1.05           # increase by 5%
-
-    while True:
-        yield 60.0
 
 
 # now we inherit our particular errors
@@ -103,21 +87,6 @@ class SSHQstatHardException(SSHQstatException):
     pass
 
 
-def rerun_delays():
-    if not RETRY:
-        return
-
-    # when our retry system is fully expressed (no corner cases) we could potentially make this an infinite generator
-    delay = 5.0
-    while delay < 300.0:
-        yield delay
-        delay *= 2.0
-    totaltime = 0.0
-    while totaltime < 21600.0:                    # 6 hours
-        totaltime += 300.0
-        yield 300.0
-
-
 class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
 
     def __init__(self):
@@ -126,13 +95,28 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         configdir = config.config['backend']['certificates']
         ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
 
-    def _ssh_qsub(self, yabiusername, creds, command, working, username, host, remoteurl, submission, stdout, stderr, modules, walltime=None, memory=None, cpus=None, queue=None, tasknum=None, tasktotal=None):
+    def _ssh_qsub(self, 
+                  yabiusername, 
+                  creds, 
+                  command, 
+                  working, 
+                  username, 
+                  host, 
+                  remoteurl, 
+                  submission, 
+                  stdout, 
+                  stderr, 
+                  modules, 
+                  walltime=None, 
+                  memory=None, 
+                  cpus=None, 
+                  queue=None, 
+                  tasknum=None, 
+                  tasktotal=None):
         """This submits via ssh the qsub command. This returns the jobid, or raises an exception on an error"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
 
         submission_script = os.path.join(TMP_DIR, str(uuid.uuid4()) + ".sh")
-        if DEBUG:
-            print "submission script path is %s" % (submission_script)
 
         qsub_submission_script = "%s -N '%s' -e '%s' -o '%s' '%s'" % (
             config.config[SCHEMA]['qsub'],
@@ -166,7 +150,6 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
             print script_string
 
         if DEBUG:
-            print "_ssh_qsub"
             print "usercert:", usercert
             print "command:", command
             print "username:", username
