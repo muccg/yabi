@@ -16,7 +16,7 @@ AWS_BUILD_INSTANCE='rpmbuild-centos6-aws'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
 CLOSURE="/usr/local/closure/compiler.jar"
 MODULES="MySQL-python==1.2.3 psycopg2==2.4.6 Werkzeug flake8"
-PIP_OPTS="-v -M --download-cache ~/.pip/cache"
+PIP_OPTS='-v --index-url=https://simple.crate.io/ --download-cache ~/.pip/cache'
 
 
 if [ "${YABI_CONFIG}" = "" ]; then
@@ -131,6 +131,7 @@ function nosetests() {
     #virt_yabiadmin/bin/nosetests -v -w tests  tests.s3_connection_tests
     #virt_yabiadmin/bin/nosetests -v -w tests  tests.ssh_tests
     #virt_yabiadmin/bin/nosetests -v -w tests  tests.sshpbspro_tests
+    #virt_yabiadmin/bin/nosetests -v -w tests  tests.sshtorque_tests
 }
 
 
