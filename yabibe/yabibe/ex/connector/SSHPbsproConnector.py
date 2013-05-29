@@ -26,7 +26,7 @@
 #
 ### END COPYRIGHT ###
 
-from ExecConnector import ExecConnector, ExecutionError, JobPollGeneratorDefault,rerun_delays 
+from ExecConnector import ExecConnector, ExecutionError, JobPollGeneratorDefault, rerun_delays 
 import traceback
 
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
