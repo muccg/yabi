@@ -174,7 +174,7 @@ class SSHSGEQsubRetryController(TorqueQsubRetryController):
 class SSHSGEQstatRetryController(TorqueQstatRetryController):
     default = SOFT
     hard_exit_codes = [2]
-    soft_exit_codes = []
+    soft_exit_codes = [255]
 
     hard_exit_regexps = {1: [
         "Following jobs do not exist"],
@@ -184,7 +184,7 @@ class SSHSGEQstatRetryController(TorqueQstatRetryController):
 class SSHSGEQacctRetryController(RetryController):
     default = SOFT
     hard_exit_codes = []
-    soft_exit_codes = []
+    soft_exit_codes = [255]
 
     hard_exit_regexps = {1: [
         r"error"],
