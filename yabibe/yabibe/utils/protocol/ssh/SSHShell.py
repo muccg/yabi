@@ -29,7 +29,7 @@
 import os
 import sys
 
-from BaseShell import BaseShell
+from utils.BaseShell import BaseShell
 from SSHRun import SSHExecProcessProtocolParamiko
 
 from conf import config

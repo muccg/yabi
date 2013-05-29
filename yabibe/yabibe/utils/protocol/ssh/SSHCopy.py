@@ -33,7 +33,7 @@ import sys
 
 from FifoPool import Fifos
 
-from BaseShell import BaseShell
+from utils.BaseShell import BaseShell
 from SSHRun import SSHExecProcessProtocolParamiko
 
 from conf import config
