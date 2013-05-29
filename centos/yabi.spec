@@ -99,7 +99,7 @@ cp build-number.txt %{buildinstalldir}/
 
 # Install package into the prefix
 export PYTHONPATH=%{buildinstalldir}/lib
-python /usr/bin/easy_install -O1 --prefix %{buildinstalldir} --install-dir %{buildinstalldir}/lib .
+python /usr/bin/easy_install -O1 --prefix %{buildinstalldir} --install-dir %{buildinstalldir}/lib -i 'https://simple.crate.io/' .
 
 # Create settings symlink so we can run collectstatic with the default settings
 touch %{settingsdir}/__init__.py
@@ -128,14 +128,14 @@ sed -i '3i import sys; sys.path.insert(1, "${installdir}/lib")' %{buildinstalldi
 
 cd $CCGSOURCEDIR/yabibe
 export PYTHONPATH=%{bebuildinstalldir}/lib
-python /usr/bin/easy_install -O1 --prefix %{bebuildinstalldir} --install-dir %{bebuildinstalldir}/lib .
+python /usr/bin/easy_install -O1 --prefix %{bebuildinstalldir} --install-dir %{bebuildinstalldir}/lib -i 'https://simple.crate.io/' .
 install -m 0755 -D ../centos/yabibe-init %{buildroot}/etc/init.d/yabibe
 install -m 0644 -D ../centos/yabi.conf.dist %{bebuildconfdir}/yabi.conf.dist
 sed -i '3i import sys; sys.path.insert(1, "${beinstalldir}/lib")' %{bebuildinstalldir}/bin/*
 
 cd $CCGSOURCEDIR/yabish
 export PYTHONPATH=%{shbuildinstalldir}/lib
-python /usr/bin/easy_install -O1 --prefix %{shbuildinstalldir} --install-dir %{shbuildinstalldir}/lib .
+python /usr/bin/easy_install -O1 --prefix %{shbuildinstalldir} --install-dir %{shbuildinstalldir}/lib -i 'https://simple.crate.io/' .
 sed -i '3i import sys; sys.path.insert(1, "%{shinstalldir}/lib")' %{shbuildinstalldir}/bin/*
 
 
