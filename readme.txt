@@ -8,9 +8,9 @@ Dependencies
     o Memcached running on the local machine (or change the yabi settings to point at your memcached server)
     o sqlite3 
     o libevent
-    o libevent include headers ('libevent-dev' package on many distributions)
+    o libevent dev package
     o openssl
-    o openssl include headers
+    o openssl dev package
 
 
 Running Yabi
@@ -51,6 +51,7 @@ Running Tests
 Yabi has an end to end test suite for testing the full Yabi stack. 
     o These require mysql and postgresql to be installed and running. 
     o For the Torque tests you will need a working Torque installation
+    o For the PBS Pro tests you will need a working PBS Pro installation
     o For the ssh tests, add tests/test_data/yabitests.pub to ~/.ssh/authorized_keys
 
     $ ./develop.sh test_mysql|test_postgresql
