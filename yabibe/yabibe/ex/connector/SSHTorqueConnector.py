@@ -26,7 +26,8 @@
 #
 ### END COPYRIGHT ###
 
-from ExecConnector import ExecConnector, ExecutionError, JobPollGeneratorDefault
+from ExecConnector import ExecConnector, ExecutionError, JobPollGeneratorDefault, rerun_delays
+import traceback
 
 # a list of system environment variables we want to "steal" from the launching environment to pass into our execution environments.
 ENV_CHILD_INHERIT = ['PATH']
@@ -47,6 +48,7 @@ import json
 import gevent
 from utils.geventtools import sleep
 from utils.protocol import ssh
+from utils.RetryController import TorqueQsubRetryController, TorqueQstatRetryController, HARD
 from conf import config
 from TaskManager.TaskTools import RemoteInfo
 from decorators import conf_retry
@@ -55,6 +57,8 @@ from decorators import conf_retry
 TMP_DIR = config.config['backend']['temp']
 
 sshauth = ssh.SSHAuth.SSHAuth()
+qsubretry = TorqueQsubRetryController()
+qstatretry = TorqueQstatRetryController()
 
 
 class SSHQsubException(Exception):
@@ -62,6 +66,23 @@ class SSHQsubException(Exception):
 
 
 class SSHQstatException(Exception):
+    pass
+
+
+# and further inherit hard and soft under those
+class SSHQsubSoftException(SSHQsubException):
+    pass
+
+
+class SSHQstatSoftException(SSHQstatException):
+    pass
+
+
+class SSHQsubHardException(SSHQsubException):
+    pass
+
+
+class SSHQstatHardException(SSHQstatException):
     pass
 
 
@@ -73,7 +94,6 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
         configdir = config.config['backend']['certificates']
         ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
 
-    @conf_retry()
     def _ssh_qsub(self, 
                   yabiusername,  
                   creds, 
@@ -149,13 +169,23 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
         while not pp.isDone():
             gevent.sleep()
 
+        if DEBUG:
+            print "EXITCODE:", pp.exitcode
+            print "STDERR:", pp.err
+            print "STDOUT:", pp.out
+
         if pp.exitcode == 0:
             # success
             return pp.out.strip().split("\n")[-1]
         else:
-            raise SSHQsubException("SSHQsub error: SSH exited %d with message %s" % (pp.exitcode, pp.err))
+            error_type = qsubretry.test(pp.exitcode, pp.err)
+            if error_type == HARD:
+                # hard error.
+                raise SSHQsubHardException("Error: SSH exited %d with message %s" % (pp.exitcode, pp.err))
 
-    @conf_retry()
+        # everything else is soft
+        raise SSHQsubSoftException("Error: SSH exited %d with message %s" % (pp.exitcode, pp.err))
+
     def _ssh_qstat(self, yabiusername, creds, command, working, username, host, stdout, stderr, modules, jobid):
         """This submits via ssh the qstat command. This takes the jobid"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
@@ -195,7 +225,14 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
 
             return {jobid: output}
         else:
-            raise SSHQstatException("SSHQstat error: SSH exited %d with message %s" % (pp.exitcode, pp.err))
+            # otherwise we need to analyse the result to see if its a hard or soft failure
+            error_type = qstatretry.test(pp.exitcode, pp.err)
+            if error_type == HARD:
+                # hard error.
+                raise SSHQstatHardException("Error: SSH exited %d with message %s" % (pp.exitcode, pp.err))
+
+        # everything else is soft
+        raise SSHQstatSoftException("Error: SSH exited %d with message %s" % (pp.exitcode, pp.err))
 
     def run(self,
             yabiusername,
@@ -218,12 +255,28 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
             module=None,
             tasknum=None,
             tasktotal=None):
-        try:
-            modules = [] if not module else [X.strip() for X in module.split(",")]
-            jobid = self._ssh_qsub(yabiusername, creds, command, working, username, host, remoteurl, stdout, stderr, modules, walltime, memory, cpus, queue, tasknum, tasktotal)
-        except (SSHQsubException, ExecutionError), ee:
-            channel.callback(http.Response(responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(ee)))
-            return
+
+        modules = [] if not module else [X.strip() for X in module.split(",")]
+        delay_gen = rerun_delays()
+
+        while True:                 # retry on soft failure
+            try:
+                jobid = self._ssh_qsub(yabiusername, creds, command, working, username, host, remoteurl, stdout, stderr, modules, walltime, memory, cpus, queue, tasknum, tasktotal)
+                break               # success
+            except (SSHQsubHardException, ExecutionError), ee:
+                traceback.print_exc()
+                channel.callback(http.Response(responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(ee)))
+                return
+            except SSHQsubSoftException, softexc:
+                print "Retrying qsub " + str(softexc)
+                # delay and then retry
+                try:
+                    sleep(delay_gen.next())
+                except StopIteration:
+                    print "No more retries for qsub soft exception"
+                    # run out of retries.
+                    channel.callback(http.Response(responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(softexc)))
+                    return
 
         # send an OK message, but leave the stream open
         client_stream = stream.ProducerStream()
@@ -238,7 +291,6 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
         try:
             self.main_loop(yabiusername, creds, command, working, username, host, remoteurl, client_stream, stdout, stderr, modules, jobid)
         except (ExecutionError, SSHQstatException):
-            import traceback
             traceback.print_exc()
             client_stream.write("Error\n")
         finally:
@@ -283,7 +335,6 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
 
         # delete finished job
         self.del_running(jobid)
-
         client_stream.finish()
 
     def main_loop(self, yabiusername, creds, command, working, username, host, remoteurl, client_stream, stdout, stderr, modules, jobid):
@@ -293,7 +344,21 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
             # pause
             sleep(delay.next())
 
-            jobsummary = self._ssh_qstat(yabiusername, creds, command, working, username, host, stdout, stderr, modules, jobid)
+            delay_gen = rerun_delays()
+            while True:
+                try:
+                    jobsummary = self._ssh_qstat(yabiusername, creds, command, working, username, host, stdout, stderr, modules, jobid)
+                    break               # success... now we continue
+                except SSHQstatSoftException, softexc:
+                    print "Retrying qstat " + str(softexc)
+                    # delay and then retry
+                    try:
+                        sleep(delay_gen.next())
+                    except StopIteration:
+                        # run out of retries.
+                        print "No more retries for qstat soft exception"
+                        raise softexc
+
             self.update_running(jobid, jobsummary)
 
             if jobid in jobsummary:
@@ -301,7 +366,6 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
                 status = jobsummary[jobid]['job_state']
 
                 if status == 'C':
-                    #print "STATUS IS C <=============================================================",jobsummary[jobid]['exit_status']
                     # state 'C' means complete OR error
                     if 'exit_status' in jobsummary[jobid] and jobsummary[jobid]['exit_status'] == '0':
                         newstate = "Done"
