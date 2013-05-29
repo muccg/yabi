@@ -74,7 +74,23 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
         ssh.KeyStore.KeyStore.__init__(self, dir=configdir)
 
     @conf_retry()
-    def _ssh_qsub(self, yabiusername, creds, command, working, username, host, remoteurl, stdout, stderr, modules):
+    def _ssh_qsub(self, 
+                  yabiusername,  
+                  creds, 
+                  command,  
+                  working,  
+                  username, 
+                  host,  
+                  remoteurl,  
+                  stdout,  
+                  stderr, 
+                  modules,
+                  walltime=None,
+                  memory=None,
+                  cpus=None,
+                  queue=None,
+                  tasknum=None,
+                  tasktotal=None):
         """This submits via ssh the qsub command. This returns the jobid, or raises an exception on an error"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
 
@@ -103,6 +119,7 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
         usercert = self.save_identity(creds['key'])
 
         # build our command script
+        # TODO use make_script
         script = ["module load %s" % mod for mod in modules or []]
         script.append(command)
         script_string = "\n".join(script) + "\n"
@@ -198,10 +215,12 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
             cpus=1,
             queue="testing",
             jobtype="single",
-            module=None):
+            module=None,
+            tasknum=None,
+            tasktotal=None):
         try:
             modules = [] if not module else [X.strip() for X in module.split(",")]
-            jobid = self._ssh_qsub(yabiusername, creds, command, working, username, host, remoteurl, stdout, stderr, modules)
+            jobid = self._ssh_qsub(yabiusername, creds, command, working, username, host, remoteurl, stdout, stderr, modules, walltime, memory, cpus, queue, tasknum, tasktotal)
         except (SSHQsubException, ExecutionError), ee:
             channel.callback(http.Response(responsecode.INTERNAL_SERVER_ERROR, {'content-type': http_headers.MimeType('text', 'plain')}, stream=str(ee)))
             return
@@ -247,7 +266,9 @@ class SSHTorqueConnector(ExecConnector, ssh.KeyStore.KeyStore):
                cpus=1,
                queue="testing",
                jobtype="single",
-               module=None):
+               module=None,
+               tasknum=None,
+               tasktotal=None):
         # send an OK message, but leave the stream open
         client_stream = stream.ProducerStream()
         modules = [] if not module else [X.strip() for X in module.split(",")]
