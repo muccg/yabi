@@ -45,8 +45,6 @@ def JobPollGeneratorDefault():
 
 
 def rerun_delays():
-    return
-
     # when our retry system is fully expressed (no corner cases) we could potentially make this an infinite generator
     delay = 5.0
     while delay < 300.0:
