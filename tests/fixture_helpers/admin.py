@@ -49,6 +49,25 @@ def create_torque_backend():
     )
     models.BackendCredential.objects.create(backend=torque_backend, credential=cred, homedir='')
 
+def create_sshtorque_backend():
+    from yabiadmin.yabi import models
+    sshtorque_backend = models.Backend.objects.create(
+        name='SSHTorque Backend', 
+        scheme='ssh+torque', 
+        hostname='localhost.localdomain', 
+        path='/', 
+        submission='${command}\n'
+    )
+    cred = models.Credential.objects.create( 
+        description='Test SSHTorque Credential', 
+        username=os.environ.get('USER'),
+        password='',
+        cert='cert',
+        key=private_key,
+        user=models.User.objects.get(name='demo')
+    )
+    models.BackendCredential.objects.create(backend=sshtorque_backend, credential=cred, homedir='')
+
 def create_sshpbspro_backend():
     from yabiadmin.yabi import models
     sshpbspro_backend = models.Backend.objects.create(
