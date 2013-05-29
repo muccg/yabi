@@ -191,6 +191,10 @@ class Configuration(object):
             'use_sudo': True,
             'sudo': '/usr/bin/sudo',
         },
+        'ssh+torque': {
+            'qstat': 'qstat-torque',
+            'qsub': 'qsub-torque',
+        },
     }
 
     def read_defaults(self):
