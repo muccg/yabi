@@ -12,6 +12,7 @@
 %define settingsdir %{buildinstalldir}/defaultsettings
 %define logsdir %{buildroot}/var/logs/%{webappname}
 %define scratchdir %{buildroot}/var/lib/%{webappname}/scratch
+%define storedir %{buildroot}/var/lib/%{webappname}/store
 %define mediadir %{buildroot}/var/lib/%{webappname}/media
 %define staticdir %{buildinstalldir}/static
 
@@ -77,7 +78,7 @@ Yabi command line shell
 
 %install
 
-for directory in "%{settingsdir} %{staticdir} %{logsdir} %{scratchdir} %{mediadir} %{bebuildconfdir}"; do
+for directory in "%{settingsdir} %{staticdir} %{logsdir} %{storedir} %{scratchdir} %{mediadir} %{bebuildconfdir}"; do
     mkdir -p $directory;
 done;
 
@@ -108,6 +109,7 @@ ln -fs ..`find %{buildinstalldir} -path "*/%{webappname}/settings.py" | sed s:^%
 # Create symlinks under install directory to real persistent data directories
 ln -fs /var/logs/%{webappname} %{buildinstalldir}/logs
 ln -fs /var/lib/%{webappname}/scratch %{buildinstalldir}/scratch
+ln -fs /var/lib/%{webappname}/store %{buildinstalldir}/store
 ln -fs /var/lib/%{webappname}/media %{buildinstalldir}/media
 
 # Install WSGI configuration into httpd/conf.d
