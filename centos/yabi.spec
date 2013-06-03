@@ -121,10 +121,6 @@ install -m 0755 -D ../centos/%{webappname}-manage.py %{buildroot}/%{_bindir}/%{w
 install -m 0755 -D init_scripts/centos/celeryd.init %{buildroot}/etc/init.d/celeryd
 install -m 0644 -D init_scripts/centos/celeryd.sysconfig %{buildroot}/etc/sysconfig/celeryd
 
-# At least one python package has hardcoded shebangs to /usr/local/bin/python
-find %{buildinstalldir} -name '*.py' -type f | xargs sed -i 's:^#!/usr/local/bin/python:#!/usr/bin/python:'
-find %{buildinstalldir} -name '*.py' -type f | xargs sed -i 's:^#!/usr/local/python:#!/usr/bin/python:'
-
 # Fix paths for stuff in bin/
 sed -i '3i import sys; sys.path.insert(1, "${installdir}/lib")' %{buildinstalldir}/bin/*
 
@@ -139,6 +135,10 @@ cd $CCGSOURCEDIR/yabish
 export PYTHONPATH=%{shbuildinstalldir}/lib
 python /usr/bin/easy_install -O1 --prefix %{shbuildinstalldir} --install-dir %{shbuildinstalldir}/lib -i 'https://simple.crate.io/' .
 sed -i '3i import sys; sys.path.insert(1, "%{shinstalldir}/lib")' %{shbuildinstalldir}/bin/*
+
+# At least one python package has hardcoded shebangs to /usr/local/bin/python
+find %{buildinstalldir} -name '*.py' -type f | xargs sed -i 's:^#!/usr/local/bin/python:#!/usr/bin/python:'
+find %{buildinstalldir} -name '*.py' -type f | xargs sed -i 's:^#!/usr/local/python:#!/usr/bin/python:'
 
 
 %post admin
