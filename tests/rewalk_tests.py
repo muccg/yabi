@@ -37,14 +37,11 @@ class RewalkTest(YabiTestCase, FileUtils):
     def get_localfs_dir(self):
         LOCALFS_PREFIX = 'localfs://demo@localhost'
         result = self.yabi.run(['ls'])
+        clean = result.stdout.splitlines()[0]
+        index = clean.rfind(LOCALFS_PREFIX)
         assert result.status == 0, "yabi ls returned an error"
-        localfs_line = None
-        for line in result.stdout.split(os.linesep):
-            if line.startswith(LOCALFS_PREFIX):
-                localfs_line = line
-                break
-        assert localfs_line is not None, "didn't find line starting with localfs in output of yabi ls"
-        return localfs_line[len(LOCALFS_PREFIX):]
+        assert index >= 0, "didn't find line starting with localfs in output of yabi ls"
+        return clean[index+len(LOCALFS_PREFIX):]
 
     def prepare_json(self, filename, new_filename, variables):
         '''Takes contents of filename replaces the variables in it and writes it out to new_filename'''
