@@ -51,7 +51,6 @@ from utils.protocol import ssh
 from utils.RetryController import TorqueQsubRetryController, TorqueQstatRetryController, HARD
 from conf import config
 from TaskManager.TaskTools import RemoteInfo
-from decorators import conf_retry
 
 # where we temporarily store the submission scripts on the submission host
 TMP_DIR = config.config['backend']['temp']

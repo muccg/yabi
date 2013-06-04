@@ -167,7 +167,6 @@ class Configuration(object):
             "syslog_prefix": r"YABI [yabibe:%(username)s]",
         },
         'taskmanager': {
-            'polldelay': '5',
             'startup': True,
             "tasktag": None,
             "retrywindow": 60,           # default is to retry for 1 minute. This is for dev and testing. production should up this value.
@@ -233,7 +232,6 @@ class Configuration(object):
         # taskmanager section
         name = "taskmanager"
         if conf_parser.has_section(name):
-            self.config[name]['polldelay'] = conf_parser.get(name, 'polldelay')
             self.config[name]['startup'] = boolean_proc(conf_parser.get(name, 'startup'))
             if conf_parser.has_option(name, 'tasktag'):
                 self.config[name]['tasktag'] = conf_parser.get(name, 'tasktag')

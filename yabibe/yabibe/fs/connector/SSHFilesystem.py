@@ -89,7 +89,6 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         return self.lockqueue.unlock(tag)
 
     @retry(5, (InvalidPath, PermissionDenied, SSHHardError))
-    #@call_count
     def mkdir(self, host, username, path, port=22, yabiusername=None, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
 
@@ -139,9 +138,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
 
         return out
 
-    #@lock
     @retry(5, (InvalidPath, PermissionDenied, SSHHardError))
-    #@call_count
     def rm(self, host, username, path, port=22, yabiusername=None, recurse=False, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
 
@@ -191,9 +188,7 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
 
         return out
 
-    #@lock
     @retry(5, (InvalidPath, PermissionDenied, SSHHardError))
-    #@call_count
     def ls(self, host, username, path, port=22, yabiusername=None, recurse=False, culldots=True, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
 
@@ -252,7 +247,6 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         return ls_data
 
     @retry(5, (InvalidPath, PermissionDenied, SSHHardError))
-    #@call_count
     def ln(self, host, username, target, link, port=22, yabiusername=None, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
 
@@ -303,7 +297,6 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
         return out
 
     @retry(5, (InvalidPath, PermissionDenied, SSHHardError))
-    #@call_count
     def cp(self, host, username, src, dst, port=22, yabiusername=None, recurse=False, creds={}, priority=0):
         assert yabiusername or creds, "You must either pass in a credential or a yabiusername so I can go get a credential. Neither was passed in"
 
@@ -354,7 +347,6 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
 
         return out
 
-    #@lock
     def GetWriteFifo(self, host=None, username=None, path=None, port=22, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         """sets up the chain needed to setup a write fifo from a remote path as a certain user.
 
@@ -381,7 +373,6 @@ class SSHFilesystem(FSConnector.FSConnector, ssh.KeyStore.KeyStore, object):
 
         return pp, fifo
 
-    #@lock
     def GetReadFifo(self, host=None, username=None, path=None, port=22, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         """sets up the chain needed to setup a read fifo from a remote path as a certain user.
 

@@ -433,7 +433,6 @@ class LocalFilesystem(FSConnector.FSConnector, object):
 
         return out
 
-    #@lock
     def GetWriteFifo(self, host=None, username=None, path=None, port=22, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         """sets up the chain needed to setup a write fifo from a remote path as a certain user.
 
@@ -453,7 +452,6 @@ class LocalFilesystem(FSConnector.FSConnector, object):
 
         return pp, fifo
 
-    #@lock
     def GetReadFifo(self, host=None, username=None, path=None, port=22, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         """sets up the chain needed to setup a read fifo from a remote path as a certain user.
 
@@ -473,7 +471,6 @@ class LocalFilesystem(FSConnector.FSConnector, object):
 
         return pp, fifo
 
-    #@lock
     def GetCompressedWriteFifo(self, host=None, username=None, path=None, port=22, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         if DEBUG:
             print "LocalFilesystem::GetWriteFifo( host:" + host, ",username:", username, ",path:", path, ",filename:", filename, ",fifo:", fifo, ",yabiusername:", yabiusername, ",creds:", creds, ")"
@@ -484,7 +481,6 @@ class LocalFilesystem(FSConnector.FSConnector, object):
 
         return pp, fifo
 
-    #@lock
     def GetCompressedReadFifo(self, host=None, username=None, path=None, port=22, filename=None, fifo=None, yabiusername=None, creds={}, priority=0):
         if DEBUG:
             print "LocalFilesystem::GetReadFifo(", host, username, path, filename, fifo, yabiusername, creds, ")"
