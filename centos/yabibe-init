@@ -13,10 +13,10 @@ NAME="yabibe"
 USER="yabi"
 PYTHON="/usr/bin/python"
 TWISTD="/usr/local/yabibe/bin/twistd"
-TAP=`$PYTHON -c 'import os, yabibe; print os.path.dirname(yabibe.__file__)'`"/server.py"
-RUNNING_DIR="/etc/yabi/run/backend"
-LOG_FILE="/etc/yabi/run/backend.log"
-PID_FILE="/etc/yabi/run/backend.pid"
+TAP=`PYTHONPATH="/usr/local/yabibe/lib" $PYTHON -c 'import os, yabibe; print os.path.dirname(yabibe.__file__)'`"/server.py
+RUNNING_DIR="/etc/yabi/run"
+LOG_FILE="/etc/yabi/backend.log"
+PID_FILE="/etc/yabi/backend.pid"
 OPTIONS="--pidfile=$PID_FILE --rundir=$RUNNING_DIR --python=${TAP} --logfile=$LOG_FILE"
 
 /usr/sbin/setcap cap_net_bind_service=ep $PYTHON
