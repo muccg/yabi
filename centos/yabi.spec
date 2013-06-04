@@ -180,6 +180,3 @@ touch ${installdir}/django.wsgi
 %files shell
 %defattr(-,root,root,-)
 %{shinstalldir}
-
-%clean
-# do nothing
