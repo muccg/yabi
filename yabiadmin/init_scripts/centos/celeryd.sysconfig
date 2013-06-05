@@ -1,8 +1,13 @@
+# http://docs.celeryproject.org/en/2.5/cookbook/daemonizing.html
+
 # Passed into celeryd multi
 #CELERYD="-m celery.bin.celeryd_detach"
 
-# Path to the celerd multi
-CELERYD_MULTI="/usr/local/webapps/yabiadmin/bin/celeryd-multi"
+# How to call "manage.py celeryd_multi"
+CELERYD_MULTI="yabiadmin celeryd_multi"
+
+# How to call "manage.py celeryctl"
+CELERYCTL="yabiadmin celeryctl"
 
 # Sets the verbosity of the celeryd logging.
 CELERYD_LOG_LEVEL="DEBUG"
@@ -18,7 +23,8 @@ CELERYD_GROUP="apache"
 #CELERYD_OPTS=""
 
 # Change to this directory first before launching celeryd.
-#CELERYD_CHDIR=""
+CELERYD_CHDIR="/usr/local/webapps/yabiadmin"
 
-# CCG yabiadmin RPM requires this for celeryd to run
-export PYTHONPATH=/usr/local/webapps/yabiadmin/lib
+PYTHONPATH=/usr/local/webapps/yabiadmin/lib
+
+DJANGO_SETTINGS_MODULE="yabiadmin.settings"
