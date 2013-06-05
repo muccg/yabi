@@ -133,8 +133,14 @@ cd $CCGSOURCEDIR/yabibe
 export PYTHONPATH=%{bebuildinstalldir}/lib
 python /usr/bin/easy_install -O1 --prefix %{bebuildinstalldir} --install-dir %{bebuildinstalldir}/lib -i 'https://simple.crate.io/' .
 
+for directory in "fifos tasklets temp"; do
+	mkdir -p %{bebuildconfdir}/run/$directory
+done
+
 install -m 0755 -D ../centos/yabibe-init %{buildroot}/etc/init.d/yabibe
 install -m 0644 -D ../centos/yabi.conf.dist %{bebuildconfdir}/yabi.conf.dist
+install -m 0644 -D ../centos/ssl-cert-snakeoil.key %{bebuildconfdir}/run/serverkey.pem
+install -m 0644 -D ../centos/ssl-cert-snakeoil.pem %{bebuildconfdir}/run/servercert.pem
 
 sed -i '3i import sys; sys.path.insert(1, "${beinstalldir}/lib")' %{bebuildinstalldir}/bin/*
 
