@@ -10,7 +10,7 @@
 %define installdir %{webapps}/%{webappname}
 %define buildinstalldir %{buildroot}/%{installdir}
 %define settingsdir %{buildinstalldir}/defaultsettings
-%define logsdir %{buildroot}/var/logs/%{webappname}
+%define logsdir %{buildroot}/var/log/%{webappname}
 %define scratchdir %{buildroot}/var/lib/%{webappname}/scratch
 %define storedir %{buildroot}/var/lib/%{webappname}/store
 %define mediadir %{buildroot}/var/lib/%{webappname}/media
@@ -107,7 +107,7 @@ touch %{settingsdir}/__init__.py
 ln -fs ..`find %{buildinstalldir} -path "*/%{webappname}/settings.py" | sed s:^%{buildinstalldir}::` %{settingsdir}/%{webappname}.py
 
 # Create symlinks under install directory to real persistent data directories
-ln -fs /var/logs/%{webappname} %{buildinstalldir}/logs
+ln -fs /var/log/%{webappname} %{buildinstalldir}/log
 ln -fs /var/lib/%{webappname}/scratch %{buildinstalldir}/scratch
 ln -fs /var/lib/%{webappname}/store %{buildinstalldir}/store
 ln -fs /var/lib/%{webappname}/media %{buildinstalldir}/media
@@ -163,7 +163,7 @@ find %{shbuildinstalldir} -name '*.py' -type f | xargs sed -i 's:^#!/usr/local/p
 %post admin
 yabiadmin collectstatic --noinput > /dev/null
 # Remove root-owned logged files just created by collectstatic
-rm -rf /var/logs/%{webappname}/*
+rm -rf /var/log/%{webappname}/*
 # Touch the wsgi file to get the app reloaded by mod_wsgi
 touch ${installdir}/django.wsgi
 
@@ -172,7 +172,7 @@ touch ${installdir}/django.wsgi
 /etc/httpd/conf.d/*
 %{_bindir}/%{webappname}
 %attr(-,apache,,apache) %{webapps}/%{webappname}
-%attr(-,apache,,apache) /var/logs/%{webappname}
+%attr(-,apache,,apache) /var/log/%{webappname}
 %attr(-,apache,,apache) /var/lib/%{webappname}
 %attr(-,root,,root) /etc/init.d/celeryd
 %attr(-,root,,root) /etc/sysconfig/celeryd
