@@ -66,7 +66,7 @@ setup(name='yabiadmin',
         'requests==1.2.0',
         'gunicorn',
         'django-nose',
-        'nose'
+        'nose==1.2.1'
     ],
 
     dependency_links = [
