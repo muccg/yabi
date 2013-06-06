@@ -55,6 +55,7 @@ from conf import config
 
 # where we temporarily store the submission scripts on the submission host
 TMP_DIR = config.config['backend']['temp']
+REMOTE_TMP_DIR = '/tmp'
 
 sshauth = ssh.SSHAuth.SSHAuth()
 qsubretry = PbsproQsubRetryController()
@@ -116,7 +117,7 @@ class SSHPbsproConnector(ExecConnector, ssh.KeyStore.KeyStore):
         """This submits via ssh the qsub command. This returns the jobid, or raises an exception on an error"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
 
-        submission_script = os.path.join(TMP_DIR, str(uuid.uuid4()) + ".sh")
+        submission_script = os.path.join(REMOTE_TMP_DIR, str(uuid.uuid4()) + ".sh")
 
         qsub_submission_script = "%s -N '%s' -e '%s' -o '%s' '%s'" % (
             config.config[SCHEMA]['qsub'],
