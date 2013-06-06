@@ -99,6 +99,8 @@ class BackendRestartTest(RequestTestWithAdmin):
             time.sleep(0.2)
             count = self.count_running(workflow_url)
             sys.stderr.write('{0}'.format(count))
+
+        sys.stderr.write('\nShutting down, throttling to 10\n')
         
         self.stop_backend()
         self.change_backend_concurrent(10) 
@@ -110,18 +112,19 @@ class BackendRestartTest(RequestTestWithAdmin):
             time.sleep(0.5)
             count = self.count_running(workflow_url)
             sys.stderr.write('{0}'.format(count))
+
             
         self.stop_backend()
         self.start_backend()
         
         # make sure there are at least 5 restarted
         dat = self.get_backend_task_debug()
-        
         self.assertTrue(len(dat)>=5, "Less than 5 jobs restarted")
-        
+
         # wait for all the jobs to finish now
         concurrent = 10
         self.change_backend_concurrent(concurrent)
+        sys.stderr.write('\nThrottling to 10\n')
         
         running = True
         while running:
