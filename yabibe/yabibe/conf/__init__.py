@@ -247,6 +247,12 @@ class Configuration(object):
             if conf_parser.has_option(name, 'use_sudo'):
                 self.config[name]['use_sudo'] = boolean_proc(conf_parser.get(name, 'use_sudo'))
 
+        # ssh+pbspro section
+        name = "ssh+pbspro"
+        if conf_parser.has_section(name):
+            self.config[name]['qstat'] = conf_parser.get(name, 'qstat')
+            self.config[name]['qsub'] = conf_parser.get(name, 'qsub')
+
         # ssh+sge section
         name = "sge+ssh"
         if conf_parser.has_section(name):
