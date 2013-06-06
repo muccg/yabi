@@ -61,7 +61,7 @@ class SSHRun(BaseShell):
 
     def run(self, certfile, remote_command="hostname", username="yabi", host="localhost.localdomain", working="/tmp", port="22", stdout="STDOUT.txt", stderr="STDERR.txt", password="", modules=[], streamin=None):
         """Spawn a process to run a remote ssh job. return the process handler"""
-        subenv = self._make_env()
+        subenv = os.environ.copy()
 
         subenv['YABIADMIN'] = config.yabiadmin
         subenv['HMAC'] = config.config['backend']['hmackey']
