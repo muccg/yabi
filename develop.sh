@@ -132,6 +132,7 @@ function nosetests() {
     #virt_yabiadmin/bin/nosetests -v -w tests  tests.ssh_tests
     #virt_yabiadmin/bin/nosetests -v -w tests  tests.sshpbspro_tests
     #virt_yabiadmin/bin/nosetests -v -w tests  tests.sshtorque_tests
+    #virt_yabiadmin/bin/nosetests -v -w tests  tests.backend_restart_tests
 }
 
 
@@ -310,6 +311,9 @@ function startyabibe() {
     mkdir -p ~/.yabi/run/backend/temp
 
     virt_yabibe/bin/yabibe --pidfile=yabibe-develop.pid
+
+    # give backend a chance to start before starts start to hit it
+    sleep 2
 }
 
 
@@ -400,6 +404,7 @@ function dbtest() {
 
 function yabiadmintest() {
     stopyabi
+    yabiclean
     dropdb
     startyabi
     noseyabiadmin
