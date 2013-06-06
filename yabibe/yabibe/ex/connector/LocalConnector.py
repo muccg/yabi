@@ -71,7 +71,7 @@ class LocalRun(BaseShell):
             password="",
             modules=[],
             streamin=None):
-        """Spawn a process to run a remote ssh job. return the process handler"""
+        """Spawn a process to run a local job. return the process handler"""
 
         if modules:
             remote_command = "&&".join(["module load %s" % module for module in modules] + [remote_command])
