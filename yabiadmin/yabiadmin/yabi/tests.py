@@ -92,7 +92,7 @@ class WsMenuTest(unittest.TestCase):
     def tearDown(self):
         if self.tool:
             ToolSet.objects.get(name='test').delete()
-            Tool.objects.get(name='hostname').delete()
+            Tool.objects.get(name='new-tool').delete()
 
     def test_menu_is_returned(self):
         response = self.client.get('/ws/menu/')
@@ -102,8 +102,8 @@ class WsMenuTest(unittest.TestCase):
         toolset = menu['toolsets'][0]
         self.assertEqual(toolset['name'], 'all_tools', "Toolset should be 'all_tools'")
         tools = toolset['toolgroups'][0]['tools']
-        self.assertEqual(len(tools), 1, "Should have 1 tool")
-        self.assertEqual(tools[0]['name'],'fileselector')
+        self.assertEqual(len(tools), 1, "Should have 1 tool (fileselector)")
+        self.assertEqual(tools[0]['name'], 'fileselector')
 
     def test_menu_is_cached(self):
         first_response = self.client.get('/ws/menu')
@@ -121,7 +121,7 @@ class WsMenuTest(unittest.TestCase):
         tools = toolset['toolgroups'][0]['tools']
         self.assertEqual(len(tools), 2, "Should have 2 tools")
         tool_names = [t['name'] for t in tools]
-        self.assertTrue('hostname' in tool_names, 'Should return new tool')
+        self.assertTrue('new-tool' in tool_names, 'Should return new tool')
 
     def test_menu_isnt_returned_from_cache_for_other_user(self):
         self.tool = self.add_new_tool()
@@ -134,15 +134,15 @@ class WsMenuTest(unittest.TestCase):
 
     def add_new_tool(self):
         null_backend = Backend.objects.get(name='nullbackend')
-        hostname = Tool.objects.create(
-            name='hostname', display_name='hostname',
+        tool = Tool.objects.create(
+            name='new-tool', display_name='new_tool',
             backend=null_backend, fs_backend=null_backend)
         test_tset = ToolSet.objects.create(name='test')
         admin = User.objects.get(name='admin')
         test_tset.users.add(admin)
         select_data = ToolGroup.objects.get(name='select data')
-        select_data.toolgrouping_set.create(tool_set=test_tset, tool=hostname)
-        return hostname
+        select_data.toolgrouping_set.create(tool_set=test_tset, tool=tool)
+        return tool
 
     def login_fe(self, user, password=None):
         if password is None:

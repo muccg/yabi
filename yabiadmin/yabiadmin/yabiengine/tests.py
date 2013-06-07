@@ -8,27 +8,33 @@ from yabiadmin.test_utils import override_settings
 from yabiadmin.yabiengine import enginemodels as emodels
 from yabiadmin.yabi.models import User, Backend
 from yabiadmin.yabiengine import models
-from yabiengine.commandlinetemplate import SwitchFilename, make_fname
+from yabiadmin.yabiengine.commandlinetemplate import SwitchFilename, make_fname
 from yabiadmin.constants import *
+
+from urlparse import urlparse
+from django.utils.http import urlencode
+import hmac
+from django.conf import settings
+
 
 class TaskViewNoTasksTest(unittest.TestCase):
     def setUp(self):
         self.client = Client()
-        
+       
     def test_task_no_tasktag(self):
-        response = self.client.get('/engine/task')
+        response = get(self.client, '/engine/task')
         self.assertEqual(response.status_code, 500)
         self.assertTrue('No tasktag' in response.content)
 
     @override_settings(TASKTAG='test_tasktag')
     def test_task_incorrect_tasktag(self):
-        response = self.client.get('/engine/task', {'tasktag': 'NOT MATCHING'})
+        response = get(self.client, '/engine/task', {'tasktag': 'NOT MATCHING'})
         self.assertEqual(response.status_code, 500)
         self.assertTrue('Tasktag incorrect' in response.content)
 
     @override_settings(TASKTAG='test_tasktag')
     def test_task_no_ready_tasks(self):
-        response = self.client.get('/engine/task', {'tasktag': 'test_tasktag'})
+        response = get(self.client, '/engine/task', {'tasktag': 'test_tasktag'})
         self.assertEqual(response.status_code, 404)
         self.assertTrue('No more tasks' in response.content)
 
@@ -45,7 +51,7 @@ class TaskViewWithTasksTest(unittest.TestCase):
     @override_settings(TASKTAG='test_tasktag')
     def test_task_no_ready_tasks(self):
         self.task.status = 'pending'
-        response = self.client.get('/engine/task', {'tasktag': 'test_tasktag'})
+        response = get(self.client, '/engine/task', {'tasktag': 'test_tasktag'})
         self.assertEqual(response.status_code, 404)
         self.assertTrue('No more tasks' in response.content)
 
@@ -87,3 +93,15 @@ class CommandLineTemplateTest(unittest.TestCase):
         self.assertEquals('"test.txt"', '%s' % s)
         s.set('test')
         self.assertEquals('"test"', '%s' % s)        
+
+
+def get(client, url, data={}):
+    "Utility function that executes a GET but adds a HMAC signature to it."
+    headers = {}
+    full_path = '%s%s' % (url, ('?' + urlencode(data, doseq=True)) if data else '') 
+    hmac_digest = hmac.new(settings.HMAC_KEY)
+    hmac_digest.update(full_path)
+    headers['HTTP_HMAC_DIGEST'] = hmac_digest.hexdigest()
+    return client.get(url, data, **headers)
+
+

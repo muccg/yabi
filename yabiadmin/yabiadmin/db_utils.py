@@ -1,15 +1,13 @@
 import sys
 import utils
-import settings
+from django.conf import settings
 import os
 import subprocess
 
 
 def get_db():
     rdbms_name = utils.detect_rdbms()
-    if rdbms_name == 'sqlite':
-        return SqliteDB()
-    elif rdbms_name == 'postgres':
+    if rdbms_name == 'postgres':
         return PostgresDB()
     elif rdbms_name == 'mysql':
         return MySQLDB()
@@ -34,20 +32,6 @@ class DB(object):
     def recreatedb(self):
         self.dropdb()
         self.createdb()
-
-class SqliteDB(DB):
-    def __init__(self, *args, **kwargs):
-        DB.__init__(self, 'sqlite', *args, **kwargs)
-        self.filename = self.dbsettings['NAME']
-        
-    def dropdb(self):
-        print 'Unlinking ' + self.filename
-        if os.path.isfile(self.filename):
-            os.unlink(self.filename) 
-
-    def createdb(self):
-        print 'Touching ' + self.filename
-        touch(self.filename)
 
 class PostgresDB(DB):
     def __init__(self, *args, **kwargs):

@@ -1,0 +1,53 @@
+from setuptools import setup
+
+setup(
+    name='yabibe',
+    version='6.15.0',
+    description='Yabi Backend',
+    long_description='Yabi back end service',
+    author='Centre for Comparative Genomics',
+    author_email='web@ccg.murdoch.edu.au',
+    packages=['yabibe',
+              'yabibe.conf',
+              'yabibe.ex',
+              'yabibe.ex.connector',
+              'yabibe.FifoPool',
+              'yabibe.fs',
+              'yabibe.fs.connector',
+              'yabibe.TaskManager',
+              'yabibe.utils',
+              'yabibe.utils.protocol',
+              'yabibe.utils.protocol.s3',
+              'yabibe.utils.protocol.ssh'
+              ],
+    package_data={'yabibe': ['conf/*.conf']},
+    zip_safe=False,
+    scripts=['scripts/yabibe'],
+    install_requires=[
+        'pyOpenSSL==0.13',
+        'pycrypto==2.3',
+        'paramiko==1.10.1',
+        'Mako==0.7.3',
+        'MarkupSafe==0.15',
+        'TwistedWeb2==1.0.0',
+        'setproctitle==1.1.2',
+        'wsgiref==0.1.2',
+        'zope.interface==4.0.5',
+        'gevent==0.13.8',
+        'geventreactor==0.1.0',
+        'psutil==0.6.1',
+        'boto==2.3.0',
+        'grequests==0.2.0',
+        'requests==1.2.0',
+        'conditional==1.0',
+        'twisted==12.3.0',
+        'unittest2',
+        'nose',
+        'pyaml'
+    ],
+    dependency_links=[
+        "https://bitbucket.org/ccgmurdoch/yabi/downloads/kombu-2.1.8.tar.gz",
+        "http://github.com/jyio/geventreactor/tarball/master#egg=geventreactor-0.1.0",
+        "https://twisted-web2.googlecode.com/files/TwistedWeb2-1.0.0.tar.gz"
+    ],
+)

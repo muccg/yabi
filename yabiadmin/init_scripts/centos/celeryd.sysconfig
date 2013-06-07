@@ -1,0 +1,30 @@
+# http://docs.celeryproject.org/en/2.5/cookbook/daemonizing.html
+
+# Passed into celeryd multi
+#CELERYD="-m celery.bin.celeryd_detach"
+
+# How to call "manage.py celeryd_multi"
+CELERYD_MULTI="yabiadmin celeryd_multi"
+
+# How to call "manage.py celeryctl"
+CELERYCTL="yabiadmin celeryctl"
+
+# Sets the verbosity of the celeryd logging.
+CELERYD_LOG_LEVEL="DEBUG"
+
+# Define the loader that celeryd should use for loading in configs.
+CELERY_LOADER="django"
+
+# User and group information for directories
+CELERYD_USER="apache"
+CELERYD_GROUP="apache"
+
+# Default arguments to be passed into celeryd.
+#CELERYD_OPTS=""
+
+# Change to this directory first before launching celeryd.
+CELERYD_CHDIR="/usr/local/webapps/yabiadmin"
+
+PYTHONPATH=/usr/local/webapps/yabiadmin/lib
+
+DJANGO_SETTINGS_MODULE="yabiadmin.settings"

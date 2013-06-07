@@ -43,7 +43,7 @@ from datetime import datetime
 import logging
 logger = logging.getLogger(__name__)
 
-from constants import *
+from yabiadmin.constants import *
 
 STAGING_COPY_CHOICES = (
     ( 'copy',   'remote copy' ),
@@ -125,11 +125,12 @@ class Workflow(models.Model, Editable, Status):
             self.status = STATUS_ERROR
             self.end_time = datetime.now()
             self.save()
-            return
-        if len(filter(lambda s: s != STATUS_COMPLETE, job_statuses)) == 0:
+        elif len(filter(lambda s: s != STATUS_COMPLETE, job_statuses)) == 0:
             self.status = STATUS_COMPLETE
             self.end_time = datetime.now()
             self.save()
+
+        return self.status
 
 class Tag(models.Model):
     value = models.CharField(max_length=255)
@@ -206,8 +207,8 @@ class Job(models.Model, Editable, Status):
                 assert(self.status in STATUS)
                 self.save()
                 break
-        if self.status != cur_status and self.status in (STATUS_ERROR, STATUS_COMPLETE):
-            self.workflow.update_status()
+  
+        return self.status
 
 class Task(models.Model, Editable, Status):
     job = models.ForeignKey(Job)
@@ -259,7 +260,7 @@ class Task(models.Model, Editable, Status):
         # formulate our status url and our error url
         # use the yabiadmin embedded in this server
         statusurl = webhelpers.url("/engine/status/task/%d" % self.id)
-        errorurl = webhelpers.url("/engine/error/task/%d" % self.id)
+        syslogurl = webhelpers.url("/engine/syslog/task/%d" % self.id)
         remoteidurl = webhelpers.url("/engine/remote_id/%d" % self.id)
         remoteinfourl = webhelpers.url("/engine/remote_info/%d" % self.id)
 
@@ -291,7 +292,7 @@ class Task(models.Model, Editable, Status):
             "yabiusername":self.job.workflow.user.name,
             "taskid":self.id,
             "statusurl":statusurl,
-            "errorurl":errorurl,
+            "syslogurl":syslogurl,
             "remoteidurl":remoteidurl,
             "remoteinfourl":remoteinfourl,
             "stagein":[],

@@ -4,139 +4,134 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import os
 import sys
-from twisted.internet import protocol
-from twisted.internet import reactor
 
-from BaseShell import BaseShell, BaseShellProcessProtocol
-from SSHRun import  SSHExecProcessProtocolParamiko 
+from utils.BaseShell import BaseShell
+from SSHRun import SSHExecProcessProtocolParamiko
 
 from conf import config
 
 DEBUG = False
+
 
 def convert_filename_to_encoded_for_echo(filename):
     """This function takes a filename, and encodes the whole thing to a back ticked eval command.
     This enables us to completely encode a full filename across ssh without any nasty side effects from special characters"""
     CHARS_TO_REPLACE = '\\' + "'" + '"' + "$@!~|<>#;*[]{}?%^&()= "
     for char in CHARS_TO_REPLACE:
-        filename=filename.replace(char,"\\x%x"%(ord(char)))
+        filename = filename.replace(char, "\\x%x" % (ord(char)))
     return filename
 
-class SSHShell(BaseShell):
-    ssh_exec = os.path.join( os.path.dirname(os.path.realpath(__file__)), "paramiko-ssh.py" )
-    python = sys.executable
-    
-    def _make_path(self):
-        return "/usr/bin"    
 
-    def _make_echo(self,filename):
+class SSHShell(BaseShell):
+    ssh_exec = os.path.join(os.path.dirname(os.path.realpath(__file__)), "paramiko-ssh.py")
+    python = sys.executable
+
+    def _make_path(self):
+        return "/usr/bin"
+
+    def _make_echo(self, filename):
         """Turn a filename into the remote eval line"""
-        result = '"`echo -e \'%s\'`"'%(convert_filename_to_encoded_for_echo(filename))
+        result = '"`echo -e \'%s\'`"' % (convert_filename_to_encoded_for_echo(filename))
         return result
 
     def execute(self, certfile, host, command, username, password, port=None):
         """Spawn a process to run a remote ssh job. return the process handler"""
         if DEBUG:
-            print "CERTFILE:",certfile
-            print "HOST:",host
-            print "COMMAND:",command
-            print "USERNAME:",username
-            print "PASSWORD:","*"*len(password)
-        
+            print "CERTFILE:", certfile
+            print "HOST:", host
+            print "COMMAND:", command
+            print "USERNAME:", username
+            print "PASSWORD:", "*" * len(password)
+
         subenv = self._make_env()
         subenv['YABIADMIN'] = config.yabiadmin
         subenv['HMAC'] = config.config['backend']['hmackey']
         subenv['SSL_CERT_CHECK'] = str(config.config['backend']['admin_cert_check'])
-        
-        sshcommand = [self.python, self.ssh_exec ]
-        sshcommand += ["-i",certfile] if certfile else []
-        sshcommand += ["-p",password] if password else []
-        sshcommand += ["-u",username] if username else []
-        sshcommand += ["-H",host] if host else []
-        sshcommand.extend( [ "-x", " ".join(command) ] )
-        
+
+        sshcommand = [self.python, self.ssh_exec]
+        sshcommand += ["-i", certfile] if certfile else []
+        sshcommand += ["-p", password] if password else []
+        sshcommand += ["-u", username] if username else []
+        sshcommand += ["-H", host] if host else []
+        sshcommand.extend(["-x", " ".join(command)])
+
         if DEBUG:
-            print "SSHShell Running:",sshcommand
-                
-        return BaseShell.execute(self,SSHExecProcessProtocolParamiko(),sshcommand, subenv)
+            print "SSHShell Running:", sshcommand
+
+        return BaseShell.execute(self, SSHExecProcessProtocolParamiko(), sshcommand, env=subenv)
 
     def execute_list(self, certfile, host, path, username, password, recurse=False, port=None):
         """Spawn a process to run a remote ssh job. return the process handler"""
         if DEBUG:
-            print "CERTFILE:",certfile
-            print "HOST:",host
-            print "USERNAME:",username
-            print "PASSWORD:","*"*len(password)
-            print "RECURSE:",recurse
-            print "PATH:",path
-        
+            print "CERTFILE:", certfile
+            print "HOST:", host
+            print "USERNAME:", username
+            print "PASSWORD:", "*" * len(password)
+            print "RECURSE:", recurse
+            print "PATH:", path
+
         subenv = self._make_env()
-        
+
         subenv['YABIADMIN'] = config.yabiadmin
         subenv['HMAC'] = config.config['backend']['hmackey']
         subenv['SSL_CERT_CHECK'] = str(config.config['backend']['admin_cert_check'])
-        
-        sshcommand = [self.python, self.ssh_exec ]
-        sshcommand += ["-i",certfile] if certfile else []
-        sshcommand += ["-p",password] if password else []
-        sshcommand += ["-u",username] if username else []
-        sshcommand += ["-H",host] if host else []
-        sshcommand.extend( [ "-F" if recurse else "-f", path ] )
-        
-        if DEBUG:
-            print "SSHShell Running:",sshcommand
-         
-        
-        return BaseShell.execute(self,SSHExecProcessProtocolParamiko(),sshcommand,subenv)
 
-      
-    def ls(self, certfile, host, directory,username, password, recurse=False, port=None):
-        return self.execute_list(certfile, host, directory,username, password, recurse, port)
-        
-    def mkdir(self, certfile, host, directory,username, password, args="-p", port=None):
-        return self.execute(certfile,host,command=["mkdir",args,self._make_echo(directory)],username=username, password=password, port=port)
-      
-    def rm(self, certfile, host, directory,username, password, args=None, port=None):
-        return self.execute(certfile,host,command=["rm",args,self._make_echo(directory)],username=username, password=password, port=port) if args else self.execute(certfile,host,command=["rm",self._make_echo(directory)],username=username, password=password, port=port) 
+        sshcommand = [self.python, self.ssh_exec]
+        sshcommand += ["-i", certfile] if certfile else []
+        sshcommand += ["-p", password] if password else []
+        sshcommand += ["-u", username] if username else []
+        sshcommand += ["-H", host] if host else []
+        sshcommand.extend(["-F" if recurse else "-f", path])
+
+        if DEBUG:
+            print "SSHShell Running:", sshcommand
+
+        return BaseShell.execute(self, SSHExecProcessProtocolParamiko(), sshcommand, env=subenv)
+
+    def ls(self, certfile, host, directory, username, password, recurse=False, port=None):
+        return self.execute_list(certfile, host, directory, username, password, recurse, port)
+
+    def mkdir(self, certfile, host, directory, username, password, args="-p", port=None):
+        return self.execute(certfile, host, command=["mkdir", args, self._make_echo(directory)], username=username, password=password, port=port)
+
+    def rm(self, certfile, host, directory, username, password, args=None, port=None):
+        return self.execute(certfile, host, command=["rm", args, self._make_echo(directory)], username=username, password=password, port=port) if args else self.execute(certfile, host, command=["rm", self._make_echo(directory)], username=username, password=password, port=port)
 
     def ln(self, certfile, host, target, link, username, password, args="-s", port=None):
-        return self.execute(certfile,host,command=["ln",args,self._make_echo(target),self._make_echo(link)],username=username, password=password, port=port) if args else self.execute(certfile,host,command=["ln",self._make_echo(target),self._make_echo(link)],username=username, password=password, port=port)
-        
+        return self.execute(certfile, host, command=["ln", args, self._make_echo(target), self._make_echo(link)], username=username, password=password, port=port) if args else self.execute(certfile, host, command=["ln", self._make_echo(target), self._make_echo(link)], username=username, password=password, port=port)
+
     def cp(self, certfile, host, src, dst, username, password, args=None, port=None):
         # if the coipy is recursive, and the src ends in a slash, then we should add a wildcard '*' to the src to make it copy the contents of the directory
         if args is not None and "r" in args and src.endswith("/"):
-            return self.execute(certfile,host,command=["cp",args,self._make_echo(src)+"*",self._make_echo(dst)],username=username, password=password, port=port) if args else self.execute(certfile,host,command=["cp",self._make_echo(src),self._make_echo(dst)],username=username, password=password, port=port)
+            return self.execute(certfile, host, command=["cp", args, self._make_echo(src) + "*", self._make_echo(dst)], username=username, password=password, port=port) if args else self.execute(certfile, host, command=["cp", self._make_echo(src), self._make_echo(dst)], username=username, password=password, port=port)
         else:
-            return self.execute(certfile,host,command=["cp",args,self._make_echo(src),self._make_echo(dst)],username=username, password=password, port=port) if args else self.execute(certfile,host,command=["cp",self._make_echo(src),self._make_echo(dst)],username=username, password=password, port=port)
-        
-    def compress(self, certfile, host, path, username, password, port=None, encoding="targz"):
-        assert encoding in ('targz','tar'), "Unknown encoding for compress"
-        
-        command = [ "tar", "c", path]
-        
+            return self.execute(certfile, host, command=["cp", args, self._make_echo(src), self._make_echo(dst)], username=username, password=password, port=port) if args else self.execute(certfile, host, command=["cp", self._make_echo(src), self._make_echo(dst)], username=username, password=password, port=port)
+
+    #def compress(self, certfile, host, path, username, password, port=None, encoding="targz"):
+    #    assert encoding in ('targz', 'tar'), "Unknown encoding for compress"
+        #command = ["tar", "c", path]
         #return self.execute(certfile, host, command=[
-        

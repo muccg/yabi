@@ -27,7 +27,7 @@
 from django import forms
 from django.conf import settings
 from yabiadmin.yabi.models import *
-import constants
+from yabiadmin import constants
 
 class BackendForm(forms.ModelForm):
     class Meta:

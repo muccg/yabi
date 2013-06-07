@@ -254,6 +254,7 @@ class Status(Action):
 
     def process_response(self, response):
         try:
+            print "=== STATUS ==="
             for key in ['status', 'name', 'tags', 'id', 'created_on', 'last_modified_on']:
                 print "%s:%s" % (key, response[key])
             print 'stageout:%s' % response['json']['jobs'][0]['stageout']

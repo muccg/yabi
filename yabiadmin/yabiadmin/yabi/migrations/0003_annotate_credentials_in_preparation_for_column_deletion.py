@@ -5,7 +5,7 @@ from south.db import db
 from south.v2 import DataMigration
 from django.db import models
 
-import settings
+from yabiadmin import settings
 
 from Crypto.Hash import SHA256
 from Crypto.Cipher import AES

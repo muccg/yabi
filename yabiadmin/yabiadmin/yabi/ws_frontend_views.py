@@ -47,7 +47,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.contrib import auth
-from crypto_utils import DecryptException
+from yabiadmin.crypto_utils import DecryptException
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
@@ -60,8 +60,7 @@ from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, ge
 from yabiadmin.responses import *
 from yabiadmin.decorators import authentication_required, profile_required
 from yabiadmin.yabistoreapp import db
-from yabiadmin.utils import using_dev_settings
-from yabiengine.backendhelper import make_hmac
+from yabiadmin.yabiengine.backendhelper import make_hmac
 from yabiadmin.utils import cache_keyname
 from yaphc import Http, PostRequest, UnauthorizedError
 
@@ -291,7 +290,7 @@ def get(request, bytes=None):
 
         response = HttpResponse(get_file(yabiusername, uri, bytes=bytes))
 
-        mimetypes.init([os.path.join(settings.PROJECT_DIRECTORY, 'mime.types')])
+        mimetypes.init([os.path.join(settings.WEBAPP_ROOT, 'mime.types')])
         mtype, file_encoding = mimetypes.guess_type(filename, False)
         if mtype is not None:
             response['content-type'] = mtype
@@ -302,10 +301,6 @@ def get(request, bytes=None):
 
     except BackendRefusedConnection, e:
         return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
-    except Exception, e:
-        # The response from this view is displayed directly to the user, so
-        # we'll send a normal response rather than a JSON message.
-        raise Http404
 
 @authentication_required
 def zget(request):
@@ -331,7 +326,7 @@ def zget(request):
 
         response = HttpResponse(zget_file(yabiusername, uri))
 
-        mimetypes.init([os.path.join(settings.PROJECT_DIRECTORY, 'mime.types')])
+        mimetypes.init([os.path.join(settings.WEBAPP_ROOT, 'mime.types')])
         mtype, file_encoding = mimetypes.guess_type(filename, False)
         if mtype is not None:
             response['content-type'] = mtype
@@ -342,10 +337,6 @@ def zget(request):
 
     except BackendRefusedConnection, e:
         return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
-    #except Exception, e:
-        ## The response from this view is displayed directly to the user, so
-        ## we'll send a normal response rather than a JSON message.
-        #raise Http404
 
 @authentication_required
 def put(request):

@@ -7,6 +7,12 @@ import os
 
 from ..migrationutils import *
 
+def homedir():
+    if os.environ['USER'] == 'root':
+        return '/home/yabi'
+    else:
+        return "%s%s" % (os.environ['HOME'], '/')
+
 class Migration(DataMigration):
 
     def forwards(self, orm):
@@ -65,6 +71,10 @@ class Migration(DataMigration):
         yabi_toolgroup_1 = yabi_toolgroup('select data')
         yabi_toolgroup_1.save()
 
+        yabi_toolgroup_2 = yabi_toolgroup('system tools')
+        yabi_toolgroup_2.save()
+
+
         yabi_toolset_1 = yabi_toolset('alltools')
         yabi_toolset_1.save()
       
@@ -88,11 +98,11 @@ class Migration(DataMigration):
         yabi_backend_4 = yabi_backend('Local Execution','This backend gives access to execution on the machine running Yabi.','localex','localhost',None, '/', submission='${command}\n')
         yabi_backend_4.save()
 
+        user_homedir = homedir()
+        stageout_dir = user_homedir + "yabi_data_dir/"
+
         yabi_backendcredential_1 = yabi_backendcredential(yabi_backend_1, yabi_credential_1, homedir='')
         yabi_backendcredential_1.save()
-
-        user_homedir = "%s%s" % (os.environ['HOME'], '/')
-        stageout_dir = user_homedir + "yabi_data_dir/"
 
         yabi_backendcredential_2 = yabi_backendcredential(yabi_backend_4, yabi_credential_1, user_homedir)
         yabi_backendcredential_2.save()
@@ -102,6 +112,7 @@ class Migration(DataMigration):
 
         yabi_backendcredential_4 = yabi_backendcredential(yabi_backend_3, yabi_credential_1, stageout_dir, default_stageout=True)
         yabi_backendcredential_4.save()
+
 
         yabi_userprofile_1 = orm.UserProfile()
         yabi_userprofile_1.user = django_user_1
@@ -135,18 +146,22 @@ class Migration(DataMigration):
         yabi_parameterswitchuse_8 = yabi_parameterswitchuse('redirect','>%(value)s','Use this to redirect the output of stdout into a file.')
         yabi_parameterswitchuse_8.save()
 
-        yabi_toolparameter_1 = yabi_toolparameter(yabi_tool_1,'files',yabi_parameterswitchuse_1,
-                                                    rank = 1,
-                                                    mandatory = True,
-                                                    hidden = False,
-                                                    output_file = False,
-                                                    extension_param = None,
-                                                    possible_values = None,
-                                                    default_value = u'selected files',
-                                                    helptext = None,
-                                                    batch_bundle_files = False,
-                                                    file_assignment = 'batch',
-                                                    use_output_filename = None )
+        yabi_toolparameter_1 = yabi_toolparameter(
+            yabi_tool_1,
+            'files',
+            yabi_parameterswitchuse_1,
+            rank = 1,
+            mandatory = True,
+            hidden = False,
+            output_file = False,
+            extension_param = None,
+            possible_values = None,
+            default_value = u'selected files',
+            helptext = None,
+            batch_bundle_files = False,
+            file_assignment = 'batch',
+            use_output_filename = None
+            )
         yabi_toolparameter_1.save()
 
         # make sure stuff is linked together
@@ -169,8 +184,110 @@ class Migration(DataMigration):
         ex_bec.homedir = ""                                         # exec backends have no path
         ex_bec.save()
         fs_bec = orm.BackendCredential.objects.get(id=3)
-        fs_bec.homedir = "%s%s" % (os.environ['HOME'], '/')
+        fs_bec.homedir = homedir()
         fs_bec.save()
+
+
+        # add the cat tool
+        yabi_tool_cat = yabi_tool(name = 'cat',
+                                  display_name='cat',
+                                  path='cat',
+                                  description='Concatenate two or more files together.',
+                                  backend=yabi_backend_4,
+                                  fs_backend=yabi_backend_2,
+                                  accepts_input=True,
+                                  cpus='',
+                                  walltime='',
+                                  module='',
+                                  queue='',
+                                  max_memory='',
+                                  job_type='',
+                                  lcopy=False,
+                                  link=False
+                                  )
+        yabi_tool_cat.save()
+
+        # add output extension
+        yabi_tooloutputextension_for_cat = yabi_tooloutputextension( yabi_tool_cat, yabi_fileextension_1 )
+        yabi_tooloutputextension_for_cat.save()
+
+        # add the tool parameters
+        yabi_toolparameter_cat = yabi_toolparameter(
+            yabi_tool_cat,
+            'files',
+            yabi_parameterswitchuse_2,
+            rank = 1,
+            mandatory = True,
+            hidden = False,
+            output_file = False,
+            extension_param = None,
+            possible_values = None,
+            default_value = u'selected files',
+            helptext = None,
+            batch_bundle_files = False,
+            file_assignment = 'all',
+            use_output_filename = None
+            )
+        yabi_toolparameter_cat.save()
+
+        # add accepted filetypes for cat
+        yabi_toolparameter_cat.accepted_filetypes.add(yabi_filetype_2)
+        yabi_toolparameter_cat.save()
+        
+        # add to tool groups
+        yabi_toolgrouping_for_cat = yabi_toolgrouping( yabi_toolgroup_2, yabi_tool_cat, yabi_toolset_1 )
+        yabi_toolgrouping_for_cat.save()
+
+
+        # add the hostname tool
+        yabi_tool_hostname = yabi_tool(name = 'hostname',
+                                  display_name='hostname',
+                                  path='hostname',
+                                  description='Output the hostname where run.',
+                                  backend=yabi_backend_4,
+                                  fs_backend=yabi_backend_2,
+                                  accepts_input=False,
+                                  cpus='',
+                                  walltime='',
+                                  module='',
+                                  queue='',
+                                  max_memory='',
+                                  job_type='',
+                                  lcopy=False,
+                                  link=False
+                                  )
+        yabi_tool_hostname.save()
+
+        # add output extension
+        yabi_tooloutputextension_for_hostname = yabi_tooloutputextension( yabi_tool_hostname, yabi_fileextension_1 )
+        yabi_tooloutputextension_for_hostname.save()
+
+        # add the tool parameters
+        yabi_toolparameter_hostname = yabi_toolparameter(
+            yabi_tool_hostname,
+            'h',
+            yabi_parameterswitchuse_1,
+            rank = 1,
+            mandatory = False,
+            hidden = False,
+            output_file = False,
+            extension_param = None,
+            possible_values = None,
+            default_value = u'',
+            helptext = None,
+            batch_bundle_files = False,
+            file_assignment = 'none',
+            use_output_filename = None
+            )
+        yabi_toolparameter_hostname.save()
+
+        # add to tool groups
+        yabi_toolgrouping_for_hostname = yabi_toolgrouping( yabi_toolgroup_2, yabi_tool_hostname, yabi_toolset_1 )
+        yabi_toolgrouping_for_hostname.save()
+
+
+
+
 
     def backwards(self, orm):
         raise RuntimeError("Cannot reverse this migration.")

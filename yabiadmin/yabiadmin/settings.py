@@ -32,7 +32,7 @@ import djcelery
 import logging
 import logging.handlers
 
-PROJECT_DIRECTORY = os.environ.get('PROJECT_DIRECTORY', os.path.abspath('.'))
+WEBAPP_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # setting to control ccg ssl middleware
 # see http://code.google.com/p/ccg-django-extras/source/browse/
@@ -62,7 +62,6 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.sites',
-    'django.contrib.admin',
     'django.contrib.staticfiles',
     'django.contrib.messages',
     'yabiadmin.yabifeapp',
@@ -71,10 +70,11 @@ INSTALLED_APPS = [
     'yabiadmin.yabistoreapp',
     'yabiadmin.uploader',
     'djcelery',
-    'djkombu',
+    'kombu.transport.django',
     'django_extensions',
     'south',
-    'djamboloader'
+    'djamboloader',
+    'django.contrib.admin'
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#root-urlconf
@@ -98,7 +98,7 @@ AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
 SESSION_COOKIE_AGE = 60*60
 SESSION_COOKIE_PATH = url('/')
 SESSION_COOKIE_NAME = 'yabi_sessionid'
-SESSION_SAVE_EVERY_REQUEST = True
+#SESSION_SAVE_EVERY_REQUEST = True
 SESSION_COOKIE_HTTPONLY = False 
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_NAME = "csrftoken_yabi"
@@ -119,18 +119,21 @@ LOGOUT_URL = url('/logout/')
 ### static file management ###
 # see: https://docs.djangoproject.com/en/dev/howto/static-files/
 # deployment uses an apache alias
-STATICFILES_DIRS = [os.path.join(PROJECT_DIRECTORY,"static")]
+# STATICFILES_DIRS = [os.path.join(WEBAPP_ROOT,"static")]
 STATIC_URL = url('/static/')
+STATIC_ROOT = os.path.join(WEBAPP_ROOT,"static")
 ADMIN_MEDIA_PREFIX = url('/static/admin/')
 
 # media directories
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#media-root
-MEDIA_ROOT = os.path.join(PROJECT_DIRECTORY,"static","media")
+MEDIA_ROOT = os.path.join(WEBAPP_ROOT,"static","media")
 MEDIA_URL = url('/static/media/')
 
 # a directory that will be writable by the webserver, for storing various files...
-WRITABLE_DIRECTORY = os.path.join(PROJECT_DIRECTORY,"scratch")
-
+WRITABLE_DIRECTORY = os.path.join(WEBAPP_ROOT,"scratch")
+if not os.path.exists(WRITABLE_DIRECTORY):
+    os.mkdir(WRITABLE_DIRECTORY)
+    
 # put our temporary uploads directory inside WRITABLE_DIRECTORY
 FILE_UPLOAD_TEMP_DIR = os.path.join(WRITABLE_DIRECTORY,".uploads")
 if not os.path.exists(FILE_UPLOAD_TEMP_DIR):
@@ -138,6 +141,11 @@ if not os.path.exists(FILE_UPLOAD_TEMP_DIR):
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#append-slash
 APPEND_SLASH = True
+
+# validation settings, these reflect the types of backend that yabi can handle
+EXEC_SCHEMES = ['sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex','explode','null']
+FS_SCHEMES = ['http', 'https', 'yabifs', 'scp', 's3', 'localfs','null']
+VALID_SCHEMES = EXEC_SCHEMES + FS_SCHEMES
 
 ##
 ## CAPTCHA settings
@@ -157,14 +165,14 @@ TEMPLATE_DEBUG = DEBUG
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
 TEMPLATE_LOADERS = [
-    'django.template.loaders.filesystem.Loader',
     'django.template.loaders.app_directories.Loader',
-    'ccg.template.loaders.makoloader.filesystem.Loader'
+    'ccg.template.loaders.makoloader.filesystem.Loader',
+    #'django.template.loaders.filesystem.Loader'
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
 TEMPLATE_DIRS = [
-    os.path.join(PROJECT_DIRECTORY,"templates"),
+    os.path.join(WEBAPP_ROOT,"templates"),
 ]
 
 # mako compiled templates directory
@@ -180,17 +188,16 @@ MAKO_MODULENAME_CALLABLE = ''
 # these are the settings you will most likely change to reflect your setup
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#databases
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'USER': '',
-        'NAME': os.path.join(PROJECT_DIRECTORY,"yabiadmin.sqlite3"),
+        'ENGINE': 'django.db.backends.mysql',
+        'USER': 'root',
+        'NAME': 'dev_yabi',
         'PASSWORD': '', 
-        'HOST': '',                    
+        'HOST': 'localhost',                    
         'PORT': '',
-        'OPTIONS': {
-            'timeout': 20,
-        }
+        'OPTIONS': {}
     }
 }
 
@@ -257,7 +264,8 @@ BACKEND_PORT = '9001'
 BACKEND_BASE = '/'
 TASKTAG = 'set_this' # this must be the same in the yabi.conf for the backend that will consume tasks from this admin
 YABIBACKEND_SERVER = BACKEND_IP + ':' +  BACKEND_PORT
-YABISTORE_HOME = os.path.join(PROJECT_DIRECTORY,"../yabistore/run/store")
+YABISTORE_HOME = os.path.join(WRITABLE_DIRECTORY, 'store')
+
 YABIBACKEND_COPY = '/fs/copy'
 YABIBACKEND_RCOPY = '/fs/rcopy'
 YABIBACKEND_MKDIR = '/fs/mkdir'
@@ -292,7 +300,7 @@ CELERY_QUEUES = {
 CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
 CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
 CELERY_IMPORTS = ("yabiadmin.yabiengine.tasks",)
-BROKER_TRANSPORT = "djkombu.transport.DatabaseTransport"
+BROKER_TRANSPORT = "kombu.transport.django.Transport"
 
 
 
@@ -333,11 +341,11 @@ PREVIEW_SIZE_LIMIT = 1048576
 THIRTY_DAYS = 30 * 24 * 60 * 60
 JAVASCRIPT_LIBRARIES = {
   "yui_3_5_1": {
-    "path": os.path.join(PROJECT_DIRECTORY, "static/javascript/lib/yui-3.5.1/build/"),
+    "path": os.path.join(WEBAPP_ROOT, "static/javascript/lib/yui-3.5.1/build/"),
     "cache_for": THIRTY_DAYS, 
   },
   "yui2in3_2_9_0": {
-    "path": os.path.join(PROJECT_DIRECTORY, "static/javascript/lib/yui-2in3/dist/2.9.0/build/"),
+    "path": os.path.join(WEBAPP_ROOT, "static/javascript/lib/yui-2in3/dist/2.9.0/build/"),
     "cache_for": THIRTY_DAYS,
   },
 }

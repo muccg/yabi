@@ -7,10 +7,6 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        
-        # Deleting model 'UserProfile'
-        #db.delete_table('yabi_userprofile')
-
         # Adding field 'User.user'
         db.add_column('yabi_user', 'user', self.gf('django.db.models.fields.related.OneToOneField')(default=None, to=orm['auth.User'], unique=False, null=True), keep_default=False)
 
@@ -22,14 +18,6 @@ class Migration(SchemaMigration):
 
 
     def backwards(self, orm):
-        
-        # Adding model 'UserProfile'
-        db.create_table('yabi_userprofile', (
-            ('id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('user', self.gf('django.db.models.fields.related.OneToOneField')(to=orm['auth.User'], unique=True)),
-        ))
-        db.send_create_signal('yabi', ['UserProfile'])
-
         # Deleting field 'User.user'
         db.delete_column('yabi_user', 'user_id')
 
@@ -258,6 +246,11 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.CharField', [], {'unique': 'True', 'max_length': '50'}),
             'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['auth.User']", 'unique': 'True'}),
             'user_option_access': ('django.db.models.fields.BooleanField', [], {'default': 'True'})
+        },
+        'yabi.userprofile': {
+            'Meta': {'object_name': 'UserProfile'},
+            'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'user': ('django.db.models.fields.related.OneToOneField', [], {'to': "orm['auth.User']", 'unique': 'True'})
         }
     }
 

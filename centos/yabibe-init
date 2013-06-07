@@ -1,0 +1,102 @@
+#! /bin/bash
+#
+# portmap       Start/Stop RPC portmapper
+#
+# chkconfig: 345 13 87
+# description: The portmapper manages RPC connections, which are used by \
+#              protocols such as NFS and NIS. The portmap server must be \
+#              running on machines which act as servers for protocols which \
+#              make use of the RPC mechanism.
+# processname: portmap
+
+NAME="yabibe"
+USER="yabi"
+PYTHON="/usr/bin/python"
+TWISTD="/usr/local/yabibe/bin/twistd"
+RUNNING_DIR="/etc/yabi/run"
+LOG_FILE="/etc/yabi/backend.log"
+PID_FILE="/etc/yabi/backend.pid"
+
+/usr/sbin/setcap cap_net_bind_service=ep $PYTHON
+
+PYTHONPATH=/usr/local/yabibe/lib
+export PYTHONPATH
+TAP=$($PYTHON -c 'import os, yabibe; print os.path.dirname(yabibe.__file__)')
+TAP="$TAP/server.py"
+OPTIONS="--pidfile=$PID_FILE --rundir=$RUNNING_DIR --python=${TAP} --logfile=$LOG_FILE"
+
+
+# This is an interactive program, we need the current locale
+[ -f /etc/profile.d/lang.sh ] && . /etc/profile.d/lang.sh
+# We can't Japanese on normal console at boot time, so force LANG=C.
+if [ "$LANG" = "ja" -o "$LANG" = "ja_JP.eucJP" ]; then
+    if [ "$TERM" = "linux" ] ; then
+        LANG=C
+    fi
+fi
+
+# Source function library.
+. /etc/init.d/functions
+
+#  check for required files
+if [ ! -x "${TWISTD}" ]
+then
+        echo "$0: Aborting, no $TWISTD found."
+        exit 0
+fi
+
+
+
+#  set up run directory if necessary
+if [ ! -d "${RUNNING_DIR}" ]
+then
+        echo "$0: Aborting, running directory $RUNNING_DIR does not exist."
+        exit 0
+fi
+
+if [ ! -f "${TAP}" ]
+then
+        echo "$0: Aborting, tap file ${TAP} not found."
+        exit 0
+fi
+
+case "$1" in
+        start)
+                echo -n "Starting $NAME..."
+                daemon --user=${USER} ${PYTHON} ${TWISTD} ${OPTIONS}
+                status -p $PID_FILE $NAME
+                ;;
+
+        stop)
+                echo -n "Stopping ${NAME}..."
+                PID=`cat "${PID_FILE}" 2>/dev/null`
+                kill `cat "${PID_FILE}"`
+                count=0
+                while ps -p ${PID} > /dev/null
+                do
+                    sleep 1
+                    echo -n '.'
+                    count=$[$count+1]
+                    if [ $count -ge 30 ]
+                    then
+                        kill -9 $PID >& /dev/null
+                        break
+                    fi
+                done
+
+                rm -f "${PID_FILE}" >& /dev/null
+                status -p $PID_FILE $NAME
+                ;;
+
+        restart)
+                "${0}" stop
+                "${0}" start
+                ;;
+
+    *)
+                echo "Usage: ${0} {start|stop|restart|}" >&2
+                exit 1
+                ;;
+esac
+
+exit 0

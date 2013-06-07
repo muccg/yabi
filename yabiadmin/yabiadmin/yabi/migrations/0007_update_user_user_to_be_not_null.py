@@ -7,12 +7,11 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
+        # update user.user to be not null
+        db.alter_column('yabi_user', 'user_id', models.ForeignKey(orm['auth.User'], null=False, blank=False, unique=True))
         
         # Deleting model 'UserProfile'
         db.delete_table('yabi_userprofile')
-
-        # update user.user to be not null
-        db.alter_column('yabi_user', 'user_id', models.ForeignKey(orm['auth.User'], null=False, blank=False, unique=True))
 
     def backwards(self, orm):
         pass

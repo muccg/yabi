@@ -38,7 +38,7 @@ from yabiadmin.yabiengine.urihelper import uriparse, get_backend_userdir
 from yabiadmin.yabi.models import Backend, BackendCredential
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.servers.basehttp import FileWrapper
-from constants import EXEC_SCHEMES, FS_SCHEMES
+from yabiadmin.constants import EXEC_SCHEMES, FS_SCHEMES
 
 class BackendRefusedConnection(Exception):
     pass
@@ -90,7 +90,7 @@ def get_exec_backendcredential_for_uri(yabiusername, uri):
     # parse the URI into chunks
     schema, rest = uriparse(uri)
 
-    logger.debug('yabiusername: %s schema: %s usernamea :%s hostnamea :%s patha :%s'%(yabiusername,schema,rest.username,rest.hostname,rest.path))
+    logger.debug('yabiusername: %s schema: %s username: %s hostname: %s path: %s' % (yabiusername,schema,rest.username,rest.hostname,rest.path))
     
     # enforce Exec scehmas only
     if schema not in EXEC_SCHEMES:

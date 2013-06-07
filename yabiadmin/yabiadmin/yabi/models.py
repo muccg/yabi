@@ -38,8 +38,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.cache import cache
 from django.utils.encoding import smart_str
 from urlparse import urlparse, urlunparse
-from crypto_utils import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, deannotate, DecryptException, AESTEMP
-from constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK, VALID_SCHEMES
+from yabiadmin.crypto_utils import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, deannotate, DecryptException, AESTEMP
+from yabiadmin.constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK, VALID_SCHEMES
 from yabiadmin.utils import cache_keyname
 
 import logging
@@ -629,13 +629,13 @@ class Credential(Base):
     def blocked_tasks(self):
         """This looks at all the blocked tasks for the user this credential belongs to
         and returns a queryset of all the tasks in a blocked status for that user"""
-        from yabiengine.models import Task
+        from yabiadmin.yabiengine.models import Task
         #return Task.objects.filter(job__workflow__user=self.user).filter(status=STATUS_BLOCKED)
         users_tasks = Task.objects.filter(job__workflow__user=self.user).filter(status_blocked__isnull=False)
         return [T for T in users_tasks if T.status==STATUS_BLOCKED]
         
     def rewalk_workflows(self):
-        from yabiengine.enginemodels import EngineWorkflow
+        from yabiadmin.yabiengine.enginemodels import EngineWorkflow
         return EngineWorkflow.objects.filter(user=self.user).filter(status=STATUS_REWALK)
         #users_wfs = EngineWorkflow.objects.filter(user=self.user).filter(status_rewalk__isnull=False)
         #return [W for W in users_wfs if W.status==STATUS_REWALK]

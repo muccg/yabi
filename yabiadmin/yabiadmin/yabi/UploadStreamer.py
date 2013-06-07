@@ -30,7 +30,7 @@ import httplib
 import random
 import mimetypes
 import hmac
-import settings
+from django.conf import settings
 from django.core.files.uploadhandler import FileUploadHandler
 
 # for main() testing uncomment the follwoing line
