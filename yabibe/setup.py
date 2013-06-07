@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='yabibe',
-    version='6.15.0',
+    version='6.15.1',
     description='Yabi Backend',
     long_description='Yabi back end service',
     author='Centre for Comparative Genomics',
