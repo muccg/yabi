@@ -10,7 +10,7 @@
 %define installdir %{webapps}/%{webappname}
 %define buildinstalldir %{buildroot}/%{installdir}
 %define settingsdir %{buildinstalldir}/defaultsettings
-%define logsdir %{buildroot}/var/log/%{webappname}
+%define logdir %{buildroot}/var/log/%{webappname}
 %define scratchdir %{buildroot}/var/lib/%{webappname}/scratch
 %define storedir %{buildroot}/var/lib/%{webappname}/store
 %define mediadir %{buildroot}/var/lib/%{webappname}/media
@@ -78,7 +78,7 @@ Yabi command line shell
 
 %install
 
-for directory in "%{settingsdir} %{staticdir} %{logsdir} %{storedir} %{scratchdir} %{mediadir} %{bebuildconfdir}"; do
+for directory in "%{settingsdir} %{staticdir} %{logdir} %{storedir} %{scratchdir} %{mediadir} %{bebuildconfdir}"; do
     mkdir -p $directory;
 done;
 
