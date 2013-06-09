@@ -16,7 +16,7 @@ AWS_BUILD_INSTANCE='rpmbuild-centos6-aws'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
 CLOSURE="/usr/local/closure/compiler.jar"
 MODULES="MySQL-python==1.2.3 psycopg2==2.4.6 Werkzeug flake8"
-PIP_OPTS='-v --index-url=https://simple.crate.io/ --download-cache ~/.pip/cache'
+PIP_OPTS='-v -M --download-cache ~/.pip/cache'
 
 
 if [ "${YABI_CONFIG}" = "" ]; then
@@ -248,19 +248,21 @@ function installyabi() {
     echo "Install yabiadmin"
     virtualenv --system-site-packages virt_yabiadmin
     pushd yabiadmin
-    ../virt_yabiadmin/bin/pip install ${PIP_OPTS} -e .
+    ../virt_yabiadmin/bin/pip install ${PIP_OPTS} pip-crate
+    ../virt_yabiadmin/bin/pip-crate install ${PIP_OPTS} -e .
     popd
-    virt_yabiadmin/bin/pip install ${PIP_OPTS} ${MODULES}
+    virt_yabiadmin/bin/pip-crate install ${PIP_OPTS} ${MODULES}
 
     echo "Install yabibe"
     virtualenv --system-site-packages virt_yabibe
     pushd yabibe
-    ../virt_yabibe/bin/pip install ${PIP_OPTS} -e .
+    ../virt_yabibe/bin/pip install ${PIP_OPTS} pip-crate
+    ../virt_yabibe/bin/pip-crate install ${PIP_OPTS} -e .
     popd
 
     echo "Install yabish"
     pushd yabish
-    ../virt_yabiadmin/bin/pip install ${PIP_OPTS} -e .
+    ../virt_yabiadmin/bin/pip-crate install ${PIP_OPTS} -e .
     popd
 }
 
@@ -389,7 +391,7 @@ function yabiclean() {
 function yabipurge() {
     rm -rf virt_yabiadmin
     rm -rf virt_yabibe
-    rm *.log
+    rm -f *.log
 }
 
 
@@ -467,7 +469,7 @@ status)
 install)
     settings
     stopyabi
-    installyabi
+    time installyabi
     ;;
 ci_remote_build)
     ci_ssh_agent
