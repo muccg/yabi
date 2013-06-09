@@ -161,11 +161,18 @@ find %{shbuildinstalldir} -name '*.py' -type f | xargs sed -i 's:^#!/usr/local/p
 
 
 %post admin
+rm -rf %{installdir}/static/*
 yabiadmin collectstatic --noinput > /dev/null
 # Remove root-owned logged files just created by collectstatic
 rm -rf /var/log/%{webappname}/*
 # Touch the wsgi file to get the app reloaded by mod_wsgi
 touch ${installdir}/django.wsgi
+
+%preun admin
+if [ "$1" = "0" ]; then
+    # Nuke staticfiles if not upgrading
+    rm -rf %{installdir}/static/*
+fi
 
 %files admin
 %defattr(-,apache,apache,-)
