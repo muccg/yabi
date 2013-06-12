@@ -133,7 +133,7 @@ cd $CCGSOURCEDIR/yabibe
 export PYTHONPATH=%{bebuildinstalldir}/lib
 python /usr/bin/easy_install -O1 --prefix %{bebuildinstalldir} --install-dir %{bebuildinstalldir}/lib -i 'https://simple.crate.io/' .
 
-for directory in "fifos tasklets temp"; do
+for directory in "certificates fifos tasklets temp"; do
 	mkdir -p %{bebuildconfdir}/run/$directory
 done
 
