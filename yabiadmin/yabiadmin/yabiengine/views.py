@@ -51,6 +51,56 @@ from random import shuffle
 
 
 def request_next_task(request, status):
+    # check tasktag
+    if 'tasktag' not in request.REQUEST or request.REQUEST['tasktag'] != settings.TASKTAG:
+        logger.critical('Expected tasktag %s got %s.' % (settings.TASKTAG, tasktag))
+        return HttpResponseServerError('Error requesting task. Tasktag incorrect.')
+    tasktag = request.REQUEST['tasktag']
+
+    # tasks waiting execution, fifo, for given status
+    ready_tasks = []
+    if status == STATUS_READY:
+        ready_tasks = Task.objects.filter(tasktag=tasktag).filter(status_requested__isnull=True, status_ready__isnull=False).order_by('id')
+    elif status == STATUS_RESUME:
+        # not implemented, there is no resume status
+        return HttpResponseNotFound('No more tasks.')
+    else:
+        return HttpResponseServerError('Unknown status for next task')
+
+    if len(ready_tasks) == 0:
+        logger.debug('No more tasks.')
+        return HttpResponseNotFound('No more tasks.')
+
+    # find a task to make available
+    throttled = []
+    for task in ready_tasks:
+        # if the backend credential for this task has already been throttled, skip task
+        if task.execution_backend_credential.id in throttled:
+            logger.debug('backend credential already throttled')
+            continue
+
+        # determine active tasks for the execution backend credential associated with this task
+        tasks_active_per_bec = Task.objects.filter(execution_backend_credential=task.execution_backend_credential).filter(tasktag=tasktag).exclude(status_requested__isnull=True).exclude(status_complete__isnull=False).exclude(job__workflow__status=STATUS_ERROR).exclude(job__workflow__status=STATUS_EXEC_ERROR).exclude(job__workflow__status=STATUS_COMPLETE)
+        tasks_per_user = task.execution_backend_credential.backend.tasks_per_user
+        active_tasks = len(tasks_active_per_bec)
+
+        # skip tasks if too many tasks active for this backend cred 
+        if tasks_per_user is not None and active_tasks >= tasks_per_user:
+            logger.warn("Throttling {0} {1}>={2}".format(task.execution_backend_credential,active_tasks, tasks_per_user))
+            throttled.append(task.execution_backend_credential.id)
+            continue
+
+        # make sure the task we are about to make available is ours for the taking
+        updated = Task.objects.filter(id=task.id, status_requested__isnull=True).update(status_requested=datetime.now())
+        if updated == 1:
+            logger.info('next %s task id: %s command: %s' % (status, task.id, task.command))
+            return HttpResponse(task.json())
+
+    logger.debug('No more tasks.')
+    return HttpResponseNotFound('No more tasks.')
+
+
+def old_request_next_task(request, status):
     if 'tasktag' not in request.REQUEST:
         return HttpResponseServerError('Error requesting task. No tasktag identifier set.')
     

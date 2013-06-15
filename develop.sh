@@ -12,7 +12,7 @@ PROJECT="$2"
 PORT='8000'
 
 PROJECT_NAME='yabi'
-AWS_BUILD_INSTANCE='rpmbuild-centos6-aws'
+AWS_BUILD_INSTANCE='aws_rpmbuild_centos6'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
 CLOSURE="/usr/local/closure/compiler.jar"
 MODULES="MySQL-python==1.2.3 psycopg2==2.4.6 Werkzeug flake8"
