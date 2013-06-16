@@ -82,19 +82,19 @@ class SSHTransportException(Exception):
 
 
 # and further inherit hard and soft under those
-class SSHQsubSoftException(Exception):
+class SSHQsubSoftException(SSHQsubException):
     pass
 
 
-class SSHQstatSoftException(Exception):
+class SSHQstatSoftException(SSHQstatException):
     pass
 
 
-class SSHQsubHardException(Exception):
+class SSHQsubHardException(SSHQsubException):
     pass
 
 
-class SSHQstatHardException(Exception):
+class SSHQstatHardException(SSHQstatException):
     pass
 
 
@@ -231,6 +231,11 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
         while not pp.isDone():
             gevent.sleep()
 
+        if DEBUG:
+            print "EXITCODE:", pp.exitcode
+            print "STDERR:", pp.err
+            print "STDOUT:", pp.out
+
         if pp.exitcode == 0:
             # success. lets process our qstat results
             output = {}
@@ -278,6 +283,11 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
         pp = ssh.Run.run(usercert, ssh_command, username, host, working=None, port="22", stdout=None, stderr=None, password=creds['password'], modules=modules)
         while not pp.isDone():
             gevent.sleep()
+
+        if DEBUG:
+            print "EXITCODE:", pp.exitcode
+            print "STDERR:", pp.err
+            print "STDOUT:", pp.out
 
         if pp.exitcode == 0:
             # success. lets process our qstat results
@@ -403,6 +413,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
                     jobsummary[jobid]['job_state'] = 'R'
                     break           # success
                 except (SSHQstatSoftException, SSHTransportException), softexc:
+                    print str(softexc)
                     # delay and then retry
                     try:
                         sleep(delay_gen.next())
@@ -411,6 +422,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
                         raise softexc
 
                 except SSHQstatHardException, qse:
+                    print str(qse)
                     if "Following jobs do not exist" in str(qse):
                         # job has errored or completed. We now search using qacct
                         qacctdelay_gen = rerun_delays()
@@ -420,6 +432,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
                                 break
                             except (SSHQacctSoftException, SSHTransportException), softexc:
                                 # delay and then retry
+                                print str(softexc)
                                 try:
                                     sleep(qacctdelay_gen.next())
                                 except StopIteration:
