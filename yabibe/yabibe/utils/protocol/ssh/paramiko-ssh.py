@@ -244,6 +244,7 @@ def parse_args():
     parser.add_option("-f", "--list-folder", dest="listfolder", help="Do an ssh list operation on the specified folder")
     parser.add_option("-F", "--list-folder-recurse", dest="listfolderrecurse", help="Do a recursive list operation on the specified folder")
     parser.add_option("-O", "--stdout", dest="stdout", help="redirect the --exec option output to local file specified here")
+    parser.add_option("-E", "--stderr", dest="stderr", help="redirect the --exec option error output to local file specified here")
     parser.add_option("-I", "--stdin", dest="stdin", help="feed this file into stdin of the --exec option instead of reading from stdin")
     parser.add_option("-N", "--no-stdin", dest="nostdin", help="ignore stdin completely", action="store_true", default=False)
     #parser.add_option( "-Y", "--yes-add-host-key", dest="addhostkey", help="Add unknown host keys to known_hosts")
@@ -476,6 +477,11 @@ def execute(ssh, options, shell=True, ex=None):
         else:
             stdout_channel = sys.stdout
 
+        if options.stderr:
+            stderr_channel = open(options.stderr, 'wb')
+        else:
+            stderr_channel = sys.stderr
+
         if options.stdin:
             stdin_channel = open(options.stdin, 'rb')
         elif not options.nostdin:
@@ -517,9 +523,13 @@ def execute(ssh, options, shell=True, ex=None):
 
         # exhaust stdout/stderr
         stdout_channel.write(stdout.read())
+        stderr_channel.write(stderr.read())
 
         if options.stdout:
             stdout_channel.close()
+
+        if options.stderr:
+            stderr_channel.close()
 
         if options.stdin:
             stdin_channel.close()
