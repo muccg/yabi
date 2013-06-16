@@ -428,6 +428,11 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
                 except SSHQstatHardException, qse:
                     print str(qse)
                     if "Following jobs do not exist" in str(qse):
+                        # YABI-218 There is a timing issue, calling qacct immediately after
+                        # qstat is problematic. This is a hack, a more elegant retry mechanism
+                        # is needed.
+                        sleep(5)
+
                         # job has errored or completed. We now search using qacct
                         qacctdelay_gen = rerun_delays()
                         while True:
