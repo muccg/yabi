@@ -204,8 +204,7 @@ class FileRCopyResource(resource.PostableResource):
                     ##
                     ## Fallback to old manual rcopy
                     ##
-                    print "NO FALLBACK", ni
-                    return
+                    print ni
 
                     # get a recursive listing of the source
                     try:
