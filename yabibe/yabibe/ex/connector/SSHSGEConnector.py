@@ -77,6 +77,10 @@ class SSHQstatException(Exception):
     pass
 
 
+class SSHQacctException(Exception):
+    pass
+
+
 class SSHTransportException(Exception):
     pass
 
@@ -98,11 +102,11 @@ class SSHQstatHardException(SSHQstatException):
     pass
 
 
-class SSHQacctSoftException(Exception):
+class SSHQacctSoftException(SSHQacctException):
     pass
 
 
-class SSHQacctHardException(Exception):
+class SSHQacctHardException(SSHQacctException):
     pass
 
 
@@ -366,7 +370,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
 
         try:
             self.main_loop(yabiusername, creds, command, working, username, host, remoteurl, client_stream, stdout, stderr, modules, jobid)
-        except (ExecutionError, SSHQstatException):
+        except (ExecutionError, SSHQstatException, SSHQacctException):
             traceback.print_exc()
             client_stream.write("Error\n")
         finally:
