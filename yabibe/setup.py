@@ -34,7 +34,7 @@ setup(
         'wsgiref==0.1.2',
         'zope.interface==4.0.5',
         'gevent==0.13.8',
-        'greenlet==0.4.0',
+        'greenlet==0.4.1',
         'geventreactor==0.1.0',
         'psutil==0.6.1',
         'boto==2.3.0',
