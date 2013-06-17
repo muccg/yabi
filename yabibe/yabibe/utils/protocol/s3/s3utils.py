@@ -88,12 +88,9 @@ class Directory(object):
         else:
             if not path:
                 # we want this whole directory
-                return [
-                    (key, obj.size, obj.last_modified, False) for key, obj in sorted(self.files.iteritems())
-                ],
-                [
-                    (key, 0, '', False) for key in sorted(self.store.keys())
-                ]
+                files = [(key, obj.size, obj.last_modified, False) for key, obj in sorted(self.files.iteritems())]
+                folders = [(key, 0, '', False) for key in sorted(self.store.keys())]
+                return files, folders
             else:
                 # look for file named path
                 if path in self.files:

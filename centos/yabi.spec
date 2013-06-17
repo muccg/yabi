@@ -1,5 +1,5 @@
-%define version 6.15.0
-%define unmangled_version 6.15.0
+%define version 6.15.1
+%define unmangled_version 6.15.1
 %define release 1
 %define webapps /usr/local/webapps
 %define webappname yabiadmin
@@ -10,7 +10,7 @@
 %define installdir %{webapps}/%{webappname}
 %define buildinstalldir %{buildroot}/%{installdir}
 %define settingsdir %{buildinstalldir}/defaultsettings
-%define logsdir %{buildroot}/var/log/%{webappname}
+%define logdir %{buildroot}/var/log/%{webappname}
 %define scratchdir %{buildroot}/var/lib/%{webappname}/scratch
 %define storedir %{buildroot}/var/lib/%{webappname}/store
 %define mediadir %{buildroot}/var/lib/%{webappname}/media
@@ -78,7 +78,7 @@ Yabi command line shell
 
 %install
 
-for directory in "%{settingsdir} %{staticdir} %{logsdir} %{storedir} %{scratchdir} %{mediadir} %{bebuildconfdir}"; do
+for directory in "%{settingsdir} %{staticdir} %{logdir} %{storedir} %{scratchdir} %{mediadir} %{bebuildconfdir}"; do
     mkdir -p $directory;
 done;
 
@@ -133,7 +133,7 @@ cd $CCGSOURCEDIR/yabibe
 export PYTHONPATH=%{bebuildinstalldir}/lib
 python /usr/bin/easy_install -O1 --prefix %{bebuildinstalldir} --install-dir %{bebuildinstalldir}/lib -i 'https://simple.crate.io/' .
 
-for directory in "fifos tasklets temp"; do
+for directory in "certificates fifos tasklets temp"; do
 	mkdir -p %{bebuildconfdir}/run/$directory
 done
 
@@ -161,11 +161,18 @@ find %{shbuildinstalldir} -name '*.py' -type f | xargs sed -i 's:^#!/usr/local/p
 
 
 %post admin
+rm -rf %{installdir}/static/*
 yabiadmin collectstatic --noinput > /dev/null
 # Remove root-owned logged files just created by collectstatic
 rm -rf /var/log/%{webappname}/*
 # Touch the wsgi file to get the app reloaded by mod_wsgi
 touch ${installdir}/django.wsgi
+
+%preun admin
+if [ "$1" = "0" ]; then
+    # Nuke staticfiles if not upgrading
+    rm -rf %{installdir}/static/*
+fi
 
 %files admin
 %defattr(-,apache,apache,-)

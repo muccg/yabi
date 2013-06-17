@@ -55,6 +55,7 @@ from conf import config
 
 # where we temporarily store the submission scripts on the submission host
 TMP_DIR = config.config['backend']['temp']
+REMOTE_TMP_DIR = '/tmp'
 
 from TaskManager.TaskTools import RemoteInfo
 from SubmissionTemplate import make_script
@@ -76,32 +77,36 @@ class SSHQstatException(Exception):
     pass
 
 
+class SSHQacctException(Exception):
+    pass
+
+
 class SSHTransportException(Exception):
     pass
 
 
 # and further inherit hard and soft under those
-class SSHQsubSoftException(Exception):
+class SSHQsubSoftException(SSHQsubException):
     pass
 
 
-class SSHQstatSoftException(Exception):
+class SSHQstatSoftException(SSHQstatException):
     pass
 
 
-class SSHQsubHardException(Exception):
+class SSHQsubHardException(SSHQsubException):
     pass
 
 
-class SSHQstatHardException(Exception):
+class SSHQstatHardException(SSHQstatException):
     pass
 
 
-class SSHQacctSoftException(Exception):
+class SSHQacctSoftException(SSHQacctException):
     pass
 
 
-class SSHQacctHardException(Exception):
+class SSHQacctHardException(SSHQacctException):
     pass
 
 
@@ -134,7 +139,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
         """This submits via ssh the qsub command. This returns the jobid, or raises an exception on an error"""
         assert type(modules) is not str and type(modules) is not unicode, "parameter modules should be sequence or None, not a string or unicode"
 
-        submission_script = os.path.join(TMP_DIR, str(uuid.uuid4()) + ".sh")
+        submission_script = os.path.join(REMOTE_TMP_DIR, str(uuid.uuid4()) + ".sh")
 
         qsub_submission_script = "'%s' -N '%s' -e '%s' -o '%s' -wd '%s' '%s'" % (
             config.config[SCHEMA]['qsub'],
@@ -230,6 +235,11 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
         while not pp.isDone():
             gevent.sleep()
 
+        if DEBUG:
+            print "EXITCODE:", pp.exitcode
+            print "STDERR:", pp.err
+            print "STDOUT:", pp.out
+
         if pp.exitcode == 0:
             # success. lets process our qstat results
             output = {}
@@ -277,6 +287,11 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
         pp = ssh.Run.run(usercert, ssh_command, username, host, working=None, port="22", stdout=None, stderr=None, password=creds['password'], modules=modules)
         while not pp.isDone():
             gevent.sleep()
+
+        if DEBUG:
+            print "EXITCODE:", pp.exitcode
+            print "STDERR:", pp.err
+            print "STDOUT:", pp.out
 
         if pp.exitcode == 0:
             # success. lets process our qstat results
@@ -355,7 +370,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
 
         try:
             self.main_loop(yabiusername, creds, command, working, username, host, remoteurl, client_stream, stdout, stderr, modules, jobid)
-        except (ExecutionError, SSHQstatException):
+        except (ExecutionError, SSHQstatException, SSHQacctException):
             traceback.print_exc()
             client_stream.write("Error\n")
         finally:
@@ -402,6 +417,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
                     jobsummary[jobid]['job_state'] = 'R'
                     break           # success
                 except (SSHQstatSoftException, SSHTransportException), softexc:
+                    print str(softexc)
                     # delay and then retry
                     try:
                         sleep(delay_gen.next())
@@ -410,7 +426,13 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
                         raise softexc
 
                 except SSHQstatHardException, qse:
+                    print str(qse)
                     if "Following jobs do not exist" in str(qse):
+                        # YABI-218 There is a timing issue, calling qacct immediately after
+                        # qstat is problematic. This is a hack, a more elegant retry mechanism
+                        # is needed.
+                        sleep(5)
+
                         # job has errored or completed. We now search using qacct
                         qacctdelay_gen = rerun_delays()
                         while True:
@@ -419,6 +441,7 @@ class SSHSGEConnector(ExecConnector, ssh.KeyStore.KeyStore):
                                 break
                             except (SSHQacctSoftException, SSHTransportException), softexc:
                                 # delay and then retry
+                                print str(softexc)
                                 try:
                                     sleep(qacctdelay_gen.next())
                                 except StopIteration:

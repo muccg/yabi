@@ -135,11 +135,11 @@ def ls(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):
     tree = make_fs_struct(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID)
 
     try:
-        lsdata = tree.ls(path)
+        files, folders = tree.ls(path)
     except s3utils.NodeNotFound:
         raise InvalidPath("No such file or directory\n")
 
-    return lsdata
+    return files, folders
 
 
 def lsrecurse(bucket, domain, port, path, ACCESSKEYID, SECRETKEYID):

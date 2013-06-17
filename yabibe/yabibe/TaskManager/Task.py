@@ -471,7 +471,7 @@ class MainTask(Task):
             Mkdir(outputuri, yabiusername=self.yabiusername)
         except GETFailure, error:
             if "503" in error.message[1]:
-                    raise                               # reraise a blocking error so our top level catcher will catch it and block the task
+                raise                               # reraise a blocking error so our top level catcher will catch it and block the task
             # error making directory
             print "TASK[%s]:Mkdir failed!" % (self.taskid)
             self.status("error")
@@ -597,6 +597,7 @@ class MainTask(Task):
                     print "Mkdir(", task['stageout'], ",", self.yabiusername, ")"
                 Mkdir(task['stageout'], yabiusername=self.yabiusername)
             except GETFailure:
+                # TODO no logging/handling here
                 pass
 
             try:
@@ -606,7 +607,8 @@ class MainTask(Task):
                 self.log("Files successfuly staged out")
             except GETFailure, error:
                 if "503" in error.message[1]:
-                        raise                               # reraise a blocking error so our top level catcher will catch it and block the task
+                    # TODO no logging/handling here
+                    raise                               # reraise a blocking error so our top level catcher will catch it and block the task
                 # error executing
                 print "TASK[%s]: Stageout failed!" % (self.taskid)
                 self.status("error")

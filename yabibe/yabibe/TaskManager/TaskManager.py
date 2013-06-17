@@ -69,6 +69,9 @@ class TaskManager(object):
 
     connect_failed = [False]
 
+    runner_thread_task = None
+    runner_thread_unblock = None
+
     def __init__(self):
         #self.pausechannel_task = gevent.queue.Queue(maxsize=0)          # a channel
         #self.pausechannel_unblock = gevent.queue.Queue(maxsize=0)       # a channel
@@ -91,7 +94,8 @@ class TaskManager(object):
 
         # now kill them if they're still running
         for thread in (self.runner_thread_task, self.runner_thread_unblock):
-            thread.kill(block=True, timeout=5.0)
+            if thread is not None:
+                thread.kill(block=True, timeout=5.0)
 
     def runner(self):
         """The green task that starts up jobs"""
