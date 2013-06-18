@@ -1,5 +1,5 @@
-%define version 6.15.1
-%define unmangled_version 6.15.1
+%define version 6.15.2
+%define unmangled_version 6.15.2
 %define release 1
 %define webapps /usr/local/webapps
 %define webappname yabiadmin

@@ -16,7 +16,7 @@ for package in packages:
     os.chdir(start_dir)
 
 setup(name='yabiadmin',
-    version='6.15.1',
+    version='6.15.2',
     description='Yabi Admin',
     long_description='Yabi front end and administration web interface',
     author='Centre for Comparative Genomics',
