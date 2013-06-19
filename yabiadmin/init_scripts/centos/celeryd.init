@@ -56,6 +56,7 @@ CELERYD_NODES=${CELERYD_NODES:-$DEFAULT_NODES}
 # This is used to change how Celery loads in the configs.  It does not need to
 # be set to be run.
 export CELERY_LOADER
+export PYTHONPATH DJANGO_SETTINGS_MODULE
 
 if [ -n "$2" ]; then
     CELERYD_OPTS="$CELERYD_OPTS $2"
