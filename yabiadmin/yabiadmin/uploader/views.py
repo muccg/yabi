@@ -1,5 +1,3 @@
-# Create your views here.
-
 from yabiadmin.yabi.UploadStreamer import UploadStreamer
 from yabiadmin.yabiengine.backendhelper import make_hmac
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
@@ -16,7 +14,6 @@ from yabiadmin.decorators import authentication_required
 import logging
 logger = logging.getLogger(__name__)
 
-DEBUG_UPLOAD_STREAMER = True
 
 #
 # Our upload streamer
@@ -31,35 +28,30 @@ class FileUploadStreamer(UploadStreamer):
         self._cookies = cookies
     
     def receive_data_chunk(self, raw_data, start):
-        if DEBUG_UPLOAD_STREAMER:
-            print "STREAMER: receive_data_chunk", len(raw_data), start
+        logger.debug('{0} {1}'.format(len(raw_data), start))
         return self.file_data(raw_data)
     
     def file_complete(self, file_size):
         """individual file upload complete"""
-        if DEBUG_UPLOAD_STREAMER:
-            print "STREAMER: file_complete",file_size
         logger.info("Streaming through of file %s has been completed. %d bytes have been transferred." % (self._present_file, file_size))
         return self.end_file()
     
     def new_file(self, field_name, file_name, content_type, content_length, charset):
         """beginning of new file in upload"""
-        if DEBUG_UPLOAD_STREAMER:
-            print "STREAMER: new_file",field_name, file_name, content_type, content_length, charset
+        logger.debug('{0} {1} {2} {3} {4}'.format(field_name, file_name, content_type, content_length, charset))
         return UploadStreamer.new_file(self,file_name)
     
     def upload_complete(self):
         """all files completely uploaded"""
-        if DEBUG_UPLOAD_STREAMER:
-            print "STREAMER: upload_complete"
+        logger.debug('')
         return self.end_connection()
     
     def handle_raw_input(self, input_data, META, content_length, boundary, encoding):
         """raw input"""
-        if DEBUG_UPLOAD_STREAMER:
-            print "STREAMER: handle_raw_input"
+        logger.debug('')
         # this is called right at the beginning. So we grab the uri detail here and initialise the outgoing POST
         self.post_multipart(host=self._host, port=self._port, selector=self._selector, cookies=self._cookies )
+
 
 @authentication_required
 def put(request):
@@ -94,8 +86,6 @@ def put(request):
         content=result.read()
         status=int(result.status)
         reason = result.reason
-        
-        #print "passing back",status,reason,"in json snippet"
         
         response = {
             "level":"success" if status==200 else "failure",

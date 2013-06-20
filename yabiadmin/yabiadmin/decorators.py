@@ -116,11 +116,11 @@ def report(fn):
             ["%s = %s" % (a, repr(b)) for a,b in kwargs.items()]
         ))
 
-        print "CALL: %s%s [#%s]" % (indent, fc, call)
+        logger.debug("CALL: %s%s [#%s]" % (indent, fc, call))
         __report_indent[0] += 1
         ret = fn(*params,**kwargs)
         __report_indent[0] -= 1
-        print "RETURN: %s%s %s [#%s]" % (indent, fc, repr(ret), call)
+        logger.debug("RETURN: %s%s %s [#%s]" % (indent, fc, repr(ret), call))
 
         return ret
     wrap.callcount = 0

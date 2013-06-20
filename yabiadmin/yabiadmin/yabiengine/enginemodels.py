@@ -285,7 +285,6 @@ class EngineJob(Job):
         try:
             rval = BackendCredential.objects.get(credential__user=self.workflow.user, backend=self.tool.fs_backend)
         except (ObjectDoesNotExist, MultipleObjectsReturned):
-            print 'Invalid filesystem backend credentials for user: %s and backend: %s' % (self.workflow.user, self.tool.fs_backend)
             logger.critical('Invalid filesystem backend credentials for user: %s and backend: %s' % (self.workflow.user, self.tool.fs_backend))
             fsbcs = BackendCredential.objects.filter(credential__user=self.workflow.user, backend=self.tool.fs_backend)
             logger.debug("FS Backend Credentials returned: %s"%(fsbcs))
@@ -424,7 +423,6 @@ class EngineJob(Job):
 
             task = EngineTask(job=job, status=STATUS_PENDING, start_time=datetime.datetime.now(), execution_backend_credential=be, task_num=task_num+1)
 
-            #print "ADD TASK: %s"%(str(task_data+[name]))
             task.add_task(*(task_data+[name]))
             num,name = buildname(num)
 
@@ -516,7 +514,7 @@ class EngineTask(Task):
 
         # non batch stageins
         for key,stageins in template.all_files():
-            print "key:%s stagein:%s"%(key,stageins)
+            logger.debug("key:%s stagein:%s" % (key,stageins))
             for stagein in stageins:
                 self.batch_files_stagein(stagein)
 

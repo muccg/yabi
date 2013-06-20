@@ -573,7 +573,7 @@ class Credential(Base):
             transaction.commit()
 
             for id in ids:
-                print "WALK----------->",id
+                logger.debug(id)
                 walk.delay(workflow_id=id)
             
     def get_from_cache(self):
