@@ -1,30 +1,31 @@
-# http://docs.celeryproject.org/en/2.5/cookbook/daemonizing.html
+# In CentOS, contents should be placed in the file /etc/sysconfig/celeryd
 
-# Passed into celeryd multi
-#CELERYD="-m celery.bin.celeryd_detach"
+# Names of nodes to start (space-separated)
+CELERYD_NODES="yabi-node_1"
 
-# How to call "manage.py celeryd_multi"
+# Where to chdir at start. This could be the root of a virtualenv.
+CELERYD_CHDIR="/usr/local/webapps/yabiadmin"
+
+# How to call celeryd-multi
 CELERYD_MULTI="yabiadmin celeryd_multi"
 
-# How to call "manage.py celeryctl"
-CELERYCTL="yabiadmin celeryctl"
+# Extra arguments
+#CELERYD_OPTS="--app=my_application.path.to.worker --time-limit=300 --concurrency=8 --loglevel=DEBUG"
 
-# Sets the verbosity of the celeryd logging.
-CELERYD_LOG_LEVEL="DEBUG"
+# Create log/pid dirs, if they don't already exist
+#CELERY_CREATE_DIRS=1
+
+# %n will be replaced with the nodename
+CELERYD_LOG_FILE="/var/log/celery/%n.log"
+CELERYD_PID_FILE="/var/run/celery/%n.pid"
+
+# Workers run as an unprivileged user
+CELERYD_USER=apache
+CELERYD_GROUP=apache
+
+PYTHONPATH="/usr/local/webapps/yabiadmin/lib"
+
+DJANGO_SETTINGS_MODULE="yabiadmin.settings"
 
 # Define the loader that celeryd should use for loading in configs.
 CELERY_LOADER="django"
-
-# User and group information for directories
-CELERYD_USER="apache"
-CELERYD_GROUP="apache"
-
-# Default arguments to be passed into celeryd.
-#CELERYD_OPTS=""
-
-# Change to this directory first before launching celeryd.
-CELERYD_CHDIR="/usr/local/webapps/yabiadmin"
-
-PYTHONPATH=/usr/local/webapps/yabiadmin/lib
-
-DJANGO_SETTINGS_MODULE="yabiadmin.settings"

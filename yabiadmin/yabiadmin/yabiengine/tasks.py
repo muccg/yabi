@@ -26,30 +26,34 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-from celery.task import task, Task
+from celery.task import Task
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from yabiadmin.constants import STATUS_REWALK, STATUS_ERROR
 import traceback
 from django.db import transaction
 
-@task(name="yabiadmin.yabiengine.tasks.build")
-def build(workflow_id):
-    print "BUILD: ",workflow_id
-    assert(workflow_id)
-    eworkflow = EngineWorkflow.objects.get(id=workflow_id)
-    print "building...",eworkflow
-    eworkflow.build()
-    print "------------->"
-    walk.delay(workflow_id=workflow_id)
-    return workflow_id
 
-#@task(name="yabiadmin.yabiengine.tasks.walk")
+class build(Task):
+    ignore_result = True
+
+    def run(self, workflow_id, **kwargs):
+        assert(workflow_id)
+        eworkflow = EngineWorkflow.objects.get(id=workflow_id)
+        try:
+            eworkflow.build()
+            walk.delay(workflow_id=workflow_id)
+        except Exception, e:
+            eworkflow.status = STATUS_ERROR
+            eworkflow.save()
+            raise
+        return workflow_id
+
+
 class walk(Task):
     ignore_result = True
 
     def run(self, workflow_id, **kwargs):
-        print "WALK:",workflow_id
         assert(workflow_id)
         eworkflow = EngineWorkflow.objects.get(id=workflow_id)
         try:
