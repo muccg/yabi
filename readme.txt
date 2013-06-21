@@ -11,6 +11,9 @@ Dependencies
     o libevent dev package
     o openssl
     o openssl dev package
+    o libxml2
+    o libxml2 dev package
+    o libxslt dev package
 
 
 Running Yabi

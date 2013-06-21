@@ -573,7 +573,7 @@ class Credential(Base):
             transaction.commit()
 
             for id in ids:
-                print "WALK----------->",id
+                logger.debug(id)
                 walk.delay(workflow_id=id)
             
     def get_from_cache(self):
@@ -965,29 +965,24 @@ class YabiCache(models.Model):
 ## Django Signals
 ##
 
+
 def signal_credential_pre_save(sender, instance, **kwargs):
-    logger.debug("credential pre_save signal")
-    
     instance.on_pre_save()
 
+
 def signal_credential_post_save(sender, instance, **kwargs):
-    logger.debug("credential post_save signal")
-    
     instance.on_post_save()
+
        
 def signal_credential_post_init(sender, instance, **kwargs):
-    logger.debug("credential post_init signal")
-
     instance.on_post_init()
 
-def signal_tool_post_save(sender, **kwargs):
-    logger.debug("tool post_save signal")
 
+def signal_tool_post_save(sender, **kwargs):
     try:
         tool = kwargs['instance']
         logger.debug("purging tool %s from cache" % str(tool))
         tool.purge_from_cache()
-
     except Exception, e:
         logger.critical(e)
         logger.critical(traceback.format_exc())
@@ -1001,12 +996,9 @@ def create_user_profile(sender, instance, created, **kwargs):
 
  
 # connect up signals
-from django.db.models.signals import post_save, pre_save,post_init
+from django.db.models.signals import post_save, pre_save, post_init
 post_save.connect(signal_tool_post_save, sender=Tool, dispatch_uid="signal_tool_post_save")
 post_save.connect(create_user_profile, sender=DjangoUser, dispatch_uid="create_user_profile")
 pre_save.connect(signal_credential_pre_save, sender=Credential, dispatch_uid="signal_credential_pre_save")
 post_save.connect(signal_credential_post_save, sender=Credential, dispatch_uid="signal_credential_post_save")
 post_init.connect(signal_credential_post_init, sender=Credential, dispatch_uid="signal_credential_post_init")
-
-
-

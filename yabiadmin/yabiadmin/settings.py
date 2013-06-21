@@ -282,26 +282,29 @@ DEFAULT_CRED_CACHE_TIME = 60*60*24                   # 1 day default
 
 
 ### CELERY ###
+# see http://docs.celeryproject.org/en/latest/django/first-steps-with-django.html
 djcelery.setup_loader()
-
+# see http://docs.celeryproject.org/en/latest/getting-started/brokers/django.html
+BROKER_URL = 'django://'
+# see http://docs.celeryproject.org/en/latest/configuration.html
 CELERY_IGNORE_RESULT = True
-CELERY_QUEUE_NAME = 'yabiadmin'
-CARROT_BACKEND = "django"
-CELERYD_LOG_LEVEL = "DEBUG"
+# Not found in latest docs CELERY_QUEUE_NAME = 'yabiadmin'
+# Deprecated alias CARROT_BACKEND = "django"
+# Not found in latest docs CELERYD_LOG_LEVEL = "DEBUG"
 CELERYD_CONCURRENCY = 1
 CELERYD_PREFETCH_MULTIPLIER = 1
-#CELERY_DISABLE_RATE_LIMITS = True
-CELERY_QUEUES = {
-    CELERY_QUEUE_NAME: {
-        "binding_key": "celery",
-        "exchange": CELERY_QUEUE_NAME
-    },
-}
-CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
-CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
+CELERY_DISABLE_RATE_LIMITS = True
+# see http://docs.celeryproject.org/en/latest/userguide/routing.html
+#CELERY_QUEUES = {
+#    CELERY_QUEUE_NAME: {
+#        "binding_key": "celery",
+#        "exchange": CELERY_QUEUE_NAME
+#    },
+#}
+#CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
+#CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
 CELERY_IMPORTS = ("yabiadmin.yabiengine.tasks",)
-BROKER_TRANSPORT = "kombu.transport.django.Transport"
-
+# Not sure if this is still needed BROKER_TRANSPORT = "kombu.transport.django.Transport"
 
 
 ### PREVIEW SETTINGS

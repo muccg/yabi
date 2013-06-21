@@ -15,7 +15,7 @@ PROJECT_NAME='yabi'
 AWS_BUILD_INSTANCE='aws_rpmbuild_centos6'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
 CLOSURE="/usr/local/closure/compiler.jar"
-MODULES="MySQL-python==1.2.3 psycopg2==2.4.6 Werkzeug flake8"
+MODULES="MySQL-python==1.2.3 psycopg2==2.4.6 Werkzeug flake8 requests==1.2.0 gunicorn django-nose nose==1.2.1"
 PIP_OPTS='-v -M --download-cache ~/.pip/cache'
 
 
@@ -128,11 +128,11 @@ function nosetests() {
     # Runs the end-to-end tests in the Yabitests project
     virt_yabiadmin/bin/nosetests --with-xunit --xunit-file=tests.xml -I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py -v -w tests
     #virt_yabiadmin/bin/nosetests -v -w tests tests.simple_tool_tests
-    #virt_yabiadmin/bin/nosetests -v -w tests  tests.s3_connection_tests
-    #virt_yabiadmin/bin/nosetests -v -w tests  tests.ssh_tests
-    #virt_yabiadmin/bin/nosetests -v -w tests  tests.sshpbspro_tests
-    #virt_yabiadmin/bin/nosetests -v -w tests  tests.sshtorque_tests
-    #virt_yabiadmin/bin/nosetests -v -w tests  tests.backend_restart_tests
+    #virt_yabiadmin/bin/nosetests -v -w tests tests.s3_connection_tests
+    #virt_yabiadmin/bin/nosetests -v -w tests tests.ssh_tests
+    #virt_yabiadmin/bin/nosetests -v -w tests tests.sshpbspro_tests
+    #virt_yabiadmin/bin/nosetests -v -w tests tests.sshtorque_tests
+    #virt_yabiadmin/bin/nosetests -v -w tests tests.backend_execution_restriction_tests
 }
 
 
@@ -246,7 +246,7 @@ function installyabi() {
     which virtualenv >/dev/null
 
     echo "Install yabiadmin"
-    virtualenv --system-site-packages virt_yabiadmin
+    virtualenv virt_yabiadmin
     pushd yabiadmin
     ../virt_yabiadmin/bin/pip install ${PIP_OPTS} pip-crate
     ../virt_yabiadmin/bin/pip-crate install ${PIP_OPTS} -e .
@@ -254,7 +254,7 @@ function installyabi() {
     virt_yabiadmin/bin/pip-crate install ${PIP_OPTS} ${MODULES}
 
     echo "Install yabibe"
-    virtualenv --system-site-packages virt_yabibe
+    virtualenv virt_yabibe
     pushd yabibe
     ../virt_yabibe/bin/pip install ${PIP_OPTS} pip-crate
     ../virt_yabibe/bin/pip-crate install ${PIP_OPTS} -e .
@@ -275,6 +275,7 @@ function startyabiadmin() {
 
     echo "Launch yabiadmin (frontend) http://localhost:${PORT}"
     mkdir -p ~/yabi_data_dir
+    . virt_yabiadmin/bin/activate
     virt_yabiadmin/bin/django-admin.py syncdb --noinput --settings=${DJANGO_SETTINGS_MODULE} 1> syncdb-develop.log
     virt_yabiadmin/bin/django-admin.py migrate --settings=${DJANGO_SETTINGS_MODULE} 1> migrate-develop.log
     virt_yabiadmin/bin/django-admin.py collectstatic --noinput --settings=${DJANGO_SETTINGS_MODULE} 1> collectstatic-develop.log
@@ -293,10 +294,10 @@ function startceleryd() {
     CELERYD_CHDIR=`pwd`
     CELERYD_OPTS="--logfile=celeryd-develop.log --pidfile=celeryd-develop.pid"
     CELERY_LOADER="django"
-    DJANGO_PROJECT_DIR="$CELERYD_CHDIR"
-    PROJECT_DIRECTORY="$CELERYD_CHDIR"
+    DJANGO_PROJECT_DIR="${CELERYD_CHDIR}"
+    PROJECT_DIRECTORY="${CELERYD_CHDIR}"
     export CELERY_CONFIG_MODULE DJANGO_SETTINGS_MODULE DJANGO_PROJECT_DIR CELERY_LOADER CELERY_CHDIR PROJECT_DIRECTORY CELERYD_CHDIR
-    virt_yabiadmin/bin/celeryd $CELERYD_OPTS 1>/dev/null 2>/dev/null &
+    virt_yabiadmin/bin/celeryd ${CELERYD_OPTS} 1>/dev/null 2>/dev/null &
 }
 
 
@@ -314,7 +315,7 @@ function startyabibe() {
 
     virt_yabibe/bin/yabibe --pidfile=yabibe-develop.pid
 
-    # give backend a chance to start before starts start to hit it
+    # give backend a chance to start before tests start to hit it
     sleep 2
 }
 

@@ -47,6 +47,7 @@ except ImportError:
 
 _connections = {}
 
+
 # Register an event that closes the database connections
 # when a Django request is finished. This stops the "Database Locked" errors
 def close_connection(**kwargs):
@@ -54,14 +55,17 @@ def close_connection(**kwargs):
     for connection in _connections.itervalues():
         connection.close()
     _connections = {}
+
+
 signals.request_finished.connect(close_connection, dispatch_uid="close_connection")
+
 
 class MultiDBManager(models.Manager):
     @staticmethod
     def get_db_connection(model):
-        print "MODEL",model
+        logger.debug(model)
         db_name = getattr(model._meta, 'db_name', None)   # get a parameter on the models meta that refers to the database it is stored in. This can be used for sharding
-        print "DB_NAME",db_name
+        logger.debug(db_name)
         if not db_name is None:
             if callable(db_name):
                 # callable returns the actual settings
@@ -70,7 +74,7 @@ class MultiDBManager(models.Manager):
             else:
                 settings_dict = settings.DATABASES[db_name] if hasattr(settings,'DATABASES') else model.DATABASES[db_name]
             if not _connections.has_key(db_name):         # cached connections
-                print "=>",settings_dict
+                logger.debug(settings_dict)
                 backend = load_backend(settings_dict['DATABASE_ENGINE'])
                 wrapper = backend.DatabaseWrapper(MultiDBManager._get_settings(settings_dict))
                 wrapper._cursor()
@@ -78,7 +82,6 @@ class MultiDBManager(models.Manager):
             return _connections[db_name]
         else:
             from django.db import connection
-            print "=> DEFAULT"
             return connection
         
     @staticmethod
@@ -162,30 +165,11 @@ class Tag(MultiDBModel):
         db_name = current_db
 
     value = models.CharField(max_length=255)
-
-##    def __init__(self, *args, **kwargs):
-        
-##        if 'username' in kwargs:
-##            (user_storage_path, user_db_path) = user_db_exists(kwargs['username'])
-##            print "path is " + user_db_path
-##            self.database["DATABASE_NAME"] = user_db_path
-##            del(kwargs["username"])
-##        else:
-##            self.database["DATABASE_NAME"] = self.default_dbname
-            
-##        super(Workflow, self).__init__(*args, **kwargs)
-
-
-    #MultiDBManager = type('MultiDBManager', (MultiDBManager,), {'database':MultiDBModel.database})
-    
-    
-    #MultiDBManager.database = MultiDBModel.database
     objects =  MultiDBManager()
     objects.use_for_related_fields = True
     
     def __unicode__(self):
         return self.value
-
         
 
 class Workflow(MultiDBModel):
@@ -204,30 +188,13 @@ class Workflow(MultiDBModel):
     objects =  MultiDBManager()
     objects.use_for_related_fields = True
 
+
 class WorkflowTag(MultiDBModel):
     class Meta:
         db_name = current_db
         
     workflow = models.ForeignKey(Workflow)
     tag = models.ForeignKey(Tag)
-    
-
-
-
-
-
-##    def __init__(self, *args, **kwargs):
-        
-##        if 'username' in kwargs:
-##            (user_storage_path, user_db_path) = user_db_exists(kwargs['username'])
-##            print "path is " + user_db_path
-##            self.database["DATABASE_NAME"] = user_db_path
-##            del(kwargs["username"])
-##        else:
-##            self.database["DATABASE_NAME"] = self.default_dbname
-            
-##        super(Workflow, self).__init__(*args, **kwargs)
-
     
     def __unicode__(self):
         return self.name

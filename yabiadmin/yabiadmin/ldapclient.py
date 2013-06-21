@@ -25,6 +25,9 @@
 # 
 ### END COPYRIGHT ###
 import ldap
+import logging
+logger = logging.getLogger(__name__)
+
 
 class LDAPClient:
     def __init__(self, servers, userdn=None, password=None):
@@ -46,8 +49,8 @@ class LDAPClient:
                 self.bind_to_server(server, userdn, password)
                 return True
             except ldap.LDAPError, e:
-                print "Ldap Error while binding to server %s:" % server
-                print e
+                logger.error("Ldap Error while binding to server %s:" % server)
+                logger.error(e)
         return False       
 
     def modify(self, dn, modlist, serverctrls=None, clientctrls=None):

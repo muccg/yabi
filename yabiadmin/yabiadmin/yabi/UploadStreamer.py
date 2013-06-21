@@ -33,8 +33,6 @@ import hmac
 from django.conf import settings
 from django.core.files.uploadhandler import FileUploadHandler
 
-# for main() testing uncomment the follwoing line
-#FileUploadHandler = object
 
 class UploadStreamer(FileUploadHandler):
     BOUNDARY_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
@@ -90,7 +88,6 @@ class UploadStreamer(FileUploadHandler):
             
     def flush(self):
         """flush the buffer"""
-        #print "SENDING:",hex(len(self._buff))[2:].upper(),"=",len(self._buff),"bytes"
         self.stream.send(hex(len(self._buff))[2:].upper()+self.CRLF)
         self.stream.send(self._buff)
         self.stream.send(self.CRLF)
@@ -136,35 +133,3 @@ class UploadStreamer(FileUploadHandler):
         self.send(self.CRLF)
         self.flush()
         self.stream.send("0\r\n\r\n\r\n")
-        
-def main():
-    # http://faramir.localdomain/yabiadmin/cwellington/ws/fs/put?uri=gridftp://cwellington@xe-gt4.ivec.org/scratch/bi01/cwellington/
-    host = "faramir.localdomain"
-    port = 80
-    selector = "/yabiadmin/cwellington/ws/fs/put?uri=gridftp://cwellington@xe-gt4.ivec.org/scratch/bi01/cwellington/"
-    
-    import random
-    dat = "".join([random.choice("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz ") for X in range(8192*5)])
-    
-    streamer = UploadStreamer()
-    #cookie = "sessionid=6a46a5c7ef1a5b4040ad8181c87871ca"
-    cookie = "sessionid=0578372359971e3e2a1565cc382bb1c8"
-    streamer.post_multipart(host=host, port=port, selector=selector, cookies=[cookie] )
-    
-    filename = "zope.interface-3.3.0.tar.gz"
-    with open(filename,'rb') as fh:
-        data = fh.read()
-        
-    streamer.new_file(filename)
-    streamer.file_data(data[:65170])
-    streamer.file_data(data[65170:])
-    streamer.end_file()
-    streamer.end_connection()
-    
-    print dir(streamer.stream)
-    resp = streamer.stream.getresponse()
-    print resp.status,resp.reason
-    print resp.read()
-    
-if __name__=="__main__":
-    main()
