@@ -1,6 +1,7 @@
 .*\.pyc$
 .*\.log$
 .*\.pid$
+^.idea
 
 ^yabiadmin/yabiadmin/build
 ^yabiadmin/yabiadmin/.yabi
