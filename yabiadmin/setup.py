@@ -30,7 +30,7 @@ setup(name='yabiadmin',
     },
     zip_safe=False,
     install_requires=[
-        'Django==1.3.7',
+        'Django==1.5.1',
         'ccg-webservices==0.1.2',
         'ccg-registration==0.8-alpha-1',
         'ccg-makoloader==0.2.4',
