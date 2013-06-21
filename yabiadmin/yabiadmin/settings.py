@@ -52,7 +52,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
     'django.middleware.doc.XViewMiddleware',
-    'ccg.middleware.ssl.SSLRedirect',
+    'ssl.SSLRedirect',
     'django.contrib.messages.middleware.MessageMiddleware'    
 ]
 
