@@ -15,7 +15,7 @@ PROJECT_NAME='yabi'
 AWS_BUILD_INSTANCE='aws_rpmbuild_centos6'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
 CLOSURE="/usr/local/closure/compiler.jar"
-MODULES="MySQL-python==1.2.3 psycopg2==2.4.6 Werkzeug flake8"
+MODULES="MySQL-python==1.2.3 psycopg2==2.4.6 Werkzeug flake8 requests==1.2.0 gunicorn django-nose nose==1.2.1"
 PIP_OPTS='-v -M --download-cache ~/.pip/cache'
 
 
@@ -246,7 +246,7 @@ function installyabi() {
     which virtualenv >/dev/null
 
     echo "Install yabiadmin"
-    virtualenv --system-site-packages virt_yabiadmin
+    virtualenv virt_yabiadmin
     pushd yabiadmin
     ../virt_yabiadmin/bin/pip install ${PIP_OPTS} pip-crate
     ../virt_yabiadmin/bin/pip-crate install ${PIP_OPTS} -e .
@@ -254,7 +254,7 @@ function installyabi() {
     virt_yabiadmin/bin/pip-crate install ${PIP_OPTS} ${MODULES}
 
     echo "Install yabibe"
-    virtualenv --system-site-packages virt_yabibe
+    virtualenv virt_yabibe
     pushd yabibe
     ../virt_yabibe/bin/pip install ${PIP_OPTS} pip-crate
     ../virt_yabibe/bin/pip-crate install ${PIP_OPTS} -e .

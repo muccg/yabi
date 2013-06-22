@@ -170,7 +170,7 @@ def _sanitise(content, parser=default_parser, ruleset=default_ruleset):
         # all of the primitive types defined by cssutils are safe except for
         # URIs and "unknowns" (which includes IE's Javascript expression syntax
         # and filter values).
-        if value.primitiveType not in (value.CSS_URI, value.CSS_UNKNOWN):
+        if not isinstance(value, css.URIValue):
             return value.cssText
 
         return ""
@@ -197,14 +197,14 @@ def _sanitise(content, parser=default_parser, ruleset=default_ruleset):
         # need to ensure that we deal with each value independently (since a
         # background definition might include an image that we want to strip,
         # but a colour that we want to keep).
-        if isinstance(input_value, css.CSSValueList):
+        if isinstance(input_value, css.PropertyValue):
             # CSS value lists can't recurse, so we can assume that the depth
             # will never be more than one, and hence use a simple for loop
             # here.
             for v in input_value:
-                if isinstance(v, css.CSSPrimitiveValue):
+                if isinstance(v, css.Value):
                     output_value.append(primitive(v))
-        elif isinstance(input_value, css.CSSPrimitiveValue):
+        elif isinstance(input_value, css.Value):
             output_value.append(primitive(input_value))
 
         return " ".join(output_value)

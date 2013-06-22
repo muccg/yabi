@@ -32,6 +32,9 @@ from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from yabiadmin.constants import STATUS_REWALK, STATUS_ERROR
 import traceback
 from django.db import transaction
+from celery.utils.log import get_task_logger
+
+logger = get_task_logger(__name__)
 
 
 class build(Task):
@@ -44,6 +47,7 @@ class build(Task):
             eworkflow.build()
             walk.delay(workflow_id=workflow_id)
         except Exception, e:
+            logger.error(e)
             eworkflow.status = STATUS_ERROR
             eworkflow.save()
             raise
@@ -58,13 +62,14 @@ class walk(Task):
         eworkflow = EngineWorkflow.objects.get(id=workflow_id)
         try:
             eworkflow.walk()
-        except DecryptedCredentialNotAvailable,dcna:
-            print "Walk failed due to decrypted credential not being available. Will re-walk on decryption. Exception was %s"%dcna
+        except DecryptedCredentialNotAvailable, dcna:
+            logger.error("Walk failed due to decrypted credential not being available. Will re-walk on decryption.")
+            logger.error(dcna)
             eworkflow.status = STATUS_REWALK
             eworkflow.save()
         except Exception, e:
+            logger.error(e)
             eworkflow.status = STATUS_ERROR
             eworkflow.save()
             raise
         return workflow_id
-

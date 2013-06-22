@@ -24,7 +24,7 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # 
 ### END COPYRIGHT ###
-from BeautifulSoup import BeautifulSoup, NavigableString, Tag
+from bs4 import BeautifulSoup, NavigableString, Tag
 
 import css
 import ruleset
@@ -600,7 +600,7 @@ def sanitise(content, ruleset=default_ruleset):
     string with the sanitised (X)HTML.
     """
 
-    input = BeautifulSoup(content)
+    input = BeautifulSoup(content, "lxml")
     output = BeautifulSoup()
 
     context = {}
@@ -638,12 +638,12 @@ def sanitise(content, ruleset=default_ruleset):
             previous_node = context["node"]
             previous_rule = context["rule"]
 
-            context["node"] = Tag(output, tag.name)
+            context["node"] = Tag(parser=output, name=tag.name)
             context["rule"] = ruleset[tag.name]
 
             # Iterate over the tag's attributes, if any.
-            for attr, value in tag.attrs:
-                attribute(attr, value)
+            for attr in tag.attrs:
+                attribute(attr, tag[attr])
 
             # Ditto for the children.
             for child in tag.contents:

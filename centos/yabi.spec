@@ -41,7 +41,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
 BuildArch: x86_64
 Vendor: Centre for Comparative Genomics <web@ccg.murdoch.edu.au>
-BuildRequires: python-setuptools openssl-devel libevent-devel python-devel
+BuildRequires: python-setuptools openssl-devel libevent-devel python-devel libxslt-devel libxml2-devel
 Requires: openssl python-setuptools python
 Requires(pre): shadow-utils
 
@@ -51,7 +51,7 @@ Test.
 %package admin
 Summary: yabiadmin Django web application
 Group: Applications/Internet
-Requires: httpd mod_wsgi
+Requires: httpd mod_wsgi libxml2 libxslt
 
 %description admin
 Django web application implementing the web front end for Yabi.
