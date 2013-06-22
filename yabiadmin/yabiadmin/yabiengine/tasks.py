@@ -32,8 +32,9 @@ from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from yabiadmin.constants import STATUS_REWALK, STATUS_ERROR
 import traceback
 from django.db import transaction
-import logging
-logger = logging.getLogger(__name__)
+from celery.utils.log import get_task_logger
+
+logger = get_task_logger(__name__)
 
 
 class build(Task):
