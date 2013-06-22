@@ -53,7 +53,7 @@ from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
 
 from yabiadmin.yabiengine import storehelper as StoreHelper
-from yabiadmin.yabiengine.tasks import build
+from yabiadmin.yabiengine.tasks import build_workflow
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import WorkflowTag
 from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, zget_file, get_fs_backendcredential_for_uri, copy_file, rcopy_file, rm_file
@@ -417,7 +417,7 @@ def submit_workflow(request):
     transaction.commit()
 
     # trigger a build via celery
-    build.delay(workflow_id=workflow.id)
+    build_workflow(workflow_id=workflow.id)
 
     return HttpResponse(json.dumps({"id":workflow.id}))
 
