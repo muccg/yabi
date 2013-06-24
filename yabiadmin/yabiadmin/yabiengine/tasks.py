@@ -26,49 +26,67 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-from celery.task import Task
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from yabiadmin.constants import STATUS_REWALK, STATUS_ERROR
 import traceback
 from django.db import transaction
-import logging
-logger = logging.getLogger(__name__)
+import celery
+from celery import current_task
+from celery.utils.log import get_task_logger
+
+logger = get_task_logger(__name__)
+
+# backoff in seconds
+def backoff(count=0):
+    if count > 4:
+        count = 4
+    return 5 ** (count + 1)
 
 
-class build(Task):
-    ignore_result = True
-
-    def run(self, workflow_id, **kwargs):
-        assert(workflow_id)
-        eworkflow = EngineWorkflow.objects.get(id=workflow_id)
-        try:
-            eworkflow.build()
-            walk.delay(workflow_id=workflow_id)
-        except Exception, e:
-            logger.error(e)
-            eworkflow.status = STATUS_ERROR
-            eworkflow.save()
-            raise
-        return workflow_id
+# Build a workflow then walk it
+def build_workflow(workflow_id):
+    chain = build.s(workflow_id) | walk.s()
+    chain()
 
 
-class walk(Task):
-    ignore_result = True
+# TODO Make idempotent
+# select for update on a build status
+#
+@celery.task(ignore_result=True)
+def build(workflow_id):
+    assert(workflow_id)
+    request = current_task.request
+    try:
+        workflow = EngineWorkflow.objects.get(id=workflow_id)
+        workflow.build()
+    except Exception, exc:
+        logger.error(exc)
+        workflow.status = STATUS_ERROR
+        workflow.save()
+        raise exc
+    return workflow_id
 
-    def run(self, workflow_id, **kwargs):
-        assert(workflow_id)
-        eworkflow = EngineWorkflow.objects.get(id=workflow_id)
-        try:
-            eworkflow.walk()
-        except DecryptedCredentialNotAvailable, dcna:
-            logger.error("Walk failed due to decrypted credential not being available. Will re-walk on decryption.")
-            logger.error(dcna)
-            eworkflow.status = STATUS_REWALK
-            eworkflow.save()
-        except Exception, e:
-            logger.error(e)
-            eworkflow.status = STATUS_ERROR
-            eworkflow.save()
-            raise
-        return workflow_id
+
+# TODO Make idempotent
+# select for update on a walking status
+#
+@celery.task(ignore_result=True, max_retries=None)
+def walk(workflow_id):
+    assert(workflow_id)
+    request = current_task.request
+    try:
+        workflow = EngineWorkflow.objects.get(id=workflow_id)
+        workflow.walk()
+    except DecryptedCredentialNotAvailable, dcna:
+        logger.error("Decrypted credential not available.")
+        logger.error(dcna)
+        countdown = backoff(request.retries)
+        logger.debug('walk.retry {0} in {1} seconds'.format(workflow_id, countdown))
+        raise walk.retry(exc=dcna, countdown=countdown)
+    except Exception, exc:
+        logger.error(exc)
+        workflow.status = STATUS_ERROR
+        workflow.save()
+        raise exc
+    return workflow_id

@@ -38,7 +38,7 @@ from yabiadmin.yabi import models
 from django.utils import simplejson as json
 
 from yabiadmin.yabistoreapp import db
-from yabiadmin.yabiengine.tasks import build
+from yabiadmin.yabiengine.tasks import build_workflow
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine import backendhelper
 
@@ -91,7 +91,7 @@ def submitjob(request):
         transaction.commit()
 
         # trigger a build via celery
-        build.delay(workflow_id=workflow.id)
+        build_workflow(workflow_id=workflow.id)
 
         resp = {'success': True, 'workflow_id':workflow.id}
     except YabiError, e:
