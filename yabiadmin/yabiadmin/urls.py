@@ -29,6 +29,7 @@ from django.conf.urls.defaults import *
 from django.conf import settings
 from django.core import urlresolvers
 from django.contrib import admin as djangoadmin
+from django.views.generic.base import RedirectView
 from yabiadmin import admin, uploader
 from yabiadmin.yabifeapp.views import handler404, handler500
 djangoadmin.autodiscover()
@@ -72,8 +73,8 @@ urlpatterns += patterns('yabiadmin.yabi.views',
 )
 
 # redirect / to /admin
-urlpatterns += patterns('django.views.generic.simple',
-    ('^$', 'redirect_to', {'url': urlresolvers.reverse('admin:index')}),
+urlpatterns += patterns('',
+    ('^$', RedirectView.as_view(url =  urlresolvers.reverse('admin:index')),
 )
 
 # pattern for serving statically
@@ -87,8 +88,8 @@ if settings.DEBUG:
 
     )
 
-urlpatterns += patterns('django.views.generic.simple',
-    (r'^favicon\.ico', 'redirect_to', {'url': '/static/images/favicon.ico'}),
+urlpatterns += patterns('',
+    (r'^favicon\.ico', RedirectView.as_view(url = '/static/images/favicon.ico')),
     )
 
 urlpatterns += patterns('',
