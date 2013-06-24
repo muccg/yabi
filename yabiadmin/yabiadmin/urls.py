@@ -74,8 +74,7 @@ urlpatterns += patterns('yabiadmin.yabi.views',
 
 # redirect / to /admin
 urlpatterns += patterns('',
-    ('^$', RedirectView.as_view(url =  urlresolvers.reverse('admin:index')),
-)
+    ('^$', RedirectView.as_view(url=urlresolvers.reverse('admin:index'))))
 
 # pattern for serving statically
 # not needed by runserver, but it is by gunicorn
