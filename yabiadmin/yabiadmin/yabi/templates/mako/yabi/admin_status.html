@@ -1,13 +1,13 @@
-<%inherit file="admin/base_site_mako.html"/>
+{% extends "admin/base_site_mako.html" %}
 
 
-${self.block_title()}<%def name="block_title()">${title} | ${trans('Yabi site admin')}</%def>
+{% block block_title %}{{title}} | {{'Yabi site admin'|trans }}{% endblock %}
 
-${self.block_branding()}<%def name="block_branding()">
-<h1 id="site-name">${trans('Yabi Administration')}</h1>
-</%def>
+{% block block_branding %}
+<h1 id="site-name">{{'Yabi Administration'|trans }}</h1>
+{% endblock %}
 
-<%def name="block_content()">
+{% block block_content %}
 
 
 <h2>Celery Processes</h2>
@@ -19,19 +19,19 @@ ${self.block_branding()}<%def name="block_branding()">
 <th>Command</th>
 </tr>
 
-% if celery_procs:
-      % for item in celery_procs:
+{% if celery_procs %}
+      {% for item in celery_procs %}
       <tr>
-        <td>${item.pid}</td>
-        <td>${item.name}</td>
-        <td>${" ".join(item.cmdline)}</td>
+        <td>{{item.pid}}</td>
+        <td>{{item.name}}</td>
+        <td>{% py " ".join(item.cmdline) %}</td>
       </tr>
-      % endfor
-% else:
+      {% endfor %}
+{% else %}
 <tr>
 <td colspan="3">No celery processes found.</td>
 </tr>
-% endif
+{% endif %}
 
 </table>
 
@@ -44,16 +44,17 @@ ${self.block_branding()}<%def name="block_branding()">
 <th>Value</th>
 </tr>
 
-% for key in sorted(settings.keys()):
+{% for key in sorted(settings.keys()) %}
 <tr>
-<td>${key}</td>
-<td>${settings[key]}</td>
+<td>{{key}}</td>
+<td>{% py settings[key] %}</td>
 </tr>
-% endfor
+{% endfor %}
 </table>
 
 
 
-</%def>
+{% endblock %}
 
-${self.block_nav_global()}<%def name="block_nav_global()"></%def>
+{% block block_nav_global %}
+{% endblock %}
