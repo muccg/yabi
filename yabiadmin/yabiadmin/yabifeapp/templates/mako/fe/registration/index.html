@@ -1,13 +1,13 @@
-<%inherit file="base.html"/>
+{% extends "base.html" %}
+{% load pytag %}
+{% block header %}
+    <link rel="stylesheet" type="text/css" href="{% py h.url('/static/css/registration/registration.css') %}" />
+    <link rel="stylesheet" type="text/css" href="{% py h.url('/static/css/registration/index.css') %}" />
 
-<%def name="header()">
-    <link rel="stylesheet" type="text/css" href="${h.url('/static/css/registration/registration.css')}" />
-    <link rel="stylesheet" type="text/css" href="${h.url('/static/css/registration/index.css')}" />
+    <script type="text/javascript" src="{% py h.url('/static/javascript/registration.js') %}"></script>
+{% endblock %}
 
-    <script type="text/javascript" src="${h.url('/static/javascript/registration.js')}"></script>
-</%def>
-
-<%def name="body()">
+{% block body %}
     <h1>Request an Account</h1>
 
     <p class="help">
@@ -16,7 +16,7 @@
     </p>
 
     <form method="post">
-        ${form.as_p()}
+        {{ form.as_p  }}
 
         <p class="help">
             By requesting an account on Yabi, you agree to the
@@ -24,7 +24,7 @@
         </p>
 
         <div id="tos">
-        ${terms}
+        {{terms}}
         </div>
 
         <p class="submit-row">
@@ -32,5 +32,5 @@
         </p>
     </form>
 
-    ${self.copyright()}
-</%def>
+
+{% endblock %}
