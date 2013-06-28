@@ -178,23 +178,42 @@ function dropdb() {
 
 function stopprocess() {
     set +e
-    if test -e $1; then
-        kill `cat $1`
+    if ! test -e $1; then
+        echo "PID file '$1' doesn't exist"
+        return
+    fi
+    local pid=`cat $1`
+    local pgrpid=""
+    if test "kill_process_group" == "$2"; then
+        pgrpid=$(ps -o pgrp= --pid $pid)
+    fi
+    
+    if test -z $pgrpid; then
+        kill $pid
+    else
+        kill -- -$pgrpid
     fi
     
     for I in {1..10} 
     do
-        if test -e $1; then
+        if ps --pid $pid > /dev/null; then
             sleep 1
         else
             break
         fi
     done
 
-    if test -e $1; then
-        kill -9 `cat $1`
-        rm -f $1
+    if ps --pid $pid > /dev/null; then
+        if test -z $pgrpid; then
+            kill -9 $pid
+        else
+            kill -9 -- -$pgrpid
+        fi
         echo "Forced stop"
+    fi
+
+    if test -e $1; then
+        rm -f $1
     fi
     set -e
 }
@@ -202,7 +221,7 @@ function stopprocess() {
 
 function stopyabiadmin() {
     echo "Stopping Yabi admin"
-    stopprocess yabiadmin-develop.pid
+    stopprocess yabiadmin-develop.pid "kill_process_group"
 }
 
 
@@ -279,7 +298,9 @@ function startyabiadmin() {
     virt_yabiadmin/bin/django-admin.py syncdb --noinput --settings=${DJANGO_SETTINGS_MODULE} 1> syncdb-develop.log
     virt_yabiadmin/bin/django-admin.py migrate --settings=${DJANGO_SETTINGS_MODULE} 1> migrate-develop.log
     virt_yabiadmin/bin/django-admin.py collectstatic --noinput --settings=${DJANGO_SETTINGS_MODULE} 1> collectstatic-develop.log
-    virt_yabiadmin/bin/gunicorn_django -b 0.0.0.0:${PORT} --pid=yabiadmin-develop.pid --log-file=yabiadmin-develop.log --daemon ${DJANGO_SETTINGS_MODULE} -t 300 -w 5
+    #virt_yabiadmin/bin/gunicorn_django -b 0.0.0.0:${PORT} --pid=yabiadmin-develop.pid --log-file=yabiadmin-develop.log --daemon ${DJANGO_SETTINGS_MODULE} -t 300 -w 5
+    virt_yabiadmin/bin/django-admin.py runserver_plus 0.0.0.0:${PORT} --settings=${DJANGO_SETTINGS_MODULE} > yabiadmin-develop.log 2>&1 &
+    echo $! > yabiadmin-develop.pid
 }
 
 
