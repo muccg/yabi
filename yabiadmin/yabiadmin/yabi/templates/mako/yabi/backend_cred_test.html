@@ -1,13 +1,14 @@
-<%inherit file="admin/base_site_mako.html"/>
-<%namespace name="admin" module="django.contrib.admin.templatetags.adminmedia" />
+{% extends "admin/base_site_mako.html" %}
+{load pytag %}
+
+{% if not is_popup %}
+{% block block_breadcrumbs %}
+<div class="breadcrumbs"><a href="{{root_path}}">{{"Home" |trans }}</a> &rsaquo; Backend Credential Test</div>
+{% endblock %}
+{% endif %}
 
 
-% if not is_popup:
-${self.block_breadcrumbs()}<%def name="block_breadcrumbs()"><div class="breadcrumbs"><a href="${root_path}">${trans("Home")}</a> &rsaquo; Backend Credential Test</div></%def>
-% endif
-
-
-${self.block_content()}<%def name="block_content()">
+{% block block_content %}
 <div id="content-main">
 
 
@@ -23,22 +24,22 @@ ${self.block_content()}<%def name="block_content()">
 
     </tr>
     <tr>
-    <td>${bec.credential.description}</td>
-    <td>${bec.credential.user.name}</td>
-    <td>${bec.credential.username}</td>
-    <td>${bec.homedir}</td>
-    <td>${bec.visible}</td>
-    <td>${bec.uri}</td>
-    <td>${bec.homedir_uri}</td>
-    <td>${bec.backend_cred_edit_link()}</td>
+    <td>{{bec.credential.description}}</td>
+    <td>{{bec.credential.user.name}}</td>
+    <td>{{bec.credential.username}</td>
+    <td>{{bec.homedir}}</td>
+    <td>{{bec.visible}}</td>
+    <td>{{bec.uri}}</td>
+    <td>{{bec.homedir_uri}}</td>
+    <td>{% py bec.backend_cred_edit_link() %}</td>
     </tr>
 
 </table>
 
 <br/><br/>
 
-%if not error:
-<h3>File listing of ${bec.homedir_uri}</h3>
+{% if not error %}
+<h3>File listing of {{bec.homedir_uri}}</h3>
 <table>
     <tr>
         <th>Filename</th>
@@ -46,39 +47,39 @@ ${self.block_content()}<%def name="block_content()">
         <th>Date</th>
     </tr>
 
-    % for key in listing:
-          % for (filename, size, date, link) in listing[key]['files']:
+    {% for key in listing %}
+          {% for (filename, size, date, link) in listing[key]['files'] %}
           <tr>
-            <td>${filename}</td>
-            <td>${size}</td>
-            <td>${date}</td>
+            <td>{{filename}}</td>
+            <td>{{size}}</td>
+            <td>{{date}}</td>
           </tr>
-          % endfor
-    % endfor
+          {% endfor %}
+    {% endfor %}
 </table>
 
 <br/><br/>
 
 
-<h3>Directory listing of ${bec.homedir_uri}</h3>
+<h3>Directory listing of {{bec.homedir_uri}}</h3>
 <table>
     <tr>
         <th>Directory</th>
         <th>Date</th>
     </tr>
 
-    % for key in listing:
-          % for (directory, size, date, link) in listing[key]['directories']:
+    {% for key in listing %}
+          {% for (directory, size, date, link) in listing[key]['directories'] %}
           <tr>
-            <td>${directory}</td>
-            <td>${date}</td>
+            <td>{{directory}}</td>
+            <td>{{date}}</td>
           </tr>
-          % endfor
-    % endfor
+          {% endfor %}
+    {% endfor %}
 </table>
-% else:
-<h3 class="error">${error}</h3>
-<p>${error_help}</p>
-% endif
+{% else %}
+<h3 class="error">{{error}}</h3>
+<p>{{error_help}}</p>
+{% endif %}
 </div>
-</%def>
+{% endblock %}
