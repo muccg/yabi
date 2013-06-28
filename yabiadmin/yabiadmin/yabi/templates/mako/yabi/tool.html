@@ -1,19 +1,21 @@
-<%inherit file="admin/base_site_mako.html"/>
-<%namespace name="admin" module="django.contrib.admin.templatetags.adminmedia" />
+{% extends "admin/base_site_mako.html" %}
 
 
-% if not is_popup:
-${self.block_breadcrumbs()}<%def name="block_breadcrumbs()"><div class="breadcrumbs"><a href="${root_path}">${trans("Home")}</a> &rsaquo; Tool ${tool.display_name}</div></%def>
-% endif
+
+{% if not is_popup %}
+{% block block_breadcrumbs %}
+<div class="breadcrumbs"><a href="{{root_path}}">{{"Home" |trans}}</a> &rsaquo; Tool {{tool.display_name}}</div>
+{% endblock %}
+{% endif %}
 
 
-${self.block_content()}<%def name="block_content()">
+[% block block_content %}
 <div id="content-main">
 
-<h1>${tool.display_name}
-% if not tool.enabled:
+<h1>{{tool.display_name}}
+{% if not tool.enabled %}
  (DISABLED)
-% endif
+{% endif %}
  - Tool Definition</h1>
 
 <br/>
@@ -27,12 +29,12 @@ ${self.block_content()}<%def name="block_content()">
         <th colspan="2"></th>
     </tr>
     <tr>
-        <td>${tool.name}</td>
-        <td>${tool.display_name}</td>
-        <td>${tool.backend}</td>
-        <td>${tool.path}</td>
-        <td><a href="${edit_url}">Edit</a></td>
-        <td><a href="${json_url}">View JSON</a></td>
+        <td>{{tool.name}}</td>
+        <td>{{tool.display_name}}</td>
+        <td>{{tool.backend}}</td>
+        <td>{{tool.path}}</td>
+        <td><a href="{{edit_url}}">Edit</a></td>
+        <td><a href="{{json_url}}">View JSON</a></td>
     </tr>
 </table>
 
@@ -42,11 +44,11 @@ ${self.block_content()}<%def name="block_content()">
     <tr>
         <th>Accepts Input</th>
         <td>
-% if tool.accepts_input:
+{% if tool.accepts_input %}
 Yes
-% else:
+{% else %}
 No
-% endif
+{% endif %}
 </td>
     </tr>
 
@@ -57,45 +59,45 @@ No
 <br/>
 
 <h2>Description</h2>
-<p>${tool.description}</p>
+<p>{{tool.description}}</p>
 
 <br/>
 
 
-% if tool.tooloutputextension_set.all:
+{% if tool.tooloutputextension_set.all %}
 
 <h2>Tool output extensions</h2>
 <ul>
 
-% for outext in tool.tooloutputextension_set.all():
+{% for outext in tool.tooloutputextension_set.all() %}
 
-    <li>${outext.file_extension.pattern}
-% if outext.must_exist or outext.must_be_larger_than:
+    <li>{{outext.file_extension.pattern}}
+{% if outext.must_exist or outext.must_be_larger_than %}
  - 
-% endif
+{% endif %}
 
 
-% if outext.must_exist:
+{% if outext.must_exist %}
 must exist
-% endif
+{% endif %}
 
 
-% if outext.must_exist and outext.must_be_larger_than:
+{% if outext.must_exist and outext.must_be_larger_than %}
  and 
-% endif
+{% endif %}
 
 
-% if outext.must_be_larger_than:
-must be larger than ${outext.must_be_larger_than}
-% endif
+{% if outext.must_be_larger_than %}
+must be larger than {{outext.must_be_larger_than}}
+{% endif %}
 
     </li>
 
-% endfor
+{% endfor %}
 
 </ul>
 
-% endif
+{% endif %}
 
 
 <br/>
@@ -109,25 +111,25 @@ must be larger than ${outext.must_be_larger_than}
         <th>Properties</th>
     </tr>
 
-% for param in tool_params:
+{% for param in tool_params %}
 
     <tr>
-        <td>${param.rank}</td>
-        <td>${param.switch}</td>
-        <td>${param.switch_use}</td>
+        <td>{{param.rank}}</td>
+        <td>{{param.switch}}</td>
+        <td>{{param.switch_use}}</td>
         <td><ul>
 
-% for prop in param.properties:
+{% for prop in param.properties %}
 
-        <li>${prop}</li>
+        <li>{{prop}}</li>
 
-% endfor
+{% endfor %}
 
         </ul></td>
     </tr>
 
-% endfor
+{% endfor %}
 </table>
 
 </div>
-</%def>
+{% endblock %}
