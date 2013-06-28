@@ -1,44 +1,40 @@
-<%! import django.core.exceptions %>
-
-<%def name="tabs()">
-    <div id="yabi-tabs">
-        <a href="${h.url('/jobs')}" id="yabi-tabs-jobs" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">jobs</a>
-        <a href="${h.url('/design')}" id="yabi-tabs-design" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">design</a>
-        <a href="${h.url('/files')}" id="yabi-tabs-files" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">files</a>
-% try:
-%    if request.user.get_profile().has_account_tab():
-        <a href="${h.url('/account')}" id="yabi-tabs-account" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">account</a>
-%    endif
-% except django.core.exceptions.ObjectDoesNotExist:
-        
-% endtry
-
-% if request.user.is_staff:
-        <a href="${h.url('/admin')}" id="yabi-tabs-admin" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">admin</a>
-% endif
-
-    </div>
-</%def>
-
-<%def name="bodyhd()">
+{% load pytag %}
+{% block bodyhd %}
     <div id="hd">
         <p>
-            <img src="${h.url('/static/images/yabi-logo.png')}" alt="Yabi-logo" height="60" width="198" />
+            <img src="{% py h.url('/static/images/yabi-logo.png') %}" alt="Yabi-logo" height="60" width="198" />
         </p>
 
         <div id="yabi-message"></div>
 
-        ${self.tabs()}
+        {% block tabs %}
+        <div id="yabi-tabs">
+        <a href="{% py h.url('/jobs') %}" id="yabi-tabs-jobs" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">jobs</a>
+        <a href="{% py h.url('/design') %}" id="yabi-tabs-design" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">design</a>
+        <a href="{% py h.url('/files') %}" id="yabi-tabs-files" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">files</a>
+        <!-- TODO alter method call to detect ObjectDoesNotExist error pre-template rendering in Django.Old Mako lines
+        kept for reference -->
+        {% if request.user.get_profile.has_account_tab %}
+        <a href="{% py h.url('/account') %}" id="yabi-tabs-account" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">account</a>
+       {% endif %}
+       <!--   TODO refactor view to cater for : except django.core.exceptions.ObjectDoesNotExist -->
+
+
+        {% if request.user.is_staff %}
+        <a href="{% py h.url('/admin') %}" id="yabi-tabs-admin" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">admin</a>
+        {% endif %}
+        </div>
+        {% endblock %}
 
         <div id="userinfo">
-            <a href="${h.url('/logout')}" class="fakeButton">log out ${request.user.username}</a>        
+            <a href="{% py h.url('/logout') %}" class="fakeButton">log out {{request.user.username}}</a>
         </div>
     </div>
-</%def>
+{% endblock %}
 
-<%def name="copyright()">
+{% block copyright %}
     <div class="copyright">&copy; 2006, 2012 CCG, Murdoch University</div>
-</%def>
+{% endblock %}
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" class="no-js">
@@ -52,9 +48,9 @@
 
 <title>Y A B I</title>
 
-<link rel="shortcut icon" href="${h.url('favicon.ico')}" />
+<link rel="shortcut icon" href="<% py h.url('favicon.ico') %}" />
 
-<script src="${h.url('/static/javascript/lib/yui-3.5.1/build/yui/yui-min.js')}"></script>
+<script src="<% py h.url('/static/javascript/lib/yui-3.5.1/build/yui/yui-min.js') %}"></script>
 
 <script type="text/javascript">
     YAHOO = {
@@ -62,24 +58,24 @@
             widget: {}
         } 
     };
-    var appURL = "${h.url('/')}";
+    var appURL = "{% py h.url('/') %}";
 
     // Set this to false if you want to get each YUI JS file on its own
     // for debugging YUI itself.
     YAHOO.ccgyabi.combineJS = true;
 
 % if request:
-    YAHOO.ccgyabi.username = '${request.user.username}';
+    YAHOO.ccgyabi.username = '{{request.user.username}}';
 % endif
     YUI_config = {
         groups: {
             yui2: {
-                base: '${h.url("/static/javascript/lib/yui-2in3/dist/2.9.0/build/")}',
+                base: '{% py h.url("/static/javascript/lib/yui-2in3/dist/2.9.0/build/") %}',
 
                 // If you have a combo service, you can configure that as well
                 combine: YAHOO.ccgyabi.combineJS,
                 // comboBase: 'http://myserver.com/combo?',
-                comboBase: '${h.url("/djamboloader/yui2in3_2_9_0/combo?")}',
+                comboBase: '{% py h.url("/djamboloader/yui2in3_2_9_0/combo?") %}',
                 root: '',
                 // root: '/2in3/build/',
 
@@ -97,7 +93,7 @@
             }
         },
         combine: YAHOO.ccgyabi.combineJS,
-        comboBase: '${h.url("/djamboloader/yui_3_5_1/combo?")}',
+        comboBase: '{% py h.url("/djamboloader/yui_3_5_1/combo?") %}',
         root: ''
     };
 
@@ -113,40 +109,45 @@
     );
 </script>
 
-<script type="text/javascript" src="${h.url('/static/javascript/lib/fbd/fbd.js')}"></script>
-<script type="text/javascript" src="${h.url('/static/javascript/lib/swfupload-2.5.0b3/swfupload.js')}"></script>
+<script type="text/javascript" src="{% py h.url('/static/javascript/lib/fbd/fbd.js') %}"></script>
+<script type="text/javascript" src="{% py h.url('/static/javascript/lib/swfupload-2.5.0b3/swfupload.js') %}"></script>
 
-<script type="text/javascript" src="${h.url('/static/javascript/lib/modernizr-1.7.min.js')}"></script>
+<script type="text/javascript" src="{% py h.url('/static/javascript/lib/modernizr-1.7.min.js') %}"></script>
 
-<script type="text/javascript" src="${h.url('/static/javascript/YabiCommon.js?20110208')}"></script>
-<script type="text/javascript" src="${h.url('/static/javascript/YabiAcceptedExtensionList.js?20110111')}"></script>
-<script type="text/javascript" src="${h.url('/static/javascript/YabiFileSelector.js?20110110')}"></script>
-<script type="text/javascript" src="${h.url('/static/javascript/YabiJob.js?20110427')}"></script>
-<script type="text/javascript" src="${h.url('/static/javascript/YabiJobFileValue.js?20101201')}"></script>
-<script type="text/javascript" src="${h.url('/static/javascript/YabiJobParam.js?20110111')}"></script>
-<script type="text/javascript" src="${h.url('/static/javascript/YabiSimpleFileValue.js?20101201')}"></script>
-<script type="text/javascript" src="${h.url('/static/javascript/YabiTool.js?20110107')}"></script>
-<script type="text/javascript" src="${h.url('/static/javascript/YabiToolCollection.js?20110428')}"></script>
-<script type="text/javascript" src="${h.url('/static/javascript/YabiWorkflow.js?20110428')}"></script>
-<script type="text/javascript" src="${h.url('/static/javascript/YabiWorkflowCollection.js?20110428')}"></script>
-<script type="text/javascript" src="${h.url('/static/javascript/YabiWorkflowProxy.js?20110208')}"></script>
+<script type="text/javascript" src="{% py h.url('/static/javascript/YabiCommon.js?20110208') %}"></script>
+<script type="text/javascript" src="{% py h.url('/static/javascript/YabiAcceptedExtensionList.js?20110111') %}"></script>
+<script type="text/javascript" src="{% py h.url('/static/javascript/YabiFileSelector.js?20110110') %}"></script>
+<script type="text/javascript" src="{% py h.url('/static/javascript/YabiJob.js?20110427') %}"></script>
+<script type="text/javascript" src="{% py h.url('/static/javascript/YabiJobFileValue.js?20101201') %}"></script>
+<script type="text/javascript" src="{% py h.url('/static/javascript/YabiJobParam.js?20110111') %}"></script>
+<script type="text/javascript" src="{% py h.url('/static/javascript/YabiSimpleFileValue.js?20101201') %}"></script>
+<script type="text/javascript" src="{% py h.url('/static/javascript/YabiTool.js?20110107') %}"></script>
+<script type="text/javascript" src="{% py h.url('/static/javascript/YabiToolCollection.js?20110428') %}"></script>
+<script type="text/javascript" src="{% py h.url('/static/javascript/YabiWorkflow.js?20110428') %}"></script>
+<script type="text/javascript" src="{% py h.url('/static/javascript/YabiWorkflowCollection.js?20110428') %}"></script>
+<script type="text/javascript" src="{% py h.url('/static/javascript/YabiWorkflowProxy.js?20110208') %}"></script>
 
-<script type="text/javascript" src="${h.url('/static/javascript/widget/event.js?20110105')}"></script>
-<script type="text/javascript" src="${h.url('/static/javascript/widget/loading.js?20101201')}"></script>
-<script type="text/javascript" src="${h.url('/static/javascript/widget/message.js?20101213')}"></script>
-<script type="text/javascript" src="${h.url('/static/javascript/widget/upload.js?20110110')}"></script>
+<script type="text/javascript" src="{% py h.url('/static/javascript/widget/event.js?20110105') %}"></script>
+<script type="text/javascript" src="{% py h.url('/static/javascript/widget/loading.js?20101201') %}"></script>
+<script type="text/javascript" src="{% py h.url('/static/javascript/widget/message.js?20101213') %}"></script>
+<script type="text/javascript" src="{% py h.url('/static/javascript/widget/upload.js?20110110') %}"></script>
 
 
-<link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/main.css?20101201')}" />
-<link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/reset-fonts-grids-min.css')}" />
-<link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/file-selector.css?20110107')}" />
-<link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/yabi.css?20110427')}" />
+<link rel="stylesheet" type="text/css" media="screen" href="{% py h.url('/static/css/main.css?20101201') %}" />
+<link rel="stylesheet" type="text/css" media="screen" href="{% py h.url('/static/css/reset-fonts-grids-min.css') %}" />
+<link rel="stylesheet" type="text/css" media="screen" href="{% py h.url('/static/css/file-selector.css?20110107') %}" />
+<link rel="stylesheet" type="text/css" media="screen" href="{% py h.url('/static/css/yabi.css?20110427') %}" />
 
-<link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/widget/message.css?20101201')}" />
+<link rel="stylesheet" type="text/css" media="screen" href="{% py h.url('/static/css/widget/message.css?20101201') %}" />
 
-${ next.header() }
+<!-- confirm this is right   replacement of next.header()-->
+<!-- only 2 level inheritance hierarchy this will work -->
+{% block header %}
+{% endblock %}
+
 </head>
 <body>
-${ next.body() }
+{% block body %}
+{% endblock %}
 </body>
 </html>
