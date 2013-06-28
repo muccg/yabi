@@ -1,19 +1,20 @@
-<%inherit file="admin/base_site_mako.html"/>
-<%namespace name="admin" module="django.contrib.admin.templatetags.adminmedia" />
+{% extends "admin/base_site_mako.html" %}
 
 
-% if not is_popup:
-${self.block_breadcrumbs()}<%def name="block_breadcrumbs()"><div class="breadcrumbs"><a href="${root_path}">${trans("Home")}</a> &rsaquo; ${breadcrumb}</div></%def>
-% endif
+{% if not is_popup %}
+{% block block_breadcrumbs %}
+<div class="breadcrumbs"><a href="{{root_path}}">{{"Home" | trans }}</a> &rsaquo; {{breadcrumb}}</div>
+{% endblock %}
+{% endif %}
 
 
-${self.block_content()}<%def name="block_content()">
+{% block block_content %}
 <div id="content-main">
 
-<form enctype="multipart/form-data" method="post" action="${action_path}">
-${ form.as_p() }
+<form enctype="multipart/form-data" method="post" action="{{action_path}}">
+{{ form.as_p() }}
 <input type="submit" value="Submit" />
 </form>
 
 </div>
-</%def>
+{% endblock %}
