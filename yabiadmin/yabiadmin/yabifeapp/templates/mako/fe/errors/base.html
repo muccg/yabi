@@ -1,17 +1,17 @@
-<%def name="title()">YABI</%def>
+{% block title %}YABI{% endblock %}
 
-<%def name="message()">
+{% block message %}
     <h1>Oops!</h1>
 
     There was an error processing your request. Please try again later, or send
     an email to
     <a href="mailto:web@ccg.murdoch.edu.au">web@ccg.murdoch.edu.au</a>.
-</%def>
+{% endblock %}
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
     <head>
-        <title>${self.title()}</title>
+        <title>{% block title %}{% endblock %}</title>
 
         <style type="text/css">
             body {
@@ -37,7 +37,7 @@
     </head>
     <body>
         <div class="message">
-            ${self.message()}
+            {% block message %}{% endblock %}
         </div>
     </body>
 </html>
