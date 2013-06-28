@@ -1,3 +1,4 @@
+{% load pytag %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -8,14 +9,14 @@
     <meta name="author" content="Centre for Comparative Genomics, Murdoch University.">
 
     <!-- styles -->
-    <link href="${h.url('/static/css/bootstrap.min.css')}" rel="stylesheet">
+    <link href="{% py h.url('/static/css/bootstrap.min.css')%}" rel="stylesheet">
     <style type="text/css">
       body {
         padding-top: 10px;
         padding-bottom: 40px;
       }
     </style>
-    <link href="${h.url('/static/css/bootstrap-responsive.min.css')}" rel="stylesheet">
+    <link href="{% py h.url('/static/css/bootstrap-responsive.min.css') %}" rel="stylesheet">
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -23,7 +24,7 @@
     <![endif]-->
 
     <!-- fav icon -->
-    <link rel="shortcut icon" href="${h.url('/static/images/favicon.ico')}">
+    <link rel="shortcut icon" href="{% py h.url('/static/images/favicon.ico') %}">
   </head>
 
   <body>
@@ -41,7 +42,7 @@
             %endif
 
 
-          <p><a href="${h.url('/')}"><img src="${h.url('/static/images/yabi-logo.png')}" alt="Yabi-logo" height="60" width="198" /></a></p>
+          <p><a href="{% py h.url('/') %}"><img src="{% py h.url('/static/images/yabi-logo.png' %}" alt="Yabi-logo" height="60" width="198" /></a></p>
           <h1>Workflows made easy.</h1>
           <p></p>
           <p><strong>Citation:</strong>
@@ -55,7 +56,7 @@
           <noscript>
             <br/><br/>
                 <strong>YABI requires JavaScript to be enabled. Please check your browser
-                settings and <a href="${h.url("/login")}">try logging in again</a>.</strong>
+                settings and <a href="{% py h.url("/login") %}">try logging in again</a>.</strong>
           </noscript>
 
           <hr class="soften">
@@ -83,42 +84,42 @@
             <!-- Carousel items -->
             <div class="carousel-inner">
 
-                  <div class="active item"><a href="http://www.youtube.com/watch?v=zLCNAqn8nFE&hd=1" target="_blank"><img src="${h.url('/static/images/screenshot_thumbs/parallel_analysis.png')}" alt="" /></a>
+                  <div class="active item"><a href="http://www.youtube.com/watch?v=zLCNAqn8nFE&hd=1" target="_blank"><img src="{% py h.url('/static/images/screenshot_thumbs/parallel_analysis.png') %}" alt="" /></a>
                       <div class="carousel-caption">
                         <h4>Parallel Analysis of input files</h4>
                         <p>Although the interface is linear in nature it is possible to achieve parallel branching over many files.</p>
                       </div>
                   </div>
 
-                  <div class="item"><a href="http://www.youtube.com/watch?v=7AEJ6eocy7Y" target="_blank"><img src="${h.url('/static/images/screenshot_thumbs/blast_clustalw2.png')}" alt="" /></a>
+                  <div class="item"><a href="http://www.youtube.com/watch?v=7AEJ6eocy7Y" target="_blank"><img src="{% py h.url('/static/images/screenshot_thumbs/blast_clustalw2.png') %}" alt="" /></a>
                       <div class="carousel-caption">
                         <h4>Running blast and clustalw2</h4>
                         <p>Combining different tools and executions backends into a workflow is easy.</p>
                       </div>
                   </div>
 
-                  <div class="item"><a href="http://www.youtube.com/watch?v=3JNVrl9h-4E&hd=1" target="_blank"><img src="${h.url('/static/images/screenshot_thumbs/blast.png')}" alt="" /></a>
+                  <div class="item"><a href="http://www.youtube.com/watch?v=3JNVrl9h-4E&hd=1" target="_blank"><img src="{% py h.url('/static/images/screenshot_thumbs/blast.png') %}" alt="" /></a>
                       <div class="carousel-caption">
                         <h4>Running Blast at EBI</h4>
                         <p>Tools can be configured to run jobs via web services, such as those offered by the European Bioinformatics Institute.</p>
                       </div>
                   </div>
 
-                  <div class="item"><a href="http://www.youtube.com/watch?v=8_gD7rwBsJM&hd=1" target="_blank"><img src="${h.url('/static/images/screenshot_thumbs/peptide_prophet.png')}" alt="" /></a>
+                  <div class="item"><a href="http://www.youtube.com/watch?v=8_gD7rwBsJM&hd=1" target="_blank"><img src="{% py h.url('/static/images/screenshot_thumbs/peptide_prophet.png') %}" alt="" /></a>
                       <div class="carousel-caption">
                         <h4>Peptide Prophet</h4>
                         <p>Tools from other domains such as proteomics are just as easily incorporated.</p>
                       </div>
                   </div>
 
-                  <div class="item"><a href="http://www.youtube.com/watch?v=UYtXWkQBDKA" target="_blank"><img src="${h.url('/static/images/screenshot_thumbs/seadas.png')}" alt="" /></a>
+                  <div class="item"><a href="http://www.youtube.com/watch?v=UYtXWkQBDKA" target="_blank"><img src="{% py h.url('/static/images/screenshot_thumbs/seadas.png') %}" alt="" /></a>
                       <div class="carousel-caption">
                         <h4>Remote sensing using SEADAS</h4>
                         <p>Workflows from a wide variety of scientific domains can be run within Yabi.</p>
                       </div>
                   </div>
 
-                  <div class="item"><a href="http://www.youtube.com/watch?v=g67J_4rJjRk" target="_blank"><img src="${h.url('/static/images/screenshot_thumbs/wheat_annotation.png')}" alt="" /></a>
+                  <div class="item"><a href="http://www.youtube.com/watch?v=g67J_4rJjRk" target="_blank"><img src="{% py h.url('/static/images/screenshot_thumbs/wheat_annotation.png') %}" alt="" /></a>
                       <div class="carousel-caption">
                         <h4>Wheat annotation</h4>
                         <p>Workflow to aide in the annotation of the wheat genome.</p>
@@ -140,19 +141,19 @@
 
         <!-- login area -->
         <div class="span3">
-          <form class="well form-inline" enctype="multipart/form-data" method="post" action="${ h.url("/login") }">
+          <form class="well form-inline" enctype="multipart/form-data" method="post" action="{% py h.url("/login") %}">
             <fieldset
-              %if error:
+              {% if error %}
                  class="control-group error"
-                %endif
+              {% endif %}
             >
               <input type="text" name="username" class="input-small" placeholder="Username" />
               <input type="password" name="password" class="input-small" placeholder="Password" />
 
               <p>
-              %if error:
-                <span class="help-inline">${error}</span><br/>
-              %endif
+              {% if error %}
+                <span class="help-inline">{{error}}</span><br/>
+              {% endif %}
               </p>
 
               </fieldset>
@@ -170,12 +171,12 @@
 
           <p>
             <br/>
-            <a href="mailto:yabi@ccg.murdoch.edu.au"><img src="${h.url('/static/images/contactus.png')}" alt="Contact us" height="41" width="157" /></a>
+            <a href="mailto:yabi@ccg.murdoch.edu.au"><img src="{% py h.url('/static/images/contactus.png') %}" alt="Contact us" height="41" width="157" /></a>
           </p>
 
           <p>
             <br/>
-            <a href="http://code.google.com/p/yabi/"><img src="${h.url('/static/images/googlecode.png')}" alt="Hosted on Google Code" height="40" width="161" /></a>
+            <a href="http://code.google.com/p/yabi/"><img src="{% py h.url('/static/images/googlecode.png') %}" alt="Hosted on Google Code" height="40" width="161" /></a>
           </p>
 
           <p>
@@ -184,7 +185,7 @@
 
           <p>
             <br/>
-            <a href="http://twitter.com/#!/yabiproject"><img src="${h.url('/static/images/twitter.png')}" alt="Follow us on Twitter" height="36" width="100" /></a><p>
+            <a href="http://twitter.com/#!/yabiproject"><img src="{% py h.url('/static/images/twitter.png') %}" alt="Follow us on Twitter" height="36" width="100" /></a><p>
           </p>
 
 
@@ -213,10 +214,10 @@
     <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="${h.url('/static/javascript/lib/jquery.js')}"></script>
-    <script src="${h.url('/static/javascript/lib/bootstrap-carousel.js')}"></script>
+    <script src="{% py h.url('/static/javascript/lib/jquery.js') %}"></script>
+    <script src="{% py h.url('/static/javascript/lib/bootstrap-carousel.js') %}"></script>
     <script>$('.myCarousel').carousel({interval: 10000})</script>
-    <script src="${h.url('/static/javascript/testimonial.js')}"></script>
+    <script src="{% py h.url('/static/javascript/testimonial.js') %}"></script>
 
     <!-- testimonials -->
     <script>
