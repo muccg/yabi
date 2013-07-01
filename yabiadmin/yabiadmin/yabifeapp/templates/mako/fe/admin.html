@@ -24,8 +24,8 @@
 {% block body %}
     <div id="doc3" class="yui-t1" style="height:100%;background-color:#fff;">
         <div id="yabi-files-mode">
-           {# fix this #}
-            {% block bodyhd %}
+          {% block bodyhd %}
+            {{ block.super }}
             {% endblock %}
 
             <iframe src="{% py h.url('/admin-pane') %}" id="admin-iframe" width="100%" height="1" frameborder="0" onLoad="calcHeight();" scrolling="no">
