@@ -22,9 +22,7 @@ class PyNode(template.Node):
 
 @register.tag(name='py')
 def do_code(parser, token):
-    print '%s' % token
     parts = token.split_contents()
-    print parts
     code = " ".join(parts[1:])
     return PyNode(code)
 
