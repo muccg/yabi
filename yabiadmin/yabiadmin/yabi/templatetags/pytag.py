@@ -7,11 +7,25 @@ class PyNode(template.Node):
         self.code = code
 
     def render(self, context):
-        return eval(self.code, context)
+        dict_index = len(context.dicts) - 1
+        try:
+            result = eval(self.code, context.dicts[dict_index])
+            return result
+        # Inline with Django Filter behaviour
+        except NameError:
+            return ""
+        except AttributeError:
+            return ""
+        except Exception, ex:
+            raise ex
+
 
 @register.tag(name='py')
 def do_code(parser, token):
-    code = token[2:]  # skip "py"
+    print '%s' % token
+    parts = token.split_contents()
+    print parts
+    code = " ".join(parts[1:])
     return PyNode(code)
 
 

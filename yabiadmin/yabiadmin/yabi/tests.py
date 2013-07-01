@@ -152,3 +152,49 @@ class WsMenuTest(unittest.TestCase):
         assert response.status_code == 302, "Couldn't log in to FE"
 
 
+class TestPytag(unittest.TestCase):
+    def test_pytag(self):
+        from django.template import Template, Context
+        import yabiadmin.yabi.templatetags.pytag  # force registration of custom tag
+        class Thing:
+            def some_method(self, s, n):
+                return "some result %s %d" % (s, n)
+
+        obj = Thing()
+        t = Template('{% load pytag %}HELLO{% py         obj.some_method(   "xyz",   100) %}GOODbye')
+        c = Context({"obj": obj})
+        result = t._render(c)
+        self.assertEquals(result, u"HELLOsome result xyz 100GOODbye")
+
+    def test_pytag_unbound_method_returns_empty(self):
+        from django.template import Template, Context
+        import yabiadmin.yabi.templatetags.pytag  # force registration of custom tag
+        class Thing:
+            def some_method(self, s, n):
+                return "some result %s %d" % (s, n)
+        # We bury NameError and AttributeError , propagate anything else
+        obj = Thing()
+        # AttributeError
+        t = Template('{% load pytag %}HELLO{% py         obj.some_missing_method(   "xyz",   100) %}GOODbye')
+        c = Context({"obj": obj})
+        result = t._render(c)
+        self.assertEquals(result, u"HELLOGOODbye")
+
+    def test_pytag_unbound_name_returns_empty(self):
+        from django.template import Template, Context
+        import yabiadmin.yabi.templatetags.pytag  # force registration of custom tag
+        class Thing:
+            def some_method(self, s, n):
+                return "some result %s %d" % (s, n)
+        # We bury NameError and AttributeError , propagate anything else
+        obj = Thing()
+        # AttributeError
+        t = Template('{% load pytag %}HELLO{% py    imunbound  %}GOODbye')
+        c = Context({"obj": obj})
+        result = t._render(c)
+        self.assertEquals(result, u"HELLOGOODbye")
+
+
+
+
+
