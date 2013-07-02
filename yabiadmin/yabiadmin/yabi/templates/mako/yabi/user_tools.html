@@ -1,8 +1,9 @@
 {% extends "admin/base_site_mako.html" %}
-
-{% if not is_popup %}
+{% load pytag %}
+{% load is_false %}
+{% if is_popup|is_false  %}
 {% block block_breadcrumbs %}
-<div class="breadcrumbs"><a href="{{root_path}}">{{"Home"|trans}}</a> &rsaquo; User tools</div>
+<div class="breadcrumbs"><a href="{{root_path}}">{% py trans("Home")%}</a> &rsaquo; User tools</div>
 {% endblock %}
 {% endif %}
 
@@ -21,7 +22,7 @@ User {{tooluser.name}} has the following tools:
 
     <li>{{tool_group.name}}</li>
 
-{% for tool in tool_group.sorted_tools() %}
+{% for tool in tool_group.sorted_tools %}
 
     <ul>
         <li>{{tool}}</li>
