@@ -1,9 +1,10 @@
 {% extends "admin/base_site_mako.html" %}
+{% load pytag %}
+{% load is_false %}
 
-
-{% if not is_popup %}
+{% if is_popup|is_false %}
 {% block block_breadcrumbs %}
-<div class="breadcrumbs"><a href="{{root_path}}">{{"Home" | trans }}</a> &rsaquo; {{breadcrumb}}</div>
+<div class="breadcrumbs"><a href="{{root_path}}">{% py trans("Home")  %}</a> &rsaquo; {{breadcrumb}}</div>
 {% endblock %}
 {% endif %}
 
@@ -12,7 +13,7 @@
 <div id="content-main">
 
 <form enctype="multipart/form-data" method="post" action="{{action_path}}">
-{{ form.as_p() }}
+{{ form.as_p }}
 <input type="submit" value="Submit" />
 </form>
 
