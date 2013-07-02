@@ -1,11 +1,11 @@
-{% extends "admin/base_site_mako.html %}
+{% extends "admin/base_site_mako.html" %}
 {% load pytag %}
+{% load is_false %}
 
 
-
-{% if not is_popup %}
+{% if is_popup|is_false %}
 {% block block_breadcrumbs %}
-<div class="breadcrumbs"><a href="{{root_path}}">{{"Home"|trans}}</a> &rsaquo; User Backends</div>
+<div class="breadcrumbs"><a href="{{root_path}}">{% py trans("Home")%}</a> &rsaquo; User Backends</div>
 {% endblock %}
 {% endif %}
 
