@@ -212,6 +212,100 @@ class TestImportTag(unittest.TestCase):
         self.assertTrue('foobar' in c.dicts[-1] and result == u"startHello Fred Bloggsfinish")
 
 
+class TemplateSyntaxLoadTest(unittest.TestCase):
+
+    def test_each_converted_template_has_no_syntax_errors(self):
+        import os
+        from django.template import TemplateSyntaxError, TemplateEncodingError, TemplateDoesNotExist
+        from django.template.loader import find_template
+        from django.conf import settings
+
+        converted_templates = ["yabiadmin/yabi/templates/admin/base_mako.html",
+                                    "yabiadmin/yabi/templates/mako/admin/base_site_mako.html",
+                                    "yabiadmin/yabi/templates/mako/yabi/add.html",
+                                    "yabiadmin/yabi/templates/mako/yabi/admin_status.html",
+                                    "yabiadmin/yabi/templates/mako/yabi/backend.html",
+                                    "yabiadmin/yabi/templates/mako/yabi/backend_cred_test.html",
+                                    "yabiadmin/yabi/templates/mako/yabi/crypt_password.html",
+                                    "yabiadmin/yabi/templates/mako/yabi/ldap_not_in_use.html",
+                                    "yabiadmin/yabi/templates/mako/yabi/ldap_users.html",
+                                    "yabiadmin/yabi/templates/mako/yabi/tool.html",
+                                    "yabiadmin/yabi/templates/mako/yabi/user_backends.html",
+                                    "yabiadmin/yabi/templates/mako/yabi/user_tools.html",
+                                    "yabiadmin/yabi/templates/mako/404.html",
+                                    "yabiadmin/yabi/templates/mako/500.html",
+                                    "yabiadmin/yabiengine/templates/mako/yabiengine/workflow_summary.html",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/email/noprofile.txt"
+                                    "yabiadmin/yabifeapp/templates/mako/fe/errors/401.html",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/errors/403.html",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/errors/404.html",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/errors/500.html",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/errors/base.html",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/errors/preview-unavailable.html",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/registration/email/approve.txt",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/registration/email/approved.txt",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/registration/email/confirm.txt",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/registration/email/denied.txt",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/registration/confirm.html",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/registration/index.html",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/registration/success.html",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/account.html",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/admin.html",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/base.html",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/design.html",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/files.html",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/jobs.html",
+                                    "yabiadmin/yabifeapp/templates/mako/fe/login.html",
+                                    ]
+        invalid_syntax = []
+        encoding_errors = []
+        other_errors = []
+        missing = []
+        good = []
+        total = len(converted_templates)
+
+        errors = 0
+
+        for converted_template in converted_templates:
+
+            template_path = os.path.join(settings.WEBAPP_ROOT, converted_template)
+
+            try:
+                t, origin = find_template(template_path)
+                good.append(template_path)
+            except TemplateSyntaxError:
+                invalid_syntax.append(converted_template)
+            except TemplateEncodingError:
+                encoding_errors.append(converted_template)
+            except TemplateDoesNotExist:
+                missing.append(converted_template)
+            except Exception, ex:
+                other_errors.append("%s - %s" % (converted_template, ex))
+
+
+        for template in invalid_syntax:
+            print "Template %s has invalid syntax" % template
+            errors += 1
+        for template in encoding_errors:
+            print "Template %s has encoding errors" % template
+            errors += 1
+        for (template, error) in other_errors:
+            print "Template %s has other errors: %s" % (template, error)
+            errors += 1
+
+        failure_rate = 100.0 * errors / total
+
+        print "Template Conversion: %s failure rate" % failure_rate
+        for good_template in good:
+            print "%s is OK" % good_template
+
+        self.assertTrue(len(invalid_syntax) == 0, "Template syntax errors: %s" % invalid_syntax)
+        self.assertTrue(len(encoding_errors) == 0, "Template encoding errors: %s" % encoding_errors)
+        self.assertTrue(len(other_errors) == 0, "Template errors: %s" % other_errors)
+        self.assertTrue(len(missing) == 0, "Some templates are missing: %s" % missing)
+        self.assertEquals(errors,0,"Template Conversion: %s failure rate" % 100.0 * errors / total )
+
+
 
 
 
