@@ -1,5 +1,8 @@
 {% extends "base.html" %}
-{% import from json import dumps %}  <!-- TODO write this import custom tag -->
+{% load pytag %}
+{% load importtag %}
+
+{% import json %}
 
 {% block header %}
     <% profile = request.user.get_profile() %>
@@ -28,7 +31,7 @@
             var credential = false;
 {% endif %}
 
-            account = new YabiAccount({% py dumps(request.user.username) %}, userOption, credential);
+            account = new YabiAccount({% py json.dumps(request.user.username) %}, userOption, credential);
         }
     </script>
 {% endblock %}
@@ -188,4 +191,4 @@
     {% block copyright %}
      {{ block.super }}
     {% endblock %}
-</%def>
+{% endblock %}
