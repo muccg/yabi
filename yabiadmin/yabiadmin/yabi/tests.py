@@ -273,7 +273,8 @@ class TemplateSyntaxLoadTest(unittest.TestCase):
             try:
                 t, origin = find_template(template_path)
                 good.append(template_path)
-            except TemplateSyntaxError:
+            except TemplateSyntaxError, tse:
+                print "%s %s" % (converted_template, tse.message)
                 invalid_syntax.append(converted_template)
             except TemplateEncodingError:
                 encoding_errors.append(converted_template)
@@ -304,6 +305,36 @@ class TemplateSyntaxLoadTest(unittest.TestCase):
         self.assertTrue(len(other_errors) == 0, "Template errors: %s" % other_errors)
         self.assertTrue(len(missing) == 0, "Some templates are missing: %s" % missing)
         self.assertEquals(errors,0,"Template Conversion: %s failure rate" % 100.0 * errors / total )
+
+
+class TestOrderByCustomFilter(unittest.TestCase):
+    def test_order_by_filter_generator(self):
+        from yabiadmin.yabi.models import FileExtension  # could be anything
+
+        from django.template import Template, Context
+
+        exe_file = FileExtension.objects.create(pattern="zzzz")
+        blah_file = FileExtension.objects.create(pattern="mmmm")
+        jpg_file = FileExtension.objects.create(pattern="aaaa")
+
+        all_extensions = FileExtension.objects.all()  # a generator
+
+
+        test_template = """
+        {% load order_by %}
+        {% for fe in all_extensions|order_by:"pattern" %}
+          {{fe.pattern}}
+        {% endfor %}
+        """
+
+        context = Context({"all_extensions": all_extensions})
+        result = Template(test_template).render(context)
+        # template contains other extensions so we just locate the ones we created and ensure they're in the order in
+        # the template we expect.
+        index_of_aaaa = result.find("aaaa")
+        index_of_mmmm = result.find('mmmm')
+        index_of_zzzz = result.find('zzzz')
+        self.assertTrue(index_of_zzzz > index_of_mmmm > index_of_aaaa, "order by failed")
 
 
 

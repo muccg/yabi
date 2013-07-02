@@ -1,11 +1,14 @@
-{% load pytag %}
 {% extends "admin/base_site_mako.html" %}
+{% load pytag %}
+{% load is_false %}
+{% load order_by %}
+{% load importtag %}
 
-{% if not is_popup %}
+{% if is_popup|is_false %}
 {% block block_breadcrumbs %}
-<div class="breadcrumbs"><a href="{{root_path}}">{{"Home"|trans}}</a> &rsaquo; Backend {{w.name}}</div>
+<div class="breadcrumbs"><a href="{{root_path}}">{% py trans("Home")%}</a> &rsaquo; Backend {{w.name}}</div>
 {% endblock %}
-% endif
+{% endif %}
 
 
 {% block block_content %}
@@ -41,7 +44,7 @@
           <th>Command</th>
           <th/>
     </tr>
-{% for job in w.job_set.all().order_by('order') %}
+{% for job in jobs_by_order %}
     <tr>
           <td>{{job.order}}</td>
           <td><font color="{% py job.get_status_colour(job.status) %}">{{job.status}}</font></td>
@@ -51,11 +54,11 @@
           <td>{% py {job.edit_link() %}</td>
     </tr>
 
-    {% if job.task_set.all() %}
-    {% for task in job.task_set.all() %}
+    {% if job.task_set.all %}
+    {% for task in job.task_set.all %}
     <tr>
           <td/>
-          <td><font color="${task.get_status_colour(task.status)}">{{task.status}}</font></td>
+          <td><font color="{% py task.get_status_colour(task.status) %}">{{task.status}}</font></td>
           <td colspan="3">
             Task: {{task.command}}
           </td>
@@ -70,7 +73,7 @@
 
     </tr>
 
-    {% for stagein in task.stagein_set.all().order_by("order") %}
+    {% for stagein in task.stagein_set.all|order_by:"order" %}
 
     <tr>
     <td/>

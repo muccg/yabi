@@ -402,9 +402,12 @@ def workflow_summary(request, workflow_id):
     logger.debug('')
 
     workflow = get_object_or_404(EngineWorkflow, pk=workflow_id)
-   
+
+    jobs_by_order = workflow.job_set.all().order_by('order')
+
     return render_to_response('yabiengine/workflow_summary.html', {
         'w': workflow,
+        'jobs_by_order': jobs_by_order,
         'user': request.user,
         'title': 'Workflow Summary',
         'root_path': urlresolvers.reverse('admin:index'),
