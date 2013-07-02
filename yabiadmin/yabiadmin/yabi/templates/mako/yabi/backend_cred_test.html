@@ -1,9 +1,11 @@
 {% extends "admin/base_site_mako.html" %}
-{load pytag %}
+{% load pytag %}
+{% load is_false %}
+{% load dynamic_lookups %}
 
-{% if not is_popup %}
+{% if is_popup|is_false %}
 {% block block_breadcrumbs %}
-<div class="breadcrumbs"><a href="{{root_path}}">{{"Home" |trans }}</a> &rsaquo; Backend Credential Test</div>
+<div class="breadcrumbs"><a href="{{root_path}}">{% py trans("Home")%}</a> &rsaquo; Backend Credential Test</div>
 {% endblock %}
 {% endif %}
 
@@ -38,7 +40,7 @@
 
 <br/><br/>
 
-{% if not error %}
+{% if error|is_false %}
 <h3>File listing of {{bec.homedir_uri}}</h3>
 <table>
     <tr>
@@ -48,11 +50,12 @@
     </tr>
 
     {% for key in listing %}
-          {% for (filename, size, date, link) in listing[key]['files'] %}
+          {# item tuple = (filename,size,date,link ) #}
+          {% for item  in listing|lookup:key|lookup:'files' %}
           <tr>
-            <td>{{filename}}</td>
-            <td>{{size}}</td>
-            <td>{{date}}</td>
+            <td>{{item.0}}</td>
+            <td>{{item.1}}</td>
+            <td>{{item.2}}</td>
           </tr>
           {% endfor %}
     {% endfor %}
@@ -69,10 +72,11 @@
     </tr>
 
     {% for key in listing %}
-          {% for (directory, size, date, link) in listing[key]['directories'] %}
+           {# item tuple is (directory, size, date, link) #}
+          {% for item  in listing|lookup:key|lookup:'directories' %}
           <tr>
-            <td>{{directory}}</td>
-            <td>{{date}}</td>
+            <td>{{item.0}}</td>
+            <td>{{item.1}}</td>
           </tr>
           {% endfor %}
     {% endfor %}
