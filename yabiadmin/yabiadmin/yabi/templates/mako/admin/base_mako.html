@@ -1,3 +1,4 @@
+{% load pytag %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="{{LANGUAGE_CODE}}" xml:lang="{{LANGUAGE_CODE}}"
 >
@@ -16,7 +17,7 @@
 <link rel="stylesheet" type="text/css" href="{% block block_stylesheet_rtl %}{{settings.ADMIN_MEDIA_PREFIX}}css/rtl.css{% endblock %}" />
 {% endif %}
 
-<script type="text/javascript">window.__admin_media_prefix__ = "{{ settings.ADMIN_MEDIA_PREFIX | escapejs) }}";</script>
+<script type="text/javascript">window.__admin_media_prefix__ = "{{ settings.ADMIN_MEDIA_PREFIX | escapejs }}";</script>
 
 
 {% block block_extrastyle %}{% endblock %}
@@ -49,7 +50,7 @@ popup
     </div>
     <!-- END Header -->
     {% block block_breadcrumbs %}
-<div class="breadcrumbs"><a href="{{root_path}}">{{'Home' | trans }}</a>
+<div class="breadcrumbs"><a href="{{root_path}}">{% py trans('Home') %}</a>
 
 
 {% if title %}
