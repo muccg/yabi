@@ -1,19 +1,20 @@
 {% extends "admin/base_site_mako.html" %}
+{% load pytag %}
+{% load is_false %}
 
 
-
-{% if not is_popup %}
+{% if is_popup|is_false %}
 {% block block_breadcrumbs %}
-<div class="breadcrumbs"><a href="{{root_path}}">{{"Home" |trans}}</a> &rsaquo; Tool {{tool.display_name}}</div>
+<div class="breadcrumbs"><a href="{{root_path}}">{py trans("Home")%}</a> &rsaquo; Tool {{tool.display_name}}</div>
 {% endblock %}
 {% endif %}
 
 
-[% block block_content %}
+{% block block_content %}
 <div id="content-main">
 
 <h1>{{tool.display_name}}
-{% if not tool.enabled %}
+{% if tool.enabled|is_false %}
  (DISABLED)
 {% endif %}
  - Tool Definition</h1>
@@ -69,7 +70,7 @@ No
 <h2>Tool output extensions</h2>
 <ul>
 
-{% for outext in tool.tooloutputextension_set.all() %}
+{% for outext in tool.tooloutputextension_set.all %}
 
     <li>{{outext.file_extension.pattern}}
 {% if outext.must_exist or outext.must_be_larger_than %}
