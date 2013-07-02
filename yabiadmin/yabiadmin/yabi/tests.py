@@ -195,6 +195,25 @@ class TestPytag(unittest.TestCase):
         self.assertEquals(result, u"HELLOGOODbye")
 
 
+class TestImportTag(unittest.TestCase):
+    def test_importtag_populates_context(self):
+        from django.template import Template, Context
+        import yabiadmin.yabi.templatetags.importtag # register import tag
+        import yabiadmin.yabi.templatetags.pytag     # register py tag
+        # We use py tag also to illustrate usage of import
+        import types
+        m = types.ModuleType("foobar", "a test module")
+        m.__dict__.update({"greet": lambda s: "Hello %s" % s})
+        t = Template("{% load importtag %}{% load pytag %}start{% import foobar %}{% py foobar.greet('Fred Bloggs')%}finish")
+        c = Context({"n": 100})  # Nb. no foobar module
+        import sys
+        sys.modules['foobar'] = m
+        result = t._render(c)
+        self.assertTrue('foobar' in c.dicts[-1] and result == u"startHello Fred Bloggsfinish")
+
+
+
+
 
 
 
