@@ -1,10 +1,11 @@
 {% extends "admin/base_site_mako.html" %}
+{% load pytag %}
+{% load as_sorted %}
 
-
-{% block block_title %}{{title}} | {{'Yabi site admin'|trans }}{% endblock %}
+{% block block_title %}{{title}} | {% py trans('Yabi site admin') %}{% endblock %}
 
 {% block block_branding %}
-<h1 id="site-name">{{'Yabi Administration'|trans }}</h1>
+<h1 id="site-name">{% py trans('Yabi Administration') }}</h1>
 {% endblock %}
 
 {% block block_content %}
@@ -44,7 +45,7 @@
 <th>Value</th>
 </tr>
 
-{% for key in sorted(settings.keys()) %}
+{% for key in settings.keys|as_sorted %}
 <tr>
 <td>{{key}}</td>
 <td>{% py settings[key] %}</td>
