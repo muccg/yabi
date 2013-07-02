@@ -1,11 +1,13 @@
 {% extends "admin/base_site_mako.html" %}
 {% load pytag %}
+{% load is_false %}
 
-{% if not is_popup %}
+{% if is_popup|is_false %}
 {% block block_breadcrumbs %}
-<div class="breadcrumbs"><a href="{{root_path}}">{{"Home"|trans }}</a> &rsaquo; Backend {{backend.name}}</div>
-{% endif %}
+<div class="breadcrumbs"><a href="{{root_path}}">{% py trans("Home") %}</a> &rsaquo; Backend {{backend.name}}</div>
 {% endblock %}
+{% endif %}
+
 
 
 {% block block_content %}
@@ -49,7 +51,7 @@
         <th>Home Dir Uri</th>
 
     </tr>
-    {% for bec in backend.backendcredential_set.all() %}
+    {% for bec in backend.backendcredential_set.all    %}
     <tr>
     <td>{{bec.credential.description}}</td>
     <td>{{bec.credential.user.name}}</td>
