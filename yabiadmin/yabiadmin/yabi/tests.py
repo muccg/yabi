@@ -166,33 +166,6 @@ class TestPytag(unittest.TestCase):
         result = t._render(c)
         self.assertEquals(result, u"HELLOsome result xyz 100GOODbye")
 
-    def test_pytag_unbound_method_returns_empty(self):
-        from django.template import Template, Context
-        import yabiadmin.yabi.templatetags.pytag  # force registration of custom tag
-        class Thing:
-            def some_method(self, s, n):
-                return "some result %s %d" % (s, n)
-        # We bury NameError and AttributeError , propagate anything else
-        obj = Thing()
-        # AttributeError
-        t = Template('{% load pytag %}HELLO{% py         obj.some_missing_method(   "xyz",   100) %}GOODbye')
-        c = Context({"obj": obj})
-        result = t._render(c)
-        self.assertEquals(result, u"HELLOGOODbye")
-
-    def test_pytag_unbound_name_returns_empty(self):
-        from django.template import Template, Context
-        import yabiadmin.yabi.templatetags.pytag  # force registration of custom tag
-        class Thing:
-            def some_method(self, s, n):
-                return "some result %s %d" % (s, n)
-        # We bury NameError and AttributeError , propagate anything else
-        obj = Thing()
-        # AttributeError
-        t = Template('{% load pytag %}HELLO{% py    imunbound  %}GOODbye')
-        c = Context({"obj": obj})
-        result = t._render(c)
-        self.assertEquals(result, u"HELLOGOODbye")
 
 
 class TestImportTag(unittest.TestCase):
@@ -220,7 +193,7 @@ class TemplateSyntaxLoadTest(unittest.TestCase):
         from django.template.loader import find_template
         from django.conf import settings
 
-        converted_templates = ["yabiadmin/yabi/templates/admin/base_mako.html",
+        converted_templates = [     "yabiadmin/yabi/templates/mako/admin/base_mako.html",
                                     "yabiadmin/yabi/templates/mako/admin/base_site_mako.html",
                                     "yabiadmin/yabi/templates/mako/yabi/add.html",
                                     "yabiadmin/yabi/templates/mako/yabi/admin_status.html",
@@ -235,7 +208,7 @@ class TemplateSyntaxLoadTest(unittest.TestCase):
                                     "yabiadmin/yabi/templates/mako/404.html",
                                     "yabiadmin/yabi/templates/mako/500.html",
                                     "yabiadmin/yabiengine/templates/mako/yabiengine/workflow_summary.html",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/email/noprofile.txt"
+                                    "yabiadmin/yabifeapp/templates/mako/fe/email/noprofile.txt",
                                     "yabiadmin/yabifeapp/templates/mako/fe/errors/401.html",
                                     "yabiadmin/yabifeapp/templates/mako/fe/errors/403.html",
                                     "yabiadmin/yabifeapp/templates/mako/fe/errors/404.html",
@@ -304,7 +277,6 @@ class TemplateSyntaxLoadTest(unittest.TestCase):
         self.assertTrue(len(encoding_errors) == 0, "Template encoding errors: %s" % encoding_errors)
         self.assertTrue(len(other_errors) == 0, "Template errors: %s" % other_errors)
         self.assertTrue(len(missing) == 0, "Some templates are missing: %s" % missing)
-        self.assertEquals(errors,0,"Template Conversion: %s failure rate" % 100.0 * errors / total )
 
 
 class TestOrderByCustomFilter(unittest.TestCase):

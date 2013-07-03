@@ -7,17 +7,11 @@ class PyNode(template.Node):
         self.code = code
 
     def render(self, context):
-        dict_index = len(context.dicts) - 1
-        try:
-            result = eval(self.code, context.dicts[dict_index])
-            return result
-        # Inline with Django Filter behaviour
-        except NameError:
-            return ""
-        except AttributeError:
-            return ""
-        except Exception, ex:
-            raise ex
+        code_context = {}
+        for context_dict in context.dicts:
+            code_context.update(context_dict)
+        return eval(self.code, code_context)
+
 
 
 @register.tag(name='py')
