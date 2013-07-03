@@ -35,11 +35,11 @@
         <div class="span8">
           <div style="text-align:center">
 
-            %if show_dev_warning:
+            {% if show_dev_warning %}
             <div>
               <strong style="color:red;">Warning: Development settings in use.</strong><br/>Change your settings files before deployment to production servers.
             </div>
-            %endif
+            {% endif %}
 
 
           <p><a href="{% py h.url('/') %}"><img src="{% py h.url('/static/images/yabi-logo.png') %}" alt="Yabi-logo" height="60" width="198" /></a></p>
