@@ -112,7 +112,7 @@
 
 {% block body %}
     <div id="doc3" class="yui-t1">
-        <div id="yabi-design-mode">\
+        <div id="yabi-design-mode">
             {% block bodyhd %}
             {{ block.super }}
             {% endblock %}
@@ -129,5 +129,5 @@
         </div>
     </div>
   
-    <!-- copy right here - this cant be a block in Django -->
+    {% include "fe/copyright_include.html" %}
 {% endblock %}
