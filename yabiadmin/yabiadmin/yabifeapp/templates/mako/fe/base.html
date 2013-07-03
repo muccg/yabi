@@ -1,4 +1,5 @@
 {% load pytag %}
+
 {% block bodyhd %}
     <div id="hd">
         <p>
@@ -32,6 +33,7 @@
     </div>
 {% endblock %}
 
+
 {% block copyright %}
     <div class="copyright">&copy; 2006, 2012 CCG, Murdoch University</div>
 {% endblock %}
@@ -48,9 +50,9 @@
 
 <title>Y A B I</title>
 
-<link rel="shortcut icon" href="<% py h.url('favicon.ico') %}" />
+<link rel="shortcut icon" href="{% py h.url('favicon.ico') %}" />
 
-<script src="<% py h.url('/static/javascript/lib/yui-3.5.1/build/yui/yui-min.js') %}"></script>
+<script src="{% py h.url('/static/javascript/lib/yui-3.5.1/build/yui/yui-min.js') %}"></script>
 
 <script type="text/javascript">
     YAHOO = {
@@ -64,9 +66,9 @@
     // for debugging YUI itself.
     YAHOO.ccgyabi.combineJS = true;
 
-% if request:
+{% if request %}
     YAHOO.ccgyabi.username = '{{request.user.username}}';
-% endif
+{% endif %}
     YUI_config = {
         groups: {
             yui2: {
