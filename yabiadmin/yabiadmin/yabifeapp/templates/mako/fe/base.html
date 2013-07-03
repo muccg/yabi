@@ -1,43 +1,4 @@
 {% load pytag %}
-
-{% block bodyhd %}
-    <div id="hd">
-        <p>
-            <img src="{% py h.url('/static/images/yabi-logo.png') %}" alt="Yabi-logo" height="60" width="198" />
-        </p>
-
-        <div id="yabi-message"></div>
-
-        {% block tabs %}
-        <div id="yabi-tabs">
-        <a href="{% py h.url('/jobs') %}" id="yabi-tabs-jobs" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">jobs</a>
-        <a href="{% py h.url('/design') %}" id="yabi-tabs-design" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">design</a>
-        <a href="{% py h.url('/files') %}" id="yabi-tabs-files" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">files</a>
-        <!-- TODO alter method call to detect ObjectDoesNotExist error pre-template rendering in Django.Old Mako lines
-        kept for reference -->
-        {% if request.user.get_profile.has_account_tab %}
-        <a href="{% py h.url('/account') %}" id="yabi-tabs-account" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">account</a>
-       {% endif %}
-       <!--   TODO refactor view to cater for : except django.core.exceptions.ObjectDoesNotExist -->
-
-
-        {% if request.user.is_staff %}
-        <a href="{% py h.url('/admin') %}" id="yabi-tabs-admin" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">admin</a>
-        {% endif %}
-        </div>
-        {% endblock %}
-
-        <div id="userinfo">
-            <a href="{% py h.url('/logout') %}" class="fakeButton">log out {{request.user.username}}</a>
-        </div>
-    </div>
-{% endblock %}
-
-
-{% block copyright %}
-    <div class="copyright">&copy; 2006, 2012 CCG, Murdoch University</div>
-{% endblock %}
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" class="no-js">
 <head>
@@ -142,14 +103,41 @@
 
 <link rel="stylesheet" type="text/css" media="screen" href="{% py h.url('/static/css/widget/message.css?20101201') %}" />
 
-<!-- confirm this is right   replacement of next.header()-->
-<!-- only 2 level inheritance hierarchy this will work -->
 {% block header %}
 {% endblock %}
 
 </head>
 <body>
 {% block body %}
+{% block bodyhd %}
+    <div id="hd">
+        <p>
+            <img src="{% py h.url('/static/images/yabi-logo.png') %}" alt="Yabi-logo" height="60" width="198" />
+        </p>
+
+        <div id="yabi-message"></div>
+
+        {% block tabs %}
+        <div id="yabi-tabs">
+        <a href="{% py h.url('/jobs') %}" id="yabi-tabs-jobs" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">jobs</a>
+        <a href="{% py h.url('/design') %}" id="yabi-tabs-design" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">design</a>
+        <a href="{% py h.url('/files') %}" id="yabi-tabs-files" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">files</a>
+        {% if request.user.get_profile.has_account_tab %}
+        <a href="{% py h.url('/account') %}" id="yabi-tabs-account" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">account</a>
+       {% endif %}
+
+        {% if request.user.is_staff %}
+        <a href="{% py h.url('/admin') %}" id="yabi-tabs-admin" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">admin</a>
+        {% endif %}
+        </div>
+        {% endblock %}
+
+        <div id="userinfo">
+            <a href="{% py h.url('/logout') %}" class="fakeButton">log out {{request.user.username}}</a>
+        </div>
+    </div>
+{% endblock %}
+
 {% endblock %}
 </body>
 </html>
