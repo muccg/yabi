@@ -108,6 +108,31 @@ def create_ssh_backend():
     )
     models.BackendCredential.objects.create(backend=ssh_backend, credential=cred, homedir='')
 
+def create_sftp_backend():
+    sys.stderr.write('Creating sftp backend\n')
+    sftp_backend = models.Backend.objects.create(
+        name='SFTP Backend', 
+        scheme='sftp', 
+        hostname='localhost', 
+        path='/', 
+        submission='${command}'
+    )
+    cred = models.Credential.objects.create( 
+        description='Test SFTP Credential', 
+        username=os.environ.get('USER'),
+        password='',
+        cert='cert',
+        key=private_key,
+        user=models.User.objects.get(name='demo')
+    )
+    models.BackendCredential.objects.create(
+        backend=sftp_backend, 
+        credential=cred, 
+        homedir=os.path.expanduser("~")[1:] + '/',
+        visible = True,
+    )
+
+
 def create_backend(scheme="ssh", hostname="localhost.localdomain",path="/",submission="${command}"):
     sys.stderr.write('Creating {0} backend\n'.format(scheme))
     backend = models.Backend.objects.create(name='Test %s Backend'%scheme.upper(), scheme=scheme, hostname=hostname, path=path, submission=submission)
