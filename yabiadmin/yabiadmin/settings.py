@@ -386,20 +386,15 @@ LOGGING = {
         }
     },
     'loggers': {
+        '': {
+            'handlers':['console', 'mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
         'django': {
             'handlers':['null'],
             'propagate': True,
             'level':'INFO',
-        },
-        'django.request': {
-            'handlers': ['console', 'mail_admins'],
-            'level': 'ERROR',
-            'propagate': False,
-        },
-        'djamboloader': {
-            'handlers': ['console'],
-            'level': 'ERROR',
-            'propagate': False,
         },
         'yabiadmin': {
             'handlers': ['console', 'mail_admins'],
