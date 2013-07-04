@@ -38,9 +38,10 @@ from yabiadmin.yabi import models
 from django.utils import simplejson as json
 
 from yabiadmin.yabistoreapp import db
-from yabiadmin.yabiengine.tasks import build_workflow
+from yabiadmin.backend.celerytasks import build_workflow
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
-from yabiadmin.yabiengine import backendhelper
+#from yabiadmin.yabiengine import backendhelper
+from yabiadmin.backend import backend
 
 from yabiadmin.decorators import authentication_required
 
@@ -71,6 +72,7 @@ def is_stagein_required(request):
     return HttpResponse(json.dumps(resp))
 
 @authentication_required
+@transaction.commit_manually
 def submitjob(request):
     logger.debug(request.user.username)
 
@@ -87,15 +89,20 @@ def submitjob(request):
         workflow = EngineWorkflow(name=workflow_dict["name"], user=user, json=workflow_json, original_json=workflow_json)
         workflow.save()
 
-        # always commit transactions before sending tasks depending on state from the current transaction http://docs.celeryq.org/en/latest/userguide/tasks.html
+        # always commit transactions before sending tasks depending on state from the current transaction 
+        # http://docs.celeryq.org/en/latest/userguide/tasks.html
         transaction.commit()
+        resp = {'success': True, 'workflow_id':workflow.id}
 
         # trigger a build via celery
         build_workflow(workflow_id=workflow.id)
-
-        resp = {'success': True, 'workflow_id':workflow.id}
     except YabiError, e:
+        # TODO error returns success???
         resp = {'success': False, 'msg': str(e)}
+        transaction.rollback()
+    except Exception, exc:
+        transaction.rollback()
+        raise
 
     return HttpResponse(json.dumps(resp))
 
@@ -151,9 +158,9 @@ def createstageindir(request):
   
         stageindir = '%s%s/' % (user.default_stagein,guid)
        
-        backendhelper.mkdir(user.name, stageindir)
+        backend.mkdir(user.name, stageindir)
         for d in dirs_to_create:
-            backendhelper.mkdir(user.name, stageindir + '/' + d)
+            backend.mkdir(user.name, stageindir + '/' + d)
          
         resp = {'success': True, 'uri':stageindir}
     except StandardError, e:
