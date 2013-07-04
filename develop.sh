@@ -26,7 +26,7 @@ fi
 
 function usage() {
     echo ""
-    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|ci_remote_build|ci_rpm_publish|ci_remote_destroy|ci_authorized_keys) (yabiadmin|yabibe|yabish)"
+    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|ci_remote_build|ci_rpm_publish|ci_remote_destroy|ci_authorized_keys) (yabiadmin|celery|yabish)"
     echo ""
 }
 
@@ -133,6 +133,10 @@ function nosetests() {
     #virt_yabiadmin/bin/nosetests -v -w tests tests.sshpbspro_tests
     #virt_yabiadmin/bin/nosetests -v -w tests tests.sshtorque_tests
     #virt_yabiadmin/bin/nosetests -v -w tests tests.backend_execution_restriction_tests
+    #virt_yabiadmin/bin/nosetests -v -w tests tests.localfs_connection_tests
+    #virt_yabiadmin/bin/nosetests -v -w tests tests.rewalk_tests
+    #virt_yabiadmin/bin/nosetests -v -w tests tests.file_transfer_tests
+    #virt_yabiadmin/bin/nosetests -v -w tests tests.ssh_tests
 }
 
 
@@ -182,7 +186,7 @@ function stopprocess() {
         kill `cat $1`
     fi
     
-    for I in {1..10} 
+    for I in {1..30} 
     do
         if test -e $1; then
             sleep 1
@@ -212,25 +216,18 @@ function stopceleryd() {
 }
 
 
-function stopyabibe() {
-    echo "Stopping Yabi backend"
-    stopprocess yabibe-develop.pid
-}
-
-
 function stopyabi() {
     case ${PROJECT} in
     'yabiadmin')
         stopyabiadmin
         stopceleryd
         ;;
-    'yabibe')
-        stopyabibe
+    'celery')
+        stopceleryd
         ;;
     '')
         stopyabiadmin
         stopceleryd
-        stopyabibe
         ;;
     *)
         echo "Cannot stop ${PROJECT}"
@@ -252,13 +249,6 @@ function installyabi() {
     ../virt_yabiadmin/bin/pip-crate install ${PIP_OPTS} -e .
     popd
     virt_yabiadmin/bin/pip-crate install ${PIP_OPTS} ${MODULES}
-
-    echo "Install yabibe"
-    virtualenv virt_yabibe
-    pushd yabibe
-    ../virt_yabibe/bin/pip install ${PIP_OPTS} pip-crate
-    ../virt_yabibe/bin/pip-crate install ${PIP_OPTS} -e .
-    popd
 
     echo "Install yabish"
     pushd yabish
@@ -292,7 +282,7 @@ function startceleryd() {
     echo "Launch celeryd (message queue)"
     CELERY_CONFIG_MODULE="settings"
     CELERYD_CHDIR=`pwd`
-    CELERYD_OPTS="--logfile=celeryd-develop.log --pidfile=celeryd-develop.pid"
+    CELERYD_OPTS="-E --loglevel=INFO --logfile=celeryd-develop.log --pidfile=celeryd-develop.pid"
     CELERY_LOADER="django"
     DJANGO_PROJECT_DIR="${CELERYD_CHDIR}"
     PROJECT_DIRECTORY="${CELERYD_CHDIR}"
@@ -301,22 +291,22 @@ function startceleryd() {
 }
 
 
-function startyabibe() {
-    if test -e yabibe-develop.pid; then
-        echo "pid file exists for yabibe"
-        return
-    fi
+function celeryevents() {
+    echo "Launch something to monitor celeryd (message queue)"
+    echo "It will not work with database transports :/"
+    DJANGO_PROJECT_DIR="${CELERYD_CHDIR}"
+    PROJECT_DIRECTORY="${CELERYD_CHDIR}"
+    export CELERY_CONFIG_MODULE DJANGO_SETTINGS_MODULE DJANGO_PROJECT_DIR CELERY_LOADER CELERY_CHDIR PROJECT_DIRECTORY CELERYD_CHDIR
+    echo ${DJANGO_SETTINGS_MODULE}
 
-    echo "Launch yabibe (backend)"
-    mkdir -p ~/.yabi/run/backend/certificates
-    mkdir -p ~/.yabi/run/backend/fifos
-    mkdir -p ~/.yabi/run/backend/tasklets
-    mkdir -p ~/.yabi/run/backend/temp
+    # You need to be using rabbitMQ for this to work
+    virt_yabiadmin/bin/django-admin.py celery flower --settings=${DJANGO_SETTINGS_MODULE}
 
-    virt_yabibe/bin/yabibe --pidfile=yabibe-develop.pid
-
-    # give backend a chance to start before tests start to hit it
-    sleep 2
+    # other monitors I looked at
+    #virt_yabiadmin/bin/django-admin.py celeryd --help --settings=${DJANGO_SETTINGS_MODULE}
+    #virt_yabiadmin/bin/django-admin.py djcelerymon 9000 --settings=${DJANGO_SETTINGS_MODULE}
+    #virt_yabiadmin/bin/django-admin.py celerycam --settings=${DJANGO_SETTINGS_MODULE}
+    #virt_yabiadmin/bin/django-admin.py celery events --settings=${DJANGO_SETTINGS_MODULE}
 }
 
 
@@ -326,13 +316,12 @@ function startyabi() {
         startyabiadmin
         startceleryd
         ;;
-    'yabibe')
-        startyabibe
+    'celery')
+        startceleryd
         ;;
     '')
         startyabiadmin
         startceleryd
-        startyabibe
         ;;
     *)
         echo "Cannot start ${PROJECT}"
@@ -345,11 +334,6 @@ function startyabi() {
 
 function yabistatus() {
     set +e
-    if test -e yabibe-develop.pid; then
-        ps -f -p `cat yabibe-develop.pid`
-    else 
-        echo "No pid file for yabibe"
-    fi
     if test -e yabiadmin-develop.pid; then
         ps -f -p `cat yabiadmin-develop.pid`
     else 
@@ -366,23 +350,20 @@ function yabistatus() {
 
 function pythonversion() {
     virt_yabiadmin/bin/python -V
-    virt_yabibe/bin/python -V
 }
 
 
 function pipfreeze() {
     echo 'yabiadmin pip freeze'
     virt_yabiadmin/bin/pip freeze
-    echo '' 
-    echo 'yabibe pip freeze' 
-    virt_yabibe/bin/pip freeze
 }
 
 
 function yabiclean() {
-    echo "rm -rf ~/.yabi/run/backend"
-    rm -rf ~/.yabi/run/backend
-    find yabibe -name "*.pyc" -exec rm -rf {} \;
+    echo "rm -rf ~/yabi_data_dir/*"
+    rm -rf ~/yabi_data_dir/*
+    rm -rf yabiadmin/scratch/*
+    rm -rf yabiadmin/scratch/.uploads
     find yabiadmin -name "*.pyc" -exec rm -rf {} \;
     find yabish -name "*.pyc" -exec rm -rf {} \;
     find tests -name "*.pyc" -exec rm -rf {} \;
@@ -391,7 +372,6 @@ function yabiclean() {
 
 function yabipurge() {
     rm -rf virt_yabiadmin
-    rm -rf virt_yabibe
     rm -f *.log
 }
 
@@ -416,7 +396,7 @@ function yabiadmintest() {
 
 
 case ${PROJECT} in
-'yabiadmin' | 'yabibe' | 'yabish' | '')
+'yabiadmin' | 'celery' |  'yabish' | '')
     ;;
 *)
     usage
@@ -471,6 +451,10 @@ install)
     settings
     stopyabi
     time installyabi
+    ;;
+celeryevents)
+    settings
+    celeryevents
     ;;
 ci_remote_build)
     ci_ssh_agent
