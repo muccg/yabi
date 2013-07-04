@@ -286,14 +286,18 @@ DEFAULT_CRED_CACHE_TIME = 60*60*24                   # 1 day default
 djcelery.setup_loader()
 # see http://docs.celeryproject.org/en/latest/getting-started/brokers/django.html
 BROKER_URL = 'django://'
+#BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 # see http://docs.celeryproject.org/en/latest/configuration.html
 CELERY_IGNORE_RESULT = True
 # Not found in latest docs CELERY_QUEUE_NAME = 'yabiadmin'
 # Deprecated alias CARROT_BACKEND = "django"
 # Not found in latest docs CELERYD_LOG_LEVEL = "DEBUG"
-CELERYD_CONCURRENCY = 1
-CELERYD_PREFETCH_MULTIPLIER = 1
+CELERYD_CONCURRENCY = 4
+CELERYD_PREFETCH_MULTIPLIER = 4
 CELERY_DISABLE_RATE_LIMITS = True
+# see http://docs.celeryproject.org/en/latest/configuration.html#id23
+CELERY_SEND_EVENTS = True
+CELERY_SEND_TASK_SENT_EVENT = True
 # see http://docs.celeryproject.org/en/latest/userguide/routing.html
 #CELERY_QUEUES = {
 #    CELERY_QUEUE_NAME: {
@@ -303,7 +307,7 @@ CELERY_DISABLE_RATE_LIMITS = True
 #}
 #CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
 #CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
-CELERY_IMPORTS = ("yabiadmin.yabiengine.tasks",)
+CELERY_IMPORTS = ("yabiadmin.backend.celerytasks",)
 # Not sure if this is still needed BROKER_TRANSPORT = "kombu.transport.django.Transport"
 
 
@@ -387,12 +391,12 @@ LOGGING = {
     },
     'loggers': {
         'django': {
-            'handlers':['null'],
+            'handlers':['console'],
             'propagate': True,
             'level':'INFO',
         },
         'django.request': {
-            'handlers': ['console', 'mail_admins'],
+            'handlers': ['console'],
             'level': 'ERROR',
             'propagate': False,
         },
@@ -402,8 +406,13 @@ LOGGING = {
             'propagate': False,
         },
         'yabiadmin': {
-            'handlers': ['console', 'mail_admins'],
+            'handlers': ['console'],
             'level': 'DEBUG'
+        },
+        '': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': True,
         }
     }
 }
