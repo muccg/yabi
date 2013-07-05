@@ -1,10 +1,10 @@
 {% extends "fe/base.html" %}
-{% load pytag %}
+{% load static from staticfiles %}
 {% block header %}
-    <link rel="stylesheet" type="text/css" href="{% py h.url('/static/css/registration/registration.css') %}" />
-    <link rel="stylesheet" type="text/css" href="{% py h.url('/static/css/registration/index.css') %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/registration/registration.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/registration/index.css' %}" />
 
-    <script type="text/javascript" src="{% py h.url('/static/javascript/registration.js') %}"></script>
+    <script type="text/javascript" src="{% static 'javascript/registration.js' %}"></script>
 {% endblock %}
 
 {% block body %}

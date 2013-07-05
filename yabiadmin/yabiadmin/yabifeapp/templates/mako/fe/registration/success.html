@@ -1,7 +1,7 @@
 {% extends "fe/base.html" %}
-{% load pytag %}
+{% load static from staticfiles %}
 {% block header %}
-    <link rel="stylesheet" type="text/css" href="{% py h.url('/static/css/registration/registration.css') %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/registration/registration.css' %}" />
 
     <style type="text/css">
         .email {

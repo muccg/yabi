@@ -1,8 +1,8 @@
 {% extends "fe/base.html" %}
-{% load pytag %}
+{% load static from staticfiles %}
 
 {% block header %}
-    <link rel="stylesheet" type="text/css" media="screen" href="{% py h.url('/static/css/files.css?20101201') %}" />
+    <link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/files.css' %}" />
 
     <script language="javascript">
         Y.use('*', function(Y) {

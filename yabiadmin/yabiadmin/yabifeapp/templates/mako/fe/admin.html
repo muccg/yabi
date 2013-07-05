@@ -1,8 +1,10 @@
 {% extends "fe/base.html" %}
-{% load pytag %}
+{% load static from staticfiles %}
+
+
 
 {% block header %}
-    <link rel="stylesheet" type="text/css" media="screen" href="{% py h.url('/static/css/admin.css?20101201') %}" />
+    <link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/admin.css' %}" />
 
     <script language="JavaScript">
     <!--
@@ -28,7 +30,7 @@
             {{ block.super }}
             {% endblock %}
 
-            <iframe src="{% py h.url('/admin-pane') %}" id="admin-iframe" width="100%" height="1" frameborder="0" onLoad="calcHeight();" scrolling="no">
+            <iframe src="{% static '/admin-pane' %}" id="admin-iframe" width="100%" height="1" frameborder="0" onLoad="calcHeight();" scrolling="no">
                 An iframe capable browser is required for inframe access to admin. <a href="admin-pane">Go to the full admin page instead.</a>
             </iframe>
         </div>

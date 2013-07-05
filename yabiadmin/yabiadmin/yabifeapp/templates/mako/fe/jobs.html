@@ -1,9 +1,9 @@
 {% extends "fe/base.html" %}
-{% load pytag %}
+{% load static from staticfiles %}
 {% block header %}
-    <link rel="stylesheet" type="text/css" media="screen" href="{% py h.url('/static/css/jobs.css?20110428') %}" />
+    <link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/jobs.css' %}" />
 
-    <script type="text/javascript" src="{% py h.url('/static/javascript/widget/radiolist.js?20110119') %}"></script>
+    <script type="text/javascript" src="{% static 'javascript/widget/radiolist.js' %}"></script>
 
     <script type="text/javascript">
        function onDOMReady() {

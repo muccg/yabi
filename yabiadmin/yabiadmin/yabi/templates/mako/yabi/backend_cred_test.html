@@ -5,7 +5,7 @@
 
 {% if is_popup|is_false %}
 {% block block_breadcrumbs %}
-<div class="breadcrumbs"><a href="{{root_path}}">{% py trans("Home")%}</a> &rsaquo; Backend Credential Test</div>
+<div class="breadcrumbs"><a href="{{root_path}}">Home</a> &rsaquo; Backend Credential Test</div>
 {% endblock %}
 {% endif %}
 
@@ -33,7 +33,7 @@
     <td>{{bec.visible}}</td>
     <td>{{bec.uri}}</td>
     <td>{{bec.homedir_uri}}</td>
-    <td>{% py bec.backend_cred_edit_link() %}</td>
+    <td>{{ bec.backend_cred_edit_link }}</td>
     </tr>
 
 </table>
