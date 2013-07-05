@@ -404,9 +404,15 @@ def workflow_summary(request, workflow_id):
     workflow = get_object_or_404(EngineWorkflow, pk=workflow_id)
 
     jobs_by_order = workflow.job_set.all().order_by('order')
+    import json
+    if workflow.json:
+        workflow_json = json.dumps(json.loads(workflow.json), indent=2)
+    else:
+        workflow_json = None
 
     return render_to_response('yabiengine/workflow_summary.html', {
         'w': workflow,
+        'workflow_json': workflow_json,
         'jobs_by_order': jobs_by_order,
         'user': request.user,
         'title': 'Workflow Summary',

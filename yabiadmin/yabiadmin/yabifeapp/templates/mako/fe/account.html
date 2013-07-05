@@ -1,19 +1,15 @@
 {% extends "fe/base.html" %}
-{% load pytag %}
-{% load importtag %}
-
-
-
+{% load static from staticfiles %}
 {% block header %}
 
-    <link rel="stylesheet" href="{% py h.url('/static/css/account.css?20110208') %}" />
+    <link rel="stylesheet" href="{% static 'css/account.css' %}" />
 
-    <script type="text/javascript" src="{% py h.url('/static/javascript/widget/radiolist.js?20110119') %}"></script>
-    <script type="text/javascript" src="{% py h.url('/static/javascript/widget/time.js?20101201') %}"></script>
+    <script type="text/javascript" src="{% static 'javascript/widget/radiolist.js' %}"></script>
+    <script type="text/javascript" src="{% static 'javascript/widget/time.js' %}"></script>
 
-    <script type="text/javascript" src="{% py h.url('/static/javascript/account/account.js?20110208') %}"></script>
-    <script type="text/javascript" src="{% py h.url('/static/javascript/account/credentials.js?20101201') %}"></script>
-    <script type="text/javascript" src="{% py h.url('/static/javascript/account/options.js?20110208') %}"></script>
+    <script type="text/javascript" src="{% static 'javascript/account/account.js' %}"></script>
+    <script type="text/javascript" src="{% static 'javascript/account/credentials.js' %}"></script>
+    <script type="text/javascript" src="{% static 'javascript/account/options.js' %}"></script>
 
     <script type="text/javascript">
         var account;
@@ -30,8 +26,7 @@
 {% else %}
             var credential = false;
 {% endif %}
-            {% import json %}
-            account = new YabiAccount({% py json.dumps(request.user.username) %}, userOption, credential);
+            account = new YabiAccount('{{username}}', userOption, credential);
         }
     </script>
 {% endblock %}
@@ -49,7 +44,7 @@
             <div class="yabiMiddleColumn"></div>
 
             <div class="yabiRightColumn">
-{% if request.user.get_profile.user_option_access %}
+{% if profile.user_option_access %}
                 <div class="template" id="optionsPassword">
                     <h1>Change Password</h1>
 
@@ -92,7 +87,7 @@
                 </div>
 {% endif %}
 
-{% if request.user.get_profile.credential_access %}
+{% if profile.credential_access %}
                 <div class="template" id="credential">
                     <h1>Edit Credential</h1>
 
@@ -188,7 +183,5 @@
             </div>
         </div>
     </div>
-    {% block copyright %}
-     {{ block.super }}
-    {% endblock %}
+    {% include "fe/copyright_include.html" %}
 {% endblock %}

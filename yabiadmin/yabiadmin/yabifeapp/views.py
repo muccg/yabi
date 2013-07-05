@@ -128,7 +128,8 @@ def account(request):
         return render_page("fe/errors/403.html", request, response=HttpResponseForbidden())
 
     profile = request.user.get_profile()
-    return render_page("fe/account.html", request, {"profile": profile})
+    username = request.user.username
+    return render_page("fe/account.html", request, profile=profile, username=username)
 
 def login(request):
 
