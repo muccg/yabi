@@ -48,6 +48,7 @@ from yabiadmin.yabiengine.commandlinetemplate import CommandTemplate, quote_argu
 from yabiadmin.yabiengine.models import Workflow, Task, Job, StageIn, Tag
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
 from yabiadmin.yabiengine.YabiJobException import YabiJobException
+from yabiadmin.backend.celerytasks import walk_workflow
 
 from yabiadmin.yabistoreapp import db
 
@@ -482,6 +483,19 @@ class EngineTask(Task):
     class Meta:
         proxy = True
 
+    def __init__(self, *args, **kwargs):
+        ret = Task.__init__(self,*args, **kwargs)
+
+        # basic stuff used by both stagein types
+        self.fsscheme, self.fsbackend_parts = uriparse(self.job.fs_backend)
+        self.execscheme, self.execbackend_parts = uriparse(self.job.exec_backend)
+
+        return ret
+
+    @property
+    def stageout(self):
+        return self.job.stageout + ("" if self.job.stageout.endswith("/") else "/") + ("" if not self.name else self.name + "/")
+
     @property
     def workflow_id(self):
         return self.job.workflow.id
@@ -490,12 +504,8 @@ class EngineTask(Task):
         logger.debug("uridict: %s" % (uridict))
 
         # create the task
-        self.working_dir = str(uuid.uuid4()) # random uuid
+        self.working_dir = str(uuid.uuid4())
         self.name = name
-
-        # basic stuff used by both stagein types
-        self.fsscheme, self.fsbackend_parts = uriparse(self.job.fs_backend)
-        self.execscheme, self.execbackend_parts = uriparse(self.job.exec_backend)
 
         # make the command from the command template
         template = self.job.template
@@ -552,6 +562,31 @@ class EngineTask(Task):
                     order=0,
                     method=method)
 
-        logger.debug("Stagein: %s <=> %s (%s): %s " % (s.src, s.dst, method, "created" if created else "reused"))
+        logger.debug("create_stagein: %s => %s (%s): %s " % (s.src, s.dst, method, "created" if created else "reused"))
         s.save()
 
+
+    @transaction.commit_manually()
+    def cascade_status(self):
+        try:
+            job_old_status = self.job.status
+            job_cur_status = self.job.update_status()
+            transaction.commit()
+
+            if job_cur_status != job_old_status and job_cur_status in (STATUS_ERROR, STATUS_COMPLETE):
+                self.job.workflow.update_status()
+                transaction.commit()
+
+            if job_cur_status in [STATUS_READY, STATUS_COMPLETE, STATUS_ERROR]:
+                workflow = EngineWorkflow.objects.get(pk=self.job.workflow.id)
+                if workflow.needs_walking():
+                    # trigger a walk via celery 
+                    # always commit transactions before sending tasks depending on state from the current transaction 
+                    # http://docs.celeryq.org/en/latest/userguide/tasks.html
+                    transaction.commit()
+                    walk_workflow(workflow_id=workflow.pk)
+            transaction.commit()
+        except Exception, exc:
+            transaction.rollback()
+            logger.error(traceback.format_exc())
+            raise
