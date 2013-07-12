@@ -29,7 +29,7 @@
 from django.db import transaction
 from datetime import datetime
 from yabiadmin.backend.exceptions import RetryException
-from yabiadmin.backend import backend 
+from yabiadmin.backend import backend
 from yabiadmin.constants import STATUS_ERROR, STATUS_READY, STATUS_RUNNING, STATUS_COMPLETE
 import traceback
 from types import LongType, StringType, BooleanType
@@ -103,6 +103,7 @@ def walk_workflow(workflow_id):
 def _stage_in_files(task_id):
     from yabiadmin.yabiengine.enginemodels import EngineTask
     task = EngineTask.objects.get(id=task_id)
+    task.change_task_status('stagein')
     backend.stage_in_files(task)
 
 
@@ -127,7 +128,7 @@ def _submit_task(task_id):
     from yabiadmin.yabiengine.enginemodels import EngineTask
     task = EngineTask.objects.get(id=task_id)
     backend.submit_task(task)
-    _task_status(task, 'exec:running')
+    task.change_task_status('exec')
 
 
 @celery.task(ignore_result=True, max_retries=None)
@@ -138,6 +139,9 @@ def submit_task(task_id):
     try:
         _submit_task(task_id)
     except RetryException, rexc:
+        from yabiadmin.yabiengine.enginemodels import EngineTask
+        task = EngineTask.objects.get(id=task_id)
+        task.change_task_status("error")
         logger.error(traceback.format_exc())
         logger.error(rexc)
         countdown = backoff(request.retries)
@@ -171,6 +175,7 @@ def poll_task_status(task_id):
 def _stage_out_files(task_id):
     from yabiadmin.yabiengine.enginemodels import EngineTask
     task = EngineTask.objects.get(id=task_id)
+    task.change_task_status("stageout")
     backend.stage_out_files(task)
 
 
@@ -189,31 +194,16 @@ def stage_out_files(task_id):
         raise stage_out_files.retry(exc=rexc, countdown=countdown)
     return task_id
 
-
-@transaction.commit_manually()
-def _task_status(task, status):
-    logger.debug('_task_status {0} {1}'.format(task, status))
-    try:
-        task.set_status(status)
-        task.save()
-        transaction.commit()
-        task.cascade_status()
-        transaction.commit()
-    except Exception:
-        transaction.rollback()
-        logger.error(traceback.format_exc())
-        raise
-
-
 @transaction.commit_manually()
 def _clean_up_task(task_id):
     logger.debug('_clean_up_task {0}'.format(task_id))
     try:
         from yabiadmin.yabiengine.enginemodels import EngineTask
         task = EngineTask.objects.get(id=task_id)
+        task.change_task_status("cleaning")
         backend.clean_up_task(task)
         transaction.commit()
-        _task_status(task, STATUS_COMPLETE)
+        task.change_task_status(STATUS_COMPLETE)
         transaction.commit()
     except Exception:
         logger.error(traceback.format_exc())

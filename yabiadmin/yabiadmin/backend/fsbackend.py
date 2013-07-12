@@ -211,6 +211,7 @@ class FSBackend(BaseBackend):
             raise RetryException(exc, traceback.format_exc())
 
     def stage_in_files(self):
+        self.task.change_task_status('mkdir')
         self.mkdir(self.working_dir_uri())
         self.mkdir(self.working_input_dir_uri())
         self.mkdir(self.working_output_dir_uri())

@@ -57,6 +57,7 @@ class BaseBackend(object):
                 self.last_stderr = process.stderr.read()
         except Exception, exc:
             logger.error('execute failed {0}'.format(status))
+            from yabiadmin.backend.exceptions import RetryException
             raise RetryException(exc, traceback.format_exc())
 
         return status

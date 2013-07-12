@@ -590,3 +590,23 @@ class EngineTask(Task):
             transaction.rollback()
             logger.error(traceback.format_exc())
             raise
+
+    @transaction.commit_manually()
+    def change_task_status(self, status):
+        logger.debug('change_task_status {0} {1}'.format(self, status))
+        try:
+            logger.debug("calling set_status")
+            self.set_status(status)
+            self.save()
+            logger.debug('saved')
+            transaction.commit()
+            logger.debug('committed')
+            self.cascade_status()
+            logger.debug('cascaded')
+            transaction.commit()
+            logger.debug('committed again')
+        except Exception, exc:
+            logger.debug("Error changing task status: %s" % exc)
+            transaction.rollback()
+            logger.error(traceback.format_exc())
+            raise

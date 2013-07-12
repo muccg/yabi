@@ -54,7 +54,7 @@ class LocalExecBackend(ExecBackend):
             raise RetryException(exc)
 
         logger.debug('Running in {0}'.format(working_parts.path))
-        args = shlex.split(self.task.command)
+        args = shlex.split(self.task.command.encode('utf-8'))
         status = self.blocking_execute(args=args, stderr=stderr, stdout=stdout, cwd=working_parts.path)
 
         if status != 0:

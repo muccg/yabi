@@ -31,6 +31,7 @@ import traceback
 from mako.template import Template
 import paramiko
 import logging
+from yabiadmin.backend.exceptions import RetryException
 logger = logging.getLogger(__name__)
 
 
