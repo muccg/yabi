@@ -30,14 +30,14 @@ from django.db import transaction
 from datetime import datetime
 from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend import backend
-from yabiadmin.constants import STATUS_ERROR, STATUS_READY, STATUS_RUNNING, STATUS_COMPLETE
+from yabiadmin.constants import STATUS_ERROR, STATUS_READY, STATUS_RUNNING, STATUS_COMPLETE, STATUS_EXEC,STATUS_STAGEOUT,STATUS_STAGEIN,STATUS_CLEANING
+from yabiadmin.constants import MAX_CELERY_TASK_RETRIES
 import traceback
 from types import LongType, StringType, BooleanType
 import celery
 from celery import current_task, chain
 from celery.utils.log import get_task_logger
 logger = get_task_logger(__name__)
-
 
 #@transaction.commit_manually
 @transaction.commit_on_success()
@@ -103,7 +103,7 @@ def walk_workflow(workflow_id):
 def _stage_in_files(task_id):
     from yabiadmin.yabiengine.enginemodels import EngineTask
     task = EngineTask.objects.get(id=task_id)
-    task.change_task_status('stagein')
+    task.change_task_status(STATUS_STAGEIN)
     backend.stage_in_files(task)
 
 
@@ -128,10 +128,10 @@ def _submit_task(task_id):
     from yabiadmin.yabiengine.enginemodels import EngineTask
     task = EngineTask.objects.get(id=task_id)
     backend.submit_task(task)
-    task.change_task_status('exec')
+    task.change_task_status(STATUS_EXEC)
 
 
-@celery.task(ignore_result=True, max_retries=None)
+@celery.task(ignore_result=True, max_retries=MAX_CELERY_TASK_RETRIES)
 def submit_task(task_id):
     """Submit a task"""
     assert type(task_id) is LongType, '{0} not a long'.format(type(task_id))
@@ -140,13 +140,22 @@ def submit_task(task_id):
         _submit_task(task_id)
     except RetryException, rexc:
         from yabiadmin.yabiengine.enginemodels import EngineTask
-        task = EngineTask.objects.get(id=task_id)
-        task.change_task_status("error")
         logger.error(traceback.format_exc())
         logger.error(rexc)
         countdown = backoff(request.retries)
         logger.warning('submit_task.retry {0} in {1} seconds'.format(task_id, countdown))
-        raise submit_task.retry(exc=rexc, countdown=countdown)
+        try:
+            submit_task.retry(exc=rexc, countdown=countdown)
+        except RetryException:
+            logger.error("submit_task.retry {0} exceeded retry limit - changing status to error".format(task_id))
+            task = EngineTask.objects.get(id=task_id)
+            task.change_task_status(STATUS_ERROR)
+            raise
+        except Exception, ex:
+            logger.error(("submit_task.retry {0} failed: {1} - changing status to error".format(task_id, ex)))
+            task = EngineTask.objects.get(id=task_id)
+            task.change_task_status(STATUS_ERROR)
+            raise
     return task_id
 
 
@@ -175,7 +184,7 @@ def poll_task_status(task_id):
 def _stage_out_files(task_id):
     from yabiadmin.yabiengine.enginemodels import EngineTask
     task = EngineTask.objects.get(id=task_id)
-    task.change_task_status("stageout")
+    task.change_task_status(STATUS_STAGEOUT)
     backend.stage_out_files(task)
 
 
@@ -200,7 +209,7 @@ def _clean_up_task(task_id):
     try:
         from yabiadmin.yabiengine.enginemodels import EngineTask
         task = EngineTask.objects.get(id=task_id)
-        task.change_task_status("cleaning")
+        task.change_task_status(STATUS_CLEANING)
         backend.clean_up_task(task)
         transaction.commit()
         task.change_task_status(STATUS_COMPLETE)

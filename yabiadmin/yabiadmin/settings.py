@@ -285,8 +285,8 @@ DEFAULT_CRED_CACHE_TIME = 60*60*24                   # 1 day default
 # see http://docs.celeryproject.org/en/latest/django/first-steps-with-django.html
 djcelery.setup_loader()
 # see http://docs.celeryproject.org/en/latest/getting-started/brokers/django.html
-BROKER_URL = 'django://'
-#BROKER_URL = 'amqp://guest:guest@localhost:5672//'
+#BROKER_URL = 'django://'
+BROKER_URL = 'amqp://guest:guest@localhost:5672//'
 # see http://docs.celeryproject.org/en/latest/configuration.html
 CELERY_IGNORE_RESULT = True
 # Not found in latest docs CELERY_QUEUE_NAME = 'yabiadmin'
