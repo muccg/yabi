@@ -48,7 +48,6 @@ from yabiadmin.yabiengine.commandlinetemplate import CommandTemplate, quote_argu
 from yabiadmin.yabiengine.models import Workflow, Task, Job, StageIn, Tag
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
 from yabiadmin.yabiengine.YabiJobException import YabiJobException
-from yabiadmin.backend.celerytasks import walk_workflow
 
 from yabiadmin.yabistoreapp import db
 
@@ -133,13 +132,11 @@ class EngineWorkflow(Workflow):
 
         except Exception, e:
             transaction.rollback()
+            logger.exception("Exception during building of workflow {0}".format(self.pk))
 
             self.status = STATUS_ERROR
             self.save()
             transaction.commit()
-
-            logger.critical(e)
-            logger.critical(traceback.format_exc())
 
             raise
 
@@ -568,6 +565,10 @@ class EngineTask(Task):
 
     @transaction.commit_manually()
     def cascade_status(self):
+        # TODO - TSZ I think that methods with logic that applies to more than
+        # one model shouldn't be defined on the model. Model should have basic
+        # methods only, methods working on more models should be on "service"
+        # classes. Transactions should be also handled on "service" methods.
         try:
             job_old_status = self.job.status
             job_cur_status = self.job.update_status()
@@ -584,6 +585,7 @@ class EngineTask(Task):
                     # always commit transactions before sending tasks depending on state from the current transaction 
                     # http://docs.celeryq.org/en/latest/userguide/tasks.html
                     transaction.commit()
+                    from yabiadmin.backend.celerytasks import walk_workflow
                     walk_workflow(workflow_id=workflow.pk)
             transaction.commit()
         except Exception, exc:

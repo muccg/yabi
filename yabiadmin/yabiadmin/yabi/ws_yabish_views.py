@@ -97,11 +97,13 @@ def submitjob(request):
         # trigger a build via celery
         build_workflow(workflow_id=workflow.id)
     except YabiError, e:
+        transaction.rollback()
+        logger.exception("Error in submitjob()")
         # TODO error returns success???
         resp = {'success': False, 'msg': str(e)}
-        transaction.rollback()
     except Exception, exc:
         transaction.rollback()
+        logger.exception("Error in submitjob()")
         raise
 
     return HttpResponse(json.dumps(resp))

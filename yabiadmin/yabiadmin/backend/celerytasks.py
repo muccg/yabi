@@ -32,6 +32,7 @@ from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend import backend
 from yabiadmin.constants import STATUS_ERROR, STATUS_READY, STATUS_RUNNING, STATUS_COMPLETE, STATUS_EXEC,STATUS_STAGEOUT,STATUS_STAGEIN,STATUS_CLEANING
 from yabiadmin.constants import MAX_CELERY_TASK_RETRIES
+from yabiadmin.yabiengine.enginemodels import EngineWorkflow, EngineTask
 import traceback
 from types import LongType, StringType, BooleanType
 import celery
@@ -69,19 +70,8 @@ def backoff(count=0):
     return 5 ** (count + 1)
 
 
-@transaction.commit_on_success()
 def build_workflow(workflow_id):
-    """
-    Build a workflow, walk it, then submit tasks
-    We don't know how the upstream django code block will handle transactions,
-    so within this block handle transactions manually to avoid side effects
-    """
-    assert type(workflow_id) is LongType, '{0} not a long'.format(type(workflow_id))
-    try:
-        chain(build.s(workflow_id) | walk.s() | tasks_to_submit.s()).apply_async()
-    except Exception:
-        logger.error(traceback.format_exc())
-        raise
+    chain(build.s(workflow_id) | walk.s() | tasks_to_submit.s()).apply_async()
 
 
 @transaction.commit_on_success()
@@ -101,7 +91,6 @@ def walk_workflow(workflow_id):
 
 @transaction.commit_on_success()
 def _stage_in_files(task_id):
-    from yabiadmin.yabiengine.enginemodels import EngineTask
     task = EngineTask.objects.get(id=task_id)
     task.change_task_status(STATUS_STAGEIN)
     backend.stage_in_files(task)
@@ -125,7 +114,6 @@ def stage_in_files(task_id):
 
 @transaction.commit_on_success()
 def _submit_task(task_id):
-    from yabiadmin.yabiengine.enginemodels import EngineTask
     task = EngineTask.objects.get(id=task_id)
     backend.submit_task(task)
     task.change_task_status(STATUS_EXEC)
@@ -139,7 +127,6 @@ def submit_task(task_id):
     try:
         _submit_task(task_id)
     except RetryException, rexc:
-        from yabiadmin.yabiengine.enginemodels import EngineTask
         logger.error(traceback.format_exc())
         logger.error(rexc)
         countdown = backoff(request.retries)
@@ -168,7 +155,6 @@ def poll_task_status(task_id):
     assert type(task_id) is LongType, '{0} not a long'.format(type(task_id))
     request = current_task.request
     try:
-        from yabiadmin.yabiengine.enginemodels import EngineTask
         task = EngineTask.objects.get(id=task_id)
         backend.poll_task_status(task)
     except RetryException, rexc:
@@ -182,7 +168,6 @@ def poll_task_status(task_id):
 
 @transaction.commit_on_success()
 def _stage_out_files(task_id):
-    from yabiadmin.yabiengine.enginemodels import EngineTask
     task = EngineTask.objects.get(id=task_id)
     task.change_task_status(STATUS_STAGEOUT)
     backend.stage_out_files(task)
@@ -207,7 +192,6 @@ def stage_out_files(task_id):
 def _clean_up_task(task_id):
     logger.debug('_clean_up_task {0}'.format(task_id))
     try:
-        from yabiadmin.yabiengine.enginemodels import EngineTask
         task = EngineTask.objects.get(id=task_id)
         task.change_task_status(STATUS_CLEANING)
         backend.clean_up_task(task)
@@ -258,7 +242,6 @@ def tasks_to_submit(workflow_id):
     except Exception, exc:
         logger.error(traceback.format_exc())
         logger.error(exc)
-        from yabiadmin.yabiengine.enginemodels import EngineWorkflow
         workflow = EngineWorkflow.objects.get(id=workflow_id)
         workflow.status = STATUS_ERROR
         workflow.save()
@@ -266,42 +249,27 @@ def tasks_to_submit(workflow_id):
     return workflow_id
 
 
-@transaction.commit_manually()
-def _build(workflow_id):
-    from yabiadmin.yabiengine.enginemodels import EngineWorkflow
-    workflow = EngineWorkflow.objects.get(id=workflow_id)
-    workflow.build()
-    transaction.commit()
-    return workflow
-
-
 @celery.task(ignore_result=True)
 def build(workflow_id):
     """
-    Build a workflow
-    TODO Make idempotent
-    select for update on a build status
+    Build a workflow.
+    Building a workflow means creating the Job objects in the DB and setting the Workflow's status to READY.
     """ 
-    assert type(workflow_id) is LongType, '{0} not a long'.format(type(workflow_id))
-    request = current_task.request
     try:
-        workflow = _build(workflow_id)
+        workflow = EngineWorkflow.objects.get(id=workflow_id)
+        workflow.build()
+        return workflow.pk
+
     except Exception, exc:
-        logger.error(traceback.format_exc())
-        logger.error(exc)
-        try:
+        logger.exception("Exception in Celery Task build() for workflow {0}".format(workflow_id))
+        if workflow.status != STATUS_ERROR:
             workflow.status = STATUS_ERROR
             workflow.save()
-        except Exception:
-            logger.error(traceback.format_exc())
-            pass
-        raise exc
-    return workflow_id
+        raise
 
 
 @transaction.commit_manually()
 def _walk(workflow_id):
-    from yabiadmin.yabiengine.enginemodels import EngineWorkflow
     workflow = EngineWorkflow.objects.get(id=workflow_id)
     workflow.walk()
     transaction.commit()

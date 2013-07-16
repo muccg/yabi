@@ -400,6 +400,7 @@ def submit_workflow(request):
         build_workflow(workflow_id=workflow.id)
     except Exception, exc:
         transaction.rollback()
+        logger.exception("Exception in submit_workflow()")
         raise
 
     return HttpResponse(json.dumps({"id":workflow.id}))
