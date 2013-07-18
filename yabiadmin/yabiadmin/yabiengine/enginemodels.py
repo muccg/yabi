@@ -563,52 +563,12 @@ class EngineTask(Task):
         s.save()
 
 
-    @transaction.commit_manually()
     def cascade_status(self):
-        # TODO - TSZ I think that methods with logic that applies to more than
-        # one model shouldn't be defined on the model. Model should have basic
-        # methods only, methods working on more models should be on "service"
-        # classes. Transactions should be also handled on "service" methods.
-        try:
-            job_old_status = self.job.status
-            job_cur_status = self.job.update_status()
-            transaction.commit()
+       job_old_status = self.job.status
+       job_cur_status = self.job.update_status()
 
-            if job_cur_status != job_old_status and job_cur_status in (STATUS_ERROR, STATUS_COMPLETE):
-                self.job.workflow.update_status()
-                transaction.commit()
+       if job_cur_status != job_old_status and job_cur_status in (STATUS_ERROR, STATUS_COMPLETE):
+           self.job.workflow.update_status()
 
-            if job_cur_status in [STATUS_READY, STATUS_COMPLETE, STATUS_ERROR]:
-                workflow = EngineWorkflow.objects.get(pk=self.job.workflow.id)
-                if workflow.needs_walking():
-                    # trigger a walk via celery 
-                    # always commit transactions before sending tasks depending on state from the current transaction 
-                    # http://docs.celeryq.org/en/latest/userguide/tasks.html
-                    transaction.commit()
-                    from yabiadmin.backend.celerytasks import walk_workflow
-                    walk_workflow(workflow_id=workflow.pk)
-            transaction.commit()
-        except Exception, exc:
-            transaction.rollback()
-            logger.error(traceback.format_exc())
-            raise
+       return (job_cur_status != job_old_status)
 
-    @transaction.commit_manually()
-    def change_task_status(self, status):
-        logger.debug('change_task_status {0} {1}'.format(self, status))
-        try:
-            logger.debug("calling set_status")
-            self.set_status(status)
-            self.save()
-            logger.debug('saved')
-            transaction.commit()
-            logger.debug('committed')
-            self.cascade_status()
-            logger.debug('cascaded')
-            transaction.commit()
-            logger.debug('committed again')
-        except Exception, exc:
-            logger.debug("Error changing task status: %s" % exc)
-            transaction.rollback()
-            logger.error(traceback.format_exc())
-            raise
