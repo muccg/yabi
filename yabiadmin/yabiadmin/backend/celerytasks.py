@@ -131,13 +131,15 @@ def submit_task(task_id):
     except RetryException, rexc:
         logger.exception("Exception in celery task submit_task for task {0}".format(task_id))
         countdown = backoff(request.retries)
-        logger.warning('submit_task.retry {0} in {1} seconds'.format(task_id, countdown))
         try:
-            submit_task.retry(exc=rexc, countdown=countdown)
+            current_task.retry(exc=rexc, countdown=countdown)
+            logger.warning('submit_task.retry {0} in {1} seconds'.format(task_id, countdown))
         except RetryException:
             logger.error("submit_task.retry {0} exceeded retry limit - changing status to error".format(task_id))
             change_task_status(task_id, STATUS_ERROR)
             raise
+        except celery.exceptions.RetryTaskError:
+             raise
         except Exception, ex:
             logger.error(("submit_task.retry {0} failed: {1} - changing status to error".format(task_id, ex)))
             change_task_status(task_id, STATUS_ERROR)
