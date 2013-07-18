@@ -26,6 +26,7 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
+from functools import wraps
 from django.db import transaction
 from datetime import datetime
 from yabiadmin.backend.exceptions import RetryException
@@ -103,114 +104,6 @@ def walk_workflow(workflow_id):
     chain(walk.s(workflow_id) | tasks_to_submit.s()).apply_async()
 
 
-# Celery Tasks working on a Yabi Task
-
-
-@celery.task(ignore_result=True, max_retries=None)
-def stage_in_files(task_id):
-    request = current_task.request
-    try:
-        task = EngineTask.objects.get(pk=task_id)
-        change_task_status(task.pk, STATUS_STAGEIN)
-        backend.stage_in_files(task)
-    except RetryException, rexc:
-        logger.exception("Exception in celery task stage_in_files for task {0}".format(task_id))
-        countdown = backoff(request.retries)
-        logger.warning('stage_in_files.retry {0} in {1} seconds'.format(task_id, countdown))
-        stage_in_files.retry(exc=rexc, countdown=countdown)
-    return task_id
-
-
-@celery.task(ignore_result=True, max_retries=MAX_CELERY_TASK_RETRIES)
-def submit_task(task_id):
-    request = current_task.request
-    try:
-        task = EngineTask.objects.get(pk=task_id)
-        backend.submit_task(task)
-        change_task_status(task.pk, STATUS_EXEC)
-    except RetryException, rexc:
-        logger.exception("Exception in celery task submit_task for task {0}".format(task_id))
-        countdown = backoff(request.retries)
-        try:
-            current_task.retry(exc=rexc, countdown=countdown)
-            logger.warning('submit_task.retry {0} in {1} seconds'.format(task_id, countdown))
-        except RetryException:
-            logger.error("submit_task.retry {0} exceeded retry limit - changing status to error".format(task_id))
-            change_task_status(task_id, STATUS_ERROR)
-            raise
-        except celery.exceptions.RetryTaskError:
-             raise
-        except Exception, ex:
-            logger.error(("submit_task.retry {0} failed: {1} - changing status to error".format(task_id, ex)))
-            change_task_status(task_id, STATUS_ERROR)
-            raise
-    return task_id
-
-
-@celery.task(ignore_result=True, max_retries=None)
-def poll_task_status(task_id):
-    """
-    Poll the status of a task. 
-    Will retry with backoff until complete.
-    """
-    request = current_task.request
-    try:
-        task = EngineTask.objects.get(id=task_id)
-        backend.poll_task_status(task)
-    except RetryException, rexc:
-        logger.error(traceback.format_exc())
-        logger.error(rexc)
-        countdown = backoff(request.retries)
-        logger.debug('poll_task_status.retry {0} in {1} seconds'.format(task_id, countdown))
-        raise poll_task_status.retry(exc=rexc, countdown=countdown)
-    return task_id
-
-
-
-@celery.task(ignore_result=True, max_retries=None)
-def stage_out_files(task_id):
-    """Stage out files for a given task"""
-    request = current_task.request
-    try:
-        task = EngineTask.objects.get(pk=task_id)
-        change_task_status(task.pk, STATUS_STAGEOUT)
-        backend.stage_out_files(task)
-    except RetryException, rexc:
-        logger.error(traceback.format_exc())
-        logger.error(rexc)
-        countdown = backoff(request.retries)
-        logger.warning('stage_out_files.retry {0} in {1} seconds'.format(task_id, countdown))
-        raise stage_out_files.retry(exc=rexc, countdown=countdown)
-    return task_id
-
-
-def _clean_up_task(task_id):
-    logger.debug('_clean_up_task {0}'.format(task_id))
-    try:
-        task = EngineTask.objects.get(id=task_id)
-        change_task_status(task.pk, STATUS_CLEANING)
-        backend.clean_up_task(task)
-        change_task_status(task.pk, STATUS_COMPLETE)
-    except Exception:
-        logger.exception("Exception in cleaning up task {0}".format(task_id))
-        raise
-
-
-@celery.task(ignore_result=True, max_retries=None)
-def clean_up_task(task_id):
-    """Clean up after a task"""
-    request = current_task.request
-    try:
-        _clean_up_task(task_id)
-    except RetryException, rexc:
-        logger.error(traceback.format_exc())
-        logger.error(rexc)
-        countdown = backoff(request.retries)
-        logger.warning('clean_up_task.retry {0} in {1} seconds'.format(task_id, countdown))
-        raise clean_up_task.retry(exc=rexc, countdown=countdown)
-    return task_id
-
-
 @celery.task(ignore_result=True)
 def tasks_to_submit(workflow_id):
     """Determine what tasks are able to be submitted for a workflow"""
@@ -256,6 +149,80 @@ def _task_chain(task_id):
     except Exception:
         logger.exception("Exception in _task_chain for task {0}".format(task_id))
         raise
+
+
+# Celery Tasks working on a Yabi Task
+
+def retry_on_error(original_function):
+    @wraps(original_function)
+    def decorated_function(task_id, *args, **kwargs):
+        request = current_task.request
+        try:
+            return original_function(task_id, *args, **kwargs)
+        except RetryException, rexc:
+            logger.exception("Exception in celery task submit_task for task {0}".format(task_id))
+            countdown = backoff(request.retries)
+            try:
+                current_task.retry(exc=rexc, countdown=countdown)
+                logger.warning('submit_task.retry {0} in {1} seconds'.format(task_id, countdown))
+            except RetryException:
+                logger.error("submit_task.retry {0} exceeded retry limit - changing status to error".format(task_id))
+                change_task_status(task_id, STATUS_ERROR)
+                raise
+            except celery.exceptions.RetryTaskError:
+                raise
+            except Exception, ex:
+                logger.error(("submit_task.retry {0} failed: {1} - changing status to error".format(task_id, ex)))
+                change_task_status(task_id, STATUS_ERROR)
+                raise
+
+    return decorated_function
+
+
+
+@celery.task(ignore_result=True, max_retries=None)
+@retry_on_error
+def stage_in_files(task_id):
+    task = EngineTask.objects.get(pk=task_id)
+    change_task_status(task.pk, STATUS_STAGEIN)
+    backend.stage_in_files(task)
+    return task_id
+
+
+@celery.task(ignore_result=True, max_retries=MAX_CELERY_TASK_RETRIES)
+@retry_on_error
+def submit_task(task_id):
+    task = EngineTask.objects.get(pk=task_id)
+    backend.submit_task(task)
+    change_task_status(task.pk, STATUS_EXEC)
+    return task_id
+
+
+@celery.task(ignore_result=True, max_retries=None)
+@retry_on_error
+def poll_task_status(task_id):
+    task = EngineTask.objects.get(pk=task_id)
+    backend.poll_task_status(task)
+    return task_id
+
+
+@celery.task(ignore_result=True, max_retries=None)
+@retry_on_error
+def stage_out_files(task_id):
+    task = EngineTask.objects.get(pk=task_id)
+    change_task_status(task.pk, STATUS_STAGEOUT)
+    backend.stage_out_files(task)
+    return task_id
+
+
+@celery.task(ignore_result=True, max_retries=None)
+@retry_on_error
+def clean_up_task(task_id):
+    task = EngineTask.objects.get(pk=task_id)
+    change_task_status(task.pk, STATUS_CLEANING)
+    backend.clean_up_task(task)
+    change_task_status(task.pk, STATUS_COMPLETE)
+
 
 
 # Implementation
