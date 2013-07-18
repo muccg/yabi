@@ -59,7 +59,7 @@ class LocalExecBackend(ExecBackend):
 
         if status != 0:
             logger.error('Non zero exit status [{0}]'.format(status))
-            raise RetryException('Status [{0}]'.format(status))
+            raise RetryException('Local Exec of command "{0}" retuned non-zero code {1}'.format(" ".join(args), status))
 
         try:
             stdout.close()
