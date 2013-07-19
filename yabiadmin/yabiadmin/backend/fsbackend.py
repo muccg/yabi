@@ -214,11 +214,9 @@ class FSBackend(BaseBackend):
         self.mkdir(self.working_dir_uri())
         self.mkdir(self.working_input_dir_uri())
         self.mkdir(self.working_output_dir_uri())
+        self.create_local_remnants_dir()
 
-        # create local directory for any remnants
-        os.makedirs(self.local_remnants_dir())
-
-        stageins = StageIn.objects.filter(task=self.task).order_by('order')
+        stageins = self.task.get_stageins()
         for stagein in stageins:
             self.stage_in(stagein)
 

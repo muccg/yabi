@@ -29,6 +29,7 @@ from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.backend.execbackend import ExecBackend
 from yabiadmin.backend.exceptions import RetryException
 import shlex
+import shutil
 import logging
 logger = logging.getLogger(__name__)
 
@@ -40,12 +41,19 @@ class LocalExecBackend(ExecBackend):
         For local exec submitting a task executes the task and blocks
         the current process. It is not intended for large scale real world usage.
         """
+        self.create_local_remnants_dir()
+
         exec_scheme, exec_parts = uriparse(self.task.job.exec_backend)
         working_scheme, working_parts = uriparse(self.working_output_dir_uri())
 
         # TODO use this script
         script = self.get_submission_script(exec_parts.hostname, working_parts.path)
         logger.debug('script {0}'.format(script))
+
+        if os.path.exists(working_parts.path):
+            shutil.rmtree(working_parts.path)
+
+        os.makedirs(working_parts.path)
 
         try:
             stdout = open(os.path.join(working_parts.path, 'STDOUT.txt'), 'w')

@@ -31,6 +31,7 @@ import traceback
 import subprocess
 import logging
 import os
+import shutil
 logger = logging.getLogger(__name__)
 
 
@@ -38,7 +39,7 @@ class BaseBackend(object):
 
     task = None
     cred = None
-    yaiusername = None
+    yabiusername = None
     last_stdout = None
     last_stderr = None
 
@@ -77,3 +78,10 @@ class BaseBackend(object):
     def working_output_dir_uri(self):
         """working/output dir"""
         return url_join(self.working_dir_uri(), 'output')
+
+    def create_local_remnants_dir(self):
+        local_remnants_dir = self.local_remnants_dir()
+        if os.path.exists(local_remnants_dir):
+            shutil.rmtree(local_remnants_dir)
+        os.makedirs(local_remnants_dir)
+

@@ -57,6 +57,7 @@ setup(name='yabiadmin',
         'httplib2==0.8',
         'djamboloader==0.1.2',
         'paramiko==1.10.1',
+        'mockito==0.5.1',
     ],
 
     dependency_links = [

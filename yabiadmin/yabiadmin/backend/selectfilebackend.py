@@ -48,7 +48,7 @@ class SelectFileBackend(FSBackend):
         backend.mkdir(self.task.stageout)
  
         # do the stage in
-        stageins = StageIn.objects.filter(task=self.task).order_by('order')
+        stageins = self.task.get_stageins()
         for stagein in stageins:
             self.stage_in(stagein)
 

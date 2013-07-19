@@ -308,6 +308,7 @@ CELERY_SEND_TASK_SENT_EVENT = True
 #CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
 #CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
 CELERY_IMPORTS = ("yabiadmin.backend.celerytasks",)
+CELERY_ACKS_LATE = True
 # Not sure if this is still needed BROKER_TRANSPORT = "kombu.transport.django.Transport"
 
 

@@ -493,6 +493,9 @@ class EngineTask(Task):
     def stageout(self):
         return self.job.stageout + ("" if self.job.stageout.endswith("/") else "/") + ("" if not self.name else self.name + "/")
 
+    def get_stageins(self):
+        return StageIn.objects.filter(task=self).order_by('order')
+
     @property
     def workflow_id(self):
         return self.job.workflow.id

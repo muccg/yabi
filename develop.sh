@@ -137,8 +137,18 @@ function nosetests() {
     #virt_yabiadmin/bin/nosetests -v -w tests tests.rewalk_tests
     #virt_yabiadmin/bin/nosetests -v -w tests tests.file_transfer_tests
     #virt_yabiadmin/bin/nosetests -v -w tests tests.ssh_tests
+    #virt_yabiadmin/bin/nosetests -v -w tests tests.idempotency_tests
 }
 
+function noseidempotency() {
+    source virt_yabiadmin/bin/activate
+    virt_yabiadmin/bin/nosetests --nocapture --with-xunit --xunit-file=tests.xml -w tests tests.idempotency_tests -v
+}
+
+function nosestatuschange() {
+    source virt_yabiadmin/bin/activate
+    virt_yabiadmin/bin/nosetests --with-xunit --xunit-file=tests.xml -w tests tests.status_tests -v 
+}
 
 function noseyabiadmin() {
     source virt_yabiadmin/bin/activate
@@ -381,6 +391,8 @@ function dbtest() {
     dropdb
     startyabi
     nosetests
+    #noseidempotency
+    #nosestatuschange
     stopyabi
 }
 
