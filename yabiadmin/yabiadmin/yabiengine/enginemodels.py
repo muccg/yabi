@@ -161,7 +161,7 @@ class EngineWorkflow(Workflow):
                 # This will open up a new transaction for creating all the tasks of a Job
                 # TODO TSZ - it might make sense to change all this code to walk jobs instead
                 # Walking one job (ie. creating tasks for it) seems to be the unit of work here
-                job.status = STATUS_PROCESSING
+                job.status = JOB_STATUS_PROCESSING
                 job.save()
                 transaction.commit()
                 job.create_tasks()
@@ -339,7 +339,7 @@ class EngineJob(Job):
 
     def is_processing(self):
         # Used to check to see another celery task is not running on this job
-        return self.status in (STATUS_PROCESSING, STATUS_TASKS_CREATED, STATUS_TASKS_SPAWNED)
+        return self.status in (JOB_STATUS_PROCESSING, STATUS_TASKS_CREATED, STATUS_TASKS_SPAWNED)
 
     def create_tasks(self):
         tasks = self._prepare_tasks()
