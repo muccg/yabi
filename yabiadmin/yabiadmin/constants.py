@@ -47,8 +47,9 @@ STATUS_RESUME = 'resume'
 STATUS_REWALK = 'rewalk'
 
 
-STATUS_TASKS_CREATED = "tasks created"
-STATUS_TASKS_SPAWNED = "tasks spawned"
+STATUS_PROCESSING = "started processing"  # Job has begun, but has not yet created Task objects or spawned chains.
+STATUS_TASKS_CREATED = "tasks created"    # Job has created Task objects in DB but has not yet spawned task chains.
+STATUS_TASKS_SPAWNED = "tasks spawned"    # Job has created Task objects and spawned chains.
 
 
 STATUS_EXEC = 'exec'
@@ -60,6 +61,9 @@ STATUS_MAP = (
     (STATUS_PENDING, 0.0),
     (STATUS_READY, 0.0),
     (STATUS_REQUESTED, 0.01),
+    (STATUS_PROCESSING, 0.02),
+    (STATUS_TASKS_CREATED, 0.03),
+    (STATUS_TASKS_SPAWNED, 0.04),
     (STATUS_STAGEIN, 0.05),
     ('mkdir', 0.1),
     (STATUS_EXEC, 0.11),
