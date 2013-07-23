@@ -123,6 +123,8 @@ def tasks_to_submit(workflow_id):
         logger.debug(ready_tasks)
         for task in ready_tasks:
             _task_chain(task.id)
+            # need to update task.job.status here when all tasks for job spawned ?
+
     except Exception, exc:
         logger.error(traceback.format_exc())
         logger.error(exc)

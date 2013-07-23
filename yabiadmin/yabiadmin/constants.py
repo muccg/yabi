@@ -46,6 +46,11 @@ STATUS_BLOCKED = 'blocked'
 STATUS_RESUME = 'resume'
 STATUS_REWALK = 'rewalk'
 
+
+STATUS_TASKS_CREATED = "tasks created"
+STATUS_TASKS_SPAWNED = "tasks spawned"
+
+
 STATUS_EXEC = 'exec'
 STATUS_STAGEOUT = 'stageout'
 STATUS_STAGEIN = 'stagein'

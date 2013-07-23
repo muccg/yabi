@@ -141,7 +141,7 @@ class EngineWorkflow(Workflow):
             raise
 
     def jobs_that_need_walking(self):
-        return [j for j in EngineJob.objects.filter(workflow=self).order_by("order") if j.total_tasks() == 0 and not j.has_incomplete_dependencies()]
+        return [j for j in EngineJob.objects.filter(workflow=self).order_by("order") if j.total_tasks() == 0 and not j.has_incomplete_dependencies() and not j.is_processing() ]
 
     def needs_walking(self):
         return (len(self.jobs_that_need_walking()) > 0)
@@ -155,8 +155,7 @@ class EngineWorkflow(Workflow):
         logger.debug('----- Walking workflow id %d -----' % self.id)
 
         try:
-            jobset = [X for X in EngineJob.objects.filter(workflow=self).order_by("order")]
-            for job in jobset:
+            for job in self.jobs_that_need_walking():
                 logger.debug('----- Walking workflow id %d job id %d -----' % (self.id, job.id))
 
                 # dont walk job if it already has tasks
@@ -189,7 +188,9 @@ class EngineWorkflow(Workflow):
                 job.save()
 
                 job.make_tasks_ready()
+                job.status = STATUS_TASKS_CREATED
                 transaction.commit()
+
 
             # Making sure the transactions opened in the loop are closed
             # ex. job.total_tasks() opens a transaction, then it could exit the loop with continue
@@ -342,6 +343,10 @@ class EngineJob(Job):
         self.job_type = self.tool.job_type
 
         self.save()
+
+    def is_processing(self):
+        # Used to check to see another celery task is not running on this job
+        return self.status in (STATUS_TASKS_CREATED, STATUS_TASKS_SPAWNED)
 
     def create_tasks(self):
         tasks = self._prepare_tasks()
