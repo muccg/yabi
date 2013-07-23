@@ -181,7 +181,7 @@ class EngineWorkflow(Workflow):
                 job.save()
 
                 job.make_tasks_ready()
-                job.status = STATUS_TASKS_CREATED
+                job.status = JOB_STATUS_TASKS_CREATED
                 transaction.commit()
 
 
@@ -339,7 +339,7 @@ class EngineJob(Job):
 
     def is_processing(self):
         # Used to check to see another celery task is not running on this job
-        return self.status in (JOB_STATUS_PROCESSING, STATUS_TASKS_CREATED, STATUS_TASKS_SPAWNED)
+        return self.status in (JOB_STATUS_PROCESSING, JOB_STATUS_TASKS_CREATED, JOB_STATUS_TASKS_SPAWNED)
 
     def create_tasks(self):
         tasks = self._prepare_tasks()
