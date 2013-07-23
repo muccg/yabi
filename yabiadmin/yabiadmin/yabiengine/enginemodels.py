@@ -158,16 +158,6 @@ class EngineWorkflow(Workflow):
             for job in self.jobs_that_need_walking():
                 logger.debug('----- Walking workflow id %d job id %d -----' % (self.id, job.id))
 
-                # dont walk job if it already has tasks
-                if job.total_tasks() > 0:
-                    logger.info("job %s has tasks, skipping walk" % job.id)
-                    continue
-
-                # we can't proceed until all previous job dependencies are satisfied
-                if job.has_incomplete_dependencies():
-                    logger.info('job %s has incomplete dependencies, skipping walk' % job.id)
-                    continue
-
                 # This will open up a new transaction for creating all the tasks of a Job
                 # TODO TSZ - it might make sense to change all this code to walk jobs instead
                 # Walking one job (ie. creating tasks for it) seems to be the unit of work here
