@@ -65,17 +65,11 @@ def build(workflow_id):
 
 @celery.task(ignore_result=True, max_retries=None)
 def walk(workflow_id):
-    """
-    Walk a workflow
-    TODO Make idempotent
-    select for update on a walking status
-    """
     request = current_task.request
     from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
     try:
          workflow = EngineWorkflow.objects.get(id=workflow_id)
          workflow.walk()
-         transaction.commit()
     except DecryptedCredentialNotAvailable, dcna:
         logger.error("Decrypted credential not available.")
         logger.error(dcna)
@@ -265,7 +259,7 @@ def change_task_status(task_id, status):
         raise
 
 def rewalk_workflow_if_needed(task):
-    if task.job.status in [STATUS_READY, STATUS_COMPLETE, STATUS_ERROR]:
+    if task.job.status == STATUS_COMPLETE:
         workflow = EngineWorkflow.objects.get(pk=task.job.workflow.pk)
         if workflow.needs_walking():
             walk_workflow(workflow_id=workflow.pk)

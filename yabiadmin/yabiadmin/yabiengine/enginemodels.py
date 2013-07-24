@@ -141,7 +141,7 @@ class EngineWorkflow(Workflow):
             raise
 
     def jobs_that_need_walking(self):
-        return [j for j in EngineJob.objects.filter(workflow=self).order_by("order") if j.total_tasks() == 0 and not j.has_incomplete_dependencies() and not j.is_processing() ]
+        return [j for j in EngineJob.objects.filter(workflow=self).order_by("order") if j.total_tasks() == 0 and not j.has_incomplete_dependencies() and j.status == STATUS_PENDING]
 
     def needs_walking(self):
         return (len(self.jobs_that_need_walking()) > 0)
@@ -161,9 +161,14 @@ class EngineWorkflow(Workflow):
                 # This will open up a new transaction for creating all the tasks of a Job
                 # TODO TSZ - it might make sense to change all this code to walk jobs instead
                 # Walking one job (ie. creating tasks for it) seems to be the unit of work here
-                job.status = JOB_STATUS_PROCESSING
-                job.save()
-                transaction.commit()
+                updated = Job.objects.filter(pk=job.pk, status=STATUS_PENDING).update(status=JOB_STATUS_PROCESSING)
+                if updated == 0:
+                    # This will work only if we do it by jobs
+                    #raise Exception("Another Walk() must have picked up job %s already" % job.pk)
+                    logger.info("Another Walk() must have picked up job %s already" % job.pk)
+                    continue
+                else:
+                    logger.info("I am responsible for creating tasks for job %s" % job.pk)
                 job.create_tasks()
 
                 # there must be at least one task for every job
@@ -337,14 +342,11 @@ class EngineJob(Job):
 
         self.save()
 
-    def is_processing(self):
-        # Used to check to see another celery task is not running on this job
-        return self.status in (JOB_STATUS_PROCESSING, JOB_STATUS_TASKS_CREATED, JOB_STATUS_TASKS_SPAWNED)
 
     def create_tasks(self):
         tasks = self._prepare_tasks()
         be = get_exec_backendcredential_for_uri(self.workflow.user.name, self.exec_backend)
-
+ 
         # by default Django is running with an open transaction
         transaction.commit()
 
@@ -499,7 +501,7 @@ class EngineTask(Task):
         return self.job.workflow.id
 
     def add_task(self, uridict, name=""):
-        logger.debug("uridict: %s" % (uridict))
+        logger.debug("add_task called with uridict: %s, name: %s" % (uridict, name))
 
         # create the task
         self.working_dir = str(uuid.uuid4())
