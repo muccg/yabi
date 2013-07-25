@@ -46,7 +46,6 @@ def put_file(yabiusername, filename, uri):
     Put a file to a backend by streaming through a fifo.
     Returns the opened fifo for the upload to write to
     """
-    # TODO this pollutes the filesystem with a fifo
     from yabiadmin.backend.fsbackend import FSBackend
     upload_as_fifo = FSBackend.remote_file_upload(yabiusername, filename, uri)
     upload = open(upload_as_fifo, 'w')
@@ -56,10 +55,10 @@ def put_file(yabiusername, filename, uri):
 def get_file(yabiusername, uri, bytes=None):
     """Get a file from a backend"""
     # TODO bytes is ignored, its for partial download
-    # TODO this pollutes the filesystem with a fifo
     from yabiadmin.backend.fsbackend import FSBackend
     download_as_fifo = FSBackend.remote_file_download(yabiusername, uri)
     download = open(download_as_fifo)
+    os.remove(download_as_fifo)
     return download
 
 
