@@ -54,7 +54,7 @@ from django.core.cache import cache
 from django.core.servers.basehttp import FileWrapper
 
 from yabiadmin.yabiengine import storehelper as StoreHelper
-from yabiadmin.backend.celerytasks import build_workflow
+from yabiadmin.backend.celerytasks import process_workflow
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import WorkflowTag
 # TODO
@@ -396,8 +396,8 @@ def submit_workflow(request):
         # http://docs.celeryq.org/en/latest/userguide/tasks.html
         transaction.commit()
 
-        # trigger a build via celery
-        build_workflow(workflow_id=workflow.id)
+        # process the workflow via celery
+        process_workflow(workflow.pk).apply_async()
     except Exception, exc:
         transaction.rollback()
         logger.exception("Exception in submit_workflow()")

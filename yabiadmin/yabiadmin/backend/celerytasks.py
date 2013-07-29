@@ -45,26 +45,22 @@ logger = get_task_logger(__name__)
 # Celery Tasks working on a Workflow
 
 @celery.task
-def build(workflow_id):
-    """
-    Build a workflow.
-    Building a workflow means creating the Job objects in the DB and setting the Workflow's status to READY.
-    """ 
+def create_jobs(workflow_id):
     try:
         workflow = EngineWorkflow.objects.get(id=workflow_id)
-        workflow.build()
+        workflow.create_jobs()
         return workflow.pk
 
     except Exception, exc:
-        logger.exception("Exception in Celery Task build() for workflow {0}".format(workflow_id))
+        logger.exception("Exception in Celery Task create_jobs() for workflow {0}".format(workflow_id))
         if workflow.status != STATUS_ERROR:
             workflow.status = STATUS_ERROR
             workflow.save()
         raise
 
 
-def build_workflow(workflow_id):
-    chain(build.s(workflow_id) | process_jobs.s()).apply_async()
+def process_workflow(workflow_id):
+    return chain(create_jobs.s(workflow_id) | process_jobs.s())
 
 
 @celery.task

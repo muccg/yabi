@@ -78,11 +78,11 @@ class EngineWorkflow(Workflow):
     def json(self):
         return json.dumps(self.as_dict())
 
-    def errored_in_build(self):
+    def errored_during_create_jobs(self):
         if self.status != STATUS_ERROR:
             return False
         # if the Workflow status is error and we have less jobs than we received in the JSON
-        # it means we couldn't build() all jobs from the request -> we had an error during build()
+        # it means we couldn't create jobs from the request -> we had an error during create_jobs()
         received_json = json.loads(self.original_json)
         if 'jobs' not in received_json:
             return False
@@ -95,9 +95,9 @@ class EngineWorkflow(Workflow):
                 "tags": [] # TODO probably can be removed
             }
         jobs = []
-        if self.errored_in_build():
+        if self.errored_during_create_jobs():
             # We have to do this to allow the FE to reuse the Workflow
-            # If build() failed there would be no jobs
+            # If create_jobs() failed there would be no jobs
             d['jobs'] = json.loads(self.original_json)['jobs']
         else:
             for job in self.get_jobs():
@@ -109,8 +109,8 @@ class EngineWorkflow(Workflow):
         return EngineJob.objects.filter(workflow=self).order_by("order")
 
     @transaction.commit_on_success
-    def build(self):
-        logger.debug('----- Building workflow id %d -----' % self.id)
+    def create_jobs(self):
+        logger.debug('----- Creating jobs for workflow id %d -----' % self.id)
 
         try:
             workflow_dict = json.loads(self.original_json)
@@ -132,7 +132,7 @@ class EngineWorkflow(Workflow):
 
         except Exception, e:
             transaction.rollback()
-            logger.exception("Exception during building of workflow {0}".format(self.pk))
+            logger.exception("Exception during creating jobs for workflow {0}".format(self.pk))
 
             self.status = STATUS_ERROR
             self.save()
@@ -328,9 +328,6 @@ class EngineJob(Job):
         if self.template.command.is_select_file:
             return []
         input_files = [X for X in self.template.file_sets()]
-        if len(input_files) == 0:
-            return []
-        logger.debug(input_files)
         return input_files
 
 
@@ -342,24 +339,16 @@ class EngineJob(Job):
 
         # lets count up our batch_file_list to see how many files there are to process
         # won't count tasks with file == None as these are from not batch param jobs
-
         count = len(filter(lambda x: x is not None, input_files))
-
-        # lets build a closure that will generate our names for us
-        if count > 1:
-            # the 10 base logarithm will give us how many digits we need to pad
-            buildname = lambda n: ("0"*(int(log10(count))+1)+str(n))[-(int(log10(count))+1):]
-        else:
-            buildname = lambda n: ""
+        left_padded_with_zeros = "{0:0>%s}" % count if count else ""
 
         self.task_total = len(input_files)
 
-        task_name = buildname(1)
         for task_num, input_file in enumerate(input_files):
             task = EngineTask(job=self, status=STATUS_PENDING, start_time=datetime.datetime.now(), execution_backend_credential=be, task_num=task_num+1)
 
+            task_name = left_padded_with_zeros.format(task_num+1)
             task.add_task(input_file, task_name)
-            task_name = buildname(task_num+2)
 
 
     def progress_score(self):
