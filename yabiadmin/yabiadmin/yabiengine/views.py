@@ -36,7 +36,6 @@ from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
 from ccg.utils import webhelpers
-from yabiadmin.backend.celerytasks import walk_workflow
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
 from yabiadmin.yabiengine.enginemodels import EngineTask, EngineJob, EngineWorkflow
 from yabiadmin.yabi.models import BackendCredential
@@ -92,52 +91,6 @@ def status(request, model, id):
             return HttpResponseServerError(e)
 
         return HttpResponse('OK')
-
-
-@transaction.commit_manually
-def _update_task_status(task_id, status):
-    try:
-        kwargs = {Task.status_attr(status): datetime.now()}
-        Task.objects.filter(id=task_id).update(**kwargs)
-        task = Task.objects.get(id=task_id)
-
-        if status != STATUS_BLOCKED and status!= STATUS_RESUME:
-            task.percent_complete = STATUS_PROGRESS_MAP[status]
-
-        if status == STATUS_COMPLETE:
-            task.end_time = datetime.now()
-       
-        # We have to commit the task status before calculating
-        # job status that is based on task statuses
-        task.save()
-        transaction.commit()
- 
-        # update the job status when the task status changes
-        job_old_status = task.job.status
-        job_cur_status = task.job.update_status()
-        transaction.commit()
-
-        if job_cur_status != job_old_status and job_cur_status in (STATUS_ERROR, STATUS_COMPLETE):
-            task.job.workflow.update_status()
-            transaction.commit()
-
-        # always commit transactions before sending tasks depending on state from the current transaction 
-        # http://docs.celeryq.org/en/latest/userguide/tasks.html
-        
-        if job_cur_status in [STATUS_READY, STATUS_COMPLETE, STATUS_ERROR]:
-            workflow = EngineWorkflow.objects.get(pk=task.job.workflow.id)
-            if workflow.needs_walking():
-                # trigger a walk via celery 
-                transaction.commit()
-                walk_workflow(workflow_id=workflow.pk)
-
-        transaction.commit()
-    except Exception, e:
-        transaction.rollback()
-        import traceback
-        logger.critical(traceback.format_exc())
-        logger.critical('Caught Exception: %s' % e)
-        raise
 
 
 @hmac_authenticated

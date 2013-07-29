@@ -41,7 +41,6 @@ from urlparse import urlparse, urlunparse
 from yabiadmin.crypto_utils import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, deannotate, DecryptException, AESTEMP
 from yabiadmin.constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK, VALID_SCHEMES
 from yabiadmin.utils import cache_keyname
-#from yabiadmin.backend.celerytasks import walk_workflow
 
 import logging
 logger = logging.getLogger(__name__)
@@ -556,27 +555,6 @@ class Credential(Base):
         
         cache.set(key, val, time_to_cache)
  
-        #try:
-        #    # unblock our blocked tasks
-        #    self.unblock_all_blocked_tasks()
-        #    
-        #    # rewalk any of this users workflows that are marked for rewalking
-        #    wfs = self.rewalk_workflows()
-        #    ids = [W.id for W in wfs]
-        #    for wf in wfs:
-        #        wf.status=STATUS_READY
-        #        wf.save()
-        #except:
-        #    transaction.rollback()
-        #    raise
-        #else:
-        #    # always commit transactions before sending tasks depending on state from the current transaction 
-        #    # http://docs.celeryq.org/en/latest/userguide/tasks.html
-        #    transaction.commit()
-#
-#            for id in ids:
-#                logger.debug(id)
-#                walk_workflow(workflow_id=id)
             
     def get_from_cache(self):
         result = self.get_cache()
@@ -628,27 +606,6 @@ class Credential(Base):
         name = self.cache_keyname()
         cache.delete( name )
         
-    #def blocked_tasks(self):
-    #    """This looks at all the blocked tasks for the user this credential belongs to
-    #    and returns a queryset of all the tasks in a blocked status for that user"""
-    #    from yabiadmin.yabiengine.models import Task
-    #    #return Task.objects.filter(job__workflow__user=self.user).filter(status=STATUS_BLOCKED)
-    #    users_tasks = Task.objects.filter(job__workflow__user=self.user).filter(status_blocked__isnull=False)
-    #    return [T for T in users_tasks if T.status==STATUS_BLOCKED]
-        
-    #def rewalk_workflows(self):
-    #    from yabiadmin.yabiengine.enginemodels import EngineWorkflow
-    #    return EngineWorkflow.objects.filter(user=self.user).filter(status=STATUS_REWALK)
-    #    #users_wfs = EngineWorkflow.objects.filter(user=self.user).filter(status_rewalk__isnull=False)
-    #    #return [W for W in users_wfs if W.status==STATUS_REWALK]
-                
-    #def unblock_all_blocked_tasks(self):
-    #    """Set the status on all tasks blocked for this user to 'resume' so they can resume"""
-    #    #self.blocked_tasks().update(status=STATUS_RESUME)    
-    #    for task in self.blocked_tasks():
-    #        task.status=STATUS_RESUME
-    #        task.save()
-
     @property
     def is_plaintext(self):
         """We assume its plaintext if it fails the crypto_utils looks_like_annotated_block() function"""

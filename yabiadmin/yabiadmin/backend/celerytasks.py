@@ -33,9 +33,9 @@ from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend import backend
 from yabiadmin.constants import STATUS_ERROR, STATUS_READY, STATUS_RUNNING, STATUS_COMPLETE, STATUS_EXEC,STATUS_STAGEOUT,STATUS_STAGEIN,STATUS_CLEANING
 from yabiadmin.constants import MAX_CELERY_TASK_RETRIES
-from yabiadmin.yabiengine.enginemodels import EngineWorkflow, EngineTask
-import traceback
-from types import LongType, StringType, BooleanType
+from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
+from yabiadmin.yabiengine.models import Task
+from yabiadmin.yabiengine.enginemodels import EngineWorkflow, EngineJob, EngineTask
 import celery
 from celery import current_task, chain
 from celery.utils.log import get_task_logger
@@ -44,7 +44,7 @@ logger = get_task_logger(__name__)
 
 # Celery Tasks working on a Workflow
 
-@celery.task(ignore_result=True)
+@celery.task
 def build(workflow_id):
     """
     Build a workflow.
@@ -63,91 +63,90 @@ def build(workflow_id):
         raise
 
 
-@celery.task(ignore_result=True, max_retries=None)
-def walk(workflow_id):
-    request = current_task.request
-    from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
-    try:
-         workflow = EngineWorkflow.objects.get(id=workflow_id)
-         workflow.walk()
-    except DecryptedCredentialNotAvailable, dcna:
-        logger.error("Decrypted credential not available.")
-        logger.error(dcna)
-        countdown = backoff(request.retries)
-        logger.warning('walk.retry {0} in {1} seconds'.format(workflow_id, countdown))
-        raise walk.retry(exc=dcna, countdown=countdown)
-    except Exception, exc:
-        logger.error(traceback.format_exc())
-        logger.error(exc)
-        try:
-            workflow.status = STATUS_ERROR
-            workflow.save()
-        except Exception:
-            logger.error(traceback.format_exc())
-            pass
-        raise exc
-    return workflow_id
-
-
-
 def build_workflow(workflow_id):
-    chain(build.s(workflow_id) | walk.s() | tasks_to_submit.s()).apply_async()
+    chain(build.s(workflow_id) | process_jobs.s()).apply_async()
 
 
-def walk_workflow(workflow_id):
-    chain(walk.s(workflow_id) | tasks_to_submit.s()).apply_async()
+@celery.task
+def process_jobs(workflow_id):
+    workflow = EngineWorkflow.objects.get(pk=workflow_id)
+    for job in workflow.jobs_that_need_processing():
+        chain(create_db_tasks.s(job.pk) | spawn_ready_tasks.s()).apply_async()
 
 
-@celery.task(ignore_result=True)
-def tasks_to_submit(workflow_id):
-    """Determine what tasks are able to be submitted for a workflow"""
-    assert type(workflow_id) is LongType, '{0} not a long'.format(type(workflow_id))
-    logger.debug('tasks_to_submit for workflow {0}'.format(workflow_id))
+# Celery Tasks working on a Job
+
+
+@celery.task
+def create_db_tasks(job_id):
     request = current_task.request
     try:
-        from yabiadmin.yabiengine.models import Task
-        # TODO deprecate tasktag
-        #ready_tasks = Task.objects.filter(tasktag=tasktag).filter(status_requested__isnull=True, status_ready__isnull=False).order_by('id')
-        tasks = Task.objects.filter(job__workflow__id=workflow_id).order_by('id')
-        logger.debug(tasks)
-        for task in tasks:
-            logger.debug(task)
+        job = EngineJob.objects.get(pk=job_id)
+        job.create_tasks()
+    except DecryptedCredentialNotAvailable, dcna:
+        logger.exception("Decrypted credential not available.")
+        countdown = backoff(request.retries)
+        logger.warning('create_db_tasks.retry {0} in {1} seconds'.format(workflow_id, countdown))
+        raise current_task.retry(exc=dcna, countdown=countdown)
+    except Exception, exc:
+        logger.exception("Exception in create_db_tasks for job {0}".format(job_id))
+        try:
+            job.status = STATUS_ERROR
+            job.workflow.status = STATUS_ERROR
+            job.save()
+            job.workflow.save()
+        except Exception:
+            logger.exception()
+        raise
 
-        ready_tasks = Task.objects.filter(job__workflow__id=workflow_id).filter(status_requested__isnull=True, status_ready__isnull=False).order_by('id')
+    return job_id
+
+
+
+@celery.task()
+@transaction.commit_on_success()
+def spawn_ready_tasks(job_id):
+    """Determine what tasks are able to be submitted for a job"""
+    logger.debug('spawn_ready_tasks for job {0}'.format(job_id))
+    request = current_task.request
+    try:
+        # TODO deprecate tasktag
+        job = EngineJob.objects.get(pk=job_id)
+        ready_tasks = job.ready_tasks()
         logger.debug(ready_tasks)
-        for task in ready_tasks:
-            _task_chain(task.id)
+        for task in job.ready_tasks():
+            spawn_task(task.pk)
             # need to update task.job.status here when all tasks for job spawned ?
 
     except Exception, exc:
-        logger.error(traceback.format_exc())
-        logger.error(exc)
-        workflow = EngineWorkflow.objects.get(id=workflow_id)
-        workflow.status = STATUS_ERROR
-        workflow.save()
-        raise exc
-    return workflow_id
+        transaction.rollback()
+        logger.exception("Exception when submitting tasks for job {0}".format(job_id))
+        job = EngineJob.objects.get(pk=job_id)
+        job.status = STATUS_ERROR
+        job.workflow.status = STATUS_ERROR
+        job.save()
+        job.workflow.save()
+        transaction.commit()
+        raise
+    return job_id
 
 
-@transaction.commit_on_success()
-def _task_chain(task_id):
-    """Create the task chain for a given task"""
-    logger.debug('task chain for {0}'.format(task_id))
+# Celery Tasks working on a Yabi Task
+
+
+def spawn_task(task_id):
+    logger.debug('Spawn task'.format(task_id))
 
     try:
-        # Mark the task as requested
-        from yabiadmin.yabiengine.models import Task
         updated = Task.objects.filter(pk=task_id, status_requested__isnull=True).update(status_requested=datetime.now())
         if updated == 1:
             chain(stage_in_files.s(task_id) | submit_task.s() | poll_task_status.s() | stage_out_files.s() | clean_up_task.s()).apply_async()
         else:
-            logger.warning("Unable to create task chain for {0}".format(task_id))
+            logger.warning("Unable to spawn task {0}".format(task_id))
     except Exception:
-        logger.exception("Exception in _task_chain for task {0}".format(task_id))
+        logger.exception("Exception in _spawn_task for task {0}".format(task_id))
         raise
 
-
-# Celery Tasks working on a Yabi Task
 
 def retry_on_error(original_function):
     @wraps(original_function)
@@ -176,7 +175,7 @@ def retry_on_error(original_function):
 
 
 
-@celery.task(ignore_result=True, max_retries=None)
+@celery.task(max_retries=None)
 @retry_on_error
 def stage_in_files(task_id):
     task = EngineTask.objects.get(pk=task_id)
@@ -185,7 +184,7 @@ def stage_in_files(task_id):
     return task_id
 
 
-@celery.task(ignore_result=True, max_retries=MAX_CELERY_TASK_RETRIES)
+@celery.task(max_retries=MAX_CELERY_TASK_RETRIES)
 @retry_on_error
 def submit_task(task_id):
     task = EngineTask.objects.get(pk=task_id)
@@ -194,7 +193,7 @@ def submit_task(task_id):
     return task_id
 
 
-@celery.task(ignore_result=True, max_retries=None)
+@celery.task(max_retries=None)
 @retry_on_error
 def poll_task_status(task_id):
     task = EngineTask.objects.get(pk=task_id)
@@ -202,7 +201,7 @@ def poll_task_status(task_id):
     return task_id
 
 
-@celery.task(ignore_result=True, max_retries=None)
+@celery.task(max_retries=None)
 @retry_on_error
 def stage_out_files(task_id):
     task = EngineTask.objects.get(pk=task_id)
@@ -211,7 +210,7 @@ def stage_out_files(task_id):
     return task_id
 
 
-@celery.task(ignore_result=True, max_retries=None)
+@celery.task(max_retries=None)
 @retry_on_error
 def clean_up_task(task_id):
     task = EngineTask.objects.get(pk=task_id)
@@ -249,7 +248,7 @@ def change_task_status(task_id, status):
         if job_status_changed:
             # commit before submission of Celery Tasks
             transaction.commit()
-            rewalk_workflow_if_needed(task)
+            process_workflow_jobs_if_needed(task)
 
         transaction.commit()
 
@@ -258,11 +257,11 @@ def change_task_status(task_id, status):
         logger.exception("Exception when updating task's {0} status to {1}".format(task_id, status))
         raise
 
-def rewalk_workflow_if_needed(task):
+def process_workflow_jobs_if_needed(task):
     if task.job.status == STATUS_COMPLETE:
         workflow = EngineWorkflow.objects.get(pk=task.job.workflow.pk)
-        if workflow.needs_walking():
-            walk_workflow(workflow_id=workflow.pk)
+        if workflow.has_jobs_to_process():
+            process_jobs.apply_async((workflow.pk,))
  
 
 
