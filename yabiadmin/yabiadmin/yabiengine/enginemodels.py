@@ -340,14 +340,14 @@ class EngineJob(Job):
         # lets count up our batch_file_list to see how many files there are to process
         # won't count tasks with file == None as these are from not batch param jobs
         count = len(filter(lambda x: x is not None, input_files))
-        left_padded_with_zeros = "{0:0>%s}" % count if count else ""
+        left_padded_with_zeros = "{0:0>%s}" % count
 
         self.task_total = len(input_files)
 
         for task_num, input_file in enumerate(input_files):
             task = EngineTask(job=self, status=STATUS_PENDING, start_time=datetime.datetime.now(), execution_backend_credential=be, task_num=task_num+1)
 
-            task_name = left_padded_with_zeros.format(task_num+1)
+            task_name = left_padded_with_zeros.format(task_num+1) if count > 1 else ""
             task.add_task(input_file, task_name)
 
 
