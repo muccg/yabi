@@ -320,6 +320,9 @@ class EngineJob(Job):
             self.status = STATUS_READY
             self.save()
             self.make_tasks_ready()
+
+            return self.total_tasks()
+
         except:
             transaction.rollback()
             # We couldn't sucessfully create tasks for the job so we will set

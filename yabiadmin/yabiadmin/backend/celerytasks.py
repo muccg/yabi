@@ -70,7 +70,10 @@ def create_db_tasks(job_id):
     request = current_task.request
     try:
         job = EngineJob.objects.get(pk=job_id)
-        job.create_tasks()
+        tasks_count = job.create_tasks()
+        if not tasks_count:
+            return None
+        return job_id
     except DecryptedCredentialNotAvailable, dcna:
         logger.exception("Decrypted credential not available.")
         countdown = backoff(request.retries)
@@ -84,53 +87,46 @@ def create_db_tasks(job_id):
         job.workflow.save()
         raise
 
-    return job_id
-
-
 
 @celery.task()
-@transaction.commit_on_success()
 def spawn_ready_tasks(job_id):
-    """Determine what tasks are able to be submitted for a job"""
     logger.debug('spawn_ready_tasks for job {0}'.format(job_id))
+    if job_id is None:
+        logger.debug('no tasks to process, exiting early')
+        return
     request = current_task.request
     try:
         # TODO deprecate tasktag
         job = EngineJob.objects.get(pk=job_id)
         ready_tasks = job.ready_tasks()
         logger.debug(ready_tasks)
-        for task in job.ready_tasks():
+        for task in ready_tasks:
             spawn_task(task.pk)
             # need to update task.job.status here when all tasks for job spawned ?
 
+        return job_id
+
     except Exception, exc:
-        transaction.rollback()
         logger.exception("Exception when submitting tasks for job {0}".format(job_id))
         job = EngineJob.objects.get(pk=job_id)
         job.status = STATUS_ERROR
         job.workflow.status = STATUS_ERROR
         job.save()
         job.workflow.save()
-        transaction.commit()
         raise
-    return job_id
 
 
 # Celery Tasks working on a Yabi Task
 
-
+@transaction.commit_on_success()
 def spawn_task(task_id):
-    logger.debug('Spawn task'.format(task_id))
+    logger.debug('Spawn task {0}'.format(task_id))
 
-    try:
-        updated = Task.objects.filter(pk=task_id, status_requested__isnull=True).update(status_requested=datetime.now())
-        if updated == 1:
-            chain(stage_in_files.s(task_id) | submit_task.s() | poll_task_status.s() | stage_out_files.s() | clean_up_task.s()).apply_async()
-        else:
-            logger.warning("Unable to spawn task {0}".format(task_id))
-    except Exception:
-        logger.exception("Exception in _spawn_task for task {0}".format(task_id))
-        raise
+    task = Task.objects.get(pk=task_id)
+    task.status_requested = datetime.now()
+    task.save()
+    transaction.commit()
+    chain(stage_in_files.s(task_id) | submit_task.s() | poll_task_status.s() | stage_out_files.s() | clean_up_task.s()).apply_async()
 
 
 def retry_on_error(original_function):
@@ -224,8 +220,8 @@ def backoff(count=0):
 @transaction.commit_manually()
 def change_task_status(task_id, status):
     try:
-        task = EngineTask.objects.get(pk=task_id)
         logger.debug("Setting status of task {0} to {1}".format(task_id, status))
+        task = EngineTask.objects.get(pk=task_id)
         task.set_status(status)
         task.save()
         job_status_changed = task.cascade_status()
