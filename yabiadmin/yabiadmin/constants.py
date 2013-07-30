@@ -48,7 +48,6 @@ STATUS_REWALK = 'rewalk'
 
 
 JOB_STATUS_PROCESSING = "started processing"  # Job has begun, but has not yet created Task objects or spawned chains.
-JOB_STATUS_TASKS_CREATED = "tasks created"    # Job has created Task objects in DB but has not yet spawned task chains.
 JOB_STATUS_TASKS_SPAWNED = "tasks spawned"    # Job has created Task objects and spawned chains.
 
 
@@ -62,8 +61,7 @@ STATUS_MAP = (
     (STATUS_READY, 0.0),
     (STATUS_REQUESTED, 0.01),
     (JOB_STATUS_PROCESSING, 0.02),
-    (JOB_STATUS_TASKS_CREATED, 0.03),
-    (JOB_STATUS_TASKS_SPAWNED, 0.04),
+    (JOB_STATUS_TASKS_SPAWNED, 0.03),
     (STATUS_STAGEIN, 0.05),
     ('mkdir', 0.1),
     (STATUS_EXEC, 0.11),
@@ -88,7 +86,7 @@ STATUS_MAP = (
 
 STATUS_PROGRESS_MAP = dict(STATUS_MAP)
 
-_statuses_order = [st[0] for st in STATUS_MAP if st[0] != '' and st[0] not in (JOB_STATUS_PROCESSING,JOB_STATUS_TASKS_CREATED,JOB_STATUS_TASKS_SPAWNED)] + [STATUS_BLOCKED]
+_statuses_order = [st[0] for st in STATUS_MAP if st[0] != '' and st[0] not in (JOB_STATUS_PROCESSING,JOB_STATUS_TASKS_SPAWNED)] + [STATUS_BLOCKED]
 _statuses_order.reverse()
 STATUSES_REVERSE_ORDER = _statuses_order
 
