@@ -44,23 +44,15 @@ logger = get_task_logger(__name__)
 
 # Celery Tasks working on a Workflow
 
-@celery.task
-def create_jobs(workflow_id):
-    try:
-        workflow = EngineWorkflow.objects.get(id=workflow_id)
-        workflow.create_jobs()
-        return workflow.pk
-
-    except Exception, exc:
-        logger.exception("Exception in Celery Task create_jobs() for workflow {0}".format(workflow_id))
-        if workflow.status != STATUS_ERROR:
-            workflow.status = STATUS_ERROR
-            workflow.save()
-        raise
-
-
 def process_workflow(workflow_id):
     return chain(create_jobs.s(workflow_id) | process_jobs.s())
+
+
+@celery.task
+def create_jobs(workflow_id):
+    workflow = EngineWorkflow.objects.get(pk=workflow_id)
+    workflow.create_jobs()
+    return workflow.pk
 
 
 @celery.task
@@ -86,13 +78,10 @@ def create_db_tasks(job_id):
         raise current_task.retry(exc=dcna, countdown=countdown)
     except Exception, exc:
         logger.exception("Exception in create_db_tasks for job {0}".format(job_id))
-        try:
-            job.status = STATUS_ERROR
-            job.workflow.status = STATUS_ERROR
-            job.save()
-            job.workflow.save()
-        except Exception:
-            logger.exception()
+        job.status = STATUS_ERROR
+        job.workflow.status = STATUS_ERROR
+        job.save()
+        job.workflow.save()
         raise
 
     return job_id

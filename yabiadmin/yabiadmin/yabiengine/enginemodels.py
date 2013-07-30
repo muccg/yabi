@@ -122,13 +122,15 @@ class EngineWorkflow(Workflow):
                 default_stageout = self.user.default_stageout
 
             self.stageout = "%s%s/" % (default_stageout, self.name)
-            self.status = STATUS_READY
             self.save()
 
             # save the jobs
             for i,job_dict in enumerate(workflow_dict["jobs"]):
                 job = EngineJob(workflow=self, order=i, start_time=datetime.datetime.now())
                 job.add_job(job_dict)
+
+            self.status = STATUS_READY
+            self.save()
 
         except Exception, e:
             transaction.rollback()
@@ -291,17 +293,14 @@ class EngineJob(Job):
         logger.debug('----- creating tasks for Job %s -----' % self.pk)
         assert self.total_tasks() == 0, "Job already has tasks"
 
-        self.update_dependencies()
 
         updated = Job.objects.filter(pk=self.pk, status=STATUS_PENDING).update(status=JOB_STATUS_PROCESSING)
         if updated == 0:
             logger.info("Another process_jobs() must have picked up job %s already" % job.pk)
             return
 
+        self.update_dependencies()
         be = get_exec_backendcredential_for_uri(self.workflow.user.name, self.exec_backend)
-
-        for fs in self.template.file_sets():
-            logger.debug("FS %s" % fs)
 
         input_files = self.get_input_files()
         self.create_one_task_for_each_input_file(input_files, be)
@@ -319,9 +318,7 @@ class EngineJob(Job):
         # mark job as ready so it can be requested by a backend
         self.status = STATUS_READY
         self.save()
-
         self.make_tasks_ready()
-        self.status = JOB_STATUS_TASKS_CREATED
 
 
     def get_input_files(self):
