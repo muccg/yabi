@@ -65,7 +65,7 @@ def process_jobs(workflow_id):
 # Celery Tasks working on a Job
 
 
-@celery.task
+@celery.task(max_retries=None)
 def create_db_tasks(job_id):
     request = current_task.request
     try:
@@ -74,7 +74,7 @@ def create_db_tasks(job_id):
     except DecryptedCredentialNotAvailable, dcna:
         logger.exception("Decrypted credential not available.")
         countdown = backoff(request.retries)
-        logger.warning('create_db_tasks.retry {0} in {1} seconds'.format(workflow_id, countdown))
+        logger.warning('create_db_tasks.retry {0} in {1} seconds'.format(job_id, countdown))
         raise current_task.retry(exc=dcna, countdown=countdown)
     except Exception, exc:
         logger.exception("Exception in create_db_tasks for job {0}".format(job_id))

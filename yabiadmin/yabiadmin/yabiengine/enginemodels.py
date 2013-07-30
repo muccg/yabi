@@ -296,30 +296,38 @@ class EngineJob(Job):
 
         updated = Job.objects.filter(pk=self.pk, status=STATUS_PENDING).update(status=JOB_STATUS_PROCESSING)
         if updated == 0:
-            logger.info("Another process_jobs() must have picked up job %s already" % job.pk)
+            logger.info("Another process_jobs() must have picked up job %s already" % self.pk)
             return
 
-        self.update_dependencies()
-        be = get_exec_backendcredential_for_uri(self.workflow.user.name, self.exec_backend)
+        try:
+            self.update_dependencies()
+            be = get_exec_backendcredential_for_uri(self.workflow.user.name, self.exec_backend)
 
-        input_files = self.get_input_files()
-        self.create_one_task_for_each_input_file(input_files, be)
+            input_files = self.get_input_files()
+            self.create_one_task_for_each_input_file(input_files, be)
 
-        # there must be at least one task for every job
-        if not self.total_tasks():
-            logger.critical('No tasks for job: %s' % self.pk)
-            self.status = STATUS_ERROR
-            self.workflow.status = STATUS_ERROR
+            # there must be at least one task for every job
+            if not self.total_tasks():
+                logger.critical('No tasks for job: %s' % self.pk)
+                self.status = STATUS_ERROR
+                self.workflow.status = STATUS_ERROR
+                self.save()
+                self.workflow.save()
+                transaction.commit()
+                raise Exception('No tasks for job: %s' % self.pk)
+
+            # mark job as ready so it can be requested by a backend
+            self.status = STATUS_READY
             self.save()
-            self.workflow.save()
+            self.make_tasks_ready()
+        except:
+            transaction.rollback()
+            # We couldn't sucessfully create tasks for the job so we will set
+            # the status to PENDING (ie. allowing a retry to pick it up again)
+            self.status = STATUS_PENDING
+            self.save()
             transaction.commit()
-            raise Exception('No tasks for job: %s' % self.pk)
-
-        # mark job as ready so it can be requested by a backend
-        self.status = STATUS_READY
-        self.save()
-        self.make_tasks_ready()
-
+            raise
 
     def get_input_files(self):
         if self.template.command.is_select_file:
