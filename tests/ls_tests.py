@@ -7,11 +7,8 @@ import shutil
 class LsTestCase(TestCase):
     def setUp(self):
         TestCase.setUp(self)
-        #YABI [yabiadmin.backend.filebackend:DEBUG:2013-07-26 16:13:43,462:filebackend.py:141:ls] filebackend.ls(uri=localfs://demo@localhost/home/ccg-user/yabi_data_dir/foo/bar/) = {'/home/ccg-user/yabi_data_dir/foo/bar/': {'files': [('d.txt', 6, 'Jul 26 2013', False), ('e.txt', 7, 'Jul 26 2013', False)], 'directories': [('baz', 4096, 'Jul 26 2013', False)]}}
-        #YABI [yabiadmin.backend.filebackend:DEBUG:2013-07-26 16:13:45,185:filebackend.py:141:ls] filebackend.ls(uri=localfs://demo@localhost/home/ccg-user/yabi_data_dir/foo/bar/baz/) = {'/home/ccg-user/yabi_data_dir/foo/bar/baz/': {'files': [], 'directories': []}}
         self.root = "/tmp/lstestdir/"
         self.link_file_src = "/tmp/mylink.txt"
-
         self.date_string = self.todays_date()
         self.remove_folder_structure()
         self.create_folder_structure()
@@ -40,9 +37,7 @@ class LsTestCase(TestCase):
         with open(self.link_file_src, "w") as lf:
             lf.write("hello")
         link_path = os.path.join(self.root, "foo", "l.txt")
-        os.symlink(self.link_file_src,link_path)
-
-
+        os.symlink(self.link_file_src, link_path)
 
     def remove_folder_structure(self):
         if os.path.exists(self.root):
@@ -83,21 +78,30 @@ class LsTestCase(TestCase):
 
         self.assertTrue(len(directories) == 2, "Expected 2 directories. listing = %s" % listing)
 
-        self.assertTrue('foo' in directories, 'Subdirectories wrong: directories = %s listing = %s' % (directories, listing))
-        self.assertTrue('bar' in directories, 'Subdirectories wrong: directories = %s listing = %s' % (directories, listing))
+        self.assertTrue(('foo', 4096, self.todays_date(), False) in directories, 'Subdirectories wrong foo: directories = %s listing = %s' % (directories, listing))
+        self.assertTrue(('bar', 4096, self.todays_date(), False) in directories, 'Subdirectories wrong bar: directories = %s listing = %s' % (directories, listing))
 
         listing = ls(os.path.join(self.root, 'foo'))
-        expected = {"%sfoo/" % self.root: {"files": [('a.txt', 1, self.todays_date(), False), ('b.txt', 1, self.todays_date(),  False), ("l.txt", 5, self.todays_date(),  True)], 'directories': ['baz']}}
+
+        expected = {"%sfoo/" % self.root: {"files": [('a.txt', 1, self.todays_date(), False), ('b.txt', 1, self.todays_date(),  False), ("l.txt", 15, self.todays_date(),  True)], 'directories': [('baz', 4096, self.todays_date(), False )]}}
 
         self.assertEquals(listing, expected, "subdirectory listing incorect: Expected: %s Actual: %s" % (expected, listing))
 
-        def tearDown(self):
-            self.remove_folder_structure()
-            TestCase.tearDown(self)
+    def test_recursive_ls(self):
+        import json
+        uri = "localfs://demo@localhost%s" % self.root
+        # This is what was produced by old ls parsing code
+        
+        self.old_listing = {"/tmp/lstestdir/foo/baz/": {"files": [], "directories": []},
+                            "/tmp/lstestdir/": {"files": [("d.txt", 1, self.todays_date(), False)], "directories": [("bar", 4096, self.todays_date(), False), ("foo", 4096, self.todays_date(), False)]},
+                            "/tmp/lstestdir/foo/": {"files": [("a.txt", 1, self.todays_date(), False), ("b.txt", 1, self.todays_date(), False), ("l.txt", 15, self.todays_date(), True)], "directories": [("baz", 4096, self.todays_date(), False)]},
+                            "/tmp/lstestdir/bar/": {"files": [("c.txt", 1, self.todays_date(), False)], "directories": []},
+                            }
+        listing = ls(self.root, recurse=True)
+
+        self.assertEquals(self.old_listing, listing, "old listing = %s\n\n\nnew listing=%s" % (self.old_listing, listing))
 
 
-
-
-
-
-
+    def tearDown(self):
+        self.remove_folder_structure()
+        TestCase.tearDown(self)

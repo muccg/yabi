@@ -199,33 +199,53 @@ def _get_creation_date(file_path):
     """
     return datetime.datetime.fromtimestamp(os.path.getctime(file_path)).strftime("%b %d %Y")
 
-def ls(path):
-    # just one level??
-    top_level = os.path.dirname(path)
+def ls(top_level_path,recurse=False):
     listing = {}
-    if not path.endswith("/"):
-        path = path + "/"
 
-    listing[path] = {}
-    for root, directories, files in os.walk(path, topdown=True):
-        if root != path:
-            continue
+    def append_slash(path):
+        if not path.endswith("/"):
+            return path + "/"
         else:
-            listing[root] = {}
-            listing[root]['files'] = []
-            for file_name in sorted(files):
-                file_path = os.path.join(root,file_name)
-                size = os.path.getsize(file_path)
-                date_string = _get_creation_date(file_path)
-                is_a_link = os.path.islink(file_path)
-                file_info_tuple = (file_name, size, date_string, is_a_link)
-                listing[root]['files'].append(file_info_tuple)
+            return path
 
-            listing[root]['directories'] = []
-            for directory in sorted(directories):
-                listing[root]['directories'].append(directory)
+    def info_tuple(root, name):
+        file_path = os.path.join(root, name)
+        is_a_link = os.path.islink(file_path)
+        if is_a_link:
+            size = os.lstat(file_path).st_size
+        else:
+            size = os.path.getsize(file_path)
+        date_string = _get_creation_date(file_path)
 
-            return listing  # bail before walking rest
+        return name, size, date_string, is_a_link
+
+    for root, directories, files in os.walk(top_level_path,topdown=True):
+        slashed_root = append_slash(root)
+        listing[slashed_root] = {}
+        listing[slashed_root]['files'] = []
+        for file_name in sorted(files):
+                file_info_tuple = info_tuple(root, file_name)
+                listing[slashed_root]['files'].append(file_info_tuple)
+
+        listing[slashed_root]['directories'] = []
+        for directory in sorted(directories):
+            directory_info_tuple = info_tuple(root, directory)
+            listing[slashed_root]['directories'].append(directory_info_tuple)
+
+        if root == top_level_path and not recurse:
+            return listing
+
+    return listing
+
+
+
+
+
+
+
+
+
+
 
 
 
