@@ -25,6 +25,7 @@
 # 
 ### END COPYRIGHT ###
 import os
+import datetime
 import subprocess
 from yabiadmin.yabiengine.urihelper import url_join
 import traceback
@@ -190,3 +191,41 @@ def sshclient(hostname, port, credential):
     except socket.error, soe:  # socket.error - if a socket error occurred while connecting
         raise RetryException(soe, traceback.format_exc())
     return ssh
+
+def _get_creation_date(file_path):
+    """
+    @param file_path:
+    @return: Creation date as a string in format like "Jul 26 2013"
+    """
+    return datetime.datetime.fromtimestamp(os.path.getctime(file_path)).strftime("%b %d %Y")
+
+def ls(path):
+    # just one level??
+    top_level = os.path.dirname(path)
+    listing = {}
+    if not path.endswith("/"):
+        path = path + "/"
+
+    listing[path] = {}
+    for root, directories, files in os.walk(path, topdown=True):
+        if root != path:
+            continue
+        else:
+            listing[root] = {}
+            listing[root]['files'] = []
+            for file_name in sorted(files):
+                file_path = os.path.join(root,file_name)
+                size = os.path.getsize(file_path)
+                date_string = _get_creation_date(file_path)
+                is_a_link = os.path.islink(file_path)
+                file_info_tuple = (file_name, size, date_string, is_a_link)
+                listing[root]['files'].append(file_info_tuple)
+
+            listing[root]['directories'] = []
+            for directory in sorted(directories):
+                listing[root]['directories'].append(directory)
+
+            return listing  # bail before walking rest
+
+
+
