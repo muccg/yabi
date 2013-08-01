@@ -101,6 +101,15 @@ class LsTestCase(TestCase):
 
         self.assertEquals(self.old_listing, listing, "old listing = %s\n\n\nnew listing=%s" % (self.old_listing, listing))
 
+    def test_ls_on_file(self):
+        # take the file /tmp/lstestdir/foo/b.txt
+        test_file = "/tmp/lstestdir/foo/b.txt"
+
+        listing = ls(test_file)
+        file_dict = {"files": [("b.txt", 1, self.todays_date(), False)], "directories": []}
+        expected = {test_file: file_dict}
+
+        self.assertEquals(listing,expected,"ls on single file failed. Expected %s Actual %s" % (expected, listing))
 
     def tearDown(self):
         self.remove_folder_structure()

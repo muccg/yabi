@@ -219,6 +219,12 @@ def ls(top_level_path,recurse=False):
 
         return name, size, date_string, is_a_link
 
+    if os.path.isfile(top_level_path):
+        parent_folder = os.path.dirname(top_level_path)
+        file_name = os.path.basename(top_level_path)
+        file_info = info_tuple(parent_folder, file_name)
+        return {top_level_path: {"files": [file_info], "directories": []}}
+
     for root, directories, files in os.walk(top_level_path,topdown=True):
         slashed_root = append_slash(root)
         listing[slashed_root] = {}
