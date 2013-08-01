@@ -25,7 +25,7 @@
 # 
 ### END COPYRIGHT ###
 from yabiadmin.backend.fsbackend import FSBackend
-from yabiadmin.backend.utils import create_fifo, execute
+from yabiadmin.backend.utils import create_fifo, execute,ls
 from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend.parsers import parse_ls
 from yabiadmin.yabiengine.urihelper import uriparse
@@ -111,33 +111,17 @@ class FileBackend(FSBackend):
         except OSError, ose:
             raise RetryException(ose, traceback.format_exc())
 
-    def ls_recursive(self, uri, args=['-R', '-lF', '--time-style={0}'.format(LS_TIME_STYLE)]):
+    def ls_recursive(self, uri):
         """recursive ls listing at uri"""
-        return self.ls(uri, args)
-
-    def ls(self, uri, args=['-lF', '--time-style={0}'.format(LS_TIME_STYLE)], culldots=True):
-        """ls listing at uri"""
-        # TODO this code is taken from the twisted backend. It needs to be refactored to use
-        # python rather than bespoke command to blocking_execute
         scheme, parts = uriparse(uri)
         logger.debug('{0}'.format(parts.path))
-        args = [LS_PATH] + args + [parts.path]
+        return ls(parts.path, recurse=True)
 
-        status = self.blocking_execute(args)
-        if status != 0:
-            logger.error(self.last_stdout)
-            logger.error(self.last_stderr)
-            raise RetryException('Status [{0}] {1}'.format(status, self.last_stderr))
-
-        listing = parse_ls(self.last_stdout, culldots=culldots)
-
-        # TODO a quirk of the parse_ls code from twisted backend, haven't investigated yet
-        if listing.has_key(None):
-            logger.warning('Listing has None as a key, why is that?')
-            listing[str(parts.path)] = listing[None]
-            del listing[None]
-
-        return listing
+    def ls(self, uri):
+        """ls listing at uri"""
+        scheme, parts = uriparse(uri)
+        logger.debug('{0}'.format(parts.path))
+        return ls(parts.path)
 
     def local_copy(self, src_uri, dst_uri):
         """A local copy within this backend."""
