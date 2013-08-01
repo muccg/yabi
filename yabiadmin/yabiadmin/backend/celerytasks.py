@@ -123,7 +123,7 @@ def spawn_task(task_id):
     logger.debug('Spawn task {0}'.format(task_id))
 
     task = Task.objects.get(pk=task_id)
-    task.status_requested = datetime.now()
+    task.set_status('requested')
     task.save()
     transaction.commit()
     chain(stage_in_files.s(task_id) | submit_task.s() | poll_task_status.s() | stage_out_files.s() | clean_up_task.s()).apply_async()
