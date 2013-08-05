@@ -30,6 +30,7 @@ from yabiadmin.backend.execbackend import ExecBackend
 from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend.fsbackend import FSBackend
 from yabiadmin.backend.utils import sshclient
+import uuid
 import socket
 import traceback
 import paramiko
@@ -81,5 +82,33 @@ class SSHBackend(ExecBackend):
 
         return 0
 
+    def _exec_script(self, script):
+        logger.debug("SSHBackend.exec_script...")
+        logger.debug('script content = {0}'.format(script))
+        exec_scheme, exec_parts = uriparse(self.task.job.exec_backend)
+        ssh = sshclient(exec_parts.hostname, exec_parts.port, self.cred.credential)
+        try:
+            stdin, stdout, stderr = ssh.exec_command(script, bufsize=-1, timeout=None, get_pty=False)
+            stdin.close()
+
+            logger.debug("sshclient exec'd script OK")
+            return stdout.readlines(), stderr.readlines()
+        except paramiko.SSHException, sshe:
+            raise RetryException(sshe, traceback.format_exc())
+        finally:
+            try:
+                if ssh is not None:
+                    ssh.close()
+            except:
+                pass
+
     def poll_task_status(self):
         pass
+
+    def _generate_remote_script_name(self):
+        REMOTE_TMP_DIR = '/tmp'
+        return os.path.join(REMOTE_TMP_DIR, "yabi-" + str(uuid.uuid4()) + ".sh")
+
+
+
+
