@@ -50,6 +50,10 @@ class ExecBackend(BaseBackend):
             from yabiadmin.backend.selectfileexecbackend import SelectFileExecBackend
             backend = SelectFileExecBackend()
 
+        elif task.execscheme == 'ssh+sge':
+            from yabiadmin.backend.sshsgeexecbackend import SSHSGEExecBackend
+            backend = SSHSGEExecBackend()
+
         else:
             raise Exception('No valid scheme is defined for task {0}'.format(task.id))
 
