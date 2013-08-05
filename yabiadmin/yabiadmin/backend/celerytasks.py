@@ -133,22 +133,24 @@ def retry_on_error(original_function):
     @wraps(original_function)
     def decorated_function(task_id, *args, **kwargs):
         request = current_task.request
+        original_function_name = original_function.__name__
         try:
-            return original_function(task_id, *args, **kwargs)
+            result = original_function(task_id, *args, **kwargs)
+            return result
         except RetryException, rexc:
             logger.exception("Exception in celery task submit_task for task {0}".format(task_id))
             countdown = backoff(request.retries)
             try:
                 current_task.retry(exc=rexc, countdown=countdown)
-                logger.warning('submit_task.retry {0} in {1} seconds'.format(task_id, countdown))
+                logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name,task_id, countdown))
             except RetryException:
-                logger.error("submit_task.retry {0} exceeded retry limit - changing status to error".format(task_id))
+                logger.error("{0}.retry {1} exceeded retry limit - changing status to error".format(original_function_name, task_id))
                 change_task_status(task_id, STATUS_ERROR)
                 raise
             except celery.exceptions.RetryTaskError:
                 raise
             except Exception, ex:
-                logger.error(("submit_task.retry {0} failed: {1} - changing status to error".format(task_id, ex)))
+                logger.error(("{0}.retry {1} failed: {2} - changing status to error".format(original_function_name, task_id, ex)))
                 change_task_status(task_id, STATUS_ERROR)
                 raise
 
