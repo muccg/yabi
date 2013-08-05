@@ -28,7 +28,7 @@ from yabiadmin.backend.fsbackend import FSBackend
 from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend.parsers import parse_ls
 from yabiadmin.yabiengine.urihelper import uriparse
-from yabiadmin.yabiengine.utils import sshclient
+from yabiadmin.backend.utils import sshclient
 import os
 import shutil
 import stat
@@ -43,9 +43,9 @@ logger = logging.getLogger(__name__)
 
 class SFTPCopyThread(threading.Thread):
 
-    def __init__(self, hostname, port, credential, localpath, remotepath, copy, hostkey=None, purge=None, queue=None, cwd=None):
+    def __init__(self, host=None, port=None, credential=None, localpath=None, remotepath=None, copy=None, hostkey=None, purge=None, queue=None, cwd=None):
         threading.Thread.__init__(self)
-        self.hostname = hostname
+        self.hostname = host
         self.port = port
         self.credential = credential
         self.localpath = localpath
@@ -130,11 +130,19 @@ class SFTPBackend(FSBackend):
 
     def mkdir(self, uri):
         """mkdir at uri"""
+        self.set_cred(uri)
         scheme, parts = uriparse(uri)
         ssh = sshclient(parts.hostname, parts.port, self.cred.credential)
         try:
             sftp = ssh.open_sftp()
+            try:
+                self._rm(sftp, parts.path)
+                logger.debug("deleted existing folder %s OK" % parts.path)
+            except Exception,ex:
+                logger.debug("could not remove directory %s: %s" % (parts.path, ex))
             sftp.mkdir(parts.path)
+            logger.debug("created dir %s OK" % parts.path)
+
         except Exception, exc:
             logger.error(exc)
             raise RetryException(exc, traceback.format_exc())
@@ -147,7 +155,9 @@ class SFTPBackend(FSBackend):
 
     def ls(self, uri):
         """ls at uri"""
+        self.set_cred(uri)
         scheme, parts = uriparse(uri)
+        self.cred.credential.unprotect()
         ssh = sshclient(parts.hostname, parts.port, self.cred.credential)
         try:
             sftp = ssh.open_sftp()
@@ -187,8 +197,10 @@ class SFTPBackend(FSBackend):
 
     def ls_recursive(self, uri):
         """recursively ls at uri"""
+        self.set_cred(uri)
         scheme, parts = uriparse(uri)
         output = {"files": [], "directories": []}
+        self.cred.credential.unprotect()
         ssh = sshclient(parts.hostname, parts.port, self.cred.credential)
         try:
             sftp = ssh.open_sftp()
@@ -287,6 +299,7 @@ class SFTPBackend(FSBackend):
         """recursively delete a uri"""
         scheme, parts = uriparse(uri)
         logger.debug('{0}'.format(parts.path))
+        self.cred.credential.unprotect()
         ssh = sshclient(parts.hostname, parts.port, self.cred.credential)
         try:
             sftp = ssh.open_sftp()
@@ -309,3 +322,7 @@ class SFTPBackend(FSBackend):
             sftp.rmdir(path)
         else:
             sftp.remove(path)
+
+    def set_cred(self, uri):
+        from yabiadmin.backend.backend import fs_credential
+        self.cred = fs_credential(self.yabiusername, uri)
