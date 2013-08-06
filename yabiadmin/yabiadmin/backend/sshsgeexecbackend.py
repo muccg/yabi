@@ -63,12 +63,10 @@ class SSHSGEExecBackend(SSHBackend):
         qstat_result = self.parser.parse_qstat(self.task.remote_id, stdout, stderr)
         return qstat_result
 
-
     def _run_qacct(self):
         script = SSHSGEExecBackend.QACCT_TEMPLATE.format(self.task.remote_id)
         stdout, stderr = self._exec_script(script)
         return self.parser.parse_qacct(self.task.remote_id, stdout, stderr)
-
 
     def _get_polling_script(self):
         return SSHSGEExecBackend.QSTAT_TEMPLATE.format(self.task.remote_id)
@@ -79,7 +77,9 @@ class SSHSGEExecBackend(SSHBackend):
         if qstat_result.status == SGEQStatResult.JOB_RUNNING:
             logger.debug("remote job %s for yabi task %s is stilling running" % (self.task.remote_id, self.task))
             # cause retry of polling task ( not sure if this is the best
-            raise RetryException("remote job %s still running" % self.task.remote_id)
+            retry_ex = RetryException("remote job %s still running" % self.task.remote_id)
+            retry_ex.backoff_strategy = RetryException.BACKOFF_STRATEGY_CONSTANT
+            raise retry_ex
 
         elif qstat_result.status == SGEQStatResult.JOB_NOT_FOUND:
             logger.debug("qstat for remote job %s did not produce results - trying qacct ..." % self.task.remote_id)
