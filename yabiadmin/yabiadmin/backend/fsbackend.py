@@ -242,7 +242,9 @@ class FSBackend(BaseBackend):
         Also upload any local remnants of the task to the stageout area
         """
         # first we need a stage out directory
-        self.mkdir(self.task.stageout)
+        backend_for_stageout = FSBackend.urifactory(self.yabiusername, self.task.stageout)
+        logger.debug("backend for stageout mkdir = %s" % backend_for_stageout)
+        backend_for_stageout.mkdir(self.task.stageout)
 
         # deal with any remanants from local commands
         self.stage_out_local_remnants()
