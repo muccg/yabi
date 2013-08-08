@@ -68,9 +68,17 @@ class SFTPCopyThread(threading.Thread):
             if self.copy == 'put':
                 sftp.put(self.localpath, self.remotepath, callback=None, confirm=True)
             elif self.copy == 'get':
-                sftp.get(self.remotepath, self.localpath, callback=None)
-            logger.debug('SFTPCopyThread end copy')
+                try:
+                    sftp.get(self.remotepath, self.localpath, callback=None)
+                # bogus error because stat of fifo returns 0
+                except IOError, ioerr:
+                    if ioerr.message.startswith("size mismatch in get!  0 !="):
+                        status = 0
+                    else:
+                        raise
+
             status = 0
+
         except Exception, exc:
             logger.error(traceback.format_exc())
             logger.error(exc)
@@ -80,7 +88,9 @@ class SFTPCopyThread(threading.Thread):
             if self.queue is not None:
                 self.queue.put(status)
             if self.purge is not None and os.path.exists(self.purge):
-                os.unlink(self.purge)
+                #os.unlink(self.purge)
+                # commented out above as it caused stage out to fail
+                pass
 
 
 class SFTPBackend(FSBackend):
@@ -88,7 +98,7 @@ class SFTPBackend(FSBackend):
     def fifo_to_remote(self, uri, fifo, queue=None):
         """initiate a copy from local fifo to uri"""
         scheme, parts = uriparse(uri)
-        assert  os.path.exists(fifo)
+        assert os.path.exists(fifo)
         thread = SFTPCopyThread(host=parts.hostname,
                             port=parts.port,
                             credential=self.cred.credential,
@@ -102,7 +112,7 @@ class SFTPBackend(FSBackend):
         return thread
 
     def remote_to_fifo(self, uri, fifo, queue=None):
-        """initiate a copy from local file to fifo"""
+        """initiate a copy from remote file to fifo"""
         scheme, parts = uriparse(uri)
         assert  os.path.exists(fifo)
         # don't think we should purge fifo after writing, rather after reading completes
