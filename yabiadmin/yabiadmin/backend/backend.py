@@ -58,7 +58,7 @@ def get_file(yabiusername, uri, bytes=None):
     from yabiadmin.backend.fsbackend import FSBackend
     download_as_fifo = FSBackend.remote_file_download(yabiusername, uri)
     download = open(download_as_fifo)
-    os.remove(download_as_fifo)
+    #os.remove(download_as_fifo)
     return download
 
 
