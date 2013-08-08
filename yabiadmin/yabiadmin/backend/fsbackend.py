@@ -103,7 +103,7 @@ class FSBackend(BaseBackend):
             backend = SelectFileBackend()
 
         else:
-            raise Exception('No valid scheme is defined for task {0}'.format(task.id))
+            raise Exception("No backend can be found for uri %s with fsscheme %s for user %s" % (uri, fsscheme, yabiusername))
 
         backend.yabiusername = yabiusername
         backend.cred = fs_credential(yabiusername, uri)
@@ -117,12 +117,13 @@ class FSBackend(BaseBackend):
         dst_backend = FSBackend.urifactory(yabiusername, dst_uri)
         try:
             listing = src_backend.ls_recursive(src_uri)
+            src_scheme, src_rest = uriparse(src_uri)
             dst_backend.mkdir(dst_uri)
             for key in listing:
                 # copy files using a fifo
                 for listing_file in listing[key]['files']:
-                    src_file_uri = url_join(src_uri, listing_file[0])
-                    dst_file_uri = url_join(dst_uri, listing_file[0])
+                    src_file_uri = url_join(src_scheme + "://" + src_rest.netloc + key,listing_file[0])
+                    dst_file_uri = url_join(dst_uri,listing_file[0])
                     FSBackend.remote_file_copy(yabiusername, src_file_uri, dst_file_uri)
                 # recurse on directories
                 for listing_dir in listing[key]['directories']:
@@ -148,9 +149,8 @@ class FSBackend(BaseBackend):
             fifo = create_fifo('remote_file_copy_' + yabiusername + '_'+ src_parts.hostname + '_' + dst_parts.hostname)
             src_queue = Queue.Queue()
             dst_queue = Queue.Queue()
-            # TODO I reversed this
-            dst_cmd  = dst_backend.fifo_to_remote(dst_uri, fifo, dst_queue)
             src_cmd  = src_backend.remote_to_fifo(src_uri, fifo, src_queue)
+            dst_cmd  = dst_backend.fifo_to_remote(dst_uri, fifo, dst_queue)
             src_cmd.join()
             dst_cmd.join()
             src_status = src_queue.get()
@@ -243,7 +243,6 @@ class FSBackend(BaseBackend):
         """
         # first we need a stage out directory
         backend_for_stageout = FSBackend.urifactory(self.yabiusername, self.task.stageout)
-        logger.debug("backend for stageout mkdir = %s" % backend_for_stageout)
         backend_for_stageout.mkdir(self.task.stageout)
 
         # deal with any remanants from local commands
@@ -306,10 +305,12 @@ class FSBackend(BaseBackend):
     def local_copy_recursive(yabiusername, src_uri, dst_uri):
         """Recursive local copy src_uri to dst_uri"""
         logger.debug('remote_copy {0} -> {1}'.format(src_uri, dst_uri))
-
-        # TODO These backends should be the same, assert it
         src_backend = FSBackend.urifactory(yabiusername, src_uri)
         dst_backend = FSBackend.urifactory(yabiusername, dst_uri)
+        src_backend_class = src_backend.__class__.__name__
+        dest_backend_class = dst_backend.__class__.__name__
+        assert src_backend_class == dest_backend_class
+
         try:
             listing = src_backend.ls_recursive(src_uri)
             dst_backend.mkdir(dst_uri)
