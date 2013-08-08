@@ -105,6 +105,7 @@ class FSBackend(BaseBackend):
         else:
             raise Exception("No backend can be found for uri %s with fsscheme %s for user %s" % (uri, fsscheme, yabiusername))
 
+
         backend.yabiusername = yabiusername
         backend.cred = fs_credential(yabiusername, uri)
         return backend
