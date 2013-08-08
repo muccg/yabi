@@ -70,7 +70,8 @@ class CopyThread(threading.Thread):
                 self.queue.put(status)
             # I was using purge to optionally remove a fifi after a copy
             if self.purge is not None and os.path.exists(self.purge):
-                os.unlink(self.purge)
+                #os.unlink(self.purge)
+                pass
 
 
 class FileBackend(FSBackend):
