@@ -27,12 +27,16 @@
 import os
 import datetime
 import subprocess
+import socket
 from yabiadmin.yabiengine.urihelper import url_join
 import traceback
 from mako.template import Template
 import paramiko
 import logging
 from yabiadmin.backend.exceptions import RetryException
+import uuid
+from yabiadmin import settings
+from yabiadmin.crypto_utils import AESTEMP
 logger = logging.getLogger(__name__)
 
 
@@ -166,22 +170,38 @@ def sshclient(hostname, port, credential):
     if port is None:
         port = 22
     ssh = None
+
+    if credential.is_protected:
+        credential.unprotect()
+
+    temp_pem_file_name = os.path.join('/tmp', "yabi-" + str(uuid.uuid4()))
     logger.debug('Connecting to {0}@{1}:{2}'.format(credential.username, hostname, port))
+
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.load_system_host_keys()
+
+        # This is an ugly hack pkey arg didn't work
+        f = open(temp_pem_file_name, "w")
+        f.write("-----BEGIN RSA PRIVATE KEY-----\n")
+        f.write(credential.key + '\n')
+        f.write("-----END RSA PRIVATE KEY-----")
+        f.close()
+
         ssh.connect(
                 hostname=hostname,
                 port=port,
                 username=credential.username,
-                password=credential.password,
-                pkey=paramiko.PKey(data=credential.key),
-                key_filename=None,
+                password=None,
+                pkey=None,
+                key_filename=temp_pem_file_name,
                 timeout=None,
                 allow_agent=False,
                 look_for_keys=True,
                 compress=False,
                 sock=None)
+
     except paramiko.BadHostKeyException, bhke:  # BadHostKeyException - if the server's host key could not be verified
         raise RetryException(bhke, traceback.format_exc())
     except paramiko.AuthenticationException, aue:  # AuthenticationException - if authentication failed
@@ -190,6 +210,9 @@ def sshclient(hostname, port, credential):
         raise RetryException(sshe, traceback.format_exc())
     except socket.error, soe:  # socket.error - if a socket error occurred while connecting
         raise RetryException(soe, traceback.format_exc())
+    finally:
+        if os.path.exists(temp_pem_file_name):
+            os.unlink(temp_pem_file_name)
     return ssh
 
 def _get_creation_date(file_path):

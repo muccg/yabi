@@ -167,7 +167,6 @@ class SFTPBackend(FSBackend):
         """ls at uri"""
         self.set_cred(uri)
         scheme, parts = uriparse(uri)
-        self.cred.credential.unprotect()
         ssh = sshclient(parts.hostname, parts.port, self.cred.credential)
         try:
             sftp = ssh.open_sftp()
@@ -210,7 +209,6 @@ class SFTPBackend(FSBackend):
         self.set_cred(uri)
         scheme, parts = uriparse(uri)
         output = {"files": [], "directories": []}
-        self.cred.credential.unprotect()
         ssh = sshclient(parts.hostname, parts.port, self.cred.credential)
         try:
             sftp = ssh.open_sftp()
@@ -309,7 +307,6 @@ class SFTPBackend(FSBackend):
         """recursively delete a uri"""
         scheme, parts = uriparse(uri)
         logger.debug('{0}'.format(parts.path))
-        self.cred.credential.unprotect()
         ssh = sshclient(parts.hostname, parts.port, self.cred.credential)
         try:
             sftp = ssh.open_sftp()
