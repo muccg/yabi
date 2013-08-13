@@ -8,6 +8,7 @@ class QStatParseTestCase(unittest.TestCase):
         self.good_qsub_line = "42940.carah.localdomain"
         self.good_qsub_lines = [self.good_qsub_line ]
         self.good_qsub_err = []
+        # the following is the output from qstat -f -1 <jobnum>
         self.good_qstat = """
                             Job Id: 42940.carah.localdomain
                             Job_Name = test.sh
@@ -55,12 +56,12 @@ class QStatParseTestCase(unittest.TestCase):
     def test_qstat_completed(self):
         lines = map(string.strip, self.good_qstat.format("C", "0").split("\n"))
         result = self.parser.parse_qstat("42940", lines, [])
-        self.assertTrue(result.status == TorqueQStatResult.JOB_COMPLETED, "torque job status not correct.expected '%s' result = %s" % (TorqueQStatResult.JOB_COMPLETED, result))
+        self.assertTrue(result.status == TorqueQStatResult.JOB_SUCCEEDED, "torque job status not correct.expected '%s' result = %s" % (TorqueQStatResult.JOB_SUCCEEDED, result))
 
     def test_qstat_completed_with_error(self):
         lines = map(string.strip, self.good_qstat.format("C", "127").split("\n"))
         result = self.parser.parse_qstat("42940", lines,[])
-        self.assertTrue(result.status == TorqueQStatResult.JOB_ERROR, "torque job status not correct. Expected '%s' result = %s" % (TorqueQStatResult.JOB_ERROR, result))
+        self.assertTrue(result.status == TorqueQStatResult.JOB_FAILED, "torque job status not correct. Expected '%s' result = %s" % (TorqueQStatResult.JOB_FAILED, result))
 
     def test_qstat_job_still_running(self):
         lines = map(string.strip, self.good_qstat.format("Q","dontcare").split("\n"))

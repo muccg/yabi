@@ -263,6 +263,7 @@ class SFTPBackend(FSBackend):
 
     def local_copy(self, src_uri, dst_uri):
         """Copy src_uri to dst_uri on the remote backend"""
+        logger.debug("SFTPBackend.local_copy: %s => %s" % (src_uri, dst_uri))
         assert False, "TODO"
 
         src_scheme, src_parts = uriparse(src_uri)
@@ -275,6 +276,7 @@ class SFTPBackend(FSBackend):
 
     def local_copy_recursive(self, src_uri, dst_uri):
         """recursively copy src_uri to dst_uri on the remote backend"""
+        logger.debug("SFTPBackend.local_copy_recursive: %s => %s" % (src_uri, dst_uri))
         assert False, "TODO"
 
         src_scheme, src_parts = uriparse(src_uri)

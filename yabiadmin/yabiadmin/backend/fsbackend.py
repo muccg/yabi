@@ -309,8 +309,9 @@ class FSBackend(BaseBackend):
         src_backend = FSBackend.urifactory(yabiusername, src_uri)
         dst_backend = FSBackend.urifactory(yabiusername, dst_uri)
         src_backend_class = src_backend.__class__.__name__
+        logger.debug("src backend class = %s" % src_backend_class)
         dest_backend_class = dst_backend.__class__.__name__
-        assert src_backend_class == dest_backend_class
+        logger.debug("dst backend class = %s" % dest_backend_class)
 
         try:
             listing = src_backend.ls_recursive(src_uri)

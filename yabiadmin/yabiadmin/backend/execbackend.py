@@ -54,6 +54,10 @@ class ExecBackend(BaseBackend):
             from yabiadmin.backend.sshsgeexecbackend import SSHSGEExecBackend
             backend = SSHSGEExecBackend()
 
+        elif task.execscheme == 'ssh+torque':
+            from yabiadmin.backend.sshtorquebackend import SSHTorqueExecBackend
+            backend = SSHTorqueExecBackend()
+
         else:
             raise Exception('No valid scheme is defined for task {0}'.format(task.id))
 

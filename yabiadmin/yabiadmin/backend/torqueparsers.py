@@ -65,13 +65,15 @@ class TorqueQSubResult(object):
 class TorqueQStatResult(object):
     JOB_RUNNING = "job running"
     JOB_NOT_FOUND = "job not found by qstat"
-    JOB_COMPLETED = "job completed"
-    JOB_ERROR = "job error"
+    JOB_SUCCEEDED = "job succeeded"
+    JOB_FAILED = "job error"
 
 
     def __init__(self):
         self.status = None
         self.remote_id = None
+        self.remote_status = None # raw result of qstat
+
 
     def __repr__(self):
         return "qstat result: remote id = %s remote job status = %s" % (self.remote_id, self.status)
@@ -105,6 +107,7 @@ class TorqueParser(object):
         """
         qsub_result = TorqueQSubResult()
         for line in stdout:
+            logger.debug("Parsing QSUB output line: [%s]" % line)
             try:
                 m = re.match(TorqueParser.JOB_NUMBER_PATTERN, line)
                 if m:
@@ -176,6 +179,7 @@ class TorqueParser(object):
         @param stderr: list of lines
         @return:
         """
+        logger.debug("stdout = %s\nstderr= %s" % (stdout, stderr))
         qstat_result = TorqueQSubResult()
         qstat_result.remote_id = remote_id
         prefix = remote_id + "."
@@ -184,6 +188,7 @@ class TorqueParser(object):
         exit_status = None
 
         for line in stdout:
+            line = line.strip()
             logger.debug("parsing qstat: [%s]" % line)
             if line.startswith("Job Id:"):
                 if not prefix in line:
@@ -196,21 +201,21 @@ class TorqueParser(object):
                 elif line.startswith("exit_status"):
                     exit_status = self._parse_qstat_line(line)
 
-
         assert job_state in TorqueParser.POSSIBLE_STATES, "Job state is wrong. Expected: %s Actual: %s" % (TorqueParser.POSSIBLE_STATES, job_state)
-        assert exit_status
+
 
         if job_state in TorqueParser.FINISHED_STATES and exit_status != "0":
-            qstat_result.status = TorqueQStatResult.JOB_ERROR
+
+            qstat_result.status = TorqueQStatResult.JOB_FAILED
             return qstat_result
         elif job_state in TorqueParser.FINISHED_STATES and exit_status == "0":
-            qstat_result.status = TorqueQStatResult.JOB_COMPLETED
+            qstat_result.status = TorqueQStatResult.JOB_SUCCEEDED
             return qstat_result
         elif job_state in TorqueParser.RUNNING_STATES:
             qstat_result.status = TorqueQStatResult.JOB_RUNNING
             return qstat_result
         else:
-            qstat_result.status = TorqueQStatResult.JOB_ERROR
+            qstat_result.status = TorqueQStatResult.JOB_FAILED
             return qstat_result
 
     def _get_job_status(self, qstat_line):
