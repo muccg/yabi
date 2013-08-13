@@ -779,7 +779,7 @@ class BackendCredential(Base):
     submission.help_text="Mako script to be used to generate a custom submission script. (Variables: walltime, memory, cpus, working, modules, command)"
     
     def __unicode__(self):
-        return "BackendCredential %s"%(self.id)
+        return "BackendCredential %s %s"%(self.id, self.backend)
 
     def json(self):
         output = {
