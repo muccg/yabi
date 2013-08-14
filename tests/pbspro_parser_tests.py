@@ -1,6 +1,15 @@
 import unittest
 from yabiadmin.backend.pbsproparsers import *
-
+# [bioflow@epicuser1 demo]$ qsub ./test.sh
+# 3485900.epic
+# [bioflow@epicuser1 demo]$
+#
+#
+# [bioflow@epicuser1 demo]$ qstat -x 3485900
+# Job id            Name             User              Time Use S Queue
+# ----------------  ---------------- ----------------  -------- - -----
+# 3485900.epic      test.sh          bioflow           00:00:05 F debugq
+# [bioflow@epicuser1 demo]$
 
 class QSubParseTestCase(unittest.TestCase):
     def setUp(self):
@@ -17,5 +26,39 @@ class QSubParseTestCase(unittest.TestCase):
         result = self.parser.parse_qsub([],self.missing_script_lines_error_lines)
         self.assertTrue(result.remote_id is None,"PBSProParser qsub test for missing script - should not assign remote id: Expected: None Actual: %s" % result.remote_id)
         self.assertTrue(result.status == PBSProQSubResult.JOB_SUBMISSION_ERROR,"PBSProParser qsub for missing script. Expected: %s Actual: %s" % (PBSProQSubResult.JOB_SUBMISSION_ERROR, result.status))
+
+class QStatParseTestCase(unittest.TestCase):
+    def setUp(self):
+        self.parser = PBSProParser()
+        self.queued_job_lines = ["Job id            Name             User              Time Use S Queue\n",
+                                    "----------------  ---------------- ----------------  -------- - -----\n",
+                                    "3485900.epic      test.sh          bioflow           00:00:05 Q debugq\n"]
+
+        self.running_job_lines = ["Job id            Name             User              Time Use S Queue\n",
+                                    "----------------  ---------------- ----------------  -------- - -----\n",
+                                    "3485900.epic      test.sh          bioflow           00:00:05 R debugq\n"]
+
+
+        self.completed_job_lines = ["Job id            Name             User              Time Use S Queue\n",
+                                    "----------------  ---------------- ----------------  -------- - -----\n",
+                                    "3485900.epic      test.sh          bioflow           00:00:05 F debugq\n"]
+        self.completed_job_error = []
+
+
+    def test_qstat_finds_completed_job(self):
+        result = self.parser.parse_qstat("3485900", self.completed_job_lines, self.completed_job_error)
+        self.assertTrue(result.status == PBSProQStatResult.JOB_SUCCEEDED,
+                        "PBSProParser failed to report a completed job. Expected status: %s Actual: %s"
+                        % (PBSProQStatResult.JOB_SUCCEEDED, result.status))
+
+    def test_qstat_queued_job(self):
+        result = self.parser.parse_qstat("3485900", self.queued_job_lines, [])
+        self.assertTrue(result.status == PBSProQStatResult.JOB_RUNNING,
+                        "PBSProParser failed to report a queued job: Expected %s Actual: %s" % (PBSProQStatResult.JOB_RUNNING, result.status))
+
+    def test_qstat_running_job(self):
+        result = self.parser.parse_qstat("3485900", self.running_job_lines, [])
+        self.assertTrue(result.status == PBSProQStatResult.JOB_RUNNING,
+                        "PBSProParser failed to report a running job: Expected %s Actual: %s" % (PBSProQStatResult.JOB_RUNNING, result.status))
 
 

@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 class PBSProQSubResult(object):
     JOB_SUBMITTED = "job submitted"
     JOB_SUBMISSION_ERROR = "job submission error"
+
     def __init__(self):
         self.remote_id = None
         self.status = None
@@ -28,11 +29,13 @@ class PBSProQStatResult(object):
     JOB_SUCCEEDED = "job succeeded"
     JOB_FAILED = "job error"
 
-
-
+    def __init__(self):
+        self.remote_id = None
+        self.status = None
 
 class PBSProParser(object):
     QSUB_OUTPUT = "^(?P<remote_id>\d+)\..*"
+
     def parse_qsub(self, stdout, stderr):
         result = PBSProQSubResult()
         for line in stdout:
@@ -46,6 +49,6 @@ class PBSProParser(object):
         result.status = PBSProQSubResult.JOB_SUBMISSION_ERROR
         return result
 
-
-
-
+    def parse_qstat(self, remote_id, stdout, stderr):
+        result = PBSProQStatResult()
+        return result
