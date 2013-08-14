@@ -35,6 +35,7 @@ import paramiko
 import logging
 from yabiadmin.backend.exceptions import RetryException
 import uuid
+import StringIO
 from yabiadmin import settings
 from yabiadmin.crypto_utils import AESTEMP
 logger = logging.getLogger(__name__)
@@ -171,34 +172,29 @@ def sshclient(hostname, port, credential):
         port = 22
     ssh = None
 
-    if credential.is_protected:
-        credential.unprotect()
+    decrypted_credential = credential.get()
+    username = decrypted_credential['username']
+    key = decrypted_credential['key']
 
-    temp_pem_file_name = os.path.join('/tmp', "yabi-" + str(uuid.uuid4()))
-    logger.debug('Connecting to {0}@{1}:{2}'.format(credential.username, hostname, port))
+    logger.debug('Connecting to {0}@{1}:{2}'.format(username, hostname, port))
 
     try:
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.load_system_host_keys()
 
-        # This is an ugly hack pkey arg didn't work
-        f = open(temp_pem_file_name, "w")
-        f.write("-----BEGIN RSA PRIVATE KEY-----\n")
-        f.write(credential.key + '\n')
-        f.write("-----END RSA PRIVATE KEY-----")
-        f.close()
+        pkey = paramiko.RSAKey.from_private_key( StringIO.StringIO(key))
 
         ssh.connect(
                 hostname=hostname,
                 port=port,
-                username=credential.username,
+                username=username,
+                pkey=pkey,
+                key_filename=None,
                 password=None,
-                pkey=None,
-                key_filename=temp_pem_file_name,
                 timeout=None,
                 allow_agent=False,
-                look_for_keys=True,
+                look_for_keys=False,
                 compress=False,
                 sock=None)
 
@@ -210,9 +206,7 @@ def sshclient(hostname, port, credential):
         raise RetryException(sshe, traceback.format_exc())
     except socket.error, soe:  # socket.error - if a socket error occurred while connecting
         raise RetryException(soe, traceback.format_exc())
-    finally:
-        if os.path.exists(temp_pem_file_name):
-            os.unlink(temp_pem_file_name)
+
     return ssh
 
 def _get_creation_date(file_path):
