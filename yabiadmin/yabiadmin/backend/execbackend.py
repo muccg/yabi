@@ -58,6 +58,10 @@ class ExecBackend(BaseBackend):
             from yabiadmin.backend.sshtorquebackend import SSHTorqueExecBackend
             backend = SSHTorqueExecBackend()
 
+        elif task.execsheme == "ssh+pbspro":
+            from yabiadmin.backend.sshpbsprobackend import SSHPBSProExecBackend
+            backend = SSHPBSProExecBackend()
+
         else:
             raise Exception('No valid scheme is defined for task {0}'.format(task.id))
 
