@@ -1,5 +1,5 @@
 import unittest
-from yabiadmin.backend.pbsproparsers import *
+from yabiadmin.backend.pbsproparsers import PBSProQStatResult, PBSProParser, PBSProQSubResult
 # [bioflow@epicuser1 demo]$ qsub ./test.sh
 # 3485900.epic
 # [bioflow@epicuser1 demo]$
@@ -10,6 +10,7 @@ from yabiadmin.backend.pbsproparsers import *
 # ----------------  ---------------- ----------------  -------- - -----
 # 3485900.epic      test.sh          bioflow           00:00:05 F debugq
 # [bioflow@epicuser1 demo]$
+
 
 class QSubParseTestCase(unittest.TestCase):
     def setUp(self):
@@ -42,11 +43,11 @@ class QStatParseTestCase(unittest.TestCase):
         self.completed_job_lines = ["Job id            Name             User              Time Use S Queue\n",
                                     "----------------  ---------------- ----------------  -------- - -----\n",
                                     "3485900.epic      test.sh          bioflow           00:00:05 F debugq\n"]
-        self.completed_job_error = []
+
 
 
     def test_qstat_finds_completed_job(self):
-        result = self.parser.parse_qstat("3485900", self.completed_job_lines, self.completed_job_error)
+        result = self.parser.parse_qstat("3485900", self.completed_job_lines, [])
         self.assertTrue(result.status == PBSProQStatResult.JOB_SUCCEEDED,
                         "PBSProParser failed to report a completed job. Expected status: %s Actual: %s"
                         % (PBSProQStatResult.JOB_SUCCEEDED, result.status))
@@ -60,5 +61,3 @@ class QStatParseTestCase(unittest.TestCase):
         result = self.parser.parse_qstat("3485900", self.running_job_lines, [])
         self.assertTrue(result.status == PBSProQStatResult.JOB_RUNNING,
                         "PBSProParser failed to report a running job: Expected %s Actual: %s" % (PBSProQStatResult.JOB_RUNNING, result.status))
-
-

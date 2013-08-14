@@ -1,7 +1,7 @@
 import logging
 from yabiadmin.backend.sshbackend import SSHBackend
 from yabiadmin.yabiengine.urihelper import uriparse
-from yabiadmin.backend.pbsproparsers import *
+from yabiadmin.backend.pbsproparsers import PBSProParser, PBSProQSubResult, PBSProQStatResult
 from yabiadmin.backend.exceptions import RetryException
 
 logger = logging.getLogger(__name__)
@@ -46,5 +46,37 @@ class SSHPBSProExecBackend(SSHBackend):
         qsub_result = self.parser.parse_qsub(stdout, stderr)
         return qsub_result
 
+
+    def _get_polling_script(self):
+        return self.QSTAT_TEMPLATE.format(self.task.remote_id)
+
+    def _run_qstat(self):
+        qstat_command = self._get_polling_script()
+        stdout, stderr = self._exec_script(qstat_command)
+        qstat_result = self.parser.parse_qstat(self.task.remote_id, stdout, stderr)
+        return qstat_result
+
     def poll_task_status(self):
-        pass
+        qstat_result = self._run_qstat()
+
+        if qstat_result.status == PBSProQStatResult.JOB_RUNNING:
+            logger.debug("remote job %s for yabi task %s is stilling running" % (self.task.remote_id, self.task))
+            # cause retry of polling task ( not sure if this is the best
+            retry_ex = RetryException("remote job %s still running" % self.task.remote_id)
+            retry_ex.backoff_strategy = RetryException.BACKOFF_STRATEGY_CONSTANT
+            raise retry_ex
+
+        elif qstat_result.status == PBSProQStatResult.JOB_NOT_FOUND:
+            logger.debug("qstat for remote job %s did not produce results" % self.task.remote_id)
+            # For Torque this is an error
+            raise Exception("Remote job %s for Yabi task %s not found by qstat" % (self.task.remote_id, self.task.pk))
+
+        elif qstat_result.status == PBSProQStatResult.JOB_SUCCEEDED:
+            logger.debug("yabi task %s succeeded" % self.task.pk)
+
+        elif qstat_result.status == PBSProQStatResult.JOB_FAILED:
+            logger.debug("remote job for yabi task %s failed" % self.task.pk)
+            # how to cause a job resubmission?
+            raise Exception("Yabi task %s failed remotely" % self.task.pk)
+        else:
+            raise Exception("Yabi task %s unknown state: %s" % (self.task.pk, qstat_result.status))
