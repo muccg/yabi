@@ -58,7 +58,7 @@ class ExecBackend(BaseBackend):
             from yabiadmin.backend.sshtorquebackend import SSHTorqueExecBackend
             backend = SSHTorqueExecBackend()
 
-        elif task.execsheme == "ssh+pbspro":
+        elif task.execscheme == "ssh+pbspro":
             from yabiadmin.backend.sshpbsprobackend import SSHPBSProExecBackend
             backend = SSHPBSProExecBackend()
 
