@@ -167,23 +167,30 @@ def harvest_host_key(hostname, port, username, password, pkey):
         logger.error(exc)
 
 
-def create_paramiko_pkey(credential_key, passphrase=None):
+def try_to_load_key_file(key_type, credential_key, passphrase=None):
     try:
-        pkey = paramiko.RSAKey.from_private_key(StringIO.StringIO(credential_key), passphrase)
+        pkey = key_type.from_private_key(StringIO.StringIO(credential_key), passphrase)
         return pkey
     except paramiko.SSHException, sshex:
-        logger.debug('(possibly) "normal" exception: %s' % sshex)
-        logger.debug(traceback.format_exc())
+        # ignoring exceptions of form "not a valid (DSA|RSA) private key file"
+        msg = str(sshex)
+        if not (msg.startswith("not a valid") and msg.endswith("private key file")):
+            logger.exception("SSHException caught:")
+            raise
 
-    try:
-        pkey = paramiko.DSSKey.from_private_key(StringIO.StringIO(credential_key), passphrase)
-        return pkey
-    except paramiko.SSHException, sshex:
-        logger.debug('(possibly) "normal" exception: %s' % sshex)
-        logger.debug(traceback.format_exc())
+    return None
 
-    raise paramiko.SSHException("Passed in key not supported. Supported keys are RSA and DSS")
 
+def create_paramiko_pkey(key, passphrase=None):
+    pkey = (
+        try_to_load_key_file(paramiko.RSAKey, key, passphrase) 
+        or
+        try_to_load_key_file(paramiko.DSSKey, key, passphrase))
+
+    if pkey is None:
+        raise paramiko.SSHException("Passed in key not supported. Supported keys are RSA and DSS")
+
+    return pkey
 
 
 def sshclient(hostname, port, credential):
