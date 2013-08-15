@@ -110,7 +110,7 @@ class Yabi(object):
         self.command = [yabish] 
         if conf.yabiurl:
             self.command.append('--yabi-url=%s' % conf.yabiurl)
-        #self.setup_data_dir()
+        self.setup_data_dir()
 
     def setup_data_dir(self):
         self.test_data_dir = conf.testdatadir
