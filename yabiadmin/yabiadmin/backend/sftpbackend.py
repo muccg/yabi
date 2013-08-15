@@ -72,7 +72,8 @@ class SFTPCopyThread(threading.Thread):
                     sftp.get(self.remotepath, self.localpath, callback=None)
                 # bogus error because stat of fifo returns 0
                 except IOError, ioerr:
-                    if ioerr.message.startswith("size mismatch in get!  0 !="):
+                    msg = str(ioerr)
+                    if msg.startswith("size mismatch in get!  0 !="):
                         status = 0
                     else:
                         raise
