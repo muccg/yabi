@@ -167,18 +167,20 @@ def harvest_host_key(hostname, port, username, password, pkey):
         logger.error(exc)
 
 
-def create_paramiko_pkey(credential_key):
+def create_paramiko_pkey(credential_key, passphrase=None):
     try:
-        pkey = paramiko.RSAKey.from_private_key(StringIO.StringIO(credential_key))
+        pkey = paramiko.RSAKey.from_private_key(StringIO.StringIO(credential_key), passphrase)
         return pkey
-    except paramiko.SSHException:
-        pass
+    except paramiko.SSHException, sshex:
+        logger.debug('(possibly) "normal" exception: %s' % sshex)
+        logger.debug(traceback.format_exc())
 
     try:
-        pkey = paramiko.DSSKey.from_private_key(StringIO.StringIO(credential_key))
+        pkey = paramiko.DSSKey.from_private_key(StringIO.StringIO(credential_key), passphrase)
         return pkey
-    except paramiko.SSHException:
-        pass
+    except paramiko.SSHException, sshex:
+        logger.debug('(possibly) "normal" exception: %s' % sshex)
+        logger.debug(traceback.format_exc())
 
     raise paramiko.SSHException("Passed in key not supported. Supported keys are RSA and DSS")
 
@@ -192,6 +194,7 @@ def sshclient(hostname, port, credential):
     decrypted_credential = credential.get()
     username = decrypted_credential['username']
     key = decrypted_credential['key']
+    passphrase = decrypted_credential['password']
 
     logger.debug('Connecting to {0}@{1}:{2}'.format(username, hostname, port))
 
@@ -200,7 +203,7 @@ def sshclient(hostname, port, credential):
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.load_system_host_keys()
 
-        pkey = create_paramiko_pkey(key)
+        pkey = create_paramiko_pkey(key, passphrase)
 
         ssh.connect(
                 hostname=hostname,
