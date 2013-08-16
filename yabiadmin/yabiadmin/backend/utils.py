@@ -198,10 +198,24 @@ def sshclient(hostname, port, credential):
         port = 22
     ssh = None
 
-    decrypted_credential = credential.get()
-    username = decrypted_credential['username']
-    key = decrypted_credential['key']
-    passphrase = decrypted_credential['password']
+    if credential.is_cached:
+        decrypted_credential = credential.get()
+        username = decrypted_credential['username']
+        key = decrypted_credential['key']
+        passphrase = decrypted_credential['password']
+    elif credential.is_protected:
+        credential.unprotect()
+        username = credential.username
+        key = credential.key
+        passphrase = credential.password
+    elif credential.is_encrypted:
+        logger.debug("credential encrypted and not in cache?!")
+    else:
+        username = credential.username
+        key = credential.key
+        passphrase = credential.password
+
+
 
     logger.debug('Connecting to {0}@{1}:{2}'.format(username, hostname, port))
 
