@@ -50,6 +50,7 @@ class PBSProQSubResult(object):
     def __init__(self):
         self.remote_id = None
         self.status = None
+        self.error = None
 
 class PBSProQStatResult(object):
     JOB_RUNNING = "job running"
@@ -73,6 +74,11 @@ class PBSProParser(object):
 
     def parse_qsub(self, stdout, stderr):
         result = PBSProQSubResult()
+        if len(stderr) > 0:
+            result.status = PBSProQSubResult.JOB_SUBMISSION_ERROR
+            result.error = "\n".join(stderr)
+            return result
+
         for line in stdout:
             s = line.strip()
             m = re.match(self.QSUB_OUTPUT, s)
