@@ -22,7 +22,6 @@ class SSHPBSProExecBackend(SSHBackend):
         super(SSHPBSProExecBackend, self).__init__(*args, **kwargs)
         self.parser = PBSProParser()
 
-
     def submit_task(self):
         logger.debug("SSHPBSProExecBackend.submit_task ...")
         qsub_result = self._run_qsub()
@@ -32,7 +31,8 @@ class SSHPBSProExecBackend(SSHBackend):
             self.task.save()
             logger.debug("Yabi Task %s submitted to PBSPro OK. remote id = %s" % (self.task.pk, self.task.remote_id))
         else:
-            raise Exception("Error submitting remote job to PBSPro for yabi task %s %s" % (self.task.pk, qsub_result.status))
+            raise Exception("Error submitting remote job to PBSPro for yabi task %s remote job %s: %s" %
+                            (self.task.pk, qsub_result.remote_id, qsub_result.error))
 
     def _run_qsub(self):
         exec_scheme, exec_parts = uriparse(self.task.job.exec_backend)
@@ -43,6 +43,8 @@ class SSHPBSProExecBackend(SSHBackend):
         qsub_script_body = self.QSUB_TEMPLATE.format(submission_script_name, submission_script_body)
         logger.debug("qsub script:\n%s" % qsub_script_body)
         stdout, stderr = self._exec_script(qsub_script_body)
+        logger.debug("pbspro qsub stdout lines = %s" % stdout)
+        logger.debug("pbspro qsub stderr lines = %s" % stderr)
         qsub_result = self.parser.parse_qsub(stdout, stderr)
         return qsub_result
 
