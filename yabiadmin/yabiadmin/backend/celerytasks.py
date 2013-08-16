@@ -59,7 +59,7 @@ def create_jobs(workflow_id):
 def process_jobs(workflow_id):
     workflow = EngineWorkflow.objects.get(pk=workflow_id)
     for job in workflow.jobs_that_need_processing():
-        chain(create_db_tasks.s(job.pk) | spawn_ready_tasks.s()).apply_async()
+        chain(create_db_tasks.s(job.pk), spawn_ready_tasks.s()).apply_async()
 
 
 # Celery Tasks working on a Job
@@ -118,6 +118,17 @@ def spawn_ready_tasks(job_id):
 
 # Celery Tasks working on a Yabi Task
 
+def mark_workflow_as_error(task_id):
+    logger.debug("Task chain for Task {0} failed.".format(task_id))
+    task = Task.objects.get(pk=task_id)
+    task.job.status = STATUS_ERROR
+    task.job.workflow.status = STATUS_ERROR
+    task.job.save()
+    task.job.workflow.save()
+    logger.debug("Marked Workflow {0} as errored.".format(task.job.workflow.pk))
+
+
+
 @transaction.commit_on_success()
 def spawn_task(task_id):
     logger.debug('Spawn task {0}'.format(task_id))
@@ -126,7 +137,13 @@ def spawn_task(task_id):
     task.set_status('requested')
     task.save()
     transaction.commit()
-    chain(stage_in_files.s(task_id) | submit_task.s() | poll_task_status.s() | stage_out_files.s() | clean_up_task.s()).apply_async()
+    task_chain = chain(stage_in_files.s(task_id), submit_task.s(), poll_task_status.s(), stage_out_files.s(), clean_up_task.s())
+    task_chain.apply_async()
+
+
+def workflow_errored(task_id):
+    task = Task.objects.get(pk=task_id)
+    return task.job.workflow.status == STATUS_ERROR
 
 
 def retry_on_error(original_function):
@@ -135,6 +152,9 @@ def retry_on_error(original_function):
         request = current_task.request
         original_function_name = original_function.__name__
         try:
+            if workflow_errored(task_id):
+                logger.debug("Task {0} is in errored workflow - aborting {1}".format(task_id, original_function_name))
+                return task_id
             result = original_function(task_id, *args, **kwargs)
             return result
         except RetryException, rexc:
@@ -157,7 +177,14 @@ def retry_on_error(original_function):
             except Exception, ex:
                 logger.error(("{0}.retry {1} failed: {2} - changing status to error".format(original_function_name, task_id, ex)))
                 change_task_status(task_id, STATUS_ERROR)
-                raise
+                mark_workflow_as_error(task_id)
+                return task_id
+
+        except Exception, ex:
+            logger.debug("Unhandled exception in celery task {0}: {1}".format(original_function_name, ex))
+            change_task_status(task_id, STATUS_ERROR)
+            mark_workflow_as_error(task_id)
+            return task_id
 
     return decorated_function
 
