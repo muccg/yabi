@@ -396,21 +396,17 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
+
         'django': {
             'handlers':['console'],
             'propagate': True,
             'level':'INFO',
         },
-            'handlers': ['console', 'mail_admins'],
+
         'yabiadmin': {
             'handlers': ['console'],
             'level': 'DEBUG'
         },
-        '': {
-            'handlers': ['console'],
-            'level': 'WARNING',
-            'propagate': True,
-        }
     }
 }
 
