@@ -51,18 +51,20 @@ from yabiadmin.crypto_utils import DecryptException
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
+from django.core.servers.basehttp import FileWrapper
 
 from yabiadmin.yabiengine import storehelper as StoreHelper
-from yabiadmin.yabiengine.tasks import build_workflow
+from yabiadmin.backend.celerytasks import process_workflow
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import WorkflowTag
-from yabiadmin.yabiengine.backendhelper import get_listing, get_backend_list, get_file, zget_file, get_fs_backendcredential_for_uri, copy_file, rcopy_file, rm_file
+# TODO
+#from yabiadmin.yabiengine.backendhelper import make_hmac, get_fs_backendcredential_for_uri
 from yabiadmin.responses import *
 from yabiadmin.decorators import authentication_required, profile_required
 from yabiadmin.yabistoreapp import db
-from yabiadmin.yabiengine.backendhelper import make_hmac
 from yabiadmin.utils import cache_keyname
 from yaphc import Http, PostRequest, UnauthorizedError
+from yabiadmin.backend import backend
 
 import logging
 logger = logging.getLogger(__name__)
@@ -145,37 +147,38 @@ def menu(request):
     except ObjectDoesNotExist:
         return JsonMessageResponseNotFound("Object not found")
 
-from yabiadmin.yabiengine.backendhelper import BackendRefusedConnection, BackendHostUnreachable, PermissionDenied, FileNotFound, BackendStatusCodeError, BackendServerError
+#from yabiadmin.yabiengine.backendhelper import BackendRefusedConnection, BackendHostUnreachable, PermissionDenied, FileNotFound, BackendStatusCodeError, BackendServerError
+#
+#def handle_connection(closure):
+#    try:
+#        return closure()
+#    except DecryptedCredentialNotAvailable, dcna:
+#        return JsonMessageResponseServerError(dcna)
+#    except PermissionDenied, pd:
+#        return JsonMessageResponseNotFound("You do not have permissions to access this file or directory")
+#    except FileNotFound, fnf:
+#        return JsonMessageResponseNotFound("The requested directory does not exist")
+#    except BackendServerError, bse:
+#        # the str() of the exception here contains the full traceback... not just the summary
+#        # as it was passed forwards in body of HTTP response
+#        # so we get the last full line and report it
+#        lines = str(bse).split("\n")
+#        
+#        # cull blank lines on end
+#        while lines and not lines[-1]:
+#            lines = lines[:-1]
+#            
+#        return JsonMessageResponseNotFound(lines[-1] if lines else "Empty bodied http 500 response from backend")
+#    except BackendStatusCodeError, bsce:
+#        return JsonMessageResponseNotFound("The yabi backend returned an inapropriate status code: %s"%(str(bsce)))
+#    except BackendRefusedConnection, e:
+#        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
+#    except BackendHostUnreachable, e:
+#        return JsonMessageResponseNotFound(BACKEND_HOST_UNREACHABLE_MESSAGE)
+#    #except Exception, e:
+#        #return JsonMessageResponseNotFound("%s::ls threw %s... %s"%(__file__,str(e.__class__),str(e)))
+        
 
-def handle_connection(closure):
-    try:
-        return closure()
-    except DecryptedCredentialNotAvailable, dcna:
-        return JsonMessageResponseServerError(dcna)
-    except PermissionDenied, pd:
-        return JsonMessageResponseNotFound("You do not have permissions to access this file or directory")
-    except FileNotFound, fnf:
-        return JsonMessageResponseNotFound("The requested directory does not exist")
-    except BackendServerError, bse:
-        # the str() of the exception here contains the full traceback... not just the summary
-        # as it was passed forwards in body of HTTP response
-        # so we get the last full line and report it
-        lines = str(bse).split("\n")
-        
-        # cull blank lines on end
-        while lines and not lines[-1]:
-            lines = lines[:-1]
-            
-        return JsonMessageResponseNotFound(lines[-1] if lines else "Empty bodied http 500 response from backend")
-    except BackendStatusCodeError, bsce:
-        return JsonMessageResponseNotFound("The yabi backend returned an inapropriate status code: %s"%(str(bsce)))
-    except BackendRefusedConnection, e:
-        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
-    except BackendHostUnreachable, e:
-        return JsonMessageResponseNotFound(BACKEND_HOST_UNREACHABLE_MESSAGE)
-    #except Exception, e:
-        #return JsonMessageResponseNotFound("%s::ls threw %s... %s"%(__file__,str(e.__class__),str(e)))
-        
 @authentication_required
 def ls(request):
     """
@@ -183,18 +186,15 @@ def ls(request):
     is not empty then it will pass on the call to the backend to get a listing of that uri
     """
     yabiusername = request.user.username
+    logger.debug('yabiusername: {0} uri: {1}'.format(yabiusername, request.GET['uri']))
+    if request.GET['uri']:
+        recurse = request.GET.get('recurse')
+        listing = backend.get_listing(yabiusername, request.GET['uri'], recurse is not None)
+    else:
+        listing = backend.get_backend_list(yabiusername)
 
-    def closure():
-        logger.debug("yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
-        if request.GET['uri']:
-            recurse = request.GET.get('recurse')
-            filelisting = get_listing(yabiusername, request.GET['uri'], recurse is not None)
-        else:
-            filelisting = get_backend_list(yabiusername)
+    return HttpResponse(json.dumps(listing))
 
-        return HttpResponse(filelisting)
-        
-    return handle_connection(closure)
 
 @authentication_required
 def copy(request):
@@ -203,25 +203,23 @@ def copy(request):
     """
     yabiusername = request.user.username
     
-    def closure():
-        src,dst = request.GET['src'],request.GET['dst']
+    src,dst = request.GET['src'],request.GET['dst']
 
-        # check that src does not match dst
-        srcpath, srcfile = src.rsplit('/', 1)
-        assert srcpath != dst, "dst must not be the same as src"
+    # check that src does not match dst
+    srcpath, srcfile = src.rsplit('/', 1)
+    assert srcpath != dst, "dst must not be the same as src"
         
-        # src must not be directory
-        assert src[-1]!='/', "src malformed. Either no length or not trailing with slash '/'"
-        # TODO: This needs to be fixed in the FRONTEND, by sending the right url through as destination. For now we just make sure it ends in a slash
-        if dst[-1]!='/':
-            dst += '/'
-        logger.debug("yabiusername: %s src: %s -> dst: %s" %(yabiusername, src, dst))
+    # src must not be directory
+    assert src[-1]!='/', "src malformed. Either no length or not trailing with slash '/'"
+    # TODO: This needs to be fixed in the FRONTEND, by sending the right url through as destination. For now we just make sure it ends in a slash
+    if dst[-1]!='/':
+        dst += '/'
+    logger.debug("yabiusername: %s src: %s -> dst: %s" %(yabiusername, src, dst))
         
-        status, data = copy_file(yabiusername,src,dst)
+    backend.copy_file(yabiusername, src, dst)
 
-        return HttpResponse(content=data, status=status)
-    
-    return handle_connection(closure)
+    return HttpResponse("OK")
+
 
 @authentication_required
 def rcopy(request):
@@ -230,77 +228,64 @@ def rcopy(request):
     """
     yabiusername = request.user.username
         
-    def closure():
-        src,dst = unquote(request.REQUEST['src']), unquote(request.REQUEST['dst'])
+    src,dst = unquote(request.REQUEST['src']), unquote(request.REQUEST['dst'])
 
-        # check that src does not match dst
-        srcpath, srcfile = src.rstrip('/').rsplit('/', 1)
-        assert srcpath != dst, "dst must not be the same as src"
+    # check that src does not match dst
+    srcpath, srcfile = src.rstrip('/').rsplit('/', 1)
+    assert srcpath != dst, "dst must not be the same as src"
         
-        # src must be directory
-        #assert src[-1]=='/', "src malformed. Not directory."
-        # TODO: This needs to be fixed in the FRONTEND, by sending the right url through as destination. For now we just make sure it ends in a slash
-        if dst[-1]!='/':
-            dst += '/'
-        logger.debug("yabiusername: %s src: %s -> dst: %s" %(yabiusername, src, dst))
+    # src must be directory
+    #assert src[-1]=='/', "src malformed. Not directory."
+    # TODO: This needs to be fixed in the FRONTEND, by sending the right url through as destination. For now we just make sure it ends in a slash
+    if dst[-1]!='/':
+        dst += '/'
+    logger.debug("yabiusername: %s src: %s -> dst: %s" %(yabiusername, src, dst))
         
-        status, data = rcopy_file(yabiusername,src,dst)
+    backend.rcopy_file(yabiusername, src, dst)
 
-        return HttpResponse(content=data, status=status)
-    
-    return handle_connection(closure)
+    return HttpResponse("OK")
+
    
 @authentication_required
 def rm(request):
-    """
-    This function will return a list of backends the user has access to IF the uri is empty. If the uri
-    is not empty then it will pass on the call to the backend to get a listing of that uri
-    """
     yabiusername = request.user.username
-    def closure():
-        logger.debug("yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
-        status, data = rm_file(yabiusername,request.GET['uri'])
-
-        return HttpResponse(content=data, status=status)
-    
-    return handle_connection(closure)
+    logger.debug("yabiusername: %s uri: %s" % (yabiusername, request.GET['uri']))
+    backend.rm_file(yabiusername,request.GET['uri'])
+    # TODO Forbidden, any other errors
+    return HttpResponse("OK")
 
 @authentication_required
 def get(request, bytes=None):
-    """
-    Returns the requested uri. get_file returns an httplib response wrapped in a FileIterWrapper. This can then be read
-    by HttpResponse
-    """
+    """ Returns the requested uri.  """
     yabiusername = request.user.username
-    try:
-        logger.debug("ws_frontend_views::get() yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
-        uri = request.GET['uri']
+
+    logger.debug("ws_frontend_views::get() yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
+    uri = request.GET['uri']
         
+    try:
+        filename = uri.rsplit('/', 1)[1]
+    except IndexError, e:
+        logger.critical('Unable to get filename from uri: %s' % uri)
+        filename = 'default.txt'
+
+    if bytes is not None:
         try:
-            filename = uri.rsplit('/', 1)[1]
-        except IndexError, e:
-            logger.critical('Unable to get filename from uri: %s' % uri)
-            filename = 'default.txt'
+            bytes = int(bytes)
+        except ValueError:
+            bytes = None
 
-        if bytes is not None:
-            try:
-                bytes = int(bytes)
-            except ValueError:
-                bytes = None
+    download_handle = backend.get_file(yabiusername, uri, bytes=bytes)
+    response = HttpResponse(FileWrapper(download_handle))
 
-        response = HttpResponse(get_file(yabiusername, uri, bytes=bytes))
+    mimetypes.init([os.path.join(settings.WEBAPP_ROOT, 'mime.types')])
+    mtype, file_encoding = mimetypes.guess_type(filename, False)
+    if mtype is not None:
+        response['content-type'] = mtype
 
-        mimetypes.init([os.path.join(settings.WEBAPP_ROOT, 'mime.types')])
-        mtype, file_encoding = mimetypes.guess_type(filename, False)
-        if mtype is not None:
-            response['content-type'] = mtype
+    response['content-disposition'] = 'attachment; filename=%s' % filename
 
-        response['content-disposition'] = 'attachment; filename=%s' % filename
+    return response
 
-        return response
-
-    except BackendRefusedConnection, e:
-        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
 
 @authentication_required
 def zget(request):
@@ -308,35 +293,36 @@ def zget(request):
     Returns the requested uri. get_file returns an httplib response wrapped in a FileIterWrapper. This can then be read
     by HttpResponse
     """
-    yabiusername = request.user.username
-    try:
-        logger.debug("ws_frontend_views::zget() yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
-        uri = request.GET['uri']
-        
-        sanitised_uri = uri
-        while sanitised_uri[-1]=='/':
-            sanitised_uri = sanitised_uri[:-1]
-        
-        try:
-            
-            filename = sanitised_uri.rsplit('/', 1)[-1]+".tar.gz"
-        except IndexError, e:
-            logger.critical('Unable to get filename from uri: %s' % uri)
-            filename = 'default.tar.gz'
-
-        response = HttpResponse(zget_file(yabiusername, uri))
-
-        mimetypes.init([os.path.join(settings.WEBAPP_ROOT, 'mime.types')])
-        mtype, file_encoding = mimetypes.guess_type(filename, False)
-        if mtype is not None:
-            response['content-type'] = mtype
-
-        response['content-disposition'] = 'attachment; filename=%s' % filename
-
-        return response
-
-    except BackendRefusedConnection, e:
-        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
+    assert False, "TODO"
+#    yabiusername = request.user.username
+#    try:
+#        logger.debug("ws_frontend_views::zget() yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
+#        uri = request.GET['uri']
+#        
+#        sanitised_uri = uri
+#        while sanitised_uri[-1]=='/':
+#            sanitised_uri = sanitised_uri[:-1]
+#        
+#        try:
+#            
+#            filename = sanitised_uri.rsplit('/', 1)[-1]+".tar.gz"
+#        except IndexError, e:
+#            logger.critical('Unable to get filename from uri: %s' % uri)
+#            filename = 'default.tar.gz'
+#
+#        response = HttpResponse(backend.zget_file(yabiusername, uri))
+#
+#        mimetypes.init([os.path.join(settings.WEBAPP_ROOT, 'mime.types')])
+#        mtype, file_encoding = mimetypes.guess_type(filename, False)
+#        if mtype is not None:
+#            response['content-type'] = mtype
+#
+#        response['content-disposition'] = 'attachment; filename=%s' % filename
+#
+#        return response
+#
+#    except BackendRefusedConnection, e:
+#        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
 
 @authentication_required
 def put(request):
@@ -346,80 +332,79 @@ def put(request):
     NB: if anyone changes FILE_UPLOAD_MAX_MEMORY_SIZE in the settings to be greater than zero
     this function will not work as it calls temporary_file_path
     """
-    import socket
-    import httplib
+    #import socket
+    #import httplib
 
     yabiusername = request.user.username
 
-    try:
-        logger.debug("uri: %s" %(request.GET['uri']))
-        uri = request.GET['uri']
+    logger.debug("uri: %s" %(request.GET['uri']))
+    uri = request.GET['uri']
 
-        bc = get_fs_backendcredential_for_uri(yabiusername, uri)
-        decrypt_cred = bc.credential.get()
-        resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))
+    #    bc = get_fs_backendcredential_for_uri(yabiusername, uri)
+    #    decrypt_cred = bc.credential.get()
+    #    resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))
 
         # TODO: the following is using GET parameters to push the decrypt creds onto the backend. This will probably make them show up in the backend logs
         # we should push them via POST parameters, or at least not log them in the backend.
-        resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(decrypt_cred['username']),quote(decrypt_cred['password']),quote( decrypt_cred['cert']),quote(decrypt_cred['key']))
+    #    resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(decrypt_cred['username']),quote(decrypt_cred['password']),quote( decrypt_cred['cert']),quote(decrypt_cred['key']))
 
 
-        files = []
-        for key, f in request.FILES.items():
-            file_details = (f.name, f.name, f.temporary_file_path())
-            files.append(file_details)
+    files = []
+    for key, f in request.FILES.items():
+        #file_details = (f.name, f.name, f.temporary_file_path())
+        #files.append(file_details)
+        upload_handle = backend.put_file(yabiusername, uri)
+        for chunk in f.chunks():
+            upload_handle.write(chunk)
+        upload_handle.close()
+
 
         # PostRequest doesn't like having leading slash on this resource, so strip it off
-        upload_request = PostRequest(resource.strip('/'), params={}, headers={'Hmac-digest': make_hmac(resource)}, files=files)
-        base_url = "http://%s" % settings.YABIBACKEND_SERVER
-        http = Http(base_url=base_url, workdir=settings.WRITABLE_DIRECTORY)
-        resp, contents = http.make_request(upload_request)
-        http.finish_session()
-        
-        return HttpResponse(content=contents,status=resp.status)
-        
-    except BackendRefusedConnection, e:
-        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
-    except socket.error, e:
-        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
-        raise
-    except httplib.CannotSendRequest, e:
-        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
-        raise
-    except UnauthorizedError, e:
-        logger.critical("Unauthorized Error connecting to %s: %s. Is the HMAC set correctly?" % (settings.YABIBACKEND_SERVER, e.message))
-        raise
+        #upload_request = PostRequest(resource.strip('/'), params={}, headers={'Hmac-digest': make_hmac(resource)}, files=files)
+        #base_url = "http://%s" % settings.YABIBACKEND_SERVER
+        #http = Http(base_url=base_url, workdir=settings.WRITABLE_DIRECTORY)
+        #resp, contents = http.make_request(upload_request)
+        #http.finish_session()
 
+    return HttpResponse("OK")
+        
 
 @authentication_required
+@transaction.commit_manually
 def submit_workflow(request):
-    yabiusername = request.user.username
-    logger.debug(yabiusername)
+    try:
+        yabiusername = request.user.username
+        logger.debug(yabiusername)
 
-    received_json = request.POST["workflowjson"]
-    workflow_dict = json.loads(received_json)
-    user = User.objects.get(name=yabiusername)
+        received_json = request.POST["workflowjson"]
+        workflow_dict = json.loads(received_json)
+        user = User.objects.get(name=yabiusername)
 
-    # Check if the user already has a workflow with the same name, and if so,
-    # munge the name appropriately.
-    workflow_dict["name"] = munge_name(yabiusername, workflow_dict["name"])
-   
-    workflow_json = json.dumps(workflow_dict)
-    workflow = EngineWorkflow(name=workflow_dict["name"],
-                              user=user,
-                              json=workflow_json,
-                              original_json=received_json,
-                              start_time=datetime.now()
-                              )
-    workflow.save()
+        # Check if the user already has a workflow with the same name, and if so,
+        # munge the name appropriately.
+        workflow_dict["name"] = munge_name(yabiusername, workflow_dict["name"])
+        workflow_json = json.dumps(workflow_dict)
+        workflow = EngineWorkflow.objects.create(
+            name=workflow_dict["name"],
+            user=user,
+            json=workflow_json,
+            original_json=received_json,
+            start_time=datetime.now()
+        )
 
-    # always commit transactions before sending tasks depending on state from the current transaction http://docs.celeryq.org/en/latest/userguide/tasks.html
-    transaction.commit()
+        # always commit transactions before sending tasks depending on state from the current transaction 
+        # http://docs.celeryq.org/en/latest/userguide/tasks.html
+        transaction.commit()
 
-    # trigger a build via celery
-    build_workflow(workflow_id=workflow.id)
+        # process the workflow via celery
+        process_workflow(workflow.pk).apply_async()
+    except Exception, exc:
+        transaction.rollback()
+        logger.exception("Exception in submit_workflow()")
+        raise
 
     return HttpResponse(json.dumps({"id":workflow.id}))
+
 
 def munge_name(user, workflow_name):
     if EngineWorkflow.objects.filter(user__name=user, name=workflow_name).count() == 0:

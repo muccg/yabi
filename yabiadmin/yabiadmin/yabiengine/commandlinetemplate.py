@@ -38,8 +38,8 @@ from ccg.utils import webhelpers
 from ccg.utils.webhelpers import url
 
 from yabiadmin.yabi.models import Backend, BackendCredential, Tool, User
-from yabiadmin.yabiengine import backendhelper
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
+from yabiadmin.backend import backend
 
 import pickle
 import fnmatch
@@ -538,7 +538,7 @@ class CommandTemplate(object):
             # has the job finished?
             if job.status == "complete":    
                 # do we now have files for this old job?
-                file_list = backendhelper.get_file_list(self.username, stageout)
+                file_list = backend.get_file_list(self.username, stageout)
                 if len(file_list):
                     # if it's a 'jobfile' then we need to select just the specified file.
                     if backref['type']=='jobfile':
@@ -572,7 +572,7 @@ class CommandTemplate(object):
                         # if its not batch_param we only reference the FIRST matching file (this is legacy behavoir)
                         
                         ignore_future_matches = False               # this is for non batch_param args so we only get the first, but continue to process the rest (TODO: do we need to process the rest?)
-                        
+
                         for filename, size, date, link in file_list:
                             if True in [fnmatch.fnmatch(filename.upper(), glob.upper()) for glob in ignore_glob_list]:
                                 continue                        # skip this filename because it matches the glob ignore list
@@ -793,6 +793,6 @@ class CommandTemplate(object):
         fulluri = self.parse_param_directory_value(item)
 
         # get recursive directory listing
-        filelist = backendhelper.get_file_list(self.username, fulluri, recurse=True)
+        filelist = backend.get_file_list(self.username, fulluri, recurse=True)
         return [ fulluri + X[0] for X in filelist ] 
  

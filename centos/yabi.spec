@@ -3,7 +3,6 @@
 %define release 1
 %define webapps /usr/local/webapps
 %define webappname yabiadmin
-%define backendname yabibe
 %define shellname yabish
 
 # Variables used for yabiadmin django app
@@ -16,12 +15,6 @@
 %define mediadir %{buildroot}/var/lib/%{webappname}/media
 %define staticdir %{buildinstalldir}/static
 
-# Variables for yabibe
-%define beinstalldir /usr/local/yabibe
-%define beconfdir /etc/yabi
-%define bebuildinstalldir %{buildroot}/%{beinstalldir}
-%define bebuildconfdir %{buildroot}/%{beconfdir}
-
 # Variables for yabish
 %define shinstalldir /usr/local/yabish
 %define shbuildinstalldir %{buildroot}/%{shinstalldir}
@@ -31,7 +24,7 @@
 # We still byte compile everything by passing in -O paramaters to python
 %global __os_install_post %(echo '%{__os_install_post}' | sed -e 's!/usr/lib[^[:space:]]*/brp-python-bytecompile[[:space:]].*$!!g')
 
-Summary: yabiadmin django webapp, yabi backend and yabi shell utility
+Summary: yabiadmin django webapp, celery backend and yabi shell utility
 Name: yabi
 Version: %{version}
 Release: %{release}
@@ -41,7 +34,7 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 Prefix: %{_prefix}
 BuildArch: x86_64
 Vendor: Centre for Comparative Genomics <web@ccg.murdoch.edu.au>
-BuildRequires: python-setuptools openssl-devel libevent-devel python-devel libxslt-devel libxml2-devel
+BuildRequires: python-setuptools openssl-devel python-devel libxslt-devel libxml2-devel
 Requires: openssl python-setuptools python
 Requires(pre): shadow-utils
 
@@ -56,18 +49,6 @@ Requires: httpd mod_wsgi libxml2 libxslt
 %description admin
 Django web application implementing the web front end for Yabi.
 
-%package backend
-Summary: yabi backend
-Group: Applications/Internet
-Requires: libevent
-
-%description backend
-Yabi backend
-
-%pre backend
-getent group yabi >/dev/null || groupadd -r yabi
-getent passwd yabi >/dev/null || useradd -r -g yabi -d /etc/yabi yabi
-
 %package shell
 Summary: yabi shell
 Group: Applications/Internet
@@ -78,13 +59,12 @@ Yabi command line shell
 
 %install
 
-for directory in "%{settingsdir} %{staticdir} %{logdir} %{storedir} %{scratchdir} %{mediadir} %{bebuildconfdir}"; do
+for directory in "%{settingsdir} %{staticdir} %{logdir} %{storedir} %{scratchdir} %{mediadir}"; do
     mkdir -p $directory;
 done;
 
 # Create python prefixes for packages
 mkdir -p %{buildinstalldir}/{lib,bin,include}
-mkdir -p %{bebuildinstalldir}/{lib,bin,include}
 mkdir -p %{shbuildinstalldir}/{lib,bin,include}
 
 if ! test -e $CCGSOURCEDIR/build-number-.txt; then
@@ -128,26 +108,6 @@ sed -i '3i import sys; sys.path.insert(1, "${installdir}/lib")' %{buildinstalldi
 find %{buildinstalldir} -name '*.py' -type f | xargs sed -i 's:^#!/usr/local/bin/python:#!/usr/bin/python:'
 find %{buildinstalldir} -name '*.py' -type f | xargs sed -i 's:^#!/usr/local/python:#!/usr/bin/python:'
 
-# yabi-backend
-cd $CCGSOURCEDIR/yabibe
-export PYTHONPATH=%{bebuildinstalldir}/lib
-python /usr/bin/easy_install -O1 --prefix %{bebuildinstalldir} --install-dir %{bebuildinstalldir}/lib -i 'https://simple.crate.io/' .
-
-for directory in "certificates fifos tasklets temp"; do
-	mkdir -p %{bebuildconfdir}/run/$directory
-done
-
-install -m 0755 -D ../centos/yabibe-init %{buildroot}/etc/init.d/yabibe
-install -m 0644 -D ../centos/yabi.conf.dist %{bebuildconfdir}/yabi.conf.dist
-install -m 0644 -D ../centos/ssl-cert-snakeoil.key %{bebuildconfdir}/run/serverkey.pem
-install -m 0644 -D ../centos/ssl-cert-snakeoil.pem %{bebuildconfdir}/run/servercert.pem
-
-sed -i '3i import sys; sys.path.insert(1, "${beinstalldir}/lib")' %{bebuildinstalldir}/bin/*
-
-# Correct hardcoded shebangs
-find %{bebuildinstalldir} -name '*.py' -type f | xargs sed -i 's:^#!/usr/local/bin/python:#!/usr/bin/python:'
-find %{bebuildinstalldir} -name '*.py' -type f | xargs sed -i 's:^#!/usr/local/python:#!/usr/bin/python:'
-
 # yabi-shell
 cd $CCGSOURCEDIR/yabish
 export PYTHONPATH=%{shbuildinstalldir}/lib
@@ -183,12 +143,6 @@ fi
 %attr(-,apache,,apache) /var/lib/%{webappname}
 %attr(-,root,,root) /etc/init.d/celeryd
 %attr(-,root,,root) /etc/sysconfig/celeryd
-
-%files backend
-%defattr(-,yabi,yabi,-)
-%{beinstalldir}
-%{beconfdir}
-/etc/init.d/yabibe
 
 %files shell
 %defattr(-,root,root,-)

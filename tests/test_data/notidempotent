@@ -1,0 +1,9 @@
+#!/usr/bin/env python
+def non_idempotent_operation(file_path):
+    with open(file_path, "a") as f:
+        f.write("test")
+
+#working dir
+non_idempotent_operation("nonidempotent_output.txt")
+# local remnant
+non_idempotent_operation("{{remnant_file_path}}")

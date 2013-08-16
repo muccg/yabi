@@ -3,7 +3,7 @@ import config
 import unittest
 from collections import namedtuple
 
-DEBUG = True
+DEBUG = False
 CONFIG_SECTION = os.environ.get('YABI_CONFIG')
 if CONFIG_SECTION:
     conf = config.Configuration(section=CONFIG_SECTION)

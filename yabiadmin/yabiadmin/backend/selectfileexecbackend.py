@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 ### BEGIN COPYRIGHT ###
 #
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
@@ -25,17 +24,19 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # 
 ### END COPYRIGHT ###
-# -*- coding: utf-8 -*-
-from django.conf.urls.defaults import *
+import os
+from yabiadmin.yabiengine.urihelper import uriparse
+from yabiadmin.backend.execbackend import ExecBackend
+import logging
+logger = logging.getLogger(__name__)
 
-urlpatterns = patterns('yabiadmin.yabiengine.views',
-    #(r'^task[/]*$', 'task'),
-    #(r'^blockedtask[/]*$', 'blockedtask'),
-    (r'^status/(?P<model>\w+)/(?P<id>\d+)[/]*$', 'status'),
-    (r'^remote_id/(?P<id>\d+)[/]*$', 'remote_id'),
-    (r'^remote_info/(?P<id>\d+)[/]*$', 'remote_info'),
-    (r'^syslog/(?P<table>\w+)/(?P<id>\d+)[/]*$', 'syslog'),
-    (r'^job/(?P<workflow>\d+)/(?P<order>\d+)[/]*$', 'job'),
-    url(r'^workflow_summary/(?P<workflow_id>\d+)/$', 'workflow_summary', name='workflow_summary'),
-    url(r'^task_json/(?P<task>\d+)[/]*$', 'task_json', name='task_json'),
-)
+
+class SelectFileExecBackend(ExecBackend):
+
+    def submit_task(self):
+        """Nothing to do for a select file submit"""
+        return 0
+
+    def poll_task_status(self):
+        """Nothing to do for a select file poll"""
+        return

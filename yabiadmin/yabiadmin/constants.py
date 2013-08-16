@@ -46,26 +46,37 @@ STATUS_BLOCKED = 'blocked'
 STATUS_RESUME = 'resume'
 STATUS_REWALK = 'rewalk'
 
-STATUS_MAP = (
 
-    ('pending', 0.0),
-    ('ready', 0.0),
-    ('requested', 0.01),
-    ('stagein', 0.05),
+JOB_STATUS_PROCESSING = "started processing"  # Job has begun, but has not yet created Task objects or spawned chains.
+JOB_STATUS_TASKS_SPAWNED = "tasks spawned"    # Job has created Task objects and spawned chains.
+
+
+STATUS_EXEC = 'exec'
+STATUS_STAGEOUT = 'stageout'
+STATUS_STAGEIN = 'stagein'
+STATUS_CLEANING = 'cleaning'
+
+STATUS_MAP = (
+    (STATUS_PENDING, 0.0),
+    (STATUS_READY, 0.0),
+    (STATUS_REQUESTED, 0.01),
+    (JOB_STATUS_PROCESSING, 0.02),
+    (JOB_STATUS_TASKS_SPAWNED, 0.03),
+    (STATUS_STAGEIN, 0.05),
     ('mkdir', 0.1),
-    ('exec', 0.11),
+    (STATUS_EXEC, 0.11),
     ('exec:unsubmitted', 0.12),
     ('exec:pending', 0.13),
     ('exec:active', 0.2),
     ('exec:running', 0.2),
     ('exec:cleanup', 0.7),
     ('exec:done', 0.75),
-    ('stageout', 0.8),
-    ('cleaning', 0.9),
+    (STATUS_STAGEOUT, 0.8),
+    (STATUS_CLEANING, 0.9),
 
     ('error', 0.0),
     ('exec:error', 0.0),
-    ('complete', 1.0),
+    (STATUS_COMPLETE, 1.0),
 
     # Added to allow tasks to be created without a status. Tasks may be created without status
     # at the very beginning and then have their status chanegd
@@ -75,11 +86,15 @@ STATUS_MAP = (
 
 STATUS_PROGRESS_MAP = dict(STATUS_MAP)
 
-_statuses_order = [st[0] for st in STATUS_MAP if st[0] != ''] + [STATUS_BLOCKED]
+_statuses_order = [st[0] for st in STATUS_MAP if st[0] != '' and st[0] not in (JOB_STATUS_PROCESSING,JOB_STATUS_TASKS_SPAWNED)] + [STATUS_BLOCKED]
 _statuses_order.reverse()
 STATUSES_REVERSE_ORDER = _statuses_order
 
 # validation settings, these reflect the types of backend that yabi can handle
 EXEC_SCHEMES = ['sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex','explode','null']
-FS_SCHEMES = ['http', 'https', 'yabifs', 'scp', 's3', 'localfs','null']
+FS_SCHEMES = ['http', 'https', 'yabifs', 'scp', 'sftp', 's3', 'localfs', 'file', 'null']
 VALID_SCHEMES = EXEC_SCHEMES + FS_SCHEMES
+
+# Celery Settings
+MAX_CELERY_TASK_RETRIES = 3
+

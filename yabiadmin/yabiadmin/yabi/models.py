@@ -27,7 +27,7 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import traceback, hashlib, base64
-from django.db import models, transaction
+from django.db import models#, transaction
 from django import forms
 from django.contrib.auth.models import User as DjangoUser
 from django.contrib.auth import authenticate
@@ -53,7 +53,8 @@ except ImportError, e:
     logger.info("LDAP modules not imported. If you are not using LDAP this is not a problem.")
 
 
-class DecryptedCredentialNotAvailable(Exception): pass
+class DecryptedCredentialNotAvailable(Exception):
+    pass
 
 
 class Base(models.Model):
@@ -540,7 +541,7 @@ class Credential(Base):
         # memcache also doesn't like spaces
         return cache_keyname("-cred-%s-%d" % (self.user.name, self.id))
     
-    @transaction.commit_manually
+    #@transaction.commit_manually
     def send_to_cache(self, time_to_cache=None):
         """This method stores the key as it is in cache"""
         time_to_cache = time_to_cache or settings.DEFAULT_CRED_CACHE_TIME
@@ -554,27 +555,6 @@ class Credential(Base):
         
         cache.set(key, val, time_to_cache)
  
-        try:
-            # unblock our blocked tasks
-            self.unblock_all_blocked_tasks()
-            
-            # rewalk any of this users workflows that are marked for rewalking
-            from yabiadmin.yabiengine.tasks import walk
-            wfs=self.rewalk_workflows()
-            ids = [W.id for W in wfs]
-            for wf in wfs:
-                wf.status=STATUS_READY
-                wf.save()
-        except:
-            transaction.rollback()
-            raise
-        else:
-            # always commit transactions before sending tasks depending on state from the current transaction http://docs.celeryq.org/en/latest/userguide/tasks.html
-            transaction.commit()
-
-            for id in ids:
-                logger.debug(id)
-                walk.delay(workflow_id=id)
             
     def get_from_cache(self):
         result = self.get_cache()
@@ -626,27 +606,6 @@ class Credential(Base):
         name = self.cache_keyname()
         cache.delete( name )
         
-    def blocked_tasks(self):
-        """This looks at all the blocked tasks for the user this credential belongs to
-        and returns a queryset of all the tasks in a blocked status for that user"""
-        from yabiadmin.yabiengine.models import Task
-        #return Task.objects.filter(job__workflow__user=self.user).filter(status=STATUS_BLOCKED)
-        users_tasks = Task.objects.filter(job__workflow__user=self.user).filter(status_blocked__isnull=False)
-        return [T for T in users_tasks if T.status==STATUS_BLOCKED]
-        
-    def rewalk_workflows(self):
-        from yabiadmin.yabiengine.enginemodels import EngineWorkflow
-        return EngineWorkflow.objects.filter(user=self.user).filter(status=STATUS_REWALK)
-        #users_wfs = EngineWorkflow.objects.filter(user=self.user).filter(status_rewalk__isnull=False)
-        #return [W for W in users_wfs if W.status==STATUS_REWALK]
-                
-    def unblock_all_blocked_tasks(self):
-        """Set the status on all tasks blocked for this user to 'resume' so they can resume"""
-        #self.blocked_tasks().update(status=STATUS_RESUME)    
-        for task in self.blocked_tasks():
-            task.status=STATUS_RESUME
-            task.save()
-
     @property
     def is_plaintext(self):
         """We assume its plaintext if it fails the crypto_utils looks_like_annotated_block() function"""
@@ -820,7 +779,7 @@ class BackendCredential(Base):
     submission.help_text="Mako script to be used to generate a custom submission script. (Variables: walltime, memory, cpus, working, modules, command)"
     
     def __unicode__(self):
-        return "BackendCredential %s"%(self.id)
+        return "BackendCredential %s %s"%(self.id, self.backend)
 
     def json(self):
         output = {
