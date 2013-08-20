@@ -181,7 +181,7 @@ def retry_on_error(original_function):
                 return task_id
 
         except Exception, ex:
-            logger.debug("Unhandled exception in celery task {0}: {1}".format(original_function_name, ex))
+            logger.exception("Unhandled exception in celery task {0}: {1}".format(original_function_name, ex))
             change_task_status(task_id, STATUS_ERROR)
             mark_workflow_as_error(task_id)
             return task_id
