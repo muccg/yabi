@@ -18,7 +18,7 @@ class SSHPBSProExecBackend(SSHBackend):
                     "cat<<EOS>$script_temp_file_name",
                     "{1}",
                     "EOS",
-                    "qsub $script_temp_file_name"])
+                    "qsub -o '{2}' -e '{3}' $script_temp_file_name"])
 
     QSTAT_TEMPLATE = "\n".join(["#!/bin/sh",
                                 "qstat -x {0}"])
@@ -45,7 +45,11 @@ class SSHPBSProExecBackend(SSHBackend):
         submission_script_name = self._generate_remote_script_name()
         logger.debug("creating qsub script %s" % submission_script_name)
         submission_script_body = self.get_submission_script(exec_parts.hostname, working_parts.path)
-        qsub_script_body = self.QSUB_TEMPLATE.format(submission_script_name, submission_script_body)
+        stdout_file = os.path.join(working_parts.path, "STDOUT.txt")
+        stderr_file = os.path.join(working_parts.path, "STDERR.txt")
+        qsub_script_body = self.QSUB_TEMPLATE.format(
+            submission_script_name, submission_script_body,
+            stdout_file, stderr_file)
         logger.debug("qsub script:\n%s" % qsub_script_body)
         stdout, stderr = self._exec_script(qsub_script_body)
         logger.debug("pbspro qsub stdout lines = %s" % stdout)
@@ -80,14 +84,6 @@ class SSHPBSProExecBackend(SSHBackend):
 
         elif qstat_result.status == PBSProQStatResult.JOB_SUCCEEDED:
             logger.debug("yabi task %s succeeded" % self.task.pk)
-            stdout, stderr = self._locate_stdout_and_stderr()
-
-            _, parts = uriparse(self.working_output_dir_uri())
-            STDOUT_FILE = os.path.join(parts.path, "STDOUT.txt")
-            STDERR_FILE = os.path.join(parts.path, "STDERR.txt")
-            self.local_copy(stdout, STDOUT_FILE)
-            self.local_copy(stderr, STDERR_FILE)
-
 
         elif qstat_result.status == PBSProQStatResult.JOB_FAILED:
             logger.debug("remote job for yabi task %s failed" % self.task.pk)
@@ -95,33 +91,5 @@ class SSHPBSProExecBackend(SSHBackend):
             raise Exception("Yabi task %s failed remotely" % self.task.pk)
         else:
             raise Exception("Yabi task %s unknown state: %s" % (self.task.pk, qstat_result.status))
-
-    def _locate_stdout_and_stderr(self):
-        """
-        @return: a pair of paths of stdout and stderr of the submitted (and run) job
-        """
-        remote_id = self.task.remote_id
-        logger.debug("remote id = %s" % remote_id)
-        submission_script_name = os.path.basename(self.task.job_identifier)
-        logger.debug("submission script name = %s" % submission_script_name)
-        backend_credential = fs_credential(self.yabiusername, self.working_dir_uri())
-
-        remote_username = backend_credential.credential.username
-
-        path = "/home/%s" % remote_username # location of the <jobname>.o<jobnumber> and <jobname>.e<jobnumber> files
-
-        # gotcha - the script name gets truncated by the scheduler
-        std_out_file = "{0}/{1}.o{2}".format(path, submission_script_name[:15], remote_id)
-        std_err_file = "{0}/{1}.e{2}".format(path, submission_script_name[:15], remote_id)
-        logger.debug("stdout file = %s" % std_out_file)
-        logger.debug("stderr file = %s" % std_err_file)
-
-
-        return std_out_file, std_err_file
-
-
-
-
-
 
 
