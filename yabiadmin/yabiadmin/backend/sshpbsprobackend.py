@@ -1,5 +1,6 @@
 import logging
 logger = logging.getLogger(__name__)
+import os
 import sys
 logger.debug("sys path = %s" % sys.path)
 
@@ -7,7 +8,7 @@ from yabiadmin.backend.sshbackend import SSHBackend
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.backend.pbsproparsers import PBSProParser, PBSProQSubResult, PBSProQStatResult
 from yabiadmin.backend.exceptions import RetryException
-
+from yabiadmin.backend.backend import fs_credential
 
 
 
@@ -81,8 +82,9 @@ class SSHPBSProExecBackend(SSHBackend):
             logger.debug("yabi task %s succeeded" % self.task.pk)
             stdout, stderr = self._locate_stdout_and_stderr()
 
-            STDOUT_FILE = os.path.join(self.working_output_dir_uri().path, "STDOUT.txt")
-            STDERR_FILE = os.path.join(self.working_output_dir_uri().path, "STDERR.txt")
+            _, parts = uriparse(self.working_output_dir_uri())
+            STDOUT_FILE = os.path.join(parts.path, "STDOUT.txt")
+            STDERR_FILE = os.path.join(parts.path, "STDERR.txt")
             self.local_copy(stdout, STDOUT_FILE)
             self.local_copy(stderr, STDERR_FILE)
 
@@ -115,7 +117,7 @@ class SSHPBSProExecBackend(SSHBackend):
         logger.debug("stderr file = %s" % std_err_file)
 
 
-        return stdout, stderr
+        return std_out_file, std_err_file
 
 
 
