@@ -26,6 +26,7 @@
 ### END COPYRIGHT ###
 import os
 from yabiadmin.yabiengine.urihelper import url_join, uriparse
+from yabiadmin.backend.backend import fs_credential
 from yabiadmin.backend.execbackend import ExecBackend
 from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend.fsbackend import FSBackend
@@ -69,6 +70,12 @@ class SSHBackend(ExecBackend):
                 pass
 
         # create local remnant files to store stdout and stderr
+        self._save_stdout_and_stderr(stdout, stderr)
+
+        return 0
+
+    def _save_stdout_and_stderr(self, stdout, stderr):
+        logger.debug("local remnants dir = %s" % self.local_remnants_dir())
         remnant_stdout = open(os.path.join(self.local_remnants_dir(), 'STDOUT.txt'), 'w')
         remnant_stderr = open(os.path.join(self.local_remnants_dir(), 'STDERR.txt'), 'w')
         logger.debug('Created remnant {0}'.format(remnant_stdout.name))
@@ -79,8 +86,6 @@ class SSHBackend(ExecBackend):
             remnant_stderr.write(line)
         remnant_stdout.close()
         remnant_stderr.close()
-
-        return 0
 
     def _exec_script(self, script):
         logger.debug("SSHBackend.exec_script...")
@@ -107,7 +112,21 @@ class SSHBackend(ExecBackend):
 
     def _generate_remote_script_name(self):
         REMOTE_TMP_DIR = '/tmp'
-        return os.path.join(REMOTE_TMP_DIR, "yabi-" + str(uuid.uuid4()) + ".sh")
+        name = os.path.join(REMOTE_TMP_DIR, "yabi-" + str(uuid.uuid4()) + ".sh")
+        self.task.job_identifier = name
+        self.task.save()
+        return name
+
+
+
+    def local_copy(self,src,dest):
+        script = """
+        #!/bin/sh
+        cp "{0}" "{1}"
+        """
+        cmd = script.format(src,dest)
+        stdout, stderr = self._exec_script(cmd)
+
 
 
 
