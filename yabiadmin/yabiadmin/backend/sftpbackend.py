@@ -25,6 +25,7 @@
 # 
 ### END COPYRIGHT ###
 from yabiadmin.backend.fsbackend import FSBackend
+from yabiadmin.backend.execbackend import ExecBackend
 from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend.parsers import parse_ls
 from yabiadmin.yabiengine.urihelper import uriparse
@@ -265,13 +266,14 @@ class SFTPBackend(FSBackend):
     def local_copy(self, src_uri, dst_uri):
         """Copy src_uri to dst_uri on the remote backend"""
         logger.debug("SFTPBackend.local_copy: %s => %s" % (src_uri, dst_uri))
-        assert False, "TODO"
-
         src_scheme, src_parts = uriparse(src_uri)
         dst_scheme, dst_parts = uriparse(dst_uri)
         logger.debug('{0} -> {1}'.format(src_uri, dst_uri))
+        # Given paramiko does not support local copy, we
+        # use cp on server via exec backend
+        ex_backend = ExecBackend.factory(self.task)
         try:
-            shutil.copy2(src_parts.path, dst_parts.path)
+            ex_backend.local_copy(src_parts.path,dst_parts.path)
         except Exception, exc:
             raise RetryException(exc, traceback.format_exc())
 
