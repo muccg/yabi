@@ -152,9 +152,6 @@ def retry_on_error(original_function):
         request = current_task.request
         original_function_name = original_function.__name__
         try:
-            if workflow_errored(task_id):
-                logger.debug("Task {0} is in errored workflow - aborting {1}".format(task_id, original_function_name))
-                return task_id
             result = original_function(task_id, *args, **kwargs)
             return result
         except RetryException, rexc:
@@ -178,13 +175,13 @@ def retry_on_error(original_function):
                 logger.error(("{0}.retry {1} failed: {2} - changing status to error".format(original_function_name, task_id, ex)))
                 change_task_status(task_id, STATUS_ERROR)
                 mark_workflow_as_error(task_id)
-                return task_id
+                raise
 
         except Exception, ex:
             logger.debug("Unhandled exception in celery task {0}: {1}".format(original_function_name, ex))
             change_task_status(task_id, STATUS_ERROR)
             mark_workflow_as_error(task_id)
-            return task_id
+            raise
 
     return decorated_function
 
