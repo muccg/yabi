@@ -48,9 +48,9 @@ class QStatParseTestCase(unittest.TestCase):
 
     def test_qstat_finds_completed_job(self):
         result = self.parser.parse_qstat("3485900", self.completed_job_lines, [])
-        self.assertTrue(result.status == PBSProQStatResult.JOB_SUCCEEDED,
+        self.assertTrue(result.status == PBSProQStatResult.JOB_COMPLETED,
                         "PBSProParser failed to report a completed job. Expected status: %s Actual: %s"
-                        % (PBSProQStatResult.JOB_SUCCEEDED, result.status))
+                        % (PBSProQStatResult.JOB_COMPLETED, result.status))
 
     def test_qstat_queued_job(self):
         result = self.parser.parse_qstat("3485900", self.queued_job_lines, [])
