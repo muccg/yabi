@@ -199,7 +199,7 @@ function stopprocess() {
     local pid=`cat $1`
     local pgrpid=""
     if test "kill_process_group" == "$2"; then
-        pgrpid=$(ps -o pgrp= --pid $pid)
+        pgrpid=$(ps -o pgrp= --pid $pid | tr -d ' ')
     fi
     
     if test -z $pgrpid; then
@@ -318,7 +318,7 @@ function startceleryd() {
     DJANGO_PROJECT_DIR="${CELERYD_CHDIR}"
     PROJECT_DIRECTORY="${CELERYD_CHDIR}"
     export CELERY_CONFIG_MODULE DJANGO_SETTINGS_MODULE DJANGO_PROJECT_DIR CELERY_LOADER CELERY_CHDIR PROJECT_DIRECTORY CELERYD_CHDIR
-    virt_yabiadmin/bin/celeryd ${CELERYD_OPTS} 1>/dev/null 2>/dev/null &
+    setsid virt_yabiadmin/bin/celeryd ${CELERYD_OPTS} 1>/dev/null 2>/dev/null &
 }
 
 

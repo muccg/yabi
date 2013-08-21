@@ -269,6 +269,7 @@ class SFTPBackend(FSBackend):
         src_scheme, src_parts = uriparse(src_uri)
         dst_scheme, dst_parts = uriparse(dst_uri)
         logger.debug('{0} -> {1}'.format(src_uri, dst_uri))
+        assert False, "TODO review whether we need this, we want to do it this way etc."
         # Given paramiko does not support local copy, we
         # use cp on server via exec backend
         ex_backend = ExecBackend.factory(self.task)
