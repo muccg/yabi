@@ -224,20 +224,36 @@ def sshclient(hostname, port, credential):
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.load_system_host_keys()
 
-        pkey = create_paramiko_pkey(key, passphrase)
+        if not key:
 
-        ssh.connect(
-                hostname=hostname,
-                port=port,
-                username=username,
-                pkey=pkey,
-                key_filename=None,
-                password=None,
-                timeout=None,
-                allow_agent=False,
-                look_for_keys=False,
-                compress=False,
-                sock=None)
+            ssh.connect(
+                    hostname=hostname,
+                    port=port,
+                    username=username,
+                    password=passphrase,
+                    pkey=None,
+                    key_filename=None,
+                    timeout=None,
+                    allow_agent=False,
+                    look_for_keys=False,
+                    compress=False,
+                    sock=None)
+        else:
+            pkey = create_paramiko_pkey(key, passphrase)
+
+
+            ssh.connect(
+                    hostname=hostname,
+                    port=port,
+                    username=username,
+                    pkey=pkey,
+                    key_filename=None,
+                    password=None,
+                    timeout=None,
+                    allow_agent=False,
+                    look_for_keys=False,
+                    compress=False,
+                    sock=None)
 
     except paramiko.BadHostKeyException, bhke:  # BadHostKeyException - if the server's host key could not be verified
         raise RetryException(bhke, traceback.format_exc())
