@@ -44,8 +44,8 @@ logger = logging.getLogger(__name__)
 
 
 class PBSProQSubResult(object):
-    JOB_SUBMITTED = "job submitted"
-    JOB_SUBMISSION_ERROR = "job submission error"
+    JOB_SUBMITTED = "JOB SUBMITTED"
+    JOB_SUBMISSION_ERROR = "JOB SUBMISSION ERROR"
 
     def __init__(self):
         self.remote_id = None
@@ -53,10 +53,9 @@ class PBSProQSubResult(object):
         self.error = None
 
 class PBSProQStatResult(object):
-    JOB_RUNNING = "job running"
-    JOB_NOT_FOUND = "job not found by qstat"
-    JOB_SUCCEEDED = "job succeeded"
-    JOB_FAILED = "job error"
+    JOB_RUNNING = "JOB RUNNING"
+    JOB_NOT_FOUND = "JOB NOT FOUND BY QSTAT"
+    JOB_COMPLETED = "JOB COMPLETED"
 
     def __init__(self):
         self.remote_id = None
@@ -103,15 +102,11 @@ class PBSProParser(object):
                 logger.debug("job_status = %s" % job_status)
                 if job_status not in self.POSSIBLE_STATES:
                     raise Exception("Unknown PBSPro job state %s for remote id %s" % (job_status, remote_id))
-
                 if job_status in self.RUNNING_STATES:
                     result.status = PBSProQStatResult.JOB_RUNNING
                     return result
-
                 elif job_status in self.FINISHED_STATES:
-                    # need to check the submission script ".e" file ( is if submission script is named test.sh , the e file is test.sh.e<jobnumber>
-                    # this contains the exit status and job info ...
-                    result.status = PBSProQStatResult.JOB_SUCCEEDED #TODO !! How to tell if job failed?!
+                    result.status = PBSProQStatResult.JOB_COMPLETED
                     return result
 
         result.status = PBSProQStatResult.JOB_NOT_FOUND
