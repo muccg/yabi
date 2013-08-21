@@ -117,14 +117,17 @@ class SSHBackend(ExecBackend):
         self.task.save()
         return name
 
-
-
-    def local_copy(self,src,dest):
+    def local_copy(self,src,dest, recursive=False):
         script = """
         #!/bin/sh
-        cp "{0}" "{1}"
+        cp {0} "{1}" "{2}"
         """
-        cmd = script.format(src,dest)
+        if recursive:
+            flag = "-r"
+        else:
+            flag = ""
+
+        cmd = script.format(flag, src,dest)
         stdout, stderr = self._exec_script(cmd)
 
 

@@ -27,8 +27,7 @@ class SGEQStatResult(object):
 
 
 class SGEQAcctResult(object):
-    JOB_SUCCEEDED = "job succeeded"
-    JOB_FAILED = "job failed"
+    JOB_COMPLETED = "job succeeded"
     JOB_NOT_FOUND = "job not found by qacct"
 
     def __init__(self):
@@ -89,31 +88,13 @@ class SGEParser(object):
             if m:
                 logger.debug("matched job number!")
                 if m.group("remote_id") != remote_id:
-                    result.status = SGEQAcctResult.ERROR
-                    return result
+                    raise Exception("Error parsing qacct result: Expected remote_id %s Actual %s" % (remote_id, m.group("remote_id")))
                 else:
                     found_job = True
                     result.remote_id = m.group("remote_id")
-
-
-            m = re.match(SGEParser.QACCT_EXIT_STATUS, line)
-            if m:
-                logger.debug("matched exit status!")
-                result.job_exit_status = m.group('exit_status')
-
-            m = re.match(SGEParser.QACCT_FAILED, line)
-            if m:
-                logger.debug("matched failed!")
-                failed_value = m.group("failed")
-                if failed_value == "0":
-                    result.status = SGEQAcctResult.JOB_SUCCEEDED
-                elif failed_value == "1":
-                    result.status == SGEQAcctResult.JOB_FAILED
-                else:
-                    pass
+                    result.status = SGEQAcctResult.JOB_COMPLETED
 
         if not found_job:
             result.status = SGEQAcctResult.JOB_NOT_FOUND
 
-        logger.debug("parse result = %s" % result)
         return result
