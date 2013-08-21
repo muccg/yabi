@@ -56,12 +56,7 @@ class QStatParseTestCase(unittest.TestCase):
     def test_qstat_completed(self):
         lines = map(string.strip, self.good_qstat.format("C", "0").split("\n"))
         result = self.parser.parse_qstat("42940", lines, [])
-        self.assertTrue(result.status == TorqueQStatResult.JOB_SUCCEEDED, "torque job status not correct.expected '%s' result = %s" % (TorqueQStatResult.JOB_SUCCEEDED, result))
-
-    def test_qstat_completed_with_error(self):
-        lines = map(string.strip, self.good_qstat.format("C", "127").split("\n"))
-        result = self.parser.parse_qstat("42940", lines,[])
-        self.assertTrue(result.status == TorqueQStatResult.JOB_FAILED, "torque job status not correct. Expected '%s' result = %s" % (TorqueQStatResult.JOB_FAILED, result))
+        self.assertTrue(result.status == TorqueQStatResult.JOB_COMPLETED, "torque job status not correct.expected '%s' result = %s" % (TorqueQStatResult.JOB_COMPLETED, result))
 
     def test_qstat_job_still_running(self):
         lines = map(string.strip, self.good_qstat.format("Q","dontcare").split("\n"))
