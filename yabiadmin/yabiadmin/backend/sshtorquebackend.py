@@ -3,6 +3,7 @@ from yabiadmin.backend.torqueparsers import TorqueParser
 
 
 class SSHTorqueExecBackend(SchedulerExecBackend):
+    SCHEDULER_NAME = "torque"
     QSTAT_TEMPLATE = "\n".join(["#!/bin/sh",
                                 "qstat -f -1 {0}"])
 
