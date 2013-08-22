@@ -36,6 +36,7 @@ import logging
 from yabiadmin.backend.exceptions import RetryException
 import uuid
 import StringIO
+from functools import partial
 from yabiadmin import settings
 from yabiadmin.crypto_utils import AESTEMP
 logger = logging.getLogger(__name__)
@@ -224,36 +225,23 @@ def sshclient(hostname, port, credential):
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.load_system_host_keys()
 
-        if not key:
-
-            ssh.connect(
-                    hostname=hostname,
-                    port=port,
-                    username=username,
-                    password=passphrase,
-                    pkey=None,
-                    key_filename=None,
-                    timeout=None,
-                    allow_agent=False,
-                    look_for_keys=False,
-                    compress=False,
-                    sock=None)
+        connect = partial(ssh.connect, 
+                            hostname=hostname,
+                            port=port,
+                            username=username,
+                            key_filename=None,
+                            timeout=None,
+                            allow_agent=False,
+                            look_for_keys=False,
+                            compress=False,
+                            sock=None)
+         
+        if key:
+            private_key = create_paramiko_pkey(key, passphrase)
+            connect(pkey=private_key)
         else:
-            pkey = create_paramiko_pkey(key, passphrase)
-
-
-            ssh.connect(
-                    hostname=hostname,
-                    port=port,
-                    username=username,
-                    pkey=pkey,
-                    key_filename=None,
-                    password=None,
-                    timeout=None,
-                    allow_agent=False,
-                    look_for_keys=False,
-                    compress=False,
-                    sock=None)
+            logger.debug("Connecting using password")
+            connect(password=passphrase)
 
     except paramiko.BadHostKeyException, bhke:  # BadHostKeyException - if the server's host key could not be verified
         raise RetryException(bhke, traceback.format_exc())

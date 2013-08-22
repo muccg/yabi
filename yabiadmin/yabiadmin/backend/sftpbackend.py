@@ -296,8 +296,9 @@ class SFTPBackend(FSBackend):
         logger.debug('{0}'.format(parts.path))
         target_scheme, target_parts = uriparse(target_uri)
         link_scheme, link_parts = uriparse(link_uri)
-        ssh = sshclient(target_parts.hostname, target_parts.port, self.cred.credential)
+        ssh = None
         try:
+            ssh = sshclient(target_parts.hostname, target_parts.port, self.cred.credential)
             sftp = ssh.open_sftp()
             sftp.symlink(target_parts.path, link_parts.path)
         except Exception, exc:
