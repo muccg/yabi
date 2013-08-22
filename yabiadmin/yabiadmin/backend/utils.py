@@ -28,6 +28,7 @@ import os
 import datetime
 import subprocess
 import socket
+import string
 from yabiadmin.yabiengine.urihelper import url_join
 import traceback
 from mako.template import Template
@@ -86,7 +87,7 @@ def submission_script(template, working, command, modules, cpus, memory, walltim
     variables = {
         'working': working,
         'command': command,
-        'modules': modules,
+        'modules': [string.strip(m) for m in modules.split(",") if string.strip(m)],
         'cpus': cpus,
         'memory': memory,
         'walltime': walltime,
