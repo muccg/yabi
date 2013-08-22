@@ -265,8 +265,11 @@ class EngineJob(Job):
 
         # lets work out the highest copy level supported by this tool and store it in job. This makes no account for the backends capabilities.
         # that will be resolved later when the stagein is created during the walk
-        self.preferred_stagein_method = 'link' if self.tool.link_supported else 'lcopy' if self.tool.lcopy_supported else 'copy'
-        self.preferred_stageout_method = 'lcopy' if self.tool.lcopy_supported else 'copy'                                                   # stageouts should never be linked. Only local copy or remote copy
+        #self.preferred_stagein_method = 'link' if self.tool.link_supported else 'lcopy' if self.tool.lcopy_supported else 'copy'
+        self.preferred_stagein_method = 'copy'
+
+        self.preferred_stageout_method = 'copy'
+        #self.preferred_stageout_method = 'lcopy' if self.tool.lcopy_supported else 'copy'                                                   # stageouts should never be linked. Only local copy or remote copy
 
         # cache job for later reference
         job_id = job_dict["jobId"] # the id that is used in the json
@@ -477,7 +480,6 @@ class EngineTask(Task):
 
     def create_stagein(self, src, scheme, hostname, port, path, username):
         preferred_stagein_method = self.job.preferred_stagein_method
-
         if port:
             dst = "%s://%s@%s:%d%s" % (scheme, username, hostname, port, path)
         else:
@@ -491,6 +493,7 @@ class EngineTask(Task):
         else:
             method = 'copy'
 
+        method = 'copy' # temporary fix
         s, created = StageIn.objects.get_or_create(task=self,
                     src=src,
                     dst=dst,
