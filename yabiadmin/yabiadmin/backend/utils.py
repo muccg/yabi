@@ -87,7 +87,7 @@ def submission_script(template, working, command, modules, cpus, memory, walltim
     variables = {
         'working': working,
         'command': command,
-        'modules': [string.strip(m) for m in modules.split(",") if string.strip(m)],
+        'modules': [string.strip(m) for m in modules.split(",") if string.strip(m)] if modules else [],
         'cpus': cpus,
         'memory': memory,
         'walltime': walltime,
