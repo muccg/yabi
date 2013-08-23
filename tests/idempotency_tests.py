@@ -101,6 +101,7 @@ class TestFileBackendIdempotencyTestCase(TestCase):
         mock_job = mock()
         mock_job.exec_backend = "localex://demo@localhost:None/"
         mock_job.fs_backend = "localfs://localhost:None/home/ccg-user/"
+        mock_job.module = None
         mock_workflow = mock()
         mock_job.workflow = mock_workflow
         mock_task.job = mock_job
