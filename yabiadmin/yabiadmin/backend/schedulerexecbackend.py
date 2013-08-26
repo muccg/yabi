@@ -33,7 +33,8 @@ class SchedulerExecBackend(SSHBackend):
 
     def _yabi_task_name(self):
         # NB. No hyphens - these got rejected by PBS Pro initially
-        return "YabiW{0}J{1}T{2}".format(self.task.job.workflow.pk, self.task.job.pk, self.task.pk)
+        # NB. 15 character limit also.
+        return "Y{0}".format(self.task.pk)[:15]
 
     def submit_task(self):
         qsub_result = self._run_qsub()
