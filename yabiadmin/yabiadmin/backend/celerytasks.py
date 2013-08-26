@@ -70,6 +70,14 @@ def create_db_tasks(job_id):
     request = current_task.request
     try:
         job = EngineJob.objects.get(pk=job_id)
+        if job.status == STATUS_READY:
+            # Handling case when in a previous execution the Celery worker died
+            # after tasks have been created and the transaction has been
+            # commited, but the Celery task didn't return yet
+            assert job.total_tasks() > 0, "Job in READY state, but has no tasks"
+            logger.warning("Job was already in READY state. Skipping creation of db tasks.")
+            return job_id
+
         tasks_count = job.create_tasks()
         if not tasks_count:
             return None
