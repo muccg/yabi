@@ -591,15 +591,12 @@ def status(request):
             if fn(e): return True
         return False
 
-    celery_procs = [p for p in psutil.process_iter() if anyfn(lambda arg: 'celery' in arg.lower(), p.cmdline)]
-
     render_data = {
         'request':request,
         'title': 'Admin Status',
         'user': request.user,
         'root_path':webhelpers.url("/"),
         'settings': get_safe_settings(),
-        'celery_procs': celery_procs,
         }
     
     return render_to_response('yabi/admin_status.html', render_data)
