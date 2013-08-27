@@ -13,6 +13,7 @@ PORT='8000'
 
 PROJECT_NAME='yabi'
 AWS_BUILD_INSTANCE='aws_rpmbuild_centos6'
+AWS_TEST_INSTANCE='aws_yabi_test'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
 CLOSURE="/usr/local/closure/compiler.jar"
 MODULES="MySQL-python==1.2.3 psycopg2==2.4.6 Werkzeug flake8 requests==1.2.0 gunicorn django-nose nose==1.2.1"
@@ -26,7 +27,7 @@ fi
 
 function usage() {
     echo ""
-    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|ci_remote_build|ci_rpm_publish|ci_remote_destroy|ci_authorized_keys) (yabiadmin|celery|yabish)"
+    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_authorized_keys) (yabiadmin|celery|yabish)"
     echo ""
 }
 
@@ -84,6 +85,19 @@ function ci_remote_build() {
 
     mkdir -p build
     ccg ${AWS_BUILD_INSTANCE} getfile:rpmbuild/RPMS/x86_64/yabi*.rpm,build/
+}
+
+# run tests on a remote host from ci environment
+function ci_remote_test() {
+    time ccg ${AWS_TEST_INSTANCE} boot
+    time ccg ${AWS_TEST_INSTANCE} puppet
+    time ccg ${AWS_TEST_INSTANCE} shutdown:50
+
+    EXCLUDES="('bootstrap'\, '.hg'\, 'virt*'\, '*.log'\, '*.rpm'\, 'screenshots'\, 'docs')"
+    SSH_OPTS="-o StrictHostKeyChecking\=no"
+    RSYNC_OPTS="-l"
+    time ccg ${AWS_TEST_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",exclude="${EXCLUDES}",delete=True
+    time ccg ${AWS_TEST_INSTANCE} drun:"${TARGET_DIR}/develop.sh test_mysql"
 }
 
 
@@ -497,6 +511,10 @@ celeryevents)
 ci_remote_build)
     ci_ssh_agent
     ci_remote_build
+    ;;
+ci_remote_test)
+    ci_ssh_agent
+    ci_remote_test
     ;;
 ci_remote_destroy)
     ci_ssh_agent
