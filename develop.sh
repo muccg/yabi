@@ -97,6 +97,7 @@ function ci_remote_test() {
     SSH_OPTS="-o StrictHostKeyChecking\=no"
     RSYNC_OPTS="-l"
     time ccg ${AWS_TEST_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",exclude="${EXCLUDES}",delete=True
+    time ccg ${AWS_TEST_INSTANCE} drun:"${TARGET_DIR}/develop.sh install"
     time ccg ${AWS_TEST_INSTANCE} drun:"${TARGET_DIR}/develop.sh test_mysql"
 }
 
