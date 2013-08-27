@@ -93,10 +93,11 @@ function ci_remote_test() {
     time ccg ${AWS_TEST_INSTANCE} puppet
     time ccg ${AWS_TEST_INSTANCE} shutdown:50
 
-    EXCLUDES="('bootstrap'\, '.hg'\, 'virt*'\, '*.log'\, '*.rpm'\, 'screenshots'\, 'docs')"
+    EXCLUDES="('bootstrap'\, '.hg'\, 'virt*'\, '*.log'\, '*.rpm'\, 'screenshots'\, 'docs'\, '*.pyc')"
     SSH_OPTS="-o StrictHostKeyChecking\=no"
     RSYNC_OPTS="-l"
     time ccg ${AWS_TEST_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",exclude="${EXCLUDES}",delete=True
+    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh purge"
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh install"
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh test_mysql"
 }
