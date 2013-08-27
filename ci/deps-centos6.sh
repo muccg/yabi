@@ -2,7 +2,6 @@ set -ex
 echo $BASH_SOURCE
 echo $-
 sudo rpm --import http://binaries.erlang-solutions.com/debian/erlang_solutions.asc
-sudo wget -O /etc/yum.repos.d/epel-erlang.repo http://repos.fedorapeople.org/repos/peter/erlang/epel-erlang.repo
 echo installing erlang
 sudo yum install erlang
 wget http://www.rabbitmq.com/releases/rabbitmq-server/v3.1.3/rabbitmq-server-3.1.3-1.noarch.rpm
