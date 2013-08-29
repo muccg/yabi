@@ -128,16 +128,9 @@ class LocalfsFileTests(RequestTest):
 
         # get the payload and pipe it into tar 
         rawdata = r.raw
-        read = " "
-        while len(read):
-            read = rawdata.read(1000)
-            detar.stdin.write(read)
+        stdout, stderr = detar.communicate(rawdata)
             
-        # close the input to the decoder
-        detar.stdin.close()
-        detar_result = [(X[:-1] if X[-1]=='\n' else X) for X in detar.stdout.readlines()]
-        
-        detar.wait()
+        detar_result = [(X[:-1] if X[-1]=='\n' else X) for X in stdout.split('\n')]
         
         self.assertTrue(detar.returncode==0, "detar of returned result failed exit code: %d"%(detar.returncode))
         
