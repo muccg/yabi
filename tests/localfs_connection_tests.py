@@ -5,7 +5,7 @@ import os
 import time
 import sys
 from urllib import quote
-from request_test_base import RequestTest
+from request_test_base import RequestTest, remove_slash_if_has
 
 KB = 1024
 MB = 1024 * KB
@@ -13,12 +13,6 @@ GB = 1024 * MB
 
 TEST_LOCALFS_SERVER = "localfs://username@localhost.localdomain/tmp/yabi-localfs-test/"
 QUOTED_TEST_LOCALFS_SERVER = quote(TEST_LOCALFS_SERVER)
-
-def remove_slash_if_has(u):
-    if u.endswith("/"):
-        return u[:-1]
-    else:
-        return u
 
 def get_localfs_server():
     return QUOTED_TEST_LOCALFS_SERVER
