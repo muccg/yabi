@@ -57,8 +57,17 @@ class DynamicTool(object):
 
 class TestFileBackendIdempotencyTestCase(TestCase):
 
+    def get_username(self):
+        import os
+        import pwd
+
+        def username():
+            return pwd.getpwuid( os.getuid() )[ 0 ]
+        return username()
+
     def setUp(self):
         self.username = "demo"
+        self.os_username = self.get_username()
         self.task_working_dir_name = "testing"
         self.create_non_idempotent_tool()
         self.task = self.create_mock_task(self.task_working_dir_name)
@@ -77,11 +86,11 @@ class TestFileBackendIdempotencyTestCase(TestCase):
     def create_mock_stagein(self, filename, task):
         s = mock()
         s.method = "copy"
-        src_path = os.path.join("/home/ccg-user/%s" % filename)
+        src_path = "/home/%s/%s" % (self.get_username(), filename)
         with open(src_path, "w") as stagein_file:
             stagein_file.write("Stage in file %s\n" % filename)
-        s.src = "localfs://demo@localhost/home/ccg-user/%s" % filename
-        s.dst = "localfs://demo@localhost/home/ccg-user/%s/input/%s" % (task.working_dir, filename)
+        s.src = "localfs://demo@localhost/home/%s/%s" % (self.get_username(), filename)
+        s.dst = "localfs://demo@localhost/home/%s/%s/input/%s" % (self.get_username(), task.working_dir, filename)
         return s
 
     def create_mock_task(self, task_working_dir):
@@ -90,7 +99,7 @@ class TestFileBackendIdempotencyTestCase(TestCase):
         mock_task.execscheme = 'localex'
         mock_task.working_dir = task_working_dir
         mock_task.command = self.dynamic_tool.path
-        mock_task.stageout = "localfs://demo@localhost:None/home/ccg-user"
+        mock_task.stageout = "localfs://demo@localhost:None/home/%s" % self.get_username()
 
         stagein1 = self.create_mock_stagein("stagein1", mock_task)
         stagein2 = self.create_mock_stagein("stagein2", mock_task)
@@ -100,7 +109,7 @@ class TestFileBackendIdempotencyTestCase(TestCase):
 
         mock_job = mock()
         mock_job.exec_backend = "localex://demo@localhost:None/"
-        mock_job.fs_backend = "localfs://localhost:None/home/ccg-user/"
+        mock_job.fs_backend = "localfs://localhost:None/home/%s/" % self.get_username()
         mock_job.module = None
         mock_workflow = mock()
         mock_job.workflow = mock_workflow
