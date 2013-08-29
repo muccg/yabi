@@ -14,6 +14,16 @@ GB = 1024 * MB
 TEST_LOCALFS_SERVER = "localfs://username@localhost.localdomain/tmp/yabi-localfs-test/"
 QUOTED_TEST_LOCALFS_SERVER = quote(TEST_LOCALFS_SERVER)
 
+def remove_slash_if_has(u):
+    if u.endswith("/"):
+        return u[:-1]
+    else:
+        return u
+
+def get_localfs_server():
+    return QUOTED_TEST_LOCALFS_SERVER
+
+
 def make_random_string(length=None):
     import random
     if not length:
@@ -66,7 +76,9 @@ class LocalfsFileTests(RequestTest):
 
     def test_localfs_files_list(self):
         import requests
-        r = self.session.get(conf.yabiurl+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_LOCALFS_SERVER) )
+        url = remove_slash_if_has(conf.yabiurl)+ "/ws/fs/ls?uri=%s" % (get_localfs_server())
+        print "test_localfs_files_list: url = %s" % url
+        r = self.session.get(url)
 
         self.assertTrue(r.status_code==200, "Could not list localfs backend contents")
         import json
@@ -92,7 +104,7 @@ class LocalfsFileTests(RequestTest):
             'dst':TEST_LOCALFS_SERVER+"output-rcopy/"
         }
         
-        r = self.session.post(conf.yabiurl+"/ws/fs/rcopy", data=payload)
+        r = self.session.post(remove_slash_if_has(conf.yabiurl) + "/ws/fs/rcopy", data=payload)
         import sys
         sys.stderr.write(r.text)
         self.assertTrue(r.status_code==200, "Could not perform rcopy")
@@ -114,11 +126,11 @@ class LocalfsFileTests(RequestTest):
                     
         payload = {
             'yabiusername':conf.yabiusername,
-            'uri':"localfs://username@localhost.localdomain/tmp/yabi-localfs-test/"
+            'uri':  get_localfs_server()
             #'uri':TEST_LOCALFS_SERVER,
         }
         
-        r = self.session.get(conf.yabiurl+"/ws/fs/zget", params=payload, stream=True)
+        r = self.session.get(remove_slash_if_has(conf.yabiurl) +"/ws/fs/zget", params=payload, stream=True)
         import sys
         self.assertTrue(r.status_code==200, "Could not perform zget. return code was: %d"%r.status_code)
 
@@ -165,17 +177,14 @@ class LocalfsFileTests(RequestTest):
         
         # upload
         files = {'file': ("file.txt", contents)}
-        r = self.session.post( url = conf.yabiurl+"/ws/fs/put?uri=%s"%(QUOTED_TEST_LOCALFS_SERVER),
-                    files = files
-                   )
-        
-        sys.stderr.write("%d...\n"%r.status_code)
+        url = remove_slash_if_has(conf.yabiurl) + "/ws/fs/put?uri=%s"% get_localfs_server()
+        r = self.session.post(url=url, files=files)
+        sys.stderr.write("%d...\n" % r.status_code)
 
-        assert(r.status_code == 200)
-        
-        r = self.session.get(conf.yabiurl+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_LOCALFS_SERVER))
-
-        self.assertTrue(r.status_code==200, "Could not list localfs backend contents")
+        self.assertTrue(r.status_code == 200, "Expected status code 200. Actual = %s" % r.status_code)
+        url = remove_slash_if_has(conf.yabiurl) + "/ws/fs/ls?uri=%s" % get_localfs_server()
+        r = self.session.get(url)
+        self.assertTrue(r.status_code==200, "Could not list localfs backend contents - status code = %s" % r.status_code)
         import json
         data = json.loads(r.text)
         
@@ -192,7 +201,7 @@ class LocalfsFileTests(RequestTest):
         self.assertTrue(filesize==length)
         
         # get the file so we can compare
-        r = self.session.get( url = conf.yabiurl+"/ws/fs/get?uri=%sfile.txt"%(QUOTED_TEST_LOCALFS_SERVER) )
+        r = self.session.get(url=remove_slash_if_has(conf.yabiurl) + "/ws/fs/get?uri=%sfile.txt"%(get_localfs_server()) )
         #sys.stderr.write("code => %d\n"%(r.status_code))
         #sys.stderr.write("text => %s\n"%(r.text))
         
