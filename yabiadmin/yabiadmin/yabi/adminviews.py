@@ -27,7 +27,6 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import sys
-import psutil
 from urllib import quote
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
