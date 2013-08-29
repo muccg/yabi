@@ -50,12 +50,13 @@ class BaseBackend(object):
             logger.debug(args)
             logger.debug(cwd)
             process = execute(args, bufsize=bufsize, stdin=stdin, stdout=stdout, stderr=stderr, shell=shell, cwd=cwd, env=env)
-            status = process.wait()
+            stdout_data, stderr_data = process.communicate(stdin)
+            status = process.returncode
 
             if stdout == subprocess.PIPE:
-                self.last_stdout = process.stdout.read()
+                self.last_stdout = stdout_data
             if stderr == subprocess.PIPE:
-                self.last_stderr = process.stderr.read()
+                self.last_stderr = stderr_data
         except Exception, exc:
             logger.error('execute failed {0}'.format(status))
             from yabiadmin.backend.exceptions import RetryException
