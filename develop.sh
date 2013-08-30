@@ -91,7 +91,7 @@ function ci_remote_build() {
 function ci_remote_test() {
     time ccg ${AWS_TEST_INSTANCE} boot
     time ccg ${AWS_TEST_INSTANCE} puppet
-    time ccg ${AWS_TEST_INSTANCE} shutdown:50
+    time ccg ${AWS_TEST_INSTANCE} shutdown:60
 
     EXCLUDES="('bootstrap'\, '.hg'\, 'virt*'\, '*.log'\, '*.rpm'\, 'screenshots'\, 'docs'\, '*.pyc')"
     SSH_OPTS="-o StrictHostKeyChecking\=no"
