@@ -27,7 +27,7 @@ fi
 
 function usage() {
     echo ""
-    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_authorized_keys) (yabiadmin|celery|yabish)"
+    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|add_yabitests_key|pipfreeze|pythonversion|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_authorized_keys) (yabiadmin|celery|yabish)"
     echo ""
 }
 
@@ -522,6 +522,9 @@ ci_remote_build)
 ci_remote_test)
     ci_ssh_agent
     ci_remote_test
+    ;;
+add_yabitests_key)
+    add_yabitests_key
     ;;
 ci_remote_destroy)
     ci_ssh_agent
