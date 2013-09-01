@@ -39,6 +39,10 @@ function project_needed() {
     fi
 }
 
+function add_yabitests_key() {
+   echo Adding key for yabitests ..
+   cat /usr/local/src/yabi/tests/test_data/yabitests.pub >> ~/.ssh/authorized_keys
+}
 
 function settings() {
     case ${YABI_CONFIG} in
@@ -99,6 +103,7 @@ function ci_remote_test() {
     time ccg ${AWS_TEST_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",exclude="${EXCLUDES}",delete=True
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh purge"
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh install"
+    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh add_yabitests_key"
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh test_mysql"
 }
 
