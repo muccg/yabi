@@ -434,13 +434,16 @@ function yabipurge() {
 
 
 function dbtest() {
+    local noseretval
     stopyabi
     dropdb
     startyabi
     nosetests
+    noseretval=$?
     #noseidempotency
     #nosestatuschange
     stopyabi
+    exit $noseretval
 }
 
 
