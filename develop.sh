@@ -41,7 +41,7 @@ function project_needed() {
 
 function add_yabitests_key() {
    echo Adding key for yabitests ..
-   cat /usr/local/src/yabi/tests/test_data/yabitests.pub >> ~/.ssh/authorized_keys
+   cat "$TARGET_DIR/tests/test_data/yabitests.pub" >> ~/.ssh/authorized_keys
 }
 
 function settings() {
