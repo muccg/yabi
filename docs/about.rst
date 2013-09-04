@@ -86,7 +86,8 @@ GNU GPL v3 for non-commercial use only. Please contact the Centre for Comparativ
 Authors
 -------
 Yabi is developed at the `Center for Comparative Genomics <http://ccg.murdoch.edu.au>`_ at `Murdoch University <http://www.murdoch.edu.au>`_ under the direction 
-of Professor Matthew Bellgard. Developers working on the project are Adam Hunter, Andrew Macgregor, Crispin Wellington and Tamas Szabo.
+of Professor Matthew Bellgard. Developers working on the project are Adam Hunter, Tamas Szabo and Lee Render with
+acknowledgements to Andrew Macgregor and Crispin Wellington.
 
 Acknowledgements
 ----------------
