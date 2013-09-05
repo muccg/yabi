@@ -15,21 +15,7 @@ for package in packages:
             [os.path.join(subdir,f) for (subdir, dirs, files) in os.walk(data_dir) for f in files]) 
     os.chdir(start_dir)
 
-setup(name='yabiadmin',
-    version='7.0.0',
-    description='Yabi Admin',
-    long_description='Yabi front end and administration web interface',
-    author='Centre for Comparative Genomics',
-    author_email='web@ccg.murdoch.edu.au',
-    packages=packages,
-    package_data={
-        '': [ "%s/%s"%(dirglob,fileglob)
-            for dirglob in (["."] + [ '/'.join(['*']*num) for num in range(1,15) ])                         # yui is deeply nested
-            for fileglob in [ '*.mako', '*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg' ]
-        ]
-    },
-    zip_safe=False,
-    install_requires=[
+install_requires = [
         'Django==1.3.7',
         'ccg-webservices==0.1.2',
         'ccg-registration==0.8-alpha-1',
@@ -42,7 +28,6 @@ setup(name='yabiadmin',
         'celery==3.0.22',
         'amqplib==1.0.2',
         'django-celery==3.0.17',
-        'importlib==1.0.1',
         'kombu==2.5.13',
         'billiard==2.7.3.32',
         'flower==0.5.1',
@@ -61,8 +46,33 @@ setup(name='yabiadmin',
         'djamboloader==0.1.2',
         'paramiko==1.10.1',
         'mockito==0.5.1',
-    ],
+    ]
 
+importlib_available = True
+try:
+    import importlib
+except ImportError:
+    # This will likely to happen before Python 2.7
+    importlib_available = False
+
+if not importlib_available:
+    install_requires.append('importlib==1.0.1')
+
+setup(name='yabiadmin',
+    version='7.0.0',
+    description='Yabi Admin',
+    long_description='Yabi front end and administration web interface',
+    author='Centre for Comparative Genomics',
+    author_email='web@ccg.murdoch.edu.au',
+    packages=packages,
+    package_data={
+        '': [ "%s/%s"%(dirglob,fileglob)
+            for dirglob in (["."] + [ '/'.join(['*']*num) for num in range(1,15) ])                         # yui is deeply nested
+            for fileglob in [ '*.mako', '*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg' ]
+        ]
+    },
+    zip_safe=False,
+    install_requires=install_requires,
     dependency_links = [
           'http://ccg-django-extras.googlecode.com/files/ccg-webservices-0.1.2.tar.gz',
           'http://ccg-django-extras.googlecode.com/files/ccg-registration-0.8-alpha-1.tar.gz',
