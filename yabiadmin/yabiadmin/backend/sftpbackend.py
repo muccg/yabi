@@ -189,6 +189,17 @@ class SFTPBackend(FSBackend):
     def _do_ls(self, sftp, path):
         """do an ls using sftp client at path"""
         results = {"files": [], "directories": []}
+        def is_dir(path):
+            import stat
+            sftp_stat_result = sftp.stat(path)
+            return stat.S_ISDIR(sftp_stat_result.st_mode)
+
+        if not is_dir(path):
+            filename = os.path.basename(path)
+            entry = sftp.stat(path)
+            results['files'].append([filename, entry.st_size, time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime(entry.st_mtime)), stat.S_ISLNK(entry.st_mode)])
+            return results
+
         for entry in sftp.listdir_attr(path):
             # if not a hidden directory
             if not entry.filename.startswith('.'):
