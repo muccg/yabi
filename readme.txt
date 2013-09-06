@@ -19,7 +19,8 @@ Dependencies
     o libxslt-devel, libxml2-devel
     o RabbitMQ (and Erlang)
 
-On CentOS you would need:
+
+To install the dependencies on CentOS (tested on 6.4):
 
   o Python is installed by default.
 
@@ -32,11 +33,24 @@ On CentOS you would need:
     http://www.rabbitmq.com/install-rpm.html  
 
 
-Make sure you start MySQL and RabbitMQ
+To install the dependencies on Ubuntu (tested on 13.4):
+
+
+  o Python is installed by default.
+ 
+  o For all the other dependencies but RabbitMQ:
+
+    $ sudo apt-get install gcc mercurial python-dev python-virtualenv libpq-dev mysql-server myql-client libxml2-dev libxslt-dev python-mysqldb libmysqlclient-dev 
+
+  o To install RabbitMQ follow the instructions at:
+ 
+    http://www.rabbitmq.com/install-debian.html
+
+
+After you've installed all dependencies, make sure you start MySQL and RabbitMQ
 
     # service mysqld start
     # service rabbitmq-server start
-
 
 Create a development and test database in MySQL for Yabi:
 
