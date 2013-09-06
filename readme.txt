@@ -1,4 +1,5 @@
 A guide to getting Yabi running for developers
+==============================================
 
 Our main target deployment platform is the latest version of CentOS (currently 6.4).
 That's why we also develop on the same OS. 
@@ -11,6 +12,9 @@ Dependencies
 ------------
 
     o python (we are currently using 2.6)
+    o Gcc
+    o Mercurial
+    o Virtualenv
     o MySQL (mysql-server, mysql, mysql-devel, MySQL-python)
     o libxslt-devel, libxml2-devel
     o RabbitMQ (and Erlang)
@@ -19,9 +23,9 @@ On CentOS you would need:
 
   o Python is installed by default.
 
-  o For the second and third point:
+  o For all the other dependencies but RabbitMQ, with the EPEL repository enabled:
 
-    # yum install mysql-server mysql mysql-devel MySQL-python libxslt-devel libxml2-devel
+    # yum install gcc mercurial python-virtualenv postgresql-devel mysql-server mysql mysql-devel MySQL-python libxslt-devel libxml2-devel
 
   o To install RabbitMQ follow the instructions at:
 
@@ -30,8 +34,8 @@ On CentOS you would need:
 
 Make sure you start MySQL and RabbitMQ
 
-    # /etc/init.d/mysqld start
-    # /ect/init.d/rabbitmq-server start
+    # service mysqld start
+    # service rabbitmq-server start
 
 
 Create a development and test database in MySQL for Yabi:
