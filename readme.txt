@@ -40,7 +40,7 @@ To install the dependencies on Ubuntu (tested on 13.4):
  
   o For all the other dependencies but RabbitMQ:
 
-    $ sudo apt-get install gcc mercurial python-dev python-virtualenv libpq-dev mysql-server myql-client libxml2-dev libxslt-dev python-mysqldb libmysqlclient-dev 
+    $ sudo apt-get install gcc mercurial python-dev python-virtualenv libpq-dev mysql-server mysql-client libxml2-dev libxslt-dev python-mysqldb libmysqlclient-dev 
 
   o To install RabbitMQ follow the instructions at:
  
@@ -49,7 +49,12 @@ To install the dependencies on Ubuntu (tested on 13.4):
 
 After you've installed all dependencies, make sure you start MySQL and RabbitMQ
 
-    # service mysqld start
+    On CentOS:
+      # service mysqld start 
+
+    On Ubuntu
+      # service mysql start 
+
     # service rabbitmq-server start
 
 Create a development and test database in MySQL for Yabi:
