@@ -16,6 +16,9 @@ for package in packages:
     os.chdir(start_dir)
 
 install_requires = [
+        # pip > 1.4 doesn't pick up pytz, because of non-standard version number
+        # Bug is still under discussion: https://bugs.launchpad.net/pytz/+bug/1204837
+        'pytz>=2013b', 
         'Django==1.3.7',
         'ccg-webservices==0.1.2',
         'ccg-registration==0.8-alpha-1',

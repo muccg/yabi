@@ -17,7 +17,7 @@ AWS_TEST_INSTANCE='aws_yabi_test'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
 CLOSURE="/usr/local/closure/compiler.jar"
 MODULES="MySQL-python==1.2.3 psycopg2==2.4.6 Werkzeug flake8 requests==1.2.0 gunicorn django-nose nose==1.2.1"
-PIP_OPTS='-v -M --download-cache ~/.pip/cache'
+PIP_OPTS='--download-cache ~/.pip/cache --index-url=http://restricted.crate.io'
 
 
 if [ "${YABI_CONFIG}" = "" ]; then
@@ -295,14 +295,13 @@ function installyabi() {
     echo "Install yabiadmin"
     virtualenv virt_yabiadmin
     pushd yabiadmin
-    ../virt_yabiadmin/bin/pip install ${PIP_OPTS} pip-crate
-    ../virt_yabiadmin/bin/pip-crate install ${PIP_OPTS} -e .
+    ../virt_yabiadmin/bin/pip install ${PIP_OPTS} -e .
     popd
-    virt_yabiadmin/bin/pip-crate install ${PIP_OPTS} ${MODULES}
+    virt_yabiadmin/bin/pip install ${PIP_OPTS} ${MODULES}
 
     echo "Install yabish"
     pushd yabish
-    ../virt_yabiadmin/bin/pip-crate install ${PIP_OPTS} -e .
+    ../virt_yabiadmin/bin/pip install ${PIP_OPTS} -e .
     popd
 }
 
