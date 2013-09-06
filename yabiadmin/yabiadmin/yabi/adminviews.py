@@ -27,7 +27,6 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import sys
-import psutil
 from urllib import quote
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render_to_response, get_object_or_404
@@ -142,7 +141,7 @@ def modify_backend_by_id(request,id):
     """This is used primarily by test harness to modify backend settings mid test"""
     be = Backend.objects.get(id=id)
     for key,val in request.REQUEST.iteritems():
-        print key,"=",val
+        logger.debug('{0}={1}'.format(key,val))
         setattr(be,key,None if val=="None" else val)
     be.save()
     
@@ -153,7 +152,7 @@ def modify_backend_by_name(request,scheme,hostname):
     """This is used primarily by test harness to modify backend settings mid test"""
     be = Backend.objects.get(scheme=scheme,hostname=hostname)
     for key,val in request.REQUEST.iteritems():
-        print key,"=",val
+        logger.debug('{0}={1}'.format(key,val))
         setattr(be,key,None if val=="None" else val)
     be.save()
     
@@ -591,15 +590,12 @@ def status(request):
             if fn(e): return True
         return False
 
-    celery_procs = [p for p in psutil.process_iter() if anyfn(lambda arg: 'celery' in arg.lower(), p.cmdline)]
-
     render_data = {
         'request':request,
         'title': 'Admin Status',
         'user': request.user,
         'root_path':webhelpers.url("/"),
         'settings': get_safe_settings(),
-        'celery_procs': celery_procs,
         }
     
     return render_to_response('yabi/admin_status.html', render_data)

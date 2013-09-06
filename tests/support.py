@@ -3,7 +3,7 @@ import config
 import unittest
 from collections import namedtuple
 
-DEBUG = True
+DEBUG = False
 CONFIG_SECTION = os.environ.get('YABI_CONFIG')
 if CONFIG_SECTION:
     conf = config.Configuration(section=CONFIG_SECTION)
@@ -123,9 +123,9 @@ class Yabi(object):
         if DEBUG:
             print args
         cmd = subprocess.Popen(args, shell=False, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-        status = cmd.wait()
+        stdoutdata, stderrdata = cmd.communicate()
 
-        return Result(status, cmd.stdout.read(), cmd.stderr.read(), runner=self)
+        return Result(cmd.returncode, stdoutdata, stderrdata, runner=self)
 
     def login(self, username=conf.yabiusername, password=conf.yabipassword):
         result = self.run(['login', username, password])
@@ -140,9 +140,8 @@ class Yabi(object):
 def shell_command(command):
     print command
     cmd = subprocess.Popen(command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-    status = cmd.wait()
-    out = cmd.stdout.read()
-    err = cmd.stdout.read()
+    out, err = cmd.communicate()
+    status = cmd.returncode
     print out
     if status != 0 or err:
         print 'Command was: ' + command
@@ -218,9 +217,8 @@ class FileUtils(object):
     def run_cksum_locally(self, filename):
         import subprocess
         cmd = subprocess.Popen('cksum %s' % filename, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
-        status = cmd.wait()
-        assert status == 0, 'ERROR: ' + cmd.stderr.read()
-        output = cmd.stdout.read()
-        our_line = filter(lambda l: filename in l, output.split("\n"))[0]
+        out, err = cmd.communicate()
+        assert cmd.returncode == 0, 'ERROR: ' + err
+        our_line = filter(lambda l: filename in l, out.split("\n"))[0]
         expected_cksum, expected_size, rest = our_line.split()
         return expected_cksum, expected_size

@@ -36,7 +36,6 @@ from django.utils import simplejson as json
 from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
 from ccg.utils import webhelpers
-from yabiadmin.yabiengine.tasks import walk
 from yabiadmin.yabiengine.models import Task, Job, Workflow, Syslog
 from yabiadmin.yabiengine.enginemodels import EngineTask, EngineJob, EngineWorkflow
 from yabiadmin.yabi.models import BackendCredential
@@ -48,130 +47,6 @@ logger = logging.getLogger(__name__)
 
 from yabiadmin.constants import *
 from random import shuffle
-
-
-def request_next_task(request, status):
-    # check tasktag
-    if 'tasktag' not in request.REQUEST or request.REQUEST['tasktag'] != settings.TASKTAG:
-        logger.critical('Expected tasktag %s got %s.' % (settings.TASKTAG, tasktag))
-        return HttpResponseServerError('Error requesting task. Tasktag incorrect.')
-    tasktag = request.REQUEST['tasktag']
-
-    # tasks waiting execution, fifo, for given status
-    ready_tasks = []
-    if status == STATUS_READY:
-        ready_tasks = Task.objects.filter(tasktag=tasktag).filter(status_requested__isnull=True, status_ready__isnull=False).order_by('id')
-    elif status == STATUS_RESUME:
-        # not implemented, there is no resume status
-        return HttpResponseNotFound('No more tasks.')
-    else:
-        return HttpResponseServerError('Unknown status for next task')
-
-    if len(ready_tasks) == 0:
-        logger.debug('No more tasks.')
-        return HttpResponseNotFound('No more tasks.')
-
-    # find a task to make available
-    throttled = []
-    for task in ready_tasks:
-        # if the backend credential for this task has already been throttled, skip task
-        if task.execution_backend_credential.id in throttled:
-            logger.debug('backend credential already throttled')
-            continue
-
-        # determine active tasks for the execution backend credential associated with this task
-        tasks_active_per_bec = Task.objects.filter(execution_backend_credential=task.execution_backend_credential).filter(tasktag=tasktag).exclude(status_requested__isnull=True).exclude(status_complete__isnull=False).exclude(job__workflow__status=STATUS_ERROR).exclude(job__workflow__status=STATUS_EXEC_ERROR).exclude(job__workflow__status=STATUS_COMPLETE)
-        tasks_per_user = task.execution_backend_credential.backend.tasks_per_user
-        active_tasks = len(tasks_active_per_bec)
-
-        # skip tasks if too many tasks active for this backend cred 
-        if tasks_per_user is not None and active_tasks >= tasks_per_user:
-            logger.warn("Throttling {0} {1}>={2}".format(task.execution_backend_credential,active_tasks, tasks_per_user))
-            throttled.append(task.execution_backend_credential.id)
-            continue
-
-        # make sure the task we are about to make available is ours for the taking
-        updated = Task.objects.filter(id=task.id, status_requested__isnull=True).update(status_requested=datetime.now())
-        if updated == 1:
-            logger.info('next %s task id: %s command: %s' % (status, task.id, task.command))
-            return HttpResponse(task.json())
-
-    logger.debug('No more tasks.')
-    return HttpResponseNotFound('No more tasks.')
-
-
-def old_request_next_task(request, status):
-    if 'tasktag' not in request.REQUEST:
-        return HttpResponseServerError('Error requesting task. No tasktag identifier set.')
-    
-    # verify that the requesters tasktag is correct
-    tasktag = request.REQUEST['tasktag']
-    if tasktag != settings.TASKTAG:
-        logger.critical('Task requested  had incorrect identifier set. Expected tasktag %s but got %s instead.' % (settings.TASKTAG, tasktag))
-        return HttpResponseServerError('Error requesting task. Tasktag incorrect. This is not the admin you are looking for.')
-    
-    # we assemble a list of backendcredentials. This way we can rate control the jobs a particular backend user and backend sees to
-    # prevent overload of the scheduler, which is what a job scheduler should deal with, with something like, you know, a queue. but most of them
-    # don't. cause they're mostly rubbish.
-    backend_user_pairs = [bec for bec in BackendCredential.objects.all()]
-    
-    # we shuffle this list to try to prevent any starvation of later backend/user pairs
-    shuffle(backend_user_pairs)
-    
-    # for each backend/user pair, we count how many submitted jobs there are. Those with no bec setting are always done first.
-    # this enables us later to allow a backend task to be submitted no matter what the remote backend is doing, simply by leaving the column null
-    for bec in [None] + backend_user_pairs:
-        # the following collects the list of tasks for this bec that are already running on the remote
-        #logger.warning('bec: %s tasktag: %s'%(str(bec),str(tasktag)))
-        remote_task_candidates = Task.objects.filter(execution_backend_credential=bec).filter(tasktag=tasktag).exclude(job__workflow__status=STATUS_ERROR).exclude(job__workflow__status=STATUS_EXEC_ERROR).exclude(job__workflow__status=STATUS_COMPLETE)
-        #logger.warning('candidates: %s'%(str(remote_task_candidates)))
-        
-        remote_tasks = []
-        for n,t in enumerate(remote_task_candidates):
-            s = t.status
-            #logger.warning('status for %d is: %s'%(n,status))
-            if s not in [STATUS_READY, STATUS_ERROR, STATUS_EXEC_ERROR, STATUS_COMPLETE]:
-                remote_tasks.append(t)
-        
-        #logger.warning('remote_tasks: %s'%(str(remote_tasks)))
-        
-        tasks_per_user = None if not bec or bec.backend.tasks_per_user==None else bec.backend.tasks_per_user
-        
-        #logger.debug('%d remote tasks running for this bec (%s)'%(len(remote_tasks),bec))
-        #logger.debug('tasks_per_user = %s\n'%(tasks_per_user))
-        
-        if tasks_per_user==None or len(remote_tasks) < tasks_per_user:
-            # we can return a task for this bec if one exists
-            try:
-                tasks = [T for T in Task.objects.filter(execution_backend_credential=bec).filter(tasktag=tasktag).filter(status_requested__isnull=True) if T.status==status]
-                
-                #logger.warning('FOUND %s: (%d tasks) %s'%(status,len(tasks),tasks))
-                
-                # Optimistic locking
-                # Update and return task only if another thread hasn't updated and returned it before us
-                for task in tasks:
-                    updated = Task.objects.filter(id=task.id, status_requested__isnull=True).update(status_requested=datetime.now())
-                    if updated == 1:
-                        logger.debug('requested %s task id: %s command: %s' % (status, task.id, task.command))
-                        return HttpResponse(task.json())
-
-            except ObjectDoesNotExist:
-                # this bec has no jobs... continue to try the next one...
-                #logger.warning('ODNE')
-                pass
-            
-    logger.debug('No more tasks.')
-    return HttpResponseNotFound('No more tasks.')
-
-
-@hmac_authenticated
-def task(request):
-    return request_next_task(request, status=STATUS_READY)
-
-
-@hmac_authenticated
-def blockedtask(request):
-    return request_next_task(request, status=STATUS_RESUME)
 
 
 @hmac_authenticated
@@ -216,47 +91,6 @@ def status(request, model, id):
             return HttpResponseServerError(e)
 
         return HttpResponse('OK')
-
-
-@transaction.commit_manually
-def _update_task_status(task_id, status):
-    try:
-        kwargs = {Task.status_attr(status): datetime.now()}
-        Task.objects.filter(id=task_id).update(**kwargs)
-        task = Task.objects.get(id=task_id)
-
-        if status != STATUS_BLOCKED and status!= STATUS_RESUME:
-            task.percent_complete = STATUS_PROGRESS_MAP[status]
-
-        if status == STATUS_COMPLETE:
-            task.end_time = datetime.now()
-       
-        # We have to commit the task status before calculating
-        # job status that is based on task statuses
-        task.save()
-        transaction.commit()
- 
-        # update the job status when the task status changes
-        job_old_status = task.job.status
-        job_cur_status = task.job.update_status()
-        transaction.commit()
-
-        if job_cur_status != job_old_status and job_cur_status in (STATUS_ERROR, STATUS_COMPLETE):
-            task.job.workflow.update_status()
-            transaction.commit()
-        
-        if job_cur_status in [STATUS_READY, STATUS_COMPLETE, STATUS_ERROR]:
-            workflow = EngineWorkflow.objects.get(pk=task.job.workflow.id)
-            if workflow.needs_walking():
-                # trigger a walk via celery 
-                walk.delay(workflow_id=workflow.pk)
-        transaction.commit()
-    except Exception, e:
-        transaction.rollback()
-        import traceback
-        logger.critical(traceback.format_exc())
-        logger.critical('Caught Exception: %s' % e)
-        raise
 
 
 @hmac_authenticated

@@ -222,7 +222,7 @@ class Migration(DataMigration):
             output_file = False,
             extension_param = None,
             possible_values = None,
-            default_value = u'selected files',
+            default_value = None,
             helptext = None,
             batch_bundle_files = False,
             file_assignment = 'all',

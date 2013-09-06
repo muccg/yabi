@@ -62,7 +62,8 @@ class ExplodingBackendTest(YabiTestCase):
         admin.create_tool('hostname')
         YabiTestCase.tearDown(self)
 
-    def test_submit_json_directly_larger_workflow(self):
+    # TODO re-enable when we will have an Exploding Backend
+    def xtest_submit_json_directly_larger_workflow(self):
         result = self.yabi.run(['submitworkflow', json_path('hostname_hundred_times')])
         wfl_id = result.id
         all_jobs_finished = False

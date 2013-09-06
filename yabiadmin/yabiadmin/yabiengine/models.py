@@ -343,6 +343,12 @@ class Task(models.Model, Editable, Status):
         # set the requested status to 'now'
         varname = self.status_attr(status)
         setattr(self,varname,datetime.now())
+
+        if status != STATUS_BLOCKED and status!= STATUS_RESUME:
+            self.percent_complete = STATUS_PROGRESS_MAP[status]
+
+        if status == STATUS_COMPLETE:
+            self.end_time = datetime.now()
     
     def get_status(self):
         for status in STATUSES_REVERSE_ORDER:

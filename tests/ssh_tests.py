@@ -19,6 +19,7 @@ class SSHBackendTest(YabiTestCase):
         models.Tool.objects.get(name='hostname').delete()
 
         admin.create_ssh_backend()
+        admin.create_sftp_backend()
         admin.create_tool('hostname', ex_backend_name='SSH Backend')
         admin.add_tool_to_all_tools('hostname')
 
@@ -31,7 +32,9 @@ class SSHBackendTest(YabiTestCase):
         YabiTestCase.tearDown(self)
 
     # This test must run first, it sets up the known hosts
-    def test_a_failure_to_get_host_key(self):
+    # Disabled as set paramiko to auto had host keys. Need
+    # ECDSA key support in paramiko
+    def xtest_a_failure_to_get_host_key(self):
         # try and run a command, it will fail due to host key error
         result = self.yabi.run(['hostname'])
         result = StatusResult(self.yabi.run(['status', result.id]))

@@ -227,7 +227,7 @@ YUI().use(
         }
 
         var loadImg;
-        if (this.status !== 'complete') {
+        if (this.status !== 'complete' && this.status !== 'error') {
           if (Y.Lang.isUndefined(this.loadingEl) || this.loadingEl === null) {
             this.loadingEl = document.createElement('div');
             this.loadingEl.className = 'workflowLoading';

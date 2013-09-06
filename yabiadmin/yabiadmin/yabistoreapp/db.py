@@ -446,7 +446,6 @@ def get_workflows(username, get_tags=True, sort="last_modified_on", dir="DESC"):
     
     if get_tags:
         for row in result:
-            #print row
             row['tags'] = get_tags_for_workflow(username, int(row['id']), cursor = c)
             
             # decode the json object

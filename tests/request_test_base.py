@@ -11,6 +11,14 @@ GB = 1024 * MB
 
 from urllib import quote
 
+
+def remove_slash_if_has(u):
+    if u.endswith("/"):
+        return u[:-1]
+    else:
+        return u
+
+
 try:
     import requests
 except ImportError, ioe:
@@ -23,7 +31,8 @@ class RequestTest(YabiTestCase):
         
         # demo login session
         self.session = requests.session()
-        r = self.session.post(conf.yabiurl+"/login", data={'username':conf.yabiusername,'password':conf.yabipassword})
+
+        r = self.session.post(remove_slash_if_has(conf.yabiurl) + "/login", data={'username':conf.yabiusername,'password':conf.yabipassword})
         self.assertTrue(r.status_code == 200, "Could not login to frontend. Frontend returned: %d"%(r.status_code))
 
     def tearDown(self):
@@ -37,10 +46,9 @@ class RequestTestWithAdmin(RequestTest):
         
         # demo login session
         self.adminsession = requests.session()
-        r = self.adminsession.post(conf.yabiurl+"/login", data={'username':conf.yabiadminusername,'password':conf.yabiadminpassword})
+        r = self.adminsession.post(remove_slash_if_has(conf.yabiurl) +"/login", data={'username':conf.yabiadminusername,'password':conf.yabiadminpassword})
         self.assertTrue(r.status_code == 200, "Could not login as admin to frontend. Frontend returned: %d"%(r.status_code))
 
     def tearDown(self):
         RequestTest.tearDown(self)
 
-    

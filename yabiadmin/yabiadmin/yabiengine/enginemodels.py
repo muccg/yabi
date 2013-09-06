@@ -27,7 +27,6 @@
 ### END COPYRIGHT ###
 
 import httplib, os, datetime, uuid, traceback
-from math import log10
 from urllib import urlencode
 from os.path import splitext
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
@@ -78,11 +77,11 @@ class EngineWorkflow(Workflow):
     def json(self):
         return json.dumps(self.as_dict())
 
-    def errored_in_build(self):
+    def errored_during_create_jobs(self):
         if self.status != STATUS_ERROR:
             return False
         # if the Workflow status is error and we have less jobs than we received in the JSON
-        # it means we couldn't build() all jobs from the request -> we had an error during build()
+        # it means we couldn't create jobs from the request -> we had an error during create_jobs()
         received_json = json.loads(self.original_json)
         if 'jobs' not in received_json:
             return False
@@ -95,9 +94,9 @@ class EngineWorkflow(Workflow):
                 "tags": [] # TODO probably can be removed
             }
         jobs = []
-        if self.errored_in_build():
+        if self.errored_during_create_jobs():
             # We have to do this to allow the FE to reuse the Workflow
-            # If build() failed there would be no jobs
+            # If create_jobs() failed there would be no jobs
             d['jobs'] = json.loads(self.original_json)['jobs']
         else:
             for job in self.get_jobs():
@@ -109,8 +108,8 @@ class EngineWorkflow(Workflow):
         return EngineJob.objects.filter(workflow=self).order_by("order")
 
     @transaction.commit_on_success
-    def build(self):
-        logger.debug('----- Building workflow id %d -----' % self.id)
+    def create_jobs(self):
+        logger.debug('----- Creating jobs for workflow id %d -----' % self.id)
 
         try:
             workflow_dict = json.loads(self.original_json)
@@ -122,7 +121,6 @@ class EngineWorkflow(Workflow):
                 default_stageout = self.user.default_stageout
 
             self.stageout = "%s%s/" % (default_stageout, self.name)
-            self.status = STATUS_READY
             self.save()
 
             # save the jobs
@@ -130,84 +128,24 @@ class EngineWorkflow(Workflow):
                 job = EngineJob(workflow=self, order=i, start_time=datetime.datetime.now())
                 job.add_job(job_dict)
 
+            self.status = STATUS_READY
+            self.save()
+
         except Exception, e:
             transaction.rollback()
+            logger.exception("Exception during creating jobs for workflow {0}".format(self.pk))
 
             self.status = STATUS_ERROR
             self.save()
             transaction.commit()
 
-            logger.critical(e)
-            logger.critical(traceback.format_exc())
-
             raise
 
-    def jobs_that_need_walking(self):
-        return [j for j in EngineJob.objects.filter(workflow=self).order_by("order") if j.total_tasks() == 0 and not j.has_incomplete_dependencies()]
+    def jobs_that_need_processing(self):
+        return [j for j in EngineJob.objects.filter(workflow=self).order_by("order") if j.total_tasks() == 0 and not j.has_incomplete_dependencies() and j.status == STATUS_PENDING]
 
-    def needs_walking(self):
-        return (len(self.jobs_that_need_walking()) > 0)
-
-    @transaction.commit_manually
-    def walk(self):
-        '''
-        Walk through the jobs for this workflow and prepare jobs and tasks,
-        check if the workflow has completed after each walk
-        '''
-        logger.debug('----- Walking workflow id %d -----' % self.id)
-
-        try:
-            jobset = [X for X in EngineJob.objects.filter(workflow=self).order_by("order")]
-            for job in jobset:
-                logger.debug('----- Walking workflow id %d job id %d -----' % (self.id, job.id))
-
-                # dont walk job if it already has tasks
-                if job.total_tasks() > 0:
-                    logger.info("job %s has tasks, skipping walk" % job.id)
-                    continue
-
-                # we can't proceed until all previous job dependencies are satisfied
-                if job.has_incomplete_dependencies():
-                    logger.info('job %s has incomplete dependencies, skipping walk' % job.id)
-                    continue
-
-                # This will open up a new transaction for creating all the tasks of a Job
-                # TODO TSZ - it might make sense to change all this code to walk jobs instead
-                # Walking one job (ie. creating tasks for it) seems to be the unit of work here
-                job.create_tasks()
-
-                # there must be at least one task for every job
-                if not job.total_tasks():
-                    logger.critical('No tasks for job: %s' % job.id)
-                    job.status = STATUS_ERROR
-                    self.status = STATUS_ERROR
-                    job.save()
-                    self.save()
-                    transaction.commit()
-                    continue
-
-                # mark job as ready so it can be requested by a backend
-                job.status = STATUS_READY
-                job.save()
-
-                job.make_tasks_ready()
-                transaction.commit()
-
-            # Making sure the transactions opened in the loop are closed
-            # ex. job.total_tasks() opens a transaction, then it could exit the loop with continue
-            transaction.commit()
-
-        except Exception,e:
-            transaction.rollback()
-
-            self.status = STATUS_ERROR
-            self.save()
-            transaction.commit()
-
-            logger.critical("Exception raised in workflow::walk")
-            logger.critical(traceback.format_exc())
-
-            raise
+    def has_jobs_to_process(self):
+        return (len(self.jobs_that_need_processing()) > 0)
 
     def change_tags(self, taglist):
         current_tags = [wft.tag.value for wft in self.workflowtag_set.all()]
@@ -285,7 +223,6 @@ class EngineJob(Job):
         try:
             rval = BackendCredential.objects.get(credential__user=self.workflow.user, backend=self.tool.fs_backend)
         except (ObjectDoesNotExist, MultipleObjectsReturned):
-            print 'Invalid filesystem backend credentials for user: %s and backend: %s' % (self.workflow.user, self.tool.fs_backend)
             logger.critical('Invalid filesystem backend credentials for user: %s and backend: %s' % (self.workflow.user, self.tool.fs_backend))
             fsbcs = BackendCredential.objects.filter(credential__user=self.workflow.user, backend=self.tool.fs_backend)
             logger.debug("FS Backend Credentials returned: %s"%(fsbcs))
@@ -295,13 +232,16 @@ class EngineJob(Job):
 
         return rval
 
+    def update_dependencies(self):
+        self.template.update_dependencies(self.workflow, ignore_glob_list=FNMATCH_EXCLUDE_GLOBS)
+        return self.template.dependencies
+
     def has_incomplete_dependencies(self):
         """Check each of the dependencies (previous jobs that must be completed) in the jobs command params.
            The only dependency we have are yabi:// style references in batch_files
         """
         logger.info('Check dependencies for jobid: %s...' % self.id)
-        self.template.update_dependencies(self.workflow, ignore_glob_list=FNMATCH_EXCLUDE_GLOBS)
-        return self.template.dependencies!=0
+        return self.update_dependencies() != 0
 
     def make_tasks_ready(self):
         tasks = EngineTask.objects.filter(job=self)
@@ -325,8 +265,11 @@ class EngineJob(Job):
 
         # lets work out the highest copy level supported by this tool and store it in job. This makes no account for the backends capabilities.
         # that will be resolved later when the stagein is created during the walk
-        self.preferred_stagein_method = 'link' if self.tool.link_supported else 'lcopy' if self.tool.lcopy_supported else 'copy'
-        self.preferred_stageout_method = 'lcopy' if self.tool.lcopy_supported else 'copy'                                                   # stageouts should never be linked. Only local copy or remote copy
+        #self.preferred_stagein_method = 'link' if self.tool.link_supported else 'lcopy' if self.tool.lcopy_supported else 'copy'
+        self.preferred_stagein_method = 'copy'
+
+        self.preferred_stageout_method = 'copy'
+        #self.preferred_stageout_method = 'lcopy' if self.tool.lcopy_supported else 'copy'                                                   # stageouts should never be linked. Only local copy or remote copy
 
         # cache job for later reference
         job_id = job_dict["jobId"] # the id that is used in the json
@@ -346,87 +289,76 @@ class EngineJob(Job):
 
         self.save()
 
+
+    @transaction.commit_on_success
     def create_tasks(self):
-        tasks = self._prepare_tasks()
-        be = get_exec_backendcredential_for_uri(self.workflow.user.name, self.exec_backend)
+        logger.debug('----- creating tasks for Job %s -----' % self.pk)
+        assert self.total_tasks() == 0, "Job already has tasks"
 
-        # by default Django is running with an open transaction
-        transaction.commit()
 
-        # see http://code.djangoproject.com/svn/django/trunk/django/db/transaction.py
-        assert is_dirty() == False
+        updated = Job.objects.filter(pk=self.pk, status=STATUS_PENDING).update(status=JOB_STATUS_PROCESSING)
+        if updated == 0:
+            logger.info("Another process_jobs() must have picked up job %s already" % self.pk)
+            return
 
         try:
-            enter_transaction_management()
-            managed(True)
+            self.update_dependencies()
+            be = get_exec_backendcredential_for_uri(self.workflow.user.name, self.exec_backend)
 
-            assert is_managed() == True
+            input_files = self.get_input_files()
+            self.create_one_task_for_each_input_file(input_files, be)
 
-            if (self.total_tasks() == 0):
-                logger.debug("job %s is having tasks created" % self.id) 
-                self._create_tasks(tasks, be)
-            else:
-                logger.debug("job %s has tasks, skipping create_tasks" % self.id)
+            # there must be at least one task for every job
+            if not self.total_tasks():
+                logger.critical('No tasks for job: %s' % self.pk)
+                self.status = STATUS_ERROR
+                self.workflow.status = STATUS_ERROR
+                self.save()
+                self.workflow.save()
+                transaction.commit()
+                raise Exception('No tasks for job: %s' % self.pk)
 
-            transaction.commit()
-            logger.debug('Committed')
+            # mark job as ready so it can be requested by a backend
+            self.status = STATUS_READY
+            self.save()
+            self.make_tasks_ready()
+
+            return self.total_tasks()
+
         except:
-            logger.critical(traceback.format_exc())
             transaction.rollback()
-            logger.debug('Rollback')
+            # We couldn't sucessfully create tasks for the job so we will set
+            # the status to PENDING (ie. allowing a retry to pick it up again)
+            self.status = STATUS_PENDING
+            self.save()
+            transaction.commit()
             raise
-        finally:
-            leave_transaction_management()
-            assert is_dirty() == False
 
-    def _prepare_tasks(self):
-        logger.info('Preparing tasks for jobid: %s...' % self.id)
+    def get_input_files(self):
+        if self.template.command.is_select_file:
+            return []
+        input_files = [X for X in self.template.file_sets()]
+        return input_files
 
-        if (self.total_tasks() > 0):
-            raise Exception("Job already has tasks")
 
-        tasks_to_create = []
-
-        if self.template.command.is_select_file or not len([X for X in self.template.file_sets()]):
-            return [ [self,None ] ]
-        else:
-            for input_file_set in self.template.file_sets():
-                tasks_to_create.append([self, input_file_set])
-
-        return tasks_to_create
-
-    def _create_tasks(self, tasks_to_create, be):
-        logger.debug("creating tasks: %s" % tasks_to_create)
+    def create_one_task_for_each_input_file(self, input_files, be):
+        logger.debug("job %s is having tasks created for %s input files" % (self.pk, len(input_files)))
         assert is_managed() == True
+        if len(input_files) == 0:
+            input_files = [None]
 
         # lets count up our batch_file_list to see how many files there are to process
         # won't count tasks with file == None as these are from not batch param jobs
+        count = len(filter(lambda x: x is not None, input_files))
+        left_padded_with_zeros = "{0:0>%s}" % len(str(count))
 
-        count = len([X for X in tasks_to_create if X[1]])
+        self.task_total = len(input_files)
 
-         # lets build a closure that will generate our names for us
-        if count>1:
-            # the 10 base logarithm will give us how many digits we need to pad
-            buildname = lambda n: (n+1,("0"*(int(log10(count))+1)+str(n))[-(int(log10(count))+1):])
-        else:
-            buildname = lambda n: (n+1, "")
+        for task_num, input_file in enumerate(input_files):
+            task = EngineTask(job=self, status=STATUS_PENDING, start_time=datetime.datetime.now(), execution_backend_credential=be, task_num=task_num+1)
 
-        #set total number of tasks on this job object
-        self.task_total = len(tasks_to_create)
-
-        # build the first name
-        num = 1
-        num, name = buildname(num)
-        for task_num,task_data in enumerate(tasks_to_create):
-            job = task_data[0]
-            # remove job from task_data as we now are going to call method on job TODO maybe use pop(0) here
-            del(task_data[0])
-
-            task = EngineTask(job=job, status=STATUS_PENDING, start_time=datetime.datetime.now(), execution_backend_credential=be, task_num=task_num+1)
-
-            #print "ADD TASK: %s"%(str(task_data+[name]))
-            task.add_task(*(task_data+[name]))
-            num,name = buildname(num)
+            task_name = left_padded_with_zeros.format(task_num+1) if count > 1 else ""
+            task.add_task(input_file, task_name)
 
 
     def progress_score(self):
@@ -442,6 +374,8 @@ class EngineJob(Job):
         tasknum = float(len(Task.objects.filter(job=self)))
         return tasknum
 
+    def ready_tasks(self):
+        return self.task_set.filter(status_requested__isnull=True, status_ready__isnull=False).order_by('id')
 
     def has_errored_tasks(self):
         return [X.error_msg for X in Task.objects.filter(job=self) if X.status == STATUS_ERROR] != []
@@ -484,20 +418,32 @@ class EngineTask(Task):
     class Meta:
         proxy = True
 
+    def __init__(self, *args, **kwargs):
+        ret = Task.__init__(self,*args, **kwargs)
+
+        # basic stuff used by both stagein types
+        self.fsscheme, self.fsbackend_parts = uriparse(self.job.fs_backend)
+        self.execscheme, self.execbackend_parts = uriparse(self.job.exec_backend)
+
+        return ret
+
+    @property
+    def stageout(self):
+        return self.job.stageout + ("" if self.job.stageout.endswith("/") else "/") + ("" if not self.name else self.name + "/")
+
+    def get_stageins(self):
+        return StageIn.objects.filter(task=self).order_by('order')
+
     @property
     def workflow_id(self):
         return self.job.workflow.id
 
     def add_task(self, uridict, name=""):
-        logger.debug("uridict: %s" % (uridict))
+        logger.debug("add_task called with uridict: %s, name: %s" % (uridict, name))
 
         # create the task
-        self.working_dir = str(uuid.uuid4()) # random uuid
+        self.working_dir = str(uuid.uuid4())
         self.name = name
-
-        # basic stuff used by both stagein types
-        self.fsscheme, self.fsbackend_parts = uriparse(self.job.fs_backend)
-        self.execscheme, self.execbackend_parts = uriparse(self.job.exec_backend)
 
         # make the command from the command template
         template = self.job.template
@@ -516,7 +462,7 @@ class EngineTask(Task):
 
         # non batch stageins
         for key,stageins in template.all_files():
-            print "key:%s stagein:%s"%(key,stageins)
+            logger.debug("key:%s stagein:%s" % (key,stageins))
             for stagein in stageins:
                 self.batch_files_stagein(stagein)
 
@@ -534,7 +480,6 @@ class EngineTask(Task):
 
     def create_stagein(self, src, scheme, hostname, port, path, username):
         preferred_stagein_method = self.job.preferred_stagein_method
-
         if port:
             dst = "%s://%s@%s:%d%s" % (scheme, username, hostname, port, path)
         else:
@@ -548,12 +493,23 @@ class EngineTask(Task):
         else:
             method = 'copy'
 
+        method = 'copy' # temporary fix
         s, created = StageIn.objects.get_or_create(task=self,
                     src=src,
                     dst=dst,
                     order=0,
                     method=method)
 
-        logger.debug("Stagein: %s <=> %s (%s): %s " % (s.src, s.dst, method, "created" if created else "reused"))
+        logger.debug("create_stagein: %s => %s (%s): %s " % (s.src, s.dst, method, "created" if created else "reused"))
         s.save()
+
+
+    def cascade_status(self):
+       job_old_status = self.job.status
+       job_cur_status = self.job.update_status()
+
+       if job_cur_status != job_old_status and job_cur_status in (STATUS_ERROR, STATUS_COMPLETE):
+           self.job.workflow.update_status()
+
+       return (job_cur_status != job_old_status)
 
