@@ -1,101 +1,78 @@
 Installation under Apache
 =========================
 
-Yabi make extensive use of `Fabric <http://fabfile.org>`_, a Python (2.5 or higher) library and command-line tool for streamlining 
-the use of SSH for application deployment or systems administration tasks. Fabric is how we typically deploy using Centos and Apache/mod_wsgi.
-
 Prerequisites
 -------------
 
 There are build requirements on Linux systems that you may need. These commands will install them:
 
  $sudo yum install python-setuptools python-devel gcc openssl-devel.x86_64 postgresql84-devel
+ $sudo yum install mysql-server mysql mysql-devel MySQL-python libxslt-devel libxml2-devel mod_ssl
+ $sudo easy_install pip virtualenv
 
- $sudo easy_install Mercurial pip virtualenv
-
-**NB:** You might need to change to the right postgres devel version 
-
-Check Mercurial is installed
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    $hg --version
+**NB:** You might need to change to the right postgres devel version
 
 
-Add new directories as needed
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Make a directory for storing wsgi conf files.
+.. index::
+  single: erlang
 
-    $sudo mkdir /usr/local/python/conf/ccg-wsgi/ -p
+Erlang
+^^^^^^
+Yabi uses RabbitMQ as a message broker which itself requires Erlang. The erlang package is provided via EPEL.
 
-Set up a clean python for WSGI to use
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-We set up a clean Python environment using `virtualenv <http://www.virtualenv.org/>`_ so we know exactly the environment our
-application is operating in. We then use the `WSGIPythonHome <http://code.google.com/p/modwsgi/wiki/ConfigurationDirectives#WSGIPythonHome>`_ 
-directive to specify the cleanpython directory.
+Add EPEL via:
+ $ wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
+ $ wget http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
+ $ sudo rpm -Uvh remi-release-6*.rpm epel-release-6*.rpm
 
-    $sudo virtualenv -p /usr/local/python/bin/python --no-site-packages /usr/local/python/cleanpython/
+Then install Erlang:
 
-    $sudo /usr/local/python/cleanpython/bin/pip install virtualenv
-
-
-Now check clean python is installed:
-
-    $ /usr/local/python/cleanpython/bin/python --version
-
-Change wsgi configuration in http.conf to include:
-
-``WSGIPythonHome     /usr/local/python/cleanpython``
+ $sudo yum install erlang
 
 
-Add an include line to mod_wsgi.conf to get the Yabi wsgi file from our ccg-wsgi directory:
+.. index::
+  single: rabbitmq
 
-``Include /usr/local/python/conf/ccg-wsgi/``
+RabbitMQ
+^^^^^^^^
+To install RabbitMQ:
 
+ $ wget http://www.rabbitmq.com/releases/rabbitmq-server/v3.1.3/rabbitmq-server-3.1.3-1.noarch.rpm
+ $ sudo rpm --import http://www.rabbitmq.com/rabbitmq-signing-key-public.asc
+ $ sudo yum install rabbitmq-server-3.1.3-1.noarch.rpm
 
-Deploying Yabi
---------------
-
-Clone the repo:
-
-    $hg clone https://code.google.com/p/yabi/ 
-
-Deploy Yabi Application
------------------------
-
-Make sure you have changed into the directory that you just checked out then:
-
-    $cd yabiadmin/yabiadmin/
-
-    $sh ../../bootstrap.sh
-
-    $source virt_yabiadmin/bin/activate
-
-    $fab release
-
-This will ask you to specify the release tag and present you with a list of possibilities. It is also possible to supply
-a Mercurial revision such as 'default' and that will be released. 
-
-Next, make a symlink to point at the newly released yabiadmin i.e. for yabiadmin-release-5.14
-
-    $cd /usr/local/python/ccgapps/yabiadmin/
-
-    $ln -s yabiadmin-release-5.14 release
+Start the service with:
+ $ /etc/init.d/rabbitmq-server start
 
 
-Deploy Yabi Backend
--------------------
+Database
+^^^^^^^^
 
-Change back into the directory where you cloned Yabi earlier, then:
+See :ref:`database`.
 
-    $cd yabibe/yabibe/
+Yabi RPMS
+^^^^^^^^^
 
-    $sh ../../bootstrap.sh
+.. index::
+    single: yabiadmin
 
-    $fab release
+Yabi Admin ( The web application )
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-    $fab start
+ $ sudo yum install yabi-admin-7.0.0-1.x86_64.rpm
 
-Again you will be asked to specify a release tag.
+This will add an Apache conf file to /etc/httpd/conf.d called yabiadmin.ccg.
+
+For Apache to pick this up automatically, create a symbolic link:
+
+ $ ln -s yabiadmin.ccg yabiadmin.conf
+
+
+Yabish
+^^^^^^
+
+See See :ref:`yabish`.
 
 .. index::
     single: celery
@@ -133,104 +110,15 @@ This is a sample configuration, for more complete references:
 Sample Yabi Configuration
 -------------------------------
 
+NB. Yabi uses wsgi so ensure mod_wsgi is loaded:
+
 In file: ``/etc/httpd/conf.d/wsgi.conf``
 
 ::
 
    <IfModule mod_wsgi.c>
    LoadModule wsgi_module modules/mod_wsgi.so
-   WSGISocketPrefix /var/run/httpd
    </IfModule>
-
-In file: ``/etc/httpd/conf.d/mod_wsgi_daemons.conf``
-
 ::
 
-   <IfModule mod_wsgi.c>
-   WSGIDaemonProcess yabiadmin processes=2 threads=15 display-name=%{GROUP}
-   </IfModule>
-
-
-These files need to be included from your ``httpd.conf``:
-
-::
-
-    Include conf.d/*.conf
-
-or:
-
-::
-
-    Include conf.d/wsgi.conf
-    Include conf.d/mod_wsgi_daemons.conf
-
-A sample virtual hosts configuration for a server that just runs Yabi:
-
-::
-
-    <VirtualHost *:80>
-        ServerAdmin your_email@mailserver.com
-        DocumentRoot /var/www/html
-        ServerName your_server
-        ErrorLog logs/yabiadmin.error_log
-        CustomLog logs/yabiadmin.access_log combined
-        RewriteLogLevel 3
-        RewriteLog logs/yabiadmin.rewrite_log
-
-        <Directory "/var/www/html">
-        Options Indexes FollowSymLinks
-        AllowOverride All
-        Order allow,deny
-        Allow from all
-        </Directory>
-
-        # mod_wsgi
-        Include /etc/httpd/conf.d/mod_wsgi.conf
-    </VirtualHost>
-
-...and ssl:
-
-::
-
-    <VirtualHost *:443>
-        #   General setup for the virtual host
-        DocumentRoot "/var/www/html"
-        ServerName your_server:443
-        ServerAdmin your_email@mailserver.com
-        ErrorLog logs/yabiadmin.ssl_error_log
-        TransferLog logs/yabiadmin.ssl_access_log
-
-        SSLEngine on
-        SSLCipherSuite ALL:!ADH:!EXPORT56:RC4+RSA:+HIGH:+MEDIUM:+LOW:+SSLv2:+EXP:+eNULL
-        SSLCertificateFile /etc/pki/tls/certs/localhost.crt
-        SSLCertificateKeyFile /etc/pki/tls/private/localhost.key
-
-        <Directory "/var/www/html">
-            Options Indexes FollowSymLinks
-            AllowOverride All
-            Order allow,deny
-            Allow from all
-        </Directory>
-        SetEnvIf User-Agent ".*MSIE.*" \
-             nokeepalive ssl-unclean-shutdown \
-             downgrade-1.0 force-response-1.0
-
-        CustomLog /etc/httpd/logs/ssl_request_log \
-              "%t %h %{SSL_PROTOCOL}x %{SSL_CIPHER}x \"%r\" %b"
-
-        # mod_wsgi
-        Include /etc/httpd/conf.d/mod_wsgi.conf
-    </VirtualHost>
-
-In file: ``/etc/httpd/conf.d/mod_wsgi.conf``:
-
-::
-
-    <IfModule mod_wsgi.c>
-    <Location /yabiadmin>
-        WSGIProcessGroup yabiadmin
-    </Location>
-    WSGIScriptAlias /yabiadmin /usr/local/python/ccgapps/yabiadmin/release/yabiadmin/yabiadmin.wsgi
-    Alias /yabiadmin/static /usr/local/python/ccgapps/yabiadmin/release/yabiadmin/static
-    Alias /yabiadmin/images /usr/local/python/ccgapps/yabiadmin/release/yabiadmin/static/images
-    </IfModule>
+Link /etc/httpd/conf.d/yabiadmin.ccg to /etc/httpd/conf.d/yabiadmin.conf for it to be loaded by Apache.
