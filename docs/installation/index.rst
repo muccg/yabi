@@ -17,7 +17,7 @@ Source code
 
 Yabi source code is available from Google Code:
 
-hg clone https://code.google.com/p/yabi/
+   ``$ hg clone https://code.google.com/p/yabi/``
 
 
 How to install
