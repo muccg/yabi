@@ -31,6 +31,7 @@ from yabiadmin.backend.parsers import parse_ls
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.backend.utils import sshclient
 import os
+import errno
 import shutil
 import stat
 import paramiko
@@ -39,6 +40,8 @@ import time
 import logging
 import threading
 import Queue
+from itertools import dropwhile
+
 logger = logging.getLogger(__name__)
 
 
@@ -140,20 +143,45 @@ class SFTPBackend(FSBackend):
             #Path does not exist, so by definition not a directory
             return False
 
+    def path_exists(self, sftp, path):
+        try:
+            sftp.stat(path)
+            return True
+        except IOError, e:
+            if e.errno == errno.ENOENT: # No such file or directory
+                return False
+            else:
+                raise
+
+
     def mkdir(self, uri):
         """mkdir at uri"""
         self.set_cred(uri)
         scheme, parts = uriparse(uri)
+        path = parts.path
         ssh = sshclient(parts.hostname, parts.port, self.cred.credential)
         try:
             sftp = ssh.open_sftp()
             try:
-                self._rm(sftp, parts.path)
-                logger.debug("deleted existing folder %s OK" % parts.path)
+                self._rm(sftp, path)
+                logger.debug("deleted existing directory %s OK" % path)
             except Exception,ex:
-                logger.debug("could not remove directory %s: %s" % (parts.path, ex))
-            sftp.mkdir(parts.path)
-            logger.debug("created dir %s OK" % parts.path)
+                logger.debug("could not remove directory %s: %s" % (path, ex))
+
+            def full_path(result, d):
+                previous = result[-1] if result else ""
+                result.append("%s/%s" % (previous, d))
+                return result
+
+            dirs = [p.strip() for p in path.split("/") if p.strip() != '']
+            dir_full_paths = reduce(full_path, dirs, [])
+            non_existant_dirs = dropwhile(
+                    lambda d: self.path_exists(sftp, d), dir_full_paths)
+
+            for d in non_existant_dirs:
+                sftp.mkdir(d)
+
+            logger.debug("created dir %s OK" % path)
 
         except Exception, exc:
             logger.error(exc)
