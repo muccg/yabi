@@ -22,5 +22,6 @@ setup(name='yabish',
      ],
      dependency_links = [
         "http://yaphc.googlecode.com/files/yaphc-0.1.5.tgz",
+        "http://argparse.googlecode.com/files/argparse-1.2.1.tar.gz"
      ]
 )
