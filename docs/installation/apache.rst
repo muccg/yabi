@@ -10,6 +10,7 @@ There are build requirements on Linux systems that you may need. These commands 
  $ sudo yum install python-setuptools python-devel gcc openssl-devel.x86_64 postgresql84-devel
  $ sudo yum install mysql-server mysql mysql-devel MySQL-python libxslt-devel libxml2-devel mod_ssl
  $ sudo easy_install pip virtualenv
+::
 
 **NB:** You might need to change to the right postgres devel version
 
