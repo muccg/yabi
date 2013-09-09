@@ -23,6 +23,8 @@ To create a clean python environment to run yabish from. Create a virtualenv as 
 Add pth file /usr/local/python/cleanpython/lib/python2.6/site-packages/yabiadminlib.pth
 containing just the path to yabiadmin lib directory:
 
-    ``$ cat /usr/local/python/cleanpython/lib/python2.6/site-packages/yabiadminlib.pth``
-    ``/usr/local/webapps/yabiadmin/lib/``
+::
+    $ cat /usr/local/python/cleanpython/lib/python2.6/site-packages/yabiadminlib.pth
+    /usr/local/webapps/yabiadmin/lib/
+
 
