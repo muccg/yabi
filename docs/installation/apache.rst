@@ -6,9 +6,12 @@ Prerequisites
 
 There are build requirements on Linux systems that you may need. These commands will install them:
 
- $sudo yum install python-setuptools python-devel gcc openssl-devel.x86_64 postgresql84-devel
- $sudo yum install mysql-server mysql mysql-devel MySQL-python libxslt-devel libxml2-devel mod_ssl
- $sudo easy_install pip virtualenv
+::
+
+ $ sudo yum install python-setuptools python-devel gcc openssl-devel.x86_64 postgresql84-devel
+ $ sudo yum install mysql-server mysql mysql-devel MySQL-python libxslt-devel libxml2-devel mod_ssl
+ $ sudo easy_install pip virtualenv
+::
 
 **NB:** You might need to change to the right postgres devel version
 
@@ -22,13 +25,14 @@ Erlang
 Yabi uses RabbitMQ as a message broker which itself requires Erlang. The erlang package is provided via EPEL.
 
 Add EPEL via:
+::
  $ wget http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
  $ wget http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
  $ sudo rpm -Uvh remi-release-6*.rpm epel-release-6*.rpm
 
 Then install Erlang:
 
- $sudo yum install erlang
+ ``$sudo yum install erlang``
 
 
 .. index::
@@ -37,13 +41,13 @@ Then install Erlang:
 RabbitMQ
 ^^^^^^^^
 To install RabbitMQ:
-
+::
  $ wget http://www.rabbitmq.com/releases/rabbitmq-server/v3.1.3/rabbitmq-server-3.1.3-1.noarch.rpm
  $ sudo rpm --import http://www.rabbitmq.com/rabbitmq-signing-key-public.asc
  $ sudo yum install rabbitmq-server-3.1.3-1.noarch.rpm
 
 Start the service with:
- $ /etc/init.d/rabbitmq-server start
+ ``$ /etc/init.d/rabbitmq-server start``
 
 
 Database
@@ -60,13 +64,12 @@ Yabi RPMS
 Yabi Admin ( The web application )
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
- $ sudo yum install yabi-admin-7.0.0-1.x86_64.rpm
+ ``$ sudo yum install yabi-admin-7.0.0-1.x86_64.rpm``
 
 This will add an Apache conf file to /etc/httpd/conf.d called yabiadmin.ccg.
-
 For Apache to pick this up automatically, create a symbolic link:
 
- $ ln -s yabiadmin.ccg yabiadmin.conf
+ ``$ ln -s yabiadmin.ccg yabiadmin.conf``
 
 
 Yabish
@@ -82,7 +85,7 @@ Start Celery
 
 `Celery <http://celeryproject.org/>`_ is an asynchronous task queue/job queue used by Yabi. It needs to be started separately.
 
-    $/etc/init.d/celeryd start
+   ``$/etc/init.d/celeryd start``
 
 An example of our celeryd init script can be found in our `source code repository <http://code.google.com/p/yabi/source/browse/yabiadmin/admin_scripts/celeryd>`_.
 
@@ -121,4 +124,4 @@ In file: ``/etc/httpd/conf.d/wsgi.conf``
    </IfModule>
 ::
 
-Link /etc/httpd/conf.d/yabiadmin.ccg to /etc/httpd/conf.d/yabiadmin.conf for it to be loaded by Apache.
+Link ``/etc/httpd/conf.d/yabiadmin.ccg to /etc/httpd/conf.d/yabiadmin.conf`` for it to be loaded by Apache.

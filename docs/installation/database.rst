@@ -21,16 +21,18 @@ MySQL
 ^^^^^
 Ensure service is started:
 
- $ /etc/init.d/mysqld start
+ ``$ /etc/init.d/mysqld start``
 
 Create databases required:
 
- $ mysql -uroot -e "create database yabi_live default charset=UTF8;"
+ ``$ mysql -uroot -e "create database yabi_live default charset=UTF8;"``
 
 
  Initialise Yabi database:
+::
  $ export PYTHONPATH=/usr/local/webapps/yabiadmin:/usr/local/webapps/yabiadmin/lib/:$PYTHONPATH
  $ export DJANGO_SETTINGS_MODULE=defaultsettings.yabiadmin
  $ /usr/local/webapps/yabiadmin/bin/django-admin.py syncdb
+
 Do not create users at this point.
- $ /usr/local/webapps/yabiadmin/bin/django-admin.py migrate
+ ``$ /usr/local/webapps/yabiadmin/bin/django-admin.py migrate``
