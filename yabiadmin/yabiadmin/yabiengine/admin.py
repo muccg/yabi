@@ -139,11 +139,14 @@ class JobAdmin(admin.ModelAdmin):
 class TaskAdmin(BaseModelAdmin):
     valid_lookups = ('job__workflow__exact',)
 
-    def workflow_name(obj):
-        return obj.job.workflow.name
+    def workflow(task):
+        workflow = task.job.workflow
+        return '<a href="/admin-pane/yabiengine/engineworkflow/%s">%s</a>' % (workflow.pk, workflow.name)
+    workflow.allow_tags = True
 
-    list_display = [workflow_name, 'start_time', 'end_time', 'job_identifier', 'error_msg', 'command', link_to_stageins_from_task, link_to_syslog_from_task]        
+    list_display = ['id', workflow, 'start_time', 'end_time', 'job_identifier', 'error_msg', 'command', link_to_stageins_from_task, link_to_syslog_from_task]
     list_filter = ['job__workflow__user']
+    search_fields = ['id']
     raw_id_fields = ['job']
     fieldsets = (
         (None, {
