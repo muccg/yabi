@@ -11,14 +11,14 @@ class SSHSGEExecBackend(SchedulerExecBackend):
 
     QACCT_TEMPLATE = "\n".join([
                      "#!/bin/sh",
-                     "qacct -j {0}"])
+                     "<QACCT_COMMAND> -j {0}"])
 
     def __init__(self, *args, **kwargs):
         super(SSHSGEExecBackend, self).__init__(*args, **kwargs)
         self.parser = SGEParser()
 
     def _run_qacct(self):
-        script = SSHSGEExecBackend.QACCT_TEMPLATE.format(self.task.remote_id)
+        script = SSHSGEExecBackend.QACCT_TEMPLATE.format(self.task.remote_id).replace("<QACCT_COMMAND>",self.get_scheduler_command_path("qacct"))
         stdout, stderr = self._exec_script(script)
         return self.parser.parse_qacct(self.task.remote_id, stdout, stderr)
 
