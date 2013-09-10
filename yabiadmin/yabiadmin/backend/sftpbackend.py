@@ -173,7 +173,7 @@ class SFTPBackend(FSBackend):
                 result.append("%s/%s" % (previous, d))
                 return result
 
-            dirs = [p.strip() for p in path.split("/") if p.strip() != '']
+            dirs = [p for p in path.split("/") if p.strip() != '']
             dir_full_paths = reduce(full_path, dirs, [])
             non_existant_dirs = dropwhile(
                     lambda d: self.path_exists(sftp, d), dir_full_paths)
