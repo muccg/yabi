@@ -112,7 +112,7 @@ def get_file_list(yabiusername, uri, recurse=False):
     for key in results.keys():
         for entry in results[key]["files"]:
             path = os.path.join(key[spl:], entry[0])
-            listing = (os.path.join(key[spl:], entry[0]),) + entry[1:]
+            listing = (os.path.join(key[spl:], entry[0]),) + tuple(entry[1:])
             file_list.append(listing)
     return file_list
 
