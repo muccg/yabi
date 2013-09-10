@@ -69,8 +69,12 @@ class SchedulerExecBackend(SSHBackend):
         stdout, stderr = self._exec_script(self.qsub_script_body)
         qsub_result = self.parser.parse_qsub(stdout, stderr)
         if qsub_result.status != qsub_result.JOB_SUBMITTED:
+            logger.error("Yabi Task Name = %s" % self._yabi_task_name())
+            logger.error("Submission script name = %s" % self.submission_script_name)
+            logger.error("Submission script body = %s" % self.submission_script_body)
+            logger.error("stderr:")
             for line in stderr:
-                logger.debug("Error submitting Yabi Task %s: %s" % (self._yabi_task_name(), line))
+                logger.error(line)
         return qsub_result
 
     def _get_qsub_body(self):
