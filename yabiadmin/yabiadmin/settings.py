@@ -410,7 +410,13 @@ LOGGING = {
     }
 }
 
+# qsub and qstat paths
 
+SCHEDULER_COMMAND_PATHS = {
+    "torque": {"qsub" : "/opt/torque/2.3.13/bin/qsub",
+                 "qstat": "/opt/torque/2.3.13/bin/qstat"
+    }
+}
 
 
 # Load instance settings.
