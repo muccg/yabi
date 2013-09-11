@@ -211,7 +211,9 @@ def sshclient(hostname, port, credential):
         key = credential.key
         passphrase = credential.password
     elif credential.is_encrypted:
-        logger.debug("credential encrypted and not in cache?!")
+        from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
+        raise DecryptedCredentialNotAvailable("Decrypted credential not available when trying to connect to %s. Cred id = %s" % (hostname, credential.pk))
+
     else:
         username = credential.username
         key = credential.key
