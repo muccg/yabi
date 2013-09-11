@@ -27,7 +27,11 @@
 class RetryException(Exception):
     BACKOFF_STRATEGY_EXPONENTIAL = "exponential"
     BACKOFF_STRATEGY_CONSTANT = "constant"
+    TYPE_ERROR = "error"  # which is bad - or "polling", which is not bad and used to trigger a recheck of remote job status
+    TYPE_POLLING = "polling"
+
     """Class to trigger a celery task to retry. Most errors will raise this."""
     def __init__(self, *args, **kwargs):
         Exception.__init__(self, *args, **kwargs)
         self.backoff_strategy = RetryException.BACKOFF_STRATEGY_EXPONENTIAL
+        self.type = RetryException.TYPE_ERROR

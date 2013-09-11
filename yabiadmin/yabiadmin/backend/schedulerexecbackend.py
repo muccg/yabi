@@ -105,6 +105,7 @@ class SchedulerExecBackend(SSHBackend):
         logger.debug("remote job %s for yabi task %s is stilling running" % (self.task.remote_id, self._yabi_task_name()))
         retry_ex = RetryException("Yabi task %s remote job %s still running" % (self._yabi_task_name(), self.task.remote_id))
         retry_ex.backoff_strategy = RetryException.BACKOFF_STRATEGY_CONSTANT
+        retry_ex.type = RetryException.TYPE_POLLING
         raise retry_ex
 
     def _job_not_found_response(self, qstat_result):
