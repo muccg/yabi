@@ -4,7 +4,7 @@ from yabiadmin.backend.pbsproparsers import PBSProParser
 class SSHPBSProExecBackend(SchedulerExecBackend):
     SCHEDULER_NAME = "PBS Pro"
     QSTAT_TEMPLATE = "\n".join(["#!/bin/sh",
-                                "qstat -x {0}"])
+                                "<QSTAT_COMMAND> -x {0}"])
 
     def __init__(self, *args, **kwargs):
         super(SSHPBSProExecBackend, self).__init__(*args, **kwargs)
