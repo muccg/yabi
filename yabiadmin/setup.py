@@ -25,7 +25,7 @@ install_requires = [
         'ccg-makoloader==0.2.4',
         'ccg-introspect==0.1.2',
         'ccg-extras==0.1.5',
-        'ccg-auth==0.3.2',
+        'ccg-auth==0.3.3',
         'anyjson==0.3.3',
         'SQLAlchemy==0.7.10',
         'celery==3.0.22',
@@ -82,7 +82,7 @@ setup(name='yabiadmin',
           'http://ccg-django-extras.googlecode.com/files/ccg-makoloader-0.2.4.tar.gz',
           'http://ccg-django-extras.googlecode.com/files/ccg-introspect-0.1.2.tar.gz',
           'http://ccg-django-extras.googlecode.com/files/ccg-extras-0.1.5.tar.gz',
-          'http://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.2.tar.gz',
+          'http://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.3.tar.gz',
           'http://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
           'http://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz'
     ]
