@@ -173,8 +173,8 @@ def retry_on_error(original_function):
                 countdown = 30
 
             try:
-                current_task.retry(exc=rexc, countdown=countdown)
                 logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name,task_id, countdown))
+                current_task.retry(exc=rexc, countdown=countdown)
             except RetryException:
                 logger.error("{0}.retry {1} exceeded retry limit - changing status to error".format(original_function_name, task_id))
                 change_task_status(task_id, STATUS_ERROR)
@@ -188,10 +188,12 @@ def retry_on_error(original_function):
                 raise
 
         except Exception, ex:
-            logger.exception("Unhandled exception in celery task {0}: {1}".format(original_function_name, ex))
-            change_task_status(task_id, STATUS_ERROR)
-            mark_workflow_as_error(task_id)
-            raise
+            # Retry always
+            countdown = backoff(request.retries)
+            logger.exception("Unhandled exception in celery task {0}: {1} - retrying anyway ...".format(original_function_name, ex))
+            logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name,task_id, countdown))
+            current_task.retry(exc=ex, countdown=countdown)
+
 
     return decorated_function
 
