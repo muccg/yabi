@@ -286,7 +286,7 @@ class SFTPBackend(FSBackend):
         try:
             lresult = sftp.lstat(path)
         except IOError, ioe:
-            logger.error(ioe)
+            logger.error("%s: path = %s" % (ioe, path))
             raise
 
         result = sftp.stat(path)
