@@ -163,7 +163,9 @@ def retry_on_error(original_function):
             result = original_function(task_id, *args, **kwargs)
             return result
         except RetryException, rexc:
-            logger.exception("Exception in celery task {0} for task {1}".format(original_function_name, task_id))
+            if rexc.type == RetryException.TYPE_ERROR:
+                logger.exception("Exception in celery task {0} for task {1}".format(original_function_name, task_id))
+
             if rexc.backoff_strategy == RetryException.BACKOFF_STRATEGY_EXPONENTIAL:
                 countdown = backoff(request.retries)
             else:

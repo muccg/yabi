@@ -113,23 +113,29 @@ class FSBackend(BaseBackend):
     @staticmethod
     def remote_copy(yabiusername, src_uri, dst_uri):
         """Recursively copy src_uri to dst_uri"""
-        logger.debug('remote_copy {0} -> {1}'.format(src_uri, dst_uri))
+        logger.info('remote_copy {0} -> {1}'.format(src_uri, dst_uri))
         src_backend = FSBackend.urifactory(yabiusername, src_uri)
         dst_backend = FSBackend.urifactory(yabiusername, dst_uri)
         try:
-            listing = src_backend.ls_recursive(src_uri)
-            src_scheme, src_rest = uriparse(src_uri)
+            listing = src_backend.ls(src_uri)  # get _flat_ listing here not recursive as before
             dst_backend.mkdir(dst_uri)
+            logger.debug("listing of src_uri %s = %s" % (src_uri, listing))
             for key in listing:
                 # copy files using a fifo
                 for listing_file in listing[key]['files']:
-                    src_file_uri = url_join(src_scheme + "://" + src_rest.netloc + key,listing_file[0])
-                    dst_file_uri = url_join(dst_uri,listing_file[0])
+                    src_file_uri = url_join(src_uri,listing_file[0])
+                    dst_file_uri = url_join(dst_uri, listing_file[0])
+                    logger.debug("src_file_uri = %s" % src_file_uri)
+                    logger.debug("dst_file_uri = %s" % dst_file_uri)
                     FSBackend.remote_file_copy(yabiusername, src_file_uri, dst_file_uri)
+
                 # recurse on directories
+
                 for listing_dir in listing[key]['directories']:
-                    src_dir_uri = url_join(src_uri, listing_dir[0])
-                    dst_dir_uri = url_join(dst_uri, listing_dir[0])
+                    src_dir_uri = url_join(src_uri,listing_dir[0])
+                    dst_dir_uri = url_join(dst_uri,listing_dir[0])
+                    logger.debug("src_dir_uri = %s" % src_dir_uri)
+                    logger.debug("dst_dir_uri = %s" % dst_dir_uri)
                     FSBackend.remote_copy(yabiusername, src_dir_uri, dst_dir_uri)
         except Exception, exc:
             raise RetryException(exc, traceback.format_exc())
