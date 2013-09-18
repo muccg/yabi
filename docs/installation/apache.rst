@@ -63,6 +63,9 @@ Yabi RPMS
 
 Yabi Admin ( The web application )
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ First add ccg repo:
+ ``sudo rpm -Uvh http://repo.ccgapps.com.au/repo/ccg/centos/6/os/noarch/CentOS/RPMS/ccg-release-6-2.noarch.rpm``
+
 
  ``$ sudo yum install yabi-admin-7.0.0-1.x86_64.rpm``
 
