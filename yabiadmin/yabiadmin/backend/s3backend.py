@@ -32,6 +32,8 @@ import logging
 import traceback
 import boto
 import dateutil
+import threading
+from io import BytesIO
 from itertools import tee, ifilter, ifilterfalse
 
 
@@ -43,16 +45,61 @@ DELIMITER = '/'
 
 
 class S3Backend(FSBackend):
-    def ls(self, uri):
+
+    def upload_file(self, uri, fifo, queue):
+        bucket_name, path = self.parse_s3_uri(uri)
+
+        bucket = self.connect_to_bucket(bucket_name)
+
+        CHUNKSIZE = 5 * 1024 * 1024
+        # 5MB is the minimum size of a part when doing multipart uploads
+        # Therefore, multipart uploads will fail if your file is smaller than 5MB
+
+        with open(fifo, 'rb') as f:
+            data = f.read(CHUNKSIZE)
+            if len(data) < CHUNKSIZE:
+                # File is smaller than CHUNKSIZE, upload in one go (ie. no multipart)
+                key = bucket.new_key(path.lstrip(DELIMITER))
+                key.set_contents_from_file(BytesIO(data))
+            else:
+                # File is larger than CHUNKSIZE, there will be more parts so initiate
+                # the multipart_upload and upload in parts
+                multipart_upload = bucket.initiate_multipart_upload(path.lstrip(DELIMITER))
+                part_no = 1
+                while len(data) > 0:
+                    multipart_upload.upload_part_from_file(BytesIO(data), part_no)
+                    data = f.read(CHUNKSIZE)
+                    part_no += 1
+
+                multipart_upload.complete_upload()
+
+
+    def fifo_to_remote(self, uri, fifo, queue=None):
+        thread = threading.Thread(target=self.upload_file, args=(uri, fifo, queue))
+        thread.start()
+        return thread
+
+
+    def parse_s3_uri(self, uri):
         scheme, parts = uriparse(uri)
         bucket_name = parts.hostname.split('.')[0]
         path = parts.path
 
+        return bucket_name, path
+
+
+    def connect_to_bucket(self, bucket_name):
         aws_access_key_id, aws_secret_access_key = self.get_access_keys()
+        connection = boto.connect_s3(aws_access_key_id, aws_secret_access_key)
+
+        return connection.get_bucket(bucket_name)
+
+
+    def ls(self, uri):
+        bucket_name, path = self.parse_s3_uri(uri)
 
         try:
-            connection = boto.connect_s3(aws_access_key_id, aws_secret_access_key)
-            bucket = connection.get_bucket(bucket_name)
+            bucket = self.connect_to_bucket(bucket_name)
             keys_and_prefixes = bucket.get_all_keys(prefix=path.lstrip(DELIMITER), delimiter=DELIMITER)
             # Keys correspond to files, prefixes to directories
             keys, prefixes = partition(lambda k: type(k) == boto.s3.key.Key, keys_and_prefixes)
