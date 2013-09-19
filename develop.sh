@@ -25,26 +25,26 @@ if [ "${YABI_CONFIG}" = "" ]; then
 fi
 
 
-function usage() {
+usage() {
     echo ""
     echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|add_yabitests_key|pipfreeze|pythonversion|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_authorized_keys) (yabiadmin|celery|yabish)"
     echo ""
 }
 
 
-function project_needed() {
+project_needed() {
     if ! test ${PROJECT}; then
         usage
         exit 1
     fi
 }
 
-function add_yabitests_key() {
+add_yabitests_key() {
    echo Adding key for yabitests ..
    cat "$TARGET_DIR/tests/test_data/yabitests.pub" >> ~/.ssh/authorized_keys
 }
 
-function settings() {
+settings() {
     case ${YABI_CONFIG} in
     test_mysql)
         export DJANGO_SETTINGS_MODULE="yabiadmin.testmysqlsettings"
@@ -68,7 +68,7 @@ function settings() {
 
 
 # ssh setup, make sure our ccg commands can run in an automated environment
-function ci_ssh_agent() {
+ci_ssh_agent() {
     ssh-agent > /tmp/agent.env.sh
     source /tmp/agent.env.sh
     ssh-add ~/.ssh/ccg-syd-staging.pem
@@ -76,7 +76,7 @@ function ci_ssh_agent() {
 
 
 # build RPMs on a remote host from ci environment
-function ci_remote_build() {
+ci_remote_build() {
     time ccg ${AWS_BUILD_INSTANCE} boot
     time ccg ${AWS_BUILD_INSTANCE} puppet
     time ccg ${AWS_BUILD_INSTANCE} shutdown:50
@@ -92,7 +92,7 @@ function ci_remote_build() {
 }
 
 # run tests on a remote host from ci environment
-function ci_remote_test() {
+ci_remote_test() {
     time ccg ${AWS_TEST_INSTANCE} boot
     time ccg ${AWS_TEST_INSTANCE} puppet
     time ccg ${AWS_TEST_INSTANCE} shutdown:100
@@ -109,32 +109,32 @@ function ci_remote_test() {
 
 
 # publish rpms 
-function ci_rpm_publish() {
+ci_rpm_publish() {
     time ccg ${AWS_BUILD_INSTANCE} publish_rpm:build/yabi*.rpm,release=6
 }
 
 
 # destroy our ci build server
-function ci_remote_destroy() {
+ci_remote_destroy() {
     ccg ${AWS_BUILD_INSTANCE} destroy
 }
 
 
 # we need authorized keys setup for ssh tests
-function ci_authorized_keys() {
+ci_authorized_keys() {
     cat tests/test_data/yabitests.pub >> ~/.ssh/authorized_keys
 }
 
 
 # lint using flake8
-function lint() {
+lint() {
     project_needed
     virt_yabiadmin/bin/flake8 ${PROJECT} --ignore=E501 --count
 }
 
 
 # lint js, assumes closure compiler
-function jslint() {
+jslint() {
     JSFILES="yabiadmin/yabiadmin/yabifeapp/static/javascript/*.js yabiadmin/yabiadmin/yabifeapp/static/javascript/account/*.js"
     for JS in $JSFILES
     do
@@ -143,7 +143,7 @@ function jslint() {
 }
 
 
-function nosetests() {
+nosetests() {
     source virt_yabiadmin/bin/activate
 
     # Runs the end-to-end tests in the Yabitests project
@@ -161,30 +161,30 @@ function nosetests() {
     #virt_yabiadmin/bin/nosetests -v -w tests tests.idempotency_tests
 }
 
-function noseidempotency() {
+noseidempotency() {
     source virt_yabiadmin/bin/activate
     virt_yabiadmin/bin/nosetests --nocapture --with-xunit --xunit-file=tests.xml -w tests tests.idempotency_tests -v
 }
 
-function nosestatuschange() {
+nosestatuschange() {
     source virt_yabiadmin/bin/activate
     virt_yabiadmin/bin/nosetests --with-xunit --xunit-file=tests.xml -w tests tests.status_tests -v 
 }
 
-function noseyabiadmin() {
+noseyabiadmin() {
     source virt_yabiadmin/bin/activate
     # Runs the unit tests in the Yabiadmin project
     virt_yabiadmin/bin/nosetests --with-xunit --xunit-file=yabiadmin.xml -v -w yabiadmin/yabiadmin 
 }
 
 
-function nose_collect() {
+nose_collect() {
     source virt_yabiadmin/bin/activate
     virt_yabiadmin/bin/nosetests -v -w tests --collect-only
 }
 
 
-function dropdb() {
+dropdb() {
 
     case ${YABI_CONFIG} in
     test_mysql)
@@ -211,7 +211,7 @@ function dropdb() {
 }
 
 
-function stopprocess() {
+stopprocess() {
     set +e
     if ! test -e $1; then
         echo "PID file '$1' doesn't exist"
@@ -254,19 +254,19 @@ function stopprocess() {
 }
 
 
-function stopyabiadmin() {
+stopyabiadmin() {
     echo "Stopping Yabi admin"
     stopprocess yabiadmin-develop.pid "kill_process_group"
 }
 
 
-function stopceleryd() {
+stopceleryd() {
     echo "Stopping celeryd"
     stopprocess celeryd-develop.pid
 }
 
 
-function stopyabi() {
+stopyabi() {
     case ${PROJECT} in
     'yabiadmin')
         stopyabiadmin
@@ -288,7 +288,7 @@ function stopyabi() {
 }
 
 
-function installyabi() {
+installyabi() {
     # check requirements
     which virtualenv >/dev/null
 
@@ -306,7 +306,7 @@ function installyabi() {
 }
 
 
-function startyabiadmin() {
+startyabiadmin() {
     if test -e yabiadmin-develop.pid; then
         echo "pid file exists for yabiadmin"
         return
@@ -329,7 +329,7 @@ function startyabiadmin() {
 }
 
 
-function startceleryd() {
+startceleryd() {
     if test -e celeryd-develop.pid; then
         echo "pid file exists for celeryd"
         return
@@ -347,7 +347,7 @@ function startceleryd() {
 }
 
 
-function celeryevents() {
+celeryevents() {
     echo "Launch something to monitor celeryd (message queue)"
     echo "It will not work with database transports :/"
     DJANGO_PROJECT_DIR="${CELERYD_CHDIR}"
@@ -366,7 +366,7 @@ function celeryevents() {
 }
 
 
-function startyabi() {
+startyabi() {
     case ${PROJECT} in
     'yabiadmin')
         startyabiadmin
@@ -388,7 +388,7 @@ function startyabi() {
 }
 
 
-function yabistatus() {
+yabistatus() {
     set +e
     if test -e yabiadmin-develop.pid; then
         ps -f -p `cat yabiadmin-develop.pid`
@@ -404,18 +404,18 @@ function yabistatus() {
 }
 
 
-function pythonversion() {
+pythonversion() {
     virt_yabiadmin/bin/python -V
 }
 
 
-function pipfreeze() {
+pipfreeze() {
     echo 'yabiadmin pip freeze'
     virt_yabiadmin/bin/pip freeze
 }
 
 
-function yabiclean() {
+yabiclean() {
     echo "rm -rf ~/yabi_data_dir/*"
     rm -rf ~/yabi_data_dir/*
     rm -rf yabiadmin/scratch/*
@@ -426,13 +426,13 @@ function yabiclean() {
 }
 
 
-function yabipurge() {
+yabipurge() {
     rm -rf virt_yabiadmin
     rm -f *.log
 }
 
 
-function dbtest() {
+dbtest() {
     local noseretval
     stopyabi
     dropdb
@@ -446,7 +446,7 @@ function dbtest() {
 }
 
 
-function yabiadmintest() {
+yabiadmintest() {
     stopyabi
     yabiclean
     dropdb
