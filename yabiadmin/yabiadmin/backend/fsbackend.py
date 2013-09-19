@@ -73,6 +73,10 @@ class FSBackend(BaseBackend):
             from yabiadmin.backend.selectfilebackend import SelectFileBackend
             backend = SelectFileBackend()
 
+        elif fsscheme == 's3':
+            from yabiadmin.backend.s3backend import S3Backend
+            backend = S3Backend()
+
         return backend
 
 
