@@ -256,7 +256,7 @@ class SelectFile(Command):
         
     def render(self):
         return ""
-  
+
 class CommandTemplate(object):
     """Holds the structure of a yabi command including the associated flags and arguments
     
@@ -333,7 +333,7 @@ class CommandTemplate(object):
         self.consume_switches = []          # the switches that need to have the input files consumed
  
         self.uri_conversion_string = "%%(file)s"            # to convert a URI into a remote path we use this string template
-        
+
     def setup(self, job, job_dict):
         """
         setup the command template as per the job passed in and the parameter dictionary passed in
@@ -367,7 +367,7 @@ class CommandTemplate(object):
         self.params = dict( [(p['switchName'],p) for p in parameters] )
         
         logger.debug('params: {0}'.format(self.params))
-            
+
     def dump(self):
         logger.debug(str(self))
         
@@ -408,9 +408,9 @@ class CommandTemplate(object):
         logger.debug(batchfiles)
 
         self.batchfiles = batchfiles
-        
+
         output = self.command.render()
-        
+
         for argument in self.arguments:
             if argument.takes_input_file:
                 assert len(batchfiles), "batch_files passed in has %d entries which is not enough for command tempate %r"%(len(self.batchfiles),self)
@@ -430,7 +430,7 @@ class CommandTemplate(object):
                 output += " "+argument.render(lambda x: self._convert_filename(x))
             else:
                 output += " "+argument.render()
-            
+
         return output
         
     def parse_parameter_description(self):
@@ -538,7 +538,8 @@ class CommandTemplate(object):
             # has the job finished?
             if job.status == "complete":    
                 # do we now have files for this old job?
-                file_list = backend.get_file_list(self.username, stageout)
+                file_list = backend.get_file_list(self.username, stageout, recurse=True)
+                logger.debug("file_list = %s" % file_list)
                 if len(file_list):
                     # if it's a 'jobfile' then we need to select just the specified file.
                     if backref['type']=='jobfile':
@@ -625,10 +626,10 @@ class CommandTemplate(object):
             else:
                 # job still hasnt finished
                 new_backrefs.append(backref)
-            
-                
+
+
         self.backrefs=new_backrefs
-        
+
     def other_files(self):
         """Look through the command and compile a list of file uri's that need to be 'aquired' by the stagein process"""
         for selection in self.files:
