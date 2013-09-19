@@ -34,7 +34,6 @@ from yabiadmin.yabiengine.urihelper import url_join, uriparse
 import logging
 import traceback
 import shutil
-from threading import Thread
 import Queue
 logger = logging.getLogger(__name__)
 
@@ -57,26 +56,33 @@ def stream_watcher(identifier, stream):
 
 class FSBackend(BaseBackend):
 
+
+    @staticmethod
+    def create_backend_for_scheme(fsscheme):
+        backend = None
+
+        if fsscheme == 'sftp' or fsscheme == 'scp':
+            from yabiadmin.backend.sftpbackend import SFTPBackend
+            backend = SFTPBackend()
+
+        elif fsscheme == 'file' or fsscheme == 'localfs':
+            from yabiadmin.backend.filebackend import FileBackend
+            backend = FileBackend()
+
+        elif fsscheme == 'select' or fsscheme == 'null':
+            from yabiadmin.backend.selectfilebackend import SelectFileBackend
+            backend = SelectFileBackend()
+
+        return backend
+
+
     @staticmethod
     def factory(task):
         assert(task)
         assert(task.fsscheme)
 
-        backend = None
-
-        if task.fsscheme == 'sftp' or task.fsscheme == 'scp':
-            from yabiadmin.backend.sftpbackend import SFTPBackend
-            backend = SFTPBackend()
-
-        elif task.fsscheme == 'file' or task.fsscheme == 'localfs':
-            from yabiadmin.backend.filebackend import FileBackend
-            backend = FileBackend()
-
-        elif task.fsscheme == 'select' or task.fsscheme == 'null':
-            from yabiadmin.backend.selectfilebackend import SelectFileBackend
-            backend = SelectFileBackend()
-
-        else:
+        backend = create_backend_for_scheme(tasks.fscheme)
+        if backend is None:
             raise Exception('No valid scheme ({0}) is defined for task {1}'.format(task.fsscheme, task.id))
 
         backend.task = task
@@ -88,23 +94,9 @@ class FSBackend(BaseBackend):
         assert(uri)
         fsscheme, fsbackend_parts = uriparse(uri)
 
-        backend = None
-
-        if fsscheme == 'sftp' or fsscheme == 'scp':
-            from yabiadmin.backend.sftpbackend import SFTPBackend
-            backend = SFTPBackend()
-
-        elif fsscheme == 'file' or  fsscheme == 'localfs':
-            from yabiadmin.backend.filebackend import FileBackend
-            backend = FileBackend()
-
-        elif fsscheme == 'select' or fsscheme == 'null':
-            from yabiadmin.backend.selectfilebackend import SelectFileBackend
-            backend = SelectFileBackend()
-
-        else:
+        backend = create_backend_for_scheme(fscheme)
+        if backend is None:
             raise Exception("No backend can be found for uri %s with fsscheme %s for user %s" % (uri, fsscheme, yabiusername))
-
 
         backend.yabiusername = yabiusername
         backend.cred = fs_credential(yabiusername, uri)
