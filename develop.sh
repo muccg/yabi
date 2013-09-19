@@ -108,9 +108,9 @@ ci_remote_test() {
 }
 
 
-# publish rpms 
+# publish rpms to testing repo
 ci_rpm_publish() {
-    time ccg ${AWS_BUILD_INSTANCE} publish_rpm:build/yabi*.rpm,release=6
+    time ccg publish_testing_rpm:build/yabi*.rpm,release=6
 }
 
 
