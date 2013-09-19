@@ -85,7 +85,7 @@ class FSBackend(BaseBackend):
         assert(task)
         assert(task.fsscheme)
 
-        backend = create_backend_for_scheme(tasks.fscheme)
+        backend = FSBackend.create_backend_for_scheme(tasks.fsscheme)
         if backend is None:
             raise Exception('No valid scheme ({0}) is defined for task {1}'.format(task.fsscheme, task.id))
 
@@ -98,7 +98,7 @@ class FSBackend(BaseBackend):
         assert(uri)
         fsscheme, fsbackend_parts = uriparse(uri)
 
-        backend = create_backend_for_scheme(fscheme)
+        backend = FSBackend.create_backend_for_scheme(fsscheme)
         if backend is None:
             raise Exception("No backend can be found for uri %s with fsscheme %s for user %s" % (uri, fsscheme, yabiusername))
 
