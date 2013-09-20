@@ -43,39 +43,50 @@ logger = logging.getLogger(__name__)
 NEVER_A_SYMLINK = False
 DELIMITER = '/'
 
+ERROR_STATUS = -1
+OK_STATUS = 0
+
 
 class S3Backend(FSBackend):
 
-    def upload_file(self, uri, fifo, queue):
-        bucket_name, path = self.parse_s3_uri(uri)
+    def upload_file(self, uri, filename, queue=None):
+        try:
+            if queue is None:
+                queue = NullQueue()
+            bucket_name, path = self.parse_s3_uri(uri)
 
-        bucket = self.connect_to_bucket(bucket_name)
+            bucket = self.connect_to_bucket(bucket_name)
 
-        CHUNKSIZE = 5 * 1024 * 1024
-        # 5MB is the minimum size of a part when doing multipart uploads
-        # Therefore, multipart uploads will fail if your file is smaller than 5MB
+            CHUNKSIZE = 5 * 1024 * 1024
+            # 5MB is the minimum size of a part when doing multipart uploads
+            # Therefore, multipart uploads will fail if your file is smaller than 5MB
 
-        with open(fifo, 'rb') as f:
-            data = f.read(CHUNKSIZE)
-            if len(data) < CHUNKSIZE:
-                # File is smaller than CHUNKSIZE, upload in one go (ie. no multipart)
-                key = bucket.new_key(path.lstrip(DELIMITER))
-                key.set_contents_from_file(BytesIO(data))
-            else:
-                # File is larger than CHUNKSIZE, there will be more parts so initiate
-                # the multipart_upload and upload in parts
-                multipart_upload = bucket.initiate_multipart_upload(path.lstrip(DELIMITER))
-                part_no = 1
-                while len(data) > 0:
-                    multipart_upload.upload_part_from_file(BytesIO(data), part_no)
-                    data = f.read(CHUNKSIZE)
-                    part_no += 1
+            with open(filename, 'rb') as f:
+                data = f.read(CHUNKSIZE)
+                if len(data) < CHUNKSIZE:
+                    # File is smaller than CHUNKSIZE, upload in one go (ie. no multipart)
+                    key = bucket.new_key(path.lstrip(DELIMITER))
+                    key.set_contents_from_file(BytesIO(data))
+                else:
+                    # File is larger than CHUNKSIZE, there will be more parts so initiate
+                    # the multipart_upload and upload in parts
+                    multipart_upload = bucket.initiate_multipart_upload(path.lstrip(DELIMITER))
+                    part_no = 1
+                    while len(data) > 0:
+                        multipart_upload.upload_part_from_file(BytesIO(data), part_no)
+                        data = f.read(CHUNKSIZE)
+                        part_no += 1
 
-                multipart_upload.complete_upload()
+                    multipart_upload.complete_upload()
+            queue.put(OK_STATUS)
+        except:
+            logger.exception("Exception thrown while S3 uploading %s to %s", filename, uri)
+            queue.put(ERROR_STATUS)
 
 
-    def fifo_to_remote(self, uri, fifo, queue=None):
-        thread = threading.Thread(target=self.upload_file, args=(uri, fifo, queue))
+
+    def fifo_to_remote(self, uri, fifo_name, queue=None):
+        thread = threading.Thread(target=self.upload_file, args=(uri, fifo_name, queue))
         thread.start()
         return thread
 
@@ -148,3 +159,6 @@ def partition(pred, iterable):
     t1, t2 = tee(iterable)
     return ifilter(pred, t1), ifilterfalse(pred, t2)
 
+class NullQueue(object):
+    def put(self, value):
+        pass
