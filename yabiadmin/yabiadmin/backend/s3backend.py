@@ -49,6 +49,76 @@ OK_STATUS = 0
 
 class S3Backend(FSBackend):
 
+    def fifo_to_remote(self, uri, fifo_name, queue=None):
+        thread = threading.Thread(target=self.upload_file, args=(uri, fifo_name, queue))
+        thread.start()
+        return thread
+
+    def remote_to_fifo(self, uri, fifo_name, queue=None):
+        thread = threading.Thread(target=self.download_file, args=(uri, fifo_name, queue))
+        thread.start()
+        return thread
+
+    def ls(self, uri):
+        bucket_name, path = self.parse_s3_uri(uri)
+
+        try:
+            bucket = self.connect_to_bucket(bucket_name)
+            empty_key_for_dir = lambda k: k.name == path.lstrip(DELIMITER)
+            keys_and_prefixes = ifilterfalse(empty_key_for_dir,
+                bucket.get_all_keys(prefix=path.lstrip(DELIMITER), delimiter=DELIMITER))
+            
+            # Keys correspond to files, prefixes to directories
+            keys, prefixes = partition(lambda k: type(k) == boto.s3.key.Key, keys_and_prefixes)
+
+            files = [(basename(k.name), k.size, format_iso8601_date(k.last_modified), NEVER_A_SYMLINK) for k in keys]
+            dirs = [(basename(p.name), 0, None, NEVER_A_SYMLINK) for p in prefixes]
+
+        except boto.exception.S3ResponseError, e:
+            logger.exception("Couldn't get listing from S3:")
+            # TODO doing the same as SFTPBackend, but is this what we want?
+            # This code is not executed by Celery tasks
+            raise RetryException(e, traceback.format_exc())
+
+        return { path: {
+                   'files': files, 
+                   'directories': dirs 
+               }}
+
+
+
+    # Implementation
+
+
+    def parse_s3_uri(self, uri):
+        scheme, parts = uriparse(uri)
+        bucket_name = parts.hostname.split('.')[0]
+        path = parts.path
+
+        return bucket_name, path
+
+
+    def connect_to_bucket(self, bucket_name):
+        aws_access_key_id, aws_secret_access_key = self.get_access_keys()
+        connection = boto.connect_s3(aws_access_key_id, aws_secret_access_key)
+
+        return connection.get_bucket(bucket_name)
+
+
+    def get_access_keys(self):
+        credential = self.cred.credential
+
+        if credential.is_cached:
+            decrypted_credential = credential.get()
+            aws_access_key_id = decrypted_credential['cert']
+            aws_secret_access_key = decrypted_credential['key']
+        else:
+            raise DecryptedCredentialNotAvailable("Decrypted credential not available to access S3")
+
+
+        return aws_access_key_id, aws_secret_access_key
+
+
     def download_file(self, uri, filename, queue=None):
         try:
             if queue is None:
@@ -62,7 +132,7 @@ class S3Backend(FSBackend):
 
             queue.put(OK_STATUS)
         except:
-            logger.exception("Exception thrown while S3 uploading %s to %s", filename, uri)
+            logger.exception("Exception thrown while S3 downloading %s to %s", uri, filename)
             queue.put(ERROR_STATUS)
 
 
@@ -102,72 +172,6 @@ class S3Backend(FSBackend):
             queue.put(ERROR_STATUS)
 
 
-
-    def fifo_to_remote(self, uri, fifo_name, queue=None):
-        thread = threading.Thread(target=self.upload_file, args=(uri, fifo_name, queue))
-        thread.start()
-        return thread
-
-    def remote_to_fifo(self, uri, fifo_name, queue=None):
-        thread = threading.Thread(target=self.download_file, args=(uri, fifo_name, queue))
-        thread.start()
-        return thread
-
-
-    def parse_s3_uri(self, uri):
-        scheme, parts = uriparse(uri)
-        bucket_name = parts.hostname.split('.')[0]
-        path = parts.path
-
-        return bucket_name, path
-
-
-    def connect_to_bucket(self, bucket_name):
-        aws_access_key_id, aws_secret_access_key = self.get_access_keys()
-        connection = boto.connect_s3(aws_access_key_id, aws_secret_access_key)
-
-        return connection.get_bucket(bucket_name)
-
-
-    def ls(self, uri):
-        bucket_name, path = self.parse_s3_uri(uri)
-
-        try:
-            bucket = self.connect_to_bucket(bucket_name)
-            empty_key_for_dir = lambda k: k.name == path.lstrip(DELIMITER)
-            keys_and_prefixes = ifilterfalse(empty_key_for_dir,
-                bucket.get_all_keys(prefix=path.lstrip(DELIMITER), delimiter=DELIMITER))
-            
-            # Keys correspond to files, prefixes to directories
-            keys, prefixes = partition(lambda k: type(k) == boto.s3.key.Key, keys_and_prefixes)
-
-            files = [(basename(k.name), k.size, format_iso8601_date(k.last_modified), NEVER_A_SYMLINK) for k in keys]
-            dirs = [(basename(p.name), 0, None, NEVER_A_SYMLINK) for p in prefixes]
-
-        except boto.exception.S3ResponseError, e:
-            logger.exception("Couldn't get listing from S3:")
-            # TODO doing the same as SFTPBackend, but is this what we want?
-            # This code is not executed by Celery tasks
-            raise RetryException(e, traceback.format_exc())
-
-        return { path: {
-                   'files': files, 
-                   'directories': dirs 
-               }}
-
-
-    def get_access_keys(self):
-        credential = self.cred.credential
-
-        if credential.is_cached:
-            decrypted_credential = credential.get()
-            aws_access_key_id = decrypted_credential['cert']
-            aws_secret_access_key = decrypted_credential['key']
-        else:
-            raise DecryptedCredentialNotAvailable("Decrypted credential not available to access S3")
-
-
-        return aws_access_key_id, aws_secret_access_key
 
 
 def basename(key_name, delimiter=DELIMITER):
