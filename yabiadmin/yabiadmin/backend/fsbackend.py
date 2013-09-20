@@ -370,7 +370,7 @@ class FSBackend(BaseBackend):
     def ls(self, uri):
         raise NotImplementedError("")
 
-    def ls_recurse(self, uri):
+    def ls_recursive(self, uri):
         raise NotImplementedError("")
 
     def local_copy(self, source, destination):
