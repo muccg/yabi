@@ -361,9 +361,6 @@ class FSBackend(BaseBackend):
     def rm(self, uri):
         raise NotImplementedError("")
 
-    def isdir(self, uri):
-        raise NotImplementedError("")
-
     def mkdir(self, uri):
         raise NotImplementedError("")
 
