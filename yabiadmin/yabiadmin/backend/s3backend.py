@@ -134,7 +134,9 @@ class S3Backend(FSBackend):
 
         try:
             bucket = self.connect_to_bucket(bucket_name)
-            keys_and_prefixes = bucket.get_all_keys(prefix=path.lstrip(DELIMITER), delimiter=DELIMITER)
+            empty_key_for_dir = lambda k: k.name == path.lstrip(DELIMITER)
+            keys_and_prefixes = ifilterfalse(empty_key_for_dir,
+                bucket.get_all_keys(prefix=path.lstrip(DELIMITER), delimiter=DELIMITER))
             
             # Keys correspond to files, prefixes to directories
             keys, prefixes = partition(lambda k: type(k) == boto.s3.key.Key, keys_and_prefixes)
