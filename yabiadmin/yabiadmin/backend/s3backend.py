@@ -49,6 +49,24 @@ OK_STATUS = 0
 
 class S3Backend(FSBackend):
 
+    def download_file(self, uri, filename, queue=None):
+        try:
+            if queue is None:
+                queue = NullQueue()
+            bucket_name, path = self.parse_s3_uri(uri)
+
+            bucket = self.connect_to_bucket(bucket_name)
+            key = bucket.get_key(path.lstrip(DELIMITER))
+
+            key.get_contents_to_filename(filename)
+
+            queue.put(OK_STATUS)
+        except:
+            logger.exception("Exception thrown while S3 uploading %s to %s", filename, uri)
+            queue.put(ERROR_STATUS)
+
+
+
     def upload_file(self, uri, filename, queue=None):
         try:
             if queue is None:
@@ -90,6 +108,11 @@ class S3Backend(FSBackend):
         thread.start()
         return thread
 
+    def remote_to_fifo(self, uri, fifo_name, queue=None):
+        thread = threading.Thread(target=self.download_file, args=(uri, fifo_name, queue))
+        thread.start()
+        return thread
+
 
     def parse_s3_uri(self, uri):
         scheme, parts = uriparse(uri)
@@ -112,15 +135,11 @@ class S3Backend(FSBackend):
         try:
             bucket = self.connect_to_bucket(bucket_name)
             keys_and_prefixes = bucket.get_all_keys(prefix=path.lstrip(DELIMITER), delimiter=DELIMITER)
+            
             # Keys correspond to files, prefixes to directories
             keys, prefixes = partition(lambda k: type(k) == boto.s3.key.Key, keys_and_prefixes)
 
-            def basename(key_name):
-                name = key_name.rstrip(DELIMITER)
-                delimiter_last_position = name.rfind(DELIMITER)
-                return name[delimiter_last_position+1:]
             files = [(basename(k.name), k.size, format_iso8601_date(k.last_modified), NEVER_A_SYMLINK) for k in keys]
-
             dirs = [(basename(p.name), 0, None, NEVER_A_SYMLINK) for p in prefixes]
 
         except boto.exception.S3ResponseError, e:
@@ -148,6 +167,11 @@ class S3Backend(FSBackend):
 
         return aws_access_key_id, aws_secret_access_key
 
+
+def basename(key_name, delimiter=DELIMITER):
+    name = key_name.rstrip(delimiter)
+    delimiter_last_position = name.rfind(delimiter)
+    return name[delimiter_last_position+1:]
 
 
 def format_iso8601_date(iso8601_date):
