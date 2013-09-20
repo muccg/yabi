@@ -16,7 +16,7 @@ for package in packages:
     os.chdir(start_dir)
 
 install_requires = [
-        'Django==1.5.1',
+        'Django==1.5.4',
          # pip > 1.4 doesn't pick up pytz, because of non-standard version number
          # Bug is still under discussion: https://bugs.launchpad.net/pytz/+bug/1204837
         'pytz>=2013b', 
