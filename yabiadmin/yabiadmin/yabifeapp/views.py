@@ -126,7 +126,10 @@ def admin(request):
 def account(request):
     if not request.user.get_profile().has_account_tab():
         return render_page("fe/errors/403.html", request, response=HttpResponseForbidden())
-    return render_page("fe/account.html", request)
+
+    profile = request.user.get_profile()
+    username = request.user.username
+    return render_page("fe/account.html", request, profile=profile, username=username)
 
 def login(request):
 

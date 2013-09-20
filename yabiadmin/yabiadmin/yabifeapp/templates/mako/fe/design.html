@@ -1,7 +1,8 @@
-<%inherit file="base.html"/>
+{% extends "fe/base.html" %}
+{% load static from staticfiles %}
 
-<%def name="header()">
-    <link rel="stylesheet" type="text/css" media="screen" href="${h.url('/static/css/design.css?20101201')}" />
+{% block header %}
+    <link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/design.css' %}" />
 
     <script type="text/javascript">
         Y.use('*', function(Y) {
@@ -19,10 +20,10 @@
             document.getElementById("toolContainer").appendChild(tools.containerEl);
             
             workflow = new YabiWorkflow(true);
-% if reuseId:
-            workflow.hydrate(${reuseId});
+            {% if reuseId %}
+            workflow.hydrate({{reuseId}});
             workflow.workflowId = undefined;
-% endif
+            {% endif %}
             
             var updateFilter = function(job) {
                 if (!tools.autofilter) {
@@ -85,7 +86,7 @@
                         YAHOO.ccgyabi.widget.YabiMessage.fail("Fail on submit!");
                     }
                 };
-                var data = "username=${request.user.username}&workflowjson=" + encodeURIComponent(wf.toJSON());
+                var data = "username={{request.user.username}}&workflowjson=" + encodeURIComponent(wf.toJSON());
                 var cfg = {
                     method: 'POST',
                     on: jsCallback,
@@ -107,12 +108,14 @@
             return false;
         }
     </script>
-</%def>
+{% endblock %}
 
-<%def name="body()">
+{% block body %}
     <div id="doc3" class="yui-t1">
         <div id="yabi-design-mode">
-            ${self.bodyhd()}
+            {% block bodyhd %}
+            {{ block.super }}
+            {% endblock %}
 
             <div class="yabiLeftColumn">
                 <div id="toolContainer"></div>
@@ -126,5 +129,5 @@
         </div>
     </div>
   
-    ${self.copyright()}
-</%def>
+    {% include "fe/copyright_include.html" %}
+{% endblock %}

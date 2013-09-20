@@ -1,46 +1,45 @@
+{% load pytag %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="${LANGUAGE_CODE}" xml:lang="${LANGUAGE_CODE}" 
-% if LANGUAGE_BIDI:
-dir="rtl"
-% endif
+<html xmlns="http://www.w3.org/1999/xhtml" lang="{{LANGUAGE_CODE}}" xml:lang="{{LANGUAGE_CODE}}"
 >
-<%namespace name="admin" module="django.contrib.admin.templatetags.adminmedia" />
-<%!
-import django.core.urlresolvers as resolvers
-from django.conf import settings
-from ccg.utils.webhelpers import url
-%>
+
+
 <head>
-<%def name="block_title()">Undefined</%def>
-<title>${self.block_title()}</title>
-<%def name="block_stylesheet()">${settings.ADMIN_MEDIA_PREFIX}css/base.css</%def>
-<%def name="block_stylesheet_rtl()">${settings.ADMIN_MEDIA_PREFIX}css/rtl.css</%def>
-<link rel="stylesheet" type="text/css" href="${self.block_stylesheet()}" />
-<link rel="stylesheet" type="text/css" href="${next.block_stylesheet()}" />
 
-% if LANGUAGE_BIDI:
-<link rel="stylesheet" type="text/css" href="${self.block_stylesheet_rtl()}" />
-% endif
+<title>{% block block_title %}Undefined{% endblock %}</title>
 
-<script type="text/javascript">window.__admin_media_prefix__ = "${ escapejs( settings.ADMIN_MEDIA_PREFIX ) }";</script>
 
-${self.block_extrastyle()}<%def name="block_extrastyle()"></%def>
-${self.block_extrahead()}<%def name="block_extrahead()"></%def>
-${self.block_blockbots()}<%def name="block_blockbots()"><meta name="robots" content="NONE,NOARCHIVE" /></%def>
+
+<link rel="stylesheet" type="text/css" href="{% block block_stylesheet %}{{settings.ADMIN_MEDIA_PREFIX}}css/base.css{% endblock %}" />
+<link rel="stylesheet" type="text/css" href="{% block base_site_block_stylesheet %}{% endblock %}" /> <!-- orig next - django equiv?-->
+
+{% if LANGUAGE_BIDI %}
+<link rel="stylesheet" type="text/css" href="{% block block_stylesheet_rtl %}{{settings.ADMIN_MEDIA_PREFIX}}css/rtl.css{% endblock %}" />
+{% endif %}
+
+<script type="text/javascript">window.__admin_media_prefix__ = "{{ settings.ADMIN_MEDIA_PREFIX | escapejs }}";</script>
+
+
+{% block block_extrastyle %}{% endblock %}
+{% block block_extrahead %}{% endblock %}}
+
+{% block block_blockbots %}
+<meta name="robots" content="NONE,NOARCHIVE" />
+{% endblock %}}
 </head>
 
 
 <body class="
-% if is_popup:
+{% if is_popup %}
 popup 
-% endif
-${self.block_bodyclass()}<%def name="block_bodyclass()"></%def>">
+{% endif %}
+{% block block_bodyclass %}{% endblock %}">
 
 <!-- Container -->
 <div id="container">
 
     
-% if not is_popup:
+{% if not is_popup %}
 
     <!-- Header -->
     <div id="header">
@@ -50,46 +49,49 @@ ${self.block_bodyclass()}<%def name="block_bodyclass()"></%def>">
         ${self.block_nav_global()}<%def name="block_nav_global()"></%def>
     </div>
     <!-- END Header -->
-    ${self.block_breadcrumbs()}<%def name="block_breadcrumbs()"><div class="breadcrumbs"><a href="${root_path}">${trans('Home')}</a>
+    {% block block_breadcrumbs %}
+<div class="breadcrumbs"><a href="{{root_path}}">Home</a>
 
 
-% if title:
- &rsaquo; ${title}
-% endif
-</div></%def>
+{% if title %}
+ &rsaquo; {{title}}
+{% endif %}
+</div>
+{% endblock %}
     
-% endif
+{% endif %}
 
 
         
-% if messages:
+{% if messages %}
 
         <ul class="messagelist">
-% for message in messages:
-<li>${message}</li>
-% endfor
+{% for message in messages %}
+<li>{{message}}</li>
+{% endfor %}
 </ul>
         
-% endif
+{% endif %}
 
 
     <!-- Content -->
-    <div id="content" class="${self.block_coltype()}<%def name="block_coltype()">colM</%def>">
-        ${self.block_pretitle()}<%def name="block_pretitle()"></%def>
-        ${self.block_content_title()}<%def name="block_content_title()">
-% if title:
-<h1>${title}</h1>
-% endif
-</%def>
-        <%def name="block_content()">
-        <%def name="block_object_tools()"></%def>${block_object_tools()}
-        </%def>${self.block_content()}
-        <%def name="block_sidebar()"></%def>${self.block_sidebar()}
+    <div id="content" class="{% block block_coltype %}colM{% endblock %}">
+        {% block block_pretitle %}{% endblock %}
+        {% block block_content_title %}
+{% if title %}
+<h1>{{title}}</h1>
+{% endif %}
+{% endblock %}
+        {% block block_content %}
+            {% block block_object_tools %}
+            {% endblock %}
+        {% endblock %}
+        {% block block_sidebar %}{% endblock %}
         <br class="clear" />
     </div>
     <!-- END Content -->
 
-    ${self.block_footer()}<%def name="block_footer()"><div id="footer"></div></%def>
+    {% block block_footer %}<div id="footer"></div>{% endblock %}
 </div>
 <!-- END Container -->
 

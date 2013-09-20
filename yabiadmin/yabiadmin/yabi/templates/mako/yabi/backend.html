@@ -1,13 +1,16 @@
-<%inherit file="admin/base_site_mako.html"/>
-<%namespace name="admin" module="django.contrib.admin.templatetags.adminmedia" />
+{% extends "admin/base_site_mako.html" %}
+{% load pytag %}
+{% load is_false %}
+
+{% if is_popup|is_false %}
+{% block block_breadcrumbs %}
+<div class="breadcrumbs"><a href="{{root_path}}">Home</a> &rsaquo; Backend {{backend.name}}</div>
+{% endblock %}
+{% endif %}
 
 
-% if not is_popup:
-${self.block_breadcrumbs()}<%def name="block_breadcrumbs()"><div class="breadcrumbs"><a href="${root_path}">${trans("Home")}</a> &rsaquo; Backend ${backend.name}</div></%def>
-% endif
 
-
-${self.block_content()}<%def name="block_content()">
+{% block block_content %}
 <div id="content-main">
 
 
@@ -22,13 +25,13 @@ ${self.block_content()}<%def name="block_content()">
         <th>Uri</th>
     </tr>
     <tr>
-        <td>${backend.name}</td>
-        <td>${backend.description}</td>
-        <td>${backend.scheme}</td>
-        <td>${backend.hostname}</td>
-        <td>${backend.port}</td>
-        <td>${backend.path}</td>
-        <td>${backend.uri}</td>
+        <td>{{backend.name}}</td>
+        <td>{{backend.description}}</td>
+        <td>{{backend.scheme}}</td>
+        <td>{{backend.hostname}}</td>
+        <td>{{backend.port}}</td>
+        <td>{{backend.path}}</td>
+        <td>{{backend.uri}}</td>
     </tr>
 </table>
 
@@ -48,40 +51,40 @@ ${self.block_content()}<%def name="block_content()">
         <th>Home Dir Uri</th>
 
     </tr>
-    % for bec in backend.backendcredential_set.all():
+    {% for bec in backend.backendcredential_set.all    %}
     <tr>
-    <td>${bec.credential.description}</td>
-    <td>${bec.credential.user.name}</td>
-    <td>${bec.credential.username}</td>
+    <td>{{bec.credential.description}}</td>
+    <td>{{bec.credential.user.name}}</td>
+    <td>{{bec.credential.username}}</td>
     <td>
-    % if bec.credential.cert:
+    {% if bec.credential.cert %}
     Yes
-    % else:
+    {% else %}
     No
-    % endif
+    {% endif %}
     </td>
     <td>
-    % if bec.credential.key:
+    {% if bec.credential.key %}
     Yes
-    % else:
+    {% else %}
     No
-    % endif
+    {% endif %}
     </td>
-    <td>${bec.homedir}</td>
-    <td>${bec.visible}</td>
-    <td>${bec.uri}</td>
-    <td>${bec.homedir_uri}</td>
-    <td>${bec.backend_cred_edit_link()}</td>
+    <td>{{bec.homedir}}</td>
+    <td>{{bec.visible}}</td>
+    <td>{{bec.uri}}</td>
+    <td>{{bec.homedir_uri}}</td>
+    <td>{{ bec.backend_cred_edit_link }}</td>
     <td>
-    % if bec.homedir:
-    ${bec.backend_cred_test_link()}
-    % endif
+    {% if bec.homedir %}
+    {{ bec.backend_cred_test_link }}
+    {% endif %}
     </td>
     </tr>
-    % endfor
+    {% endfor %}
           
 
 </table>
 
 </div>
-</%def>
+{% endblock %}

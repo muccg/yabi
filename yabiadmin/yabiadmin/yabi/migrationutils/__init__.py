@@ -31,12 +31,11 @@ def auth_user(username, password, email, active=True, staff=False, superuser=Fal
     return authuser
     
 def make_password_hash(password):
-    from django.contrib.auth.models import get_hexdigest
     import random
-    algo = 'sha1'
-    salt = get_hexdigest(algo, str(random.random()), str(random.random()))[:5]
-    hsh = get_hexdigest(algo, salt, password)
-    return '%s$%s$%s' % (algo, salt, hsh)
+    import hashlib
+    from django.contrib.auth.hashers import make_password
+    salt = hashlib.sha1(str(random.random())).hexdigest()[:5]
+    return make_password(password, salt=salt, hasher='sha1')
 
 def yabi_user(username, user=None, orm=None):
     user = user or settings.user

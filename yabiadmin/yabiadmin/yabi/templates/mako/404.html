@@ -1,3 +1,4 @@
+{% load static from staticfiles %}
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -8,14 +9,14 @@
     <meta name="author" content="Centre for Comparative Genomics, Murdoch University.">
 
     <!-- styles -->
-    <link href="${h.url('/static/css/bootstrap.min.css')}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
     <style type="text/css">
       body {
         padding-top: 10px;
         padding-bottom: 40px;
       }
     </style>
-    <link href="${h.url('/static/css/bootstrap-responsive.min.css')}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap-responsive.min.css' %}" rel="stylesheet">
 
     <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
     <!--[if lt IE 9]>
@@ -23,7 +24,7 @@
     <![endif]-->
 
     <!-- fav icon -->
-    <link rel="shortcut icon" href="${h.url('/static/images/favicon.ico')}">
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}">
   </head>
 
   <body>
@@ -33,11 +34,11 @@
       <div class="row">
         <div class="span12">
 
-          <p><a href="${h.url('/')}"><img src="${h.url('/static/images/yabi-logo.png')}" alt="Yabi-logo" height="60" width="198" /></a></p>
+          <p><a href="{% static '/' %}"><img src="{% static 'images/yabi-logo.png' %}" alt="Yabi-logo" height="60" width="198" /></a></p>
           <br/><br/>
           <h1>Page not found.</h1>
           <br/><br/>
-          <p>Please return to the <a href="${h.url('/')}">front page</a>.</p>
+          <p>Please return to the <a href="{% static '/' %}">front page</a>.</p>
           <br/><br/>
       </div>
 
