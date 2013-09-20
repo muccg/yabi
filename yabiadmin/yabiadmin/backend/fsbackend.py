@@ -151,7 +151,8 @@ class FSBackend(BaseBackend):
         dst_backend = FSBackend.urifactory(yabiusername, dst_uri)
         src_scheme, src_parts = uriparse(src_uri)
         dst_scheme, dst_parts = uriparse(dst_uri)
-        if dst_backend.is_dir(dst_parts.path):
+        # Making sure dst_uri is always a file not a dir
+        if dst_parts.path.endswith("/"): # Looks like a dir
             dst_file_uri = "%s/%s" % (dst_uri, src_backend.basename(src_parts.path))
             dst_scheme, dst_parts = uriparse(dst_uri)
         else:
@@ -348,10 +349,6 @@ class FSBackend(BaseBackend):
         # remove local remnants directory
         shutil.rmtree(self.local_remnants_dir())
 
-
-    def is_dir(self, path):
-        # Maybe a bit naive, but can be overwritten in specific Backends
-        return path.endswith("/")
 
     def basename(self, path):
         return os.path.basename(path)
