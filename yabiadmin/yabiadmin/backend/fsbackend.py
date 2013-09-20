@@ -339,6 +339,7 @@ class FSBackend(BaseBackend):
         except Exception, exc:
             raise RetryException(exc, traceback.format_exc())
 
+
     def clean_up_task(self):
         # remove working directory
         self.rm(self.working_dir_uri())
@@ -346,6 +347,19 @@ class FSBackend(BaseBackend):
         shutil.rmtree(self.local_remnants_dir())
 
 
+    def ls_recursive(self, uri):
+        result = self.ls(uri)
+
+        dirs = []
+        if result.values():
+            dirs = result.values()[0].get('directories')
+ 
+        dir_uris = map(lambda d: "%s/%s" % (uri.rstrip("/"), d[0].lstrip("/")), dirs)
+        for d in dir_uris:
+            result.update(self.ls_recursive(d))
+        return result
+
+ 
     def basename(self, path):
         return os.path.basename(path)
 
@@ -367,11 +381,9 @@ class FSBackend(BaseBackend):
     def ls(self, uri):
         raise NotImplementedError("")
 
-    def ls_recursive(self, uri):
-        raise NotImplementedError("")
-
     def local_copy(self, source, destination):
         raise NotImplementedError("")
 
     def symbolic_link(self, source, destination):
         raise NotImplementedError("")
+

@@ -25,7 +25,7 @@
 # 
 ### END COPYRIGHT ###
 from yabiadmin.backend.fsbackend import FSBackend
-from yabiadmin.backend.exceptions import RetryException
+from yabiadmin.backend.exceptions import NotSupportedError, RetryException
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from yabiadmin.yabiengine.urihelper import uriparse
 import logging
@@ -84,6 +84,24 @@ class S3Backend(FSBackend):
                    'files': files, 
                    'directories': dirs 
                }}
+
+
+
+    def get_file(self, uri, bytes=None):
+        raise NotImplementedError("")
+
+    def rm(self, uri):
+        raise NotImplementedError("")
+
+    def mkdir(self, uri):
+        raise NotImplementedError("")
+
+    def local_copy(self, source, destination):
+        raise NotSupportedError()
+
+    def symbolic_link(self, source, destination):
+        raise NotSupportedError()
+
 
 
 

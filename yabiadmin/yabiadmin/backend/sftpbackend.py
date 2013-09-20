@@ -245,63 +245,6 @@ class SFTPBackend(FSBackend):
 
         return results
 
-    def ls_recursive(self, uri):
-        """recursively ls at uri"""
-        self.set_cred(uri)
-        scheme, parts = uriparse(uri)
-        output = {"files": [], "directories": []}
-        ssh = sshclient(parts.hostname, parts.port, self.cred.credential)
-        try:
-            sftp = ssh.open_sftp()
-            output = self._do_stat(sftp, parts.path) or self._do_ls_r(sftp, parts.path, {})
-        except Exception, exc:
-            logger.error(exc)
-            raise RetryException(exc, traceback.format_exc())
-        finally:
-            try:
-                if ssh is not None:
-                    ssh.close()
-            except:
-                pass
-
-        return output
-
-    def _do_ls_r(self, sftp, path, output):
-        """recursively do an ls"""
-        try:
-            results = self._do_ls(sftp, path)
-        except IOError, ioe:
-            logger.warning(ioe)
-            # permissions...
-            return output
-        output[path] = results
-
-        for filename, size, date, link in results['directories']:
-            self._do_ls_r(sftp, os.path.join(path, filename), output)
-
-        return output
-
-    def _do_stat(self, sftp, path):
-        """stat a path using sftp client"""
-        try:
-            lresult = sftp.lstat(path)
-        except IOError, ioe:
-            logger.error("%s: path = %s" % (ioe, path))
-            raise
-
-        result = sftp.stat(path)
-        if stat.S_ISREG(result.st_mode):
-            # regular file
-            output = {
-                'directories': [],
-                'files': [
-                    [path.rsplit('/', 1)[-1], lresult.st_size, time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime(lresult.st_mtime)), stat.S_ISLNK(lresult.st_mode)]
-                ]
-            }
-
-            return {path: output}
-        return None
-
     def local_copy(self, src_uri, dst_uri):
         """Copy src_uri to dst_uri on the remote backend"""
         logger.debug("SFTPBackend.local_copy: %s => %s" % (src_uri, dst_uri))
