@@ -1,5 +1,5 @@
 {% extends "admin/base_site_mako.html" %}
-{% load pytag %}
+
 {% load is_false %}
 
 {% if is_popup|is_false %}
@@ -74,10 +74,15 @@
     <td>{{bec.visible}}</td>
     <td>{{bec.uri}}</td>
     <td>{{bec.homedir_uri}}</td>
-    <td>{{ bec.backend_cred_edit_link }}</td>
+    <td>{% autoescape off %}
+    {{ bec.backend_cred_edit_link}}
+       {% endautoescape %}
+    </td>
     <td>
     {% if bec.homedir %}
+    {% autoescape off %}
     {{ bec.backend_cred_test_link }}
+    {% endautoescape %}
     {% endif %}
     </td>
     </tr>
