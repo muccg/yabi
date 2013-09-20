@@ -10,22 +10,22 @@
 
 
 
-<link rel="stylesheet" type="text/css" href="{% block block_stylesheet %}{{settings.ADMIN_MEDIA_PREFIX}}css/base.css{% endblock %}" />
+<link rel="stylesheet" type="text/css" href="{% block block_stylesheet %}/static/admin/css/base.css{% endblock %}" />
 <link rel="stylesheet" type="text/css" href="{% block base_site_block_stylesheet %}{% endblock %}" /> <!-- orig next - django equiv?-->
 
 {% if LANGUAGE_BIDI %}
-<link rel="stylesheet" type="text/css" href="{% block block_stylesheet_rtl %}{{settings.ADMIN_MEDIA_PREFIX}}css/rtl.css{% endblock %}" />
+<link rel="stylesheet" type="text/css" href="{% block block_stylesheet_rtl %}/static/admin/css/rtl.css{% endblock %}" />
 {% endif %}
 
 <script type="text/javascript">window.__admin_media_prefix__ = "{{ settings.ADMIN_MEDIA_PREFIX | escapejs }}";</script>
 
 
 {% block block_extrastyle %}{% endblock %}
-{% block block_extrahead %}{% endblock %}}
+{% block block_extrahead %}{% endblock %}
 
 {% block block_blockbots %}
 <meta name="robots" content="NONE,NOARCHIVE" />
-{% endblock %}}
+{% endblock %}
 </head>
 
 
@@ -44,9 +44,11 @@ popup
     <!-- Header -->
     <div id="header">
         <div id="branding">
-        ${self.block_branding()}<%def name="block_branding()"></%def>
+            {% block branding %}
+            {% endblock %}
         </div>
-        ${self.block_nav_global()}<%def name="block_nav_global()"></%def>
+        {% block block_nav_global %}
+        {% endblock %}
     </div>
     <!-- END Header -->
     {% block block_breadcrumbs %}
