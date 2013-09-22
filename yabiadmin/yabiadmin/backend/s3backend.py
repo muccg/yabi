@@ -87,9 +87,6 @@ class S3Backend(FSBackend):
 
 
 
-    def get_file(self, uri, bytes=None):
-        raise NotImplementedError("")
-
     def rm(self, uri):
         raise NotImplementedError("")
 

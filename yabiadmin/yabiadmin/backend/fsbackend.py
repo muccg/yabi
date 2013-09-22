@@ -369,9 +369,6 @@ class FSBackend(BaseBackend):
     def fifo_to_remote(self, uri, fifo):
         raise NotImplementedError("")
 
-    def get_file(self, uri, bytes=None):
-        raise NotImplementedError("")
-
     def rm(self, uri):
         raise NotImplementedError("")
 
