@@ -133,6 +133,8 @@ class S3Backend(FSBackend):
 
 
     def parse_s3_uri(self, uri):
+        if uri.endswith(DELIMITER):
+            uri = uri.rstrip(DELIMITER) + DELIMITER
         scheme, parts = uriparse(uri)
         bucket_name = parts.hostname.split('.')[0]
         path = parts.path
