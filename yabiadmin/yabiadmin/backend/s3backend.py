@@ -86,7 +86,6 @@ class S3Backend(FSBackend):
                }}
 
     def rm(self, uri):
-
         bucket_name, path = self.parse_s3_uri(uri)
 
         try:
@@ -99,10 +98,13 @@ class S3Backend(FSBackend):
                 raise RuntimeException(
                     "The following keys couldn't be deleted when deleting uri %s: %s", 
                         uri, ", ".join(multi_delete_result.errors))
+
+            parent_dir_uri = self.parent_dir_uri(uri)
+            if not self.path_exists(parent_dir_uri, bucket):
+                self.mkdir(parent_dir_uri)
         except Exception, exc:
             logger.exception("Error while trying to S3 rm uri %s", uri)
             raise RetryException(exc, traceback.format_exc())
-
 
     def mkdir(self, uri):
         dir_uri = uri if uri.endswith(DELIMITER) else uri + DELIMITER
@@ -229,6 +231,16 @@ class S3Backend(FSBackend):
             result.extend(self.get_keys_recurse(bucket, p.name))
 
         return result
+
+    def parent_dir_uri(self, uri):
+        uri = uri.rstrip(DELIMITER)
+        return uri[:uri.rfind(DELIMITER)] + DELIMITER
+
+    def path_exists(self, uri, bucket):
+        bucket_name, path = self.parse_s3_uri(uri)
+        return bucket.get_key(path.lstrip(DELIMITER)) is not None
+
+
 
 
 def basename(key_name, delimiter=DELIMITER):
