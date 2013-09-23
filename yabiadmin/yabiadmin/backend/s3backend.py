@@ -85,10 +85,24 @@ class S3Backend(FSBackend):
                    'directories': dirs 
                }}
 
-
-
     def rm(self, uri):
-        raise NotImplementedError("")
+
+        bucket_name, path = self.parse_s3_uri(uri)
+
+        try:
+            bucket = self.connect_to_bucket(bucket_name)
+            all_keys = self.get_keys_recurse(bucket, path)
+
+            multi_delete_result = bucket.delete_keys(all_keys)
+            if multi_delete_result.errors:
+                # Some keys couldn't be deleted
+                raise RuntimeException(
+                    "The following keys couldn't be deleted when deleting uri %s: %s", 
+                        uri, ", ".join(multi_delete_result.errors))
+        except Exception, exc:
+            logger.exception("Error while trying to S3 rm uri %s", uri)
+            raise RetryException(exc, traceback.format_exc())
+
 
     def mkdir(self, uri):
         raise NotImplementedError("")
@@ -187,6 +201,19 @@ class S3Backend(FSBackend):
             queue.put(ERROR_STATUS)
 
 
+    def get_keys_recurse(self, bucket, path):
+        key_name = path.lstrip(DELIMITER)
+        result = []
+
+        keys_and_prefixes = bucket.get_all_keys(prefix=path.lstrip(DELIMITER), delimiter=DELIMITER)
+        # Keys correspond to files, prefixes to directories
+        keys, prefixes = partition(lambda k: type(k) == boto.s3.key.Key, keys_and_prefixes)
+
+        result.extend(keys)
+        for p in prefixes:
+            result.extend(self.get_keys_recurse(bucket, p.name))
+
+        return result
 
 
 def basename(key_name, delimiter=DELIMITER):
@@ -204,6 +231,8 @@ def partition(pred, iterable):
     t1, t2 = tee(iterable)
     return ifilter(pred, t1), ifilterfalse(pred, t2)
 
+
 class NullQueue(object):
     def put(self, value):
         pass
+
