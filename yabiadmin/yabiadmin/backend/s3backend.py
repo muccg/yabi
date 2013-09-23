@@ -64,7 +64,7 @@ class S3Backend(FSBackend):
 
         try:
             bucket = self.connect_to_bucket(bucket_name)
-            empty_key_for_dir = lambda k: k.name == path.lstrip(DELIMITER)
+            empty_key_for_dir = lambda k: k.name == path.lstrip(DELIMITER) and k.name.endswith(DELIMITER)
             keys_and_prefixes = ifilterfalse(empty_key_for_dir,
                 bucket.get_all_keys(prefix=path.lstrip(DELIMITER), delimiter=DELIMITER))
             
