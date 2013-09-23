@@ -49,6 +49,17 @@ OK_STATUS = 0
 
 class S3Backend(FSBackend):
 
+    def __init__(self, *args, **kwargs):
+        FSBackend.__init__(self, *args, **kwargs)
+        self._bucket = None
+
+    def bucket(self, name=None):
+        if self._bucket is None:
+            if name is None:
+                raise ValueError("bucket not initialised")
+            self._bucket = self.connect_to_bucket(name)
+        return self._bucket
+
     def fifo_to_remote(self, uri, fifo_name, queue=None):
         thread = threading.Thread(target=self.upload_file, args=(uri, fifo_name, queue))
         thread.start()
@@ -63,7 +74,7 @@ class S3Backend(FSBackend):
         bucket_name, path = self.parse_s3_uri(uri)
 
         try:
-            bucket = self.connect_to_bucket(bucket_name)
+            bucket = self.bucket(bucket_name)
             empty_key_for_dir = lambda k: k.name == path.lstrip(DELIMITER) and k.name.endswith(DELIMITER)
             keys_and_prefixes = ifilterfalse(empty_key_for_dir,
                 bucket.get_all_keys(prefix=path.lstrip(DELIMITER), delimiter=DELIMITER))
@@ -89,7 +100,7 @@ class S3Backend(FSBackend):
         bucket_name, path = self.parse_s3_uri(uri)
 
         try:
-            bucket = self.connect_to_bucket(bucket_name)
+            bucket = self.bucket(bucket_name)
             all_keys = self.get_keys_recurse(bucket, path)
 
             multi_delete_result = bucket.delete_keys(all_keys)
@@ -100,7 +111,7 @@ class S3Backend(FSBackend):
                         uri, ", ".join(multi_delete_result.errors))
 
             parent_dir_uri = self.parent_dir_uri(uri)
-            if not self.path_exists(parent_dir_uri, bucket):
+            if not self.path_exists(parent_dir_uri):
                 self.mkdir(parent_dir_uri)
         except Exception, exc:
             logger.exception("Error while trying to S3 rm uri %s", uri)
@@ -112,8 +123,7 @@ class S3Backend(FSBackend):
         bucket_name, path = self.parse_s3_uri(dir_uri)
 
         try:
-            # TODO try to make bucket a lazy property on the object
-            bucket = self.connect_to_bucket(bucket_name)
+            bucket = self.bucket()
             key = bucket.new_key(path.lstrip(DELIMITER))
             key.set_contents_from_string('')
 
@@ -236,11 +246,11 @@ class S3Backend(FSBackend):
         uri = uri.rstrip(DELIMITER)
         return uri[:uri.rfind(DELIMITER)] + DELIMITER
 
-    def path_exists(self, uri, bucket):
-        bucket_name, path = self.parse_s3_uri(uri)
+    def path_exists(self, uri, bucket=None):
+        if bucket is None:
+            bucket = self.bucket()
+        _, path = self.parse_s3_uri(uri)
         return bucket.get_key(path.lstrip(DELIMITER)) is not None
-
-
 
 
 def basename(key_name, delimiter=DELIMITER):
