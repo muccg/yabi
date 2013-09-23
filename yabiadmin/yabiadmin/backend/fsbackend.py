@@ -140,6 +140,7 @@ class FSBackend(BaseBackend):
         except Exception, exc:
             raise RetryException(exc, traceback.format_exc())
 
+
     @staticmethod
     def remote_file_copy(yabiusername, src_uri, dst_uri):
         """Use a local fifo to copy a single file from src_uri to dst_uri"""
@@ -150,6 +151,12 @@ class FSBackend(BaseBackend):
         dst_backend = FSBackend.urifactory(yabiusername, dst_uri)
         src_scheme, src_parts = uriparse(src_uri)
         dst_scheme, dst_parts = uriparse(dst_uri)
+        # Making sure dst_uri is always a file not a dir
+        if dst_parts.path.endswith("/"): # Looks like a dir
+            dst_file_uri = "%s/%s" % (dst_uri, src_backend.basename(src_parts.path))
+            dst_scheme, dst_parts = uriparse(dst_uri)
+        else:
+            dst_file_uri = dst_uri
         fifo = None
         try:
             # create a fifo, start the write to/read from fifo
@@ -157,7 +164,7 @@ class FSBackend(BaseBackend):
             src_queue = Queue.Queue()
             dst_queue = Queue.Queue()
             src_cmd  = src_backend.remote_to_fifo(src_uri, fifo, src_queue)
-            dst_cmd  = dst_backend.fifo_to_remote(dst_uri, fifo, dst_queue)
+            dst_cmd  = dst_backend.fifo_to_remote(dst_file_uri, fifo, dst_queue)
             src_cmd.join()
             dst_cmd.join()
             src_status = src_queue.get()
@@ -341,6 +348,10 @@ class FSBackend(BaseBackend):
         self.rm(self.working_dir_uri())
         # remove local remnants directory
         shutil.rmtree(self.local_remnants_dir())
+
+
+    def basename(self, path):
+        return os.path.basename(path)
 
     def remote_to_fifo(self, uri, fifo):
         raise NotImplementedError("")
