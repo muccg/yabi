@@ -85,7 +85,7 @@ class FSBackend(BaseBackend):
         assert(task)
         assert(task.fsscheme)
 
-        backend = FSBackend.create_backend_for_scheme(tasks.fsscheme)
+        backend = FSBackend.create_backend_for_scheme(task.fsscheme)
         if backend is None:
             raise Exception('No valid scheme ({0}) is defined for task {1}'.format(task.fsscheme, task.id))
 
