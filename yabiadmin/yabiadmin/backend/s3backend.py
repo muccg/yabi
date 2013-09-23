@@ -26,6 +26,7 @@
 ### END COPYRIGHT ###
 from yabiadmin.backend.fsbackend import FSBackend
 from yabiadmin.backend.exceptions import NotSupportedError, RetryException
+from yabiadmin.backend.utils import get_credential_data
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from yabiadmin.yabiengine.urihelper import uriparse
 import logging
@@ -165,15 +166,7 @@ class S3Backend(FSBackend):
 
     def get_access_keys(self):
         credential = self.cred.credential
-
-        if credential.is_cached:
-            decrypted_credential = credential.get()
-            aws_access_key_id = decrypted_credential['cert']
-            aws_secret_access_key = decrypted_credential['key']
-        else:
-            raise DecryptedCredentialNotAvailable("Decrypted credential not available to access S3")
-
-
+        _, aws_access_key_id, aws_secret_access_key, _ = get_credential_data(self.cred.credential)
         return aws_access_key_id, aws_secret_access_key
 
 
@@ -199,6 +192,7 @@ class S3Backend(FSBackend):
         try:
             if queue is None:
                 queue = NullQueue()
+            logger.debug("upload_file %s to %s", filename, uri)
             bucket_name, path = self.parse_s3_uri(uri)
 
             bucket = self.connect_to_bucket(bucket_name)
@@ -212,7 +206,8 @@ class S3Backend(FSBackend):
                 if len(data) < CHUNKSIZE:
                     # File is smaller than CHUNKSIZE, upload in one go (ie. no multipart)
                     key = bucket.new_key(path.lstrip(DELIMITER))
-                    key.set_contents_from_file(BytesIO(data))
+                    size = key.set_contents_from_file(BytesIO(data))
+                    logger.debug("Set %s bytes to %s", size, key.name)
                 else:
                     # File is larger than CHUNKSIZE, there will be more parts so initiate
                     # the multipart_upload and upload in parts

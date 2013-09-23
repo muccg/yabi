@@ -199,11 +199,13 @@ def get_credential_data(credential):
     if credential.is_cached:
         decrypted_credential = credential.get()
         username = decrypted_credential['username']
+        cert = decrypted_credential['cert']
         key = decrypted_credential['key']
         password = decrypted_credential['password']
     elif credential.is_protected:
         credential.unprotect()
         username = credential.username
+        cert = credential.cert
         key = credential.key
         password = credential.password
     elif credential.is_encrypted:
@@ -212,10 +214,11 @@ def get_credential_data(credential):
 
     else:
         username = credential.username
+        cert = credential.cert
         key = credential.key
         password = credential.password
 
-    return username, key, password
+    return username, cert, key, password
 
 
 def sshclient(hostname, port, credential):
@@ -223,7 +226,7 @@ def sshclient(hostname, port, credential):
         port = 22
     ssh = None
 
-    username, key, passphrase = get_credential_data(credential)
+    username, _, key, passphrase = get_credential_data(credential)
 
     logger.debug('Connecting to {0}@{1}:{2}'.format(username, hostname, port))
 
