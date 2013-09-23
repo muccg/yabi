@@ -105,7 +105,20 @@ class S3Backend(FSBackend):
 
 
     def mkdir(self, uri):
-        raise NotImplementedError("")
+        dir_uri = uri if uri.endswith(DELIMITER) else uri + DELIMITER
+        self.rm(dir_uri)
+        bucket_name, path = self.parse_s3_uri(dir_uri)
+
+        try:
+            # TODO try to make bucket a lazy property on the object
+            bucket = self.connect_to_bucket(bucket_name)
+            key = bucket.new_key(path.lstrip(DELIMITER))
+            key.set_contents_from_string('')
+
+        except Exception, exc:
+            logger.exception("Error while trying to S3 rm uri %s", uri)
+            raise RetryException(exc, traceback.format_exc())
+
 
     def local_copy(self, source, destination):
         raise NotSupportedError()
