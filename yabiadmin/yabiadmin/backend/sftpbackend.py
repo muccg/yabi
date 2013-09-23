@@ -319,6 +319,3 @@ class SFTPBackend(FSBackend):
         else:
             sftp.remove(path)
 
-    def set_cred(self, uri):
-        from yabiadmin.backend.backend import fs_credential
-        self.cred = fs_credential(self.yabiusername, uri)

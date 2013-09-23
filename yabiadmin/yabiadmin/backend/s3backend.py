@@ -71,6 +71,7 @@ class S3Backend(FSBackend):
         return thread
 
     def ls(self, uri):
+        self.set_cred(uri)
         bucket_name, path = self.parse_s3_uri(uri)
 
         try:
@@ -118,6 +119,7 @@ class S3Backend(FSBackend):
             raise RetryException(exc, traceback.format_exc())
 
     def mkdir(self, uri):
+        self.set_cred(uri)
         dir_uri = uri if uri.endswith(DELIMITER) else uri + DELIMITER
         self.rm(dir_uri)
         bucket_name, path = self.parse_s3_uri(dir_uri)

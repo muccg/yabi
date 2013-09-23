@@ -359,6 +359,11 @@ class FSBackend(BaseBackend):
             result.update(self.ls_recursive(d))
         return result
 
+
+    def set_cred(self, uri):
+        from yabiadmin.backend.backend import fs_credential
+        self.cred = fs_credential(self.yabiusername, uri)
+
  
     def basename(self, path):
         return os.path.basename(path)
