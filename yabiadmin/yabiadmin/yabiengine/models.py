@@ -132,6 +132,13 @@ class Workflow(models.Model, Editable, Status):
 
         return self.status
 
+    def get_status_colour(self):
+        return Status.COLOURS.get(self.status, 'grey')
+
+    @property
+    def colour(self):
+        return self.get_status_colour()
+
 class Tag(models.Model):
     value = models.CharField(max_length=255)
 
@@ -179,6 +186,13 @@ class Job(models.Model, Editable, Status):
 
     def status_error(self):
         return self.status == STATUS_ERROR
+
+    def get_status_colour(self):
+        return Status.COLOURS.get(self.status, 'grey')
+
+    @property
+    def colour(self):
+        return self.get_status_colour()
 
     @property
     def workflowid(self):
@@ -369,6 +383,13 @@ class Task(models.Model, Editable, Status):
         return '<a href="%s?table_name=task&table_id=%d">%s</a>' % (url('/admin-pane/yabiengine/syslog/'), self.id, "Syslog")
     link_to_syslog.allow_tags = True
     link_to_syslog.short_description = "Syslog"
+
+    def get_status_colour(self):
+        return Status.COLOURS.get(self.status, 'grey')
+
+    @property
+    def colour(self):
+        return self.get_status_colour()
 
 
 class StageIn(models.Model, Editable):

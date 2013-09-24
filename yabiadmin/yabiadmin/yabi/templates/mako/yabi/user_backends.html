@@ -1,13 +1,16 @@
-<%inherit file="admin/base_site_mako.html"/>
-<%namespace name="admin" module="django.contrib.admin.templatetags.adminmedia" />
+{% extends "admin/base_site_mako.html" %}
+{% load pytag %}
+{% load is_false %}
 
 
-% if not is_popup:
-${self.block_breadcrumbs()}<%def name="block_breadcrumbs()"><div class="breadcrumbs"><a href="${root_path}">${trans("Home")}</a> &rsaquo; User Backends</div></%def>
-% endif
+{% if is_popup|is_false %}
+{% block block_breadcrumbs %}
+<div class="breadcrumbs"><a href="{{root_path}}">Home</a> &rsaquo; User Backends</div>
+{% endblock %}
+{% endif %}
 
 
-${self.block_content()}<%def name="block_content()">
+{% block block_content %}
 <div id="content-main">
 
 
@@ -25,41 +28,41 @@ ${self.block_content()}<%def name="block_content()">
         <th>Home Dir Uri</th>
 
     </tr>
-    % for bec in backendcredentials:
+    {% for bec in backendcredentials %}
     <tr>
-    <td>${bec.credential.description}</td>
-    <td>${bec.credential.user.name}</td>
-    <td>${bec.credential.username}</td>
+    <td>{{bec.credential.description}}</td>
+    <td>{{bec.credential.user.name}}</td>
+    <td>{{bec.credential.username}}</td>
     <td>
-    % if bec.credential.cert:
+    {% if bec.credential.cert %}
     Yes
-    % else:
+    {% else %}
     No
-    % endif
+    {% endif %}
     </td>
     <td>
-    % if bec.credential.key:
+    {% if bec.credential.key %}
     Yes
-    % else:
+    {% else %}
     No
-    % endif
+    {% endif %}
     </td>
-    <td>${bec.homedir}</td>
-    <td>${bec.visible}</td>
-    <td>${bec.uri}</td>
-    <td>${bec.homedir_uri}</td>
-    <td>${bec.backend_cred_edit_link()}</td>
+    <td>{{bec.homedir}}</td>
+    <td>{{bec.visible}}</td>
+    <td>{{bec.uri}}</td>
+    <td>{{bec.homedir_uri}}</td>
+    <td>{{ bec.backend_cred_edit_link }}</td>
     <td>
-    % if bec.homedir:
-    ${bec.backend_cred_test_link()}
-    % endif
+    {% if bec.homedir %}
+    {{ bec.backend_cred_test_link }}
+    {% endif %}
     </td>
     </tr>
-    % endfor
+    {% endfor %}
           
 
 </table>
 
 
 </div>
-</%def>
+{% endblock %}

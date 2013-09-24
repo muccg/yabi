@@ -16,13 +16,13 @@ for package in packages:
     os.chdir(start_dir)
 
 install_requires = [
-        # pip > 1.4 doesn't pick up pytz, because of non-standard version number
-        # Bug is still under discussion: https://bugs.launchpad.net/pytz/+bug/1204837
+        'Django==1.5.4',
+         # pip > 1.4 doesn't pick up pytz, because of non-standard version number
+         # Bug is still under discussion: https://bugs.launchpad.net/pytz/+bug/1204837
         'pytz>=2013b', 
-        'Django==1.3.7',
         'ccg-webservices==0.1.2',
         'ccg-registration==0.8-alpha-1',
-        'ccg-makoloader==0.2.4',
+        'ccg-makoloader==0.2.6',
         'ccg-introspect==0.1.2',
         'ccg-extras==0.1.5',
         'ccg-auth==0.3.3',
@@ -81,11 +81,11 @@ setup(name='yabiadmin',
     dependency_links = [
           'http://ccg-django-extras.googlecode.com/files/ccg-webservices-0.1.2.tar.gz',
           'http://ccg-django-extras.googlecode.com/files/ccg-registration-0.8-alpha-1.tar.gz',
-          'http://ccg-django-extras.googlecode.com/files/ccg-makoloader-0.2.4.tar.gz',
           'http://ccg-django-extras.googlecode.com/files/ccg-introspect-0.1.2.tar.gz',
           'http://ccg-django-extras.googlecode.com/files/ccg-extras-0.1.5.tar.gz',
           'http://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.3.tar.gz',
           'http://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
-          'http://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz'
+          'http://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',
+          'http://repo.ccgapps.com.au',
     ]
 )
