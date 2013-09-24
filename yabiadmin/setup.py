@@ -49,6 +49,8 @@ install_requires = [
         'djamboloader==0.1.2',
         'paramiko==1.10.1',
         'mockito==0.5.1',
+        'boto==2.13.3',
+	'python-dateutil==2.1',
     ]
 
 importlib_available = True

@@ -34,7 +34,6 @@ from yabiadmin.yabiengine.urihelper import url_join, uriparse
 import logging
 import traceback
 import shutil
-from threading import Thread
 import Queue
 logger = logging.getLogger(__name__)
 
@@ -57,26 +56,37 @@ def stream_watcher(identifier, stream):
 
 class FSBackend(BaseBackend):
 
+
+    @staticmethod
+    def create_backend_for_scheme(fsscheme):
+        backend = None
+
+        if fsscheme == 'sftp' or fsscheme == 'scp':
+            from yabiadmin.backend.sftpbackend import SFTPBackend
+            backend = SFTPBackend()
+
+        elif fsscheme == 'file' or fsscheme == 'localfs':
+            from yabiadmin.backend.filebackend import FileBackend
+            backend = FileBackend()
+
+        elif fsscheme == 'select' or fsscheme == 'null':
+            from yabiadmin.backend.selectfilebackend import SelectFileBackend
+            backend = SelectFileBackend()
+
+        elif fsscheme == 's3':
+            from yabiadmin.backend.s3backend import S3Backend
+            backend = S3Backend()
+
+        return backend
+
+
     @staticmethod
     def factory(task):
         assert(task)
         assert(task.fsscheme)
 
-        backend = None
-
-        if task.fsscheme == 'sftp' or task.fsscheme == 'scp':
-            from yabiadmin.backend.sftpbackend import SFTPBackend
-            backend = SFTPBackend()
-
-        elif task.fsscheme == 'file' or task.fsscheme == 'localfs':
-            from yabiadmin.backend.filebackend import FileBackend
-            backend = FileBackend()
-
-        elif task.fsscheme == 'select' or task.fsscheme == 'null':
-            from yabiadmin.backend.selectfilebackend import SelectFileBackend
-            backend = SelectFileBackend()
-
-        else:
+        backend = FSBackend.create_backend_for_scheme(task.fsscheme)
+        if backend is None:
             raise Exception('No valid scheme ({0}) is defined for task {1}'.format(task.fsscheme, task.id))
 
         backend.task = task
@@ -88,23 +98,9 @@ class FSBackend(BaseBackend):
         assert(uri)
         fsscheme, fsbackend_parts = uriparse(uri)
 
-        backend = None
-
-        if fsscheme == 'sftp' or fsscheme == 'scp':
-            from yabiadmin.backend.sftpbackend import SFTPBackend
-            backend = SFTPBackend()
-
-        elif fsscheme == 'file' or  fsscheme == 'localfs':
-            from yabiadmin.backend.filebackend import FileBackend
-            backend = FileBackend()
-
-        elif fsscheme == 'select' or fsscheme == 'null':
-            from yabiadmin.backend.selectfilebackend import SelectFileBackend
-            backend = SelectFileBackend()
-
-        else:
+        backend = FSBackend.create_backend_for_scheme(fsscheme)
+        if backend is None:
             raise Exception("No backend can be found for uri %s with fsscheme %s for user %s" % (uri, fsscheme, yabiusername))
-
 
         backend.yabiusername = yabiusername
         backend.cred = fs_credential(yabiusername, uri)
@@ -343,6 +339,7 @@ class FSBackend(BaseBackend):
         except Exception, exc:
             raise RetryException(exc, traceback.format_exc())
 
+
     def clean_up_task(self):
         # remove working directory
         self.rm(self.working_dir_uri())
@@ -350,6 +347,24 @@ class FSBackend(BaseBackend):
         shutil.rmtree(self.local_remnants_dir())
 
 
+    def ls_recursive(self, uri):
+        result = self.ls(uri)
+
+        dirs = []
+        if result.values():
+            dirs = result.values()[0].get('directories')
+ 
+        dir_uris = map(lambda d: "%s/%s" % (uri.rstrip("/"), d[0].lstrip("/")), dirs)
+        for d in dir_uris:
+            result.update(self.ls_recursive(d))
+        return result
+
+
+    def set_cred(self, uri):
+        from yabiadmin.backend.backend import fs_credential
+        self.cred = fs_credential(self.yabiusername, uri)
+
+ 
     def basename(self, path):
         return os.path.basename(path)
 
@@ -359,13 +374,7 @@ class FSBackend(BaseBackend):
     def fifo_to_remote(self, uri, fifo):
         raise NotImplementedError("")
 
-    def get_file(self, uri, bytes=None):
-        raise NotImplementedError("")
-
     def rm(self, uri):
-        raise NotImplementedError("")
-
-    def isdir(self, uri):
         raise NotImplementedError("")
 
     def mkdir(self, uri):
@@ -374,11 +383,9 @@ class FSBackend(BaseBackend):
     def ls(self, uri):
         raise NotImplementedError("")
 
-    def ls_recurse(self, uri):
-        raise NotImplementedError("")
-
     def local_copy(self, source, destination):
         raise NotImplementedError("")
 
     def symbolic_link(self, source, destination):
         raise NotImplementedError("")
+
