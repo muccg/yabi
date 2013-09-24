@@ -1,5 +1,6 @@
 {% load static from staticfiles %}
 
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" class="no-js">
 <head>
@@ -22,7 +23,7 @@
             widget: {}
         } 
     };
-    var appURL = "{% static '/' %}";
+    var appURL = "{{base_site_url}}/";
 
     // Set this to false if you want to get each YUI JS file on its own
     // for debugging YUI itself.
@@ -120,21 +121,21 @@
 
         {% block tabs %}
         <div id="yabi-tabs">
-        <a href="{% static '/jobs' %}" id="yabi-tabs-jobs" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">jobs</a>
-        <a href="{% static '/design' %}" id="yabi-tabs-design" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">design</a>
-        <a href="{% static '/files' %}" id="yabi-tabs-files" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">files</a>
+        <a href="{{ base_site_url}}/jobs" id="yabi-tabs-jobs" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">jobs</a>
+        <a href="{{ base_site_url}}/design" id="yabi-tabs-design" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">design</a>
+        <a href="{{ base_site_url}}/files" id="yabi-tabs-files" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">files</a>
         {% if request.user.get_profile.has_account_tab %}
-        <a href="{% static '/account' %}" id="yabi-tabs-account" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">account</a>
+        <a href="{{ base_site_url}}/account" id="yabi-tabs-account" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">account</a>
        {% endif %}
 
         {% if request.user.is_staff %}
-        <a href="{% static '/admin' %}" id="yabi-tabs-admin" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">admin</a>
+        <a href="{{ base_site_url}}/admin" id="yabi-tabs-admin" onclick="YAHOO.ccgyabi.widget.YabiMessage.disable();">admin</a>
         {% endif %}
         </div>
         {% endblock %}
 
         <div id="userinfo">
-            <a href="{% static '/logout' %}" class="fakeButton">log out {{request.user.username}}</a>
+            <a href="{{ base_site_url}}/logout" class="fakeButton">log out {{request.user.username}}</a>
         </div>
     </div>
 {% endblock %}

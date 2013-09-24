@@ -95,6 +95,7 @@ def render_page(template, request, response=None, **kwargs):
         "h": webhelpers,
         "request": request,
         "debug": debug,
+        "base_site_url": webhelpers.url("").rstrip("/")
     }
     context.update(kwargs)
     return render_to_response(template, context)
@@ -167,15 +168,15 @@ def login(request):
 
             else:
                 form = LoginForm()
-                return render_to_response('fe/login.html', {'h':webhelpers, 'form':form, 'error':'Invalid login credentials', 'show_dev_warning':show_dev_warning})
+                return render_to_response('fe/login.html', {'h':webhelpers, 'base_site_url': webhelpers.url("").rstrip("/") ,'form':form, 'error':'Invalid login credentials', 'show_dev_warning':show_dev_warning})
 
         else:
-            return render_to_response('fe/login.html', {'h':webhelpers, 'form':form, 'error':'Invalid login credentials', 'show_dev_warning':show_dev_warning})
+            return render_to_response('fe/login.html', {'h':webhelpers, 'base_site_url': webhelpers.url("").rstrip("/"), 'form':form, 'error':'Invalid login credentials', 'show_dev_warning':show_dev_warning})
 
     else:
         form = LoginForm()
         error = request.GET['error'] if 'error' in request.GET else ''
-        return render_to_response('fe/login.html', {'h':webhelpers, 'form':form, 'url':None, 'error':error, 'show_dev_warning':show_dev_warning})
+        return render_to_response('fe/login.html', {'h':webhelpers, 'base_site_url': webhelpers.url("").rstrip("/"), 'form':form, 'url':None, 'error':error, 'show_dev_warning':show_dev_warning})
 
 
 
@@ -376,6 +377,7 @@ def preview_metadata(request):
 
 # Error page views.
 def error_404(request):
+    from ccg.utils import webhelpers
     return render_page("fe/errors/404.html", request, response=HttpResponseNotFound())
 
 def error_500(request):
