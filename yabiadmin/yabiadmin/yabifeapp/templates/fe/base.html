@@ -35,12 +35,12 @@
     YUI_config = {
         groups: {
             yui2: {
-                base: '{% static "/static/javascript/lib/yui-2in3/dist/2.9.0/build/" %}',
+                base: '{% static "javascript/lib/yui-2in3/dist/2.9.0/build/" %}',
 
                 // If you have a combo service, you can configure that as well
                 combine: YAHOO.ccgyabi.combineJS,
                 // comboBase: 'http://myserver.com/combo?',
-                comboBase: '{% static "/djamboloader/yui2in3_2_9_0/combo" %}?',
+                comboBase: '{{base_site_url}}/djamboloader/yui2in3_2_9_0/combo?',
                 root: '',
                 // root: '/2in3/build/',
 
@@ -58,7 +58,7 @@
             }
         },
         combine: YAHOO.ccgyabi.combineJS,
-        comboBase: '{% static "/djamboloader/yui_3_5_1/combo" %}?',
+        comboBase: '{{base_site_url}}/djamboloader/yui_3_5_1/combo?',
         root: ''
     };
 
