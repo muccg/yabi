@@ -1,5 +1,4 @@
 {% extends "admin/base_mako.html" %}
-{% load pytag %}
 
 {% block block_title %}Yabi Administration{% endblock %}
 
@@ -7,7 +6,7 @@
 {% block block_extrahead %}
 {% endblock %}
 {% block block_extrastyle %}
-<link rel="SHORTCUT ICON" href="/yabiadmin/static/images/favicon.ico" type="image/x-icon" />
+<link rel="SHORTCUT ICON" href="{{STATIC_URL}}/images/favicon.ico" type="image/x-icon" />
 {% endblock %}
 
 
