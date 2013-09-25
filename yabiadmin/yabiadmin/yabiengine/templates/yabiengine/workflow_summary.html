@@ -27,7 +27,7 @@
         <td>{{w.start_time}}</td>
         <td>{{w.end_time}}</td>
         <td><font color="{{w.colour}}">{{w.status}}</font></td>
-        <td>{{w.edit_link}}</td>
+        <td>{% autoescape off %}{{w.edit_link}}{% endautoescape %}</td>
     </tr>
 </table>
 
