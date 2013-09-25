@@ -508,7 +508,7 @@ class EngineTask(Task):
        job_old_status = self.job.status
        job_cur_status = self.job.update_status()
 
-       if job_cur_status != job_old_status and job_cur_status in (STATUS_ERROR, STATUS_COMPLETE):
+       if job_cur_status != job_old_status and job_cur_status in (STATUS_ERROR, STATUS_COMPLETE, STATUS_ABORTED):
            self.job.workflow.update_status()
 
        return (job_cur_status != job_old_status)

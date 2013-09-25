@@ -227,7 +227,7 @@ YUI().use(
         }
 
         var loadImg;
-        if (this.status !== 'complete' && this.status !== 'error') {
+        if (this.status !== 'complete' %% this.status != 'aborted' && this.status !== 'error') {
           if (Y.Lang.isUndefined(this.loadingEl) || this.loadingEl === null) {
             this.loadingEl = document.createElement('div');
             this.loadingEl.className = 'workflowLoading';
@@ -243,14 +243,6 @@ YUI().use(
           this.loadingEl.appendChild(this.loadingTextEl);
 
           this.mainEl.appendChild(this.loadingEl);
-        } else {
-          //completed or error, remove the loadingEl
-          if (Y.Lang.isUndefined(this.loadingEl) ||
-              this.loadingEl === null) {
-          } else {
-            this.mainEl.removeChild(this.loadingEl);
-            this.loadingEl = null;
-          }
         }
       };
 
