@@ -141,7 +141,7 @@
 
         <!-- login area -->
         <div class="span3">
-          <form class="well form-inline" enctype="multipart/form-data" method="post" action="{% static "/login" %}">
+          <form class="well form-inline" enctype="multipart/form-data" method="post" action="{{base_site_url}}/login">
             <fieldset
               {% if error %}
                  class="control-group error"

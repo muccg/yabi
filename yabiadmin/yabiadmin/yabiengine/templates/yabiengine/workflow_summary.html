@@ -49,7 +49,7 @@
           <td>{{job.start_time}}</td>
           <td>{{job.end_time}}</td>
           <td>{{job.command| force_escape }}</td>
-          <td>{{job.edit_link}}</td>
+          <td>{% autoescape off %}{{job.edit_link}}{% endautoescape %}</td>
     </tr>
 
     {% if job.task_set.all %}
@@ -61,11 +61,11 @@
             Task: {{task.command}}
           </td>
           <td>
-              {{ task.edit_link }}
+              {% autoescape off %}{{ task.edit_link }}{% endautoescape %}
               <br/>
-              {{ task.link_to_syslog }}
+              {% autoescape off %}{{ task.link_to_syslog }} {% endautoescape %}
               <br/>
-              {{ task.link_to_json }}
+              {% autoescape off %}{{ task.link_to_json }} {% endautoescape %}
           </td>
           
 
@@ -80,7 +80,7 @@
         Src: {{stagein.src}}<br/>
         Dst: {{stagein.dst}}
     </td>
-    <td>{{ stagein.edit_link }}</td>
+    <td>{% autoescape off %}{{ stagein.edit_link }}{% endautoescape %}</td>
     </tr>
     {% endfor %}
 

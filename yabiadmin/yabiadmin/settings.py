@@ -167,17 +167,17 @@ TEMPLATE_DEBUG = DEBUG
 TEMPLATE_LOADERS = [
     'django.template.loaders.app_directories.Loader',
     #'ccg.template.loaders.makoloader.filesystem.Loader',
-    'django.template.loaders.filesystem.Loader'
+    #'django.template.loaders.filesystem.Loader'
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
-TEMPLATE_DIRS = [
-    os.path.join(WEBAPP_ROOT, "templates"),
-    os.path.join(WEBAPP_ROOT, "yabiadmin", "yabifeapp", "templates", "mako"),
-    os.path.join(WEBAPP_ROOT, "yabiadmin", "yabiengine", "templates", "mako"),
-    os.path.join(WEBAPP_ROOT, "yabiadmin", "yabi", "templates", "mako"),
-    os.path.join(WEBAPP_ROOT, "yabiadmin", "yabi", "templates"),
-]
+# TEMPLATE_DIRS = [
+#     os.path.join(WEBAPP_ROOT, "templates"),
+#     os.path.join(WEBAPP_ROOT, "yabiadmin", "yabifeapp", "templates", "mako"),
+#     os.path.join(WEBAPP_ROOT, "yabiadmin", "yabiengine", "templates", "mako"),
+#     os.path.join(WEBAPP_ROOT, "yabiadmin", "yabi", "templates", "mako"),
+#     os.path.join(WEBAPP_ROOT, "yabiadmin", "yabi", "templates"),
+# ]
 
 # mako compiled templates directory
 MAKO_MODULE_DIR = os.path.join(WRITABLE_DIRECTORY, "templates")

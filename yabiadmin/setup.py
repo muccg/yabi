@@ -2,7 +2,7 @@ import setuptools
 import os
 from setuptools import setup, find_packages
 
-packages=   ['yabiadmin'] + [ 'yabiadmin.%s'%app for app in ['yabifeapp', 'yabistoreapp','yabiengine','yabi','uploader','preview','registration', 'backend'] ] + [ 'yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations' ]
+packages=   ['yabiadmin'] + [ 'yabiadmin.%s'%app for app in ['yabifeapp', 'yabistoreapp','yabiengine','yabi','uploader','preview','registration', 'backend'] ] + [ 'yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations', 'yabiadmin.yabi.templatetags']
                     
 data_files = {}
 start_dir = os.getcwd()
@@ -50,7 +50,7 @@ install_requires = [
         'paramiko==1.10.1',
         'mockito==0.5.1',
         'boto==2.13.3',
-	'python-dateutil==2.1',
+        'python-dateutil==2.1',
     ]
 
 importlib_available = True
