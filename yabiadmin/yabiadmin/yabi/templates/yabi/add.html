@@ -1,0 +1,21 @@
+{% extends "admin/base_site_mako.html" %}
+{% load pytag %}
+{% load is_false %}
+
+{% if is_popup|is_false %}
+{% block block_breadcrumbs %}
+<div class="breadcrumbs"><a href="{{root_path}}">Home</a> &rsaquo; {{breadcrumb}}</div>
+{% endblock %}
+{% endif %}
+
+
+{% block block_content %}
+<div id="content-main">
+
+<form enctype="multipart/form-data" method="post" action="{{action_path}}">
+{{ form.as_p }}
+<input type="submit" value="Submit" />
+</form>
+
+</div>
+{% endblock %}

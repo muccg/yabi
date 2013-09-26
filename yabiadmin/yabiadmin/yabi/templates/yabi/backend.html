@@ -1,0 +1,95 @@
+{% extends "admin/base_site_mako.html" %}
+
+{% load is_false %}
+
+{% if is_popup|is_false %}
+{% block block_breadcrumbs %}
+<div class="breadcrumbs"><a href="{{root_path}}">Home</a> &rsaquo; Backend {{backend.name}}</div>
+{% endblock %}
+{% endif %}
+
+
+
+{% block block_content %}
+<div id="content-main">
+
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Scheme</th>
+        <th>Hostname</th>
+        <th>Port</th>
+        <th>Path</th>
+        <th>Uri</th>
+    </tr>
+    <tr>
+        <td>{{backend.name}}</td>
+        <td>{{backend.description}}</td>
+        <td>{{backend.scheme}}</td>
+        <td>{{backend.hostname}}</td>
+        <td>{{backend.port}}</td>
+        <td>{{backend.path}}</td>
+        <td>{{backend.uri}}</td>
+    </tr>
+</table>
+
+<br/>
+
+<H3>Credentials Associated With This Backend</H3>
+<table>
+    <tr>
+        <th>Description</th
+        <th>Yabi Username</th>
+        <th>Username</th>
+        <th>Certificate</th>
+        <th>Key</th>
+        <th>Home Dir</th>
+        <th>Visible</th>
+        <th>Uri</th>
+        <th>Home Dir Uri</th>
+
+    </tr>
+    {% for bec in backend.backendcredential_set.all    %}
+    <tr>
+    <td>{{bec.credential.description}}</td>
+    <td>{{bec.credential.user.name}}</td>
+    <td>{{bec.credential.username}}</td>
+    <td>
+    {% if bec.credential.cert %}
+    Yes
+    {% else %}
+    No
+    {% endif %}
+    </td>
+    <td>
+    {% if bec.credential.key %}
+    Yes
+    {% else %}
+    No
+    {% endif %}
+    </td>
+    <td>{{bec.homedir}}</td>
+    <td>{{bec.visible}}</td>
+    <td>{{bec.uri}}</td>
+    <td>{{bec.homedir_uri}}</td>
+    <td>{% autoescape off %}
+    {{ bec.backend_cred_edit_link}}
+       {% endautoescape %}
+    </td>
+    <td>
+    {% if bec.homedir %}
+    {% autoescape off %}
+    {{ bec.backend_cred_test_link }}
+    {% endautoescape %}
+    {% endif %}
+    </td>
+    </tr>
+    {% endfor %}
+          
+
+</table>
+
+</div>
+{% endblock %}

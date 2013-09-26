@@ -2,7 +2,7 @@ import setuptools
 import os
 from setuptools import setup, find_packages
 
-packages=   ['yabiadmin'] + [ 'yabiadmin.%s'%app for app in ['yabifeapp', 'yabistoreapp','yabiengine','yabi','uploader','preview','registration', 'backend'] ] + [ 'yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations' ]
+packages=   ['yabiadmin'] + [ 'yabiadmin.%s'%app for app in ['yabifeapp', 'yabistoreapp','yabiengine','yabi','uploader','preview','registration', 'backend'] ] + [ 'yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations', 'yabiadmin.yabi.templatetags']
                     
 data_files = {}
 start_dir = os.getcwd()
@@ -16,15 +16,15 @@ for package in packages:
     os.chdir(start_dir)
 
 install_requires = [
-        # pip > 1.4 doesn't pick up pytz, because of non-standard version number
-        # Bug is still under discussion: https://bugs.launchpad.net/pytz/+bug/1204837
+        'Django==1.5.4',
+         # pip > 1.4 doesn't pick up pytz, because of non-standard version number
+         # Bug is still under discussion: https://bugs.launchpad.net/pytz/+bug/1204837
         'pytz>=2013b', 
-        'Django==1.3.7',
         'ccg-webservices==0.1.2',
         'ccg-registration==0.8-alpha-1',
-        'ccg-makoloader==0.2.4',
+        'ccg-makoloader==0.2.6',
         'ccg-introspect==0.1.2',
-        'ccg-extras==0.1.5',
+        'ccg-extras==0.1.7',
         'ccg-auth==0.3.3',
         'anyjson==0.3.3',
         'SQLAlchemy==0.7.10',
@@ -49,6 +49,8 @@ install_requires = [
         'djamboloader==0.1.2',
         'paramiko==1.10.1',
         'mockito==0.5.1',
+        'boto==2.13.3',
+        'python-dateutil==2.1',
     ]
 
 importlib_available = True
@@ -62,7 +64,7 @@ if not importlib_available:
     install_requires.append('importlib==1.0.1')
 
 setup(name='yabiadmin',
-    version='7.0.0',
+    version='7.1.0',
     description='Yabi Admin',
     long_description='Yabi front end and administration web interface',
     author='Centre for Comparative Genomics',
@@ -79,11 +81,11 @@ setup(name='yabiadmin',
     dependency_links = [
           'http://ccg-django-extras.googlecode.com/files/ccg-webservices-0.1.2.tar.gz',
           'http://ccg-django-extras.googlecode.com/files/ccg-registration-0.8-alpha-1.tar.gz',
-          'http://ccg-django-extras.googlecode.com/files/ccg-makoloader-0.2.4.tar.gz',
           'http://ccg-django-extras.googlecode.com/files/ccg-introspect-0.1.2.tar.gz',
-          'http://ccg-django-extras.googlecode.com/files/ccg-extras-0.1.5.tar.gz',
+          'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-extras-0.1.7.tar.gz',
           'http://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.3.tar.gz',
           'http://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
-          'http://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz'
+          'http://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',
+          'http://repo.ccgapps.com.au',
     ]
 )

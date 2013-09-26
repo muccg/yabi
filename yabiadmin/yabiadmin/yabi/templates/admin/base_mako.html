@@ -1,0 +1,101 @@
+{% load static from staticfiles %}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="{{LANGUAGE_CODE}}" xml:lang="{{LANGUAGE_CODE}}"
+>
+
+
+<head>
+
+<title>{% block block_title %}Undefined{% endblock %}</title>
+
+
+
+<link rel="stylesheet" type="text/css" href="{% block block_stylesheet %}{% static 'admin/css/base.css' %}{% endblock %}" />
+<link rel="stylesheet" type="text/css" href="{% block base_site_block_stylesheet %}{% endblock %}" /> <!-- orig next - django equiv?-->
+
+{% if LANGUAGE_BIDI %}
+<link rel="stylesheet" type="text/css" href="{% block block_stylesheet_rtl %}/static/admin/css/rtl.css{% endblock %}" />
+{% endif %}
+
+<script type="text/javascript">window.__admin_media_prefix__ = "{{ settings.ADMIN_MEDIA_PREFIX | escapejs }}";</script>
+
+
+{% block block_extrastyle %}{% endblock %}
+{% block block_extrahead %}{% endblock %}
+
+{% block block_blockbots %}
+<meta name="robots" content="NONE,NOARCHIVE" />
+{% endblock %}
+</head>
+
+
+<body class="
+{% if is_popup %}
+popup 
+{% endif %}
+{% block block_bodyclass %}{% endblock %}">
+
+<!-- Container -->
+<div id="container">
+
+    
+{% if not is_popup %}
+
+    <!-- Header -->
+    <div id="header">
+        <div id="branding">
+            {% block branding %}
+            {% endblock %}
+        </div>
+        {% block block_nav_global %}
+        {% endblock %}
+    </div>
+    <!-- END Header -->
+    {% block block_breadcrumbs %}
+<div class="breadcrumbs"><a href="{{root_path}}">Home</a>
+
+
+{% if title %}
+ &rsaquo; {{title}}
+{% endif %}
+</div>
+{% endblock %}
+    
+{% endif %}
+
+
+        
+{% if messages %}
+
+        <ul class="messagelist">
+{% for message in messages %}
+<li>{{message}}</li>
+{% endfor %}
+</ul>
+        
+{% endif %}
+
+
+    <!-- Content -->
+    <div id="content" class="{% block block_coltype %}colM{% endblock %}">
+        {% block block_pretitle %}{% endblock %}
+        {% block block_content_title %}
+{% if title %}
+<h1>{{title}}</h1>
+{% endif %}
+{% endblock %}
+        {% block block_content %}
+            {% block block_object_tools %}
+            {% endblock %}
+        {% endblock %}
+        {% block block_sidebar %}{% endblock %}
+        <br class="clear" />
+    </div>
+    <!-- END Content -->
+
+    {% block block_footer %}<div id="footer"></div>{% endblock %}
+</div>
+<!-- END Container -->
+
+</body>
+</html>

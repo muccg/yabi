@@ -195,31 +195,38 @@ def create_paramiko_pkey(key, passphrase=None):
     return pkey
 
 
-def sshclient(hostname, port, credential):
-    if port is None:
-        port = 22
-    ssh = None
-
+def get_credential_data(credential):
     if credential.is_cached:
         decrypted_credential = credential.get()
         username = decrypted_credential['username']
+        cert = decrypted_credential['cert']
         key = decrypted_credential['key']
-        passphrase = decrypted_credential['password']
+        password = decrypted_credential['password']
     elif credential.is_protected:
         credential.unprotect()
         username = credential.username
+        cert = credential.cert
         key = credential.key
-        passphrase = credential.password
+        password = credential.password
     elif credential.is_encrypted:
         from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
         raise DecryptedCredentialNotAvailable("Decrypted credential not available when trying to connect to %s. Cred id = %s" % (hostname, credential.pk))
 
     else:
         username = credential.username
+        cert = credential.cert
         key = credential.key
-        passphrase = credential.password
+        password = credential.password
+
+    return username, cert, key, password
 
 
+def sshclient(hostname, port, credential):
+    if port is None:
+        port = 22
+    ssh = None
+
+    username, _, key, passphrase = get_credential_data(credential)
 
     logger.debug('Connecting to {0}@{1}:{2}'.format(username, hostname, port))
 

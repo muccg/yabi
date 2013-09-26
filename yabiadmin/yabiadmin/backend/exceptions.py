@@ -35,3 +35,8 @@ class RetryException(Exception):
         Exception.__init__(self, *args, **kwargs)
         self.backoff_strategy = RetryException.BACKOFF_STRATEGY_EXPONENTIAL
         self.type = RetryException.TYPE_ERROR
+
+
+class NotSupportedError(RuntimeError):
+    pass
+

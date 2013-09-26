@@ -1,5 +1,5 @@
-%define version 7.0.0
-%define unmangled_version 7.0.0
+%define version 7.1.0
+%define unmangled_version 7.1.0
 %define release 1
 %define webapps /usr/local/webapps
 %define webappname yabiadmin
@@ -80,7 +80,7 @@ cp build-number.txt %{buildinstalldir}/
 # yabi-admin
 cd $CCGSOURCEDIR/yabiadmin
 export PYTHONPATH=%{buildinstalldir}/lib
-python /usr/bin/easy_install -O1 --prefix %{buildinstalldir} --install-dir %{buildinstalldir}/lib -i 'https://simple.crate.io/' .
+python /usr/bin/easy_install -O1 --prefix %{buildinstalldir} --install-dir %{buildinstalldir}/lib -i 'https://restricted.crate.io/' .
 
 # Create settings symlink so we can run collectstatic with the default settings
 touch %{settingsdir}/__init__.py
@@ -111,7 +111,7 @@ find %{buildinstalldir} -name '*.py' -type f | xargs sed -i 's:^#!/usr/local/pyt
 # yabi-shell
 cd $CCGSOURCEDIR/yabish
 export PYTHONPATH=%{shbuildinstalldir}/lib
-python /usr/bin/easy_install -O1 --prefix %{shbuildinstalldir} --install-dir %{shbuildinstalldir}/lib -i 'https://simple.crate.io/' .
+python /usr/bin/easy_install -O1 --prefix %{shbuildinstalldir} --install-dir %{shbuildinstalldir}/lib -i 'https://restricted.crate.io/' .
 
 sed -i '3i import sys; sys.path.insert(1, "%{shinstalldir}/lib")' %{shbuildinstalldir}/bin/*
 
