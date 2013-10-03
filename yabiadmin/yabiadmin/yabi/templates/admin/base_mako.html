@@ -1,4 +1,4 @@
-{% load pytag %}
+{% load static from staticfiles %}
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="{{LANGUAGE_CODE}}" xml:lang="{{LANGUAGE_CODE}}"
 >
@@ -10,7 +10,7 @@
 
 
 
-<link rel="stylesheet" type="text/css" href="{% block block_stylesheet %}/static/admin/css/base.css{% endblock %}" />
+<link rel="stylesheet" type="text/css" href="{% block block_stylesheet %}{% static 'admin/css/base.css' %}{% endblock %}" />
 <link rel="stylesheet" type="text/css" href="{% block base_site_block_stylesheet %}{% endblock %}" /> <!-- orig next - django equiv?-->
 
 {% if LANGUAGE_BIDI %}
