@@ -51,13 +51,24 @@ def process_workflow(workflow_id):
 @celery.task
 def create_jobs(workflow_id):
     workflow = EngineWorkflow.objects.get(pk=workflow_id)
-    workflow.create_jobs()
+    if workflow.is_aborting:
+        workflow.status = STATUS_ABORTED
+        workflow.save()
+    else: 
+        workflow.create_jobs()
     return workflow.pk
 
 
 @celery.task
 def process_jobs(workflow_id):
     workflow = EngineWorkflow.objects.get(pk=workflow_id)
+    if workflow.is_aborted:
+        return
+    if workflow.is_aborting:
+        workflow.status = STATUS_ABORTED
+        workflow.save()
+        return
+        
     for job in workflow.jobs_that_need_processing():
         chain(create_db_tasks.s(job.pk), spawn_ready_tasks.s()).apply_async()
 

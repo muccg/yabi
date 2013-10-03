@@ -153,6 +153,11 @@ class Workflow(models.Model, Editable, Status):
     def is_aborting(self):
         return (self.abort_requested_on is not None)
 
+    @property
+    def is_aborted(self):
+        return (self.status == STATUS_ABORTED)
+
+
 
 class Tag(models.Model):
     value = models.CharField(max_length=255)

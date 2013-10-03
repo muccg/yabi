@@ -390,6 +390,8 @@ def submit_workflow(request):
             json=workflow_json,
             original_json=received_json,
             start_time=datetime.now()
+            ,abort_requested_by=user,
+            abort_requested_on=datetime.now()
         )
 
         # always commit transactions before sending tasks depending on state from the current transaction 
