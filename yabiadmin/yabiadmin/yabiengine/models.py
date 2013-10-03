@@ -83,6 +83,8 @@ class Workflow(models.Model, Editable, Status):
     last_modified_on = models.DateTimeField(null=True, auto_now=True, editable=False)
     created_on = models.DateTimeField(auto_now_add=True, editable=False, db_index=True)
     status = models.TextField(max_length=64, blank=True)
+    abort_requested_by = models.ForeignKey(User, related_name='aborted_workflows', null=True)
+    abort_requested_on = models.DateTimeField(null=True)
     stageout = models.CharField(max_length=1000)
     original_json = models.TextField()
 
@@ -146,6 +148,11 @@ class Workflow(models.Model, Editable, Status):
     @property
     def colour(self):
         return self.get_status_colour()
+
+    @property
+    def is_aborting(self):
+        return (self.abort_requested_on is not None)
+
 
 class Tag(models.Model):
     value = models.CharField(max_length=255)
@@ -231,6 +238,10 @@ class Job(models.Model, Editable, Status):
                 break
   
         return self.status
+
+    @property
+    def is_aborting(self):
+        return self.workflow.is_aborting
 
 class Task(models.Model, Editable, Status):
     job = models.ForeignKey(Job)
@@ -399,6 +410,10 @@ class Task(models.Model, Editable, Status):
     @property
     def colour(self):
         return self.get_status_colour()
+
+    @property
+    def is_aborting(self):
+        return self.job.is_aborting
 
 
 class StageIn(models.Model, Editable):
