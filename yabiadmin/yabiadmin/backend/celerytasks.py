@@ -62,7 +62,7 @@ def process_jobs(workflow_id):
         workflow.status = STATUS_ABORTED
         workflow.save()
         return
-        
+
     for job in workflow.jobs_that_need_processing():
         chain(create_db_tasks.s(job.pk), spawn_ready_tasks.s()).apply_async()
 
@@ -83,10 +83,17 @@ def create_db_tasks(job_id):
             logger.warning("Job was already in READY state. Skipping creation of db tasks.")
             return job_id
 
+        if job.is_workflow_aborting:
+            job.status = STATUS_ABORTED
+            job.save()
+            job.workflow.update_status()
+            return None
+
         tasks_count = job.create_tasks()
         if not tasks_count:
             return None
         return job_id
+
     except DecryptedCredentialNotAvailable, dcna:
         logger.exception("Decrypted credential not available.")
         countdown = backoff(request.retries)
@@ -113,9 +120,20 @@ def spawn_ready_tasks(job_id):
         job = EngineJob.objects.get(pk=job_id)
         ready_tasks = job.ready_tasks()
         logger.debug(ready_tasks)
+        aborting = job.is_workflow_aborting
+
         for task in ready_tasks:
-            spawn_task(task.pk)
-            # need to update task.job.status here when all tasks for job spawned ?
+            if aborting:
+                task.set_status(STATUS_ABORTED)
+                task.save()
+            else:
+                spawn_task(task.pk)
+                # need to update task.job.status here when all tasks for job spawned ?
+
+        if aborting:
+            job.status = STATUS_ABORTED
+            job.save()
+            job.workflow.update_status()
 
         return job_id
 
@@ -147,6 +165,9 @@ def spawn_task(task_id):
     logger.debug('Spawn task {0}'.format(task_id))
 
     task = Task.objects.get(pk=task_id)
+    if task.is_workflow_aborting:
+        change_task_status(task_id, STATUS_ABORTED)
+        return
     task.set_status('requested')
     task.save()
     transaction.commit()

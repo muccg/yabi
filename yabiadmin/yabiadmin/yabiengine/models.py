@@ -251,7 +251,7 @@ class Job(models.Model, Editable, Status):
         return self.status
 
     @property
-    def is_aborting(self):
+    def is_workflow_aborting(self):
         return self.workflow.is_aborting
 
 class Task(models.Model, Editable, Status):
@@ -423,8 +423,8 @@ class Task(models.Model, Editable, Status):
         return self.get_status_colour()
 
     @property
-    def is_aborting(self):
-        return self.job.is_aborting
+    def is_workflow_aborting(self):
+        return self.job.workflow.is_aborting
 
 
 class StageIn(models.Model, Editable):
