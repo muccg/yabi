@@ -31,7 +31,7 @@ from django.db import transaction
 from datetime import datetime
 from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend import backend
-from yabiadmin.constants import STATUS_ERROR, STATUS_READY, STATUS_RUNNING, STATUS_COMPLETE, STATUS_EXEC,STATUS_STAGEOUT,STATUS_STAGEIN,STATUS_CLEANING
+from yabiadmin.constants import STATUS_ERROR, STATUS_READY, STATUS_RUNNING, STATUS_COMPLETE, STATUS_EXEC,STATUS_STAGEOUT,STATUS_STAGEIN,STATUS_CLEANING, STATUS_ABORTED
 from yabiadmin.constants import MAX_CELERY_TASK_RETRIES
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from yabiadmin.yabiengine.models import Task
