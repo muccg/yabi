@@ -26,6 +26,7 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
+from yabiadmin.yabi.models import User
 from yabiadmin.yabiengine.models import *
 from yabiadmin.yabiengine.enginemodels import *
 
@@ -80,10 +81,10 @@ class BaseModelAdmin(admin.ModelAdmin):
 
 
 class WorkflowAdmin(admin.ModelAdmin):
-    list_display = ['name', 'status', 'stageout', link_to_jobs, link_to_tasks, link_to_stageins, 'summary_link']
+    list_display = ['name', 'status', 'stageout', link_to_jobs, link_to_tasks, link_to_stageins, 'summary_link', 'is_aborting']
     list_filter = ['status', 'user']
     search_fields = ['name']
-    actions = ['archive_workflow']
+    actions = ['archive_workflow', 'abort_workflow']
     fieldsets = (
         (None, {
             'fields': ('name', 'user', 'start_time', 'end_time','status','stageout')
@@ -112,6 +113,27 @@ class WorkflowAdmin(admin.ModelAdmin):
         #return delete_selected(self, request, queryset)
 
     archive_workflow.short_description = "Archive selected Workflows."
+
+    def abort_workflow(self, request, queryset):
+        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+
+        counter = 0
+        for id in selected:
+            wf = EngineWorkflow.objects.get(id=id)
+            yabiuser = User.objects.get(name=request.user.username)
+            if wf.request_abort(yabiuser):
+                counter += 1
+
+        if counter == 1:
+            message_bit = "1 workflow was requested to abort."
+        else:
+            message_bit = "%s workflows were requested to abort." % counter
+        messages.success(request, message_bit)
+
+        # pass on to delete action
+        #return delete_selected(self, request, queryset)
+
+    abort_workflow.short_description = "Abort selected Workflows."
 
 
 class QueuedWorkflowAdmin(admin.ModelAdmin):
