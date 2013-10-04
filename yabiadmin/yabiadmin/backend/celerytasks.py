@@ -175,11 +175,6 @@ def spawn_task(task_id):
     task_chain.apply_async()
 
 
-def workflow_errored(task_id):
-    task = Task.objects.get(pk=task_id)
-    return task.job.workflow.status == STATUS_ERROR
-
-
 def retry_on_error(original_function):
     @wraps(original_function)
     def decorated_function(task_id, *args, **kwargs):
