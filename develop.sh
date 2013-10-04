@@ -28,7 +28,7 @@ fi
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|add_yabitests_key|pipfreeze|pythonversion|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_authorized_keys) (yabiadmin|celery|yabish)"
+    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|add_yabitests_key|pipfreeze|pythonversion|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_staging_selenium|ci_authorized_keys) (yabiadmin|celery|yabish)"
     echo ""
 }
 
@@ -160,6 +160,19 @@ ci_staging_tests() {
     ccg ${AWS_STAGING_INSTANCE} getfile:${REMOTE_TEST_RESULTS},./
 }
 
+
+# staging selenium test
+function ci_staging_selenium() {
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'dbus-uuidgen --ensure'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'chown apache:apache /var/www'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'killall httpd || true'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'service httpd start'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'echo http://localhost/yabi > /tmp/yabifeapp_site_url'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'yabiadmin run_lettuce --app-name yabifeapp --with-xunit --xunit-file\=/tmp/tests-yabifeapp.xml || true'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'yum remove yabiadmin -y'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'rm /tmp/yabifeapp_site_url'
+    ccg ${AWS_STAGING_INSTANCE} getfile:/tmp/tests-yabifeapp.xml,./
+}
 
 # we need authorized keys setup for ssh tests
 ci_authorized_keys() {
@@ -587,6 +600,10 @@ ci_staging)
 ci_staging_tests)
     ci_ssh_agent
     ci_staging_tests
+    ;;
+ci_staging_selenium)
+    ci_ssh_agent
+    ci_staging_selenium
     ;;
 clean)
     settings
