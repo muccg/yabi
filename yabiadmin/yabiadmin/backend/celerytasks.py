@@ -224,11 +224,26 @@ def retry_on_error(original_function):
     return decorated_function
 
 
+def skip_if_no_task_id(original_function):
+    @wraps(original_function)
+    def decorated_function(task_id, *args, **kwargs):
+        original_function_name = original_function.__name__
+        if task_id is None:
+            logger.info("%s received no task_id. Skipping processing ", original_function_name)
+            return None
+        result = original_function(task_id, *args, **kwargs)
+        return result
+
+    return decorated_function
+
 
 @celery.task(max_retries=None)
 @retry_on_error
+@skip_if_no_task_id
 def stage_in_files(task_id):
     task = EngineTask.objects.get(pk=task_id)
+    if abort_task_if_needed(task):
+        return None
     change_task_status(task.pk, STATUS_STAGEIN)
     backend.stage_in_files(task)
     return task_id
@@ -236,8 +251,11 @@ def stage_in_files(task_id):
 
 @celery.task(max_retries=MAX_CELERY_TASK_RETRIES)
 @retry_on_error
+@skip_if_no_task_id
 def submit_task(task_id):
     task = EngineTask.objects.get(pk=task_id)
+    if abort_task_if_needed(task):
+        return None
     backend.submit_task(task)
     change_task_status(task.pk, STATUS_EXEC)
     return task_id
@@ -245,6 +263,7 @@ def submit_task(task_id):
 
 @celery.task(max_retries=None)
 @retry_on_error
+@skip_if_no_task_id
 def poll_task_status(task_id):
     task = EngineTask.objects.get(pk=task_id)
     backend.poll_task_status(task)
@@ -253,8 +272,11 @@ def poll_task_status(task_id):
 
 @celery.task(max_retries=None)
 @retry_on_error
+@skip_if_no_task_id
 def stage_out_files(task_id):
     task = EngineTask.objects.get(pk=task_id)
+    if abort_task_if_needed(task):
+        return None
     change_task_status(task.pk, STATUS_STAGEOUT)
     backend.stage_out_files(task)
     return task_id
@@ -262,8 +284,11 @@ def stage_out_files(task_id):
 
 @celery.task(max_retries=None)
 @retry_on_error
+@skip_if_no_task_id
 def clean_up_task(task_id):
     task = EngineTask.objects.get(pk=task_id)
+    if abort_task_if_needed(task):
+        return None
     change_task_status(task.pk, STATUS_CLEANING)
     backend.clean_up_task(task)
     change_task_status(task.pk, STATUS_COMPLETE)
@@ -271,6 +296,14 @@ def clean_up_task(task_id):
 
 
 # Implementation
+
+def abort_task_if_needed(task):
+    if task.is_workflow_aborting:
+        if task.status != STATUS_ABORTED:
+            change_task_status(task.pk, STATUS_ABORTED)
+        return True
+    return False
+
 
 def backoff(count=0):
     """
