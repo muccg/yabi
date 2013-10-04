@@ -63,7 +63,10 @@ class LocalExecBackend(ExecBackend):
 
         logger.debug('Running in {0}'.format(working_parts.path))
         args = shlex.split(self.task.command.encode('utf-8'))
-        status = self.blocking_execute(args=args, stderr=stderr, stdout=stdout, cwd=working_parts.path)
+        def set_remote_id(pid):
+            self.task.remote_id = pid
+            self.task.save()
+        status = self.blocking_execute(args=args, stderr=stderr, stdout=stdout, cwd=working_parts.path, report_pid_callback=set_remote_id)
 
         if status != 0:
             logger.error('Non zero exit status [{0}]'.format(status))

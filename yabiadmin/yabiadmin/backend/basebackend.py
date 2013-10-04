@@ -43,13 +43,14 @@ class BaseBackend(object):
     last_stdout = None
     last_stderr = None
 
-    def blocking_execute(self, args, bufsize=0, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, cwd=None, env=None):
+    def blocking_execute(self, args, bufsize=0, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, cwd=None, env=None, report_pid_callback=(lambda x: None)):
         """execute a process and wait for it to end"""
         status = None
         try:
             logger.debug(args)
             logger.debug(cwd)
             process = execute(args, bufsize=bufsize, stdin=stdin, stdout=stdout, stderr=stderr, shell=shell, cwd=cwd, env=env)
+            report_pid_callback(process.pid)
             stdout_data, stderr_data = process.communicate(stdin)
             status = process.returncode
 
