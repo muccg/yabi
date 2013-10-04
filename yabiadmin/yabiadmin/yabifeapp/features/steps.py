@@ -1,5 +1,6 @@
 from lettuce import *
 from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
 import lettuce_webdriver.webdriver
 
 
@@ -26,25 +27,6 @@ def login_as_user(step, username, password):
     password_field = world.browser.find_element_by_xpath('.//input[@name="password"]')
     password_field.send_keys(password)
     password_field.submit()
-
-@step('I am on admin page')
-def on_admin(step):
-    javascript = """
-    (function () {
-        var titles = [];
-        var links = document.getElementsByTagName('a');
-        for (var i=0;i<links.length;i++) {
-            var linkElement = links[i];
-            titles.push(linkElement.getAttribute('title'));
-        }
-        return [1,2,4];
-    })();
-    """
-
-    result = world.browser.execute_script(javascript)
-    import pdb
-    pdb.set_trace()
-
 
 def get_site_url(app_name, default_url):
     """
