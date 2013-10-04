@@ -149,6 +149,17 @@ def spawn_ready_tasks(job_id):
 
 # Celery Tasks working on a Yabi Task
 
+def mark_workflow_as_error(task_id):
+    logger.debug("Task chain for Task {0} failed.".format(task_id))
+    task = Task.objects.get(pk=task_id)
+    task.job.status = STATUS_ERROR
+    task.job.workflow.status = STATUS_ERROR
+    task.job.save()
+    task.job.workflow.save()
+    logger.debug("Marked Workflow {0} as errored.".format(task.job.workflow.pk))
+
+
+
 @transaction.commit_on_success()
 def spawn_task(task_id):
     logger.debug('Spawn task {0}'.format(task_id))
@@ -162,6 +173,68 @@ def spawn_task(task_id):
     transaction.commit()
     task_chain = chain(stage_in_files.s(task_id), submit_task.s(), poll_task_status.s(), stage_out_files.s(), clean_up_task.s())
     task_chain.apply_async()
+
+
+def workflow_errored(task_id):
+    task = Task.objects.get(pk=task_id)
+    return task.job.workflow.status == STATUS_ERROR
+
+
+def retry_on_error(original_function):
+    @wraps(original_function)
+    def decorated_function(task_id, *args, **kwargs):
+        request = current_task.request
+        original_function_name = original_function.__name__
+        try:
+            result = original_function(task_id, *args, **kwargs)
+            return result
+        except RetryException, rexc:
+            if rexc.type == RetryException.TYPE_ERROR:
+                logger.exception("Exception in celery task {0} for task {1}".format(original_function_name, task_id))
+
+            if rexc.backoff_strategy == RetryException.BACKOFF_STRATEGY_EXPONENTIAL:
+                countdown = backoff(request.retries)
+            else:
+                # constant for polling
+                countdown = 30
+
+            try:
+                logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name,task_id, countdown))
+                current_task.retry(exc=rexc, countdown=countdown)
+            except RetryException:
+                logger.error("{0}.retry {1} exceeded retry limit - changing status to error".format(original_function_name, task_id))
+                change_task_status(task_id, STATUS_ERROR)
+                raise
+            except celery.exceptions.RetryTaskError:
+                raise
+            except Exception, ex:
+                logger.error(("{0}.retry {1} failed: {2} - changing status to error".format(original_function_name, task_id, ex)))
+                change_task_status(task_id, STATUS_ERROR)
+                mark_workflow_as_error(task_id)
+                raise
+
+        except Exception, ex:
+            # Retry always
+            countdown = backoff(request.retries)
+            logger.exception("Unhandled exception in celery task {0}: {1} - retrying anyway ...".format(original_function_name, ex))
+            logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name,task_id, countdown))
+            current_task.retry(exc=ex, countdown=countdown)
+
+
+    return decorated_function
+
+
+def skip_if_no_task_id(original_function):
+    @wraps(original_function)
+    def decorated_function(task_id, *args, **kwargs):
+        original_function_name = original_function.__name__
+        if task_id is None:
+            logger.info("%s received no task_id. Skipping processing ", original_function_name)
+            return None
+        result = original_function(task_id, *args, **kwargs)
+        return result
+
+    return decorated_function
 
 
 @celery.task(max_retries=None)
@@ -223,74 +296,6 @@ def clean_up_task(task_id):
 
 
 # Implementation
-
-
-def mark_workflow_as_error(task_id):
-    logger.debug("Task chain for Task {0} failed.".format(task_id))
-    task = Task.objects.get(pk=task_id)
-    task.job.status = STATUS_ERROR
-    task.job.workflow.status = STATUS_ERROR
-    task.job.save()
-    task.job.workflow.save()
-    logger.debug("Marked Workflow {0} as errored.".format(task.job.workflow.pk))
-
-
-def retry_on_error(original_function):
-    @wraps(original_function)
-    def decorated_function(task_id, *args, **kwargs):
-        request = current_task.request
-        original_function_name = original_function.__name__
-        try:
-            result = original_function(task_id, *args, **kwargs)
-            return result
-        except RetryException, rexc:
-            if rexc.type == RetryException.TYPE_ERROR:
-                logger.exception("Exception in celery task {0} for task {1}".format(original_function_name, task_id))
-
-            if rexc.backoff_strategy == RetryException.BACKOFF_STRATEGY_EXPONENTIAL:
-                countdown = backoff(request.retries)
-            else:
-                # constant for polling
-                countdown = 30
-
-            try:
-                logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name,task_id, countdown))
-                current_task.retry(exc=rexc, countdown=countdown)
-            except RetryException:
-                logger.error("{0}.retry {1} exceeded retry limit - changing status to error".format(original_function_name, task_id))
-                change_task_status(task_id, STATUS_ERROR)
-                raise
-            except celery.exceptions.RetryTaskError:
-                raise
-            except Exception, ex:
-                logger.error(("{0}.retry {1} failed: {2} - changing status to error".format(original_function_name, task_id, ex)))
-                change_task_status(task_id, STATUS_ERROR)
-                mark_workflow_as_error(task_id)
-                raise
-
-        except Exception, ex:
-            # Retry always
-            countdown = backoff(request.retries)
-            logger.exception("Unhandled exception in celery task {0}: {1} - retrying anyway ...".format(original_function_name, ex))
-            logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name,task_id, countdown))
-            current_task.retry(exc=ex, countdown=countdown)
-
-
-    return decorated_function
-
-
-def skip_if_no_task_id(original_function):
-    @wraps(original_function)
-    def decorated_function(task_id, *args, **kwargs):
-        original_function_name = original_function.__name__
-        if task_id is None:
-            logger.info("%s received no task_id. Skipping processing ", original_function_name)
-            return None
-        result = original_function(task_id, *args, **kwargs)
-        return result
-
-    return decorated_function
-
 
 def abort_task_if_needed(task):
     if task.is_workflow_aborting:
