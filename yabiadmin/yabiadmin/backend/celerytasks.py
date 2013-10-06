@@ -78,7 +78,7 @@ def abort_workflow(workflow_id):
     running_tasks = filter(lambda x: x.status == STATUS_EXEC, not_aborted_tasks)
     logger.debug("Found %s running tasks", len(running_tasks))
     for task in running_tasks:
-        backend.abort_task(task)
+        abort_task.apply_async((task.pk,))
 
 
 # Celery Tasks working on a Job
@@ -305,6 +305,12 @@ def clean_up_task(task_id):
     backend.clean_up_task(task)
     change_task_status(task.pk, STATUS_COMPLETE)
 
+
+@celery.task
+def abort_task(task_id):
+    logger.debug("Aborting task %s", task_id)
+    task = EngineTask.objects.get(pk=task_id)
+    backend.abort_task(task)
 
 
 # Implementation

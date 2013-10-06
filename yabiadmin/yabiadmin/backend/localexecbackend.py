@@ -93,7 +93,7 @@ class LocalExecBackend(ExecBackend):
     def abort_task(self):
         pid = self.task.remote_id
         if not is_process_running(pid):
-            logger.info("Couldn't abort task %s. Process with id %s isn't running", self.task.pk, pid)
+            logger.info("Couldn't kill process of task %s. Process with id %s isn't running", self.task.pk, pid)
             return
 
         kill_process(pid)
