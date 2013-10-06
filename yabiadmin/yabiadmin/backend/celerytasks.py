@@ -67,6 +67,20 @@ def process_jobs(workflow_id):
         chain(create_db_tasks.s(job.pk), spawn_ready_tasks.s()).apply_async()
 
 
+@celery.task
+def abort_workflow(workflow_id):
+    logger.debug("Aborting workflow %s", workflow_id)
+    workflow = EngineWorkflow.objects.get(pk=workflow_id)
+    if workflow.status == STATUS_ABORTED:
+        return
+    not_aborted_tasks = EngineTask.objects.filter(job__workflow__id=workflow.pk).exclude(job__status=STATUS_ABORTED)
+
+    running_tasks = filter(lambda x: x.status == STATUS_EXEC, not_aborted_tasks)
+    logger.debug("Found %s running tasks", len(running_tasks))
+    for task in running_tasks:
+        backend.abort_task(task)
+
+
 # Celery Tasks working on a Job
 
 
@@ -251,8 +265,11 @@ def submit_task(task_id):
     task = EngineTask.objects.get(pk=task_id)
     if abort_task_if_needed(task):
         return None
-    backend.submit_task(task)
     change_task_status(task.pk, STATUS_EXEC)
+    transaction.commit()
+    # Re-fetch task
+    task = EngineTask.objects.get(pk=task_id)
+    backend.submit_task(task)
     return task_id
 
 
@@ -342,4 +359,16 @@ def process_workflow_jobs_if_needed(task):
             process_jobs.apply_async((workflow.pk,))
  
 
+@transaction.commit_manually()
+def request_workflow_abort(workflow_id, yabiuser=None):
+    workflow = EngineWorkflow.objects.get(pk=workflow_id)
+    if (workflow.abort_requested_on is not None) or workflow.status in (STATUS_COMPLETE, STATUS_ERROR):
+        transaction.commit()
+        return False
+    workflow.abort_requested_on = datetime.now()
+    workflow.abort_requested_by = yabiuser
+    workflow.save()
+    transaction.commit()
+    abort_workflow.apply_async((workflow_id,))
+    return True
 

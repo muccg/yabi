@@ -28,6 +28,7 @@ import os
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.backend.execbackend import ExecBackend
 from yabiadmin.backend.exceptions import RetryException
+from yabiadmin.yabiengine.enginemodels import EngineTask
 import shlex
 import shutil
 import logging
@@ -58,27 +59,64 @@ class LocalExecBackend(ExecBackend):
         try:
             stdout = open(os.path.join(working_parts.path, 'STDOUT.txt'), 'w')
             stderr = open(os.path.join(working_parts.path, 'STDERR.txt'), 'w')
+
+            logger.debug('Running in {0}'.format(working_parts.path))
+            args = shlex.split(self.task.command.encode('utf-8'))
+            def set_remote_id(pid):
+                self.task.remote_id = pid
+                self.task.save()
+
+            status = self.blocking_execute(args=args, stderr=stderr, stdout=stdout, cwd=working_parts.path, report_pid_callback=set_remote_id)
+
+            if status != 0:
+                if self.is_aborting():
+                    return None
+                logger.error('Non zero exit status [{0}]'.format(status))
+                raise RetryException('Local Exec of command "{0}" retuned non-zero code {1}'.format(" ".join(args), status))
+
         except Exception, exc:
             raise RetryException(exc)
-
-        logger.debug('Running in {0}'.format(working_parts.path))
-        args = shlex.split(self.task.command.encode('utf-8'))
-        def set_remote_id(pid):
-            self.task.remote_id = pid
-            self.task.save()
-        status = self.blocking_execute(args=args, stderr=stderr, stdout=stdout, cwd=working_parts.path, report_pid_callback=set_remote_id)
-
-        if status != 0:
-            logger.error('Non zero exit status [{0}]'.format(status))
-            raise RetryException('Local Exec of command "{0}" retuned non-zero code {1}'.format(" ".join(args), status))
-
-        try:
-            stdout.close()
-            stderr.close()
-        except Exception, exc:
-            logger.error(exc)
+        finally:
+            try:
+                stdout.close()
+                stderr.close()
+            except Exception, exc:
+                logger.error(exc)
 
         return status
 
     def poll_task_status(self):
         pass
+
+    def abort_task(self):
+        pid = self.task.remote_id
+        if not is_process_running(pid):
+            logger.info("Couldn't abort task %s. Process with id %s isn't running", self.task.pk, pid)
+            return
+        kill_process(pid)
+
+    def is_aborting(self):
+        task = EngineTask.objects.get(pk=self.task.pk)
+        return task.is_workflow_aborting
+
+
+def is_process_running(pid):
+    from yabiadmin.backend.utils import execute
+
+    args = ["ps", "-o", "pid=", "-p", pid]
+    process = execute(args)
+    stdout, stderr = process.communicate(None)
+    status = process.returncode
+
+    return (pid in stdout)
+
+
+def kill_process(pid):
+    logger.info("Killing process %s", pid)
+    from yabiadmin.backend.utils import execute
+
+    args = ["kill", pid]
+    process = execute(args)
+    stdout, stderr = process.communicate(None)
+    status = process.returncode
+

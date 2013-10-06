@@ -157,13 +157,6 @@ class Workflow(models.Model, Editable, Status):
     def is_aborted(self):
         return (self.status == STATUS_ABORTED)
 
-    def request_abort(self, yabiuser=None):
-        if (self.abort_requested_on is not None) or self.status in (STATUS_COMPLETE, STATUS_ERROR):
-            return False
-        self.abort_requested_on = datetime.now()
-        self.abort_requested_by = yabiuser
-        self.save()
-        return True
 
 class Tag(models.Model):
     value = models.CharField(max_length=255)

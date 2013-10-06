@@ -34,6 +34,7 @@ from django.contrib import admin
 from django.contrib import messages
 from django.contrib.admin.actions import delete_selected
 from yabiadmin.yabiengine import storehelper as StoreHelper
+from yabiadmin.backend.celerytasks import request_workflow_abort
 
 
 def link_to_jobs(obj):
@@ -119,9 +120,8 @@ class WorkflowAdmin(admin.ModelAdmin):
 
         counter = 0
         for id in selected:
-            wf = EngineWorkflow.objects.get(id=id)
             yabiuser = User.objects.get(name=request.user.username)
-            if wf.request_abort(yabiuser):
+            if request_workflow_abort(id, yabiuser):
                 counter += 1
 
         if counter == 1:
