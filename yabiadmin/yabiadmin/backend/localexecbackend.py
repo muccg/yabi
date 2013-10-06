@@ -32,8 +32,10 @@ from yabiadmin.yabiengine.enginemodels import EngineTask
 import shlex
 import shutil
 import logging
+import time
 logger = logging.getLogger(__name__)
 
+WAIT_TO_TERMINATE_SECS = 3
 
 class LocalExecBackend(ExecBackend):
 
@@ -93,7 +95,14 @@ class LocalExecBackend(ExecBackend):
         if not is_process_running(pid):
             logger.info("Couldn't abort task %s. Process with id %s isn't running", self.task.pk, pid)
             return
+
         kill_process(pid)
+        time.sleep(WAIT_TO_TERMINATE_SECS)
+        if not is_process_running(pid):
+            return
+
+        logger.info("Process %s (task %s) not terminated on SIGTERM. Sending SIGKILL", pid, self.task.pk)
+        kill_process(pid, with_SIGKILL=True)
 
     def is_aborting(self):
         task = EngineTask.objects.get(pk=self.task.pk)
@@ -111,11 +120,14 @@ def is_process_running(pid):
     return (pid in stdout)
 
 
-def kill_process(pid):
-    logger.info("Killing process %s", pid)
+def kill_process(pid, with_SIGKILL=False):
+    logger.info("Killing process (SIGKILL=%s) %s", with_SIGKILL, pid)
     from yabiadmin.backend.utils import execute
 
-    args = ["kill", pid]
+    args = ["kill"]
+    if with_SIGKILL:
+        args.append("-KILL")
+    args.append(pid)
     process = execute(args)
     stdout, stderr = process.communicate(None)
     status = process.returncode
