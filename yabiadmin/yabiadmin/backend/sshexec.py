@@ -27,11 +27,10 @@
 import os
 from yabiadmin.yabiengine.urihelper import url_join, uriparse
 from yabiadmin.backend.backend import fs_credential
-from yabiadmin.backend.schedulerexecbackend import SchedulerExecBackend
+from yabiadmin.backend.execbackend import ExecBackend
 from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend.fsbackend import FSBackend
 from yabiadmin.backend.utils import sshclient
-from yabiadmin.backend.sshparsers import SSHParser
 import uuid
 import socket
 import traceback
@@ -41,46 +40,34 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class SSHBackend(SchedulerExecBackend):
-    SCHEDULER_NAME = "SSH"
+class SSHExec(object):
 
-    RUN_COMMAND_TEMPLATE = """
-#!/bin/sh
-script_temp_file_name="{0}"
-cat<<EOS>$script_temp_file_name
-{1}
-EOS
-chmod u+x $script_temp_file_name
-nohup $script_temp_file_name > '{2}' 2> '{3}' < /dev/null &
-echo "$!"
-"""
+    def __init__(self, uri=None, credential=None):
+        self.uri = uri
+        self.credential = credential
 
-    def __init__(self, *args, **kwargs):
-        super(SSHBackend, self).__init__(*args, **kwargs)
-        self.parser = SSHParser()
+    def exec_script(self, script):
+        logger.debug("SSHExex.exec_script...")
+        logger.debug('script content = {0}'.format(script))
+        exec_scheme, exec_parts = uriparse(self.uri)
+        ssh = sshclient(exec_parts.hostname, exec_parts.port, self.credential)
+        try:
+            stdin, stdout, stderr = ssh.exec_command(script, bufsize=-1, timeout=None, get_pty=False)
+            stdin.close()
 
+            logger.debug("sshclient exec'd script OK")
+            return stdout.readlines(), stderr.readlines()
+        except paramiko.SSHException, sshe:
+            raise RetryException(sshe, traceback.format_exc())
+        finally:
+            try:
+                if ssh is not None:
+                    ssh.close()
+            except:
+                pass
 
-    def _get_qsub_body(self):
-        return self.RUN_COMMAND_TEMPLATE.format(
-                self.submission_script_name, self.submission_script_body, 
-                self.stdout_file, self.stderr_file)
-
-    def poll_task_status(self):
-        pass
-
-
-    def local_copy(self,src,dest, recursive=False):
-        script = """
-        #!/bin/sh
-        cp {0} "{1}" "{2}"
-        """
-        if recursive:
-            flag = "-r"
-        else:
-            flag = ""
-
-        cmd = script.format(flag, src,dest)
-        stdout, stderr = self._exec_script(cmd)
-
-
+    def generate_remote_script_name(self):
+        REMOTE_TMP_DIR = '/tmp'
+        name = os.path.join(REMOTE_TMP_DIR, "yabi-" + str(uuid.uuid4()) + ".sh")
+        return name
 
