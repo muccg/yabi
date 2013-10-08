@@ -102,7 +102,6 @@ class SchedulerExecBackend(ExecBackend):
         self.qsub_script_body = self._get_qsub_body()
         logger.debug("qsub script:\n%s" % self.qsub_script_body)
         stdout, stderr = self.executer.exec_script(self.qsub_script_body)
-        logger.debug("_run_qsub:\nSTDOUT:\n%s\nSTDERR:\n%s", stdout, stderr)
         qsub_result = self.parser.parse_qsub(stdout, stderr)
         if qsub_result.status != qsub_result.JOB_SUBMITTED:
             logger.error("Yabi Task Name = %s" % self._yabi_task_name())
@@ -128,7 +127,7 @@ class SchedulerExecBackend(ExecBackend):
         return qstat_result
 
     def _job_running_response(self, qstat_result):
-        logger.debug("remote job %s for yabi task %s is stilling running" % (self.task.remote_id, self._yabi_task_name()))
+        logger.debug("remote job %s for yabi task %s is still running" % (self.task.remote_id, self._yabi_task_name()))
         retry_ex = RetryException("Yabi task %s remote job %s still running" % (self._yabi_task_name(), self.task.remote_id))
         retry_ex.backoff_strategy = RetryException.BACKOFF_STRATEGY_CONSTANT
         retry_ex.type = RetryException.TYPE_POLLING

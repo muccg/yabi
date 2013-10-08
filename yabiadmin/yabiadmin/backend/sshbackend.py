@@ -55,6 +55,11 @@ nohup $script_temp_file_name > '{2}' 2> '{3}' < /dev/null &
 echo "$!"
 """
 
+    PS_COMMAND_TEMPLATE = """
+#!/bin/sh
+ps -o pid= -p {0}
+"""
+
     def __init__(self, *args, **kwargs):
         super(SSHBackend, self).__init__(*args, **kwargs)
         self.parser = SSHParser()
@@ -65,9 +70,9 @@ echo "$!"
                 self.submission_script_name, self.submission_script_body, 
                 self.stdout_file, self.stderr_file)
 
-    def poll_task_status(self):
-        pass
-
+    def _get_polling_script(self):
+        return self.PS_COMMAND_TEMPLATE.format( self.task.remote_id)
+        
 
     def local_copy(self,src,dest, recursive=False):
         script = """
