@@ -90,7 +90,7 @@ Start Celery
 
    ``$/etc/init.d/celeryd start``
 
-An example of our celeryd init script can be found in our `source code repository <http://code.google.com/p/yabi/source/browse/yabiadmin/admin_scripts/celeryd>`_.
+An example of our celeryd init script and sysconfig file can be found in our `source code repository <https://bitbucket.org/ccgmurdoch/yabi/src/e9e1057394a424a5d69e9b9f1b0ace432c448cdb/yabiadmin/init_scripts/centos?at=default>`_.
 
 Restart apache
 --------------
