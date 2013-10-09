@@ -43,28 +43,6 @@ class BaseBackend(object):
     last_stdout = None
     last_stderr = None
 
-    def blocking_execute(self, args, bufsize=0, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, cwd=None, env=None, report_pid_callback=(lambda x: None)):
-        """execute a process and wait for it to end"""
-        status = None
-        try:
-            logger.debug(args)
-            logger.debug(cwd)
-            process = execute(args, bufsize=bufsize, stdin=stdin, stdout=stdout, stderr=stderr, shell=shell, cwd=cwd, env=env)
-            report_pid_callback(process.pid)
-            stdout_data, stderr_data = process.communicate(stdin)
-            status = process.returncode
-
-            if stdout == subprocess.PIPE:
-                self.last_stdout = stdout_data
-            if stderr == subprocess.PIPE:
-                self.last_stderr = stderr_data
-        except Exception, exc:
-            logger.error('execute failed {0}'.format(status))
-            from yabiadmin.backend.exceptions import RetryException
-            raise RetryException(exc, traceback.format_exc())
-
-        return status
-
     def local_remnants_dir(self, scratch='/tmp'):
         """Return path to a directory on the local file system for any task remnants"""
         return os.path.join(scratch, self.task.working_dir)

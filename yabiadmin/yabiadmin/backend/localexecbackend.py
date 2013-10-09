@@ -29,6 +29,7 @@ from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.backend.execbackend import ExecBackend
 from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.yabiengine.enginemodels import EngineTask
+from yabiadmin.backend.utils import blocking_execute
 import shlex
 import shutil
 import logging
@@ -68,7 +69,7 @@ class LocalExecBackend(ExecBackend):
                 self.task.remote_id = pid
                 self.task.save()
 
-            status = self.blocking_execute(args=args, stderr=stderr, stdout=stdout, cwd=working_parts.path, report_pid_callback=set_remote_id)
+            status = blocking_execute(args=args, stderr=stderr, stdout=stdout, cwd=working_parts.path, report_pid_callback=set_remote_id)
 
             if status != 0:
                 if self.is_aborting():
