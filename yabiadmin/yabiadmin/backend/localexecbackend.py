@@ -132,3 +132,6 @@ def kill_process(pid, with_SIGKILL=False):
     stdout, stderr = process.communicate(None)
     status = process.returncode
 
+    if status != 0:
+        logger.error("Couldn't kill process %s. STDERR:\n%s", pid, stderr)
+
