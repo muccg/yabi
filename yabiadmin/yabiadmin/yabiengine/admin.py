@@ -130,9 +130,6 @@ class WorkflowAdmin(admin.ModelAdmin):
             message_bit = "%s workflows were requested to abort." % counter
         messages.success(request, message_bit)
 
-        # pass on to delete action
-        #return delete_selected(self, request, queryset)
-
     abort_workflow.short_description = "Abort selected Workflows."
 
 
