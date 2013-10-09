@@ -65,7 +65,7 @@ ps -o pid= -p {0}
         self.parser = SSHParser()
 
 
-    def _get_qsub_body(self):
+    def _get_submission_wrapper_script(self):
         return self.RUN_COMMAND_TEMPLATE.format(
                 self.submission_script_name, self.submission_script_body, 
                 self.stdout_file, self.stderr_file)

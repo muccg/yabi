@@ -1,7 +1,7 @@
-from yabiadmin.backend.schedulerexecbackend import SchedulerExecBackend
+from yabiadmin.backend.qbaseexecbackend import QBaseExecBackend
 from yabiadmin.backend.pbsproparsers import PBSProParser
 
-class SSHPBSProExecBackend(SchedulerExecBackend):
+class SSHPBSProExecBackend(QBaseExecBackend):
     SCHEDULER_NAME = "PBS Pro"
     QSTAT_TEMPLATE = "\n".join(["#!/bin/sh",
                                 "<QSTAT_COMMAND> -x {0}"])

@@ -27,7 +27,7 @@ class SSHPsResult(object):
 class SSHParser(object):
     SUBMISSION_OUTPUT = "^(?P<remote_id>\d+)"
 
-    def parse_qsub(self, stdout, stderr):
+    def parse_sub(self, stdout, stderr):
         result = SSHSubmitResult()
 
         if len(stderr) > 0:
@@ -50,7 +50,7 @@ class SSHParser(object):
         result.status = SSHSubmitResult.JOB_SUBMISSION_ERROR
         return result
 
-    def parse_qstat(self, remote_id, stdout, stderr):
+    def parse_poll(self, remote_id, stdout, stderr):
         result = SSHPsResult()
         result.remote_id = remote_id
         for line in [s.strip() for s in stdout if s.strip() != '']:
