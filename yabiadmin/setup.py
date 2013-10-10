@@ -2,7 +2,7 @@ import setuptools
 import os
 from setuptools import setup, find_packages
 
-packages=   ['yabiadmin'] + [ 'yabiadmin.%s'%app for app in ['yabifeapp', 'yabistoreapp','yabiengine','yabi','uploader','preview','registration', 'backend'] ] + [ 'yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations', 'yabiadmin.yabi.templatetags']
+packages = ['yabiadmin'] + [ 'yabiadmin.%s'%app for app in ['yabifeapp', 'yabistoreapp','yabiengine','yabi','uploader','preview','registration', 'backend'] ] + [ 'yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations', 'yabiadmin.yabi.templatetags', 'yabiadmin.yabifeapp.management']
                     
 data_files = {}
 start_dir = os.getcwd()
@@ -10,7 +10,7 @@ for package in packages:
     data_files[package] = []
     path = package.replace('.','/')
     os.chdir(path)
-    for data_dir in ('templates', 'static', 'migrations', 'fixtures'):
+    for data_dir in ('templates', 'static', 'migrations', 'fixtures', 'features'):
         data_files[package].extend(
             [os.path.join(subdir,f) for (subdir, dirs, files) in os.walk(data_dir) for f in files]) 
     os.chdir(start_dir)
