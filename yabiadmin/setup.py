@@ -42,7 +42,7 @@ install_requires = [
         'django-extensions==1.1.1',
         'pycrypto>=2.6',
         'yaphc==0.1.5',
-        'beautifulsoup4==4.2.1',
+        'beautifulsoup4==4.3.2',
         'lxml==3.2.1',
         'cssutils==0.9.10',
         'httplib2==0.8',
