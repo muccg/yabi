@@ -68,7 +68,6 @@ ps -o pid= -p {0}
 kill {1} {0}
 """
 
-
     def __init__(self, *args, **kwargs):
         super(SSHBackend, self).__init__(*args, **kwargs)
         self.parser = SSHParser()
@@ -110,19 +109,5 @@ kill {1} {0}
     def _get_kill_script(self, with_SIGKILL):
         signal = "-KILL" if with_SIGKILL else ""
         return self.KILL_COMMAND_TEMPLATE.format(self.task.remote_id, signal)
-
-    def local_copy(self,src,dest, recursive=False):
-        script = """
-        #!/bin/sh
-        cp {0} "{1}" "{2}"
-        """
-        if recursive:
-            flag = "-r"
-        else:
-            flag = ""
-
-        cmd = script.format(flag, src,dest)
-        stdout, stderr = self._exec_script(cmd)
-
 
 
