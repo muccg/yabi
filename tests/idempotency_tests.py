@@ -7,6 +7,7 @@ from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.yabi import models
 from yabiadmin.backend.filebackend import FileBackend
 from yabiadmin.backend.backend import exec_credential
+from yabiadmin.backend.backend import fs_credential
 from yabiadmin.backend.localexecbackend import LocalExecBackend
 from mockito import *
 
@@ -75,6 +76,7 @@ class TestFileBackendIdempotencyTestCase(TestCase):
         self.fs_backend = FileBackend()
         self.fs_backend.yabiusername = self.username
         self.fs_backend.task = self.task
+        self.fs_backend.cred = fs_credential(self.username, self.task.job.fs_backend)
 
         self.exec_backend = LocalExecBackend()
         self.exec_backend.task = self.task
@@ -109,10 +111,11 @@ class TestFileBackendIdempotencyTestCase(TestCase):
 
         mock_job = mock()
         mock_job.exec_backend = "localex://demo@localhost:None/"
-        mock_job.fs_backend = "localfs://localhost:None/home/%s/" % self.get_username()
+        mock_job.fs_backend = "localfs://demo@localhost:None/home/%s/" % self.get_username()
         mock_job.module = None
         mock_workflow = mock()
         mock_job.workflow = mock_workflow
+        mock_job.preferred_stageout_method = "copy"
         mock_task.job = mock_job
         mock_user = mock()
         mock_user.name = self.username
