@@ -59,6 +59,13 @@ def uriparse(uri):
         logger.critical("%s - %s" % ("urihelper.uriparse", e.message))
         raise
 
+def uriunparse(scheme, hostname, username, path='/', port=None):
+    if port:
+        uri = "%s://%s@%s:%s%s" % (scheme, username, hostname, port, path)
+    else:
+        uri = "%s://%s@%s%s" % (scheme, username, hostname, path)
+    return uri
+
 
 def url_join(*args):
     '''This is used to join subpaths to already constructed urls'''
@@ -88,4 +95,9 @@ def get_backend_userdir(backendcredential, yabiusername):
     path = backendcredential.backend.path + backendcredential.homedir
 
     return urlunparse((backendcredential.backend.scheme, netloc, path, '', '', ''))
+
+def is_same_location(uri, other_uri):
+    uri_scheme, uri_rest = uriparse(uri)
+    other_scheme, other_rest = uriparse(other_uri)
+    return (uri_scheme==other_scheme and uri_rest.hostname==other_rest.hostname and uri_rest.port==other_rest.port)
 

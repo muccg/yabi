@@ -27,110 +27,87 @@
 import os
 from yabiadmin.yabiengine.urihelper import url_join, uriparse
 from yabiadmin.backend.backend import fs_credential
-from yabiadmin.backend.execbackend import ExecBackend
+from yabiadmin.backend.schedulerexecbackend import SchedulerExecBackend
 from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend.fsbackend import FSBackend
 from yabiadmin.backend.utils import sshclient
+from yabiadmin.backend.sshparsers import SSHParser
 import uuid
 import socket
 import traceback
 import paramiko
 import tempfile
 import logging
+import time
 logger = logging.getLogger(__name__)
 
 
-class SSHBackend(ExecBackend):
+WAIT_TO_TERMINATE_SECS = 3
 
-    def submit_task(self):
-        """ 
-        For ssh tasks we run the task in the foreground. For this reason
-        it is not intended for large scale use. A quirk of using ssh.exec_command
-        is the need to copy stderr and stdout to the working output dir of the 
-        remote host.
-        """
-        exec_scheme, exec_parts = uriparse(self.task.job.exec_backend)
-        working_scheme, working_parts = uriparse(self.working_output_dir_uri())
+class SSHBackend(SchedulerExecBackend):
+    SCHEDULER_NAME = "SSH"
 
-        # TODO use this script instead of self.task.command
-        script = self.get_submission_script(exec_parts.hostname, working_parts.path)
-        logger.debug('script {0}'.format(script))
+    RUN_COMMAND_TEMPLATE = """
+#!/bin/sh
+script_temp_file_name="{0}"
+cat<<EOS>$script_temp_file_name
+{1}
+EOS
+chmod u+x $script_temp_file_name
+nohup $script_temp_file_name > '{2}' 2> '{3}' < /dev/null &
+echo "$!"
+"""
 
-        ssh = sshclient(exec_parts.hostname, exec_parts.port, self.cred.credential)
-        try:
-            stdin, stdout, stderr = ssh.exec_command(self.task.command, bufsize=-1, timeout=None, get_pty=False)
-            stdin.close()
-        except paramiko.SSHException, sshe:
-            raise RetryException(sshe, traceback.format_exc())
-        finally:
-            try:
-                if ssh is not None:
-                    ssh.close()
-            except:
-                pass
+    PS_COMMAND_TEMPLATE = """
+#!/bin/sh
+ps -o pid= -p {0}
+"""
 
-        # create local remnant files to store stdout and stderr
-        self._save_stdout_and_stderr(stdout, stderr)
+    KILL_COMMAND_TEMPLATE = """
+#!/bin/sh
+kill {1} {0}
+"""
 
-        return 0
+    def __init__(self, *args, **kwargs):
+        super(SSHBackend, self).__init__(*args, **kwargs)
+        self.parser = SSHParser()
 
-    def _save_stdout_and_stderr(self, stdout, stderr):
-        logger.debug("local remnants dir = %s" % self.local_remnants_dir())
-        remnant_stdout = open(os.path.join(self.local_remnants_dir(), 'STDOUT.txt'), 'w')
-        remnant_stderr = open(os.path.join(self.local_remnants_dir(), 'STDERR.txt'), 'w')
-        logger.debug('Created remnant {0}'.format(remnant_stdout.name))
-        logger.debug('Created remnant {0}'.format(remnant_stderr.name))
-        for line in stdout:
-            remnant_stdout.write(line)
-        for line in stderr:
-            remnant_stderr.write(line)
-        remnant_stdout.close()
-        remnant_stderr.close()
+    # TODO this looks very similar to LocalExecBackend#abort_task()
+    # Maybe, refactor later.
+    def abort_task(self):
+        pid = self.task.remote_id
+        if not self.is_process_running():
+            logger.info("Couldn't kill process of task %s. Process with id %s isn't running", self.task.pk, pid)
+            return
 
-    def _exec_script(self, script):
-        logger.debug("SSHBackend.exec_script...")
-        logger.debug('script content = {0}'.format(script))
-        exec_scheme, exec_parts = uriparse(self.task.job.exec_backend)
-        ssh = sshclient(exec_parts.hostname, exec_parts.port, self.cred.credential)
-        try:
-            stdin, stdout, stderr = ssh.exec_command(script, bufsize=-1, timeout=None, get_pty=False)
-            stdin.close()
+        self.kill_process(pid)
+        time.sleep(WAIT_TO_TERMINATE_SECS)
+        if not self.is_process_running():
+            return
 
-            logger.debug("sshclient exec'd script OK")
-            return stdout.readlines(), stderr.readlines()
-        except paramiko.SSHException, sshe:
-            raise RetryException(sshe, traceback.format_exc())
-        finally:
-            try:
-                if ssh is not None:
-                    ssh.close()
-            except:
-                pass
+        logger.info("Process %s (task %s) not terminated on SIGTERM. Sending SIGKILL", pid, self.task.pk)
+        self.kill_process(pid, with_SIGKILL=True)
 
-    def poll_task_status(self):
-        pass
+    def _get_submission_wrapper_script(self):
+        return self.RUN_COMMAND_TEMPLATE.format(
+                self.submission_script_name, self.submission_script_body, 
+                self.stdout_file, self.stderr_file)
 
-    def _generate_remote_script_name(self):
-        REMOTE_TMP_DIR = '/tmp'
-        name = os.path.join(REMOTE_TMP_DIR, "yabi-" + str(uuid.uuid4()) + ".sh")
-        self.task.job_identifier = name
-        self.task.save()
-        return name
+    def _get_polling_script(self):
+        return self.PS_COMMAND_TEMPLATE.format( self.task.remote_id)
+        
+    def is_process_running(self):
+        result = self._poll_job_status()
+        return result.status == result.JOB_RUNNING
 
-    def local_copy(self,src,dest, recursive=False):
-        script = """
-        #!/bin/sh
-        cp {0} "{1}" "{2}"
-        """
-        if recursive:
-            flag = "-r"
-        else:
-            flag = ""
-
-        cmd = script.format(flag, src,dest)
-        stdout, stderr = self._exec_script(cmd)
-
-
-
+    def kill_process(self, pid, with_SIGKILL=False):
+        kill_script = self._get_kill_script(with_SIGKILL)
+        stdout, stderr = self.executer.exec_script(kill_script)
+        if stderr:
+            log.error("Couldn't kill process %s. STDERR:\n%s", pid, stderr)
+     
+    def _get_kill_script(self, with_SIGKILL):
+        signal = "-KILL" if with_SIGKILL else ""
+        return self.KILL_COMMAND_TEMPLATE.format(self.task.remote_id, signal)
 
 

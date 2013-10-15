@@ -30,7 +30,7 @@ from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend.utils import create_fifo, execute
 from yabiadmin.backend.backend import fs_credential
 from yabiadmin.backend.basebackend import BaseBackend
-from yabiadmin.yabiengine.urihelper import url_join, uriparse
+from yabiadmin.yabiengine.urihelper import url_join, uriparse, is_same_location
 import logging
 import traceback
 import shutil
@@ -261,11 +261,17 @@ class FSBackend(BaseBackend):
         # now the stageout proper
         method = self.task.job.preferred_stageout_method
         logger.debug('stage out method is {0}'.format(method))
+        if method == 'lcopy':
+            if is_same_location(self.working_output_dir_uri(), self.task.stageout):
+                return self.local_copy_recursive(self.working_output_dir_uri(), self.task.stageout)
+            else:
+                method = 'copy'
+
         if method == 'copy':
             return FSBackend.remote_copy(self.yabiusername, self.working_output_dir_uri(), self.task.stageout)
 
-        if method == 'lcopy':
-            return FSBackend.local_copy_recursive(self.yabiusername, self.working_output_dir_uri(), self.task.stageout)
+        raise RuntimeError("Invalid stageout method %s for task %s" % (method, self.task.pk))
+
 
     def stage_out_local_remnants(self):
         """
@@ -310,34 +316,6 @@ class FSBackend(BaseBackend):
                 os.path.join(dirpath, dirname)
                 uri = url_join(self.task.stageout, dirpath[len(remnants_dir):], dirname)
                 self.mkdir(uri)
-
-    @staticmethod
-    def local_copy_recursive(yabiusername, src_uri, dst_uri):
-        """Recursive local copy src_uri to dst_uri"""
-        logger.debug('remote_copy {0} -> {1}'.format(src_uri, dst_uri))
-        src_backend = FSBackend.urifactory(yabiusername, src_uri)
-        dst_backend = FSBackend.urifactory(yabiusername, dst_uri)
-        src_backend_class = src_backend.__class__.__name__
-        logger.debug("src backend class = %s" % src_backend_class)
-        dest_backend_class = dst_backend.__class__.__name__
-        logger.debug("dst backend class = %s" % dest_backend_class)
-
-        try:
-            listing = src_backend.ls_recursive(src_uri)
-            dst_backend.mkdir(dst_uri)
-            for key in listing:
-                # copy files using a fifo
-                for listing_file in listing[key]['files']:
-                    src_file_uri = url_join(src_uri, listing_file[0])
-                    dst_file_uri = url_join(dst_uri, listing_file[0])
-                    src_backend.local_copy(src_file_uri, dst_file_uri)
-                # recurse on directories
-                for listing_dir in listing[key]['directories']:
-                    src_dir_uri = url_join(src_uri, listing_dir[0])
-                    dst_dir_uri = url_join(dst_uri, listing_dir[0])
-                    FSBackend.local_copy_recursive(yabiusername, src_dir_uri, dst_dir_uri)
-        except Exception, exc:
-            raise RetryException(exc, traceback.format_exc())
 
 
     def clean_up_task(self):
@@ -384,6 +362,9 @@ class FSBackend(BaseBackend):
         raise NotImplementedError("")
 
     def local_copy(self, source, destination):
+        raise NotImplementedError("")
+
+    def local_copy_recursive(self, source, destination):
         raise NotImplementedError("")
 
     def symbolic_link(self, source, destination):

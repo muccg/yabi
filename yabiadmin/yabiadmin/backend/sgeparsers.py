@@ -46,7 +46,7 @@ class SGEParser(object):
     QACCT_EXIT_STATUS = r"^exit_status\s(?P<exit_status>\d+)"
     QACCT_FAILED = r"^failed\s+(?P<failed>[10])"
 
-    def parse_qsub(self, stdout, stderr):
+    def parse_sub(self, stdout, stderr):
         for line in stderr:
             logger.debug("qsub stderr line: %s" % line)
         result = SGEQSubResult()
@@ -64,7 +64,7 @@ class SGEParser(object):
         logger.debug("parse result = %s" % result)
         return result
 
-    def parse_qstat(self, remote_id, stdout, stderr):
+    def parse_poll(self, remote_id, stdout, stderr):
         result = SGEQStatResult()
         for line in stdout:
             logger.debug("parsing qstat stdout line: %s" % line)

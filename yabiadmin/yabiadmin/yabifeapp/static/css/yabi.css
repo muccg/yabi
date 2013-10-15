@@ -927,6 +927,19 @@ input {
     background: -webkit-gradient(linear, left top, left bottom, from(red), to(#f66));
 }
 
+.badgeaborted {
+
+    width:16px;
+    height:16px;
+    padding:0px;
+    margin:0px;
+    border:0px;
+    background:url(../images/aborted.png) no-repeat;
+    position:absolute;
+    right: 9px;
+    top: 4px;
+}
+
 .badgecompleted, .badgecomplete {
 
     width:16px;

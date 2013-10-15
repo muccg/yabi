@@ -1,10 +1,10 @@
-from yabiadmin.backend.schedulerexecbackend import SchedulerExecBackend
+from yabiadmin.backend.qbaseexecbackend import QBaseExecBackend
 from yabiadmin.backend.sgeparsers import SGEParser, SGEQAcctResult
 import logging
 logger = logging.getLogger(__name__)
 
 
-class SSHSGEExecBackend(SchedulerExecBackend):
+class SSHSGEExecBackend(QBaseExecBackend):
     SCHEDULER_NAME = "sge"
     QSTAT_TEMPLATE = "\n".join(["#!/bin/sh",
                                 "qstat -j {0}"])
@@ -19,7 +19,7 @@ class SSHSGEExecBackend(SchedulerExecBackend):
 
     def _run_qacct(self):
         script = SSHSGEExecBackend.QACCT_TEMPLATE.format(self.task.remote_id).replace("<QACCT_COMMAND>",self.get_scheduler_command_path("qacct"))
-        stdout, stderr = self._exec_script(script)
+        stdout, stderr = self.executer.exec_script(script)
         return self.parser.parse_qacct(self.task.remote_id, stdout, stderr)
 
     def _job_not_found_response(self, qstat_result):
@@ -30,6 +30,4 @@ class SSHSGEExecBackend(SchedulerExecBackend):
         else:
             # Not found in qacct either ..
             raise Exception("Remote job %s for Yabi task %s not found by qstat" % (self.task.remote_id, self._yabi_task_name()))
-
-
 

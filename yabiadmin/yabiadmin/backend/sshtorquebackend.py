@@ -1,8 +1,8 @@
-from yabiadmin.backend.schedulerexecbackend import SchedulerExecBackend
+from yabiadmin.backend.qbaseexecbackend import QBaseExecBackend
 from yabiadmin.backend.torqueparsers import TorqueParser
 
 
-class SSHTorqueExecBackend(SchedulerExecBackend):
+class SSHTorqueExecBackend(QBaseExecBackend):
     SCHEDULER_NAME = "torque"
     QSTAT_TEMPLATE = "\n".join(["#!/bin/sh",
                                 "<QSTAT_COMMAND> -f -1 {0}"])

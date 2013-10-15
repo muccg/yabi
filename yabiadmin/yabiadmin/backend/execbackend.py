@@ -98,3 +98,8 @@ class ExecBackend(BaseBackend):
 
     def poll_task_status(self):
         raise NotImplementedError("")
+
+    def abort_task(self):
+        logger.warning("Abort task called on Backend %s but it isn't implemented", 
+                self.__class__.__name__)
+
