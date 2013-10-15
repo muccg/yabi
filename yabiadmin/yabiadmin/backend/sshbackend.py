@@ -65,7 +65,7 @@ ps -o pid= -p {0}
 
     KILL_COMMAND_TEMPLATE = """
 #!/bin/sh
-kill {1} {0}
+kill {1} -- -$( ps opgid= {0} | tr -d ' ')
 """
 
     def __init__(self, *args, **kwargs):
@@ -104,7 +104,7 @@ kill {1} {0}
         kill_script = self._get_kill_script(with_SIGKILL)
         stdout, stderr = self.executer.exec_script(kill_script)
         if stderr:
-            log.error("Couldn't kill process %s. STDERR:\n%s", pid, stderr)
+            logger.error("Couldn't kill process %s. STDERR:\n%s", pid, stderr)
      
     def _get_kill_script(self, with_SIGKILL):
         signal = "-KILL" if with_SIGKILL else ""
