@@ -31,7 +31,7 @@ from django.db import transaction
 from datetime import datetime
 from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend import backend
-from yabiadmin.constants import STATUS_ERROR, STATUS_READY, STATUS_RUNNING, STATUS_COMPLETE, STATUS_EXEC,STATUS_STAGEOUT,STATUS_STAGEIN,STATUS_CLEANING
+from yabiadmin.constants import STATUS_ERROR, STATUS_READY, STATUS_RUNNING, STATUS_COMPLETE, STATUS_EXEC,STATUS_STAGEOUT,STATUS_STAGEIN,STATUS_CLEANING, STATUS_ABORTED
 from yabiadmin.constants import MAX_CELERY_TASK_RETRIES
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from yabiadmin.yabiengine.models import Task
@@ -58,8 +58,27 @@ def create_jobs(workflow_id):
 @celery.task
 def process_jobs(workflow_id):
     workflow = EngineWorkflow.objects.get(pk=workflow_id)
+    if workflow.is_aborting:
+        workflow.status = STATUS_ABORTED
+        workflow.save()
+        return
+
     for job in workflow.jobs_that_need_processing():
         chain(create_db_tasks.s(job.pk), spawn_ready_tasks.s()).apply_async()
+
+
+@celery.task
+def abort_workflow(workflow_id):
+    logger.debug("Aborting workflow %s", workflow_id)
+    workflow = EngineWorkflow.objects.get(pk=workflow_id)
+    if workflow.status == STATUS_ABORTED:
+        return
+    not_aborted_tasks = EngineTask.objects.filter(job__workflow__id=workflow.pk).exclude(job__status=STATUS_ABORTED)
+
+    running_tasks = filter(lambda x: x.status == STATUS_EXEC, not_aborted_tasks)
+    logger.debug("Found %s running tasks", len(running_tasks))
+    for task in running_tasks:
+        abort_task.apply_async((task.pk,))
 
 
 # Celery Tasks working on a Job
@@ -78,10 +97,17 @@ def create_db_tasks(job_id):
             logger.warning("Job was already in READY state. Skipping creation of db tasks.")
             return job_id
 
+        if job.is_workflow_aborting:
+            job.status = STATUS_ABORTED
+            job.save()
+            job.workflow.update_status()
+            return None
+
         tasks_count = job.create_tasks()
         if not tasks_count:
             return None
         return job_id
+
     except DecryptedCredentialNotAvailable, dcna:
         logger.exception("Decrypted credential not available.")
         countdown = backoff(request.retries)
@@ -108,9 +134,20 @@ def spawn_ready_tasks(job_id):
         job = EngineJob.objects.get(pk=job_id)
         ready_tasks = job.ready_tasks()
         logger.debug(ready_tasks)
+        aborting = job.is_workflow_aborting
+
         for task in ready_tasks:
-            spawn_task(task.pk)
-            # need to update task.job.status here when all tasks for job spawned ?
+            if aborting:
+                task.set_status(STATUS_ABORTED)
+                task.save()
+            else:
+                spawn_task(task.pk)
+                # need to update task.job.status here when all tasks for job spawned ?
+
+        if aborting:
+            job.status = STATUS_ABORTED
+            job.save()
+            job.workflow.update_status()
 
         return job_id
 
@@ -142,16 +179,14 @@ def spawn_task(task_id):
     logger.debug('Spawn task {0}'.format(task_id))
 
     task = Task.objects.get(pk=task_id)
+    if task.is_workflow_aborting:
+        change_task_status(task_id, STATUS_ABORTED)
+        return
     task.set_status('requested')
     task.save()
     transaction.commit()
     task_chain = chain(stage_in_files.s(task_id), submit_task.s(), poll_task_status.s(), stage_out_files.s(), clean_up_task.s())
     task_chain.apply_async()
-
-
-def workflow_errored(task_id):
-    task = Task.objects.get(pk=task_id)
-    return task.job.workflow.status == STATUS_ERROR
 
 
 def retry_on_error(original_function):
@@ -198,11 +233,26 @@ def retry_on_error(original_function):
     return decorated_function
 
 
+def skip_if_no_task_id(original_function):
+    @wraps(original_function)
+    def decorated_function(task_id, *args, **kwargs):
+        original_function_name = original_function.__name__
+        if task_id is None:
+            logger.info("%s received no task_id. Skipping processing ", original_function_name)
+            return None
+        result = original_function(task_id, *args, **kwargs)
+        return result
+
+    return decorated_function
+
 
 @celery.task(max_retries=None)
 @retry_on_error
+@skip_if_no_task_id
 def stage_in_files(task_id):
     task = EngineTask.objects.get(pk=task_id)
+    if abort_task_if_needed(task):
+        return None
     change_task_status(task.pk, STATUS_STAGEIN)
     backend.stage_in_files(task)
     return task_id
@@ -210,15 +260,22 @@ def stage_in_files(task_id):
 
 @celery.task(max_retries=MAX_CELERY_TASK_RETRIES)
 @retry_on_error
+@skip_if_no_task_id
 def submit_task(task_id):
     task = EngineTask.objects.get(pk=task_id)
-    backend.submit_task(task)
+    if abort_task_if_needed(task):
+        return None
     change_task_status(task.pk, STATUS_EXEC)
+    transaction.commit()
+    # Re-fetch task
+    task = EngineTask.objects.get(pk=task_id)
+    backend.submit_task(task)
     return task_id
 
 
 @celery.task(max_retries=None)
 @retry_on_error
+@skip_if_no_task_id
 def poll_task_status(task_id):
     task = EngineTask.objects.get(pk=task_id)
     backend.poll_task_status(task)
@@ -227,8 +284,11 @@ def poll_task_status(task_id):
 
 @celery.task(max_retries=None)
 @retry_on_error
+@skip_if_no_task_id
 def stage_out_files(task_id):
     task = EngineTask.objects.get(pk=task_id)
+    if abort_task_if_needed(task):
+        return None
     change_task_status(task.pk, STATUS_STAGEOUT)
     backend.stage_out_files(task)
     return task_id
@@ -236,15 +296,32 @@ def stage_out_files(task_id):
 
 @celery.task(max_retries=None)
 @retry_on_error
+@skip_if_no_task_id
 def clean_up_task(task_id):
     task = EngineTask.objects.get(pk=task_id)
+    if abort_task_if_needed(task):
+        return None
     change_task_status(task.pk, STATUS_CLEANING)
     backend.clean_up_task(task)
     change_task_status(task.pk, STATUS_COMPLETE)
 
 
+@celery.task
+def abort_task(task_id):
+    logger.debug("Aborting task %s", task_id)
+    task = EngineTask.objects.get(pk=task_id)
+    backend.abort_task(task)
+
 
 # Implementation
+
+def abort_task_if_needed(task):
+    if task.is_workflow_aborting:
+        if task.status != STATUS_ABORTED:
+            change_task_status(task.pk, STATUS_ABORTED)
+        return True
+    return False
+
 
 def backoff(count=0):
     """
@@ -282,10 +359,29 @@ def change_task_status(task_id, status):
         raise
 
 def process_workflow_jobs_if_needed(task):
+    workflow = EngineWorkflow.objects.get(pk=task.job.workflow.pk)
+    if workflow.is_aborting:
+        for job in workflow.jobs_that_wait_for_dependencies():
+            logger.debug('Aborting job %s', job.pk)
+            job.status = STATUS_ABORTED
+            job.save()
+        workflow.update_status()
+        return
     if task.job.status == STATUS_COMPLETE:
-        workflow = EngineWorkflow.objects.get(pk=task.job.workflow.pk)
         if workflow.has_jobs_to_process():
             process_jobs.apply_async((workflow.pk,))
  
 
+@transaction.commit_manually()
+def request_workflow_abort(workflow_id, yabiuser=None):
+    workflow = EngineWorkflow.objects.get(pk=workflow_id)
+    if (workflow.abort_requested_on is not None) or workflow.status in (STATUS_COMPLETE, STATUS_ERROR):
+        transaction.commit()
+        return False
+    workflow.abort_requested_on = datetime.now()
+    workflow.abort_requested_by = yabiuser
+    workflow.save()
+    transaction.commit()
+    abort_workflow.apply_async((workflow_id,))
+    return True
 

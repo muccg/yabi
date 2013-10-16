@@ -45,7 +45,7 @@ from yabiadmin.yabiengine import backendhelper
 from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.yabiengine.commandlinetemplate import CommandTemplate, quote_argument
 from yabiadmin.yabiengine.models import Workflow, Task, Job, StageIn, Tag
-from yabiadmin.yabiengine.urihelper import uriparse, url_join
+from yabiadmin.yabiengine.urihelper import uriparse, url_join, is_same_location, uriunparse, uriunparse
 from yabiadmin.yabiengine.YabiJobException import YabiJobException
 
 from yabiadmin.yabistoreapp import db
@@ -141,6 +141,9 @@ class EngineWorkflow(Workflow):
 
             raise
 
+    def jobs_that_wait_for_dependencies(self):
+        return [j for j in EngineJob.objects.filter(workflow=self).order_by("order") if j.total_tasks() == 0 and j.status == STATUS_PENDING]
+ 
     def jobs_that_need_processing(self):
         return [j for j in EngineJob.objects.filter(workflow=self).order_by("order") if j.total_tasks() == 0 and not j.has_incomplete_dependencies() and j.status == STATUS_PENDING]
 
@@ -265,11 +268,9 @@ class EngineJob(Job):
 
         # lets work out the highest copy level supported by this tool and store it in job. This makes no account for the backends capabilities.
         # that will be resolved later when the stagein is created during the walk
-        #self.preferred_stagein_method = 'link' if self.tool.link_supported else 'lcopy' if self.tool.lcopy_supported else 'copy'
-        self.preferred_stagein_method = 'copy'
+        self.preferred_stagein_method = 'link' if self.tool.link_supported else 'lcopy' if self.tool.lcopy_supported else 'copy'
 
-        self.preferred_stageout_method = 'copy'
-        #self.preferred_stageout_method = 'lcopy' if self.tool.lcopy_supported else 'copy'                                                   # stageouts should never be linked. Only local copy or remote copy
+        self.preferred_stageout_method = 'lcopy' if self.tool.lcopy_supported else 'copy'                                                   # stageouts should never be linked. Only local copy or remote copy
 
         # cache job for later reference
         job_id = job_dict["jobId"] # the id that is used in the json
@@ -479,21 +480,11 @@ class EngineTask(Task):
                            username=self.fsbackend_parts.username)
 
     def create_stagein(self, src, scheme, hostname, port, path, username):
-        preferred_stagein_method = self.job.preferred_stagein_method
-        if port:
-            dst = "%s://%s@%s:%d%s" % (scheme, username, hostname, port, path)
-        else:
-            dst = "%s://%s@%s%s" % (scheme, username, hostname, path)
+        dst = uriunparse(scheme, hostname, username, path, port)
 
         # if src and dst are same backend, and the backend supports advanced copy methods, set the method as such
-        sscheme,srest = uriparse(src)
-        dscheme,drest = uriparse(dst)
-        if sscheme==dscheme and srest.hostname==drest.hostname and srest.port==drest.port:
-            method = preferred_stagein_method
-        else:
-            method = 'copy'
+        method = self.determine_stagein_method(src, dst)
 
-        method = 'copy' # temporary fix
         s, created = StageIn.objects.get_or_create(task=self,
                     src=src,
                     dst=dst,
@@ -508,8 +499,18 @@ class EngineTask(Task):
        job_old_status = self.job.status
        job_cur_status = self.job.update_status()
 
-       if job_cur_status != job_old_status and job_cur_status in (STATUS_ERROR, STATUS_COMPLETE):
+       if job_cur_status != job_old_status and job_cur_status in (STATUS_ERROR, STATUS_COMPLETE, STATUS_ABORTED):
            self.job.workflow.update_status()
 
        return (job_cur_status != job_old_status)
+
+
+    def determine_stagein_method(self, src, dst):
+        preferred_stagein_method = self.job.preferred_stagein_method
+        if is_same_location(src, dst):
+            method = preferred_stagein_method
+        else:
+            method = 'copy'
+        return method
+
 

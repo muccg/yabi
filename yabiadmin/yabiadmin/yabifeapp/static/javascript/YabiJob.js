@@ -605,6 +605,16 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
     }
   }
 
+  if (status == 'aborted') {
+    if (Y.Lang.isUndefined(this.errorEl)) {
+        this.errorEl = document.createElement('div');
+        this.errorEl.className = 'jobErrorMsg';
+        this.errorEl.appendChild(document.createTextNode(
+            'job aborted'));
+        this.jobEl.appendChild(this.errorEl);
+    }
+  }
+
   if (Y.Lang.isUndefined(completed) || Y.Lang.isUndefined(total)) {
     return;
   }

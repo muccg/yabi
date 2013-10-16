@@ -26,6 +26,7 @@
 # 
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
+from yabiadmin.yabi.models import User
 from yabiadmin.yabiengine.models import *
 from yabiadmin.yabiengine.enginemodels import *
 
@@ -33,6 +34,7 @@ from django.contrib import admin
 from django.contrib import messages
 from django.contrib.admin.actions import delete_selected
 from yabiadmin.yabiengine import storehelper as StoreHelper
+from yabiadmin.backend.celerytasks import request_workflow_abort
 
 
 def link_to_jobs(obj):
@@ -80,10 +82,10 @@ class BaseModelAdmin(admin.ModelAdmin):
 
 
 class WorkflowAdmin(admin.ModelAdmin):
-    list_display = ['name', 'status', 'stageout', link_to_jobs, link_to_tasks, link_to_stageins, 'summary_link']
+    list_display = ['name', 'status', 'stageout', link_to_jobs, link_to_tasks, link_to_stageins, 'summary_link', 'is_aborting']
     list_filter = ['status', 'user']
     search_fields = ['name']
-    actions = ['archive_workflow']
+    actions = ['archive_workflow', 'abort_workflow']
     fieldsets = (
         (None, {
             'fields': ('name', 'user', 'start_time', 'end_time','status','stageout')
@@ -112,6 +114,23 @@ class WorkflowAdmin(admin.ModelAdmin):
         #return delete_selected(self, request, queryset)
 
     archive_workflow.short_description = "Archive selected Workflows."
+
+    def abort_workflow(self, request, queryset):
+        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+
+        counter = 0
+        for id in selected:
+            yabiuser = User.objects.get(name=request.user.username)
+            if request_workflow_abort(id, yabiuser):
+                counter += 1
+
+        if counter == 1:
+            message_bit = "1 workflow was requested to abort."
+        else:
+            message_bit = "%s workflows were requested to abort." % counter
+        messages.success(request, message_bit)
+
+    abort_workflow.short_description = "Abort selected Workflows."
 
 
 class QueuedWorkflowAdmin(admin.ModelAdmin):
@@ -160,7 +179,7 @@ class TaskAdmin(BaseModelAdmin):
             'classes':('collapse',),
             'fields':(  'status_pending','status_ready','status_requested','status_stagein','status_mkdir','status_exec',
                         'status_exec_unsubmitted','status_exec_pending','status_exec_active','status_exec_running','status_exec_cleanup',
-                        'status_exec_done','status_exec_error','status_stageout','status_cleaning','status_complete','status_error', 'status_blocked' )
+                        'status_exec_done','status_exec_error','status_stageout','status_cleaning','status_complete','status_error', 'status_aborted', 'status_blocked' )
         }),
     )
 

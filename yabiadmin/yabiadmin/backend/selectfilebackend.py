@@ -55,11 +55,15 @@ class SelectFileBackend(FSBackend):
     def stage_in(self, stagein):
         """ For the select backend stage in goes straight to stage out directory"""
         logger.debug('SelectFileBackend.stage_in {0} {1}'.format(stagein.method, stagein.src))
-        logger.debug(stagein.method)
-       
         # we need to create the path to the destination file in the stageout area for the file copy 
         filename = stagein.src.rsplit('/',1)[1]
         dst_uri = url_join(self.task.stageout, filename)
+
+        # We have to determine the stagin method here again
+        # We don't actually copy to working_dir, so the method determined
+        # at task creation time can't be valid
+        stagein.method = self.task.determine_stagein_method(stagein.src, dst_uri)
+        stagein.save()
 
         if stagein.method == 'copy':
             if stagein.src.endswith('/'):
@@ -67,11 +71,16 @@ class SelectFileBackend(FSBackend):
             else:
                 return FSBackend.remote_file_copy(self.yabiusername, stagein.src, dst_uri)
 
+        
+        fsbackend = FSBackend.urifactory(self.yabiusername, stagein.src)
         if stagein.method == 'lcopy':
-            raise NotImplementedError("No lcopy for SelectFileBackend")
+            return fsbackend.local_copy(stagein.src, dst_uri)
 
         if stagein.method == 'link':
-            raise NotImplementedError("No link for SelectFileBackend")
+            return fsbackend.symbolic_link(stagein.src, dst_uri)
+
+        raise RuntimeError("Invalid stagein.method '%s' for stagein %s" % 
+                (stagein.method, stagein.pk))
 
     def stage_out_files(self):
         """No stageout for select file backend"""

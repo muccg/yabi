@@ -25,10 +25,12 @@
 # 
 ### END COPYRIGHT ###
 from yabiadmin.backend.fsbackend import FSBackend
+from yabiadmin.backend.sshexec import SSHExec
+from yabiadmin.backend.backend import fs_credential
 from yabiadmin.backend.execbackend import ExecBackend
 from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend.parsers import parse_ls
-from yabiadmin.yabiengine.urihelper import uriparse
+from yabiadmin.yabiengine.urihelper import uriparse, uriunparse
 from yabiadmin.backend.utils import sshclient
 import os
 import errno
@@ -245,52 +247,38 @@ class SFTPBackend(FSBackend):
 
         return results
 
-    def local_copy(self, src_uri, dst_uri):
+    def local_copy(self, src_uri, dst_uri, recursive=False):
         """Copy src_uri to dst_uri on the remote backend"""
-        logger.debug("SFTPBackend.local_copy: %s => %s" % (src_uri, dst_uri))
+        logger.debug("SFTPBackend.local_copy(recursive=%s): %s => %s",
+                recursive, src_uri, dst_uri)
         src_scheme, src_parts = uriparse(src_uri)
         dst_scheme, dst_parts = uriparse(dst_uri)
         logger.debug('{0} -> {1}'.format(src_uri, dst_uri))
-        assert False, "TODO review whether we need this, we want to do it this way etc."
         # Given paramiko does not support local copy, we
         # use cp on server via exec backend
-        ex_backend = ExecBackend.factory(self.task)
+        executer = create_executer(self.yabiusername, src_uri)
         try:
-            ex_backend.local_copy(src_parts.path,dst_parts.path)
+            executer.local_copy(src_parts.path, dst_parts.path, recursive)
         except Exception, exc:
             raise RetryException(exc, traceback.format_exc())
 
     def local_copy_recursive(self, src_uri, dst_uri):
         """recursively copy src_uri to dst_uri on the remote backend"""
-        logger.debug("SFTPBackend.local_copy_recursive: %s => %s" % (src_uri, dst_uri))
-        assert False, "TODO"
+        self.local_copy(src_uri, dst_uri, recursive=True)
 
+    def symbolic_link(self, src_uri, dst_uri):
+        """symbolic link to target_uri called link_uri."""
+        logger.debug("SFTPBackend.symbolic_link: %s => %s",
+                src_uri, dst_uri)
         src_scheme, src_parts = uriparse(src_uri)
         dst_scheme, dst_parts = uriparse(dst_uri)
         logger.debug('{0} -> {1}'.format(src_uri, dst_uri))
+        
+        executer = create_executer(self.yabiusername, src_uri)
         try:
-            shutil.copytree(src_parts.path, dst_parts.path)
+            executer.local_symlink(src_parts.path, dst_parts.path)
         except Exception, exc:
             raise RetryException(exc, traceback.format_exc())
-
-    def symbolic_link(self, target_uri, link_uri):
-        """symbolic link to target_uri called link_uri."""
-        logger.debug('{0}'.format(parts.path))
-        target_scheme, target_parts = uriparse(target_uri)
-        link_scheme, link_parts = uriparse(link_uri)
-        ssh = None
-        try:
-            ssh = sshclient(target_parts.hostname, target_parts.port, self.cred.credential)
-            sftp = ssh.open_sftp()
-            sftp.symlink(target_parts.path, link_parts.path)
-        except Exception, exc:
-            raise RetryException(exc, traceback.format_exc())
-        finally:
-            try:
-                if ssh is not None:
-                    ssh.close()
-            except:
-                pass
 
     def rm(self, uri):
         """recursively delete a uri"""
@@ -318,4 +306,51 @@ class SFTPBackend(FSBackend):
             sftp.rmdir(path)
         else:
             sftp.remove(path)
+
+
+def create_executer(yabiusername, sftp_uri):
+    cred = fs_credential(yabiusername, sftp_uri)
+    return SSHLocalCopyAndLinkExecuter(sftp_uri, cred.credential)
+
+
+class SSHLocalCopyAndLinkExecuter(object):
+
+    COPY_COMMAND_TEMPLATE = """ 
+#!/bin/sh
+cp "{0}" "{1}"
+"""
+
+    COPY_RECURSIVE_COMMAND_TEMPLATE = """ 
+#!/bin/sh
+cp -r "{0}/"* "{1}"
+"""
+
+    SYMLINK_COMMAND_TEMPLATE = """ 
+#!/bin/sh
+ln -s "{0}" "{1}"
+"""
+
+    def __init__(self, uri, credential):
+        self.executer = SSHExec(uri, credential)
+
+    def local_copy(self, src, dest, recursive=False):
+        logger.debug('SSH Local Copy %s => %s', src, dest)
+        if recursive:
+            cmd = self.COPY_RECURSIVE_COMMAND_TEMPLATE.format(src, dest)
+        else:
+            cmd = self.COPY_COMMAND_TEMPLATE.format(src, dest)
+        stdout, stderr = self.executer.exec_script(cmd)
+        if stderr:
+            raise RuntimeError("Couldn't (recursive=%s) copy %s to %s. STDERR:\n%s" % (
+                    recursive, src, dest, stderr))
+        return True
+
+    def local_symlink(self, src, dest):
+        logger.debug('SSH Local Symlink %s => %s', src, dest)
+        cmd = self.SYMLINK_COMMAND_TEMPLATE.format(src, dest)
+        stdout, stderr = self.executer.exec_script(cmd)
+        if stderr:
+            raise RuntimeError("Couldn't symlink %s to %s. STDERR:\n%s" % (
+                    src, dest, stderr()))
+        return True
 

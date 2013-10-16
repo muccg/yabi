@@ -91,7 +91,7 @@ class TorqueParser(object):
     RUNNING_STATES = ["R", "T", "W", "S", "Q", "H"]
     FINISHED_STATES = ["E", "C"]
 
-    def parse_qsub(self, stdout, stderr):
+    def parse_sub(self, stdout, stderr):
         """
 
         @param stdout: list of lines
@@ -126,7 +126,7 @@ class TorqueParser(object):
         parts = map(string.strip, line.split("="))
         return parts[1]
 
-    def parse_qstat(self, remote_id, stdout, stderr):
+    def parse_poll(self, remote_id, stdout, stderr):
         """
         parsing result of: qstat -f -1 <remote_id>:
 

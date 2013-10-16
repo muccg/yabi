@@ -16,7 +16,7 @@ writable and readable by Yabi?
 What backend should a file select tool use or why won't my file select run?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You have run into an evolutionary quirk of Yabi. See :ref:`nullbackend`. If you set up Yabi from the Google Code repository
+You have run into an evolutionary quirk of Yabi. See :ref:`nullbackend`. If you set up Yabi from our code repository
 you will find a `file select` tool was installed by default for you to use.
 
 What is the default stageout field for?
