@@ -83,6 +83,8 @@ class Workflow(models.Model, Editable, Status):
     last_modified_on = models.DateTimeField(null=True, auto_now=True, editable=False)
     created_on = models.DateTimeField(auto_now_add=True, editable=False, db_index=True)
     status = models.TextField(max_length=64, blank=True)
+    abort_requested_by = models.ForeignKey(User, related_name='aborted_workflows', null=True)
+    abort_requested_on = models.DateTimeField(null=True)
     stageout = models.CharField(max_length=1000)
     original_json = models.TextField()
 
@@ -121,14 +123,22 @@ class Workflow(models.Model, Editable, Status):
 
     def update_status(self):
         job_statuses = [x['status'] for x in Job.objects.filter(workflow=self).values('status')]
-        if STATUS_ERROR in job_statuses:
-            self.status = STATUS_ERROR
-            self.end_time = datetime.now()
-            self.save()
-        elif len(filter(lambda s: s != STATUS_COMPLETE, job_statuses)) == 0:
-            self.status = STATUS_COMPLETE
-            self.end_time = datetime.now()
-            self.save()
+        if not all([status in (STATUS_COMPLETE, STATUS_ERROR, STATUS_ABORTED) for status in job_statuses]):
+            # Status not know yet
+            return self.status
+
+        # All jobs should be finished (either completed, errored or aborted) at this point
+        if STATUS_ABORTED in job_statuses:
+            status = STATUS_ABORTED
+        elif STATUS_ERROR in job_statuses:
+            status = STATUS_ERROR
+        else:
+            assert all([status == STATUS_COMPLETE for status in job_statuses]), "All jobs should be completed"
+            status = STATUS_COMPLETE
+
+        self.status = status
+        self.end_time = datetime.now()
+        self.save()
 
         return self.status
 
@@ -138,6 +148,15 @@ class Workflow(models.Model, Editable, Status):
     @property
     def colour(self):
         return self.get_status_colour()
+
+    @property
+    def is_aborting(self):
+        return (self.abort_requested_on is not None)
+
+    @property
+    def is_aborted(self):
+        return (self.status == STATUS_ABORTED)
+
 
 class Tag(models.Model):
     value = models.CharField(max_length=255)
@@ -204,7 +223,7 @@ class Job(models.Model, Editable, Status):
         The order of the list being checked is therefore important.
         '''
         cur_status = self.status
-        for status in [STATUS_ERROR, 'exec:error', 'pending', 'requested', 'stagein', 'mkdir', 'exec', 'exec:active', 'exec:pending', 'exec:unsubmitted', 'exec:running', 'exec:cleanup', 'exec:done', 'stageout', 'cleaning', STATUS_BLOCKED, STATUS_READY, STATUS_COMPLETE]:
+        for status in [STATUS_ERROR, 'exec:error', 'pending', 'requested', 'stagein', 'mkdir', 'exec', 'exec:active', 'exec:pending', 'exec:unsubmitted', 'exec:running', 'exec:cleanup', 'exec:done', 'stageout', 'cleaning', STATUS_BLOCKED, STATUS_READY, STATUS_COMPLETE, STATUS_ABORTED]:
             if [T for T in Task.objects.filter(job=self) if T.status==status]:
                 # we need to map the task status values to valid job status values
                 if status == 'exec:error':
@@ -223,6 +242,10 @@ class Job(models.Model, Editable, Status):
                 break
   
         return self.status
+
+    @property
+    def is_workflow_aborting(self):
+        return self.workflow.is_aborting
 
 class Task(models.Model, Editable, Status):
     job = models.ForeignKey(Job)
@@ -254,6 +277,7 @@ class Task(models.Model, Editable, Status):
     status_cleaning = models.DateTimeField(null=True, blank=True)
     status_complete = models.DateTimeField(null=True, blank=True)
     status_error = models.DateTimeField(null=True, blank=True)
+    status_aborted = models.DateTimeField(null=True, blank=True)
     status_blocked = models.DateTimeField(null=True, blank=True)
     
     percent_complete = models.FloatField(blank=True, null=True)                     # This is between 0.0 and 1.0. if we are null, then the task has not begun at all
@@ -390,6 +414,10 @@ class Task(models.Model, Editable, Status):
     @property
     def colour(self):
         return self.get_status_colour()
+
+    @property
+    def is_workflow_aborting(self):
+        return self.job.workflow.is_aborting
 
 
 class StageIn(models.Model, Editable):

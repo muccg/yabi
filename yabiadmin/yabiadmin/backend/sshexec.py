@@ -24,44 +24,50 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # 
 ### END COPYRIGHT ###
-from yabiadmin.yabiengine.urihelper import url_join
-from yabiadmin.backend.exceptions import RetryException
-from yabiadmin.backend.utils import execute
-import traceback
-import subprocess
-import logging
 import os
-import shutil
+from yabiadmin.yabiengine.urihelper import url_join, uriparse
+from yabiadmin.backend.backend import fs_credential
+from yabiadmin.backend.execbackend import ExecBackend
+from yabiadmin.backend.exceptions import RetryException
+from yabiadmin.backend.fsbackend import FSBackend
+from yabiadmin.backend.utils import sshclient
+import uuid
+import socket
+import traceback
+import paramiko
+import tempfile
+import logging
 logger = logging.getLogger(__name__)
 
 
-class BaseBackend(object):
+class SSHExec(object):
 
-    task = None
-    cred = None
-    yabiusername = None
-    last_stdout = None
-    last_stderr = None
+    def __init__(self, uri=None, credential=None):
+        self.uri = uri
+        self.credential = credential
 
-    def local_remnants_dir(self, scratch='/tmp'):
-        """Return path to a directory on the local file system for any task remnants"""
-        return os.path.join(scratch, self.task.working_dir)
+    def exec_script(self, script):
+        logger.debug("SSHExex.exec_script...")
+        logger.debug('script content = {0}'.format(script))
+        exec_scheme, exec_parts = uriparse(self.uri)
+        ssh = sshclient(exec_parts.hostname, exec_parts.port, self.credential)
+        try:
+            stdin, stdout, stderr = ssh.exec_command(script, bufsize=-1, timeout=None, get_pty=False)
+            stdin.close()
 
-    def working_dir_uri(self):
-        """working dir"""
-        return url_join(self.task.job.fs_backend, self.task.working_dir)
+            logger.debug("sshclient exec'd script OK")
+            return stdout.readlines(), stderr.readlines()
+        except paramiko.SSHException, sshe:
+            raise RetryException(sshe, traceback.format_exc())
+        finally:
+            try:
+                if ssh is not None:
+                    ssh.close()
+            except:
+                pass
 
-    def working_input_dir_uri(self):
-        """working/input dir"""
-        return url_join(self.working_dir_uri(), 'input')
-
-    def working_output_dir_uri(self):
-        """working/output dir"""
-        return url_join(self.working_dir_uri(), 'output')
-
-    def create_local_remnants_dir(self):
-        local_remnants_dir = self.local_remnants_dir()
-        if os.path.exists(local_remnants_dir):
-            shutil.rmtree(local_remnants_dir)
-        os.makedirs(local_remnants_dir)
+    def generate_remote_script_name(self):
+        REMOTE_TMP_DIR = '/tmp'
+        name = os.path.join(REMOTE_TMP_DIR, "yabi-" + str(uuid.uuid4()) + ".sh")
+        return name
 

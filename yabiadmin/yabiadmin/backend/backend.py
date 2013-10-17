@@ -162,6 +162,13 @@ def clean_up_task(task):
     #backend.clean_up_task()
 
 
+def abort_task(task):
+    """Try to abort a running task"""
+    from yabiadmin.backend.execbackend import ExecBackend
+    backend = ExecBackend.factory(task)
+    backend.abort_task()
+
+
 def exec_credential(yabiusername, uri):
     """
     Return a exec_credential for a given user and uri

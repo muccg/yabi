@@ -134,6 +134,23 @@ class FileBackend(FSBackend):
         except Exception, exc:
             raise RetryException(exc, traceback.format_exc())
 
+    def local_copy_recursive(self, src_uri, dst_uri):
+        """A local copy within this backend."""
+        logger.debug('local_copy {0} -> {1}'.format(src_uri, dst_uri))
+        src_scheme, src_parts = uriparse(src_uri)
+        dst_scheme, dst_parts = uriparse(dst_uri)
+        try:
+            for item in os.listdir(src_parts.path):
+                src = os.path.join(src_parts.path, item)
+                dst = os.path.join(dst_parts.path, item)
+                if os.path.isdir(src):
+                    shutil.copytree(src, dst)
+                else:
+                    shutil.copy2(src, dst)
+        except Exception, exc:
+            raise RetryException(exc, traceback.format_exc())
+
+
     def symbolic_link(self, target_uri, link_uri):
         """symbolic link to target_uri called link_uri."""
         logger.debug('symbolic_link {0} -> {1}'.format(link_uri, target_uri))

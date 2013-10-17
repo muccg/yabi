@@ -32,7 +32,7 @@ Things that don't really belong in settings because they never change, you know!
 """
 
 # status settings that can be used on workflow, job and task.
-STATUS = ['pending','ready','requested','running','complete','error','blocked','resume','rewalk']
+STATUS = ['pending','ready','requested','running','complete','error','blocked','aborted','resume','rewalk']
 
 # constants
 STATUS_PENDING = 'pending'
@@ -43,6 +43,7 @@ STATUS_COMPLETE = 'complete'
 STATUS_ERROR = 'error'
 STATUS_EXEC_ERROR = 'exec:error'
 STATUS_BLOCKED = 'blocked'
+STATUS_ABORTED='aborted'
 STATUS_RESUME = 'resume'
 STATUS_REWALK = 'rewalk'
 
@@ -76,6 +77,7 @@ STATUS_MAP = (
 
     ('error', 0.0),
     ('exec:error', 0.0),
+    (STATUS_ABORTED, 0.0),
     (STATUS_COMPLETE, 1.0),
 
     # Added to allow tasks to be created without a status. Tasks may be created without status

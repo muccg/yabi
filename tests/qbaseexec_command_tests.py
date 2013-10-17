@@ -1,24 +1,24 @@
 from unittest import TestCase
 
-from yabiadmin.backend.schedulerexecbackend import SchedulerExecBackend
+from yabiadmin.backend.qbaseexecbackend import QBaseExecBackend
 from yabiadmin.backend.sshpbsprobackend import SSHPBSProExecBackend
 from yabiadmin.backend.sshsgeexecbackend import SSHSGEExecBackend
 from yabiadmin.backend.sshtorquebackend import SSHTorqueExecBackend
 
 
-class SchedulerCommandsTestCase(TestCase):
+class QBaseCommandsTestCase(TestCase):
     def setUp(self):
         TestCase.setUp(self)
-        self.scheduler_exec_backend = SchedulerExecBackend()
+        self.qbase_exec_backend = QBaseExecBackend()
         self.pbs_backend = SSHPBSProExecBackend()
         self.sge_backend = SSHSGEExecBackend()
         self.torque_backend = SSHTorqueExecBackend()
 
-    def test_command_path_scheduler_exec(self):
-        qsub = self.scheduler_exec_backend.get_scheduler_command_path("qsub")
+    def test_command_path_qbase_exec(self):
+        qsub = self.qbase_exec_backend.get_scheduler_command_path("qsub")
         self.assertEquals(qsub,"qsub","scheduler exec qsub command path wrong: Expected qsub: Actual: %s" % qsub)
-        qstat = self.scheduler_exec_backend.get_scheduler_command_path("qstat")
-        self.assertEquals(qstat, "qstat","scheduler exec qstat command path wrong: Expected qstat: Actual: %s" % qstat)
+        qstat = self.qbase_exec_backend.get_scheduler_command_path("qstat")
+        self.assertEquals(qstat, "qstat","qbase exec qstat command path wrong: Expected qstat: Actual: %s" % qstat)
 
 
     def test_sge_command_paths(self):
