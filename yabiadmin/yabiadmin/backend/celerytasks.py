@@ -359,8 +359,15 @@ def change_task_status(task_id, status):
         raise
 
 def process_workflow_jobs_if_needed(task):
+    workflow = EngineWorkflow.objects.get(pk=task.job.workflow.pk)
+    if workflow.is_aborting:
+        for job in workflow.jobs_that_wait_for_dependencies():
+            logger.debug('Aborting job %s', job.pk)
+            job.status = STATUS_ABORTED
+            job.save()
+        workflow.update_status()
+        return
     if task.job.status == STATUS_COMPLETE:
-        workflow = EngineWorkflow.objects.get(pk=task.job.workflow.pk)
         if workflow.has_jobs_to_process():
             process_jobs.apply_async((workflow.pk,))
  

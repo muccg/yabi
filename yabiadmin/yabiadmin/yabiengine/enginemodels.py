@@ -141,6 +141,9 @@ class EngineWorkflow(Workflow):
 
             raise
 
+    def jobs_that_wait_for_dependencies(self):
+        return [j for j in EngineJob.objects.filter(workflow=self).order_by("order") if j.total_tasks() == 0 and j.status == STATUS_PENDING]
+ 
     def jobs_that_need_processing(self):
         return [j for j in EngineJob.objects.filter(workflow=self).order_by("order") if j.total_tasks() == 0 and not j.has_incomplete_dependencies() and j.status == STATUS_PENDING]
 
