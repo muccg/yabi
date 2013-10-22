@@ -13,3 +13,8 @@ class SSHTorqueExecBackend(QBaseExecBackend):
 
     def _job_not_found_response(self, qstat_result):
         raise Exception("Remote job %s for Yabi task %s not found by qstat" % (self.task.remote_id, self._yabi_task_name()))
+
+    def abort_task(self):
+        logger.warning("Abort task called on Backend %s but it isn't implemented",
+                       self.__class__.__name__)
+

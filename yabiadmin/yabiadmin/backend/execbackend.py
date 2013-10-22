@@ -100,6 +100,5 @@ class ExecBackend(BaseBackend):
         raise NotImplementedError("")
 
     def abort_task(self):
-        logger.warning("Abort task called on Backend %s but it isn't implemented", 
-                self.__class__.__name__)
+        raise NotImplementedError("")
 
