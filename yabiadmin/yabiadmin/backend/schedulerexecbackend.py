@@ -56,14 +56,23 @@ class SchedulerExecBackend(ExecBackend):
         if result.status == result.JOB_RUNNING:
             self._job_running_response(result)
         elif result.status == result.JOB_NOT_FOUND:
-            logger.info("polling of status for remote job %s of yabi task %s did not produce results" % (self.task.remote_id,
-                                                                                             self._yabi_task_name()))
+            logger.info("polling of status for remote job %s of yabi task %s did not produce results", self.task.remote_id, self._yabi_task_name())
             self._job_not_found_response(result)
         elif result.status == result.JOB_COMPLETED:
             self._job_completed_response(result)
         else:
             self._unknown_job_status_response(result)
 
+    def abort_task(self):
+        result = self._abort_job()
+        if result.status == result.JOB_FINISHED:
+            logger.info("trying to abort an already finished job. Remote job %s, yabi task %s", self.task.remote_id, self._yabi_task_name())
+        elif result.status == result.JOB_ABORTION_ERROR:
+            self._job_abortion_error_response(result)
+        elif result.status == result.JOB_ABORTED:
+            self._job_aborted_response(result)
+        else:
+            self._unknown_job_status_response(result)
 
     def _get_submission_wrapper_script(self):
         raise NotImplementedError()
@@ -71,6 +80,8 @@ class SchedulerExecBackend(ExecBackend):
     def _get_polling_script(self):
         raise NotImplementedError()
 
+    def _get_abort_script(self):
+        raise NotImplementedError()
 
     def _submit_job(self):
         exec_scheme, exec_parts = uriparse(self.task.job.exec_backend)
@@ -136,4 +147,19 @@ class SchedulerExecBackend(ExecBackend):
     def _unknown_job_status_response(self, result):
         raise Exception("Yabi task %s unknown state: %s" % (self._yabi_task_name(), result.status))
 
+    def _abort_job(self):
+        abort_script = self._get_abort_script()
+        stdout, stderr = self.executer.exec_script(abort_script)
+        result = self.parser.parse_abort(stdout, stderr)
+        return result
+
+    def _job_abortion_error_response(self, result):
+        logger.error("couldn't abort job %s for yabi task %s. STDERR was: \n%s",
+            self.task.remote_id, self._yabi_task_name(), result.error)
+        raise Exception("couldn't abort job %s for yabi task %s" % (
+            self.task.remote_id, self._yabi_task_name()))
+
+    def _job_aborted_response(self, result):
+        logger.error("Aborted job %s for yabi task %s.",
+            self.task.remote_id, self._yabi_task_name())
 

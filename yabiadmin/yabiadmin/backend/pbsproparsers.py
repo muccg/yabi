@@ -61,6 +61,15 @@ class PBSProQStatResult(object):
         self.remote_id = None
         self.status = None
 
+class PBSProQDelResult(object):
+    JOB_ABORTED = "JOB ABORTED"
+    JOB_ABORTION_ERROR = "JOB ABORTION ERROR"
+    JOB_FINISHED = "JOB FINISHED"
+
+    def __init__(self):
+        self.status = None
+        self.error = None
+
 
 
 class PBSProParser(object):
@@ -111,3 +120,17 @@ class PBSProParser(object):
 
         result.status = PBSProQStatResult.JOB_NOT_FOUND
         return result
+
+    def parse_abort(self, stdout, stderr):
+        result = PBSProQDelResult()
+        if len(stderr) > 0:
+            if 'finished' in "\n".join(stderr):
+                result.status = PBSProQDelResult.JOB_FINISHED
+                return result
+            result.status = PBSProQDelResult.JOB_ABORTION_ERROR
+            result.error = "\n".join(stderr)
+            return result
+
+        result.status = PBSProQDelResult.JOB_ABORTED
+        return result
+
