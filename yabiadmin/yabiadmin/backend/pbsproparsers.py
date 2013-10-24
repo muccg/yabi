@@ -121,7 +121,7 @@ class PBSProParser(object):
         result.status = PBSProQStatResult.JOB_NOT_FOUND
         return result
 
-    def parse_abort(self, stdout, stderr):
+    def parse_abort(self, remote_id, stdout, stderr):
         result = PBSProQDelResult()
         if len(stderr) > 0:
             if 'finished' in "\n".join(stderr):

@@ -150,7 +150,7 @@ class SchedulerExecBackend(ExecBackend):
     def _abort_job(self):
         abort_script = self._get_abort_script()
         stdout, stderr = self.executer.exec_script(abort_script)
-        result = self.parser.parse_abort(stdout, stderr)
+        result = self.parser.parse_abort(self.task.remote_id, stdout, stderr)
         return result
 
     def _job_abortion_error_response(self, result):
