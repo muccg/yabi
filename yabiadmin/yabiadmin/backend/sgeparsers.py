@@ -49,16 +49,16 @@ class SGEQDelResult(object):
         self.error = error
 
     @classmethod
-    def job_aborted(self):
-        return self(self.JOB_ABORTED)
+    def job_aborted(cls):
+        return cls(cls.JOB_ABORTED)
 
     @classmethod
-    def job_finished(self):
-        return self(self.JOB_FINISHED)
+    def job_finished(cls):
+        return cls(cls.JOB_FINISHED)
 
     @classmethod
-    def job_abortion_error(self, error=None):
-        return self(self.JOB_ABORTION_ERROR, error)
+    def job_abortion_error(cls, error=None):
+        return cls(cls.JOB_ABORTION_ERROR, error)
 
 
 class SGEParser(object):
