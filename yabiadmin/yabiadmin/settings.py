@@ -422,7 +422,8 @@ LOGGING = {
 
 SCHEDULER_COMMAND_PATHS = {
     "torque": {"qsub" : "/opt/torque/2.3.13/bin/qsub",
-                 "qstat": "/opt/torque/2.3.13/bin/qstat"
+               "qstat": "/opt/torque/2.3.13/bin/qstat",
+               "qdel" : "/opt/torque/2.3.13/bin/qdel",
     }
 }
 
