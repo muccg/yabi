@@ -29,7 +29,7 @@
 from functools import wraps
 from django.db import transaction
 from datetime import datetime
-from yabiadmin.backend.exceptions import RetryException
+from yabiadmin.backend.exceptions import RetryException, JobNotFoundException
 from yabiadmin.backend import backend
 from yabiadmin.constants import STATUS_ERROR, STATUS_READY, STATUS_RUNNING, STATUS_COMPLETE, STATUS_EXEC,STATUS_STAGEOUT,STATUS_STAGEIN,STATUS_CLEANING, STATUS_ABORTED
 from yabiadmin.constants import MAX_CELERY_TASK_RETRIES
@@ -278,8 +278,13 @@ def submit_task(task_id):
 @skip_if_no_task_id
 def poll_task_status(task_id):
     task = EngineTask.objects.get(pk=task_id)
-    backend.poll_task_status(task)
-    return task_id
+    try:
+        backend.poll_task_status(task)
+        return task_id
+    except JobNotFoundException:
+        if abort_task_if_needed(task):
+            return None
+        raise
 
 
 @celery.task(max_retries=None)
