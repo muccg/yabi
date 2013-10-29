@@ -82,10 +82,10 @@ setup(name='yabiadmin',
           'http://ccg-django-extras.googlecode.com/files/ccg-webservices-0.1.2.tar.gz',
           'http://ccg-django-extras.googlecode.com/files/ccg-registration-0.8-alpha-1.tar.gz',
           'http://ccg-django-extras.googlecode.com/files/ccg-introspect-0.1.2.tar.gz',
+          'http://ccg-django-extras.googlecode.com/files/ccg-makoloader-0.2.6.tar.gz',
           'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-extras-0.1.7.tar.gz',
           'http://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.3.tar.gz',
           'http://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
           'http://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',
-          'http://repo.ccgapps.com.au',
     ]
 )

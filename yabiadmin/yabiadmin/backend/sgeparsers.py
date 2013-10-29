@@ -67,7 +67,8 @@ class SGEParser(object):
     QACCT_JOB_NUMBER = r"^jobnumber\s+(?P<remote_id>\d+)"
     QACCT_EXIT_STATUS = r"^exit_status\s(?P<exit_status>\d+)"
     QACCT_FAILED = r"^failed\s+(?P<failed>[10])"
-    QDEL_JOB_ABORTED = r"registered the job (?P<remote_id>\d+) for deletion"
+    QDEL_JOB_ABORTED = r"has deleted job (?P<remote_id>\d+)"
+    QDEL_JOB_ABORT_REGISTERED = r"registered the job (?P<remote_id>\d+) for deletion"
     QDEL_JOB_FINISHED = r'job "(?P<remote_id>\d+)" does not exist'
 
     def parse_sub(self, stdout, stderr):
@@ -127,7 +128,7 @@ class SGEParser(object):
         # Note: SGE tools print errors to stdout
         result = SGEQDelResult()
         for line in stdout:
-            if job_aborted_line(line, remote_id):
+            if job_aborted_line(line, remote_id) or job_abort_registered_line(line, remote_id):
                 return SGEQDelResult.job_aborted()
 
             if job_finished_line(line, remote_id):
@@ -145,5 +146,6 @@ def line_matches(regex, line, remote_id):
     return False
 
 job_aborted_line = partial(line_matches, SGEParser.QDEL_JOB_ABORTED)
+job_abort_registered_line = partial(line_matches, SGEParser.QDEL_JOB_ABORT_REGISTERED)
 job_finished_line = partial(line_matches, SGEParser.QDEL_JOB_FINISHED) 
 

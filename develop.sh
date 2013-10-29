@@ -18,7 +18,7 @@ AWS_STAGING_INSTANCE='aws_syd_yabi_staging'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
 CLOSURE="/usr/local/closure/compiler.jar"
 MODULES="MySQL-python==1.2.3 psycopg2==2.4.6 Werkzeug flake8 requests==1.2.0 gunicorn django-nose nose==1.2.1"
-PIP_OPTS='--download-cache ~/.pip/cache --index-url=http://restricted.crate.io'
+PIP_OPTS='--download-cache ~/.pip/cache --index-url=https://restricted.crate.io'
 
 
 if [ "${YABI_CONFIG}" = "" ]; then

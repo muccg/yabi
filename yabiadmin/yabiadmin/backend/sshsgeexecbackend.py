@@ -1,5 +1,6 @@
 from yabiadmin.backend.qbaseexecbackend import QBaseExecBackend
 from yabiadmin.backend.sgeparsers import SGEParser, SGEQAcctResult
+from yabiadmin.backend.exceptions import JobNotFoundException
 import logging
 logger = logging.getLogger(__name__)
 
@@ -29,5 +30,5 @@ class SSHSGEExecBackend(QBaseExecBackend):
             logger.debug("yabi task %s remote id %s succeeded" % (self._yabi_task_name(), self.task.remote_id))
         else:
             # Not found in qacct either ..
-            raise Exception("Remote job %s for Yabi task %s not found by qstat" % (self.task.remote_id, self._yabi_task_name()))
+            raise JobNotFoundException("Remote job %s for Yabi task %s not found by qstat and qacct" % (self.task.remote_id, self._yabi_task_name()))
 
