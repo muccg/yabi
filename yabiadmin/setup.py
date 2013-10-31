@@ -48,6 +48,8 @@ install_requires = [
     'mockito==0.5.1',
     'boto==2.13.3',
     'python-dateutil==2.1',
+    'yaphc==0.1.5',
+    'pycrypto>=2.6',
 ]
 
 dev_requires = [
