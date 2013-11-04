@@ -1,5 +1,6 @@
 from yabiadmin.backend.qbaseexecbackend import QBaseExecBackend
 from yabiadmin.backend.torqueparsers import TorqueParser
+from yabiadmin.backend.exceptions import JobNotFoundException
 
 
 class SSHTorqueExecBackend(QBaseExecBackend):
@@ -12,5 +13,5 @@ class SSHTorqueExecBackend(QBaseExecBackend):
         self.parser = TorqueParser()
 
     def _job_not_found_response(self, qstat_result):
-        raise Exception("Remote job %s for Yabi task %s not found by qstat" % (self.task.remote_id, self._yabi_task_name()))
+        raise JobNotFoundException("Remote job %s for Yabi task %s not found by qstat" % (self.task.remote_id, self._yabi_task_name()))
 

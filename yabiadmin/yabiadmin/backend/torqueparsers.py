@@ -191,6 +191,10 @@ class TorqueParser(object):
         job_state = None
         exit_status = None
 
+        if len(stderr) > 0:
+            if any(['Unknown Job' in line for line in stderr]):
+                qstat_result.status = TorqueQStatResult.JOB_NOT_FOUND
+                return qstat_result
         for line in stdout:
             line = line.strip()
             logger.debug("parsing qstat: [%s]" % line)
