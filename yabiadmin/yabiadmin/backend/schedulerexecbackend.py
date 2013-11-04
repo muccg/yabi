@@ -24,6 +24,7 @@ class SchedulerExecBackend(ExecBackend):
         self.stderr_file = None
         self._task = None
         self._cred = None
+        self._backend = None
 
     @property
     def task(self):
@@ -43,6 +44,14 @@ class SchedulerExecBackend(ExecBackend):
         self._cred = val
         self.executer.credential = self._cred.credential
 
+    @property
+    def backend(self):
+        return self._backend
+
+    @backend.setter
+    def backend(self, val):
+        self._backend = val
+        self.executer.tmp_dir = self._backend.temporary_directory
 
     def submit_task(self):
         result = self._submit_job()

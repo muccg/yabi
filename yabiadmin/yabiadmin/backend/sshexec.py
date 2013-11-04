@@ -42,9 +42,18 @@ logger = logging.getLogger(__name__)
 
 class SSHExec(object):
 
-    def __init__(self, uri=None, credential=None):
+    def __init__(self, uri=None, credential=None, tmp_dir=None):
         self.uri = uri
         self.credential = credential
+        self._tmp_dir = tmp_dir
+
+    @property
+    def tmp_dir(self):
+        return self._tmp_dir or '/tmp'
+
+    @tmp_dir.setter
+    def tmp_dir(self, value):
+        self._tmp_dir = value
 
     def exec_script(self, script):
         logger.debug("SSHExex.exec_script...")
@@ -67,7 +76,6 @@ class SSHExec(object):
                 pass
 
     def generate_remote_script_name(self):
-        REMOTE_TMP_DIR = '/tmp'
-        name = os.path.join(REMOTE_TMP_DIR, "yabi-" + str(uuid.uuid4()) + ".sh")
+        name = os.path.join(self.tmp_dir, "yabi-" + str(uuid.uuid4()) + ".sh")
         return name
 
