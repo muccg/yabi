@@ -37,6 +37,7 @@ import traceback
 import paramiko
 import tempfile
 import logging
+import stat
 logger = logging.getLogger(__name__)
 
 
@@ -61,7 +62,8 @@ class SSHExec(object):
         exec_scheme, exec_parts = uriparse(self.uri)
         ssh = sshclient(exec_parts.hostname, exec_parts.port, self.credential)
         try:
-            stdin, stdout, stderr = ssh.exec_command(script, bufsize=-1, timeout=None, get_pty=False)
+            script_name = self.upload_script(ssh, script)
+            stdin, stdout, stderr = ssh.exec_command(script_name, bufsize=-1, timeout=None, get_pty=False)
             stdin.close()
 
             logger.debug("sshclient exec'd script OK")
@@ -75,7 +77,28 @@ class SSHExec(object):
             except:
                 pass
 
+    def upload_script(self, ssh, script_body):
+        try:
+            sftp = ssh.open_sftp()
+            remote_path = self.generate_remote_script_name()
+            create_remote_file(sftp, remote_path, script_body)
+            make_user_executable(sftp, remote_path)
+            return remote_path
+        finally:
+            try:
+                sftp.close()
+            except:
+                pass
+
     def generate_remote_script_name(self):
         name = os.path.join(self.tmp_dir, "yabi-" + str(uuid.uuid4()) + ".sh")
         return name
+
+def create_remote_file(sftp, remote_path, body):
+    remote_file = sftp.open(remote_path, mode='w')
+    remote_file.write(body)
+
+def make_user_executable(sftp, path):
+    st = sftp.stat(path)
+    sftp.chmod(path, st.st_mode | stat.S_IEXEC)
 
