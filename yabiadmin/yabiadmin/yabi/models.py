@@ -717,7 +717,7 @@ class Backend(Base):
 
     tasks_per_user.help_text="The number of simultaneous tasks the backends should execute for each remote backend user. 0 means do not execute jobs for this backend. Blank means no limits."
 
-    temporary_directory.help_text='Temporary directory on the exec backend used for temporary execution scripts. Blank means "/tmp".'
+    temporary_directory.help_text='Only to be set on execution backends. Temporary directory used for temporary execution scripts. Blank means "/tmp".'
 
     @property
     def uri(self):
