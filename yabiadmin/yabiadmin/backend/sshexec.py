@@ -84,6 +84,9 @@ class SSHExec(object):
             create_remote_file(sftp, remote_path, script_body)
             make_user_executable(sftp, remote_path)
             return remote_path
+        except:
+            logger.exception("Error while trying to upload script")
+            raise
         finally:
             try:
                 sftp.close()
