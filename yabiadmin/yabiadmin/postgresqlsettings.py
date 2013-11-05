@@ -3,9 +3,9 @@ from yabiadmin.settings import *
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'USER': 'yabminapp',
+        'USER': 'yabiapp',
         'NAME': 'dev_yabi',
-        'PASSWORD': 'yabminapp',
+        'PASSWORD': 'yabiapp',
         'HOST': '',
         'PORT': '',
     }
