@@ -49,18 +49,18 @@ class QStatParseTestCase(unittest.TestCase):
 
 
     def test_job_prefix_is_parsed(self):
-        result = self.parser.parse_sub(self.good_qsub_lines, self.good_qsub_err)
+        result = self.parser.parse_sub(0, self.good_qsub_lines, self.good_qsub_err)
         self.assertTrue(result.remote_id == "42940")
         self.assertTrue(result.status == TorqueQSubResult.JOB_SUBMITTED)
 
     def test_qstat_completed(self):
         lines = map(string.strip, self.good_qstat.format("C", "0").split("\n"))
-        result = self.parser.parse_poll("42940", lines, [])
+        result = self.parser.parse_poll("42940", 0, lines, [])
         self.assertTrue(result.status == TorqueQStatResult.JOB_COMPLETED, "torque job status not correct.expected '%s' result = %s" % (TorqueQStatResult.JOB_COMPLETED, result))
 
     def test_qstat_job_still_running(self):
         lines = map(string.strip, self.good_qstat.format("Q","dontcare").split("\n"))
-        result = self.parser.parse_poll("42940", lines, [])
+        result = self.parser.parse_poll("42940", 0, lines, [])
         self.assertTrue(result.status == TorqueQStatResult.JOB_RUNNING, "torque job status wrong - expected %s result = %s" % (TorqueQStatResult.JOB_RUNNING, result))
 
 

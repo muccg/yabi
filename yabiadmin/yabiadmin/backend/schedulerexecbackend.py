@@ -104,8 +104,8 @@ class SchedulerExecBackend(ExecBackend):
         self.stderr_file = os.path.join(working_parts.path, "STDERR.txt")
         wrapper_script = self._get_submission_wrapper_script()
         logger.debug("wrapper script:\n%s" % wrapper_script)
-        stdout, stderr = self.executer.exec_script(wrapper_script)
-        result = self.parser.parse_sub(stdout, stderr)
+        exit_code, stdout, stderr = self.executer.exec_script(wrapper_script)
+        result = self.parser.parse_sub(exit_code, stdout, stderr)
         if result.status != result.JOB_SUBMITTED:
             logger.error("Yabi Task Name = %s" % self._yabi_task_name())
             logger.error("Submission script name = %s" % self.submission_script_name)
@@ -135,8 +135,8 @@ class SchedulerExecBackend(ExecBackend):
  
     def _poll_job_status(self):
         polling_script = self._get_polling_script()
-        stdout, stderr = self.executer.exec_script(polling_script)
-        result = self.parser.parse_poll(self.task.remote_id, stdout, stderr)
+        exit_code, stdout, stderr = self.executer.exec_script(polling_script)
+        result = self.parser.parse_poll(self.task.remote_id, exit_code, stdout, stderr)
         return result
 
     def _job_running_response(self, result):
@@ -158,8 +158,8 @@ class SchedulerExecBackend(ExecBackend):
 
     def _abort_job(self):
         abort_script = self._get_abort_script()
-        stdout, stderr = self.executer.exec_script(abort_script)
-        result = self.parser.parse_abort(self.task.remote_id, stdout, stderr)
+        exit_code, stdout, stderr = self.executer.exec_script(abort_script)
+        result = self.parser.parse_abort(self.task.remote_id, exit_code, stdout, stderr)
         return result
 
     def _job_abortion_error_response(self, result):

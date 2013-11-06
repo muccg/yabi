@@ -20,8 +20,8 @@ class SSHSGEExecBackend(QBaseExecBackend):
 
     def _run_qacct(self):
         script = SSHSGEExecBackend.QACCT_TEMPLATE.format(self.task.remote_id).replace("<QACCT_COMMAND>",self.get_scheduler_command_path("qacct"))
-        stdout, stderr = self.executer.exec_script(script)
-        return self.parser.parse_qacct(self.task.remote_id, stdout, stderr)
+        exit_code, stdout, stderr = self.executer.exec_script(script)
+        return self.parser.parse_qacct(self.task.remote_id, exit_code, stdout, stderr)
 
     def _job_not_found_response(self, qstat_result):
         logger.debug("qstat for yabi task %s remote job %s did not produce results - trying qacct ..." % (self._yabi_task_name(), self.task.remote_id))

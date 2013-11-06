@@ -65,9 +65,10 @@ class SSHExec(object):
             script_name = self.upload_script(ssh, script)
             stdin, stdout, stderr = ssh.exec_command(script_name, bufsize=-1, timeout=None, get_pty=False)
             stdin.close()
-
+            exit_code = stdout.channel.recv_exit_status()
             logger.debug("sshclient exec'd script OK")
-            return stdout.readlines(), stderr.readlines()
+
+            return exit_code, stdout.readlines(), stderr.readlines()
         except paramiko.SSHException, sshe:
             raise RetryException(sshe, traceback.format_exc())
         finally:
