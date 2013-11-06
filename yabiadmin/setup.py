@@ -95,7 +95,7 @@ if not importlib_available:
     install_requires.append('importlib==1.0.1')
 
 setup(name='yabiadmin',
-    version='7.1.2',
+    version='7.1.3',
     description='Yabi Admin',
     long_description='Yabi front end and administration web interface',
     author='Centre for Comparative Genomics',
