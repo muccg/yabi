@@ -23,6 +23,9 @@ class SSHBackendTest(YabiTestCase):
         admin.create_tool('hostname', ex_backend_name='SSH Backend')
         admin.add_tool_to_all_tools('hostname')
 
+        key_file = os.path.join(os.path.dirname(__file__), "test_data/yabitests.pub")
+        os.system("cat %s >> ~/.ssh/authorized_keys" % key_file)
+
     def tearDown(self):
         models.Tool.objects.get(name='hostname').delete()
         models.Backend.objects.get(name='SSH Backend').delete()
@@ -30,6 +33,8 @@ class SSHBackendTest(YabiTestCase):
         # put normal hostname back to restore order
         admin.create_tool('hostname')
         YabiTestCase.tearDown(self)
+
+        os.system('sed "/yabitest/ D" -i.old ~/.ssh/authorized_keys')
 
     # This test must run first, it sets up the known hosts
     # Disabled as set paramiko to auto had host keys. Need
