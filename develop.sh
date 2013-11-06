@@ -95,8 +95,16 @@ ci_remote_build() {
     ccg ${AWS_BUILD_INSTANCE} getfile:rpmbuild/RPMS/x86_64/yabi*.rpm,build/
 }
 
+
 # run tests on a remote host from ci environment
 ci_remote_test() {
+    TEST_PLAN=$1
+    if [ "${TEST_PLAN}" = "" ]; then
+        TEST_PLAN="test_mysql"
+    fi
+
+    echo "Test plan ${TEST_PLAN}"
+
     time ccg ${AWS_TEST_INSTANCE} boot
     time ccg ${AWS_TEST_INSTANCE} puppet
     time ccg ${AWS_TEST_INSTANCE} shutdown:100
@@ -107,9 +115,7 @@ ci_remote_test() {
     time ccg ${AWS_TEST_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",exclude="${EXCLUDES}",delete=True
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh purge"
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh install"
-    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh add_yabitests_key"
-    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh test_postgresql"
-    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh test_mysql"
+    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh ${TEST_PLAN}"
     time ccg ${AWS_TEST_INSTANCE} shutdown:10
 }
 
@@ -582,6 +588,14 @@ ci_remote_build)
 ci_remote_test)
     ci_ssh_agent
     ci_remote_test
+    ;;
+ci_remote_test_postgresql)
+    ci_ssh_agent
+    ci_remote_test test_postgresql
+    ;;
+ci_remote_test_mysql)
+    ci_ssh_agent
+    ci_remote_test test_mysql
     ;;
 add_yabitests_key)
     add_yabitests_key
