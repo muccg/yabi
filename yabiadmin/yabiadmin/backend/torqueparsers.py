@@ -74,6 +74,17 @@ class TorqueQStatResult(object):
     def __repr__(self):
         return "qstat result: remote id = %s remote job status = %s" % (self.remote_id, self.status)
 
+
+class TorqueQDelResult(object):
+    JOB_ABORTED = "JOB ABORTED"
+    JOB_ABORTION_ERROR = "JOB ABORTION ERROR"
+    JOB_FINISHED = "JOB FINISHED"
+
+    def __init__(self):
+        self.status = None
+        self.error = None
+
+
 class TorqueParser(object):
     JOB_NUMBER_PATTERN = r'^(?P<remote_id>\d+)(\.\w+)+'  # E.g.  1224.carah  or 1234.carah.localdomain
     QSTAT_JOB_STATE_INDEX = 4
@@ -180,6 +191,10 @@ class TorqueParser(object):
         job_state = None
         exit_status = None
 
+        if len(stderr) > 0:
+            if any(['Unknown Job' in line for line in stderr]):
+                qstat_result.status = TorqueQStatResult.JOB_NOT_FOUND
+                return qstat_result
         for line in stdout:
             line = line.strip()
             logger.debug("parsing qstat: [%s]" % line)
@@ -224,21 +239,16 @@ class TorqueParser(object):
         return job_status
 
 
+    def parse_abort(self, remote_id, stdout, stderr):
+        result = TorqueQDelResult()
+        if len(stderr) > 0:
+            if 'invalid state for job - COMPLETE' in "\n".join(stderr):
+                result.status = TorqueQDelResult.JOB_FINISHED
+                return result
+            result.status = TorqueQDelResult.JOB_ABORTION_ERROR
+            result.error = "\n".join(stderr)
+            return result
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+        result.status = TorqueQDelResult.JOB_ABORTED
+        return result
+ 

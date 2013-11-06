@@ -315,6 +315,10 @@ CELERY_IMPORTS = ("yabiadmin.backend.celerytasks",)
 CELERY_ACKS_LATE = True
 # Not sure if this is still needed BROKER_TRANSPORT = "kombu.transport.django.Transport"
 
+# Set this to 1000 or even higher on LIVE
+CELERYD_MAX_TASKS_PER_CHILD = 100
+
+
 
 ### PREVIEW SETTINGS
 
@@ -422,7 +426,8 @@ LOGGING = {
 
 SCHEDULER_COMMAND_PATHS = {
     "torque": {"qsub" : "/opt/torque/2.3.13/bin/qsub",
-                 "qstat": "/opt/torque/2.3.13/bin/qstat"
+               "qstat": "/opt/torque/2.3.13/bin/qstat",
+               "qdel" : "/opt/torque/2.3.13/bin/qdel",
     }
 }
 

@@ -8,10 +8,7 @@ import os
 from ..migrationutils import *
 
 def homedir():
-    if os.environ['USER'] == 'root':
-        return '/home/yabi'
-    else:
-        return "%s%s" % (os.environ['HOME'], '/')
+    return "%s%s" % (os.environ.get('HOME', '/tmp'), '/')
 
 class Migration(DataMigration):
 

@@ -24,6 +24,8 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 # 
 ### END COPYRIGHT ###
+
+
 class RetryException(Exception):
     BACKOFF_STRATEGY_EXPONENTIAL = "exponential"
     BACKOFF_STRATEGY_CONSTANT = "constant"
@@ -40,3 +42,7 @@ class RetryException(Exception):
 class NotSupportedError(RuntimeError):
     pass
 
+
+class JobNotFoundException(RuntimeError):
+    """Raised when a job isn't found on the cluster by qstat, qacct"""
+    pass

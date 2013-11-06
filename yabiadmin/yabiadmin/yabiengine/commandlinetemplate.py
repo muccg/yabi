@@ -451,8 +451,11 @@ class CommandTemplate(object):
             params = self.params[tp.switch]
             if params['valid']:
                 details = params['value']
+                logger.debug("details = %s" % details)
                 for value in details:
-                    if 'type' in value and (value['type']=='file' or value['type']=='directory'):                       # TODO: what if value is unicode and contains the word 'type' within it! LOL
+                    logger.debug("value = %s" % value)
+
+                    if type(value) is dict and 'type' in value and (value['type']=='file' or value['type']=='directory'):
                         # param refers to a file
                         assert tp.file_assignment=="batch" or tp.file_assignment=="all", "File parameter passed in on switch '%s' where file_assignment is neither 'batch' nor 'all'"%(tp.switch)
                         value['extensions'] = tp.input_filetype_patterns()

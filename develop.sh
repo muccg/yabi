@@ -3,6 +3,8 @@
 # Script to control Yabi in dev and test
 #
 
+TOPDIR=$(cd `dirname $0`; pwd)
+
 # break on error
 set -e 
 
@@ -17,18 +19,19 @@ AWS_TEST_INSTANCE='aws_yabi_test'
 AWS_STAGING_INSTANCE='aws_syd_yabi_staging'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
 CLOSURE="/usr/local/closure/compiler.jar"
-MODULES="MySQL-python==1.2.3 psycopg2==2.4.6 Werkzeug flake8 requests==1.2.0 gunicorn django-nose nose==1.2.1"
-PIP_OPTS='--download-cache ~/.pip/cache --index-url=http://restricted.crate.io'
+PIP_OPTS='--download-cache ~/.pip/cache --index-url=https://restricted.crate.io'
 
 
 if [ "${YABI_CONFIG}" = "" ]; then
     YABI_CONFIG="dev_mysql"
 fi
 
+VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
+
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|add_yabitests_key|pipfreeze|pythonversion|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_authorized_keys) (yabiadmin|celery|yabish)"
+    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|add_yabitests_key|pipfreeze|pythonversion|syncmigrate|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_authorized_keys) (yabiadmin|celery|yabish)"
     echo ""
 }
 
@@ -105,6 +108,7 @@ ci_remote_test() {
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh purge"
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh install"
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh add_yabitests_key"
+    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh test_postgresql"
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh test_mysql"
     time ccg ${AWS_TEST_INSTANCE} shutdown:10
 }
@@ -170,7 +174,7 @@ ci_authorized_keys() {
 # lint using flake8
 lint() {
     project_needed
-    virt_yabiadmin/bin/flake8 ${PROJECT} --ignore=E501 --count
+    ${VIRTUALENV}/bin/flake8 ${PROJECT} --ignore=E501 --count
 }
 
 
@@ -185,43 +189,43 @@ jslint() {
 
 
 nosetests() {
-    source virt_yabiadmin/bin/activate
+    source ${VIRTUALENV}/bin/activate
 
     # Runs the end-to-end tests in the Yabitests project
-    virt_yabiadmin/bin/nosetests --with-xunit --xunit-file=tests.xml -I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py -v -w tests
-    #virt_yabiadmin/bin/nosetests -v -w tests tests.simple_tool_tests
-    #virt_yabiadmin/bin/nosetests -v -w tests tests.s3_connection_tests
-    #virt_yabiadmin/bin/nosetests -v -w tests tests.ssh_tests
-    #virt_yabiadmin/bin/nosetests -v -w tests tests.sshpbspro_tests
-    #virt_yabiadmin/bin/nosetests -v -w tests tests.sshtorque_tests
-    #virt_yabiadmin/bin/nosetests -v -w tests tests.backend_execution_restriction_tests
-    #virt_yabiadmin/bin/nosetests -v -w tests tests.localfs_connection_tests
-    #virt_yabiadmin/bin/nosetests -v -w tests tests.rewalk_tests
-    #virt_yabiadmin/bin/nosetests -v -w tests tests.file_transfer_tests
-    #virt_yabiadmin/bin/nosetests -v -w tests tests.ssh_tests
-    #virt_yabiadmin/bin/nosetests -v -w tests tests.idempotency_tests
+    ${VIRTUALENV}/bin/nosetests --with-xunit --xunit-file=tests.xml -I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py -v -w tests
+    #${VIRTUALENV}/bin/nosetests -v -w tests tests.simple_tool_tests
+    #${VIRTUALENV}/bin/nosetests -v -w tests tests.s3_connection_tests
+    #${VIRTUALENV}/bin/nosetests -v -w tests tests.ssh_tests
+    #${VIRTUALENV}/bin/nosetests -v -w tests tests.sshpbspro_tests
+    #${VIRTUALENV}/bin/nosetests -v -w tests tests.sshtorque_tests
+    #${VIRTUALENV}/bin/nosetests -v -w tests tests.backend_execution_restriction_tests
+    #${VIRTUALENV}/bin/nosetests -v -w tests tests.localfs_connection_tests
+    #${VIRTUALENV}/bin/nosetests -v -w tests tests.rewalk_tests
+    #${VIRTUALENV}/bin/nosetests -v -w tests tests.file_transfer_tests
+    #${VIRTUALENV}/bin/nosetests -v -w tests tests.ssh_tests
+    #${VIRTUALENV}/bin/nosetests -v -w tests tests.idempotency_tests
 }
 
 noseidempotency() {
-    source virt_yabiadmin/bin/activate
-    virt_yabiadmin/bin/nosetests --nocapture --with-xunit --xunit-file=tests.xml -w tests tests.idempotency_tests -v
+    source ${VIRTUALENV}/bin/activate
+    ${VIRTUALENV}/bin/nosetests --nocapture --with-xunit --xunit-file=tests.xml -w tests tests.idempotency_tests -v
 }
 
 nosestatuschange() {
-    source virt_yabiadmin/bin/activate
-    virt_yabiadmin/bin/nosetests --with-xunit --xunit-file=tests.xml -w tests tests.status_tests -v 
+    source ${VIRTUALENV}/bin/activate
+    ${VIRTUALENV}/bin/nosetests --with-xunit --xunit-file=tests.xml -w tests tests.status_tests -v 
 }
 
 noseyabiadmin() {
-    source virt_yabiadmin/bin/activate
+    source ${VIRTUALENV}/bin/activate
     # Runs the unit tests in the Yabiadmin project
-    virt_yabiadmin/bin/nosetests --with-xunit --xunit-file=yabiadmin.xml -v -w yabiadmin/yabiadmin 
+    ${VIRTUALENV}/bin/nosetests --with-xunit --xunit-file=yabiadmin.xml -v -w yabiadmin/yabiadmin 
 }
 
 
 nose_collect() {
-    source virt_yabiadmin/bin/activate
-    virt_yabiadmin/bin/nosetests -v -w tests --collect-only
+    source ${VIRTUALENV}/bin/activate
+    ${VIRTUALENV}/bin/nosetests -v -w tests --collect-only
 }
 
 
@@ -233,7 +237,7 @@ dropdb() {
         mysql -v -uroot -e "create database test_yabi default charset=UTF8;" || true
         ;;
     test_postgresql)
-        psql -aeE -U postgres -c "SELECT pg_terminate_backend(pg_stat_activity.procpid) FROM pg_stat_activity where pg_stat_activity.datname = 'test_yabi'" && psql -aeE -U postgres -c "alter user yabminapp createdb;" template1 && psql -aeE -U postgres -c "alter database test_yabi owner to yabminapp" template1 && psql -aeE -U yabminapp -c "drop database test_yabi" template1 && psql -aeE -U yabminapp -c "create database test_yabi;" template1
+        psql -aeE -U postgres -c "SELECT pg_terminate_backend(pg_stat_activity.procpid) FROM pg_stat_activity where pg_stat_activity.datname = 'test_yabi'" && psql -aeE -U postgres -c "alter user yabiapp createdb;" template1 && psql -aeE -U postgres -c "alter database test_yabi owner to yabiapp" template1 && psql -aeE -U yabiapp -c "drop database test_yabi" template1 && psql -aeE -U yabiapp -c "create database test_yabi;" template1
         ;;
     dev_mysql)
 	echo "Drop the dev database manually:"
@@ -242,7 +246,7 @@ dropdb() {
         ;;
     dev_postgresql)
 	echo "Drop the dev database manually:"
-        echo "psql -aeE -U postgres -c \"SELECT pg_terminate_backend(pg_stat_activity.procpid) FROM pg_stat_activity where pg_stat_activity.datname = 'dev_yabi'\" && psql -aeE -U postgres -c \"alter user yabminapp createdb;\" template1 && psql -aeE -U yabminapp -c \"drop database dev_yabi\" template1 && psql -aeE -U yabminapp -c \"create database dev_yabi;\" template1"
+        echo "psql -aeE -U postgres -c \"SELECT pg_terminate_backend(pg_stat_activity.procpid) FROM pg_stat_activity where pg_stat_activity.datname = 'dev_yabi'\" && psql -aeE -U postgres -c \"alter user yabiapp createdb;\" template1 && psql -aeE -U yabiapp -c \"drop database dev_yabi\" template1 && psql -aeE -U yabiapp -c \"create database dev_yabi;\" template1"
         exit 1
         ;;
     *)
@@ -334,15 +338,14 @@ installyabi() {
     which virtualenv >/dev/null
 
     echo "Install yabiadmin"
-    virtualenv virt_yabiadmin
+    virtualenv ${VIRTUALENV}
     pushd yabiadmin
-    ../virt_yabiadmin/bin/pip install ${PIP_OPTS} -e .
+    ${VIRTUALENV}/bin/pip install ${PIP_OPTS} -e .[dev,mysql,postgres,tests]
     popd
-    virt_yabiadmin/bin/pip install ${PIP_OPTS} ${MODULES}
 
     echo "Install yabish"
     pushd yabish
-    ../virt_yabiadmin/bin/pip install ${PIP_OPTS} -e .
+    ${VIRTUALENV}/bin/pip install ${PIP_OPTS} -e .
     popd
 }
 
@@ -355,18 +358,28 @@ startyabiadmin() {
 
     echo "Launch yabiadmin (frontend) http://localhost:${PORT}"
     mkdir -p ~/yabi_data_dir
-    . virt_yabiadmin/bin/activate
-    virt_yabiadmin/bin/django-admin.py syncdb --noinput --settings=${DJANGO_SETTINGS_MODULE} 1> syncdb-develop.log
-    virt_yabiadmin/bin/django-admin.py migrate --settings=${DJANGO_SETTINGS_MODULE} 1> migrate-develop.log
-    virt_yabiadmin/bin/django-admin.py collectstatic --noinput --settings=${DJANGO_SETTINGS_MODULE} 1> collectstatic-develop.log
+    . ${VIRTUALENV}/bin/activate
+    syncmigrate
+
     case ${YABI_CONFIG} in
     test_*)
-        virt_yabiadmin/bin/gunicorn_django -b 0.0.0.0:${PORT} --pid=yabiadmin-develop.pid --log-file=yabiadmin-develop.log --daemon ${DJANGO_SETTINGS_MODULE} -t 300 -w 5
+        ${VIRTUALENV}/bin/gunicorn_django -b 0.0.0.0:${PORT} --pid=yabiadmin-develop.pid --log-file=yabiadmin-develop.log --daemon ${DJANGO_SETTINGS_MODULE} -t 300 -w 5
         ;;
     *)
-        virt_yabiadmin/bin/django-admin.py runserver_plus 0.0.0.0:${PORT} --settings=${DJANGO_SETTINGS_MODULE} > yabiadmin-develop.log 2>&1 &
+        ${VIRTUALENV}/bin/django-admin.py runserver_plus 0.0.0.0:${PORT} --settings=${DJANGO_SETTINGS_MODULE} > yabiadmin-develop.log 2>&1 &
         echo $! > yabiadmin-develop.pid
     esac
+}
+
+
+# django syncdb, migrate and collect static
+syncmigrate() {
+    echo "syncdb"
+    ${VIRTUALENV}/bin/django-admin.py syncdb --noinput --settings=${DJANGO_SETTINGS_MODULE} 1> syncdb-develop.log
+    echo "migrate"
+    ${VIRTUALENV}/bin/django-admin.py migrate --settings=${DJANGO_SETTINGS_MODULE} 1> migrate-develop.log
+    echo "collectstatic"
+    ${VIRTUALENV}/bin/django-admin.py collectstatic --noinput --settings=${DJANGO_SETTINGS_MODULE} 1> collectstatic-develop.log
 }
 
 
@@ -384,7 +397,7 @@ startceleryd() {
     DJANGO_PROJECT_DIR="${CELERYD_CHDIR}"
     PROJECT_DIRECTORY="${CELERYD_CHDIR}"
     export CELERY_CONFIG_MODULE DJANGO_SETTINGS_MODULE DJANGO_PROJECT_DIR CELERY_LOADER CELERY_CHDIR PROJECT_DIRECTORY CELERYD_CHDIR
-    setsid virt_yabiadmin/bin/celeryd ${CELERYD_OPTS} 1>/dev/null 2>/dev/null &
+    setsid ${VIRTUALENV}/bin/celeryd ${CELERYD_OPTS} 1>/dev/null 2>/dev/null &
 }
 
 
@@ -397,13 +410,13 @@ celeryevents() {
     echo ${DJANGO_SETTINGS_MODULE}
 
     # You need to be using rabbitMQ for this to work
-    virt_yabiadmin/bin/django-admin.py celery flower --settings=${DJANGO_SETTINGS_MODULE}
+    ${VIRTUALENV}/bin/django-admin.py celery flower --settings=${DJANGO_SETTINGS_MODULE}
 
     # other monitors I looked at
-    #virt_yabiadmin/bin/django-admin.py celeryd --help --settings=${DJANGO_SETTINGS_MODULE}
-    #virt_yabiadmin/bin/django-admin.py djcelerymon 9000 --settings=${DJANGO_SETTINGS_MODULE}
-    #virt_yabiadmin/bin/django-admin.py celerycam --settings=${DJANGO_SETTINGS_MODULE}
-    #virt_yabiadmin/bin/django-admin.py celery events --settings=${DJANGO_SETTINGS_MODULE}
+    #${VIRTUALENV}/bin/django-admin.py celeryd --help --settings=${DJANGO_SETTINGS_MODULE}
+    #${VIRTUALENV}/bin/django-admin.py djcelerymon 9000 --settings=${DJANGO_SETTINGS_MODULE}
+    #${VIRTUALENV}/bin/django-admin.py celerycam --settings=${DJANGO_SETTINGS_MODULE}
+    #${VIRTUALENV}/bin/django-admin.py celery events --settings=${DJANGO_SETTINGS_MODULE}
 }
 
 
@@ -446,13 +459,13 @@ yabistatus() {
 
 
 pythonversion() {
-    virt_yabiadmin/bin/python -V
+    ${VIRTUALENV}/bin/python -V
 }
 
 
 pipfreeze() {
     echo 'yabiadmin pip freeze'
-    virt_yabiadmin/bin/pip freeze
+    ${VIRTUALENV}/bin/pip freeze
 }
 
 
@@ -468,7 +481,7 @@ yabiclean() {
 
 
 yabipurge() {
-    rm -rf virt_yabiadmin
+    rm -rf ${VIRTUALENV}
     rm -f *.log
 }
 
@@ -537,6 +550,10 @@ jslint)
 dropdb)
     settings
     dropdb
+    ;;
+syncmigrate)
+    settings
+    syncmigrate
     ;;
 stop)
     settings

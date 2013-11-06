@@ -18,6 +18,9 @@ class QBaseExecBackend(SchedulerExecBackend):
     QSTAT_TEMPLATE = "\n".join(["#!/bin/sh",
                                 "<QSTAT_COMMAND> -f -1 {0}"])
 
+    QDEL_TEMPLATE = "\n".join(['#!/bin/sh',
+                                '<QDEL_COMMAND> "{0}"'])
+
 
     def get_scheduler_command_path(self, scheduler_command):
         from django.conf import settings
@@ -34,4 +37,7 @@ class QBaseExecBackend(SchedulerExecBackend):
 
     def _get_polling_script(self):
         return self.QSTAT_TEMPLATE.format(self.task.remote_id).replace("<QSTAT_COMMAND>", self.get_scheduler_command_path("qstat"))
+
+    def _get_abort_script(self):
+        return self.QDEL_TEMPLATE.format(self.task.remote_id).replace("<QDEL_COMMAND>", self.get_scheduler_command_path("qdel"))
 
