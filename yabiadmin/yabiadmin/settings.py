@@ -201,7 +201,7 @@ DATABASES = {
         'PASSWORD': '', 
         'HOST': 'localhost',                    
         'PORT': '',
-        'OPTIONS': {}
+        'OPTIONS': {'init_command': 'SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED'},
     }
 }
 
@@ -314,6 +314,10 @@ CELERY_SEND_TASK_SENT_EVENT = True
 CELERY_IMPORTS = ("yabiadmin.backend.celerytasks",)
 CELERY_ACKS_LATE = True
 # Not sure if this is still needed BROKER_TRANSPORT = "kombu.transport.django.Transport"
+
+# Set this to 1000 or even higher on LIVE
+CELERYD_MAX_TASKS_PER_CHILD = 100
+
 
 
 ### PREVIEW SETTINGS

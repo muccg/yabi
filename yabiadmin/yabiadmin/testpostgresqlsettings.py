@@ -4,9 +4,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'USER': 'yabiapp',
-        'NAME': 'dev_yabi',
+        'NAME': 'test_yabi',
         'PASSWORD': 'yabiapp',
-        'HOST': '',
+        'HOST': 'localhost',
         'PORT': '',
+        'OPTIONS': {}
     }
 }
