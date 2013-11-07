@@ -346,7 +346,7 @@ installyabi() {
     echo "Install yabiadmin"
     virtualenv ${VIRTUALENV}
     pushd yabiadmin
-    ${VIRTUALENV}/bin/pip install ${PIP_OPTS} -e .[dev,mysql,postgres,tests]
+    ${VIRTUALENV}/bin/pip install ${PIP_OPTS} -e .[dev,mysql,postgresql,tests]
     popd
 
     echo "Install yabish"
