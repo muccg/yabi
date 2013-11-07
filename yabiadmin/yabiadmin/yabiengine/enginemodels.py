@@ -494,17 +494,6 @@ class EngineTask(Task):
         logger.debug("create_stagein: %s => %s (%s): %s " % (s.src, s.dst, method, "created" if created else "reused"))
         s.save()
 
-
-    def cascade_status(self):
-       job_old_status = self.job.status
-       job_cur_status = self.job.update_status()
-
-       if job_cur_status != job_old_status and job_cur_status in (STATUS_ERROR, STATUS_COMPLETE, STATUS_ABORTED):
-           self.job.workflow.update_status()
-
-       return (job_cur_status != job_old_status)
-
-
     def determine_stagein_method(self, src, dst):
         preferred_stagein_method = self.job.preferred_stagein_method
         if is_same_location(src, dst):

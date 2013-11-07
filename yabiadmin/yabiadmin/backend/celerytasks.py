@@ -349,9 +349,16 @@ def change_task_status(task_id, status):
         task = EngineTask.objects.get(pk=task_id)
         task.set_status(status)
         task.save()
-        job_status_changed = task.cascade_status()
+        transaction.commit()
+
+        job_old_status = task.job.status
+        job_status = task.job.update_status()
+        job_status_changed = (job_old_status != job_status)
 
         if job_status_changed:
+            transaction.commit()
+            if task.job.status in (STATUS_ERROR, STATUS_COMPLETE, STATUS_ABORTED):
+                task.job.workflow.update_status()
             # commit before submission of Celery Tasks
             transaction.commit()
             process_workflow_jobs_if_needed(task)
