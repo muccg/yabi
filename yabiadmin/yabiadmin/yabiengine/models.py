@@ -236,9 +236,12 @@ class Job(models.Model, Editable, Status):
                 else:
                     self.status = status
 
-                # fill end_time if finished
                 if status == STATUS_COMPLETE:
-                    self.end_time = datetime.now()
+                    if [T for T in Task.objects.filter(job=self) if T.status==STATUS_ABORTED]:
+                        # at least one aborted the rest completed
+                        status = STATUS_ABORTED
+                    else:
+                        self.end_time = datetime.now()
                 
                 assert(self.status in STATUS)
                 self.save()
