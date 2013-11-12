@@ -27,34 +27,33 @@ install_requires = [
     'ccg-extras==0.1.7',
     'ccg-auth==0.3.3',
     'anyjson==0.3.3',
-    'SQLAlchemy==0.7.10',
-    'celery==3.0.22',
+    'SQLAlchemy>=0.7.10,<0.8.0',
+    'celery>=3.0.22,<3.1.0',
     'amqplib==1.0.2',
-    'django-celery==3.0.17',
-    'kombu==2.5.13',
-    'billiard==2.7.3.32',
+    'django-celery>=3.0.17,<3.1.0',
+    'kombu>=2.5.13,<2.6.0',
+    'billiard>=2.7.3.32,<2.8.0.0',
     'django-templatetag-sugar==0.1',
     'ordereddict==1.1',
-    'python-memcached==1.53',
+    'python-memcached>=1.53,<2.0',
     'Mako==0.5.0',
     'South==0.7.6',
-    'django-extensions==1.1.1',
-    'beautifulsoup4==4.3.2',
-    'lxml==3.2.1',
-    'cssutils==0.9.10',
-    'httplib2==0.8',
+    'django-extensions>=1.2.0,<1.2.0',
+    'beautifulsoup4>=4.3.2,<4.4.0',
+    'lxml>=3.2.0,<3.3.0',
+    'cssutils>=0.9.10,<0.10.0',
+    'httplib2>=0.8,<0.9',
     'djamboloader==0.1.2',
-    'paramiko==1.10.1',
-    'mockito==0.5.1',
+    'paramiko>=1.10.0,<1.11.0',
     'boto==2.13.3',
-    'python-dateutil==2.1',
+    'python-dateutil>=2.1,<3.0',
     'yaphc==0.1.5',
     'pycrypto>=2.6',
 ]
 
 dev_requires = [
     'flake8>=2.0,<2.1',
-    'flower==0.5.1',
+    'flower>=0.5',
     'Werkzeug',
     'gunicorn',
 ]
@@ -62,7 +61,8 @@ dev_requires = [
 tests_require = [
     'requests==1.2.0',
     'django-nose',
-    'nose==1.2.1'
+    'nose==1.2.1',
+    'mockito>=0.5.0,<0.6.0',
 ]
 
 postgres_requires = [
@@ -95,11 +95,11 @@ if not importlib_available:
     install_requires.append('importlib==1.0.1')
 
 setup(name='yabiadmin',
-    version='7.1.2',
+    version='7.1.3',
     description='Yabi Admin',
     long_description='Yabi front end and administration web interface',
     author='Centre for Comparative Genomics',
-    author_email='web@ccg.murdoch.edu.au',
+    author_email='yabi@ccg.murdoch.edu.au',
     packages=packages,
     package_data={
         '': [ "%s/%s"%(dirglob,fileglob)
