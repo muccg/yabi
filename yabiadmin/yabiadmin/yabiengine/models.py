@@ -124,7 +124,10 @@ class Workflow(models.Model, Editable, Status):
     def update_status(self):
         job_statuses = [x['status'] for x in Job.objects.filter(workflow=self).values('status')]
         if not all([status in (STATUS_COMPLETE, STATUS_ERROR, STATUS_ABORTED) for status in job_statuses]):
-            # Status not know yet
+            if self.status == STATUS_READY:
+                if any([status in (STATUS_RUNNING, STATUS_COMPLETE) for status in job_statuses]):
+                    self.status = STATUS_RUNNING
+                    self.save()
             return self.status
 
         # All jobs should be finished (either completed, errored or aborted) at this point

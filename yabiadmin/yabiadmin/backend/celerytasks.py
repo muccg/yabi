@@ -357,8 +357,7 @@ def change_task_status(task_id, status):
 
         if job_status_changed:
             transaction.commit()
-            if task.job.status in (STATUS_ERROR, STATUS_COMPLETE, STATUS_ABORTED):
-                task.job.workflow.update_status()
+            task.job.workflow.update_status()
             # commit before submission of Celery Tasks
             transaction.commit()
             process_workflow_jobs_if_needed(task)
