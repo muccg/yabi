@@ -71,11 +71,15 @@ class SGEParser(object):
     QDEL_JOB_ABORT_REGISTERED = r"registered the job (?P<remote_id>\d+) for deletion"
     QDEL_JOB_FINISHED = r'job "(?P<remote_id>\d+)" does not exist'
 
-    def parse_sub(self, stdout, stderr):
+    def parse_sub(self, exit_code, stdout, stderr):
         for line in stderr:
             logger.debug("qsub stderr line: %s" % line)
         result = SGEQSubResult()
         logger.debug("starting qsub parse..")
+        if exit_code > 0:
+            result.status = SGEQSubResult.JOB_SUBMISSION_ERROR
+            return result
+
         for line in stdout:
             logger.debug("parsing qsub stdout line: %s" % line)
             m = re.match(SGEParser.QSUB_JOB_SUBMITTED_PATTERN, line)
@@ -89,7 +93,7 @@ class SGEParser(object):
         logger.debug("parse result = %s" % result)
         return result
 
-    def parse_poll(self, remote_id, stdout, stderr):
+    def parse_poll(self, remote_id, exit_code, stdout, stderr):
         result = SGEQStatResult()
         for line in stdout:
             logger.debug("parsing qstat stdout line: %s" % line)
@@ -104,7 +108,7 @@ class SGEParser(object):
         logger.debug("parse result = %s" % result)
         return result
 
-    def parse_qacct(self, remote_id, stdout, stderr):
+    def parse_qacct(self, remote_id, exit_code, stdout, stderr):
         result = SGEQAcctResult()
         found_job = False
         for line in stdout:
@@ -124,13 +128,13 @@ class SGEParser(object):
 
         return result
 
-    def parse_abort(self, remote_id, stdout, stderr):
+    def parse_abort(self, remote_id, exit_code, stdout, stderr):
         # Note: SGE tools print errors to stdout
         result = SGEQDelResult()
-        for line in stdout:
-            if job_aborted_line(line, remote_id) or job_abort_registered_line(line, remote_id):
-                return SGEQDelResult.job_aborted()
+        if exit_code == 0:
+            return SGEQDelResult.job_aborted()
 
+        for line in stdout:
             if job_finished_line(line, remote_id):
                 return SGEQDelResult.job_finished()
 

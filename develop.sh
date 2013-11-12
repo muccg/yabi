@@ -27,6 +27,7 @@ if [ "${YABI_CONFIG}" = "" ]; then
 fi
 
 VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
+VIRTUALENV="${TOPDIR}/virt_yabiadmin"
 
 
 usage() {

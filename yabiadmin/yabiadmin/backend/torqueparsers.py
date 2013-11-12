@@ -102,7 +102,7 @@ class TorqueParser(object):
     RUNNING_STATES = ["R", "T", "W", "S", "Q", "H"]
     FINISHED_STATES = ["E", "C"]
 
-    def parse_sub(self, stdout, stderr):
+    def parse_sub(self, exit_code, stdout, stderr):
         """
 
         @param stdout: list of lines
@@ -110,6 +110,9 @@ class TorqueParser(object):
         @return: TorqueQSubResult
         """
         qsub_result = TorqueQSubResult()
+        if exit_code > 0:
+            qsub_result.status = TorqueQSubResult.JOB_SUBMISSION_ERROR
+            return qsub_result
         for line in stdout:
             logger.debug("Parsing QSUB output line: [%s]" % line)
             try:
@@ -137,7 +140,7 @@ class TorqueParser(object):
         parts = map(string.strip, line.split("="))
         return parts[1]
 
-    def parse_poll(self, remote_id, stdout, stderr):
+    def parse_poll(self, remote_id, exit_code, stdout, stderr):
         """
         parsing result of: qstat -f -1 <remote_id>:
 
@@ -239,16 +242,19 @@ class TorqueParser(object):
         return job_status
 
 
-    def parse_abort(self, remote_id, stdout, stderr):
+    def parse_abort(self, remote_id, exit_code, stdout, stderr):
         result = TorqueQDelResult()
-        if len(stderr) > 0:
-            if 'invalid state for job - COMPLETE' in "\n".join(stderr):
-                result.status = TorqueQDelResult.JOB_FINISHED
-                return result
-            result.status = TorqueQDelResult.JOB_ABORTION_ERROR
-            result.error = "\n".join(stderr)
+        if exit_code == 0:
+            result.status = TorqueQDelResult.JOB_ABORTED
             return result
 
-        result.status = TorqueQDelResult.JOB_ABORTED
+        if 'invalid state for job - COMPLETE' in "\n".join(stderr):
+            result.status = TorqueQDelResult.JOB_FINISHED
+            return result
+
+        result.status = TorqueQDelResult.JOB_ABORTION_ERROR
+        result.error = "\n".join(stderr)
+
         return result
+
  

@@ -68,6 +68,7 @@ class ExecBackend(BaseBackend):
         backend.yabiusername = task.job.workflow.user.name
         backend.task = task
         backend.cred = exec_credential(backend.yabiusername, task.job.exec_backend)
+        backend.backend = backend.cred.backend
         return backend
 
     def get_submission_script(self, host, working):
