@@ -159,9 +159,8 @@ The following is a table of the keys available in the template, and their meanin
 Troubleshooting SSH
 -------------------
 
-Take a look at these FAQs
+Take a look at these FAQ
  - :ref:`ssh_troubleshooting`
- - :ref:`known_hosts`
 
 .. index::
    pair: backend; null backend
