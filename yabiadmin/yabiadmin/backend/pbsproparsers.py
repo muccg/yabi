@@ -80,9 +80,9 @@ class PBSProParser(object):
     RUNNING_STATES = ["R", "B", "E", "H", "M", "Q", "S" , "T" ,"U", "W" ] # Added exiting(E)  here to ensure we wait till job has actually finished
     FINISHED_STATES = ["F", "C", "X"]
 
-    def parse_sub(self, stdout, stderr):
+    def parse_sub(self, exit_code, stdout, stderr):
         result = PBSProQSubResult()
-        if len(stderr) > 0:
+        if exit_code > 0 or len(stderr) > 0:
             result.status = PBSProQSubResult.JOB_SUBMISSION_ERROR
             result.error = "\n".join(stderr)
             return result
@@ -98,7 +98,7 @@ class PBSProParser(object):
         result.status = PBSProQSubResult.JOB_SUBMISSION_ERROR
         return result
 
-    def parse_poll(self, remote_id, stdout, stderr):
+    def parse_poll(self, remote_id, exit_code, stdout, stderr):
         job_prefix = remote_id + "."
         result = PBSProQStatResult()
         result.remote_id = remote_id
@@ -121,16 +121,18 @@ class PBSProParser(object):
         result.status = PBSProQStatResult.JOB_NOT_FOUND
         return result
 
-    def parse_abort(self, remote_id, stdout, stderr):
+    def parse_abort(self, remote_id, exit_code, stdout, stderr):
         result = PBSProQDelResult()
-        if len(stderr) > 0:
-            if 'finished' in "\n".join(stderr):
-                result.status = PBSProQDelResult.JOB_FINISHED
-                return result
-            result.status = PBSProQDelResult.JOB_ABORTION_ERROR
-            result.error = "\n".join(stderr)
+        if exit_code == 0:
+            result.status = PBSProQDelResult.JOB_ABORTED
             return result
 
-        result.status = PBSProQDelResult.JOB_ABORTED
+        if 'finished' in "\n".join(stderr):
+            result.status = PBSProQDelResult.JOB_FINISHED
+            return result
+
+        result.status = PBSProQDelResult.JOB_ABORTION_ERROR
+        result.error = "\n".join(stderr)
+ 
         return result
 

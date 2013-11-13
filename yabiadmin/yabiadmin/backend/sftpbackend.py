@@ -339,18 +339,18 @@ ln -s "{0}" "{1}"
             cmd = self.COPY_RECURSIVE_COMMAND_TEMPLATE.format(src, dest)
         else:
             cmd = self.COPY_COMMAND_TEMPLATE.format(src, dest)
-        stdout, stderr = self.executer.exec_script(cmd)
-        if stderr:
-            raise RuntimeError("Couldn't (recursive=%s) copy %s to %s. STDERR:\n%s" % (
-                    recursive, src, dest, stderr))
+        exit_code, stdout, stderr = self.executer.exec_script(cmd)
+        if exit_code > 0 or stderr:
+            raise RuntimeError("Couldn't (recursive=%s) copy %s to %s. Exit code: %s. STDERR:\n%s" % (
+                    recursive, src, dest, exit_code, stderr))
         return True
 
     def local_symlink(self, src, dest):
         logger.debug('SSH Local Symlink %s => %s', src, dest)
         cmd = self.SYMLINK_COMMAND_TEMPLATE.format(src, dest)
-        stdout, stderr = self.executer.exec_script(cmd)
-        if stderr:
-            raise RuntimeError("Couldn't symlink %s to %s. STDERR:\n%s" % (
-                    src, dest, stderr()))
+        exit_code, stdout, stderr = self.executer.exec_script(cmd)
+        if exit_code > 0 or stderr:
+            raise RuntimeError("Couldn't symlink %s to %s. Exit code: %s. STDERR:\n%s" % (
+                    src, dest, exit_code, stderr()))
         return True
 

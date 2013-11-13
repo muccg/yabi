@@ -1,5 +1,5 @@
-%define version 7.1.2
-%define unmangled_version 7.1.2
+%define version 7.1.3
+%define unmangled_version 7.1.3
 %define release 1
 %define webapps /usr/local/webapps
 %define webappname yabiadmin

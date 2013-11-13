@@ -102,9 +102,9 @@ kill {1} -- -$( ps opgid= {0} | tr -d ' ')
 
     def kill_process(self, pid, with_SIGKILL=False):
         kill_script = self._get_kill_script(with_SIGKILL)
-        stdout, stderr = self.executer.exec_script(kill_script)
-        if stderr:
-            logger.error("Couldn't kill process %s. STDERR:\n%s", pid, stderr)
+        exit_code, stdout, stderr = self.executer.exec_script(kill_script)
+        if exit_code > 0 or stderr:
+            logger.error("Couldn't kill process %s. Exit code: %s. STDERR:\n%s", pid, exit_code, stderr)
      
     def _get_kill_script(self, with_SIGKILL):
         signal = "-KILL" if with_SIGKILL else ""

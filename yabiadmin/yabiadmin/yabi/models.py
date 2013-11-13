@@ -701,6 +701,7 @@ class Backend(Base):
     submission = models.TextField(blank=True)
     
     tasks_per_user = models.IntegerField(null=True, blank=True)
+    temporary_directory = models.CharField(max_length=512, blank=True)
 
     scheme.help_text="Must be one of %s." % ", ".join(VALID_SCHEMES)
     hostname.help_text="Hostname must not end with a /."
@@ -715,6 +716,8 @@ class Backend(Base):
     submission.help_text="Mako script to be used to generate the submission script. (Variables: walltime, memory, cpus, working, modules, command)"
 
     tasks_per_user.help_text="The number of simultaneous tasks the backends should execute for each remote backend user. 0 means do not execute jobs for this backend. Blank means no limits."
+
+    temporary_directory.help_text='Only to be set on execution backends. Temporary directory used for temporary execution scripts. Blank means "/tmp".'
 
     @property
     def uri(self):

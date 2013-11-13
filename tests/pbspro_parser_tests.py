@@ -19,12 +19,12 @@ class QSubParseTestCase(unittest.TestCase):
         self.missing_script_lines_error_lines = ["qsub: script file:: No such file or directory\n"]
 
     def test_qsub_parser_picks_up_remote_id(self):
-        result = self.parser.parse_sub(self.good_lines, [])
+        result = self.parser.parse_sub(0, self.good_lines, [])
         self.assertTrue(result.remote_id == "1223", "PBSProParser failed to parse qsub remote id: Expected: 1223 Actual: %s" % result.remote_id)
         self.assertTrue(result.status == PBSProQSubResult.JOB_SUBMITTED, "PBSProParser qsub result has incorrect status: Expected: %s Actual %s" % (PBSProQSubResult.JOB_SUBMITTED, result.status))
 
     def test_qsub_parser_returns_error_status_when_no_such_script(self):
-        result = self.parser.parse_sub([],self.missing_script_lines_error_lines)
+        result = self.parser.parse_sub(0, [],self.missing_script_lines_error_lines)
         self.assertTrue(result.remote_id is None,"PBSProParser qsub test for missing script - should not assign remote id: Expected: None Actual: %s" % result.remote_id)
         self.assertTrue(result.status == PBSProQSubResult.JOB_SUBMISSION_ERROR,"PBSProParser qsub for missing script. Expected: %s Actual: %s" % (PBSProQSubResult.JOB_SUBMISSION_ERROR, result.status))
 
@@ -47,17 +47,17 @@ class QStatParseTestCase(unittest.TestCase):
 
 
     def test_qstat_finds_completed_job(self):
-        result = self.parser.parse_poll("3485900", self.completed_job_lines, [])
+        result = self.parser.parse_poll("3485900", 0, self.completed_job_lines, [])
         self.assertTrue(result.status == PBSProQStatResult.JOB_COMPLETED,
                         "PBSProParser failed to report a completed job. Expected status: %s Actual: %s"
                         % (PBSProQStatResult.JOB_COMPLETED, result.status))
 
     def test_qstat_queued_job(self):
-        result = self.parser.parse_poll("3485900", self.queued_job_lines, [])
+        result = self.parser.parse_poll("3485900", 0, self.queued_job_lines, [])
         self.assertTrue(result.status == PBSProQStatResult.JOB_RUNNING,
                         "PBSProParser failed to report a queued job: Expected %s Actual: %s" % (PBSProQStatResult.JOB_RUNNING, result.status))
 
     def test_qstat_running_job(self):
-        result = self.parser.parse_poll("3485900", self.running_job_lines, [])
+        result = self.parser.parse_poll("3485900", 0, self.running_job_lines, [])
         self.assertTrue(result.status == PBSProQStatResult.JOB_RUNNING,
                         "PBSProParser failed to report a running job: Expected %s Actual: %s" % (PBSProQStatResult.JOB_RUNNING, result.status))
