@@ -73,10 +73,13 @@ class ExecBackend(BaseBackend):
 
     def get_submission_script(self, host, working):
         """Get the submission script for this backend."""
-        if self.cred.submission.strip() != '':
+        if self.task.job.tool.submission.strip() != '':
+            template = self.task.job.tool.submission
+        elif self.cred.submission.strip() != '':
             template = self.cred.submission
         else:
             template = self.cred.backend.submission
+
         return submission_script(
             template=template,
             working=working,

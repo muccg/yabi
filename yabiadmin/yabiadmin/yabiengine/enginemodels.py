@@ -177,8 +177,6 @@ class EngineWorkflow(Workflow):
 
 class EngineJob(Job):
 
-    tool = None
-
     class Meta:
         proxy = True
 
@@ -262,8 +260,6 @@ class EngineJob(Job):
         template.parse_parameter_description()
 
         self.job_dict = job_dict
-        # AH tool is intrinsic to job, so it would seem to me that this ref is useful,
-        # let me know if keep refs to ORM objects like this is not cool
         self.tool = Tool.objects.get(name=job_dict["toolName"])
 
         # lets work out the highest copy level supported by this tool and store it in job. This makes no account for the backends capabilities.

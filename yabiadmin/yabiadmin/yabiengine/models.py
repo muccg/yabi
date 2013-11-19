@@ -29,7 +29,7 @@
 from django.db import models
 from django.db.models import Q
 from django.conf import settings
-from yabiadmin.yabi.models import User, BackendCredential
+from yabiadmin.yabi.models import User, BackendCredential, Tool
 from yabiadmin.yabiengine import backendhelper
 from django.utils import simplejson as json
 from ccg.utils import webhelpers
@@ -172,6 +172,7 @@ class Job(models.Model, Editable, Status):
     order = models.PositiveIntegerField()
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(null=True)
+    tool = models.ForeignKey(Tool, null=True)
     cpus = models.CharField(max_length=64, null=True, blank=True)
     walltime = models.CharField(max_length=64, null=True, blank=True)
     module = models.TextField(null=True, blank=True)
