@@ -92,7 +92,8 @@ class ExecBackend(BaseBackend):
             stdout='STDOUT.txt',
             stderr='STDERR.txt',
             tasknum=self.task.task_num,
-            tasktotal=self.task.job.task_total)
+            tasktotal=self.task.job.task_total,
+            envvars=self.task.envvars)
 
     def submit_task(self):
         raise NotImplementedError("")

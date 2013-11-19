@@ -101,7 +101,7 @@ def create_fifo(suffix='', dir='/tmp'):
     return filename
 
 
-def submission_script(template, working, command, modules, cpus, memory, walltime, yabiusername, username, host, queue, stdout, stderr, tasknum, tasktotal):
+def submission_script(template, working, command, modules, cpus, memory, walltime, yabiusername, username, host, queue, stdout, stderr, tasknum, tasktotal, envvars):
     """Mako templating support function for submission script templating."""
     cleaned_template = template.replace('\r\n', '\n').replace('\n\r', '\n').replace('\r', '\n')
     tmpl = Template(cleaned_template)
@@ -123,7 +123,8 @@ def submission_script(template, working, command, modules, cpus, memory, walltim
         'tasknum': tasknum,
         'tasktotal': tasktotal,
         'arrayid': tasknum,
-        'arraysize': tasktotal
+        'arraysize': tasktotal,
+        'envvars': envvars,
     }
 
     return str(tmpl.render(**variables))

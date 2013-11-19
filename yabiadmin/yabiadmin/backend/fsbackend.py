@@ -25,12 +25,14 @@
 # 
 ### END COPYRIGHT ###
 import os
+from django.utils import simplejson as json
 from yabiadmin.yabiengine.enginemodels import StageIn
 from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend.utils import create_fifo, execute
 from yabiadmin.backend.backend import fs_credential
 from yabiadmin.backend.basebackend import BaseBackend
 from yabiadmin.yabiengine.urihelper import url_join, uriparse, is_same_location
+from yabiadmin.constants import ENVVAR_FILENAME
 import logging
 import traceback
 import shutil
@@ -220,6 +222,18 @@ class FSBackend(BaseBackend):
         except Exception, exc:
             raise RetryException(exc, traceback.format_exc())
 
+    def save_envvars(self, task, envvars_uri):
+        try:
+            fifo = FSBackend.remote_file_download(self.yabiusername, envvars_uri)
+            with open(fifo) as f:
+                content = f.read()
+            envvars = json.loads(content)
+        except:
+            logger.exception("Could not read contents of envvars file '%s' for task %s", envvars_uri, task.pk)
+        else:
+            task.envvars_json = json.dumps(envvars)
+            task.save()
+
     def stage_in_files(self):
         self.mkdir(self.working_dir_uri())
         self.mkdir(self.working_input_dir_uri())
@@ -229,6 +243,8 @@ class FSBackend(BaseBackend):
         stageins = self.task.get_stageins()
         for stagein in stageins:
             self.stage_in(stagein)
+            if stagein.matches_filename(ENVVAR_FILENAME):
+                self.save_envvars(self.task, stagein.src)
 
     def stage_in(self, stagein):
         """Perform a single stage in."""
