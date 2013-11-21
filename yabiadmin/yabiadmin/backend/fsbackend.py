@@ -27,7 +27,7 @@
 import os
 from django.utils import simplejson as json
 from yabiadmin.yabiengine.enginemodels import StageIn
-from yabiadmin.backend.exceptions import RetryException
+from yabiadmin.backend.exceptions import RetryException, FileNotFoundError
 from yabiadmin.backend.utils import create_fifo, execute
 from yabiadmin.backend.backend import fs_credential
 from yabiadmin.backend.basebackend import BaseBackend
@@ -192,6 +192,8 @@ class FSBackend(BaseBackend):
             # TODO some check on the copy thread
 
             return fifo
+        except FileNotFoundError:
+            raise
         except Exception, exc:
             raise RetryException(exc, traceback.format_exc())
 

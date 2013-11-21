@@ -20,8 +20,7 @@ class SchedulerExecBackend(ExecBackend):
         self.parser = None
         self.submission_script_name = None
         self.submission_script_body = None
-        self.stdout_file = None
-        self.stderr_file = None
+        self.working_dir = None
         self._task = None
         self._cred = None
         self._backend = None
@@ -95,13 +94,12 @@ class SchedulerExecBackend(ExecBackend):
     def _submit_job(self):
         exec_scheme, exec_parts = uriparse(self.task.job.exec_backend)
         working_scheme, working_parts = uriparse(self.working_output_dir_uri())
+        self.working_dir = working_parts.path
         self.submission_script_name = self.executer.generate_remote_script_name()
         self.task.job_identifier = self.submission_script_name
         self.task.save()
         logger.debug("creating submission script %s" % self.submission_script_name)
-        self.submission_script_body = self.get_submission_script(exec_parts.hostname, working_parts.path)
-        self.stdout_file = os.path.join(working_parts.path, "STDOUT.txt")
-        self.stderr_file = os.path.join(working_parts.path, "STDERR.txt")
+        self.submission_script_body = self.get_submission_script(exec_parts.hostname, self.working_dir)
         wrapper_script = self._get_submission_wrapper_script()
         logger.debug("wrapper script:\n%s" % wrapper_script)
         exit_code, stdout, stderr = self.executer.exec_script(wrapper_script)

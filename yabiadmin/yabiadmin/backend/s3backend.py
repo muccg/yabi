@@ -26,7 +26,7 @@
 ### END COPYRIGHT ###
 from yabiadmin.backend.fsbackend import FSBackend
 from yabiadmin.backend.exceptions import NotSupportedError, RetryException
-from yabiadmin.backend.utils import get_credential_data
+from yabiadmin.backend.utils import get_credential_data, partition
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from yabiadmin.yabiengine.urihelper import uriparse
 import logging
@@ -35,7 +35,7 @@ import boto
 import dateutil
 import threading
 from io import BytesIO
-from itertools import tee, ifilter, ifilterfalse
+from itertools import ifilterfalse
 
 
 logger = logging.getLogger(__name__)
@@ -259,11 +259,6 @@ def basename(key_name, delimiter=DELIMITER):
 def format_iso8601_date(iso8601_date):
     date = dateutil.parser.parse(iso8601_date)
     return date.strftime("%a, %d %b %Y %H:%M:%S")
-
-
-def partition(pred, iterable):
-    t1, t2 = tee(iterable)
-    return ifilter(pred, t1), ifilterfalse(pred, t2)
 
 
 class NullQueue(object):

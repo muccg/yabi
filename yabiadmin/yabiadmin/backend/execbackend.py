@@ -92,8 +92,6 @@ class ExecBackend(BaseBackend):
             username=self.cred.credential.username,
             host=host,
             queue=self.task.job.queue,
-            stdout='STDOUT.txt',
-            stderr='STDERR.txt',
             tasknum=self.task.task_num,
             tasktotal=self.task.job.task_total,
             envvars=self.task.envvars)
