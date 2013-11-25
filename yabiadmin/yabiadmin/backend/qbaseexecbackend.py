@@ -10,7 +10,7 @@ class QBaseExecBackend(SchedulerExecBackend):
     """
     QSUB_TEMPLATE = "\n".join(["#!/bin/sh",
                     'script_temp_file_name="{0}"',
-                    "cat<<EOS>$script_temp_file_name",
+                    "cat<<\"EOS\">$script_temp_file_name",
                     "{1}",
                     "EOS",
                     "cd '{2}'"])

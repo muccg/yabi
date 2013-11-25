@@ -50,7 +50,7 @@ class SSHBackend(SchedulerExecBackend):
     RUN_COMMAND_TEMPLATE = """
 #!/bin/sh
 script_temp_file_name="{0}"
-cat<<EOS>$script_temp_file_name
+cat<<"EOS">$script_temp_file_name
 {1}
 EOS
 chmod u+x $script_temp_file_name
