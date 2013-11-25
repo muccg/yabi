@@ -174,7 +174,8 @@ class SGEParser(object):
             raise RuntimeError("Not all subjobs returned the jobnumber %s" % expected_job_id)
 
         if frozenset(expected_subjob_ids) != frozenset(map(lambda x: int(x), returned_subjob_ids)):
-            raise RuntimeError("The returned subjob ids (%s) don't match the expected subjob ids (%s)" % (returned_subjob_ids, expected_subjob_ids))
+            result.status = SGEQAcctResult.JOB_NOT_FOUND
+            return result
 
         result.status = SGEQAcctResult.JOB_COMPLETED
         result.remote_id = remote_id
