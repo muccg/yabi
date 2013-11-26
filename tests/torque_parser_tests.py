@@ -80,22 +80,36 @@ class QStatParseTestCase(unittest.TestCase):
         """ + self.good_qstat
  
 
-    def test_qstat_completed(self):
-        lines = map(string.strip, self.good_qstat.format("C", "0").split("\n"))
-        result = self.parser.parse_poll("42940", 0, lines, [])
+    def test_qstat_job_completed(self):
+        stdout = self.setup_stdout(self.good_qstat, status="C", exit_code="0")
+
+        result = self.parser.parse_poll("42940", 0, stdout, [])
+
         self.assertTrue(result.status == TorqueQStatResult.JOB_COMPLETED, "torque job status not correct.expected '%s' result = %s" % (TorqueQStatResult.JOB_COMPLETED, result))
 
     def test_qstat_job_still_running(self):
-        lines = map(string.strip, self.good_qstat.format("Q","dontcare").split("\n"))
-        result = self.parser.parse_poll("42940", 0, lines, [])
+        stdout = self.setup_stdout(self.good_qstat, status="Q")
+
+        result = self.parser.parse_poll("42940", 0, stdout, [])
+
         self.assertTrue(result.status == TorqueQStatResult.JOB_RUNNING, "torque job status wrong - expected %s result = %s" % (TorqueQStatResult.JOB_RUNNING, result))
 
-    def test_qstat_job_not_found(self):
-        lines = map(string.strip, self.wrong_job_id_qstat.format("Q","dontcare").split("\n"))
-        result = self.parser.parse_poll("42940", 0, lines, [])
+    def test_qstat_different_job_id_returned(self):
+        stdout = self.setup_stdout(self.wrong_job_id_qstat, status="Q")
+
+        result = self.parser.parse_poll("42940", 0, stdout, [])
+
         self.assertEqual(TorqueQStatResult.JOB_NOT_FOUND, result.status) 
 
     def test_qstat_multiple_job_statuses_returned(self):
-        lines = map(string.strip, self.two_jobs_qstats.format("Q", "dontcare").split("\n"))
-        result = self.parser.parse_poll("42940", 0, lines, [])
+        # if qstat returns the status of more than one job we
+        # still should parse our Job's status if it is in the output
+        stdout = self.setup_stdout(self.two_jobs_qstats, status="Q")
+
+        result = self.parser.parse_poll("42940", 0, stdout, [])
+
         self.assertEqual(TorqueQStatResult.JOB_RUNNING, result.status)
+
+    def setup_stdout(self, template, status_code, exit_code='dontcare'):
+        return map(string.strip, template.format(status_code, exit_code).split("\n"))
+
