@@ -1,13 +1,32 @@
 import unittest
 from yabiadmin.backend.torqueparsers import *
 
+class QSubParseTestCase(unittest.TestCase):
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.parser = TorqueParser()
+        self.good_lines = ["ignored", "1234.carahlocaldomain", "ignored again", "and again"]
+        self.good_lines_job_array = ["ignored", "1234[].carah.localdomain", "ignored again", "and again"]
+
+    def test_qsub_success(self):
+        result = self.parser.parse_sub(0, self.good_lines, [])
+        self.assertEqual(TorqueQSubResult.JOB_SUBMITTED, result.status)
+        self.assertEqual('1234', result.remote_id)
+
+    def test_qsub_success_job_array(self):
+        result = self.parser.parse_sub(0, self.good_lines_job_array, [])
+        self.assertEqual(TorqueQSubResult.JOB_SUBMITTED, result.status)
+        self.assertEqual('1234[]', result.remote_id)
+
+    def test_qsub_fails_if_exit_code_nonzero(self):
+        result = self.parser.parse_sub(1, self.good_lines, [])
+        self.assertEqual(TorqueQSubResult.JOB_SUBMISSION_ERROR, result.status)
+
+
 class QStatParseTestCase(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.parser = TorqueParser()
-        self.good_qsub_line = "42940.carah.localdomain"
-        self.good_qsub_lines = [self.good_qsub_line ]
-        self.good_qsub_err = []
         # the following is the output from qstat -f -1 <jobnum>
         self.good_qstat = """
                             Job Id: 42940.carah.localdomain
@@ -46,12 +65,6 @@ class QStatParseTestCase(unittest.TestCase):
                             comp_time = Mon Aug 12 15:19:43 2013
                             """
 
-
-
-    def test_job_prefix_is_parsed(self):
-        result = self.parser.parse_sub(0, self.good_qsub_lines, self.good_qsub_err)
-        self.assertTrue(result.remote_id == "42940")
-        self.assertTrue(result.status == TorqueQSubResult.JOB_SUBMITTED)
 
     def test_qstat_completed(self):
         lines = map(string.strip, self.good_qstat.format("C", "0").split("\n"))

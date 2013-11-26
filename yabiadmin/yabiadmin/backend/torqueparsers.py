@@ -86,7 +86,7 @@ class TorqueQDelResult(object):
 
 
 class TorqueParser(object):
-    JOB_NUMBER_PATTERN = r'^(?P<remote_id>\d+)(\.\w+)+'  # E.g.  1224.carah  or 1234.carah.localdomain
+    JOB_NUMBER_PATTERN = r'^(?P<remote_id>\d+(?:\[\])?)(\.\w+)+'  # E.g.  1224.carah  or 1234.carah.localdomain or 1224[].carah
     QSTAT_JOB_STATE_INDEX = 4
     #     NB. Possible statuses:
     #     C   Job is completed after having run
@@ -120,9 +120,6 @@ class TorqueParser(object):
                 if m:
                     qsub_result.remote_id = m.group("remote_id")
                     qsub_result.status = TorqueQSubResult.JOB_SUBMITTED
-                    return qsub_result
-                else:
-                    qsub_result.status = TorqueQSubResult.JOB_SUBMISSION_ERROR
                     return qsub_result
             except:
                 qsub_result.status = TorqueQSubResult.JOB_SUBMISSION_ERROR
