@@ -110,6 +110,6 @@ class QStatParseTestCase(unittest.TestCase):
 
         self.assertEqual(TorqueQStatResult.JOB_RUNNING, result.status)
 
-    def setup_stdout(self, template, status_code, exit_code='dontcare'):
-        return map(string.strip, template.format(status_code, exit_code).split("\n"))
+    def setup_stdout(self, template, status, exit_code='dontcare'):
+        return map(string.strip, template.format(status, exit_code).split("\n"))
 
