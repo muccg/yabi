@@ -28,8 +28,8 @@ class QStatParseTestCase(unittest.TestCase):
         unittest.TestCase.setUp(self)
         self.parser = TorqueParser()
         # the following is the output from qstat -f -1 <jobnum>
-        self.good_qstat = """
-                            Job Id: 42940.carah.localdomain
+        self.good_job_id_line = "Job Id: 42940.carah.localdomain"
+        self.good_job_data = """
                             Job_Name = test.sh
                             Job_Owner = lrender@carah.localdomain
                             resources_used.cput = 00:00:00
@@ -64,7 +64,21 @@ class QStatParseTestCase(unittest.TestCase):
                             start_count = 1
                             comp_time = Mon Aug 12 15:19:43 2013
                             """
+        self.wrong_job_id_line = "Job Id: 1.carah.localdomain"
 
+        self.good_qstat = self.good_job_id_line + self.good_job_data
+        self.wrong_job_id_qstat = self.wrong_job_id_line + self.good_job_data
+
+        self.two_jobs_qstats = """
+                    Job Id: 1001.carah.localdomain
+                    Job_name = test.sh
+                    Job_Owner = lrender@carah.localdomain
+                    job_state = 'C'
+                    queue = normal
+                    server = carah.localdomain
+                    ctime = Mon Aug 12 15:19:13 2013
+        """ + self.good_qstat
+ 
 
     def test_qstat_completed(self):
         lines = map(string.strip, self.good_qstat.format("C", "0").split("\n"))
@@ -76,10 +90,12 @@ class QStatParseTestCase(unittest.TestCase):
         result = self.parser.parse_poll("42940", 0, lines, [])
         self.assertTrue(result.status == TorqueQStatResult.JOB_RUNNING, "torque job status wrong - expected %s result = %s" % (TorqueQStatResult.JOB_RUNNING, result))
 
+    def test_qstat_job_not_found(self):
+        lines = map(string.strip, self.wrong_job_id_qstat.format("Q","dontcare").split("\n"))
+        result = self.parser.parse_poll("42940", 0, lines, [])
+        self.assertEqual(TorqueQStatResult.JOB_NOT_FOUND, result.status) 
 
-
-
-
-
-
-
+    def test_qstat_multiple_job_statuses_returned(self):
+        lines = map(string.strip, self.two_jobs_qstats.format("Q", "dontcare").split("\n"))
+        result = self.parser.parse_poll("42940", 0, lines, [])
+        self.assertEqual(TorqueQStatResult.JOB_RUNNING, result.status)
