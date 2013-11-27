@@ -32,6 +32,7 @@ from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.backend.parsers import parse_ls
 from yabiadmin.yabiengine.urihelper import uriparse, uriunparse
 from yabiadmin.backend.utils import sshclient
+from yabiadmin.constants import ENVVAR_FILENAME
 import os
 import errno
 import shutil
@@ -232,7 +233,7 @@ class SFTPBackend(FSBackend):
 
         for entry in sftp.listdir_attr(path):
             # if not a hidden directory
-            if not entry.filename.startswith('.'):
+            if not entry.filename.startswith('.') or entry.filename == ENVVAR_FILENAME:
                 s = sftp.stat(os.path.join(path, entry.filename))            # stat the destination of any link
                 if stat.S_ISDIR(s.st_mode):
                     # directory
