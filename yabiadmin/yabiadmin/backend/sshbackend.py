@@ -50,7 +50,7 @@ class SSHBackend(SchedulerExecBackend):
     RUN_COMMAND_TEMPLATE = """
 #!/bin/sh
 script_temp_file_name="{0}"
-cat<<EOS>$script_temp_file_name
+cat<<"EOS">$script_temp_file_name
 {1}
 EOS
 chmod u+x $script_temp_file_name
@@ -89,9 +89,12 @@ kill {1} -- -$( ps opgid= {0} | tr -d ' ')
         self.kill_process(pid, with_SIGKILL=True)
 
     def _get_submission_wrapper_script(self):
+        stdout_file = os.path.join(self.working_dir, "STDOUT.txt")
+        stderr_file = os.path.join(self.working_dir, "STDERR.txt")
+
         return self.RUN_COMMAND_TEMPLATE.format(
                 self.submission_script_name, self.submission_script_body, 
-                self.stdout_file, self.stderr_file)
+                stdout_file, stderr_file)
 
     def _get_polling_script(self):
         return self.PS_COMMAND_TEMPLATE.format( self.task.remote_id)

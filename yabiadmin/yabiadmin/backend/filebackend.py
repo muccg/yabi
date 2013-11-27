@@ -26,7 +26,7 @@
 ### END COPYRIGHT ###
 from yabiadmin.backend.fsbackend import FSBackend
 from yabiadmin.backend.utils import create_fifo, execute,ls
-from yabiadmin.backend.exceptions import RetryException
+from yabiadmin.backend.exceptions import RetryException, FileNotFoundError
 from yabiadmin.backend.parsers import parse_ls
 from yabiadmin.yabiengine.urihelper import uriparse
 import os
@@ -88,7 +88,8 @@ class FileBackend(FSBackend):
     def remote_to_fifo(self, uri, fifo, queue=None):
         """initiate a copy from local file to fifo"""
         scheme, parts = uriparse(uri)
-        assert  os.path.exists(parts.path)
+        if not os.path.exists(parts.path):
+            raise FileNotFoundError(uri)
         assert  os.path.exists(fifo)
         thread = CopyThread(src=parts.path, dst=fifo, queue=queue)
         thread.start()

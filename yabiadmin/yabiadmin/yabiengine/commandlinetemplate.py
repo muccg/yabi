@@ -44,6 +44,7 @@ from yabiadmin.backend import backend
 import pickle
 import fnmatch
 import os.path
+import re
 
 import logging
 logger = logging.getLogger(__name__)
@@ -527,9 +528,14 @@ class CommandTemplate(object):
         return len(self.backrefs)
     dependencies = property(get_dependencies)
     
-    def update_dependencies(self, workflow, ignore_glob_list=[]):
+    def update_dependencies(self, workflow, ignored_patterns=[]):
         """ignore_glob_list is a list of filename globbing patterns of files to exclude from use in any jobs"""
         new_backrefs=[]
+
+        def ignore_file(filename):
+            return any([re.match(p, filename, flags=re.IGNORECASE | re.VERBOSE)
+                            for p in ignored_patterns])
+
         for backref in self.backrefs:
             assert 'type' in backref and (backref['type']=="job" or backref['type']=='jobfile')                     # TODO: support jobfile correctly
             job_index = backref['jobId']-1
@@ -578,7 +584,7 @@ class CommandTemplate(object):
                         ignore_future_matches = False               # this is for non batch_param args so we only get the first, but continue to process the rest (TODO: do we need to process the rest?)
 
                         for filename, size, date, link in file_list:
-                            if True in [fnmatch.fnmatch(filename.upper(), glob.upper()) for glob in ignore_glob_list]:
+                            if ignore_file(os.path.basename(filename)):
                                 continue                        # skip this filename because it matches the glob ignore list
                                 
                             details = {

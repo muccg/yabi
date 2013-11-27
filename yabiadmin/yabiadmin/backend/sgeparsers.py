@@ -62,7 +62,8 @@ class SGEQDelResult(object):
 
 
 class SGEParser(object):
-    QSUB_JOB_SUBMITTED_PATTERN = r"Your job (?P<remote_id>\d+)"
+    QSUB_JOB_SUBMITTED_PATTERN = r"Your job(?:-array)? (?P<remote_id>\d+(?:\.\d+-\d+:\d+)?)"
+    ARRAY_JOB_ID_PATTERN = r"^(\d+)\.(\d+)-(\d+):(\d+)$"
     QSTAT_JOB_RUNNING_JOB_OUTPUT = r"job_number:\s+(?P<remote_id>\d+)"
     QACCT_JOB_NUMBER = r"^jobnumber\s+(?P<remote_id>\d+)"
     QACCT_EXIT_STATUS = r"^exit_status\s(?P<exit_status>\d+)"
@@ -94,6 +95,10 @@ class SGEParser(object):
         return result
 
     def parse_poll(self, remote_id, exit_code, stdout, stderr):
+        match = re.match(SGEParser.ARRAY_JOB_ID_PATTERN, remote_id)
+        if match:
+            remote_id = match.group(1)
+
         result = SGEQStatResult()
         for line in stdout:
             logger.debug("parsing qstat stdout line: %s" % line)
@@ -109,6 +114,11 @@ class SGEParser(object):
         return result
 
     def parse_qacct(self, remote_id, exit_code, stdout, stderr):
+        if re.match(SGEParser.ARRAY_JOB_ID_PATTERN, remote_id):
+            return self.parse_array_job_qacct(remote_id, exit_code, stdout, stderr)
+        return self.parse_job_qacct(remote_id, exit_code, stdout, stderr)
+
+    def parse_job_qacct(self, remote_id, exit_code, stdout, stderr):
         result = SGEQAcctResult()
         found_job = False
         for line in stdout:
@@ -126,6 +136,49 @@ class SGEParser(object):
         if not found_job:
             result.status = SGEQAcctResult.JOB_NOT_FOUND
 
+        return result
+
+    def parse_array_job_qacct(self, remote_id, exit_code, stdout, stderr):
+        # For array jobs qacct returns one entry for each subjob separated by
+        # "====...===" (62 of them)
+        # We parse each subjob output and check that the jobnumber matches, and
+        # that all the subjobs had exactly one account record outputed
+
+        result = SGEQAcctResult()
+        match = re.match(SGEParser.ARRAY_JOB_ID_PATTERN, remote_id)
+        if match is None:
+            raise RuntimeError("Remote id '%s' doesn't look like an array job pattern" % remote_id)
+        expected_job_id, first_subjob_id, last_subjob_id, step = match.groups()
+        expected_subjob_ids = range(int(first_subjob_id), int(last_subjob_id)+1, int(step))
+
+        all_lines = "".join(stdout)
+        SUBJOB_SEPARATOR = "=" * 62 + "\n"
+
+        # One entry for the output of each subjob
+        subjob_acct_outputs = all_lines.split(SUBJOB_SEPARATOR)
+        subjob_acct_outputs = filter(lambda x: x.strip() != '', subjob_acct_outputs)
+
+        def extract_value(name, s):
+            match = re.search(r"^%s\s+(?P<value>\S+)\s*$" % name, s, flags=re.MULTILINE)
+            if match:
+                return match.group('value')
+
+        returned_job_ids = [extract_value('jobnumber', sj_out) for sj_out in subjob_acct_outputs]
+        returned_subjob_ids = [extract_value('taskid', sj_out) for sj_out in subjob_acct_outputs]
+
+        if not returned_job_ids or not returned_subjob_ids:
+            result.status = SGEQAcctResult.JOB_NOT_FOUND
+            return result
+
+        if not all([ret_job_id == expected_job_id for ret_job_id in returned_job_ids]):
+            raise RuntimeError("Not all subjobs returned the jobnumber %s" % expected_job_id)
+
+        if frozenset(expected_subjob_ids) != frozenset(map(lambda x: int(x), returned_subjob_ids)):
+            result.status = SGEQAcctResult.JOB_NOT_FOUND
+            return result
+
+        result.status = SGEQAcctResult.JOB_COMPLETED
+        result.remote_id = remote_id
         return result
 
     def parse_abort(self, remote_id, exit_code, stdout, stderr):

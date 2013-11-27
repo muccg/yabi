@@ -38,6 +38,7 @@ from yabiadmin.backend.exceptions import RetryException
 import uuid
 import StringIO
 from functools import partial
+from itertools import tee, ifilter, ifilterfalse
 from yabiadmin import settings
 from yabiadmin.crypto_utils import AESTEMP
 logger = logging.getLogger(__name__)
@@ -101,7 +102,7 @@ def create_fifo(suffix='', dir='/tmp'):
     return filename
 
 
-def submission_script(template, working, command, modules, cpus, memory, walltime, yabiusername, username, host, queue, stdout, stderr, tasknum, tasktotal):
+def submission_script(template, working, command, modules, cpus, memory, walltime, yabiusername, username, host, queue, tasknum, tasktotal, envvars):
     """Mako templating support function for submission script templating."""
     cleaned_template = template.replace('\r\n', '\n').replace('\n\r', '\n').replace('\r', '\n')
     tmpl = Template(cleaned_template)
@@ -118,12 +119,11 @@ def submission_script(template, working, command, modules, cpus, memory, walltim
         'username': username,
         'host': host,
         'queue': queue,
-        'stdout': stdout,
-        'stderr': stderr,
         'tasknum': tasknum,
         'tasktotal': tasktotal,
         'arrayid': tasknum,
-        'arraysize': tasktotal
+        'arraysize': tasktotal,
+        'envvars': envvars,
     }
 
     return str(tmpl.render(**variables))
@@ -339,14 +339,8 @@ def ls(top_level_path,recurse=False):
     return listing
 
 
-
-
-
-
-
-
-
-
-
-
+def partition(pred, iterable):
+    """Partition an iterable in two iterable based on the predicate"""
+    t1, t2 = tee(iterable)
+    return ifilter(pred, t1), ifilterfalse(pred, t2) 
 

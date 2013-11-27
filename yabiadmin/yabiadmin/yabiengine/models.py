@@ -29,9 +29,8 @@
 from django.db import models
 from django.db.models import Q
 from django.conf import settings
-from yabiadmin.yabi.models import User, BackendCredential
+from yabiadmin.yabi.models import User, BackendCredential, Tool
 from yabiadmin.yabiengine import backendhelper
-from yabiadmin.yabiengine.urihelper import uriparse
 from django.utils import simplejson as json
 from ccg.utils import webhelpers
 from ccg.utils.webhelpers import url
@@ -173,6 +172,7 @@ class Job(models.Model, Editable, Status):
     order = models.PositiveIntegerField()
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(null=True)
+    tool = models.ForeignKey(Tool, null=True)
     cpus = models.CharField(max_length=64, null=True, blank=True)
     walltime = models.CharField(max_length=64, null=True, blank=True)
     module = models.TextField(null=True, blank=True)
@@ -300,6 +300,8 @@ class Task(models.Model, Editable, Status):
     # there are helper funtions to process those uri's (but they don't help us with complex SQL queries)
     execution_backend_credential = models.ForeignKey(BackendCredential, null=True)
 
+    envvars_json = models.TextField(blank=True)
+
     def json(self):
         # formulate our status url and our error url
         # use the yabiadmin embedded in this server
@@ -425,6 +427,12 @@ class Task(models.Model, Editable, Status):
     def is_workflow_aborting(self):
         return self.job.workflow.is_aborting
 
+    @property
+    def envvars(self):
+        if self.envvars_json is None or self.envvars_json.strip() == '':
+            return {}
+        return json.loads(self.envvars_json)
+
 
 class StageIn(models.Model, Editable):
     src = models.CharField(max_length=256)
@@ -437,6 +445,9 @@ class StageIn(models.Model, Editable):
     def workflowid(self):
         return self.task.job.workflow.id
 
+    def matches_filename(self, filename):
+        _, parts = uriparse(self.src)
+        return filename == os.path.basename(parts.path)
 
 class QueueBase(models.Model):
     class Meta:
