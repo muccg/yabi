@@ -492,9 +492,7 @@ class Credential(Base):
         key = aes_enc_hex(self.key,key,linelength=80)
         
         # they all have to work before we change the object
-        self.password = password
-        self.cert = cert
-        self.key = key
+        self.password, self.cert, self.key = password, cert, key
                 
     def decrypt(self, key):
         password = aes_dec_hex(self.password,key)
@@ -502,20 +500,26 @@ class Credential(Base):
         key = aes_dec_hex(self.key,key)
         
         # they all have to work before we change the object
-        self.password = password
-        self.cert = cert
-        self.key = key
-        
+        self.password, self.cert, self.key = password, cert, key
+    
     def protect(self):
-        """temporarily protects a key by encrypting it with the secret django key"""
-        password = aes_enc_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
-        cert = aes_enc_hex(self.cert, settings.SECRET_KEY,tag=AESTEMP)
-        key = aes_enc_hex(self.key, settings.SECRET_KEY,tag=AESTEMP)
-        
+        """
+        temporarily protects credential by encrypting it with the secret django key
+        does not double-encrypt already encrypted credential attributes
+        """
+
+        def protect_if_plaintext(val):
+            if looks_like_annotated_block(val):
+                return val
+            else:
+                return aes_enc_hex(val, settings.SECRET_KEY, tag=AESTEMP)
+
+        password = protect_if_plaintext(self.password)
+        cert = protect_if_plaintext(self.cert)
+        key = protect_if_plaintext(self.key)
+
         # they all have to work before we change the object
-        self.password = password
-        self.cert = cert
-        self.key = key
+        self.password, self.cert, self.key = password, cert, key
         
     def unprotect(self):
         """take a temporarily protected key and decrypt it with the django secret key"""
@@ -524,9 +528,7 @@ class Credential(Base):
         key = aes_dec_hex(self.key, settings.SECRET_KEY,tag=AESTEMP)
         
         # they all have to work before we change the object
-        self.password = password
-        self.cert = cert
-        self.key = key
+        self.password, self.cert, self.key = password, cert, key
         
     def recrypt(self,oldkey,newkey):
         self.decrypt(oldkey)
