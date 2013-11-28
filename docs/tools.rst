@@ -78,6 +78,21 @@ Queue
 
 The queue that should be requested in the submission script when running this tool.
 
+Max memory
+^^^^^^^^^^
+
+The maximum memory that should be requested in the submission script when running this tool.
+
+Job type
+^^^^^^^^
+
+The job type that should be requested in the submission script when running this tool.
+
+Submission
+^^^^^^^^^^
+
+Submission template to be used when submitting a task running this tool. Please see :ref:`submissiontemplates`.
+
 Lcopy supported, Link supported
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
