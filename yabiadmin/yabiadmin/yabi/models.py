@@ -38,7 +38,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.cache import cache
 from django.utils.encoding import smart_str
 from urlparse import urlparse, urlunparse
-from yabiadmin.crypto_utils import encrypt_to_annotated_block, decrypt_annotated_block, looks_like_annotated_block, deannotate, DecryptException, AESTEMP
+from yabiadmin.crypto_utils import encrypt_to_annotated_block, decrypt_annotated_block, encrypted_block_is_legacy, DecryptException
 from yabiadmin.constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK, VALID_SCHEMES
 from yabiadmin.utils import cache_keyname
 
@@ -401,7 +401,6 @@ class User(Base):
         creds = Credential.objects.filter(user=yabiuser)
         for cred in creds:
             cred.recrypt(currentPassword, newPassword)
-            cred.save()
 
     def has_account_tab(self):
         logger.debug('')        
@@ -542,8 +541,8 @@ class Credential(Base):
             
     def on_login(self, username, password):
         """When a user logs in, convert protected credentials to encrypted credentials"""
-        assert(self.security_state != Credential.PLAINTEXT, 'unreachable internal yabi error (unexpected plaintext)')
-        print("on_login", self)
+        if self.security_state == Credential.PLAINTEXT:
+            raise DecryptException("credential is plaintext, should be unreachable")
         if self.security_state == Credential.PROTECTED:
             protect_to_encrypt = lambda v: encrypt_to_annotated_block(decrypt_annotated_block(v, settings.SECRET_KEY), password)
             self.password, self.cert, self.key = protect_to_encrypt(self.password), protect_to_encrypt(self.cert), protect_to_encrypt(self.key)
@@ -556,12 +555,16 @@ class Credential(Base):
             encrypted_to_protected(self.password),
             encrypted_to_protected(self.cert),
             encrypted_to_protected(self.key))
+        # if the encrypted token is in legacy crypto, migrate it
+        if any(encrypted_block_is_legacy(t) for t in (self.password, self.cert, self.key)):
+            self.recrypt(password, password)
 
     def recrypt(self, oldkey, newkey):
         if self.security_state != Credential.ENCRYPTED:
             return
         recrypted = lambda v: encrypt_to_annotated_block(decrypt_annotated_block(v, oldkey), newkey)
         self.password, self.cert, self.key = recrypted(self.password), recrypted(self.cert), recrypted(self.key)
+        self.save()
     
     def get_credential_access(self):
         access = CredentialAccess(self)

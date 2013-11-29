@@ -162,7 +162,6 @@ def login(request):
                             cred.on_login(username, password)
                         except DecryptException, e:
                             logger.error("Unable to decrypt credential `%s'" % cred.description)
-                            raise
                     return HttpResponseRedirect(webhelpers.url("/"))
 
             else:

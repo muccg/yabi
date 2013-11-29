@@ -35,33 +35,30 @@ class Migration(DataMigration):
                 return False
             return val.startswith('$AESTEMP$')
 
-        print "Migrating credentials..."
+        print "Migrating credentials and inferring credential state..."
         for cred in orm.Credential.objects.all():
             import sys
-            print >>sys.stderr, cred.user.name, cred.id, cred.description
 
             to_convert = {
                 'password' : cred.password,
                 'cert' : cred.cert,
                 'key' : cred.key
             }
-            print >>sys.stderr, "before", to_convert
 
             for k in to_convert:
                 to_convert[k] = empty_crypt_to_empty_string(to_convert[k])
                 to_convert[k] = reprotect(to_convert[k])
 
             # infer the security state of this credential
-            if True in [is_encrypted(t) for t in to_convert.values()]:
+            if any(is_encrypted(t) for t in to_convert.values()):
                 cred.security_state = ENCRYPTED
-            elif True in [is_protected(t) for t in to_convert.values()]:
+            elif any(is_protected(t) for t in to_convert.values()):
                 cred.security_state = PROTECTED
             else:
                 cred.security_state = PLAINTEXT
             # special case; a credential which is empty can be called encrypted
             if all([t == '' for t in to_convert.values()]):
                 cred.security_state = ENCRYPTED
-            print >>sys.stderr, "after", cred.security_state, to_convert
             # apply conversions
             for k in to_convert:
                 setattr(cred, k, to_convert[k])

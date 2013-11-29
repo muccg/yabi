@@ -116,12 +116,19 @@ def nounicode(fn):
         return fn(*new_args, **kwargs)
     return inner
 
+def encrypted_block_is_legacy(data):
+    "check if an annotated block is using legacy crypto"
+    if data == '':
+        return False
+    tag, _ = deannotate(data)
+    return tag == AESHEXTAG or tag == AESTEMP
+
 @nounicode
 def decrypt_annotated_block(data, key):
     "takes a annotated block and returns the encrypted value (decrypting with `key')"
     if data == '':
         return ''
-    tag, ciphertext = deannotate(joiner(data))
+    tag, ciphertext = deannotate(data)
     if ciphertext == '':
         return ''
     if tag == AESHEXTAG or tag == AESTEMP:
@@ -141,18 +148,16 @@ def encrypt_to_annotated_block(data, key):
     wrapper = aes_ctr.AESWrapper(key)
     encrypted = wrapper.encrypt(data)
     return annotate(AESCTRTAG, encrypted)
-#
-# this deannotates the string
-#
-def deannotate( string ):
+
+def deannotate(data):
+    "deannotate annotated data"
+    data = joiner(data)
     try:
-        dummy,tag,cipher,dummy2 = string.split('$')
+        dummy,tag,cipher,dummy2 = data.split('$')
     except ValueError, ve:
-        raise DecryptException("Invalid input string to deannotator")
-    
+        raise DecryptException("Invalid input string to deannotate")
     if dummy or dummy2:
-        raise DecryptException("Invalid input string to deannotator")
-    
+        raise DecryptException("Invalid input string to deannotate")
     return tag, cipher
 
 def looks_like_annotated_block(data):
@@ -162,7 +167,7 @@ def looks_like_annotated_block(data):
     """
     if data.startswith('$') and data.endswith('$') and data.count('$') == 3:
         try:
-            tag, ciphertext = deannotate(joiner(data))
+            tag, ciphertext = deannotate(data)
             return True
         except DecryptException:
             return False
