@@ -118,10 +118,11 @@ class AESWrapper(object):
     # changing these will break decryption of data previously encoded with this wrapper
     hmac_length = 20
     hash_mod = hashlib.sha1
+    key_length = 256
 
-    def __init__(self, password, key_length):
+    def __init__(self, password):
         self.hmac = lambda text: hmac.new(password, text, AESWrapper.hash_mod).digest()
-        self.ctr = CTR(password, key_length)
+        self.ctr = CTR(password, AESWrapper.key_length)
 
     def encrypt(self, text):
         ciphered = self.ctr.encrypt(text)

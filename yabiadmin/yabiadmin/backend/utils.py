@@ -218,6 +218,7 @@ def create_paramiko_pkey(key, passphrase=None):
     return pkey
 
 
+# GB FIXME
 def get_credential_data(credential):
     if credential.is_cached:
         decrypted_credential = credential.get()

@@ -28,6 +28,7 @@ from django import forms
 from django.conf import settings
 from yabiadmin.yabi.models import *
 from yabiadmin import constants
+from yabiadmin.crypto_utils import looks_like_annotated_block
 
 class BackendForm(forms.ModelForm):
     class Meta:
@@ -53,6 +54,27 @@ class BackendForm(forms.ModelForm):
             raise forms.ValidationError("Path must end with a /.")            
         return path
 
+class CredentialForm(forms.ModelForm):
+    class Meta:
+        model = Credential
+
+    def clean(self):
+        cleaned_data = super(CredentialForm, self).clean()
+        security_state = cleaned_data.get('security_state')
+        # validate encryption state matches the data submitted in the form
+        for field in ('password', 'cert', 'key'):
+            val = cleaned_data.get(field)
+            # blank fields are valid in all states
+            if val == '':
+                continue
+            is_annotated_block = looks_like_annotated_block(val)
+            if security_state == Credential.PLAINTEXT:
+                if is_annotated_block:
+                    raise forms.ValidationError("Encrypted data in form field `%s' cannot be saved to an unencrypted credential." % (field))
+            else:
+                if not is_annotated_block:
+                    raise forms.ValidationError("Non-encrypted data in form field `%s' cannot be saved to an encrypted credential. Change security state when updating credentials." % (field))
+        return cleaned_data
 
 class BackendCredentialForm(forms.ModelForm):
     class Meta:

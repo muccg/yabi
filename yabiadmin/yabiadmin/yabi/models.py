@@ -38,7 +38,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.cache import cache
 from django.utils.encoding import smart_str
 from urlparse import urlparse, urlunparse
-from yabiadmin.crypto_utils import aes_enc_hex, aes_dec_hex, looks_like_hex_ciphertext, looks_like_annotated_block, deannotate, DecryptException, AESTEMP
+from yabiadmin.crypto_utils import aes_enc_hex, aes_dec_hex, looks_like_annotated_block, deannotate, DecryptException, AESTEMP
 from yabiadmin.constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK, VALID_SCHEMES
 from yabiadmin.utils import cache_keyname
 
@@ -469,6 +469,15 @@ class User(Base):
         return self.default_stageout + settings.DEFAULT_STAGEIN_DIRNAME
 
 class Credential(Base):
+    PLAINTEXT = 0
+    PROTECTED = 1
+    ENCRYPTED = 2
+    SECURITYSTATE_CHOICES = (
+        (PLAINTEXT, 'Plaintext'),
+        (PROTECTED, 'Protected with secret key'),
+        (ENCRYPTED, 'Encrypted with user password')
+        )
+
     description = models.CharField(max_length=512, blank=True)
     username = models.CharField(max_length=512)
     password = models.CharField(max_length=512, blank=True)
@@ -476,6 +485,7 @@ class Credential(Base):
     key = models.TextField(blank=True)
     user = models.ForeignKey(User)
     backends = models.ManyToManyField('Backend', through='BackendCredential', null=True, blank=True)
+    security_state = models.PositiveSmallIntegerField(choices=SECURITYSTATE_CHOICES, default=0)
 
     expires_on = models.DateTimeField( null=True )                      # null mean never expire this
     
@@ -485,213 +495,95 @@ class Credential(Base):
     def __unicode__(self):
         return "%s username:%s for yabiuser:%s"%(self.description,self.username,self.user.name)
     
-    def encrypt(self, key):
-        """Turn this unencrypted cred into an encrypted one using the supplied password"""
-        password = aes_enc_hex(self.password,key)
-        cert = aes_enc_hex(self.cert,key,linelength=80)
-        key = aes_enc_hex(self.key,key,linelength=80)
-        
-        # they all have to work before we change the object
-        self.password, self.cert, self.key = password, cert, key
-                
-    def decrypt(self, key):
-        password = aes_dec_hex(self.password,key)
-        cert = aes_dec_hex(self.cert,key)
-        key = aes_dec_hex(self.key,key)
-        
-        # they all have to work before we change the object
-        self.password, self.cert, self.key = password, cert, key
-    
-    def protect(self):
-        """
-        temporarily protects credential by encrypting it with the secret django key
-        does not double-encrypt already encrypted credential attributes
-        """
-
-        def protect_if_plaintext(val):
-            if looks_like_annotated_block(val):
-                return val
-            else:
-                return aes_enc_hex(val, settings.SECRET_KEY, tag=AESTEMP)
-
-        password = protect_if_plaintext(self.password)
-        cert = protect_if_plaintext(self.cert)
-        key = protect_if_plaintext(self.key)
-
-        # they all have to work before we change the object
-        self.password, self.cert, self.key = password, cert, key
-        
-    def unprotect(self):
-        """take a temporarily protected key and decrypt it with the django secret key"""
-        password = aes_dec_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
-        cert = aes_dec_hex(self.cert, settings.SECRET_KEY,tag=AESTEMP)
-        key = aes_dec_hex(self.key, settings.SECRET_KEY,tag=AESTEMP)
-        
-        # they all have to work before we change the object
-        self.password, self.cert, self.key = password, cert, key
-        
-    def recrypt(self,oldkey,newkey):
-        self.decrypt(oldkey)
-        self.encrypt(newkey)
-        
-    def encrypted2protected(self, key):
-        """Tries to decrypt using the key and if successful protects
-        the credential. Credential must be saved to take effect."""
-        self.decrypt(key)
-        self.protect()
-
-    def cache_keyname(self):
-        """return the cache key for this credential"""
-        # smart_str takes care of non-ascii characters (memcache doesn't support Unicode in keys)
-        # memcache also doesn't like spaces
-        return cache_keyname("-cred-%s-%d" % (self.user.name, self.id))
-    
-    #@transaction.commit_manually
-    def send_to_cache(self, time_to_cache=None):
-        """This method stores the key as it is in cache"""
-        time_to_cache = time_to_cache or settings.DEFAULT_CRED_CACHE_TIME
-                
-        key = self.cache_keyname()
-        val = json.dumps( {
-            'password': self.password,
-            'cert': self.cert,
-            'key': self.key
-        } )
-        
-        cache.set(key, val, time_to_cache)
- 
-            
-    def get_from_cache(self):
-        result = self.get_cache()
-        self.password = result['password']
-        self.cert = result['cert']
-        self.key = result['key']
-       
-    def get(self):
-        """return the decrypted cert if available. Otherwise raise exception"""
-        #return dict([('username', self.username),
-                    #('password', self.password),
-                    #('cert', self.cert),
-                    #('key', self.key)])
-        
-        if self.is_cached:
-            self.get_from_cache()
-            self.unprotect()
-            return dict([('username', self.username),
-                    ('password', self.password),
-                    ('cert', self.cert),
-                    ('key', self.key)])
-            
-        # encrypted but not cached. ERROR!
-        raise DecryptedCredentialNotAvailable("Credential for yabiuser: %s id: %d is not available in a decrypted form"%(self.user.name, self.id))
-        
-    @property
-    def is_cached(self):
-        """return true if there is a decypted cert in cache"""
-        return cache.has_key(self.cache_keyname())
-        
-    def get_cache_json(self):
-        """return the cached credential"""
-        credential = cache.get(self.cache_keyname())
-        return credential
-        
-    def get_cache(self):
-        """return the decoded cached credentials"""
-        return json.loads(self.get_cache_json())
-        
-    def refresh_cache(self, time_to_cache=None):
-        """refresh the cache version with a new timeout"""
-        time_to_cache = time_to_cache or settings.DEFAULT_CRED_CACHE_TIME
-        name = self.cache_keyname()
-        cred = cache.get( name )
-        assert cred, "tried to refresh a non-cached credential"
-        cache.set(name, cred, time_to_cache)
-        
-    def clear_cache(self):
-        name = self.cache_keyname()
-        cache.delete( name )
-        
-    @property
-    def is_plaintext(self):
-        """We assume its plaintext if it fails the crypto_utils looks_like_annotated_block() function"""
-        return not (looks_like_annotated_block(self.password) and looks_like_annotated_block(self.key) and looks_like_annotated_block(self.cert))
-        
-    @property
-    def is_protected(self):
-        """Is this cred a temporarily protected one?"""
-        return not (self.is_plaintext or not deannotate(self.password)[0]==AESTEMP)
-    
-    @property
-    def is_encrypted(self):
-        """Is this cred fully encrypted with user pass?"""
-        return not (self.is_plaintext or not deannotate(self.password)[0]!=AESTEMP)
-        
-    def is_only_hex(self):
-        """This is a legacy function to help migrating old encrypted creds to new creds.
-        It returns true if the key, cert and password fields are soley composed of hex characters.
-        """
-        return looks_like_hex_ciphertext(self.password) and looks_like_hex_ciphertext(self.key) and looks_like_hex_ciphertext(self.cert)
-        
     def on_pre_save(self):
-        if self.is_plaintext:
-            # temporarily protect this for saving
-            self.protect()
+        # we never allow plaintext credentials to make it into the database
+        if self.security_state == Credential.PLAINTEXT:
+            protect = lambda v: aes_enc_hex(v, settings.SECRET_KEY)
+            self.password, self.cert, self.key = protect(self.password), protect(self.cert), protect(self.key)
+            self.security_state = Credential.PROTECTED
             
     def on_post_save(self):
-        if self.is_protected:
-            # cache the protected form while we have it
-            self.send_to_cache()
+        # GB FIXME; should put a protected version of this in the cache; but move to credentials.py...
+        pass
             
-    def on_post_init(self):
-        if not self.is_plaintext:
-            # ciphertext... lets look at its tag
-            tag = looks_like_annotated_block(self.password) or looks_like_annotated_block(self.key) or looks_like_annotated_block(self.cert)
-        
-            # TODO: automate this bit
-
     def on_login(self, username, password):
-        """When a user logs in, this method is called on every one of their credentials, and gets passed their login password"""
-        logger.debug("Decrypting %s" % self)
-        
-        # is it not encrypted at all?
-        if self.is_plaintext:
-            # we need to protect this with users password and save it back before we do anything else.
-            self.encrypt(password)
-            self.save()
+        """When a user logs in, convert protected credentials to encrypted credentials"""
+
+        if self.security_state == Credential.PROTECTED:
+            protect_to_encrypt = lambda v: aes_enc_hex(aes_dec_hex(v, settings.SECRET_KEY), password)
+            self.password, self.cert, self.key = protect_to_encrypt(self.password), protect_to_encrypt(self.cert), protect_to_encrypt(self.key)
+            self.security_state = Credential.ENCRYPTED
+
+    def recrypt(self, oldkey, newkey):
+        if self.security_state != Credential.ENCRYPTED:
             return
-            
+        recrypted = lambda v: aes_enc_hex(aes_dec_hex(v, oldkey), newkey)
+        self.password, self.cert, self.key = recrypted(self.password), recrypted(self.cert), recrypted(self.key)
+
+    # def cache_keyname(self):
+    #     """return the cache key for this credential"""
+    #     # smart_str takes care of non-ascii characters (memcache doesn't support Unicode in keys)
+    #     # memcache also doesn't like spaces
+    #     return cache_keyname("-cred-%s-%d" % (self.user.name, self.id))
+    
+    # def send_to_cache(self, time_to_cache=None):
+    #     """This method stores the key as it is in cache"""
+    #     time_to_cache = time_to_cache or settings.DEFAULT_CRED_CACHE_TIME
+                
+    #     key = self.cache_keyname()
+    #     val = json.dumps( {
+    #         'password': self.password,
+    #         'cert': self.cert,
+    #         'key': self.key
+    #     } )
+        
+    #     cache.set(key, val, time_to_cache)
+ 
+    # def get_from_cache(self):
+    #     result = self.get_cache()
+    #     self.password = result['password']
+    #     self.cert = result['cert']
+    #     self.key = result['key']
        
-        # now the generic stuff to do with an encrypted password.    
-        # 1.try and decrypt with this password
-        try:
-            self.decrypt(password)
-            
-            # decrypt with users password succeeded. protect and cache...
-            self.protect()
-            
-            # dont save
-            self.send_to_cache()
-        except DecryptException, de:
-            # decrypt with password failed
-            # 2. try to decrypt with symetric key
-            try:
-                self.unprotect()
+    # def get(self):
+    #     """return the decrypted cert if available. Otherwise raise exception"""
+    #     if self.is_cached:
+    #         self.get_from_cache()
+    #         self.unprotect()
+    #         return dict([('username', self.username),
+    #                 ('password', self.password),
+    #                 ('cert', self.cert),
+    #                 ('key', self.key)])
+    #     # encrypted but not cached. ERROR!
+    #     raise DecryptedCredentialNotAvailable("Credential for yabiuser: %s id: %d is not available in a decrypted form"%(self.user.name, self.id))
+        
+    # @property
+    # def is_cached(self):
+    #     """return true if there is a decypted cert in cache"""
+    #     return cache.has_key(self.cache_keyname())
+        
+    # def get_cache_json(self):
+    #     """return the cached credential"""
+    #     credential = cache.get(self.cache_keyname())
+    #     return credential
+        
+    # def get_cache(self):
+    #     """return the decoded cached credentials"""
+    #     return json.loads(self.get_cache_json())
+        
+    # def refresh_cache(self, time_to_cache=None):
+    #     """refresh the cache version with a new timeout"""
+    #     time_to_cache = time_to_cache or settings.DEFAULT_CRED_CACHE_TIME
+    #     name = self.cache_keyname()
+    #     cred = cache.get( name )
+    #     assert cred, "tried to refresh a non-cached credential"
+    #     cache.set(name, cred, time_to_cache)
+        
+    # def clear_cache(self):
+    #     name = self.cache_keyname()
+    #     cache.delete( name )
 
-                # its symetricly encrypted... that means we need to encrypt with the users password and save it encrypted into db
-                self.encrypt(password)
-                self.save()
-                
-                # now decrypt and protect and save to cache
-                self.decrypt(password)
-                
-                self.protect()
-
-                # dont save
-                self.send_to_cache()
-            except DecryptException, de:
-                # failed to decrypt with users key or symetric key
-                raise DecryptException("Failed to decrypt %s with users key or symetric key!"%(self))
-            
+                    
 class Backend(Base):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=512, blank=True)
@@ -936,14 +828,8 @@ class YabiCache(models.Model):
 def signal_credential_pre_save(sender, instance, **kwargs):
     instance.on_pre_save()
 
-
 def signal_credential_post_save(sender, instance, **kwargs):
     instance.on_post_save()
-
-       
-def signal_credential_post_init(sender, instance, **kwargs):
-    instance.on_post_init()
-
 
 def signal_tool_post_save(sender, **kwargs):
     try:
@@ -968,4 +854,3 @@ post_save.connect(signal_tool_post_save, sender=Tool, dispatch_uid="signal_tool_
 post_save.connect(create_user_profile, sender=DjangoUser, dispatch_uid="create_user_profile")
 pre_save.connect(signal_credential_pre_save, sender=Credential, dispatch_uid="signal_credential_pre_save")
 post_save.connect(signal_credential_post_save, sender=Credential, dispatch_uid="signal_credential_post_save")
-post_init.connect(signal_credential_post_init, sender=Credential, dispatch_uid="signal_credential_post_init")

@@ -123,10 +123,13 @@ class QueueAdmin(admin.ModelAdmin):
     list_display = ['name', 'user_name', 'created_on']
 
 class CredentialAdmin(AdminBase):
-    list_display = ['description', 'user', 'username', 'is_cached']
+    form = CredentialForm
+    list_display = ['description', 'user', 'username']
     list_filter = ['user']
     actions = ['duplicate_credential','cache_credential','decache_credential']
     search_fields = ['description', 'username', 'user__user__username']
+
+    # GB FIXME
 
     def duplicate_credential(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)        
