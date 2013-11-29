@@ -31,5 +31,3 @@ def cache_keyname(key):
     # smart_str takes care of non-ascii characters (memcache doesn't support Unicode in keys)
     # memcache also doesn't like spaces
     return smart_str(key).replace(' ', '_')
-
-

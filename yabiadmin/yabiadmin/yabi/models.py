@@ -468,6 +468,40 @@ class User(Base):
     def default_stagein(self):
         return self.default_stageout + settings.DEFAULT_STAGEIN_DIRNAME
 
+class CredentialAccess:
+    """
+    manage storage of protected credentials in the cache so they can be
+    accessed by tasks
+    """
+
+    def __init__(self, credential):
+        self.keyname = cache_keyname("-cred-%s-%d" % (credential.user.name, credential.id))
+
+    @property
+    def in_cache(self):
+        return cache.has_key(self.keyname)
+
+    def cache_protected_creds(self, protected_password, protected_cert, protected_key):
+        key = self.keyname
+        val = json.dumps({
+            'password': protected_password,
+            'cert': protected_cert,
+            'key': protected_key
+        })
+        cache.set(key, val, settings.DEFAULT_CRED_CACHE_TIME)
+
+    def get(self):
+        """return the decrypted cert if available. Otherwise raise exception"""
+        protected_creds_str = cache.get(self.keyname)
+        if protected_creds_str is None:
+            raise DecryptedCredentialNotAvailable("Credential for yabiuser: %s id: %d is not available in a decrypted form"%(self.user.name, self.id))
+        protected_creds = json.loads(protected_creds_str)
+        decrypt = lambda v: aes_dec_hex(v, settings.SECRET_KEY)
+        return dict((t, decrypt(protected_creds[t])) for t in protected_creds)
+        
+    def clear_cache(self):
+        cache.delete(self.keyname)
+
 class Credential(Base):
     PLAINTEXT = 0
     PROTECTED = 1
@@ -502,88 +536,33 @@ class Credential(Base):
             self.password, self.cert, self.key = protect(self.password), protect(self.cert), protect(self.key)
             self.security_state = Credential.PROTECTED
             
-    def on_post_save(self):
-        # GB FIXME; should put a protected version of this in the cache; but move to credentials.py...
-        pass
-            
     def on_login(self, username, password):
         """When a user logs in, convert protected credentials to encrypted credentials"""
-
+        assert(self.security_state != Credential.PLAINTEXT)
         if self.security_state == Credential.PROTECTED:
             protect_to_encrypt = lambda v: aes_enc_hex(aes_dec_hex(v, settings.SECRET_KEY), password)
             self.password, self.cert, self.key = protect_to_encrypt(self.password), protect_to_encrypt(self.cert), protect_to_encrypt(self.key)
             self.security_state = Credential.ENCRYPTED
+        # we are now guaranteed to be encrypted; but we need to make sure there's protected creds in the cache
+        encrypted_to_protected = lambda v: aes_enc_hex(aes_dec_hex(v, password), settings.SECRET_KEY)
+        access = self.get_credential_access()
+        access.cache_protected_creds(
+            encrypted_to_protected(self.password),
+            encrypted_to_protected(self.cert),
+            encrypted_to_protected(self.key))
 
     def recrypt(self, oldkey, newkey):
         if self.security_state != Credential.ENCRYPTED:
             return
         recrypted = lambda v: aes_enc_hex(aes_dec_hex(v, oldkey), newkey)
         self.password, self.cert, self.key = recrypted(self.password), recrypted(self.cert), recrypted(self.key)
-
-    # def cache_keyname(self):
-    #     """return the cache key for this credential"""
-    #     # smart_str takes care of non-ascii characters (memcache doesn't support Unicode in keys)
-    #     # memcache also doesn't like spaces
-    #     return cache_keyname("-cred-%s-%d" % (self.user.name, self.id))
     
-    # def send_to_cache(self, time_to_cache=None):
-    #     """This method stores the key as it is in cache"""
-    #     time_to_cache = time_to_cache or settings.DEFAULT_CRED_CACHE_TIME
-                
-    #     key = self.cache_keyname()
-    #     val = json.dumps( {
-    #         'password': self.password,
-    #         'cert': self.cert,
-    #         'key': self.key
-    #     } )
-        
-    #     cache.set(key, val, time_to_cache)
+    def get_credential_access(self):
+        access = CredentialAccess(self)
+        if self.security_state == Credential.PROTECTED:
+            access.cache_protected_creds(self.password, self.cert, self.key)
+        return access
  
-    # def get_from_cache(self):
-    #     result = self.get_cache()
-    #     self.password = result['password']
-    #     self.cert = result['cert']
-    #     self.key = result['key']
-       
-    # def get(self):
-    #     """return the decrypted cert if available. Otherwise raise exception"""
-    #     if self.is_cached:
-    #         self.get_from_cache()
-    #         self.unprotect()
-    #         return dict([('username', self.username),
-    #                 ('password', self.password),
-    #                 ('cert', self.cert),
-    #                 ('key', self.key)])
-    #     # encrypted but not cached. ERROR!
-    #     raise DecryptedCredentialNotAvailable("Credential for yabiuser: %s id: %d is not available in a decrypted form"%(self.user.name, self.id))
-        
-    # @property
-    # def is_cached(self):
-    #     """return true if there is a decypted cert in cache"""
-    #     return cache.has_key(self.cache_keyname())
-        
-    # def get_cache_json(self):
-    #     """return the cached credential"""
-    #     credential = cache.get(self.cache_keyname())
-    #     return credential
-        
-    # def get_cache(self):
-    #     """return the decoded cached credentials"""
-    #     return json.loads(self.get_cache_json())
-        
-    # def refresh_cache(self, time_to_cache=None):
-    #     """refresh the cache version with a new timeout"""
-    #     time_to_cache = time_to_cache or settings.DEFAULT_CRED_CACHE_TIME
-    #     name = self.cache_keyname()
-    #     cred = cache.get( name )
-    #     assert cred, "tried to refresh a non-cached credential"
-    #     cache.set(name, cred, time_to_cache)
-        
-    # def clear_cache(self):
-    #     name = self.cache_keyname()
-    #     cache.delete( name )
-
-                    
 class Backend(Base):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=512, blank=True)
@@ -828,9 +807,6 @@ class YabiCache(models.Model):
 def signal_credential_pre_save(sender, instance, **kwargs):
     instance.on_pre_save()
 
-def signal_credential_post_save(sender, instance, **kwargs):
-    instance.on_post_save()
-
 def signal_tool_post_save(sender, **kwargs):
     try:
         tool = kwargs['instance']
@@ -853,4 +829,3 @@ from django.db.models.signals import post_save, pre_save, post_init
 post_save.connect(signal_tool_post_save, sender=Tool, dispatch_uid="signal_tool_post_save")
 post_save.connect(create_user_profile, sender=DjangoUser, dispatch_uid="create_user_profile")
 pre_save.connect(signal_credential_pre_save, sender=Credential, dispatch_uid="signal_credential_pre_save")
-post_save.connect(signal_credential_post_save, sender=Credential, dispatch_uid="signal_credential_post_save")
