@@ -129,8 +129,6 @@ class CredentialAdmin(AdminBase):
     actions = ['duplicate_credential','cache_credential','decache_credential']
     search_fields = ['description', 'username', 'user__user__username']
 
-    # GB FIXME
-
     def duplicate_credential(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)        
         return HttpResponseRedirect(webhelpers.url("/ws/manage_credential/?ids=%s&action=duplicate" % (",".join(selected)))) 

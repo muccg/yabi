@@ -159,8 +159,7 @@ def login(request):
                     creds = Credential.objects.filter(user__name=username)
                     try:
                         for cred in creds:
-                            cred.on_login(username,password )
-
+                            cred.on_login(username, password)
                     except DecryptException, e:
                         logger.error('Unable to decrypt credential %s' % cred.description)
 
