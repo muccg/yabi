@@ -542,7 +542,8 @@ class Credential(Base):
             
     def on_login(self, username, password):
         """When a user logs in, convert protected credentials to encrypted credentials"""
-        assert(self.security_state != Credential.PLAINTEXT)
+        assert(self.security_state != Credential.PLAINTEXT, 'unreachable internal yabi error (unexpected plaintext)')
+        print("on_login", self)
         if self.security_state == Credential.PROTECTED:
             protect_to_encrypt = lambda v: encrypt_to_annotated_block(decrypt_annotated_block(v, settings.SECRET_KEY), password)
             self.password, self.cert, self.key = protect_to_encrypt(self.password), protect_to_encrypt(self.cert), protect_to_encrypt(self.key)

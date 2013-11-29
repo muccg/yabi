@@ -4,16 +4,68 @@ from south.db import db
 from south.v2 import DataMigration
 from django.db import models
 
+# security_state enum values as at this migration
+PLAINTEXT = 0
+PROTECTED = 1
+ENCRYPTED = 2
+
 class Migration(DataMigration):
 
     def forwards(self, orm):
+        def empty_crypt_to_empty_string(val):
+            "we no longer store empty strings in annotated form"            
+            if val == '$AESTEMP$$':
+                return ''
+            if val == '$AES$$':
+                return ''
+            return val
+
+        def reprotect(val):
+            if val.startswith("$AESTEMP$"):
+                print("reprotect", val)
+            return val
+
+        def is_encrypted(val):
+            if val is None:
+                return False
+            return val.startswith('$AES$')
+
+        def is_protected(val):
+            if val is None:
+                return False
+            return val.startswith('$AESTEMP$')
+
         print "Migrating credentials..."
         for cred in orm.Credential.objects.all():
             import sys
             print >>sys.stderr, cred.user.name, cred.id, cred.description
+
+            to_convert = {
+                'password' : cred.password,
+                'cert' : cred.cert,
+                'key' : cred.key
+            }
+            print >>sys.stderr, "before", to_convert
+
+            for k in to_convert:
+                to_convert[k] = empty_crypt_to_empty_string(to_convert[k])
+                to_convert[k] = reprotect(to_convert[k])
+
             # infer the security state of this credential
-            pass
-        raise Exception("Nein")
+            if True in [is_encrypted(t) for t in to_convert.values()]:
+                cred.security_state = ENCRYPTED
+            elif True in [is_protected(t) for t in to_convert.values()]:
+                cred.security_state = PROTECTED
+            else:
+                cred.security_state = PLAINTEXT
+            # special case; a credential which is empty can be called encrypted
+            if all([t == '' for t in to_convert.values()]):
+                cred.security_state = ENCRYPTED
+            print >>sys.stderr, "after", cred.security_state, to_convert
+            # apply conversions
+            for k in to_convert:
+                setattr(cred, k, to_convert[k])
+            cred.save()
 
     def backwards(self, orm):
         "Write your backwards methods here."

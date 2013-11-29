@@ -61,7 +61,7 @@ class LegacyAESWrapper(object):
     #
     # this is a chunking lambda generator
     #
-    chunkify = lambda v, l: (v[i*l:(i+1)*l] for i in range(int(math.ceil(len(v)/float(l)))))
+    chunkify = staticmethod(lambda v, l: (v[i*l:(i+1)*l] for i in range(int(math.ceil(len(v)/float(l))))))
 
     @classmethod
     def aes_dec(cls, data, key):
@@ -102,7 +102,7 @@ class LegacyAESWrapper(object):
         except TypeError, te:
             # the credential binary block cannot be decoded
             raise DecryptException("Credential does not seem to contain binary encrypted data")
-        return aes_dec(ciphertext, key)
+        return LegacyAESWrapper.aes_dec(ciphertext, key)
 
 def nounicode(fn):
     "decorator function, converts any unicode arguments to utf-8 bytestrings"
@@ -124,13 +124,13 @@ def decrypt_annotated_block(data, key):
     tag, ciphertext = deannotate(joiner(data))
     if ciphertext == '':
         return ''
-    if tag == AESHEXTAG or tag == AESHEXTAG:
-        return LegacyAESWrapper.aes_dec_hex(data, key)
+    if tag == AESHEXTAG or tag == AESTEMP:
+        return LegacyAESWrapper.aes_dec_hex(ciphertext, key)
     wrapper = aes_ctr.AESWrapper(key)
     try:
         return wrapper.decrypt(ciphertext)
     except aes_ctr.DecryptionFailure:
-        raise DecryptException("Invalid key for AES-CTR encrypted data")
+        raise DecryptException("Invalid key for AES-CTR encrypted data (%s / %s)" % (data, key))
 
 @nounicode
 def encrypt_to_annotated_block(data, key):
