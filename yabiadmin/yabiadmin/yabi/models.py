@@ -474,8 +474,11 @@ class CredentialAccess:
     """
 
     def __init__(self, credential):
-        self.descr = 'yabiuser: %s id: %d' % (credential.user.name, credential.id)
-        self.keyname = cache_keyname("-cred-%s-%d" % (credential.user.name, credential.id))
+        self.credential = credential
+
+    @property
+    def keyname(self):
+        return cache_keyname("-cred-%s-%d" % (self.credential.user.name, self.credential.id))
 
     @property
     def in_cache(self):
@@ -494,7 +497,7 @@ class CredentialAccess:
         """return the decrypted cert if available. Otherwise raise exception"""
         protected_creds_str = cache.get(self.keyname)
         if protected_creds_str is None:
-            raise DecryptedCredentialNotAvailable("Credential for %s in a decrypted form" % (self.descr))
+            raise DecryptedCredentialNotAvailable("Credential for yabiuser: %s id: %s in a decrypted form" % (self.credential.user.name, self.credential.id))
         protected_creds = json.loads(protected_creds_str)
         decrypt = lambda v: decrypt_annotated_block(v, settings.SECRET_KEY)
         return dict((t, decrypt(protected_creds[t])) for t in protected_creds)
@@ -535,10 +538,13 @@ class Credential(Base):
             protect = lambda v: encrypt_to_annotated_block(v, settings.SECRET_KEY)
             self.password, self.cert, self.key = protect(self.password), protect(self.cert), protect(self.key)
             self.security_state = Credential.PROTECTED
+
+    def on_post_save(self):
+        if self.security_state == Credential.PLAINTEXT:
             # put these updated protected credentials into the cache
             access = self.get_credential_access()
             access.cache_protected_creds(self.password, self.cert, self.key)
-            
+
     def on_login(self, username, password):
         """When a user logs in, convert protected credentials to encrypted credentials"""
         if self.security_state == Credential.PLAINTEXT:
@@ -816,6 +822,9 @@ class YabiCache(models.Model):
 def signal_credential_pre_save(sender, instance, **kwargs):
     instance.on_pre_save()
 
+def signal_credential_post_save(sender, instance, **kwargs):
+    instance.on_post_save()
+
 def signal_tool_post_save(sender, **kwargs):
     try:
         tool = kwargs['instance']
@@ -837,4 +846,5 @@ def create_user_profile(sender, instance, created, **kwargs):
 from django.db.models.signals import post_save, pre_save, post_init
 post_save.connect(signal_tool_post_save, sender=Tool, dispatch_uid="signal_tool_post_save")
 post_save.connect(create_user_profile, sender=DjangoUser, dispatch_uid="create_user_profile")
+post_save.connect(signal_credential_post_save, sender=Credential, dispatch_uid="signal_credential_post_save")
 pre_save.connect(signal_credential_pre_save, sender=Credential, dispatch_uid="signal_credential_pre_save")
