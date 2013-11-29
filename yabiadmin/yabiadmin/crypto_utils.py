@@ -118,7 +118,6 @@ def nounicode(fn):
 
 @nounicode
 def aes_dec_hex(data, key):
-    print "!!!! aes_dec_hex", data, key
     if data == '':
         return ''
     tag, ciphertext = deannotate(joiner(data))
@@ -135,7 +134,6 @@ def aes_dec_hex(data, key):
 @nounicode
 def aes_enc_hex(data, key):
     "returns base64 encoded data, annotated appropriately and encrypted with `key`"
-    print "!!! aes_enc_hex data `%s' key `%s'" % (data, key)
     # don't encrypt empty string
     if data == '':
         return ''
