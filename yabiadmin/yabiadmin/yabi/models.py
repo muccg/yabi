@@ -513,13 +513,13 @@ class Credential(Base):
         )
 
     description = models.CharField(max_length=512, blank=True)
+    security_state = models.PositiveSmallIntegerField(choices=SECURITYSTATE_CHOICES, default=0)
     username = models.CharField(max_length=512)
     password = models.CharField(max_length=512, blank=True)
     cert = models.TextField(blank=True)
     key = models.TextField(blank=True)
     user = models.ForeignKey(User)
     backends = models.ManyToManyField('Backend', through='BackendCredential', null=True, blank=True)
-    security_state = models.PositiveSmallIntegerField(choices=SECURITYSTATE_CHOICES, default=0)
 
     expires_on = models.DateTimeField( null=True )                      # null mean never expire this
     
