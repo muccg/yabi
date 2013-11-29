@@ -543,6 +543,7 @@ class Credential(Base):
             protect_to_encrypt = lambda v: aes_enc_hex(aes_dec_hex(v, settings.SECRET_KEY), password)
             self.password, self.cert, self.key = protect_to_encrypt(self.password), protect_to_encrypt(self.cert), protect_to_encrypt(self.key)
             self.security_state = Credential.ENCRYPTED
+            self.save()
         # we are now guaranteed to be encrypted; but we need to make sure there's protected creds in the cache
         encrypted_to_protected = lambda v: aes_enc_hex(aes_dec_hex(v, password), settings.SECRET_KEY)
         access = self.get_credential_access()
