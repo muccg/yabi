@@ -369,10 +369,10 @@ startyabiadmin() {
 
     case ${YABI_CONFIG} in
     test_*)
-        ${VIRTUALENV}/bin/gunicorn_django -b 0.0.0.0:${PORT} --pid=yabiadmin-develop.pid --loglevel=INFO --log-file=yabiadmin-develop.log --daemon ${DJANGO_SETTINGS_MODULE} -t 300 -w 5
+        ${VIRTUALENV}/bin/gunicorn_django -b 0.0.0.0:${PORT} --pid=yabiadmin-develop.pid --log-file=yabiadmin-develop.log --daemon ${DJANGO_SETTINGS_MODULE} -t 300 -w 5
         ;;
     *)
-        ${VIRTUALENV}/bin/django-admin.py runserver_plus --traceback 0.0.0.0:${PORT} --settings=${DJANGO_SETTINGS_MODULE} > yabiadmin-develop.log 2>&1 &
+        ${VIRTUALENV}/bin/django-admin.py runserver_plus 0.0.0.0:${PORT} --settings=${DJANGO_SETTINGS_MODULE} > yabiadmin-develop.log 2>&1 &
         echo $! > yabiadmin-develop.pid
     esac
 }
