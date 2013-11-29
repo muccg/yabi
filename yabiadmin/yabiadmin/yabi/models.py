@@ -475,6 +475,7 @@ class CredentialAccess:
     """
 
     def __init__(self, credential):
+        self.descr = 'yabiuser: %s id: %d' % (credential.user.name, credential.id)
         self.keyname = cache_keyname("-cred-%s-%d" % (credential.user.name, credential.id))
 
     @property
@@ -494,7 +495,7 @@ class CredentialAccess:
         """return the decrypted cert if available. Otherwise raise exception"""
         protected_creds_str = cache.get(self.keyname)
         if protected_creds_str is None:
-            raise DecryptedCredentialNotAvailable("Credential for yabiuser: %s id: %d is not available in a decrypted form"%(self.user.name, self.id))
+            raise DecryptedCredentialNotAvailable("Credential for %s in a decrypted form" % (self.descr))
         protected_creds = json.loads(protected_creds_str)
         decrypt = lambda v: aes_dec_hex(v, settings.SECRET_KEY)
         return dict((t, decrypt(protected_creds[t])) for t in protected_creds)
