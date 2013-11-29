@@ -529,7 +529,7 @@ class Credential(Base):
 
     def __unicode__(self):
         return "%s username:%s for yabiuser:%s"%(self.description,self.username,self.user.name)
-    
+
     def on_pre_save(self):
         # we never allow plaintext credentials to make it into the database
         if self.security_state == Credential.PLAINTEXT:
