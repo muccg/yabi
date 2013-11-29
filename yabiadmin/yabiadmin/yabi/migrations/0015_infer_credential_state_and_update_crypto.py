@@ -20,11 +20,6 @@ class Migration(DataMigration):
                 return ''
             return val
 
-        def reprotect(val):
-            if val.startswith("$AESTEMP$"):
-                print("reprotect", val)
-            return val
-
         def is_encrypted(val):
             if val is None:
                 return False
@@ -47,7 +42,6 @@ class Migration(DataMigration):
 
             for k in to_convert:
                 to_convert[k] = empty_crypt_to_empty_string(to_convert[k])
-                to_convert[k] = reprotect(to_convert[k])
 
             # infer the security state of this credential
             if any(is_encrypted(t) for t in to_convert.values()):
