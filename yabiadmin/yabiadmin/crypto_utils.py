@@ -117,7 +117,8 @@ def nounicode(fn):
     return inner
 
 @nounicode
-def aes_dec_hex(data, key):
+def decrypt_annotated_block(data, key):
+    "takes a annotated block and returns the encrypted value (decrypting with `key')"
     if data == '':
         return ''
     tag, ciphertext = deannotate(joiner(data))
@@ -132,7 +133,7 @@ def aes_dec_hex(data, key):
         raise DecryptException("Invalid key for AES-CTR encrypted data")
 
 @nounicode
-def aes_enc_hex(data, key):
+def encrypt_to_annotated_block(data, key):
     "returns base64 encoded data, annotated appropriately and encrypted with `key`"
     # don't encrypt empty string
     if data == '':
@@ -159,7 +160,6 @@ def looks_like_annotated_block(data):
     Returns the tag if it looks like an annotated cipherblock
     returns False if its improperly formatted
     """
-
     if data.startswith('$') and data.endswith('$') and data.count('$') == 3:
         try:
             tag, ciphertext = deannotate(joiner(data))
@@ -167,4 +167,3 @@ def looks_like_annotated_block(data):
         except DecryptException:
             return False
     return False
-

@@ -38,7 +38,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.cache import cache
 from django.utils.encoding import smart_str
 from urlparse import urlparse, urlunparse
-from yabiadmin.crypto_utils import aes_enc_hex, aes_dec_hex, looks_like_annotated_block, deannotate, DecryptException, AESTEMP
+from yabiadmin.crypto_utils import encrypt_to_annotated_block, decrypt_annotated_block, looks_like_annotated_block, deannotate, DecryptException, AESTEMP
 from yabiadmin.constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK, VALID_SCHEMES
 from yabiadmin.utils import cache_keyname
 
@@ -497,7 +497,7 @@ class CredentialAccess:
         if protected_creds_str is None:
             raise DecryptedCredentialNotAvailable("Credential for %s in a decrypted form" % (self.descr))
         protected_creds = json.loads(protected_creds_str)
-        decrypt = lambda v: aes_dec_hex(v, settings.SECRET_KEY)
+        decrypt = lambda v: decrypt_annotated_block(v, settings.SECRET_KEY)
         return dict((t, decrypt(protected_creds[t])) for t in protected_creds)
         
     def clear_cache(self):
@@ -533,20 +533,23 @@ class Credential(Base):
     def on_pre_save(self):
         # we never allow plaintext credentials to make it into the database
         if self.security_state == Credential.PLAINTEXT:
-            protect = lambda v: aes_enc_hex(v, settings.SECRET_KEY)
+            protect = lambda v: encrypt_to_annotated_block(v, settings.SECRET_KEY)
             self.password, self.cert, self.key = protect(self.password), protect(self.cert), protect(self.key)
             self.security_state = Credential.PROTECTED
+            # put these updated protected credentials into the cache
+            access = self.get_credential_access()
+            access.cache_protected_creds(self.password, self.cert, self.key)
             
     def on_login(self, username, password):
         """When a user logs in, convert protected credentials to encrypted credentials"""
         assert(self.security_state != Credential.PLAINTEXT)
         if self.security_state == Credential.PROTECTED:
-            protect_to_encrypt = lambda v: aes_enc_hex(aes_dec_hex(v, settings.SECRET_KEY), password)
+            protect_to_encrypt = lambda v: encrypt_to_annotated_block(decrypt_annotated_block(v, settings.SECRET_KEY), password)
             self.password, self.cert, self.key = protect_to_encrypt(self.password), protect_to_encrypt(self.cert), protect_to_encrypt(self.key)
             self.security_state = Credential.ENCRYPTED
             self.save()
         # we are now guaranteed to be encrypted; but we need to make sure there's protected creds in the cache
-        encrypted_to_protected = lambda v: aes_enc_hex(aes_dec_hex(v, password), settings.SECRET_KEY)
+        encrypted_to_protected = lambda v: encrypt_to_annotated_block(decrypt_annotated_block(v, password), settings.SECRET_KEY)
         access = self.get_credential_access()
         access.cache_protected_creds(
             encrypted_to_protected(self.password),
@@ -556,7 +559,7 @@ class Credential(Base):
     def recrypt(self, oldkey, newkey):
         if self.security_state != Credential.ENCRYPTED:
             return
-        recrypted = lambda v: aes_enc_hex(aes_dec_hex(v, oldkey), newkey)
+        recrypted = lambda v: encrypt_to_annotated_block(decrypt_annotated_block(v, oldkey), newkey)
         self.password, self.cert, self.key = recrypted(self.password), recrypted(self.cert), recrypted(self.key)
     
     def get_credential_access(self):
