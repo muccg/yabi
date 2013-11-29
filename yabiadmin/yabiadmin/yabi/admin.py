@@ -142,8 +142,9 @@ class CredentialAdmin(AdminBase):
     def decache_credential(self, request, queryset):
         success,fail = 0,0
         for credential in queryset:
-            if credential.is_cached:
-                credential.clear_cache()
+            access = credential.get_credential_access()
+            if access.in_cache:
+                access.clear_cache()
                 success += 1
             else:
                 fail += 1
