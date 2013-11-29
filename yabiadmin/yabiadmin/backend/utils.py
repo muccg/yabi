@@ -121,8 +121,6 @@ def submission_script(template, working, command, modules, cpus, memory, walltim
         'queue': queue,
         'tasknum': tasknum,
         'tasktotal': tasktotal,
-        'arrayid': tasknum,
-        'arraysize': tasktotal,
         'envvars': envvars,
     }
 
