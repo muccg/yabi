@@ -73,7 +73,7 @@ class PBSProQDelResult(object):
 
 
 class PBSProParser(object):
-    QSUB_OUTPUT = "^(?P<remote_id>\d+)\..*"
+    QSUB_OUTPUT = "^(?P<remote_id>\d+(?:\[\])?)\..*"
     JOB_STATUS_COLUMN_INDEX = 4
     # From Yabi's point of view , it's either running or finished
     POSSIBLE_STATES = ["B","E", "F", "H", "M", "Q", "R", "S", "T", "U", "W", "X"]

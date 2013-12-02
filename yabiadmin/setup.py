@@ -65,7 +65,7 @@ tests_require = [
     'mockito>=0.5.0,<0.6.0',
 ]
 
-postgres_requires = [
+postgresql_requires = [
     'psycopg2>=2.5.0,<2.6.0',
 ]
 
@@ -92,10 +92,10 @@ except ImportError:
     importlib_available = False
 
 if not importlib_available:
-    install_requires.append('importlib==1.0.1')
+    install_requires.append('importlib>=1.0.1,<1.1.0')
 
 setup(name='yabiadmin',
-    version='7.1.3',
+    version='7.1.4',
     description='Yabi Admin',
     long_description='Yabi front end and administration web interface',
     author='Centre for Comparative Genomics',
@@ -113,7 +113,7 @@ setup(name='yabiadmin',
     extras_require={
         'tests': tests_require,
         'dev': dev_requires,
-        'postgres': postgres_requires,
+        'postgresql': postgresql_requires,
         'mysql': mysql_requires,
     },
 )

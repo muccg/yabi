@@ -17,6 +17,7 @@ Yabi Documentation
     backends
     credentials
     backendcredentials
+    submissiontemplates
     tools
     tool_import_export
     toolsets_and_toolgroups

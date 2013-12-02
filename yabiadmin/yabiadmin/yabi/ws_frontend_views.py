@@ -36,7 +36,7 @@ from urllib import quote, unquote
 from urlparse import urlparse, urlunparse
 
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError, Http404
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError
 from django.shortcuts import render_to_response, get_object_or_404
 from django.core.exceptions import ObjectDoesNotExist
 from yabiadmin.yabi.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential
@@ -65,6 +65,7 @@ from yabiadmin.yabistoreapp import db
 from yabiadmin.utils import cache_keyname
 from yaphc import Http, PostRequest, UnauthorizedError
 from yabiadmin.backend import backend
+from yabiadmin.backend.exceptions import FileNotFoundError
 
 import logging
 logger = logging.getLogger(__name__)
@@ -274,7 +275,10 @@ def get(request, bytes=None):
         except ValueError:
             bytes = None
 
-    download_handle = backend.get_file(yabiusername, uri, bytes=bytes)
+    try:
+        download_handle = backend.get_file(yabiusername, uri, bytes=bytes)
+    except FileNotFoundError:
+        return HttpResponseNotFound()
     response = HttpResponse(FileWrapper(download_handle))
 
     mimetypes.init([os.path.join(settings.WEBAPP_ROOT, 'mime.types')])

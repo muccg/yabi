@@ -58,7 +58,15 @@ logger = logging.getLogger(__name__)
 from yabiadmin.constants import *
 from yabiadmin.yabistoreapp import db
 
-FNMATCH_EXCLUDE_GLOBS = [ '*/STDOUT.txt', '*/STDERR.txt', 'STDOUT.txt', 'STDERR.txt' ]
+DEPENDENCIES_EXCLUDED_PATTERNS = [ r'STDOUT.txt$', r'STDERR.txt$', 
+        r""" # examples: Y123.e4567 Y123.o4567, Y123.o456.1, Y123.e456-2
+        Y\d+        # Y for YABI, followed by some digits (task pk)
+        \.          # separated by a dot ...
+        [eo]        # from e for stderr, or o for stdout
+        \d+         # followed by some digits (remote id)
+        ([-.]\d+)?  # and optionally the job array index (separated by - or .)
+        $"""
+        ]
 
 class EngineWorkflow(Workflow):
     job_cache = {}
@@ -177,8 +185,6 @@ class EngineWorkflow(Workflow):
 
 class EngineJob(Job):
 
-    tool = None
-
     class Meta:
         proxy = True
 
@@ -236,7 +242,7 @@ class EngineJob(Job):
         return rval
 
     def update_dependencies(self):
-        self.template.update_dependencies(self.workflow, ignore_glob_list=FNMATCH_EXCLUDE_GLOBS)
+        self.template.update_dependencies(self.workflow, ignored_patterns=DEPENDENCIES_EXCLUDED_PATTERNS)
         return self.template.dependencies
 
     def has_incomplete_dependencies(self):
@@ -262,8 +268,6 @@ class EngineJob(Job):
         template.parse_parameter_description()
 
         self.job_dict = job_dict
-        # AH tool is intrinsic to job, so it would seem to me that this ref is useful,
-        # let me know if keep refs to ORM objects like this is not cool
         self.tool = Tool.objects.get(name=job_dict["toolName"])
 
         # lets work out the highest copy level supported by this tool and store it in job. This makes no account for the backends capabilities.

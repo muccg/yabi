@@ -42,7 +42,10 @@ class RetryException(Exception):
 class NotSupportedError(RuntimeError):
     pass
 
-
 class JobNotFoundException(RuntimeError):
     """Raised when a job isn't found on the cluster by qstat, qacct"""
     pass
+
+class FileNotFoundError(RuntimeError):
+    pass
+

@@ -120,6 +120,8 @@ class Tool(Base):
     queue = models.CharField(max_length=50, default='normal', null=True, blank=True)
     max_memory = models.CharField(max_length=64, null=True, blank=True)
     job_type = models.CharField(max_length=40, default='single', null=True, blank=True)
+    submission = models.TextField(blank=True)
+
     lcopy_supported = models.BooleanField(default=True)
     link_supported = models.BooleanField(default=True)
 
@@ -133,6 +135,7 @@ class Tool(Base):
     accepts_input.help_text="If checked, this tool will accept inputs from prior tools rather than presenting file select widgets."
     #batch_on_param.help_text="Specify switch that will be fed files in batch mode. i.e. -i in blast."
     module.help_text="Comma separated list of modules to load."
+    submission.help_text="Mako script to be used to generate the submission script. (Variables: walltime, memory, cpus, working, modules, command, etc.)"
     lcopy_supported.help_text="If this tool should use local copies on supported backends where appropriate."
     link_supported.help_text="If this tool should use symlinks on supported backends where appropriate."
     
@@ -713,7 +716,7 @@ class Backend(Base):
     lcopy_supported.help_text="Backend supports 'cp' localised copies."
     link_supported.help_text="Backend supports 'ln' localised symlinking."
 
-    submission.help_text="Mako script to be used to generate the submission script. (Variables: walltime, memory, cpus, working, modules, command)"
+    submission.help_text="Mako script to be used to generate the submission script. (Variables: walltime, memory, cpus, working, modules, command, etc.)"
 
     tasks_per_user.help_text="The number of simultaneous tasks the backends should execute for each remote backend user. 0 means do not execute jobs for this backend. Blank means no limits."
 
@@ -779,7 +782,7 @@ class BackendCredential(Base):
     homedir.help_text="This must not start with a / but must end with a /.<br/>This value will be combined with the Backend path field to create a valid URI."
     default_stageout.help_text="There must be only one default_stageout per yabi user."
     
-    submission.help_text="Mako script to be used to generate a custom submission script. (Variables: walltime, memory, cpus, working, modules, command)"
+    submission.help_text="Mako script to be used to generate a custom submission script. (Variables: walltime, memory, cpus, working, modules, command, etc.)"
     
     def __unicode__(self):
         return "BackendCredential %s %s"%(self.id, self.backend)

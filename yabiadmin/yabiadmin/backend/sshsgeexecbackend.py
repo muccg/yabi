@@ -7,6 +7,8 @@ logger = logging.getLogger(__name__)
 
 class SSHSGEExecBackend(QBaseExecBackend):
     SCHEDULER_NAME = "sge"
+    QSUB_COMMAND_LINE = "<QSUB_COMMAND> -N {3} -cwd $script_temp_file_name"
+
     QSTAT_TEMPLATE = "\n".join(["#!/bin/sh",
                                 "qstat -j {0}"])
 
