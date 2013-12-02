@@ -4,26 +4,26 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 
@@ -89,7 +89,7 @@ def submitjob(request):
         workflow = EngineWorkflow(name=workflow_dict["name"], user=user, json=workflow_json, original_json=workflow_json)
         workflow.save()
 
-        # always commit transactions before sending tasks depending on state from the current transaction 
+        # always commit transactions before sending tasks depending on state from the current transaction
         # http://docs.celeryq.org/en/latest/userguide/tasks.html
         transaction.commit()
         resp = {'success': True, 'workflow_id':workflow.id}
@@ -123,18 +123,18 @@ def split_job(job):
             else:
                 value['type'] = "job"
             params.append({
-                "valid": True, 
+                "valid": True,
                 "value": [value],
                 "switchName": param['switchName']
             })
             files.append(param['value'][0])
         else:
             params.append(param)
-            
+
     changed_job['parameterList']['parameter'] = params
-    
-    if not files: 
-        selectfile_job = None 
+
+    if not files:
+        selectfile_job = None
     else:
         selectfile_job = {
             'valid': True,
@@ -153,23 +153,23 @@ def split_job(job):
 def createstageindir(request):
     logger.debug(request.user.username)
     try:
-        guid = request.REQUEST['uuid']    
+        guid = request.REQUEST['uuid']
         dirs_to_create = [p[1] for p in request.REQUEST.items() if p[0].startswith('dir_')]
         uuid.UUID(guid) # validation
-        user = models.User.objects.get(name=request.user.username) 
-  
+        user = models.User.objects.get(name=request.user.username)
+
         stageindir = '%s%s/' % (user.default_stagein,guid)
-       
+
         backend.mkdir(user.name, stageindir)
         for d in dirs_to_create:
             backend.mkdir(user.name, stageindir + '/' + d)
-         
+
         resp = {'success': True, 'uri':stageindir}
     except StandardError, e:
         resp = {'success': False, 'msg': str(e)}
 
     return HttpResponse(json.dumps(resp))
-   
+
 
 # Implementation
 
@@ -197,17 +197,17 @@ class ParamDef(object):
                 self.original_arg = argument
                 self.original_value = self.value[0]
                 return True
-        return False 
+        return False
 
-       
+
 
     def consume_values(self, arguments):
         '''WARNING! This changes the passed in arguments list in place! '''
         if self.switch_use not in ('combined', 'combined with equals'):
-            self.original_value = None 
+            self.original_value = None
         if self.switch_use == 'switchOnly':
             self.value = ['Yes']
-            return 
+            return
         if self.switch_use == 'pair':
             if len(arguments) <= 1:
                 raise ParsingError('Option %s requires 2 arguments' % self.name)
@@ -228,7 +228,7 @@ class ParamDef(object):
             self.original_value = v
             if self.original_arg is None:
                 self.original_arg = v
- 
+
     def parsed_argument(self):
         value = self.value
         if self.input_file:
@@ -242,16 +242,16 @@ class ParamDef(object):
                 'filename': filename,
                 'pathComponents': [root]
             }]
-        return ParsedArg(name= self.name, original_arg=self.original_arg, 
-            value=value, original_value=self.original_value, input_file=self.input_file) 
+        return ParsedArg(name= self.name, original_arg=self.original_arg,
+            value=value, original_value=self.original_value, input_file=self.input_file)
 
 class YabiArgumentParser(object):
     def __init__(self, tool):
         self.paramdefs = self.init_paramdefs(tool)
-        self.positional_paramdefs = filter(lambda x: x.switch_use == 'valueOnly', self.paramdefs)       
+        self.positional_paramdefs = filter(lambda x: x.switch_use == 'valueOnly', self.paramdefs)
 
     def parse_args(self, arguments):
-        arguments_copy = copy.copy(arguments) 
+        arguments_copy = copy.copy(arguments)
         parsed_options, unhandled_args = self.parse_options(arguments_copy)
 
         # Error if any unhandled argument are options (ie. start with '-' or '--')
@@ -262,8 +262,8 @@ class YabiArgumentParser(object):
         # All unhandled arguments have to be positional arguments
         if len(unhandled_args) != len(self.positional_paramdefs):
             pos_param_names = ', '.join([p.name for p in self.positional_paramdefs])
-            raise ParsingError('Tool expects %d positional arguments (%s) but %d (%s) were passed in.' % 
-                    ( len(self.positional_paramdefs), pos_param_names, 
+            raise ParsingError('Tool expects %d positional arguments (%s) but %d (%s) were passed in.' %
+                    ( len(self.positional_paramdefs), pos_param_names,
                       len(unhandled_args), ', '.join([arg[0] for arg in unhandled_args])))
 
         parsed_positionals = self.parse_positionals([arg[0] for arg in unhandled_args])
@@ -275,7 +275,7 @@ class YabiArgumentParser(object):
     # Implementation
 
     def init_paramdefs(self, tool):
-        return [ParamDef(param.switch, param.switch_use.display_text, param.mandatory, param.input_file) 
+        return [ParamDef(param.switch, param.switch_use.display_text, param.mandatory, param.input_file)
                     for param in tool.toolparameter_set.all().order_by('rank')]
 
     def parse_options(self, arguments):
@@ -289,7 +289,7 @@ class YabiArgumentParser(object):
             paramdef = self.find_matching_paramdef(next_arg)
             if paramdef:
                 paramdef.consume_values(remaining_args)
-                parsed_options.append(paramdef.parsed_argument()) 
+                parsed_options.append(paramdef.parsed_argument())
             else:
                 unhandled_args.append((next_arg, last_arg))
             last_arg = next_arg
@@ -307,7 +307,7 @@ class YabiArgumentParser(object):
         result = copy.copy(parsed_options)
         # and insert the positionals at the right location based on the original order
         for positional in parsed_positionals:
-            insert_after = find_item(positional_order, 
+            insert_after = find_item(positional_order,
                     lambda x: x[0] == positional.original_arg)[1]
             insert_idx = 0
             if insert_after is not None:
@@ -319,10 +319,10 @@ class YabiArgumentParser(object):
         for paramdef in self.paramdefs:
             if paramdef.matches(arg):
                 return paramdef
-            
+
     def validate_mandatory(self, result):
         mandatory_params = [p.name for p in self.paramdefs if p.mandatory]
-        missing_params = [p for p in mandatory_params if p not in [arg[0] for arg in result]] 
+        missing_params = [p for p in mandatory_params if p not in [arg[0] for arg in result]]
         if missing_params:
             raise ParsingError('Mandatory option: %s not passed in.' % ','.join(missing_params))
 
@@ -331,15 +331,15 @@ def extract_tool_and_params(request):
     tools = models.Tool.objects.filter(display_name=toolname, toolgrouping__tool_set__users__name=request.user.username)
     if len(tools) == 0:
         raise YabiError('Unknown tool name "%s"' % toolname)
-    tool = tools[0]    
+    tool = tools[0]
     argparser = YabiArgumentParser(tool)
     params = create_params(request, argparser)
     return tool, params
 
 def create_job(tool, params):
-    params_list = [{'switchName': arg.name, 'valid': True, 'value': arg.value} 
+    params_list = [{'switchName': arg.name, 'valid': True, 'value': arg.value}
                 for arg in params]
-    return {'toolName': tool.name, 'valid': True, 
+    return {'toolName': tool.name, 'valid': True,
             'parameterList': {'parameter': params_list}}
 
 def create_wrapper_workflow(selectfile_job, job, toolname):
@@ -356,8 +356,8 @@ def create_wrapper_workflow(selectfile_job, job, toolname):
         'tags': ['yabish'],
         'jobs': jobs
     }
-    
-    return workflow    
+
+    return workflow
 
 def create_params(request, argparser):
     arguments = reconstruct_argument_list(request)
@@ -384,7 +384,7 @@ def item_index(l, func):
             return i
 
 def is_int(s):
-    try: 
+    try:
        int(s)
        return True
     except ValueError:

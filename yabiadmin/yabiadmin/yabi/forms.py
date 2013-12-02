@@ -3,26 +3,26 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 from django import forms
 from django.conf import settings
@@ -50,7 +50,7 @@ class BackendForm(forms.ModelForm):
         if not path.startswith('/'):
             raise forms.ValidationError("Path must start with a /.")
         if not path.endswith('/'):
-            raise forms.ValidationError("Path must end with a /.")            
+            raise forms.ValidationError("Path must end with a /.")
         return path
 
 
@@ -83,7 +83,7 @@ class BackendCredentialForm(forms.ModelForm):
 
             if stageout_count > 0:
                 raise forms.ValidationError("There is a backend credential flagged as the default stageout already.")
-            
+
         return default_stageout
 
 
@@ -91,7 +91,7 @@ class ToolForm(forms.ModelForm):
     class Meta:
         model = Tool
         exclude = ('groups','output_filetypes')
-        
+
     def clean_backend(self):
         backend = self.cleaned_data['backend']
         if backend.path != '/':
@@ -103,7 +103,7 @@ class ToolParameterForm(forms.ModelForm):
         model = ToolParameter
     def __init__(self, *args, **kwargs):
         super(ToolParameterForm, self).__init__(*args, **kwargs)
-        
+
         # this is no longer on the tool, but on the toolparameter
         # limit the drop down for parameters to batch to only be those for this tool
         # the problem here is that with Django architecture there is no way of knowing inside this Form INLINE what Tool we came from
@@ -123,14 +123,14 @@ class ToolParameterForm(forms.ModelForm):
                     # this is the frame. Lets get our object
                     tool_object = f_locals['obj']
                     assert tool_object.__class__ is Tool, "When i traced back through the frame stack to find my tool object, I found an object, but it wasnt a tool, it was a %s"%(tool_object.__class__)
-                
+
             # go back a frame
             f_search = f_search.f_back
-       
+
         tool_param = None
         if 'instance' in kwargs:
             tool_param = kwargs['instance']
- 
+
         if tool_object:
             if tool_param is None:
                 self.fields["use_output_filename"].queryset = ToolParameter.objects.filter(tool=tool_object)

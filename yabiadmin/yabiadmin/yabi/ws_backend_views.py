@@ -4,26 +4,26 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden
@@ -53,7 +53,7 @@ logger = logging.getLogger(__name__)
 def fs_credential_uri(request, yabiusername):
     if 'uri' not in request.REQUEST:
         return HttpResponse("Request must contain parameter 'uri' in the GET or POST parameters.")
-        
+
     uri = request.REQUEST['uri']
     logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
 
@@ -72,7 +72,7 @@ def fs_credential_uri(request, yabiusername):
 def exec_credential_uri(request, yabiusername):
     if 'uri' not in request.REQUEST:
         return HttpResponse("Request must contain parameter 'uri' in the GET or POST parameters.")
-        
+
     uri = request.REQUEST['uri']
     logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
 
@@ -91,41 +91,41 @@ def exec_credential_uri(request, yabiusername):
 def get_hostkeys(request):
     if 'hostname' not in request.REQUEST:
         return HttpResponse("Request must contain parameter 'hostname' in the GET or POST parameters.\n")
-        
+
     hostname = request.REQUEST['hostname']
     #logger.debug('hostname: %s'%(hostname))
-    
+
     host_keys = HostKey.objects.filter(hostname=hostname).filter(allowed=True)
     #logger.debug("host_keys = %s\n"%str(host_keys))
-    
+
     data = [key.make_hash() for key in host_keys]
     return HttpResponse(json.dumps(data))
-    
+
 @hmac_authenticated
 def report_denied_hostkey(request):
     if 'hostname' not in request.REQUEST:
         return HttpResponse("Request must contain parameter 'hostname' in the GET or POST parameters.\n")
-    
+
     hostname = request.REQUEST['hostname']
     #logger.debug('hostname: %s'%(hostname))
-    
+
     key = request.REQUEST['key']
     key_type = request.REQUEST['key_type']
     fingerprint = request.REQUEST['fingerprint']
-    
+
     # if there is already this key listed as denied... just return OK. its already listed
     if HostKey.objects.filter(hostname=hostname, key_type=key_type, fingerprint=fingerprint, data=key, allowed=False).count() == 1:
         return HttpResponse("OK")
-        
+
     # if there is an identical key for this host that is allowed, then error out. This should not happen
     assert HostKey.objects.filter(hostname=hostname, key_type=key_type, fingerprint=fingerprint, data=key, allowed=True).count() == 0
-    
+
     # save the key as a denied key
     hostkey = HostKey(hostname=hostname, key_type=key_type, fingerprint=fingerprint, data=key, allowed=False)
     hostkey.save()
-    
+
     return HttpResponse("OK")
-        
+
 def backend_connection_limit(request,scheme,hostname):
     filt = Q(scheme=scheme) & Q(hostname=hostname)
     if 'port' in request.REQUEST:
@@ -135,7 +135,7 @@ def backend_connection_limit(request,scheme,hostname):
             filt &= Q(port=int(request.REQUEST['port']))
     if 'path' in request.REQUEST:
         filt &= Q(path=request.REQUEST['path'])
-            
+
     backends = Backend.objects.filter(filt)
     if not len(backends):
         return HttpResponse("Object not found",status=404)

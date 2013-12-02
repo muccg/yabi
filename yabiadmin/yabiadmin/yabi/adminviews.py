@@ -4,26 +4,26 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import sys
@@ -53,7 +53,7 @@ try:
     from yabiadmin import ldaputils
     LDAP_IN_USE = True
 except ImportError, e:
-    LDAP_IN_USE = False    
+    LDAP_IN_USE = False
     logger.info("LDAP modules not imported. If you are not using LDAP this is not a problem.")
 
 
@@ -70,7 +70,7 @@ class AddToolForm(forms.Form):
 
         if Tool.objects.filter(name=tool_dict["tool"]["name"]):
             raise forms.ValidationError("A tool named %s already exists." % tool_dict["tool"]["name"])
-        
+
         return data
 
 
@@ -80,7 +80,7 @@ class ToolGroupView:
         self.tools = set([])
 
     def sorted_tools(self):
-        logger.debug('')        
+        logger.debug('')
         for tool in sorted(self.tools):
             yield tool
 
@@ -91,11 +91,11 @@ class ToolParamView:
         self.switch = tool_param.switch
         self.switch_use = tool_param.switch_use.display_text
         self.properties = self.other_properties()
-        
+
     def other_properties(self):
         tp = self._tool_param
         props = []
-        
+
         if tp.mandatory:
             props.append('Mandatory')
         if tp.file_assignment != 'none':
@@ -117,7 +117,7 @@ class ToolParamView:
         return props
 
 def format_params(tool_parameters):
-    for param in tool_parameters:        
+    for param in tool_parameters:
         yield ToolParamView(param)
 
 @staff_member_required
@@ -125,7 +125,7 @@ def tool(request, tool_id):
     logger.debug("")
 
     tool = get_object_or_404(Tool, pk=tool_id)
-    
+
     return render_to_response('yabi/tool.html', {
         'tool': tool,
         'user':request.user,
@@ -144,7 +144,7 @@ def modify_backend_by_id(request,id):
         logger.debug('{0}={1}'.format(key,val))
         setattr(be,key,None if val=="None" else val)
     be.save()
-    
+
     return HttpResponse("OK")
 
 @staff_member_required
@@ -155,7 +155,7 @@ def modify_backend_by_name(request,scheme,hostname):
         logger.debug('{0}={1}'.format(key,val))
         setattr(be,key,None if val=="None" else val)
     be.save()
-    
+
     return HttpResponse("OK")
 
 
@@ -167,7 +167,7 @@ def user_tools(request, user_id):
     tool_groupings = ToolGrouping.objects.filter(tool_set__users=tooluser)
     unique_tool_groups = {}
     for grouping in tool_groupings:
-        tool_group_name = grouping.tool_group.name 
+        tool_group_name = grouping.tool_group.name
         tool_name = grouping.tool.name
         tgv = unique_tool_groups.setdefault(tool_group_name, ToolGroupView(tool_group_name))
         tgv.tools.add(tool_name)
@@ -214,7 +214,7 @@ def register_users(request):
             #save in yabi user
             user, created = User.objects.get_or_create(name=username)
             logger.debug("Yabi user %s for %s" % ("created" if created else 'already existed', username))
-            
+
         except Exception, e:
             logger.critical("Users not registered because of %s" % e)
             pass
@@ -231,22 +231,22 @@ def ldap_users(request):
             'user':request.user,
             'root_path':urlresolvers.reverse('admin:index'),
             })
-    
+
     if request.method == 'POST':
         register_users(request)
 
     all_ldap_users = ldaputils.get_all_users()
     yabi_userids = ldaputils.get_yabi_userids()
 
-    ldap_yabi_users = [ldaputils.format(entry[0],entry[1]) for entry in 
+    ldap_yabi_users = [ldaputils.format(entry[0],entry[1]) for entry in
             all_ldap_users.items() if entry[0] in yabi_userids ]
-    
+
     db_user_names = [user.name for user in User.objects.all()]
     user_in_db = lambda u: u.uid in db_user_names
 
     existing_ldap_users = [user for user in ldap_yabi_users if user_in_db(user) ]
     unexisting_ldap_users = [user for user in ldap_yabi_users if not user_in_db(user) ]
- 
+
     return render_to_response("yabi/ldap_users.html", {
         'user':request.user,
         'unexisting_ldap_users': unexisting_ldap_users,
@@ -258,7 +258,7 @@ def ldap_users(request):
 def backend(request, backend_id):
     logger.debug('')
     backend = get_object_or_404(Backend, pk=backend_id)
-        
+
     return render_to_response('yabi/backend.html', {
         'backend': backend,
         'user':request.user,
@@ -289,20 +289,20 @@ def backend_cred_test(request, backend_cred_id):
 
     try:
         rawdata = backendhelper.get_listing(bec.credential.user.name, bec.homedir_uri)
-        
+
         try:
             # successful listing
             return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars,{
                 'listing':json.loads(rawdata)
             }))
-            
+
         except ValueError, e:
             # value error report
             return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars,{
                 'error':"Value Error",
                 'error_help':"<pre>"+rawdata+"</pre>"
             }))
-            
+
     except backendhelper.BackendServerError, bse:
         if "authentication failed" in str(bse).lower():
             # auth failed
@@ -311,34 +311,34 @@ def backend_cred_test(request, backend_cred_id):
                 'error':"Authentication Failed",
                 'error_help': "The authentication of the test has failed. The <a href='%s'>credential used</a> is most likely incorrect. Please ensure the <a href='%s'>credential</a> is correct."%(cred_url,cred_url)
                 }))
-                
+
         elif "remote host key is denied" in str(bse).lower():
             # remote host key denied.
-            
+
             # work out which hostkey this is...
             keys = HostKey.objects.filter(hostname=bec.backend.hostname)
-            
+
             if not keys or len(keys)>1:
                 # link to host key page
                 link = '%syabi/hostkey/?hostname=%s'%(urlresolvers.reverse('admin:index'),bec.backend.hostname)     # TODO... construct this more 'correctly'
             else:
                 # link to changelist page
                 link = '%syabi/hostkey/%d'%(urlresolvers.reverse('admin:index'),keys[0].id)
-            
+
             logger.info("backend_cred_test tried to test BackendCredential %d and received a denied host key exception [hostname: %s]."%(bec.id,bec.backend.hostname))
-            
+
             return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars,{
                 'error':"Remote Host Key Denied",
                 'error_help':"The remote host key has been denied. Please <a href='%s'>check the hostkey</a>'s fingerprint and if it is the correct key, mark it as accepted."%link
             }))
-        
+
         else:
             # overall exception
             return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars,{
                 'error':"Backend Server Error",
                 'error_help':"<pre>"+str(bse)+"</pre>"
             }))
-    
+
     # we should not get here
     assert False, "Unreachable codepoint reached. Something wicked happened"
 
@@ -351,7 +351,7 @@ def add_tool(request):
                                   {'form':AddToolForm(),
                                    'user':request.user,
                                    'title': 'Add Tool',
-                                   'root_path':urlresolvers.reverse('admin:index'),                                   
+                                   'root_path':urlresolvers.reverse('admin:index'),
                                    'action_path': urlresolvers.reverse('add_tool_view'),
                                    'breadcrumb':'Add Tool'
                                    }
@@ -364,18 +364,18 @@ def add_tool(request):
                                       {'form': f,
                                        'user':request.user,
                                        'title': 'Add Tool',
-                                       'root_path':urlresolvers.reverse('admin:index'),                                       
+                                       'root_path':urlresolvers.reverse('admin:index'),
                                        'action_path': urlresolvers.reverse('add_tool_view'),
                                        'breadcrumb':'Add Tool'
                                        }
                                       )
-    
+
         else:
 
             tool_dict = json.loads(f.cleaned_data["tool_json"])
             tool_dict = tool_dict["tool"]
             tool = create_tool(request, tool_dict)
-            
+
             return HttpResponseRedirect(urlresolvers.reverse('admin:yabi_tool_change', args=(tool.id,)))
 
 
@@ -474,7 +474,7 @@ def create_tool(request, tool_dict):
                 outputfilename_toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["use_output_filename__switch"])
                 toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["switch"])
                 toolparameter.use_output_filename=outputfilename_toolparameter
-                toolparameter.save()                
+                toolparameter.save()
             except ObjectDoesNotExist,e:
                 logger.critical("Unable to add use_output_filename on parameter.use_output_filename field: %s" % e)
 
@@ -484,7 +484,7 @@ def create_tool(request, tool_dict):
                 extension = FileExtension.objects.get(pattern=parameter["extension_param"])
                 toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["switch"])
                 toolparameter.extension_param=extension
-                toolparameter.save()                
+                toolparameter.save()
             except ObjectDoesNotExist,e:
                 logger.critical("Unable to add extension on parameter.extension field: %s" % e)
 
@@ -498,7 +498,7 @@ from yabiadmin.crypto_utils import DecryptException
 def render_cred_password_form(request):
     ids = request.GET.get('ids', [])
     action = request.GET.get('action',None)
-    
+
     render_data = {'h':webhelpers,
                    'return_url': webhelpers.url("/ws/manage_credential/"),
                    'ids':ids,
@@ -524,7 +524,7 @@ def duplicate_credential(request):
             messages.info(request, "No changes made.")
             return HttpResponseRedirect(webhelpers.url("/admin-pane/yabi/credential/?ids=%s" % (request.POST['ids'])))
 
-        ids = [int(X) for X in request.POST.get('ids', '').split(',')]     
+        ids = [int(X) for X in request.POST.get('ids', '').split(',')]
         action = request.POST.get('action',None)
 
         success, fail = 0,0
@@ -597,6 +597,6 @@ def status(request):
         'root_path':webhelpers.url("/"),
         'settings': get_safe_settings(),
         }
-    
+
     return render_to_response('yabi/admin_status.html', render_data)
 

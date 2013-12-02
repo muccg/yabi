@@ -4,26 +4,26 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import traceback, hashlib, base64
@@ -49,7 +49,7 @@ try:
     from yabiadmin import ldaputils
     LDAP_IN_USE = True
 except ImportError, e:
-    LDAP_IN_USE = False    
+    LDAP_IN_USE = False
     logger.info("LDAP modules not imported. If you are not using LDAP this is not a problem.")
 
 
@@ -69,7 +69,7 @@ class Base(models.Model):
 
 class FileExtension(Base):
     pattern = models.CharField(max_length=64, unique=True)
-    
+
     def __unicode__(self):
         return self.pattern
 
@@ -109,11 +109,11 @@ class Tool(Base):
     groups = models.ManyToManyField('ToolGroup', through='ToolGrouping', null=True, blank=True)
     output_filetypes = models.ManyToManyField(FileExtension, through='ToolOutputExtension', null=True, blank=True)
     accepts_input = models.BooleanField(default=False)
-    
+
     # OBSOLETE
     #batch_on_param = models.ForeignKey('ToolParameter', related_name='batch_tool', null=True, blank=True)
     #batch_on_param_bundle_files = models.NullBooleanField(null=True, blank=True)
-    
+
     cpus = models.CharField(max_length=64, null=True, blank=True)
     walltime = models.CharField(max_length=64, null=True, blank=True)
     module = models.TextField(null=True, blank=True)
@@ -138,10 +138,10 @@ class Tool(Base):
     submission.help_text="Mako script to be used to generate the submission script. (Variables: walltime, memory, cpus, working, modules, command, etc.)"
     lcopy_supported.help_text="If this tool should use local copies on supported backends where appropriate."
     link_supported.help_text="If this tool should use symlinks on supported backends where appropriate."
-    
+
     def tool_groups_str(self):
         return ",".join(
-            ["%s (%s)" % (tg.tool_group,tg.tool_set) 
+            ["%s (%s)" % (tg.tool_group,tg.tool_set)
                 for tg in self.toolgrouping_set.all()
             ]
         )
@@ -191,7 +191,7 @@ class Tool(Base):
             'description':self.description,
             'enabled':self.enabled,
             'backend':self.backend.name,
-            'fs_backend':self.fs_backend.name,            
+            'fs_backend':self.fs_backend.name,
             'accepts_input':self.accepts_input,
             'cpus':self.cpus,
             'walltime':self.walltime,
@@ -199,24 +199,24 @@ class Tool(Base):
             'queue':self.queue,
             'max_memory':self.max_memory,
             'job_type': self.job_type,
-            'inputExtensions':self.input_filetype_extensions(),                     
-            'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__pattern")),            
+            'inputExtensions':self.input_filetype_extensions(),
+            'outputExtensions': list(self.tooloutputextension_set.values("must_exist", "must_be_larger_than", "file_extension__pattern")),
             'parameter_list': list(self.toolparameter_set.order_by('id').values("id", "rank", "mandatory", "hidden", "file_assignment", "output_file",
                                                                                 "switch", "switch_use__display_text", "switch_use__formatstring","switch_use__description",
                                                                                 "possible_values","default_value","helptext", "batch_bundle_files", "use_output_filename__switch"))
             }
-            
+
         for index in range(len(tool_dict['outputExtensions'])):
             tool_dict['outputExtensions'][index]['file_extension__pattern']=tool_dict['outputExtensions'][index]['file_extension__pattern']
-            
+
         for p in tool_dict["parameter_list"]:
             tp = ToolParameter.objects.get(id=p["id"])
             p["acceptedExtensionList"] = tp.input_filetype_extensions()
             if tp.extension_param:
                 p["extension_param"] = tp.extension_param.pattern
-                
+
         return tool_dict
-    
+
     def decode_embedded_json(self):
         # the possible_values field has json in it so we need to make it decode
         # or it will be double encoded
@@ -235,7 +235,7 @@ class Tool(Base):
     def json_pretty(self):
         output = self.decode_embedded_json()
         return json.dumps({'tool':output}, indent=4)
-        
+
     def purge_from_cache(self):
         """Purge this tools entry description from cache"""
         cache.delete(cache_keyname(self.name))
@@ -266,10 +266,10 @@ class ToolParameter(Base):
     rank = models.IntegerField(null=True, blank=True)
     mandatory = models.BooleanField(blank=True, default=False)
     hidden = models.BooleanField(blank=True, default=False)
-    
+
     # replaced with file_assignment
     #input_file = models.BooleanField(blank=True, default=False)
-    
+
     output_file = models.BooleanField(blank=True, default=False)
     accepted_filetypes = models.ManyToManyField(FileType, blank=True)
     #use_batch_filename = models.BooleanField(default=False)
@@ -277,17 +277,17 @@ class ToolParameter(Base):
     possible_values = models.TextField(null=True, blank=True)
     default_value = models.TextField(null=True, blank=True)
     helptext = models.TextField(null=True, blank=True)
-    
+
     # this is replaced by a setting in file_assignment
     #batch_param = models.BooleanField(blank=False, null=False, default=False)
     batch_bundle_files = models.BooleanField(blank=False, null=False, default=False)
-    
+
     # this replaces batch_param with a 'file assignment mode' that determines if it 'batches' or 'consumes all'
     file_assignment = models.CharField(max_length=5, null=False, choices=FILE_ASSIGNMENT_CHOICES)
-    
+
     # this foreign key points to the tool parameter (that is a batch_on_param) that we will derive the output filename for this switch from
     use_output_filename = models.ForeignKey('ToolParameter', null=True, blank=True)
-    
+
 
     switch.help_text="The actual command line switch that should be passed to the tool i.e. -i or --input-file"
     switch_use.help_text="The way the switch should be combined with the value."
@@ -302,13 +302,13 @@ class ToolParameter(Base):
     possible_values.help_text="Json snippet for html select. See blast tool for examples."
     default_value.help_text="Value that will appear in field. If possible values is populated this should match one of the values so the select widget defaults to that option."
     helptext.help_text="Help text that is passed to the frontend for display to the user."
-    
+
     batch_bundle_files.help_text = "When staging in files, stage in every file that is in the same source location as this file. Useful for bringing along other files that are associated, but not specified."
     file_assignment.help_text = """Specifies how to deal with files that match the accepted filetypes setting...<br/><br/>
         <i>No input files:</i> This parameter does not take any input files as an argument<br/>
         <i>Single input file:</i> This parameter can only take a single input file, and batch jobs will need to be created for multiple files if the user passes them in<br/>
         <i>Multiple input file:</i> This parameter can take a whole string of onput files, one after the other. All matching filetypes will be passed into it"""
-    
+
     def __unicode__(self):
         return self.switch or ''
 
@@ -348,10 +348,10 @@ class ToolGroup(Base):
         tools_by_toolset = {}
         for tg in self.toolgrouping_set.all():
            tools = tools_by_toolset.setdefault(tg.tool_set, [])
-           tools.append(tg.tool) 
+           tools.append(tg.tool)
         return "<br/>".join([
-            "%s: (%s)" % (set, ",".join(str(t) for t in tools)) 
-                                for (set, tools) in tools_by_toolset.iteritems() ]) 
+            "%s: (%s)" % (set, ",".join(str(t) for t in tools))
+                                for (set, tools) in tools_by_toolset.iteritems() ])
     tools_str.short_description = 'Tools in toolgroup, by toolset'
     tools_str.allow_tags = True
 
@@ -396,7 +396,7 @@ class User(Base):
 
         currentPassword = request.POST['currentPassword']
         newPassword = request.POST['newPassword']
-    
+
         # get all creds for this user that are encrypted
         creds = Credential.objects.filter(user=yabiuser)
         for cred in creds:
@@ -404,12 +404,12 @@ class User(Base):
             cred.save()
 
     def has_account_tab(self):
-        logger.debug('')        
+        logger.debug('')
         return self.user_option_access or self.credential_access
 
     def validate(self, request):
         logger.debug('')
-        
+
         currentPassword = request.POST.get("currentPassword", None)
         newPassword = request.POST.get("newPassword", None)
         confirmPassword = request.POST.get("confirmPassword", None)
@@ -478,60 +478,60 @@ class Credential(Base):
     backends = models.ManyToManyField('Backend', through='BackendCredential', null=True, blank=True)
 
     expires_on = models.DateTimeField( null=True )                      # null mean never expire this
-    
+
     username.help_text="The username on the backend this credential is for."
     user.help_text="Yabi username."
 
     def __unicode__(self):
         return "%s username:%s for yabiuser:%s"%(self.description,self.username,self.user.name)
-    
+
     def encrypt(self, key):
         """Turn this unencrypted cred into an encrypted one using the supplied password"""
         password = aes_enc_hex(self.password,key)
         cert = aes_enc_hex(self.cert,key,linelength=80)
         key = aes_enc_hex(self.key,key,linelength=80)
-        
+
         # they all have to work before we change the object
         self.password = password
         self.cert = cert
         self.key = key
-                
+
     def decrypt(self, key):
         password = aes_dec_hex(self.password,key)
         cert = aes_dec_hex(self.cert,key)
         key = aes_dec_hex(self.key,key)
-        
+
         # they all have to work before we change the object
         self.password = password
         self.cert = cert
         self.key = key
-        
+
     def protect(self):
         """temporarily protects a key by encrypting it with the secret django key"""
         password = aes_enc_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
         cert = aes_enc_hex(self.cert, settings.SECRET_KEY,tag=AESTEMP)
         key = aes_enc_hex(self.key, settings.SECRET_KEY,tag=AESTEMP)
-        
+
         # they all have to work before we change the object
         self.password = password
         self.cert = cert
         self.key = key
-        
+
     def unprotect(self):
         """take a temporarily protected key and decrypt it with the django secret key"""
         password = aes_dec_hex(self.password, settings.SECRET_KEY,tag=AESTEMP)
         cert = aes_dec_hex(self.cert, settings.SECRET_KEY,tag=AESTEMP)
         key = aes_dec_hex(self.key, settings.SECRET_KEY,tag=AESTEMP)
-        
+
         # they all have to work before we change the object
         self.password = password
         self.cert = cert
         self.key = key
-        
+
     def recrypt(self,oldkey,newkey):
         self.decrypt(oldkey)
         self.encrypt(newkey)
-        
+
     def encrypted2protected(self, key):
         """Tries to decrypt using the key and if successful protects
         the credential. Credential must be saved to take effect."""
@@ -543,35 +543,35 @@ class Credential(Base):
         # smart_str takes care of non-ascii characters (memcache doesn't support Unicode in keys)
         # memcache also doesn't like spaces
         return cache_keyname("-cred-%s-%d" % (self.user.name, self.id))
-    
+
     #@transaction.commit_manually
     def send_to_cache(self, time_to_cache=None):
         """This method stores the key as it is in cache"""
         time_to_cache = time_to_cache or settings.DEFAULT_CRED_CACHE_TIME
-                
+
         key = self.cache_keyname()
         val = json.dumps( {
             'password': self.password,
             'cert': self.cert,
             'key': self.key
         } )
-        
+
         cache.set(key, val, time_to_cache)
- 
-            
+
+
     def get_from_cache(self):
         result = self.get_cache()
         self.password = result['password']
         self.cert = result['cert']
         self.key = result['key']
-       
+
     def get(self):
         """return the decrypted cert if available. Otherwise raise exception"""
         #return dict([('username', self.username),
                     #('password', self.password),
                     #('cert', self.cert),
                     #('key', self.key)])
-        
+
         if self.is_cached:
             self.get_from_cache()
             self.unprotect()
@@ -579,24 +579,24 @@ class Credential(Base):
                     ('password', self.password),
                     ('cert', self.cert),
                     ('key', self.key)])
-            
+
         # encrypted but not cached. ERROR!
         raise DecryptedCredentialNotAvailable("Credential for yabiuser: %s id: %d is not available in a decrypted form"%(self.user.name, self.id))
-        
+
     @property
     def is_cached(self):
         """return true if there is a decypted cert in cache"""
         return cache.has_key(self.cache_keyname())
-        
+
     def get_cache_json(self):
         """return the cached credential"""
         credential = cache.get(self.cache_keyname())
         return credential
-        
+
     def get_cache(self):
         """return the decoded cached credentials"""
         return json.loads(self.get_cache_json())
-        
+
     def refresh_cache(self, time_to_cache=None):
         """refresh the cache version with a new timeout"""
         time_to_cache = time_to_cache or settings.DEFAULT_CRED_CACHE_TIME
@@ -604,69 +604,69 @@ class Credential(Base):
         cred = cache.get( name )
         assert cred, "tried to refresh a non-cached credential"
         cache.set(name, cred, time_to_cache)
-        
+
     def clear_cache(self):
         name = self.cache_keyname()
         cache.delete( name )
-        
+
     @property
     def is_plaintext(self):
         """We assume its plaintext if it fails the crypto_utils looks_like_annotated_block() function"""
         return not (looks_like_annotated_block(self.password) and looks_like_annotated_block(self.key) and looks_like_annotated_block(self.cert))
-        
+
     @property
     def is_protected(self):
         """Is this cred a temporarily protected one?"""
         return not (self.is_plaintext or not deannotate(self.password)[0]==AESTEMP)
-    
+
     @property
     def is_encrypted(self):
         """Is this cred fully encrypted with user pass?"""
         return not (self.is_plaintext or not deannotate(self.password)[0]!=AESTEMP)
-        
+
     def is_only_hex(self):
         """This is a legacy function to help migrating old encrypted creds to new creds.
         It returns true if the key, cert and password fields are soley composed of hex characters.
         """
         return looks_like_hex_ciphertext(self.password) and looks_like_hex_ciphertext(self.key) and looks_like_hex_ciphertext(self.cert)
-        
+
     def on_pre_save(self):
         if self.is_plaintext:
             # temporarily protect this for saving
             self.protect()
-            
+
     def on_post_save(self):
         if self.is_protected:
             # cache the protected form while we have it
             self.send_to_cache()
-            
+
     def on_post_init(self):
         if not self.is_plaintext:
             # ciphertext... lets look at its tag
             tag = looks_like_annotated_block(self.password) or looks_like_annotated_block(self.key) or looks_like_annotated_block(self.cert)
-        
+
             # TODO: automate this bit
 
     def on_login(self, username, password):
         """When a user logs in, this method is called on every one of their credentials, and gets passed their login password"""
         logger.debug("Decrypting %s" % self)
-        
+
         # is it not encrypted at all?
         if self.is_plaintext:
             # we need to protect this with users password and save it back before we do anything else.
             self.encrypt(password)
             self.save()
             return
-            
-       
-        # now the generic stuff to do with an encrypted password.    
+
+
+        # now the generic stuff to do with an encrypted password.
         # 1.try and decrypt with this password
         try:
             self.decrypt(password)
-            
+
             # decrypt with users password succeeded. protect and cache...
             self.protect()
-            
+
             # dont save
             self.send_to_cache()
         except DecryptException, de:
@@ -678,10 +678,10 @@ class Credential(Base):
                 # its symetricly encrypted... that means we need to encrypt with the users password and save it encrypted into db
                 self.encrypt(password)
                 self.save()
-                
+
                 # now decrypt and protect and save to cache
                 self.decrypt(password)
-                
+
                 self.protect()
 
                 # dont save
@@ -689,7 +689,7 @@ class Credential(Base):
             except DecryptException, de:
                 # failed to decrypt with users key or symetric key
                 raise DecryptException("Failed to decrypt %s with users key or symetric key!"%(self))
-            
+
 class Backend(Base):
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=512, blank=True)
@@ -702,7 +702,7 @@ class Backend(Base):
     link_supported = models.BooleanField(default=True)
 
     submission = models.TextField(blank=True)
-    
+
     tasks_per_user = models.IntegerField(null=True, blank=True)
     temporary_directory = models.CharField(max_length=512, blank=True)
 
@@ -742,21 +742,21 @@ class Backend(Base):
         return '<a href="%s">View</a>' % self.get_absolute_url()
     backend_summary_link.short_description = 'Summary'
     backend_summary_link.allow_tags = True
-    
+
 class HostKey(Base):
     #backend = models.ForeignKey(Backend)
     #scheme = models.CharField(max_length=64)
     hostname = models.CharField(max_length=512)
     #port = models.IntegerField(null=True, blank=True)
-    
+
     key_type = models.CharField(max_length=32, blank=False, null=False)
     fingerprint = models.CharField(max_length=64, blank=False, null=False)                # some SSH handshakes send a SSH "message" associated with the key
-    data = models.TextField(max_length=16384, blank=False, null=False)    
+    data = models.TextField(max_length=16384, blank=False, null=False)
     allowed = models.BooleanField(default=False)
-    
+
     def __unicode__(self):
         return "%s hostkey for %s"%(self.key_type, self.hostname)
-        
+
     def make_hash(self):
         """return the contents of this hostkey as a python dictionary"""
         return {
@@ -766,7 +766,7 @@ class HostKey(Base):
             'data':self.data,
             'allowed':self.allowed
         }
-            
+
 class BackendCredential(Base):
     class Meta:
         verbose_name_plural = "Backend Credentials"
@@ -781,9 +781,9 @@ class BackendCredential(Base):
 
     homedir.help_text="This must not start with a / but must end with a /.<br/>This value will be combined with the Backend path field to create a valid URI."
     default_stageout.help_text="There must be only one default_stageout per yabi user."
-    
+
     submission.help_text="Mako script to be used to generate a custom submission script. (Variables: walltime, memory, cpus, working, modules, command, etc.)"
-    
+
     def __unicode__(self):
         return "BackendCredential %s %s"%(self.id, self.backend)
 
@@ -793,21 +793,21 @@ class BackendCredential(Base):
             'scheme':self.backend.scheme,
             'homedir':self.homedir_uri,
             }
-        
+
         cred = self.credential                                  # TODO: check for expiry or non existence
         output.update( {
             'credential':cred.description,
             'username':cred.username,
         })
-        
+
         parts = cred.get()
-        
+
         # refresh its time stamp
         cred.refresh_cache()
-                
+
         # add in the decrypted cred parts
         output.update(parts)
-            
+
         return json.dumps(output)
 
     @property
@@ -867,7 +867,7 @@ class ModelBackendUserProfile(User):
         proxy = True
 
     def change_password(self, request):
-        logger.debug("passchange in ModelBackendUserProfile")        
+        logger.debug("passchange in ModelBackendUserProfile")
         currentPassword = request.POST.get("currentPassword", None)
         newPassword = request.POST.get("newPassword", None)
 
@@ -890,7 +890,7 @@ class ModelBackendUserProfile(User):
 
 
 class LDAPBackendUserProfile(User):
-    
+
     class Meta:
         proxy = True
 
@@ -920,7 +920,7 @@ class YabiCache(models.Model):
     """
     class Meta:
         db_table = 'yabi_cache'
-        
+
     cache_key = models.CharField(max_length=255, unique=True, primary_key=True)
     value = models.TextField()
     expires = models.DateTimeField(db_index=True)
@@ -938,7 +938,7 @@ def signal_credential_pre_save(sender, instance, **kwargs):
 def signal_credential_post_save(sender, instance, **kwargs):
     instance.on_post_save()
 
-       
+
 def signal_credential_post_init(sender, instance, **kwargs):
     instance.on_post_init()
 
@@ -959,7 +959,7 @@ def create_user_profile(sender, instance, created, **kwargs):
         logger.debug('Creating user profile for %s' % instance.username)
         User.objects.create(user=instance, name=instance.username)
 
- 
+
 # connect up signals
 from django.db.models.signals import post_save, pre_save, post_init
 post_save.connect(signal_tool_post_save, sender=Tool, dispatch_uid="signal_tool_post_save")

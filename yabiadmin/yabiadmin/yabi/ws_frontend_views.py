@@ -4,26 +4,26 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import mimetypes
@@ -72,8 +72,8 @@ logger = logging.getLogger(__name__)
 
 DATE_FORMAT = '%Y-%m-%d'
 
-BACKEND_REFUSED_CONNECTION_MESSAGE = "The backend server is refusing connections. Check that the backend server at %s on port %s is running and answering requests."%(settings.BACKEND_IP,settings.BACKEND_PORT) 
-BACKEND_HOST_UNREACHABLE_MESSAGE = "The backend server is unreachable. Check that the backend server setting is correct. It is presently configured to %s."%(settings.BACKEND_IP) 
+BACKEND_REFUSED_CONNECTION_MESSAGE = "The backend server is refusing connections. Check that the backend server at %s on port %s is running and answering requests."%(settings.BACKEND_IP,settings.BACKEND_PORT)
+BACKEND_HOST_UNREACHABLE_MESSAGE = "The backend server is unreachable. Check that the backend server setting is correct. It is presently configured to %s."%(settings.BACKEND_IP)
 
 @authentication_required
 def tool(request, toolname):
@@ -112,14 +112,14 @@ def menu(request):
                     if not tool:
                         tool["name"] = toolgroup.tool.name
                         tool["displayName"] = toolgroup.tool.display_name
-                        tool["description"] = toolgroup.tool.description                
+                        tool["description"] = toolgroup.tool.description
                         tool["outputExtensions"] = toolgroup.tool.output_filetype_extensions()
                         tool["inputExtensions"] = toolgroup.tool.input_filetype_extensions()
 
         # from here down is getting the tools into a form
         # used by the front end so no changes are needed there
         # toolsets are dev, marine science, ccg etc, not used on the front end
-        # toolgroups are for example genomics, select data, mapreduce        
+        # toolgroups are for example genomics, select data, mapreduce
         output = {}
         output['menu'] = {}
         output['menu']['toolsets'] = []
@@ -164,11 +164,11 @@ def menu(request):
 #        # as it was passed forwards in body of HTTP response
 #        # so we get the last full line and report it
 #        lines = str(bse).split("\n")
-#        
+#
 #        # cull blank lines on end
 #        while lines and not lines[-1]:
 #            lines = lines[:-1]
-#            
+#
 #        return JsonMessageResponseNotFound(lines[-1] if lines else "Empty bodied http 500 response from backend")
 #    except BackendStatusCodeError, bsce:
 #        return JsonMessageResponseNotFound("The yabi backend returned an inapropriate status code: %s"%(str(bsce)))
@@ -178,7 +178,7 @@ def menu(request):
 #        return JsonMessageResponseNotFound(BACKEND_HOST_UNREACHABLE_MESSAGE)
 #    #except Exception, e:
 #        #return JsonMessageResponseNotFound("%s::ls threw %s... %s"%(__file__,str(e.__class__),str(e)))
-        
+
 
 @authentication_required
 def ls(request):
@@ -203,20 +203,20 @@ def copy(request):
     This function will instantiate a copy on the backend for this user
     """
     yabiusername = request.user.username
-    
+
     src,dst = request.GET['src'],request.GET['dst']
 
     # check that src does not match dst
     srcpath, srcfile = src.rsplit('/', 1)
     assert srcpath != dst, "dst must not be the same as src"
-        
+
     # src must not be directory
     assert src[-1]!='/', "src malformed. Either no length or not trailing with slash '/'"
     # TODO: This needs to be fixed in the FRONTEND, by sending the right url through as destination. For now we just make sure it ends in a slash
     if dst[-1]!='/':
         dst += '/'
     logger.debug("yabiusername: %s src: %s -> dst: %s" %(yabiusername, src, dst))
-        
+
     backend.copy_file(yabiusername, src, dst)
 
     return HttpResponse("OK")
@@ -228,25 +228,25 @@ def rcopy(request):
     This function will instantiate a rcopy on the backend for this user
     """
     yabiusername = request.user.username
-        
+
     src,dst = unquote(request.REQUEST['src']), unquote(request.REQUEST['dst'])
 
     # check that src does not match dst
     srcpath, srcfile = src.rstrip('/').rsplit('/', 1)
     assert srcpath != dst, "dst must not be the same as src"
-        
+
     # src must be directory
     #assert src[-1]=='/', "src malformed. Not directory."
     # TODO: This needs to be fixed in the FRONTEND, by sending the right url through as destination. For now we just make sure it ends in a slash
     if dst[-1]!='/':
         dst += '/'
     logger.debug("yabiusername: %s src: %s -> dst: %s" %(yabiusername, src, dst))
-        
+
     backend.rcopy_file(yabiusername, src, dst)
 
     return HttpResponse("OK")
 
-   
+
 @authentication_required
 def rm(request):
     yabiusername = request.user.username
@@ -262,7 +262,7 @@ def get(request, bytes=None):
 
     logger.debug("ws_frontend_views::get() yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
     uri = request.GET['uri']
-        
+
     try:
         filename = uri.rsplit('/', 1)[1]
     except IndexError, e:
@@ -302,13 +302,13 @@ def zget(request):
 #    try:
 #        logger.debug("ws_frontend_views::zget() yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
 #        uri = request.GET['uri']
-#        
+#
 #        sanitised_uri = uri
 #        while sanitised_uri[-1]=='/':
 #            sanitised_uri = sanitised_uri[:-1]
-#        
+#
 #        try:
-#            
+#
 #            filename = sanitised_uri.rsplit('/', 1)[-1]+".tar.gz"
 #        except IndexError, e:
 #            logger.critical('Unable to get filename from uri: %s' % uri)
@@ -371,7 +371,7 @@ def put(request):
         #http.finish_session()
 
     return HttpResponse("OK")
-        
+
 
 @authentication_required
 @transaction.commit_manually
@@ -396,7 +396,7 @@ def submit_workflow(request):
             start_time=datetime.now()
         )
 
-        # always commit transactions before sending tasks depending on state from the current transaction 
+        # always commit transactions before sending tasks depending on state from the current transaction
         # http://docs.celeryq.org/en/latest/userguide/tasks.html
         transaction.commit()
 
@@ -433,7 +433,7 @@ def munge_name(user, workflow_name):
     while munged_name in used_names:
         val += 1
         munged_name = "%s (%d)" % (base, val)
-        
+
     return munged_name
 
 @authentication_required
@@ -469,10 +469,10 @@ def workflow_to_response(workflow, key=None, parse_json=True, retrieve_tags=True
             'status': workflow.status,
             'json': json.loads(workflow.json) if parse_json else workflow.json,
             "tags": [],
-        } 
+        }
 
     if retrieve_tags:
-        response["tags"] = [wft.tag.value for wft in workflow.workflowtag_set.all()] 
+        response["tags"] = [wft.tag.value for wft in workflow.workflowtag_set.all()]
 
     if key is not None:
         response = (getattr(workflow,key), response)
@@ -500,7 +500,7 @@ def workflow_datesearch(request):
     sort_dir, sort_field = ('ASC', sort)
     if sort[0] == '-':
         sort_dir, sort_field = ('DESC', sort[1:])
- 
+
     # Retrieve the matched workflows.
     workflows = EngineWorkflow.objects.filter(
            user__name = yabiusername,
@@ -540,7 +540,7 @@ def workflow_change_tags(request, id=None):
 
     if 'taglist' not in request.POST:
         return HttpResponseBadRequest("taglist needs to be passed in\n")
- 
+
     taglist = request.POST['taglist'].split(',')
     taglist = [t.strip() for t in taglist if t.strip()]
     try:
@@ -550,7 +550,7 @@ def workflow_change_tags(request, id=None):
             db.change_workflow_tags(yabiusername, id, taglist)
         else:
             return HttpResponseNotFound()
-         
+
     else:
         workflow.change_tags(taglist)
     return HttpResponse("Success")
@@ -567,8 +567,8 @@ def passchange(request):
         return HttpResponse(json.dumps(message))
     else:
         return HttpResponseServerError(json.dumps(message))
-    
-        
+
+
 @authentication_required
 def credential(request):
     if request.method != "GET":
@@ -609,7 +609,7 @@ def credential(request):
             # to get the number of seconds total out of it.
             delta = expires_on - datetime.now()
             return (delta.days * 86400) + delta.seconds
-        
+
         return None
 
     return HttpResponse(json.dumps([{

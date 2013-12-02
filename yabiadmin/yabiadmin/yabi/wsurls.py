@@ -4,26 +4,26 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 from django.conf.urls.defaults import *
@@ -56,7 +56,7 @@ urlpatterns = patterns('yabiadmin.yabi.ws_frontend_views',
 urlpatterns += patterns('yabiadmin.yabi.adminviews',
     url(r'^manage_credential[/]*$', 'duplicate_credential'),
     url(r'^modify_backend/id/(?P<id>\d+)[/]*$', 'modify_backend_by_id'),
-    url(r'^modify_backend/name/(?P<scheme>[a-zA-Z_]*[a-zA-Z0-9_\-\.]*)/(?P<hostname>[a-zA-Z_]*[a-zA-Z0-9_\-\.]*)[/]*$', 'modify_backend_by_name'), 
+    url(r'^modify_backend/name/(?P<scheme>[a-zA-Z_]*[a-zA-Z0-9_\-\.]*)/(?P<hostname>[a-zA-Z_]*[a-zA-Z0-9_\-\.]*)[/]*$', 'modify_backend_by_name'),
 )
 
 # backend webservices
@@ -69,13 +69,13 @@ urlpatterns += patterns('yabiadmin.yabi.ws_backend_views',
     url(r'^hostkeys[/]*$','get_hostkeys', name='get_hostkeys'),
     url(r'^hostkey/deny[/]*$','report_denied_hostkey', name='report_denied_hostkey'),
     #url(r'^backend/(?P<scheme>\w+)/(?P<hostname>\w+)/(?P<port>\w+)/(?P<path>\w+)', 'backend_connection_limit', {'SSL':False}, name='backend_connection_limit'),
-    #url(r'^credential_deprecated/(?P<yabiusername>\w+)/(?P<scheme>\w+)/(?P<username>\w+)/(?P<hostname>[\w\-.]+)/(?P<detail>\w+)[/]*$', 'credential_detail', name='credential_detail'),                       
+    #url(r'^credential_deprecated/(?P<yabiusername>\w+)/(?P<scheme>\w+)/(?P<username>\w+)/(?P<hostname>[\w\-.]+)/(?P<detail>\w+)[/]*$', 'credential_detail', name='credential_detail'),
     #url(r'^credential/(?P<yabiusername>\w+)/(?P<scheme>\w+)/(?P<username>\w+)/(?P<hostname>[\w\-.]+)[/]*$', 'credential', name='credential'),
 )
 
 # yabish webservices
 urlpatterns += patterns('yabiadmin.yabi.ws_yabish_views',
-    url(r'^yabish/submitjob/?$', 'submitjob', name='submitjob'),  
-    url(r'^yabish/createstageindir/?$', 'createstageindir', name='createstageindir'),  
-    url(r'^yabish/is_stagein_required/?$', 'is_stagein_required', name='is_stagein_required'),  
+    url(r'^yabish/submitjob/?$', 'submitjob', name='submitjob'),
+    url(r'^yabish/createstageindir/?$', 'createstageindir', name='createstageindir'),
+    url(r'^yabish/is_stagein_required/?$', 'is_stagein_required', name='is_stagein_required'),
 )
