@@ -28,9 +28,6 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.utils import simplejson as json
-#import httplib
-#import socket
-#import errno
 import os
 from os.path import splitext, normpath
 from urllib import urlencode, quote
@@ -39,27 +36,6 @@ from yabiadmin.yabi.models import Backend, BackendCredential
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.servers.basehttp import FileWrapper
 from yabiadmin.constants import EXEC_SCHEMES, FS_SCHEMES
-
-#class BackendRefusedConnection(Exception):
-#    pass
-#
-#class BackendHostUnreachable(Exception):
-#    pass
-#
-#class PermissionDenied(Exception):
-#    pass
-#
-#class FileNotFound(Exception):
-#    pass
-#
-#class BackendServerError(Exception):
-#    """A 500 from the backend"""
-#    pass
-#
-#class BackendStatusCodeError(Exception):
-#    pass
-
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -175,143 +151,6 @@ def get_exec_credential_for_uri(yabiusername, uri):
 
 def get_exec_backend_for_uri(yabiusername, uri):
     return get_exec_backendcredential_for_uri(yabiusername,uri).backend
-
-#import hmac
-#
-#def make_hmac(uri):
-#    """Make the hash value for a passed in uri"""
-#    hmac_digest = hmac.new(settings.HMAC_KEY)
-#    hmac_digest.update(uri)
-#    return hmac_digest.hexdigest()
-
-#def POST(resource, datadict, extraheaders={}, server=None):
-#    """Do a x-www-form-urlencoded style POST. That is NOT a file upload style"""
-#    data = urlencode(datadict)
-#    headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain", "Hmac-digest":make_hmac(resource)}
-#    headers.update(extraheaders)
-#    server = server if server else settings.YABIBACKEND_SERVER
-#    conn = httplib.HTTPConnection(server)
-#    conn.request('POST', resource, data, headers)
-#    logger.debug("resource: %s headers: %s"%(resource,headers))
-#    return conn.getresponse()
-
-#def get_file_list(yabiusername, uri, recurse=True):
-#    """
-#    Return a list of file tuples
-#    """
-#    logger.debug('backendhelper::get_file_list() yabiusername: %s uri: %s'%(yabiusername,uri))
-#
-#    try:
-#        resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, quote(uri))
-#        if recurse:
-#            resource += "&recurse"
-#        logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-#
-#        bc = get_fs_backendcredential_for_uri(yabiusername, uri)
-#        data = bc.credential.get()
-#
-#        r = POST(resource,data)
-#
-#        # TODO Code path relies on not always getting a 200 from the backend, so we cant assert 200
-#
-#        file_list = []
-#        if r.status == 200:
-#
-#            results = json.loads(r.read())
-#
-#            logger.debug("json: %s" % results)
-#            shortpath=reduce(lambda x,y: x if len(x)<len(y) else y,results.keys())
-#            spl = len(shortpath)
-#
-#            for key in results.keys():
-#                for file in results[key]["files"]:
-#                    file_list.append([os.path.join(key[spl:],file[0])]+file[1:])
-#
-#        logger.info("returning: %s" % file_list)
-#        return file_list
-#
-#    except socket.error, e:
-#        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
-#        raise
-#    except httplib.CannotSendRequest, e:
-#        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
-#        raise
-
-
-
-#def get_first_matching_file(yabiusername, uri, extension_list):
-#    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
-#
-#    file_list = get_file_list(yabiusername, uri, recurse=True)
-#    filename = None
-#
-#    # TODO similar code to is_task_file_valid on EngineJob, can we combine?
-#    for f in file_list:
-#        if (splitext(f[0])[1].strip('.') in extension_list) or ('*' in extension_list):
-#            filename = f[0]
-#            break
-#
-#    return filename
-
-#def handle_connection(func,*args,**kwargs):
-#    try:
-#        r = func(*args, **kwargs)
-#    except socket.error, e:
-#        if e.errno==errno.ECONNREFUSED:
-#            logger.critical("Error connecting to Backend server %s: %s. Connection refused. Is the backend running? Are we configured to call it correctly?" % (settings.YABIBACKEND_SERVER, e))
-#            raise BackendRefusedConnection(e)
-#        elif e.errno==errno.EHOSTUNREACH:
-#            logger.critical("Error connecting to Backend server %s: %s. No route to host. Is yabi admin's backend setting correct?" % (settings.YABIBACKEND_SERVER, e))
-#            raise BackendHostUnreachable(e)
-#
-#        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
-#        raise
-#    except httplib.CannotSendRequest, e:
-#        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
-#        raise
-#
-#    if r.status != 200:
-#        # try and process the error and then raise a sane exception
-#        if r.status == 403:
-#            # forbidden
-#            raise PermissionDenied("Access denied: You do not have sufficient permissions to access the resource.")
-#        elif r.status == 404:
-#            # not found
-#            raise FileNotFound("File or directory not found.")
-#        elif r.status == 500:
-#            # server error. Report the error forwards
-#            raise BackendServerError(r.read())
-#        else:
-#            # other error
-#            raise BackendStatusCodeError("Request to backend for resource: %s returned unhandled status code: %d" % (args[0],r.status))
-#
-#    return r
-
-#def get_listing(yabiusername, uri, recurse=False):
-#    """
-#    Return a listing from backend
-#    """
-#    # clean up any trailing double slashes that will confuse s3 or key-based storage systems
-#    if uri.endswith('//'):
-#        uri = uri[0:len(uri)-1]
-#
-#    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
-#    resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, quote(uri))
-#    if recurse:
-#        resource += '&recurse=true'
-#    logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-#    bc = get_fs_backendcredential_for_uri(yabiusername, uri)
-#    data = bc.credential.get()
-#    return handle_connection(POST,resource,data).read()
-
-#def mkdir(yabiusername, uri):
-#    """
-#    Make a directory via the backend
-#    """
-#    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
-#    resource = "%s?uri=%s" % (settings.YABIBACKEND_MKDIR, quote(uri))
-#    logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-#    return handle_connection(POST,resource, get_fs_credential_for_uri(yabiusername, uri).get()).read()
 
 def get_backend_list(yabiusername):
     """
