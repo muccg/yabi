@@ -26,18 +26,15 @@
 #
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-from django.conf import settings
 from django.utils import simplejson as json
 import os
-from os.path import splitext, normpath
-from urllib import urlencode, quote
-from yabiadmin.yabiengine.urihelper import uriparse, get_backend_userdir
+from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.yabi.models import Backend, BackendCredential
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from django.core.servers.basehttp import FileWrapper
+from django.core.exceptions import ObjectDoesNotExist
 from yabiadmin.constants import EXEC_SCHEMES, FS_SCHEMES
 import logging
 logger = logging.getLogger(__name__)
+
 
 def get_backend_by_uri(uri):
     """
@@ -47,21 +44,23 @@ def get_backend_by_uri(uri):
     schema, rest = uriparse(uri)
     netloc = rest.netloc
     if ':' in netloc:
-        host,port = netloc.split(':')
+        host, port = netloc.split(':')
     else:
-        host,port = netloc, None
+        host, port = netloc, None
 
     return Backend.objects.filter(scheme=schema, hostname=host, port=port)
 
+
 def get_hostkeys_by_uri(uri):
     return Backend.objects.filter(backend__in=get_backend_by_uri(uri))
+
 
 def get_exec_backendcredential_for_uri(yabiusername, uri):
     """
     Looks up a backend credential based on the supplied uri, which should include a username.
     Returns bc, will log and reraise ObjectDoesNotExist and MultipleObjectsReturned exceptions if more than one credential
     """
-    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
+    logger.debug('yabiusername: %s uri: %s' % (yabiusername, uri))
 
     # parse the URI into chunks
     schema, rest = uriparse(uri)
@@ -69,12 +68,12 @@ def get_exec_backendcredential_for_uri(yabiusername, uri):
     # enforce Exec scehmas only
     if schema not in EXEC_SCHEMES:
         logger.error("get_exec_backendcredential_for_uri was asked to get an fs schema! This is forbidden.")
-        raise ValueError("Invalid schema in uri passed to get_exec_backendcredential_for_uri: asked for %s"%schema)
+        raise ValueError("Invalid schema in uri passed to get_exec_backendcredential_for_uri: asked for %s" % schema)
 
     path = rest.path
-    if path!="/":
+    if path != "/":
         logger.error("get_exec_backendcredential_for_uri was passed a uri with a path! This is forbidden. Path must be / for exec backends")
-        raise ValueError("Invalid path in uri passed to get_exec_backendcredential_for_uri: path passed in was: %s"%path)
+        raise ValueError("Invalid path in uri passed to get_exec_backendcredential_for_uri: path passed in was: %s" % path)
 
     # get our set of credential candidates
     bcs = BackendCredential.objects.filter(credential__user__name=yabiusername,
@@ -83,17 +82,18 @@ def get_exec_backendcredential_for_uri(yabiusername, uri):
                                            backend__hostname=rest.hostname)
 
     # there must only be one valid exec credential
-    if len(bcs)==1:
+    if len(bcs) == 1:
         return bcs[0]
 
     raise ObjectDoesNotExist("Could not find backendcredential")
+
 
 def get_fs_backendcredential_for_uri(yabiusername, uri):
     """
     Looks up a backend credential based on the supplied uri, which should include a username.
     Returns bc, will log and reraise ObjectDoesNotExist and MultipleObjectsReturned exceptions if more than one credential
     """
-    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
+    logger.debug('yabiusername: %s uri: %s' % (yabiusername, uri))
 
     # parse the URI into chunks
     schema, rest = uriparse(uri)
@@ -101,7 +101,7 @@ def get_fs_backendcredential_for_uri(yabiusername, uri):
     # enforce FS scehmas only
     if schema not in FS_SCHEMES:
         logger.error("get_fs_backendcredential_for_uri was asked to get an executions schema! This is forbidden.")
-        raise ValueError("Invalid schema in uri passed to get_fs_backendcredential_for_uri: schema passed in was %s"%schema)
+        raise ValueError("Invalid schema in uri passed to get_fs_backendcredential_for_uri: schema passed in was %s" % schema)
 
     path = os.path.normpath(rest.path)                      # normalise path to get rid of ../../ style exploits
 
@@ -140,28 +140,33 @@ def get_fs_backendcredential_for_uri(yabiusername, uri):
     logger.info("chose cred {0} {1} {2}".format(cred.id, cred.backend.path, cred.homedir))
     return cred
 
+
 def get_fs_credential_for_uri(yabiusername, uri):
-    return get_fs_backendcredential_for_uri(yabiusername,uri).credential
+    return get_fs_backendcredential_for_uri(yabiusername, uri).credential
+
 
 def get_fs_backend_for_uri(yabiusername, uri):
-    return get_fs_backendcredential_for_uri(yabiusername,uri).backend
+    return get_fs_backendcredential_for_uri(yabiusername, uri).backend
+
 
 def get_exec_credential_for_uri(yabiusername, uri):
-    return get_exec_backendcredential_for_uri(yabiusername,uri).credential
+    return get_exec_backendcredential_for_uri(yabiusername, uri).credential
+
 
 def get_exec_backend_for_uri(yabiusername, uri):
-    return get_exec_backendcredential_for_uri(yabiusername,uri).backend
+    return get_exec_backendcredential_for_uri(yabiusername, uri).backend
+
 
 def get_backend_list(yabiusername):
     """
     Returns a list of backends for user, returns in json as the plain list is passed to the
     twisted backend which returns json
     """
-    logger.debug('yabiusername: %s'%(yabiusername))
+    logger.debug('yabiusername: %s' % (yabiusername))
 
     try:
 
-        results = { yabiusername: {'files':[], 'directories':[] }}
+        results = {yabiusername: {'files': [], 'directories': []}}
 
         for bc in BackendCredential.objects.filter(credential__user__name=yabiusername, visible=True):
             results[yabiusername]['directories'].append([bc.homedir_uri, 0, ''])
