@@ -43,9 +43,8 @@ class TaskViewWithTasksTest(unittest.TestCase):
         self.client = Client()
         user = User.objects.get(name='demo')
         wfl = emodels.EngineWorkflow.objects.create(user=user)
-        fs_backend = Backend.objects.get(name='Local Filesystem')
         self.job = emodels.EngineJob.objects.create(workflow=wfl, order=2, start_time=datetime.now(),
-            fs_backend= 'localfs://localhost/')
+            fs_backend= 'localfs://localhost/', exec_backend='localex://localhost/')
         self.task = emodels.EngineTask.objects.create(job=self.job, tasktag= 'test_tasktag')
 
     @override_settings(TASKTAG='test_tasktag')
