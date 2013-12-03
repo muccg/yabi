@@ -1,6 +1,5 @@
 import re
 import logging
-import string
 logger = logging.getLogger(__name__)
 
 
@@ -52,6 +51,7 @@ class PBSProQSubResult(object):
         self.status = None
         self.error = None
 
+
 class PBSProQStatResult(object):
     JOB_RUNNING = "JOB RUNNING"
     JOB_NOT_FOUND = "JOB NOT FOUND BY QSTAT"
@@ -60,6 +60,7 @@ class PBSProQStatResult(object):
     def __init__(self):
         self.remote_id = None
         self.status = None
+
 
 class PBSProQDelResult(object):
     JOB_ABORTED = "JOB ABORTED"
@@ -71,13 +72,12 @@ class PBSProQDelResult(object):
         self.error = None
 
 
-
 class PBSProParser(object):
     QSUB_OUTPUT = "^(?P<remote_id>\d+(?:\[\])?)\..*"
     JOB_STATUS_COLUMN_INDEX = 4
     # From Yabi's point of view , it's either running or finished
-    POSSIBLE_STATES = ["B","E", "F", "H", "M", "Q", "R", "S", "T", "U", "W", "X"]
-    RUNNING_STATES = ["R", "B", "E", "H", "M", "Q", "S" , "T" ,"U", "W" ] # Added exiting(E)  here to ensure we wait till job has actually finished
+    POSSIBLE_STATES = ["B", "E", "F", "H", "M", "Q", "R", "S", "T", "U", "W", "X"]
+    RUNNING_STATES = ["R", "B", "E", "H", "M", "Q", "S", "T", "U", "W"]  # Added exiting(E)  here to ensure we wait till job has actually finished
     FINISHED_STATES = ["F", "C", "X"]
 
     def parse_sub(self, exit_code, stdout, stderr):
@@ -133,6 +133,5 @@ class PBSProParser(object):
 
         result.status = PBSProQDelResult.JOB_ABORTION_ERROR
         result.error = "\n".join(stderr)
- 
-        return result
 
+        return result

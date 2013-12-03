@@ -1,6 +1,5 @@
 import logging
 from yabiadmin.backend.schedulerexecbackend import SchedulerExecBackend
-import django
 logger = logging.getLogger(__name__)
 
 
@@ -15,18 +14,13 @@ class QBaseExecBackend(SchedulerExecBackend):
                     "EOS",
                     "cd '{2}'"])
     QSUB_COMMAND_LINE = "<QSUB_COMMAND> -N {3} $script_temp_file_name"
-
-    QSTAT_TEMPLATE = "\n".join(["#!/bin/sh",
-                                "<QSTAT_COMMAND> -f -1 {0}"])
-
-    QDEL_TEMPLATE = "\n".join(['#!/bin/sh',
-                                '<QDEL_COMMAND> "{0}"'])
-
+    QSTAT_TEMPLATE = "\n".join(["#!/bin/sh", "<QSTAT_COMMAND> -f -1 {0}"])
+    QDEL_TEMPLATE = "\n".join(['#!/bin/sh', '<QDEL_COMMAND> "{0}"'])
 
     def get_scheduler_command_path(self, scheduler_command):
         from django.conf import settings
         if hasattr(settings, "SCHEDULER_COMMAND_PATHS"):
-            if settings.SCHEDULER_COMMAND_PATHS.has_key(self.SCHEDULER_NAME):
+            if self.SCHEDULER_NAME in settings.SCHEDULER_COMMAND_PATHS:
                 return settings.SCHEDULER_COMMAND_PATHS[self.SCHEDULER_NAME].get(scheduler_command, scheduler_command)
         return scheduler_command
 
@@ -37,11 +31,10 @@ class QBaseExecBackend(SchedulerExecBackend):
         return self._get_qsub_template().format(
             self.submission_script_name, self.submission_script_body,
             self.working_dir,
-            self._yabi_task_name()).replace("<QSUB_COMMAND>",self.get_scheduler_command_path("qsub"))
+            self._yabi_task_name()).replace("<QSUB_COMMAND>", self.get_scheduler_command_path("qsub"))
 
     def _get_polling_script(self):
         return self.QSTAT_TEMPLATE.format(self.task.remote_id).replace("<QSTAT_COMMAND>", self.get_scheduler_command_path("qstat"))
 
     def _get_abort_script(self):
         return self.QDEL_TEMPLATE.format(self.task.remote_id).replace("<QDEL_COMMAND>", self.get_scheduler_command_path("qdel"))
-

@@ -4,6 +4,7 @@ from django.utils.functional import wraps
 # This is taken (and slightly modified) from Django dev version
 # We can remove this and use Django's instead when it will get into stable and then into Mango
 
+
 class override_settings(object):
     """
     Acts as either a decorator, or a context manager. If it's a decorator it
@@ -26,9 +27,11 @@ class override_settings(object):
         if isinstance(test_func, type) and issubclass(test_func, TransactionTestCase):
             original_pre_setup = test_func._pre_setup
             original_post_teardown = test_func._post_teardown
+
             def _pre_setup(innerself):
                 self.enable()
                 original_pre_setup(innerself)
+
             def _post_teardown(innerself):
                 original_post_teardown(innerself)
                 self.disable()
@@ -36,6 +39,7 @@ class override_settings(object):
             test_func._post_teardown = _post_teardown
             return test_func
         else:
+
             @wraps(test_func)
             def inner(*args, **kwargs):
                 with self:
@@ -52,4 +56,3 @@ class override_settings(object):
         settings._wrapped = self.wrapped
         for key in self.options:
             new_value = getattr(settings, key, None)
-

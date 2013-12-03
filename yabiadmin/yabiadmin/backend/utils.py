@@ -3,33 +3,32 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 import os
 import datetime
 import subprocess
 import socket
 import string
-from yabiadmin.yabiengine.urihelper import url_join
 import traceback
 from mako.template import Template
 import paramiko
@@ -39,14 +38,11 @@ import uuid
 import StringIO
 from functools import partial
 from itertools import tee, ifilter, ifilterfalse
-from yabiadmin import settings
-from yabiadmin.crypto_utils import AESTEMP
 logger = logging.getLogger(__name__)
 
 
 def execute(args, bufsize=0, stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False, cwd=None, env=None):
     """execute a process and return a handle to the process"""
-    status = None
     try:
         logger.debug(args)
         process = subprocess.Popen(args, bufsize=bufsize, stdin=stdin, stdout=stdout, stderr=stderr, shell=shell, cwd=cwd, env=env)
@@ -82,7 +78,6 @@ def blocking_execute(args, bufsize=0, stdin=None, stdout=subprocess.PIPE, stderr
 
 def valid_filename(filename):
     """Ensure filenames for fifo are valid, trimmed to 100"""
-    import string
     valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
     filename = ''.join(c for c in filename if c in valid_chars)
     filename = filename[:100]
@@ -91,7 +86,6 @@ def valid_filename(filename):
 
 def create_fifo(suffix='', dir='/tmp'):
     """make a fifo on the filesystem and return its path"""
-    import uuid
     filename = 'yabi_fifo_' + str(uuid.uuid4()) + '_' + suffix
     filename = valid_filename(filename)
     filename = os.path.join(dir, filename)
@@ -149,7 +143,6 @@ def harvest_host_key(hostname, port, username, password, pkey):
     logger.debug('save_host_key {0}'.format(hostname))
     try:
         # connect to harvest the host key
-        import paramiko
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(
@@ -206,7 +199,7 @@ def try_to_load_key_file(key_type, credential_key, passphrase=None):
 
 def create_paramiko_pkey(key, passphrase=None):
     pkey = (
-        try_to_load_key_file(paramiko.RSAKey, key, passphrase) 
+        try_to_load_key_file(paramiko.RSAKey, key, passphrase)
         or
         try_to_load_key_file(paramiko.DSSKey, key, passphrase))
 
@@ -234,17 +227,17 @@ def sshclient(hostname, port, credential):
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.load_system_host_keys()
 
-        connect = partial(ssh.connect, 
-                            hostname=hostname,
-                            port=port,
-                            username=username,
-                            key_filename=None,
-                            timeout=None,
-                            allow_agent=False,
-                            look_for_keys=False,
-                            compress=False,
-                            sock=None)
-         
+        connect = partial(ssh.connect,
+                          hostname=hostname,
+                          port=port,
+                          username=username,
+                          key_filename=None,
+                          timeout=None,
+                          allow_agent=False,
+                          look_for_keys=False,
+                          compress=False,
+                          sock=None)
+
         if key:
             private_key = create_paramiko_pkey(key, passphrase)
             connect(pkey=private_key)
@@ -263,6 +256,7 @@ def sshclient(hostname, port, credential):
 
     return ssh
 
+
 def _get_creation_date(file_path):
     """
     @param file_path:
@@ -270,7 +264,8 @@ def _get_creation_date(file_path):
     """
     return datetime.datetime.fromtimestamp(os.path.getctime(file_path)).strftime("%b %d %Y")
 
-def ls(top_level_path,recurse=False):
+
+def ls(top_level_path, recurse=False):
     listing = {}
 
     def append_slash(path):
@@ -296,7 +291,7 @@ def ls(top_level_path,recurse=False):
         file_info = info_tuple(parent_folder, file_name)
         return {top_level_path: {"files": [file_info], "directories": []}}
 
-    for root, directories, files in os.walk(top_level_path,topdown=True):
+    for root, directories, files in os.walk(top_level_path, topdown=True):
         slashed_root = append_slash(root)
         listing[slashed_root] = {}
         listing[slashed_root]['files'] = []
@@ -318,5 +313,4 @@ def ls(top_level_path,recurse=False):
 def partition(pred, iterable):
     """Partition an iterable in two iterable based on the predicate"""
     t1, t2 = tee(iterable)
-    return ifilter(pred, t1), ifilterfalse(pred, t2) 
-
+    return ifilter(pred, t1), ifilterfalse(pred, t2)

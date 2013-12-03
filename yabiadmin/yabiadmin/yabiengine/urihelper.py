@@ -3,34 +3,28 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
-from django.conf import settings
-import httplib
-from urllib import urlencode
 from urlparse import urlparse
-
-from django.core.exceptions import ObjectDoesNotExist
-
 import logging
 logger = logging.getLogger(__name__)
 
@@ -47,8 +41,8 @@ def uriparse(uri):
     A copy of this function is in yabi-sh.
     """
     try:
-        scheme, rest = uri.split(":",1)
-        assert re_url_schema.match(scheme)        
+        scheme, rest = uri.split(":", 1)
+        assert re_url_schema.match(scheme)
         return (scheme, urlparse(rest))
     except ValueError, e:
         logger.critical("%s - ValueError for uri: %s" % ("urihelper.uriparse", uri))
@@ -58,6 +52,7 @@ def uriparse(uri):
         logger.critical("%s - AttributeError for uri: %s" % ("urihelper.uriparse", uri))
         logger.critical("%s - %s" % ("urihelper.uriparse", e.message))
         raise
+
 
 def uriunparse(scheme, hostname, username, path='/', port=None):
     if port:
@@ -69,9 +64,9 @@ def uriunparse(scheme, hostname, username, path='/', port=None):
 
 def url_join(*args):
     '''This is used to join subpaths to already constructed urls'''
-    return reduce(lambda a,b: a+b if a.endswith('/') else a+'/'+b, args)
+    return reduce(lambda a, b: a + b if a.endswith('/') else a + '/' + b, args)
 
-    
+
 def get_backend_userdir(backendcredential, yabiusername):
     """
     Supplies the front end with a list of backend uris including the user's home dir
@@ -96,8 +91,8 @@ def get_backend_userdir(backendcredential, yabiusername):
 
     return urlunparse((backendcredential.backend.scheme, netloc, path, '', '', ''))
 
+
 def is_same_location(uri, other_uri):
     uri_scheme, uri_rest = uriparse(uri)
     other_scheme, other_rest = uriparse(other_uri)
-    return (uri_scheme==other_scheme and uri_rest.hostname==other_rest.hostname and uri_rest.port==other_rest.port)
-
+    return (uri_scheme == other_scheme and uri_rest.hostname == other_rest.hostname and uri_rest.port == other_rest.port)

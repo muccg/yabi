@@ -3,26 +3,26 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 # Migrates the json and the Tags of a Workflow from SQLLite to Postgres.
 # SQLLite files should be moved out of the way after the migration finished,
@@ -31,16 +31,16 @@
 #
 # yabiadmin $ fab manage:shell_plus
 # shell> from scripts import migrate_json_from_sqllite_to_psql as m
-# 
+#
 # To make a simulation only do (now True by default):
 #
 # shell> m.DontAct = True
 #
-# shell> m.migrate(USERNAME) 
+# shell> m.migrate(USERNAME)
 #
 # or to migrate all users call without args:
 #
-# shell> m.migrate() 
+# shell> m.migrate()
 #
 # If you want to do the migration for real set back DontAct to False first
 #
@@ -74,8 +74,8 @@ def migrate(*users):
         try:
             migrate_user(user, DontAct)
         except MissingDataError, e:
-            failed.append(MigrationError(user, str(e), 
-                "The following workflows don't have SQLLite data:\n %s" % 
+            failed.append(MigrationError(user, str(e),
+                "The following workflows don't have SQLLite data:\n %s" %
                     ','.join([str(x) for x in e.ids])))
             continue
         except Exception, e:
@@ -111,7 +111,7 @@ def migrate_user(user, dont_act):
     sqll_wfl_ids = filter(lambda x: x is not None, [s.get("id", None) for s in sqll_wfls])
     missing = EngineWorkflow.objects.exclude(pk__in=sqll_wfl_ids).filter(user__name=user)
     if missing:
-        raise MissingDataError('User %s has missing sqllite data' % user, 
+        raise MissingDataError('User %s has missing sqllite data' % user,
                 [wfl.id for wfl in missing])
     psql_wfls = EngineWorkflow.objects.filter(json=None)
     for from_wfl in sqll_wfls:

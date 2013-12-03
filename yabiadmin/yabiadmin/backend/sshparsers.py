@@ -1,6 +1,5 @@
 import re
 import logging
-import string
 logger = logging.getLogger(__name__)
 
 
@@ -13,6 +12,7 @@ class SSHSubmitResult(object):
         self.status = None
         self.error = None
 
+
 class SSHPsResult(object):
     JOB_RUNNING = "JOB RUNNING"
     JOB_NOT_FOUND = "JOB NOT FOUND BY PS"
@@ -21,7 +21,6 @@ class SSHPsResult(object):
     def __init__(self):
         self.remote_id = None
         self.status = None
-
 
 
 class SSHParser(object):
@@ -60,4 +59,3 @@ class SSHParser(object):
 
         result.status = SSHPsResult.JOB_COMPLETED
         return result
-

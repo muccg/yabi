@@ -27,26 +27,26 @@ class FileUploadStreamer(UploadStreamer):
         self._selector = selector
         self._fields = fields
         self._cookies = cookies
-    
+
     def receive_data_chunk(self, raw_data, start):
         logger.debug('{0} {1}'.format(len(raw_data), start))
         return self.file_data(raw_data)
-    
+
     def file_complete(self, file_size):
         """individual file upload complete"""
         logger.info("Streaming through of file %s has been completed. %d bytes have been transferred." % (self._present_file, file_size))
         return self.end_file()
-    
+
     def new_file(self, field_name, file_name, content_type, content_length, charset):
         """beginning of new file in upload"""
         logger.debug('{0} {1} {2} {3} {4}'.format(field_name, file_name, content_type, content_length, charset))
         return UploadStreamer.new_file(self,file_name)
-    
+
     def upload_complete(self):
         """all files completely uploaded"""
         logger.debug('')
         return self.end_connection()
-    
+
     def handle_raw_input(self, input_data, META, content_length, boundary, encoding):
         """raw input"""
         logger.debug('')
@@ -82,13 +82,13 @@ def xput(request):
 #
 #        # evaluating POST triggers the processing of the request body
 #        request.POST
-#        
+#
 #        result=streamer.stream.getresponse()
-#        
+#
 #        content=result.read()
 #        status=int(result.status)
 #        reason = result.reason
-#        
+#
 #        response = {
 #            "level":"success" if status==200 else "failure",
 #            "message":content

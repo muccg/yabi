@@ -9,8 +9,9 @@ __contributors__ = "Jay Parlar - parlar@gmail.com"
 from django.conf import settings
 #from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect, get_host
 
-from django.http import HttpResponseRedirect, HttpResponsePermanentRedirect
+from django.http import HttpResponsePermanentRedirect
 SSL = 'SSL'
+
 
 class SSLRedirect:
     def process_request(self, request):
@@ -47,16 +48,16 @@ class SSLRedirect:
 
         # if we are being proxied use the default behavoir. Thus proxied servers will only work if outside the proxy they look like they are on standard ports.
         if 'HTTP_X_FORWARDED_HOST' not in request.META:
-            if hasattr(settings,'HTTP_REDIRECT_TO_HTTPS'):
+            if hasattr(settings, 'HTTP_REDIRECT_TO_HTTPS'):
                 host = settings.HTTP_REDIRECT_TO_HTTPS
 
-            if hasattr(settings,'HTTP_REDIRECT_TO_HTTPS_PORT'):
+            if hasattr(settings, 'HTTP_REDIRECT_TO_HTTPS_PORT'):
                 host = host.split(":")[0] + ":" + str(settings.HTTP_REDIRECT_TO_HTTPS_PORT)
 
-        newurl = "%s://%s%s" % (protocol,host,request.get_full_path())
+        newurl = "%s://%s%s" % (protocol, host, request.get_full_path())
         if settings.DEBUG and request.method == 'POST':
-            raise RuntimeError, \
-        """Django can't perform a SSL redirect while maintaining POST data.
-           Please structure your views so that redirects only occur during GETs."""
+            raise RuntimeError(
+                """Django can't perform a SSL redirect while maintaining POST data.
+                Please structure your views so that redirects only occur during GETs.""")
 
         return HttpResponsePermanentRedirect(newurl)

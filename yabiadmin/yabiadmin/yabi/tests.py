@@ -29,8 +29,8 @@ class CreateUserFromAdminTest(unittest.TestCase):
 
     # TODO refactor when we add more tests
     def login_admin(self):
-        response = self.client.post('/admin-pane/', 
-                {'username': 'admin', 'password': 'admin', 
+        response = self.client.post('/admin-pane/',
+                {'username': 'admin', 'password': 'admin',
                  'this_is_the_login_form': 1, 'next': '/admin-pane/'})
         # This assert might be a bit fragile
         assert response.status_code == 302, "Couldn't log in admin user"
@@ -147,8 +147,8 @@ class WsMenuTest(unittest.TestCase):
     def login_fe(self, user, password=None):
         if password is None:
             password = user
-        response = self.client.post('/login', 
-                {'username': user, 'password': password}) 
+        response = self.client.post('/login',
+                {'username': user, 'password': password})
         assert response.status_code == 302, "Couldn't log in to FE"
 
 

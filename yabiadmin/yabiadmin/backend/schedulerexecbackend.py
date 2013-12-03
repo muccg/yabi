@@ -1,10 +1,8 @@
 import logging
-import os
 from yabiadmin.backend.execbackend import ExecBackend
 from yabiadmin.backend.sshexec import SSHExec
 from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.yabiengine.urihelper import uriparse
-import django
 logger = logging.getLogger(__name__)
 
 
@@ -112,13 +110,14 @@ class SchedulerExecBackend(ExecBackend):
             for line in stderr:
                 logger.error(line)
         return result
- 
+
     def _job_submitted_response(self, result):
         self.task.remote_id = result.remote_id
         self.task.save()
-        logger.info("Yabi Task {0} submitted to {1} OK. remote id = {2}".format(self._yabi_task_name(),
-                                                                                     self.SCHEDULER_NAME,
-                                                                                     self.task.remote_id))
+        logger.info("Yabi Task {0} submitted to {1} OK. remote id = {2}".format(
+                    self._yabi_task_name(),
+                    self.SCHEDULER_NAME,
+                    self.task.remote_id))
 
     def _job_not_submitted_response(self, result):
         raise Exception("Error submitting remote job to {0} for yabi task {1} {2}".format(self.SCHEDULER_NAME,
@@ -130,7 +129,6 @@ class SchedulerExecBackend(ExecBackend):
         # NB. 15 character limit also.
         return "Y{0}".format(self.task.pk)[:15]
 
- 
     def _poll_job_status(self):
         polling_script = self._get_polling_script()
         exit_code, stdout, stderr = self.executer.exec_script(polling_script)
@@ -162,11 +160,10 @@ class SchedulerExecBackend(ExecBackend):
 
     def _job_abortion_error_response(self, result):
         logger.error("couldn't abort job %s for yabi task %s. STDERR was: \n%s",
-            self.task.remote_id, self._yabi_task_name(), result.error)
+                     self.task.remote_id, self._yabi_task_name(), result.error)
         raise Exception("couldn't abort job %s for yabi task %s" % (
-            self.task.remote_id, self._yabi_task_name()))
+                        self.task.remote_id, self._yabi_task_name()))
 
     def _job_aborted_response(self, result):
         logger.error("Aborted job %s for yabi task %s.",
-            self.task.remote_id, self._yabi_task_name())
-
+                     self.task.remote_id, self._yabi_task_name())
