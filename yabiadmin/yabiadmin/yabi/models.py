@@ -541,7 +541,7 @@ class Credential(Base):
             self.security_state = Credential.PROTECTED
 
     def on_post_save(self):
-        if self.security_state == Credential.PLAINTEXT:
+        if self.security_state == Credential.PROTECTED:
             # put these updated protected credentials into the cache
             access = self.get_credential_access()
             access.cache_protected_creds(self.password, self.cert, self.key)
