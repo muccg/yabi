@@ -26,15 +26,18 @@
 #
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-from Crypto.Hash import SHA256
-from Crypto.Cipher import AES
+import aes_ctr
 import math
 import binascii
+import logging
+logger = logging.getLogger(__name__)
 
-#
-# this is a chunking lambda generator
-#
-chunkify = lambda v, l: (v[i * l:(i + 1) * l] for i in range(int(math.ceil(len(v) / float(l)))))
+# legacy AES encryption (insecure)
+AESHEXTAG = 'AES'
+# legacy AES encryption (insecure) & protect with global key for memcache / prior to user login
+AESTEMP = 'AESTEMP'
+# AES-CTR encryption, with a HMAC. don't store with this is 'protected' or 'encrypted'
+AESCTRTAG = 'AESCTR'
 
 #
 # this annotates a string with the
@@ -46,142 +49,127 @@ annotate = lambda tag, ciphertext: "$%s$%s$" % (tag, ciphertext)
 #
 joiner = lambda data: "".join("".join(data.split("\n")).split("\r"))
 
-
 #
-# this deannotates the string
-#
-def deannotate(string):
-    try:
-        dummy, tag, cipher, dummy2 = string.split('$')
-    except ValueError:
-        raise DecryptException("Invalid input string to deannotator")
-
-    if dummy or dummy2:
-        raise DecryptException("Invalid input string to deannotator")
-
-    return tag, cipher
-
-# known tags
-AESHEXTAG = 'AES'
-AESTEMP = "AESTEMP"                     # tag for temporary decryption of aes for protection in memecache and on DB prior to user key encryption
-
-
-#
-# Some exceptions to notify callers of failure to decrypt if validity is being checked (not just blind decrypt)
+# notify callers of failure to decrypt if validity is being checked (not just blind decrypt)
 #
 class DecryptException(Exception):
     pass
 
 
-def aes_enc(data, key):
-    if not data:
-        return data                         # encrypt nothing. get nothing.
-
-    assert data[-1] != '\0', "encrypt/decrypt implementation uses null padding and cant reliably decrypt a binary string that ends in \\0"
+class LegacyAESWrapper(object):
+    """insecure as it uses AES in fixed block mode. do not use (only kept for compatibility reasons, and only for decryption)"""
 
     #
-    # Our AES Cipher
+    # this is a chunking lambda generator
     #
-    key_hash = SHA256.new(key)
-    aes = AES.new(key_hash.digest())
+    chunkify = staticmethod(lambda v, l: (v[i*l:(i+1)*l] for i in range(int(math.ceil(len(v)/float(l))))))
 
-    # pad to nearest 16.
-    data += '\0' * (16 - (len(data) % 16))
+    @classmethod
+    def aes_dec(cls, data, key):
+        from Crypto.Hash import SHA256
+        from Crypto.Cipher import AES
 
-    # take chunks of 16
-    output = ""
-    for chunk in chunkify(data, 16):
-        output += aes.encrypt(chunk)
+        def contains_binary(data):
+            """return true if string 'data' contains any binary"""
+            # for now just see if there are any unprintable characters in the string
+            import string
+            return False in [X in string.printable for X in data]
 
-    return output
+        if not data:
+            return data                     # decrypt nothing, get nothing
+         
+        key_hash = SHA256.new(key)
+        aes = AES.new(key_hash.digest())
+        
+        # take chunks of 16
+        output = ""
+        for chunk in LegacyAESWrapper.chunkify(data,16):
+            output += aes.decrypt(chunk)
+            
+        # depad the plaintext
+        while output.endswith('\0'):
+            output = output[:-1]
+        
+        if contains_binary(output):
+            raise DecryptException, "AES decrypt failed. Decrypted data contains binary"
+        
+        return output
 
+    @classmethod
+    def aes_dec_hex(cls, ciphertext, key):
+        """decrypt a base64 encoded encrypted block"""
+        try:
+            ciphertext = binascii.unhexlify( ciphertext )
+        except TypeError, te:
+            # the credential binary block cannot be decoded
+            raise DecryptException("Credential does not seem to contain binary encrypted data")
+        return LegacyAESWrapper.aes_dec(ciphertext, key)
 
-def aes_enc_hex(data, key, linelength=None, tag=AESHEXTAG):
-    """DO an aes encrypt, but return data as base64 encoded"""
-    enc = aes_enc(data, key)
-    encoded = annotate(tag, binascii.hexlify(enc))
+def nounicode(fn):
+    "decorator function, converts any unicode arguments to utf-8 bytestrings"
+    def inner(*args, **kwargs):
+        new_args = []
+        for arg in args:
+            if type(arg) is unicode:
+                new_args.append(arg.encode('utf8'))
+            else:
+                new_args.append(arg)
+        return fn(*new_args, **kwargs)
+    return inner
 
-    if linelength:
-        encoded = "\n".join(chunkify(encoded, linelength))
+def encrypted_block_is_legacy(data):
+    "check if an annotated block is using legacy crypto"
+    if data == '':
+        return False
+    tag, _ = deannotate(data)
+    return tag == AESHEXTAG or tag == AESTEMP
 
-    return encoded
-
-
-def aes_dec(data, key, check=False):
-    if not data:
-        return data                     # decrypt nothing, get nothing
-
-    key_hash = SHA256.new(key)
-    aes = AES.new(key_hash.digest())
-
-    # take chunks of 16
-    output = ""
-    for chunk in chunkify(data, 16):
-        output += aes.decrypt(chunk)
-
-    # depad the plaintext
-    while output.endswith('\0'):
-        output = output[:-1]
-
-    if contains_binary(output):
-        raise DecryptException("AES decrypt failed. Decrypted data contains binary")
-
-    return output
-
-
-def aes_dec_hex(data, key, check=False, tag=AESHEXTAG):
-    """decrypt a base64 encoded encrypted block"""
-    tag, ciphertext = deannotate(joiner(data))
-
-    if tag != tag:
-        raise DecryptException("Calling aes hex decrypt on non valid text. tag seems to be %s and it should be %s" % (tag, AESHEXTAG))
-
+@nounicode
+def decrypt_annotated_block(data, key):
+    "takes a annotated block and returns the encrypted value (decrypting with `key')"
+    if data == '':
+        return ''
+    tag, ciphertext = deannotate(data)
+    if ciphertext == '':
+        return ''
+    if tag == AESHEXTAG or tag == AESTEMP:
+        return LegacyAESWrapper.aes_dec_hex(ciphertext, key)
+    wrapper = aes_ctr.AESWrapper(key)
     try:
-        ciphertext = binascii.unhexlify(ciphertext)
-    except TypeError:
-        # the credential binary block cannot be decoded
-        raise DecryptException("Credential does not seem to contain binary encrypted data")
-    return aes_dec(ciphertext, key, check)
+        return wrapper.decrypt(ciphertext)
+    except aes_ctr.DecryptionFailure:
+        raise DecryptException("Invalid key for AES-CTR encrypted data (%s / %s)" % (data, key))
 
+@nounicode
+def encrypt_to_annotated_block(data, key):
+    "returns base64 encoded data, annotated appropriately and encrypted with `key`"
+    # don't encrypt empty string
+    if data == '':
+        return ''
+    wrapper = aes_ctr.AESWrapper(key)
+    encrypted = wrapper.encrypt(data)
+    return annotate(AESCTRTAG, encrypted)
 
-def contains_binary(data):
-    """return true if string 'data' contains any binary"""
-    # for now just see if there are any unprintable characters in the string
-    import string
-    return False in [X in string.printable for X in data]
-
-
-def looks_like_hex_ciphertext(data):
-    """returns true if the string 'data' looks like it is
-    actually cipher text. Of course we can not be 100% sure... but it makes a best guess attempt
-    """
-    CIPHER_CHARS = '0123456789ABCDEFabcdef\n\r\t '
-    for char in data:
-        if char not in CIPHER_CHARS:
-            return False
-
-    return True
-
+def deannotate(data):
+    "deannotate annotated data"
+    data = joiner(data)
+    try:
+        dummy,tag,cipher,dummy2 = data.split('$')
+    except ValueError, ve:
+        raise DecryptException("Invalid input string to deannotate")
+    if dummy or dummy2:
+        raise DecryptException("Invalid input string to deannotate")
+    return tag, cipher
 
 def looks_like_annotated_block(data):
     """Looks for the $tag$ciphertext$ format.
     Returns the tag if it looks like an annotated cipherblock
     returns False if its improperly formatted
     """
-    if data.count('$') != 3:
-        return False
-
-    onelinedata = joiner(data)
-
-    try:
-        dummy, tag, ciphertext, dummy2 = onelinedata.split('$')
-    except ValueError:
-        return False
-
-    if dummy or dummy2:
-        return False
-
-    if not looks_like_hex_ciphertext(ciphertext):
-        return False
-
-    return tag
+    if data.startswith('$') and data.endswith('$') and data.count('$') == 3:
+        try:
+            tag, ciphertext = deannotate(data)
+            return True
+        except DecryptException:
+            return False
+    return False
