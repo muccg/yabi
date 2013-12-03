@@ -498,7 +498,7 @@ class CredentialAccess:
         """return the decrypted cert if available. Otherwise raise exception"""
         protected_creds_str = cache.get(self.keyname)
         if protected_creds_str is None:
-            raise DecryptedCredentialNotAvailable("Credential for yabiuser: %s id: %s in a decrypted form" % (self.credential.user.name, self.credential.id))
+            raise DecryptedCredentialNotAvailable("Credential for yabiuser: %s id: %s is not available in a decrypted form" % (self.credential.user.name, self.credential.id))
         protected_creds = json.loads(protected_creds_str)
         decrypt = lambda v: decrypt_annotated_block(v, settings.SECRET_KEY)
         return dict((t, decrypt(protected_creds[t])) for t in protected_creds)
@@ -555,7 +555,6 @@ class Credential(Base):
             self.password, self.cert, self.key = protect_to_encrypt(self.password), protect_to_encrypt(self.cert), protect_to_encrypt(self.key)
             self.security_state = Credential.ENCRYPTED
             self.save()
-            return
         # we are now guaranteed to be encrypted; but we need to make sure there's protected creds in the cache
         encrypted_to_protected = lambda v: encrypt_to_annotated_block(decrypt_annotated_block(v, password), settings.SECRET_KEY)
         access = self.get_credential_access()
