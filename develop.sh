@@ -597,6 +597,10 @@ ci_remote_test_mysql)
     ci_ssh_agent
     ci_remote_test test_mysql
     ;;
+ci_remote_test_yabiadmin_mysql)
+    ci_ssh_agent
+    ci_remote_test test_yabiadmin_mysql
+    ;;
 add_yabitests_key)
     add_yabitests_key
     ;;
