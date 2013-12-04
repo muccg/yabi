@@ -141,13 +141,13 @@ def decrypt_annotated_block(data, key):
         raise DecryptException("Invalid key for AES-CTR encrypted data (%s / %s)" % (data, key))
 
 @nounicode
-def encrypt_to_annotated_block(data, key):
-    "returns base64 encoded data, annotated appropriately and encrypted with `key`"
+def encrypt_to_annotated_block(data, key, nonce=None):
+    "returns base64 encoded data, annotated appropriately and encrypted with `key`; nonce argument should only be specified in testing, other use is insecure"
     # don't encrypt empty string
     if data == '':
         return ''
     wrapper = aes_ctr.AESWrapper(key)
-    encrypted = wrapper.encrypt(data)
+    encrypted = wrapper.encrypt(data, nonce)
     return annotate(AESCTRTAG, encrypted)
 
 def deannotate(data):
