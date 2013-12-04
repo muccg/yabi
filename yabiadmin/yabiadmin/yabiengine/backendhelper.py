@@ -159,8 +159,7 @@ def get_exec_backend_for_uri(yabiusername, uri):
 
 def get_backend_list(yabiusername):
     """
-    Returns a list of backends for user, returns in json as the plain list is passed to the
-    twisted backend which returns json
+    Returns a list of backends for user, returns in json
     """
     logger.debug('yabiusername: %s' % (yabiusername))
 
