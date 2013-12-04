@@ -64,10 +64,6 @@ def blocking_execute(args, bufsize=0, stdin=None, stdout=subprocess.PIPE, stderr
         stdout_data, stderr_data = process.communicate(stdin)
         status = process.returncode
 
-        if stdout == subprocess.PIPE:
-            self.last_stdout = stdout_data
-        if stderr == subprocess.PIPE:
-            self.last_stderr = stderr_data
     except Exception, exc:
         logger.error('execute failed {0}'.format(status))
         from yabiadmin.backend.exceptions import RetryException
@@ -178,7 +174,8 @@ def harvest_host_key(hostname, port, username, password, pkey):
                 continue
 
             # save the key
-            host_keys = HostKey.objects.create(hostname=hostname, fingerprint=fingerprint, key_type=key_type, data=data)
+            host_key = HostKey.objects.create(hostname=hostname, fingerprint=fingerprint, key_type=key_type, data=data)
+            host_key.save()
     except Exception, exc:
         logger.error(exc)
 
@@ -208,10 +205,12 @@ def create_paramiko_pkey(key, passphrase=None):
 
     return pkey
 
+
 def get_credential_data(credential):
     access = credential.get_credential_access()
     decrypted = access.get()
     return credential.username, decrypted['cert'], decrypted['key'], decrypted['password']
+
 
 def sshclient(hostname, port, credential):
     if port is None:

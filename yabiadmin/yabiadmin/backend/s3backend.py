@@ -109,7 +109,7 @@ class S3Backend(FSBackend):
             multi_delete_result = bucket.delete_keys(all_keys)
             if multi_delete_result.errors:
                 # Some keys couldn't be deleted
-                raise RuntimeException(
+                raise RuntimeError(
                     "The following keys couldn't be deleted when deleting uri %s: %s",
                     uri, ", ".join(multi_delete_result.errors))
 
