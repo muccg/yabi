@@ -1,14 +1,6 @@
 from yabiadmin.yabi.UploadStreamer import UploadStreamer
-#from yabiadmin.yabiengine.backendhelper import make_hmac
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
-from urlparse import urlparse
-from urllib import quote
+from django.http import HttpResponse
 import json
-from django.conf import settings
-
-from yaphc import Http, PostRequest, UnauthorizedError
-#from yabiadmin.yabiengine.backendhelper import BackendRefusedConnection, BackendHostUnreachable, PermissionDenied, FileNotFound, BackendStatusCodeError
-from yabiadmin.yabiengine.backendhelper import get_fs_backendcredential_for_uri
 from yabiadmin.decorators import authentication_required
 from yabiadmin.backend import backend
 
@@ -40,7 +32,7 @@ class FileUploadStreamer(UploadStreamer):
     def new_file(self, field_name, file_name, content_type, content_length, charset):
         """beginning of new file in upload"""
         logger.debug('{0} {1} {2} {3} {4}'.format(field_name, file_name, content_type, content_length, charset))
-        return UploadStreamer.new_file(self,file_name)
+        return UploadStreamer.new_file(self, file_name)
 
     def upload_complete(self):
         """all files completely uploaded"""
@@ -51,7 +43,7 @@ class FileUploadStreamer(UploadStreamer):
         """raw input"""
         logger.debug('')
         # this is called right at the beginning. So we grab the uri detail here and initialise the outgoing POST
-        self.post_multipart(host=self._host, port=self._port, selector=self._selector, cookies=self._cookies )
+        self.post_multipart(host=self._host, port=self._port, selector=self._selector, cookies=self._cookies)
 
 
 @authentication_required
@@ -116,10 +108,9 @@ def put(request):
     """
     yabiusername = request.user.username
 
-    logger.debug("uri: %s" %(request.GET['uri']))
+    logger.debug("uri: %s" % (request.GET['uri']))
     uri = request.GET['uri']
 
-    files = []
     for key, f in request.FILES.items():
         logger.debug('handling file {0}'.format(key))
         upload_handle = backend.put_file(yabiusername, f.name, uri)
@@ -128,7 +119,7 @@ def put(request):
         upload_handle.close()
 
     response = {
-        "level":"success",
+        "level": "success",
         "message": 'no message'
     }
     return HttpResponse(content=json.dumps(response))
