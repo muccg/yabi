@@ -211,35 +211,63 @@ class SFTPBackend(FSBackend):
 
     def _do_ls(self, sftp, path):
         """do an ls using sftp client at path"""
-        results = {"files": [], "directories": []}
 
         def is_dir(path):
             import stat
             sftp_stat_result = sftp.stat(path)
             return stat.S_ISDIR(sftp_stat_result.st_mode)
 
-        if not is_dir(path):
-            filename = os.path.basename(path)
-            entry = sftp.stat(path)
-            results['files'].append([filename, entry.st_size, time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime(entry.st_mtime)), stat.S_ISLNK(entry.st_mode)])
-            return results
+        if is_dir(path):
+            dirs, files = self._do_ls_dir(sftp, path)
+        else:
+            dirs = []
+            file_ls = self._do_ls_file(sftp, path)
+            files = [file_ls]
+
+        dirs.sort()
+        files.sort()
+        return {
+            "directories": dirs,
+            "files": files
+        }
+
+
+    def _format_stat_entry(self, entry, filename=None):
+        filename = filename or entry.filename
+        return [filename, entry.st_size, time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime(entry.st_mtime)), stat.S_ISLNK(entry.st_mode)]
+
+    def _do_ls_file(self, sftp, path):
+        filename = os.path.basename(path)
+        entry = sftp.stat(path)
+        return self._format_stat_entry(entry, filename=filename)
+
+    def _do_ls_dir(self, sftp, path):
+        dirs = []
+        files = []
+        format = self._format_stat_entry
 
         for entry in sftp.listdir_attr(path):
-            # if not a hidden directory
-            if not entry.filename.startswith('.') or entry.filename == ENVVAR_FILENAME:
-                s = sftp.stat(os.path.join(path, entry.filename))            # stat the destination of any link
-                if stat.S_ISDIR(s.st_mode):
-                    # directory
-                    results['directories'].append([entry.filename, entry.st_size, time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime(entry.st_mtime)), stat.S_ISLNK(entry.st_mode)])
+            if entry.filename.startswith('.') and entry.filename != ENVVAR_FILENAME:
+                continue
+
+            if stat.S_ISDIR(entry.st_mode): # dir
+                dirs.append(format(entry))
+            elif stat.S_ISLNK(entry.st_mode): # symlink
+                full_path = os.path.join(path, entry.filename)
+                try:
+                    target = sftp.stat(full_path)
+                except IOError, e:
+                    logger.warning('Broken symlink "%s"', full_path)
                 else:
-                    # file or symlink to directory
-                    results['files'].append([entry.filename, entry.st_size, time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime(entry.st_mtime)), stat.S_ISLNK(entry.st_mode)])
+                    if stat.S_ISDIR(target.st_mode):
+                        dirs.append(format(entry))
+                    else:
+                        files.append(format(entry))
+            else: # file
+                files.append(format(entry))
 
-        # sort entries
-        results['directories'].sort()
-        results['files'].sort()
+        return dirs, files
 
-        return results
 
     def local_copy(self, src_uri, dst_uri, recursive=False):
         """Copy src_uri to dst_uri on the remote backend"""
