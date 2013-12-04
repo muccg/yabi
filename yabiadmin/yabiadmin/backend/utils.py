@@ -205,10 +205,12 @@ def create_paramiko_pkey(key, passphrase=None):
 
     return pkey
 
+
 def get_credential_data(credential):
     access = credential.get_credential_access()
     decrypted = access.get()
     return credential.username, decrypted['cert'], decrypted['key'], decrypted['password']
+
 
 def sshclient(hostname, port, credential):
     if port is None:
