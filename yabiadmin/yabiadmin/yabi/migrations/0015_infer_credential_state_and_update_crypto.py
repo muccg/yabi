@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 import datetime
+from itertools import combinations
 from south.db import db
 from south.v2 import DataMigration
 from django.db import models
+
+import logging
+logger = logging.getLogger(__name__)
 
 # security_state enum values as at this migration
 PLAINTEXT = 0
@@ -30,7 +34,14 @@ class Migration(DataMigration):
                 return False
             return val.startswith('$AESTEMP$')
 
-        print "Migrating credentials and inferring credential state..."
+        def is_plaintext(val):
+            if val is None:
+                return False
+            return (not is_protected(val)) and \
+                (not is_encrypted(val)) and \
+                (val != "")
+
+        logger.info("Migrating credentials and inferring credential state...")
         for cred in orm.Credential.objects.all():
             import sys
 
@@ -44,12 +55,23 @@ class Migration(DataMigration):
                 to_convert[k] = empty_crypt_to_empty_string(to_convert[k])
 
             # infer the security state of this credential
-            if any(is_encrypted(t) for t in to_convert.values()):
+            contains_encrypted_values = any(is_encrypted(t) for t in to_convert.values())
+            contains_protected_values = any(is_protected(t) for t in to_convert.values())
+            contains_plaintext_values = any(is_plaintext(t) for t in to_convert.values())
+
+            if contains_encrypted_values:
                 cred.security_state = ENCRYPTED
-            elif any(is_protected(t) for t in to_convert.values()):
+            elif contains_protected_values:
                 cred.security_state = PROTECTED
             else:
                 cred.security_state = PLAINTEXT
+
+            # detect contradictory security state
+            if (True, True) in combinations((contains_protected_values, 
+                    contains_encrypted_values, 
+                    contains_plaintext_values), 2):
+                logger.error("Credential %s (id=%d) in inconsistent state - manual attention required" % (str(cred), cred.id))
+
             # special case; a credential which is empty can be called encrypted
             if all([t == '' for t in to_convert.values()]):
                 cred.security_state = ENCRYPTED
