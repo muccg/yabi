@@ -178,7 +178,8 @@ def harvest_host_key(hostname, port, username, password, pkey):
                 continue
 
             # save the key
-            host_keys = HostKey.objects.create(hostname=hostname, fingerprint=fingerprint, key_type=key_type, data=data)
+            host_key = HostKey.objects.create(hostname=hostname, fingerprint=fingerprint, key_type=key_type, data=data)
+            host_key.save()
     except Exception, exc:
         logger.error(exc)
 
