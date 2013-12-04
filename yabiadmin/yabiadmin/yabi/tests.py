@@ -49,38 +49,43 @@ class CredentialTests(unittest.TestCase):
         self.django_user.set_password('pass')
         self.django_user.save()
         self.user = self.django_user.get_profile()
-        self.credential = Credential.objects.create(description='null credential', username=self.user.name, user=self.user)
+        self.credential = Credential.objects.create(description='test cred', username=self.user.name, user=self.user, password='wombles', cert='cheese', key='it')
+        self.credential.save()
 
     def tearDown(self):
-        self.credential.clear_cache()
+        access = self.credential.get_credential_access()
+        access.clear_cache()
         self.credential.delete()
         self.django_user.delete()
 
+    def test_credential_states(self):
+        self.assertEqual(self.credential.security_state, Credential.PROTECTED)
+        # must be able to decrypt a protected credential
+        self.credential.get_credential_access().clear_cache()
+        decrypted = self.credential.get_credential_access().get()
+        self.assertEqual(decrypted, {u'cert' : 'cheese', u'password':'wombles', u'key':'it'})
+        # logging in must encrypt the credential, and also shove a copy of the 
+        # decrypted and then protected credential into the cache
+        self.credential.get_credential_access().clear_cache()
+        self.credential.on_login(self.django_user.username, 'pass')
+        self.assertEqual(self.credential.security_state, Credential.ENCRYPTED)
+        decrypted = self.credential.get_credential_access().get()
+        self.assertEqual(decrypted, {u'cert' : 'cheese', u'password':'wombles', u'key':'it'})
+        # and a final login, with the credentials encrypted in the db already
+        self.assertEqual(self.credential.security_state, Credential.ENCRYPTED)
+        self.credential.get_credential_access().clear_cache()
+        self.credential.on_login(self.django_user.username, 'pass')
+        decrypted = self.credential.get_credential_access().get()
+        self.assertEqual(decrypted, {u'cert' : 'cheese', u'password':'wombles', u'key':'it'})        
+
     def test_cache_keyname_replaces_unicode_character(self):
-        self.assertTrue('\xc5\x91' in self.credential.cache_keyname())
+        access = self.credential.get_credential_access()
+        self.assertTrue('\\xc5\\x91' in access.keyname)
 
     def test_cache(self):
-        self.assertTrue(self.credential.is_cached)
-        self.assertEqual(self.credential.get_from_cache(), None)
-
-    def test_get_from_cache(self):
-        self.credential.password = 'pass'
-        self.credential.send_to_cache()
-        self.credential.password = 'pass2'
-        self.credential.get_from_cache()
-        self.assertEqual(self.credential.password, 'pass', 'get_from_cache() should set the password back to original')
-
-    def test_clear_from_cache(self):
-        self.credential.send_to_cache()
-        self.credential.clear_cache()
-        self.assertFalse(self.credential.is_cached)
-
-    def test_login_decrypts_credential(self):
-        client = Client()
-        response = client.post('/wslogin/',
-                {'username': self.django_user.username, 'password': 'pass'})
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(self.credential.is_cached)
+        access = self.credential.get_credential_access()
+        self.assertTrue(access.in_cache)
+        self.assertEqual(access.get(), {u'cert' : 'cheese', u'password':'wombles', u'key':'it'})
 
 class WsMenuTest(unittest.TestCase):
     def setUp(self):
@@ -183,101 +188,6 @@ class TestImportTag(unittest.TestCase):
         sys.modules['foobar'] = m
         result = t._render(c)
         self.assertTrue('foobar' in c.dicts[-1] and result == u"startHello Fred Bloggsfinish")
-
-
-class TemplateSyntaxLoadTest(unittest.TestCase):
-
-    def test_each_converted_template_has_no_syntax_errors(self):
-        import os
-        from django.template import TemplateSyntaxError, TemplateEncodingError, TemplateDoesNotExist
-        from django.template.loader import find_template
-        from django.conf import settings
-
-        converted_templates = [     "yabiadmin/yabi/templates/mako/admin/base_mako.html",
-                                    "yabiadmin/yabi/templates/mako/admin/base_site_mako.html",
-                                    "yabiadmin/yabi/templates/mako/yabi/add.html",
-                                    "yabiadmin/yabi/templates/mako/yabi/admin_status.html",
-                                    "yabiadmin/yabi/templates/mako/yabi/backend.html",
-                                    "yabiadmin/yabi/templates/mako/yabi/backend_cred_test.html",
-                                    "yabiadmin/yabi/templates/mako/yabi/crypt_password.html",
-                                    "yabiadmin/yabi/templates/mako/yabi/ldap_not_in_use.html",
-                                    "yabiadmin/yabi/templates/mako/yabi/ldap_users.html",
-                                    "yabiadmin/yabi/templates/mako/yabi/tool.html",
-                                    "yabiadmin/yabi/templates/mako/yabi/user_backends.html",
-                                    "yabiadmin/yabi/templates/mako/yabi/user_tools.html",
-                                    "yabiadmin/yabi/templates/mako/404.html",
-                                    "yabiadmin/yabi/templates/mako/500.html",
-                                    "yabiadmin/yabiengine/templates/mako/yabiengine/workflow_summary.html",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/email/noprofile.txt",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/errors/401.html",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/errors/403.html",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/errors/404.html",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/errors/500.html",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/errors/base.html",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/errors/preview-unavailable.html",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/registration/email/approve.txt",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/registration/email/approved.txt",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/registration/email/confirm.txt",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/registration/email/denied.txt",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/registration/confirm.html",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/registration/index.html",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/registration/success.html",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/account.html",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/admin.html",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/base.html",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/design.html",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/files.html",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/jobs.html",
-                                    "yabiadmin/yabifeapp/templates/mako/fe/login.html",
-                                    ]
-        invalid_syntax = []
-        encoding_errors = []
-        other_errors = []
-        missing = []
-        good = []
-        total = len(converted_templates)
-
-        errors = 0
-
-        for converted_template in converted_templates:
-
-            template_path = os.path.join(settings.WEBAPP_ROOT, converted_template)
-
-            try:
-                t, origin = find_template(template_path)
-                good.append(template_path)
-            except TemplateSyntaxError, tse:
-                print "%s %s" % (converted_template, tse.message)
-                invalid_syntax.append(converted_template)
-            except TemplateEncodingError:
-                encoding_errors.append(converted_template)
-            except TemplateDoesNotExist:
-                missing.append(converted_template)
-            except Exception, ex:
-                other_errors.append("%s - %s" % (converted_template, ex))
-
-
-        for template in invalid_syntax:
-            print "Template %s has invalid syntax" % template
-            errors += 1
-        for template in encoding_errors:
-            print "Template %s has encoding errors" % template
-            errors += 1
-        for (template, error) in other_errors:
-            print "Template %s has other errors: %s" % (template, error)
-            errors += 1
-
-        failure_rate = 100.0 * errors / total
-
-        print "Template Conversion: %s failure rate" % failure_rate
-        for good_template in good:
-            print "%s is OK" % good_template
-
-        self.assertTrue(len(invalid_syntax) == 0, "Template syntax errors: %s" % invalid_syntax)
-        self.assertTrue(len(encoding_errors) == 0, "Template encoding errors: %s" % encoding_errors)
-        self.assertTrue(len(other_errors) == 0, "Template errors: %s" % other_errors)
-        self.assertTrue(len(missing) == 0, "Some templates are missing: %s" % missing)
-
 
 class TestOrderByCustomFilter(unittest.TestCase):
     def test_order_by_filter_generator(self):
