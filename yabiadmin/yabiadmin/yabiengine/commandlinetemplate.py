@@ -726,9 +726,6 @@ class CommandTemplate(object):
         other_set_keys = [X for X in set_keys if X != primary_set_key]
 
         primary_set = self.backfiles[primary_set_key]       # the set of files to loop over
-
-        output = []         # out output list
-
         for details_hash in primary_set:
             filename = details_hash['filename']             # the filename we have to find the most similar other filename to
             #batch_type = details_hash['batch_type']         # consume all or batch
