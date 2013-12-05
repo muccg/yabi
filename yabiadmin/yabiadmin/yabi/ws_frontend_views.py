@@ -27,43 +27,29 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import mimetypes
-import uuid
 import os
 import re
-
 from datetime import datetime, timedelta
-from urllib import quote, unquote
+from urllib import unquote
 from urlparse import urlparse, urlunparse
 
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError
-from django.shortcuts import render_to_response, get_object_or_404
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError
 from django.core.exceptions import ObjectDoesNotExist
-from yabiadmin.yabi.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential
-from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
-from ccg.utils import webhelpers
+from yabiadmin.yabi.models import User, ToolGrouping, Tool, Credential, ToolSet, BackendCredential
 from django.utils import simplejson as json
-from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.contrib import auth
-from yabiadmin.crypto_utils import DecryptException
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
 from django.core.servers.basehttp import FileWrapper
-
-from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.backend.celerytasks import process_workflow
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import WorkflowTag
-# TODO
-#from yabiadmin.yabiengine.backendhelper import make_hmac, get_fs_backendcredential_for_uri
 from yabiadmin.responses import *
 from yabiadmin.decorators import authentication_required, profile_required
 from yabiadmin.yabistoreapp import db
 from yabiadmin.utils import cache_keyname
-from yaphc import Http, PostRequest, UnauthorizedError
 from yabiadmin.backend import backend
 from yabiadmin.backend.exceptions import FileNotFoundError
 
@@ -91,6 +77,7 @@ def tool(request, toolname):
         return response
     except ObjectDoesNotExist:
         return JsonMessageResponseNotFound("Object not found")
+
 
 @authentication_required
 @cache_page(300)
@@ -127,7 +114,6 @@ def menu(request):
 
         all_tools_toolset["name"] = 'all_tools'
         all_tools_toolset["toolgroups"] = []
-
 
         for key in sorted(all_tools.iterkeys()):
             toolgroup = all_tools[key]
@@ -171,18 +157,18 @@ def copy(request):
     """
     yabiusername = request.user.username
 
-    src,dst = request.GET['src'],request.GET['dst']
+    src, dst = request.GET['src'], request.GET['dst']
 
     # check that src does not match dst
     srcpath, srcfile = src.rsplit('/', 1)
     assert srcpath != dst, "dst must not be the same as src"
 
     # src must not be directory
-    assert src[-1]!='/', "src malformed. Either no length or not trailing with slash '/'"
+    assert src[-1] != '/', "src malformed. Either no length or not trailing with slash '/'"
     # TODO: This needs to be fixed in the FRONTEND, by sending the right url through as destination. For now we just make sure it ends in a slash
-    if dst[-1]!='/':
+    if dst[-1] != '/':
         dst += '/'
-    logger.debug("yabiusername: %s src: %s -> dst: %s" %(yabiusername, src, dst))
+    logger.debug("yabiusername: %s src: %s -> dst: %s" % (yabiusername, src, dst))
 
     backend.copy_file(yabiusername, src, dst)
 
@@ -196,7 +182,7 @@ def rcopy(request):
     """
     yabiusername = request.user.username
 
-    src,dst = unquote(request.REQUEST['src']), unquote(request.REQUEST['dst'])
+    src, dst = unquote(request.REQUEST['src']), unquote(request.REQUEST['dst'])
 
     # check that src does not match dst
     srcpath, srcfile = src.rstrip('/').rsplit('/', 1)
@@ -205,9 +191,9 @@ def rcopy(request):
     # src must be directory
     #assert src[-1]=='/', "src malformed. Not directory."
     # TODO: This needs to be fixed in the FRONTEND, by sending the right url through as destination. For now we just make sure it ends in a slash
-    if dst[-1]!='/':
+    if dst[-1] != '/':
         dst += '/'
-    logger.debug("yabiusername: %s src: %s -> dst: %s" %(yabiusername, src, dst))
+    logger.debug("yabiusername: %s src: %s -> dst: %s" % (yabiusername, src, dst))
 
     backend.rcopy_file(yabiusername, src, dst)
 
@@ -218,7 +204,7 @@ def rcopy(request):
 def rm(request):
     yabiusername = request.user.username
     logger.debug("yabiusername: %s uri: %s" % (yabiusername, request.GET['uri']))
-    backend.rm_file(yabiusername,request.GET['uri'])
+    backend.rm_file(yabiusername, request.GET['uri'])
     # TODO Forbidden, any other errors
     return HttpResponse("OK")
 
@@ -228,12 +214,12 @@ def get(request, bytes=None):
     """ Returns the requested uri.  """
     yabiusername = request.user.username
 
-    logger.debug("ws_frontend_views::get() yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
+    logger.debug("ws_frontend_views::get() yabiusername: %s uri: %s" % (yabiusername, request.GET['uri']))
     uri = request.GET['uri']
 
     try:
         filename = uri.rsplit('/', 1)[1]
-    except IndexError, e:
+    except IndexError:
         logger.critical('Unable to get filename from uri: %s' % uri)
         filename = 'default.txt'
 
@@ -269,10 +255,9 @@ def put(request):
     """
     yabiusername = request.user.username
 
-    logger.debug("uri: %s" %(request.GET['uri']))
+    logger.debug("uri: %s" % request.GET['uri'])
     uri = request.GET['uri']
 
-    files = []
     for key, f in request.FILES.items():
         upload_handle = backend.put_file(yabiusername, uri)
         for chunk in f.chunks():
@@ -311,12 +296,12 @@ def submit_workflow(request):
 
         # process the workflow via celery
         process_workflow(workflow.pk).apply_async()
-    except Exception, exc:
+    except Exception:
         transaction.rollback()
         logger.exception("Exception in submit_workflow()")
         raise
 
-    return HttpResponse(json.dumps({"id":workflow.id}))
+    return HttpResponse(json.dumps({"id": workflow.id}))
 
 
 def munge_name(user, workflow_name):
@@ -333,8 +318,7 @@ def munge_name(user, workflow_name):
         base = workflow_name
         val = 1
 
-    used_names = [wf.name for wf in EngineWorkflow.objects.filter(
-                        user__name=user, name__startswith=base)]
+    used_names = [wf.name for wf in EngineWorkflow.objects.filter(user__name=user, name__startswith=base)]
     used_names.extend(db.workflow_names_starting_with(user, base))
     used_names = dict(zip(used_names, [None] * len(used_names)))
 
@@ -361,7 +345,7 @@ def get_workflow(request, workflow_id):
         response = workflow_to_response(workflows[0])
     else:
         try:
-            response = db.get_workflow(yabiusername,workflow_id)
+            response = db.get_workflow(yabiusername, workflow_id)
         except (db.NoSuchWorkflow), e:
             logger.critical('%s' % e)
             return JsonMessageResponseNotFound(e)
@@ -373,20 +357,20 @@ def get_workflow(request, workflow_id):
 def workflow_to_response(workflow, key=None, parse_json=True, retrieve_tags=True):
     fmt = DATE_FORMAT
     response = {
-            'id': workflow.id,
-            'name': workflow.name,
-            'last_modified_on': workflow.last_modified_on.strftime(fmt),
-            'created_on': workflow.created_on.strftime(fmt),
-            'status': workflow.status,
-            'json': json.loads(workflow.json) if parse_json else workflow.json,
-            "tags": [],
-        }
+        'id': workflow.id,
+        'name': workflow.name,
+        'last_modified_on': workflow.last_modified_on.strftime(fmt),
+        'created_on': workflow.created_on.strftime(fmt),
+        'status': workflow.status,
+        'json': json.loads(workflow.json) if parse_json else workflow.json,
+        'tags': [],
+    }
 
     if retrieve_tags:
         response["tags"] = [wft.tag.value for wft in workflow.workflowtag_set.all()]
 
     if key is not None:
-        response = (getattr(workflow,key), response)
+        response = (getattr(workflow, key), response)
 
     return response
 
@@ -400,7 +384,7 @@ def workflow_datesearch(request):
     logger.debug(yabiusername)
 
     fmt = DATE_FORMAT
-    tomorrow = lambda : datetime.today()+timedelta(days=1)
+    tomorrow = lambda: datetime.today() + timedelta(days=1)
 
     start = datetime.strptime(request.GET['start'], fmt)
     end = request.GET.get('end')
@@ -415,9 +399,9 @@ def workflow_datesearch(request):
 
     # Retrieve the matched workflows.
     workflows = EngineWorkflow.objects.filter(
-           user__name = yabiusername,
-           created_on__gte = start, created_on__lte = end
-        ).order_by(sort)
+        user__name=yabiusername,
+        created_on__gte=start, created_on__lte=end
+    ).order_by(sort)
 
     # Use that list to retrieve all of the tags applied to those workflows in
     # one query, then build a dict we can use when iterating over the
@@ -433,10 +417,10 @@ def workflow_datesearch(request):
         workflow_response[1]["tags"] = tags.get(workflow.id, [])
         response.append(workflow_response)
 
-    archived_workflows = db.find_workflow_by_date(yabiusername,start,end,sort_field,sort_dir)
+    archived_workflows = db.find_workflow_by_date(yabiusername, start, end, sort_field, sort_dir)
 
     response.extend(archived_workflows)
-    response.sort(key=lambda x: x[0], reverse=sort_dir=='DESC')
+    response.sort(key=lambda x: x[0], reverse=sort_dir == 'DESC')
     response = [r[1] for r in response]
 
     return HttpResponse(json.dumps(response), mimetype='application/json')
