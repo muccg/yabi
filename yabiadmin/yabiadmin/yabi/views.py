@@ -27,21 +27,15 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import httplib
-from urllib import urlencode, unquote, quote
+from urllib import urlencode
 import copy
 import os
-
 from django.conf.urls.defaults import *
 from django.conf import settings
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
-from django.shortcuts import render_to_response, get_object_or_404
-from django.core.exceptions import ObjectDoesNotExist
-from ccg.utils import webhelpers
-from django import forms
-from yabiadmin.yabi.models import FileExtension
-
+from django.http import HttpResponse
 import logging
 logger = logging.getLogger(__name__)
+
 
 # proxy view to pass through all requests set up in urls.py
 def proxy(request, url, server, base):
@@ -68,7 +62,7 @@ def proxy(request, url, server, base):
         #post_params['yabiusername'] = request.user.username
         logger.debug('Proxying post: %s%s' % (server, resource))
         data = urlencode(post_params)
-        headers = {"Content-type":"application/x-www-form-urlencoded","Accept":"text/plain"}
+        headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain"}
         conn = httplib.HTTPConnection(server)
         conn.request(request.method, resource, data, headers)
         r = conn.getresponse()
@@ -84,21 +78,19 @@ def proxy(request, url, server, base):
 
     return response
 
+
 def status_page(request):
     """Availability page to be called to see if yabiadmin is running. Should return HttpResponse with status 200"""
     logger.info('')
 
-    # make a db connection
-    exts = FileExtension.objects.all()
-
     # write a file
     with open(os.path.join(settings.WRITABLE_DIRECTORY, 'status_page_testfile.txt'), 'w') as f:
-         f.write("testing file write")
+        f.write("testing file write")
 
     # read it again
     with open(os.path.join(settings.WRITABLE_DIRECTORY, 'status_page_testfile.txt'), 'r') as f:
-         contents = f.read()
-         assert 'testing file write' in contents
+        contents = f.read()
+        assert 'testing file write' in contents
 
     # delete the file
     os.unlink(os.path.join(settings.WRITABLE_DIRECTORY, 'status_page_testfile.txt'))
