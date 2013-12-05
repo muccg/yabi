@@ -38,7 +38,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.cache import cache
 from django.utils.encoding import smart_str
 from urlparse import urlparse, urlunparse
-from yabiadmin.crypto_utils import encrypt_to_annotated_block, decrypt_annotated_block, encrypted_block_is_legacy, DecryptException
+from yabiadmin.crypto_utils import encrypt_to_annotated_block, decrypt_annotated_block, \
+    encrypted_block_is_legacy, any_unencrypted, any_annotated_block, DecryptException
 from yabiadmin.constants import STATUS_BLOCKED, STATUS_RESUME, STATUS_READY, STATUS_REWALK, VALID_SCHEMES
 from yabiadmin.utils import cache_keyname
 
@@ -517,7 +518,8 @@ class Credential(Base):
         )
 
     description = models.CharField(max_length=512, blank=True)
-    security_state = models.PositiveSmallIntegerField(choices=SECURITYSTATE_CHOICES, default=0)
+    # blank=True is set here because we infer the value on form submit in the admin
+    security_state = models.PositiveSmallIntegerField(choices=SECURITYSTATE_CHOICES, default=0, blank=True)
     username = models.CharField(max_length=512)
     password = models.CharField(max_length=512, blank=True)
     cert = models.TextField(blank=True)
@@ -534,8 +536,22 @@ class Credential(Base):
         return "%s username:%s for yabiuser:%s"%(self.description,self.username,self.user.name)
 
     def on_pre_save(self):
+        # security state is read-only in the admin; we validate the form to 
+        # make sure the data is consistent, but cross-check here and throw an 
+        # exception just in case
+        #
+        # we can't rewrite security_state in the form's clean method, as the 
+        # field is marked readonly, and so django discards any changes made to it
+        crypto_values = [self.key, self.password, self.cert]
+        # are any of the crypto_fields set to a non-empty, non-annotated-block value?
+        have_unencrypted_field = any_unencrypted(*crypto_values)
+        # are any of the crypto_fields set to a non-empty, annotated-block value?
+        have_annotated_field = any_annotated_block(*crypto_values)
+        assert(not (have_unencrypted_field and have_annotated_field),
+            'Internal YABI error - unencrypted and annotated data mixed in Credential object %s' % str(self))
+
         # we never allow plaintext credentials to make it into the database
-        if self.security_state == Credential.PLAINTEXT:
+        if have_unencrypted_field:
             protect = lambda v: encrypt_to_annotated_block(v, settings.SECRET_KEY)
             self.password, self.cert, self.key = protect(self.password), protect(self.cert), protect(self.key)
             self.security_state = Credential.PROTECTED

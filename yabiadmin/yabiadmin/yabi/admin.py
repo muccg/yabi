@@ -128,6 +128,7 @@ class CredentialAdmin(AdminBase):
     list_filter = ['user']
     actions = ['duplicate_credential','cache_credential','decache_credential']
     search_fields = ['description', 'username', 'user__user__username']
+    readonly_fields = ['security_state']
 
     def duplicate_credential(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
@@ -153,9 +154,6 @@ class CredentialAdmin(AdminBase):
         if fail:
             self.message_user(request, "%d credential%s failed purge." % (fail,"s" if fail!=1 else "") )
     decache_credential.short_description = "Purge selected credentials from cache."
-
-
-
 
 class BackendAdmin(AdminBase):
     form = BackendForm
