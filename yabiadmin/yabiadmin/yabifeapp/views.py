@@ -179,12 +179,11 @@ def wslogin(request):
             # this is logged but user can still log in as they may have other creds
             # that are still usable
             creds = Credential.objects.filter(user__name=username)
-            try:
-                for cred in creds:
+            for cred in creds:
+                try:
                     cred.on_login(username, password)
-
-            except DecryptException:
-                logger.error('Unable to decrypt credential %s' % cred.description)
+                except DecryptException:
+                    logger.error('Unable to decrypt credential %s' % cred.description)
 
             response = {
                 "success": True
