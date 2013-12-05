@@ -163,17 +163,9 @@ def get_backend_list(yabiusername):
     """
     logger.debug('yabiusername: %s' % (yabiusername))
 
-    try:
+    results = {yabiusername: {'files': [], 'directories': []}}
 
-        results = {yabiusername: {'files': [], 'directories': []}}
+    for bc in BackendCredential.objects.filter(credential__user__name=yabiusername, visible=True):
+        results[yabiusername]['directories'].append([bc.homedir_uri, 0, ''])
 
-        for bc in BackendCredential.objects.filter(credential__user__name=yabiusername, visible=True):
-            results[yabiusername]['directories'].append([bc.homedir_uri, 0, ''])
-
-        return json.dumps(results)
-
-    except ObjectDoesNotExist, e:
-        logger.critical("ObjectDoesNotExist for uri: %s" % uri)
-        logger.critical("Scheme: %s" % scheme)
-        logger.critical("Hostname: %s" % parts.hostname)
-        raise
+    return json.dumps(results)
