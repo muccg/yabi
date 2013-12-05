@@ -261,7 +261,6 @@ class EngineJob(Job):
         self.preferred_stageout_method = 'lcopy' if self.tool.lcopy_supported else 'copy'                                                   # stageouts should never be linked. Only local copy or remote copy
 
         # cache job for later reference
-        job_id = job_dict["jobId"]  # the id that is used in the json
         self.command_template = template.serialise()
         self.command = str(template)                    # text description of command
 
