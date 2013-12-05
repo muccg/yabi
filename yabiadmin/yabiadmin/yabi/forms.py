@@ -28,7 +28,8 @@ from django import forms
 from django.conf import settings
 from yabiadmin.yabi.models import *
 from yabiadmin import constants
-from yabiadmin.crypto_utils import looks_like_annotated_block
+from yabiadmin.crypto_utils import looks_like_annotated_block, any_unencrypted, any_annotated_block
+from django.contrib import admin
 
 class BackendForm(forms.ModelForm):
     class Meta:
@@ -61,19 +62,19 @@ class CredentialForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super(CredentialForm, self).clean()
         security_state = cleaned_data.get('security_state')
-        # validate encryption state matches the data submitted in the form
-        for field in ('password', 'cert', 'key'):
-            val = cleaned_data.get(field)
-            # blank fields are valid in all states
-            if val == '':
-                continue
-            is_annotated_block = looks_like_annotated_block(val)
-            if security_state == Credential.PLAINTEXT:
-                if is_annotated_block:
-                    raise forms.ValidationError("Encrypted data in form field `%s' cannot be saved to an unencrypted credential." % (field))
-            else:
-                if not is_annotated_block:
-                    raise forms.ValidationError("Non-encrypted data in form field `%s' cannot be saved to an encrypted credential. Change security state when updating credentials." % (field))
+
+        # fields to which security_state applies, or from which it can be inferred
+        crypto_fields = ('password', 'cert', 'key')
+        crypto_values = [cleaned_data.get(t) for t in crypto_fields]
+
+        # are any of the crypto_fields set to a non-empty, non-annotated-block value?
+        have_unencrypted_field = any_unencrypted(*crypto_values)
+        # are any of the crypto_fields set to a non-empty, annotated-block value?
+        have_annotated_field = any_annotated_block(*crypto_values)
+
+        if have_unencrypted_field and have_annotated_field:
+            raise forms.ValidationError("Submitted form contains some plain text data and some encrypted data. If you wish to update credentials, you must update all fields.")
+
         return cleaned_data
 
 class BackendCredentialForm(forms.ModelForm):

@@ -173,3 +173,11 @@ def looks_like_annotated_block(data):
         except DecryptException:
             return False
     return False
+
+def any_unencrypted(*args):
+    "returns True if any of the `args' is unencrypted. empty values are ignored"
+    return any(t != '' and (not looks_like_annotated_block(t)) for t in args)
+
+def any_annotated_block(*args):
+    "returns True if any of the `args' is an annotated block. empty values are ignored"
+    return any(t != '' and looks_like_annotated_block(t) for t in args)
