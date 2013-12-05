@@ -26,35 +26,30 @@
 #
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-
 import uuid
 import copy
 import os
 from datetime import datetime
-
 from django.db import transaction
 from django.http import HttpResponse
 from yabiadmin.yabi import models
 from django.utils import simplejson as json
-
-from yabiadmin.yabistoreapp import db
 from yabiadmin.backend.celerytasks import process_workflow
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
-#from yabiadmin.yabiengine import backendhelper
 from yabiadmin.backend import backend
-
 from yabiadmin.decorators import authentication_required
-
 from collections import namedtuple
-
 import logging
 logger = logging.getLogger(__name__)
+
 
 class YabiError(StandardError):
     pass
 
+
 class ParsingError(YabiError):
     pass
+
 
 @authentication_required
 def is_stagein_required(request):
@@ -70,6 +65,7 @@ def is_stagein_required(request):
         resp = {'success': False, 'msg': str(e)}
 
     return HttpResponse(json.dumps(resp))
+
 
 @authentication_required
 @transaction.commit_manually
@@ -92,7 +88,7 @@ def submitjob(request):
         # always commit transactions before sending tasks depending on state from the current transaction
         # http://docs.celeryq.org/en/latest/userguide/tasks.html
         transaction.commit()
-        resp = {'success': True, 'workflow_id':workflow.id}
+        resp = {'success': True, 'workflow_id': workflow.id}
 
         # process workflow via celery
         process_workflow(workflow.pk).apply_async()
@@ -101,12 +97,13 @@ def submitjob(request):
         logger.exception("Error in submitjob()")
         # TODO error returns success???
         resp = {'success': False, 'msg': str(e)}
-    except Exception, exc:
+    except Exception:
         transaction.rollback()
         logger.exception("Error in submitjob()")
         raise
 
     return HttpResponse(json.dumps(resp))
+
 
 def split_job(job):
     '''Creates a selectfile job for any job that has input files'''
@@ -140,14 +137,14 @@ def split_job(job):
             'valid': True,
             'toolName': 'fileselector',
             'parameterList': {
-               'parameter': [{
+                'parameter': [{
                     'valid': True,
                     'value': files,
-                    'switchName': 'files'
-                }]
+                    'switchName': 'files'}]
             }
         }
     return selectfile_job, changed_job
+
 
 @authentication_required
 def createstageindir(request):
@@ -155,16 +152,16 @@ def createstageindir(request):
     try:
         guid = request.REQUEST['uuid']
         dirs_to_create = [p[1] for p in request.REQUEST.items() if p[0].startswith('dir_')]
-        uuid.UUID(guid) # validation
+        uuid.UUID(guid)  # validation
         user = models.User.objects.get(name=request.user.username)
 
-        stageindir = '%s%s/' % (user.default_stagein,guid)
+        stageindir = '%s%s/' % (user.default_stagein, guid)
 
         backend.mkdir(user.name, stageindir)
         for d in dirs_to_create:
             backend.mkdir(user.name, stageindir + '/' + d)
 
-        resp = {'success': True, 'uri':stageindir}
+        resp = {'success': True, 'uri': stageindir}
     except StandardError, e:
         resp = {'success': False, 'msg': str(e)}
 
@@ -175,7 +172,9 @@ def createstageindir(request):
 
 ParsedArg = namedtuple('ParsedArg', 'name original_arg value original_value input_file')
 
+
 class ParamDef(object):
+
     def __init__(self, name, switch_use, mandatory, is_input_file):
         self.name = name
         self.switch_use = switch_use
@@ -198,8 +197,6 @@ class ParamDef(object):
                 self.original_value = self.value[0]
                 return True
         return False
-
-
 
     def consume_values(self, arguments):
         '''WARNING! This changes the passed in arguments list in place! '''
@@ -242,8 +239,9 @@ class ParamDef(object):
                 'filename': filename,
                 'pathComponents': [root]
             }]
-        return ParsedArg(name= self.name, original_arg=self.original_arg,
-            value=value, original_value=self.original_value, input_file=self.input_file)
+        return ParsedArg(name=self.name, original_arg=self.original_arg,
+                         value=value, original_value=self.original_value, input_file=self.input_file)
+
 
 class YabiArgumentParser(object):
     def __init__(self, tool):
@@ -263,8 +261,8 @@ class YabiArgumentParser(object):
         if len(unhandled_args) != len(self.positional_paramdefs):
             pos_param_names = ', '.join([p.name for p in self.positional_paramdefs])
             raise ParsingError('Tool expects %d positional arguments (%s) but %d (%s) were passed in.' %
-                    ( len(self.positional_paramdefs), pos_param_names,
-                      len(unhandled_args), ', '.join([arg[0] for arg in unhandled_args])))
+                               (len(self.positional_paramdefs), pos_param_names,
+                                len(unhandled_args), ', '.join([arg[0] for arg in unhandled_args])))
 
         parsed_positionals = self.parse_positionals([arg[0] for arg in unhandled_args])
         result = self.combine_results(parsed_options, parsed_positionals, unhandled_args)
@@ -276,7 +274,7 @@ class YabiArgumentParser(object):
 
     def init_paramdefs(self, tool):
         return [ParamDef(param.switch, param.switch_use.display_text, param.mandatory, param.input_file)
-                    for param in tool.toolparameter_set.all().order_by('rank')]
+                for param in tool.toolparameter_set.all().order_by('rank')]
 
     def parse_options(self, arguments):
         remaining_args = arguments
@@ -308,7 +306,7 @@ class YabiArgumentParser(object):
         # and insert the positionals at the right location based on the original order
         for positional in parsed_positionals:
             insert_after = find_item(positional_order,
-                    lambda x: x[0] == positional.original_arg)[1]
+                                     lambda x: x[0] == positional.original_arg)[1]
             insert_idx = 0
             if insert_after is not None:
                 insert_idx = item_index(result, lambda x: x.original_arg == insert_after) + 1
@@ -326,6 +324,7 @@ class YabiArgumentParser(object):
         if missing_params:
             raise ParsingError('Mandatory option: %s not passed in.' % ','.join(missing_params))
 
+
 def extract_tool_and_params(request):
     toolname = request.POST.get('name')
     tools = models.Tool.objects.filter(display_name=toolname, toolgrouping__tool_set__users__name=request.user.username)
@@ -336,19 +335,21 @@ def extract_tool_and_params(request):
     params = create_params(request, argparser)
     return tool, params
 
+
 def create_job(tool, params):
     params_list = [{'switchName': arg.name, 'valid': True, 'value': arg.value}
-                for arg in params]
+                   for arg in params]
     return {'toolName': tool.name, 'valid': True,
             'parameterList': {'parameter': params_list}}
+
 
 def create_wrapper_workflow(selectfile_job, job, toolname):
     def generate_name(toolname):
         return '%s (%s)' % (toolname, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
-    jobs = filter(lambda x: x is not None,[selectfile_job, job])
+    jobs = filter(lambda x: x is not None, [selectfile_job, job])
     for i, job in enumerate(jobs):
-        job['jobId'] = i+1
+        job['jobId'] = i + 1
 
     workflow = {
         'name': generate_name(toolname),
@@ -359,37 +360,42 @@ def create_wrapper_workflow(selectfile_job, job, toolname):
 
     return workflow
 
+
 def create_params(request, argparser):
     arguments = reconstruct_argument_list(request)
     parsed_arguments = argparser.parse_args(arguments)
     return parsed_arguments
 
+
 def reconstruct_argument_list(request):
     '''Reconstructs the argument list from request params named arg0, arg1, ... argN'''
     def argNtoN(argN):
         return int(argN[3:])
-    arg_params = [(argNtoN(p[0]),p[1]) for p in request.POST.items() if p[0].startswith('arg')]
-    arg_params.sort(cmp= lambda x,y: cmp(x[0],y[0]))
+    arg_params = [(argNtoN(p[0]), p[1]) for p in request.POST.items() if p[0].startswith('arg')]
+    arg_params.sort(cmp=lambda x, y: cmp(x[0], y[0]))
     arguments = [a[1] for a in arg_params]
     return arguments
+
 
 def find_item(l, func):
     for item in l:
         if func(item):
             return item
 
+
 def item_index(l, func):
     for i, item in enumerate(l):
         if func(item):
             return i
 
+
 def is_int(s):
     try:
-       int(s)
-       return True
+        int(s)
+        return True
     except ValueError:
-       return False
+        return False
+
 
 def is_option(s):
     return s.startswith('-') and not is_int(s)
-
