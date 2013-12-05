@@ -198,9 +198,6 @@ class Tool(Base):
                                                                                 "possible_values", "default_value", "helptext", "batch_bundle_files", "use_output_filename__switch"))
         }
 
-        for index in range(len(tool_dict['outputExtensions'])):
-            tool_dict['outputExtensions'][index]['file_extension__pattern'] = tool_dict['outputExtensions'][index]['file_extension__pattern']
-
         for p in tool_dict["parameter_list"]:
             tp = ToolParameter.objects.get(id=p["id"])
             p["acceptedExtensionList"] = tp.input_filetype_extensions()
