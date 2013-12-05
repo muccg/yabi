@@ -549,7 +549,6 @@ class Credential(Base):
         have_annotated_field = any_annotated_block(*crypto_values)
         assert(not (have_unencrypted_field and have_annotated_field),
             'Internal YABI error - unencrypted and annotated data mixed in Credential object %s' % str(self))
-
         # we never allow plaintext credentials to make it into the database
         if have_unencrypted_field:
             protect = lambda v: encrypt_to_annotated_block(v, settings.SECRET_KEY)
@@ -562,15 +561,20 @@ class Credential(Base):
             access = self.get_credential_access()
             access.cache_protected_creds(self.password, self.cert, self.key)
 
-    def on_login(self, username, password):
-        """When a user logs in, convert protected credentials to encrypted credentials"""
-        if self.security_state == Credential.PLAINTEXT:
-            raise DecryptException("credential is plaintext, should be unreachable")
+    def encrypt_if_protected(self, username, password):
+        "if we have are in protected credential state, move to encrypted state while we have username and password"
         if self.security_state == Credential.PROTECTED:
             protect_to_encrypt = lambda v: encrypt_to_annotated_block(decrypt_annotated_block(v, settings.SECRET_KEY), password)
             self.password, self.cert, self.key = protect_to_encrypt(self.password), protect_to_encrypt(self.cert), protect_to_encrypt(self.key)
             self.security_state = Credential.ENCRYPTED
             self.save()
+
+    def on_login(self, username, password):
+        """When a user logs in, convert protected credentials to encrypted credentials"""
+        # reject plaintext creds (shouldn't be possible), encrypt protected creds
+        if self.security_state == Credential.PLAINTEXT:
+            raise DecryptException("credential is plaintext, should be unreachable")
+        self.encrypt_if_protected(username, password)
         # we are now guaranteed to be encrypted; but we need to make sure there's protected creds in the cache
         encrypted_to_protected = lambda v: encrypt_to_annotated_block(decrypt_annotated_block(v, password), settings.SECRET_KEY)
         access = self.get_credential_access()
