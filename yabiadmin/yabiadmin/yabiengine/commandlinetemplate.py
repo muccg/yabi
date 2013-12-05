@@ -583,8 +583,6 @@ class CommandTemplate(object):
                         # if the parameter is batch_param, we batch all the files
                         # if its not batch_param we only reference the FIRST matching file (this is legacy behavoir)
 
-                        ignore_future_matches = False               # this is for non batch_param args so we only get the first, but continue to process the rest (TODO: do we need to process the rest?)
-
                         for filename, size, date, link in file_list:
                             if ignore_file(os.path.basename(filename)):
                                 continue                        # skip this filename because it matches the glob ignore list
