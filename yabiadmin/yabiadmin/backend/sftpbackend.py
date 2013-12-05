@@ -231,7 +231,6 @@ class SFTPBackend(FSBackend):
             "files": files
         }
 
-
     def _format_stat_entry(self, entry, filename=None):
         filename = filename or entry.filename
         return [filename, entry.st_size, time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime(entry.st_mtime)), stat.S_ISLNK(entry.st_mode)]
@@ -250,24 +249,23 @@ class SFTPBackend(FSBackend):
             if entry.filename.startswith('.') and entry.filename != ENVVAR_FILENAME:
                 continue
 
-            if stat.S_ISDIR(entry.st_mode): # dir
+            if stat.S_ISDIR(entry.st_mode):  # dir
                 dirs.append(format(entry))
-            elif stat.S_ISLNK(entry.st_mode): # symlink
+            elif stat.S_ISLNK(entry.st_mode):  # symlink
                 full_path = os.path.join(path, entry.filename)
                 try:
                     target = sftp.stat(full_path)
-                except IOError, e:
+                except IOError:
                     logger.warning('Broken symlink "%s"', full_path)
                 else:
                     if stat.S_ISDIR(target.st_mode):
                         dirs.append(format(entry))
                     else:
                         files.append(format(entry))
-            else: # file
+            else:  # file
                 files.append(format(entry))
 
         return dirs, files
-
 
     def local_copy(self, src_uri, dst_uri, recursive=False):
         """Copy src_uri to dst_uri on the remote backend"""

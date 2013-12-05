@@ -256,24 +256,7 @@ SESSION_FILE_PATH = WRITABLE_DIRECTORY
 # this also ensures that files are always written to disk so we can access them via temporary_file_path
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
-
-### BACKEND ###
-# point this to the yabi backend server
-BACKEND_IP = '0.0.0.0'
-BACKEND_PORT = '9001'
-BACKEND_BASE = '/'
-TASKTAG = 'set_this'  # this must be the same in the yabi.conf for the backend that will consume tasks from this admin
-YABIBACKEND_SERVER = BACKEND_IP + ':' + BACKEND_PORT
 YABISTORE_HOME = os.path.join(WRITABLE_DIRECTORY, 'store')
-
-YABIBACKEND_COPY = '/fs/copy'
-YABIBACKEND_RCOPY = '/fs/rcopy'
-YABIBACKEND_MKDIR = '/fs/mkdir'
-YABIBACKEND_RM = '/fs/rm'
-YABIBACKEND_LIST = '/fs/ls'
-YABIBACKEND_PUT = '/fs/put'
-YABIBACKEND_GET = '/fs/get'
-YABIBACKEND_ZGET = '/fs/zget'
 
 DEFAULT_STAGEIN_DIRNAME = 'stagein/'
 

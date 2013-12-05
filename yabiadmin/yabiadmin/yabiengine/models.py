@@ -364,9 +364,7 @@ class Task(models.Model, Editable, Status):
 
         stageins = self.stagein_set.all()
         for s in stageins:
-            src_backend = backendhelper.get_fs_backend_for_uri(self.job.workflow.user.name, s.src)
             src_scheme, src_rest = uriparse(s.src)
-            dst_backend = backendhelper.get_fs_backend_for_uri(self.job.workflow.user.name, s.dst)
             dst_scheme, dst_rest = uriparse(s.dst)
 
             output["stagein"].append({"src": s.src, "dst": s.dst, "order": s.order, "method": s.method})              # method may be 'copy', 'lcopy' or 'link'

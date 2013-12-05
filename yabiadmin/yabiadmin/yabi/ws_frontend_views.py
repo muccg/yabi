@@ -72,8 +72,6 @@ logger = logging.getLogger(__name__)
 
 DATE_FORMAT = '%Y-%m-%d'
 
-BACKEND_REFUSED_CONNECTION_MESSAGE = "The backend server is refusing connections. Check that the backend server at %s on port %s is running and answering requests."%(settings.BACKEND_IP,settings.BACKEND_PORT)
-BACKEND_HOST_UNREACHABLE_MESSAGE = "The backend server is unreachable. Check that the backend server setting is correct. It is presently configured to %s."%(settings.BACKEND_IP)
 
 @authentication_required
 def tool(request, toolname):
@@ -147,37 +145,6 @@ def menu(request):
         return response
     except ObjectDoesNotExist:
         return JsonMessageResponseNotFound("Object not found")
-
-#from yabiadmin.yabiengine.backendhelper import BackendRefusedConnection, BackendHostUnreachable, PermissionDenied, FileNotFound, BackendStatusCodeError, BackendServerError
-#
-#def handle_connection(closure):
-#    try:
-#        return closure()
-#    except DecryptedCredentialNotAvailable, dcna:
-#        return JsonMessageResponseServerError(dcna)
-#    except PermissionDenied, pd:
-#        return JsonMessageResponseNotFound("You do not have permissions to access this file or directory")
-#    except FileNotFound, fnf:
-#        return JsonMessageResponseNotFound("The requested directory does not exist")
-#    except BackendServerError, bse:
-#        # the str() of the exception here contains the full traceback... not just the summary
-#        # as it was passed forwards in body of HTTP response
-#        # so we get the last full line and report it
-#        lines = str(bse).split("\n")
-#
-#        # cull blank lines on end
-#        while lines and not lines[-1]:
-#            lines = lines[:-1]
-#
-#        return JsonMessageResponseNotFound(lines[-1] if lines else "Empty bodied http 500 response from backend")
-#    except BackendStatusCodeError, bsce:
-#        return JsonMessageResponseNotFound("The yabi backend returned an inapropriate status code: %s"%(str(bsce)))
-#    except BackendRefusedConnection, e:
-#        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
-#    except BackendHostUnreachable, e:
-#        return JsonMessageResponseNotFound(BACKEND_HOST_UNREACHABLE_MESSAGE)
-#    #except Exception, e:
-#        #return JsonMessageResponseNotFound("%s::ls threw %s... %s"%(__file__,str(e.__class__),str(e)))
 
 
 @authentication_required
@@ -255,6 +222,7 @@ def rm(request):
     # TODO Forbidden, any other errors
     return HttpResponse("OK")
 
+
 @authentication_required
 def get(request, bytes=None):
     """ Returns the requested uri.  """
@@ -292,43 +260,6 @@ def get(request, bytes=None):
 
 
 @authentication_required
-def zget(request):
-    """
-    Returns the requested uri. get_file returns an httplib response wrapped in a FileIterWrapper. This can then be read
-    by HttpResponse
-    """
-    assert False, "TODO"
-#    yabiusername = request.user.username
-#    try:
-#        logger.debug("ws_frontend_views::zget() yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
-#        uri = request.GET['uri']
-#
-#        sanitised_uri = uri
-#        while sanitised_uri[-1]=='/':
-#            sanitised_uri = sanitised_uri[:-1]
-#
-#        try:
-#
-#            filename = sanitised_uri.rsplit('/', 1)[-1]+".tar.gz"
-#        except IndexError, e:
-#            logger.critical('Unable to get filename from uri: %s' % uri)
-#            filename = 'default.tar.gz'
-#
-#        response = HttpResponse(backend.zget_file(yabiusername, uri))
-#
-#        mimetypes.init([os.path.join(settings.WEBAPP_ROOT, 'mime.types')])
-#        mtype, file_encoding = mimetypes.guess_type(filename, False)
-#        if mtype is not None:
-#            response['content-type'] = mtype
-#
-#        response['content-disposition'] = 'attachment; filename=%s' % filename
-#
-#        return response
-#
-#    except BackendRefusedConnection, e:
-#        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
-
-@authentication_required
 def put(request):
     """
     Uploads a file to the supplied URI
@@ -336,39 +267,17 @@ def put(request):
     NB: if anyone changes FILE_UPLOAD_MAX_MEMORY_SIZE in the settings to be greater than zero
     this function will not work as it calls temporary_file_path
     """
-    #import socket
-    #import httplib
-
     yabiusername = request.user.username
 
     logger.debug("uri: %s" %(request.GET['uri']))
     uri = request.GET['uri']
 
-    #    bc = get_fs_backendcredential_for_uri(yabiusername, uri)
-    #    decrypt_cred = bc.credential.get()
-    #    resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))
-
-        # TODO: the following is using GET parameters to push the decrypt creds onto the backend. This will probably make them show up in the backend logs
-        # we should push them via POST parameters, or at least not log them in the backend.
-    #    resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(decrypt_cred['username']),quote(decrypt_cred['password']),quote( decrypt_cred['cert']),quote(decrypt_cred['key']))
-
-
     files = []
     for key, f in request.FILES.items():
-        #file_details = (f.name, f.name, f.temporary_file_path())
-        #files.append(file_details)
         upload_handle = backend.put_file(yabiusername, uri)
         for chunk in f.chunks():
             upload_handle.write(chunk)
         upload_handle.close()
-
-
-        # PostRequest doesn't like having leading slash on this resource, so strip it off
-        #upload_request = PostRequest(resource.strip('/'), params={}, headers={'Hmac-digest': make_hmac(resource)}, files=files)
-        #base_url = "http://%s" % settings.YABIBACKEND_SERVER
-        #http = Http(base_url=base_url, workdir=settings.WRITABLE_DIRECTORY)
-        #resp, contents = http.make_request(upload_request)
-        #http.finish_session()
 
     return HttpResponse("OK")
 
@@ -436,6 +345,7 @@ def munge_name(user, workflow_name):
 
     return munged_name
 
+
 @authentication_required
 @cache_page(20)
 def get_workflow(request, workflow_id):
@@ -459,6 +369,7 @@ def get_workflow(request, workflow_id):
     return HttpResponse(json.dumps(response),
                         mimetype='application/json')
 
+
 def workflow_to_response(workflow, key=None, parse_json=True, retrieve_tags=True):
     fmt = DATE_FORMAT
     response = {
@@ -478,6 +389,7 @@ def workflow_to_response(workflow, key=None, parse_json=True, retrieve_tags=True
         response = (getattr(workflow,key), response)
 
     return response
+
 
 @authentication_required
 def workflow_datesearch(request):
@@ -529,6 +441,7 @@ def workflow_datesearch(request):
 
     return HttpResponse(json.dumps(response), mimetype='application/json')
 
+
 @authentication_required
 def workflow_change_tags(request, id=None):
     if request.method != 'POST':
@@ -554,6 +467,7 @@ def workflow_change_tags(request, id=None):
     else:
         workflow.change_tags(taglist)
     return HttpResponse("Success")
+
 
 @authentication_required
 @profile_required
