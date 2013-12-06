@@ -71,9 +71,9 @@ class CTR(object):
         """
         returns the number of blocks in the string
         """
-        nblocks = int(math.ceil(len(s) / (1.*CTR.blocksize)))
+        nblocks = int(math.ceil(len(s) / (1. * CTR.blocksize)))
         for i in xrange(nblocks):
-            yield s[i*CTR.blocksize:(i+1)*CTR.blocksize]
+            yield s[i * CTR.blocksize:(i + 1) * CTR.blocksize]
     
     @classmethod
     def generate_counterblock(cls, block_num, nonce):
@@ -82,7 +82,7 @@ class CTR(object):
         using initial nonce `nonce'
         """
         counterblock = nonce + []
-        for i in xrange(7,-1,-1):
+        for i in xrange(7, -1, -1):
             v = (block_num / (2 ** (8*i))) & 0xFF
             counterblock.append(v)
         return counterblock
@@ -132,14 +132,13 @@ class CTR(object):
         """
         u = self.urandom.next()
         n = struct.pack('hbbbbbbh', *datetime.datetime.now().timetuple()[:-1])
-        return [ ord(x) ^ ord(y) for (x, y) in itertools.izip(u, n) ]
+        return [ord(x) ^ ord(y) for (x, y) in itertools.izip(u, n)]
     
     def encrypt(self, text, nonce=None):
         """
         encrypt a string. nonce can be provided, this should only be done 
         for testing. reuse of the same nonce is insecure.
         """
-        cipher = AES.new(self.key)
         if nonce is None:
             nonce = self.generate_nonce()
         res = nonce + self.ctr(nonce, text)
