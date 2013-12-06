@@ -47,7 +47,7 @@ install_requires = [
     'boto==2.13.3',
     'python-dateutil>=2.1,<3.0',
     'yaphc==0.1.5',
-    'pycrypto>=2.6',
+    'pycrypto==2.6.1',  # version locked as a 2.7a1 appeared in pypi
 ]
 
 dev_requires = [
