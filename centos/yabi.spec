@@ -80,7 +80,7 @@ cp build-number.txt %{buildinstalldir}/
 # yabi-admin
 cd $CCGSOURCEDIR/yabiadmin
 export PYTHONPATH=%{buildinstalldir}/lib
-python /usr/bin/easy_install -O1 --prefix %{buildinstalldir} --install-dir %{buildinstalldir}/lib -i 'https://restricted.crate.io/' .
+python /usr/bin/easy_install -O1 --prefix %{buildinstalldir} --install-dir %{buildinstalldir}/lib .
 
 # Create settings symlink so we can run collectstatic with the default settings
 touch %{settingsdir}/__init__.py
