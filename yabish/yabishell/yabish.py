@@ -1,3 +1,4 @@
+from __future__ import print_function
 from argparse import ArgumentParser
 from collections import namedtuple
 import json
@@ -11,6 +12,9 @@ from yaphc import Http, UnauthorizedError, PostRequest, GetRequest
 from yabishell import errors
 from yabishell import actions
 from yabishell.utils import human_readable_size
+from six.moves import filter
+from six.moves import map
+from six.moves import zip
 
 YABI_DEFAULT_URL = os.environ.get('YABISH_YABI_URL', 'http://localhost:8000/')
 
@@ -49,7 +53,7 @@ def main():
         if stagein:
             stagein.delete_stageindir()
 
-    except Exception, e:
+    except Exception as e:
         print_error(e, debug)
         exit_code = 1
     finally:
@@ -61,7 +65,7 @@ def main():
 def print_help():
     help_file = os.path.join(os.path.dirname(__file__), 'help/main')
     with open(help_file) as f:
-        print f.read()
+        print(f.read())
 
 class StageIn(object):
     def __init__(self, yabi, args):
@@ -84,14 +88,14 @@ class StageIn(object):
         files_to_uris = {}
         alldirs, allfiles, total_size = self.collect_files()
         stagein_dir, dir_uris = self.create_stagein_dir(alldirs)
-        print "Staging in %s in %i directories and %i files." % (
-                human_readable_size(total_size), len(alldirs), len(allfiles))
+        print("Staging in %s in %i directories and %i files." % (
+                human_readable_size(total_size), len(alldirs), len(allfiles)))
         files_to_uris.update(dir_uris)
         for f in allfiles:
             rel_path, fname = os.path.split(f.relpath)
             file_uri = self.stagein_file(f, stagein_dir + rel_path)
             files_to_uris[f.relpath] = file_uri
-        print "Staging in finished."
+        print("Staging in finished.")
         return files_to_uris
 
     def collect_files(self):
@@ -154,8 +158,8 @@ class StageIn(object):
         fname = os.path.basename(f.relpath)
         finfo = (fname, fname, f.fullpath)
         params = {}
-        print '  Staging in file: %s (%s).' % (
-                f.relpath,human_readable_size(os.path.getsize(f.fullpath)))
+        print('  Staging in file: %s (%s).' % (
+                f.relpath,human_readable_size(os.path.getsize(f.fullpath))))
         resp, json_response = self.yabi.post(uri, params, files=[finfo])
         assert resp.status == 200
         return os.path.join(stagein_dir, fname)
@@ -210,14 +214,14 @@ class Yabi(object):
             else:
                 assert False, "Method should be GET or POST"
             if self.debug:
-                print '=' * 5 + 'Making HTTP request'
+                print('=' * 5 + 'Making HTTP request')
             resp, contents = self.http.make_request(request)
             if self.debug:
-                print resp, contents
-                print '=' * 5 + 'End of HTTP request'
+                print(resp, contents)
+                print('=' * 5 + 'End of HTTP request')
         except UnauthorizedError:
             if not self.login():
-                raise StandardError("Invalid username/password")
+                raise Exception("Invalid username/password")
             resp, contents = self.http.make_request(request)
         if int(resp.status) >= 400:
             raise errors.CommunicationError(int(resp.status), url, contents)
@@ -245,13 +249,13 @@ class Yabi(object):
             self._http.finish_session()
 
 def print_version():
-    from version import __version__ 
-    print 'yabish %s' % __version__
+    from .version import __version__ 
+    print('yabish %s' % __version__)
 
 def print_error(error, debug=False):
-    print >> sys.stderr, 'An error occured: \n\t%s' % error
+    print('An error occured: \n\t%s' % error, file=sys.stderr)
     if debug:
-        print >> sys.stderr, '-' * 5 + ' DEBUG ' + '-' * 5
+        print('-' * 5 + ' DEBUG ' + '-' * 5, file=sys.stderr)
         import traceback
         traceback.print_exc()
 
@@ -278,7 +282,8 @@ class CommandLineArguments(object):
     @property
     def local_files(self):
         # if argument has "=" return right side else return argument
-        args_and_values = map(lambda a: a.split('=', 1)[1] if '=' in a else a, self.args)
+        # AH
+        args_and_values = list(map(lambda a: a.split('=', 1)[1] if '=' in a else a, self.args))
         return filter(lambda arg: os.path.isfile(arg) or os.path.isdir(arg), args_and_values)
 
     def substitute_file_urls(self, urls):
@@ -293,5 +298,6 @@ class CommandLineArguments(object):
                     if os.path.isfile(value) or os.path.isdir(value):
                         new_arg = "%s=%s" % (name, urls.get(os.path.basename(value), value))
             return new_arg 
-        self.args = map(file_to_url, self.args)
+        # AH
+        self.args = list(map(file_to_url, self.args))
 

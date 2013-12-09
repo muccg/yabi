@@ -1,3 +1,4 @@
+from __future__ import print_function
 import time
 import json
 import os
@@ -10,7 +11,11 @@ from functools import partial
 
 from yabishell import errors
 from yabishell.utils import mkdir_p, partition
-from urihelper import uriparse
+from .urihelper import uriparse
+from six.moves import filter
+from six.moves import map
+import six
+from six.moves import zip
 
 STDOUT_PATTERNS = [ r'STDOUT.txt$', 
         r""" # examples: Y123.o4567, Y123.o456.1, Y123.o456-2
@@ -71,7 +76,7 @@ class FileDownload(object):
             else:
                 with open(dest, 'w') as f:
                     f.write(contents)
-        except errors.CommunicationError, e:
+        except errors.CommunicationError as e:
             if e.status_code == 404:
                 if ignore_404:
                    return
@@ -95,7 +100,7 @@ class RemoteAction(Action):
         if not decoded_resp['success']:
             raise errors.RemoteError(decoded_resp['msg'])
 
-        print 'Running your job on the server. Id: %s' % decoded_resp['workflow_id']
+        print('Running your job on the server. Id: %s' % decoded_resp['workflow_id'])
         return decoded_resp['workflow_id']
 
     def stagein_required(self):
@@ -131,10 +136,10 @@ class Attach(Action, FileDownload):
             try:
                 resp = self.get_workflow(workflow_id)
                 status = resp.get('status', '')
-                time.sleep(gen.next())
+                time.sleep(six.advance_iterator(gen))
             except KeyboardInterrupt:
-                print
-                print "Job %s current status is '%s'" % (workflow_id, status)
+                print()
+                print("Job %s current status is '%s'" % (workflow_id, status))
                 sys.exit()
         if status.lower() == 'error':
             raise errors.RemoteError('Error running workflow')
@@ -214,7 +219,7 @@ class BackgroundRemoteAction(object):
 
     def process(self, args):
         workflow_id = self.action.process(args)
-        print "Submitted. Workflow id: %s" % workflow_id
+        print("Submitted. Workflow id: %s" % workflow_id)
 
     def stagein_required(self):
         return self.action.stagein_required()
@@ -232,7 +237,7 @@ class Logout(Action):
         if response.get('success', False):
             return True
         else:
-            print >> sys.stderr, 'Logout unsuccessful'
+            print('Logout unsuccessful', file=sys.stderr)
             return False
 
 class Login(Action):
@@ -252,7 +257,7 @@ class Login(Action):
         if response.get('success', False):
             return True
         else:
-            print >> sys.stderr, 'Login unsuccessful'
+            print('Login unsuccessful', file=sys.stderr)
             return False
 
 class Ls(Action):
@@ -274,9 +279,9 @@ class Ls(Action):
             dirname = d[0]
             if not dirname.endswith('/'):
                 dirname += "/"
-            print dirname
+            print(dirname)
         for f in files:
-            print f[0]
+            print(f[0])
 
 class Jobs(Action):
     def __init__(self, *args, **kwargs):
@@ -293,7 +298,7 @@ class Jobs(Action):
 
     def process_response(self, response):
         for job in response:
-            print '%7d  %s  %10s  %s' % (job['id'], job['created_on'], job['status'].upper(), job['name'])
+            print('%7d  %s  %10s  %s' % (job['id'], job['created_on'], job['status'].upper(), job['name']))
 
 class Status(Action):
     def __init__(self, *args, **kwargs):
@@ -308,21 +313,21 @@ class Status(Action):
 
     def process_response(self, response):
         try:
-            print "=== STATUS ==="
+            print("=== STATUS ===")
             for key in ['status', 'name', 'tags', 'id', 'created_on', 'last_modified_on']:
-                print "%s:%s" % (key, response[key])
-            print 'stageout:%s' % response['json']['jobs'][0]['stageout']
-            print "=== JOBS ==="
-            print "%4s %20s   %s" % ('ID', 'Status', 'Toolname')
-            print "=" * 80
+                print("%s:%s" % (key, response[key]))
+            print('stageout:%s' % response['json']['jobs'][0]['stageout'])
+            print("=== JOBS ===")
+            print("%4s %20s   %s" % ('ID', 'Status', 'Toolname'))
+            print("=" * 80)
             for job in response['json']['jobs']:
                 tool_name = job['toolName']
                 if len(tool_name) > 50: 
                     tool_name = tool_name[:47] + '...'
-                print "%4s %20s   %s" % (job['jobId'], job['status'], tool_name) 
+                print("%4s %20s   %s" % (job['jobId'], job['status'], tool_name)) 
 
-        except Exception, e:
-            print "Unable to load job status: %s" % e
+        except Exception as e:
+            print("Unable to load job status: %s" % e)
 
 
             
@@ -401,7 +406,7 @@ class Submitworkflow(Action):
         if not decoded_resp['id']:
             raise errors.RemoteError(decoded_resp.get('msg', 'Unknown error'))
         wfid = decoded_resp['id']
-        print 'Running your job on the server. Id: %s' % wfid
+        print('Running your job on the server. Id: %s' % wfid)
         return wfid 
 
     def process(self, args):
