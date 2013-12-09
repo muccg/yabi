@@ -282,7 +282,6 @@ class CommandLineArguments(object):
     @property
     def local_files(self):
         # if argument has "=" return right side else return argument
-        # AH
         args_and_values = list(map(lambda a: a.split('=', 1)[1] if '=' in a else a, self.args))
         return filter(lambda arg: os.path.isfile(arg) or os.path.isdir(arg), args_and_values)
 
@@ -298,6 +297,5 @@ class CommandLineArguments(object):
                     if os.path.isfile(value) or os.path.isdir(value):
                         new_arg = "%s=%s" % (name, urls.get(os.path.basename(value), value))
             return new_arg 
-        # AH
         self.args = list(map(file_to_url, self.args))
 
