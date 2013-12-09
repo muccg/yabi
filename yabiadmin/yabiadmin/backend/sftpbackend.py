@@ -3,41 +3,43 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 from yabiadmin.backend.fsbackend import FSBackend
+from yabiadmin.backend.sshexec import SSHExec
+from yabiadmin.backend.backend import fs_credential
 from yabiadmin.backend.exceptions import RetryException
-from yabiadmin.backend.parsers import parse_ls
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.backend.utils import sshclient
+from yabiadmin.constants import ENVVAR_FILENAME
 import os
-import shutil
+import errno
 import stat
-import paramiko
 import traceback
 import time
 import logging
 import threading
-import Queue
+from itertools import dropwhile
+
 logger = logging.getLogger(__name__)
 
 
@@ -60,7 +62,6 @@ class SFTPCopyThread(threading.Thread):
     def run(self):
         status = -1
         logger.debug('SFTPCopyThread {0} {1} {2}'.format(self.localpath, self.copy, self.remotepath))
-        transport = None
         try:
             logger.debug('SFTPCopyThread start copy')
             ssh = sshclient(self.hostname, self.port, self.credential)
@@ -101,34 +102,33 @@ class SFTPBackend(FSBackend):
         scheme, parts = uriparse(uri)
         assert os.path.exists(fifo)
         thread = SFTPCopyThread(host=parts.hostname,
-                            port=parts.port,
-                            credential=self.cred.credential,
-                            localpath=fifo,
-                            remotepath=parts.path,
-                            copy='put',
-                            hostkey=None,
-                            purge=fifo,
-                            queue=queue)
+                                port=parts.port,
+                                credential=self.cred.credential,
+                                localpath=fifo,
+                                remotepath=parts.path,
+                                copy='put',
+                                hostkey=None,
+                                purge=fifo,
+                                queue=queue)
         thread.start()
         return thread
 
     def remote_to_fifo(self, uri, fifo, queue=None):
         """initiate a copy from remote file to fifo"""
         scheme, parts = uriparse(uri)
-        assert  os.path.exists(fifo)
+        assert os.path.exists(fifo)
         # don't think we should purge fifo after writing, rather after reading completes
         thread = SFTPCopyThread(host=parts.hostname,
-                            port=parts.port,
-                            credential=self.cred.credential,
-                            localpath=fifo,
-                            remotepath=parts.path,
-                            copy='get',
-                            hostkey=None,
-                            purge=None,
-                            queue=queue)
+                                port=parts.port,
+                                credential=self.cred.credential,
+                                localpath=fifo,
+                                remotepath=parts.path,
+                                copy='get',
+                                hostkey=None,
+                                purge=None,
+                                queue=queue)
         thread.start()
         return thread
-
 
     # http://stackoverflow.com/questions/6674862/recursive-directory-download-with-paramiko
     def isdir(self, sftp, path):
@@ -139,20 +139,44 @@ class SFTPBackend(FSBackend):
             #Path does not exist, so by definition not a directory
             return False
 
+    def path_exists(self, sftp, path):
+        try:
+            sftp.stat(path)
+            return True
+        except IOError, e:
+            if e.errno == errno.ENOENT:  # No such file or directory
+                return False
+            else:
+                raise
+
     def mkdir(self, uri):
         """mkdir at uri"""
         self.set_cred(uri)
         scheme, parts = uriparse(uri)
+        path = parts.path
         ssh = sshclient(parts.hostname, parts.port, self.cred.credential)
         try:
             sftp = ssh.open_sftp()
             try:
-                self._rm(sftp, parts.path)
-                logger.debug("deleted existing folder %s OK" % parts.path)
-            except Exception,ex:
-                logger.debug("could not remove directory %s: %s" % (parts.path, ex))
-            sftp.mkdir(parts.path)
-            logger.debug("created dir %s OK" % parts.path)
+                self._rm(sftp, path)
+                logger.debug("deleted existing directory %s OK" % path)
+            except Exception, ex:
+                logger.debug("could not remove directory %s: %s" % (path, ex))
+
+            def full_path(result, d):
+                previous = result[-1] if result else ""
+                result.append("%s/%s" % (previous, d))
+                return result
+
+            dirs = [p for p in path.split("/") if p.strip() != '']
+            dir_full_paths = reduce(full_path, dirs, [])
+            non_existant_dirs = dropwhile(
+                lambda d: self.path_exists(sftp, d), dir_full_paths)
+
+            for d in non_existant_dirs:
+                sftp.mkdir(d)
+
+            logger.debug("created dir %s OK" % path)
 
         except Exception, exc:
             logger.error(exc)
@@ -187,124 +211,94 @@ class SFTPBackend(FSBackend):
 
     def _do_ls(self, sftp, path):
         """do an ls using sftp client at path"""
-        results = {"files": [], "directories": []}
+
+        def is_dir(path):
+            import stat
+            sftp_stat_result = sftp.stat(path)
+            return stat.S_ISDIR(sftp_stat_result.st_mode)
+
+        if is_dir(path):
+            dirs, files = self._do_ls_dir(sftp, path)
+        else:
+            dirs = []
+            file_ls = self._do_ls_file(sftp, path)
+            files = [file_ls]
+
+        dirs.sort()
+        files.sort()
+        return {
+            "directories": dirs,
+            "files": files
+        }
+
+    def _format_stat_entry(self, entry, filename=None):
+        filename = filename or entry.filename
+        return [filename, entry.st_size, time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime(entry.st_mtime)), stat.S_ISLNK(entry.st_mode)]
+
+    def _do_ls_file(self, sftp, path):
+        filename = os.path.basename(path)
+        entry = sftp.stat(path)
+        return self._format_stat_entry(entry, filename=filename)
+
+    def _do_ls_dir(self, sftp, path):
+        dirs = []
+        files = []
+        format = self._format_stat_entry
+
         for entry in sftp.listdir_attr(path):
-            # if not a hidden directory
-            if not entry.filename.startswith('.'):
-                s = sftp.stat(os.path.join(path, entry.filename))            # stat the destination of any link
-                if stat.S_ISDIR(s.st_mode):
-                    # directory
-                    results['directories'].append([entry.filename, entry.st_size, time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime(entry.st_mtime)), stat.S_ISLNK(entry.st_mode)])
+            if entry.filename.startswith('.') and entry.filename != ENVVAR_FILENAME:
+                continue
+
+            if stat.S_ISDIR(entry.st_mode):  # dir
+                dirs.append(format(entry))
+            elif stat.S_ISLNK(entry.st_mode):  # symlink
+                full_path = os.path.join(path, entry.filename)
+                try:
+                    target = sftp.stat(full_path)
+                except IOError:
+                    logger.warning('Broken symlink "%s"', full_path)
                 else:
-                    # file or symlink to directory
-                    results['files'].append([entry.filename, entry.st_size, time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime(entry.st_mtime)), stat.S_ISLNK(entry.st_mode)])
+                    if stat.S_ISDIR(target.st_mode):
+                        dirs.append(format(entry))
+                    else:
+                        files.append(format(entry))
+            else:  # file
+                files.append(format(entry))
 
-        # sort entries
-        results['directories'].sort()
-        results['files'].sort()
+        return dirs, files
 
-        return results
-
-    def ls_recursive(self, uri):
-        """recursively ls at uri"""
-        self.set_cred(uri)
-        scheme, parts = uriparse(uri)
-        output = {"files": [], "directories": []}
-        ssh = sshclient(parts.hostname, parts.port, self.cred.credential)
-        try:
-            sftp = ssh.open_sftp()
-            output = self._do_stat(sftp, parts.path) or self._do_ls_r(sftp, parts.path, {})
-        except Exception, exc:
-            logger.error(exc)
-            raise RetryException(exc, traceback.format_exc())
-        finally:
-            try:
-                if ssh is not None:
-                    ssh.close()
-            except:
-                pass
-
-        return output
-
-    def _do_ls_r(self, sftp, path, output):
-        """recursively do an ls"""
-        try:
-            results = self._do_ls(sftp, path)
-        except IOError, ioe:
-            logger.warning(ioe)
-            # permissions...
-            return output
-        output[path] = results
-
-        for filename, size, date, link in results['directories']:
-            self._do_ls_r(sftp, os.path.join(path, filename), output)
-
-        return output
-
-    def _do_stat(self, sftp, path):
-        """stat a path using sftp client"""
-        try:
-            lresult = sftp.lstat(path)
-        except IOError, ioe:
-            logger.error(ioe)
-            raise
-
-        result = sftp.stat(path)
-        if stat.S_ISREG(result.st_mode):
-            # regular file
-            output = {
-                'directories': [],
-                'files': [
-                    [path.rsplit('/', 1)[-1], lresult.st_size, time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime(lresult.st_mtime)), stat.S_ISLNK(lresult.st_mode)]
-                ]
-            }
-
-            return {path: output}
-        return None
-
-    def local_copy(self, src_uri, dst_uri):
+    def local_copy(self, src_uri, dst_uri, recursive=False):
         """Copy src_uri to dst_uri on the remote backend"""
-        logger.debug("SFTPBackend.local_copy: %s => %s" % (src_uri, dst_uri))
-        assert False, "TODO"
-
+        logger.debug("SFTPBackend.local_copy(recursive=%s): %s => %s",
+                     recursive, src_uri, dst_uri)
         src_scheme, src_parts = uriparse(src_uri)
         dst_scheme, dst_parts = uriparse(dst_uri)
         logger.debug('{0} -> {1}'.format(src_uri, dst_uri))
+        # Given paramiko does not support local copy, we
+        # use cp on server via exec backend
+        executer = create_executer(self.yabiusername, src_uri)
         try:
-            shutil.copy2(src_parts.path, dst_parts.path)
+            executer.local_copy(src_parts.path, dst_parts.path, recursive)
         except Exception, exc:
             raise RetryException(exc, traceback.format_exc())
 
     def local_copy_recursive(self, src_uri, dst_uri):
         """recursively copy src_uri to dst_uri on the remote backend"""
-        logger.debug("SFTPBackend.local_copy_recursive: %s => %s" % (src_uri, dst_uri))
-        assert False, "TODO"
+        self.local_copy(src_uri, dst_uri, recursive=True)
 
+    def symbolic_link(self, src_uri, dst_uri):
+        """symbolic link to target_uri called link_uri."""
+        logger.debug("SFTPBackend.symbolic_link: %s => %s",
+                     src_uri, dst_uri)
         src_scheme, src_parts = uriparse(src_uri)
         dst_scheme, dst_parts = uriparse(dst_uri)
         logger.debug('{0} -> {1}'.format(src_uri, dst_uri))
-        try:
-            shutil.copytree(src_parts.path, dst_parts.path)
-        except Exception, exc:
-            raise RetryException(exc, traceback.format_exc())
 
-    def symbolic_link(self, target_uri, link_uri):
-        """symbolic link to target_uri called link_uri."""
-        logger.debug('{0}'.format(parts.path))
-        target_scheme, target_parts = uriparse(target_uri)
-        link_scheme, link_parts = uriparse(link_uri)
-        ssh = sshclient(target_parts.hostname, target_parts.port, self.cred.credential)
+        executer = create_executer(self.yabiusername, src_uri)
         try:
-            sftp = ssh.open_sftp()
-            sftp.symlink(target_parts.path, link_parts.path)
+            executer.local_symlink(src_parts.path, dst_parts.path)
         except Exception, exc:
             raise RetryException(exc, traceback.format_exc())
-        finally:
-            try:
-                if ssh is not None:
-                    ssh.close()
-            except:
-                pass
 
     def rm(self, uri):
         """recursively delete a uri"""
@@ -328,11 +322,54 @@ class SFTPBackend(FSBackend):
         if self.isdir(sftp, path):
             for filename in sftp.listdir(path):
                 filepath = os.path.join(path, filename)
-                self._rm(sftp, filepath)        
+                self._rm(sftp, filepath)
             sftp.rmdir(path)
         else:
             sftp.remove(path)
 
-    def set_cred(self, uri):
-        from yabiadmin.backend.backend import fs_credential
-        self.cred = fs_credential(self.yabiusername, uri)
+
+def create_executer(yabiusername, sftp_uri):
+    cred = fs_credential(yabiusername, sftp_uri)
+    return SSHLocalCopyAndLinkExecuter(sftp_uri, cred.credential)
+
+
+class SSHLocalCopyAndLinkExecuter(object):
+
+    COPY_COMMAND_TEMPLATE = """
+#!/bin/sh
+cp "{0}" "{1}"
+"""
+
+    COPY_RECURSIVE_COMMAND_TEMPLATE = """
+#!/bin/sh
+cp -r "{0}/"* "{1}"
+"""
+
+    SYMLINK_COMMAND_TEMPLATE = """
+#!/bin/sh
+ln -s "{0}" "{1}"
+"""
+
+    def __init__(self, uri, credential):
+        self.executer = SSHExec(uri, credential)
+
+    def local_copy(self, src, dest, recursive=False):
+        logger.debug('SSH Local Copy %s => %s', src, dest)
+        if recursive:
+            cmd = self.COPY_RECURSIVE_COMMAND_TEMPLATE.format(src, dest)
+        else:
+            cmd = self.COPY_COMMAND_TEMPLATE.format(src, dest)
+        exit_code, stdout, stderr = self.executer.exec_script(cmd)
+        if exit_code > 0 or stderr:
+            raise RuntimeError("Couldn't (recursive=%s) copy %s to %s. Exit code: %s. STDERR:\n%s" % (
+                recursive, src, dest, exit_code, stderr))
+        return True
+
+    def local_symlink(self, src, dest):
+        logger.debug('SSH Local Symlink %s => %s', src, dest)
+        cmd = self.SYMLINK_COMMAND_TEMPLATE.format(src, dest)
+        exit_code, stdout, stderr = self.executer.exec_script(cmd)
+        if exit_code > 0 or stderr:
+            raise RuntimeError("Couldn't symlink %s to %s. Exit code: %s. STDERR:\n%s" % (
+                src, dest, exit_code, stderr()))
+        return True

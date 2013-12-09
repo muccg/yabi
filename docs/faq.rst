@@ -16,7 +16,7 @@ writable and readable by Yabi?
 What backend should a file select tool use or why won't my file select run?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You have run into an evolutionary quirk of Yabi. See :ref:`nullbackend`. If you set up Yabi from the Google Code repository
+You have run into an evolutionary quirk of Yabi. See :ref:`nullbackend`. If you set up Yabi from our code repository
 you will find a `file select` tool was installed by default for you to use.
 
 What is the default stageout field for?
@@ -73,17 +73,6 @@ user's password for the backend resource.
 we can also check in the admin under Yabi Users whether we can access the backend (see :ref:`viewing_a_users_setup`).
 
 Using just a password for ssh (not a private key) should be the same steps.
-
-.. _known_hosts:
-
-I seem to have SSH backend setup but am getting nothing, why?
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-When a connection is first made to an unknown SSH backend, it will be denied. This is because the SSH Host Key sent by the server is unknown.
-Yabi stores its known host keys inside its database. It **does not** utilise the system ``~/.ssh/known_hosts`` file at all. After the initial connection
-is refused, you may go to the Known Hosts section of yabi admin. Here you will see the denied key and its fingerprint. Verify the fingerprint,
-and if it is correct, mark the key as accepted. Do this by clicking on the hostname portion of the line to take yourself to the Host Key editing page.
-Then mark the *Accepted* checkbox. Then click *Save*. Now try reconnecting to the server via Yabi.
 
 How do I get symlinking working?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

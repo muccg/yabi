@@ -4,65 +4,38 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-from django.conf import settings
 from django.utils import simplejson as json
-#import httplib
-#import socket
-#import errno
 import os
-from os.path import splitext, normpath
-from urllib import urlencode, quote
-from yabiadmin.yabiengine.urihelper import uriparse, get_backend_userdir
+from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.yabi.models import Backend, BackendCredential
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
-from django.core.servers.basehttp import FileWrapper
+from django.core.exceptions import ObjectDoesNotExist
 from yabiadmin.constants import EXEC_SCHEMES, FS_SCHEMES
-
-#class BackendRefusedConnection(Exception):
-#    pass
-#
-#class BackendHostUnreachable(Exception):
-#    pass
-#
-#class PermissionDenied(Exception):
-#    pass
-#
-#class FileNotFound(Exception):
-#    pass
-#
-#class BackendServerError(Exception):
-#    """A 500 from the backend"""
-#    pass
-#
-#class BackendStatusCodeError(Exception):
-#    pass
-
-
 import logging
 logger = logging.getLogger(__name__)
-  
+
+
 def get_backend_by_uri(uri):
     """
     Looks up a backend object purely by uri. Ignored username. Thus diesnt consider credentials.
@@ -71,21 +44,23 @@ def get_backend_by_uri(uri):
     schema, rest = uriparse(uri)
     netloc = rest.netloc
     if ':' in netloc:
-        host,port = netloc.split(':')
+        host, port = netloc.split(':')
     else:
-        host,port = netloc, None
-    
+        host, port = netloc, None
+
     return Backend.objects.filter(scheme=schema, hostname=host, port=port)
-    
+
+
 def get_hostkeys_by_uri(uri):
     return Backend.objects.filter(backend__in=get_backend_by_uri(uri))
+
 
 def get_exec_backendcredential_for_uri(yabiusername, uri):
     """
     Looks up a backend credential based on the supplied uri, which should include a username.
     Returns bc, will log and reraise ObjectDoesNotExist and MultipleObjectsReturned exceptions if more than one credential
     """
-    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
+    logger.debug('yabiusername: %s uri: %s' % (yabiusername, uri))
 
     # parse the URI into chunks
     schema, rest = uriparse(uri)
@@ -93,31 +68,32 @@ def get_exec_backendcredential_for_uri(yabiusername, uri):
     # enforce Exec scehmas only
     if schema not in EXEC_SCHEMES:
         logger.error("get_exec_backendcredential_for_uri was asked to get an fs schema! This is forbidden.")
-        raise ValueError("Invalid schema in uri passed to get_exec_backendcredential_for_uri: asked for %s"%schema)
-    
+        raise ValueError("Invalid schema in uri passed to get_exec_backendcredential_for_uri: asked for %s" % schema)
+
     path = rest.path
-    if path!="/":
+    if path != "/":
         logger.error("get_exec_backendcredential_for_uri was passed a uri with a path! This is forbidden. Path must be / for exec backends")
-        raise ValueError("Invalid path in uri passed to get_exec_backendcredential_for_uri: path passed in was: %s"%path)
+        raise ValueError("Invalid path in uri passed to get_exec_backendcredential_for_uri: path passed in was: %s" % path)
 
     # get our set of credential candidates
     bcs = BackendCredential.objects.filter(credential__user__name=yabiusername,
                                            backend__scheme=schema,
                                            credential__username=rest.username,
                                            backend__hostname=rest.hostname)
-    
+
     # there must only be one valid exec credential
-    if len(bcs)==1:
+    if len(bcs) == 1:
         return bcs[0]
-    
+
     raise ObjectDoesNotExist("Could not find backendcredential")
-    
+
+
 def get_fs_backendcredential_for_uri(yabiusername, uri):
     """
     Looks up a backend credential based on the supplied uri, which should include a username.
     Returns bc, will log and reraise ObjectDoesNotExist and MultipleObjectsReturned exceptions if more than one credential
     """
-    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
+    logger.debug('yabiusername: %s uri: %s' % (yabiusername, uri))
 
     # parse the URI into chunks
     schema, rest = uriparse(uri)
@@ -125,8 +101,8 @@ def get_fs_backendcredential_for_uri(yabiusername, uri):
     # enforce FS scehmas only
     if schema not in FS_SCHEMES:
         logger.error("get_fs_backendcredential_for_uri was asked to get an executions schema! This is forbidden.")
-        raise ValueError("Invalid schema in uri passed to get_fs_backendcredential_for_uri: schema passed in was %s"%schema)
-    
+        raise ValueError("Invalid schema in uri passed to get_fs_backendcredential_for_uri: schema passed in was %s" % schema)
+
     path = os.path.normpath(rest.path)                      # normalise path to get rid of ../../ style exploits
 
     # get our set of credential candidates
@@ -134,9 +110,9 @@ def get_fs_backendcredential_for_uri(yabiusername, uri):
                                            backend__scheme=schema,
                                            credential__username=rest.username,
                                            backend__hostname=rest.hostname)
-    
+
     logger.debug("potential credentials [%s]" % (",".join([str(x) for x in bcs])))
-    
+
     # lets look at the paths for these to find candidates
     cred = None
     for bc in bcs:
@@ -157,249 +133,39 @@ def get_fs_backendcredential_for_uri(yabiusername, uri):
             elif len(checkpath) > len(os.path.join(cred.backend.path, cred.homedir)):
                 logger.debug("cred {0} {1} {2}".format(bc.id, bc.backend.path, bc.homedir))
                 cred = bc
-            
+
     if not cred:
         raise ObjectDoesNotExist("Could not find backendcredential")
-    
+
     logger.info("chose cred {0} {1} {2}".format(cred.id, cred.backend.path, cred.homedir))
     return cred
-    
+
+
 def get_fs_credential_for_uri(yabiusername, uri):
-    return get_fs_backendcredential_for_uri(yabiusername,uri).credential
-    
+    return get_fs_backendcredential_for_uri(yabiusername, uri).credential
+
+
 def get_fs_backend_for_uri(yabiusername, uri):
-    return get_fs_backendcredential_for_uri(yabiusername,uri).backend
+    return get_fs_backendcredential_for_uri(yabiusername, uri).backend
+
 
 def get_exec_credential_for_uri(yabiusername, uri):
-    return get_exec_backendcredential_for_uri(yabiusername,uri).credential
-    
+    return get_exec_backendcredential_for_uri(yabiusername, uri).credential
+
+
 def get_exec_backend_for_uri(yabiusername, uri):
-    return get_exec_backendcredential_for_uri(yabiusername,uri).backend
+    return get_exec_backendcredential_for_uri(yabiusername, uri).backend
 
-#import hmac
-#
-#def make_hmac(uri):
-#    """Make the hash value for a passed in uri"""
-#    hmac_digest = hmac.new(settings.HMAC_KEY)
-#    hmac_digest.update(uri)
-#    return hmac_digest.hexdigest()
-    
-#def POST(resource, datadict, extraheaders={}, server=None):
-#    """Do a x-www-form-urlencoded style POST. That is NOT a file upload style"""
-#    data = urlencode(datadict)
-#    headers = {"Content-type": "application/x-www-form-urlencoded", "Accept": "text/plain", "Hmac-digest":make_hmac(resource)}
-#    headers.update(extraheaders)
-#    server = server if server else settings.YABIBACKEND_SERVER
-#    conn = httplib.HTTPConnection(server)
-#    conn.request('POST', resource, data, headers)
-#    logger.debug("resource: %s headers: %s"%(resource,headers))
-#    return conn.getresponse()
-
-#def get_file_list(yabiusername, uri, recurse=True):
-#    """
-#    Return a list of file tuples
-#    """
-#    logger.debug('backendhelper::get_file_list() yabiusername: %s uri: %s'%(yabiusername,uri))
-#
-#    try:
-#        resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, quote(uri))
-#        if recurse:
-#            resource += "&recurse"
-#        logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-#
-#        bc = get_fs_backendcredential_for_uri(yabiusername, uri)
-#        data = bc.credential.get()
-#        
-#        r = POST(resource,data)
-#       
-#        # TODO Code path relies on not always getting a 200 from the backend, so we cant assert 200
-#
-#        file_list = []
-#        if r.status == 200:
-#
-#            results = json.loads(r.read())
-#            
-#            logger.debug("json: %s" % results)
-#            shortpath=reduce(lambda x,y: x if len(x)<len(y) else y,results.keys())
-#            spl = len(shortpath)
-#            
-#            for key in results.keys():
-#                for file in results[key]["files"]:
-#                    file_list.append([os.path.join(key[spl:],file[0])]+file[1:])
-#
-#        logger.info("returning: %s" % file_list)
-#        return file_list
-# 
-#    except socket.error, e:
-#        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
-#        raise
-#    except httplib.CannotSendRequest, e:
-#        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
-#        raise
-
-
-
-#def get_first_matching_file(yabiusername, uri, extension_list):
-#    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
-#
-#    file_list = get_file_list(yabiusername, uri, recurse=True)
-#    filename = None
-#
-#    # TODO similar code to is_task_file_valid on EngineJob, can we combine?
-#    for f in file_list:
-#        if (splitext(f[0])[1].strip('.') in extension_list) or ('*' in extension_list):
-#            filename = f[0]
-#            break
-#
-#    return filename
-        
-#def handle_connection(func,*args,**kwargs):
-#    try:
-#        r = func(*args, **kwargs)
-#    except socket.error, e:
-#        if e.errno==errno.ECONNREFUSED:
-#            logger.critical("Error connecting to Backend server %s: %s. Connection refused. Is the backend running? Are we configured to call it correctly?" % (settings.YABIBACKEND_SERVER, e))
-#            raise BackendRefusedConnection(e)
-#        elif e.errno==errno.EHOSTUNREACH:
-#            logger.critical("Error connecting to Backend server %s: %s. No route to host. Is yabi admin's backend setting correct?" % (settings.YABIBACKEND_SERVER, e))
-#            raise BackendHostUnreachable(e)
-#        
-#        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e))
-#        raise
-#    except httplib.CannotSendRequest, e:
-#        logger.critical("Error connecting to %s: %s" % (settings.YABIBACKEND_SERVER, e.message))
-#        raise
-#    
-#    if r.status != 200:
-#        # try and process the error and then raise a sane exception
-#        if r.status == 403:
-#            # forbidden
-#            raise PermissionDenied("Access denied: You do not have sufficient permissions to access the resource.")
-#        elif r.status == 404:
-#            # not found
-#            raise FileNotFound("File or directory not found.")
-#        elif r.status == 500:
-#            # server error. Report the error forwards
-#            raise BackendServerError(r.read())
-#        else:
-#            # other error
-#            raise BackendStatusCodeError("Request to backend for resource: %s returned unhandled status code: %d" % (args[0],r.status))
-#        
-#    return r
-
-#def get_listing(yabiusername, uri, recurse=False):
-#    """
-#    Return a listing from backend
-#    """
-#    # clean up any trailing double slashes that will confuse s3 or key-based storage systems
-#    if uri.endswith('//'):
-#        uri = uri[0:len(uri)-1]
-#        
-#    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
-#    resource = "%s?uri=%s" % (settings.YABIBACKEND_LIST, quote(uri))
-#    if recurse:
-#        resource += '&recurse=true'
-#    logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-#    bc = get_fs_backendcredential_for_uri(yabiusername, uri)
-#    data = bc.credential.get()
-#    return handle_connection(POST,resource,data).read()
-    
-#def mkdir(yabiusername, uri):
-#    """
-#    Make a directory via the backend
-#    """
-#    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
-#    resource = "%s?uri=%s" % (settings.YABIBACKEND_MKDIR, quote(uri))
-#    logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-#    return handle_connection(POST,resource, get_fs_credential_for_uri(yabiusername, uri).get()).read()
 
 def get_backend_list(yabiusername):
     """
-    Returns a list of backends for user, returns in json as the plain list is passed to the
-    twisted backend which returns json
+    Returns a list of backends for user, returns in json
     """
-    logger.debug('yabiusername: %s'%(yabiusername))
+    logger.debug('yabiusername: %s' % (yabiusername))
 
-    try:
+    results = {yabiusername: {'files': [], 'directories': []}}
 
-        results = { yabiusername: {'files':[], 'directories':[] }}
+    for bc in BackendCredential.objects.filter(credential__user__name=yabiusername, visible=True):
+        results[yabiusername]['directories'].append([bc.homedir_uri, 0, ''])
 
-        for bc in BackendCredential.objects.filter(credential__user__name=yabiusername, visible=True):
-            results[yabiusername]['directories'].append([bc.homedir_uri, 0, ''])
-
-        return json.dumps(results)
-
-    except ObjectDoesNotExist, e:
-        logger.critical("ObjectDoesNotExist for uri: %s" % uri)
-        logger.critical("Scheme: %s" % scheme)
-        logger.critical("Hostname: %s" % parts.hostname)
-        raise
-
-#def get_file(yabiusername, uri, bytes=None):
-#    """
-#    Return a file at given uri
-#    """
-#    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
-#    resource = "%s?uri=%s" % (settings.YABIBACKEND_GET, quote(uri))
-#    if bytes is not None:
-#        resource += "&bytes=%d" % int(bytes)
-#
-#    logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-#    
-#    result = handle_connection(POST,resource,get_fs_credential_for_uri(yabiusername, uri).get())
-#    return FileWrapper(result, blksize=1024**2)
-
-#def zget_file(yabiusername, uri):
-#    """
-#    Return a file at given uri
-#    """
-#    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
-#    resource = "%s?uri=%s" % (settings.YABIBACKEND_ZGET, quote(uri))
-#    logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-#    
-#    result = handle_connection(POST,resource,get_fs_credential_for_uri(yabiusername, uri).get())
-#    return FileWrapper(result, blksize=1024**2)
-
-#def rm_file(yabiusername, uri):
-#    """
-#    Return a file at given uri
-#    """
-#    logger.debug('yabiusername: %s uri: %s'%(yabiusername,uri))
-#    recurse = '&recurse' if uri[-1]=='/' else ''
-#    resource = "%s?uri=%s%s" % (settings.YABIBACKEND_RM, quote(uri),recurse)
-#    logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-#    r = handle_connection(POST,resource,get_fs_credential_for_uri(yabiusername, uri).get())
-#    return r.status, r.read()
-
-#def copy_file(yabiusername, src, dst):
-#    """Send a request to the backend to perform the specified file copy"""
-#    logger.debug('copy_file yabiusername: %s src: %s dst: %s'%(yabiusername,src,dst))
-#        
-#    resource = "%s?src=%s&dst=%s" % (settings.YABIBACKEND_COPY, quote(src), quote(dst))
-#    logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-#
-#    # get credentials for src and destination backend
-#    src = get_fs_credential_for_uri(yabiusername, src).get()
-#    dst = get_fs_credential_for_uri(yabiusername, dst).get()
-#    data = {'yabiusername':yabiusername}
-#    data.update( dict( [("src_"+K,V) for K,V in src.iteritems()] ))
-#    data.update( dict( [("dst_"+K,V) for K,V in dst.iteritems()] ))
-#    r = handle_connection(POST,resource,data)
-#    return r.status, r.read()
-
-#def rcopy_file(yabiusername, src, dst):
-#    """Send a request to the backend to perform the specified file copy"""
-#    logger.debug('rcopy_file yabiusername: %s src: %s dst: %s'%(yabiusername,src,dst))
-#    
-#    resource = "%s?src=%s&dst=%s" % (settings.YABIBACKEND_RCOPY, quote(src), quote(dst))
-#    logger.debug('server: %s resource: %s' % (settings.YABIBACKEND_SERVER, resource))
-#
-#    # get credentials for src and destination backend
-#    src = get_fs_credential_for_uri(yabiusername, src).get()
-#    dst = get_fs_credential_for_uri(yabiusername, dst).get()
-#    data = {'yabiusername':yabiusername}
-#    data.update( dict( [("src_"+K,V) for K,V in src.iteritems()] ))
-#    data.update( dict( [("dst_"+K,V) for K,V in dst.iteritems()] ))
-#    r = handle_connection(POST,resource,data)
-#    data=r.read()
-#    return r.status, data
+    return json.dumps(results)

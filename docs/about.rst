@@ -15,7 +15,7 @@ Yabi has a few key features:
 
  - simplified web based access to High Performance Computing
  - easy tool addition and maintenance
- - handling of disparate compute and storage resouces ie PBSPro, Globus, GridFTP, SSH, Amazon S3
+ - handling of disparate compute and storage resouces ie PBSPro, SSH, Amazon S3
  - easy and powerful workflow creation environment
 
 
@@ -41,9 +41,6 @@ The diagram below is an overview of the Yabi architecture. There are three main 
  * The Yabi Application
  * The Yabi Backend (Yabi Resouce Manager)
 
-Theses are explained below in more detail.
-
-.. image:: images/yabi-arch.png
 
 Client
 ^^^^^^
@@ -74,8 +71,8 @@ internal network if access over the Internet is not desired.
 Yabi Backend
 ^^^^^^^^^^^^
 
-Yabi Backend is a backend server daemon written in which makes use of the Twisted  Python networking stack. It runs as a dedicated non-root user 
-and is **not** intended to be network accessible by users.
+The Yabi Backend Server makes use of the Celery Task Engine to queue user jobs before distribution to the appropriate execution backend via
+a message broker ( typically RabbitMQ but this is configurable.)
 
 The Yabi Backend server is responsible for the communication with individual data and compute resources.
 
@@ -86,7 +83,8 @@ GNU GPL v3 for non-commercial use only. Please contact the Centre for Comparativ
 Authors
 -------
 Yabi is developed at the `Center for Comparative Genomics <http://ccg.murdoch.edu.au>`_ at `Murdoch University <http://www.murdoch.edu.au>`_ under the direction 
-of Professor Matthew Bellgard. Developers working on the project are Adam Hunter, Andrew Macgregor, Crispin Wellington and Tamas Szabo.
+of Professor Matthew Bellgard. Developers working on the project are Adam Hunter, Tamas Szabo and Lee Render with
+acknowledgements to Andrew Macgregor and Crispin Wellington.
 
 Acknowledgements
 ----------------

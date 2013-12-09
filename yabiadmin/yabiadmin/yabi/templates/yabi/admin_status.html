@@ -1,0 +1,42 @@
+{% extends "admin/base_site_mako.html" %}
+{% load dynamic_lookups %}
+{% load as_sorted %}
+
+{% block block_title %}{{title}} | Yabi site admin{% endblock %}
+
+{% block block_branding %}
+<h1 id="site-name">Yabi Administration</h1>
+{% endblock %}
+
+{% block block_content %}
+
+{% if celery_procs %}
+      {% for item in celery_procs %}
+        <td>{{item.pid}}</td>
+        <td>{{item.name}}</td>
+        <td>{{item.cmdline|join:" "}}</td>
+      {% endfor %}
+{% else %}
+{% endif %}
+<h2>Settings</h2>
+
+<table>
+<tr>
+<th>Key</th>
+<th>Value</th>
+</tr>
+
+{% for key in settings.keys|as_sorted %}
+<tr>
+<td>{{key}}</td>
+<td>{{settings|lookup:key}}</td>
+</tr>
+{% endfor %}
+</table>
+
+
+
+{% endblock %}
+
+{% block block_nav_global %}
+{% endblock %}

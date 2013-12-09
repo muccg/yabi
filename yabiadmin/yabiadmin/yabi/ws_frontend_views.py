@@ -4,75 +4,60 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 import mimetypes
-import uuid
 import os
 import re
-
 from datetime import datetime, timedelta
-from urllib import quote, unquote
+from urllib import unquote
 from urlparse import urlparse, urlunparse
 
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseForbidden, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError, Http404
-from django.shortcuts import render_to_response, get_object_or_404
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError
 from django.core.exceptions import ObjectDoesNotExist
-from yabiadmin.yabi.models import User, ToolGrouping, ToolGroup, Tool, ToolParameter, Credential, Backend, ToolSet, BackendCredential
-from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
-from ccg.utils import webhelpers
+from yabiadmin.yabi.models import User, ToolGrouping, Tool, Credential, ToolSet, BackendCredential
 from django.utils import simplejson as json
-from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from django.contrib import auth
-from yabiadmin.crypto_utils import DecryptException
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
 from django.core.servers.basehttp import FileWrapper
-
-from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.backend.celerytasks import process_workflow
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import WorkflowTag
-# TODO
-#from yabiadmin.yabiengine.backendhelper import make_hmac, get_fs_backendcredential_for_uri
 from yabiadmin.responses import *
 from yabiadmin.decorators import authentication_required, profile_required
 from yabiadmin.yabistoreapp import db
 from yabiadmin.utils import cache_keyname
-from yaphc import Http, PostRequest, UnauthorizedError
 from yabiadmin.backend import backend
+from yabiadmin.backend.exceptions import FileNotFoundError
 
 import logging
 logger = logging.getLogger(__name__)
 
 DATE_FORMAT = '%Y-%m-%d'
 
-BACKEND_REFUSED_CONNECTION_MESSAGE = "The backend server is refusing connections. Check that the backend server at %s on port %s is running and answering requests."%(settings.BACKEND_IP,settings.BACKEND_PORT) 
-BACKEND_HOST_UNREACHABLE_MESSAGE = "The backend server is unreachable. Check that the backend server setting is correct. It is presently configured to %s."%(settings.BACKEND_IP) 
 
 @authentication_required
 def tool(request, toolname):
@@ -93,6 +78,7 @@ def tool(request, toolname):
     except ObjectDoesNotExist:
         return JsonMessageResponseNotFound("Object not found")
 
+
 @authentication_required
 @cache_page(300)
 @vary_on_cookie
@@ -111,14 +97,14 @@ def menu(request):
                     if not tool:
                         tool["name"] = toolgroup.tool.name
                         tool["displayName"] = toolgroup.tool.display_name
-                        tool["description"] = toolgroup.tool.description                
+                        tool["description"] = toolgroup.tool.description
                         tool["outputExtensions"] = toolgroup.tool.output_filetype_extensions()
                         tool["inputExtensions"] = toolgroup.tool.input_filetype_extensions()
 
         # from here down is getting the tools into a form
         # used by the front end so no changes are needed there
         # toolsets are dev, marine science, ccg etc, not used on the front end
-        # toolgroups are for example genomics, select data, mapreduce        
+        # toolgroups are for example genomics, select data, mapreduce
         output = {}
         output['menu'] = {}
         output['menu']['toolsets'] = []
@@ -128,7 +114,6 @@ def menu(request):
 
         all_tools_toolset["name"] = 'all_tools'
         all_tools_toolset["toolgroups"] = []
-
 
         for key in sorted(all_tools.iterkeys()):
             toolgroup = all_tools[key]
@@ -147,37 +132,6 @@ def menu(request):
     except ObjectDoesNotExist:
         return JsonMessageResponseNotFound("Object not found")
 
-#from yabiadmin.yabiengine.backendhelper import BackendRefusedConnection, BackendHostUnreachable, PermissionDenied, FileNotFound, BackendStatusCodeError, BackendServerError
-#
-#def handle_connection(closure):
-#    try:
-#        return closure()
-#    except DecryptedCredentialNotAvailable, dcna:
-#        return JsonMessageResponseServerError(dcna)
-#    except PermissionDenied, pd:
-#        return JsonMessageResponseNotFound("You do not have permissions to access this file or directory")
-#    except FileNotFound, fnf:
-#        return JsonMessageResponseNotFound("The requested directory does not exist")
-#    except BackendServerError, bse:
-#        # the str() of the exception here contains the full traceback... not just the summary
-#        # as it was passed forwards in body of HTTP response
-#        # so we get the last full line and report it
-#        lines = str(bse).split("\n")
-#        
-#        # cull blank lines on end
-#        while lines and not lines[-1]:
-#            lines = lines[:-1]
-#            
-#        return JsonMessageResponseNotFound(lines[-1] if lines else "Empty bodied http 500 response from backend")
-#    except BackendStatusCodeError, bsce:
-#        return JsonMessageResponseNotFound("The yabi backend returned an inapropriate status code: %s"%(str(bsce)))
-#    except BackendRefusedConnection, e:
-#        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
-#    except BackendHostUnreachable, e:
-#        return JsonMessageResponseNotFound(BACKEND_HOST_UNREACHABLE_MESSAGE)
-#    #except Exception, e:
-#        #return JsonMessageResponseNotFound("%s::ls threw %s... %s"%(__file__,str(e.__class__),str(e)))
-        
 
 @authentication_required
 def ls(request):
@@ -202,20 +156,20 @@ def copy(request):
     This function will instantiate a copy on the backend for this user
     """
     yabiusername = request.user.username
-    
-    src,dst = request.GET['src'],request.GET['dst']
+
+    src, dst = request.GET['src'], request.GET['dst']
 
     # check that src does not match dst
     srcpath, srcfile = src.rsplit('/', 1)
     assert srcpath != dst, "dst must not be the same as src"
-        
+
     # src must not be directory
-    assert src[-1]!='/', "src malformed. Either no length or not trailing with slash '/'"
+    assert src[-1] != '/', "src malformed. Either no length or not trailing with slash '/'"
     # TODO: This needs to be fixed in the FRONTEND, by sending the right url through as destination. For now we just make sure it ends in a slash
-    if dst[-1]!='/':
+    if dst[-1] != '/':
         dst += '/'
-    logger.debug("yabiusername: %s src: %s -> dst: %s" %(yabiusername, src, dst))
-        
+    logger.debug("yabiusername: %s src: %s -> dst: %s" % (yabiusername, src, dst))
+
     backend.copy_file(yabiusername, src, dst)
 
     return HttpResponse("OK")
@@ -227,44 +181,45 @@ def rcopy(request):
     This function will instantiate a rcopy on the backend for this user
     """
     yabiusername = request.user.username
-        
-    src,dst = unquote(request.REQUEST['src']), unquote(request.REQUEST['dst'])
+
+    src, dst = unquote(request.REQUEST['src']), unquote(request.REQUEST['dst'])
 
     # check that src does not match dst
     srcpath, srcfile = src.rstrip('/').rsplit('/', 1)
     assert srcpath != dst, "dst must not be the same as src"
-        
+
     # src must be directory
     #assert src[-1]=='/', "src malformed. Not directory."
     # TODO: This needs to be fixed in the FRONTEND, by sending the right url through as destination. For now we just make sure it ends in a slash
-    if dst[-1]!='/':
+    if dst[-1] != '/':
         dst += '/'
-    logger.debug("yabiusername: %s src: %s -> dst: %s" %(yabiusername, src, dst))
-        
+    logger.debug("yabiusername: %s src: %s -> dst: %s" % (yabiusername, src, dst))
+
     backend.rcopy_file(yabiusername, src, dst)
 
     return HttpResponse("OK")
 
-   
+
 @authentication_required
 def rm(request):
     yabiusername = request.user.username
     logger.debug("yabiusername: %s uri: %s" % (yabiusername, request.GET['uri']))
-    backend.rm_file(yabiusername,request.GET['uri'])
+    backend.rm_file(yabiusername, request.GET['uri'])
     # TODO Forbidden, any other errors
     return HttpResponse("OK")
+
 
 @authentication_required
 def get(request, bytes=None):
     """ Returns the requested uri.  """
     yabiusername = request.user.username
 
-    logger.debug("ws_frontend_views::get() yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
+    logger.debug("ws_frontend_views::get() yabiusername: %s uri: %s" % (yabiusername, request.GET['uri']))
     uri = request.GET['uri']
-        
+
     try:
         filename = uri.rsplit('/', 1)[1]
-    except IndexError, e:
+    except IndexError:
         logger.critical('Unable to get filename from uri: %s' % uri)
         filename = 'default.txt'
 
@@ -274,7 +229,10 @@ def get(request, bytes=None):
         except ValueError:
             bytes = None
 
-    download_handle = backend.get_file(yabiusername, uri, bytes=bytes)
+    try:
+        download_handle = backend.get_file(yabiusername, uri, bytes=bytes)
+    except FileNotFoundError:
+        return HttpResponseNotFound()
     response = HttpResponse(FileWrapper(download_handle))
 
     mimetypes.init([os.path.join(settings.WEBAPP_ROOT, 'mime.types')])
@@ -288,43 +246,6 @@ def get(request, bytes=None):
 
 
 @authentication_required
-def zget(request):
-    """
-    Returns the requested uri. get_file returns an httplib response wrapped in a FileIterWrapper. This can then be read
-    by HttpResponse
-    """
-    assert False, "TODO"
-#    yabiusername = request.user.username
-#    try:
-#        logger.debug("ws_frontend_views::zget() yabiusername: %s uri: %s" %(yabiusername, request.GET['uri']))
-#        uri = request.GET['uri']
-#        
-#        sanitised_uri = uri
-#        while sanitised_uri[-1]=='/':
-#            sanitised_uri = sanitised_uri[:-1]
-#        
-#        try:
-#            
-#            filename = sanitised_uri.rsplit('/', 1)[-1]+".tar.gz"
-#        except IndexError, e:
-#            logger.critical('Unable to get filename from uri: %s' % uri)
-#            filename = 'default.tar.gz'
-#
-#        response = HttpResponse(backend.zget_file(yabiusername, uri))
-#
-#        mimetypes.init([os.path.join(settings.WEBAPP_ROOT, 'mime.types')])
-#        mtype, file_encoding = mimetypes.guess_type(filename, False)
-#        if mtype is not None:
-#            response['content-type'] = mtype
-#
-#        response['content-disposition'] = 'attachment; filename=%s' % filename
-#
-#        return response
-#
-#    except BackendRefusedConnection, e:
-#        return JsonMessageResponseNotFound(BACKEND_REFUSED_CONNECTION_MESSAGE)
-
-@authentication_required
 def put(request):
     """
     Uploads a file to the supplied URI
@@ -332,42 +253,19 @@ def put(request):
     NB: if anyone changes FILE_UPLOAD_MAX_MEMORY_SIZE in the settings to be greater than zero
     this function will not work as it calls temporary_file_path
     """
-    #import socket
-    #import httplib
-
     yabiusername = request.user.username
 
-    logger.debug("uri: %s" %(request.GET['uri']))
+    logger.debug("uri: %s" % request.GET['uri'])
     uri = request.GET['uri']
 
-    #    bc = get_fs_backendcredential_for_uri(yabiusername, uri)
-    #    decrypt_cred = bc.credential.get()
-    #    resource = "%s?uri=%s" % (settings.YABIBACKEND_PUT, quote(uri))
-
-        # TODO: the following is using GET parameters to push the decrypt creds onto the backend. This will probably make them show up in the backend logs
-        # we should push them via POST parameters, or at least not log them in the backend.
-    #    resource += "&username=%s&password=%s&cert=%s&key=%s"%(quote(decrypt_cred['username']),quote(decrypt_cred['password']),quote( decrypt_cred['cert']),quote(decrypt_cred['key']))
-
-
-    files = []
     for key, f in request.FILES.items():
-        #file_details = (f.name, f.name, f.temporary_file_path())
-        #files.append(file_details)
         upload_handle = backend.put_file(yabiusername, uri)
         for chunk in f.chunks():
             upload_handle.write(chunk)
         upload_handle.close()
 
-
-        # PostRequest doesn't like having leading slash on this resource, so strip it off
-        #upload_request = PostRequest(resource.strip('/'), params={}, headers={'Hmac-digest': make_hmac(resource)}, files=files)
-        #base_url = "http://%s" % settings.YABIBACKEND_SERVER
-        #http = Http(base_url=base_url, workdir=settings.WRITABLE_DIRECTORY)
-        #resp, contents = http.make_request(upload_request)
-        #http.finish_session()
-
     return HttpResponse("OK")
-        
+
 
 @authentication_required
 @transaction.commit_manually
@@ -392,18 +290,18 @@ def submit_workflow(request):
             start_time=datetime.now()
         )
 
-        # always commit transactions before sending tasks depending on state from the current transaction 
+        # always commit transactions before sending tasks depending on state from the current transaction
         # http://docs.celeryq.org/en/latest/userguide/tasks.html
         transaction.commit()
 
         # process the workflow via celery
         process_workflow(workflow.pk).apply_async()
-    except Exception, exc:
+    except Exception:
         transaction.rollback()
         logger.exception("Exception in submit_workflow()")
         raise
 
-    return HttpResponse(json.dumps({"id":workflow.id}))
+    return HttpResponse(json.dumps({"id": workflow.id}))
 
 
 def munge_name(user, workflow_name):
@@ -420,8 +318,7 @@ def munge_name(user, workflow_name):
         base = workflow_name
         val = 1
 
-    used_names = [wf.name for wf in EngineWorkflow.objects.filter(
-                        user__name=user, name__startswith=base)]
+    used_names = [wf.name for wf in EngineWorkflow.objects.filter(user__name=user, name__startswith=base)]
     used_names.extend(db.workflow_names_starting_with(user, base))
     used_names = dict(zip(used_names, [None] * len(used_names)))
 
@@ -429,8 +326,9 @@ def munge_name(user, workflow_name):
     while munged_name in used_names:
         val += 1
         munged_name = "%s (%d)" % (base, val)
-        
+
     return munged_name
+
 
 @authentication_required
 @cache_page(20)
@@ -447,7 +345,7 @@ def get_workflow(request, workflow_id):
         response = workflow_to_response(workflows[0])
     else:
         try:
-            response = db.get_workflow(yabiusername,workflow_id)
+            response = db.get_workflow(yabiusername, workflow_id)
         except (db.NoSuchWorkflow), e:
             logger.critical('%s' % e)
             return JsonMessageResponseNotFound(e)
@@ -455,25 +353,27 @@ def get_workflow(request, workflow_id):
     return HttpResponse(json.dumps(response),
                         mimetype='application/json')
 
+
 def workflow_to_response(workflow, key=None, parse_json=True, retrieve_tags=True):
     fmt = DATE_FORMAT
     response = {
-            'id': workflow.id,
-            'name': workflow.name,
-            'last_modified_on': workflow.last_modified_on.strftime(fmt),
-            'created_on': workflow.created_on.strftime(fmt),
-            'status': workflow.status,
-            'json': json.loads(workflow.json) if parse_json else workflow.json,
-            "tags": [],
-        } 
+        'id': workflow.id,
+        'name': workflow.name,
+        'last_modified_on': workflow.last_modified_on.strftime(fmt),
+        'created_on': workflow.created_on.strftime(fmt),
+        'status': workflow.status,
+        'json': json.loads(workflow.json) if parse_json else workflow.json,
+        'tags': [],
+    }
 
     if retrieve_tags:
-        response["tags"] = [wft.tag.value for wft in workflow.workflowtag_set.all()] 
+        response["tags"] = [wft.tag.value for wft in workflow.workflowtag_set.all()]
 
     if key is not None:
-        response = (getattr(workflow,key), response)
+        response = (getattr(workflow, key), response)
 
     return response
+
 
 @authentication_required
 def workflow_datesearch(request):
@@ -484,7 +384,7 @@ def workflow_datesearch(request):
     logger.debug(yabiusername)
 
     fmt = DATE_FORMAT
-    tomorrow = lambda : datetime.today()+timedelta(days=1)
+    tomorrow = lambda: datetime.today() + timedelta(days=1)
 
     start = datetime.strptime(request.GET['start'], fmt)
     end = request.GET.get('end')
@@ -496,12 +396,12 @@ def workflow_datesearch(request):
     sort_dir, sort_field = ('ASC', sort)
     if sort[0] == '-':
         sort_dir, sort_field = ('DESC', sort[1:])
- 
+
     # Retrieve the matched workflows.
     workflows = EngineWorkflow.objects.filter(
-           user__name = yabiusername,
-           created_on__gte = start, created_on__lte = end
-        ).order_by(sort)
+        user__name=yabiusername,
+        created_on__gte=start, created_on__lte=end
+    ).order_by(sort)
 
     # Use that list to retrieve all of the tags applied to those workflows in
     # one query, then build a dict we can use when iterating over the
@@ -517,13 +417,14 @@ def workflow_datesearch(request):
         workflow_response[1]["tags"] = tags.get(workflow.id, [])
         response.append(workflow_response)
 
-    archived_workflows = db.find_workflow_by_date(yabiusername,start,end,sort_field,sort_dir)
+    archived_workflows = db.find_workflow_by_date(yabiusername, start, end, sort_field, sort_dir)
 
     response.extend(archived_workflows)
-    response.sort(key=lambda x: x[0], reverse=sort_dir=='DESC')
+    response.sort(key=lambda x: x[0], reverse=sort_dir == 'DESC')
     response = [r[1] for r in response]
 
     return HttpResponse(json.dumps(response), mimetype='application/json')
+
 
 @authentication_required
 def workflow_change_tags(request, id=None):
@@ -536,7 +437,7 @@ def workflow_change_tags(request, id=None):
 
     if 'taglist' not in request.POST:
         return HttpResponseBadRequest("taglist needs to be passed in\n")
- 
+
     taglist = request.POST['taglist'].split(',')
     taglist = [t.strip() for t in taglist if t.strip()]
     try:
@@ -546,10 +447,11 @@ def workflow_change_tags(request, id=None):
             db.change_workflow_tags(yabiusername, id, taglist)
         else:
             return HttpResponseNotFound()
-         
+
     else:
         workflow.change_tags(taglist)
     return HttpResponse("Success")
+
 
 @authentication_required
 @profile_required
@@ -563,8 +465,8 @@ def passchange(request):
         return HttpResponse(json.dumps(message))
     else:
         return HttpResponseServerError(json.dumps(message))
-    
-        
+
+
 @authentication_required
 def credential(request):
     if request.method != "GET":
@@ -605,7 +507,7 @@ def credential(request):
             # to get the number of seconds total out of it.
             delta = expires_on - datetime.now()
             return (delta.days * 86400) + delta.seconds
-        
+
         return None
 
     return HttpResponse(json.dumps([{

@@ -1,16 +1,35 @@
 import unittest
 from yabiadmin.backend.torqueparsers import *
 
+class QSubParseTestCase(unittest.TestCase):
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        self.parser = TorqueParser()
+        self.good_lines = ["ignored", "1234.carahlocaldomain", "ignored again", "and again"]
+        self.good_lines_job_array = ["ignored", "1234[].carah.localdomain", "ignored again", "and again"]
+
+    def test_qsub_success(self):
+        result = self.parser.parse_sub(0, self.good_lines, [])
+        self.assertEqual(TorqueQSubResult.JOB_SUBMITTED, result.status)
+        self.assertEqual('1234', result.remote_id)
+
+    def test_qsub_success_job_array(self):
+        result = self.parser.parse_sub(0, self.good_lines_job_array, [])
+        self.assertEqual(TorqueQSubResult.JOB_SUBMITTED, result.status)
+        self.assertEqual('1234[]', result.remote_id)
+
+    def test_qsub_fails_if_exit_code_nonzero(self):
+        result = self.parser.parse_sub(1, self.good_lines, [])
+        self.assertEqual(TorqueQSubResult.JOB_SUBMISSION_ERROR, result.status)
+
+
 class QStatParseTestCase(unittest.TestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
         self.parser = TorqueParser()
-        self.good_qsub_line = "42940.carah.localdomain"
-        self.good_qsub_lines = [self.good_qsub_line ]
-        self.good_qsub_err = []
         # the following is the output from qstat -f -1 <jobnum>
-        self.good_qstat = """
-                            Job Id: 42940.carah.localdomain
+        self.good_job_id_line = "Job Id: 42940.carah.localdomain"
+        self.good_job_data = """
                             Job_Name = test.sh
                             Job_Owner = lrender@carah.localdomain
                             resources_used.cput = 00:00:00
@@ -45,33 +64,52 @@ class QStatParseTestCase(unittest.TestCase):
                             start_count = 1
                             comp_time = Mon Aug 12 15:19:43 2013
                             """
+        self.wrong_job_id_line = "Job Id: 1.carah.localdomain"
 
+        self.good_qstat = self.good_job_id_line + self.good_job_data
+        self.wrong_job_id_qstat = self.wrong_job_id_line + self.good_job_data
 
+        self.two_jobs_qstats = """
+                    Job Id: 1001.carah.localdomain
+                    Job_name = test.sh
+                    Job_Owner = lrender@carah.localdomain
+                    job_state = 'C'
+                    queue = normal
+                    server = carah.localdomain
+                    ctime = Mon Aug 12 15:19:13 2013
+        """ + self.good_qstat
+ 
 
-    def test_job_prefix_is_parsed(self):
-        result = self.parser.parse_qsub(self.good_qsub_lines, self.good_qsub_err)
-        self.assertTrue(result.remote_id == "42940")
-        self.assertTrue(result.status == TorqueQSubResult.JOB_SUBMITTED)
+    def test_qstat_job_completed(self):
+        stdout = self.setup_stdout(self.good_qstat, status="C", exit_code="0")
 
-    def test_qstat_completed(self):
-        lines = map(string.strip, self.good_qstat.format("C", "0").split("\n"))
-        result = self.parser.parse_qstat("42940", lines, [])
-        self.assertTrue(result.status == TorqueQStatResult.JOB_SUCCEEDED, "torque job status not correct.expected '%s' result = %s" % (TorqueQStatResult.JOB_SUCCEEDED, result))
+        result = self.parser.parse_poll("42940", 0, stdout, [])
 
-    def test_qstat_completed_with_error(self):
-        lines = map(string.strip, self.good_qstat.format("C", "127").split("\n"))
-        result = self.parser.parse_qstat("42940", lines,[])
-        self.assertTrue(result.status == TorqueQStatResult.JOB_FAILED, "torque job status not correct. Expected '%s' result = %s" % (TorqueQStatResult.JOB_FAILED, result))
+        self.assertTrue(result.status == TorqueQStatResult.JOB_COMPLETED, "torque job status not correct.expected '%s' result = %s" % (TorqueQStatResult.JOB_COMPLETED, result))
 
     def test_qstat_job_still_running(self):
-        lines = map(string.strip, self.good_qstat.format("Q","dontcare").split("\n"))
-        result = self.parser.parse_qstat("42940", lines, [])
+        stdout = self.setup_stdout(self.good_qstat, status="Q")
+
+        result = self.parser.parse_poll("42940", 0, stdout, [])
+
         self.assertTrue(result.status == TorqueQStatResult.JOB_RUNNING, "torque job status wrong - expected %s result = %s" % (TorqueQStatResult.JOB_RUNNING, result))
 
+    def test_qstat_different_job_id_returned(self):
+        stdout = self.setup_stdout(self.wrong_job_id_qstat, status="Q")
 
+        result = self.parser.parse_poll("42940", 0, stdout, [])
 
+        self.assertEqual(TorqueQStatResult.JOB_NOT_FOUND, result.status) 
 
+    def test_qstat_multiple_job_statuses_returned(self):
+        # if qstat returns the status of more than one job we
+        # still should parse our Job's status if it is in the output
+        stdout = self.setup_stdout(self.two_jobs_qstats, status="Q")
 
+        result = self.parser.parse_poll("42940", 0, stdout, [])
 
+        self.assertEqual(TorqueQStatResult.JOB_RUNNING, result.status)
 
+    def setup_stdout(self, template, status, exit_code='dontcare'):
+        return map(string.strip, template.format(status, exit_code).split("\n"))
 

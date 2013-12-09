@@ -29,8 +29,8 @@ class CreateUserFromAdminTest(unittest.TestCase):
 
     # TODO refactor when we add more tests
     def login_admin(self):
-        response = self.client.post('/admin-pane/', 
-                {'username': 'admin', 'password': 'admin', 
+        response = self.client.post('/admin-pane/',
+                {'username': 'admin', 'password': 'admin',
                  'this_is_the_login_form': 1, 'next': '/admin-pane/'})
         # This assert might be a bit fragile
         assert response.status_code == 302, "Couldn't log in admin user"
@@ -49,38 +49,43 @@ class CredentialTests(unittest.TestCase):
         self.django_user.set_password('pass')
         self.django_user.save()
         self.user = self.django_user.get_profile()
-        self.credential = Credential.objects.create(description='null credential', username=self.user.name, user=self.user)
+        self.credential = Credential.objects.create(description='test cred', username=self.user.name, user=self.user, password='wombles', cert='cheese', key='it')
+        self.credential.save()
 
     def tearDown(self):
-        self.credential.clear_cache()
+        access = self.credential.get_credential_access()
+        access.clear_cache()
         self.credential.delete()
         self.django_user.delete()
 
+    def test_credential_states(self):
+        self.assertEqual(self.credential.security_state, Credential.PROTECTED)
+        # must be able to decrypt a protected credential
+        self.credential.get_credential_access().clear_cache()
+        decrypted = self.credential.get_credential_access().get()
+        self.assertEqual(decrypted, {u'cert' : 'cheese', u'password':'wombles', u'key':'it'})
+        # logging in must encrypt the credential, and also shove a copy of the 
+        # decrypted and then protected credential into the cache
+        self.credential.get_credential_access().clear_cache()
+        self.credential.on_login(self.django_user.username, 'pass')
+        self.assertEqual(self.credential.security_state, Credential.ENCRYPTED)
+        decrypted = self.credential.get_credential_access().get()
+        self.assertEqual(decrypted, {u'cert' : 'cheese', u'password':'wombles', u'key':'it'})
+        # and a final login, with the credentials encrypted in the db already
+        self.assertEqual(self.credential.security_state, Credential.ENCRYPTED)
+        self.credential.get_credential_access().clear_cache()
+        self.credential.on_login(self.django_user.username, 'pass')
+        decrypted = self.credential.get_credential_access().get()
+        self.assertEqual(decrypted, {u'cert' : 'cheese', u'password':'wombles', u'key':'it'})        
+
     def test_cache_keyname_replaces_unicode_character(self):
-        self.assertTrue('\xc5\x91' in self.credential.cache_keyname())
+        access = self.credential.get_credential_access()
+        self.assertTrue('\\xc5\\x91' in access.keyname)
 
     def test_cache(self):
-        self.assertTrue(self.credential.is_cached)
-        self.assertEqual(self.credential.get_from_cache(), None)
-
-    def test_get_from_cache(self):
-        self.credential.password = 'pass'
-        self.credential.send_to_cache()
-        self.credential.password = 'pass2'
-        self.credential.get_from_cache()
-        self.assertEqual(self.credential.password, 'pass', 'get_from_cache() should set the password back to original')
-
-    def test_clear_from_cache(self):
-        self.credential.send_to_cache()
-        self.credential.clear_cache()
-        self.assertFalse(self.credential.is_cached)
-
-    def test_login_decrypts_credential(self):
-        client = Client()
-        response = client.post('/wslogin/',
-                {'username': self.django_user.username, 'password': 'pass'})
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(self.credential.is_cached)
+        access = self.credential.get_credential_access()
+        self.assertTrue(access.in_cache)
+        self.assertEqual(access.get(), {u'cert' : 'cheese', u'password':'wombles', u'key':'it'})
 
 class WsMenuTest(unittest.TestCase):
     def setUp(self):
@@ -147,8 +152,75 @@ class WsMenuTest(unittest.TestCase):
     def login_fe(self, user, password=None):
         if password is None:
             password = user
-        response = self.client.post('/login', 
-                {'username': user, 'password': password}) 
+        response = self.client.post('/login',
+                {'username': user, 'password': password})
         assert response.status_code == 302, "Couldn't log in to FE"
+
+
+class TestPytag(unittest.TestCase):
+    def test_pytag(self):
+        from django.template import Template, Context
+        import yabiadmin.yabi.templatetags.pytag  # force registration of custom tag
+        class Thing:
+            def some_method(self, s, n):
+                return "some result %s %d" % (s, n)
+
+        obj = Thing()
+        t = Template('{% load pytag %}HELLO{% py         obj.some_method(   "xyz",   100) %}GOODbye')
+        c = Context({"obj": obj})
+        result = t._render(c)
+        self.assertEquals(result, u"HELLOsome result xyz 100GOODbye")
+
+
+
+class TestImportTag(unittest.TestCase):
+    def test_importtag_populates_context(self):
+        from django.template import Template, Context
+        import yabiadmin.yabi.templatetags.importtag # register import tag
+        import yabiadmin.yabi.templatetags.pytag     # register py tag
+        # We use py tag also to illustrate usage of import
+        import types
+        m = types.ModuleType("foobar", "a test module")
+        m.__dict__.update({"greet": lambda s: "Hello %s" % s})
+        t = Template("{% load importtag %}{% load pytag %}start{% import foobar %}{% py foobar.greet('Fred Bloggs')%}finish")
+        c = Context({"n": 100})  # Nb. no foobar module
+        import sys
+        sys.modules['foobar'] = m
+        result = t._render(c)
+        self.assertTrue('foobar' in c.dicts[-1] and result == u"startHello Fred Bloggsfinish")
+
+class TestOrderByCustomFilter(unittest.TestCase):
+    def test_order_by_filter_generator(self):
+        from yabiadmin.yabi.models import FileExtension  # could be anything
+
+        from django.template import Template, Context
+
+        exe_file = FileExtension.objects.create(pattern="zzzz")
+        blah_file = FileExtension.objects.create(pattern="mmmm")
+        jpg_file = FileExtension.objects.create(pattern="aaaa")
+
+        all_extensions = FileExtension.objects.all()  # a generator
+
+
+        test_template = """
+        {% load order_by %}
+        {% for fe in all_extensions|order_by:"pattern" %}
+          {{fe.pattern}}
+        {% endfor %}
+        """
+
+        context = Context({"all_extensions": all_extensions})
+        result = Template(test_template).render(context)
+        # template contains other extensions so we just locate the ones we created and ensure they're in the order in
+        # the template we expect.
+        index_of_aaaa = result.find("aaaa")
+        index_of_mmmm = result.find('mmmm')
+        index_of_zzzz = result.find('zzzz')
+        self.assertTrue(index_of_zzzz > index_of_mmmm > index_of_aaaa, "order by failed")
+
+
+
+
+
 
 

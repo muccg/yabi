@@ -1,0 +1,24 @@
+{% extends "fe/base.html" %}
+{% load static from staticfiles %}
+{% block header %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/registration/registration.css' %}" />
+
+    <style type="text/css">
+        .email {
+            font-style: italic;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <h1>Request an Account</h1>
+
+    <p>
+        Your request has been received. You will shortly receive a confirmation
+        e-mail to <span class="email">{{email|force_escape}}</span> to confirm that the e-mail
+        address is correct.
+    </p>
+
+
+{%  endblock %}
+

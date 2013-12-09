@@ -4,26 +4,26 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 
 import os, sys
@@ -52,8 +52,8 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
     'django.middleware.doc.XViewMiddleware',
-    'ccg.middleware.ssl.SSLRedirect',
-    'django.contrib.messages.middleware.MessageMiddleware'    
+    'yabiadmin.ssl.SSLRedirect',
+    'django.contrib.messages.middleware.MessageMiddleware'
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -95,11 +95,11 @@ AUTH_PROFILE_MODULE = 'yabi.ModelBackendUserProfile'
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#session-cookie-age
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#csrf-cookie-name
 # you SHOULD change the cookie to use HTTPONLY and SECURE when in production
-SESSION_COOKIE_AGE = 60*60
+SESSION_COOKIE_AGE = 60 * 60
 SESSION_COOKIE_PATH = url('/')
 SESSION_COOKIE_NAME = 'yabi_sessionid'
 #SESSION_SAVE_EVERY_REQUEST = True
-SESSION_COOKIE_HTTPONLY = False 
+SESSION_COOKIE_HTTPONLY = False
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_NAME = "csrftoken_yabi"
 
@@ -121,21 +121,21 @@ LOGOUT_URL = url('/logout/')
 # deployment uses an apache alias
 # STATICFILES_DIRS = [os.path.join(WEBAPP_ROOT,"static")]
 STATIC_URL = url('/static/')
-STATIC_ROOT = os.path.join(WEBAPP_ROOT,"static")
+STATIC_ROOT = os.path.join(WEBAPP_ROOT, 'static')
 ADMIN_MEDIA_PREFIX = url('/static/admin/')
 
 # media directories
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#media-root
-MEDIA_ROOT = os.path.join(WEBAPP_ROOT,"static","media")
+MEDIA_ROOT = os.path.join(WEBAPP_ROOT, 'static', 'media')
 MEDIA_URL = url('/static/media/')
 
 # a directory that will be writable by the webserver, for storing various files...
-WRITABLE_DIRECTORY = os.path.join(WEBAPP_ROOT,"scratch")
+WRITABLE_DIRECTORY = os.path.join(WEBAPP_ROOT, 'scratch')
 if not os.path.exists(WRITABLE_DIRECTORY):
     os.mkdir(WRITABLE_DIRECTORY)
-    
+
 # put our temporary uploads directory inside WRITABLE_DIRECTORY
-FILE_UPLOAD_TEMP_DIR = os.path.join(WRITABLE_DIRECTORY,".uploads")
+FILE_UPLOAD_TEMP_DIR = os.path.join(WRITABLE_DIRECTORY, '.uploads')
 if not os.path.exists(FILE_UPLOAD_TEMP_DIR):
     os.mkdir(FILE_UPLOAD_TEMP_DIR)
 
@@ -143,8 +143,8 @@ if not os.path.exists(FILE_UPLOAD_TEMP_DIR):
 APPEND_SLASH = True
 
 # validation settings, these reflect the types of backend that yabi can handle
-EXEC_SCHEMES = ['sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex','explode','null']
-FS_SCHEMES = ['http', 'https', 'yabifs', 'scp', 's3', 'localfs','null']
+EXEC_SCHEMES = ['sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex', 'explode', 'null']
+FS_SCHEMES = ['http', 'https', 'yabifs', 'scp', 's3', 'localfs', 'null']
 VALID_SCHEMES = EXEC_SCHEMES + FS_SCHEMES
 
 ##
@@ -166,38 +166,38 @@ TEMPLATE_DEBUG = DEBUG
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#template-loaders
 TEMPLATE_LOADERS = [
     'django.template.loaders.app_directories.Loader',
-    'ccg.template.loaders.makoloader.filesystem.Loader',
+    #'ccg.template.loaders.makoloader.filesystem.Loader',
     #'django.template.loaders.filesystem.Loader'
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
-TEMPLATE_DIRS = [
-    os.path.join(WEBAPP_ROOT,"templates"),
-]
+# TEMPLATE_DIRS = [
+#     os.path.join(WEBAPP_ROOT, "templates"),
+#     os.path.join(WEBAPP_ROOT, "yabiadmin", "yabifeapp", "templates", "mako"),
+#     os.path.join(WEBAPP_ROOT, "yabiadmin", "yabiengine", "templates", "mako"),
+#     os.path.join(WEBAPP_ROOT, "yabiadmin", "yabi", "templates", "mako"),
+#     os.path.join(WEBAPP_ROOT, "yabiadmin", "yabi", "templates"),
+# ]
 
 # mako compiled templates directory
-MAKO_MODULE_DIR = os.path.join(WRITABLE_DIRECTORY, "templates")
+MAKO_MODULE_DIR = os.path.join(WRITABLE_DIRECTORY, 'templates')
 
 # mako module name
 MAKO_MODULENAME_CALLABLE = ''
-
-
-
 
 ### USER SPECIFIC SETUP ###
 # these are the settings you will most likely change to reflect your setup
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'USER': 'root',
         'NAME': 'dev_yabi',
-        'PASSWORD': '', 
-        'HOST': 'localhost',                    
+        'PASSWORD': '',
+        'HOST': 'localhost',
         'PORT': '',
-        'OPTIONS': {}
+        'OPTIONS': {'init_command': 'SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED'},
     }
 }
 
@@ -216,7 +216,7 @@ EMAIL_SUBJECT_PREFIX = "DEV "
 # admins to email error reports to
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#admins
 ADMINS = [
-    ( 'alert', 'alerts@set_this.com' )
+    ('alert', 'alerts@set_this.com')
 ]
 
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#managers
@@ -256,29 +256,13 @@ SESSION_FILE_PATH = WRITABLE_DIRECTORY
 # this also ensures that files are always written to disk so we can access them via temporary_file_path
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
-
-### BACKEND ###
-# point this to the yabi backend server
-BACKEND_IP = '0.0.0.0'
-BACKEND_PORT = '9001'
-BACKEND_BASE = '/'
-TASKTAG = 'set_this' # this must be the same in the yabi.conf for the backend that will consume tasks from this admin
-YABIBACKEND_SERVER = BACKEND_IP + ':' +  BACKEND_PORT
 YABISTORE_HOME = os.path.join(WRITABLE_DIRECTORY, 'store')
 
-YABIBACKEND_COPY = '/fs/copy'
-YABIBACKEND_RCOPY = '/fs/rcopy'
-YABIBACKEND_MKDIR = '/fs/mkdir'
-YABIBACKEND_RM = '/fs/rm'
-YABIBACKEND_LIST = '/fs/ls'
-YABIBACKEND_PUT = '/fs/put'
-YABIBACKEND_GET = '/fs/get'
-YABIBACKEND_ZGET = '/fs/zget'
-
+TASKTAG = 'set_this'
 DEFAULT_STAGEIN_DIRNAME = 'stagein/'
 
 # How long to cache decypted credentials for
-DEFAULT_CRED_CACHE_TIME = 60*60*24                   # 1 day default
+DEFAULT_CRED_CACHE_TIME = 60 * 60 * 24                   # 1 day default
 
 
 ### CELERY ###
@@ -311,6 +295,8 @@ CELERY_IMPORTS = ("yabiadmin.backend.celerytasks",)
 CELERY_ACKS_LATE = True
 # Not sure if this is still needed BROKER_TRANSPORT = "kombu.transport.django.Transport"
 
+# Set this to 1000 or even higher on LIVE
+CELERYD_MAX_TASKS_PER_CHILD = 100
 
 ### PREVIEW SETTINGS
 
@@ -324,19 +310,19 @@ CELERY_ACKS_LATE = True
 # MIME types not in this list will result in the preview being unavailable.
 PREVIEW_SETTINGS = {
     # Text formats.
-    "text/plain": { "truncate": True },
+    "text/plain": {"truncate": True},
 
     # Structured markup formats.
-    "text/html": { "truncate": False, "sanitise": True },
-    "application/xhtml+xml": { "truncate": False, "sanitise": True },
-    "text/svg+xml": { "truncate": True, "override_mime_type": "text/plain" },
-    "text/xml": { "truncate": True, "override_mime_type": "text/plain" },
-    "application/xml": { "truncate": True, "override_mime_type": "text/plain" },
+    "text/html": {"truncate": False, "sanitise": True},
+    "application/xhtml+xml": {"truncate": False, "sanitise": True},
+    "text/svg+xml": {"truncate": True, "override_mime_type": "text/plain"},
+    "text/xml": {"truncate": True, "override_mime_type": "text/plain"},
+    "application/xml": {"truncate": True, "override_mime_type": "text/plain"},
 
     # Image formats.
-    "image/gif": { "truncate": False },
-    "image/jpeg": { "truncate": False },
-    "image/png": { "truncate": False },
+    "image/gif": {"truncate": False},
+    "image/jpeg": {"truncate": False},
+    "image/png": {"truncate": False},
 }
 
 # The length of time preview metadata will be cached, in seconds.
@@ -348,14 +334,14 @@ PREVIEW_SIZE_LIMIT = 1048576
 # Used by djamboloader to combo load the YUI JS files
 THIRTY_DAYS = 30 * 24 * 60 * 60
 JAVASCRIPT_LIBRARIES = {
-  "yui_3_5_1": {
-    "path": os.path.join(WEBAPP_ROOT, "static/javascript/lib/yui-3.5.1/build/"),
-    "cache_for": THIRTY_DAYS, 
-  },
-  "yui2in3_2_9_0": {
-    "path": os.path.join(WEBAPP_ROOT, "static/javascript/lib/yui-2in3/dist/2.9.0/build/"),
-    "cache_for": THIRTY_DAYS,
-  },
+    "yui_3_5_1": {
+        "path": os.path.join(WEBAPP_ROOT, "static/javascript/lib/yui-3.5.1/build/"),
+        "cache_for": THIRTY_DAYS,
+    },
+    "yui2in3_2_9_0": {
+        "path": os.path.join(WEBAPP_ROOT, "static/javascript/lib/yui-2in3/dist/2.9.0/build/"),
+        "cache_for": THIRTY_DAYS,
+    },
 }
 
 ### LOGGING SETUP ###
@@ -373,52 +359,54 @@ LOGGING = {
         },
     },
     'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
     },
     'handlers': {
         'null': {
-            'level':'DEBUG',
-            'class':'django.utils.log.NullHandler',
+            'level': 'DEBUG',
+            'class': 'django.utils.log.NullHandler',
         },
-        'console':{
-            'level':'DEBUG',
-            'class':'logging.StreamHandler',
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
             'formatter': 'verbose'
         },
         'mail_admins': {
             'level': 'ERROR',
+            'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler',
-            'formatter':'verbose'
+            'formatter': 'verbose'
         }
     },
     'loggers': {
-        'django': {
-            'handlers':['console'],
+        '': {
+            'handlers': ['console', 'mail_admins'],
+            'level': 'ERROR',
             'propagate': True,
-            'level':'INFO',
         },
-        'django.request': {
+
+        'django': {
             'handlers': ['console'],
-            'level': 'ERROR',
-            'propagate': False,
+            'propagate': True,
+            'level': 'INFO',
         },
-        'djamboloader': {
-            'handlers': ['console'],
-            'level': 'ERROR',
-            'propagate': False,
-        },
+
         'yabiadmin': {
             'handlers': ['console'],
             'level': 'DEBUG'
         },
-        '': {
-            'handlers': ['console'],
-            'level': 'WARNING',
-            'propagate': True,
-        }
     }
 }
 
+# qsub and qstat paths
 
+SCHEDULER_COMMAND_PATHS = {
+    "torque": {"qsub": "/opt/torque/2.3.13/bin/qsub",
+               "qstat": "/opt/torque/2.3.13/bin/qstat",
+               "qdel": "/opt/torque/2.3.13/bin/qdel"}
+}
 
 
 # Load instance settings.

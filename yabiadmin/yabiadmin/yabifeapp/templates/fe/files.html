@@ -1,0 +1,42 @@
+{% extends "fe/base.html" %}
+{% load static from staticfiles %}
+
+{% block header %}
+    <link rel="stylesheet" type="text/css" media="screen" href="{% static 'css/files.css' %}" />
+
+    <script language="javascript">
+        Y.use('*', function(Y) {
+            Y.on('domready', function() {
+                initFileSelector();
+            });
+        });
+
+        var leftfileselector, rightfileselector, messageManager;
+
+        function initFileSelector() {
+            leftfileselector = new YabiFileSelector(null, true);
+            rightfileselector = new YabiFileSelector(null, true);
+            
+            document.getElementById("leftContainer").appendChild(leftfileselector.containerEl);
+            document.getElementById("rightContainer").appendChild(rightfileselector.containerEl);
+        }
+    </script>
+{% endblock %}
+
+{% block body %}
+    <div id="doc3" class="yui-t1" style="height:100%;background-color:#fff;">
+        <div id="yabi-files-mode">
+             {% block bodyhd %}
+            {{ block.super }}
+            {% endblock %}
+            <div id="containers">
+                <div id="leftContainer"></div>
+                <div id="rightContainer"></div>
+            </div>
+        </div>
+    </div>
+    {% block copyright %}
+      {{ block.super }}
+    {% endblock %}
+
+{% endblock %}

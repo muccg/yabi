@@ -1,0 +1,89 @@
+{% extends "admin/base_site_mako.html" %}
+{% load pytag %}
+{% load is_false %}
+{% load dynamic_lookups %}
+
+{% if is_popup|is_false %}
+{% block block_breadcrumbs %}
+<div class="breadcrumbs"><a href="{{root_path}}">Home</a> &rsaquo; Backend Credential Test</div>
+{% endblock %}
+{% endif %}
+
+
+{% block block_content %}
+<div id="content-main">
+
+
+<table>
+    <tr>
+        <th>Description</th
+        <th>Yabi Username</th>
+        <th>Username</th>
+        <th>Home Dir</th>
+        <th>Visible</th>
+        <th>Uri</th>
+        <th>Home Dir Uri</th>
+
+    </tr>
+    <tr>
+    <td>{{bec.credential.description}}</td>
+    <td>{{bec.credential.user.name}}</td>
+    <td>{{bec.credential.username}</td>
+    <td>{{bec.homedir}}</td>
+    <td>{{bec.visible}}</td>
+    <td>{{bec.uri}}</td>
+    <td>{{bec.homedir_uri}}</td>
+    <td>{% autoescape off %}{{ bec.backend_cred_edit_link }}{% endautoescape %}</td>
+    </tr>
+
+</table>
+
+<br/><br/>
+
+{% if error|is_false %}
+<h3>File listing of {{bec.homedir_uri}}</h3>
+<table>
+    <tr>
+        <th>Filename</th>
+        <th>Size</th>
+        <th>Date</th>
+    </tr>
+
+    {% for key in listing %}
+          {# item tuple = (filename,size,date,link ) #}
+          {% for item  in listing|lookup:key|lookup:'files' %}
+          <tr>
+            <td>{{item.0}}</td>
+            <td>{{item.1}}</td>
+            <td>{{item.2}}</td>
+          </tr>
+          {% endfor %}
+    {% endfor %}
+</table>
+
+<br/><br/>
+
+
+<h3>Directory listing of {{bec.homedir_uri}}</h3>
+<table>
+    <tr>
+        <th>Directory</th>
+        <th>Date</th>
+    </tr>
+
+    {% for key in listing %}
+           {# item tuple is (directory, size, date, link) #}
+          {% for item  in listing|lookup:key|lookup:'directories' %}
+          <tr>
+            <td>{{item.0}}</td>
+            <td>{{item.1}}</td>
+          </tr>
+          {% endfor %}
+    {% endfor %}
+</table>
+{% else %}
+<h3 class="error">{{error}}</h3>
+<p>{{error_help}}</p>
+{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "admin/base_site_mako.html" %}
+{% load pytag %}
+{% load is_false %}
+{% if is_popup|is_false  %}
+{% block block_breadcrumbs %}
+<div class="breadcrumbs"><a href="{{root_path}}">Home</a> &rsaquo; User tools</div>
+{% endblock %}
+{% endif %}
+
+
+{% block block_content %}
+<div id="content-main">
+
+
+{% if tool_groups %}
+
+
+User {{tooluser.name}} has the following tools:
+
+<ul>
+{% for tool_group in tool_groups %}
+
+    <li>{{tool_group.name}}</li>
+
+{% for tool in tool_group.sorted_tools %}
+
+    <ul>
+        <li>{{tool}}</li>
+    </ul>
+
+{% endfor %}
+
+
+{% endfor %}
+
+</ul>
+
+
+{% else %}
+
+
+User {{tooluser.name}} has <em>no tools</em> configured.
+
+
+{% endif %}
+
+
+</div>
+{% endblock %}

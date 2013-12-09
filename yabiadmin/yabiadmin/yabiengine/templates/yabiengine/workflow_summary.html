@@ -1,0 +1,106 @@
+{% extends "admin/base_site_mako.html" %}
+{% load is_false %}
+{% load order_by %}
+
+{% if is_popup|is_false %}
+{% block block_breadcrumbs %}
+<div class="breadcrumbs"><a href="{{root_path}}">Home</a> &rsaquo; Backend {{w.name}}</div>
+{% endblock %}
+{% endif %}
+
+
+{% block block_content %}
+<div id="content-main">
+
+<table>
+    <tr>
+        <th>Name</th>
+        <th>User</th>
+        <th>Start</th>
+        <th>End</th>
+        <th>Status</th>
+        <th></th>
+    </tr>
+    <tr>
+        <td>{{w.name}}</td>
+        <td>{{w.user.name}}</td>
+        <td>{{w.start_time}}</td>
+        <td>{{w.end_time}}</td>
+        <td><font color="{{w.colour}}">{{w.status}}</font></td>
+        <td>{% autoescape off %}{{w.edit_link}}{% endautoescape %}</td>
+    </tr>
+</table>
+
+<br/>
+
+<table>
+    <tr>
+          <th>Order</th>
+          <th>Status</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Command</th>
+          <th/>
+    </tr>
+{% for job in jobs_by_order %}
+    <tr>
+          <td>{{job.order}}</td>
+          <td><font color="{{ job.colour }}">{{job.status}}</font></td>
+          <td>{{job.start_time}}</td>
+          <td>{{job.end_time}}</td>
+          <td>{{job.command| force_escape }}</td>
+          <td>{% autoescape off %}{{job.edit_link}}{% endautoescape %}</td>
+    </tr>
+
+    {% if job.task_set.all %}
+    {% for task in job.task_set.all %}
+    <tr>
+          <td/>
+          <td><font color="{{ task.colour }}">{{task.status}}</font></td>
+          <td colspan="3">
+            Task: {{task.command}}
+          </td>
+          <td>
+              {% autoescape off %}{{ task.edit_link }}{% endautoescape %}
+              <br/>
+              {% autoescape off %}{{ task.link_to_syslog }} {% endautoescape %}
+              <br/>
+              {% autoescape off %}{{ task.link_to_json }} {% endautoescape %}
+          </td>
+          
+
+    </tr>
+
+    {% for stagein in task.stagein_set.all|order_by:"order" %}
+
+    <tr>
+    <td/>
+    <td/>
+    <td colspan="3">
+        Src: {{stagein.src}}<br/>
+        Dst: {{stagein.dst}}
+    </td>
+    <td>{% autoescape off %}{{ stagein.edit_link }}{% endautoescape %}</td>
+    </tr>
+    {% endfor %}
+
+
+    {% endfor %}
+    {% endif %}
+
+    <tr>
+    <td colspan="6"><br/><br/><br/></td>
+    </tr>
+
+
+{% endfor %}
+</table>
+
+<h3>Workflow Json</h3>
+<pre>
+{% if w.json %}
+{{workflow_json}}
+{% endif %}
+</pre>
+</div>
+{% endblock %}

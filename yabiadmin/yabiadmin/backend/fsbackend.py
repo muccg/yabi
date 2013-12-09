@@ -3,38 +3,38 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 import os
-from yabiadmin.yabiengine.enginemodels import StageIn
-from yabiadmin.backend.exceptions import RetryException
-from yabiadmin.backend.utils import create_fifo, execute
+from django.utils import simplejson as json
+from yabiadmin.backend.exceptions import RetryException, FileNotFoundError
+from yabiadmin.backend.utils import create_fifo
 from yabiadmin.backend.backend import fs_credential
 from yabiadmin.backend.basebackend import BaseBackend
-from yabiadmin.yabiengine.urihelper import url_join, uriparse
+from yabiadmin.yabiengine.urihelper import url_join, uriparse, is_same_location
+from yabiadmin.constants import ENVVAR_FILENAME
 import logging
 import traceback
 import shutil
-from threading import Thread
 import Queue
 logger = logging.getLogger(__name__)
 
@@ -58,25 +58,34 @@ def stream_watcher(identifier, stream):
 class FSBackend(BaseBackend):
 
     @staticmethod
+    def create_backend_for_scheme(fsscheme):
+        backend = None
+
+        if fsscheme == 'sftp' or fsscheme == 'scp':
+            from yabiadmin.backend.sftpbackend import SFTPBackend
+            backend = SFTPBackend()
+
+        elif fsscheme == 'file' or fsscheme == 'localfs':
+            from yabiadmin.backend.filebackend import FileBackend
+            backend = FileBackend()
+
+        elif fsscheme == 'select' or fsscheme == 'null':
+            from yabiadmin.backend.selectfilebackend import SelectFileBackend
+            backend = SelectFileBackend()
+
+        elif fsscheme == 's3':
+            from yabiadmin.backend.s3backend import S3Backend
+            backend = S3Backend()
+
+        return backend
+
+    @staticmethod
     def factory(task):
         assert(task)
         assert(task.fsscheme)
 
-        backend = None
-
-        if task.fsscheme == 'sftp' or task.fsscheme == 'scp':
-            from yabiadmin.backend.sftpbackend import SFTPBackend
-            backend = SFTPBackend()
-
-        elif task.fsscheme == 'file' or task.fsscheme == 'localfs':
-            from yabiadmin.backend.filebackend import FileBackend
-            backend = FileBackend()
-
-        elif task.fsscheme == 'select' or task.fsscheme == 'null':
-            from yabiadmin.backend.selectfilebackend import SelectFileBackend
-            backend = SelectFileBackend()
-
-        else:
+        backend = FSBackend.create_backend_for_scheme(task.fsscheme)
+        if backend is None:
             raise Exception('No valid scheme ({0}) is defined for task {1}'.format(task.fsscheme, task.id))
 
         backend.task = task
@@ -88,23 +97,9 @@ class FSBackend(BaseBackend):
         assert(uri)
         fsscheme, fsbackend_parts = uriparse(uri)
 
-        backend = None
-
-        if fsscheme == 'sftp' or fsscheme == 'scp':
-            from yabiadmin.backend.sftpbackend import SFTPBackend
-            backend = SFTPBackend()
-
-        elif fsscheme == 'file' or  fsscheme == 'localfs':
-            from yabiadmin.backend.filebackend import FileBackend
-            backend = FileBackend()
-
-        elif fsscheme == 'select' or fsscheme == 'null':
-            from yabiadmin.backend.selectfilebackend import SelectFileBackend
-            backend = SelectFileBackend()
-
-        else:
+        backend = FSBackend.create_backend_for_scheme(fsscheme)
+        if backend is None:
             raise Exception("No backend can be found for uri %s with fsscheme %s for user %s" % (uri, fsscheme, yabiusername))
-
 
         backend.yabiusername = yabiusername
         backend.cred = fs_credential(yabiusername, uri)
@@ -113,23 +108,29 @@ class FSBackend(BaseBackend):
     @staticmethod
     def remote_copy(yabiusername, src_uri, dst_uri):
         """Recursively copy src_uri to dst_uri"""
-        logger.debug('remote_copy {0} -> {1}'.format(src_uri, dst_uri))
+        logger.info('remote_copy {0} -> {1}'.format(src_uri, dst_uri))
         src_backend = FSBackend.urifactory(yabiusername, src_uri)
         dst_backend = FSBackend.urifactory(yabiusername, dst_uri)
         try:
-            listing = src_backend.ls_recursive(src_uri)
-            src_scheme, src_rest = uriparse(src_uri)
+            listing = src_backend.ls(src_uri)  # get _flat_ listing here not recursive as before
             dst_backend.mkdir(dst_uri)
+            logger.debug("listing of src_uri %s = %s" % (src_uri, listing))
             for key in listing:
                 # copy files using a fifo
                 for listing_file in listing[key]['files']:
-                    src_file_uri = url_join(src_scheme + "://" + src_rest.netloc + key,listing_file[0])
-                    dst_file_uri = url_join(dst_uri,listing_file[0])
+                    src_file_uri = url_join(src_uri, listing_file[0])
+                    dst_file_uri = url_join(dst_uri, listing_file[0])
+                    logger.debug("src_file_uri = %s" % src_file_uri)
+                    logger.debug("dst_file_uri = %s" % dst_file_uri)
                     FSBackend.remote_file_copy(yabiusername, src_file_uri, dst_file_uri)
+
                 # recurse on directories
+
                 for listing_dir in listing[key]['directories']:
                     src_dir_uri = url_join(src_uri, listing_dir[0])
                     dst_dir_uri = url_join(dst_uri, listing_dir[0])
+                    logger.debug("src_dir_uri = %s" % src_dir_uri)
+                    logger.debug("dst_dir_uri = %s" % dst_dir_uri)
                     FSBackend.remote_copy(yabiusername, src_dir_uri, dst_dir_uri)
         except Exception, exc:
             raise RetryException(exc, traceback.format_exc())
@@ -144,14 +145,20 @@ class FSBackend(BaseBackend):
         dst_backend = FSBackend.urifactory(yabiusername, dst_uri)
         src_scheme, src_parts = uriparse(src_uri)
         dst_scheme, dst_parts = uriparse(dst_uri)
+        # Making sure dst_uri is always a file not a dir
+        if dst_parts.path.endswith("/"):  # Looks like a dir
+            dst_file_uri = "%s/%s" % (dst_uri, src_backend.basename(src_parts.path))
+            dst_scheme, dst_parts = uriparse(dst_uri)
+        else:
+            dst_file_uri = dst_uri
         fifo = None
         try:
             # create a fifo, start the write to/read from fifo
-            fifo = create_fifo('remote_file_copy_' + yabiusername + '_'+ src_parts.hostname + '_' + dst_parts.hostname)
+            fifo = create_fifo('remote_file_copy_' + yabiusername + '_' + src_parts.hostname + '_' + dst_parts.hostname)
             src_queue = Queue.Queue()
             dst_queue = Queue.Queue()
-            src_cmd  = src_backend.remote_to_fifo(src_uri, fifo, src_queue)
-            dst_cmd  = dst_backend.fifo_to_remote(dst_uri, fifo, dst_queue)
+            src_cmd = src_backend.remote_to_fifo(src_uri, fifo, src_queue)
+            dst_cmd = dst_backend.fifo_to_remote(dst_file_uri, fifo, dst_queue)
             src_cmd.join()
             dst_cmd.join()
             src_status = src_queue.get()
@@ -181,6 +188,8 @@ class FSBackend(BaseBackend):
             # TODO some check on the copy thread
 
             return fifo
+        except FileNotFoundError:
+            raise
         except Exception, exc:
             raise RetryException(exc, traceback.format_exc())
 
@@ -193,7 +202,7 @@ class FSBackend(BaseBackend):
         backend = FSBackend.urifactory(yabiusername, uri)
         scheme, parts = uriparse(uri)
 
-        # uri for an upload must specify filename. we can't rely on the 
+        # uri for an upload must specify filename. we can't rely on the
         # source name as we copy from a fifo with a random name
         if not uri.endswith(filename):
             if not uri.endswith('/'):
@@ -206,10 +215,22 @@ class FSBackend(BaseBackend):
             thread = backend.fifo_to_remote(uri, fifo)
 
             # TODO some check on the copy thread
-            
+
             return fifo
         except Exception, exc:
             raise RetryException(exc, traceback.format_exc())
+
+    def save_envvars(self, task, envvars_uri):
+        try:
+            fifo = FSBackend.remote_file_download(self.yabiusername, envvars_uri)
+            with open(fifo) as f:
+                content = f.read()
+            envvars = json.loads(content)
+        except:
+            logger.exception("Could not read contents of envvars file '%s' for task %s", envvars_uri, task.pk)
+        else:
+            task.envvars_json = json.dumps(envvars)
+            task.save()
 
     def stage_in_files(self):
         self.mkdir(self.working_dir_uri())
@@ -220,6 +241,8 @@ class FSBackend(BaseBackend):
         stageins = self.task.get_stageins()
         for stagein in stageins:
             self.stage_in(stagein)
+            if stagein.matches_filename(ENVVAR_FILENAME):
+                self.save_envvars(self.task, stagein.src)
 
     def stage_in(self, stagein):
         """Perform a single stage in."""
@@ -252,11 +275,16 @@ class FSBackend(BaseBackend):
         # now the stageout proper
         method = self.task.job.preferred_stageout_method
         logger.debug('stage out method is {0}'.format(method))
+        if method == 'lcopy':
+            if is_same_location(self.working_output_dir_uri(), self.task.stageout):
+                return self.local_copy_recursive(self.working_output_dir_uri(), self.task.stageout)
+            else:
+                method = 'copy'
+
         if method == 'copy':
             return FSBackend.remote_copy(self.yabiusername, self.working_output_dir_uri(), self.task.stageout)
 
-        if method == 'lcopy':
-            return FSBackend.local_copy_recursive(self.yabiusername, self.working_output_dir_uri(), self.task.stageout)
+        raise RuntimeError("Invalid stageout method %s for task %s" % (method, self.task.pk))
 
     def stage_out_local_remnants(self):
         """
@@ -302,39 +330,30 @@ class FSBackend(BaseBackend):
                 uri = url_join(self.task.stageout, dirpath[len(remnants_dir):], dirname)
                 self.mkdir(uri)
 
-    @staticmethod
-    def local_copy_recursive(yabiusername, src_uri, dst_uri):
-        """Recursive local copy src_uri to dst_uri"""
-        logger.debug('remote_copy {0} -> {1}'.format(src_uri, dst_uri))
-        src_backend = FSBackend.urifactory(yabiusername, src_uri)
-        dst_backend = FSBackend.urifactory(yabiusername, dst_uri)
-        src_backend_class = src_backend.__class__.__name__
-        logger.debug("src backend class = %s" % src_backend_class)
-        dest_backend_class = dst_backend.__class__.__name__
-        logger.debug("dst backend class = %s" % dest_backend_class)
-
-        try:
-            listing = src_backend.ls_recursive(src_uri)
-            dst_backend.mkdir(dst_uri)
-            for key in listing:
-                # copy files using a fifo
-                for listing_file in listing[key]['files']:
-                    src_file_uri = url_join(src_uri, listing_file[0])
-                    dst_file_uri = url_join(dst_uri, listing_file[0])
-                    src_backend.local_copy(src_file_uri, dst_file_uri)
-                # recurse on directories
-                for listing_dir in listing[key]['directories']:
-                    src_dir_uri = url_join(src_uri, listing_dir[0])
-                    dst_dir_uri = url_join(dst_uri, listing_dir[0])
-                    FSBackend.local_copy_recursive(yabiusername, src_dir_uri, dst_dir_uri)
-        except Exception, exc:
-            raise RetryException(exc, traceback.format_exc())
-
     def clean_up_task(self):
         # remove working directory
         self.rm(self.working_dir_uri())
         # remove local remnants directory
         shutil.rmtree(self.local_remnants_dir())
+
+    def ls_recursive(self, uri):
+        result = self.ls(uri)
+
+        dirs = []
+        if result.values():
+            dirs = result.values()[0].get('directories')
+
+        dir_uris = map(lambda d: "%s/%s" % (uri.rstrip("/"), d[0].lstrip("/")), dirs)
+        for d in dir_uris:
+            result.update(self.ls_recursive(d))
+        return result
+
+    def set_cred(self, uri):
+        from yabiadmin.backend.backend import fs_credential
+        self.cred = fs_credential(self.yabiusername, uri)
+
+    def basename(self, path):
+        return os.path.basename(path)
 
     def remote_to_fifo(self, uri, fifo):
         raise NotImplementedError("")
@@ -342,13 +361,7 @@ class FSBackend(BaseBackend):
     def fifo_to_remote(self, uri, fifo):
         raise NotImplementedError("")
 
-    def get_file(self, uri, bytes=None):
-        raise NotImplementedError("")
-
     def rm(self, uri):
-        raise NotImplementedError("")
-
-    def isdir(self, uri):
         raise NotImplementedError("")
 
     def mkdir(self, uri):
@@ -357,10 +370,10 @@ class FSBackend(BaseBackend):
     def ls(self, uri):
         raise NotImplementedError("")
 
-    def ls_recurse(self, uri):
+    def local_copy(self, source, destination):
         raise NotImplementedError("")
 
-    def local_copy(self, source, destination):
+    def local_copy_recursive(self, source, destination):
         raise NotImplementedError("")
 
     def symbolic_link(self, source, destination):

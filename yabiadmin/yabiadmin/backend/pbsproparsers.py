@@ -1,6 +1,5 @@
 import re
 import logging
-import string
 logger = logging.getLogger(__name__)
 
 
@@ -44,37 +43,46 @@ logger = logging.getLogger(__name__)
 
 
 class PBSProQSubResult(object):
-    JOB_SUBMITTED = "job submitted"
-    JOB_SUBMISSION_ERROR = "job submission error"
+    JOB_SUBMITTED = "JOB SUBMITTED"
+    JOB_SUBMISSION_ERROR = "JOB SUBMISSION ERROR"
 
     def __init__(self):
         self.remote_id = None
         self.status = None
         self.error = None
 
+
 class PBSProQStatResult(object):
-    JOB_RUNNING = "job running"
-    JOB_NOT_FOUND = "job not found by qstat"
-    JOB_SUCCEEDED = "job succeeded"
-    JOB_FAILED = "job error"
+    JOB_RUNNING = "JOB RUNNING"
+    JOB_NOT_FOUND = "JOB NOT FOUND BY QSTAT"
+    JOB_COMPLETED = "JOB COMPLETED"
 
     def __init__(self):
         self.remote_id = None
         self.status = None
 
 
+class PBSProQDelResult(object):
+    JOB_ABORTED = "JOB ABORTED"
+    JOB_ABORTION_ERROR = "JOB ABORTION ERROR"
+    JOB_FINISHED = "JOB FINISHED"
+
+    def __init__(self):
+        self.status = None
+        self.error = None
+
 
 class PBSProParser(object):
-    QSUB_OUTPUT = "^(?P<remote_id>\d+)\..*"
+    QSUB_OUTPUT = "^(?P<remote_id>\d+(?:\[\])?)\..*"
     JOB_STATUS_COLUMN_INDEX = 4
     # From Yabi's point of view , it's either running or finished
-    POSSIBLE_STATES = ["B","E", "F", "H", "M", "Q", "R", "S", "T", "U", "W", "X"]
-    RUNNING_STATES = ["R", "B", "E", "H", "M", "Q", "S" , "T" ,"U", "W" ] # Added exiting(E)  here to ensure we wait till job has actually finished
+    POSSIBLE_STATES = ["B", "E", "F", "H", "M", "Q", "R", "S", "T", "U", "W", "X"]
+    RUNNING_STATES = ["R", "B", "E", "H", "M", "Q", "S", "T", "U", "W"]  # Added exiting(E)  here to ensure we wait till job has actually finished
     FINISHED_STATES = ["F", "C", "X"]
 
-    def parse_qsub(self, stdout, stderr):
+    def parse_sub(self, exit_code, stdout, stderr):
         result = PBSProQSubResult()
-        if len(stderr) > 0:
+        if exit_code > 0 or len(stderr) > 0:
             result.status = PBSProQSubResult.JOB_SUBMISSION_ERROR
             result.error = "\n".join(stderr)
             return result
@@ -90,7 +98,7 @@ class PBSProParser(object):
         result.status = PBSProQSubResult.JOB_SUBMISSION_ERROR
         return result
 
-    def parse_qstat(self, remote_id, stdout, stderr):
+    def parse_poll(self, remote_id, exit_code, stdout, stderr):
         job_prefix = remote_id + "."
         result = PBSProQStatResult()
         result.remote_id = remote_id
@@ -103,16 +111,27 @@ class PBSProParser(object):
                 logger.debug("job_status = %s" % job_status)
                 if job_status not in self.POSSIBLE_STATES:
                     raise Exception("Unknown PBSPro job state %s for remote id %s" % (job_status, remote_id))
-
                 if job_status in self.RUNNING_STATES:
                     result.status = PBSProQStatResult.JOB_RUNNING
                     return result
-
                 elif job_status in self.FINISHED_STATES:
-                    # need to check the submission script ".e" file ( is if submission script is named test.sh , the e file is test.sh.e<jobnumber>
-                    # this contains the exit status and job info ...
-                    result.status = PBSProQStatResult.JOB_SUCCEEDED #TODO !! How to tell if job failed?!
+                    result.status = PBSProQStatResult.JOB_COMPLETED
                     return result
 
         result.status = PBSProQStatResult.JOB_NOT_FOUND
+        return result
+
+    def parse_abort(self, remote_id, exit_code, stdout, stderr):
+        result = PBSProQDelResult()
+        if exit_code == 0:
+            result.status = PBSProQDelResult.JOB_ABORTED
+            return result
+
+        if 'finished' in "\n".join(stderr):
+            result.status = PBSProQDelResult.JOB_FINISHED
+            return result
+
+        result.status = PBSProQDelResult.JOB_ABORTION_ERROR
+        result.error = "\n".join(stderr)
+
         return result

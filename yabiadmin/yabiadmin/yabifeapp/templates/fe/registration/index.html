@@ -1,0 +1,36 @@
+{% extends "fe/base.html" %}
+{% load static from staticfiles %}
+{% block header %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/registration/registration.css' %}" />
+    <link rel="stylesheet" type="text/css" href="{% static 'css/registration/index.css' %}" />
+
+    <script type="text/javascript" src="{% static 'javascript/registration.js' %}"></script>
+{% endblock %}
+
+{% block body %}
+    <h1>Request an Account</h1>
+
+    <p class="help">
+        This form allows you to request an account to use the
+        supercomputing facilities available through Yabi.
+    </p>
+
+    <form method="post">
+        {{ form.as_p  }}
+
+        <p class="help">
+            By requesting an account on Yabi, you agree to the
+            terms of service below.
+        </p>
+
+        <div id="tos">
+        {{terms}}
+        </div>
+
+        <p class="submit-row">
+            <input type="submit" value="Request Account" />
+        </p>
+    </form>
+
+
+{% endblock %}
