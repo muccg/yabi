@@ -1,7 +1,8 @@
 import unittest
-from support import YabiTestCase, StatusResult, FileUtils
-from fixture_helpers import admin
+from .support import YabiTestCase, StatusResult, FileUtils
+from .fixture_helpers import admin
 import os
+from six.moves import filter
 
 ONE_GB = 1 * 1024 * 1024 * 1024
 
@@ -32,7 +33,8 @@ class FileUploadTest(YabiTestCase, FileUtils):
 
         expected_cksum, expected_size = self.run_cksum_locally(filename)
 
-        returned_lines = filter(lambda l: l.startswith(expected_cksum), result.stdout.split("\n"))
+        # AH added list after running modernize
+        returned_lines = list(filter(lambda l: l.startswith(expected_cksum), result.stdout.split("\n")))
         self.assertEqual(len(returned_lines), 1, 'Expected cksum %s result not returned or checksum is incorrect' % expected_cksum)
         our_line = returned_lines[0]
         actual_cksum, actual_size, rest = our_line.split()

@@ -1,5 +1,5 @@
 from unittest import TestCase
-from fixture_helpers import admin
+from .fixture_helpers import admin
 import os
 import hashlib
 import stat

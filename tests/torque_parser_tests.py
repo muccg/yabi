@@ -1,5 +1,7 @@
 import unittest
 from yabiadmin.backend.torqueparsers import *
+from six.moves import map
+from six.moves import zip
 
 class QSubParseTestCase(unittest.TestCase):
     def setUp(self):

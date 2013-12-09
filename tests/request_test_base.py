@@ -1,6 +1,6 @@
 import unittest
-from support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, conf
-from fixture_helpers import admin
+from .support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, conf
+from .fixture_helpers import admin
 import os
 import time
 import sys
@@ -21,7 +21,7 @@ def remove_slash_if_has(u):
 
 try:
     import requests
-except ImportError, ioe:
+except ImportError as ioe:
     pass                            # admin imports this file aswell... but doesn't have requests installed :P
 
 class RequestTest(YabiTestCase):

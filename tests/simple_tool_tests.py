@@ -1,6 +1,8 @@
+from __future__ import print_function
+from __future__ import print_function
 import unittest
-from support import YabiTestCase, StatusResult, all_items, json_path
-from fixture_helpers import admin
+from .support import YabiTestCase, StatusResult, all_items, json_path
+from .fixture_helpers import admin
 import os
 import time
 from yabiadmin.yabi import models
@@ -35,8 +37,8 @@ class HostnameTest(YabiTestCase):
 
         result = StatusResult(self.yabi.run(['status', wfl_id]))
 
-        print result.status
-        print result.workflow
+        print(result.status)
+        print(result.workflow)
 
         self.assertEqual(result.workflow.status, 'complete')
         self.assertTrue(all_items(lambda j: j.status == 'complete', result.workflow.jobs))
