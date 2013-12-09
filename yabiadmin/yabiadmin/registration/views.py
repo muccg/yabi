@@ -34,8 +34,9 @@ from django.conf import settings
 
 from yabiadmin.yabi.models import User
 
-from forms import RegistrationForm
-from models import Request
+from .forms import RegistrationForm
+from .models import Request
+import six
 
 
 @transaction.commit_on_success
@@ -85,12 +86,12 @@ def index(request):
 
                 context["email"] = email
                 return render_to_response("registration/success.html", context)
-            except IntegrityError, e:
+            except IntegrityError as e:
                 transaction.rollback()
                 form.add_error("username", "The username is already in use.")
-            except Exception, e:
+            except Exception as e:
                 transaction.rollback()
-                form.add_global_error(unicode(e))
+                form.add_global_error(six.text_type(e))
 
     else:
         form = RegistrationForm()

@@ -30,6 +30,7 @@
 
 from Crypto.Cipher import AES
 import base64, math, itertools, datetime, struct, os, hmac, hashlib
+import six
 
 class CTR(object):
     """
@@ -72,7 +73,7 @@ class CTR(object):
         returns the number of blocks in the string
         """
         nblocks = int(math.ceil(len(s) / (1. * CTR.blocksize)))
-        for i in xrange(nblocks):
+        for i in range(nblocks):
             yield s[i * CTR.blocksize:(i + 1) * CTR.blocksize]
     
     @classmethod
@@ -82,7 +83,7 @@ class CTR(object):
         using initial nonce `nonce'
         """
         counterblock = nonce + []
-        for i in xrange(7, -1, -1):
+        for i in range(7, -1, -1):
             v = (block_num / (2 ** (8*i))) & 0xFF
             counterblock.append(v)
         return counterblock
@@ -130,7 +131,7 @@ class CTR(object):
         generate a random nonce - random number XOR-ed with the current datetime
         as recommended by http://www.movable-type.co.uk/scripts/aes.html
         """
-        u = self.urandom.next()
+        u = six.advance_iterator(self.urandom)
         n = struct.pack('hbbbbbbh', *datetime.datetime.now().timetuple()[:-1])
         return [ord(x) ^ ord(y) for (x, y) in itertools.izip(u, n)]
     

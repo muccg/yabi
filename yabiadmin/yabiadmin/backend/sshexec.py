@@ -64,7 +64,7 @@ class SSHExec(object):
             logger.debug("sshclient exec'd script OK")
 
             return exit_code, stdout.readlines(), stderr.readlines()
-        except paramiko.SSHException, sshe:
+        except paramiko.SSHException as sshe:
             raise RetryException(sshe, traceback.format_exc())
         finally:
             try:

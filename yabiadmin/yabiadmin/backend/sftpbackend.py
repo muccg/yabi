@@ -39,6 +39,7 @@ import time
 import logging
 import threading
 from itertools import dropwhile
+from functools import reduce
 
 logger = logging.getLogger(__name__)
 
@@ -72,7 +73,7 @@ class SFTPCopyThread(threading.Thread):
                 try:
                     sftp.get(self.remotepath, self.localpath, callback=None)
                 # bogus error because stat of fifo returns 0
-                except IOError, ioerr:
+                except IOError as ioerr:
                     msg = str(ioerr)
                     if msg.startswith("size mismatch in get!  0 !="):
                         status = 0
@@ -81,7 +82,7 @@ class SFTPCopyThread(threading.Thread):
 
             status = 0
 
-        except Exception, exc:
+        except Exception as exc:
             logger.error(traceback.format_exc())
             logger.error(exc)
         finally:
@@ -143,7 +144,7 @@ class SFTPBackend(FSBackend):
         try:
             sftp.stat(path)
             return True
-        except IOError, e:
+        except IOError as e:
             if e.errno == errno.ENOENT:  # No such file or directory
                 return False
             else:
@@ -160,7 +161,7 @@ class SFTPBackend(FSBackend):
             try:
                 self._rm(sftp, path)
                 logger.debug("deleted existing directory %s OK" % path)
-            except Exception, ex:
+            except Exception as ex:
                 logger.debug("could not remove directory %s: %s" % (path, ex))
 
             def full_path(result, d):
@@ -178,7 +179,7 @@ class SFTPBackend(FSBackend):
 
             logger.debug("created dir %s OK" % path)
 
-        except Exception, exc:
+        except Exception as exc:
             logger.error(exc)
             raise RetryException(exc, traceback.format_exc())
         finally:
@@ -199,7 +200,7 @@ class SFTPBackend(FSBackend):
             output = {}
             output[parts.path] = results
             return output
-        except Exception, exc:
+        except Exception as exc:
             logger.error(exc)
             raise RetryException(exc, traceback.format_exc())
         finally:
@@ -279,7 +280,7 @@ class SFTPBackend(FSBackend):
         executer = create_executer(self.yabiusername, src_uri)
         try:
             executer.local_copy(src_parts.path, dst_parts.path, recursive)
-        except Exception, exc:
+        except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
 
     def local_copy_recursive(self, src_uri, dst_uri):
@@ -297,7 +298,7 @@ class SFTPBackend(FSBackend):
         executer = create_executer(self.yabiusername, src_uri)
         try:
             executer.local_symlink(src_parts.path, dst_parts.path)
-        except Exception, exc:
+        except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
 
     def rm(self, uri):
@@ -308,7 +309,7 @@ class SFTPBackend(FSBackend):
         try:
             sftp = ssh.open_sftp()
             self._rm(sftp, parts.path)
-        except Exception, exc:
+        except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
         finally:
             try:

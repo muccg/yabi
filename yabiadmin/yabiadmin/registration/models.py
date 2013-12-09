@@ -33,6 +33,7 @@ from ccg.utils import webhelpers
 
 from datetime import datetime, timedelta
 from uuid import uuid4
+import six
 
 
 class Request(models.Model):
@@ -51,7 +52,7 @@ class Request(models.Model):
         ordering = ("state", "user__username")
 
     def __unicode__(self):
-        return unicode(self.user)
+        return six.text_type(self.user)
 
     def approve(self, request):
         password = DjangoUser.objects.make_random_password()

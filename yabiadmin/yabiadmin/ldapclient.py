@@ -48,7 +48,7 @@ class LDAPClient:
             try:
                 self.bind_to_server(server, userdn, password)
                 return True
-            except ldap.LDAPError, e:
+            except ldap.LDAPError as e:
                 logger.error("Ldap Error while binding to server %s:" % server)
                 logger.error(e)
         return False

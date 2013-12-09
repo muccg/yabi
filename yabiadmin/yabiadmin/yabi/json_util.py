@@ -49,7 +49,7 @@ def makeJsonFriendly(data):
       else:
           pass # do nothing
 
-  except Exception, e:
+  except Exception as e:
       logger.critical("makeJsonFriendly encountered an error: %s" % str(e))
       raise
 

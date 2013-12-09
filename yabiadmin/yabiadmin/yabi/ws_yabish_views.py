@@ -40,10 +40,11 @@ from yabiadmin.backend import backend
 from yabiadmin.decorators import authentication_required
 from collections import namedtuple
 import logging
+from six.moves import filter
 logger = logging.getLogger(__name__)
 
 
-class YabiError(StandardError):
+class YabiError(Exception):
     pass
 
 
@@ -61,7 +62,7 @@ def is_stagein_required(request):
             resp = {'success': True, 'stagein_required': True, 'files': input_files}
         else:
             resp = {'success': True, 'stagein_required': False}
-    except YabiError, e:
+    except YabiError as e:
         resp = {'success': False, 'msg': str(e)}
 
     return HttpResponse(json.dumps(resp))
@@ -92,7 +93,7 @@ def submitjob(request):
 
         # process workflow via celery
         process_workflow(workflow.pk).apply_async()
-    except YabiError, e:
+    except YabiError as e:
         transaction.rollback()
         logger.exception("Error in submitjob()")
         # TODO error returns success???
@@ -162,7 +163,7 @@ def createstageindir(request):
             backend.mkdir(user.name, stageindir + '/' + d)
 
         resp = {'success': True, 'uri': stageindir}
-    except StandardError, e:
+    except Exception as e:
         resp = {'success': False, 'msg': str(e)}
 
     return HttpResponse(json.dumps(resp))
@@ -246,14 +247,15 @@ class ParamDef(object):
 class YabiArgumentParser(object):
     def __init__(self, tool):
         self.paramdefs = self.init_paramdefs(tool)
-        self.positional_paramdefs = filter(lambda x: x.switch_use == 'valueOnly', self.paramdefs)
+        self.positional_paramdefs = list(filter(lambda x: x.switch_use == 'valueOnly', self.paramdefs))
 
     def parse_args(self, arguments):
         arguments_copy = copy.copy(arguments)
         parsed_options, unhandled_args = self.parse_options(arguments_copy)
 
         # Error if any unhandled argument are options (ie. start with '-' or '--')
-        unknown_options = filter(lambda arg: is_option(arg), [arg[0] for arg in unhandled_args])
+        # AH added list after running modernize
+        unknown_options = list(filter(lambda arg: is_option(arg), [arg[0] for arg in unhandled_args]))
         if unknown_options:
             raise ParsingError('Unknown option: %s' % ','.join(unknown_options))
 
@@ -347,7 +349,8 @@ def create_wrapper_workflow(selectfile_job, job, toolname):
     def generate_name(toolname):
         return '%s (%s)' % (toolname, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
-    jobs = filter(lambda x: x is not None, [selectfile_job, job])
+    # AH added list after running modernize
+    jobs = list(filter(lambda x: x is not None, [selectfile_job, job]))
     for i, job in enumerate(jobs):
         job['jobId'] = i + 1
 

@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from datetime import datetime
+import six
 
 class Settings:
     user = None
@@ -22,7 +23,7 @@ def auth_user(username, password, email, active=True, staff=False, superuser=Fal
     authuser.last_modified_on = datetime.now()
     authuser.created_by = user or authuser
     authuser.created_on = datetime.now()
-    authuser.username = unicode(username)
+    authuser.username = six.text_type(username)
     authuser.password = make_password_hash(password)
     authuser.email = email
     authuser.is_active = active

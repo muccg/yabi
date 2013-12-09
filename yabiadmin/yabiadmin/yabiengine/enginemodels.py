@@ -38,8 +38,9 @@ from yabiadmin.yabi.models import BackendCredential, Tool
 from yabiadmin.yabiengine.commandlinetemplate import CommandTemplate
 from yabiadmin.yabiengine.models import Workflow, Task, Job, StageIn, Tag
 from yabiadmin.yabiengine.urihelper import uriparse, url_join, is_same_location, uriunparse
-from backendhelper import get_exec_backendcredential_for_uri
+from .backendhelper import get_exec_backendcredential_for_uri
 import logging
+from six.moves import filter
 logger = logging.getLogger(__name__)
 from yabiadmin.constants import *
 
@@ -334,7 +335,8 @@ class EngineJob(Job):
 
         # lets count up our batch_file_list to see how many files there are to process
         # won't count tasks with file == None as these are from not batch param jobs
-        count = len(filter(lambda x: x is not None, input_files))
+        # AH added list after running modernize
+        count = len(list(filter(lambda x: x is not None, input_files)))
         left_padded_with_zeros = "{0:0>%s}" % len(str(count))
 
         self.task_total = len(input_files)

@@ -59,7 +59,7 @@ class CopyThread(threading.Thread):
             #shutil.copyfileobj(os.open(self.src, os.O_RDONLY), os.open(self.dst, os.O_WRONLY|os.O_CREAT))
             logger.debug('CopyThread end copy')
             status = 0
-        except Exception, exc:
+        except Exception as exc:
             logger.error(traceback.format_exc())
             logger.error(exc)
         finally:
@@ -107,7 +107,7 @@ class FileBackend(FSBackend):
 
         try:
             os.makedirs(parts.path)
-        except OSError, ose:
+        except OSError as ose:
             raise RetryException(ose, traceback.format_exc())
 
     def ls_recursive(self, uri):
@@ -129,7 +129,7 @@ class FileBackend(FSBackend):
         dst_scheme, dst_parts = uriparse(dst_uri)
         try:
             shutil.copy2(src_parts.path, dst_parts.path)
-        except Exception, exc:
+        except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
 
     def local_copy_recursive(self, src_uri, dst_uri):
@@ -145,7 +145,7 @@ class FileBackend(FSBackend):
                     shutil.copytree(src, dst)
                 else:
                     shutil.copy2(src, dst)
-        except Exception, exc:
+        except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
 
     def symbolic_link(self, target_uri, link_uri):
@@ -155,7 +155,7 @@ class FileBackend(FSBackend):
         link_scheme, link_parts = uriparse(link_uri)
         try:
             os.symlink(target_parts.path, link_parts.path)
-        except OSError, ose:
+        except OSError as ose:
             raise RetryException(ose, traceback.format_exc())
 
     def rm(self, uri):
@@ -172,5 +172,5 @@ class FileBackend(FSBackend):
                 shutil.rmtree(parts.path)
             elif os.path.isfile(parts.path):
                 os.unlink(parts.path)
-        except Exception, exc:
+        except Exception as exc:
             raise RetryException(exc, traceback.format_exc())

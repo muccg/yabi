@@ -54,6 +54,7 @@ from yabiadmin.backend import backend
 from yabiadmin.backend.exceptions import FileNotFoundError
 
 import logging
+import six
 logger = logging.getLogger(__name__)
 
 DATE_FORMAT = '%Y-%m-%d'
@@ -115,13 +116,13 @@ def menu(request):
         all_tools_toolset["name"] = 'all_tools'
         all_tools_toolset["toolgroups"] = []
 
-        for key in sorted(all_tools.iterkeys()):
+        for key in sorted(six.iterkeys(all_tools)):
             toolgroup = all_tools[key]
             tg = {}
             tg['name'] = key
             tg['tools'] = []
 
-            for toolname in sorted(toolgroup.iterkeys()):
+            for toolname in sorted(six.iterkeys(toolgroup)):
                 tg['tools'].append(toolgroup[toolname])
 
             all_tools_toolset["toolgroups"].append(tg)
@@ -346,7 +347,7 @@ def get_workflow(request, workflow_id):
     else:
         try:
             response = db.get_workflow(yabiusername, workflow_id)
-        except (db.NoSuchWorkflow), e:
+        except (db.NoSuchWorkflow) as e:
             logger.critical('%s' % e)
             return JsonMessageResponseNotFound(e)
 

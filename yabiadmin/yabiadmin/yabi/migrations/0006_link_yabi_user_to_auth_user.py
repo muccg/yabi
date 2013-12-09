@@ -1,3 +1,8 @@
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
 # encoding: utf-8
 import datetime
 from south.db import db
@@ -16,16 +21,16 @@ class Migration(DataMigration):
             try:
                 user.user = orm['auth.user'].objects.get(username=user.name)
                 user.save()
-            except (MultipleObjectsReturned, ObjectDoesNotExist), e:
+            except (MultipleObjectsReturned, ObjectDoesNotExist) as e:
                 bad_users.append(user)
 
         if bad_users:
-            print "\n\n****************************************"
-            print "WARNING\n"
-            print "These users in yabi.user had a name that differed from auth.user. Please correct this."
+            print("\n\n****************************************")
+            print("WARNING\n")
+            print("These users in yabi.user had a name that differed from auth.user. Please correct this.")
             for u in bad_users:
-                print u.name
-            print "****************************************\n\n"                
+                print(u.name)
+            print("****************************************\n\n")                
 
 
     def backwards(self, orm):

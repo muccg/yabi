@@ -39,7 +39,7 @@ def archiveWorkflow(workflow):
         db.ensure_user_db(workflow.user.name)
         db.save_workflow(workflow.user.name, workflow,
                          [t.tag.value for t in workflow.workflowtag_set.all()])
-    except Exception, e:
+    except Exception as e:
         logger.critical("Couldn't save workflow %d to store: %s" %
                         (workflow.id, e))
         raise

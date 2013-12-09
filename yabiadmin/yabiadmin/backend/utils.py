@@ -46,7 +46,7 @@ def execute(args, bufsize=0, stdin=None, stdout=subprocess.PIPE, stderr=subproce
     try:
         logger.debug(args)
         process = subprocess.Popen(args, bufsize=bufsize, stdin=stdin, stdout=stdout, stderr=stderr, shell=shell, cwd=cwd, env=env)
-    except Exception, exc:
+    except Exception as exc:
         logger.error(exc)
         raise RetryException(exc, traceback.format_exc())
 
@@ -64,7 +64,7 @@ def blocking_execute(args, bufsize=0, stdin=None, stdout=subprocess.PIPE, stderr
         stdout_data, stderr_data = process.communicate(stdin)
         status = process.returncode
 
-    except Exception, exc:
+    except Exception as exc:
         logger.error('execute failed {0}'.format(status))
         from yabiadmin.backend.exceptions import RetryException
         raise RetryException(exc, traceback.format_exc())
@@ -88,7 +88,7 @@ def create_fifo(suffix='', dir='/tmp'):
     filename = str(filename)
     logger.debug('create_fifo {0}'.format(filename))
     os.umask(0)
-    os.mkfifo(filename, 0600)
+    os.mkfifo(filename, 0o600)
     return filename
 
 
@@ -176,7 +176,7 @@ def harvest_host_key(hostname, port, username, password, pkey):
             # save the key
             host_key = HostKey.objects.create(hostname=hostname, fingerprint=fingerprint, key_type=key_type, data=data)
             host_key.save()
-    except Exception, exc:
+    except Exception as exc:
         logger.error(exc)
 
 
@@ -184,7 +184,7 @@ def try_to_load_key_file(key_type, credential_key, passphrase=None):
     try:
         pkey = key_type.from_private_key(StringIO.StringIO(credential_key), passphrase)
         return pkey
-    except paramiko.SSHException, sshex:
+    except paramiko.SSHException as sshex:
         # ignoring exceptions of form "not a valid (DSA|RSA) private key file"
         msg = str(sshex)
         if not (msg.startswith("not a valid") and msg.endswith("private key file")):
@@ -244,13 +244,13 @@ def sshclient(hostname, port, credential):
             logger.debug("Connecting using password")
             connect(password=passphrase)
 
-    except paramiko.BadHostKeyException, bhke:  # BadHostKeyException - if the server's host key could not be verified
+    except paramiko.BadHostKeyException as bhke:  # BadHostKeyException - if the server's host key could not be verified
         raise RetryException(bhke, traceback.format_exc())
-    except paramiko.AuthenticationException, aue:  # AuthenticationException - if authentication failed
+    except paramiko.AuthenticationException as aue:  # AuthenticationException - if authentication failed
         raise RetryException(aue, traceback.format_exc())
-    except paramiko.SSHException, sshe:  # SSHException - if there was any other error connecting or establishing an SSH session
+    except paramiko.SSHException as sshe:  # SSHException - if there was any other error connecting or establishing an SSH session
         raise RetryException(sshe, traceback.format_exc())
-    except socket.error, soe:  # socket.error - if a socket error occurred while connecting
+    except socket.error as soe:  # socket.error - if a socket error occurred while connecting
         raise RetryException(soe, traceback.format_exc())
 
     return ssh

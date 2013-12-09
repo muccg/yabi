@@ -1,6 +1,9 @@
 import logging
 import re
 from functools import partial
+from six.moves import filter
+from six.moves import map
+from six.moves import zip
 
 logger = logging.getLogger(__name__)
 
@@ -152,7 +155,7 @@ class SGEParser(object):
         if match is None:
             raise RuntimeError("Remote id '%s' doesn't look like an array job pattern" % remote_id)
         expected_job_id, first_subjob_id, last_subjob_id, step = match.groups()
-        expected_subjob_ids = range(int(first_subjob_id), int(last_subjob_id) + 1, int(step))
+        expected_subjob_ids = list(range(int(first_subjob_id), int(last_subjob_id) + 1, int(step)))
 
         all_lines = "".join(stdout)
         SUBJOB_SEPARATOR = "=" * 62 + "\n"

@@ -27,6 +27,9 @@
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 """A suite of useful parsers for us"""
+from __future__ import print_function
+from __future__ import print_function
+from __future__ import print_function
 
 import urlparse
 import re
@@ -124,9 +127,9 @@ def parse_ls(data, culldots=True):
     output = {}
     for name, filelisting, dirlisting in parse_ls_directories(data, culldots):
         if DEBUG:
-            print "NAME", name
-            print "FILELISTING", filelisting
-            print "DIRLISTING", dirlisting
+            print("NAME", name)
+            print("FILELISTING", filelisting)
+            print("DIRLISTING", dirlisting)
         if name and not name.endswith('/'):
             name = name + "/"                 # add a slash to directories missing it
         output[name] = {

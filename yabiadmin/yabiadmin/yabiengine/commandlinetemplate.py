@@ -37,6 +37,7 @@ import os.path
 import re
 
 import logging
+import six
 logger = logging.getLogger(__name__)
 
 DEBUG = False
@@ -58,7 +59,7 @@ def levenshtein(a, b):
         a, b = b, a
         n, m = m, n
 
-    current = range(n + 1)
+    current = list(range(n + 1))
     for i in range(1, m + 1):
         previous, current = current, [i] + [0] * n
         for j in range(1, n + 1):
@@ -751,7 +752,7 @@ class CommandTemplate(object):
 
             # now process the values of batch_set into parsed_param_values
             out_hash = {}
-            for key, val in batch_set.iteritems():
+            for key, val in six.iteritems(batch_set):
                 decoded_file_list = self.parse_param_value(val)
                 assert len(decoded_file_list) == 1
                 out_hash[key] = decoded_file_list

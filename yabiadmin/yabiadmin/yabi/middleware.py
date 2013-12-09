@@ -1,3 +1,4 @@
+from __future__ import print_function
 ### BEGIN COPYRIGHT ###
 #
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
@@ -29,5 +30,5 @@ from django.db import connection
 class Logging:
     def process_response(self, request, response):
         for query in connection.queries:
-            print "\033[1;31m[%s]\033[0m \033[1m%s\033[0m" % (query['time'], " ".join(query['sql'].split()))
+            print("\033[1;31m[%s]\033[0m \033[1m%s\033[0m" % (query['time'], " ".join(query['sql'].split())))
         return response

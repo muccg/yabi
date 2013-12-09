@@ -47,6 +47,8 @@
 import re
 import logging
 import string
+from six.moves import map
+from six.moves import zip
 logger = logging.getLogger(__name__)
 
 
@@ -135,7 +137,8 @@ class TorqueParser(object):
         @param line: eg "job_state = C"
         @return: the value after = stripped ( E.g. "C" in above case
         """
-        parts = map(string.strip, line.split("="))
+        # AH added the list after running modernize
+        parts = list(map(string.strip, line.split("=")))
         return parts[1]
 
     def parse_poll(self, remote_id, exit_code, stdout, stderr):

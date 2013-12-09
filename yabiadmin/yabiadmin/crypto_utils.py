@@ -26,7 +26,7 @@
 #
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-import aes_ctr
+from . import aes_ctr
 import math
 import binascii
 import logging
@@ -91,7 +91,7 @@ class LegacyAESWrapper(object):
             output = output[:-1]
         
         if contains_binary(output):
-            raise DecryptException, "AES decrypt failed. Decrypted data contains binary"
+            raise DecryptException("AES decrypt failed. Decrypted data contains binary")
         
         return output
 
@@ -100,7 +100,7 @@ class LegacyAESWrapper(object):
         """decrypt a base64 encoded encrypted block"""
         try:
             ciphertext = binascii.unhexlify( ciphertext )
-        except TypeError, te:
+        except TypeError as te:
             # the credential binary block cannot be decoded
             raise DecryptException("Credential does not seem to contain binary encrypted data")
         return LegacyAESWrapper.aes_dec(ciphertext, key)
@@ -155,7 +155,7 @@ def deannotate(data):
     data = joiner(data)
     try:
         dummy,tag,cipher,dummy2 = data.split('$')
-    except ValueError, ve:
+    except ValueError as ve:
         raise DecryptException("Invalid input string to deannotate")
     if dummy or dummy2:
         raise DecryptException("Invalid input string to deannotate")
