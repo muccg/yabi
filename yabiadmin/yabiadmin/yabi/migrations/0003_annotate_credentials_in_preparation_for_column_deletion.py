@@ -1,8 +1,5 @@
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-# -*- coding: utf-8 -*-
 # encoding: utf-8
+from __future__ import print_function
 import datetime
 from south.db import db
 from south.v2 import DataMigration

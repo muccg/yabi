@@ -1,14 +1,3 @@
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
 ### BEGIN COPYRIGHT ###
 #
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
@@ -56,7 +45,7 @@ from __future__ import print_function
 # If you want to do the migration for real set back DontAct to False first
 #
 # shell> m.DontAct = False
-
+from __future__ import print_function
 from yabi.models import User
 from yabistoreapp import db
 from yabiengine.enginemodels import EngineWorkflow

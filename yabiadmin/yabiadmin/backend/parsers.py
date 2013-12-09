@@ -28,9 +28,6 @@
 # -*- coding: utf-8 -*-
 """A suite of useful parsers for us"""
 from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-
 import urlparse
 import re
 re_url_schema = re.compile(r'\w+')

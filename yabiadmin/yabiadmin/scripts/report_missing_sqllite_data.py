@@ -1,9 +1,3 @@
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
-from __future__ import print_function
 ### BEGIN COPYRIGHT ###
 #
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
@@ -38,7 +32,7 @@ from __future__ import print_function
 # shell> from scripts import report_missing_sqllite_data as r
 # shell> r.report()
 #
-
+from __future__ import print_function
 from yabi.models import User
 from yabistoreapp import db
 

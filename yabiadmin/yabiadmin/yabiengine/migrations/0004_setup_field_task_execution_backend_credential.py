@@ -1,5 +1,4 @@
 from __future__ import print_function
-from __future__ import print_function
 # encoding: utf-8
 import datetime
 from south.db import db
