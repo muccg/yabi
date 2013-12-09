@@ -335,7 +335,6 @@ class EngineJob(Job):
 
         # lets count up our batch_file_list to see how many files there are to process
         # won't count tasks with file == None as these are from not batch param jobs
-        # AH added list after running modernize
         count = len(list(filter(lambda x: x is not None, input_files)))
         left_padded_with_zeros = "{0:0>%s}" % len(str(count))
 

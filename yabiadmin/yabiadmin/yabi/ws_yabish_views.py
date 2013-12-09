@@ -254,7 +254,6 @@ class YabiArgumentParser(object):
         parsed_options, unhandled_args = self.parse_options(arguments_copy)
 
         # Error if any unhandled argument are options (ie. start with '-' or '--')
-        # AH added list after running modernize
         unknown_options = list(filter(lambda arg: is_option(arg), [arg[0] for arg in unhandled_args]))
         if unknown_options:
             raise ParsingError('Unknown option: %s' % ','.join(unknown_options))
@@ -349,7 +348,6 @@ def create_wrapper_workflow(selectfile_job, job, toolname):
     def generate_name(toolname):
         return '%s (%s)' % (toolname, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
-    # AH added list after running modernize
     jobs = list(filter(lambda x: x is not None, [selectfile_job, job]))
     for i, job in enumerate(jobs):
         job['jobId'] = i + 1

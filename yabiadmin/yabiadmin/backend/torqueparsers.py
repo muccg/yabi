@@ -137,7 +137,6 @@ class TorqueParser(object):
         @param line: eg "job_state = C"
         @return: the value after = stripped ( E.g. "C" in above case
         """
-        # AH added the list after running modernize
         parts = list(map(string.strip, line.split("=")))
         return parts[1]
 
