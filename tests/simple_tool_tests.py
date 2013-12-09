@@ -1,5 +1,4 @@
 from __future__ import print_function
-from __future__ import print_function
 import unittest
 from .support import YabiTestCase, StatusResult, all_items, json_path
 from .fixture_helpers import admin
