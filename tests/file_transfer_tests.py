@@ -33,7 +33,6 @@ class FileUploadTest(YabiTestCase, FileUtils):
 
         expected_cksum, expected_size = self.run_cksum_locally(filename)
 
-        # AH added list after running modernize
         returned_lines = list(filter(lambda l: l.startswith(expected_cksum), result.stdout.split("\n")))
         self.assertEqual(len(returned_lines), 1, 'Expected cksum %s result not returned or checksum is incorrect' % expected_cksum)
         our_line = returned_lines[0]
