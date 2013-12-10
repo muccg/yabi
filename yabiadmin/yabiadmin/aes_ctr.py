@@ -31,6 +31,7 @@
 from Crypto.Cipher import AES
 import base64, math, itertools, datetime, struct, os, hmac, hashlib
 import six
+from six.moves import xrange
 
 class CTR(object):
     """
@@ -73,7 +74,7 @@ class CTR(object):
         returns the number of blocks in the string
         """
         nblocks = int(math.ceil(len(s) / (1. * CTR.blocksize)))
-        for i in range(nblocks):
+        for i in xrange(nblocks):
             yield s[i * CTR.blocksize:(i + 1) * CTR.blocksize]
     
     @classmethod
@@ -83,7 +84,7 @@ class CTR(object):
         using initial nonce `nonce'
         """
         counterblock = nonce + []
-        for i in range(7, -1, -1):
+        for i in xrange(7, -1, -1):
             v = (block_num / (2 ** (8*i))) & 0xFF
             counterblock.append(v)
         return counterblock
