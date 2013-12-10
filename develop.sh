@@ -19,7 +19,7 @@ AWS_TEST_INSTANCE='aws_yabi_test'
 AWS_STAGING_INSTANCE='aws_syd_yabi_staging'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
 CLOSURE="/usr/local/closure/compiler.jar"
-PIP_OPTS='--download-cache ~/.pip/cache --index-url=https://simple.crate.io'
+PIP_OPTS='--download-cache ~/.pip/cache'
 
 
 if [ "${YABI_CONFIG}" = "" ]; then
