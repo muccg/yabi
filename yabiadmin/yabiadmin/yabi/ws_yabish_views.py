@@ -348,7 +348,7 @@ def create_wrapper_workflow(selectfile_job, job, toolname):
     def generate_name(toolname):
         return '%s (%s)' % (toolname, datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
 
-    jobs = filter(lambda x: x is not None, [selectfile_job, job])
+    jobs = list(filter(lambda x: x is not None, [selectfile_job, job]))
     for i, job in enumerate(jobs):
         job['jobId'] = i + 1
 
