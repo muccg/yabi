@@ -1,0 +1,10 @@
+The S column is the state of the job.
+In this case the job_state is Q for queued.
+
+remote_id: 3485900
+STDOUT:
+Job id            Name             User              Time Use S Queue
+3485900.epic      test.sh          bioflow           00:00:05 Q debugq
+----------------------------------------------------------------------
+status should be JOB_RUNNING
+

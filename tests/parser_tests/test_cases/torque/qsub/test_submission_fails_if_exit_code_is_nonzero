@@ -1,0 +1,10 @@
+If the Exit Code is non-zero we should always handle it as a submission error
+even when the STDOUT output looks OK.
+
+Exit Code: 1
+STDOUT: 
+12345.carah.localdomain
+-------------------------
+status should be JOB_SUBMISSION_ERROR
+remote_id should be None
+
