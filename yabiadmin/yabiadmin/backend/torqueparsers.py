@@ -202,9 +202,13 @@ class TorqueParser(object):
             if line.startswith("Job Id:"):
                 if prefix in line:
                     matched_job = True
+                else:
+                    if matched_job:
+                        break
 
-            elif matched_job and line.startswith("job_state"):
+            if matched_job and line.startswith("job_state"):
                 job_state = self._parse_qstat_line(line)
+                break
         if not matched_job:
             qstat_result.status = TorqueQStatResult.JOB_NOT_FOUND
             return qstat_result
