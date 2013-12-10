@@ -6,6 +6,7 @@ from django.db import models
 import os
 
 from ..migrationutils import *
+import six
 
 def homedir():
     return "%s%s" % (os.environ.get('HOME', '/tmp'), '/')
@@ -153,7 +154,7 @@ class Migration(DataMigration):
             output_file = False,
             extension_param = None,
             possible_values = None,
-            default_value = u'selected files',
+            default_value = six.u('selected files'),
             helptext = None,
             batch_bundle_files = False,
             file_assignment = 'batch',
@@ -270,7 +271,7 @@ class Migration(DataMigration):
             output_file = False,
             extension_param = None,
             possible_values = None,
-            default_value = u'',
+            default_value = six.u(''),
             helptext = None,
             batch_bundle_files = False,
             file_assignment = 'none',

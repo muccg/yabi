@@ -38,7 +38,7 @@ from django.core import urlresolvers
 from yabiadmin.yabi.models import *
 from ccg.utils import webhelpers
 from django.utils import simplejson as json
-from json_util import makeJsonFriendly
+from .json_util import makeJsonFriendly
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django import forms
@@ -47,12 +47,13 @@ from django.views.debug import get_safe_settings
 from django.contrib import messages
 
 import logging
+import six
 logger = logging.getLogger(__name__)
 
 try:
     from yabiadmin import ldaputils
     LDAP_IN_USE = True
-except ImportError, e:
+except ImportError as e:
     LDAP_IN_USE = False
     logger.info("LDAP modules not imported. If you are not using LDAP this is not a problem.")
 
@@ -64,7 +65,7 @@ class AddToolForm(forms.Form):
         data = self.cleaned_data['tool_json']
         try:
             tool_dict = json.loads(data)
-        except Exception, e:
+        except Exception as e:
             raise forms.ValidationError("Unable to load json. Please check it is valid.")
 
 
@@ -140,7 +141,7 @@ def tool(request, tool_id):
 def modify_backend_by_id(request,id):
     """This is used primarily by test harness to modify backend settings mid test"""
     be = Backend.objects.get(id=id)
-    for key,val in request.REQUEST.iteritems():
+    for key,val in six.iteritems(request.REQUEST):
         logger.debug('{0}={1}'.format(key,val))
         setattr(be,key,None if val=="None" else val)
     be.save()
@@ -151,7 +152,7 @@ def modify_backend_by_id(request,id):
 def modify_backend_by_name(request,scheme,hostname):
     """This is used primarily by test harness to modify backend settings mid test"""
     be = Backend.objects.get(scheme=scheme,hostname=hostname)
-    for key,val in request.REQUEST.iteritems():
+    for key,val in six.iteritems(request.REQUEST):
         logger.debug('{0}={1}'.format(key,val))
         setattr(be,key,None if val=="None" else val)
     be.save()
@@ -215,7 +216,7 @@ def register_users(request):
             user, created = User.objects.get_or_create(name=username)
             logger.debug("Yabi user %s for %s" % ("created" if created else 'already existed', username))
 
-        except Exception, e:
+        except Exception as e:
             logger.critical("Users not registered because of %s" % e)
             pass
 
@@ -296,14 +297,14 @@ def backend_cred_test(request, backend_cred_id):
                 'listing':json.loads(rawdata)
             }))
 
-        except ValueError, e:
+        except ValueError as e:
             # value error report
             return render_to_response('yabi/backend_cred_test.html', dict_join(template_vars,{
                 'error':"Value Error",
                 'error_help':"<pre>"+rawdata+"</pre>"
             }))
 
-    except backendhelper.BackendServerError, bse:
+    except backendhelper.BackendServerError as bse:
         if "authentication failed" in str(bse).lower():
             # auth failed
             cred_url = '%syabi/credential/%d'%(urlresolvers.reverse('admin:index'),bec.credential.id)               # TODO... construct this more 'correctly'
@@ -384,12 +385,12 @@ def create_tool(request, tool_dict):
     # try and get the backends
     try:
         backend = Backend.objects.get(name=tool_dict['backend'])
-    except ObjectDoesNotExist,e:
+    except ObjectDoesNotExist as e:
         backend = Backend.objects.get(name='nullbackend')
 
     try:
         fs_backend = Backend.objects.get(name=tool_dict['fs_backend'])
-    except ObjectDoesNotExist,e:
+    except ObjectDoesNotExist as e:
         fs_backend = Backend.objects.get(name='nullbackend')
 
     # create the tool
@@ -475,7 +476,7 @@ def create_tool(request, tool_dict):
                 toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["switch"])
                 toolparameter.use_output_filename=outputfilename_toolparameter
                 toolparameter.save()
-            except ObjectDoesNotExist,e:
+            except ObjectDoesNotExist as e:
                 logger.critical("Unable to add use_output_filename on parameter.use_output_filename field: %s" % e)
 
         # add extension param
@@ -485,7 +486,7 @@ def create_tool(request, tool_dict):
                 toolparameter = ToolParameter.objects.get(tool=tool, switch=parameter["switch"])
                 toolparameter.extension_param=extension
                 toolparameter.save()
-            except ObjectDoesNotExist,e:
+            except ObjectDoesNotExist as e:
                 logger.critical("Unable to add extension on parameter.extension field: %s" % e)
 
 
@@ -550,7 +551,7 @@ def duplicate_credential(request):
                 try:
                     cred.send_to_cache()
                     success += 1
-                except DecryptException, de:
+                except DecryptException as de:
                     # failed decrypt. not saved.
                     fail += 1
 

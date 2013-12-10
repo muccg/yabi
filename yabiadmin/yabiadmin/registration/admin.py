@@ -31,8 +31,9 @@ from django.db import transaction
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from ccg.utils import webhelpers
-from models import Request
+from .models import Request
 from yabife.yabifeapp.models import User
+import six
 
 
 class RequestAdmin(ModelAdmin):
@@ -55,7 +56,7 @@ class RequestAdmin(ModelAdmin):
         req = get_object_or_404(Request, id=id)
         req.approve(request)
 
-        self.message_user(request, "Request for %s approved." % unicode(req))
+        self.message_user(request, "Request for %s approved." % six.text_type(req))
         return HttpResponseRedirect(webhelpers.url("/admin-pane/registration/request/"))
 
     @transaction.commit_on_success
@@ -63,7 +64,7 @@ class RequestAdmin(ModelAdmin):
         req = get_object_or_404(Request, id=id)
         req.deny(request)
 
-        self.message_user(request, "Request for %s denied." % unicode(req))
+        self.message_user(request, "Request for %s denied." % six.text_type(req))
         return HttpResponseRedirect(webhelpers.url("/admin-pane/registration/request/"))
 
     # Admin actions allowing bulk approval or denial.
@@ -82,11 +83,11 @@ class RequestAdmin(ModelAdmin):
             if req.state == 1:
                 try:
                     req.approve(request)
-                    approved.append(unicode(req))
+                    approved.append(six.text_type(req))
                 except User.LDAPUserDoesNotExist:
-                    failed.append("%s (no LDAP account)" % unicode(req))
+                    failed.append("%s (no LDAP account)" % six.text_type(req))
             else:
-                skipped.append(unicode(req))
+                skipped.append(six.text_type(req))
 
         message = {
             "approved": (", ".join(approved)) if approved else "None",
@@ -124,9 +125,9 @@ class RequestAdmin(ModelAdmin):
         for req in qs:
             if req.state < 2:
                 req.deny(request)
-                denied.append(unicode(req))
+                denied.append(six.text_type(req))
             else:
-                skipped.append(unicode(req))
+                skipped.append(six.text_type(req))
 
         message = {
             "denied": (", ".join(denied)) if denied else "None",

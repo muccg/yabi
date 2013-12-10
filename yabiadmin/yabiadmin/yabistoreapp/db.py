@@ -33,10 +33,11 @@ Support library to create and access the users personal history database
 import sqlite3
 import os
 from datetime import datetime as datetime
+from six.moves import filter
 
 try:
     import json
-except ImportError, ie:
+except ImportError as ie:
     import simplejson as json
 
 from django.conf import settings

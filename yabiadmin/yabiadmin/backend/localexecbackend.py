@@ -79,13 +79,13 @@ class LocalExecBackend(ExecBackend):
                 logger.error('Non zero exit status [{0}]'.format(status))
                 raise RetryException('Local Exec of command "{0}" retuned non-zero code {1}'.format(" ".join(args), status))
 
-        except Exception, exc:
+        except Exception as exc:
             raise RetryException(exc)
         finally:
             try:
                 stdout.close()
                 stderr.close()
-            except Exception, exc:
+            except Exception as exc:
                 logger.error(exc)
 
         return status

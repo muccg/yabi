@@ -26,6 +26,7 @@
 ### END COPYRIGHT ###
 from urlparse import urlparse
 import logging
+from functools import reduce
 logger = logging.getLogger(__name__)
 
 import re
@@ -44,11 +45,11 @@ def uriparse(uri):
         scheme, rest = uri.split(":", 1)
         assert re_url_schema.match(scheme)
         return (scheme, urlparse(rest))
-    except ValueError, e:
+    except ValueError as e:
         logger.critical("%s - ValueError for uri: %s" % ("urihelper.uriparse", uri))
         logger.critical("%s - %s" % ("urihelper.uriparse", e.message))
         raise
-    except AttributeError, e:
+    except AttributeError as e:
         logger.critical("%s - AttributeError for uri: %s" % ("urihelper.uriparse", uri))
         logger.critical("%s - %s" % ("urihelper.uriparse", e.message))
         raise

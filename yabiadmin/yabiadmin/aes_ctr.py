@@ -30,6 +30,8 @@
 
 from Crypto.Cipher import AES
 import base64, math, itertools, datetime, struct, os, hmac, hashlib
+import six
+from six.moves import xrange
 
 class CTR(object):
     """
@@ -130,7 +132,7 @@ class CTR(object):
         generate a random nonce - random number XOR-ed with the current datetime
         as recommended by http://www.movable-type.co.uk/scripts/aes.html
         """
-        u = self.urandom.next()
+        u = six.advance_iterator(self.urandom)
         n = struct.pack('hbbbbbbh', *datetime.datetime.now().timetuple()[:-1])
         return [ord(x) ^ ord(y) for (x, y) in itertools.izip(u, n)]
     

@@ -39,6 +39,7 @@ from yabiadmin.yabiengine.enginemodels import EngineWorkflow, EngineJob, EngineT
 import celery
 from celery import current_task, chain
 from celery.utils.log import get_task_logger
+from six.moves import filter
 logger = get_task_logger(__name__)
 
 
@@ -108,7 +109,7 @@ def create_db_tasks(job_id):
             return None
         return job_id
 
-    except DecryptedCredentialNotAvailable, dcna:
+    except DecryptedCredentialNotAvailable as dcna:
         logger.exception("Decrypted credential not available.")
         countdown = backoff(request.retries)
         logger.warning('create_db_tasks.retry {0} in {1} seconds'.format(job_id, countdown))
@@ -195,7 +196,7 @@ def retry_on_error(original_function):
         try:
             result = original_function(task_id, *args, **kwargs)
             return result
-        except RetryException, rexc:
+        except RetryException as rexc:
             if rexc.type == RetryException.TYPE_ERROR:
                 logger.exception("Exception in celery task {0} for task {1}".format(original_function_name, task_id))
 
@@ -214,13 +215,13 @@ def retry_on_error(original_function):
                 raise
             except celery.exceptions.RetryTaskError:
                 raise
-            except Exception, ex:
+            except Exception as ex:
                 logger.error(("{0}.retry {1} failed: {2} - changing status to error".format(original_function_name, task_id, ex)))
                 change_task_status(task_id, STATUS_ERROR)
                 mark_workflow_as_error(task_id)
                 raise
 
-        except Exception, ex:
+        except Exception as ex:
             # Retry always
             countdown = backoff(request.retries)
             logger.exception("Unhandled exception in celery task {0}: {1} - retrying anyway ...".format(original_function_name, ex))

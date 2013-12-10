@@ -10,6 +10,7 @@ from yabiadmin.yabi.models import Credential, User, Backend, Tool, ToolSet, Tool
 from django.core.cache import cache
 
 from django.utils import simplejson as json
+import six
 
 class StatusPageTest(unittest.TestCase):
     def test_status_page(self):
@@ -45,7 +46,7 @@ class CreateUserFromAdminTest(unittest.TestCase):
 
 class CredentialTests(unittest.TestCase):
     def setUp(self):
-        self.django_user = DjangoUser.objects.create(username=u'győzike')
+        self.django_user = DjangoUser.objects.create(username=six.u('győzike'))
         self.django_user.set_password('pass')
         self.django_user.save()
         self.user = self.django_user.get_profile()
@@ -63,20 +64,20 @@ class CredentialTests(unittest.TestCase):
         # must be able to decrypt a protected credential
         self.credential.get_credential_access().clear_cache()
         decrypted = self.credential.get_credential_access().get()
-        self.assertEqual(decrypted, {u'cert' : 'cheese', u'password':'wombles', u'key':'it'})
+        self.assertEqual(decrypted, {six.u('cert') : 'cheese', six.u('password'):'wombles', six.u('key'):'it'})
         # logging in must encrypt the credential, and also shove a copy of the 
         # decrypted and then protected credential into the cache
         self.credential.get_credential_access().clear_cache()
         self.credential.on_login(self.django_user.username, 'pass')
         self.assertEqual(self.credential.security_state, Credential.ENCRYPTED)
         decrypted = self.credential.get_credential_access().get()
-        self.assertEqual(decrypted, {u'cert' : 'cheese', u'password':'wombles', u'key':'it'})
+        self.assertEqual(decrypted, {six.u('cert') : 'cheese', six.u('password'):'wombles', six.u('key'):'it'})
         # and a final login, with the credentials encrypted in the db already
         self.assertEqual(self.credential.security_state, Credential.ENCRYPTED)
         self.credential.get_credential_access().clear_cache()
         self.credential.on_login(self.django_user.username, 'pass')
         decrypted = self.credential.get_credential_access().get()
-        self.assertEqual(decrypted, {u'cert' : 'cheese', u'password':'wombles', u'key':'it'})        
+        self.assertEqual(decrypted, {six.u('cert') : 'cheese', six.u('password'):'wombles', six.u('key'):'it'})        
 
     def test_cache_keyname_replaces_unicode_character(self):
         access = self.credential.get_credential_access()
@@ -85,7 +86,7 @@ class CredentialTests(unittest.TestCase):
     def test_cache(self):
         access = self.credential.get_credential_access()
         self.assertTrue(access.in_cache)
-        self.assertEqual(access.get(), {u'cert' : 'cheese', u'password':'wombles', u'key':'it'})
+        self.assertEqual(access.get(), {six.u('cert') : 'cheese', six.u('password'):'wombles', six.u('key'):'it'})
 
 class WsMenuTest(unittest.TestCase):
     def setUp(self):
@@ -169,7 +170,7 @@ class TestPytag(unittest.TestCase):
         t = Template('{% load pytag %}HELLO{% py         obj.some_method(   "xyz",   100) %}GOODbye')
         c = Context({"obj": obj})
         result = t._render(c)
-        self.assertEquals(result, u"HELLOsome result xyz 100GOODbye")
+        self.assertEquals(result, six.u("HELLOsome result xyz 100GOODbye"))
 
 
 
@@ -187,7 +188,7 @@ class TestImportTag(unittest.TestCase):
         import sys
         sys.modules['foobar'] = m
         result = t._render(c)
-        self.assertTrue('foobar' in c.dicts[-1] and result == u"startHello Fred Bloggsfinish")
+        self.assertTrue('foobar' in c.dicts[-1] and result == six.u("startHello Fred Bloggsfinish"))
 
 class TestOrderByCustomFilter(unittest.TestCase):
     def test_order_by_filter_generator(self):

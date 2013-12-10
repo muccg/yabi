@@ -2,6 +2,7 @@ import sys
 import os
 from tests.support import conf
 from yabiadmin.yabi import models
+import six
 
 '''
 Module providing helper methods for creating data in yabi admin from tests
@@ -169,7 +170,7 @@ def create_localfs_backend(scheme="localfs", hostname="localhost.localdomain", p
     import os
     try:
         os.mkdir("/tmp/yabi-localfs-test/")
-    except OSError, ose:
+    except OSError as ose:
         if ose.errno != 17:
             raise
         #directory already exists... leave it
@@ -207,7 +208,7 @@ def destroy_localfs_backend(scheme="localfs", hostname="localhost.localdomain", 
     
     try:
         shutil.rmtree("/tmp/yabi-localfs-test/")    
-    except OSError, ose:
+    except OSError as ose:
         pass
 
 def create_fakes3_backend(scheme="s3", hostname="localhost.localdomain", path="/" ):
@@ -370,7 +371,7 @@ def destroy_ssh_exec_backend(scheme="ssh", hostname="localhost.localdomain", pat
 def modify_backend(scheme="localex",hostname="localhost",**kwargs):
     """Apply kwargs to modify the matching backend"""
     backend = models.Backend.objects.get(scheme=scheme,hostname=hostname)
-    for key,arg in kwargs.iteritems():
+    for key,arg in six.iteritems(kwargs):
         setattr(backend,key,arg)
     backend.save()
     

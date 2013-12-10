@@ -45,18 +45,19 @@
 # If you want to do the migration for real set back DontAct to False first
 #
 # shell> m.DontAct = False
-
+from __future__ import print_function
 from yabi.models import User
 from yabistoreapp import db
 from yabiengine.enginemodels import EngineWorkflow
 from collections import namedtuple
 from django.db import transaction
 import json
+from six.moves import filter
 
 
-class MissingDataError(StandardError):
+class MissingDataError(Exception):
     def __init__(self, msg, ids):
-        StandardError.__init__(self, msg)
+        Exception.__init__(self, msg)
         self.ids = ids
 
 MigrationError = namedtuple('MigrationError', 'user msg details')
@@ -73,33 +74,33 @@ def migrate(*users):
     for user in users:
         try:
             migrate_user(user, DontAct)
-        except MissingDataError, e:
+        except MissingDataError as e:
             failed.append(MigrationError(user, str(e),
                 "The following workflows don't have SQLLite data:\n %s" %
                     ','.join([str(x) for x in e.ids])))
             continue
-        except Exception, e:
+        except Exception as e:
             failed.append(MigrationError(user, str(e), 'No idea'))
             continue
 
         succeeded.append(user)
     if succeeded:
-        print 'The following users have their data migrated:'
+        print('The following users have their data migrated:')
         for user in succeeded:
-            print user
-        print 'You should backup their history DBs now:'
-        print 'Something like:'
+            print(user)
+        print('You should backup their history DBs now:')
+        print('Something like:')
         for user in succeeded:
             histfile = db.user_fs_home(user) + '/history.sqlite3'
             backup = db.user_fs_home(user) + '/history.sqlite3.migrated'
-            print 'mv %s %s' % (histfile, backup)
+            print('mv %s %s' % (histfile, backup))
     if failed:
-        print 'For the following users the migration has FAILED:'
+        print('For the following users the migration has FAILED:')
         for mig_err in failed:
-            print mig_err.user
-            print 'Error: ' + mig_err.msg
-            print 'Details/Resolution: ' + mig_err.details
-            print '-' * 20
+            print(mig_err.user)
+            print('Error: ' + mig_err.msg)
+            print('Details/Resolution: ' + mig_err.details)
+            print('-' * 20)
 
 def get_all_users():
     return [u.name for u in User.objects.all()]
@@ -124,6 +125,6 @@ def migrate_user(user, dont_act):
                     to_wfl.change_tags(from_wfl['tags'])
                     to_wfl.save()
         except EngineWorkflow.DoesNotExist:
-            print 'The following SQLite Workflow has no Postgres correspondent: ' + str(from_wfl['id'])
+            print('The following SQLite Workflow has no Postgres correspondent: ' + str(from_wfl['id']))
             pass
 

@@ -1,7 +1,9 @@
+from __future__ import print_function
 import subprocess, os, shutil, glob, time
-import config
+from . import config
 import unittest
 from collections import namedtuple
+from six.moves import filter
 
 DEBUG = False
 CONFIG_SECTION = os.environ.get('YABI_CONFIG')
@@ -31,7 +33,7 @@ class Result(object):
         self._id = None
 
         if DEBUG:
-            print "Result (%s)(%s)(%s)"%(self.status, self.stdout, self.stderr)
+            print("Result (%s)(%s)(%s)"%(self.status, self.stdout, self.stderr))
 
     @property
     def id(self):
@@ -47,7 +49,7 @@ class Result(object):
     def cleanup(self):
         result = self.yabi.run(['rm', self.stageout_dir])
         if result.status != 0:
-            print "Result (%s)(%s)(%s)"%(result.status, result.stdout, result.stderr)
+            print("Result (%s)(%s)(%s)"%(result.status, result.stdout, result.stderr))
 
 class StatusResult(Result):
     '''Decorates a normal Result with methods to access Worflow properties from yabish status output'''
@@ -87,7 +89,7 @@ class StatusResult(Result):
         jobs = self.extract_jobs(jobs_text)
         workflow_props = self.extract_workflow_properties(wfl_text)
         workflow_props['jobs'] = jobs
-        print workflow_props
+        print(workflow_props)
         workflow = StatusResult.Workflow(**workflow_props)
         return workflow
 
@@ -121,7 +123,7 @@ class Yabi(object):
     def run(self, args=[]):
         args = self.command + args
         if DEBUG:
-            print args
+            print(args)
         cmd = subprocess.Popen(args, shell=False, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         stdoutdata, stderrdata = cmd.communicate()
 
@@ -138,16 +140,16 @@ class Yabi(object):
         result = self.run(['purge'])
 
 def shell_command(command):
-    print command
+    print(command)
     cmd = subprocess.Popen(command, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
     out, err = cmd.communicate()
     status = cmd.returncode
-    print out
+    print(out)
     if status != 0 or err:
-        print 'Command was: ' + command
-        print 'STATUS was: %d' % status
-        print 'STDERR was: \n' + err
-        raise StandardError('shell_command failed (%s)'%command)
+        print('Command was: ' + command)
+        print('STATUS was: %d' % status)
+        print('STDERR was: \n' + err)
+        raise Exception('shell_command failed (%s)'%command)
 
 class YabiTestCase(unittest.TestCase):
 
@@ -219,6 +221,6 @@ class FileUtils(object):
         cmd = subprocess.Popen('cksum %s' % filename, shell=True, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
         out, err = cmd.communicate()
         assert cmd.returncode == 0, 'ERROR: ' + err
-        our_line = filter(lambda l: filename in l, out.split("\n"))[0]
+        our_line = list(filter(lambda l: filename in l, out.split("\n")))[0]
         expected_cksum, expected_size, rest = our_line.split()
         return expected_cksum, expected_size

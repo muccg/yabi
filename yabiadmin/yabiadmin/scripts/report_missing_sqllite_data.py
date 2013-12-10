@@ -32,30 +32,31 @@
 # shell> from scripts import report_missing_sqllite_data as r
 # shell> r.report()
 #
-
+from __future__ import print_function
 from yabi.models import User
 from yabistoreapp import db
 
 from django.db import connection
+from six.moves import filter
 
 
 # entry point
 def report():
     users = get_all_users()
     for user in users:
-        print '-' * 20
-        print user
+        print('-' * 20)
+        print(user)
         try:
             sql_ids = get_sqllite_ids(user)
             psql_ids = get_psql_ids(user)
             missing = filter(lambda x: x not in sql_ids, psql_ids)
             if missing:
-                print "The following Workflows are missing from SQLite:"
-                print ",".join([str(id) for id in missing])
+                print("The following Workflows are missing from SQLite:")
+                print(",".join([str(id) for id in missing]))
             else:
-                print "No data missing"
-        except Exception, e:
-            print e
+                print("No data missing")
+        except Exception as e:
+            print(e)
 
 def get_all_users():
     return [u.name for u in User.objects.all()]

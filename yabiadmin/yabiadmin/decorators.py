@@ -55,7 +55,7 @@ def authentication_required(f):
 
 
 def profile_required(func):
-    from yabi.models import User
+    from .yabi.models import User
 
     def newfunc(request, *args, **kwargs):
         # Check if the user has a profile; if not, nothing's going to work anyway,

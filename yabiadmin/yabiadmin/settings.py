@@ -416,5 +416,5 @@ SCHEDULER_COMMAND_PATHS = {
 # of this file.
 try:
     from appsettings.yabiadmin import *
-except ImportError, e:
+except ImportError as e:
     pass

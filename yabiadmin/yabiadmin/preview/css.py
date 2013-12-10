@@ -26,7 +26,8 @@
 ### END COPYRIGHT ###
 from cssutils import css, CSSParser
 
-import ruleset
+from . import ruleset
+import six
 
 
 class Ruleset(ruleset.Ruleset):
@@ -38,7 +39,7 @@ class Ruleset(ruleset.Ruleset):
         if isinstance(properties, list) or isinstance(properties, tuple):
             properties = dict(zip(properties, [True] * len(properties)))
 
-        for property, value in properties.iteritems():
+        for property, value in six.iteritems(properties):
             self[property] = value
 
 

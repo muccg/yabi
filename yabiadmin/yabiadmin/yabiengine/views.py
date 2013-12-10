@@ -54,7 +54,7 @@ def status(request, model, id):
             m = models[model.lower()]
             obj = m.objects.get(id=id)
             return HttpResponse(json.dumps({'status': obj.status}))
-        except ObjectDoesNotExist, e:
+        except ObjectDoesNotExist as e:
             return HttpResponseNotFound('Object not found')
     elif request.method == 'POST':
         if 'status' not in request.POST:
@@ -79,7 +79,7 @@ def status(request, model, id):
 
         try:
             _update_task_status(task.pk, status)
-        except Exception, e:
+        except Exception as e:
             return HttpResponseServerError(e)
 
         return HttpResponse('OK')
@@ -107,7 +107,7 @@ def remote_id(request, id):
         return HttpResponse('')
     except (ObjectDoesNotExist, ValueError):
         return HttpResponseNotFound('Task not found')
-    except Exception, e:
+    except Exception as e:
         import traceback
         logger.critical(traceback.format_exc())
         logger.critical('Caught Exception: %s' % e)
@@ -136,7 +136,7 @@ def remote_info(request, id):
         return HttpResponse('')
     except (ObjectDoesNotExist, ValueError):
         return HttpResponseNotFound('Object not found')
-    except Exception, e:
+    except Exception as e:
         import traceback
         logger.critical(traceback.format_exc())
         logger.critical('Caught Exception: %s' % e)
@@ -166,13 +166,13 @@ def syslog(request, table, id):
 
             return HttpResponse('OK')
 
-    except ObjectDoesNotExist, o:
+    except ObjectDoesNotExist as o:
         logger.critical('Caught Exception: %s' % o.message)
         return HttpResponseNotFound('Object not found')
-    except ValueError, ve:
+    except ValueError as ve:
         logger.critical('Caught Exception: %s' % ve.message)
         return HttpResponseNotFound('Object not found')
-    except Exception, e:
+    except Exception as e:
         logger.critical('Caught Exception: %s' % e.message)
         return HttpResponseNotFound('Object not found')
 
@@ -207,7 +207,7 @@ def job(request, workflow, order):
         return HttpResponse(json.dumps(output), mimetype='application/json')
     except (MultipleObjectsReturned, ObjectDoesNotExist, ValueError):
         return HttpResponseNotFound('Object not found')
-    except Exception, e:
+    except Exception as e:
         logger.critical('Caught Exception: %s' % e.message)
         return HttpResponseNotFound('Object not found')
 

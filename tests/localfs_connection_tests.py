@@ -1,11 +1,12 @@
+from __future__ import print_function
 import unittest
-from support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, conf
-from fixture_helpers import admin
+from .support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, conf
+from .fixture_helpers import admin
 import os
 import time
 import sys
 from urllib import quote
-from request_test_base import RequestTest, remove_slash_if_has
+from .request_test_base import RequestTest, remove_slash_if_has
 
 KB = 1024
 MB = 1024 * KB
@@ -41,7 +42,7 @@ class LocalfsFileTests(RequestTest):
         import shutil
         try:
             shutil.rmtree(base)
-        except OSError, ose:
+        except OSError as ose:
             pass
         os.makedirs(base)
         
@@ -71,7 +72,7 @@ class LocalfsFileTests(RequestTest):
     def test_localfs_files_list(self):
         import requests
         url = remove_slash_if_has(conf.yabiurl)+ "/ws/fs/ls?uri=%s" % (get_localfs_server())
-        print "test_localfs_files_list: url = %s" % url
+        print("test_localfs_files_list: url = %s" % url)
         r = self.session.get(url)
 
         self.assertTrue(r.status_code==200, "Could not list localfs backend contents")

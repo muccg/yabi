@@ -1,7 +1,7 @@
 import os
 import unittest
-from support import YabiTestCase, StatusResult, all_items, json_path
-from fixture_helpers import admin
+from .support import YabiTestCase, StatusResult, all_items, json_path
+from .fixture_helpers import admin
 import time
 from yabiadmin.yabi import models
 from socket import gethostname

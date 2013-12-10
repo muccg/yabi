@@ -113,7 +113,7 @@ def set_ldap_password(user, current_password, new_password, bind_userdn=None, bi
         client.unbind()
         return True
 
-    except (AttributeError, LDAPError), e:
+    except (AttributeError, LDAPError) as e:
         logger.critical("Unable to change password on ldap server.")
         logger.critical(e)
         return False

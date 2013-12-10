@@ -35,6 +35,7 @@ from django.core import signals
 from yabiadmin.yabistoreapp.json_util import *
 
 import logging
+import six
 logger = logging.getLogger(__name__)
 
 options.DEFAULT_NAMES += ('db_name',)
@@ -51,7 +52,7 @@ _connections = {}
 # when a Django request is finished. This stops the "Database Locked" errors
 def close_connection(**kwargs):
     global _connections
-    for connection in _connections.itervalues():
+    for connection in six.itervalues(_connections):
         connection.close()
     _connections = {}
 

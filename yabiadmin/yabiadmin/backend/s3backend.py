@@ -88,7 +88,7 @@ class S3Backend(FSBackend):
             files = [(basename(k.name), k.size, format_iso8601_date(k.last_modified), NEVER_A_SYMLINK) for k in keys]
             dirs = [(basename(p.name), 0, None, NEVER_A_SYMLINK) for p in prefixes]
 
-        except boto.exception.S3ResponseError, e:
+        except boto.exception.S3ResponseError as e:
             logger.exception("Couldn't get listing from S3:")
             # TODO doing the same as SFTPBackend, but is this what we want?
             # This code is not executed by Celery tasks
@@ -116,7 +116,7 @@ class S3Backend(FSBackend):
             parent_dir_uri = self.parent_dir_uri(uri)
             if not self.path_exists(parent_dir_uri):
                 self.mkdir(parent_dir_uri)
-        except Exception, exc:
+        except Exception as exc:
             logger.exception("Error while trying to S3 rm uri %s", uri)
             raise RetryException(exc, traceback.format_exc())
 
@@ -131,7 +131,7 @@ class S3Backend(FSBackend):
             key = bucket.new_key(path.lstrip(DELIMITER))
             key.set_contents_from_string('')
 
-        except Exception, exc:
+        except Exception as exc:
             logger.exception("Error while trying to S3 rm uri %s", uri)
             raise RetryException(exc, traceback.format_exc())
 

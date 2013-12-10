@@ -35,6 +35,8 @@ from django.forms import ModelForm
 from django import forms
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
 from ccg.utils import webhelpers
+from six.moves import map
+from six.moves import zip
 
 class AdminBase(ExtJsonInterface, admin.ModelAdmin):
     save_as = True

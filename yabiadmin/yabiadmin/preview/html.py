@@ -26,8 +26,9 @@
 ### END COPYRIGHT ###
 from bs4 import BeautifulSoup, NavigableString, Tag
 
-import css
-import ruleset
+from . import css
+from . import ruleset
+import six
 
 
 class AttributeRule(ruleset.Rule):
@@ -100,7 +101,7 @@ class Ruleset(ruleset.Ruleset):
         self.global_attributes = {}
 
         try:
-            for name, attr in elements["_global"]["attributes"].iteritems():
+            for name, attr in six.iteritems(elements["_global"]["attributes"]):
                 rule = AttributeRule(self, name)
 
                 if isinstance(attr, dict) and "sanitiser" in attr:
@@ -110,7 +111,7 @@ class Ruleset(ruleset.Ruleset):
         except KeyError:
             pass
 
-        for name, options in elements.iteritems():
+        for name, options in six.iteritems(elements):
             if name != "_global":
                 self[name] = self.parse_element(name, options)
 
@@ -121,7 +122,7 @@ class Ruleset(ruleset.Ruleset):
         element.add_attribute_dict(self.global_attributes)
 
         if isinstance(options, dict):
-            for name, attr in options.get("attributes", {}).iteritems():
+            for name, attr in six.iteritems(options.get("attributes", {})):
                 element.add_attribute(name, attr)
 
             if "sanitiser" in options:
@@ -625,7 +626,7 @@ def sanitise(content, ruleset=default_ruleset):
 
     def string(ns):
         # Sanitise the string, if the rule requires it.
-        value = context["rule"].sanitise(unicode(ns))
+        value = context["rule"].sanitise(six.text_type(ns))
 
         # Returning None from a sanitiser will result in the string not being
         # appended at all.

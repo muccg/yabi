@@ -1,4 +1,5 @@
 # encoding: utf-8
+from __future__ import print_function
 import datetime
 from south.db import db
 from south.v2 import DataMigration
@@ -32,7 +33,7 @@ class Migration(DataMigration):
     def forwards(self, orm):
         "Write your forwards methods here."
         for task in orm.Task.objects.all():
-            print "processing task:",task.id,'...',
+            print("processing task:",task.id,'...', end=' ')
             task_status = task.status
             
             if task.status:
@@ -56,7 +57,7 @@ class Migration(DataMigration):
                         else:
                             delta = datetime.timedelta(seconds=1.0)
                         
-                        print 'spreading status timestamps using delta %s'%(str(delta))
+                        print('spreading status timestamps using delta %s'%(str(delta)))
                         
                         # fill in the times
                         t = timestamps[ statuses[0] ]
@@ -64,7 +65,7 @@ class Migration(DataMigration):
                             t+=delta
                             timestamps[ key ] = t
                     else:
-                        print 'setting start/stop times'
+                        print('setting start/stop times')
                         
                     for prestat in statuses:
                         # mark this status boolean with now.
@@ -72,11 +73,11 @@ class Migration(DataMigration):
                         setattr(task,varname,timestamps[ prestat ])
                 elif 'error' in task_status:
                     # handle errors... we just mark the error state (cause we don't actually know how we came to this error)
-                    print "setting error time"
+                    print("setting error time")
                     task.status_error = task.end_time
                 else:
                     # handle blocked tasks
-                    print "setting blocked time"
+                    print("setting blocked time")
                     task.status_blocked = task.start_time       # just use start time for simplicity
                     
                 # save the task

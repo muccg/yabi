@@ -40,12 +40,14 @@ from yabiadmin.constants import VALID_SCHEMES
 from yabiadmin.utils import cache_keyname
 
 import logging
+from functools import reduce
+import six
 logger = logging.getLogger(__name__)
 
 try:
     from yabiadmin import ldaputils
     LDAP_IN_USE = True
-except ImportError, e:
+except ImportError as e:
     LDAP_IN_USE = False
     logger.info("LDAP modules not imported. If you are not using LDAP this is not a problem.")
 
@@ -331,7 +333,7 @@ class ToolGroup(Base):
             tools.append(tg.tool)
         return "<br/>".join([
             "%s: (%s)" % (set, ",".join(str(t) for t in tools))
-            for (set, tools) in tools_by_toolset.iteritems()])
+            for (set, tools) in six.iteritems(tools_by_toolset)])
 
     tools_str.short_description = 'Tools in toolgroup, by toolset'
     tools_str.allow_tags = True
@@ -763,7 +765,7 @@ class ModelBackendUserProfile(User):
             self.reencrypt_user_credentials(request)
             self.user.save()
             return (True, "Password successfully changed")
-        except AttributeError, e:
+        except AttributeError as e:
             # Send back something fairly generic.
             logger.debug("Error changing password in database server: %s" % str(e))
             return (False, "Error changing password")
@@ -824,7 +826,7 @@ def signal_tool_post_save(sender, **kwargs):
         tool = kwargs['instance']
         logger.debug("purging tool %s from cache" % str(tool))
         tool.purge_from_cache()
-    except Exception, e:
+    except Exception as e:
         logger.critical(e)
         logger.critical(traceback.format_exc())
         raise

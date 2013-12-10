@@ -36,6 +36,8 @@ import logging
 import traceback
 import shutil
 import Queue
+from six.moves import map
+from six.moves import zip
 logger = logging.getLogger(__name__)
 
 
@@ -132,7 +134,7 @@ class FSBackend(BaseBackend):
                     logger.debug("src_dir_uri = %s" % src_dir_uri)
                     logger.debug("dst_dir_uri = %s" % dst_dir_uri)
                     FSBackend.remote_copy(yabiusername, src_dir_uri, dst_dir_uri)
-        except Exception, exc:
+        except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
 
     @staticmethod
@@ -169,7 +171,7 @@ class FSBackend(BaseBackend):
                 raise RetryException('remote_file_copy remote_to_fifo failed')
             if dst_status != 0:
                 raise RetryException('remote_file_copy fifo_to_remote failed')
-        except Exception, exc:
+        except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
 
     @staticmethod
@@ -190,7 +192,7 @@ class FSBackend(BaseBackend):
             return fifo
         except FileNotFoundError:
             raise
-        except Exception, exc:
+        except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
 
     @staticmethod
@@ -217,7 +219,7 @@ class FSBackend(BaseBackend):
             # TODO some check on the copy thread
 
             return fifo
-        except Exception, exc:
+        except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
 
     def save_envvars(self, task, envvars_uri):
@@ -310,7 +312,7 @@ class FSBackend(BaseBackend):
                 try:
                     #shutil.copyfileobj(open(remnant, 'r'), open(upload_as_fifo, 'w+'))
                     shutil.copyfileobj(open(remnant, 'r'), open(upload_as_fifo, 'w'))
-                except Exception, exc:
+                except Exception as exc:
                     logger.error('copy to upload fifo failed')
                     raise RetryException(exc, traceback.format_exc())
 

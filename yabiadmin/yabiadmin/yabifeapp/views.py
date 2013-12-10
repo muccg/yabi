@@ -44,7 +44,7 @@ from yabiadmin.yabi.models import Credential
 from yabiadmin.decorators import profile_required
 from yabiadmin.crypto_utils import DecryptException
 from yabiadmin.yabi.ws_frontend_views import ls, get
-from utils import make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout, using_dev_settings
+from .utils import make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout, using_dev_settings
 
 import logging
 logger = logging.getLogger(__name__)
@@ -145,7 +145,7 @@ def login(request):
                     for cred in creds:
                         try:
                             cred.on_login(username, password)
-                        except DecryptException, e:
+                        except DecryptException as e:
                             logger.error("Unable to decrypt credential `%s'" % cred.description)
                     return HttpResponseRedirect(webhelpers.url("/"))
 
