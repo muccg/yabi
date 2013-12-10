@@ -135,8 +135,8 @@ class TorqueParser(object):
         @param line: eg "job_state = C"
         @return: the value after = stripped ( E.g. "C" in above case
         """
-        parts = map(string.strip, line.split("="))
-        return parts[1]
+        name, value = map(lambda s: s.strip(), line.split("="))
+        return value
 
     def parse_poll(self, remote_id, exit_code, stdout, stderr):
         """
