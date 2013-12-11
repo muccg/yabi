@@ -332,9 +332,13 @@ class FSBackend(BaseBackend):
                 uri = url_join(self.task.stageout, dirpath[len(remnants_dir):], dirname)
                 self.mkdir(uri)
 
+    # TODO review later: maybe this should be static method or similar
+    # feels strange we create the FSBackend with a factory based on task but then
+    # we need to create another backend for the working_dir
     def clean_up_task(self):
         # remove working directory
-        self.rm(self.working_dir_uri())
+        working_dir_backend = FSBackend.urifactory(self.yabiusername, self.working_dir_uri())
+        working_dir_backend.rm(self.working_dir_uri())
         # remove local remnants directory
         shutil.rmtree(self.local_remnants_dir())
 
