@@ -152,7 +152,9 @@ def clean_up_task(task):
     """Clean up after a task"""
     from yabiadmin.backend.fsbackend import FSBackend
     backend = FSBackend.factory(task)
-    backend.clean_up_task()
+    # TODO this caused errors on live
+    # look into it!
+    #backend.clean_up_task()
 
 
 def abort_task(task):
