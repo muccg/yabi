@@ -3,30 +3,29 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 from django.db import models
 from django.db import load_backend
-from django.utils import simplejson as json
 from django.conf import settings
 from django.db.models import sql, options
 from django.db.models.query import QuerySet
@@ -36,6 +35,7 @@ from django.core import signals
 from yabiadmin.yabistoreapp.json_util import *
 
 import logging
+import six
 logger = logging.getLogger(__name__)
 
 options.DEFAULT_NAMES += ('db_name',)
@@ -52,7 +52,7 @@ _connections = {}
 # when a Django request is finished. This stops the "Database Locked" errors
 def close_connection(**kwargs):
     global _connections
-    for connection in _connections.itervalues():
+    for connection in six.itervalues(_connections):
         connection.close()
     _connections = {}
 
@@ -61,6 +61,7 @@ signals.request_finished.connect(close_connection, dispatch_uid="close_connectio
 
 
 class MultiDBManager(models.Manager):
+
     @staticmethod
     def get_db_connection(model):
         logger.debug(model)
@@ -72,8 +73,8 @@ class MultiDBManager(models.Manager):
                 settings_dict = db_name()
                 db_name = settings_dict['DB_NAME']
             else:
-                settings_dict = settings.DATABASES[db_name] if hasattr(settings,'DATABASES') else model.DATABASES[db_name]
-            if not _connections.has_key(db_name):         # cached connections
+                settings_dict = settings.DATABASES[db_name] if hasattr(settings, 'DATABASES') else model.DATABASES[db_name]
+            if not db_name in _connections:         # cached connections
                 logger.debug(settings_dict)
                 backend = load_backend(settings_dict['DATABASE_ENGINE'])
                 wrapper = backend.DatabaseWrapper(MultiDBManager._get_settings(settings_dict))
@@ -83,7 +84,7 @@ class MultiDBManager(models.Manager):
         else:
             from django.db import connection
             return connection
-        
+
     @staticmethod
     def _get_settings(settings_dict):
         return {
@@ -94,7 +95,7 @@ class MultiDBManager(models.Manager):
             'DATABASE_PORT': settings_dict.get('DATABASE_PORT'),
             'DATABASE_USER': settings_dict.get('DATABASE_USER'),
             'TIME_ZONE': settings.TIME_ZONE,
-        }  
+        }
 
     def get_query_set(self):
         connection = MultiDBManager.get_db_connection(self.model)
@@ -104,7 +105,7 @@ class MultiDBManager(models.Manager):
             Query = BaseQuery
         qs = QuerySet(self.model, Query(self.model, connection))
         return qs
-    
+
     def _insert(self, values, return_id=False, raw_values=False):
         query = sql.InsertQuery(self.model, self.get_db_connection(self.model))
         query.insert_values(values, raw_values)
@@ -114,7 +115,6 @@ class MultiDBManager(models.Manager):
         if thread_ident in savepoint_state:
             del savepoint_state[thread_ident]
         return ret
-
 
 
 class MultiDBModel(models.Model):
@@ -152,12 +152,14 @@ class MultiDBModel(models.Model):
 
         #cls.database["DATABASE_NAME"] = user_db_path
 
+
 def current_db():
     return {
-            'DB_NAME': 'testing',
-            'DATABASE_ENGINE' : 'sqlite3',
-            'DATABASE_NAME' : '/tmp/test.sqlite3',
-        }
+        'DB_NAME': 'testing',
+        'DATABASE_ENGINE': 'sqlite3',
+        'DATABASE_NAME': '/tmp/test.sqlite3',
+    }
+
 
 class Tag(MultiDBModel):
 
@@ -165,12 +167,12 @@ class Tag(MultiDBModel):
         db_name = current_db
 
     value = models.CharField(max_length=255)
-    objects =  MultiDBManager()
+    objects = MultiDBManager()
     objects.use_for_related_fields = True
-    
+
     def __unicode__(self):
         return self.value
-        
+
 
 class Workflow(MultiDBModel):
     class Meta:
@@ -185,17 +187,17 @@ class Workflow(MultiDBModel):
     tags = models.ManyToManyField(Tag, null=True, blank=True, through="WorkflowTag")
 
     #MultiDBManager.database = MultiDBModel.database
-    objects =  MultiDBManager()
+    objects = MultiDBManager()
     objects.use_for_related_fields = True
 
 
 class WorkflowTag(MultiDBModel):
     class Meta:
         db_name = current_db
-        
+
     workflow = models.ForeignKey(Workflow)
     tag = models.ForeignKey(Tag)
-    
+
     def __unicode__(self):
         return self.name
 

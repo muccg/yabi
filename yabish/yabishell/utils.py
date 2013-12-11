@@ -5,7 +5,7 @@ from itertools import tee, ifilter, ifilterfalse
 def mkdir_p(path):
     try:
         os.makedirs(path)
-    except OSError, e: 
+    except OSError as e: 
         if e.errno != errno.EEXIST:
             raise
 

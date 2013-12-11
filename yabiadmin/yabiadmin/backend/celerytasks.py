@@ -4,26 +4,26 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
 from functools import wraps
@@ -31,7 +31,7 @@ from django.db import transaction
 from datetime import datetime
 from yabiadmin.backend.exceptions import RetryException, JobNotFoundException
 from yabiadmin.backend import backend
-from yabiadmin.constants import STATUS_ERROR, STATUS_READY, STATUS_RUNNING, STATUS_COMPLETE, STATUS_EXEC,STATUS_STAGEOUT,STATUS_STAGEIN,STATUS_CLEANING, STATUS_ABORTED
+from yabiadmin.constants import STATUS_ERROR, STATUS_READY, STATUS_COMPLETE, STATUS_EXEC, STATUS_STAGEOUT, STATUS_STAGEIN, STATUS_CLEANING, STATUS_ABORTED
 from yabiadmin.constants import MAX_CELERY_TASK_RETRIES
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from yabiadmin.yabiengine.models import Task
@@ -39,6 +39,7 @@ from yabiadmin.yabiengine.enginemodels import EngineWorkflow, EngineJob, EngineT
 import celery
 from celery import current_task, chain
 from celery.utils.log import get_task_logger
+from six.moves import filter
 logger = get_task_logger(__name__)
 
 
@@ -108,12 +109,12 @@ def create_db_tasks(job_id):
             return None
         return job_id
 
-    except DecryptedCredentialNotAvailable, dcna:
+    except DecryptedCredentialNotAvailable as dcna:
         logger.exception("Decrypted credential not available.")
         countdown = backoff(request.retries)
         logger.warning('create_db_tasks.retry {0} in {1} seconds'.format(job_id, countdown))
         raise current_task.retry(exc=dcna, countdown=countdown)
-    except Exception, exc:
+    except Exception:
         logger.exception("Exception in create_db_tasks for job {0}".format(job_id))
         job.status = STATUS_ERROR
         job.workflow.status = STATUS_ERROR
@@ -128,7 +129,6 @@ def spawn_ready_tasks(job_id):
     if job_id is None:
         logger.debug('no tasks to process, exiting early')
         return
-    request = current_task.request
     try:
         # TODO deprecate tasktag
         job = EngineJob.objects.get(pk=job_id)
@@ -151,7 +151,7 @@ def spawn_ready_tasks(job_id):
 
         return job_id
 
-    except Exception, exc:
+    except Exception:
         logger.exception("Exception when submitting tasks for job {0}".format(job_id))
         job = EngineJob.objects.get(pk=job_id)
         job.status = STATUS_ERROR
@@ -171,7 +171,6 @@ def mark_workflow_as_error(task_id):
     task.job.save()
     task.job.workflow.save()
     logger.debug("Marked Workflow {0} as errored.".format(task.job.workflow.pk))
-
 
 
 @transaction.commit_on_success()
@@ -197,7 +196,7 @@ def retry_on_error(original_function):
         try:
             result = original_function(task_id, *args, **kwargs)
             return result
-        except RetryException, rexc:
+        except RetryException as rexc:
             if rexc.type == RetryException.TYPE_ERROR:
                 logger.exception("Exception in celery task {0} for task {1}".format(original_function_name, task_id))
 
@@ -208,7 +207,7 @@ def retry_on_error(original_function):
                 countdown = 30
 
             try:
-                logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name,task_id, countdown))
+                logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name, task_id, countdown))
                 current_task.retry(exc=rexc, countdown=countdown)
             except RetryException:
                 logger.error("{0}.retry {1} exceeded retry limit - changing status to error".format(original_function_name, task_id))
@@ -216,19 +215,18 @@ def retry_on_error(original_function):
                 raise
             except celery.exceptions.RetryTaskError:
                 raise
-            except Exception, ex:
+            except Exception as ex:
                 logger.error(("{0}.retry {1} failed: {2} - changing status to error".format(original_function_name, task_id, ex)))
                 change_task_status(task_id, STATUS_ERROR)
                 mark_workflow_as_error(task_id)
                 raise
 
-        except Exception, ex:
+        except Exception as ex:
             # Retry always
             countdown = backoff(request.retries)
             logger.exception("Unhandled exception in celery task {0}: {1} - retrying anyway ...".format(original_function_name, ex))
-            logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name,task_id, countdown))
+            logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name, task_id, countdown))
             current_task.retry(exc=ex, countdown=countdown)
-
 
     return decorated_function
 
@@ -338,9 +336,9 @@ def backoff(count=0):
     return 5 ** (count + 1)
 
 
-
-# Service methods 
+# Service methods
 # TODO TSZ move to another file?
+
 
 @transaction.commit_manually()
 def change_task_status(task_id, status):
@@ -369,6 +367,7 @@ def change_task_status(task_id, status):
         logger.exception("Exception when updating task's {0} status to {1}".format(task_id, status))
         raise
 
+
 def process_workflow_jobs_if_needed(task):
     workflow = EngineWorkflow.objects.get(pk=task.job.workflow.pk)
     if workflow.is_aborting:
@@ -381,7 +380,7 @@ def process_workflow_jobs_if_needed(task):
     if task.job.status == STATUS_COMPLETE:
         if workflow.has_jobs_to_process():
             process_jobs.apply_async((workflow.pk,))
- 
+
 
 @transaction.commit_manually()
 def request_workflow_abort(workflow_id, yabiuser=None):
@@ -395,4 +394,3 @@ def request_workflow_abort(workflow_id, yabiuser=None):
     transaction.commit()
     abort_workflow.apply_async((workflow_id,))
     return True
-

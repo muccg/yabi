@@ -1,0 +1,13 @@
+Test for a succesful job submission.
+There can be other lines in the output before and/or after the "right" line as
+long as there is a line that matches the expected format.
+
+STDOUT:
+ignored
+1234.carah.localdomain
+ignored again
+and again
+-------------
+status should be JOB_SUBMITTED
+remote_id should be 1234
+

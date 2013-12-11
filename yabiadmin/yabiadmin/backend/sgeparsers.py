@@ -1,6 +1,9 @@
 import logging
 import re
 from functools import partial
+from six.moves import filter
+from six.moves import map
+from six.moves import zip
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +19,7 @@ class SGEQSubResult(object):
     def __repr__(self):
         return "qsub result: remote id = %s remote job status = %s" % (self.remote_id, self.status)
 
+
 class SGEQStatResult(object):
     JOB_RUNNING = "job running"
     JOB_NOT_FOUND = "job not found by qstat"
@@ -26,6 +30,7 @@ class SGEQStatResult(object):
 
     def __repr__(self):
         return "qstat result: remote id = %s remote job status = %s" % (self.remote_id, self.status)
+
 
 class SGEQAcctResult(object):
     JOB_COMPLETED = "job succeeded"
@@ -38,6 +43,7 @@ class SGEQAcctResult(object):
 
     def __repr__(self):
         return "qsub result: remote id = %s remote job status = %s exit status = %s" % (self.remote_id, self.status, self.job_exit_status)
+
 
 class SGEQDelResult(object):
     JOB_ABORTED = "JOB ABORTED"
@@ -149,7 +155,7 @@ class SGEParser(object):
         if match is None:
             raise RuntimeError("Remote id '%s' doesn't look like an array job pattern" % remote_id)
         expected_job_id, first_subjob_id, last_subjob_id, step = match.groups()
-        expected_subjob_ids = range(int(first_subjob_id), int(last_subjob_id)+1, int(step))
+        expected_subjob_ids = list(range(int(first_subjob_id), int(last_subjob_id) + 1, int(step)))
 
         all_lines = "".join(stdout)
         SUBJOB_SEPARATOR = "=" * 62 + "\n"
@@ -183,7 +189,6 @@ class SGEParser(object):
 
     def parse_abort(self, remote_id, exit_code, stdout, stderr):
         # Note: SGE tools print errors to stdout
-        result = SGEQDelResult()
         if exit_code == 0:
             return SGEQDelResult.job_aborted()
 
@@ -204,5 +209,4 @@ def line_matches(regex, line, remote_id):
 
 job_aborted_line = partial(line_matches, SGEParser.QDEL_JOB_ABORTED)
 job_abort_registered_line = partial(line_matches, SGEParser.QDEL_JOB_ABORT_REGISTERED)
-job_finished_line = partial(line_matches, SGEParser.QDEL_JOB_FINISHED) 
-
+job_finished_line = partial(line_matches, SGEParser.QDEL_JOB_FINISHED)

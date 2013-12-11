@@ -1,3 +1,4 @@
+from __future__ import print_function
 # encoding: utf-8
 import datetime
 from south.db import db
@@ -19,7 +20,7 @@ def uriparse(uri):
     we cannot inject the scheme back into it.
     A copy of this function is in yabi-sh.
     """
-    print "uri is:",uri
+    print("uri is:",uri)
     scheme, rest = uri.split(":",1)
     assert re_url_schema.match(scheme)        
     return (scheme, urlparse(rest))
@@ -64,10 +65,10 @@ class Migration(DataMigration):
         "Write your forwards methods here."
         # we need to fill in all the backendcredential fields to point to the correct table rows.
         for task in orm.Task.objects.all():
-            print "task:",task.id
+            print("task:",task.id)
             try:
                 task.execution_backend_credential = get_exec_backendcredential_for_uri( task.job.workflow.user.name, task.job.exec_backend, orm )
-            except (ValueError, ObjectDoesNotExist), ve:
+            except (ValueError, ObjectDoesNotExist) as ve:
                 task.execution_backend_credential = None
             task.save()
 

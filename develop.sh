@@ -19,7 +19,7 @@ AWS_TEST_INSTANCE='aws_yabi_test'
 AWS_STAGING_INSTANCE='aws_syd_yabi_staging'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
 CLOSURE="/usr/local/closure/compiler.jar"
-PIP_OPTS='--download-cache ~/.pip/cache --index-url=https://restricted.crate.io'
+PIP_OPTS='--download-cache ~/.pip/cache'
 
 
 if [ "${YABI_CONFIG}" = "" ]; then
@@ -596,6 +596,10 @@ ci_remote_test_postgresql)
 ci_remote_test_mysql)
     ci_ssh_agent
     ci_remote_test test_mysql
+    ;;
+ci_remote_test_yabiadmin_mysql)
+    ci_ssh_agent
+    ci_remote_test test_yabiadmin_mysql
     ;;
 add_yabitests_key)
     add_yabitests_key

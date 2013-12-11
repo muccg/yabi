@@ -1,25 +1,24 @@
-import setuptools
 import os
-from setuptools import setup, find_packages
+from setuptools import setup
 
-packages=   ['yabiadmin'] + [ 'yabiadmin.%s'%app for app in ['yabifeapp', 'yabistoreapp','yabiengine','yabi','uploader','preview','registration', 'backend'] ] + [ 'yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations', 'yabiadmin.yabi.templatetags']
-                    
+packages = ['yabiadmin'] + ['yabiadmin.%s' % app for app in ['yabifeapp', 'yabistoreapp', 'yabiengine', 'yabi', 'uploader', 'preview', 'registration', 'backend']] + ['yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations', 'yabiadmin.yabi.templatetags']
+
 data_files = {}
 start_dir = os.getcwd()
 for package in packages:
     data_files[package] = []
-    path = package.replace('.','/')
+    path = package.replace('.', '/')
     os.chdir(path)
     for data_dir in ('templates', 'static', 'migrations', 'fixtures'):
         data_files[package].extend(
-            [os.path.join(subdir,f) for (subdir, dirs, files) in os.walk(data_dir) for f in files]) 
+            [os.path.join(subdir, f) for (subdir, dirs, files) in os.walk(data_dir) for f in files])
     os.chdir(start_dir)
 
 install_requires = [
     'Django==1.5.4',
     # pip > 1.4 doesn't pick up pytz, because of non-standard version number
     # Bug is still under discussion: https://bugs.launchpad.net/pytz/+bug/1204837
-    'pytz>=2013b', 
+    'pytz>=2013b',
     'ccg-webservices==0.1.2',
     'ccg-registration==0.8-alpha-1',
     'ccg-makoloader==0.2.6',
@@ -48,7 +47,8 @@ install_requires = [
     'boto==2.13.3',
     'python-dateutil>=2.1,<3.0',
     'yaphc==0.1.5',
-    'pycrypto>=2.6',
+    'pycrypto==2.6.1',  # version locked as a 2.7a1 appeared in pypi
+    'six>=1.4,<1.5',
 ]
 
 dev_requires = [
@@ -95,25 +95,23 @@ if not importlib_available:
     install_requires.append('importlib>=1.0.1,<1.1.0')
 
 setup(name='yabiadmin',
-    version='7.1.4',
-    description='Yabi Admin',
-    long_description='Yabi front end and administration web interface',
-    author='Centre for Comparative Genomics',
-    author_email='yabi@ccg.murdoch.edu.au',
-    packages=packages,
-    package_data={
-        '': [ "%s/%s"%(dirglob,fileglob)
-            for dirglob in (["."] + [ '/'.join(['*']*num) for num in range(1,15) ])                         # yui is deeply nested
-            for fileglob in [ '*.mako', '*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg' ]
-        ]
-    },
-    zip_safe=False,
-    install_requires=install_requires,
-    dependency_links=dependency_links,
-    extras_require={
-        'tests': tests_require,
-        'dev': dev_requires,
-        'postgresql': postgresql_requires,
-        'mysql': mysql_requires,
-    },
-)
+      version='7.1.5',
+      description='Yabi Admin',
+      long_description='Yabi front end and administration web interface',
+      author='Centre for Comparative Genomics',
+      author_email='yabi@ccg.murdoch.edu.au',
+      packages=packages,
+      package_data={
+          '': ["%s/%s" % (dirglob, fileglob)
+              for dirglob in (["."] + ['/'.join(['*'] * num) for num in range(1, 15)])                         # yui is deeply nested
+              for fileglob in ['*.mako', '*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg']]
+      },
+      zip_safe=False,
+      install_requires=install_requires,
+      dependency_links=dependency_links,
+      extras_require={
+          'tests': tests_require,
+          'dev': dev_requires,
+          'postgresql': postgresql_requires,
+          'mysql': mysql_requires,
+      })

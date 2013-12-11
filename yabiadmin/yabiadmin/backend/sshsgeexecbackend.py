@@ -21,7 +21,7 @@ class SSHSGEExecBackend(QBaseExecBackend):
         self.parser = SGEParser()
 
     def _run_qacct(self):
-        script = SSHSGEExecBackend.QACCT_TEMPLATE.format(self.task.remote_id).replace("<QACCT_COMMAND>",self.get_scheduler_command_path("qacct"))
+        script = SSHSGEExecBackend.QACCT_TEMPLATE.format(self.task.remote_id).replace("<QACCT_COMMAND>", self.get_scheduler_command_path("qacct"))
         exit_code, stdout, stderr = self.executer.exec_script(script)
         return self.parser.parse_qacct(self.task.remote_id, exit_code, stdout, stderr)
 
@@ -33,4 +33,3 @@ class SSHSGEExecBackend(QBaseExecBackend):
         else:
             # Not found in qacct either ..
             raise JobNotFoundException("Remote job %s for Yabi task %s not found by qstat and qacct" % (self.task.remote_id, self._yabi_task_name()))
-

@@ -47,7 +47,10 @@
 import re
 import logging
 import string
+from six.moves import map
+from six.moves import zip
 logger = logging.getLogger(__name__)
+
 
 class TorqueQSubResult(object):
     JOB_SUBMITTED = "job submitted"
@@ -69,7 +72,7 @@ class TorqueQStatResult(object):
     def __init__(self):
         self.status = None
         self.remote_id = None
-        self.remote_status = None # raw result of qstat
+        self.remote_status = None  # raw result of qstat
 
     def __repr__(self):
         return "qstat result: remote id = %s remote job status = %s" % (self.remote_id, self.status)
@@ -98,7 +101,7 @@ class TorqueParser(object):
     #     W   job is waiting for its execution time (-a option) to be reached.
     #     S   (Unicos only) job is suspended.
     #     see http://www.clusterresources.com/torquedocs21/commands/qstat.shtml
-    POSSIBLE_STATES = ["C","E", "H", "Q", "R", "T", "W", "S"]
+    POSSIBLE_STATES = ["C", "E", "H", "Q", "R", "T", "W", "S"]
     RUNNING_STATES = ["R", "T", "W", "S", "Q", "H"]
     FINISHED_STATES = ["E", "C"]
 
@@ -134,8 +137,8 @@ class TorqueParser(object):
         @param line: eg "job_state = C"
         @return: the value after = stripped ( E.g. "C" in above case
         """
-        parts = map(string.strip, line.split("="))
-        return parts[1]
+        name, value = map(lambda s: s.strip(), line.split("="))
+        return value
 
     def parse_poll(self, remote_id, exit_code, stdout, stderr):
         """
@@ -189,7 +192,6 @@ class TorqueParser(object):
         prefix = remote_id + "."
         logger.debug("prefix = %s" % prefix)
         job_state = None
-        exit_status = None
 
         if len(stderr) > 0:
             if any(['Unknown Job' in line for line in stderr]):
@@ -202,9 +204,13 @@ class TorqueParser(object):
             if line.startswith("Job Id:"):
                 if prefix in line:
                     matched_job = True
+                else:
+                    if matched_job:
+                        break
 
-            elif matched_job and line.startswith("job_state"):
+            if matched_job and line.startswith("job_state"):
                 job_state = self._parse_qstat_line(line)
+                break
         if not matched_job:
             qstat_result.status = TorqueQStatResult.JOB_NOT_FOUND
             return qstat_result
@@ -241,7 +247,6 @@ class TorqueParser(object):
         job_status = parts[TorqueParser.QSTAT_JOB_STATE_INDEX]
         return job_status
 
-
     def parse_abort(self, remote_id, exit_code, stdout, stderr):
         result = TorqueQDelResult()
         if exit_code == 0:
@@ -256,5 +261,3 @@ class TorqueParser(object):
         result.error = "\n".join(stderr)
 
         return result
-
- 

@@ -1,0 +1,13 @@
+Test for a succesful job array submission.
+This is very similar to the test_job_sumitted_successfully test, but the
+remote_id looks different for job arrays.
+
+STDOUT:
+ignored
+1234[].epic
+ignored again
+and again
+-------------
+status should be JOB_SUBMITTED
+remote_id should be 1234[]
+
