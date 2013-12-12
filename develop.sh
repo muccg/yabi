@@ -31,7 +31,7 @@ VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|add_yabitests_key|pipfreeze|pythonversion|syncmigrate|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_authorized_keys) (yabiadmin|celery|yabish)"
+    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|syncmigrate|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_authorized_keys) (yabiadmin|celery|yabish)"
     echo ""
 }
 
@@ -41,11 +41,6 @@ project_needed() {
         usage
         exit 1
     fi
-}
-
-add_yabitests_key() {
-   echo Adding key for yabitests ..
-   cat "$TARGET_DIR/tests/test_data/yabitests.pub" >> ~/.ssh/authorized_keys
 }
 
 settings() {
@@ -198,7 +193,7 @@ nosetests() {
     source ${VIRTUALENV}/bin/activate
 
     # Runs the end-to-end tests in the Yabitests project
-    ${VIRTUALENV}/bin/nosetests --with-xunit --xunit-file=tests.xml -I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py -v -w tests
+    ${VIRTUALENV}/bin/nosetests --with-xunit --xunit-file=tests.xml -I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py -v tests yabiadmin/yabiadmin 
     #${VIRTUALENV}/bin/nosetests -v -w tests tests.simple_tool_tests
     #${VIRTUALENV}/bin/nosetests -v -w tests tests.s3_connection_tests
     #${VIRTUALENV}/bin/nosetests -v -w tests tests.ssh_tests
@@ -210,28 +205,6 @@ nosetests() {
     #${VIRTUALENV}/bin/nosetests -v -w tests tests.file_transfer_tests
     #${VIRTUALENV}/bin/nosetests -v -w tests tests.ssh_tests
     #${VIRTUALENV}/bin/nosetests -v -w tests tests.idempotency_tests
-}
-
-noseidempotency() {
-    source ${VIRTUALENV}/bin/activate
-    ${VIRTUALENV}/bin/nosetests --nocapture --with-xunit --xunit-file=tests.xml -w tests tests.idempotency_tests -v
-}
-
-nosestatuschange() {
-    source ${VIRTUALENV}/bin/activate
-    ${VIRTUALENV}/bin/nosetests --with-xunit --xunit-file=tests.xml -w tests tests.status_tests -v 
-}
-
-noseyabiadmin() {
-    source ${VIRTUALENV}/bin/activate
-    # Runs the unit tests in the Yabiadmin project
-    ${VIRTUALENV}/bin/nosetests --with-xunit --xunit-file=yabiadmin.xml -v -w yabiadmin/yabiadmin 
-}
-
-
-nose_collect() {
-    source ${VIRTUALENV}/bin/activate
-    ${VIRTUALENV}/bin/nosetests -v -w tests --collect-only
 }
 
 
@@ -499,20 +472,8 @@ dbtest() {
     startyabi
     nosetests
     noseretval=$?
-    #noseidempotency
-    #nosestatuschange
     stopyabi
     exit $noseretval
-}
-
-
-yabiadmintest() {
-    stopyabi
-    yabiclean
-    dropdb
-    startyabi
-    noseyabiadmin
-    stopyabi
 }
 
 
@@ -541,11 +502,6 @@ test_postgresql)
     YABI_CONFIG="test_postgresql"
     settings
     dbtest
-    ;;
-test_yabiadmin_mysql)
-    YABI_CONFIG="test_mysql"
-    settings
-    yabiadmintest
     ;;
 lint)
     lint
@@ -600,9 +556,6 @@ ci_remote_test_mysql)
 ci_remote_test_yabiadmin_mysql)
     ci_ssh_agent
     ci_remote_test test_yabiadmin_mysql
-    ;;
-add_yabitests_key)
-    add_yabitests_key
     ;;
 ci_remote_destroy)
     ci_ssh_agent

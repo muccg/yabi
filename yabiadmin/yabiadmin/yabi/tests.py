@@ -81,7 +81,7 @@ class CredentialTests(unittest.TestCase):
 
     def test_cache_keyname_replaces_unicode_character(self):
         access = self.credential.get_credential_access()
-        self.assertTrue('\\xc5\\x91' in access.keyname)
+        self.assertTrue('\\xc3\\x85\\xc2\\x91' in access.keyname, access.keyname)
 
     def test_cache(self):
         access = self.credential.get_credential_access()
