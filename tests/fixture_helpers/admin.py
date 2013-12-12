@@ -97,7 +97,10 @@ def create_ssh_backend():
         scheme='ssh', 
         hostname='localhost', 
         path='/', 
-        submission='${command}'
+        submission= """#!/bin/bash
+cd ${working}
+${command} 1>STDOUT.txt 2>STDERR.txt
+"""
     )
     cred = models.Credential.objects.create( 
         description='Test SSH Credential', 
@@ -116,7 +119,7 @@ def create_sftp_backend():
         scheme='sftp', 
         hostname='localhost', 
         path='/', 
-        submission='${command}'
+        submission=''
     )
     cred = models.Credential.objects.create( 
         description='Test SFTP Credential', 
@@ -134,11 +137,6 @@ def create_sftp_backend():
     )
 
 
-def create_backend(scheme="ssh", hostname="localhost.localdomain",path="/",submission="${command}"):
-    sys.stderr.write('Creating {0} backend\n'.format(scheme))
-    backend = models.Backend.objects.create(name='Test %s Backend'%scheme.upper(), scheme=scheme, hostname=hostname, path=path, submission=submission)
-    # continue this...
-    
 def create_localfs_backend(scheme="localfs", hostname="localhost.localdomain", path="/tmp/yabi-localfs-test/"):
     backend = models.Backend.objects.create(
         name='Test %s Backend'%scheme.upper(),
@@ -257,8 +255,8 @@ def create_tool_cksum():
 
     tool.save()
 
-def create_tool_dd():
-    create_tool('dd')
+def create_tool_dd(*args, **kwargs):
+    create_tool('dd', *args, **kwargs)
     add_tool_to_all_tools('dd')
     tool = models.Tool.objects.get(name='dd')
     tool.accepts_input = True
@@ -286,87 +284,6 @@ def create_tool_sleep():
 
     add_tool_to_all_tools('sleep')
 
-
-
-def create_ssh_exec_backend(scheme="ssh", hostname="localhost.localdomain", path="/", submission=None, port=None):
-    sys.stderr.write('Creating {0} backend\n'.format(scheme))
-    
-    if submission == None:
-        submission = """#!/bin/bash
-cd ${working}
-${command} 1>${stdout} 2>${stderr}
-"""
-    
-    backend = models.Backend.objects.create(
-        name='Test %s Backend'%scheme.upper(),
-        description="Test %s Backend"%scheme.upper(),
-        scheme=scheme, 
-        hostname=hostname,
-        port=port,
-        path=path, 
-        submission=submission
-    )
-    cred = models.Credential.objects.create( 
-        description='Test %s Credential'%scheme.upper(), 
-        username='user',
-        password='pass',
-        cert='',
-        key='',
-        user=models.User.objects.get(name="demo")
-    )
-    
-    #join them
-    backend_cred = models.BackendCredential.objects.create(
-        backend = backend,
-        credential = cred,
-        homedir = path,
-        visible = True,
-        default_stageout = False,
-        submission = ""
-    )
-    #import os
-    #try:
-        #os.mkdir(path)
-    #except OSError, ose:
-        #if ose.errno != 17:
-            #raise
-        #directory already exists... leave it
-        
-    create_tool("hostname","hostname","/bin/hostname",backend_name='Test %s Backend'%scheme.upper(), fs_backend_name='Local Filesystem')
-    add_tool_to_all_tools('hostname')
-
-    tool = models.Tool.objects.get(name='hostname')
-    tool.accepts_input = False
-    tool.save()
-    
-def destroy_ssh_exec_backend(scheme="ssh", hostname="localhost.localdomain", path="/", port=None):
-    sys.stderr.write('Destroying {0} backend\n'.format(scheme))
-    models.BackendCredential.objects.filter(
-        backend__description = 'Test %s Backend'%scheme.upper(),
-        credential__description = 'Test %s Credential'%scheme.upper(),
-        homedir = path,
-        visible = True,
-        default_stageout = False
-    ).delete()
-    models.Backend.objects.filter(
-        name='Test %s Backend'%scheme.upper(),
-        description="Test %s Backend"%scheme.upper(),
-        scheme=scheme, 
-        hostname=hostname,
-        port=port,
-        path=path
-    ).delete()
-    models.Credential.objects.filter( 
-        description='Test %s Credential'%scheme.upper(), 
-        username='user',
-        password='pass',
-        cert='',
-        key='',
-        user=models.User.objects.get(name="demo")
-    ).delete()
-    
-    #import shutil
-    #shutil.rmtree(path)    
 
 def modify_backend(scheme="localex",hostname="localhost",**kwargs):
     """Apply kwargs to modify the matching backend"""
