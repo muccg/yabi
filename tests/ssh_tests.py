@@ -1,61 +1,51 @@
 import os
 import unittest
-from .support import YabiTestCase, StatusResult, all_items, json_path
+from .support import YabiTestCase, StatusResult, FileUtils, all_items, json_path
 from .fixture_helpers import admin
 import time
 from yabiadmin.yabi import models
 from socket import gethostname
+import logging
 
-#
-# Please add tests/test_data/yabitests.pub to ~/.ssh/authorized_keys
-#
+logger = logging.getLogger(__name__)
 
-class SSHBackendTest(YabiTestCase):
-
+class SSHBackend(object):
     def setUp(self):
-        YabiTestCase.setUp(self)
-
-        # hostname is already in the db, so remove it and re-add to exploding backend
-        models.Tool.objects.get(name='hostname').delete()
-
         admin.create_ssh_backend()
         admin.create_sftp_backend()
-        admin.create_tool('hostname', ex_backend_name='SSH Backend')
-        admin.add_tool_to_all_tools('hostname')
 
         key_file = os.path.join(os.path.dirname(__file__), "test_data/yabitests.pub")
         os.system("cat %s >> ~/.ssh/authorized_keys" % key_file)
 
     def tearDown(self):
-        models.Tool.objects.get(name='hostname').delete()
+        models.Backend.objects.get(name='SFTP Backend').delete()
         models.Backend.objects.get(name='SSH Backend').delete()
-
-        # put normal hostname back to restore order
-        admin.create_tool('hostname')
-        YabiTestCase.tearDown(self)
+        logger.debug(models.Backend.objects.filter(name='SFTP Backend').count())
+        logger.debug(models.Backend.objects.filter(name='SSH Backend').count())
 
         os.system('sed "/yabitest/ D" -i.old ~/.ssh/authorized_keys')
 
-    # This test must run first, it sets up the known hosts
-    # Disabled as set paramiko to auto had host keys. Need
-    # ECDSA key support in paramiko
-    def xtest_a_failure_to_get_host_key(self):
-        # try and run a command, it will fail due to host key error
-        result = self.yabi.run(['hostname'])
-        result = StatusResult(self.yabi.run(['status', result.id]))
-        self.assertEqual(result.workflow.status, 'error')
 
-        # now lets validate the host key
-        query = models.HostKey.objects.all()
-        for hostkey in query:
-            hostkey.allowed = True
-            hostkey.save()
+class ManySSHJobsTest(YabiTestCase, SSHBackend):
 
-        # now run hostname again, it will pass
-        result = self.yabi.run(['hostname'])
-        self.assertTrue(gethostname() in result.stdout)
-        result = StatusResult(self.yabi.run(['status', result.id]))
-        self.assertEqual(result.workflow.status, 'complete')
+    def setUp(self):
+        YabiTestCase.setUp(self)
+        SSHBackend.setUp(self)
+
+        # hostname is already in the db, so remove it and re-add to exploding backend
+        models.Tool.objects.get(name='hostname').delete()
+
+        admin.create_tool('hostname', ex_backend_name='SSH Backend')
+        admin.add_tool_to_all_tools('hostname')
+
+    def tearDown(self):
+        models.Tool.objects.get(name='hostname').delete()
+
+        # put normal hostname back to restore order
+        admin.create_tool('hostname')
+
+        SSHBackend.tearDown(self)
+        YabiTestCase.tearDown(self)
 
     def test_submit_json_directly_larger_workflow(self):
         result = self.yabi.run(['submitworkflow', json_path('hostname_hundred_times')])
@@ -72,3 +62,35 @@ class SSHBackendTest(YabiTestCase):
 
         self.assertTrue(sresult.workflow.status in ('complete'))
         self.assertTrue(all_items(lambda j: j.status == 'complete', sresult.workflow.jobs))
+
+
+class SSHFileTransferTest(YabiTestCase, SSHBackend, FileUtils):
+
+    def setUp(self):
+        YabiTestCase.setUp(self)
+        logger.debug(models.Backend.objects.filter(name='SFTP Backend').count())
+        logger.debug(models.Backend.objects.filter(name='SSH Backend').count())
+        SSHBackend.setUp(self)
+        FileUtils.setUp(self)
+
+        admin.create_tool_dd(fs_backend_name='SFTP Backend', ex_backend_name='SSH Backend')
+        self.filename = self.create_tempfile()
+
+    def tearDown(self):
+        models.Tool.objects.get(name='dd').delete()
+        FileUtils.tearDown(self)
+        SSHBackend.tearDown(self)
+        YabiTestCase.tearDown(self)
+
+    def test_dd(self):
+        result = self.yabi.run(['dd', 'if=%s' % self.filename, 'of=output_file'])
+        self.assertTrue(result.status == 0, "Yabish command shouldn't return error!")
+
+        expected_cksum, expected_size = self.run_cksum_locally(self.filename)
+        copy_cksum, copy_size = self.run_cksum_locally('output_file')
+        if os.path.isfile('output_file'):
+            os.unlink('output_file')
+
+        self.assertEqual(expected_size, copy_size)
+        self.assertEqual(expected_cksum, copy_cksum)
+

@@ -138,7 +138,9 @@ class Ruleset(ruleset.Ruleset):
 DEFAULT_ALLOWED_ELEMENTS = {
     "a": {
         "attributes": {
-            "href": True,
+            "href": {
+                "sanitiser": "url",
+            },
             "rel": True,
             "media": True,
             "hreflang": True,
@@ -153,7 +155,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
             "coords": True,
             "shape": True,
             "href": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "rel": True,
             "media": True,
@@ -166,7 +168,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "audio": {
         "attributes": {
             "src": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "preload": True,
             "autoplay": True,
@@ -178,7 +180,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "base": {
         "attributes": {
             "href": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
         },
     },
@@ -187,7 +189,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "blockquote": {
         "attributes": {
             "cite": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
         },
     },
@@ -198,7 +200,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
             "disabled": True,
             "form": True,
             "formaction": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "formenctype": True,
             "formmethod": True,
@@ -226,7 +228,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
             "type": True,
             "label": True,
             "icon": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "disabled": True,
             "checked": True,
@@ -238,7 +240,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "del": {
         "attributes": {
             "cite": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "datetime": True,
         },
@@ -267,7 +269,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
         "attributes": {
             "accept-charset": True,
             "action": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "autocomplete": True,
             "enctype": True,
@@ -291,7 +293,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "iframe": {
         "attributes": {
             "src": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "name": True,
             "sandbox": True,
@@ -304,7 +306,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
         "attributes": {
             "alt": True,
             "src": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "usemap": True,
             "ismap": True,
@@ -322,7 +324,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
             "disabled": True,
             "form": True,
             "formaction": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "formenctype": True,
             "formmethod": True,
@@ -340,7 +342,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
             "required": True,
             "size": True,
             "src": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "step": True,
             "type": True,
@@ -351,7 +353,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "ins": {
         "attributes": {
             "cite": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "datetime": True,
         },
@@ -381,7 +383,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "link": {
         "attributes": {
             "href": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "rel": True,
             "media": True,
@@ -447,7 +449,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "q": {
         "attributes": {
             "cite": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
         },
     },
@@ -471,7 +473,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "source": {
         "attributes": {
             "src": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "type": True,
             "media": True,
@@ -541,7 +543,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
             "kind": True,
             "label": True,
             "src": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "srclang": True,
         },
@@ -551,10 +553,10 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "video": {
         "attributes": {
             "src": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "poster": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "preload": True,
             "autoplay": True,
@@ -590,9 +592,25 @@ default_ruleset = Ruleset(DEFAULT_ALLOWED_ELEMENTS)
 default_ruleset.add_sanitiser("css", css.sanitise)
 default_ruleset.add_sanitiser("inline_css", css.sanitise_inline)
 
-# The default URL sanitiser strips all URLs; this may be tweaked later to allow
-# certain data: URLs based on their MIME type.
-default_ruleset.add_sanitiser("url", lambda url: None)
+# The stripped sanitiser strips all content 
+default_ruleset.add_sanitiser("stripped", lambda stripped: None)
+
+
+def url_sanitise(content):
+    from django.core.validators import URLValidator
+    from django.core.exceptions import ValidationError
+
+    val = URLValidator()
+    try:
+        val(content)
+    except ValidationError, e:
+        return None
+
+    return content
+
+
+# The url validator uses the Django url validator to ensure it is a valid url
+default_ruleset.add_sanitiser("url", url_sanitise)
 
 
 def sanitise(content, ruleset=default_ruleset):
