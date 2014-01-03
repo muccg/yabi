@@ -101,91 +101,74 @@ def parse(contents):
 
     return setup, expectations
 
+
+def sameline_value(name, pattern, lines):
+    first_line = lines[0]
+    m = re.match(pattern, first_line)
+    if m:
+        value = m.group(1)
+        return name, value
+
+def multiline_value(name, pattern, lines):
+    first_line = lines[0]
+    m = re.match(pattern, first_line)
+    if m:
+        value = lines[1:]
+        return name, value
+
+
 def parse_setup(contents):
-    PATTERNS= (r"^remote_id\s*:", r"^Exit Code\s*:", r"^STDOUT\s*:", r"^STDERR\s*:")
+    to_extract = (
+        (sameline_value,  'exit_code', r"^Exit Code\s*:\s*(\d+)"),
+        (sameline_value,  'remote_id', r"^remote_id\s*:\s*(\S+)"),
+        (multiline_value, 'stdout',    r"^STDOUT\s*:"),
+        (multiline_value, 'stderr',    r"^STDERR\s*:"),
+    )
 
-    def parse_exit_code(lines):
-        first_line = lines[0]
-        m = re.match(r"^Exit Code\s*:\s*(\d+)", first_line)
-        if m:
-            value = m.group(1)
-            return ['exit_code', int(value)]
-
-    def parse_remote_id(lines):
-        first_line = lines[0]
-        m = re.match(r"^remote_id\s*:\s*(\S+)", first_line)
-        if m:
-            value = m.group(1)
-            return ['remote_id', value]
-
-    def parse_stdout(lines):
-        first_line = lines[0]
-        m = re.match(r"^STDOUT\s*:", first_line, flags=re.IGNORECASE)
-        if m:
-            value = lines[1:]
-            return ['stdout', value]
-
-    def parse_stderr(lines):
-        first_line = lines[0]
-        m = re.match(r"^STDERR\s*:", first_line, flags=re.IGNORECASE)
-        if m:
-            value = "\n".join(lines[1:])
-            return ['stderr', value]
-
-
-    PARSERS = [parse_remote_id, parse_exit_code, parse_stdout, parse_stderr]
-
-    return parse_section(PATTERNS, PARSERS, contents)
-
+    return parse_section(to_extract, contents)
 
 def parse_expectations(contents):
-    PATTERNS= (r"^status should be ", r"remote_id should be")
+    to_extract = (
+        (sameline_value,  'status',    r"^status should be (\S+)"),
+        (sameline_value,  'remote_id', r"^remote id should be (\S+)"),
+    )
 
-    def parse_status(lines):
-        first_line = lines[0]
-        m = re.match(r"^status should be (\S+)", first_line)
-        if m:
-            value = m.group(1)
-            if value == 'None':
-                value = None
-            return ['status', value]
-
-    def parse_remote_id(lines):
-        first_line = lines[0]
-        m = re.match(r"^remote_id should be (\S+)", first_line)
-        if m:
-            value = m.group(1)
-            if value == 'None':
-                value = None
-            return ['remote_id', value]
-
-    PARSERS = [parse_status, parse_remote_id]
-
-    return parse_section(PATTERNS, PARSERS, contents)
+    return parse_section(to_extract, contents)
 
 
-def parse_section(patterns, parsers, contents):
-    PATTERNS = [re.compile(p, flags=re.IGNORECASE) for p in patterns]
+def parse_section(to_extract, contents):
+    """Parses a section of a testcase file (ie. setup or expectations)"""
+    group_start_patterns = [x[2] for x in to_extract]
+    parsers = [partial(*x) for x in to_extract]
+
+    PATTERNS = [re.compile(p, flags=re.IGNORECASE) for p in group_start_patterns]
 
     def match(line):
         return any([re.match(p, line) is not None for p in PATTERNS])
 
-    def create_parts(result, line):
+    def create_groups(result, line):
         if match(line):
             result.append([])
         if result:
             result[-1].append(line)
         return result
-    parts = reduce(create_parts, contents.split('\n'), [])
 
-    def map_parts(lines):
+    # Splits up the lines in contents in groups of lines
+    # The split occurs on lines that matches any of the PATTERNS
+    groups = reduce(create_groups, contents.split('\n'), [])
+
+    def parse_group(lines):
+        """Taking a group of lines it tries to parse it with each parser 
+        in turn until one parser returns a value"""
         for parse in parsers:
             value = parse(lines)
             if value is not None:
                 return value
 
-    return dict([map_parts(v) for v in parts if map_parts(v) is not None])
+    values = [parse_group(g) for g in groups]
+    values = filter(lambda x: x is not None, values)
 
+    return dict(values)
 
 
 @nottest
@@ -209,14 +192,14 @@ def create_tester(test_case):
 
 class ParserTester(object):
     def __init__(self, parser_class, method_name, result_class):
-        self.parser_class = parser_class()
-        self.method = getattr(self.parser_class, method_name)
+        self.parser = parser_class()
+        self.method = getattr(self.parser, method_name)
         self.result_class = result_class()
 
     def __str__(self):
         return "%s.%s:%s" % (
-                self.parser_class.__class__.__module__.replace('yabiadmin.backend.', ''), 
-                self.parser_class.__class__.__name__, 
+                self.parser.__class__.__module__.replace('yabiadmin.backend.', ''), 
+                self.parser.__class__.__name__, 
                 self.method.__name__)
 
     def __repr__(self):
