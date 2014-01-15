@@ -131,6 +131,44 @@ class SFTPBackend(FSBackend):
         thread.start()
         return thread
 
+    def remote_uri_stat(self, uri):
+        scheme, parts = uriparse(uri)
+        remotepath=parts.path
+        ssh = None
+        try:
+            ssh = sshclient(parts.hostname, parts.port, self.cred.credential)
+            sftp = ssh.open_sftp()
+
+            stat = sftp.stat(remotepath)
+
+            return { 'atime': stat.st_atime, 'mtime': stat.st_mtime }
+
+        except Exception as exc:
+            logger.exception("Exception while stating '%s'", uri)
+            raise
+        finally:
+            if ssh is not None:
+                ssh.close()
+
+    def set_remote_uri_times(self, uri, atime, mtime):
+        scheme, parts = uriparse(uri)
+        remotepath=parts.path
+        ssh = None
+        try:
+            ssh = sshclient(parts.hostname, parts.port, self.cred.credential)
+            sftp = ssh.open_sftp()
+
+            stat = sftp.utime(remotepath, (atime, mtime))
+
+        except Exception as exc:
+            logger.exception("Exception while setting times for '%s'", uri)
+            raise
+        finally:
+            if ssh is not None:
+                ssh.close()
+
+
+
     # http://stackoverflow.com/questions/6674862/recursive-directory-download-with-paramiko
     def isdir(self, sftp, path):
         """isdir at path using sftp client"""
@@ -338,12 +376,12 @@ class SSHLocalCopyAndLinkExecuter(object):
 
     COPY_COMMAND_TEMPLATE = """
 #!/bin/sh
-cp "{0}" "{1}"
+cp -p "{0}" "{1}"
 """
 
     COPY_RECURSIVE_COMMAND_TEMPLATE = """
 #!/bin/sh
-cp -r "{0}/"* "{1}"
+cp -rp "{0}/"* "{1}"
 """
 
     SYMLINK_COMMAND_TEMPLATE = """
