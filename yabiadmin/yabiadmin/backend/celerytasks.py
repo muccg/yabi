@@ -76,7 +76,7 @@ def abort_workflow(workflow_id):
         return
     not_aborted_tasks = EngineTask.objects.filter(job__workflow__id=workflow.pk).exclude(job__status=STATUS_ABORTED)
 
-    running_tasks = filter(lambda x: x.status == STATUS_EXEC, not_aborted_tasks)
+    running_tasks = list(filter(lambda x: x.status == STATUS_EXEC, not_aborted_tasks))
     logger.debug("Found %s running tasks", len(running_tasks))
     for task in running_tasks:
         abort_task.apply_async((task.pk,))
