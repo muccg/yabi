@@ -48,7 +48,6 @@ import re
 import logging
 import string
 from six.moves import map
-from six.moves import zip
 logger = logging.getLogger(__name__)
 
 

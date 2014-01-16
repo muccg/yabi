@@ -3,7 +3,6 @@ import re
 from functools import partial
 from six.moves import filter
 from six.moves import map
-from six.moves import zip
 
 logger = logging.getLogger(__name__)
 

@@ -37,7 +37,6 @@ import traceback
 import shutil
 import Queue
 from six.moves import map
-from six.moves import zip
 logger = logging.getLogger(__name__)
 
 
