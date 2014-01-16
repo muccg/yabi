@@ -92,6 +92,19 @@ class FileBackend(FSBackend):
         thread.start()
         return thread
 
+    def remote_uri_stat(self, uri):
+        scheme, parts = uriparse(uri)
+        remote_path = parts.path
+        stat = os.stat(remote_path)
+
+        return { 'atime': stat.st_atime, 'mtime': stat.st_mtime }
+
+    def set_remote_uri_times(self, uri, atime, mtime):
+        scheme, parts = uriparse(uri)
+        remote_path = parts.path
+
+        os.utime(remote_path, (atime, mtime))
+
     def isdir(self, uri):
         """is the uri a dir?"""
         scheme, parts = uriparse(uri)

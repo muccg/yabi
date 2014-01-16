@@ -113,7 +113,10 @@ class FSBackend(BaseBackend):
         logger.info('remote_copy {0} -> {1}'.format(src_uri, dst_uri))
         src_backend = FSBackend.urifactory(yabiusername, src_uri)
         dst_backend = FSBackend.urifactory(yabiusername, dst_uri)
+
         try:
+            src_stat = src_backend.remote_uri_stat(src_uri)
+
             listing = src_backend.ls(src_uri)  # get _flat_ listing here not recursive as before
             dst_backend.mkdir(dst_uri)
             logger.debug("listing of src_uri %s = %s" % (src_uri, listing))
@@ -134,6 +137,12 @@ class FSBackend(BaseBackend):
                     logger.debug("src_dir_uri = %s" % src_dir_uri)
                     logger.debug("dst_dir_uri = %s" % dst_dir_uri)
                     FSBackend.remote_copy(yabiusername, src_dir_uri, dst_dir_uri)
+
+            if src_stat and src_backend.basename(src_uri.rstrip('/')) == dst_backend.basename(dst_uri.rstrip('/')):
+                # Avoid setting the times if we're copying the contents of the source
+                atime = src_stat.get('atime')
+                mtime = src_stat.get('mtime')
+                dst_backend.set_remote_uri_times(dst_uri, atime, mtime)
         except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
 
@@ -153,8 +162,11 @@ class FSBackend(BaseBackend):
             dst_scheme, dst_parts = uriparse(dst_uri)
         else:
             dst_file_uri = dst_uri
+
         fifo = None
         try:
+            src_stat = src_backend.remote_uri_stat(src_uri)
+
             # create a fifo, start the write to/read from fifo
             fifo = create_fifo('remote_file_copy_' + yabiusername + '_' + src_parts.hostname + '_' + dst_parts.hostname)
             src_queue = Queue.Queue()
@@ -171,6 +183,12 @@ class FSBackend(BaseBackend):
                 raise RetryException('remote_file_copy remote_to_fifo failed')
             if dst_status != 0:
                 raise RetryException('remote_file_copy fifo_to_remote failed')
+
+            if src_stat:
+                atime = src_stat.get('atime')
+                mtime = src_stat.get('mtime')
+                dst_backend.set_remote_uri_times(dst_file_uri, atime, mtime)
+
         except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
 
@@ -366,6 +384,12 @@ class FSBackend(BaseBackend):
 
     def fifo_to_remote(self, uri, fifo):
         raise NotImplementedError("")
+
+    def remote_uri_stat(self, uri):
+        return {}
+
+    def set_remote_uri_times(self, uri, atime, mtime):
+        pass
 
     def rm(self, uri):
         raise NotImplementedError("")

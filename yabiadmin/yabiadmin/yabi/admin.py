@@ -35,8 +35,6 @@ from django.forms import ModelForm
 from django import forms
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
 from ccg.utils import webhelpers
-from six.moves import map
-from six.moves import zip
 
 class AdminBase(ExtJsonInterface, admin.ModelAdmin):
     save_as = True
@@ -64,7 +62,8 @@ class AdminBase(ExtJsonInterface, admin.ModelAdmin):
             instance.save()
 
         instances = formset.save(commit=False)
-        map(set_user, instances)
+        for inst in instances:
+            set_user(inst)
         formset.save_m2m()
         return instances
 
