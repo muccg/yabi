@@ -318,6 +318,7 @@ installyabi() {
 
     echo "Install yabiadmin"
     virtualenv ${VIRTUALENV}
+    ${VIRTUALENV}/bin/pip install 'pip>=1.5,<1.6' --upgrade
     ${VIRTUALENV}/bin/pip --version
     pushd yabiadmin
     ${VIRTUALENV}/bin/pip install ${PIP_OPTS} -e .[dev,mysql,postgresql,tests]
