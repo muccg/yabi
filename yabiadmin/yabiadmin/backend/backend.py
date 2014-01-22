@@ -164,7 +164,7 @@ def abort_task(task):
 def exec_credential(yabiusername, uri):
     """
     Return a exec_credential for a given user and uri
-    Curretly wraps legacy code in backendhelper
+    Currently wraps legacy code in backendhelper
     raises ObjectDoesNotExist, DecryptedCredentialNotAvailable
     """
     from yabiadmin.yabiengine import backendhelper
@@ -174,7 +174,7 @@ def exec_credential(yabiusername, uri):
 def fs_credential(yabiusername, uri):
     """
     Return a fs_credential for a given user and uri
-    Curretly wraps legacy code in backendhelper
+    Currently wraps legacy code in backendhelper
     raises ObjectDoesNotExist, DecryptedCredentialNotAvailable
     """
     from yabiadmin.yabiengine import backendhelper
