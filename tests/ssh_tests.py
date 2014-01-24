@@ -4,6 +4,7 @@ from .support import YabiTestCase, StatusResult, FileUtils, all_items, json_path
 from .fixture_helpers import admin
 import time
 from yabiadmin.yabi import models
+from yabiadmin.backend.fsbackend import FSBackend
 from socket import gethostname
 import logging
 
@@ -93,4 +94,68 @@ class SSHFileTransferTest(YabiTestCase, SSHBackend, FileUtils):
 
         self.assertEqual(expected_size, copy_size)
         self.assertEqual(expected_cksum, copy_cksum)
+
+
+class SFTPPerformanceTest(YabiTestCase, SSHBackend, FileUtils):
+
+    def setUp(self):
+        YabiTestCase.setUp(self)
+        SSHBackend.setUp(self)
+        FileUtils.setUp(self)
+        self.username = 'demo'
+        self.homedir = os.environ.get('HOME')
+        self.user = os.environ.get('USER')
+
+    def tearDown(self):
+        FileUtils.tearDown(self)
+        SSHBackend.tearDown(self)
+        YabiTestCase.tearDown(self)
+
+    def time_copy_of_files(self, file_count):
+        """Copies the passed in amount of files from localhost to localhost
+        going through SFTP an times how long the copying takes"""
+
+        a_dir = self.create_tempdir(parentdir=self.homedir) + "/"
+        target_dir = self.create_tempdir(parentdir=self.homedir) + "/"
+
+        for i in range(file_count):
+            self.create_tempfile(parentdir=a_dir)
+
+        cp_start = time.time()
+        FSBackend.remote_copy(self.username,
+                'localfs://%s@localhost%s' % (self.username, a_dir),
+                'sftp://%s@localhost%s/' % (self.user, target_dir))
+        copy_duration = time.time() - cp_start
+
+        return copy_duration
+
+
+    def test_one_file_copy_time(self):
+        one_file_cp_duration = self.time_copy_of_files(1)
+        two_files_cp_duration = self.time_copy_of_files(2)
+
+        logger.debug(one_file_cp_duration)
+        logger.debug(two_files_cp_duration)
+
+        self.assertTrue(two_files_cp_duration < 2 * one_file_cp_duration, "Copying 2 files shouldn't take twice as much as copying 1 file")
+
+    def test_many_files_copy_time(self):
+        MANY_FILES = 20
+        # We can't expect the copy to be exactly calculable
+        # We use an acceptable factor for differences in cp times
+        # I usually don't like tests that can fail based on external factors
+        # but I will leave this test alive for now (TSZ)
+        FACTOR = 0.33 # Copying a file over the same connection shouldn
+                      # last less than a third of the time of opening
+                      # the connection and cp the file
+
+        one_file_cp_duration = self.time_copy_of_files(1)
+        many_files_cp_duration = self.time_copy_of_files(MANY_FILES)
+
+        expected = one_file_cp_duration + (MANY_FILES-1) * one_file_cp_duration * FACTOR
+
+        logger.debug(expected)
+        logger.debug(many_files_cp_duration)
+
+        self.assertTrue(many_files_cp_duration < expected, "Expected copy of many files to last less than %s seconds but it lasted %s seconds" % (expected, many_files_cp_duration))
 
