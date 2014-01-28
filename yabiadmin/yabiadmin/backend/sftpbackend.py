@@ -40,9 +40,11 @@ import logging
 import threading
 from itertools import dropwhile
 from functools import reduce
+from pooling import get_ssh_pool_manager
 
 logger = logging.getLogger(__name__)
 
+pool_manager = get_ssh_pool_manager()
 
 class SFTPCopyThread(threading.Thread):
 
@@ -63,9 +65,10 @@ class SFTPCopyThread(threading.Thread):
     def run(self):
         status = -1
         logger.debug('SFTPCopyThread {0} {1} {2}'.format(self.localpath, self.copy, self.remotepath))
+        ssh = None
+        sftp = None
         try:
-            logger.debug('SFTPCopyThread start copy')
-            ssh = sshclient(self.hostname, self.port, self.credential)
+            ssh = pool_manager.borrow(self.hostname, self.port, self.credential)
             sftp = ssh.open_sftp()
             if self.copy == 'put':
                 sftp.put(self.localpath, self.remotepath, callback=None, confirm=True)
@@ -87,7 +90,9 @@ class SFTPCopyThread(threading.Thread):
             logger.error(exc)
         finally:
             if ssh is not None:
-                ssh.close()
+                if sftp is not None: 
+                    sftp.close()
+                pool_manager.give_back(ssh, self.hostname, self.port, self.credential)
             if self.queue is not None:
                 self.queue.put(status)
             if self.purge is not None and os.path.exists(self.purge):
@@ -136,7 +141,7 @@ class SFTPBackend(FSBackend):
         remotepath=parts.path
         ssh = None
         try:
-            ssh = sshclient(parts.hostname, parts.port, self.cred.credential)
+            ssh = pool_manager.borrow(parts.hostname, parts.port, self.cred.credential)
             sftp = ssh.open_sftp()
 
             stat = sftp.stat(remotepath)
@@ -148,14 +153,15 @@ class SFTPBackend(FSBackend):
             raise
         finally:
             if ssh is not None:
-                ssh.close()
+                sftp.close()
+                pool_manager.give_back(ssh, parts.hostname, parts.port, self.cred.credential)
 
     def set_remote_uri_times(self, uri, atime, mtime):
         scheme, parts = uriparse(uri)
         remotepath=parts.path
         ssh = None
         try:
-            ssh = sshclient(parts.hostname, parts.port, self.cred.credential)
+            ssh = pool_manager.borrow(parts.hostname, parts.port, self.cred.credential)
             sftp = ssh.open_sftp()
 
             stat = sftp.utime(remotepath, (atime, mtime))
@@ -165,8 +171,8 @@ class SFTPBackend(FSBackend):
             raise
         finally:
             if ssh is not None:
-                ssh.close()
-
+                sftp.close()
+                pool_manager.give_back(ssh, parts.hostname, parts.port, self.cred.credential)
 
 
     # http://stackoverflow.com/questions/6674862/recursive-directory-download-with-paramiko
