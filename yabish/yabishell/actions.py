@@ -15,7 +15,6 @@ from .urihelper import uriparse
 from six.moves import filter
 from six.moves import map
 import six
-from six.moves import zip
 
 STDOUT_PATTERNS = [ r'STDOUT.txt$', 
         r""" # examples: Y123.o4567, Y123.o456.1, Y123.o456-2
@@ -176,7 +175,7 @@ class Attach(Action, FileDownload):
         stdout_files, other_files = partition(is_stdout_file, files)
         stderr_files, other_files = partition(is_stderr_file, other_files)
 
-        return dirs, list(stdout_files), list(stderr_files), list(other_files)
+        return list(dirs), list(stdout_files), list(stderr_files), list(other_files)
 
     def download_stageout_files(self, uri, dirs, stdout_files, stderr_files, other_files):
         def create_dirs(dirs):

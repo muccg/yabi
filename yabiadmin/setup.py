@@ -74,14 +74,14 @@ mysql_requires = [
 ]
 
 dependency_links = [
-    'http://ccg-django-extras.googlecode.com/files/ccg-webservices-0.1.2.tar.gz',
-    'http://ccg-django-extras.googlecode.com/files/ccg-registration-0.8-alpha-1.tar.gz',
-    'http://ccg-django-extras.googlecode.com/files/ccg-introspect-0.1.2.tar.gz',
-    'http://ccg-django-extras.googlecode.com/files/ccg-makoloader-0.2.6.tar.gz',
+    'https://ccg-django-extras.googlecode.com/files/ccg-webservices-0.1.2.tar.gz',
+    'https://ccg-django-extras.googlecode.com/files/ccg-registration-0.8-alpha-1.tar.gz',
+    'https://ccg-django-extras.googlecode.com/files/ccg-introspect-0.1.2.tar.gz',
+    'https://ccg-django-extras.googlecode.com/files/ccg-makoloader-0.2.6.tar.gz',
     'https://bitbucket.org/ccgmurdoch/ccg-django-extras/downloads/ccg-extras-0.1.7.tar.gz',
-    'http://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.3.tar.gz',
-    'http://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
-    'http://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',
+    'https://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.3.tar.gz',
+    'https://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
+    'https://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',
 ]
 
 importlib_available = True
@@ -95,7 +95,7 @@ if not importlib_available:
     install_requires.append('importlib>=1.0.1,<1.1.0')
 
 setup(name='yabiadmin',
-      version='7.1.7',
+      version='7.1.8',
       description='Yabi Admin',
       long_description='Yabi front end and administration web interface',
       author='Centre for Comparative Genomics',

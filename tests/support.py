@@ -207,9 +207,9 @@ class FileUtils(object):
         self.tempfiles.append(filename)
         return filename
 
-    def create_tempdir(self):
+    def create_tempdir(self, parentdir = conf.tmpdir):
         import tempfile
-        dirname = tempfile.mkdtemp()
+        dirname = tempfile.mkdtemp(dir=parentdir)
         self.tempfiles.append(dirname)
         return dirname
 

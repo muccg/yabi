@@ -30,6 +30,7 @@ from yabiadmin.backend.exceptions import RetryException, FileNotFoundError
 from yabiadmin.backend.utils import create_fifo
 from yabiadmin.backend.backend import fs_credential
 from yabiadmin.backend.basebackend import BaseBackend
+from yabiadmin.backend.pooling import get_ssh_pool_manager
 from yabiadmin.yabiengine.urihelper import url_join, uriparse, is_same_location
 from yabiadmin.constants import ENVVAR_FILENAME
 import logging
@@ -37,7 +38,6 @@ import traceback
 import shutil
 import Queue
 from six.moves import map
-from six.moves import zip
 logger = logging.getLogger(__name__)
 
 
@@ -109,6 +109,11 @@ class FSBackend(BaseBackend):
 
     @staticmethod
     def remote_copy(yabiusername, src_uri, dst_uri):
+        FSBackend.remote_copy_recurse(yabiusername, src_uri, dst_uri)
+        get_ssh_pool_manager().release()
+
+    @staticmethod
+    def remote_copy_recurse(yabiusername, src_uri, dst_uri):
         """Recursively copy src_uri to dst_uri"""
         logger.info('remote_copy {0} -> {1}'.format(src_uri, dst_uri))
         src_backend = FSBackend.urifactory(yabiusername, src_uri)
@@ -136,7 +141,7 @@ class FSBackend(BaseBackend):
                     dst_dir_uri = url_join(dst_uri, listing_dir[0])
                     logger.debug("src_dir_uri = %s" % src_dir_uri)
                     logger.debug("dst_dir_uri = %s" % dst_dir_uri)
-                    FSBackend.remote_copy(yabiusername, src_dir_uri, dst_dir_uri)
+                    FSBackend.remote_copy_recurse(yabiusername, src_dir_uri, dst_dir_uri)
 
             if src_stat and src_backend.basename(src_uri.rstrip('/')) == dst_backend.basename(dst_uri.rstrip('/')):
                 # Avoid setting the times if we're copying the contents of the source

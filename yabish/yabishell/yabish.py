@@ -14,7 +14,6 @@ from yabishell import actions
 from yabishell.utils import human_readable_size
 from six.moves import filter
 from six.moves import map
-from six.moves import zip
 
 YABI_DEFAULT_URL = os.environ.get('YABISH_YABI_URL', 'http://localhost:8000/')
 
