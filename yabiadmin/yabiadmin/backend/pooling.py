@@ -1,5 +1,4 @@
 from yabiadmin.backend.utils import sshclient
-from operator import add
 
 from threading import RLock
 import logging
@@ -45,8 +44,8 @@ class SSHPoolManager(object):
     def release(self):
         """Releases the manager itself, closing all objects"""
 
-        connections = reduce(add, self.connections.values(), [])
-        for connection in connections:
+        all_connections = sum(self.connections.values(), [])
+        for connection in all_connections:
             self.connector.close(connection)
 
         connections = {}
@@ -61,6 +60,8 @@ class SSHPoolManager(object):
             connection = connections.pop()
             if self.connector.is_active(connection):
                 return connection
+            else:
+                self.connector.close(connection)
         return None
 
  
