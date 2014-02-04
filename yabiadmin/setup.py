@@ -63,6 +63,9 @@ tests_require = [
     'django-nose',
     'nose==1.2.1',
     'mockito>=0.5.0,<0.6.0',
+    'sniffer==0.3.2',
+    'pyinotify==0.9.4',
+    'model_mommy==1.2',
 ]
 
 postgresql_requires = [
