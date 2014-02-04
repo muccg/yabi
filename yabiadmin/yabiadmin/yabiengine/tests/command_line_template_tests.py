@@ -1,20 +1,7 @@
 from django.utils import unittest as unittest
-from django.test.client import Client
 
-from datetime import datetime, timedelta
-
-from yabiadmin.test_utils import override_settings
-
-from yabiadmin.yabiengine import enginemodels as emodels
-from yabiadmin.yabi.models import User, Backend
 from yabiadmin.yabiengine import models
 from yabiadmin.yabiengine.commandlinetemplate import SwitchFilename, make_fname
-from yabiadmin.constants import *
-
-from urlparse import urlparse
-from django.utils.http import urlencode
-import hmac
-from django.conf import settings
 
 
 class SwitchFilenameWithExtensionTest(unittest.TestCase):
