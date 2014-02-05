@@ -129,7 +129,6 @@ class Tool(Base):
     backend.help_text = "The execution backend for this tool."
     fs_backend.help_text = "The filesystem backend for this tool."
     accepts_input.help_text = "If checked, this tool will accept inputs from prior tools rather than presenting file select widgets."
-    #batch_on_param.help_text="Specify switch that will be fed files in batch mode. i.e. -i in blast."
     module.help_text = "Comma separated list of modules to load."
     submission.help_text = "Mako script to be used to generate the submission script. (Variables: walltime, memory, cpus, working, modules, command, etc.)"
     lcopy_supported.help_text = "If this tool should use local copies on supported backends where appropriate."
@@ -266,10 +265,8 @@ class ToolParameter(Base):
     default_value = models.TextField(null=True, blank=True)
     helptext = models.TextField(null=True, blank=True)
 
-    # this is replaced by a setting in file_assignment
     batch_bundle_files = models.BooleanField(blank=False, null=False, default=False)
 
-    # this replaces batch_param with a 'file assignment mode' that determines if it 'batches' or 'consumes all'
     file_assignment = models.CharField(max_length=5, null=False, choices=FILE_ASSIGNMENT_CHOICES)
 
     # this foreign key points to the tool parameter (that is a batch_on_param) that we will derive the output filename for this switch from
