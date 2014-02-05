@@ -50,8 +50,8 @@ class CommandLineTemplateTest(unittest.TestCase):
         self.tool = mommy.make('Tool', name='my-tool', path='tool.sh')
         combined_with_equals = ParameterSwitchUse.objects.get(display_text='combined with equals')
         value_only = ParameterSwitchUse.objects.get(display_text='valueOnly')
-        self.tool_param = mommy.make('ToolParameter', tool=self.tool, switch="-arg1", switch_use=combined_with_equals)
-        self.tool_param = mommy.make('ToolParameter', tool=self.tool, switch="-arg2", switch_use=value_only)
+        mommy.make('ToolParameter', tool=self.tool, switch="-arg1", switch_use=combined_with_equals)
+        mommy.make('ToolParameter', tool=self.tool, switch="-arg2", switch_use=value_only)
 
         self.template = CommandTemplate()
 
