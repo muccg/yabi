@@ -337,7 +337,7 @@ class CommandTemplate(object):
         self.batch_switches = []            # the switches that need to have the input files batched
         self.consume_switches = []          # the switches that need to have the input files consumed
 
-        self.uri_conversion_string = "%%(file)s"            # to convert a URI into a remote path we use this string template
+        self.uri_conversion_string = "%(filename)s"            # to convert a URI into a remote path we use this string template
 
     def setup(self, job, job_dict):
         """
@@ -417,7 +417,7 @@ class CommandTemplate(object):
 
         for argument in self.arguments:
             if argument.takes_input_file:
-                assert len(batchfiles), "batch_files passed in has %d entries which is not enough for command tempate %r" % (len(self.batchfiles), self)
+                assert len(batchfiles), "batch_files passed in has %d entries which is not enough for command template %r" % (len(self.batchfiles), self)
                 # render all in a list
                 try:
                     output += " " + argument.render([self._convert(X) for X in batchfiles[argument.flag]])
