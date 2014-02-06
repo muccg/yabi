@@ -1,6 +1,9 @@
 from django.utils import unittest as unittest
 
-from yabiadmin.yabiengine import models
+from  model_mommy import mommy
+
+from yabiadmin.yabi.models import User, ParameterSwitchUse
+from yabiadmin.yabiengine import models as m
 from yabiadmin.yabiengine.commandlinetemplate import CommandTemplate, SwitchFilename, make_fname
 
 
@@ -36,11 +39,6 @@ class SwitchFilenameWithoutExtensionTest(unittest.TestCase):
         self.assertEquals('"test.txt"', '%s' % self.switch)
 
 
-from yabiadmin.yabi.models import User, ParameterSwitchUse
-from yabiadmin.yabiengine import models as m
-
-from  model_mommy import mommy
-
 class CommandLineTemplateTest(unittest.TestCase):
 
     def setUp(self):
@@ -50,55 +48,92 @@ class CommandLineTemplateTest(unittest.TestCase):
         self.tool = mommy.make('Tool', name='my-tool', path='tool.sh')
         combined_with_equals = ParameterSwitchUse.objects.get(display_text='combined with equals')
         value_only = ParameterSwitchUse.objects.get(display_text='valueOnly')
-        mommy.make('ToolParameter', tool=self.tool, switch="-arg1", switch_use=combined_with_equals)
-        mommy.make('ToolParameter', tool=self.tool, switch="-arg2", switch_use=value_only)
+        mommy.make('ToolParameter', tool=self.tool, switch="-arg1", switch_use=combined_with_equals, rank=2)
+        mommy.make('ToolParameter', tool=self.tool, switch="-arg2", switch_use=value_only, rank=1)
+        mommy.make('ToolParameter', tool=self.tool, switch="-arg3", switch_use=value_only, file_assignment='batch')
 
         self.template = CommandTemplate()
+        self.job_1_dict = {
+            "jobId": 1,
+            "toolName": "my-tool",
+            "parameterList": {"parameter": []}}
 
     def tearDown(self):
         self.job.workflow.delete()
         self.tool.delete()
 
-    def test_no_params(self):
-        job_dict = {
-            "jobId": 1,
-            "toolName": "my-tool",
-            "parameterList": {"parameter": []}}
-        self.template.setup(self.job, job_dict)
+    def job_dict_with_params(self, *params):
+        import copy
+        d = copy.copy(self.job_1_dict)
+        if params:
+            d['parameterList']['parameter'] = params
+        return d
+
+    def render_command(self, job, job_dict, uri_conversion=None):
+        self.template.setup(job, job_dict)
         self.template.parse_parameter_description()
 
-        command = self.template.render()
+        if uri_conversion is not None:
+            self.template.set_uri_conversion(uri_conversion)
+
+        return self.template.render()
+
+    def test_no_params(self):
+        job_dict = self.job_1_dict
+
+        command = self.render_command(self.job, job_dict)
 
         self.assertEquals("tool.sh", command)
 
     def test_param_combined_with_equals(self):
-        job_dict = {
-            "jobId": 1,
-            "toolName": "my-tool",
-            "parameterList": {"parameter": [{
+        job_dict = self.job_dict_with_params({
                     'switchName': '-arg1',
                     'valid': True,
-                    'value': ['value'] }]}}
-        self.template.setup(self.job, job_dict)
-        self.template.parse_parameter_description()
+                    'value': ['value']})
 
-        command = self.template.render()
+        command = self.render_command(self.job, job_dict)
 
         self.assertEquals('tool.sh -arg1="value"', command)
 
     def test_param_value_only(self):
-        job_dict = {
-            "jobId": 1,
-            "toolName": "my-tool",
-            "parameterList": {"parameter": [{
+        job_dict = self.job_dict_with_params({
                     'switchName': '-arg2',
                     'valid': True,
-                    'value': ['value'] }]}}
-        self.template.setup(self.job, job_dict)
-        self.template.parse_parameter_description()
+                    'value': ['value']})
 
-        command = self.template.render()
+        command = self.render_command(self.job, job_dict)
 
         self.assertEquals('tool.sh "value"', command)
+
+    def test_rank_respected(self):
+        job_dict = self.job_dict_with_params({
+                    'switchName': '-arg1',
+                    'valid': True,
+                    'value': ['value']},
+                {
+                    'switchName': '-arg2',
+                    'valid': True,
+                    'value': ['other value']})
+
+        command = self.render_command(self.job, job_dict)
+
+        self.assertEquals('tool.sh "other value" -arg1="value"', command)
+
+    def test_direct_file_reference(self):
+        job_dict = self.job_dict_with_params({
+                    'switchName': '-arg3',
+                    'valid': True,
+                    'value': [{
+                        'path': ['some', 'path'],
+                        'root': 'sftp://demo@localhost:22/',
+                        'type': 'file',
+                        'filename': 'a.txt'}]})
+
+        command = self.render_command(self.job, job_dict, uri_conversion='/tools/workdir/input/%(filename)s')
+
+        self.assertEquals('tool.sh "/tools/workdir/input/a.txt"', command)
+
+        #TODO Assert file will be staged in?
+        # for f in self.template.other_files():
 
 
