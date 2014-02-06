@@ -194,17 +194,17 @@ nosetests() {
 
     # Runs the end-to-end tests in the Yabitests project
     ${VIRTUALENV}/bin/nosetests --with-xunit --xunit-file=tests.xml -I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py -v tests yabiadmin/yabiadmin 
-    #${VIRTUALENV}/bin/nosetests -v -w tests tests.simple_tool_tests
-    #${VIRTUALENV}/bin/nosetests -v -w tests tests.s3_connection_tests
-    #${VIRTUALENV}/bin/nosetests -v -w tests tests.ssh_tests
-    #${VIRTUALENV}/bin/nosetests -v -w tests tests.sshpbspro_tests
-    #${VIRTUALENV}/bin/nosetests -v -w tests tests.sshtorque_tests
-    #${VIRTUALENV}/bin/nosetests -v -w tests tests.backend_execution_restriction_tests
-    #${VIRTUALENV}/bin/nosetests -v -w tests tests.localfs_connection_tests
-    #${VIRTUALENV}/bin/nosetests -v -w tests tests.rewalk_tests
-    #${VIRTUALENV}/bin/nosetests -v -w tests tests.file_transfer_tests
-    #${VIRTUALENV}/bin/nosetests -v -w tests tests.ssh_tests
-    #${VIRTUALENV}/bin/nosetests -v -w tests tests.idempotency_tests
+    #${VIRTUALENV}/bin/nosetests -v tests.simple_tool_tests
+    #${VIRTUALENV}/bin/nosetests -v tests.s3_connection_tests
+    #${VIRTUALENV}/bin/nosetests -v tests.ssh_tests
+    #${VIRTUALENV}/bin/nosetests -v tests.sshpbspro_tests
+    #${VIRTUALENV}/bin/nosetests -v tests.sshtorque_tests
+    #${VIRTUALENV}/bin/nosetests -v tests.backend_execution_restriction_tests
+    #${VIRTUALENV}/bin/nosetests -v tests.localfs_connection_tests
+    #${VIRTUALENV}/bin/nosetests -v tests.rewalk_tests
+    #${VIRTUALENV}/bin/nosetests -v tests.file_transfer_tests
+    #${VIRTUALENV}/bin/nosetests -v tests.ssh_tests
+    #${VIRTUALENV}/bin/nosetests -v tests.idempotency_tests
 }
 
 
