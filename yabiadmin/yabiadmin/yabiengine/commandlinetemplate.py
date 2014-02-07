@@ -462,12 +462,13 @@ class CommandTemplate(object):
                     if type(value) is dict and 'type' in value and (value['type'] == 'file' or value['type'] == 'directory'):
                         # param refers to a file
                         assert tp.file_assignment == "batch" or tp.file_assignment == "all", "File parameter passed in on switch '%s' where file_assignment is neither 'batch' nor 'all'" % (tp.switch)
-                        value['extensions'] = tp.input_filetype_patterns()
-
-                        # annotate with the switch we are processing
-                        value['switch'] = tp.switch
 
                         self.files.append(value)
+
+                        filename = value['filename']
+                        value = SwitchInputFilename(filename)
+
+                        self.arguments.append(Switch(tp.switch, value, switchuse=tp.switch_use.formatstring))
                     else:
                         # switch has single parameter
                         if tp.batch_bundle_files:
