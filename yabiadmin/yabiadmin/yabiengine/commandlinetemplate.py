@@ -791,9 +791,10 @@ class CommandTemplate(object):
         fulluri = "/".join(strippedComponents) + '/'
         return fulluri
 
-    def list_files_for_param_directory(self, item):
+    def list_files_for_param_directory_value(self, item):
         fulluri = self.parse_param_directory_value(item)
 
         # get recursive directory listing
         filelist = backend.get_file_list(self.username, fulluri, recurse=True)
         return [fulluri + X[0] for X in filelist]
+
