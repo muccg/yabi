@@ -467,7 +467,8 @@ class CommandTemplate(object):
 
                         filename = value['filename']
                         if value['type'] == 'directory':
-                            filename += '/'
+                            if not filename.endswith('/'):
+                                filename += '/'
 
                         value = SwitchInputFilename(filename)
 
