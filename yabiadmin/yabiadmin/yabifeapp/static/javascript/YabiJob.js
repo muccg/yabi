@@ -650,8 +650,10 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
  * Render the current status as a badge.
  */
 YabiJob.prototype.renderStatusBadge = function(status) {
-  this.badgeEl = document.createElement('div');
-  this.badgeEl.className = 'badge' + status;
+  this.badgeEl = document.createElement('img');
+  this.badgeEl.className = 'badge';
+  this.badgeEl.title = "Job " + Yabi.util.Status.getStatusDescription(status);
+  this.badgeEl.src = imagesURL + Yabi.util.Status.getStatusImage(status);
   this.jobEl.appendChild(this.badgeEl);
 };
 

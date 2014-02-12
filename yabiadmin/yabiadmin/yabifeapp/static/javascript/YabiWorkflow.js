@@ -218,8 +218,8 @@ YUI().use(
         var proxy;
         for (index in this.attachedProxies) {
           proxy = this.attachedProxies[index];
-          proxy.badgeEl.className = 'badge' + this.status;
           proxy.payload.status = this.status;
+          proxy.renderStatus();
         }
 
         if (this.editable) {

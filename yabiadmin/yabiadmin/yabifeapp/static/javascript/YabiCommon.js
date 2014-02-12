@@ -152,4 +152,17 @@ Yabi.util.Glob.create = function(glob) {
 };
 
 
+Yabi.util.Status = {};
+Yabi.util.Status.getStatusImage = function(status) {
+  if (status === "complete") return "ok.png";
+  if (status === "error") return "error.png";
+  if (status === "aborted") return "aborted.png";
+  return "pending.png";
+};
+
+Yabi.util.Status.getStatusDescription = function(status) {
+  if (status === "complete") return "completed";
+  if (status === "error") return "errored";
+  return status;
+};
 
