@@ -190,15 +190,23 @@ class TestImportTag(unittest.TestCase):
         result = t._render(c)
         self.assertTrue('foobar' in c.dicts[-1] and result == six.u("startHello Fred Bloggsfinish"))
 
+
+from yabiadmin.yabi.models import FileExtension  # could be anything
 class TestOrderByCustomFilter(unittest.TestCase):
+    def setUp(self):
+        self.extensions = [
+            FileExtension.objects.create(pattern="zzzz"),
+            FileExtension.objects.create(pattern="mmmm"),
+            FileExtension.objects.create(pattern="aaaa"),
+        ]
+
+    def tearDown(self):
+        for ext in self.extensions:
+            ext.delete()
+
     def test_order_by_filter_generator(self):
-        from yabiadmin.yabi.models import FileExtension  # could be anything
 
         from django.template import Template, Context
-
-        exe_file = FileExtension.objects.create(pattern="zzzz")
-        blah_file = FileExtension.objects.create(pattern="mmmm")
-        jpg_file = FileExtension.objects.create(pattern="aaaa")
 
         all_extensions = FileExtension.objects.all()  # a generator
 
