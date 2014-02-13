@@ -43,7 +43,7 @@ install_requires = [
     'cssutils>=0.9.10,<0.10.0',
     'httplib2>=0.8,<0.9',
     'djamboloader==0.1.2',
-    'paramiko>=1.10.0,<1.11.0',
+    'paramiko>=1.12.1,<1.13.0',
     'boto==2.25',
     'python-dateutil>=2.1,<3.0',
     'yaphc==0.1.5',
