@@ -439,7 +439,7 @@ class Task(models.Model, Editable, Status):
             return {}
         return json.loads(self.envvars_json)
 
-    def mark_task_as_retrying(self, message="Some error occured"):
+    def mark_task_as_retrying(self, message="Some error occurred"):
         self.is_retrying = True
         self.error_msg = message
         self.save()

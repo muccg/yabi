@@ -188,7 +188,7 @@ def spawn_task(task_id):
     task_chain.apply_async()
 
 
-def mark_task_as_retrying(task_id, message="Some error occured"):
+def mark_task_as_retrying(task_id, message="Some error occurred"):
     task = Task.objects.get(pk=task_id)
     task.mark_task_as_retrying(message)
 
