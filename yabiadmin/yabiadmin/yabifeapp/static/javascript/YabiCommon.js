@@ -157,12 +157,14 @@ Yabi.util.Status.getStatusImage = function(status) {
   if (status === "complete") return "ok.png";
   if (status === "error") return "error.png";
   if (status === "aborted") return "aborted.png";
+  if (status === "retrying") return "blocked.png";
   return "pending.png";
 };
 
 Yabi.util.Status.getStatusDescription = function(status) {
   if (status === "complete") return "completed";
   if (status === "error") return "errored";
+  if (status === "retrying") return "errored, Yabi is retrying to run it";
   return status;
 };
 

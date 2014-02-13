@@ -211,7 +211,7 @@ YUI().use(
         }, this);
       };
 
-      YabiWorkflow.prototype.setStatus = function(statusText) {
+      YabiWorkflow.prototype.setStatus = function(statusText, is_retrying) {
         this.status = statusText.toLowerCase();
 
         //update proxies
@@ -219,6 +219,7 @@ YUI().use(
         for (index in this.attachedProxies) {
           proxy = this.attachedProxies[index];
           proxy.payload.status = this.status;
+          proxy.payload.is_retrying = is_retrying;
           proxy.renderStatus();
         }
 
@@ -811,7 +812,7 @@ YUI().use(
           if (!this.editable) {
             oldJobStatus = job.status;
 
-            job.renderProgress(obj.jobs[index].status,
+            job.renderProgress(obj.jobs[index].status, obj.jobs[index].is_retrying,
                 obj.jobs[index].tasksComplete, obj.jobs[index].tasksTotal);
 
             if (this.selectedJob == job && oldJobStatus != job.status) {
@@ -975,7 +976,7 @@ YUI().use(
         //preprocess wrapper meta data
         target.setTags(obj.tags);
 
-        target.setStatus(obj.status);
+        target.setStatus(obj.status, obj.is_retrying);
 
         target.solidify(obj.json);
       };

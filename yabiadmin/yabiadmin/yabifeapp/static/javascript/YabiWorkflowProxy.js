@@ -62,6 +62,9 @@ YabiWorkflowProxy.prototype.destroy = function() {
 
 YabiWorkflowProxy.prototype.renderStatus = function() {
   var status = this.payload.status;
+  if (this.payload.is_retrying) {
+      status = 'retrying';
+  }
 
   image = Yabi.util.Status.getStatusImage(status);
   title = "Worflow " + Yabi.util.Status.getStatusDescription(status);
