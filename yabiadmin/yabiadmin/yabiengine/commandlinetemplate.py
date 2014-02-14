@@ -337,7 +337,7 @@ class CommandTemplate(object):
         self.batch_switches = []            # the switches that need to have the input files batched
         self.consume_switches = []          # the switches that need to have the input files consumed
 
-        self.uri_conversion_string = "%%(file)s"            # to convert a URI into a remote path we use this string template
+        self.uri_conversion_string = "%(filename)s"            # to convert a URI into a remote path we use this string template
 
     def setup(self, job, job_dict):
         """
@@ -417,7 +417,7 @@ class CommandTemplate(object):
 
         for argument in self.arguments:
             if argument.takes_input_file:
-                assert len(batchfiles), "batch_files passed in has %d entries which is not enough for command tempate %r" % (len(self.batchfiles), self)
+                assert len(batchfiles), "batch_files passed in has %d entries which is not enough for command template %r" % (len(self.batchfiles), self)
                 # render all in a list
                 try:
                     output += " " + argument.render([self._convert(X) for X in batchfiles[argument.flag]])
@@ -462,12 +462,17 @@ class CommandTemplate(object):
                     if type(value) is dict and 'type' in value and (value['type'] == 'file' or value['type'] == 'directory'):
                         # param refers to a file
                         assert tp.file_assignment == "batch" or tp.file_assignment == "all", "File parameter passed in on switch '%s' where file_assignment is neither 'batch' nor 'all'" % (tp.switch)
-                        value['extensions'] = tp.input_filetype_patterns()
-
-                        # annotate with the switch we are processing
-                        value['switch'] = tp.switch
 
                         self.files.append(value)
+
+                        filename = value['filename']
+                        if value['type'] == 'directory':
+                            if not filename.endswith('/'):
+                                filename += '/'
+
+                        value = SwitchInputFilename(filename)
+
+                        self.arguments.append(Switch(tp.switch, value, switchuse=tp.switch_use.formatstring))
                     else:
                         # switch has single parameter
                         if tp.batch_bundle_files:
@@ -767,13 +772,7 @@ class CommandTemplate(object):
             return [self.parse_param_file_value(item)]
 
         elif item['type'] == 'directory':
-            # if we are not select file
-            if not self.command.is_select_file:
-                # decode directory
-                return [f for f in self.list_files_for_param_directory_value(item)]
-            else:
-                # select file returns the directory itself, so rcopy can be used on the backend to preserve directory structures
-                return [self.parse_param_directory_value(item)]
+            return [self.parse_param_directory_value(item)]
 
     def parse_param_file_value(self, item):
         path = ''
@@ -790,9 +789,3 @@ class CommandTemplate(object):
         fulluri = "/".join(strippedComponents) + '/'
         return fulluri
 
-    def list_files_for_param_directory(self, item):
-        fulluri = self.parse_param_directory_value(item)
-
-        # get recursive directory listing
-        filelist = backend.get_file_list(self.username, fulluri, recurse=True)
-        return [fulluri + X[0] for X in filelist]

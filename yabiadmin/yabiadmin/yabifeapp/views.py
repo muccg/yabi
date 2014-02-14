@@ -122,6 +122,14 @@ def login(request):
     # show a warning if using dev settings
     show_dev_warning = using_dev_settings()
 
+    def render_form(form, error='Invalid login credentials'):
+        return render_to_response('fe/login.html', {
+                 'h': webhelpers,
+                 'base_site_url': webhelpers.url("").rstrip("/"),
+                 'form': form,
+                 'error': error,
+                 'show_dev_warning': show_dev_warning})
+
     if request.method == 'POST':
         form = LoginForm(request.POST)
 
@@ -151,15 +159,15 @@ def login(request):
 
             else:
                 form = LoginForm()
-                return render_to_response('fe/login.html', {'h': webhelpers, 'base_site_url': webhelpers.url("").rstrip("/"), 'form': form, 'error': 'Invalid login credentials', 'show_dev_warning': show_dev_warning})
+                return render_form(form)
 
         else:
-            return render_to_response('fe/login.html', {'h': webhelpers, 'base_site_url': webhelpers.url("").rstrip("/"), 'form': form, 'error': 'Invalid login credentials', 'show_dev_warning': show_dev_warning})
+            return render_form(form)
 
     else:
         form = LoginForm()
         error = request.GET['error'] if 'error' in request.GET else ''
-        return render_to_response('fe/login.html', {'h': webhelpers, 'base_site_url': webhelpers.url("").rstrip("/"), 'form': form, 'url': None, 'error': error, 'show_dev_warning': show_dev_warning})
+        return render_form(form, error)
 
 
 def wslogin(request):

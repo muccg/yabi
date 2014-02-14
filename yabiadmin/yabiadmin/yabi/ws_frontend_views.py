@@ -365,6 +365,7 @@ def workflow_to_response(workflow, key=None, parse_json=True, retrieve_tags=True
         'last_modified_on': workflow.last_modified_on.strftime(fmt),
         'created_on': workflow.created_on.strftime(fmt),
         'status': workflow.status,
+        'is_retrying': workflow.is_retrying,
         'json': json.loads(workflow.json) if parse_json else workflow.json,
         'tags': [],
     }

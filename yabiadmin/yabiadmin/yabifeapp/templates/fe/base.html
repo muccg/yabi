@@ -24,6 +24,7 @@
         } 
     };
     var appURL = "{{base_site_url}}/";
+    var imagesURL = "{{base_site_url}}/static/images/";
 
     // Set this to false if you want to get each YUI JS file on its own
     // for debugging YUI itself.
@@ -141,5 +142,6 @@
 {% endblock %}
 
 {% endblock %}
+{% include "fe/copyright_include.html" %}
 </body>
 </html>

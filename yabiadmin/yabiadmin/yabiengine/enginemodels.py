@@ -380,6 +380,7 @@ class EngineJob(Job):
         assert job_dict['jobId'] == job_id + 1  # jobs are 1 indexed in json
 
         job_dict['status'] = self.status
+        job_dict['is_retrying'] = self.is_retrying
         job_dict['tasksComplete'] = float(self.progress_score())
         job_dict['tasksTotal'] = float(self.total_tasks())
 

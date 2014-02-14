@@ -9,7 +9,7 @@ from django.core.cache import cache
 
 from django.utils import simplejson as json
 
-from .crypto_utils import encrypt_to_annotated_block, \
+from yabiadmin.crypto_utils import encrypt_to_annotated_block, \
     decrypt_annotated_block, looks_like_annotated_block, DecryptException
 
 class CryptoTest(unittest.TestCase):
