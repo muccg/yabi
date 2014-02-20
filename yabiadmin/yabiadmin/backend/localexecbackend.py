@@ -25,15 +25,18 @@
 #
 ### END COPYRIGHT ###
 import os
+import stat
+import shlex
+import shutil
+import logging
+import uuid
+import time
 from yabiadmin.yabiengine.urihelper import uriparse
 from yabiadmin.backend.execbackend import ExecBackend
 from yabiadmin.backend.exceptions import RetryException
 from yabiadmin.yabiengine.enginemodels import EngineTask
 from yabiadmin.backend.utils import blocking_execute
-import shlex
-import shutil
-import logging
-import time
+
 logger = logging.getLogger(__name__)
 
 WAIT_TO_TERMINATE_SECS = 3
@@ -51,9 +54,9 @@ class LocalExecBackend(ExecBackend):
         exec_scheme, exec_parts = uriparse(self.task.job.exec_backend)
         working_scheme, working_parts = uriparse(self.working_output_dir_uri())
 
-        # TODO use this script
         script = self.get_submission_script(exec_parts.hostname, working_parts.path)
         logger.debug('script {0}'.format(script))
+        script_name = self.create_script(script)
 
         if os.path.exists(working_parts.path):
             shutil.rmtree(working_parts.path)
@@ -71,6 +74,7 @@ class LocalExecBackend(ExecBackend):
                 self.task.remote_id = pid
                 self.task.save()
 
+            args = [script_name]
             status = blocking_execute(args=args, stderr=stderr, stdout=stdout, cwd=working_parts.path, report_pid_callback=set_remote_id)
 
             if status != 0:
@@ -88,7 +92,20 @@ class LocalExecBackend(ExecBackend):
             except Exception as exc:
                 logger.error(exc)
 
+            try:
+                os.unlink(script_name)
+            except:
+                logger.exception("Couldn't delete script file %s", script_name)
+
         return status
+
+    def create_script(self, script_contents):
+        script_name = '/tmp/yabi_lexec_%s.sh' % uuid.uuid4()
+        with open(script_name, 'w') as f:
+            f.write(script_contents)
+        st = os.stat(script_name)
+        os.chmod(script_name, st.st_mode | stat.S_IEXEC)
+        return script_name
 
     def poll_task_status(self):
         pass
