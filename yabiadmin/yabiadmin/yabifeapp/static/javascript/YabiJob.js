@@ -563,13 +563,13 @@ YabiJob.prototype.renderJobStatusResponse = function(obj) {
  *
  * render progress bar/badges
  */
-YabiJob.prototype.renderProgress = function(status, completed, total, message) {
+YabiJob.prototype.renderProgress = function(status, is_retrying, completed, total, message) {
   if (Y.Lang.isUndefined(status)) {
     return;
   }
 
   if (!this.showingProgress) {
-    this.renderStatusBadge(status);
+    this.renderStatusBadge(status, is_retrying);
 
     this.progressContainerEl = document.createElement('div');
     this.progressContainerEl.className = 'progressBarContainer';
@@ -585,7 +585,7 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
 
   //update status badge
   if (this.jobEl.removeChild(this.badgeEl)) {
-    this.renderStatusBadge(status);
+    this.renderStatusBadge(status, is_retrying);
   }
 
 
@@ -649,9 +649,14 @@ YabiJob.prototype.renderProgress = function(status, completed, total, message) {
  *
  * Render the current status as a badge.
  */
-YabiJob.prototype.renderStatusBadge = function(status) {
-  this.badgeEl = document.createElement('div');
-  this.badgeEl.className = 'badge' + status;
+YabiJob.prototype.renderStatusBadge = function(status, is_retrying) {
+  if (is_retrying) {
+      status = "retrying";
+  }
+  this.badgeEl = document.createElement('img');
+  this.badgeEl.className = 'badge';
+  this.badgeEl.title = "Job " + Yabi.util.Status.getStatusDescription(status);
+  this.badgeEl.src = imagesURL + Yabi.util.Status.getStatusImage(status);
   this.jobEl.appendChild(this.badgeEl);
 };
 

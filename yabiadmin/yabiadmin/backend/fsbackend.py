@@ -283,7 +283,10 @@ class FSBackend(BaseBackend):
             return self.local_copy(stagein.src, stagein.dst)
 
         if stagein.method == 'link':
-            return self.symbolic_link(stagein.src, stagein.dst)
+            dst = stagein.dst
+            if stagein.src.endswith('/'):
+                dst = stagein.dst + os.path.basename(stagein.src[:-1])
+            return self.symbolic_link(stagein.src, dst)
 
     def stage_out_files(self):
         """

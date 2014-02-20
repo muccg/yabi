@@ -188,6 +188,10 @@ def spawn_task(task_id):
     task_chain.apply_async()
 
 
+def mark_task_as_retrying(task_id, message="Some error occurred"):
+    task = Task.objects.get(pk=task_id)
+    task.mark_task_as_retrying(message)
+
 def retry_on_error(original_function):
     @wraps(original_function)
     def decorated_function(task_id, *args, **kwargs):
@@ -195,10 +199,10 @@ def retry_on_error(original_function):
         original_function_name = original_function.__name__
         try:
             result = original_function(task_id, *args, **kwargs)
-            return result
         except RetryException as rexc:
             if rexc.type == RetryException.TYPE_ERROR:
                 logger.exception("Exception in celery task {0} for task {1}".format(original_function_name, task_id))
+                mark_task_as_retrying(task_id)
 
             if rexc.backoff_strategy == RetryException.BACKOFF_STRATEGY_EXPONENTIAL:
                 countdown = backoff(request.retries)
@@ -226,7 +230,14 @@ def retry_on_error(original_function):
             countdown = backoff(request.retries)
             logger.exception("Unhandled exception in celery task {0}: {1} - retrying anyway ...".format(original_function_name, ex))
             logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name, task_id, countdown))
+            mark_task_as_retrying(task_id)
             current_task.retry(exc=ex, countdown=countdown)
+
+        task = EngineTask.objects.get(pk=task_id)
+        if task.is_retrying:
+            task.recovered_from_error()
+
+        return result
 
     return decorated_function
 

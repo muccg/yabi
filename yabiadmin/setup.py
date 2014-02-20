@@ -43,8 +43,8 @@ install_requires = [
     'cssutils>=0.9.10,<0.10.0',
     'httplib2>=0.8,<0.9',
     'djamboloader==0.1.2',
-    'paramiko>=1.10.0,<1.11.0',
-    'boto==2.13.3',
+    'paramiko>=1.12.1,<1.13.0',
+    'boto==2.25',
     'python-dateutil>=2.1,<3.0',
     'yaphc==0.1.5',
     'pycrypto==2.6.1',  # version locked as a 2.7a1 appeared in pypi
@@ -98,7 +98,7 @@ if not importlib_available:
     install_requires.append('importlib>=1.0.1,<1.1.0')
 
 setup(name='yabiadmin',
-      version='7.1.8',
+      version='7.1.9',
       description='Yabi Admin',
       long_description='Yabi front end and administration web interface',
       author='Centre for Comparative Genomics',

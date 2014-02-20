@@ -927,75 +927,12 @@ input {
     background: -webkit-gradient(linear, left top, left bottom, from(red), to(#f66));
 }
 
-.badgeaborted {
-
+.badge {
     width:16px;
     height:16px;
     padding:0px;
     margin:0px;
     border:0px;
-    background:url(../images/aborted.png) no-repeat;
-    position:absolute;
-    right: 9px;
-    top: 4px;
-}
-
-.badgecompleted, .badgecomplete {
-
-    width:16px;
-    height:16px;
-    padding:0px;
-    margin:0px;
-    border:0px;
-    background:url(../images/ok.png) no-repeat;
-    position:absolute;
-    right: 9px;
-    top: 4px;
-}
-
-.badgepending {
-    width:18px;
-    height:18px;
-    padding:0px;
-    margin:0px;
-    border:0px;
-/*    background:url(../images/pending.png) no-repeat;*/
-    position:absolute;
-    right: 7px;
-    top: 2px;
-}
-
-.badgeerror {
-    width:16px;
-    height:16px;
-    padding:0px;
-    margin:0px;
-    border:0px;
-    background:url(../images/error.png) no-repeat;
-    position:absolute;
-    right: 9px;
-    top: 4px;
-}
-
-.badgerunning, .badgeready {
-    width:18px;
-    height:18px;
-    padding:0px;
-    margin:0px;
-    border:0px;
-    background:url(../images/processing.gif) no-repeat;
-    position:absolute;
-    right: 9px;
-    top: 2px;
-}
-
-.badgeblocked {
-    width:16px;
-    height:16px;
-    padding:0px;
-    margin:0px;
-    border:0px;
-    background:url(../images/blocked.png) no-repeat;
     position:absolute;
     right: 9px;
     top: 4px;

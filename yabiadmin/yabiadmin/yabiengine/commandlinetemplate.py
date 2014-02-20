@@ -466,6 +466,10 @@ class CommandTemplate(object):
                         self.files.append(value)
 
                         filename = value['filename']
+                        if value['type'] == 'directory':
+                            if not filename.endswith('/'):
+                                filename += '/'
+
                         value = SwitchInputFilename(filename)
 
                         self.arguments.append(Switch(tp.switch, value, switchuse=tp.switch_use.formatstring))
@@ -768,13 +772,7 @@ class CommandTemplate(object):
             return [self.parse_param_file_value(item)]
 
         elif item['type'] == 'directory':
-            # if we are not select file
-            if not self.command.is_select_file:
-                # decode directory
-                return [f for f in self.list_files_for_param_directory_value(item)]
-            else:
-                # select file returns the directory itself, so rcopy can be used on the backend to preserve directory structures
-                return [self.parse_param_directory_value(item)]
+            return [self.parse_param_directory_value(item)]
 
     def parse_param_file_value(self, item):
         path = ''
@@ -791,9 +789,3 @@ class CommandTemplate(object):
         fulluri = "/".join(strippedComponents) + '/'
         return fulluri
 
-    def list_files_for_param_directory(self, item):
-        fulluri = self.parse_param_directory_value(item)
-
-        # get recursive directory listing
-        filelist = backend.get_file_list(self.username, fulluri, recurse=True)
-        return [fulluri + X[0] for X in filelist]
