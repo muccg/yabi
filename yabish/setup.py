@@ -22,7 +22,7 @@ setup(name='yabish',
          'six>=1.4,<1.5',
      ],
      dependency_links = [
-        "http://yaphc.googlecode.com/files/yaphc-0.1.5.tgz",
-        "http://argparse.googlecode.com/files/argparse-1.2.1.tar.gz"
+        "https://yaphc.googlecode.com/files/yaphc-0.1.5.tgz",
+        "https://argparse.googlecode.com/files/argparse-1.2.1.tar.gz"
      ]
 )
