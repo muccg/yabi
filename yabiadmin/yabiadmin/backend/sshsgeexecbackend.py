@@ -9,8 +9,7 @@ class SSHSGEExecBackend(QBaseExecBackend):
     SCHEDULER_NAME = "sge"
     QSUB_COMMAND_LINE = "<QSUB_COMMAND> -N {3} -cwd $script_temp_file_name"
 
-    QSTAT_TEMPLATE = "\n".join(["#!/bin/sh",
-                                "qstat -j {0}"])
+    QSTAT_TEMPLATE = "\n".join(["#!/bin/sh", "<QSTAT_COMMAND> -j {0}"])
 
     QACCT_TEMPLATE = "\n".join([
                      "#!/bin/sh",
