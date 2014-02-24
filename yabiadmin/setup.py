@@ -61,6 +61,7 @@ dev_requires = [
 ]
 
 tests_require = [
+    'unittest2==0.5.1',
     'requests==1.2.0',
     'django-nose',
     'nose==1.2.1',
