@@ -45,6 +45,8 @@ install_requires = [
     'djamboloader==0.1.2',
     'paramiko>=1.12.1,<1.13.0',
     'boto==2.25',
+    'python-swiftclient==2.0.2',
+    'python-keystoneclient==0.6.0',
     'python-dateutil>=2.1,<3.0',
     'yaphc==0.1.5',
     'pycrypto==2.6.1',  # version locked as a 2.7a1 appeared in pypi
