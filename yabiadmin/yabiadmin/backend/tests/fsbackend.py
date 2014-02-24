@@ -19,6 +19,8 @@ from yabiadmin.yabi.models import Backend, Credential, BackendCredential, User
 
 logger = logging.getLogger(__name__)
 
+getname = lambda entry: entry[0]
+
 @attr("django")
 class FSBackendTests(object):
     """File storage tests with real backends.
@@ -131,14 +133,12 @@ class FSBackendTests(object):
         self.assertNotEqual(len(ls[path]["directories"]), 0)
         self.assertIn(dirname.rstrip("/"), [d[0] for d in ls[path]["directories"]])
         logger.debug("files are: %s" % str(ls[path]["files"]))
-        self.assertEqual(len(ls[path]["files"]), 1)
-        self.assertEqual(ls[path]["files"][0][0], "now2.txt")
+        self.assertIn("now2.txt", map(getname, ls[path]["files"]))
 
         ls = self.be.ls(diruri)
         self.assertIn(dirpath, ls)
         self.assertIn("files", ls[dirpath])
-        self.assertEqual(len(ls[dirpath]["files"]), 1)
-        self.assertEqual(ls[dirpath]["files"][0][0], "now1.txt")
+        self.assertIn("now1.txt", map(getname, ls[dirpath]["files"]))
 
         self.be.rm(diruri)
         self.be.rm(file2uri)
@@ -155,7 +155,6 @@ class FSBackendTests(object):
         # self.assertEqual(len(ls[path]["files"]), 1)
         # self.assertEqual(len(ls[path]["directories"]), 0)
 
-    @unittest.skip("doesn't work for swift")
     def test_ls_dir_no_exist(self):
         uri, path = self.get_uri("this_directory_no_exist/")
         ls = self.be.ls(uri)
@@ -286,6 +285,95 @@ class FSBackendTests(object):
         self.assertIn(basepath, ls)
         self.assertNotIn(name, [f[0] for f in ls[basepath]["files"]])
 
+    def test_ls_file(self):
+        # Running ls on a single file allows yabi to get its file size and
+        # mod-time, etc.
+        tmp, text = self.make_now_file()
+
+        dirname = "test_ls_file_%s/" % os.getpid()
+        diruri, dirpath = self.get_uri(dirname)
+        self.be.mkdir(diruri)
+        fileuri, filepath = self.get_uri(dirname + "now.txt")
+        self.be.upload_file(fileuri, tmp.name, mock())
+
+        ls = self.be.ls(fileuri)
+        self.assertIn(filepath, ls)
+        self.assertIn("files", ls[filepath])
+        self.assertIn("directories", ls[filepath])
+        self.assertEqual(ls[filepath]["directories"], [])
+        self.assertEqual(map(getname, ls[filepath]["files"]), ["now.txt"])
+        self.assertEqual(ls[filepath]["files"][0][1], len(text))
+
+        self.be.rm(fileuri)
+        self.be.rm(diruri)
+
+    def test_ls_prefix(self):
+        dirname = "test_ls_prefix_%s/" % os.getpid()
+        diruri, dirpath = self.get_uri(dirname)
+        self.be.mkdir(diruri)
+
+        testuri, testpath = self.get_uri(dirname + "prefix")
+
+        self.be.mkdir(testuri)
+        self.be.mkdir(testuri + "_test/")
+
+        ls = self.be.ls(diruri)
+        self.assertIn(dirpath, ls)
+        self.assertIn("files", ls[dirpath])
+        self.assertIn("directories", ls[dirpath])
+        self.assertEqual(map(getname, ls[dirpath]["files"]), [])
+        self.assertEqual(map(getname, ls[dirpath]["directories"]),
+                         ["prefix", "prefix_test"])
+
+        ls = self.be.ls(testuri)
+        testpath = testpath + "/"  # expect that the slash will be added by ls()
+        self.assertIn(testpath, ls)
+        self.assertIn("files", ls[testpath])
+        self.assertIn("directories", ls[testpath])
+        self.assertEqual(map(getname, ls[testpath]["files"]), [])
+        self.assertEqual(map(getname, ls[testpath]["directories"]), [])
+
+        self.be.rm(testuri)
+        self.be.rm(testuri + "_test")
+        self.be.rm(diruri)
+
+    def test_rm_prefix(self):
+        uri, path = self.get_uri("")
+
+        # fixme: shouldn't have to do this
+        self.be.set_cred(uri)
+
+        # this test makes sure deleting a file won't result in
+        # deletion of all files which have its name as a prefix
+        tmp, text = self.make_now_file()
+        files = ["test_rm_prefix_file1", "test_rm_prefix_file2",
+                 "test_rm_prefix_file3", "test_rm_prefix"]
+        for f in files:
+            self.be.upload_file(uri + f, tmp.name, mock())
+        self.be.mkdir(uri + "test_rm_prefix_dir")
+
+        # test that the files were created
+        ls = self.be.ls(uri)
+        self.assertIn(path, ls)
+        self.assertIn("files", ls[path])
+        self.assertIn("directories", ls[path])
+        for f in files:
+            self.assertIn(f, map(getname, ls[path]["files"]))
+        self.assertIn("test_rm_prefix_dir", map(getname, ls[path]["directories"]))
+
+        # remove a file which prefixes the other files
+        self.be.rm(uri + "test_rm_prefix")
+
+        # test that only one file was removed
+        ls = self.be.ls(uri)
+        for f in files[:-1]:
+            self.assertIn(f, map(getname, ls[path]["files"]))
+        self.assertIn("test_rm_prefix_dir", map(getname, ls[path]["directories"]))
+
+        # clean up
+        for f in files[:-1] + ["test_rm_prefix_dir"]:
+            self.be.rm(uri + f)
+
 class S3BackendTests(FSBackendTests, unittest.TestCase):
     """
     Tests against our yabitest bucket in the syd region. This bucket
@@ -317,6 +405,9 @@ class SwiftBackendTests(FSBackendTests, unittest.TestCase):
         "key": "",
     }
     base_uri = "swift://yabitest@keystone.bioplatforms.com:443/yabitest/test"
+
+    def test_ls_dir_no_exist(self):
+        self.skipTest("doesn't work for swift")
 
 class FileBackendTests(FSBackendTests, unittest.TestCase):
     scheme = "localfs"
@@ -364,6 +455,18 @@ class FileBackendTests(FSBackendTests, unittest.TestCase):
             f.write("now2.txt\n")
 
         super(FileBackendTests, self).test_ls_something()
+
+    def test_rm_prefix(self):
+        # FileBackend doesn't have upload_file, so just put the files in
+        self.be.upload_file = lambda *args: mock()
+
+        files = ["test_rm_prefix_file1", "test_rm_prefix_file2",
+                 "test_rm_prefix_file3", "test_rm_prefix"]
+        for filename in files:
+            with open(os.path.join(self.backend_path, filename), "w") as f:
+                f.write(filename + "\n")
+
+        super(FileBackendTests, self).test_rm_prefix()
 
 from yabiadmin.backend.swiftbackend import SwiftBackend
 
@@ -501,3 +604,25 @@ class SwiftURIParseTests(unittest.TestCase):
         self.assertEqual(swift.uri, uri)
 
     # todo: maybe test url escaping
+
+    def test_ensure_trailing_slash(self):
+        uri = "swift://username@keystone.bioplatforms.com:443/tenant/bucket/subdir"
+        swift = SwiftBackend.SwiftPath.parse(uri)
+
+        # case 1: no trailing slash yet
+        swift = swift.ensure_trailing_slash()
+        self.assertEqual(swift.keystone, "https://keystone.bioplatforms.com/v2.0/")
+        self.assertEqual(swift.tenant, "tenant")
+        self.assertEqual(swift.bucket, "bucket")
+        self.assertEqual(swift.prefix, "subdir/")
+        self.assertEqual(swift.path_part, "/tenant/bucket/subdir/")
+        self.assertEqual(swift.uri, uri.replace(":443", "").replace("username@", "") + "/")
+
+        # case 2: trailing slash already there
+        swift = swift.ensure_trailing_slash()
+        self.assertEqual(swift.keystone, "https://keystone.bioplatforms.com/v2.0/")
+        self.assertEqual(swift.tenant, "tenant")
+        self.assertEqual(swift.bucket, "bucket")
+        self.assertEqual(swift.prefix, "subdir/")
+        self.assertEqual(swift.path_part, "/tenant/bucket/subdir/")
+        self.assertEqual(swift.uri, uri.replace(":443", "").replace("username@", "") + "/")
