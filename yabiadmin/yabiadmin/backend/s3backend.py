@@ -76,11 +76,10 @@ class S3Backend(FSBackend):
 
         try:
             bucket = self.bucket(bucket_name)
-            empty_key_for_dir = lambda k: k.name == path.lstrip(DELIMITER) and k.name.endswith(DELIMITER)
+            empty_key_for_dir = lambda k: k.name == path and k.name.endswith(DELIMITER)
             keys_and_prefixes = ifilterfalse(
                 empty_key_for_dir,
-                bucket.get_all_keys(prefix=path.lstrip(DELIMITER),
-                                    delimiter=DELIMITER))
+                bucket.get_all_keys(prefix=path, delimiter=DELIMITER))
 
             # Keys correspond to files, prefixes to directories
             keys, prefixes = partition(lambda k: type(k) == boto.s3.key.Key, keys_and_prefixes)
@@ -94,7 +93,7 @@ class S3Backend(FSBackend):
             # This code is not executed by Celery tasks
             raise RetryException(e, traceback.format_exc())
 
-        return {path: {
+        return {DELIMITER + path: {
             'files': files,
             'directories': dirs
         }}
@@ -128,7 +127,7 @@ class S3Backend(FSBackend):
 
         try:
             bucket = self.bucket()
-            key = bucket.new_key(path.lstrip(DELIMITER))
+            key = bucket.new_key(path)
             key.set_contents_from_string('')
 
         except Exception as exc:
@@ -143,12 +142,18 @@ class S3Backend(FSBackend):
 
     # Implementation
 
-    def parse_s3_uri(self, uri):
+    @staticmethod
+    def parse_s3_uri(uri):
+        """
+        Converts a key-value storage URI into a tuple of bucket name and path.
+        The bucket name comes from the subdomain part of the hostname. Path
+        will be returned without a leading slash.
+        """
         if uri.endswith(DELIMITER):
             uri = uri.rstrip(DELIMITER) + DELIMITER
         scheme, parts = uriparse(uri)
         bucket_name = parts.hostname.split('.')[0]
-        path = parts.path
+        path = parts.path.lstrip(DELIMITER)
 
         return bucket_name, path
 
@@ -169,7 +174,7 @@ class S3Backend(FSBackend):
             bucket_name, path = self.parse_s3_uri(uri)
 
             bucket = self.connect_to_bucket(bucket_name)
-            key = bucket.get_key(path.lstrip(DELIMITER))
+            key = bucket.get_key(path)
 
             key.get_contents_to_filename(filename)
 
@@ -195,13 +200,13 @@ class S3Backend(FSBackend):
                 data = f.read(CHUNKSIZE)
                 if len(data) < CHUNKSIZE:
                     # File is smaller than CHUNKSIZE, upload in one go (ie. no multipart)
-                    key = bucket.new_key(path.lstrip(DELIMITER))
+                    key = bucket.new_key(path)
                     size = key.set_contents_from_file(BytesIO(data))
                     logger.debug("Set %s bytes to %s", size, key.name)
                 else:
                     # File is larger than CHUNKSIZE, there will be more parts so initiate
                     # the multipart_upload and upload in parts
-                    multipart_upload = bucket.initiate_multipart_upload(path.lstrip(DELIMITER))
+                    multipart_upload = bucket.initiate_multipart_upload(path)
                     part_no = 1
                     while len(data) > 0:
                         multipart_upload.upload_part_from_file(BytesIO(data), part_no)
@@ -217,7 +222,7 @@ class S3Backend(FSBackend):
     def get_keys_recurse(self, bucket, path):
         result = []
 
-        keys_and_prefixes = bucket.get_all_keys(prefix=path.lstrip(DELIMITER), delimiter=DELIMITER)
+        keys_and_prefixes = bucket.get_all_keys(prefix=path, delimiter=DELIMITER)
         # Keys correspond to files, prefixes to directories
         keys, prefixes = partition(lambda k: type(k) == boto.s3.key.Key, keys_and_prefixes)
 
@@ -235,7 +240,7 @@ class S3Backend(FSBackend):
         if bucket is None:
             bucket = self.bucket()
         _, path = self.parse_s3_uri(uri)
-        return bucket.get_key(path.lstrip(DELIMITER)) is not None
+        return bucket.get_key(path) is not None
 
 
 def basename(key_name, delimiter=DELIMITER):
