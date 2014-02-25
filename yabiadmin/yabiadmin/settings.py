@@ -401,11 +401,14 @@ LOGGING = {
 }
 
 # qsub and qstat paths
-
 SCHEDULER_COMMAND_PATHS = {
     "torque": {"qsub": "/opt/torque/2.3.13/bin/qsub",
                "qstat": "/opt/torque/2.3.13/bin/qstat",
-               "qdel": "/opt/torque/2.3.13/bin/qdel"}
+               "qdel": "/opt/torque/2.3.13/bin/qdel"},
+    "sge": {"qsub": "/opt/sge6/bin/linux-x64/qsub",
+            "qstat": "/opt/sge6/bin/linux-x64/qstat",
+            "qdel": "/opt/sge6/bin/linux-x64/qdel",
+            "qacct": "/opt/sge6/bin/linux-x64/qacct"},
 }
 
 
