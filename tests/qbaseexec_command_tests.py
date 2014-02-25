@@ -22,11 +22,11 @@ class QBaseCommandsTestCase(TestCase):
 
 
     def test_sge_command_paths(self):
-        qsub = self.sge_backend.get_scheduler_command_path("qsub")
+        qsub = self.sge_backend.get_scheduler_command_path("/opt/sge6/bin/linux-x64/qsub")
         self.assertEquals(qsub,"qsub","sge exec qsub command path wrong: Expected qsub: Actual: %s" % qsub)
-        qstat = self.sge_backend.get_scheduler_command_path("qstat")
+        qstat = self.sge_backend.get_scheduler_command_path("/opt/sge6/bin/linux-x64/qstat")
         self.assertEquals(qstat, "qstat","scheduler exec qstat command path wrong: Expected qstat: Actual: %s" % qstat)
-        qacct = self.sge_backend.get_scheduler_command_path("qacct")
+        qacct = self.sge_backend.get_scheduler_command_path("/opt/sge6/bin/linux-x64/qacct")
         self.assertEquals(qacct, "qacct","scheduler exec qacct command path wrong: Expected qstat: Actual: %s" % qacct)
 
 
