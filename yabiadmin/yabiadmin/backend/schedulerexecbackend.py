@@ -137,10 +137,7 @@ class SchedulerExecBackend(ExecBackend):
 
     def _job_running_response(self, result):
         logger.debug("remote job %s for yabi task %s is still running" % (self.task.remote_id, self._yabi_task_name()))
-        retry_ex = RetryException("Yabi task %s remote job %s still running" % (self._yabi_task_name(), self.task.remote_id))
-        retry_ex.backoff_strategy = RetryException.BACKOFF_STRATEGY_CONSTANT
-        retry_ex.type = RetryException.TYPE_POLLING
-        raise retry_ex
+        raise RetryPollingException("Yabi task %s remote job %s still running" % (self._yabi_task_name(), self.task.remote_id))
 
     def _job_not_found_response(self, result):
         # NB. for psbpro and torque this is an error, for other subclasses it isn't
