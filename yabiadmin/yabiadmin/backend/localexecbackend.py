@@ -41,8 +41,14 @@ logger = logging.getLogger(__name__)
 
 WAIT_TO_TERMINATE_SECS = 3
 
+EXEC_SCRIPT_PREFIX = 'yabi_lexec_'
+DEFAULT_TEMP_DIRECTORY = '/tmp'
 
 class LocalExecBackend(ExecBackend):
+
+    @property
+    def temp_directory(self):
+        return self.backend.temporary_directory or DEFAULT_TEMP_DIRECTORY
 
     def submit_task(self):
         """
@@ -100,7 +106,8 @@ class LocalExecBackend(ExecBackend):
         return status
 
     def create_script(self, script_contents):
-        script_name = '/tmp/yabi_lexec_%s.sh' % uuid.uuid4()
+        script_name = os.path.join(self.temp_directory,
+                            '%s_%s.sh' % (EXEC_SCRIPT_PREFIX, uuid.uuid4()))
         with open(script_name, 'w') as f:
             f.write(script_contents)
         st = os.stat(script_name)
