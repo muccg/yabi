@@ -46,9 +46,16 @@ DEFAULT_TEMP_DIRECTORY = '/tmp'
 
 class LocalExecBackend(ExecBackend):
 
+    def __init__(self, *args, **kwargs):
+        ExecBackend.__init__(self, *args, **kwargs)
+        self.backend = None
+
     @property
     def temp_directory(self):
-        return self.backend.temporary_directory or DEFAULT_TEMP_DIRECTORY
+        temp_dir = DEFAULT_TEMP_DIRECTORY
+        if self.backend and self.backend.temporary_directory:
+            temp_dir = self.backend.temporary_directory
+        return temp_dir
 
     def submit_task(self):
         """
@@ -107,7 +114,7 @@ class LocalExecBackend(ExecBackend):
 
     def create_script(self, script_contents):
         script_name = os.path.join(self.temp_directory,
-                            '%s_%s.sh' % (EXEC_SCRIPT_PREFIX, uuid.uuid4()))
+                            '%s%s.sh' % (EXEC_SCRIPT_PREFIX, uuid.uuid4()))
         with open(script_name, 'w') as f:
             f.write(script_contents)
         st = os.stat(script_name)

@@ -89,10 +89,4 @@ class S3FileUploadTest(RequestTest):
         import requests
         
         r = self.session.get(conf.yabiurl+"/ws/fs/mkdir?uri=%s/directory"%(QUOTED_TEST_S3_SERVER))
-
-        #sys.stderr.write("status: %d\n"%r.status_code)
-        #sys.stderr.write("headers: %s\n"%str(r.headers))
-        #sys.stderr.write("body: %s\n"%r.text)
-
-         
     
