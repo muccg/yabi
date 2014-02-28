@@ -1,6 +1,6 @@
-%define version 7.1.9
-%define unmangled_version 7.1.9
-%define release 1
+%define version 7.1.10
+%define unmangled_version 7.1.10
+%define release 2
 %define webapps /usr/local/webapps
 %define webappname yabiadmin
 %define shellname yabish
@@ -111,7 +111,7 @@ find %{buildinstalldir} -name '*.py' -type f | xargs sed -i 's:^#!/usr/local/pyt
 # yabi-shell
 cd $CCGSOURCEDIR/yabish
 export PYTHONPATH=%{shbuildinstalldir}/lib
-python /usr/bin/easy_install -O1 --prefix %{shbuildinstalldir} --install-dir %{shbuildinstalldir}/lib -i 'https://restricted.crate.io/' .
+python /usr/bin/easy_install -O1 --prefix %{shbuildinstalldir} --install-dir %{shbuildinstalldir}/lib .
 
 sed -i '3i import sys; sys.path.insert(1, "%{shinstalldir}/lib")' %{shbuildinstalldir}/bin/*
 

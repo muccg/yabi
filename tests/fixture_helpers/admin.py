@@ -9,7 +9,6 @@ Module providing helper methods for creating data in yabi admin from tests
 '''
 
 def create_tool(name, display_name=None, path=None, ex_backend_name='Local Execution', fs_backend_name='Yabi Data Local Filesystem'):
-    sys.stderr.write('Creating {0} tool\n'.format(name))
     if display_name is None: display_name = name
     if path is None: path = name
     lfs = models.Backend.objects.get(name=fs_backend_name)
@@ -17,24 +16,20 @@ def create_tool(name, display_name=None, path=None, ex_backend_name='Local Execu
     models.Tool.objects.create(name=name, display_name=display_name, path=path, backend=lex, fs_backend=lfs)
 
 def add_tool_to_all_tools(toolname): 
-    sys.stderr.write('Adding tool {0} to all tools\n'.format(toolname))
     tool = models.Tool.objects.get(name=toolname)
     tg = models.ToolGroup.objects.get(name='select data')
     alltools = models.ToolSet.objects.get(name='alltools')
     tg.toolgrouping_set.create(tool=tool, tool_set=alltools)
 
 def remove_tool_from_all_tools(toolname):
-    sys.stderr.write('Removing tool {0} from all tools\n'.format(toolname))
     models.ToolGrouping.objects.filter(tool__name=toolname, tool_set__name='alltools', tool_group__name='select data').delete()
 
 def create_exploding_backend():
-    sys.stderr.write('Creating exploding backend\n')
     exploding_backend = models.Backend.objects.create(name='Exploding Backend', scheme='explode', hostname='localhost.localdomain', path='/', submission='${command}\n')
     null_credential = models.Credential.objects.get(description='null credential')
     models.BackendCredential.objects.create(backend=exploding_backend, credential=null_credential, homedir='')
 
 def create_torque_backend():
-    sys.stderr.write('Creating torque backend\n')
     torque_backend = models.Backend.objects.create(
         name='Torque Backend', 
         scheme='torque', 
@@ -53,7 +48,6 @@ def create_torque_backend():
     models.BackendCredential.objects.create(backend=torque_backend, credential=cred, homedir='')
 
 def create_sshtorque_backend():
-    sys.stderr.write('Creating ssh+torque backend\n')
     sshtorque_backend = models.Backend.objects.create(
         name='SSHTorque Backend', 
         scheme='ssh+torque', 
@@ -72,7 +66,6 @@ def create_sshtorque_backend():
     models.BackendCredential.objects.create(backend=sshtorque_backend, credential=cred, homedir='')
 
 def create_sshpbspro_backend():
-    sys.stderr.write('Creating ssh+pbspro backend\n')
     sshpbspro_backend = models.Backend.objects.create(
         name='SSHPBSPro Backend', 
         scheme='ssh+pbspro', 
@@ -91,7 +84,6 @@ def create_sshpbspro_backend():
     models.BackendCredential.objects.create(backend=sshpbspro_backend, credential=cred, homedir='')
 
 def create_ssh_backend():
-    sys.stderr.write('Creating ssh backend\n')
     ssh_backend = models.Backend.objects.create(
         name='SSH Backend', 
         scheme='ssh', 
@@ -113,7 +105,6 @@ ${command} 1>STDOUT.txt 2>STDERR.txt
     models.BackendCredential.objects.create(backend=ssh_backend, credential=cred, homedir='')
 
 def create_sftp_backend():
-    sys.stderr.write('Creating sftp backend\n')
     sftp_backend = models.Backend.objects.create(
         name='SFTP Backend', 
         scheme='sftp', 
