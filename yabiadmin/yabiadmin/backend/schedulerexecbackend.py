@@ -1,7 +1,7 @@
 import logging
 from yabiadmin.backend.execbackend import ExecBackend
 from yabiadmin.backend.sshexec import SSHExec
-from yabiadmin.backend.exceptions import RetryException
+from yabiadmin.backend.exceptions import RetryException, RetryPollingException
 from yabiadmin.yabiengine.urihelper import uriparse
 logger = logging.getLogger(__name__)
 
