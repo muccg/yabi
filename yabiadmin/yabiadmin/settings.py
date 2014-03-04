@@ -272,6 +272,16 @@ djcelery.setup_loader()
 # see http://docs.celeryproject.org/en/latest/getting-started/brokers/django.html
 #BROKER_URL = 'django://'
 BROKER_URL = 'amqp://guest:guest@localhost:5672//'
+
+# http://celery.readthedocs.org/en/latest/whatsnew-3.1.html#last-version-to-enable-pickle-by-default
+# Pickle is unsecure, but to ensure that we won't fail on existing messages
+# we will do this upgrade in 2 steps. For now we make our messages json, but
+# still accept 'pickle' to allow failing on existing messages or clearing all
+# messages before the upgrade.
+# TODO: in a next release drop 'pickle' from CELERY_ACCEPT_CONTENT
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_ACCEPT_CONTENT = ['pickle', 'json']
+
 # see http://docs.celeryproject.org/en/latest/configuration.html
 CELERY_IGNORE_RESULT = True
 # Not found in latest docs CELERY_QUEUE_NAME = 'yabiadmin'
