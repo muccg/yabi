@@ -29,6 +29,7 @@
 import os, sys
 from ccg.utils.webhelpers import url
 import djcelery
+from kombu import Queue
 import logging
 import logging.handlers
 
@@ -282,15 +283,25 @@ CELERY_DISABLE_RATE_LIMITS = True
 # see http://docs.celeryproject.org/en/latest/configuration.html#id23
 CELERY_SEND_EVENTS = True
 CELERY_SEND_TASK_SENT_EVENT = True
+
 # see http://docs.celeryproject.org/en/latest/userguide/routing.html
-#CELERY_QUEUES = {
-#    CELERY_QUEUE_NAME: {
-#        "binding_key": "celery",
-#        "exchange": CELERY_QUEUE_NAME
-#    },
-#}
-#CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
-#CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
+FILE_OPERATIONS = 'file_operations'
+
+CELERY_QUEUES = (
+    Queue('celery', routing_key='celery'),
+    Queue(FILE_OPERATIONS, routing_key=FILE_OPERATIONS),
+)
+
+FILE_OPERATIONS_ROUTE = {
+        'queue': FILE_OPERATIONS,
+        'routing_key': FILE_OPERATIONS,
+}
+
+CELERY_ROUTES = {
+    'yabiadmin.backend.celerytasks.stage_in_files': FILE_OPERATIONS_ROUTE,
+    'yabiadmin.backend.celerytasks.stage_out_files': FILE_OPERATIONS_ROUTE,
+}
+
 CELERY_IMPORTS = ("yabiadmin.backend.celerytasks",)
 CELERY_ACKS_LATE = True
 # Not sure if this is still needed BROKER_TRANSPORT = "kombu.transport.django.Transport"

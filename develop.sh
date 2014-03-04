@@ -375,6 +375,10 @@ startceleryd() {
     CELERY_CONFIG_MODULE="settings"
     CELERYD_CHDIR=`pwd`
     CELERYD_OPTS="-E --loglevel=INFO --logfile=celeryd-develop.log --pidfile=celeryd-develop.pid"
+    # Do just file operations (stagein and stagout tasks)
+    #CELERYD_OPTS="$CELERYD_OPTS -Q file_operations"
+    # Do all tasks BUT file operations (stagein and stagout tasks)
+    #CELERYD_OPTS="$CELERYD_OPTS -Q celery"
     CELERY_LOADER="django"
     DJANGO_PROJECT_DIR="${CELERYD_CHDIR}"
     PROJECT_DIRECTORY="${CELERYD_CHDIR}"
