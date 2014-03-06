@@ -257,7 +257,10 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
 
                 var schema = this.pathComponents[0].substring(0,
                     this.pathComponents[0].indexOf('://'));
-                if (schema == 'scp' || schema == 'localfs')
+                // Disabled for now.
+                // See https://ccgmurdoch.atlassian.net/browse/YABI-452
+                //if (schema == 'scp' || schema == 'localfs')
+                if (false)
                 {
                   downloadEl = document.createElement('div');
                   downloadEl.className = 'download';
@@ -898,6 +901,9 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
       YabiFileSelector.prototype.downloadDirectoryCallback =
           function(e, invoker) {
         e.halt(true);
+        // Disabled for now.
+        // See https://ccgmurdoch.atlassian.net/browse/YABI-452
+        return;
         var target = invoker.target;
         target.downloadDirectory(invoker.object);
       };
