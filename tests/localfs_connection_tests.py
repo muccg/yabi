@@ -83,12 +83,12 @@ class LocalfsFileTests(RequestTest):
         self.assertTrue('files' in data["/tmp/yabi-localfs-test/"])
         self.assertTrue('directories' in data["/tmp/yabi-localfs-test/"])
         
-    def xtest_localfs_rcopy(self):
+    def test_localfs_rcopy(self):
         import requests
         
         # make some /tmp file structures
         basedir = '/tmp/yabi-localfs-test/'
-        srcdir = basedir + "input-rcopy/"
+        srcdir = basedir + "input-rcopy"
         destdir = basedir + "output-rcopy/"
         dirs = self.build_file_archive(srcdir)
         os.system("mkdir -p %s" % destdir)
@@ -100,12 +100,10 @@ class LocalfsFileTests(RequestTest):
         }
         
         r = self.session.post(remove_slash_if_has(conf.yabiurl) + "/ws/fs/rcopy", data=payload)
-        import sys
-        sys.stderr.write(r.text)
         self.assertTrue(r.status_code==200, "Could not perform rcopy")
   
         # diff the two directories
-        result = os.system("diff -r '%s' '%s'"%(srcdir, destdir))
+        result = os.system("diff -r '%s' '%s'"%(srcdir, os.path.join(destdir, 'input-rcopy')))
         
         self.assertTrue(result==0, "Diff between the input and output failed")
         
@@ -167,7 +165,6 @@ class LocalfsFileTests(RequestTest):
         files = {'file': ("file.txt", contents)}
         url = remove_slash_if_has(conf.yabiurl) + "/ws/fs/put?uri=%s"% get_localfs_server()
         r = self.session.post(url=url, files=files)
-        sys.stderr.write("%d...\n" % r.status_code)
 
         self.assertTrue(r.status_code == 200, "Expected status code 200. Actual = %s" % r.status_code)
         url = remove_slash_if_has(conf.yabiurl) + "/ws/fs/ls?uri=%s" % get_localfs_server()
@@ -176,8 +173,6 @@ class LocalfsFileTests(RequestTest):
         import json
         data = json.loads(r.text)
         
-        sys.stderr.write("=> %s\n\n"%(str(data)))
-        
         files = data["/tmp/yabi-localfs-test/"]["files"]
         self.assertTrue(len(files)==1)
         
@@ -185,13 +180,10 @@ class LocalfsFileTests(RequestTest):
         self.assertTrue(symlink==False)
         self.assertTrue(filename=='file.txt')
         
-        #sys.stderr.write("=> %d != %d\n\n"%(filesize,length))
         self.assertTrue(filesize==length)
         
         # get the file so we can compare
         r = self.session.get(url=remove_slash_if_has(conf.yabiurl) + "/ws/fs/get?uri=%sfile.txt"%(get_localfs_server()) )
-        #sys.stderr.write("code => %d\n"%(r.status_code))
-        #sys.stderr.write("text => %s\n"%(r.text))
         
         self.assertTrue( len(r.text) == filesize )
         self.assertTrue( r.text == content )

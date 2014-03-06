@@ -6,7 +6,7 @@
 TOPDIR=$(cd `dirname $0`; pwd)
 
 # break on error
-set -e 
+set -e
 
 ACTION="$1"
 PROJECT="$2"
@@ -193,7 +193,8 @@ nosetests() {
     source ${VIRTUALENV}/bin/activate
 
     # Runs the end-to-end tests in the Yabitests project
-    ${VIRTUALENV}/bin/nosetests --with-xunit --xunit-file=tests.xml -I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py -v tests yabiadmin/yabiadmin 
+    ${VIRTUALENV}/bin/nosetests --with-xunit --xunit-file=tests.xml -I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py -v --logging-clear-handlers tests yabiadmin/yabiadmin
+    #{VIRTUALENV}/bin/nosetests -v tests.simple_tool_tests:LocalExecutionRedirectTest
     #${VIRTUALENV}/bin/nosetests -v tests.simple_tool_tests
     #${VIRTUALENV}/bin/nosetests -v tests.s3_connection_tests
     #${VIRTUALENV}/bin/nosetests -v tests.ssh_tests
@@ -246,14 +247,14 @@ stopprocess() {
     if test "kill_process_group" == "$2"; then
         pgrpid=$(ps -o pgrp= --pid $pid | tr -d ' ')
     fi
-    
+
     if test -z $pgrpid; then
         kill $pid
     else
         kill -- -$pgrpid
     fi
-    
-    for I in {1..30} 
+
+    for I in {1..30}
     do
         if ps --pid $pid > /dev/null; then
             sleep 1
@@ -374,11 +375,15 @@ startceleryd() {
     CELERY_CONFIG_MODULE="settings"
     CELERYD_CHDIR=`pwd`
     CELERYD_OPTS="-E --loglevel=INFO --logfile=celeryd-develop.log --pidfile=celeryd-develop.pid"
+    # Do just file operations (stagein and stagout tasks)
+    #CELERYD_OPTS="$CELERYD_OPTS -Q file_operations"
+    # Do all tasks BUT file operations (stagein and stagout tasks)
+    #CELERYD_OPTS="$CELERYD_OPTS -Q celery"
     CELERY_LOADER="django"
     DJANGO_PROJECT_DIR="${CELERYD_CHDIR}"
     PROJECT_DIRECTORY="${CELERYD_CHDIR}"
     export CELERY_CONFIG_MODULE DJANGO_SETTINGS_MODULE DJANGO_PROJECT_DIR CELERY_LOADER CELERY_CHDIR PROJECT_DIRECTORY CELERYD_CHDIR
-    setsid ${VIRTUALENV}/bin/celeryd ${CELERYD_OPTS} 1>/dev/null 2>/dev/null &
+    setsid ${VIRTUALENV}/bin/celery worker ${CELERYD_OPTS} 1>/dev/null 2>/dev/null &
 }
 
 
@@ -427,12 +432,12 @@ yabistatus() {
     set +e
     if test -e yabiadmin-develop.pid; then
         ps -f -p `cat yabiadmin-develop.pid`
-    else 
+    else
         echo "No pid file for yabiadmin"
     fi
     if test -e celeryd-develop.pid; then
         ps -f -p `cat celeryd-develop.pid`
-    else 
+    else
         echo "No pid file for celeryd"
     fi
     set -e
@@ -581,7 +586,7 @@ ci_staging_tests)
 clean)
     settings
     stopyabi
-    yabiclean 
+    yabiclean
     ;;
 purge)
     settings

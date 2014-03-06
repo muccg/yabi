@@ -160,6 +160,9 @@ class Workflow(models.Model, Editable, Status):
     def is_aborted(self):
         return (self.status == STATUS_ABORTED)
 
+    @property
+    def is_retrying(self):
+        return any([j.is_retrying for j in self.job_set.all()])
 
 class Tag(models.Model):
     value = models.CharField(max_length=255)
@@ -254,6 +257,10 @@ class Job(models.Model, Editable, Status):
     def is_workflow_aborting(self):
         return self.workflow.is_aborting
 
+    @property
+    def is_retrying(self):
+        return any([t.is_retrying for t in self.task_set.all()])
+
 
 class Task(models.Model, Editable, Status):
     job = models.ForeignKey(Job)
@@ -262,6 +269,7 @@ class Task(models.Model, Editable, Status):
     job_identifier = models.TextField(blank=True)
     command = models.TextField(blank=True)
     error_msg = models.CharField(max_length=1000, null=True, blank=True)
+    is_retrying = models.BooleanField(default=False)
     task_num = models.IntegerField(null=True, blank=True)
 
     # new status boolean like fields:
@@ -294,7 +302,6 @@ class Task(models.Model, Editable, Status):
 
     working_dir = models.CharField(max_length=256, null=True, blank=True)
     name = models.CharField(max_length=256, null=True, blank=True)                  # if we are null, we behave the old way and use our task.id
-    tasktag = models.CharField(max_length=256, null=True, blank=True)           # if we are null, we behave the old way and use our task.id
 
     # the following field is a convenience pointer (not normalised) to the backendcredential table row used for the execution credential
     # they are used by the task view to help group and count the tasks quickly and efficiently to load control the backend executer
@@ -430,6 +437,17 @@ class Task(models.Model, Editable, Status):
         if self.envvars_json is None or self.envvars_json.strip() == '':
             return {}
         return json.loads(self.envvars_json)
+
+    def mark_task_as_retrying(self, message="Some error occurred"):
+        self.is_retrying = True
+        self.error_msg = message
+        self.save()
+
+    def recovered_from_error(self):
+        logger.debug("Task %s recovered from error", self.pk)
+        self.is_retrying = False
+        self.error_msg = None
+        self.save()
 
 
 class StageIn(models.Model, Editable):

@@ -179,7 +179,7 @@ class TaskAdmin(BaseModelAdmin):
         }),
         ('Remote Information', {
             'classes': ('collapse',),
-            'fields': ('remote_id', 'remote_info', 'working_dir', 'name', 'tasktag')
+            'fields': ('remote_id', 'remote_info', 'working_dir', 'name')
         }),
         ('Status Information', {
             'classes': ('collapse',),

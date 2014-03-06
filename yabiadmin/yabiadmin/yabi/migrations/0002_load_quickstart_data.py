@@ -93,7 +93,10 @@ class Migration(DataMigration):
         yabi_backend_3 = yabi_backend('Yabi Data Local Filesystem','This backend is to be used for stageout and BE tool data.','localfs','localhost',None,'/')
         yabi_backend_3.save()
 
-        yabi_backend_4 = yabi_backend('Local Execution','This backend gives access to execution on the machine running Yabi.','localex','localhost',None, '/', submission='${command}\n')
+        yabi_backend_4 = yabi_backend('Local Execution','This backend gives access to execution on the machine running Yabi.','localex','localhost',None, '/', submission="""#!/bin/sh
+
+${command}
+""")
         yabi_backend_4.save()
 
         user_homedir = homedir()

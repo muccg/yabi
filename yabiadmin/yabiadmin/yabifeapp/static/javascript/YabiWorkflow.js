@@ -211,15 +211,16 @@ YUI().use(
         }, this);
       };
 
-      YabiWorkflow.prototype.setStatus = function(statusText) {
+      YabiWorkflow.prototype.setStatus = function(statusText, is_retrying) {
         this.status = statusText.toLowerCase();
 
         //update proxies
         var proxy;
         for (index in this.attachedProxies) {
           proxy = this.attachedProxies[index];
-          proxy.badgeEl.className = 'badge' + this.status;
           proxy.payload.status = this.status;
+          proxy.payload.is_retrying = is_retrying;
+          proxy.renderStatus();
         }
 
         if (this.editable) {
@@ -228,7 +229,7 @@ YUI().use(
 
         var loadImg;
         if (this.status !== 'complete' && this.status != 'aborted' && this.status !== 'error') {
-          if (Y.Lang.isUndefined(this.loadingEl) || this.loadingEl === null) {
+          if (!Y.Lang.isValue(this.loadingEl)) {
             this.loadingEl = document.createElement('div');
             this.loadingEl.className = 'workflowLoading';
             loadImg = new Image();
@@ -243,6 +244,11 @@ YUI().use(
           this.loadingEl.appendChild(this.loadingTextEl);
 
           this.mainEl.appendChild(this.loadingEl);
+        } else {
+          if (Y.Lang.isValue(this.loadingEl)) {
+              this.mainEl.removeChild(this.loadingEl);
+              this.loadingEl = null;
+          }
         }
       };
 
@@ -806,7 +812,7 @@ YUI().use(
           if (!this.editable) {
             oldJobStatus = job.status;
 
-            job.renderProgress(obj.jobs[index].status,
+            job.renderProgress(obj.jobs[index].status, obj.jobs[index].is_retrying,
                 obj.jobs[index].tasksComplete, obj.jobs[index].tasksTotal);
 
             if (this.selectedJob == job && oldJobStatus != job.status) {
@@ -970,7 +976,7 @@ YUI().use(
         //preprocess wrapper meta data
         target.setTags(obj.tags);
 
-        target.setStatus(obj.status);
+        target.setStatus(obj.status, obj.is_retrying);
 
         target.solidify(obj.json);
       };

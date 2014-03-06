@@ -29,7 +29,11 @@
 from functools import wraps
 from django.db import transaction
 from datetime import datetime
-from yabiadmin.backend.exceptions import RetryException, JobNotFoundException
+from functools import partial
+from celery import chain
+from celery.utils.log import get_task_logger
+from six.moves import filter
+from yabiadmin.backend.exceptions import RetryException, RetryPollingException, JobNotFoundException
 from yabiadmin.backend import backend
 from yabiadmin.constants import STATUS_ERROR, STATUS_READY, STATUS_COMPLETE, STATUS_EXEC, STATUS_STAGEOUT, STATUS_STAGEIN, STATUS_CLEANING, STATUS_ABORTED
 from yabiadmin.constants import MAX_CELERY_TASK_RETRIES
@@ -37,10 +41,14 @@ from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from yabiadmin.yabiengine.models import Task
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow, EngineJob, EngineTask
 import celery
-from celery import current_task, chain
-from celery.utils.log import get_task_logger
-from six.moves import filter
+
 logger = get_task_logger(__name__)
+
+
+# Use this function instead of direct access, to allow testing
+def get_current_celery_task():
+    from celery import current_task
+    return current_task
 
 
 # Celery Tasks working on a Workflow
@@ -87,7 +95,7 @@ def abort_workflow(workflow_id):
 
 @celery.task(max_retries=None)
 def create_db_tasks(job_id):
-    request = current_task.request
+    request = get_current_celery_task().request
     try:
         job = EngineJob.objects.get(pk=job_id)
         if job.status == STATUS_READY:
@@ -113,7 +121,7 @@ def create_db_tasks(job_id):
         logger.exception("Decrypted credential not available.")
         countdown = backoff(request.retries)
         logger.warning('create_db_tasks.retry {0} in {1} seconds'.format(job_id, countdown))
-        raise current_task.retry(exc=dcna, countdown=countdown)
+        raise get_current_celery_task().retry(exc=dcna, countdown=countdown)
     except Exception:
         logger.exception("Exception in create_db_tasks for job {0}".format(job_id))
         job.status = STATUS_ERROR
@@ -130,7 +138,6 @@ def spawn_ready_tasks(job_id):
         logger.debug('no tasks to process, exiting early')
         return
     try:
-        # TODO deprecate tasktag
         job = EngineJob.objects.get(pk=job_id)
         ready_tasks = job.ready_tasks()
         logger.debug(ready_tasks)
@@ -188,45 +195,51 @@ def spawn_task(task_id):
     task_chain.apply_async()
 
 
+def retry_current_celery_task(original_function_name, task_id, exc, countdown):
+    logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name, task_id, countdown))
+    try:
+        get_current_celery_task().retry(exc=exc, countdown=countdown)
+    except celery.exceptions.RetryTaskError:
+        # This is normal operation, Celery is signaling to the Worker
+        # that this task should be retried by throwing an RetryTaskError
+        # Just re-raise it
+        raise
+    except Exception as ex:
+        if ex is exc:
+            # The same exception we passed to retry() has been re-raised
+            # This means the max_retry limit has been exceeded
+            logger.error("{0}.retry {1} exceeded retry limit - changing status to error".format(original_function_name, task_id))
+        else:
+            # Some other Exception occured, log the details
+            logger.exception(("{0}.retry {1} failed - changing status to error".format(original_function_name, task_id)))
+
+        mark_task_as_error(task_id, str(ex))
+        raise
+
+
 def retry_on_error(original_function):
     @wraps(original_function)
     def decorated_function(task_id, *args, **kwargs):
-        request = current_task.request
+        request = get_current_celery_task().request
         original_function_name = original_function.__name__
+
+        retry_celery_task = partial(retry_current_celery_task, original_function_name, task_id)
         try:
             result = original_function(task_id, *args, **kwargs)
-            return result
-        except RetryException as rexc:
-            if rexc.type == RetryException.TYPE_ERROR:
-                logger.exception("Exception in celery task {0} for task {1}".format(original_function_name, task_id))
+        except RetryPollingException as exc:
+            # constant for polling
+            countdown = 30
+            retry_celery_task(exc, countdown)
 
-            if rexc.backoff_strategy == RetryException.BACKOFF_STRATEGY_EXPONENTIAL:
-                countdown = backoff(request.retries)
-            else:
-                # constant for polling
-                countdown = 30
-
-            try:
-                logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name, task_id, countdown))
-                current_task.retry(exc=rexc, countdown=countdown)
-            except RetryException:
-                logger.error("{0}.retry {1} exceeded retry limit - changing status to error".format(original_function_name, task_id))
-                change_task_status(task_id, STATUS_ERROR)
-                raise
-            except celery.exceptions.RetryTaskError:
-                raise
-            except Exception as ex:
-                logger.error(("{0}.retry {1} failed: {2} - changing status to error".format(original_function_name, task_id, ex)))
-                change_task_status(task_id, STATUS_ERROR)
-                mark_workflow_as_error(task_id)
-                raise
-
-        except Exception as ex:
-            # Retry always
+        except Exception as exc:
+            logger.exception("Exception in celery task {0} for task {1}".format(original_function_name, task_id))
+            mark_task_as_retrying(task_id)
             countdown = backoff(request.retries)
-            logger.exception("Unhandled exception in celery task {0}: {1} - retrying anyway ...".format(original_function_name, ex))
-            logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name, task_id, countdown))
-            current_task.retry(exc=ex, countdown=countdown)
+            retry_celery_task(exc, countdown)
+
+        remove_task_retrying_mark(task_id)
+
+        return result
 
     return decorated_function
 
@@ -336,6 +349,30 @@ def backoff(count=0):
     return 5 ** (count + 1)
 
 
+def mark_task_as_retrying(task_id, message="Some error occurred"):
+    task = Task.objects.get(pk=task_id)
+    task.mark_task_as_retrying(message)
+
+
+def remove_task_retrying_mark(task_id):
+    task = Task.objects.get(pk=task_id)
+    if task.is_retrying:
+        task.recovered_from_error()
+
+
+def set_task_error_message(task_id, error_msg):
+    task = Task.objects.get(pk=task_id)
+    task.error_msg = error_msg
+    task.save()
+
+
+def mark_task_as_error(task_id, error_msg="Some error occured"):
+    remove_task_retrying_mark(task_id)
+    change_task_status(task_id, STATUS_ERROR)
+    set_task_error_message(task_id, error_msg)
+    mark_workflow_as_error(task_id)
+
+
 # Service methods
 # TODO TSZ move to another file?
 
@@ -344,7 +381,7 @@ def backoff(count=0):
 def change_task_status(task_id, status):
     try:
         logger.debug("Setting status of task {0} to {1}".format(task_id, status))
-        task = EngineTask.objects.get(pk=task_id)
+        task = Task.objects.get(pk=task_id)
         task.set_status(status)
         task.save()
         transaction.commit()

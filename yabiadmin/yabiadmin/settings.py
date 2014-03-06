@@ -29,6 +29,7 @@
 import os, sys
 from ccg.utils.webhelpers import url
 import djcelery
+from kombu import Queue
 import logging
 import logging.handlers
 
@@ -143,8 +144,8 @@ if not os.path.exists(FILE_UPLOAD_TEMP_DIR):
 APPEND_SLASH = True
 
 # validation settings, these reflect the types of backend that yabi can handle
-EXEC_SCHEMES = ['sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex', 'explode', 'null']
-FS_SCHEMES = ['http', 'https', 'yabifs', 'scp', 's3', 'localfs', 'null']
+EXEC_SCHEMES = ['ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex', 'null']
+FS_SCHEMES = ['scp', 'sftp', 's3', 'localfs', 'null']
 VALID_SCHEMES = EXEC_SCHEMES + FS_SCHEMES
 
 ##
@@ -204,7 +205,6 @@ DATABASES = {
 # Make this unique, and don't share it with anybody.
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#secret-key
 SECRET_KEY = 'set_this'
-HMAC_KEY = 'set_this'
 
 # email settings so yabi can send email error alerts etc
 # see https://docs.djangoproject.com/en/dev/ref/settings/#email-host
@@ -271,6 +271,16 @@ djcelery.setup_loader()
 # see http://docs.celeryproject.org/en/latest/getting-started/brokers/django.html
 #BROKER_URL = 'django://'
 BROKER_URL = 'amqp://guest:guest@localhost:5672//'
+
+# http://celery.readthedocs.org/en/latest/whatsnew-3.1.html#last-version-to-enable-pickle-by-default
+# Pickle is unsecure, but to ensure that we won't fail on existing messages
+# we will do this upgrade in 2 steps. For now we make our messages json, but
+# still accept 'pickle' to allow failing on existing messages or clearing all
+# messages before the upgrade.
+# TODO: in a next release drop 'pickle' from CELERY_ACCEPT_CONTENT
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_ACCEPT_CONTENT = ['pickle', 'json']
+
 # see http://docs.celeryproject.org/en/latest/configuration.html
 CELERY_IGNORE_RESULT = True
 # Not found in latest docs CELERY_QUEUE_NAME = 'yabiadmin'
@@ -282,15 +292,25 @@ CELERY_DISABLE_RATE_LIMITS = True
 # see http://docs.celeryproject.org/en/latest/configuration.html#id23
 CELERY_SEND_EVENTS = True
 CELERY_SEND_TASK_SENT_EVENT = True
+
 # see http://docs.celeryproject.org/en/latest/userguide/routing.html
-#CELERY_QUEUES = {
-#    CELERY_QUEUE_NAME: {
-#        "binding_key": "celery",
-#        "exchange": CELERY_QUEUE_NAME
-#    },
-#}
-#CELERY_DEFAULT_QUEUE = CELERY_QUEUE_NAME
-#CELERY_DEFAULT_EXCHANGE = CELERY_QUEUE_NAME
+FILE_OPERATIONS = 'file_operations'
+
+CELERY_QUEUES = (
+    Queue('celery', routing_key='celery'),
+    Queue(FILE_OPERATIONS, routing_key=FILE_OPERATIONS),
+)
+
+FILE_OPERATIONS_ROUTE = {
+        'queue': FILE_OPERATIONS,
+        'routing_key': FILE_OPERATIONS,
+}
+
+CELERY_ROUTES = {
+    'yabiadmin.backend.celerytasks.stage_in_files': FILE_OPERATIONS_ROUTE,
+    'yabiadmin.backend.celerytasks.stage_out_files': FILE_OPERATIONS_ROUTE,
+}
+
 CELERY_IMPORTS = ("yabiadmin.backend.celerytasks",)
 CELERY_ACKS_LATE = True
 # Not sure if this is still needed BROKER_TRANSPORT = "kombu.transport.django.Transport"
@@ -401,11 +421,14 @@ LOGGING = {
 }
 
 # qsub and qstat paths
-
 SCHEDULER_COMMAND_PATHS = {
     "torque": {"qsub": "/opt/torque/2.3.13/bin/qsub",
                "qstat": "/opt/torque/2.3.13/bin/qstat",
-               "qdel": "/opt/torque/2.3.13/bin/qdel"}
+               "qdel": "/opt/torque/2.3.13/bin/qdel"},
+    "sge": {"qsub": "/opt/sge6/bin/linux-x64/qsub",
+            "qstat": "/opt/sge6/bin/linux-x64/qstat",
+            "qdel": "/opt/sge6/bin/linux-x64/qdel",
+            "qacct": "/opt/sge6/bin/linux-x64/qacct"},
 }
 
 
