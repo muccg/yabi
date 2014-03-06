@@ -181,9 +181,11 @@ class FileBackend(FSBackend):
             raise Exception('rm target ({0}) is not a file or directory'.format(parts.path))
 
         try:
-            if os.path.isdir(parts.path):
-                shutil.rmtree(parts.path)
-            elif os.path.isfile(parts.path):
-                os.unlink(parts.path)
+            path = parts.path.rstrip('/')
+            if os.path.isfile(path) or os.path.islink(path):
+                os.unlink(path)
+            elif os.path.isdir(path):
+                shutil.rmtree(path)
         except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
+

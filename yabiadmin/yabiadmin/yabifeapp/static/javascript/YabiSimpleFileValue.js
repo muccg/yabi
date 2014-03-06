@@ -17,6 +17,7 @@ function YabiSimpleFileValue(path, filename, type) {
   if (type !== undefined && type !== null) {
     this.type = type;
   }
+  this.isSymlink = false;
 }
 
 YabiSimpleFileValue.prototype.toString = function() {
