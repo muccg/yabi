@@ -138,7 +138,6 @@ def spawn_ready_tasks(job_id):
         logger.debug('no tasks to process, exiting early')
         return
     try:
-        # TODO deprecate tasktag
         job = EngineJob.objects.get(pk=job_id)
         ready_tasks = job.ready_tasks()
         logger.debug(ready_tasks)
