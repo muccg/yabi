@@ -35,13 +35,11 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.conf import settings
 from yabiadmin.yabiengine.models import Task, Syslog
 from yabiadmin.yabiengine.enginemodels import EngineTask, EngineJob, EngineWorkflow
-from yabiadmin.decorators import hmac_authenticated
 from yabiadmin.constants import *
 import logging
 logger = logging.getLogger(__name__)
 
 
-@hmac_authenticated
 def status(request, model, id):
     models = {'task': EngineTask, 'job': EngineJob, 'workflow': EngineWorkflow}
 
@@ -85,7 +83,6 @@ def status(request, model, id):
         return HttpResponse('OK')
 
 
-@hmac_authenticated
 def remote_id(request, id):
     logger.debug('remote_task_id> %s' % id)
     try:
@@ -114,7 +111,6 @@ def remote_id(request, id):
         return HttpResponseServerError(e)
 
 
-@hmac_authenticated
 def remote_info(request, id):
     logger.debug('remote_task_info> %s' % id)
     try:
@@ -143,7 +139,6 @@ def remote_info(request, id):
         return HttpResponseServerError(e)
 
 
-@hmac_authenticated
 def syslog(request, table, id):
     try:
         if request.method == 'GET':
@@ -177,7 +172,6 @@ def syslog(request, table, id):
         return HttpResponseNotFound('Object not found')
 
 
-@hmac_authenticated
 def job(request, workflow, order):
     try:
         workflow = EngineWorkflow.objects.get(id=int(workflow))

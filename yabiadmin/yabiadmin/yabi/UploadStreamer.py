@@ -29,7 +29,6 @@
 import httplib
 import random
 import mimetypes
-import hmac
 from django.conf import settings
 from django.core.files.uploadhandler import FileUploadHandler
 
@@ -74,10 +73,6 @@ class UploadStreamer(FileUploadHandler):
         self.stream.putheader('User-Agent', 'YabiUploadStreamer/0.0')
         self.stream.putheader('Expect','100-continue')
         self.stream.putheader('Accept','*/*')
-
-        hmac_digest = hmac.new(settings.HMAC_KEY)
-        hmac_digest.update(selector)
-        self.stream.putheader("Hmac-digest", hmac_digest.hexdigest())
 
         self.stream.endheaders()
 
