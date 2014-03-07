@@ -258,7 +258,6 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
 YABISTORE_HOME = os.path.join(WRITABLE_DIRECTORY, 'store')
 
-TASKTAG = 'set_this'
 DEFAULT_STAGEIN_DIRNAME = 'stagein/'
 
 # How long to cache decypted credentials for
