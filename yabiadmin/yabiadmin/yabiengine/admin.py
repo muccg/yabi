@@ -32,7 +32,6 @@ from yabiadmin.yabiengine.enginemodels import *
 
 from django.contrib import admin
 from django.contrib import messages
-from yabiadmin.yabiengine import storehelper as StoreHelper
 from yabiadmin.backend.celerytasks import request_workflow_abort
 
 
@@ -89,35 +88,12 @@ class WorkflowAdmin(admin.ModelAdmin):
     list_display = ['name', 'status', 'stageout', link_to_jobs, link_to_tasks, link_to_stageins, 'summary_link', 'is_aborting']
     list_filter = ['status', 'user']
     search_fields = ['name']
-    actions = ['archive_workflow', 'abort_workflow']
+    actions = ['abort_workflow']
     fieldsets = (
         (None, {
             'fields': ('name', 'user', 'start_time', 'end_time', 'status', 'stageout')
         }),
     )
-
-    def archive_workflow(self, request, queryset):
-        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
-
-        for id in selected:
-            wf = EngineWorkflow.objects.get(id=id)
-            success = StoreHelper.archiveWorkflow(wf)
-
-        if success:
-            if len(selected):
-                if len(selected) == 1:
-                    message_bit = "1 workflow archived."
-                else:
-                    message_bit = "%s workflows were archived." % len(selected)
-
-                messages.success(request, message_bit)
-        else:
-            messages.error(request, "Couldn't archive workflow(s)!")
-
-        # pass on to delete action
-        #return delete_selected(self, request, queryset)
-
-    archive_workflow.short_description = "Archive selected Workflows."
 
     def abort_workflow(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)

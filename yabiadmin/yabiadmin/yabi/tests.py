@@ -3,7 +3,9 @@
 from django.utils import unittest as unittest
 from django.test.client import Client
 from django.contrib.auth.models import User as DjangoUser
+from model_mommy import mommy
 from yabiadmin.yabi.models import User
+from yabiadmin.yabi.ws_frontend_views import munge_name
 
 from django.contrib.auth.models import User as DjangoUser
 from yabiadmin.yabi.models import Credential, User, Backend, Tool, ToolSet, ToolGroup
@@ -228,8 +230,34 @@ class TestOrderByCustomFilter(unittest.TestCase):
         self.assertTrue(index_of_zzzz > index_of_mmmm > index_of_aaaa, "order by failed")
 
 
+class TestWorkflowNameMunging(unittest.TestCase):
+    def setUp(self):
+        self.user = User.objects.get(name='demo')
+        self.workflow = mommy.make('Workflow', name='Unmunged yet', user=self.user)
+        self.munged_workflows = [
+            mommy.make('Workflow', name='Munged', user=self.user),
+            mommy.make('Workflow', name='Munged (1)', user=self.user),
+            mommy.make('Workflow', name='Munged (2)', user=self.user),
+        ]
 
+    def tearDown(self):
+        self.workflow.delete()
+        for w in self.munged_workflows:
+            w.delete()
 
+    def test_unique_name_does_not_get_munged(self):
+        name = munge_name(self.user.name, 'does not exist yet')
+        self.assertEquals('does not exist yet', name)
 
+    def test_unmunged_unique_workflow_name(self):
+        name = munge_name(self.user.name, 'Unmunged yet')
+        self.assertEquals('Unmunged yet (1)', name)
 
+    def test_already_munged_called_with_basename(self):
+        name = munge_name(self.user.name, 'Munged')
+        self.assertEquals('Munged (3)', name)
+
+    def test_already_munged_called_with_munged_name(self):
+        name = munge_name(self.user.name, 'Munged (1)')
+        self.assertEquals('Munged (3)', name)
 
