@@ -68,7 +68,6 @@ INSTALLED_APPS = [
     'yabiadmin.yabifeapp',
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
-    'yabiadmin.yabistoreapp',
     'yabiadmin.uploader',
     'djcelery',
     'kombu.transport.django',
@@ -256,9 +255,6 @@ SESSION_FILE_PATH = WRITABLE_DIRECTORY
 # this also ensures that files are always written to disk so we can access them via temporary_file_path
 FILE_UPLOAD_MAX_MEMORY_SIZE = 0
 
-YABISTORE_HOME = os.path.join(WRITABLE_DIRECTORY, 'store')
-
-TASKTAG = 'set_this'
 DEFAULT_STAGEIN_DIRNAME = 'stagein/'
 
 # How long to cache decypted credentials for
