@@ -400,18 +400,18 @@ LOGGING = {
         '': {
             'handlers': ['console', 'mail_admins'],
             'level': 'ERROR',
-            'propagate': True,
         },
 
         'django': {
             'handlers': ['console'],
-            'propagate': True,
+            'propagate': False,
             'level': 'INFO',
         },
 
         'yabiadmin': {
             'handlers': ['console'],
-            'level': 'DEBUG'
+            'level': 'DEBUG',
+            'propagate': False,
         },
     }
 }
