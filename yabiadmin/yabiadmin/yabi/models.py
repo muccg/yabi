@@ -70,6 +70,9 @@ class Base(models.Model):
 class FileExtension(Base):
     pattern = models.CharField(max_length=64, unique=True)
 
+    class Meta:
+        ordering = ('pattern',)
+
     def __unicode__(self):
         return self.pattern
 
