@@ -140,6 +140,7 @@ class S3Backend(FSBackend):
                     "The following keys couldn't be deleted when deleting uri %s: %s",
                     uri, ", ".join(multi_delete_result.errors))
 
+            # TODO TSZ: Why do we have to do this here? Seems very strange
             parent_dir_uri = self.parent_dir_uri(uri)
             if not self.path_exists(parent_dir_uri):
                 self.mkdir(parent_dir_uri)
@@ -244,7 +245,12 @@ class S3Backend(FSBackend):
     def get_keys_recurse(self, bucket, path):
         result = []
 
-        keys_and_prefixes = bucket.get_all_keys(prefix=path.lstrip(DELIMITER), delimiter=DELIMITER)
+        is_item_matching_name = partial(self.is_item_matching_name, path.lstrip(DELIMITER))
+
+        keys_and_prefixes = ifilter(
+                is_item_matching_name,
+                bucket.get_all_keys(prefix=path.lstrip(DELIMITER), delimiter=DELIMITER))
+
         # Keys correspond to files, prefixes to directories
         keys, prefixes = partition(lambda k: type(k) == boto.s3.key.Key, keys_and_prefixes)
 

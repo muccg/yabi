@@ -17,6 +17,9 @@ class S3BotoMockedOutTest(unittest.TestCase):
         self.bucket = mock()
         self.backend.bucket = lambda name: self.bucket
         self.S3_URI = 's3://ignored@some-bucket-name@amazonaws-test-host.com%s'
+        # This is to avoid rm to mk parent dirs
+        # Hopefully will get removed when rm won't be making dirs
+        self.backend.path_exists = lambda uri: True
 
     def test_ls_for_empty_dir(self):
         PATH = '/some/path/'
@@ -115,8 +118,75 @@ class S3BotoMockedOutTest(unittest.TestCase):
         self.assertEquals(1, len(ls_result[PATH]['files']))
         self.assertEquals('file1', ls_result[PATH]['files'][0][0])
 
+    def test_rm_a_file(self):
+        PATH = '/some/path/some_file'
+        S3_PATH = drop_starting_slash(PATH)
+        key = make_key(S3_PATH)
+        when(self.bucket).get_all_keys(prefix=S3_PATH, delimiter='/').thenReturn([
+            key])
+        when(self.bucket).delete_keys([key]).thenReturn(FakeMultiDeleteResult())
+
+        self.backend.rm(self.S3_URI % PATH)
+
+        verify(self.bucket).delete_keys([key])
+
+    def test_rm_a_file_does_not_delete_by_prefix(self):
+        DIR_PATH = '/some/path/'
+        PATH = DIR_PATH + 'some_file'
+        S3_PATH = drop_starting_slash(PATH)
+        key = make_key(S3_PATH)
+        when(self.bucket).get_all_keys(prefix=S3_PATH, delimiter='/').thenReturn([
+            key,
+            make_key('some_file_with_same_prefix'),
+            boto.s3.prefix.Prefix(name=S3_PATH + 'looking_directory')
+        ])
+        when(self.bucket).delete_keys([key]).thenReturn(FakeMultiDeleteResult())
+
+        self.backend.rm(self.S3_URI % PATH)
+
+        verify(self.bucket).delete_keys([key])
+
+    def test_rm_a_dir_recursively(self):
+        PATH = '/some/path/'
+        S3_PATH = drop_starting_slash(PATH)
+        S3_NESTED_PATH = S3_PATH + 'subdir'
+        name = lambda name: S3_PATH + name
+        nested_name = lambda name: S3_NESTED_PATH + '/' + name
+        file1 = make_key(name('file1'))
+        file2 = make_key(name('file2'))
+        file3 = make_key(nested_name('file3'))
+        file4 = make_key(nested_name('file4'))
+        when(self.bucket).get_all_keys(prefix=S3_PATH, delimiter='/').thenReturn([
+            file1,
+            file2,
+            boto.s3.prefix.Prefix(name=S3_NESTED_PATH)
+        ])
+        when(self.bucket).get_all_keys(prefix=S3_NESTED_PATH, delimiter='/').thenReturn([
+            file3,
+            file4,
+        ])
+        when(self.bucket).delete_keys([
+            file1,
+            file2,
+            file3,
+            file4]).thenReturn(FakeMultiDeleteResult())
+
+        self.backend.rm(self.S3_URI % PATH)
+
+        verify(self.bucket).delete_keys([
+            file1,
+            file2,
+            file3,
+            file4])
+
+
+class FakeMultiDeleteResult(object):
+    def __init__(self, errors=None):
+        self.errors = errors
+
 def drop_starting_slash(path):
     return path.lstrip('/')
+
 
 def make_key(name, size=0, last_modified=u'1999-12-31T01:02:03.000Z'):
     s3key = boto.s3.key.Key(name=name)
