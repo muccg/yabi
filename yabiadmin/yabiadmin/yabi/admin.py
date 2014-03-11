@@ -115,6 +115,7 @@ class ToolSetAdmin(AdminBase):
 class FileTypeAdmin(AdminBase):
     list_display = ['name', 'file_extensions_text']
     search_fields = ['name']
+    filter_horizontal = ['extensions']
 
 class FileExtensionAdmin(AdminBase):
     list_display = ['pattern']
