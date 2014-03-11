@@ -142,10 +142,6 @@ class S3Backend(FSBackend):
                     "The following keys couldn't be deleted when deleting uri %s: %s",
                     uri, ", ".join(multi_delete_result.errors))
 
-            # TODO TSZ: Why do we have to do this here? Seems very strange
-            parent_dir_uri = self.parent_dir_uri(uri)
-            if not self.path_exists(parent_dir_uri):
-                self.mkdir(parent_dir_uri)
         except Exception as exc:
             logger.exception("Error while trying to S3 rm uri %s", uri)
             raise RetryException(exc, traceback.format_exc())

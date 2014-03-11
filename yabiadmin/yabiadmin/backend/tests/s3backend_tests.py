@@ -17,9 +17,6 @@ class S3BotoMockedOutTest(unittest.TestCase):
         self.bucket = mock()
         self.backend.bucket = lambda name: self.bucket
         self.S3_URI = 's3://ignored@some-bucket-name@amazonaws-test-host.com%s'
-        # This is to avoid rm to mk parent dirs
-        # Hopefully will get removed when rm won't be making dirs
-        self.backend.path_exists = lambda uri: True
 
     def test_ls_for_empty_dir(self):
         PATH = '/some/path/'
