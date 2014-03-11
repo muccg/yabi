@@ -124,6 +124,7 @@ def login(request):
 
     def render_form(form, error='Invalid login credentials'):
         return render_to_response('fe/login.html', {
+                 'request': request,
                  'h': webhelpers,
                  'base_site_url': webhelpers.url("").rstrip("/"),
                  'form': form,
@@ -155,7 +156,8 @@ def login(request):
                             cred.on_login(username, password)
                         except DecryptException as e:
                             logger.error("Unable to decrypt credential `%s'" % cred.description)
-                    return HttpResponseRedirect(webhelpers.url("/"))
+                    next_page = request.GET.get('next', "/")
+                    return HttpResponseRedirect(webhelpers.url(next_page))
 
             else:
                 form = LoginForm()
