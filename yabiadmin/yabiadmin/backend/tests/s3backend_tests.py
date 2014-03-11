@@ -18,12 +18,9 @@ class S3BotoMockedOutTest(unittest.TestCase):
         self.backend.bucket = lambda name: self.bucket
         self.S3_URI = 's3://ignored@some-bucket-name@amazonaws-test-host.com%s'
 
-    def tearDown(self):
-        pass
-
     def test_ls_for_empty_dir(self):
         PATH = '/some/path/'
-        S3_PATH = 'some/path/'
+        S3_PATH = drop_starting_slash(PATH)
         when(self.bucket).get_all_keys(prefix=S3_PATH, delimiter='/').thenReturn([])
 
         ls_result = self.backend.ls(self.S3_URI % PATH)
@@ -34,7 +31,7 @@ class S3BotoMockedOutTest(unittest.TestCase):
 
     def test_ls_for_single_file(self):
         PATH = '/some/path/some_file'
-        S3_PATH = 'some/path/some_file'
+        S3_PATH = drop_starting_slash(PATH)
         when(self.bucket).get_all_keys(prefix=S3_PATH, delimiter='/').thenReturn([
             make_key(S3_PATH, size=123, last_modified=u'2000-01-30T00:11:22.000Z')])
 
@@ -50,7 +47,7 @@ class S3BotoMockedOutTest(unittest.TestCase):
 
     def test_ls_a_dir_with_some_files_inside(self):
         PATH = '/some/path/'
-        S3_PATH = 'some/path/'
+        S3_PATH = drop_starting_slash(PATH)
         name = lambda filename: S3_PATH + filename
         when(self.bucket).get_all_keys(prefix=S3_PATH, delimiter='/').thenReturn([
             make_key(name('file1'), size=1, last_modified='1989-12-21T17:23:00.000Z'),
@@ -78,8 +75,8 @@ class S3BotoMockedOutTest(unittest.TestCase):
     def test_ls_ignores_keys_with_same_prefix(self):
         DIR_PATH = '/some/path/'
         PATH = DIR_PATH + 'file1'
-        S3_DIR_PATH = 'some/path/'
-        S3_PATH = 'some/path/file1'
+        S3_DIR_PATH = drop_starting_slash(DIR_PATH)
+        S3_PATH = drop_starting_slash(PATH)
         name = lambda filename: S3_DIR_PATH + filename
         when(self.bucket).get_all_keys(prefix=S3_PATH, delimiter='/').thenReturn([
             make_key(name('file1'), size=1, last_modified='1989-12-21T17:23:00.000Z'),
@@ -99,25 +96,27 @@ class S3BotoMockedOutTest(unittest.TestCase):
 
 
     def test_ls_a_dir_without_slash_at_the_end(self):
-        # If we send a get_all_keys to Amazon on a dir without ending it in the
+        # If we send a get_all_keys to boto on a dir without ending it in the
         # DELIMITER, it will just return the single entry as a Prefix. No items.
         # All we can do is call the method again after appending the DELIMITER
-        PATH = '/some/path'
-        S3_PATH = 'some/path'
+        PATH = '/some/path/'
+        S3_PATH = drop_starting_slash(PATH)
+        S3_WRONG_PATH = S3_PATH.rstrip('/')
+        when(self.bucket).get_all_keys(prefix=S3_WRONG_PATH, delimiter='/').thenReturn([
+            boto.s3.prefix.Prefix(name=S3_WRONG_PATH),
+        ])
         when(self.bucket).get_all_keys(prefix=S3_PATH, delimiter='/').thenReturn([
-            boto.s3.prefix.Prefix(name=S3_PATH),
-        ])
-        #verify(self.bucket).get_all_keys(prefix=S3_PATH + '/', delimiter='/').thenReturn([
-        when(self.bucket).get_all_keys(prefix=S3_PATH + '/', delimiter='/').thenReturn([
-            make_key(name=S3_PATH + '/file1'),
+            make_key(name=S3_PATH + 'file1'),
         ])
 
-        ls_result = self.backend.ls(self.S3_URI % PATH)
+        ls_result = self.backend.ls(self.S3_URI % PATH.rstrip('/'))
 
-        self.assertEquals(0, len(ls_result[PATH + '/']['directories']))
-        self.assertEquals(1, len(ls_result[PATH + '/']['files']))
-        self.assertEquals('file1', ls_result[PATH + '/']['files'][0][0])
+        self.assertEquals(0, len(ls_result[PATH]['directories']))
+        self.assertEquals(1, len(ls_result[PATH]['files']))
+        self.assertEquals('file1', ls_result[PATH]['files'][0][0])
 
+def drop_starting_slash(path):
+    return path.lstrip('/')
 
 def make_key(name, size=0, last_modified=u'1999-12-31T01:02:03.000Z'):
     s3key = boto.s3.key.Key(name=name)
