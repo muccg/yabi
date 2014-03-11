@@ -56,8 +56,8 @@ class S3BotoMockedOutTest(unittest.TestCase):
             make_key(name('file1'), size=1, last_modified='1989-12-21T17:23:00.000Z'),
             make_key(name('file2'), size=2, last_modified='1989-12-22T17:23:00.000Z'),
             make_key(name('file3'), size=3, last_modified='1989-12-23T17:23:00.000Z'),
-            boto.s3.prefix.Prefix(name=name('dir')),
-            boto.s3.prefix.Prefix(name=name('dir2')),
+            boto.s3.prefix.Prefix(name=name('dir/')),
+            boto.s3.prefix.Prefix(name=name('dir2/')),
         ])
 
         ls_result = self.backend.ls(self.S3_URI % PATH)

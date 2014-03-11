@@ -82,10 +82,12 @@ class S3Backend(FSBackend):
                'a/anything' included
                'a/anything/deeper' ignored"""
         name_and_delimiter = name + DELIMITER if not name.endswith(DELIMITER) else name
-        return (item.name == name or
-                item.name.startswith(name_and_delimiter) and
-                DELIMITER not in item.name[len(name_and_delimiter):])
+        def no_more_delimiters(item):
+            item_name_end = item.name.rstrip(DELIMITER)[len(name_and_delimiter):]
+            return DELIMITER not in item_name_end
 
+        return (item.name == name or
+                item.name.startswith(name_and_delimiter) and no_more_delimiters(item))
 
     def ls(self, uri):
         self.set_cred(uri)
