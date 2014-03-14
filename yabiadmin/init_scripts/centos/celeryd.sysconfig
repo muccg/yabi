@@ -1,7 +1,7 @@
 # In CentOS, contents should be placed in the file /etc/sysconfig/celeryd
 
 # Names of nodes to start (space-separated)
-CELERYD_NODES="yabi-node_1"
+CELERYD_NODES="yabi-node_1 yabi-node_2"
 
 # Where to chdir at start. This could be the root of a virtualenv.
 CELERYD_CHDIR="/usr/local/webapps/yabiadmin"
@@ -11,6 +11,7 @@ CELERYD_MULTI="yabiadmin celeryd_multi"
 
 # Extra arguments
 #CELERYD_OPTS="--app=my_application.path.to.worker --time-limit=300 --concurrency=8 --loglevel=DEBUG"
+CELERYD_OPTS="-Q:1 file_operations -Q:2 celery --concurrency=4"
 
 # Create log/pid dirs, if they don't already exist
 #CELERY_CREATE_DIRS=1
