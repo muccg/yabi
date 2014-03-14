@@ -1,6 +1,6 @@
-%define version 7.1.10
-%define unmangled_version 7.1.10
-%define release 2
+%define version 7.1.11
+%define unmangled_version 7.1.11
+%define release 1
 %define webapps /usr/local/webapps
 %define webappname yabiadmin
 %define shellname yabish
