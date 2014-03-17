@@ -26,7 +26,6 @@ install_requires = [
     'ccg-extras==0.1.7',
     'ccg-auth==0.3.3',
     'anyjson==0.3.3',
-    'SQLAlchemy>=0.7.10,<0.8.0',
     'celery==3.1.9',
     'django-celery==3.1.9',
     'amqp==1.4.4',
@@ -40,7 +39,6 @@ install_requires = [
     'South==0.7.6',
     'django-extensions>=1.2.0,<1.2.0',
     'beautifulsoup4>=4.3.2,<4.4.0',
-    'lxml>=3.2.0,<3.3.0',
     'cssutils>=0.9.10,<0.10.0',
     'httplib2>=0.8,<0.9',
     'djamboloader==0.1.2',
@@ -48,8 +46,14 @@ install_requires = [
     'boto==2.25',
     'python-dateutil>=2.1,<3.0',
     'yaphc==0.1.5',
-    'pycrypto==2.6.1',  # version locked as a 2.7a1 appeared in pypi
     'six>=1.4,<1.5',
+]
+
+# Compiled python modules which are usually provided by system packages
+install_requires_compiled = [
+    'SQLAlchemy>=0.7.10,<0.8.0',
+    'lxml>=3.3.0,<3.4.0',
+    'pycrypto==2.6.1',  # version locked as a 2.7a1 appeared in pypi
 ]
 
 dev_requires = [
@@ -111,11 +115,12 @@ setup(name='yabiadmin',
               for fileglob in ['*.mako', '*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg']]
       },
       zip_safe=False,
+      scripts=["yabiadmin/yabiadmin-manage.py"],
       install_requires=install_requires,
       dependency_links=dependency_links,
       extras_require={
-          'tests': tests_require,
-          'dev': dev_requires,
-          'postgresql': postgresql_requires,
-          'mysql': mysql_requires,
+          'tests': install_requires_compiled + tests_require,
+          'dev': install_requires_compiled + dev_requires,
+          'postgresql': install_requires_compiled + postgresql_requires,
+          'mysql': install_requires_compiled + mysql_requires,
       })
