@@ -110,6 +110,10 @@ sed -i "s|`readlink -f ${RPM_BUILD_ROOT}`||g" %{buildinstalldir}/bin/*
 # Strip out mention of rpm buildroot from the pip install record
 find %{buildinstalldir} -name RECORD -exec sed -i -e "s|${RPM_BUILD_ROOT}||" {} \;
 
+# Strip debug syms out of the compiled python modules which are in the
+# build root.
+find %{buildinstalldir} -name \*.so -exec strip -g {} \;
+
 # don't need a copy of python interpreter in the virtualenv
 rm %{buildinstalldir}/bin/python*
 
