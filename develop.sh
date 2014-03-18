@@ -315,10 +315,10 @@ stopyabi() {
 
 installyabi() {
     # check requirements
-    which virtualenv >/dev/null
+    which virtualenv-2.7 > /dev/null
 
     echo "Install yabiadmin"
-    virtualenv ${VIRTUALENV}
+    virtualenv-2.7 ${VIRTUALENV}
     ${VIRTUALENV}/bin/pip install 'pip>=1.5,<1.6' --upgrade
     ${VIRTUALENV}/bin/pip --version
     pushd yabiadmin
