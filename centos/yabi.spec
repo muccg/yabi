@@ -180,7 +180,6 @@ find %{shbuildinstalldir} -name RECORD -exec sed -i -e "s|${RPM_BUILD_ROOT}||" {
 rm %{shbuildinstalldir}/bin/python*
 
 %pre admin
-/usr/bin/getent group celery || /usr/sbin/groupadd -r celery
 /usr/bin/getent passwd celery || /usr/sbin/useradd -r -d /var/run/celery -s /bin/bash celery
 
 %post admin
