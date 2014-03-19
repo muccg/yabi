@@ -148,7 +148,7 @@ install -m 0644 -D init_scripts/centos/celeryd.default %{buildroot}/etc/default/
 
 # make dirs for celery
 mkdir -p %{buildroot}/var/log/celery
-mkdir -p %{buildroot}/var/lib/celery
+mkdir -p %{buildroot}/var/run/celery
 
 ##############################
 # yabi-shell
@@ -207,7 +207,7 @@ fi
 %attr(-,apache,,apache) %{webapps}/%{webappname}
 %attr(-,apache,,apache) /var/log/%{webappname}
 %attr(-,apache,,apache) /var/lib/%{webappname}
-%attr(-,celery,,celery) /var/lib/celery
+%attr(-,celery,,celery) /var/run/celery
 %attr(-,celery,,celery) /var/log/celery
 %attr(-,root,,root) /etc/init.d/celeryd
 %attr(-,root,,root) /etc/default/celeryd
