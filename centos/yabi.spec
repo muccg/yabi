@@ -38,7 +38,8 @@ BuildArch: x86_64
 Vendor: Centre for Comparative Genomics <web@ccg.murdoch.edu.au>
 BuildRequires: python%{pyver}-virtualenv python%{pyver}-devel openssl-devel libxslt-devel libxml2-devel
 Requires: python%{pyver} openssl
-Requires(pre): shadow-utils
+Requires(pre): shadow-utils, /usr/sbin/useradd, /usr/bin/getent
+Requires(postun): /usr/sbin/userdel
 
 %description 
 Test.
@@ -145,6 +146,9 @@ ln -fsT %{installdir}/bin/%{webappname}-manage.py %{buildroot}/%{_bindir}/%{weba
 install -m 0755 -D init_scripts/centos/celeryd.init %{buildroot}/etc/init.d/celeryd
 install -m 0644 -D init_scripts/centos/celeryd.default %{buildroot}/etc/default/celeryd
 
+# make dirs for celery
+mkdir -p %{buildroot}/var/log/celery
+mkdir -p %{buildroot}/var/lib/celery
 
 ##############################
 # yabi-shell
@@ -175,6 +179,9 @@ find %{shbuildinstalldir} -name RECORD -exec sed -i -e "s|${RPM_BUILD_ROOT}||" {
 # don't need a copy of python interpreter in the virtualenv
 rm %{shbuildinstalldir}/bin/python*
 
+%pre admin
+/usr/bin/getent group celery || /usr/sbin/groupadd -r celery
+/usr/bin/getent passwd celery || /usr/sbin/useradd -r -d /var/run/celery -s /bin/bash celery
 
 %post admin
 rm -rf %{installdir}/static/*
@@ -190,6 +197,9 @@ if [ "$1" = "0" ]; then
     rm -rf %{installdir}/static/*
 fi
 
+%postun admin
+/usr/sbin/userdel celery
+
 %files admin
 %defattr(-,apache,apache,-)
 /etc/httpd/conf.d/*
@@ -197,6 +207,8 @@ fi
 %attr(-,apache,,apache) %{webapps}/%{webappname}
 %attr(-,apache,,apache) /var/log/%{webappname}
 %attr(-,apache,,apache) /var/lib/%{webappname}
+%attr(-,celery,,celery) /var/lib/celery
+%attr(-,celery,,celery) /var/log/celery
 %attr(-,root,,root) /etc/init.d/celeryd
 %attr(-,root,,root) /etc/default/celeryd
 
