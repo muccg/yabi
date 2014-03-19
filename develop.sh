@@ -80,10 +80,9 @@ ci_remote_build() {
     time ccg ${AWS_BUILD_INSTANCE} puppet
     time ccg ${AWS_BUILD_INSTANCE} shutdown:50
 
-    EXCLUDES="('bootstrap'\, '.hg'\, 'virt*'\, '*.log'\, '*.rpm'\, 'screenshots'\, 'docs')"
     SSH_OPTS="-o StrictHostKeyChecking\=no"
-    RSYNC_OPTS="-l"
-    time ccg ${AWS_BUILD_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",exclude="${EXCLUDES}",delete=True
+    RSYNC_OPTS="-l -z --exclude-from '.rsync_excludes'"
+    time ccg ${AWS_BUILD_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",delete=True
     time ccg ${AWS_BUILD_INSTANCE} build_rpm:centos/yabi.spec,src=${TARGET_DIR}
 
     mkdir -p build

@@ -1,0 +1,11 @@
+build/
+images/
+.hg/
+virt*
+*.log
+*.rpm
+screenshots/
+docs/
+*.pyc
+yabi_sessionid*
+tmp*
