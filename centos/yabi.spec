@@ -143,7 +143,7 @@ ln -fsT %{installdir}/bin/%{webappname}-manage.py %{buildroot}/%{_bindir}/%{weba
 
 # Install yabiadmin's celeryd init script system wide
 install -m 0755 -D init_scripts/centos/celeryd.init %{buildroot}/etc/init.d/celeryd
-install -m 0644 -D init_scripts/centos/celeryd.sysconfig %{buildroot}/etc/sysconfig/celeryd
+install -m 0644 -D init_scripts/centos/celeryd.default %{buildroot}/etc/default/celeryd
 
 
 ##############################
@@ -198,7 +198,7 @@ fi
 %attr(-,apache,,apache) /var/log/%{webappname}
 %attr(-,apache,,apache) /var/lib/%{webappname}
 %attr(-,root,,root) /etc/init.d/celeryd
-%attr(-,root,,root) /etc/sysconfig/celeryd
+%attr(-,root,,root) /etc/default/celeryd
 
 %files shell
 %defattr(-,root,root,-)
