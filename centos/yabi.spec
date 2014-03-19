@@ -180,7 +180,12 @@ find %{shbuildinstalldir} -name RECORD -exec sed -i -e "s|${RPM_BUILD_ROOT}||" {
 rm %{shbuildinstalldir}/bin/python*
 
 %pre admin
-/usr/bin/getent passwd celery || /usr/sbin/useradd -r -d /var/run/celery -s /bin/bash celery
+# https://fedoraproject.org/wiki/Packaging:UsersAndGroups?rd=Packaging/UsersAndGroups
+/usr/bin/getent group celery >/dev/null || /usr/sbin/groupadd -r celery
+/usr/bin/getent passwd celery >/dev/null || \
+    /usr/sbin/useradd -r -g celery -d /var/run/celery -s /bin/bash \
+    -c "celery distributed task queue" celery
+exit 0
 
 %post admin
 rm -rf %{installdir}/static/*
