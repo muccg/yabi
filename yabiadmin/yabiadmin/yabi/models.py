@@ -289,7 +289,7 @@ class ToolParameter(Base):
     file_assignment.help_text = """Specifies how to deal with files that match the accepted filetypes setting...<br/><br/>
         <i>No input files:</i> This parameter does not take any input files as an argument<br/>
         <i>Single input file:</i> This parameter can only take a single input file, and batch jobs will need to be created for multiple files if the user passes them in<br/>
-        <i>Multiple input file:</i> This parameter can take a whole string of onput files, one after the other. All matching filetypes will be passed into it"""
+        <i>Multiple input file:</i> This parameter can take a whole string of input files, one after the other. All matching filetypes will be passed into it"""
 
     def __unicode__(self):
         return self.switch or ''
