@@ -156,8 +156,8 @@ def login(request):
                             cred.on_login(username, password)
                         except DecryptException as e:
                             logger.error("Unable to decrypt credential `%s'" % cred.description)
-                    next_page = request.GET.get('next', "/")
-                    return HttpResponseRedirect(webhelpers.url(next_page))
+                    next_page = request.GET.get('next', webhelpers.url("/"))
+                    return HttpResponseRedirect(next_page)
 
             else:
                 form = LoginForm()
