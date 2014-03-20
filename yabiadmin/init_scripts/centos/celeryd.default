@@ -1,6 +1,6 @@
 # Names of nodes to start
 #   most will only start one node:
-CELERYD_NODES="yabi-node_1 yabi-node_2"
+CELERYD_NODES="yabi-node yabi-node-fsops"
 
 # Absolute or relative path to the 'celery' command:
 CELERY_BIN="/usr/local/webapps/yabiadmin/bin/celery"
@@ -16,7 +16,7 @@ CELERY_APP="yabiadmin.backend.celerytasks"
 CELERYD_CHDIR="/var/run/celery"
 
 # Extra command-line arguments to the worker
-CELERYD_OPTS="-Q:yabi-node_1 celery -Q:yabi-node_2 file_operations --concurrency=4"
+CELERYD_OPTS="-Q:yabi-node celery -Q:yabi-node-fsops file_operations --concurrency=4"
 
 # %N will be replaced with the first part of the nodename.
 CELERYD_LOG_FILE="/var/log/celery/%N.log"
