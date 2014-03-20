@@ -26,6 +26,7 @@
 #
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from functools import wraps
 from django.db import transaction
 from datetime import datetime
@@ -41,8 +42,15 @@ from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from yabiadmin.yabiengine.models import Task
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow, EngineJob, EngineTask
 import celery
+import os
+from django.conf import settings
 
 logger = get_task_logger(__name__)
+
+
+app = celery.Celery('yabiadmin.backend.celerytasks')
+
+app.config_from_object('django.conf:settings')
 
 
 # Use this function instead of direct access, to allow testing
@@ -57,14 +65,14 @@ def process_workflow(workflow_id):
     return chain(create_jobs.s(workflow_id) | process_jobs.s())
 
 
-@celery.task
+@app.task
 def create_jobs(workflow_id):
     workflow = EngineWorkflow.objects.get(pk=workflow_id)
     workflow.create_jobs()
     return workflow.pk
 
 
-@celery.task
+@app.task
 def process_jobs(workflow_id):
     workflow = EngineWorkflow.objects.get(pk=workflow_id)
     if workflow.is_aborting:
@@ -76,7 +84,7 @@ def process_jobs(workflow_id):
         chain(create_db_tasks.s(job.pk), spawn_ready_tasks.s()).apply_async()
 
 
-@celery.task
+@app.task
 def abort_workflow(workflow_id):
     logger.debug("Aborting workflow %s", workflow_id)
     workflow = EngineWorkflow.objects.get(pk=workflow_id)
@@ -93,7 +101,7 @@ def abort_workflow(workflow_id):
 # Celery Tasks working on a Job
 
 
-@celery.task(max_retries=None)
+@app.task(max_retries=None)
 def create_db_tasks(job_id):
     request = get_current_celery_task().request
     try:
@@ -131,7 +139,7 @@ def create_db_tasks(job_id):
         raise
 
 
-@celery.task()
+@app.task()
 def spawn_ready_tasks(job_id):
     logger.debug('spawn_ready_tasks for job {0}'.format(job_id))
     if job_id is None:
@@ -257,7 +265,7 @@ def skip_if_no_task_id(original_function):
     return decorated_function
 
 
-@celery.task(max_retries=None)
+@app.task(max_retries=None)
 @retry_on_error
 @skip_if_no_task_id
 def stage_in_files(task_id):
@@ -269,7 +277,7 @@ def stage_in_files(task_id):
     return task_id
 
 
-@celery.task(max_retries=MAX_CELERY_TASK_RETRIES)
+@app.task(max_retries=MAX_CELERY_TASK_RETRIES)
 @retry_on_error
 @skip_if_no_task_id
 def submit_task(task_id):
@@ -284,7 +292,7 @@ def submit_task(task_id):
     return task_id
 
 
-@celery.task(max_retries=None)
+@app.task(max_retries=None)
 @retry_on_error
 @skip_if_no_task_id
 def poll_task_status(task_id):
@@ -298,7 +306,7 @@ def poll_task_status(task_id):
         raise
 
 
-@celery.task(max_retries=None)
+@app.task(max_retries=None)
 @retry_on_error
 @skip_if_no_task_id
 def stage_out_files(task_id):
@@ -310,7 +318,7 @@ def stage_out_files(task_id):
     return task_id
 
 
-@celery.task(max_retries=None)
+@app.task(max_retries=None)
 @retry_on_error
 @skip_if_no_task_id
 def clean_up_task(task_id):
@@ -322,7 +330,7 @@ def clean_up_task(task_id):
     change_task_status(task.pk, STATUS_COMPLETE)
 
 
-@celery.task
+@app.task
 def abort_task(task_id):
     logger.debug("Aborting task %s", task_id)
     task = EngineTask.objects.get(pk=task_id)

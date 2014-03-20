@@ -10,6 +10,7 @@ CELERY_BIN="/usr/local/webapps/yabiadmin/bin/celery"
 #CELERY_APP="proj"
 # or fully qualified:
 #CELERY_APP="proj.tasks:app"
+CELERY_APP="yabiadmin.backend.celerytasks"
 
 # Where to chdir at start.
 CELERYD_CHDIR="/var/run/celery"

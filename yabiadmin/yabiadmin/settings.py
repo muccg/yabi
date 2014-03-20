@@ -28,7 +28,6 @@
 
 import os, sys
 from ccg.utils.webhelpers import url
-import djcelery
 from kombu import Queue
 import logging
 import logging.handlers
@@ -69,7 +68,6 @@ INSTALLED_APPS = [
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
     'yabiadmin.uploader',
-    'djcelery',
     'kombu.transport.django',
     'django_extensions',
     'south',
@@ -262,8 +260,6 @@ DEFAULT_CRED_CACHE_TIME = 60 * 60 * 24                   # 1 day default
 
 
 ### CELERY ###
-# see http://docs.celeryproject.org/en/latest/django/first-steps-with-django.html
-djcelery.setup_loader()
 # see http://docs.celeryproject.org/en/latest/getting-started/brokers/django.html
 #BROKER_URL = 'django://'
 BROKER_URL = 'amqp://guest:guest@localhost:5672//'
