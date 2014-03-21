@@ -34,4 +34,4 @@ CELERY_CREATE_DIRS=0
 
 export DJANGO_SETTINGS_MODULE="yabiadmin.settings"
 
-export PYTHONPATH="/usr/local/webapps/yabiadmin/lib/python2.7/site-packages"
+export PYTHONPATH="/usr/local/webapps/yabiadmin/lib/python2.7/site-packages:/etc/ccgapps-celery"
