@@ -27,12 +27,12 @@
 ### END COPYRIGHT ###
 import hashlib
 from django.http import HttpResponse, HttpResponseRedirect
-from ccg.http import HttpResponseUnauthorized
+from ccg_django_utils.http import HttpResponseUnauthorized
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import mail_admins
 from django.contrib.auth import logout as django_logout
-from ccg.utils import webhelpers
+from ccg_django_utils import webhelpers
 from django.template.loader import render_to_string
 from django.utils import simplejson as json
 from yaphc import Http, GetRequest, PostRequest, UnauthorizedError

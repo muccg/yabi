@@ -36,7 +36,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import ObjectDoesNotExist
 from django.core import urlresolvers
 from yabiadmin.yabi.models import *
-from ccg.utils import webhelpers
+from ccg_django_utils import webhelpers
 from django.utils import simplejson as json
 from .json_util import makeJsonFriendly
 from django.contrib.auth.decorators import login_required

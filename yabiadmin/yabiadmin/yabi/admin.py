@@ -34,7 +34,7 @@ from django.forms.models import BaseInlineFormSet
 from django.forms import ModelForm
 from django import forms
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
-from ccg.utils import webhelpers
+from ccg_django_utils import webhelpers
 
 class AdminBase(ExtJsonInterface, admin.ModelAdmin):
     save_as = True

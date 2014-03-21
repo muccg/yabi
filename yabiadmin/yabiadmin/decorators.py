@@ -29,7 +29,7 @@
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseBadRequest
-from ccg.http import HttpResponseUnauthorized
+from ccg_django_utils.http import HttpResponseUnauthorized
 from django.conf import settings
 
 import logging

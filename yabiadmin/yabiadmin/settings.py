@@ -27,7 +27,7 @@
 ### END COPYRIGHT ###
 
 import os, sys
-from ccg.utils.webhelpers import url
+from ccg_django_utils.webhelpers import url
 from kombu import Queue
 import logging
 import logging.handlers
