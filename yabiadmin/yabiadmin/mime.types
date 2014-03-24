@@ -905,7 +905,7 @@ text/dns
 text/enriched
 text/html					html htm
 text/parityfec
-text/plain					txt text conf def list log in
+text/plain					aln bls cat chips clustalw detail dnd eprimer3 fa fna genemark genscan gff icm kig lst masked out pepinfo predict screen sirna tbl train fasta
 text/prs.fallenstein.rst
 text/prs.lines.tag				dsc
 text/red
@@ -1008,4 +1008,3 @@ video/x-ms-wvx					wvx
 video/x-msvideo					avi
 video/x-sgi-movie				movie
 x-conference/x-cooltalk				ice
-text/plain                  aln bls cat chips clustalw detail dnd eprimer3 fa fna genemark genscan gff icm kig lst masked out pepinfo predict screen sirna tbl train

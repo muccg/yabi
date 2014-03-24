@@ -83,12 +83,12 @@ class LocalfsFileTests(RequestTest):
         self.assertTrue('files' in data["/tmp/yabi-localfs-test/"])
         self.assertTrue('directories' in data["/tmp/yabi-localfs-test/"])
         
-    def xtest_localfs_rcopy(self):
+    def test_localfs_rcopy(self):
         import requests
         
         # make some /tmp file structures
         basedir = '/tmp/yabi-localfs-test/'
-        srcdir = basedir + "input-rcopy/"
+        srcdir = basedir + "input-rcopy"
         destdir = basedir + "output-rcopy/"
         dirs = self.build_file_archive(srcdir)
         os.system("mkdir -p %s" % destdir)
@@ -103,7 +103,7 @@ class LocalfsFileTests(RequestTest):
         self.assertTrue(r.status_code==200, "Could not perform rcopy")
   
         # diff the two directories
-        result = os.system("diff -r '%s' '%s'"%(srcdir, destdir))
+        result = os.system("diff -r '%s' '%s'"%(srcdir, os.path.join(destdir, 'input-rcopy')))
         
         self.assertTrue(result==0, "Diff between the input and output failed")
         

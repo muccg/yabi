@@ -441,7 +441,6 @@ class EngineTask(Task):
         else:
             self.command = template.render(uridict)
 
-        self.tasktag = settings.TASKTAG
         self.save()
 
         # non batch stageins

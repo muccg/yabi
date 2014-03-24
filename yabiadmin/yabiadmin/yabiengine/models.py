@@ -30,8 +30,8 @@ from django.db import models
 from yabiadmin.yabi.models import User, BackendCredential, Tool
 from yabiadmin.yabiengine import backendhelper
 from django.utils import simplejson as json
-from ccg.utils import webhelpers
-from ccg.utils.webhelpers import url
+from ccg_django_utils import webhelpers
+from ccg_django_utils.webhelpers import url
 import os
 from yabiadmin.yabiengine.urihelper import uriparse, url_join
 from datetime import datetime
@@ -302,7 +302,6 @@ class Task(models.Model, Editable, Status):
 
     working_dir = models.CharField(max_length=256, null=True, blank=True)
     name = models.CharField(max_length=256, null=True, blank=True)                  # if we are null, we behave the old way and use our task.id
-    tasktag = models.CharField(max_length=256, null=True, blank=True)           # if we are null, we behave the old way and use our task.id
 
     # the following field is a convenience pointer (not normalised) to the backendcredential table row used for the execution credential
     # they are used by the task view to help group and count the tasks quickly and efficiently to load control the backend executer

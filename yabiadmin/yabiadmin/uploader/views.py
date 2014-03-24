@@ -54,6 +54,7 @@ def put(request):
     """
     yabiusername = request.user.username
 
+    logger.debug("In UPLOADER VIEW")
     logger.debug("uri: %s" % (request.GET['uri']))
     uri = request.GET['uri']
 

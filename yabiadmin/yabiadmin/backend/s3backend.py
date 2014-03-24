@@ -31,7 +31,9 @@ from yabiadmin.yabiengine.urihelper import uriparse
 import logging
 import traceback
 import boto
-import dateutil
+from functools import partial
+from itertools import ifilter
+import dateutil.parser
 import threading
 from io import BytesIO
 from itertools import ifilterfalse
@@ -70,23 +72,50 @@ class S3Backend(FSBackend):
         thread.start()
         return thread
 
+
+    def is_item_matching_name(self, name, item):
+        """We want to eliminate key names starting with the same prefix,
+           but include keys at the next level (but not deeper) for dirs.
+           Ex: listing for 'a'
+               'a' included
+               'abc' ignored
+               'a/anything' included
+               'a/anything/deeper' ignored"""
+        name_and_delimiter = name + DELIMITER if not name.endswith(DELIMITER) else name
+        def no_more_delimiters(item):
+            item_name_end = item.name.rstrip(DELIMITER)[len(name_and_delimiter):]
+            return DELIMITER not in item_name_end
+
+        return (item.name == name or
+                item.name.startswith(name_and_delimiter) and no_more_delimiters(item))
+
     def ls(self, uri):
         self.set_cred(uri)
         bucket_name, path = self.parse_s3_uri(uri)
 
+        is_empty_key_for_dir = lambda k: k.name == path.lstrip(DELIMITER) and k.name.endswith(DELIMITER)
+        is_item_matching_name = partial(self.is_item_matching_name, path.lstrip(DELIMITER))
+
+        def filter_clause(item):
+            return is_item_matching_name(item) and not is_empty_key_for_dir(item)
+
         try:
             bucket = self.bucket(bucket_name)
-            empty_key_for_dir = lambda k: k.name == path.lstrip(DELIMITER) and k.name.endswith(DELIMITER)
-            keys_and_prefixes = ifilterfalse(
-                empty_key_for_dir,
-                bucket.get_all_keys(prefix=path.lstrip(DELIMITER),
-                                    delimiter=DELIMITER))
+            keys_and_prefixes = ifilter(
+                    filter_clause,
+                    bucket.get_all_keys(prefix=path.lstrip(DELIMITER),
+                    delimiter=DELIMITER))
 
             # Keys correspond to files, prefixes to directories
             keys, prefixes = partition(lambda k: type(k) == boto.s3.key.Key, keys_and_prefixes)
 
             files = [(basename(k.name), k.size, format_iso8601_date(k.last_modified), NEVER_A_SYMLINK) for k in keys]
             dirs = [(basename(p.name), 0, None, NEVER_A_SYMLINK) for p in prefixes]
+
+            # Called on a directory with URI not ending in DELIMITER
+            # We call ourself again correctly
+            if len(files) == 0 and len(dirs) == 1 and not uri.endswith(DELIMITER):
+                return self.ls(uri + DELIMITER)
 
         except boto.exception.S3ResponseError as e:
             logger.exception("Couldn't get listing from S3:")
@@ -113,9 +142,6 @@ class S3Backend(FSBackend):
                     "The following keys couldn't be deleted when deleting uri %s: %s",
                     uri, ", ".join(multi_delete_result.errors))
 
-            parent_dir_uri = self.parent_dir_uri(uri)
-            if not self.path_exists(parent_dir_uri):
-                self.mkdir(parent_dir_uri)
         except Exception as exc:
             logger.exception("Error while trying to S3 rm uri %s", uri)
             raise RetryException(exc, traceback.format_exc())
@@ -217,7 +243,12 @@ class S3Backend(FSBackend):
     def get_keys_recurse(self, bucket, path):
         result = []
 
-        keys_and_prefixes = bucket.get_all_keys(prefix=path.lstrip(DELIMITER), delimiter=DELIMITER)
+        is_item_matching_name = partial(self.is_item_matching_name, path.lstrip(DELIMITER))
+
+        keys_and_prefixes = ifilter(
+                is_item_matching_name,
+                bucket.get_all_keys(prefix=path.lstrip(DELIMITER), delimiter=DELIMITER))
+
         # Keys correspond to files, prefixes to directories
         keys, prefixes = partition(lambda k: type(k) == boto.s3.key.Key, keys_and_prefixes)
 

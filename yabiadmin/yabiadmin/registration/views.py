@@ -29,7 +29,7 @@ from django.db import transaction
 from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404, render_to_response
 from django.template.loader import render_to_string
-from ccg.utils import webhelpers
+from ccg_django_utils import webhelpers
 from django.conf import settings
 
 from yabiadmin.yabi.models import User

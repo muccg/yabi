@@ -34,7 +34,7 @@ from django.forms.models import BaseInlineFormSet
 from django.forms import ModelForm
 from django import forms
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
-from ccg.utils import webhelpers
+from ccg_django_utils import webhelpers
 
 class AdminBase(ExtJsonInterface, admin.ModelAdmin):
     save_as = True
@@ -115,6 +115,7 @@ class ToolSetAdmin(AdminBase):
 class FileTypeAdmin(AdminBase):
     list_display = ['name', 'file_extensions_text']
     search_fields = ['name']
+    filter_horizontal = ['extensions']
 
 class FileExtensionAdmin(AdminBase):
     list_display = ['pattern']

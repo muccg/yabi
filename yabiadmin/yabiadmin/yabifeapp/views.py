@@ -36,7 +36,7 @@ from django.contrib.auth import login as django_login, logout as django_logout, 
 from django import forms
 from django.utils import simplejson as json
 from django.core.cache import cache
-from ccg.utils import webhelpers
+from ccg_django_utils import webhelpers
 from yabiadmin.yabi.models import User
 from yabiadmin.responses import *
 from yabiadmin.preview import html
@@ -124,6 +124,7 @@ def login(request):
 
     def render_form(form, error='Invalid login credentials'):
         return render_to_response('fe/login.html', {
+                 'request': request,
                  'h': webhelpers,
                  'base_site_url': webhelpers.url("").rstrip("/"),
                  'form': form,
@@ -155,7 +156,8 @@ def login(request):
                             cred.on_login(username, password)
                         except DecryptException as e:
                             logger.error("Unable to decrypt credential `%s'" % cred.description)
-                    return HttpResponseRedirect(webhelpers.url("/"))
+                    next_page = request.GET.get('next', webhelpers.url("/"))
+                    return HttpResponseRedirect(next_page)
 
             else:
                 form = LoginForm()

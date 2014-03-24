@@ -80,10 +80,9 @@ ci_remote_build() {
     time ccg ${AWS_BUILD_INSTANCE} puppet
     time ccg ${AWS_BUILD_INSTANCE} shutdown:50
 
-    EXCLUDES="('bootstrap'\, '.hg'\, 'virt*'\, '*.log'\, '*.rpm'\, 'screenshots'\, 'docs')"
     SSH_OPTS="-o StrictHostKeyChecking\=no"
-    RSYNC_OPTS="-l"
-    time ccg ${AWS_BUILD_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",exclude="${EXCLUDES}",delete=True
+    RSYNC_OPTS="-l -z --exclude-from '.rsync_excludes'"
+    time ccg ${AWS_BUILD_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",delete=True
     time ccg ${AWS_BUILD_INSTANCE} build_rpm:centos/yabi.spec,src=${TARGET_DIR}
 
     mkdir -p build
@@ -315,10 +314,10 @@ stopyabi() {
 
 installyabi() {
     # check requirements
-    which virtualenv >/dev/null
+    which virtualenv-2.7 > /dev/null
 
     echo "Install yabiadmin"
-    virtualenv ${VIRTUALENV}
+    virtualenv-2.7 ${VIRTUALENV}
     ${VIRTUALENV}/bin/pip install 'pip>=1.5,<1.6' --upgrade
     ${VIRTUALENV}/bin/pip --version
     pushd yabiadmin
@@ -374,12 +373,16 @@ startceleryd() {
     echo "Launch celeryd (message queue)"
     CELERY_CONFIG_MODULE="settings"
     CELERYD_CHDIR=`pwd`
-    CELERYD_OPTS="-E --loglevel=INFO --logfile=celeryd-develop.log --pidfile=celeryd-develop.pid"
-    CELERY_LOADER="django"
+    CELERYD_OPTS="-A yabiadmin.backend.celerytasks -E --loglevel=DEBUG --logfile=celeryd-develop.log --pidfile=celeryd-develop.pid"
+    # Do just file operations (stagein and stagout tasks)
+    #CELERYD_OPTS="$CELERYD_OPTS -Q file_operations"
+    # Do all tasks BUT file operations (stagein and stagout tasks)
+    #CELERYD_OPTS="$CELERYD_OPTS -Q celery"
+    #CELERY_LOADER="django"
     DJANGO_PROJECT_DIR="${CELERYD_CHDIR}"
     PROJECT_DIRECTORY="${CELERYD_CHDIR}"
     export CELERY_CONFIG_MODULE DJANGO_SETTINGS_MODULE DJANGO_PROJECT_DIR CELERY_LOADER CELERY_CHDIR PROJECT_DIRECTORY CELERYD_CHDIR
-    setsid ${VIRTUALENV}/bin/celeryd ${CELERYD_OPTS} 1>/dev/null 2>/dev/null &
+    setsid ${VIRTUALENV}/bin/celery worker ${CELERYD_OPTS} 1>/dev/null 2>/dev/null &
 }
 
 

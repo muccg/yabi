@@ -29,6 +29,7 @@
 import mimetypes
 import os
 import re
+import itertools
 from datetime import datetime, timedelta
 from urllib import unquote
 from urlparse import urlparse, urlunparse
@@ -48,7 +49,6 @@ from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import WorkflowTag
 from yabiadmin.responses import *
 from yabiadmin.decorators import authentication_required, profile_required
-from yabiadmin.yabistoreapp import db
 from yabiadmin.utils import cache_keyname
 from yabiadmin.backend import backend
 from yabiadmin.backend.exceptions import FileNotFoundError
@@ -309,28 +309,21 @@ def submit_workflow(request):
 
 def munge_name(user, workflow_name):
     if EngineWorkflow.objects.filter(user__name=user, name=workflow_name).count() == 0:
-        if not db.does_workflow_exist(user, name=workflow_name):
-            return workflow_name
+        return workflow_name
 
-    # See if the name has already been munged.
     match = re.search(r"^(.*) \(([0-9]+)\)$", workflow_name)
-    if match:
-        base = match.group(1)
-        val = int(match.group(2))
-    else:
-        base = workflow_name
-        val = 1
+    base = match.group(1) if match else workflow_name
 
     used_names = [wf.name for wf in EngineWorkflow.objects.filter(user__name=user, name__startswith=base)]
-    used_names.extend(db.workflow_names_starting_with(user, base))
-    used_names = dict(zip(used_names, [None] * len(used_names)))
+    used_names = frozenset(used_names)
 
-    munged_name = "%s (%d)" % (base, val)
-    while munged_name in used_names:
-        val += 1
-        munged_name = "%s (%d)" % (base, val)
+    unused_name = lambda name: name not in used_names
+    infinite_range = itertools.count
 
-    return munged_name
+    generate_unique_names = ("%s (%d)" % (base, i) for i in infinite_range(1))
+    next_available_name = find_first(unused_name, generate_unique_names)
+
+    return next_available_name
 
 
 @authentication_required
@@ -344,20 +337,17 @@ def get_workflow(request, workflow_id):
 
     workflow_id = int(workflow_id)
     workflows = EngineWorkflow.objects.filter(id=workflow_id)
-    if len(workflows) == 1:
-        response = workflow_to_response(workflows[0])
-    else:
-        try:
-            response = db.get_workflow(yabiusername, workflow_id)
-        except (db.NoSuchWorkflow) as e:
-            logger.critical('%s' % e)
-            return JsonMessageResponseNotFound(e)
+    if len(workflows) != 1:
+        logger.critical('%s' % e)
+        return JsonMessageResponseNotFound(e)
+
+    response = workflow_to_response(workflows[0])
 
     return HttpResponse(json.dumps(response),
                         mimetype='application/json')
 
 
-def workflow_to_response(workflow, key=None, parse_json=True, retrieve_tags=True):
+def workflow_to_response(workflow, parse_json=True, retrieve_tags=True):
     fmt = DATE_FORMAT
     response = {
         'id': workflow.id,
@@ -372,9 +362,6 @@ def workflow_to_response(workflow, key=None, parse_json=True, retrieve_tags=True
 
     if retrieve_tags:
         response["tags"] = [wft.tag.value for wft in workflow.workflowtag_set.all()]
-
-    if key is not None:
-        response = (getattr(workflow, key), response)
 
     return response
 
@@ -397,9 +384,6 @@ def workflow_datesearch(request):
     else:
         end = datetime.strptime(end, fmt)
     sort = request.GET['sort'] if 'sort' in request.GET else '-created_on'
-    sort_dir, sort_field = ('ASC', sort)
-    if sort[0] == '-':
-        sort_dir, sort_field = ('DESC', sort[1:])
 
     # Retrieve the matched workflows.
     workflows = EngineWorkflow.objects.filter(
@@ -413,19 +397,13 @@ def workflow_datesearch(request):
     workflow_tags = WorkflowTag.objects.select_related("tag", "workflow").filter(workflow__in=workflows)
     tags = {}
     for wt in workflow_tags:
-        tags[wt.workflow.id] = tags.get(wt.workflow.id, []) + [wt.tag.value]
+        tags.setdefault(wt.workflow.id, []).append(wt.tag.value)
 
     response = []
     for workflow in workflows:
-        workflow_response = workflow_to_response(workflow, sort_field, parse_json=False, retrieve_tags=False)
-        workflow_response[1]["tags"] = tags.get(workflow.id, [])
+        workflow_response = workflow_to_response(workflow, parse_json=False, retrieve_tags=False)
+        workflow_response["tags"] = tags.get(workflow.id, [])
         response.append(workflow_response)
-
-    archived_workflows = db.find_workflow_by_date(yabiusername, start, end, sort_field, sort_dir)
-
-    response.extend(archived_workflows)
-    response.sort(key=lambda x: x[0], reverse=sort_dir == 'DESC')
-    response = [r[1] for r in response]
 
     return HttpResponse(json.dumps(response), mimetype='application/json')
 
@@ -447,13 +425,10 @@ def workflow_change_tags(request, id=None):
     try:
         workflow = EngineWorkflow.objects.get(pk=id)
     except EngineWorkflow.DoesNotExist:
-        if db.does_workflow_exist(yabiusername, id=id):
-            db.change_workflow_tags(yabiusername, id, taglist)
-        else:
-            return HttpResponseNotFound()
+        return HttpResponseNotFound()
 
-    else:
-        workflow.change_tags(taglist)
+    workflow.change_tags(taglist)
+
     return HttpResponse("Success")
 
 
@@ -567,3 +542,10 @@ def save_credential(request, id):
     credential.save()
 
     return JsonMessageResponse("Credential updated successfully")
+
+
+def find_first(pred, sequence):
+    for x in sequence:
+        if pred(x):
+            return x
+
