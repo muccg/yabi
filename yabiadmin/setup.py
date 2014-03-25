@@ -27,7 +27,6 @@ install_requires = [
     'ccg-auth==0.3.3',
     'anyjson==0.3.3',
     'celery==3.1.9',
-    'django-celery==3.1.9',
     'amqp==1.4.4',
     'amqplib==1.0.2',
     'kombu==3.0.13',
@@ -47,6 +46,7 @@ install_requires = [
     'python-dateutil>=2.1,<3.0',
     'yaphc==0.1.5',
     'six>=1.4,<1.5',
+    'flower>=0.5',
 ]
 
 # Compiled python modules which are usually provided by system packages
@@ -58,7 +58,6 @@ install_requires_compiled = [
 
 dev_requires = [
     'flake8>=2.0,<2.1',
-    'flower>=0.5',
     'Werkzeug',
     'gunicorn',
 ]
