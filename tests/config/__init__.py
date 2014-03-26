@@ -9,26 +9,39 @@ class Configuration(object):
         print("Loading config section: %s" % section)
         self.load(section)
 
+    configs = (
+        ("yabiusername", "yabi_username"),
+        ("yabipassword", "yabi_password"),
+        ("yabiadminusername", "yabi_admin_username"),
+        ("yabiadminpassword", "yabi_admin_password"),
+        ("yabiurl", "yabi_url"),
+        ("yabibeurl", "yabibe_url"),
+        ("jsondir", "json_dir"),
+        ("tmpdir", "tmp_dir"),
+        ("testdatadir", "test_data_dir"),
+        ("dbrebuild", "db_rebuild"),
+        ("yabidir", "yabi_dir"),
+        ("yabish", "yabish"),
+        ("startyabi", "startyabi"),
+        ("stopyabi", "stopyabi"),
+        ("stopyabibe", "stopyabibe"),
+        ("startyabibe", "startyabibe"),
+        ("cleanyabi", "cleanyabi"),
+        ("yabistatus", "yabistatus"),
+        ("s3_server", None),
+        ("s3_port", None),
+        ("s3_bucket", None),
+        ("aws_access_key_id", None),
+        ("aws_secret_access_key", None),
+        ("keystone_host", None),
+        ("swift_tenant", None),
+        ("swift_username", None),
+        ("swift_password", None),
+        ("swift_bucket", None),
+    )
+
     def load(self, section):
         cp = ConfigParser.ConfigParser()
         cp.readfp(open(self.config_file))
-        self.yabiusername = cp.get(section, 'yabi_username')
-        self.yabipassword = cp.get(section, 'yabi_password')
-        self.yabiadminusername = cp.get(section, 'yabi_admin_username')
-        self.yabiadminpassword = cp.get(section, 'yabi_admin_password')
-        self.yabiurl = cp.get(section, 'yabi_url')
-        self.yabibeurl = cp.get(section, 'yabibe_url')
-        self.jsondir = cp.get(section, 'json_dir')
-        self.tmpdir = cp.get(section, 'tmp_dir')
-        self.testdatadir = cp.get(section, 'test_data_dir')
-        self.dbrebuild = cp.get(section, 'db_rebuild')
-        self.yabidir = cp.get(section, 'yabi_dir')
-        self.yabish = cp.get(section, 'yabish')
-        self.startyabi = cp.get(section, 'startyabi')
-        self.stopyabi = cp.get(section, 'stopyabi')
-        self.stopyabibe = cp.get(section, 'stopyabibe')
-        self.startyabibe = cp.get(section, 'startyabibe')
-        self.cleanyabi = cp.get(section, 'cleanyabi')
-        self.yabistatus = cp.get(section, 'yabistatus')
-        self.s3_server = cp.get(section, 's3_server')
-        self.s3_port = cp.get(section, 's3_port')
+        for attr, key in self.configs:
+            setattr(self, attr, cp.get(section, key or attr))
