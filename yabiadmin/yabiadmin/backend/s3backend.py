@@ -184,10 +184,10 @@ class S3Backend(FSBackend):
 
             key.get_contents_to_filename(filename)
 
-            queue.put(OK_STATUS)
+            queue.put(True)
         except:
             logger.exception("Exception thrown while S3 downloading %s to %s", uri, filename)
-            queue.put(ERROR_STATUS)
+            queue.put(False)
 
     def upload_file(self, uri, filename, queue):
         try:
@@ -217,10 +217,10 @@ class S3Backend(FSBackend):
                         part_no += 1
 
                     multipart_upload.complete_upload()
-            queue.put(OK_STATUS)
+            queue.put(True)
         except:
             logger.exception("Exception thrown while S3 uploading %s to %s", filename, uri)
-            queue.put(ERROR_STATUS)
+            queue.put(False)
 
     def get_keys_recurse(self, bucket, path):
         result = []

@@ -37,6 +37,7 @@ import dateutil
 import logging
 import traceback
 import shutil
+import threading
 import Queue
 from six.moves import map
 logger = logging.getLogger(__name__)
@@ -181,13 +182,13 @@ class FSBackend(BaseBackend):
             dst_cmd = dst_backend.fifo_to_remote(dst_file_uri, fifo, dst_queue)
             src_cmd.join()
             dst_cmd.join()
-            src_status = src_queue.get()
-            dst_status = dst_queue.get()
+            src_success = src_queue.get()
+            dst_success = dst_queue.get()
 
             # check exit status
-            if src_status != 0:
+            if not src_success:
                 raise RetryException('remote_file_copy remote_to_fifo failed')
-            if dst_status != 0:
+            if not dst_success:
                 raise RetryException('remote_file_copy fifo_to_remote failed')
 
             if src_stat:
@@ -197,6 +198,28 @@ class FSBackend(BaseBackend):
 
         except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
+
+    def fifo_to_remote(self, uri, fifo_name, queue=None):
+        if queue is None:
+            queue = NullQueue()
+        logger.debug("upload_file %s -> %s", fifo_name, uri)
+        thread = threading.Thread(target=self.upload_file, args=(uri, fifo_name, queue))
+        thread.start()
+        return thread
+
+    def remote_to_fifo(self, uri, fifo_name, queue=None):
+        if queue is None:
+            queue = NullQueue()
+        logger.debug("download_file %s <- %s", fifo_name, uri)
+        thread = threading.Thread(target=self.download_file, args=(uri, fifo_name, queue))
+        thread.start()
+        return thread
+
+    def upload_file(self, uri, fifo, queue):
+        raise NotImplementedError()
+
+    def download_file(self, uri, fifo, queue):
+        raise NotImplementedError()
 
     @staticmethod
     def remote_file_download(yabiusername, uri):
@@ -387,12 +410,6 @@ class FSBackend(BaseBackend):
 
     def basename(self, path):
         return os.path.basename(path)
-
-    def remote_to_fifo(self, uri, fifo):
-        raise NotImplementedError("")
-
-    def fifo_to_remote(self, uri, fifo):
-        raise NotImplementedError("")
 
     def remote_uri_stat(self, uri):
         return {}

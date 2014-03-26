@@ -39,58 +39,31 @@ logger = logging.getLogger(__name__)
 LS_PATH = '/bin/ls'
 LS_TIME_STYLE = r"+%b %d  %Y"
 
-
-class CopyThread(threading.Thread):
-
-    def __init__(self, src, dst, purge=None, queue=None):
-        threading.Thread.__init__(self)
-        self.src = src
-        self.dst = dst
-        self.purge = purge
-        self.queue = queue
-
-    def run(self):
-        status = -1
-        logger.debug('CopyThread {0} -> {1}'.format(self.src, self.dst))
-        try:
-            logger.debug('CopyThread start copy')
-            shutil.copyfileobj(open(self.src, 'r'), open(self.dst, 'w'))
-            #shutil.copyfileobj(open(self.src, os.O_RDONLY), open(self.dst, 'w+'))
-            #shutil.copyfileobj(os.open(self.src, os.O_RDONLY), os.open(self.dst, os.O_WRONLY|os.O_CREAT))
-            logger.debug('CopyThread end copy')
-            status = 0
-        except Exception as exc:
-            logger.error(traceback.format_exc())
-            logger.error(exc)
-        finally:
-            if self.queue is not None:
-                self.queue.put(status)
-            # I was using purge to optionally remove a fifi after a copy
-            if self.purge is not None and os.path.exists(self.purge):
-                #os.unlink(self.purge)
-                pass
-
-
 class FileBackend(FSBackend):
-
-    def fifo_to_remote(self, uri, fifo, queue=None):
-        """initiate a copy from local fifo to uri"""
+    def upload_file(self, uri, src, queue):
         scheme, parts = uriparse(uri)
-        assert os.path.exists(fifo)
-        # purge the fifo after we finish reading from it
-        thread = CopyThread(src=fifo, dst=parts.path, purge=fifo, queue=queue)
-        thread.start()
-        return thread
+        self._copy_file(open(src, "rb"), open(parts.path, "wb"), queue)
 
-    def remote_to_fifo(self, uri, fifo, queue=None):
-        """initiate a copy from local file to fifo"""
+    def download_file(self, uri, dst, queue):
         scheme, parts = uriparse(uri)
         if not os.path.exists(parts.path):
             raise FileNotFoundError(uri)
-        assert os.path.exists(fifo)
-        thread = CopyThread(src=parts.path, dst=fifo, queue=queue)
-        thread.start()
-        return thread
+        self._copy_file(open(parts.path, "rb"), open(dst, "wb"), queue)
+
+    def _copy_file(self, src, dst, queue):
+        success = False
+        logger.debug('CopyThread {0} -> {1}'.format(src, dst))
+        logger.debug('CopyThread start copy')
+        try:
+            shutil.copyfileobj(src, dst)
+        except Exception as exc:
+            # fixme: just catch the shutil and ioerror exceptions
+            logger.exception("FileBackend _copy_file error")
+        else:
+            logger.debug('CopyThread end copy')
+            success = True
+        finally:
+            queue.put(success)
 
     def remote_uri_stat(self, uri):
         scheme, parts = uriparse(uri)
