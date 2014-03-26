@@ -373,7 +373,7 @@ startceleryd() {
     echo "Launch celeryd (message queue)"
     CELERY_CONFIG_MODULE="settings"
     CELERYD_CHDIR=`pwd`
-    CELERYD_OPTS="-A yabiadmin.backend.celerytasks -E --loglevel=DEBUG --logfile=celeryd-develop.log --pidfile=celeryd-develop.pid"
+    CELERYD_OPTS="-A yabiadmin.backend.celerytasks -E --loglevel=DEBUG --logfile=celeryd-develop.log --pidfile=celeryd-develop.pid -Ofair"
     # Do just file operations (stagein and stagout tasks)
     #CELERYD_OPTS="$CELERYD_OPTS -Q file_operations"
     # Do all tasks BUT file operations (stagein and stagout tasks)
