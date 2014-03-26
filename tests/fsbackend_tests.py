@@ -12,6 +12,9 @@ from yabiadmin.backend.fsbackend import FSBackend
 from django.contrib.auth.models import User as DjangoUser
 from yabiadmin.yabi.models import Backend, Credential, BackendCredential, User
 
+from .support import YabiTestCase
+from .fakes3 import fakes3_setup
+
 logger = logging.getLogger(__name__)
 
 getname = lambda entry: entry[0]
@@ -90,6 +93,7 @@ class FSBackendTests(object):
     def setUp(self):
         self.be = FSBackend.create_backend_for_scheme(self.scheme)
         self.be.yabiusername = self.yabiuser.user.username  # this is required for FSBackend.set_cred()
+        super(FSBackendTests, self).setUp()
 
     def get_uri(self, path=""):
         if self.creds.get("username", None):
@@ -380,7 +384,7 @@ class FSBackendTests(object):
 
 
 @attr("s3", "backend")
-class S3BackendTests(FSBackendTests, unittest.TestCase):
+class S3BackendTests(FSBackendTests, YabiTestCase):
     """
     Tests against our yabitest bucket in the syd region. This bucket
     has a 1 day object expiration rule. If ci tests start to cost
@@ -403,6 +407,11 @@ class S3BackendTests(FSBackendTests, unittest.TestCase):
         }
         return hostname, backend_path, creds
 
+    def setUp(self):
+        YabiTestCase.setUp(self)
+        FSBackendTests.setUp(self)
+        fakes3_setup(self, "fakes3")
+
     def test_ls_dir_no_exist(self):
         self.skipTest("doesn't work for s3")
 
@@ -410,7 +419,7 @@ class S3BackendTests(FSBackendTests, unittest.TestCase):
         self.skipTest("s3 backend not returning same as other backends")
 
 @attr("swift", "backend")
-class SwiftBackendTests(FSBackendTests, unittest.TestCase):
+class SwiftBackendTests(FSBackendTests, YabiTestCase):
     scheme = "swift"
 
     @classmethod
@@ -429,7 +438,7 @@ class SwiftBackendTests(FSBackendTests, unittest.TestCase):
         self.skipTest("doesn't work for swift")
 
 @attr("backend")
-class FileBackendTests(FSBackendTests, unittest.TestCase):
+class FileBackendTests(FSBackendTests, YabiTestCase):
     scheme = "localfs"
 
     @classmethod
