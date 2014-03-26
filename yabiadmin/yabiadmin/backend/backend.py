@@ -43,6 +43,10 @@ def put_file(yabiusername, filename, uri):
     from yabiadmin.backend.fsbackend import FSBackend
     upload_as_fifo = FSBackend.remote_file_upload(yabiusername, filename, uri)
     upload = open(upload_as_fifo, 'w')
+    try:
+        os.unlink(upload_as_fifo)
+    except OSError as exc:
+        logger.warning("Couldn't delete fifo: %s" % exc)
     return upload
 
 
@@ -52,7 +56,10 @@ def get_file(yabiusername, uri, bytes=None):
     from yabiadmin.backend.fsbackend import FSBackend
     download_as_fifo = FSBackend.remote_file_download(yabiusername, uri)
     download = open(download_as_fifo)
-    #os.remove(download_as_fifo)
+    try:
+        os.unlink(download_as_fifo)
+    except OSError as exc:
+        logger.warning("Couldn't delete fifo: %s" % exc)
     return download
 
 

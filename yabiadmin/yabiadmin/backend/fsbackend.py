@@ -186,6 +186,10 @@ class FSBackend(BaseBackend):
             dst_cmd = dst_backend.fifo_to_remote(dst_file_uri, fifo, dst_queue)
             src_cmd.join()
             dst_cmd.join()
+            try:
+                os.unlink(fifo)
+            except OSError:
+                pass
             src_success = src_queue.get()
             dst_success = dst_queue.get()
 
