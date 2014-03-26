@@ -41,6 +41,8 @@ install_requires = [
     'djamboloader==0.1.2',
     'paramiko==1.12.1',
     'boto==2.25',
+    'python-swiftclient==2.0.2',
+    'python-keystoneclient==0.6.0',
     'python-dateutil>=2.1,<3.0',
     'yaphc==0.1.5',
     'six>=1.4,<1.5',

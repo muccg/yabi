@@ -81,6 +81,10 @@ class FSBackend(BaseBackend):
             from yabiadmin.backend.s3backend import S3Backend
             backend = S3Backend()
 
+        elif fsscheme == 'swift':
+            from yabiadmin.backend.swiftbackend import SwiftBackend
+            backend = SwiftBackend()
+
         return backend
 
     @staticmethod
