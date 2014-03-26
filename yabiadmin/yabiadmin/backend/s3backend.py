@@ -165,14 +165,21 @@ class S3Backend(FSBackend):
 
         return bucket_name, path
 
-    def get_access_keys(self):
-        _, aws_access_key_id, aws_secret_access_key, _ = get_credential_data(self.cred.credential)
-        return aws_access_key_id, aws_secret_access_key
+    def _get_connect_params(self, bucket_name):
+        _, key_id, key, _ = get_credential_data(self.cred.credential)
+        params = { "aws_access_key_id": key_id, "aws_secret_access_key": key }
+
+        # Use different boto options for e2e tests against fakes3
+        from django.conf import settings
+        if settings.DEBUG and bucket_name == "fakes3":
+            logger.info("Changing boto connection params for fakes3")
+            params.update(host="localhost.localdomain", port=8090, is_secure=False,
+                          calling_format="boto.s3.connection.OrdinaryCallingFormat")
+
+        return params
 
     def connect_to_bucket(self, bucket_name):
-        aws_access_key_id, aws_secret_access_key = self.get_access_keys()
-        connection = boto.connect_s3(aws_access_key_id, aws_secret_access_key)
-
+        connection = boto.connect_s3(**self._get_connect_params(bucket_name))
         return connection.get_bucket(bucket_name)
 
     def download_file(self, uri, filename, queue):
