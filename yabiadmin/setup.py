@@ -23,7 +23,7 @@ install_requires = [
     'ccg-registration==0.8-alpha-1',
     'ccg-makoloader==0.2.6',
     'ccg-introspect==0.1.2',
-    'ccg-django_utils==0.1.9',
+    'ccg-django-utils==0.1.9',
     'ccg-auth==0.3.3',
     'anyjson==0.3.3',
     'celery==3.1.9',
