@@ -1,7 +1,7 @@
 import os
 from setuptools import setup
 
-packages = ['yabiadmin'] + ['yabiadmin.%s' % app for app in ['yabifeapp', 'yabiengine', 'yabi', 'uploader', 'preview', 'registration', 'backend']] + ['yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations', 'yabiadmin.yabi.templatetags']
+packages = ['yabiadmin'] + ['yabiadmin.%s' % app for app in ['yabifeapp', 'yabiengine', 'yabi', 'uploader', 'preview', 'backend']] + ['yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations', 'yabiadmin.yabi.templatetags']
 
 data_files = {}
 start_dir = os.getcwd()
