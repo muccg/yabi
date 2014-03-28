@@ -20,9 +20,6 @@ install_requires = [
     # Bug is still under discussion: https://bugs.launchpad.net/pytz/+bug/1204837
     'pytz>=2013b',
     'ccg-webservices==0.1.2',
-    'ccg-registration==0.8-alpha-1',
-    'ccg-makoloader==0.2.6',
-    'ccg-introspect==0.1.2',
     'ccg-django-utils==0.1.9',
     'ccg-auth==0.3.3',
     'anyjson==0.3.3',
@@ -82,9 +79,6 @@ mysql_requires = [
 
 dependency_links = [
     'https://ccg-django-extras.googlecode.com/files/ccg-webservices-0.1.2.tar.gz',
-    'https://ccg-django-extras.googlecode.com/files/ccg-registration-0.8-alpha-1.tar.gz',
-    'https://ccg-django-extras.googlecode.com/files/ccg-introspect-0.1.2.tar.gz',
-    'https://ccg-django-extras.googlecode.com/files/ccg-makoloader-0.2.6.tar.gz',
     'https://bitbucket.org/ccgmurdoch/ccg-django-utils/downloads/ccg-django-utils-0.1.9.tar.gz',
     'https://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.3.tar.gz',
     'https://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
