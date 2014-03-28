@@ -84,13 +84,17 @@ class S3FileUploadTest(RequestTest):
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.text, "OK")
 
-    @unittest.skip("There is no mkdir API in wsurls, this test can't work.")
     def test_s3_mkdir(self):
         r = self.session.get(self.fscmd("mkdir", "/directory"))
 
         self.assertEqual(r.status_code, 200)
+        self.assertEqual(r.text, "OK")
+
+        r = self.session.get(self.fscmd("ls", "/directory"))
+
+        self.assertEqual(r.status_code, 200)
 
         data = json.loads(r.text)
-        self.assertIn('/', data)
-        self.assertIn('files', data['/'])
-        self.assertIn('directories', data['/'])
+        self.assertIn('/directory', data)
+        self.assertIn('files', data['/directory'])
+        self.assertIn('directories', data['/directory'])
