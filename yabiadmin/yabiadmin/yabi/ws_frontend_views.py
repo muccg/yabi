@@ -211,6 +211,10 @@ def rm(request):
     # TODO Forbidden, any other errors
     return HttpResponse("OK")
 
+@authentication_required
+def mkdir(request):
+    backend.mkdir(request.user.username, request.GET['uri'])
+    return HttpResponse("OK")
 
 @authentication_required
 def get(request, bytes=None):
@@ -548,4 +552,3 @@ def find_first(pred, sequence):
     for x in sequence:
         if pred(x):
             return x
-
