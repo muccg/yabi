@@ -19,6 +19,7 @@ AWS_TEST_INSTANCE='aws_yabi_test'
 AWS_STAGING_INSTANCE='aws_syd_yabi_staging'
 TARGET_DIR="/usr/local/src/${PROJECT_NAME}"
 CLOSURE="/usr/local/closure/compiler.jar"
+TESTING_MODULES="pyvirtualdisplay nose selenium lettuce lettuce_webdriver"
 PIP_OPTS='--download-cache ~/.pip/cache --process-dependency-links'
 
 
@@ -31,7 +32,7 @@ VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
 
 usage() {
     echo ""
-    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|add_yabitests_key|pipfreeze|pythonversion|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_staging_selenium|ci_authorized_keys) (yabiadmin|celery|yabish)"
+    echo "Usage ./develop.sh (status|test_mysql|test_postgresql|test_yabiadmin|lint|jslint|dropdb|start|stop|install|clean|purge|pipfreeze|pythonversion|ci_remote_build|ci_remote_test|ci_rpm_publish|ci_remote_destroy|ci_staging|ci_staging_tests|ci_staging_selenium|ci_authorized_keys) (yabiadmin|celery|yabish)"
     echo ""
 }
 
@@ -43,10 +44,6 @@ project_needed() {
     fi
 }
 
-add_yabitests_key() {
-   echo Adding key for yabitests ..
-   cat "$TARGET_DIR/tests/test_data/yabitests.pub" >> ~/.ssh/authorized_keys
-}
 
 settings() {
     case ${YABI_CONFIG} in
@@ -110,10 +107,9 @@ ci_remote_test() {
 
     SSH_OPTS="-o StrictHostKeyChecking\=no"
     RSYNC_OPTS="-l -z --exclude-from '.rsync_excludes'"
-    time ccg ${AWS_BUILD_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",delete=True
+    time ccg ${AWS_TEST_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",delete=True
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh purge"
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh install"
-    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh add_yabitests_key"
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh ${TEST_PLAN}"
     time ccg ${AWS_TEST_INSTANCE} shutdown:10
 }
@@ -172,15 +168,20 @@ ci_staging_tests() {
 
 # staging selenium test
 function ci_staging_selenium() {
+    ccg ${AWS_STAGING_INSTANCE} dsudo:"pip2.7 install ${PIP_OPTS} ${TESTING_MODULES}"
     ccg ${AWS_STAGING_INSTANCE} dsudo:'dbus-uuidgen --ensure'
     ccg ${AWS_STAGING_INSTANCE} dsudo:'chown apache:apache /var/www'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'yum --enablerepo\=ccg-testing clean all'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'yum install yabi-admin -y'
     ccg ${AWS_STAGING_INSTANCE} dsudo:'killall httpd || true'
     ccg ${AWS_STAGING_INSTANCE} dsudo:'service httpd start'
-    ccg ${AWS_STAGING_INSTANCE} dsudo:'echo http://localhost/yabi > /tmp/yabifeapp_site_url'
-    ccg ${AWS_STAGING_INSTANCE} dsudo:'yabiadmin run_lettuce --app-name yabifeapp --with-xunit --xunit-file\=/tmp/tests-yabifeapp.xml || true'
-    ccg ${AWS_STAGING_INSTANCE} dsudo:'yum remove yabiadmin -y'
-    ccg ${AWS_STAGING_INSTANCE} dsudo:'rm /tmp/yabifeapp_site_url'
-    ccg ${AWS_STAGING_INSTANCE} getfile:/tmp/tests-yabifeapp.xml,./
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'echo http://localhost/yabi > /tmp/yabi_site_url'
+    ccg ${AWS_STAGING_INSTANCE} drunbg:"Xvfb -ac \:0"
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'mkdir -p lettuce && chmod o+w lettuce'
+    ccg ${AWS_STAGING_INSTANCE} dsudo:"cd lettuce && env DISPLAY\=\:0 yabiadmin run_lettuce --with-xunit --xunit-file\=/tmp/tests.xml || true"
+    ccg ${AWS_STAGING_INSTANCE} dsudo:'rm /tmp/yabi_site_url'
+    ccg ${AWS_STAGING_INSTANCE} getfile:/tmp/tests.xml,./
+    #ccg ${AWS_STAGING_INSTANCE} dsudo:'yabiadmin run_lettuce --app-name yabifeapp --with-xunit --xunit-file\=/tmp/tests-yabifeapp.xml || true'
 }
 
 # we need authorized keys setup for ssh tests
