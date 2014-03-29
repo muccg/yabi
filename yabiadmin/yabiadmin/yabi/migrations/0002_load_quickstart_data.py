@@ -6,12 +6,10 @@ from django.db import models
 import os
 
 from ..migrationutils import *
+import six
 
 def homedir():
-    if os.environ['USER'] == 'root':
-        return '/home/yabi'
-    else:
-        return "%s%s" % (os.environ['HOME'], '/')
+    return "%s%s" % (os.environ.get('HOME', '/tmp'), '/')
 
 class Migration(DataMigration):
 
@@ -95,7 +93,10 @@ class Migration(DataMigration):
         yabi_backend_3 = yabi_backend('Yabi Data Local Filesystem','This backend is to be used for stageout and BE tool data.','localfs','localhost',None,'/')
         yabi_backend_3.save()
 
-        yabi_backend_4 = yabi_backend('Local Execution','This backend gives access to execution on the machine running Yabi.','localex','localhost',None, '/', submission='${command}\n')
+        yabi_backend_4 = yabi_backend('Local Execution','This backend gives access to execution on the machine running Yabi.','localex','localhost',None, '/', submission="""#!/bin/sh
+
+${command}
+""")
         yabi_backend_4.save()
 
         user_homedir = homedir()
@@ -156,7 +157,7 @@ class Migration(DataMigration):
             output_file = False,
             extension_param = None,
             possible_values = None,
-            default_value = u'selected files',
+            default_value = six.u('selected files'),
             helptext = None,
             batch_bundle_files = False,
             file_assignment = 'batch',
@@ -273,7 +274,7 @@ class Migration(DataMigration):
             output_file = False,
             extension_param = None,
             possible_values = None,
-            default_value = u'',
+            default_value = six.u(''),
             helptext = None,
             batch_bundle_files = False,
             file_assignment = 'none',

@@ -3,36 +3,30 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
-import tempfile
 import os
-import shutil
-import subprocess
 import logging
-import json
-from yabiadmin.yabiengine.urihelper import url_join
-import shutil
-import traceback
+from functools import reduce
 logger = logging.getLogger(__name__)
 
 
@@ -100,18 +94,17 @@ def get_listing(yabiusername, uri, recurse=False):
 
 def get_file_list(yabiusername, uri, recurse=False):
     """
-    Get a file list and return a bespoke structure 
+    Get a file list and return a bespoke structure
     Used by legacy code in yabiengine to determine dependencies for tasks
     """
     results = get_listing(yabiusername, uri, recurse)
 
-    shortpath = reduce(lambda x,y: x if len(x)<len(y) else y,results.keys())
+    shortpath = reduce(lambda x, y: x if len(x) < len(y) else y, results.keys())
     spl = len(shortpath)
-    
-    file_list = []        
+
+    file_list = []
     for key in results.keys():
         for entry in results[key]["files"]:
-            path = os.path.join(key[spl:], entry[0])
             listing = (os.path.join(key[spl:], entry[0]),) + tuple(entry[1:])
             file_list.append(listing)
     return file_list
@@ -121,7 +114,7 @@ def get_backend_list(yabiusername):
     """Returns a list of backends for user, returns in json"""
     from yabiadmin.yabi.models import BackendCredential
     logger.debug('yabiusername: {0}'.format(yabiusername))
-    results = {yabiusername: {'files':[], 'directories':[]}}
+    results = {yabiusername: {'files': [], 'directories': []}}
     for bc in BackendCredential.objects.filter(credential__user__name=yabiusername, visible=True):
         results[yabiusername]['directories'].append([bc.homedir_uri, 0, ''])
     return results
@@ -159,7 +152,7 @@ def clean_up_task(task):
     """Clean up after a task"""
     from yabiadmin.backend.fsbackend import FSBackend
     backend = FSBackend.factory(task)
-    #backend.clean_up_task()
+    backend.clean_up_task()
 
 
 def abort_task(task):

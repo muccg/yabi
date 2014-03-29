@@ -3,31 +3,32 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 from bs4 import BeautifulSoup, NavigableString, Tag
 
-import css
-import ruleset
+from . import css
+from . import ruleset
+import six
 
 
 class AttributeRule(ruleset.Rule):
@@ -100,7 +101,7 @@ class Ruleset(ruleset.Ruleset):
         self.global_attributes = {}
 
         try:
-            for name, attr in elements["_global"]["attributes"].iteritems():
+            for name, attr in six.iteritems(elements["_global"]["attributes"]):
                 rule = AttributeRule(self, name)
 
                 if isinstance(attr, dict) and "sanitiser" in attr:
@@ -110,7 +111,7 @@ class Ruleset(ruleset.Ruleset):
         except KeyError:
             pass
 
-        for name, options in elements.iteritems():
+        for name, options in six.iteritems(elements):
             if name != "_global":
                 self[name] = self.parse_element(name, options)
 
@@ -121,7 +122,7 @@ class Ruleset(ruleset.Ruleset):
         element.add_attribute_dict(self.global_attributes)
 
         if isinstance(options, dict):
-            for name, attr in options.get("attributes", {}).iteritems():
+            for name, attr in six.iteritems(options.get("attributes", {})):
                 element.add_attribute(name, attr)
 
             if "sanitiser" in options:
@@ -137,7 +138,9 @@ class Ruleset(ruleset.Ruleset):
 DEFAULT_ALLOWED_ELEMENTS = {
     "a": {
         "attributes": {
-            "href": True,
+            "href": {
+                "sanitiser": "url",
+            },
             "rel": True,
             "media": True,
             "hreflang": True,
@@ -152,7 +155,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
             "coords": True,
             "shape": True,
             "href": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "rel": True,
             "media": True,
@@ -165,7 +168,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "audio": {
         "attributes": {
             "src": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "preload": True,
             "autoplay": True,
@@ -177,7 +180,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "base": {
         "attributes": {
             "href": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
         },
     },
@@ -186,7 +189,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "blockquote": {
         "attributes": {
             "cite": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
         },
     },
@@ -197,7 +200,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
             "disabled": True,
             "form": True,
             "formaction": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "formenctype": True,
             "formmethod": True,
@@ -225,7 +228,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
             "type": True,
             "label": True,
             "icon": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "disabled": True,
             "checked": True,
@@ -237,7 +240,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "del": {
         "attributes": {
             "cite": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "datetime": True,
         },
@@ -266,7 +269,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
         "attributes": {
             "accept-charset": True,
             "action": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "autocomplete": True,
             "enctype": True,
@@ -290,7 +293,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "iframe": {
         "attributes": {
             "src": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "name": True,
             "sandbox": True,
@@ -303,7 +306,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
         "attributes": {
             "alt": True,
             "src": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "usemap": True,
             "ismap": True,
@@ -321,7 +324,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
             "disabled": True,
             "form": True,
             "formaction": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "formenctype": True,
             "formmethod": True,
@@ -339,7 +342,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
             "required": True,
             "size": True,
             "src": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "step": True,
             "type": True,
@@ -350,7 +353,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "ins": {
         "attributes": {
             "cite": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "datetime": True,
         },
@@ -380,7 +383,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "link": {
         "attributes": {
             "href": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "rel": True,
             "media": True,
@@ -446,7 +449,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "q": {
         "attributes": {
             "cite": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
         },
     },
@@ -470,7 +473,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "source": {
         "attributes": {
             "src": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "type": True,
             "media": True,
@@ -540,7 +543,7 @@ DEFAULT_ALLOWED_ELEMENTS = {
             "kind": True,
             "label": True,
             "src": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "srclang": True,
         },
@@ -550,10 +553,10 @@ DEFAULT_ALLOWED_ELEMENTS = {
     "video": {
         "attributes": {
             "src": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "poster": {
-                "sanitiser": "url",
+                "sanitiser": "stripped",
             },
             "preload": True,
             "autoplay": True,
@@ -589,9 +592,25 @@ default_ruleset = Ruleset(DEFAULT_ALLOWED_ELEMENTS)
 default_ruleset.add_sanitiser("css", css.sanitise)
 default_ruleset.add_sanitiser("inline_css", css.sanitise_inline)
 
-# The default URL sanitiser strips all URLs; this may be tweaked later to allow
-# certain data: URLs based on their MIME type.
-default_ruleset.add_sanitiser("url", lambda url: None)
+# The stripped sanitiser strips all content 
+default_ruleset.add_sanitiser("stripped", lambda stripped: None)
+
+
+def url_sanitise(content):
+    from django.core.validators import URLValidator
+    from django.core.exceptions import ValidationError
+
+    val = URLValidator()
+    try:
+        val(content)
+    except ValidationError, e:
+        return None
+
+    return content
+
+
+# The url validator uses the Django url validator to ensure it is a valid url
+default_ruleset.add_sanitiser("url", url_sanitise)
 
 
 def sanitise(content, ruleset=default_ruleset):
@@ -625,7 +644,7 @@ def sanitise(content, ruleset=default_ruleset):
 
     def string(ns):
         # Sanitise the string, if the rule requires it.
-        value = context["rule"].sanitise(unicode(ns))
+        value = context["rule"].sanitise(six.text_type(ns))
 
         # Returning None from a sanitiser will result in the string not being
         # appended at all.

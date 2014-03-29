@@ -1,7 +1,7 @@
 # This tests don't require any data to be set up before running.
 
 import unittest
-from support import YabiTestCase
+from .support import YabiTestCase
 
 class FirstTest(unittest.TestCase):
     def test_success(self):

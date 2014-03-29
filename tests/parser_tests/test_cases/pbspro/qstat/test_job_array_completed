@@ -1,0 +1,9 @@
+This test is similar to test_job_completed but the remote id looks different for job arrays.
+
+remote_id: 3485900[]
+STDOUT:
+Job id            Name             User              Time Use S Queue
+3485900[].epic    test.sh          bioflow           00:00:05 F debugq
+------------------------------------------------------------------------
+status should be JOB_COMPLETED
+

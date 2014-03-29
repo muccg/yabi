@@ -1,6 +1,5 @@
 import re
 import logging
-import string
 logger = logging.getLogger(__name__)
 
 
@@ -13,6 +12,7 @@ class SSHSubmitResult(object):
         self.status = None
         self.error = None
 
+
 class SSHPsResult(object):
     JOB_RUNNING = "JOB RUNNING"
     JOB_NOT_FOUND = "JOB NOT FOUND BY PS"
@@ -23,14 +23,13 @@ class SSHPsResult(object):
         self.status = None
 
 
-
 class SSHParser(object):
     SUBMISSION_OUTPUT = "^(?P<remote_id>\d+)"
 
-    def parse_sub(self, stdout, stderr):
+    def parse_sub(self, exit_code, stdout, stderr):
         result = SSHSubmitResult()
 
-        if len(stderr) > 0:
+        if exit_code > 0 or len(stderr) > 0:
 
             result.status = SSHSubmitResult.JOB_SUBMISSION_ERROR
             result.error = "\n".join(stderr)
@@ -50,7 +49,7 @@ class SSHParser(object):
         result.status = SSHSubmitResult.JOB_SUBMISSION_ERROR
         return result
 
-    def parse_poll(self, remote_id, stdout, stderr):
+    def parse_poll(self, remote_id, exit_code, stdout, stderr):
         result = SSHPsResult()
         result.remote_id = remote_id
         for line in [s.strip() for s in stdout if s.strip() != '']:
@@ -60,4 +59,3 @@ class SSHParser(object):
 
         result.status = SSHPsResult.JOB_COMPLETED
         return result
-

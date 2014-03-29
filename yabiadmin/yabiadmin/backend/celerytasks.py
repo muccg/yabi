@@ -4,42 +4,59 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import
 from functools import wraps
 from django.db import transaction
 from datetime import datetime
-from yabiadmin.backend.exceptions import RetryException
+from functools import partial
+from celery import chain
+from celery.utils.log import get_task_logger
+from six.moves import filter
+from yabiadmin.backend.exceptions import RetryException, RetryPollingException, JobNotFoundException
 from yabiadmin.backend import backend
-from yabiadmin.constants import STATUS_ERROR, STATUS_READY, STATUS_RUNNING, STATUS_COMPLETE, STATUS_EXEC,STATUS_STAGEOUT,STATUS_STAGEIN,STATUS_CLEANING, STATUS_ABORTED
+from yabiadmin.constants import STATUS_ERROR, STATUS_READY, STATUS_COMPLETE, STATUS_EXEC, STATUS_STAGEOUT, STATUS_STAGEIN, STATUS_CLEANING, STATUS_ABORTED
 from yabiadmin.constants import MAX_CELERY_TASK_RETRIES
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from yabiadmin.yabiengine.models import Task
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow, EngineJob, EngineTask
 import celery
-from celery import current_task, chain
-from celery.utils.log import get_task_logger
+import os
+from django.conf import settings
+
 logger = get_task_logger(__name__)
+
+
+app = celery.Celery('yabiadmin.backend.celerytasks')
+
+app.config_from_object('django.conf:settings')
+
+
+# Use this function instead of direct access, to allow testing
+def get_current_celery_task():
+    from celery import current_task
+    return current_task
 
 
 # Celery Tasks working on a Workflow
@@ -48,14 +65,14 @@ def process_workflow(workflow_id):
     return chain(create_jobs.s(workflow_id) | process_jobs.s())
 
 
-@celery.task
+@app.task
 def create_jobs(workflow_id):
     workflow = EngineWorkflow.objects.get(pk=workflow_id)
     workflow.create_jobs()
     return workflow.pk
 
 
-@celery.task
+@app.task
 def process_jobs(workflow_id):
     workflow = EngineWorkflow.objects.get(pk=workflow_id)
     if workflow.is_aborting:
@@ -67,7 +84,7 @@ def process_jobs(workflow_id):
         chain(create_db_tasks.s(job.pk), spawn_ready_tasks.s()).apply_async()
 
 
-@celery.task
+@app.task
 def abort_workflow(workflow_id):
     logger.debug("Aborting workflow %s", workflow_id)
     workflow = EngineWorkflow.objects.get(pk=workflow_id)
@@ -75,7 +92,7 @@ def abort_workflow(workflow_id):
         return
     not_aborted_tasks = EngineTask.objects.filter(job__workflow__id=workflow.pk).exclude(job__status=STATUS_ABORTED)
 
-    running_tasks = filter(lambda x: x.status == STATUS_EXEC, not_aborted_tasks)
+    running_tasks = list(filter(lambda x: x.status == STATUS_EXEC, not_aborted_tasks))
     logger.debug("Found %s running tasks", len(running_tasks))
     for task in running_tasks:
         abort_task.apply_async((task.pk,))
@@ -84,9 +101,9 @@ def abort_workflow(workflow_id):
 # Celery Tasks working on a Job
 
 
-@celery.task(max_retries=None)
+@app.task(max_retries=None)
 def create_db_tasks(job_id):
-    request = current_task.request
+    request = get_current_celery_task().request
     try:
         job = EngineJob.objects.get(pk=job_id)
         if job.status == STATUS_READY:
@@ -108,12 +125,12 @@ def create_db_tasks(job_id):
             return None
         return job_id
 
-    except DecryptedCredentialNotAvailable, dcna:
+    except DecryptedCredentialNotAvailable as dcna:
         logger.exception("Decrypted credential not available.")
         countdown = backoff(request.retries)
         logger.warning('create_db_tasks.retry {0} in {1} seconds'.format(job_id, countdown))
-        raise current_task.retry(exc=dcna, countdown=countdown)
-    except Exception, exc:
+        raise get_current_celery_task().retry(exc=dcna, countdown=countdown)
+    except Exception:
         logger.exception("Exception in create_db_tasks for job {0}".format(job_id))
         job.status = STATUS_ERROR
         job.workflow.status = STATUS_ERROR
@@ -122,15 +139,13 @@ def create_db_tasks(job_id):
         raise
 
 
-@celery.task()
+@app.task()
 def spawn_ready_tasks(job_id):
     logger.debug('spawn_ready_tasks for job {0}'.format(job_id))
     if job_id is None:
         logger.debug('no tasks to process, exiting early')
         return
-    request = current_task.request
     try:
-        # TODO deprecate tasktag
         job = EngineJob.objects.get(pk=job_id)
         ready_tasks = job.ready_tasks()
         logger.debug(ready_tasks)
@@ -151,7 +166,7 @@ def spawn_ready_tasks(job_id):
 
         return job_id
 
-    except Exception, exc:
+    except Exception:
         logger.exception("Exception when submitting tasks for job {0}".format(job_id))
         job = EngineJob.objects.get(pk=job_id)
         job.status = STATUS_ERROR
@@ -173,7 +188,6 @@ def mark_workflow_as_error(task_id):
     logger.debug("Marked Workflow {0} as errored.".format(task.job.workflow.pk))
 
 
-
 @transaction.commit_on_success()
 def spawn_task(task_id):
     logger.debug('Spawn task {0}'.format(task_id))
@@ -189,46 +203,51 @@ def spawn_task(task_id):
     task_chain.apply_async()
 
 
+def retry_current_celery_task(original_function_name, task_id, exc, countdown):
+    logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name, task_id, countdown))
+    try:
+        get_current_celery_task().retry(exc=exc, countdown=countdown)
+    except celery.exceptions.RetryTaskError:
+        # This is normal operation, Celery is signaling to the Worker
+        # that this task should be retried by throwing an RetryTaskError
+        # Just re-raise it
+        raise
+    except Exception as ex:
+        if ex is exc:
+            # The same exception we passed to retry() has been re-raised
+            # This means the max_retry limit has been exceeded
+            logger.error("{0}.retry {1} exceeded retry limit - changing status to error".format(original_function_name, task_id))
+        else:
+            # Some other Exception occured, log the details
+            logger.exception(("{0}.retry {1} failed - changing status to error".format(original_function_name, task_id)))
+
+        mark_task_as_error(task_id, str(ex))
+        raise
+
+
 def retry_on_error(original_function):
     @wraps(original_function)
     def decorated_function(task_id, *args, **kwargs):
-        request = current_task.request
+        request = get_current_celery_task().request
         original_function_name = original_function.__name__
+
+        retry_celery_task = partial(retry_current_celery_task, original_function_name, task_id)
         try:
             result = original_function(task_id, *args, **kwargs)
-            return result
-        except RetryException, rexc:
-            if rexc.type == RetryException.TYPE_ERROR:
-                logger.exception("Exception in celery task {0} for task {1}".format(original_function_name, task_id))
+        except RetryPollingException as exc:
+            # constant for polling
+            countdown = 30
+            retry_celery_task(exc, countdown)
 
-            if rexc.backoff_strategy == RetryException.BACKOFF_STRATEGY_EXPONENTIAL:
-                countdown = backoff(request.retries)
-            else:
-                # constant for polling
-                countdown = 30
-
-            try:
-                logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name,task_id, countdown))
-                current_task.retry(exc=rexc, countdown=countdown)
-            except RetryException:
-                logger.error("{0}.retry {1} exceeded retry limit - changing status to error".format(original_function_name, task_id))
-                change_task_status(task_id, STATUS_ERROR)
-                raise
-            except celery.exceptions.RetryTaskError:
-                raise
-            except Exception, ex:
-                logger.error(("{0}.retry {1} failed: {2} - changing status to error".format(original_function_name, task_id, ex)))
-                change_task_status(task_id, STATUS_ERROR)
-                mark_workflow_as_error(task_id)
-                raise
-
-        except Exception, ex:
-            # Retry always
+        except Exception as exc:
+            logger.exception("Exception in celery task {0} for task {1}".format(original_function_name, task_id))
+            mark_task_as_retrying(task_id)
             countdown = backoff(request.retries)
-            logger.exception("Unhandled exception in celery task {0}: {1} - retrying anyway ...".format(original_function_name, ex))
-            logger.warning('{0}.retry {1} in {2} seconds'.format(original_function_name,task_id, countdown))
-            current_task.retry(exc=ex, countdown=countdown)
+            retry_celery_task(exc, countdown)
 
+        remove_task_retrying_mark(task_id)
+
+        return result
 
     return decorated_function
 
@@ -246,7 +265,7 @@ def skip_if_no_task_id(original_function):
     return decorated_function
 
 
-@celery.task(max_retries=None)
+@app.task(max_retries=None)
 @retry_on_error
 @skip_if_no_task_id
 def stage_in_files(task_id):
@@ -258,7 +277,7 @@ def stage_in_files(task_id):
     return task_id
 
 
-@celery.task(max_retries=MAX_CELERY_TASK_RETRIES)
+@app.task(max_retries=MAX_CELERY_TASK_RETRIES)
 @retry_on_error
 @skip_if_no_task_id
 def submit_task(task_id):
@@ -273,16 +292,21 @@ def submit_task(task_id):
     return task_id
 
 
-@celery.task(max_retries=None)
+@app.task(max_retries=None)
 @retry_on_error
 @skip_if_no_task_id
 def poll_task_status(task_id):
     task = EngineTask.objects.get(pk=task_id)
-    backend.poll_task_status(task)
-    return task_id
+    try:
+        backend.poll_task_status(task)
+        return task_id
+    except JobNotFoundException:
+        if abort_task_if_needed(task):
+            return None
+        raise
 
 
-@celery.task(max_retries=None)
+@app.task(max_retries=None)
 @retry_on_error
 @skip_if_no_task_id
 def stage_out_files(task_id):
@@ -294,7 +318,7 @@ def stage_out_files(task_id):
     return task_id
 
 
-@celery.task(max_retries=None)
+@app.task(max_retries=None)
 @retry_on_error
 @skip_if_no_task_id
 def clean_up_task(task_id):
@@ -306,7 +330,7 @@ def clean_up_task(task_id):
     change_task_status(task.pk, STATUS_COMPLETE)
 
 
-@celery.task
+@app.task
 def abort_task(task_id):
     logger.debug("Aborting task %s", task_id)
     task = EngineTask.objects.get(pk=task_id)
@@ -333,20 +357,50 @@ def backoff(count=0):
     return 5 ** (count + 1)
 
 
+def mark_task_as_retrying(task_id, message="Some error occurred"):
+    task = Task.objects.get(pk=task_id)
+    task.mark_task_as_retrying(message)
 
-# Service methods 
+
+def remove_task_retrying_mark(task_id):
+    task = Task.objects.get(pk=task_id)
+    if task.is_retrying:
+        task.recovered_from_error()
+
+
+def set_task_error_message(task_id, error_msg):
+    task = Task.objects.get(pk=task_id)
+    task.error_msg = error_msg
+    task.save()
+
+
+def mark_task_as_error(task_id, error_msg="Some error occured"):
+    remove_task_retrying_mark(task_id)
+    change_task_status(task_id, STATUS_ERROR)
+    set_task_error_message(task_id, error_msg)
+    mark_workflow_as_error(task_id)
+
+
+# Service methods
 # TODO TSZ move to another file?
+
 
 @transaction.commit_manually()
 def change_task_status(task_id, status):
     try:
         logger.debug("Setting status of task {0} to {1}".format(task_id, status))
-        task = EngineTask.objects.get(pk=task_id)
+        task = Task.objects.get(pk=task_id)
         task.set_status(status)
         task.save()
-        job_status_changed = task.cascade_status()
+        transaction.commit()
+
+        job_old_status = task.job.status
+        job_status = task.job.update_status()
+        job_status_changed = (job_old_status != job_status)
 
         if job_status_changed:
+            transaction.commit()
+            task.job.workflow.update_status()
             # commit before submission of Celery Tasks
             transaction.commit()
             process_workflow_jobs_if_needed(task)
@@ -357,6 +411,7 @@ def change_task_status(task_id, status):
         transaction.rollback()
         logger.exception("Exception when updating task's {0} status to {1}".format(task_id, status))
         raise
+
 
 def process_workflow_jobs_if_needed(task):
     workflow = EngineWorkflow.objects.get(pk=task.job.workflow.pk)
@@ -370,7 +425,7 @@ def process_workflow_jobs_if_needed(task):
     if task.job.status == STATUS_COMPLETE:
         if workflow.has_jobs_to_process():
             process_jobs.apply_async((workflow.pk,))
- 
+
 
 @transaction.commit_manually()
 def request_workflow_abort(workflow_id, yabiuser=None):
@@ -384,4 +439,3 @@ def request_workflow_abort(workflow_id, yabiuser=None):
     transaction.commit()
     abort_workflow.apply_async((workflow_id,))
     return True
-

@@ -1,10 +1,13 @@
+from __future__ import print_function
 import unittest
-from support import YabiTestCase, StatusResult, all_items, json_path
-from fixture_helpers import admin
+from .support import YabiTestCase, StatusResult, all_items, json_path
+from .fixture_helpers import admin
 import os
 import time
 from yabiadmin.yabi import models
 from socket import gethostname
+
+from model_mommy import mommy
 
 
 class HostnameTest(YabiTestCase):
@@ -35,11 +38,41 @@ class HostnameTest(YabiTestCase):
 
         result = StatusResult(self.yabi.run(['status', wfl_id]))
 
-        print result.status
-        print result.workflow
+        print(result.status)
+        print(result.workflow)
 
         self.assertEqual(result.workflow.status, 'complete')
         self.assertTrue(all_items(lambda j: j.status == 'complete', result.workflow.jobs))
+
+
+class LocalExecutionRedirectTest(YabiTestCase):
+
+    def setUp(self):
+        YabiTestCase.setUp(self)
+        admin.add_tool_to_all_tools('hostname')
+        hostname = models.Tool.objects.get(name='hostname')
+        switch_use_redirect = models.ParameterSwitchUse.objects.get(display_text='redirect')
+        mommy.make('ToolParameter', tool=hostname, switch='--redirectTo', switch_use=switch_use_redirect, rank=101, output_file=True, file_assignment='none')
+
+    def tearDown(self):
+        YabiTestCase.tearDown(self)
+        admin.remove_tool_from_all_tools('hostname')
+
+    def test_hostname(self):
+        REDIRECT_TO_FILENAME = 'hostname_output.txt'
+
+        result = self.yabi.run(['hostname', '--redirectTo', REDIRECT_TO_FILENAME])
+
+        hostname = gethostname()
+
+        result = StatusResult(self.yabi.run(['status', result.id]))
+        self.assertEqual(result.workflow.status, 'complete', 'Workflow should run to completion')
+        self.assertFalse(hostname in result.stdout, "stdout was redirected to file, stdout shouldn't have hostname")
+        self.assertTrue(os.path.isfile(REDIRECT_TO_FILENAME), 'file we redirected to should exist')
+        contents = ''
+        with open(REDIRECT_TO_FILENAME) as f:
+            contents = f.read()
+        self.assertTrue(hostname in contents, "The hostname should be in the file we redirected to")
 
 
 class ExplodingBackendTest(YabiTestCase):

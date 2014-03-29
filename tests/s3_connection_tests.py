@@ -1,7 +1,8 @@
+from __future__ import print_function
 import unittest
-from support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, conf
-from fixture_helpers import admin
-from request_test_base import RequestTest
+from .support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, conf
+from .fixture_helpers import admin
+from .request_test_base import RequestTest
 import os
 import time
 import sys
@@ -34,7 +35,7 @@ class S3FileUploadTest(RequestTest):
         import requests
         
         r = self.session.get(conf.yabiurl+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_S3_SERVER) )
-        print r.text
+        print(r.text)
 
         self.assertTrue(r.status_code==200, "Could not list S3 backend contents")
         
@@ -57,7 +58,7 @@ class S3FileUploadTest(RequestTest):
                     files = files
                    )
         
-        print r.status
+        print(r.status)
         
 
         r = self.session.get(conf.yabiurl+"/ws/fs/ls?uri=%s"%(QUOTED_TEST_S3_SERVER))
@@ -88,10 +89,4 @@ class S3FileUploadTest(RequestTest):
         import requests
         
         r = self.session.get(conf.yabiurl+"/ws/fs/mkdir?uri=%s/directory"%(QUOTED_TEST_S3_SERVER))
-
-        #sys.stderr.write("status: %d\n"%r.status_code)
-        #sys.stderr.write("headers: %s\n"%str(r.headers))
-        #sys.stderr.write("body: %s\n"%r.text)
-
-         
     

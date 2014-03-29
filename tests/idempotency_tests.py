@@ -1,5 +1,5 @@
 from unittest import TestCase
-from fixture_helpers import admin
+from .fixture_helpers import admin
 import os
 import hashlib
 import stat
@@ -116,6 +116,7 @@ class TestFileBackendIdempotencyTestCase(TestCase):
         mock_workflow = mock()
         mock_job.workflow = mock_workflow
         mock_job.preferred_stageout_method = "copy"
+        mock_job.tool = self.tool
         mock_task.job = mock_job
         mock_user = mock()
         mock_user.name = self.username

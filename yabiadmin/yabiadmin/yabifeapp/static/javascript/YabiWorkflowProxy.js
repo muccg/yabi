@@ -32,12 +32,12 @@ function YabiWorkflowProxy(obj, collection) {
   this.dateEl.className = 'workflowDate';
   this.dateEl.appendChild(document.createTextNode(this.payload.created_on));
   this.proxyEl.appendChild(this.dateEl);
-
   this.el.appendChild(this.proxyEl);
 
-  this.badgeEl = document.createElement('div');
-  this.badgeEl.className = 'badge' + obj.status;
+  this.badgeEl = document.createElement('img');
+  this.badgeEl.className = 'badge';
   this.proxyEl.appendChild(this.badgeEl);
+  this.renderStatus();
 
   this.proxyEl.appendChild(document.createTextNode(this.detailsPayload.name));
 
@@ -58,6 +58,19 @@ YabiWorkflowProxy.prototype.toString = function() {
 
 YabiWorkflowProxy.prototype.destroy = function() {
   Y.one(this.proxyEl).detachAll();
+};
+
+YabiWorkflowProxy.prototype.renderStatus = function() {
+  var status = this.payload.status;
+  if (this.payload.is_retrying) {
+      status = 'retrying';
+  }
+
+  image = Yabi.util.Status.getStatusImage(status);
+  title = "Worflow " + Yabi.util.Status.getStatusDescription(status);
+
+  this.badgeEl.title = title;
+  this.badgeEl.src = imagesURL + image;
 };
 
 YabiWorkflowProxy.prototype.setSelected = function(state) {

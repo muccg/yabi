@@ -1,6 +1,6 @@
 import unittest
-from support import YabiTestCase, StatusResult, FileUtils, all_items, json_path
-from fixture_helpers import admin
+from .support import YabiTestCase, StatusResult, FileUtils, all_items, json_path
+from .fixture_helpers import admin
 import os
 import shutil
 

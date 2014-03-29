@@ -1,0 +1,44 @@
+The two important bits of information in the STDOUT here are the "Job Id" (that
+should match the remote_id) and the "job_state" the we use to determine the
+Job's status.
+In this case the Job Id returned doesn't match the job_id we polled for.
+
+remote_id: 42940
+STDOUT:
+Job Id: 1001.carah.localdomain
+Job_Name = test.sh
+Job_Owner = lrender@carah.localdomain
+resources_used.cput = 00:00:00
+resources_used.mem = 0kb
+resources_used.vmem = 0kb
+resources_used.walltime = 00:00:00
+job_state = C
+queue = normal
+server = carah.localdomain
+Checkpoint = u
+ctime = Mon Aug 12 15:19:13 2013
+Error_Path = carah.localdomain:/export/home/tech/lrender/test.sh.e42940
+exec_host = carah/0
+Hold_Types = n
+Join_Path = n
+Keep_Files = n
+Mail_Points = a
+mtime = Mon Aug 12 15:19:43 2013
+Output_Path = carah.localdomain:/export/home/tech/lrender/test.sh.o42940
+Priority = 0
+qtime = Mon Aug 12 15:19:13 2013
+Rerunable = True
+Resource_List.nodect = 1
+Resource_List.nodes = 1
+Resource_List.walltime = 01:00:00
+session_id = 16857
+Variable_List = PBS_O_HOME=/export/home/tech/lrender,PBS_O_LANG=en_AU.UTF-8,PBS_O_LOGNAME=lrender,PBS_O_PATH=/usr/kerberos/bin:/usr/local/bin:/bin:/usr/bin:/opt/torque/2.3.13/bin/:/export/home/tech/lrender/bin,PBS_O_MAIL=/var/spool/mail/lrender,PBS_O_SHELL=/bin/bash,PBS_O_HOST=carah.localdomain,PBS_SERVER=carah,PBS_O_WORKDIR=/export/home/tech/lrender,PBS_O_QUEUE=normal
+etime = Mon Aug 12 15:19:13 2013
+exit_status = {1}
+submit_args = test.sh
+start_time = Mon Aug 12 15:19:43 2013
+start_count = 1
+comp_time = Mon Aug 12 15:19:43 2013
+------------------------------------------------------------------------------------
+status should be JOB_NOT_FOUND
+

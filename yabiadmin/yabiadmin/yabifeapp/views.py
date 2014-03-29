@@ -4,77 +4,57 @@
 # (C) Copyright 2011, Centre for Comparative Genomics, Murdoch University.
 # All rights reserved.
 #
-# This product includes software developed at the Centre for Comparative Genomics 
+# This product includes software developed at the Centre for Comparative Genomics
 # (http://ccg.murdoch.edu.au/).
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS," 
-# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED, 
-# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
-# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS. 
-# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, YABI IS PROVIDED TO YOU "AS IS,"
+# WITHOUT WARRANTY. THERE IS NO WARRANTY FOR YABI, EITHER EXPRESSED OR IMPLIED,
+# INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
+# FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY RIGHTS.
+# THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF YABI IS WITH YOU.  SHOULD
 # YABI PROVE DEFECTIVE, YOU ASSUME THE COST OF ALL NECESSARY SERVICING, REPAIR
 # OR CORRECTION.
-# 
-# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN 
-# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR 
-# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING 
-# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE 
-# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR 
-# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES 
-# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER 
+#
+# TO THE EXTENT PERMITTED BY APPLICABLE LAWS, OR AS OTHERWISE AGREED TO IN
+# WRITING NO COPYRIGHT HOLDER IN YABI, OR ANY OTHER PARTY WHO MAY MODIFY AND/OR
+# REDISTRIBUTE YABI AS PERMITTED IN WRITING, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+# ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
+# USE OR INABILITY TO USE YABI (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR
+# DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD PARTIES
+# OR A FAILURE OF YABI TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
-# 
+#
 ### END COPYRIGHT ###
 # -*- coding: utf-8 -*-
-import httplib
-from urllib import urlencode, unquote, quote
-import copy
-from email.utils import formatdate
-import datetime
-import hashlib
 import os
-from time import mktime
-from urlparse import urlparse
-
 from django.conf.urls.defaults import *
 from django.conf import settings
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotAllowed, HttpResponseNotFound, HttpResponseRedirect, HttpResponseServerError
-from django.shortcuts import render_to_response, get_object_or_404
-from django.template.loader import render_to_string
-from django.core.exceptions import ObjectDoesNotExist
+from django.shortcuts import render_to_response
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth import login as django_login, logout as django_logout, authenticate
-from django.contrib.auth.models import SiteProfileNotAvailable, User as DjangoUser
-from django.contrib.sessions.models import Session
 from django import forms
-from django.core.servers.basehttp import FileWrapper
-from django.template.loader import get_template
 from django.utils import simplejson as json
-from django.utils.importlib import import_module
 from django.core.cache import cache
-from django.views.decorators.csrf import csrf_exempt
-
-from ccg.http import HttpResponseUnauthorized
-from ccg.utils import webhelpers
-
-from yaphc import Http, GetRequest, PostRequest, UnauthorizedError
-
+from ccg_django_utils import webhelpers
 from yabiadmin.yabi.models import User
 from yabiadmin.responses import *
 from yabiadmin.preview import html
 from yabiadmin.yabi.models import Credential
-from yabiadmin.decorators import authentication_required, profile_required
+from yabiadmin.decorators import profile_required
 from yabiadmin.crypto_utils import DecryptException
 from yabiadmin.yabi.ws_frontend_views import ls, get
-from utils import make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout, using_dev_settings
+from .utils import make_http_request, make_request_object, preview_key, yabiadmin_passchange, logout, yabiadmin_logout, using_dev_settings
 
 import logging
 logger = logging.getLogger(__name__)
+
 
 # forms
 class LoginForm(forms.Form):
     username = forms.CharField()
     password = forms.CharField(widget=forms.PasswordInput(render_value=False))
+
 
 # views
 def render_page(template, request, response=None, **kwargs):
@@ -106,22 +86,26 @@ def render_page(template, request, response=None, **kwargs):
 def files(request):
     return render_page("fe/files.html", request)
 
+
 @login_required
 @profile_required
 def design(request, id=None):
     return render_page("fe/design.html", request, reuseId=id)
-    
+
+
 @login_required
 @profile_required
 def jobs(request):
     return render_page("fe/jobs.html", request)
-    
+
+
 @login_required
 @profile_required
-@user_passes_test( lambda user: user.is_staff )
+@user_passes_test(lambda user: user.is_staff)
 def admin(request):
     return render_page("fe/admin.html", request)
-    
+
+
 @login_required
 @profile_required
 def account(request):
@@ -132,10 +116,20 @@ def account(request):
     username = request.user.username
     return render_page("fe/account.html", request, profile=profile, username=username)
 
+
 def login(request):
 
     # show a warning if using dev settings
     show_dev_warning = using_dev_settings()
+
+    def render_form(form, error='Invalid login credentials'):
+        return render_to_response('fe/login.html', {
+                 'request': request,
+                 'h': webhelpers,
+                 'base_site_url': webhelpers.url("").rstrip("/"),
+                 'form': form,
+                 'error': error,
+                 'show_dev_warning': show_dev_warning})
 
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -157,27 +151,25 @@ def login(request):
                     # this is logged but user can still log in as they may have other creds
                     # that are still usable
                     creds = Credential.objects.filter(user__name=username)
-                    try:
-                        for cred in creds:
-                            cred.on_login(username,password )
-
-                    except DecryptException, e:
-                        logger.error('Unable to decrypt credential %s' % cred.description)
-
-                    return HttpResponseRedirect(webhelpers.url("/"))
+                    for cred in creds:
+                        try:
+                            cred.on_login(username, password)
+                        except DecryptException as e:
+                            logger.error("Unable to decrypt credential `%s'" % cred.description)
+                    next_page = request.GET.get('next', webhelpers.url("/"))
+                    return HttpResponseRedirect(next_page)
 
             else:
                 form = LoginForm()
-                return render_to_response('fe/login.html', {'h':webhelpers, 'base_site_url': webhelpers.url("").rstrip("/") ,'form':form, 'error':'Invalid login credentials', 'show_dev_warning':show_dev_warning})
+                return render_form(form)
 
         else:
-            return render_to_response('fe/login.html', {'h':webhelpers, 'base_site_url': webhelpers.url("").rstrip("/"), 'form':form, 'error':'Invalid login credentials', 'show_dev_warning':show_dev_warning})
+            return render_form(form)
 
     else:
         form = LoginForm()
         error = request.GET['error'] if 'error' in request.GET else ''
-        return render_to_response('fe/login.html', {'h':webhelpers, 'base_site_url': webhelpers.url("").rstrip("/"), 'form':form, 'url':None, 'error':error, 'show_dev_warning':show_dev_warning})
-
+        return render_form(form, error)
 
 
 def wslogin(request):
@@ -188,7 +180,7 @@ def wslogin(request):
     if not (username and password):
         return HttpResponseBadRequest()
     user = authenticate(username=username, password=password)
-    if user is not None: 
+    if user is not None:
         if user.is_active:
             django_login(request, user)
 
@@ -197,16 +189,15 @@ def wslogin(request):
             # this is logged but user can still log in as they may have other creds
             # that are still usable
             creds = Credential.objects.filter(user__name=username)
-            try:
-                for cred in creds:
-                    cred.on_login(username,password )
-
-            except DecryptException, e:
-                logger.error('Unable to decrypt credential %s' % cred.description)
+            for cred in creds:
+                try:
+                    cred.on_login(username, password)
+                except DecryptException:
+                    logger.error('Unable to decrypt credential %s' % cred.description)
 
             response = {
                 "success": True
-                }
+            }
 
         else:
             response = {
@@ -220,6 +211,7 @@ def wslogin(request):
         }
 
     return HttpResponse(content=json.dumps(response))
+
 
 def wslogout(request):
     django_logout(request)
@@ -255,7 +247,7 @@ def preview(request):
             "truncated": False,
             "type": content_type,
         }), settings.PREVIEW_METADATA_EXPIRY)
-        
+
         return render_page("fe/errors/preview-unavailable.html", request, reason=reason, response=HttpResponseServerError())
 
     try:
@@ -357,6 +349,7 @@ def preview(request):
 
     return response
 
+
 @login_required
 def preview_metadata(request):
     if request.method != "GET":
@@ -375,18 +368,21 @@ def preview_metadata(request):
 
     return JsonMessageResponseNotFound("Metadata not in cache")
 
+
 # Error page views.
 def error_404(request):
-    from ccg.utils import webhelpers
     return render_page("fe/errors/404.html", request, response=HttpResponseNotFound())
+
 
 def error_500(request):
     return render_page("fe/errors/500.html", request, response=HttpResponseServerError())
+
 
 @login_required
 def exception_view(request):
     logger.debug("test exception view")
     raise Exception("This is a test exception.")
+
 
 def status_page(request):
     """Availability page to be called to see if yabife is running. Should return HttpResponse with status 200"""
@@ -394,24 +390,26 @@ def status_page(request):
 
     # make a db connection
     u = User.objects.filter(name='')
-    len(u) # so it is evaluated
+    len(u)  # so it is evaluated
 
     # write a file
     with open(os.path.join(settings.WRITABLE_DIRECTORY, 'status_page_testfile.txt'), 'w') as f:
-         f.write("testing file write")
+        f.write("testing file write")
 
     # read it again
     with open(os.path.join(settings.WRITABLE_DIRECTORY, 'status_page_testfile.txt'), 'r') as f:
-         contents = f.read()
-         assert 'testing file write' in contents
+        contents = f.read()
+        assert 'testing file write' in contents
 
     # delete the file
     os.unlink(os.path.join(settings.WRITABLE_DIRECTORY, 'status_page_testfile.txt'))
 
     return HttpResponse('Status OK')
 
+
 def handler404(request):
-    return render_to_response('404.html', {'h':webhelpers})
+    return render_to_response('404.html', {'h': webhelpers})
+
 
 def handler500(request):
-    return render_to_response('500.html', {'h':webhelpers})
+    return render_to_response('500.html', {'h': webhelpers})

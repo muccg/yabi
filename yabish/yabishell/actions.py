@@ -1,14 +1,48 @@
+from __future__ import print_function
 import time
 import json
 import os
 import sys
 import uuid
 import urlparse
+import re
 import itertools
+from functools import partial
 
 from yabishell import errors
-from yabishell.utils import mkdir_p
-from urihelper import uriparse
+from yabishell.utils import mkdir_p, partition
+from .urihelper import uriparse
+from six.moves import filter
+from six.moves import map
+import six
+
+STDOUT_PATTERNS = [ r'STDOUT.txt$', 
+        r""" # examples: Y123.o4567, Y123.o456.1, Y123.o456-2
+        Y\d+        # Y for YABI, followed by some digits (task pk)
+        \.          # separated by a dot ...
+        o           # from o for stdout
+        \d+         # followed by some digits (remote id)
+        ([-.]\d+)?  # and optionally the job array index (separated by - or .)
+        $"""
+        ]   
+
+STDERR_PATTERNS = [ r'STDERR.txt$', 
+        r""" # examples: Y123.e4567 Y123.e456-1
+        Y\d+
+        \.
+        e           # The only difference is this: e for stderr
+        \d+
+        ([-.]\d+)?
+        $"""
+        ]   
+
+
+def filename_matches(patterns, filename):
+    return any([re.match(p, filename, flags=re.IGNORECASE | re.VERBOSE)
+                    for p in patterns])
+is_stdout_file = partial(filename_matches, STDOUT_PATTERNS)
+is_stderr_file = partial(filename_matches, STDERR_PATTERNS)
+
 
 class Action(object):
     def __init__(self, yabi, name=None):
@@ -41,7 +75,7 @@ class FileDownload(object):
             else:
                 with open(dest, 'w') as f:
                     f.write(contents)
-        except errors.CommunicationError, e:
+        except errors.CommunicationError as e:
             if e.status_code == 404:
                 if ignore_404:
                    return
@@ -65,7 +99,7 @@ class RemoteAction(Action):
         if not decoded_resp['success']:
             raise errors.RemoteError(decoded_resp['msg'])
 
-        print 'Running your job on the server. Id: %s' % decoded_resp['workflow_id']
+        print('Running your job on the server. Id: %s' % decoded_resp['workflow_id'])
         return decoded_resp['workflow_id']
 
     def stagein_required(self):
@@ -101,45 +135,69 @@ class Attach(Action, FileDownload):
             try:
                 resp = self.get_workflow(workflow_id)
                 status = resp.get('status', '')
-                time.sleep(gen.next())
+                time.sleep(six.advance_iterator(gen))
             except KeyboardInterrupt:
-                print
-                print "Job %s current status is '%s'" % (workflow_id, status)
+                print()
+                print("Job %s current status is '%s'" % (workflow_id, status))
                 sys.exit()
         if status.lower() == 'error':
             raise errors.RemoteError('Error running workflow')
             return
 
-        stageout_dir = resp['json']['jobs'][-1]['stageout']
+        stageout_dir_uri = resp['json']['jobs'][-1]['stageout']
+        if not stageout_dir_uri.endswith('/'):
+            stageout_dir_uri += '/'
+ 
+        dirs, stdout_files, stderr_files, other_files = self.get_listing(stageout_dir_uri)
+        self.download_stageout_files(stageout_dir_uri, dirs, stdout_files, stderr_files, other_files)
 
-        self.recursive_download(stageout_dir)
+    def get_listing(self, uri):
+        """Lists the uri recursively categorising the results in dirs, stdout_files, stderr_files, other_files.
+        dirs is a list of the directories
+        stdout_files is a list of all the files that look like stdout files
+        stderr_files is a list of all the files that look like stderr files
+        other_files is a list of all the other files
+        Any of the lists returned can be empty."""
 
-        stdout = os.path.join(stageout_dir,'STDOUT.txt')
-        stderr = os.path.join(stageout_dir,'STDERR.txt')
-        self.download_file(stdout, sys.stdout, ignore_404=True)
-        self.download_file(stderr, sys.stderr, ignore_404=True)
-
-    def recursive_download(self, uri):
-        if not uri.endswith('/'):
-            uri += '/'
         ls_url = 'ws/fs/ls'
         params = {'uri': uri, 'recurse': True}
         resp, json_response = self.yabi.get(ls_url, params)
         response = self.decode_json(json_response)
         scheme, rest = uriparse(uri)
         base_path = rest.path
-        rel_dirs = map(lambda x: x[len(base_path):], response)
-        rel_dirs = filter(lambda x: x != '', rel_dirs)
-        rel_files = [[os.path.join(d[len(base_path):], f[0]) for f in listing['files']] for d,listing in response.items()]
+        dirs = map(lambda x: x[len(base_path):], response)
+        dirs = filter(lambda x: x != '', dirs)
+        files = [[os.path.join(d[len(base_path):], f[0]) for f in listing['files']] for d,listing in response.items()]
 
         # flatten the file list
-        rel_files = [f for f in itertools.chain.from_iterable(rel_files)]
-        rel_files = filter(lambda x: x not in ('STDERR.txt', 'STDOUT.txt'), rel_files)
+        files = [f for f in itertools.chain.from_iterable(files)]
 
-        for d in rel_dirs:
-            mkdir_p(d)
-        for f in rel_files:
-            self.download_file(uri+f, f)
+        stdout_files, other_files = partition(is_stdout_file, files)
+        stderr_files, other_files = partition(is_stderr_file, other_files)
+
+        return list(dirs), list(stdout_files), list(stderr_files), list(other_files)
+
+    def download_stageout_files(self, uri, dirs, stdout_files, stderr_files, other_files):
+        def create_dirs(dirs):
+            for d in dirs:
+                mkdir_p(d)
+
+        def download_files(files):
+            for f in files:
+                self.download_file(uri+f, f)
+
+        create_dirs(dirs)
+        if (len(stdout_files) == 1 and (len(stderr_files) == 1)):
+            # if there is just one stdout and one stderr file we print them to
+            # stdout and stderr
+            download_files(other_files)
+            self.download_file(uri+stdout_files[0], sys.stdout)
+            self.download_file(uri+stderr_files[0], sys.stderr)
+        else:
+            # if we have more than one stdout and stderr file we download them
+            # (0 stdout and stderr also handled here)
+            download_files(other_files + stdout_files + stderr_files)
+
 
 
 class ForegroundRemoteAction(object):
@@ -160,7 +218,7 @@ class BackgroundRemoteAction(object):
 
     def process(self, args):
         workflow_id = self.action.process(args)
-        print "Submitted. Workflow id: %s" % workflow_id
+        print("Submitted. Workflow id: %s" % workflow_id)
 
     def stagein_required(self):
         return self.action.stagein_required()
@@ -178,7 +236,7 @@ class Logout(Action):
         if response.get('success', False):
             return True
         else:
-            print >> sys.stderr, 'Logout unsuccessful'
+            print('Logout unsuccessful', file=sys.stderr)
             return False
 
 class Login(Action):
@@ -198,7 +256,7 @@ class Login(Action):
         if response.get('success', False):
             return True
         else:
-            print >> sys.stderr, 'Login unsuccessful'
+            print('Login unsuccessful', file=sys.stderr)
             return False
 
 class Ls(Action):
@@ -220,9 +278,9 @@ class Ls(Action):
             dirname = d[0]
             if not dirname.endswith('/'):
                 dirname += "/"
-            print dirname
+            print(dirname)
         for f in files:
-            print f[0]
+            print(f[0])
 
 class Jobs(Action):
     def __init__(self, *args, **kwargs):
@@ -239,7 +297,7 @@ class Jobs(Action):
 
     def process_response(self, response):
         for job in response:
-            print '%7d  %s  %10s  %s' % (job['id'], job['created_on'], job['status'].upper(), job['name'])
+            print('%7d  %s  %10s  %s' % (job['id'], job['created_on'], job['status'].upper(), job['name']))
 
 class Status(Action):
     def __init__(self, *args, **kwargs):
@@ -254,21 +312,21 @@ class Status(Action):
 
     def process_response(self, response):
         try:
-            print "=== STATUS ==="
+            print("=== STATUS ===")
             for key in ['status', 'name', 'tags', 'id', 'created_on', 'last_modified_on']:
-                print "%s:%s" % (key, response[key])
-            print 'stageout:%s' % response['json']['jobs'][0]['stageout']
-            print "=== JOBS ==="
-            print "%4s %20s   %s" % ('ID', 'Status', 'Toolname')
-            print "=" * 80
+                print("%s:%s" % (key, response[key]))
+            print('stageout:%s' % response['json']['jobs'][0]['stageout'])
+            print("=== JOBS ===")
+            print("%4s %20s   %s" % ('ID', 'Status', 'Toolname'))
+            print("=" * 80)
             for job in response['json']['jobs']:
                 tool_name = job['toolName']
                 if len(tool_name) > 50: 
                     tool_name = tool_name[:47] + '...'
-                print "%4s %20s   %s" % (job['jobId'], job['status'], tool_name) 
+                print("%4s %20s   %s" % (job['jobId'], job['status'], tool_name)) 
 
-        except Exception, e:
-            print "Unable to load job status: %s" % e
+        except Exception as e:
+            print("Unable to load job status: %s" % e)
 
 
             
@@ -347,7 +405,7 @@ class Submitworkflow(Action):
         if not decoded_resp['id']:
             raise errors.RemoteError(decoded_resp.get('msg', 'Unknown error'))
         wfid = decoded_resp['id']
-        print 'Running your job on the server. Id: %s' % wfid
+        print('Running your job on the server. Id: %s' % wfid)
         return wfid 
 
     def process(self, args):

@@ -1,0 +1,11 @@
+If the program outputs only to STDERR we should treat it as a submission error
+even if the exit code is 0.
+
+Exit Code: 0
+STDOUT: 
+STDERR:
+qsub: script file:: No such file or directory
+---------------------------------------------
+status should be JOB_SUBMISSION_ERROR
+remote_id should be None
+

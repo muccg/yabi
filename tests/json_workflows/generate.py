@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 
 PRE = """
@@ -25,7 +26,7 @@ def hostname(how_many):
     while i <= how_many:
         hostnames = (" " * 8 + "},{").join([hostnames, HOSTNAME % i])
         i += 1
-    print "".join([PRE, hostnames, POST])    
+    print("".join([PRE, hostnames, POST]))    
 
 def main():
     count = 1
