@@ -251,7 +251,8 @@ class SwiftBackend(FSBackend):
             # fixme: there is one http request per chunk i think.
             headers, contents = conn.get_object(swift.bucket, swift.prefix, resp_chunk_size=self.CHUNKSIZE)
             with open(filename, "wb") as outfile:
-                map(outfile.write, contents)
+                for chunk in contents:
+                    outfile.write(chunk)
         except swiftclient.exceptions.ClientException as e:
             logger.exception("Error downloading %s to %s", uri, filename)
         except IOError:
