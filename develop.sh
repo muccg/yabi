@@ -178,7 +178,7 @@ function ci_staging_selenium() {
     ccg ${AWS_STAGING_INSTANCE} dsudo:'echo http://localhost/yabi > /tmp/yabi_site_url'
     ccg ${AWS_STAGING_INSTANCE} drunbg:"Xvfb -ac \:0"
     ccg ${AWS_STAGING_INSTANCE} dsudo:'mkdir -p lettuce && chmod o+w lettuce'
-    ccg ${AWS_STAGING_INSTANCE} dsudo:"cd lettuce && env DISPLAY\=\:0 yabiadmin run_lettuce --with-xunit --xunit-file\=/tmp/tests.xml || true"
+    ccg ${AWS_STAGING_INSTANCE} dsudo:"cd lettuce && env DISPLAY\=\:0 yabiadmin run_lettuce --with-xunit --xunit-file\=/tmp/tests.xml --app-name\=yabiadmin --traceback|| true"
     ccg ${AWS_STAGING_INSTANCE} dsudo:'rm /tmp/yabi_site_url'
     ccg ${AWS_STAGING_INSTANCE} getfile:/tmp/tests.xml,./
     #ccg ${AWS_STAGING_INSTANCE} dsudo:'yabiadmin run_lettuce --app-name yabifeapp --with-xunit --xunit-file\=/tmp/tests-yabifeapp.xml || true'
