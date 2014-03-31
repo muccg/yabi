@@ -1,7 +1,14 @@
 import os
 from setuptools import setup
 
-packages = ['yabiadmin'] + ['yabiadmin.%s' % app for app in ['yabifeapp', 'yabiengine', 'yabi', 'uploader', 'preview', 'backend']] + ['yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations', 'yabiadmin.yabi.templatetags']
+packages = ['yabiadmin'] + \
+           ['yabiadmin.%s' % app for app in ['yabifeapp', 'yabiengine', 'yabi', 'uploader', 'preview', 'backend']] + \
+           ['yabiadmin.yabi.migrations',
+            'yabiadmin.yabi.migrationutils',
+            'yabiadmin.yabi.templatetags',
+            'yabiadmin.yabifeapp.management',
+            'yabiadmin.yabifeapp.management.commands',
+            'yabiadmin.yabiengine.migrations']
 
 data_files = {}
 start_dir = os.getcwd()
@@ -104,11 +111,7 @@ setup(name='yabiadmin',
       author='Centre for Comparative Genomics',
       author_email='yabi@ccg.murdoch.edu.au',
       packages=packages,
-      package_data={
-          '': ["%s/%s" % (dirglob, fileglob)
-              for dirglob in (["."] + ['/'.join(['*'] * num) for num in range(1, 15)])                         # yui is deeply nested
-              for fileglob in ['*.mako', '*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg']]
-      },
+      package_data=data_files,
       zip_safe=False,
       scripts=["yabiadmin/yabiadmin-manage.py"],
       install_requires=install_requires,
