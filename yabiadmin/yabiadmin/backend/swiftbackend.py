@@ -241,7 +241,7 @@ class SwiftBackend(FSBackend):
 
     CHUNKSIZE = 5 * 1024 * 1024
 
-    def download_file(self, uri, filename, queue):
+    def download_file(self, uri, filename):
         swift = self.SwiftPath.parse(uri)
         conn = self._get_conn(swift)
 
@@ -258,10 +258,9 @@ class SwiftBackend(FSBackend):
             logger.exception("Error writing %s to file", uri)
         else:
             success = True
-        finally:
-            queue.put(success)
+        return success
 
-    def upload_file(self, uri, filename, queue):
+    def upload_file(self, uri, filename):
         logger.debug("upload_file(%s)", uri)
 
         swift = self.SwiftPath.parse(uri)
@@ -281,8 +280,8 @@ class SwiftBackend(FSBackend):
             logger.exception("Error reading from file for %s", uri)
         else:
             success = True
-        finally:
-            queue.put(success)
+
+        return success
 
     def local_copy(self, source, destination):
         raise NotSupportedError()

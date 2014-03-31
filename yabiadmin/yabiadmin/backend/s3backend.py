@@ -182,7 +182,7 @@ class S3Backend(FSBackend):
         connection = boto.connect_s3(**self._get_connect_params(bucket_name))
         return connection.get_bucket(bucket_name)
 
-    def download_file(self, uri, filename, queue):
+    def download_file(self, uri, filename):
         try:
             bucket_name, path = self.parse_s3_uri(uri)
 
@@ -190,13 +190,12 @@ class S3Backend(FSBackend):
             key = bucket.get_key(path.lstrip(DELIMITER))
 
             key.get_contents_to_filename(filename)
-
-            queue.put(True)
+            return True
         except:
             logger.exception("Exception thrown while S3 downloading %s to %s", uri, filename)
-            queue.put(False)
+            return False
 
-    def upload_file(self, uri, filename, queue):
+    def upload_file(self, uri, filename):
         try:
             bucket_name, path = self.parse_s3_uri(uri)
 
@@ -206,7 +205,7 @@ class S3Backend(FSBackend):
             # 5MB is the minimum size of a part when doing multipart uploads
             # Therefore, multipart uploads will fail if your file is smaller than 5MB
 
-            with open(filename, 'rb') as f:
+            with open(filename, "rb") as f:
                 data = f.read(CHUNKSIZE)
                 if len(data) < CHUNKSIZE:
                     # File is smaller than CHUNKSIZE, upload in one go (ie. no multipart)
@@ -224,10 +223,10 @@ class S3Backend(FSBackend):
                         part_no += 1
 
                     multipart_upload.complete_upload()
-            queue.put(True)
+            return True
         except:
             logger.exception("Exception thrown while S3 uploading %s to %s", filename, uri)
-            queue.put(False)
+            return False
 
     def get_keys_recurse(self, bucket, path):
         result = []

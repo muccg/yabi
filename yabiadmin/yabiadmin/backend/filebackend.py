@@ -40,17 +40,17 @@ LS_PATH = '/bin/ls'
 LS_TIME_STYLE = r"+%b %d  %Y"
 
 class FileBackend(FSBackend):
-    def upload_file(self, uri, src, queue):
+    def upload_file(self, uri, src):
         scheme, parts = uriparse(uri)
-        self._copy_file(open(src, "rb"), open(parts.path, "wb"), queue)
+        return self._copy_file(open(src, "rb"), open(parts.path, "wb"))
 
-    def download_file(self, uri, dst, queue):
+    def download_file(self, uri, dst):
         scheme, parts = uriparse(uri)
         if not os.path.exists(parts.path):
             raise FileNotFoundError(uri)
-        self._copy_file(open(parts.path, "rb"), open(dst, "wb"), queue)
+        return self._copy_file(open(parts.path, "rb"), open(dst, "wb"))
 
-    def _copy_file(self, src, dst, queue):
+    def _copy_file(self, src, dst):
         success = False
         logger.debug('CopyThread {0} -> {1}'.format(src, dst))
         logger.debug('CopyThread start copy')
@@ -62,8 +62,7 @@ class FileBackend(FSBackend):
         else:
             logger.debug('CopyThread end copy')
             success = True
-        finally:
-            queue.put(success)
+        return success
 
     def remote_uri_stat(self, uri):
         scheme, parts = uriparse(uri)
@@ -161,4 +160,3 @@ class FileBackend(FSBackend):
                 shutil.rmtree(path)
         except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
-
