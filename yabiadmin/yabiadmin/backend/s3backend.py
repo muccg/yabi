@@ -189,8 +189,12 @@ class S3Backend(FSBackend):
             bucket = self.connect_to_bucket(bucket_name)
             key = bucket.get_key(path.lstrip(DELIMITER))
 
-            key.get_contents_to_filename(filename)
-            return True
+            if key:
+                key.get_contents_to_filename(filename)
+                return True
+            else:
+                logger.error("Key not found for uri")
+                return False
         except:
             logger.exception("Exception thrown while S3 downloading %s to %s", uri, filename)
             return False
