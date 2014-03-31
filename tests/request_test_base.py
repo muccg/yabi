@@ -1,9 +1,7 @@
-import unittest
+from urllib import quote
+import logging
+
 from .support import YabiTestCase, StatusResult, all_items, json_path, FileUtils, conf
-from .fixture_helpers import admin
-import os
-import time
-import sys
 
 
 def remove_slash_if_has(u):
@@ -32,18 +30,21 @@ class RequestTest(YabiTestCase):
         r = self.session.post(self.yabiurl("login"), data=self.creds)
         self.assertEqual(r.status_code, 200, "Could not login to frontend. Frontend returned: %d"%(r.status_code))
 
+        logging.info("Logged in with: %(username)s/%(password)s" % self.creds)
+
     @staticmethod
     def yabiurl(path=""):
         "Returns the configured yabi url with `path' appended to it."
         return "%s/%s" % (remove_slash_if_has(conf.yabiurl), path)
 
     @classmethod
-    def fscmd(cls, cmd, uri=""):
+    def fscmd(cls, cmd, uri=None):
         """
         Returns the yabi API url for a fs command, optionally with `uri'
         param in the query string.
         """
-        return cls.yabiurl("ws/fs/%s%s" % (cmd, "?uri=%s" % uri if uri else ""))
+        q = "?uri=%s" % quote(uri) if uri is not None else ""
+        return cls.yabiurl("ws/fs/%s%s" % (cmd, q))
 
 
 class RequestTestWithAdmin(RequestTest):

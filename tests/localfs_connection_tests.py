@@ -6,7 +6,6 @@ import os
 import time
 import sys
 import subprocess
-from urllib import quote
 from StringIO import StringIO
 import json
 import shutil
@@ -26,7 +25,7 @@ class LocalfsFileTests(RequestTest):
 
     @staticmethod
     def fscmd(cmd, path=""):
-        return RequestTest.fscmd(cmd, quote(TEST_LOCALFS_SERVER + path))
+        return RequestTest.fscmd(cmd, TEST_LOCALFS_SERVER + path)
 
     def setUp(self):
         RequestTest.setUp(self)

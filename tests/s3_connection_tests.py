@@ -2,7 +2,6 @@ from __future__ import print_function
 import time
 import sys
 import json
-from urllib import quote
 from StringIO import StringIO
 
 from django.utils import unittest
@@ -20,7 +19,7 @@ class S3FileUploadTest(RequestTest):
 
     @classmethod
     def fscmd(cls, cmd, uri=""):
-        server = quote("s3://%s@%s.%s" % (conf.s3_user, cls.SPECIAL_TEST_BUCKET, conf.s3_host))
+        server = "s3://%s@%s.%s" % (conf.s3_user, cls.SPECIAL_TEST_BUCKET, conf.s3_host)
         return RequestTest.fscmd(cmd, server + uri)
 
     def setUp(self):
