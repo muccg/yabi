@@ -28,7 +28,7 @@ install_requires = [
     'pytz>=2013b',
     'ccg-webservices==0.1.2',
     'ccg-introspect==0.1.2',
-    'ccg-django-utils==0.1.9',
+    'ccg-django-utils==0.1.10',
     'ccg-auth==0.3.3',
     'anyjson==0.3.3',
     'celery==3.1.9',
@@ -88,7 +88,7 @@ mysql_requires = [
 dependency_links = [
     'https://ccg-django-extras.googlecode.com/files/ccg-webservices-0.1.2.tar.gz',
     'https://ccg-django-extras.googlecode.com/files/ccg-introspect-0.1.2.tar.gz',
-    'https://bitbucket.org/ccgmurdoch/ccg-django-utils/downloads/ccg-django-utils-0.1.9.tar.gz',
+    'https://bitbucket.org/ccgmurdoch/ccg-django-utils/downloads/ccg-django-utils-0.1.10.tar.gz',
     'https://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.3.tar.gz',
     'https://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
     'https://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',
