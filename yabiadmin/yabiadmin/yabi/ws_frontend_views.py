@@ -265,7 +265,11 @@ def put(request):
             upload_handle.write(chunk)
         upload_handle.close()
 
-    return HttpResponse("OK")
+    response = {
+        "level": "success",
+        "message": 'no message'
+    }
+    return HttpResponse(content=json.dumps(response))
 
 
 @authentication_required
