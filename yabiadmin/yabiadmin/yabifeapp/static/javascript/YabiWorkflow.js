@@ -524,10 +524,17 @@ YUI().use(
           this.jobs[selectedIndex].selectJob();
           this.selectedJob = object;
 
-          if (!this.editable &&
-              !Y.Lang.isUndefined(this.payload.jobs[selectedIndex].stageout)) {
-            this.fileOutputsSelector.updateBrowser(new YabiSimpleFileValue(
-                [this.payload.jobs[selectedIndex].stageout], ''));
+          if (!this.editable) {
+              var dirToDisplay = [];
+              var dontLoadContents = true;
+              if (!Y.Lang.isUndefined(this.payload.jobs[selectedIndex].stageout)) {
+                  dirToDisplay = this.payload.jobs[selectedIndex].stageout;
+              }
+              if (this.payload.jobs[selectedIndex].status === 'complete') {
+                dontLoadContents = false;
+              }
+              this.fileOutputsSelector.updateBrowser(new YabiSimpleFileValue(
+                          dirToDisplay, ''), dontLoadContents);
           }
 
           // callback hook to allow other elements to hook in when jobs are
@@ -786,10 +793,11 @@ YUI().use(
        * handle json response, populating object and rendering as required
        */
       YabiWorkflow.prototype.solidify = function(obj) {
+        var oldJobsData = this.payload.jobs;
         this.payload = obj;
         var updateMode = false;
 
-        var job, index, oldJobStatus;
+        var jobEl, jobData, index, oldJobStatus;
 
         this.updateName(obj.name);
 
@@ -803,25 +811,30 @@ YUI().use(
         this.tagListEl.appendChild(document.createTextNode(this.tags));
 
         for (index in obj.jobs) {
+          jobData = obj.jobs[index];
           if (updateMode) {
-            job = this.jobs[index];
+            jobEl = this.jobs[index];
           } else {
-            job = this.addJob(obj.jobs[index].toolName,
-                obj.jobs[index].parameterList.parameter);
+            jobEl = this.addJob(jobData.toolName,
+                                jobData.parameterList.parameter);
           }
           if (!this.editable) {
-            oldJobStatus = job.status;
+            oldJobStatus = '';
+            if (!Y.Lang.isUndefined(oldJobsData)) {
+                oldJobStatus = oldJobsData[index].status;
+            }
 
-            job.renderProgress(obj.jobs[index].status, obj.jobs[index].is_retrying,
-                obj.jobs[index].tasksComplete, obj.jobs[index].tasksTotal);
+            jobEl.renderProgress(jobData.status, jobData.is_retrying,
+                jobData.tasksComplete, jobData.tasksTotal);
 
-            if (this.selectedJob == job && oldJobStatus != job.status) {
+            if (this.selectedJob == jobEl &&
+                    oldJobStatus != jobData.status &&
+                    jobData.status === 'complete') {
               this.fileOutputsSelector.updateBrowser(new YabiSimpleFileValue(
-                  [this.payload.jobs[index].stageout], ''));
+                  [jobData.stageout], ''));
             }
           }
         }
-
       };
 
 
