@@ -217,7 +217,7 @@ def mkdir(request):
     return HttpResponse("OK")
 
 @authentication_required
-def get(request, bytes=None):
+def get(request):
     """ Returns the requested uri.  """
     yabiusername = request.user.username
 
@@ -230,14 +230,8 @@ def get(request, bytes=None):
         logger.critical('Unable to get filename from uri: %s' % uri)
         filename = 'default.txt'
 
-    if bytes is not None:
-        try:
-            bytes = int(bytes)
-        except ValueError:
-            bytes = None
-
     try:
-        download_handle = backend.get_file(yabiusername, uri, bytes=bytes)
+        download_handle = backend.get_file(yabiusername, uri)
     except FileNotFoundError:
         return HttpResponseNotFound()
     response = HttpResponse(FileWrapper(download_handle))

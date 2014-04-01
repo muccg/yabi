@@ -25,7 +25,7 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #
 ### END COPYRIGHT ###
-# -*- coding: utf-8 -*-
+
 from django.conf.urls.defaults import *
 
 # frontend webservices

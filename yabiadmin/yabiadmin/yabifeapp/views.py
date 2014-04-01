@@ -25,7 +25,7 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #
 ### END COPYRIGHT ###
-# -*- coding: utf-8 -*-
+
 import os
 from django.conf.urls.defaults import *
 from django.conf import settings
@@ -278,7 +278,7 @@ def preview(request):
         return unavailable()
 
     size = result.values()[0]["files"][0][1]
-    resp = get(request, bytes=min(size, settings.PREVIEW_SIZE_LIMIT))
+    resp = get(request)
 
     if resp.status_code != 200:
         logger.warning("Attempted to preview inaccessible URI '%s'", uri)

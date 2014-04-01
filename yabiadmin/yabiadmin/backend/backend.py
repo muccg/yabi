@@ -50,9 +50,8 @@ def put_file(yabiusername, filename, uri):
     return upload
 
 
-def get_file(yabiusername, uri, bytes=None):
+def get_file(yabiusername, uri):
     """Get a file from a backend"""
-    # TODO bytes is ignored, its for partial download
     from yabiadmin.backend.fsbackend import FSBackend
     download_as_fifo = FSBackend.remote_file_download(yabiusername, uri)
     download = open(download_as_fifo)
