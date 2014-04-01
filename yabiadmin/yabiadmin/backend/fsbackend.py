@@ -290,6 +290,10 @@ class FSBackend(BaseBackend):
         try:
             fifo = FSBackend.remote_file_download(self.yabiusername, envvars_uri)
             with open(fifo) as f:
+                try:
+                    os.unlink(fifo)
+                except OSError:
+                    logger.exception("Couldn't remove fifo")
                 content = f.read()
             envvars = json.loads(content)
         except:
