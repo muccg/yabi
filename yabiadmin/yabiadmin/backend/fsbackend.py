@@ -250,14 +250,12 @@ class FSBackend(BaseBackend):
             queue = Queue.Queue()
             thread = backend.remote_to_fifo(uri, fifo, queue)
 
-            # TODO some check on the copy thread
-
             infile = open(fifo, "rb")
             try:
-                os.unlink(download_as_fifo)
+                os.unlink(fifo)
             except OSError:
                 logger.exception("Couldn't delete remote file download fifo")
-            return infile
+            return infile, queue
 
         except FileNotFoundError:
             raise
@@ -286,14 +284,12 @@ class FSBackend(BaseBackend):
             queue = Queue.Queue()
             thread = backend.fifo_to_remote(uri, fifo, queue)
 
-            # TODO some check on the copy thread
-
             outfile = open(fifo, "wb")
             try:
                 os.unlink(fifo)
             except OSError:
                 logger.exception("Couldn't delete remote file upload fifo")
-            return outfile
+            return outfile, queue
         except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
 

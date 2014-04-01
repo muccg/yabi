@@ -35,7 +35,7 @@ from urllib import unquote
 from urlparse import urlparse, urlunparse
 
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError, StreamingHttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from yabiadmin.yabi.models import User, ToolGrouping, Tool, Credential, ToolSet, BackendCredential
 from django.utils import simplejson as json
@@ -43,7 +43,6 @@ from django.conf import settings
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
-from django.core.servers.basehttp import FileWrapper
 from yabiadmin.backend.celerytasks import process_workflow
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import WorkflowTag
@@ -216,6 +215,17 @@ def mkdir(request):
     backend.mkdir(request.user.username, request.GET['uri'])
     return HttpResponse("OK")
 
+def backend_get_file(yabiusername, uri):
+    f, status_queue = backend.get_file(yabiusername, uri)
+
+    for chunk in f:
+        yield chunk
+
+    success = status_queue.get()
+    logger.info("status on queue is %s" % success)
+    if not success:
+        raise Exception("Backend file download was not successful")
+
 @authentication_required
 def get(request):
     """ Returns the requested uri.  """
@@ -231,17 +241,16 @@ def get(request):
         filename = 'default.txt'
 
     try:
-        download_handle = backend.get_file(yabiusername, uri)
+        response = StreamingHttpResponse(backend_get_file(yabiusername, uri))
     except FileNotFoundError:
-        return HttpResponseNotFound()
-    response = HttpResponse(FileWrapper(download_handle))
+        response = HttpResponseNotFound()
+    else:
+        mimetypes.init([os.path.join(settings.WEBAPP_ROOT, 'mime.types')])
+        mtype, file_encoding = mimetypes.guess_type(filename, False)
+        if mtype is not None:
+            response['content-type'] = mtype
 
-    mimetypes.init([os.path.join(settings.WEBAPP_ROOT, 'mime.types')])
-    mtype, file_encoding = mimetypes.guess_type(filename, False)
-    if mtype is not None:
-        response['content-type'] = mtype
-
-    response['content-disposition'] = 'attachment; filename=%s' % filename
+        response['content-disposition'] = 'attachment; filename=%s' % filename
 
     return response
 
@@ -259,16 +268,27 @@ def put(request):
     logger.debug("uri: %s" % request.GET['uri'])
     uri = request.GET['uri']
 
+    num_success = 0
+    num_fail = 0
+
     for key, f in request.FILES.items():
-        upload_handle = backend.put_file(yabiusername, uri)
+        upload_handle, status_queue = backend.put_file(yabiusername, f.name, uri)
         for chunk in f.chunks():
             upload_handle.write(chunk)
         upload_handle.close()
 
+        if status_queue.get():
+            num_success += 1
+        else:
+            num_fail += 1
+
     response = {
-        "level": "success",
+        "level": "success" if num_fail == 0 else "failure",
+        "num_success": num_success,
+        "num_fail": num_fail,
         "message": 'no message'
     }
+
     return HttpResponse(content=json.dumps(response))
 
 
