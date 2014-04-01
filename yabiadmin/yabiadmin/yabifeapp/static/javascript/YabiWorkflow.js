@@ -526,15 +526,15 @@ YUI().use(
 
           if (!this.editable) {
               var dirToDisplay = [];
-              var dontLoadContents = true;
+              var loadContents = false;
               if (!Y.Lang.isUndefined(this.payload.jobs[selectedIndex].stageout)) {
                   dirToDisplay = this.payload.jobs[selectedIndex].stageout;
               }
               if (this.payload.jobs[selectedIndex].status === 'complete') {
-                dontLoadContents = false;
+                loadContents = true;
               }
               this.fileOutputsSelector.updateBrowser(new YabiSimpleFileValue(
-                          dirToDisplay, ''), dontLoadContents);
+                          dirToDisplay, ''), loadContents);
           }
 
           // callback hook to allow other elements to hook in when jobs are

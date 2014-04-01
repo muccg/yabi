@@ -82,13 +82,13 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
        *
        * fetches updated file listing based on a new browse
        * location
-       * - pass in dontLoadContents true if you don't want the files to be loaded
+       * - pass in loadContents false if you don't want the files to be loaded
        *   this is useful in case you know the files aren't ready yet on the
        *   server
        */
-      YabiFileSelector.prototype.updateBrowser = function(loc, dontLoadContents) {
-        if (Y.Lang.isUndefined(dontLoadContents)) {
-            dontLoadContents = false;
+      YabiFileSelector.prototype.updateBrowser = function(loc, loadContents) {
+        if (Y.Lang.isUndefined(loadContents)) {
+            loadContents = true;
         }
         //console.log(location);
         this.pathComponents = loc.pathComponents.slice();
@@ -122,7 +122,7 @@ YUI().use('dd-constrain', 'dd-proxy', 'dd-drop', 'io', 'json-parse',
           this.enableUpload();
         }
 
-        if (!dontLoadContents) {
+        if (loadContents) {
             this.hydrate(loc.toString());
         }
 
