@@ -29,6 +29,22 @@ class S3BotoMockedOutTest(unittest.TestCase):
         self.assertEquals([], ls_result[PATH]['files'])
         self.assertEquals([], ls_result[PATH]['directories'])
 
+    def test_ls_toplevel_single_file(self):
+        PATH = '/'
+        S3_PATH = drop_starting_slash(PATH)
+        when(self.bucket).get_all_keys(prefix=S3_PATH, delimiter='/').thenReturn([
+            make_key("some_file", size=123, last_modified=u'2000-01-30T00:11:22.000Z')])
+
+        ls_result = self.backend.ls(self.S3_URI % PATH)
+
+        self.assertEquals(0, len(ls_result[PATH]['directories']))
+        self.assertEquals(1, len(ls_result[PATH]['files']))
+        ls_item = ls_result[PATH]['files'][0]
+        self.assertEquals('some_file', ls_item[0])
+        self.assertEquals(123, ls_item[1])
+        self.assertEquals('Sun, 30 Jan 2000 00:11:22', ls_item[2])
+        self.assertEquals(False, ls_item[3], "Not a symlink")
+
     def test_ls_for_single_file(self):
         PATH = '/some/path/some_file'
         S3_PATH = drop_starting_slash(PATH)
