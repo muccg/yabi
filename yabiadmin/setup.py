@@ -6,6 +6,7 @@ packages = ['yabiadmin'] + \
            ['yabiadmin.yabi.migrations',
             'yabiadmin.yabi.migrationutils',
             'yabiadmin.yabi.templatetags',
+            'yabiadmin.yabifeapp.features',
             'yabiadmin.yabifeapp.management',
             'yabiadmin.yabifeapp.management.commands',
             'yabiadmin.yabiengine.migrations']
