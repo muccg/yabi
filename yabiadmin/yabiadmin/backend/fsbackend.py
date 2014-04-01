@@ -252,7 +252,13 @@ class FSBackend(BaseBackend):
 
             # TODO some check on the copy thread
 
-            return fifo
+            infile = open(fifo, "rb")
+            try:
+                os.unlink(download_as_fifo)
+            except OSError:
+                logger.exception("Couldn't delete remote file download fifo")
+            return infile
+
         except FileNotFoundError:
             raise
         except Exception as exc:
@@ -282,20 +288,19 @@ class FSBackend(BaseBackend):
 
             # TODO some check on the copy thread
 
-            return fifo
+            outfile = open(fifo, "wb")
+            try:
+                os.unlink(fifo)
+            except OSError:
+                logger.exception("Couldn't delete remote file upload fifo")
+            return outfile
         except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
 
     def save_envvars(self, task, envvars_uri):
         try:
             fifo = FSBackend.remote_file_download(self.yabiusername, envvars_uri)
-            with open(fifo) as f:
-                try:
-                    os.unlink(fifo)
-                except OSError:
-                    logger.exception("Couldn't remove fifo")
-                content = f.read()
-            envvars = json.loads(content)
+            envvars = json.load(fifo)
         except:
             logger.exception("Could not read contents of envvars file '%s' for task %s", envvars_uri, task.pk)
         else:
@@ -377,12 +382,9 @@ class FSBackend(BaseBackend):
                 upload_as_fifo = FSBackend.remote_file_upload(self.yabiusername, filename, uri)
                 # write our remnant to the fifo
                 remnant = os.path.join(dirpath, filename)
-                #process = execute([CP_PATH, remnant, upload_as_fifo])
-                #status = process.wait()
 
                 try:
-                    #shutil.copyfileobj(open(remnant, 'r'), open(upload_as_fifo, 'w+'))
-                    shutil.copyfileobj(open(remnant, 'r'), open(upload_as_fifo, 'w'))
+                    shutil.copyfileobj(open(remnant, 'rb'), upload_as_fifo)
                 except Exception as exc:
                     logger.error('copy to upload fifo failed')
                     raise RetryException(exc, traceback.format_exc())

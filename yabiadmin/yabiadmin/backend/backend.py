@@ -41,25 +41,13 @@ def put_file(yabiusername, filename, uri):
     Returns the opened fifo for the upload to write to
     """
     from yabiadmin.backend.fsbackend import FSBackend
-    upload_as_fifo = FSBackend.remote_file_upload(yabiusername, filename, uri)
-    upload = open(upload_as_fifo, 'w')
-    try:
-        os.unlink(upload_as_fifo)
-    except OSError as exc:
-        logger.warning("Couldn't delete fifo: %s" % exc)
-    return upload
+    return FSBackend.remote_file_upload(yabiusername, filename, uri)
 
 
 def get_file(yabiusername, uri):
     """Get a file from a backend"""
     from yabiadmin.backend.fsbackend import FSBackend
-    download_as_fifo = FSBackend.remote_file_download(yabiusername, uri)
-    download = open(download_as_fifo)
-    try:
-        os.unlink(download_as_fifo)
-    except OSError as exc:
-        logger.warning("Couldn't delete fifo: %s" % exc)
-    return download
+    return FSBackend.remote_file_download(yabiusername, uri)
 
 
 def copy_file(yabiusername, src_uri, dst_uri):
