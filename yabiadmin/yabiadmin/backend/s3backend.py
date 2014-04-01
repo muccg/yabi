@@ -33,23 +33,20 @@ import traceback
 import boto
 from functools import partial
 from itertools import ifilter
-import dateutil.parser
-import threading
 from io import BytesIO
 from itertools import ifilterfalse
 
 
 logger = logging.getLogger(__name__)
 
-
 NEVER_A_SYMLINK = False
 DELIMITER = '/'
 
-ERROR_STATUS = -1
-OK_STATUS = 0
-
-
 class S3Backend(FSBackend):
+    """
+    A key-value storage backend which uses Amazon's S3 object storage
+    service through the boto package.
+    """
 
     def __init__(self, *args, **kwargs):
         FSBackend.__init__(self, *args, **kwargs)
@@ -61,17 +58,6 @@ class S3Backend(FSBackend):
                 raise ValueError("bucket not initialised")
             self._bucket = self.connect_to_bucket(name)
         return self._bucket
-
-    def fifo_to_remote(self, uri, fifo_name, queue=None):
-        thread = threading.Thread(target=self.upload_file, args=(uri, fifo_name, queue))
-        thread.start()
-        return thread
-
-    def remote_to_fifo(self, uri, fifo_name, queue=None):
-        thread = threading.Thread(target=self.download_file, args=(uri, fifo_name, queue))
-        thread.start()
-        return thread
-
 
     @staticmethod
     def is_item_matching_name(name, item):
@@ -110,8 +96,8 @@ class S3Backend(FSBackend):
             # Keys correspond to files, prefixes to directories
             keys, prefixes = partition(lambda k: type(k) == boto.s3.key.Key, keys_and_prefixes)
 
-            files = [(basename(k.name), k.size, format_iso8601_date(k.last_modified), NEVER_A_SYMLINK) for k in keys]
-            dirs = [(basename(p.name), 0, None, NEVER_A_SYMLINK) for p in prefixes]
+            files = [(self.basename(k.name), k.size, self.format_iso8601_date(k.last_modified), NEVER_A_SYMLINK) for k in keys]
+            dirs = [(self.basename(p.name), 0, None, NEVER_A_SYMLINK) for p in prefixes]
 
             # Called on a directory with URI not ending in DELIMITER
             # We call ourself again correctly
@@ -149,7 +135,7 @@ class S3Backend(FSBackend):
 
     def mkdir(self, uri):
         self.set_cred(uri)
-        dir_uri = uri if uri.endswith(DELIMITER) else uri + DELIMITER
+        dir_uri = self.ensure_trailing_slash(uri)
         self.rm(dir_uri)
         bucket_name, path = self.parse_s3_uri(dir_uri)
 
@@ -179,20 +165,18 @@ class S3Backend(FSBackend):
 
         return bucket_name, path
 
+    def get_access_keys(self):
+        _, aws_access_key_id, aws_secret_access_key, _ = get_credential_data(self.cred.credential)
+        return aws_access_key_id, aws_secret_access_key
+
     def connect_to_bucket(self, bucket_name):
         aws_access_key_id, aws_secret_access_key = self.get_access_keys()
         connection = boto.connect_s3(aws_access_key_id, aws_secret_access_key)
 
         return connection.get_bucket(bucket_name)
 
-    def get_access_keys(self):
-        _, aws_access_key_id, aws_secret_access_key, _ = get_credential_data(self.cred.credential)
-        return aws_access_key_id, aws_secret_access_key
-
-    def download_file(self, uri, filename, queue=None):
+    def download_file(self, uri, filename, queue):
         try:
-            if queue is None:
-                queue = NullQueue()
             bucket_name, path = self.parse_s3_uri(uri)
 
             bucket = self.connect_to_bucket(bucket_name)
@@ -205,11 +189,8 @@ class S3Backend(FSBackend):
             logger.exception("Exception thrown while S3 downloading %s to %s", uri, filename)
             queue.put(ERROR_STATUS)
 
-    def upload_file(self, uri, filename, queue=None):
+    def upload_file(self, uri, filename, queue):
         try:
-            if queue is None:
-                queue = NullQueue()
-            logger.debug("upload_file %s to %s", filename, uri)
             bucket_name, path = self.parse_s3_uri(uri)
 
             bucket = self.connect_to_bucket(bucket_name)
@@ -259,28 +240,20 @@ class S3Backend(FSBackend):
 
         return result
 
-    def parent_dir_uri(self, uri):
-        uri = uri.rstrip(DELIMITER)
-        return uri[:uri.rfind(DELIMITER)] + DELIMITER
-
-    def path_exists(self, uri, bucket=None):
-        if bucket is None:
-            bucket = self.bucket()
+    def _path_exists(self, uri):
+        bucket = self.bucket()
         _, path = self.parse_s3_uri(uri)
         return bucket.get_key(path.lstrip(DELIMITER)) is not None
 
+    # URI and path helpers
 
-def basename(key_name, delimiter=DELIMITER):
-    name = key_name.rstrip(delimiter)
-    delimiter_last_position = name.rfind(delimiter)
-    return name[delimiter_last_position + 1:]
+    @classmethod
+    def ensure_trailing_slash(cls, uri):
+        return uri if uri.endswith(DELIMITER) else uri + DELIMITER
 
+    def basename(self, key_name):
+        return FSBackend.basename(self, key_name.rstrip(DELIMITER))
 
-def format_iso8601_date(iso8601_date):
-    date = dateutil.parser.parse(iso8601_date)
-    return date.strftime("%a, %d %b %Y %H:%M:%S")
-
-
-class NullQueue(object):
-    def put(self, value):
-        pass
+    def parent_dir_uri(self, uri):
+        uri = uri.rstrip(DELIMITER)
+        return uri[:uri.rfind(DELIMITER)] + DELIMITER

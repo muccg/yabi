@@ -33,6 +33,7 @@ from yabiadmin.backend.basebackend import BaseBackend
 from yabiadmin.backend.pooling import get_ssh_pool_manager
 from yabiadmin.yabiengine.urihelper import url_join, uriparse, is_same_location
 from yabiadmin.constants import ENVVAR_FILENAME
+import dateutil
 import logging
 import traceback
 import shutil
@@ -416,3 +417,13 @@ class FSBackend(BaseBackend):
 
     def symbolic_link(self, source, destination):
         raise NotImplementedError("")
+
+    @staticmethod
+    def format_iso8601_date(iso8601_date):
+        date = dateutil.parser.parse(iso8601_date)
+        return date.strftime("%a, %d %b %Y %H:%M:%S")
+
+
+class NullQueue(object):
+    def put(self, value):
+        pass
