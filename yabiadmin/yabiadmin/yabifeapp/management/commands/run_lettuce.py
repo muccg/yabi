@@ -40,7 +40,7 @@ class Command(BaseCommand):
         app_name = options.get('app_name')
         if app_name:
             module = __import__(app_name)
-            path = '%s/features/' % os.path.dirname(module.__file__)
+            path = '%s/yabifeapp/features/' % os.path.dirname(module.__file__)
             print "Feature path = %s" % path
             runner = Runner(path, verbosity=options.get('verbosity'),
                             enable_xunit=options.get('enable_xunit'),
