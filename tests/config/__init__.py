@@ -4,30 +4,39 @@ import os, ConfigParser
 
 class Configuration(object):
 
-    def __init__(self, section='DEFAULT'):
-        self.config_file = os.path.join(os.path.dirname(os.path.realpath(__file__)), "tests.conf" )
+    def __init__(self, filename=None, section=None):
+        config_dir = os.path.dirname(os.path.realpath(__file__))
+        default_config_file = os.path.join(config_dir, "tests.conf")
+        self._load_conf_file(default_config_file, section)
+        if filename:
+            self._load_conf_file(filename, section)
+
+    def _load_conf_file(self, filename=None, section=None):
+        print("Loading config file: %s" % filename)
+        cp = ConfigParser.ConfigParser()
+        cp.readfp(open(filename))
+        self._load_section(cp, "DEFAULT")
+        if section:
+            self._load_section(cp, section)
+
+    def _load_section(self, cp, section):
         print("Loading config section: %s" % section)
-        self.load(section)
+        for attr, key in self.configs:
+            option = key or attr
+            if cp.has_option(section, option):
+                setattr(self, attr, cp.get(section, option))
 
     configs = (
+        ("yabidir", "yabi_dir"),
+        ("yabish", "yabish"),
         ("yabiusername", "yabi_username"),
         ("yabipassword", "yabi_password"),
         ("yabiadminusername", "yabi_admin_username"),
         ("yabiadminpassword", "yabi_admin_password"),
         ("yabiurl", "yabi_url"),
-        ("yabibeurl", "yabibe_url"),
         ("jsondir", "json_dir"),
         ("tmpdir", "tmp_dir"),
         ("testdatadir", "test_data_dir"),
-        ("dbrebuild", "db_rebuild"),
-        ("yabidir", "yabi_dir"),
-        ("yabish", "yabish"),
-        ("startyabi", "startyabi"),
-        ("stopyabi", "stopyabi"),
-        ("stopyabibe", "stopyabibe"),
-        ("startyabibe", "startyabibe"),
-        ("cleanyabi", "cleanyabi"),
-        ("yabistatus", "yabistatus"),
         ("s3_host", None),
         ("s3_port", None),
         ("s3_user", None),
@@ -40,9 +49,3 @@ class Configuration(object):
         ("swift_password", None),
         ("swift_bucket", None),
     )
-
-    def load(self, section):
-        cp = ConfigParser.ConfigParser()
-        cp.readfp(open(self.config_file))
-        for attr, key in self.configs:
-            setattr(self, attr, cp.get(section, key or attr))
