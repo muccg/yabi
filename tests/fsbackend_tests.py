@@ -411,10 +411,13 @@ class FSBackendTests(object):
 @attr("s3", "backend")
 class S3BackendTests(FSBackendTests, RequestTest):
     """
-    Tests against our yabitest bucket in the syd region. This bucket
-    has a 1 day object expiration rule. If ci tests start to cost
-    money (they shouldn't) then maybe the fakes3 server could be used
-    instead.
+    Tests against either of:
+    1. Our yabitest bucket in the syd region. This bucket
+       has a 1 day object expiration rule. Put s3_bucket=yabitest in
+       tests.conf.
+    2. A fakes3 server launched by the test class. Fakes3 isn't quite
+       good enough so a lot of tests are disabled. Put
+       s3_bucket=fakes3 in tests.conf.
     """
 
     scheme = "s3"
@@ -436,11 +439,38 @@ class S3BackendTests(FSBackendTests, RequestTest):
         RequestTest.setUp(self)
         fakes3_setup(self, "fakes3")
 
+    def skip_if_fakes3(self, msg=None):
+        if self.hostname == "fakes3":
+            self.skipTest(msg or "test doesn't work with fakes3")
+
     def test_ls_dir_no_exist(self):
         self.skipTest("doesn't work for s3")
 
+    def test_large_upload(self):
+        self.skip_if_fakes3("multipart upload doesn't work with fakes3")
+        super(S3BackendTests, self).test_large_upload()
+
     def test_ls_prefix(self):
-        self.skipTest("s3 backend not returning same as other backends")
+        self.skip_if_fakes3()
+        super(S3BackendTests, self).test_ls_prefix()
+
+    def test_ls_something(self):
+        self.skip_if_fakes3()
+        super(S3BackendTests, self).test_ls_something()
+
+    def test_mkdir_ls_rmdir(self):
+        self.skip_if_fakes3()
+        super(S3BackendTests, self).test_mkdir_ls_rmdir()
+
+    def test_rm_prefix(self):
+        self.skip_if_fakes3()
+        super(S3BackendTests, self).test_rm_prefix()
+
+    def getcmdok(self, cmd, uri):
+        if cmd == "rm" and self.hostname == "fakes3":
+            logger.warning("rm disabled on fakes3")
+        else:
+            return super(S3BackendTests, self).getcmdok(cmd, uri)
 
 @attr("swift", "backend")
 class SwiftBackendTests(FSBackendTests, RequestTest):
