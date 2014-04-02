@@ -192,9 +192,11 @@ do_nosetests() {
     source ${VIRTUALENV}/bin/activate
 
     NOSETESTS="nosetests --with-xunit --xunit-file=tests.xml -v --logging-clear-handlers"
+    IGNORES="-a \!external_service -I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py"
+    TEST_CASES="tests yabiadmin/yabiadmin"
 
     # Runs the end-to-end tests in the Yabitests project
-    ${NOSETESTS} -I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py tests yabiadmin/yabiadmin
+    ${NOSETESTS} ${IGNORES} ${TEST_CASES}
 
     # ${NOSETESTS} tests.simple_tool_tests:LocalExecutionRedirectTest
     # ${NOSETESTS} tests.simple_tool_tests

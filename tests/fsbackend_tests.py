@@ -472,7 +472,7 @@ class S3BackendTests(FSBackendTests, RequestTest):
         else:
             return super(S3BackendTests, self).getcmdok(cmd, uri)
 
-@attr("swift", "backend")
+@attr("swift", "backend", "external_service")
 class SwiftBackendTests(FSBackendTests, RequestTest):
     scheme = "swift"
 

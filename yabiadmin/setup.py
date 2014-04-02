@@ -65,7 +65,7 @@ dev_requires = [
 tests_require = [
     'requests==1.2.0',
     'django-nose',
-    'nose==1.2.1',
+    'nose==1.3.1',
     'mockito>=0.5.0,<0.6.0',
     'sniffer==0.3.2',
     'pyinotify==0.9.4',
