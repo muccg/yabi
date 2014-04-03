@@ -1,18 +1,7 @@
 import os
 from setuptools import setup
 
-packages = ['yabiadmin'] + ['yabiadmin.%s' % app for app in ['yabifeapp', 'yabiengine', 'yabi', 'uploader', 'preview', 'registration', 'backend']] + ['yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations', 'yabiadmin.yabi.templatetags']
-
-data_files = {}
-start_dir = os.getcwd()
-for package in packages:
-    data_files[package] = []
-    path = package.replace('.', '/')
-    os.chdir(path)
-    for data_dir in ('templates', 'static', 'migrations', 'fixtures'):
-        data_files[package].extend(
-            [os.path.join(subdir, f) for (subdir, dirs, files) in os.walk(data_dir) for f in files])
-    os.chdir(start_dir)
+packages = ['yabiadmin'] + ['yabiadmin.%s' % app for app in ['yabifeapp', 'yabiengine', 'yabi', 'uploader', 'preview', 'backend']] + ['yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations', 'yabiadmin.yabi.templatetags']
 
 install_requires = [
     'Django==1.5.4',
@@ -20,14 +9,11 @@ install_requires = [
     # Bug is still under discussion: https://bugs.launchpad.net/pytz/+bug/1204837
     'pytz>=2013b',
     'ccg-webservices==0.1.2',
-    'ccg-registration==0.8-alpha-1',
-    'ccg-makoloader==0.2.6',
     'ccg-introspect==0.1.2',
-    'ccg-django_utils==0.1.9',
+    'ccg-django-utils==0.1.10',
     'ccg-auth==0.3.3',
     'anyjson==0.3.3',
     'celery==3.1.9',
-    'django-celery==3.1.9',
     'amqp==1.4.4',
     'amqplib==1.0.2',
     'kombu==3.0.13',
@@ -47,6 +33,7 @@ install_requires = [
     'python-dateutil>=2.1,<3.0',
     'yaphc==0.1.5',
     'six>=1.4,<1.5',
+    'flower>=0.5',
 ]
 
 # Compiled python modules which are usually provided by system packages
@@ -58,7 +45,6 @@ install_requires_compiled = [
 
 dev_requires = [
     'flake8>=2.0,<2.1',
-    'flower>=0.5',
     'Werkzeug',
     'gunicorn',
 ]
@@ -83,10 +69,8 @@ mysql_requires = [
 
 dependency_links = [
     'https://ccg-django-extras.googlecode.com/files/ccg-webservices-0.1.2.tar.gz',
-    'https://ccg-django-extras.googlecode.com/files/ccg-registration-0.8-alpha-1.tar.gz',
     'https://ccg-django-extras.googlecode.com/files/ccg-introspect-0.1.2.tar.gz',
-    'https://ccg-django-extras.googlecode.com/files/ccg-makoloader-0.2.6.tar.gz',
-    'https://bitbucket.org/ccgmurdoch/ccg-django-utils/downloads/ccg-django-utils-0.1.9.tar.gz',
+    'https://bitbucket.org/ccgmurdoch/ccg-django-utils/downloads/ccg-django-utils-0.1.10.tar.gz',
     'https://ccg-django-extras.googlecode.com/files/ccg-auth-0.3.3.tar.gz',
     'https://yaphc.googlecode.com/files/yaphc-0.1.5.tgz',
     'https://github.com/downloads/muccg/djamboloader/djamboloader-0.1.2.tar.gz',
@@ -103,7 +87,7 @@ if not importlib_available:
     install_requires.append('importlib>=1.0.1,<1.1.0')
 
 setup(name='yabiadmin',
-      version='7.2.0',
+      version='7.2.1',
       description='Yabi Admin',
       long_description='Yabi front end and administration web interface',
       author='Centre for Comparative Genomics',
@@ -112,7 +96,7 @@ setup(name='yabiadmin',
       package_data={
           '': ["%s/%s" % (dirglob, fileglob)
               for dirglob in (["."] + ['/'.join(['*'] * num) for num in range(1, 15)])                         # yui is deeply nested
-              for fileglob in ['*.mako', '*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg']]
+              for fileglob in ['*.html', '*.css', '*.js', '*.png', '*.jpg', 'favicon.ico', '*.gif', 'mime.types', '*.wsgi', '*.svg', '*.feature']]
       },
       zip_safe=False,
       scripts=["yabiadmin/yabiadmin-manage.py"],

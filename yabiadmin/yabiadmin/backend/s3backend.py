@@ -73,7 +73,8 @@ class S3Backend(FSBackend):
         return thread
 
 
-    def is_item_matching_name(self, name, item):
+    @staticmethod
+    def is_item_matching_name(name, item):
         """We want to eliminate key names starting with the same prefix,
            but include keys at the next level (but not deeper) for dirs.
            Ex: listing for 'a'
@@ -86,7 +87,7 @@ class S3Backend(FSBackend):
             item_name_end = item.name.rstrip(DELIMITER)[len(name_and_delimiter):]
             return DELIMITER not in item_name_end
 
-        return (item.name == name or
+        return (not name or item.name == name or
                 item.name.startswith(name_and_delimiter) and no_more_delimiters(item))
 
     def ls(self, uri):

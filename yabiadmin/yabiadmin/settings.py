@@ -52,7 +52,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.middleware.transaction.TransactionMiddleware',
     'django.middleware.doc.XViewMiddleware',
-    'yabiadmin.ssl.SSLRedirect',
+    'ccg_django_utils.middleware.ssl.SSLRedirect',
     'django.contrib.messages.middleware.MessageMiddleware'
 ]
 
@@ -309,6 +309,7 @@ CELERY_ACKS_LATE = True
 
 # Set this to 1000 or even higher on LIVE
 CELERYD_MAX_TASKS_PER_CHILD = 100
+CELERYD_FORCE_EXECV = True
 
 ### PREVIEW SETTINGS
 
