@@ -194,7 +194,7 @@ nosetests() {
 
     # Runs the end-to-end tests in the Yabitests project
     ${VIRTUALENV}/bin/nosetests --with-xunit --xunit-file=tests.xml -I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py -v --logging-clear-handlers tests yabiadmin/yabiadmin
-    #{VIRTUALENV}/bin/nosetests -v tests.simple_tool_tests:LocalExecutionRedirectTest
+    #${VIRTUALENV}/bin/nosetests -v tests.simple_tool_tests:LocalExecutionRedirectTest
     #${VIRTUALENV}/bin/nosetests -v tests.simple_tool_tests
     #${VIRTUALENV}/bin/nosetests -v tests.s3_connection_tests
     #${VIRTUALENV}/bin/nosetests -v tests.ssh_tests
@@ -214,14 +214,14 @@ dropdb() {
     case ${YABI_CONFIG} in
     test_mysql)
         mysql -v -uroot -e "drop database test_yabi;" || true
-        mysql -v -uroot -e "create database test_yabi default charset=UTF8;" || true
+        mysql -v -uroot -e "create database test_yabi default charset=UTF8 default collate utf8_bin;" || true
         ;;
     test_postgresql)
         psql -aeE -U postgres -c "SELECT pg_terminate_backend(pg_stat_activity.procpid) FROM pg_stat_activity where pg_stat_activity.datname = 'test_yabi'" && psql -aeE -U postgres -c "alter user yabiapp createdb;" template1 && psql -aeE -U postgres -c "alter database test_yabi owner to yabiapp" template1 && psql -aeE -U yabiapp -c "drop database test_yabi" template1 && psql -aeE -U yabiapp -c "create database test_yabi;" template1
         ;;
     dev_mysql)
 	echo "Drop the dev database manually:"
-        echo "mysql -uroot -e \"drop database dev_yabi; create database dev_yabi default charset=UTF8;\""
+        echo "mysql -uroot -e \"drop database dev_yabi; create database dev_yabi default charset=UTF8 default collate utf8_bin;\""
         exit 1
         ;;
     dev_postgresql)
