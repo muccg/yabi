@@ -145,6 +145,8 @@ ln -fsT %{installdir}/bin/%{webappname}-manage.py %{buildroot}/%{_bindir}/%{weba
 # Install yabiadmin's celeryd init script system wide
 install -m 0755 -D init_scripts/centos/celeryd.init %{buildroot}/etc/init.d/celeryd
 install -m 0644 -D init_scripts/centos/celeryd.default %{buildroot}/etc/default/celeryd
+# also install celery-flower
+install -m 0755 -D init_scripts/centos/celery-flower.init %{buildroot}/etc/init.d/celery-flower
 
 # make dirs for celery
 mkdir -p %{buildroot}/var/log/celery
@@ -215,6 +217,7 @@ fi
 %attr(-,celery,,celery) /var/log/celery
 %attr(-,root,,root) /etc/init.d/celeryd
 %attr(-,root,,root) /etc/default/celeryd
+%attr(-,root,,root) /etc/init.d/celery-flower
 
 %files shell
 %defattr(-,root,root,-)
