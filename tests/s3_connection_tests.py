@@ -55,7 +55,12 @@ class S3FileUploadTest(RequestTest):
         self.assertEqual(r.status_code, 200)
 
         data = json.loads(r.text)
-        self.assertEqual(data, {"message": "no message", "level": "success"})
+        self.assertEqual(data, {
+            "message": "no message",
+            "level": "success",
+            "num_fail": 0,
+            "num_success": 1,
+        })
 
         path = "/"  # original test case value
         path = ""   # a value which causes test to pass
