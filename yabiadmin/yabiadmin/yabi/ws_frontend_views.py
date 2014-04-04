@@ -342,8 +342,9 @@ def get_workflow(request, workflow_id):
     workflow_id = int(workflow_id)
     workflows = EngineWorkflow.objects.filter(id=workflow_id)
     if len(workflows) != 1:
-        logger.critical('%s' % e)
-        return JsonMessageResponseNotFound(e)
+        msg = 'Workflow %d not found' % workflow_id
+        logger.critical(msg)
+        return JsonMessageResponseNotFound(msg)
 
     response = workflow_to_response(workflows[0])
 
