@@ -93,8 +93,8 @@ _statuses_order.reverse()
 STATUSES_REVERSE_ORDER = _statuses_order
 
 # validation settings, these reflect the types of backend that yabi can handle
-EXEC_SCHEMES = ['sge', 'torque', 'ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex', 'explode', 'null']
-FS_SCHEMES = ['http', 'https', 'yabifs', 'scp', 'sftp', 's3', 'localfs', 'file', 'null']
+EXEC_SCHEMES = ['ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex', 'null']
+FS_SCHEMES = ['scp', 'sftp', 's3', 'localfs', 'null']
 VALID_SCHEMES = EXEC_SCHEMES + FS_SCHEMES
 
 # Celery Settings

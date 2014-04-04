@@ -140,11 +140,6 @@ if not os.path.exists(FILE_UPLOAD_TEMP_DIR):
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#append-slash
 APPEND_SLASH = True
 
-# validation settings, these reflect the types of backend that yabi can handle
-EXEC_SCHEMES = ['ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex', 'null']
-FS_SCHEMES = ['scp', 'sftp', 's3', 'localfs', 'null']
-VALID_SCHEMES = EXEC_SCHEMES + FS_SCHEMES
-
 ##
 ## CAPTCHA settings
 ##
