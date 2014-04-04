@@ -31,9 +31,28 @@ from yabiadmin import constants
 from yabiadmin.crypto_utils import looks_like_annotated_block, any_unencrypted, any_annotated_block
 from django.contrib import admin
 
+SCHEMES_WITHOUT_LCOPY = ('s3', 'swift')
+SCHEMES_WITHOUT_LINKING = ('s3', 'swift')
+
+
 class BackendForm(forms.ModelForm):
     class Meta:
         model = Backend
+
+    def clean(self):
+        cleaned_data = super(BackendForm, self).clean()
+        scheme = self.cleaned_data.get('scheme')
+        lcopy_supported = self.cleaned_data.get('lcopy_supported')
+        link_supported = self.cleaned_data.get('link_supported')
+
+        if lcopy_supported and scheme in SCHEMES_WITHOUT_LCOPY:
+            self._errors['lcopy_supported'] = self.error_class(["Local Copy not supported on %s." % scheme])
+            del cleaned_data['lcopy_supported']
+        if link_supported and scheme in SCHEMES_WITHOUT_LINKING:
+            self._errors['link_supported'] = self.error_class(["Linking not supported on %s." % scheme])
+            del cleaned_data['link_supported']
+
+        return cleaned_data
 
     def clean_scheme(self):
         scheme = self.cleaned_data['scheme']
