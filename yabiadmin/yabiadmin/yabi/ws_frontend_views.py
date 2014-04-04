@@ -89,18 +89,22 @@ def menu(request):
 
     try:
         all_tools = {}
-        toolsets = ToolSet.objects.filter(users__name=username)
-        for toolset in toolsets:
-            for toolgroup in ToolGrouping.objects.filter(tool_set=toolset):
-                tg = all_tools.setdefault(toolgroup.tool_group.name, {})
-                if toolgroup.tool.enabled:  # only include tools that are enabled
-                    tool = tg.setdefault(toolgroup.tool.name, {})
-                    if not tool:
-                        tool["name"] = toolgroup.tool.name
-                        tool["displayName"] = toolgroup.tool.display_name
-                        tool["description"] = toolgroup.tool.description
-                        tool["outputExtensions"] = toolgroup.tool.output_filetype_extensions()
-                        tool["inputExtensions"] = toolgroup.tool.input_filetype_extensions()
+        prefetch_related = (
+            'tool__tooloutputextension_set__file_extension',
+            'tool__toolparameter_set__accepted_filetypes__extensions',
+        )
+        select_related = ('tool_group',)
+
+        for toolgroup in ToolGrouping.objects.filter(tool_set__users__name=username).prefetch_related(*prefetch_related).select_related(*select_related):
+            tg = all_tools.setdefault(toolgroup.tool_group.name, {})
+            if toolgroup.tool.enabled:  # only include tools that are enabled
+                tool = tg.setdefault(toolgroup.tool.name, {})
+                if not tool:
+                    tool["name"] = toolgroup.tool.name
+                    tool["displayName"] = toolgroup.tool.display_name
+                    tool["description"] = toolgroup.tool.description
+                    tool["outputExtensions"] = toolgroup.tool.output_filetype_extensions()
+                    tool["inputExtensions"] = toolgroup.tool.input_filetype_extensions()
 
         # from here down is getting the tools into a form
         # used by the front end so no changes are needed there
