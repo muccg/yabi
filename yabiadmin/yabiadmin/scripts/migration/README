@@ -1,0 +1,5 @@
+This scripts were written to migrate the AWS Yabi server's data from MySQL to Postgres.
+
+They probably won't be reused, but was trouble finding a good place for them so they will live here for now.
+
+
