@@ -184,13 +184,12 @@ MAKO_MODULENAME_CALLABLE = ''
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'USER': 'root',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'USER': 'yabiapp',
         'NAME': 'dev_yabi',
-        'PASSWORD': '',
-        'HOST': 'localhost',
+        'PASSWORD': 'yabiapp',
+        'HOST': '',
         'PORT': '',
-        'OPTIONS': {'init_command': 'SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED'},
     }
 }
 

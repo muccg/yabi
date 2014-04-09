@@ -2,11 +2,14 @@ A guide to getting Yabi running for developers
 ==============================================
 
 Our main target deployment platform is the latest version of CentOS (currently 6.4).
-That's why we also develop on the same OS. 
+That's why we also develop on the same OS.
 Developing on other Linux distributions or other versions shouldn't be a problem, but
-if you don't have other preferences, developing on the latest CentOS is a good 
+if you don't have other preferences, developing on the latest CentOS is a good
 practical default (ie. doing so and following this documentation would probably
 mean things will just work).
+
+All our Yabi installation are using the Postgresql database. We do recommend it as
+a first choice over MySQL or other databases.
 
 Dependencies
 ------------
@@ -15,7 +18,7 @@ Dependencies
     o Gcc
     o Mercurial
     o Virtualenv
-    o MySQL (mysql-server, mysql, mysql-devel, MySQL-python)
+    o Postgresql
     o libxslt-devel, libxml2-devel
     o RabbitMQ (and Erlang)
 
@@ -30,37 +33,36 @@ To install the dependencies on CentOS (tested on 6.4):
 
   o To install RabbitMQ follow the instructions at:
 
-    http://www.rabbitmq.com/install-rpm.html  
+    http://www.rabbitmq.com/install-rpm.html
 
 
 To install the dependencies on Ubuntu (tested on 13.4):
 
 
   o Python is installed by default.
- 
+
   o For all the other dependencies but RabbitMQ:
 
-    $ sudo apt-get install gcc mercurial python-dev python-virtualenv libpq-dev mysql-server mysql-client libxml2-dev libxslt-dev python-mysqldb libmysqlclient-dev 
+    $ sudo apt-get install gcc mercurial python-dev python-virtualenv libpq-dev mysql-server mysql-client libxml2-dev libxslt-dev python-mysqldb libmysqlclient-dev postgresql
 
   o To install RabbitMQ follow the instructions at:
- 
+
     http://www.rabbitmq.com/install-debian.html
 
 
-After you've installed all dependencies, make sure you start MySQL and RabbitMQ
+After you've installed all dependencies, make sure you start Postgresql and RabbitMQ
 
-    On CentOS:
-      # service mysqld start 
-
-    On Ubuntu
-      # service mysql start 
+    # service postgresql start
 
     # service rabbitmq-server start
 
-Create a development and test database in MySQL for Yabi:
+Create the user yabiapp with password yabiapp in Postgres. Make sure you can connect using this user and password with psql.
+Creating Postgres users is explained in the Postgres documentation at: http://www.postgresql.org/docs/9.3/static/database-roles.html .
 
-    $ mysql -uroot -e "create database dev_yabi default charset=UTF8;"
-    $ mysql -uroot -e "create database test_yabi default charset=UTF8;"
+Create a development and a test database for Yabi using the yabiapp user you've just created. Your commands should be similar to:
+
+    $ psql -aeE -U yabiapp -c "create database dev_yabi;" template1
+    $ psql -aeE -U yabiapp -c "create database test_yabi;" template1
 
 
 Running Yabi
@@ -70,7 +72,7 @@ To run Yabi you need to start Yabi Admin and the Yabi Admin Celery server.
 
 All this components can be controlled from the top level directory using 'develop.sh'.
 
-    $ ./develop.sh 
+    $ ./develop.sh
 
 To create virtual pythons for running a local development stack:
 
@@ -98,11 +100,11 @@ Access
 Running Tests
 -------------
 
-Yabi has an end to end test suite for testing the full Yabi stack. 
+Yabi has an end to end test suite for testing the full Yabi stack.
     o For the Torque tests you will need a working Torque installation
     o For the PBS Pro tests you will need a working PBS Pro installation
     o For the ssh tests, add tests/test_data/yabitests.pub to ~/.ssh/authorized_keys
 
-    $ ./develop.sh test_mysql
+    $ ./develop.sh test_postgresql
 
 

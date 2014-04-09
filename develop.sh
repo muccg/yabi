@@ -23,7 +23,7 @@ PIP_OPTS='--download-cache ~/.pip/cache --process-dependency-links'
 
 
 if [ "${YABI_CONFIG}" = "" ]; then
-    YABI_CONFIG="dev_mysql"
+    YABI_CONFIG="dev_postgresql"
 fi
 
 VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
@@ -52,10 +52,10 @@ settings() {
         export DJANGO_SETTINGS_MODULE="yabiadmin.testpostgresqlsettings"
         ;;
     dev_mysql)
-        export DJANGO_SETTINGS_MODULE="yabiadmin.settings"
+        export DJANGO_SETTINGS_MODULE="yabiadmin.mysqlsettings"
         ;;
     dev_postgresql)
-        export DJANGO_SETTINGS_MODULE="yabiadmin.postgresqlsettings"
+        export DJANGO_SETTINGS_MODULE="yabiadmin.settings"
         ;;
     *)
         echo "No YABI_CONFIG set, exiting"
@@ -94,7 +94,7 @@ ci_remote_build() {
 ci_remote_test() {
     TEST_PLAN=$1
     if [ "${TEST_PLAN}" = "" ]; then
-        TEST_PLAN="test_mysql"
+        TEST_PLAN="test_postgresql"
     fi
 
     echo "Test plan ${TEST_PLAN}"
