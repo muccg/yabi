@@ -25,7 +25,7 @@
 # OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 #
 ### END COPYRIGHT ###
-# -*- coding: utf-8 -*-
+
 from django.conf.urls.defaults import *
 
 # frontend webservices
@@ -40,6 +40,7 @@ urlpatterns = patterns(
     url(r'^fs/copy[/]*$', 'copy', name='copy'),
     url(r'^fs/rcopy[/]*$', 'rcopy', name='rcopy'),
     url(r'^fs/rm[/]*$', 'rm', name='rm'),
+    url(r'^fs/mkdir/?$', 'mkdir', name='mkdir'),
 
     url(r'^workflows/submit[/]*$', 'submit_workflow'),
     url(r'^workflows/get/(?P<workflow_id>\d+)[/]*$', 'get_workflow'),

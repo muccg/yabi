@@ -67,7 +67,6 @@ INSTALLED_APPS = [
     'yabiadmin.yabifeapp',
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
-    'yabiadmin.uploader',
     'kombu.transport.django',
     'django_extensions',
     'south',

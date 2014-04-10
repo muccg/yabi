@@ -46,95 +46,66 @@ logger = logging.getLogger(__name__)
 
 pool_manager = get_ssh_pool_manager()
 
-class SFTPCopyThread(threading.Thread):
+class SFTPBackend(FSBackend):
 
-    def __init__(self, host=None, port=None, credential=None, localpath=None, remotepath=None, copy=None, hostkey=None, purge=None, queue=None, cwd=None):
-        threading.Thread.__init__(self)
-        self.hostname = host
-        self.port = port
-        self.credential = credential
-        self.localpath = localpath
-        self.remotepath = remotepath
-        self.copy = copy
-        self.hostkey = hostkey
-        self.purge = purge
-        self.queue = queue
-        self.cwd = cwd
+    def _sftp_copy(self, host=None, port=None, credential=None,
+                   localpath=None, remotepath=None, copy=None,
+                   hostkey=None, cwd=None):
         assert copy == 'put' or copy == 'get'
 
-    def run(self):
-        status = -1
-        logger.debug('SFTPCopyThread {0} {1} {2}'.format(self.localpath, self.copy, self.remotepath))
+        status = False
+        logger.debug('SFTPCopyThread {0} {1} {2}'.format(localpath, copy, remotepath))
         ssh = None
         sftp = None
         try:
-            ssh = pool_manager.borrow(self.hostname, self.port, self.credential)
+            ssh = pool_manager.borrow(host, port, credential)
             sftp = ssh.open_sftp()
-            if self.copy == 'put':
-                sftp.put(self.localpath, self.remotepath, callback=None, confirm=True)
-            elif self.copy == 'get':
+            if copy == 'put':
+                sftp.put(localpath, remotepath, callback=None, confirm=True)
+            elif copy == 'get':
                 try:
-                    sftp.get(self.remotepath, self.localpath, callback=None)
+                    sftp.get(remotepath, localpath, callback=None)
                 # bogus error because stat of fifo returns 0
                 except IOError as ioerr:
                     msg = str(ioerr)
-                    if msg.startswith("size mismatch in get!  0 !="):
-                        status = 0
-                    else:
+                    if not msg.startswith("size mismatch in get!  0 !="):
+                        raise
+                # bogus error -- trying to stat, fifo already deleted
+                except OSError as oserr:
+                    if oserr.errno != errno.ENOENT:
                         raise
 
-            status = 0
+            status = True
 
         except Exception as exc:
             logger.error(traceback.format_exc())
             logger.error(exc)
         finally:
             if ssh is not None:
-                if sftp is not None: 
+                if sftp is not None:
                     sftp.close()
-                pool_manager.give_back(ssh, self.hostname, self.port, self.credential)
-            if self.queue is not None:
-                self.queue.put(status)
-            if self.purge is not None and os.path.exists(self.purge):
-                #os.unlink(self.purge)
-                # commented out above as it caused stage out to fail
-                pass
+                pool_manager.give_back(ssh, host, port, credential)
+        return status
 
-
-class SFTPBackend(FSBackend):
-
-    def fifo_to_remote(self, uri, fifo, queue=None):
-        """initiate a copy from local fifo to uri"""
+    def upload_file(self, uri, infile):
         scheme, parts = uriparse(uri)
-        assert os.path.exists(fifo)
-        thread = SFTPCopyThread(host=parts.hostname,
-                                port=parts.port,
-                                credential=self.cred.credential,
-                                localpath=fifo,
-                                remotepath=parts.path,
-                                copy='put',
-                                hostkey=None,
-                                purge=fifo,
-                                queue=queue)
-        thread.start()
-        return thread
+        return self._sftp_copy(host=parts.hostname,
+                               port=parts.port,
+                               credential=self.cred.credential,
+                               localpath=infile,
+                               remotepath=parts.path,
+                               copy='put',
+                               hostkey=None)
 
-    def remote_to_fifo(self, uri, fifo, queue=None):
-        """initiate a copy from remote file to fifo"""
+    def download_file(self, uri, outfile):
         scheme, parts = uriparse(uri)
-        assert os.path.exists(fifo)
-        # don't think we should purge fifo after writing, rather after reading completes
-        thread = SFTPCopyThread(host=parts.hostname,
-                                port=parts.port,
-                                credential=self.cred.credential,
-                                localpath=fifo,
-                                remotepath=parts.path,
-                                copy='get',
-                                hostkey=None,
-                                purge=None,
-                                queue=queue)
-        thread.start()
-        return thread
+        return self._sftp_copy(host=parts.hostname,
+                               port=parts.port,
+                               credential=self.cred.credential,
+                               localpath=outfile,
+                               remotepath=parts.path,
+                               copy='get',
+                               hostkey=None)
 
     def remote_uri_stat(self, uri):
         scheme, parts = uriparse(uri)
@@ -245,7 +216,7 @@ class SFTPBackend(FSBackend):
             output[parts.path] = results
             return output
         except Exception as exc:
-            logger.error(exc)
+            logger.exception("ls: %s" % uri)
             raise RetryException(exc, traceback.format_exc())
         finally:
             try:

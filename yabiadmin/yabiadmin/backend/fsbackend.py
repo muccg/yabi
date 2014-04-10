@@ -33,9 +33,11 @@ from yabiadmin.backend.basebackend import BaseBackend
 from yabiadmin.backend.pooling import get_ssh_pool_manager
 from yabiadmin.yabiengine.urihelper import url_join, uriparse, is_same_location
 from yabiadmin.constants import ENVVAR_FILENAME
+import dateutil.parser
 import logging
 import traceback
 import shutil
+import threading
 import Queue
 from six.moves import map
 logger = logging.getLogger(__name__)
@@ -78,6 +80,10 @@ class FSBackend(BaseBackend):
         elif fsscheme == 's3':
             from yabiadmin.backend.s3backend import S3Backend
             backend = S3Backend()
+
+        elif fsscheme == 'swift':
+            from yabiadmin.backend.swiftbackend import SwiftBackend
+            backend = SwiftBackend()
 
         return backend
 
@@ -180,13 +186,17 @@ class FSBackend(BaseBackend):
             dst_cmd = dst_backend.fifo_to_remote(dst_file_uri, fifo, dst_queue)
             src_cmd.join()
             dst_cmd.join()
-            src_status = src_queue.get()
-            dst_status = dst_queue.get()
+            try:
+                os.unlink(fifo)
+            except OSError:
+                pass
+            src_success = src_queue.get()
+            dst_success = dst_queue.get()
 
             # check exit status
-            if src_status != 0:
+            if not src_success:
                 raise RetryException('remote_file_copy remote_to_fifo failed')
-            if dst_status != 0:
+            if not dst_success:
                 raise RetryException('remote_file_copy fifo_to_remote failed')
 
             if src_stat:
@@ -196,6 +206,35 @@ class FSBackend(BaseBackend):
 
         except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
+
+    def _fifo_thread(self, uri, fifo_name, queue, method):
+        if queue is None:
+            queue = NullQueue()
+
+        def run():
+            success = False
+            try:
+                success = method(uri, fifo_name)
+            finally:
+                queue.put(success)
+
+        thread = threading.Thread(target=run)
+        thread.start()
+        return thread
+
+    def fifo_to_remote(self, uri, fifo_name, queue=None):
+        logger.debug("upload_file %s -> %s", fifo_name, uri)
+        return self._fifo_thread(uri, fifo_name, queue, self.upload_file)
+
+    def remote_to_fifo(self, uri, fifo_name, queue=None):
+        logger.debug("download_file %s <- %s", fifo_name, uri)
+        return self._fifo_thread(uri, fifo_name, queue, self.download_file)
+
+    def upload_file(self, uri, fifo):
+        raise NotImplementedError()
+
+    def download_file(self, uri, fifo):
+        raise NotImplementedError()
 
     @staticmethod
     def remote_file_download(yabiusername, uri):
@@ -208,11 +247,16 @@ class FSBackend(BaseBackend):
         try:
             # create a fifo, start the write to/read from fifo
             fifo = create_fifo('remote_file_download_' + yabiusername + '_' + parts.hostname)
-            thread = backend.remote_to_fifo(uri, fifo)
+            queue = Queue.Queue()
+            thread = backend.remote_to_fifo(uri, fifo, queue)
 
-            # TODO some check on the copy thread
+            infile = open(fifo, "rb")
+            try:
+                os.unlink(fifo)
+            except OSError:
+                logger.exception("Couldn't delete remote file download fifo")
+            return infile, queue
 
-            return fifo
         except FileNotFoundError:
             raise
         except Exception as exc:
@@ -237,20 +281,22 @@ class FSBackend(BaseBackend):
         try:
             # create a fifo, start the write to/read from fifo
             fifo = create_fifo('remote_file_upload_' + yabiusername + '_' + parts.hostname)
-            thread = backend.fifo_to_remote(uri, fifo)
+            queue = Queue.Queue()
+            thread = backend.fifo_to_remote(uri, fifo, queue)
 
-            # TODO some check on the copy thread
-
-            return fifo
+            outfile = open(fifo, "wb")
+            try:
+                os.unlink(fifo)
+            except OSError:
+                logger.exception("Couldn't delete remote file upload fifo")
+            return outfile, queue
         except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
 
     def save_envvars(self, task, envvars_uri):
         try:
             fifo = FSBackend.remote_file_download(self.yabiusername, envvars_uri)
-            with open(fifo) as f:
-                content = f.read()
-            envvars = json.loads(content)
+            envvars = json.load(fifo)
         except:
             logger.exception("Could not read contents of envvars file '%s' for task %s", envvars_uri, task.pk)
         else:
@@ -332,12 +378,9 @@ class FSBackend(BaseBackend):
                 upload_as_fifo = FSBackend.remote_file_upload(self.yabiusername, filename, uri)
                 # write our remnant to the fifo
                 remnant = os.path.join(dirpath, filename)
-                #process = execute([CP_PATH, remnant, upload_as_fifo])
-                #status = process.wait()
 
                 try:
-                    #shutil.copyfileobj(open(remnant, 'r'), open(upload_as_fifo, 'w+'))
-                    shutil.copyfileobj(open(remnant, 'r'), open(upload_as_fifo, 'w'))
+                    shutil.copyfileobj(open(remnant, 'rb'), upload_as_fifo)
                 except Exception as exc:
                     logger.error('copy to upload fifo failed')
                     raise RetryException(exc, traceback.format_exc())
@@ -387,12 +430,6 @@ class FSBackend(BaseBackend):
     def basename(self, path):
         return os.path.basename(path)
 
-    def remote_to_fifo(self, uri, fifo):
-        raise NotImplementedError("")
-
-    def fifo_to_remote(self, uri, fifo):
-        raise NotImplementedError("")
-
     def remote_uri_stat(self, uri):
         return {}
 
@@ -416,3 +453,13 @@ class FSBackend(BaseBackend):
 
     def symbolic_link(self, source, destination):
         raise NotImplementedError("")
+
+    @staticmethod
+    def format_iso8601_date(iso8601_date):
+        date = dateutil.parser.parse(iso8601_date)
+        return date.strftime("%a, %d %b %Y %H:%M:%S")
+
+
+class NullQueue(object):
+    def put(self, value):
+        pass

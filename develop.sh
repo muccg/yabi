@@ -189,23 +189,30 @@ jslint() {
 }
 
 
-nosetests() {
+do_nosetests() {
     source ${VIRTUALENV}/bin/activate
 
+    NOSETESTS="nosetests --with-xunit --xunit-file=tests.xml -v --logging-clear-handlers"
+    IGNORES="-a !external_service -I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py"
+    TEST_CASES="tests yabiadmin/yabiadmin"
+
     # Runs the end-to-end tests in the Yabitests project
-    ${VIRTUALENV}/bin/nosetests --with-xunit --xunit-file=tests.xml -I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py -v --logging-clear-handlers tests yabiadmin/yabiadmin
-    #${VIRTUALENV}/bin/nosetests -v tests.simple_tool_tests:LocalExecutionRedirectTest
-    #${VIRTUALENV}/bin/nosetests -v tests.simple_tool_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.s3_connection_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.ssh_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.sshpbspro_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.sshtorque_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.backend_execution_restriction_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.localfs_connection_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.rewalk_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.file_transfer_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.ssh_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.idempotency_tests
+    echo ${NOSETESTS} ${IGNORES} ${TEST_CASES}
+    ${NOSETESTS} ${IGNORES} ${TEST_CASES}
+
+    # ${NOSETESTS} tests.simple_tool_tests:LocalExecutionRedirectTest
+    # ${NOSETESTS} tests.simple_tool_tests
+    # ${NOSETESTS} tests.s3_connection_tests
+    # ${NOSETESTS} tests.ssh_tests
+    # ${NOSETESTS} tests.sshpbspro_tests
+    # ${NOSETESTS} tests.sshtorque_tests
+    # ${NOSETESTS} tests.backend_execution_restriction_tests
+    # ${NOSETESTS} tests.localfs_connection_tests
+    # ${NOSETESTS} tests.rewalk_tests
+    # ${NOSETESTS} tests.file_transfer_tests
+    # ${NOSETESTS} tests.ssh_tests
+    # ${NOSETESTS} tests.idempotency_tests
+    # ${NOSETESTS} tests.fsbackend_tests
 }
 
 
@@ -477,7 +484,7 @@ dbtest() {
     stopyabi
     dropdb
     startyabi
-    nosetests
+    do_nosetests
     noseretval=$?
     stopyabi
     exit $noseretval
