@@ -109,7 +109,7 @@ ci_remote_test() {
     time ccg ${AWS_TEST_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",exclude="${EXCLUDES}",delete=True
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh purge"
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh install"
-    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh ${TEST_PLAN}"
+    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh ${TEST_PLAN} || true"
     time ccg ${AWS_TEST_INSTANCE} getfile:"${TARGET_DIR}/tests.xml,tests.xml"
     time ccg ${AWS_TEST_INSTANCE} shutdown:10
 }
