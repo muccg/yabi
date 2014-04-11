@@ -208,9 +208,6 @@ class FSBackend(BaseBackend):
             raise RetryException(exc, traceback.format_exc())
 
     def _fifo_thread(self, uri, fifo_name, queue, method):
-        if queue is None:
-            queue = NullQueue()
-
         def run():
             success = False
             try:
@@ -295,7 +292,7 @@ class FSBackend(BaseBackend):
 
     def save_envvars(self, task, envvars_uri):
         try:
-            fifo = FSBackend.remote_file_download(self.yabiusername, envvars_uri)
+            fifo, queue = FSBackend.remote_file_download(self.yabiusername, envvars_uri)
             envvars = json.load(fifo)
         except:
             logger.exception("Could not read contents of envvars file '%s' for task %s", envvars_uri, task.pk)
@@ -375,25 +372,20 @@ class FSBackend(BaseBackend):
                 # get a fifo to remote file
                 uri = url_join(self.task.stageout, dirpath[len(remnants_dir):])
                 logger.debug('uploading {0} to {1}'.format(filename, uri))
-                upload_as_fifo = FSBackend.remote_file_upload(self.yabiusername, filename, uri)
-                # write our remnant to the fifo
-                remnant = os.path.join(dirpath, filename)
-
+                upload_as_fifo, queue = FSBackend.remote_file_upload(self.yabiusername, filename, uri)
                 try:
-                    shutil.copyfileobj(open(remnant, 'rb'), upload_as_fifo)
+                    # write our remnant to the fifo
+                    with open(os.path.join(dirpath, filename), "rb") as remnant:
+                        shutil.copyfileobj(remnant, upload_as_fifo)
                 except Exception as exc:
                     logger.error('copy to upload fifo failed')
                     raise RetryException(exc, traceback.format_exc())
+                finally:
+                    upload_as_fifo.close()
 
-                # check exit status
-                #if status != 0:
-                #    # TODO logger.error will fail with unicode errors
-                #    logger.debug(str(process.stdout.read()))
-                #    logger.debug(str(process.stderr.read()))
-                #    raise RetryException('copy to upload fifo failed')
-
-                #if os.path.exists(upload_as_fifo):
-                #    os.unlink(upload_as_fifo)
+                # check exit status at other end of pipe
+                if not queue.get():
+                    raise RetryException('copy to upload fifo failed')
 
             for dirname in dirnames:
                 # any directories we encounter we create in the stageout area

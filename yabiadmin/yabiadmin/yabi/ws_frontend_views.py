@@ -224,9 +224,10 @@ def backend_get_file(yabiusername, uri):
 
     for chunk in f:
         yield chunk
+    f.close()
 
     success = status_queue.get()
-    logger.info("status on queue is %s" % success)
+
     if not success:
         raise Exception("Backend file download was not successful")
 
