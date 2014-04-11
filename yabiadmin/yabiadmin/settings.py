@@ -367,6 +367,9 @@ LOGGING = {
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
+        },
+        'yabi_context_exists': {
+            '()': 'yabiadmin.yabiengine.engine_logging.YabiContextFilter'
         }
     },
     'handlers': {
@@ -384,6 +387,11 @@ LOGGING = {
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler',
             'formatter': 'verbose'
+        },
+        'yabi_db_handler': {
+            'level': 'DEBUG',
+            'filters': ['yabi_context_exists'],
+            'class': 'yabiadmin.yabiengine.engine_logging.YabiDBHandler'
         }
     },
     'loggers': {
@@ -399,7 +407,7 @@ LOGGING = {
         },
 
         'yabiadmin': {
-            'handlers': ['console'],
+            'handlers': ['console', 'yabi_db_handler'],
             'level': 'DEBUG',
             'propagate': False,
         },
