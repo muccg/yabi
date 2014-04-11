@@ -298,20 +298,25 @@ def preview(request):
     type_settings = settings.PREVIEW_SETTINGS[content_type]
     content_type = type_settings.get("override_mime_type", content_type)
 
-    # now work with the resulting file
-    content = resp.content
-
+    # Now work with the resulting file.
     # If the file is beyond the size limit, we'll need to check whether to
     # truncate it or not.
     truncated = False
-    if size > settings.PREVIEW_SIZE_LIMIT:
-        if type_settings.get("truncate", False):
-            logger.debug("URI '%s' is too large: size %d > limit %d; truncating", uri, size, settings.PREVIEW_SIZE_LIMIT)
-            content = content[0:settings.PREVIEW_SIZE_LIMIT]
-            truncated = True
-        else:
-            logger.debug("URI '%s' is too large: size %d > limit %d", uri, size, settings.PREVIEW_SIZE_LIMIT)
-            return unavailable("This file is too large to be previewed.")
+    contents = []
+    size = 0
+    for chunk in resp.streaming_content:
+        contents.append(chunk)
+        size += len(chunk)
+        if size > settings.PREVIEW_SIZE_LIMIT:
+            if type_settings.get("truncate", False):
+                logger.debug("URI '%s' is too large: size %d > limit %d; truncating", uri, size, settings.PREVIEW_SIZE_LIMIT)
+                contents[-1] = contents[-1][:settings.PREVIEW_SIZE_LIMIT - size]
+                truncated = True
+                break
+            else:
+                logger.debug("URI '%s' is too large: size %d > limit %d", uri, size, settings.PREVIEW_SIZE_LIMIT)
+                return unavailable("This file is too large to be previewed.")
+    content = "".join(contents)
 
     # Cache some metadata about the preview so we can retrieve it later.
     key = preview_key(uri)
