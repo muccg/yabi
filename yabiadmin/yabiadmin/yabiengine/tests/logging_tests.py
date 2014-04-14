@@ -2,6 +2,8 @@ from django.utils import unittest as unittest
 
 from model_mommy import mommy
 
+from django.conf import settings
+
 from yabiadmin.yabiengine.models import Syslog
 from yabiadmin.yabiengine.engine_logging import create_task_logger, create_job_logger, create_workflow_logger
 
@@ -15,6 +17,9 @@ TASK_ID = 100
 
 class YabiDBHandlerNormalLoggingTest(unittest.TestCase):
 
+    def setUp(self):
+        logging.config.dictConfig(settings.LOGGING)
+
     def test_not_logging_without_adapter(self):
         logger = logging.getLogger('yabiadmin.yabiengine')
         logger.debug(MSG)
@@ -23,10 +28,11 @@ class YabiDBHandlerNormalLoggingTest(unittest.TestCase):
 
 class YabiDBHandlerLoggingTest(unittest.TestCase):
 
+    def setUp(self):
+        logging.config.dictConfig(settings.LOGGING)
 
     def tearDown(self):
         Syslog.objects.filter(message=MSG).delete()
-
 
     def test_logging_with_task_logger(self):
         logger = logging.getLogger('yabiadmin.yabiengine')

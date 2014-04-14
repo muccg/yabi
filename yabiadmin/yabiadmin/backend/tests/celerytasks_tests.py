@@ -1,4 +1,5 @@
 from django.utils import unittest as unittest
+from django.conf import settings
 
 import celery
 from celery import _state
@@ -9,7 +10,7 @@ from yabiadmin.backend import celerytasks
 from yabiadmin.yabi import models as m
 from yabiadmin.constants import STATUS_ERROR
 from yabiadmin.yabiengine.models import Task, Syslog
-from yabiadmin.yabiengine.engine_logging import create_workflow_logger, create_job_logger, create_task_logger, YabiDBHandler
+from yabiadmin.yabiengine.engine_logging import create_workflow_logger, create_job_logger, create_task_logger
 from yabiadmin.backend.celerytasks import retry_on_error
 from yabiadmin.backend.exceptions import RetryException, RetryPollingException
 
@@ -187,18 +188,14 @@ class RetryOnErrorTest(unittest.TestCase):
 class DeleteAllSyslogMessagesTest(unittest.TestCase):
 
     def setUp(self):
+        logging.config.dictConfig(settings.LOGGING)
         create_workflow_with_job_and_a_task(self)
-        handler = YabiDBHandler()
-        logger.addHandler(handler)
         self.wfl_logger = create_workflow_logger(logger, self.workflow.pk)
         self.job_logger = create_job_logger(logger, self.job.pk)
         self.task_logger = create_task_logger(logger, self.task.pk)
         self.other_wfl_logger = create_workflow_logger(logger, self.workflow.pk + 1)
         self.other_job_logger = create_job_logger(logger, self.job.pk + 1)
         self.other_task_logger = create_task_logger(logger, self.task.pk + 1)
-
-        #self.wfl_logger.debug('Some message')
-        #self.wfl_logger.debug('Some other message')
 
     def tearDown(self):
         Syslog.objects.filter(table_name='workflow', table_id__in=(self.workflow.pk, self.workflow.pk+1))
