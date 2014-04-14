@@ -401,6 +401,23 @@ class FSBackendTests(object):
         for f in files[:-1] + ["test_rm_prefix_dir"]:
             self.getcmdok("rm", uri + f)
 
+    def test_download_file_no_exist(self):
+        uri, path = self.get_uri("this_file_no_exist_%s.txt" % os.getpid())
+        r = self.session.get(url=self.fscmd("get", uri), stream=True)
+        self.assertEqual(r.status_code, 500)
+
+    @staticmethod
+    def _make_noperm_file(dirname):
+        path = os.path.join(dirname, "noperms.txt")
+        with open(path, "w") as f:
+            f.write("you shouldn't see this\n")
+        os.chmod(path, 0)
+
+    def test_download_file_eperm(self):
+        uri, path = self.get_uri("noperms.txt")
+        r = self.session.get(url=self.fscmd("get", uri), stream=True)
+        self.assertEqual(r.status_code, 500)
+
     # def test_large_download(self):
     #     pass
     #
@@ -445,6 +462,10 @@ class S3BackendTests(FSBackendTests, RequestTest):
 
     def test_ls_dir_no_exist(self):
         self.skipTest("doesn't work for s3")
+
+    def test_download_file_eperm(self):
+        # can't test on this backend
+        pass
 
     def test_large_upload(self):
         self.skip_if_fakes3("multipart upload doesn't work with fakes3")
@@ -500,6 +521,10 @@ class SwiftBackendTests(FSBackendTests, RequestTest):
     def test_ls_dir_no_exist(self):
         self.skipTest("doesn't work for swift")
 
+    def test_download_file_eperm(self):
+        # can't test on this backend
+        pass
+
     @classmethod
     def setUpClass(cls):
         super(SwiftBackendTests, cls).setUpClass()
@@ -536,6 +561,7 @@ class FileBackendTests(FSBackendTests, RequestTest):
     @classmethod
     def setUpClass(cls):
         cls.backend_path = tempfile.mkdtemp(prefix="yabitest-") + "/"
+        cls._make_noperm_file(cls.backend_path)
         super(FileBackendTests, cls).setUpClass()
 
     @classmethod
@@ -563,6 +589,7 @@ class SFTPBackendTests(FSBackendTests, RequestTest):
     @classmethod
     def setUpClass(cls):
         cls.backend_path = tempfile.mkdtemp(prefix="yabitest-") + "/"
+        cls._make_noperm_file(cls.backend_path)
         super(SFTPBackendTests, cls).setUpClass()
 
     @classmethod
