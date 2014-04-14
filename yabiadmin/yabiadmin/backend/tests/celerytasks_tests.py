@@ -8,9 +8,15 @@ from model_mommy import mommy
 from yabiadmin.backend import celerytasks
 from yabiadmin.yabi import models as m
 from yabiadmin.constants import STATUS_ERROR
-from yabiadmin.yabiengine.models import Task
+from yabiadmin.yabiengine.models import Task, Syslog
+from yabiadmin.yabiengine.engine_logging import create_workflow_logger, create_job_logger, create_task_logger
 from yabiadmin.backend.celerytasks import retry_on_error
 from yabiadmin.backend.exceptions import RetryException, RetryPollingException
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def create_workflow_with_job_and_a_task(obj):
     demo_user = m.User.objects.get(name='demo')
@@ -176,4 +182,72 @@ class RetryOnErrorTest(unittest.TestCase):
         with self.assertRaises(celery.exceptions.RetryTaskError):
             self.retrying_fn(self.task.pk)
         return self.celery_current_task.countdown
+
+
+class DeleteAllSyslogMessagesTest(unittest.TestCase):
+
+    def setUp(self):
+        create_workflow_with_job_and_a_task(self)
+        self.wfl_logger = create_workflow_logger(logger, self.workflow.pk)
+        self.job_logger = create_job_logger(logger, self.job.pk)
+        self.task_logger = create_task_logger(logger, self.task.pk)
+        self.other_wfl_logger = create_workflow_logger(logger, self.workflow.pk + 1)
+        self.other_job_logger = create_job_logger(logger, self.job.pk + 1)
+        self.other_task_logger = create_task_logger(logger, self.task.pk + 1)
+
+        #self.wfl_logger.debug('Some message')
+        #self.wfl_logger.debug('Some other message')
+
+    def tearDown(self):
+        Syslog.objects.filter(table_name='workflow', table_id__in=(self.workflow.pk, self.workflow.pk+1))
+        Syslog.objects.filter(table_name='job', table_id__in=(self.job.pk, self.job.pk+1))
+        Syslog.objects.filter(table_name='task', table_id__in=(self.task.pk, self.task.pk+1))
+        delete_models(self.workflow, self.tool)
+
+    def test_no_syslog_messages_to_start_with(self):
+        self.assertEquals(0, Syslog.objects.filter(table_name='workflow', table_id=self.workflow.pk).count())
+        self.assertEquals(0, Syslog.objects.filter(table_name='job', table_id=self.job.pk).count())
+        self.assertEquals(0, Syslog.objects.filter(table_name='task', table_id=self.task.pk).count())
+
+    def log_some_messages(self):
+        self.wfl_logger.debug('Some message')
+        self.wfl_logger.debug('Some other message')
+        self.job_logger.debug('Some job level message')
+        self.task_logger.debug('Some task level message')
+        self.task_logger.debug('Some other task level message')
+        self.task_logger.debug('And another task level message')
+
+    def log_some_other_messages(self):
+        self.other_wfl_logger.debug('Some message')
+        self.other_job_logger.debug('Some job level message')
+        self.other_task_logger.debug('Some task level message')
+
+    def test_logger_logs_properly(self):
+        self.log_some_messages()
+
+        self.assertEquals(2, Syslog.objects.filter(table_name='workflow', table_id=self.workflow.pk).count())
+        self.assertEquals(1, Syslog.objects.filter(table_name='job', table_id=self.job.pk).count())
+        self.assertEquals(3, Syslog.objects.filter(table_name='task', table_id=self.task.pk).count())
+
+    def test_log_messages_are_deleted(self):
+        self.log_some_messages()
+
+        celerytasks.delete_all_syslog_messages(self.workflow.pk)
+
+        self.assertEquals(0, Syslog.objects.filter(table_name='workflow', table_id=self.workflow.pk).count())
+        self.assertEquals(0, Syslog.objects.filter(table_name='job', table_id=self.job.pk).count())
+        self.assertEquals(0, Syslog.objects.filter(table_name='task', table_id=self.task.pk).count())
+
+    def test_only_the_associated_messages_are_deleted(self):
+        self.log_some_messages()
+        self.log_some_other_messages()
+
+        log_count = Syslog.objects.count()
+
+        celerytasks.delete_all_syslog_messages(self.workflow.pk)
+
+        after_delete_log_count = Syslog.objects.count()
+
+        self.assertEquals(6, log_count - after_delete_log_count, "Only 6 log messages should be deleted")
+
 

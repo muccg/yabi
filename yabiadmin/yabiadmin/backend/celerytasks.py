@@ -39,12 +39,13 @@ from yabiadmin.backend import backend
 from yabiadmin.constants import STATUS_ERROR, STATUS_READY, STATUS_COMPLETE, STATUS_EXEC, STATUS_STAGEOUT, STATUS_STAGEIN, STATUS_CLEANING, STATUS_ABORTED
 from yabiadmin.constants import MAX_CELERY_TASK_RETRIES
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
-from yabiadmin.yabiengine.models import Task
+from yabiadmin.yabiengine.models import Workflow, Job, Task, Syslog
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow, EngineJob, EngineTask
 from yabiadmin.yabiengine.engine_logging import create_workflow_logger, create_job_logger, create_task_logger, create_logger
 import celery
 import os
 from django.conf import settings
+from django.db.models import Q
 import logging
 
 logger = logging.getLogger(__name__)
@@ -116,6 +117,12 @@ def abort_workflow(workflow_id):
     wfl_logger.info("Found %s running tasks", len(running_tasks))
     for task in running_tasks:
         abort_task.apply_async((task.pk,))
+
+
+@app.task
+@log_it('workflow')
+def on_workflow_completed(workflow_id):
+    delete_all_syslog_messages(workflow_id)
 
 
 # Celery Tasks working on a Job
@@ -431,10 +438,15 @@ def change_task_status(task_id, status):
 
         if job_status_changed:
             transaction.commit()
+            old_status = task.job.workflow.status
             task.job.workflow.update_status()
             # commit before submission of Celery Tasks
             transaction.commit()
-            process_workflow_jobs_if_needed(task)
+            new_status = task.job.workflow.status
+            if old_status != new_status and new_status == STATUS_COMPLETE:
+                on_workflow_completed.apply_async((task.job.workflow.pk,))
+            else:
+                process_workflow_jobs_if_needed(task)
 
         transaction.commit()
 
@@ -471,4 +483,17 @@ def request_workflow_abort(workflow_id, yabiuser=None):
     transaction.commit()
     abort_workflow.apply_async((workflow_id,))
     return True
+
+
+def delete_all_syslog_messages(workflow_id):
+    logger.info("Deleting all the Syslog objects of workflow %s" % workflow_id)
+    job_ids = [j.pk for j in Job.objects.filter(workflow__pk=workflow_id)]
+    task_ids = [t.pk for t in Task.objects.filter(job__workflow__pk=workflow_id)]
+
+    Syslog.objects.filter(
+            Q(table_name='workflow') & Q(table_id=workflow_id)  |
+            Q(table_name='job')      & Q(table_id__in=job_ids)  |
+            Q(table_name='task')     & Q(table_id__in=task_ids)
+    ).delete()
+
 
