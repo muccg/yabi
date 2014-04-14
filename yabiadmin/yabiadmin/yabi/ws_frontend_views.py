@@ -222,7 +222,9 @@ def mkdir(request):
 def backend_get_file(yabiusername, uri):
     f, status_queue = backend.get_file(yabiusername, uri)
 
-    for chunk in f:
+    CHUNKSIZE = 64 * 1024
+
+    for chunk in iter(lambda: f.read(CHUNKSIZE), ""):
         yield chunk
     f.close()
 
