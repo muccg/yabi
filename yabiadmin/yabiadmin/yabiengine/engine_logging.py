@@ -35,18 +35,16 @@ class YabiDBHandler(logging.Handler):
         from yabiadmin.yabiengine import models as m
         if hasattr(record, 'yabi_context'):
             table_name = record.yabi_context.get('type')
-            task_id = record.yabi_context.get('id')
+            table_id = record.yabi_context.get('id')
             m.Syslog.objects.create(
                     message=record.getMessage(),
                     table_name=table_name,
-                    table_id=task_id)
+                    table_id=table_id)
 
 
 class YabiContextFilter(logging.Filter):
 
     def filter(self, record):
-        if hasattr(record, 'yabi_context'):
-            return True
-        return False
+        return hasattr(record, 'yabi_context')
 
 

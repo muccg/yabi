@@ -169,12 +169,12 @@ def create_db_tasks(job_id):
 
 
 @app.task()
-@log_it('job')
 def spawn_ready_tasks(job_id):
-    job_logger = create_job_logger(logger, job_id)
     if job_id is None:
-        job_logger.info('no tasks to process, exiting early')
+        logger.warning('no tasks to process, exiting early')
         return
+    job_logger = create_job_logger(logger, job_id)
+    job_logger.info("Starting spawn_ready_tasks for Job %s", job_id)
     try:
         job = EngineJob.objects.get(pk=job_id)
         ready_tasks = job.ready_tasks()
@@ -194,10 +194,12 @@ def spawn_ready_tasks(job_id):
             job.save()
             job.workflow.update_status()
 
+        job_logger.info("Finished spawn_ready_tasks for Job %s", job_id)
+
         return job_id
 
     except Exception:
-        job_logger.exception("Exception when submitting tasks for job {0}".format(job_id))
+        job_logger.exception("Exception when spawning tasks for job {0}".format(job_id))
         job = EngineJob.objects.get(pk=job_id)
         job.status = STATUS_ERROR
         job.workflow.status = STATUS_ERROR
