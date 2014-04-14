@@ -180,10 +180,8 @@ class FSBackend(BaseBackend):
 
             # create a fifo, start the write to/read from fifo
             fifo = create_fifo('remote_file_copy_' + yabiusername + '_' + src_parts.hostname + '_' + dst_parts.hostname)
-            src_queue = Queue.Queue()
-            dst_queue = Queue.Queue()
-            src_cmd = src_backend.remote_to_fifo(src_uri, fifo, src_queue)
-            dst_cmd = dst_backend.fifo_to_remote(dst_file_uri, fifo, dst_queue)
+            src_cmd, src_queue = src_backend.remote_to_fifo(src_uri, fifo)
+            dst_cmd, dst_queue = dst_backend.fifo_to_remote(dst_file_uri, fifo)
             src_cmd.join()
             dst_cmd.join()
             try:
@@ -207,25 +205,30 @@ class FSBackend(BaseBackend):
         except Exception as exc:
             raise RetryException(exc, traceback.format_exc())
 
-    def _fifo_thread(self, uri, fifo_name, queue, method):
+    def _fifo_thread(self, method, uri, fifo_name, open_mode):
+        queue = Queue.Queue()
+
         def run():
             success = False
             try:
-                success = method(uri, fifo_name)
+                with open(fifo_name, open_mode) as fifo:
+                    success = method(uri, fifo)
+            except Exception:
+                logger.exception("fifo thread operation %s failed." % method.__name__)
             finally:
                 queue.put(success)
 
         thread = threading.Thread(target=run)
         thread.start()
-        return thread
+        return thread, queue
 
-    def fifo_to_remote(self, uri, fifo_name, queue=None):
+    def fifo_to_remote(self, uri, fifo_name):
         logger.debug("upload_file %s -> %s", fifo_name, uri)
-        return self._fifo_thread(uri, fifo_name, queue, self.upload_file)
+        return self._fifo_thread(self.upload_file, uri, fifo_name, "rb")
 
-    def remote_to_fifo(self, uri, fifo_name, queue=None):
+    def remote_to_fifo(self, uri, fifo_name):
         logger.debug("download_file %s <- %s", fifo_name, uri)
-        return self._fifo_thread(uri, fifo_name, queue, self.download_file)
+        return self._fifo_thread(self.download_file, uri, fifo_name, "wb")
 
     def upload_file(self, uri, fifo):
         raise NotImplementedError()
@@ -244,8 +247,7 @@ class FSBackend(BaseBackend):
         try:
             # create a fifo, start the write to/read from fifo
             fifo = create_fifo('remote_file_download_' + yabiusername + '_' + parts.hostname)
-            queue = Queue.Queue()
-            thread = backend.remote_to_fifo(uri, fifo, queue)
+            thread, queue = backend.remote_to_fifo(uri, fifo)
 
             infile = open(fifo, "rb")
             try:
@@ -278,8 +280,7 @@ class FSBackend(BaseBackend):
         try:
             # create a fifo, start the write to/read from fifo
             fifo = create_fifo('remote_file_upload_' + yabiusername + '_' + parts.hostname)
-            queue = Queue.Queue()
-            thread = backend.fifo_to_remote(uri, fifo, queue)
+            thread, queue = backend.fifo_to_remote(uri, fifo)
 
             outfile = open(fifo, "wb")
             try:
@@ -450,8 +451,3 @@ class FSBackend(BaseBackend):
     def format_iso8601_date(iso8601_date):
         date = dateutil.parser.parse(iso8601_date)
         return date.strftime("%a, %d %b %Y %H:%M:%S")
-
-
-class NullQueue(object):
-    def put(self, value):
-        pass

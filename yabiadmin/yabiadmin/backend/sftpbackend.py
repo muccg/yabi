@@ -49,32 +49,21 @@ pool_manager = get_ssh_pool_manager()
 class SFTPBackend(FSBackend):
 
     def _sftp_copy(self, host=None, port=None, credential=None,
-                   localpath=None, remotepath=None, copy=None,
+                   localfo=None, remotepath=None, copy=None,
                    hostkey=None, cwd=None):
         assert copy == 'put' or copy == 'get'
 
         status = False
-        logger.debug('SFTPCopyThread {0} {1} {2}'.format(localpath, copy, remotepath))
+        logger.debug('SFTPCopyThread {0} {1} {2}'.format(localfo.name, copy, remotepath))
         ssh = None
         sftp = None
         try:
             ssh = pool_manager.borrow(host, port, credential)
             sftp = ssh.open_sftp()
             if copy == 'put':
-                sftp.put(localpath, remotepath, callback=None, confirm=True)
+                sftp.putfo(localfo, remotepath, callback=None, confirm=True)
             elif copy == 'get':
-                try:
-                    sftp.get(remotepath, localpath, callback=None)
-                # bogus error because stat of fifo returns 0
-                except IOError as ioerr:
-                    msg = str(ioerr)
-                    if not msg.startswith("size mismatch in get!  0 !="):
-                        raise
-                # bogus error -- trying to stat, fifo already deleted
-                except OSError as oserr:
-                    if oserr.errno != errno.ENOENT:
-                        raise
-
+                sftp.getfo(remotepath, localfo, callback=None)
             status = True
 
         except Exception as exc:
@@ -92,7 +81,7 @@ class SFTPBackend(FSBackend):
         return self._sftp_copy(host=parts.hostname,
                                port=parts.port,
                                credential=self.cred.credential,
-                               localpath=infile,
+                               localfo=infile,
                                remotepath=parts.path,
                                copy='put',
                                hostkey=None)
@@ -102,7 +91,7 @@ class SFTPBackend(FSBackend):
         return self._sftp_copy(host=parts.hostname,
                                port=parts.port,
                                credential=self.cred.credential,
-                               localpath=outfile,
+                               localfo=outfile,
                                remotepath=parts.path,
                                copy='get',
                                hostkey=None)

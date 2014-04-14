@@ -182,7 +182,7 @@ class S3Backend(FSBackend):
         connection = boto.connect_s3(**self._get_connect_params(bucket_name))
         return connection.get_bucket(bucket_name)
 
-    def download_file(self, uri, filename):
+    def download_file(self, uri, dst):
         try:
             bucket_name, path = self.parse_s3_uri(uri)
 
@@ -190,7 +190,7 @@ class S3Backend(FSBackend):
             key = bucket.get_key(path.lstrip(DELIMITER))
 
             if key:
-                key.get_contents_to_filename(filename)
+                key.get_contents_to_file(dst)
                 return True
             else:
                 logger.error("Key not found for uri")
@@ -199,7 +199,7 @@ class S3Backend(FSBackend):
             logger.exception("Exception thrown while S3 downloading %s to %s", uri, filename)
             return False
 
-    def upload_file(self, uri, filename):
+    def upload_file(self, uri, src):
         try:
             bucket_name, path = self.parse_s3_uri(uri)
 
@@ -209,24 +209,23 @@ class S3Backend(FSBackend):
             # 5MB is the minimum size of a part when doing multipart uploads
             # Therefore, multipart uploads will fail if your file is smaller than 5MB
 
-            with open(filename, "rb") as f:
-                data = f.read(CHUNKSIZE)
-                if len(data) < CHUNKSIZE:
-                    # File is smaller than CHUNKSIZE, upload in one go (ie. no multipart)
-                    key = bucket.new_key(path.lstrip(DELIMITER))
-                    size = key.set_contents_from_file(BytesIO(data))
-                    logger.debug("Set %s bytes to %s", size, key.name)
-                else:
-                    # File is larger than CHUNKSIZE, there will be more parts so initiate
-                    # the multipart_upload and upload in parts
-                    multipart_upload = bucket.initiate_multipart_upload(path.lstrip(DELIMITER))
-                    part_no = 1
-                    while len(data) > 0:
-                        multipart_upload.upload_part_from_file(BytesIO(data), part_no)
-                        data = f.read(CHUNKSIZE)
-                        part_no += 1
+            data = src.read(CHUNKSIZE)
+            if len(data) < CHUNKSIZE:
+                # File is smaller than CHUNKSIZE, upload in one go (ie. no multipart)
+                key = bucket.new_key(path.lstrip(DELIMITER))
+                size = key.set_contents_from_file(BytesIO(data))
+                logger.debug("Set %s bytes to %s", size, key.name)
+            else:
+                # File is larger than CHUNKSIZE, there will be more parts so initiate
+                # the multipart_upload and upload in parts
+                multipart_upload = bucket.initiate_multipart_upload(path.lstrip(DELIMITER))
+                part_no = 1
+                while len(data) > 0:
+                    multipart_upload.upload_part_from_file(BytesIO(data), part_no)
+                    data = src.read(CHUNKSIZE)
+                    part_no += 1
 
-                    multipart_upload.complete_upload()
+                multipart_upload.complete_upload()
             return True
         except:
             logger.exception("Exception thrown while S3 uploading %s to %s", filename, uri)
