@@ -239,7 +239,7 @@ class SwiftBackend(FSBackend):
         return (swiftpath.prefix in ("", "/") or
                 len(self.list_bucket(swiftpath, shallow=True)) > 0)
 
-    CHUNKSIZE = 5 * 1024 * 1024
+    CHUNKSIZE = 64 * 1024
 
     def download_file(self, uri, filename):
         swift = self.SwiftPath.parse(uri)
@@ -248,8 +248,8 @@ class SwiftBackend(FSBackend):
         success = False
 
         try:
-            # fixme: there is one http request per chunk i think.
-            headers, contents = conn.get_object(swift.bucket, swift.prefix, resp_chunk_size=self.CHUNKSIZE)
+            headers, contents = conn.get_object(swift.bucket, swift.prefix,
+                                                resp_chunk_size=self.CHUNKSIZE)
             with open(filename, "wb") as outfile:
                 for chunk in contents:
                     outfile.write(chunk)
@@ -270,7 +270,9 @@ class SwiftBackend(FSBackend):
         success = False
 
         try:
-            # apparently swiftclient handles chunking, how nice
+            # fixme: swift doesn't support files larger than 5GB
+            # unless they are segmented, which python-swiftclient
+            # doesn't do.
             with open(filename, "rb") as infile:
                 conn.retries = 0  # will stop swiftclient seeking through infile
                 conn.put_object(swift.bucket, swift.prefix, infile,
