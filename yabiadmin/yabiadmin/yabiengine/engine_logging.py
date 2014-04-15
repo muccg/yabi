@@ -1,3 +1,4 @@
+import os
 import logging
 from functools import partial
 
@@ -37,9 +38,19 @@ class YabiDBHandler(logging.Handler):
             table_name = record.yabi_context.get('type')
             table_id = record.yabi_context.get('id')
             m.Syslog.objects.create(
-                    message=record.getMessage(),
+                    message=self.format_message(record),
                     table_name=table_name,
                     table_id=table_id)
+
+    def format_message(self, record):
+        msg = record.getMessage()
+        if record.exc_info is not None:
+            formatter = logging.Formatter()
+            traceback = formatter.formatException(record.exc_info)
+            msg = msg.rstrip()
+            msg = os.linesep.join((msg, traceback))
+
+        return msg
 
 
 class YabiContextFilter(logging.Filter):

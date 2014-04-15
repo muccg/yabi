@@ -15,6 +15,10 @@ JOB_ID = 50
 TASK_ID = 100
 
 
+class MyVerySpecificException(StandardError):
+    pass
+
+
 class YabiDBHandlerNormalLoggingTest(unittest.TestCase):
 
     def setUp(self):
@@ -33,6 +37,7 @@ class YabiDBHandlerLoggingTest(unittest.TestCase):
 
     def tearDown(self):
         Syslog.objects.filter(message=MSG).delete()
+        Syslog.objects.filter(message__startswith="Exception caught").delete()
 
     def test_logging_with_task_logger(self):
         logger = logging.getLogger('yabiadmin.yabiengine')
@@ -76,5 +81,20 @@ class YabiDBHandlerLoggingTest(unittest.TestCase):
         syslog = Syslog.objects.get(message=MSG)
         self.assertEquals('workflow', syslog.table_name)
         self.assertEquals(WORKFLOW_ID, syslog.table_id)
+
+
+    def test_exception_info_is_logged(self):
+        logger = logging.getLogger('yabiadmin.backend.celerytasks')
+        wfl_logger = create_workflow_logger(logger, WORKFLOW_ID)
+
+        try:
+            raise MyVerySpecificException("my error message")
+        except MyVerySpecificException as exc:
+            wfl_logger.exception("Exception caught")
+
+        syslog = Syslog.objects.get(table_name='workflow', table_id=WORKFLOW_ID, message__startswith="Exception caught")
+
+        self.assertTrue('MyVerySpecificException' in syslog.message, "Information about the exception should be logged")
+        self.assertTrue('my error message' in syslog.message, "The excpetions value should be logged")
 
 
