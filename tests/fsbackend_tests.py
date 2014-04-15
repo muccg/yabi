@@ -573,22 +573,55 @@ class FileBackendTests(FSBackendTests, RequestTest):
 class SFTPBackendTests(FSBackendTests, RequestTest):
     scheme = "sftp"
 
+    private_key_file = os.path.expanduser("~/.ssh/id_rsa")
+
     @classmethod
     def backend_info(cls, conf):
         hostname = "localhost"
         logname = os.environ.get("LOGNAME", "ccg-user")
+
+        if os.path.exists(cls.private_key_file):
+            key = open(cls.private_key_file).read()
+            password = ""
+        else:
+            key = ""
+            password = logname
+
         fscreds = {
             "username": logname,
-            "password": logname,
+            "password": password,
             "cert": "",
-            "key": "",
+            "key": key,
         }
         return hostname, cls.backend_path, fscreds
+
+    @classmethod
+    def _ssh_keygen(cls):
+        config_dir = os.path.dirname(cls.private_key_file)
+        pub_key_file = cls.private_key_file + ".pub"
+        authorized_keys = os.path.join(config_dir, "authorized_keys")
+
+        if not os.path.exists(config_dir):
+            os.mkdir(config_dir, 0700)
+        if not os.path.exists(cls.private_key_file):
+            status = subprocess.call(["ssh-keygen", "-t", "rsa", "-N", "",
+                                      "-f", cls.private_key_file],
+                                     stdin=open("/dev/null"))
+            if status != 0:
+                logger.warning("Couldn't generate SSH keypair")
+
+        if os.path.exists(pub_key_file):
+            pub_key = open(pub_key_file).readline().rstrip()
+            with open(authorized_keys, "a+") as f:
+                if not any(pub_key in line for line in f):
+                    f.write(pub_key + "\n")
+            os.chmod(authorized_keys, 0600)
 
     @classmethod
     def setUpClass(cls):
         cls.backend_path = tempfile.mkdtemp(prefix="yabitest-") + "/"
         cls._make_noperm_file(cls.backend_path)
+        cls._ssh_keygen()
         super(SFTPBackendTests, cls).setUpClass()
 
     @classmethod
