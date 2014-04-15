@@ -5,14 +5,14 @@ import os
 import logging
 from collections import namedtuple
 import tempfile
-from urllib import quote, unquote
+from urllib import unquote
 import swiftclient
 import swiftclient.client
 import swiftclient.exceptions
 from .fsbackend import FSBackend
-from yabiadmin.backend.exceptions import NotSupportedError, RetryException
-from yabiadmin.backend.utils import get_credential_data, partition
-from yabiadmin.yabiengine.urihelper import uriparse
+from .exceptions import NotSupportedError, RetryException
+from .utils import get_credential_data, partition
+from ..yabiengine.urihelper import uriparse
 
 logger = logging.getLogger(__name__)
 
@@ -150,6 +150,14 @@ class SwiftBackend(FSBackend):
                     name.startswith(swift.ensure_trailing_slash().prefix) or
                     swift.prefix in ("", swift.DELIMITER))
 
+        def get_content_length(entry):
+            "Fills in the file size for dynamic large object entries"
+            if ("name" in entry and entry.get("bytes", -1) == 0 and
+                not entry["name"].endswith("/")):
+                headers = conn.head_object(swift.bucket, entry["name"])
+                entry["bytes"] = int(headers.get("content-length", "") or 0)
+            return entry
+
         try:
             r = conn.get_container(swift.bucket, prefix=swift.prefix,
                                    full_listing=True,
@@ -159,8 +167,8 @@ class SwiftBackend(FSBackend):
             # use this exception for lack of a better one
             raise RetryException(e)
         else:
-            bucket = filter(wanted, r[1])
-            return bucket
+            bucket = r[1]
+            return map(get_content_length, filter(wanted, bucket))
 
     def ls(self, uri):
         logger.debug("swift ls %s" % uri)
