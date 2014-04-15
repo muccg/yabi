@@ -401,6 +401,23 @@ class FSBackendTests(object):
         for f in files[:-1] + ["test_rm_prefix_dir"]:
             self.getcmdok("rm", uri + f)
 
+    def test_download_file_no_exist(self):
+        uri, path = self.get_uri("this_file_no_exist_%s.txt" % os.getpid())
+        r = self.session.get(url=self.fscmd("get", uri), stream=True)
+        self.assertEqual(r.status_code, 500)
+
+    @staticmethod
+    def _make_noperm_file(dirname):
+        path = os.path.join(dirname, "noperms.txt")
+        with open(path, "w") as f:
+            f.write("you shouldn't see this\n")
+        os.chmod(path, 0)
+
+    def test_download_file_eperm(self):
+        uri, path = self.get_uri("noperms.txt")
+        r = self.session.get(url=self.fscmd("get", uri), stream=True)
+        self.assertEqual(r.status_code, 500)
+
     # def test_large_download(self):
     #     pass
     #
@@ -445,6 +462,10 @@ class S3BackendTests(FSBackendTests, RequestTest):
 
     def test_ls_dir_no_exist(self):
         self.skipTest("doesn't work for s3")
+
+    def test_download_file_eperm(self):
+        # can't test on this backend
+        pass
 
     def test_large_upload(self):
         self.skip_if_fakes3("multipart upload doesn't work with fakes3")
@@ -500,6 +521,10 @@ class SwiftBackendTests(FSBackendTests, RequestTest):
     def test_ls_dir_no_exist(self):
         self.skipTest("doesn't work for swift")
 
+    def test_download_file_eperm(self):
+        # can't test on this backend
+        pass
+
     @classmethod
     def setUpClass(cls):
         super(SwiftBackendTests, cls).setUpClass()
@@ -536,6 +561,7 @@ class FileBackendTests(FSBackendTests, RequestTest):
     @classmethod
     def setUpClass(cls):
         cls.backend_path = tempfile.mkdtemp(prefix="yabitest-") + "/"
+        cls._make_noperm_file(cls.backend_path)
         super(FileBackendTests, cls).setUpClass()
 
     @classmethod
@@ -544,25 +570,58 @@ class FileBackendTests(FSBackendTests, RequestTest):
         shutil.rmtree(cls.backend_path)
 
 @attr("backend")
-@unittest.skip("Works on dev instance, doesn't work on aws test instance, will debug later")
 class SFTPBackendTests(FSBackendTests, RequestTest):
     scheme = "sftp"
+
+    private_key_file = os.path.expanduser("~/.ssh/id_rsa")
 
     @classmethod
     def backend_info(cls, conf):
         hostname = "localhost"
         logname = os.environ.get("LOGNAME", "ccg-user")
+
+        if os.path.exists(cls.private_key_file):
+            key = open(cls.private_key_file).read()
+            password = ""
+        else:
+            key = ""
+            password = logname
+
         fscreds = {
             "username": logname,
-            "password": logname,
+            "password": password,
             "cert": "",
-            "key": "",
+            "key": key,
         }
         return hostname, cls.backend_path, fscreds
 
     @classmethod
+    def _ssh_keygen(cls):
+        config_dir = os.path.dirname(cls.private_key_file)
+        pub_key_file = cls.private_key_file + ".pub"
+        authorized_keys = os.path.join(config_dir, "authorized_keys")
+
+        if not os.path.exists(config_dir):
+            os.mkdir(config_dir, 0700)
+        if not os.path.exists(cls.private_key_file):
+            status = subprocess.call(["ssh-keygen", "-t", "rsa", "-N", "",
+                                      "-f", cls.private_key_file],
+                                     stdin=open("/dev/null"))
+            if status != 0:
+                logger.warning("Couldn't generate SSH keypair")
+
+        if os.path.exists(pub_key_file):
+            pub_key = open(pub_key_file).readline().rstrip()
+            with open(authorized_keys, "a+") as f:
+                if not any(pub_key in line for line in f):
+                    f.write(pub_key + "\n")
+            os.chmod(authorized_keys, 0600)
+
+    @classmethod
     def setUpClass(cls):
         cls.backend_path = tempfile.mkdtemp(prefix="yabitest-") + "/"
+        cls._make_noperm_file(cls.backend_path)
+        cls._ssh_keygen()
         super(SFTPBackendTests, cls).setUpClass()
 
     @classmethod

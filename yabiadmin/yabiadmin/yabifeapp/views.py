@@ -304,19 +304,23 @@ def preview(request):
     truncated = False
     contents = []
     size = 0
-    for chunk in resp.streaming_content:
-        contents.append(chunk)
-        size += len(chunk)
-        if size > settings.PREVIEW_SIZE_LIMIT:
-            if type_settings.get("truncate", False):
-                logger.debug("URI '%s' is too large: size %d > limit %d; truncating", uri, size, settings.PREVIEW_SIZE_LIMIT)
-                contents[-1] = contents[-1][:settings.PREVIEW_SIZE_LIMIT - size]
-                truncated = True
-                break
-            else:
-                logger.debug("URI '%s' is too large: size %d > limit %d", uri, size, settings.PREVIEW_SIZE_LIMIT)
-                return unavailable("This file is too large to be previewed.")
-    content = "".join(contents)
+    try:
+        for chunk in resp.streaming_content:
+            contents.append(chunk)
+            size += len(chunk)
+            if size > settings.PREVIEW_SIZE_LIMIT:
+                if type_settings.get("truncate", False):
+                    logger.debug("URI '%s' is too large: size %d > limit %d; truncating", uri, size, settings.PREVIEW_SIZE_LIMIT)
+                    contents[-1] = contents[-1][:settings.PREVIEW_SIZE_LIMIT - size]
+                    truncated = True
+                    break
+                else:
+                    logger.debug("URI '%s' is too large: size %d > limit %d", uri, size, settings.PREVIEW_SIZE_LIMIT)
+                    return unavailable("This file is too large to be previewed.")
+        content = "".join(contents)
+    except Exception:
+        logger.exception("Problem when streaming response")
+        return unavailable("The file could not be accessed.")
 
     # Cache some metadata about the preview so we can retrieve it later.
     key = preview_key(uri)

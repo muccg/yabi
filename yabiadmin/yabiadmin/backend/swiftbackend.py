@@ -241,7 +241,7 @@ class SwiftBackend(FSBackend):
 
     CHUNKSIZE = 64 * 1024
 
-    def download_file(self, uri, filename):
+    def download_file(self, uri, outfile):
         swift = self.SwiftPath.parse(uri)
         conn = self._get_conn(swift)
 
@@ -250,9 +250,8 @@ class SwiftBackend(FSBackend):
         try:
             headers, contents = conn.get_object(swift.bucket, swift.prefix,
                                                 resp_chunk_size=self.CHUNKSIZE)
-            with open(filename, "wb") as outfile:
-                for chunk in contents:
-                    outfile.write(chunk)
+            for chunk in contents:
+                outfile.write(chunk)
         except swiftclient.exceptions.ClientException as e:
             logger.exception("Error downloading %s to %s", uri, filename)
         except IOError:
@@ -261,7 +260,7 @@ class SwiftBackend(FSBackend):
             success = True
         return success
 
-    def upload_file(self, uri, filename):
+    def upload_file(self, uri, infile):
         logger.debug("upload_file(%s)", uri)
 
         swift = self.SwiftPath.parse(uri)
@@ -273,10 +272,9 @@ class SwiftBackend(FSBackend):
             # fixme: swift doesn't support files larger than 5GB
             # unless they are segmented, which python-swiftclient
             # doesn't do.
-            with open(filename, "rb") as infile:
-                conn.retries = 0  # will stop swiftclient seeking through infile
-                conn.put_object(swift.bucket, swift.prefix, infile,
-                                chunk_size=self.CHUNKSIZE)
+            conn.retries = 0  # will stop swiftclient seeking through infile
+            conn.put_object(swift.bucket, swift.prefix, infile,
+                            chunk_size=self.CHUNKSIZE)
         except swiftclient.exceptions.ClientException:
             logger.exception("Error uploading %s to %s", filename, uri)
         except IOError:

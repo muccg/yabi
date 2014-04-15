@@ -42,13 +42,13 @@ LS_TIME_STYLE = r"+%b %d  %Y"
 class FileBackend(FSBackend):
     def upload_file(self, uri, src):
         scheme, parts = uriparse(uri)
-        return self._copy_file(open(src, "rb"), open(parts.path, "wb"))
+        return self._copy_file(src, open(parts.path, "wb"))
 
     def download_file(self, uri, dst):
         scheme, parts = uriparse(uri)
         if not os.path.exists(parts.path):
             raise FileNotFoundError(uri)
-        return self._copy_file(open(parts.path, "rb"), open(dst, "wb"))
+        return self._copy_file(open(parts.path, "rb"), dst)
 
     def _copy_file(self, src, dst):
         success = False
