@@ -107,7 +107,7 @@ def process_jobs(workflow_id):
 @app.task
 @log_it('workflow')
 def abort_workflow(workflow_id):
-    wfl_logger = get_workflow_logger(logger, workflow_id)
+    wfl_logger = create_workflow_logger(logger, workflow_id)
     workflow = EngineWorkflow.objects.get(pk=workflow_id)
     if workflow.status == STATUS_ABORTED:
         return
@@ -278,7 +278,8 @@ def retry_on_error(original_function):
             countdown = backoff(request.retries)
             retry_celery_task(exc, countdown)
 
-        remove_task_retrying_mark(task_id)
+        if task_id is not None:
+            remove_task_retrying_mark(task_id)
 
         return result
 
@@ -471,8 +472,8 @@ def process_workflow_jobs_if_needed(task):
             process_jobs.apply_async((workflow.pk,))
 
 
-@transaction.commit_manually()
 @log_it('workflow')
+@transaction.commit_manually()
 def request_workflow_abort(workflow_id, yabiuser=None):
     workflow = EngineWorkflow.objects.get(pk=workflow_id)
     if (workflow.abort_requested_on is not None) or workflow.status in (STATUS_COMPLETE, STATUS_ERROR):
