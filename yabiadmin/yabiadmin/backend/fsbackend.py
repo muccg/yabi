@@ -32,6 +32,7 @@ from yabiadmin.backend.backend import fs_credential
 from yabiadmin.backend.basebackend import BaseBackend
 from yabiadmin.backend.pooling import get_ssh_pool_manager
 from yabiadmin.yabiengine.urihelper import url_join, uriparse, is_same_location
+from yabiadmin.yabiengine.engine_logging import create_task_logger
 from yabiadmin.constants import ENVVAR_FILENAME
 import dateutil.parser
 import logging
@@ -302,12 +303,14 @@ class FSBackend(BaseBackend):
             task.save()
 
     def stage_in_files(self):
+        task_logger = create_task_logger(logger, self.task.pk)
         self.mkdir(self.working_dir_uri())
         self.mkdir(self.working_input_dir_uri())
         self.mkdir(self.working_output_dir_uri())
         self.create_local_remnants_dir()
 
         stageins = self.task.get_stageins()
+        task_logger.info("About to stagein %d stageins", len(stageins))
         for stagein in stageins:
             self.stage_in(stagein)
             if stagein.matches_filename(ENVVAR_FILENAME):
@@ -315,7 +318,8 @@ class FSBackend(BaseBackend):
 
     def stage_in(self, stagein):
         """Perform a single stage in."""
-        logger.debug(stagein.method)
+        task_logger = create_task_logger(logger, self.task.pk)
+        task_logger.info("Stagein: %sing '%s' to '%s'", stagein.method, stagein.src, stagein.dst)
 
         if stagein.method == 'copy':
             if stagein.src.endswith('/'):
@@ -337,24 +341,29 @@ class FSBackend(BaseBackend):
         Stage out files from fs backend to stageout area.
         Also upload any local remnants of the task to the stageout area
         """
+        task_logger = create_task_logger(logger, self.task.pk)
         # first we need a stage out directory
+        task_logger.info("Stageout to %s", self.task.stageout)
         backend_for_stageout = FSBackend.urifactory(self.yabiusername, self.task.stageout)
         backend_for_stageout.mkdir(self.task.stageout)
 
-        # deal with any remanants from local commands
+        # deal with any remnants from local commands
         self.stage_out_local_remnants()
 
         # now the stageout proper
         method = self.task.job.preferred_stageout_method
-        logger.debug('stage out method is {0}'.format(method))
+        src = self.working_output_dir_uri()
+        dst = self.task.stageout
+
+        if method == 'lcopy' and not is_same_location(src, dst):
+            method = 'copy'
+
+        task_logger.info("Stageout: %sing '%s' to '%s'", method, src, dst)
         if method == 'lcopy':
-            if is_same_location(self.working_output_dir_uri(), self.task.stageout):
-                return self.local_copy_recursive(self.working_output_dir_uri(), self.task.stageout)
-            else:
-                method = 'copy'
+            return self.local_copy_recursive(src, dst)
 
         if method == 'copy':
-            return FSBackend.remote_copy(self.yabiusername, self.working_output_dir_uri(), self.task.stageout)
+            return FSBackend.remote_copy(self.yabiusername, src, dst)
 
         raise RuntimeError("Invalid stageout method %s for task %s" % (method, self.task.pk))
 
