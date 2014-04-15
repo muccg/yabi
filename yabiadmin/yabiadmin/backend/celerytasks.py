@@ -120,7 +120,6 @@ def abort_workflow(workflow_id):
 
 
 @app.task
-@log_it('workflow')
 def on_workflow_completed(workflow_id):
     delete_all_syslog_messages(workflow_id)
 
