@@ -196,11 +196,14 @@ class DeleteAllSyslogMessagesTest(unittest.TestCase):
         self.other_wfl_logger = create_workflow_logger(logger, self.workflow.pk + 1)
         self.other_job_logger = create_job_logger(logger, self.job.pk + 1)
         self.other_task_logger = create_task_logger(logger, self.task.pk + 1)
+        # Same id, different type
+        self.one_more_logger = create_task_logger(logger, self.workflow.pk)
 
     def tearDown(self):
         Syslog.objects.filter(table_name='workflow', table_id__in=(self.workflow.pk, self.workflow.pk+1))
         Syslog.objects.filter(table_name='job', table_id__in=(self.job.pk, self.job.pk+1))
         Syslog.objects.filter(table_name='task', table_id__in=(self.task.pk, self.task.pk+1))
+        Syslog.objects.filter(table_name='task', table_id__in=(self.task.pk, self.workflow.pk))
         delete_models(self.workflow, self.tool)
 
     def test_no_syslog_messages_to_start_with(self):
@@ -220,6 +223,7 @@ class DeleteAllSyslogMessagesTest(unittest.TestCase):
         self.other_wfl_logger.debug('Some message')
         self.other_job_logger.debug('Some job level message')
         self.other_task_logger.debug('Some task level message')
+        self.one_more_logger.debug('Table name is task but id same as workflow id')
 
     def test_logger_logs_properly(self):
         self.log_some_messages()
