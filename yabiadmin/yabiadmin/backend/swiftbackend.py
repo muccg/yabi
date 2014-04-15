@@ -9,6 +9,7 @@ from urllib import unquote
 import swiftclient
 import swiftclient.client
 import swiftclient.exceptions
+from django.conf import settings
 from .fsbackend import FSBackend
 from .exceptions import NotSupportedError, RetryException
 from .utils import get_credential_data, partition
@@ -305,7 +306,8 @@ class SwiftBackend(FSBackend):
         a temporary file before uploading. This allows the
         python-swiftclient library to retry failed uploads.
         """
-        SEGMENT_SIZE = 100 * 1024 * 1024
+        SEGMENT_SIZE = getattr(settings, "SWIFT_BACKEND_SEGMENT_SIZE",
+                               100 * 1024 * 1024)
 
         segment_buf = tempfile.NamedTemporaryFile()
 
