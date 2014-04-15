@@ -1,8 +1,11 @@
 # OpenStack Swift storage backend for YABI.
 # Copyright (C) 2014  Centre for Comparative Genomics
 
+import os
 import logging
 from collections import namedtuple
+import tempfile
+from urllib import quote, unquote
 import swiftclient
 import swiftclient.client
 import swiftclient.exceptions
@@ -125,7 +128,6 @@ class SwiftBackend(FSBackend):
     def _get_conn(self, url):
         if self._conn is None:
             params = self._get_auth_params(url)
-            logger.debug("auth params: %s" % str(params))
             self._conn = swiftclient.client.Connection(**params)
         return self._conn
 
@@ -200,6 +202,24 @@ class SwiftBackend(FSBackend):
             "directories": filter(bool, map(format_dir, prefixes)),
         }}
 
+    def _delete_object(self, conn, bucket, prefix):
+        """
+        Deletes an object in a bucket. If the file is a dynamic large
+        object, it takes care of segments too.
+        This lovely code is adapted from swiftclient.shell.st_delete().
+        """
+        headers = conn.head_object(bucket, prefix)
+        old_manifest = headers.get('x-object-manifest')
+        conn.delete_object(bucket, prefix)
+
+        if old_manifest:
+            scontainer, sprefix = old_manifest.split('/', 1)
+            scontainer = unquote(scontainer)
+            sprefix = unquote(sprefix).rstrip('/') + '/'
+
+            for delobj in conn.get_container(scontainer, prefix=sprefix)[1]:
+                conn.delete_object(scontainer, delobj['name'])
+
     def rm(self, uri):
         logger.debug("rm(%s)", uri)
         swift = self.SwiftPath.parse(uri)
@@ -210,7 +230,7 @@ class SwiftBackend(FSBackend):
 
         for entry in all_keys:
             if "name" in entry:
-                conn.delete_object(swift.bucket, entry["name"])
+                self._delete_object(conn, swift.bucket, entry["name"])
 
         parent = swift.parent_dir()
         if parent and not self._path_exists(parent):
@@ -266,23 +286,87 @@ class SwiftBackend(FSBackend):
         swift = self.SwiftPath.parse(uri)
         conn = self._get_conn(swift)
 
-        success = False
+        return self._swift_upload(swift, conn, infile)
 
-        try:
-            # fixme: swift doesn't support files larger than 5GB
-            # unless they are segmented, which python-swiftclient
-            # doesn't do.
-            conn.retries = 0  # will stop swiftclient seeking through infile
-            conn.put_object(swift.bucket, swift.prefix, infile,
-                            chunk_size=self.CHUNKSIZE)
-        except swiftclient.exceptions.ClientException:
-            logger.exception("Error uploading %s to %s", filename, uri)
-        except IOError:
-            logger.exception("Error reading from file for %s", uri)
-        else:
-            success = True
+    def _swift_upload(self, swift, conn, infile):
+        """Puts the contents of infile into a container on swift. If the file
+        is larger than 100M, it will be divided into segments using
+        the "dynamic large objects" convention.
 
-        return success
+        infile is expected to be a pipe, so each segment is stored in
+        a temporary file before uploading. This allows the
+        python-swiftclient library to retry failed uploads.
+        """
+        SEGMENT_SIZE = 100 * 1024 * 1024
+
+        segment_buf = tempfile.NamedTemporaryFile()
+
+        st = os.fstatvfs(segment_buf.fileno())
+        free_space = st.f_bavail * st.f_bsize
+        if free_space < SEGMENT_SIZE:
+            logger.error("There is only %dM space available for %s and %dM is required." % (free_space / 1024 / 1024, segment_buf.name, SEGMENT_SIZE / 1024 / 1024))
+
+        def load_segment():
+            """Copies enough data for a segment from the fifo into a temporary
+            file. Returns how much data was actually written. """
+            written = 0
+            while written < SEGMENT_SIZE:
+                bufsize = min(64 * 1024, SEGMENT_SIZE - written)
+                buf = infile.read(bufsize)
+                if not buf:
+                    break
+                segment_buf.write(buf)
+                written += len(buf)
+            segment_buf.seek(0)
+            return written
+
+        def upload_segment(bucket, prefix, length):
+            try:
+                conn.put_object(bucket, prefix, segment_buf,
+                                content_length=length,
+                                chunk_size=self.CHUNKSIZE)
+            except swiftclient.exceptions.ClientException:
+                logger.exception("Error uploading %s to %s", filename, uri)
+                raise
+            except IOError:
+                logger.exception("Error reading from file for %s", uri)
+                raise
+
+        def upload_manifest(bucket, prefix):
+            headers = { "X-Object-Manifest": "%s_segments/%s/" % (bucket, prefix) }
+            conn.put_object(bucket, prefix, "", content_length=0,
+                            headers=headers)
+
+        seg_num = 0
+        last_seg = False
+
+        while not last_seg:
+            seg_size = load_segment()
+
+            last_seg = seg_size < SEGMENT_SIZE
+
+            if seg_num == 0 and last_seg:
+                bucket = swift.bucket
+                prefix = swift.prefix
+            else:
+                bucket = swift.bucket + "_segments"
+                prefix = "%s/%s/%08d" % (swift.prefix, SEGMENT_SIZE, seg_num)
+                if seg_num == 0:
+                    logger.debug("%s %s will be uploaded in %s byte segments." % (swift.bucket, swift.prefix, SEGMENT_SIZE))
+                    # ensure that a segments container exists
+                    conn.put_container(bucket)
+
+            upload_segment(bucket, prefix, seg_size)
+
+            segment_buf.seek(0)
+            segment_buf.truncate(0)
+
+            seg_num += 1
+
+        if seg_num > 1:
+            upload_manifest(swift.bucket, swift.prefix)
+
+        return True
 
     def local_copy(self, source, destination):
         raise NotSupportedError()
