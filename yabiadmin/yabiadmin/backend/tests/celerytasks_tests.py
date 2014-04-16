@@ -10,7 +10,7 @@ from yabiadmin.backend import celerytasks
 from yabiadmin.yabi import models as m
 from yabiadmin.constants import STATUS_ERROR
 from yabiadmin.yabiengine.models import Task, Syslog
-from yabiadmin.yabiengine.engine_logging import create_workflow_logger, create_job_logger, create_task_logger
+from yabiadmin.yabiengine.engine_logging import create_workflow_logger, create_job_logger, create_task_logger, YabiDBHandler
 from yabiadmin.backend.celerytasks import retry_on_error
 from yabiadmin.backend.exceptions import RetryException, RetryPollingException
 
@@ -188,7 +188,7 @@ class RetryOnErrorTest(unittest.TestCase):
 class DeleteAllSyslogMessagesTest(unittest.TestCase):
 
     def setUp(self):
-        logging.config.dictConfig(settings.LOGGING)
+        logger.addHandler(YabiDBHandler())
         create_workflow_with_job_and_a_task(self)
         self.wfl_logger = create_workflow_logger(logger, self.workflow.pk)
         self.job_logger = create_job_logger(logger, self.job.pk)
