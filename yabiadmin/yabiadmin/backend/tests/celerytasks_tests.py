@@ -198,11 +198,14 @@ class DeleteAllSyslogMessagesTest(unittest.TestCase):
         self.other_task_logger = create_task_logger(logger, self.task.pk + 1)
 
     def tearDown(self):
-        Syslog.objects.filter(table_name='workflow', table_id__in=(self.workflow.pk, self.workflow.pk+1))
-        Syslog.objects.filter(table_name='job', table_id__in=(self.job.pk, self.job.pk+1))
-        Syslog.objects.filter(table_name='task', table_id__in=(self.task.pk, self.task.pk+1))
-        Syslog.objects.filter(table_name='task', table_id__in=(self.task.pk, self.workflow.pk))
+        self.delete_log_messages()
         delete_models(self.workflow, self.tool)
+
+    def delete_log_messages(self):
+        Syslog.objects.filter(table_name='workflow', table_id__in=(self.workflow.pk, self.workflow.pk+1)).delete()
+        Syslog.objects.filter(table_name='job', table_id__in=(self.job.pk, self.job.pk+1)).delete()
+        Syslog.objects.filter(table_name='task', table_id__in=(self.task.pk, self.task.pk+1)).delete()
+        Syslog.objects.filter(table_name='task', table_id__in=(self.task.pk, self.workflow.pk)).delete()
 
     def test_no_syslog_messages_to_start_with(self):
         self.assertEquals(0, Syslog.objects.filter(table_name='workflow', table_id=self.workflow.pk).count())
