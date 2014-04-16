@@ -41,18 +41,31 @@ from yabiadmin.constants import MAX_CELERY_TASK_RETRIES
 from yabiadmin.yabi.models import DecryptedCredentialNotAvailable
 from yabiadmin.yabiengine.models import Workflow, Job, Task, Syslog
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow, EngineJob, EngineTask
-from yabiadmin.yabiengine.engine_logging import create_workflow_logger, create_job_logger, create_task_logger, create_logger
+from yabiadmin.yabiengine.engine_logging import create_workflow_logger, create_job_logger, create_task_logger, create_logger, YabiDBHandler, YabiContextFilter
 import celery
 import os
 from django.conf import settings
 from django.db.models import Q
+from celery.signals import after_setup_task_logger
 import logging
 
-logger = logging.getLogger(__name__)
+logger = get_task_logger(__name__)
 
 app = celery.Celery('yabiadmin.backend.celerytasks')
 
 app.config_from_object('django.conf:settings')
+
+# Celery uses its own logging setup. All our custom logging setup has to be
+# done in this callback
+def setup_logging(*args, **kwargs):
+    handler = YabiDBHandler()
+    log_filter = YabiContextFilter()
+    handler.addFilter(log_filter)
+    level = getattr(settings, 'YABIDBHANDLER_LOG_LEVEL', 'DEBUG')
+    handler.setLevel(logging.getLevelName(level))
+    logger.addHandler(handler)
+
+after_setup_task_logger.connect(setup_logging)
 
 
 # Use this function instead of direct access, to allow testing
