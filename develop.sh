@@ -484,10 +484,8 @@ dbtest() {
     stopyabi
     dropdb
     startyabi
+    trap stopyabi EXIT
     do_nosetests
-    noseretval=$?
-    stopyabi
-    exit $noseretval
 }
 
 
