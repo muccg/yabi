@@ -5,7 +5,7 @@ from model_mommy import mommy
 from django.conf import settings
 
 from yabiadmin.yabiengine.models import Syslog
-from yabiadmin.yabiengine.engine_logging import create_task_logger, create_job_logger, create_workflow_logger
+from yabiadmin.yabiengine.engine_logging import create_task_logger, create_job_logger, create_workflow_logger, YabiDBHandler
 
 import logging
 
@@ -22,7 +22,8 @@ class MyVerySpecificException(StandardError):
 class YabiDBHandlerNormalLoggingTest(unittest.TestCase):
 
     def setUp(self):
-        logging.config.dictConfig(settings.LOGGING)
+        logger = logging.getLogger('yabiadmin')
+        logger.addHandler(YabiDBHandler())
 
     def test_not_logging_without_adapter(self):
         logger = logging.getLogger('yabiadmin.yabiengine')
@@ -33,7 +34,8 @@ class YabiDBHandlerNormalLoggingTest(unittest.TestCase):
 class YabiDBHandlerLoggingTest(unittest.TestCase):
 
     def setUp(self):
-        logging.config.dictConfig(settings.LOGGING)
+        logger = logging.getLogger('yabiadmin')
+        logger.addHandler(YabiDBHandler())
 
     def tearDown(self):
         Syslog.objects.filter(message=MSG).delete()
@@ -83,10 +85,8 @@ class YabiDBHandlerLoggingTest(unittest.TestCase):
         self.assertEquals(WORKFLOW_ID, syslog.table_id)
 
 
-    #def test_exception_info_is_logged(self):
-    # TODO - TSZ: changing the name makes it pass on aws testing ????!!!!
-    def test_todo(self):
-        logger = logging.getLogger('yabiadmin.backend.celerytasks')
+    def test_exception_info_is_logged(self):
+        logger = logging.getLogger('yabiadmin')
         wfl_logger = create_workflow_logger(logger, WORKFLOW_ID)
 
         try:
