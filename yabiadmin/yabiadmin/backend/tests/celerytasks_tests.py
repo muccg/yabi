@@ -22,8 +22,8 @@ logger = logging.getLogger(__name__)
 def create_workflow_with_job_and_a_task(obj):
     demo_user = m.User.objects.get(name='demo')
     obj.workflow = mommy.make('Workflow', user=demo_user)
-    obj.job = mommy.make('Job', workflow=obj.workflow, pk=obj.workflow.pk+1, order=0)
-    obj.task = mommy.make('Task', job=obj.job, pk=obj.job.pk+1)
+    obj.job = mommy.make('Job', workflow=obj.workflow, pk=obj.workflow.pk, order=0)
+    obj.task = mommy.make('Task', job=obj.job, pk=obj.job.pk)
     obj.tool = mommy.make('Tool', name='my-tool', path='tool.sh')
 
 
@@ -196,8 +196,6 @@ class DeleteAllSyslogMessagesTest(unittest.TestCase):
         self.other_wfl_logger = create_workflow_logger(logger, self.workflow.pk + 1)
         self.other_job_logger = create_job_logger(logger, self.job.pk + 1)
         self.other_task_logger = create_task_logger(logger, self.task.pk + 1)
-        # Same id, different type
-        self.one_more_logger = create_task_logger(logger, self.workflow.pk)
 
     def tearDown(self):
         Syslog.objects.filter(table_name='workflow', table_id__in=(self.workflow.pk, self.workflow.pk+1))
@@ -223,7 +221,6 @@ class DeleteAllSyslogMessagesTest(unittest.TestCase):
         self.other_wfl_logger.debug('Some message')
         self.other_job_logger.debug('Some job level message')
         self.other_task_logger.debug('Some task level message')
-        self.one_more_logger.debug('Table name is task but id same as workflow id')
 
     def test_logger_logs_properly(self):
         self.log_some_messages()
