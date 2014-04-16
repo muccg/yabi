@@ -22,8 +22,8 @@ logger = logging.getLogger(__name__)
 def create_workflow_with_job_and_a_task(obj):
     demo_user = m.User.objects.get(name='demo')
     obj.workflow = mommy.make('Workflow', user=demo_user)
-    obj.job = mommy.make('Job', workflow=obj.workflow, order=0)
-    obj.task = mommy.make('Task', job=obj.job)
+    obj.job = mommy.make('Job', workflow=obj.workflow, pk=obj.workflow.pk+1, order=0)
+    obj.task = mommy.make('Task', job=obj.job, pk=obj.job.pk+1)
     obj.tool = mommy.make('Tool', name='my-tool', path='tool.sh')
 
 
