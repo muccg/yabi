@@ -23,7 +23,7 @@ PIP_OPTS='--download-cache ~/.pip/cache --process-dependency-links'
 
 
 if [ "${YABI_CONFIG}" = "" ]; then
-    YABI_CONFIG="dev_mysql"
+    YABI_CONFIG="dev_postgresql"
 fi
 
 VIRTUALENV="${TOPDIR}/virt_${PROJECT_NAME}"
@@ -52,10 +52,10 @@ settings() {
         export DJANGO_SETTINGS_MODULE="yabiadmin.testpostgresqlsettings"
         ;;
     dev_mysql)
-        export DJANGO_SETTINGS_MODULE="yabiadmin.settings"
+        export DJANGO_SETTINGS_MODULE="yabiadmin.mysqlsettings"
         ;;
     dev_postgresql)
-        export DJANGO_SETTINGS_MODULE="yabiadmin.postgresqlsettings"
+        export DJANGO_SETTINGS_MODULE="yabiadmin.settings"
         ;;
     *)
         echo "No YABI_CONFIG set, exiting"
@@ -94,7 +94,7 @@ ci_remote_build() {
 ci_remote_test() {
     TEST_PLAN=$1
     if [ "${TEST_PLAN}" = "" ]; then
-        TEST_PLAN="test_mysql"
+        TEST_PLAN="test_postgresql"
     fi
 
     echo "Test plan ${TEST_PLAN}"
@@ -109,7 +109,8 @@ ci_remote_test() {
     time ccg ${AWS_TEST_INSTANCE} rsync_project:local_dir=./,remote_dir=${TARGET_DIR}/,ssh_opts="${SSH_OPTS}",extra_opts="${RSYNC_OPTS}",exclude="${EXCLUDES}",delete=True
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh purge"
     time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh install"
-    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh ${TEST_PLAN}"
+    time ccg ${AWS_TEST_INSTANCE} drun:"cd ${TARGET_DIR} && ./develop.sh ${TEST_PLAN} || true"
+    time ccg ${AWS_TEST_INSTANCE} getfile:"${TARGET_DIR}/tests.xml,tests.xml"
     time ccg ${AWS_TEST_INSTANCE} shutdown:10
 }
 
@@ -188,23 +189,30 @@ jslint() {
 }
 
 
-nosetests() {
+do_nosetests() {
     source ${VIRTUALENV}/bin/activate
 
+    NOSETESTS="nosetests --with-xunit --xunit-file=tests.xml -v --logging-clear-handlers"
+    IGNORES="-a !external_service -I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py"
+    TEST_CASES="tests yabiadmin/yabiadmin"
+
     # Runs the end-to-end tests in the Yabitests project
-    ${VIRTUALENV}/bin/nosetests --with-xunit --xunit-file=tests.xml -I sshtorque_tests.py -I torque_tests.py -I sshpbspro_tests.py -v --logging-clear-handlers tests yabiadmin/yabiadmin
-    #{VIRTUALENV}/bin/nosetests -v tests.simple_tool_tests:LocalExecutionRedirectTest
-    #${VIRTUALENV}/bin/nosetests -v tests.simple_tool_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.s3_connection_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.ssh_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.sshpbspro_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.sshtorque_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.backend_execution_restriction_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.localfs_connection_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.rewalk_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.file_transfer_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.ssh_tests
-    #${VIRTUALENV}/bin/nosetests -v tests.idempotency_tests
+    echo ${NOSETESTS} ${IGNORES} ${TEST_CASES}
+    ${NOSETESTS} ${IGNORES} ${TEST_CASES}
+
+    # ${NOSETESTS} tests.simple_tool_tests:LocalExecutionRedirectTest
+    # ${NOSETESTS} tests.simple_tool_tests
+    # ${NOSETESTS} tests.s3_connection_tests
+    # ${NOSETESTS} tests.ssh_tests
+    # ${NOSETESTS} tests.sshpbspro_tests
+    # ${NOSETESTS} tests.sshtorque_tests
+    # ${NOSETESTS} tests.backend_execution_restriction_tests
+    # ${NOSETESTS} tests.localfs_connection_tests
+    # ${NOSETESTS} tests.rewalk_tests
+    # ${NOSETESTS} tests.file_transfer_tests
+    # ${NOSETESTS} tests.ssh_tests
+    # ${NOSETESTS} tests.idempotency_tests
+    # ${NOSETESTS} tests.fsbackend_tests
 }
 
 
@@ -213,14 +221,14 @@ dropdb() {
     case ${YABI_CONFIG} in
     test_mysql)
         mysql -v -uroot -e "drop database test_yabi;" || true
-        mysql -v -uroot -e "create database test_yabi default charset=UTF8;" || true
+        mysql -v -uroot -e "create database test_yabi default charset=UTF8 default collate utf8_bin;" || true
         ;;
     test_postgresql)
         psql -aeE -U postgres -c "SELECT pg_terminate_backend(pg_stat_activity.procpid) FROM pg_stat_activity where pg_stat_activity.datname = 'test_yabi'" && psql -aeE -U postgres -c "alter user yabiapp createdb;" template1 && psql -aeE -U postgres -c "alter database test_yabi owner to yabiapp" template1 && psql -aeE -U yabiapp -c "drop database test_yabi" template1 && psql -aeE -U yabiapp -c "create database test_yabi;" template1
         ;;
     dev_mysql)
 	echo "Drop the dev database manually:"
-        echo "mysql -uroot -e \"drop database dev_yabi; create database dev_yabi default charset=UTF8;\""
+        echo "mysql -uroot -e \"drop database dev_yabi; create database dev_yabi default charset=UTF8 default collate utf8_bin;\""
         exit 1
         ;;
     dev_postgresql)
@@ -476,10 +484,8 @@ dbtest() {
     stopyabi
     dropdb
     startyabi
-    nosetests
-    noseretval=$?
-    stopyabi
-    exit $noseretval
+    trap stopyabi EXIT
+    do_nosetests
 }
 
 

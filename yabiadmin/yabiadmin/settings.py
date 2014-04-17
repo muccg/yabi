@@ -67,7 +67,6 @@ INSTALLED_APPS = [
     'yabiadmin.yabifeapp',
     'yabiadmin.yabi',
     'yabiadmin.yabiengine',
-    'yabiadmin.uploader',
     'kombu.transport.django',
     'django_extensions',
     'south',
@@ -140,11 +139,6 @@ if not os.path.exists(FILE_UPLOAD_TEMP_DIR):
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#append-slash
 APPEND_SLASH = True
 
-# validation settings, these reflect the types of backend that yabi can handle
-EXEC_SCHEMES = ['ssh', 'ssh+pbspro', 'ssh+torque', 'ssh+sge', 'localex', 'null']
-FS_SCHEMES = ['scp', 'sftp', 's3', 'localfs', 'null']
-VALID_SCHEMES = EXEC_SCHEMES + FS_SCHEMES
-
 ##
 ## CAPTCHA settings
 ##
@@ -189,13 +183,12 @@ MAKO_MODULENAME_CALLABLE = ''
 # see: https://docs.djangoproject.com/en/dev/ref/settings/#databases
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'USER': 'root',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'USER': 'yabiapp',
         'NAME': 'dev_yabi',
-        'PASSWORD': '',
-        'HOST': 'localhost',
+        'PASSWORD': 'yabiapp',
+        'HOST': '',
         'PORT': '',
-        'OPTIONS': {'init_command': 'SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED'},
     }
 }
 
@@ -374,6 +367,9 @@ LOGGING = {
     'filters': {
         'require_debug_false': {
             '()': 'django.utils.log.RequireDebugFalse'
+        },
+        'yabi_context_exists': {
+            '()': 'yabiadmin.yabiengine.engine_logging.YabiContextFilter'
         }
     },
     'handlers': {
@@ -391,6 +387,11 @@ LOGGING = {
             'filters': ['require_debug_false'],
             'class': 'django.utils.log.AdminEmailHandler',
             'formatter': 'verbose'
+        },
+        'yabi_db_handler': {
+            'level': 'DEBUG',
+            'filters': ['yabi_context_exists'],
+            'class': 'yabiadmin.yabiengine.engine_logging.YabiDBHandler'
         }
     },
     'loggers': {
@@ -406,7 +407,7 @@ LOGGING = {
         },
 
         'yabiadmin': {
-            'handlers': ['console'],
+            'handlers': ['console', 'yabi_db_handler'],
             'level': 'DEBUG',
             'propagate': False,
         },

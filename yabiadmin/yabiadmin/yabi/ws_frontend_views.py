@@ -35,7 +35,7 @@ from urllib import unquote
 from urlparse import urlparse, urlunparse
 
 from django.db import transaction
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseBadRequest, HttpResponseNotAllowed, HttpResponseServerError, StreamingHttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from yabiadmin.yabi.models import User, ToolGrouping, Tool, Credential, ToolSet, BackendCredential
 from django.utils import simplejson as json
@@ -43,7 +43,6 @@ from django.conf import settings
 from django.views.decorators.cache import cache_page
 from django.views.decorators.vary import vary_on_cookie
 from django.core.cache import cache
-from django.core.servers.basehttp import FileWrapper
 from yabiadmin.backend.celerytasks import process_workflow
 from yabiadmin.yabiengine.enginemodels import EngineWorkflow
 from yabiadmin.yabiengine.models import WorkflowTag
@@ -89,18 +88,22 @@ def menu(request):
 
     try:
         all_tools = {}
-        toolsets = ToolSet.objects.filter(users__name=username)
-        for toolset in toolsets:
-            for toolgroup in ToolGrouping.objects.filter(tool_set=toolset):
-                tg = all_tools.setdefault(toolgroup.tool_group.name, {})
-                if toolgroup.tool.enabled:  # only include tools that are enabled
-                    tool = tg.setdefault(toolgroup.tool.name, {})
-                    if not tool:
-                        tool["name"] = toolgroup.tool.name
-                        tool["displayName"] = toolgroup.tool.display_name
-                        tool["description"] = toolgroup.tool.description
-                        tool["outputExtensions"] = toolgroup.tool.output_filetype_extensions()
-                        tool["inputExtensions"] = toolgroup.tool.input_filetype_extensions()
+        prefetch_related = (
+            'tool__tooloutputextension_set__file_extension',
+            'tool__toolparameter_set__accepted_filetypes__extensions',
+        )
+        select_related = ('tool_group',)
+
+        for toolgroup in ToolGrouping.objects.filter(tool_set__users__name=username).prefetch_related(*prefetch_related).select_related(*select_related):
+            tg = all_tools.setdefault(toolgroup.tool_group.name, {})
+            if toolgroup.tool.enabled:  # only include tools that are enabled
+                tool = tg.setdefault(toolgroup.tool.name, {})
+                if not tool:
+                    tool["name"] = toolgroup.tool.name
+                    tool["displayName"] = toolgroup.tool.display_name
+                    tool["description"] = toolgroup.tool.description
+                    tool["outputExtensions"] = toolgroup.tool.output_filetype_extensions()
+                    tool["inputExtensions"] = toolgroup.tool.input_filetype_extensions()
 
         # from here down is getting the tools into a form
         # used by the front end so no changes are needed there
@@ -211,9 +214,27 @@ def rm(request):
     # TODO Forbidden, any other errors
     return HttpResponse("OK")
 
+@authentication_required
+def mkdir(request):
+    backend.mkdir(request.user.username, request.GET['uri'])
+    return HttpResponse("OK")
+
+def backend_get_file(yabiusername, uri):
+    f, status_queue = backend.get_file(yabiusername, uri)
+
+    CHUNKSIZE = 64 * 1024
+
+    for chunk in iter(lambda: f.read(CHUNKSIZE), ""):
+        yield chunk
+    f.close()
+
+    success = status_queue.get()
+
+    if not success:
+        raise Exception("Backend file download was not successful")
 
 @authentication_required
-def get(request, bytes=None):
+def get(request):
     """ Returns the requested uri.  """
     yabiusername = request.user.username
 
@@ -226,24 +247,17 @@ def get(request, bytes=None):
         logger.critical('Unable to get filename from uri: %s' % uri)
         filename = 'default.txt'
 
-    if bytes is not None:
-        try:
-            bytes = int(bytes)
-        except ValueError:
-            bytes = None
-
     try:
-        download_handle = backend.get_file(yabiusername, uri, bytes=bytes)
+        response = StreamingHttpResponse(backend_get_file(yabiusername, uri))
     except FileNotFoundError:
-        return HttpResponseNotFound()
-    response = HttpResponse(FileWrapper(download_handle))
+        response = HttpResponseNotFound()
+    else:
+        mimetypes.init([os.path.join(settings.WEBAPP_ROOT, 'mime.types')])
+        mtype, file_encoding = mimetypes.guess_type(filename, False)
+        if mtype is not None:
+            response['content-type'] = mtype
 
-    mimetypes.init([os.path.join(settings.WEBAPP_ROOT, 'mime.types')])
-    mtype, file_encoding = mimetypes.guess_type(filename, False)
-    if mtype is not None:
-        response['content-type'] = mtype
-
-    response['content-disposition'] = 'attachment; filename=%s' % filename
+        response['content-disposition'] = 'attachment; filename=%s' % filename
 
     return response
 
@@ -261,13 +275,28 @@ def put(request):
     logger.debug("uri: %s" % request.GET['uri'])
     uri = request.GET['uri']
 
+    num_success = 0
+    num_fail = 0
+
     for key, f in request.FILES.items():
-        upload_handle = backend.put_file(yabiusername, uri)
+        upload_handle, status_queue = backend.put_file(yabiusername, f.name, uri)
         for chunk in f.chunks():
             upload_handle.write(chunk)
         upload_handle.close()
 
-    return HttpResponse("OK")
+        if status_queue.get():
+            num_success += 1
+        else:
+            num_fail += 1
+
+    response = {
+        "level": "success" if num_fail == 0 else "failure",
+        "num_success": num_success,
+        "num_fail": num_fail,
+        "message": 'no message'
+    }
+
+    return HttpResponse(content=json.dumps(response))
 
 
 @authentication_required
@@ -338,8 +367,9 @@ def get_workflow(request, workflow_id):
     workflow_id = int(workflow_id)
     workflows = EngineWorkflow.objects.filter(id=workflow_id)
     if len(workflows) != 1:
-        logger.critical('%s' % e)
-        return JsonMessageResponseNotFound(e)
+        msg = 'Workflow %d not found' % workflow_id
+        logger.critical(msg)
+        return JsonMessageResponseNotFound(msg)
 
     response = workflow_to_response(workflows[0])
 
@@ -548,4 +578,3 @@ def find_first(pred, sequence):
     for x in sequence:
         if pred(x):
             return x
-

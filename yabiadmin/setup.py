@@ -1,7 +1,7 @@
 import os
 from setuptools import setup
 
-packages = ['yabiadmin'] + ['yabiadmin.%s' % app for app in ['yabifeapp', 'yabiengine', 'yabi', 'uploader', 'preview', 'backend']] + ['yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations', 'yabiadmin.yabi.templatetags']
+packages = ['yabiadmin'] + ['yabiadmin.%s' % app for app in ['yabifeapp', 'yabiengine', 'yabi', 'preview', 'backend']] + ['yabiadmin.yabi.migrations', 'yabiadmin.yabi.migrationutils', 'yabiadmin.yabiengine.migrations', 'yabiadmin.yabi.templatetags']
 
 install_requires = [
     'Django==1.5.4',
@@ -30,6 +30,8 @@ install_requires = [
     'djamboloader==0.1.2',
     'paramiko==1.12.1',
     'boto==2.25',
+    'python-swiftclient==2.0.2',
+    'python-keystoneclient==0.6.0',
     'python-dateutil>=2.1,<3.0',
     'yaphc==0.1.5',
     'six>=1.4,<1.5',
@@ -52,7 +54,7 @@ dev_requires = [
 tests_require = [
     'requests==1.2.0',
     'django-nose',
-    'nose==1.2.1',
+    'nose==1.3.1',
     'mockito>=0.5.0,<0.6.0',
     'sniffer==0.3.2',
     'pyinotify==0.9.4',
@@ -87,7 +89,7 @@ if not importlib_available:
     install_requires.append('importlib>=1.0.1,<1.1.0')
 
 setup(name='yabiadmin',
-      version='7.2.1',
+      version='7.2.2',
       description='Yabi Admin',
       long_description='Yabi front end and administration web interface',
       author='Centre for Comparative Genomics',

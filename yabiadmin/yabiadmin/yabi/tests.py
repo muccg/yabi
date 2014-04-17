@@ -9,6 +9,7 @@ from yabiadmin.yabi.ws_frontend_views import munge_name
 
 from django.contrib.auth.models import User as DjangoUser
 from yabiadmin.yabi.models import Credential, User, Backend, Tool, ToolSet, ToolGroup
+from yabiadmin.yabi.forms import BackendForm
 from django.core.cache import cache
 
 from django.utils import simplejson as json
@@ -260,4 +261,74 @@ class TestWorkflowNameMunging(unittest.TestCase):
     def test_already_munged_called_with_munged_name(self):
         name = munge_name(self.user.name, 'Munged (1)')
         self.assertEquals('Munged (3)', name)
+
+
+class TestBackendFormValidation(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def minimal_valid_data(self):
+        return {"name": "some name",
+            "scheme": "sftp",
+            "hostname": "ahostname",
+            "path": "/a/path/"}
+
+    def test_should_be_valid_with_minimal_data(self):
+        form = BackendForm(self.minimal_valid_data())
+        self.assertTrue(form.is_valid(), "Form should be valid")
+
+    def test_mandatory_fields_are_required(self):
+        mandatory_fields = ('name', 'scheme', 'hostname', 'path',)
+        def field_is_required_error(field, errors):
+            return errors.get(field) == [u'This field is required.']
+
+        form = BackendForm({})
+        self.assertFalse(form.is_valid(), "Form shouldn't be valid")
+        for mand_field in mandatory_fields:
+            self.assertTrue(field_is_required_error(mand_field, form.errors),
+                    "Field '%s' should be reported as required" % mand_field)
+
+    def test_scheme_is_a_valid_scheme(self):
+        data = self.minimal_valid_data()
+        data['scheme'] = "not valid"
+        form = BackendForm(data)
+        self.assertFalse(form.is_valid(), "Form shouldn't be valid")
+        self.assertTrue(form.errors['scheme'][0].startswith(u"Scheme not valid. Options: "))
+
+    def test_path_should_start_with_slash(self):
+        data = self.minimal_valid_data()
+        data['path'] = "no/slash/at/start/"
+        form = BackendForm(data)
+        self.assertFalse(form.is_valid(), "Form shouldn't be valid")
+        self.assertEqual(form.errors['path'][0], u"Path must start with a /.")
+
+    def test_path_should_end_with_slash(self):
+        data = self.minimal_valid_data()
+        data['path'] = "/no/slash/at/end"
+        form = BackendForm(data)
+        self.assertFalse(form.is_valid(), "Form shouldn't be valid")
+        self.assertEqual(form.errors['path'][0], u"Path must end with a /.")
+
+    def test_hostname_can_not_end_in_slash(self):
+        data = self.minimal_valid_data()
+        data['hostname'] = "hostname-ending-in/"
+        form = BackendForm(data)
+        self.assertFalse(form.is_valid(), "Form shouldn't be valid")
+        self.assertEqual(form.errors['hostname'][0], u"Hostname must not end with a /.")
+
+    def test_lcopy_unsupported_on_s3(self):
+        data = self.minimal_valid_data()
+        data['scheme'] = "s3"
+        data['lcopy_supported'] = True
+        form = BackendForm(data)
+        self.assertFalse(form.is_valid(), "Form shouldn't be valid")
+        self.assertEqual(form.errors['lcopy_supported'][0], u"Local Copy not supported on s3.")
+
+    def test_link_unsupported_on_s3(self):
+        data = self.minimal_valid_data()
+        data['scheme'] = "s3"
+        data['link_supported'] = True
+        form = BackendForm(data)
+        self.assertFalse(form.is_valid(), "Form shouldn't be valid")
+        self.assertEqual(form.errors['link_supported'][0], u"Linking not supported on s3.")
 

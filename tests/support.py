@@ -6,11 +6,8 @@ from collections import namedtuple
 from six.moves import filter
 
 DEBUG = False
-CONFIG_SECTION = os.environ.get('YABI_CONFIG')
-if CONFIG_SECTION:
-    conf = config.Configuration(section=CONFIG_SECTION)
-else:
-    conf = config.Configuration()
+conf = config.Configuration(os.environ.get("TEST_CONFIG_FILE") or None,
+                            os.environ.get("YABI_CONFIG") or None)
 
 def yabipath(relpath):
     return os.path.join(conf.yabidir, relpath)
@@ -107,9 +104,9 @@ class YabiTimeoutException(Exception):
 class Yabi(object):
 
     def __init__(self):
-        yabish = yabipath(conf.yabish) 
+        yabish = yabipath(conf.yabish)
 
-        self.command = [yabish] 
+        self.command = [yabish]
         if conf.yabiurl:
             self.command.append('--yabi-url=%s' % conf.yabiurl)
         self.setup_data_dir()
