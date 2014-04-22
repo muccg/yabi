@@ -325,6 +325,10 @@ installyabi() {
     which virtualenv-2.7 > /dev/null
 
     echo "Install yabiadmin"
+    if test -e /usr/pgsql-9.3/bin; then
+        export PATH=/usr/pgsql-9.3/bin:$PATH
+        echo $PATH
+    fi
     virtualenv-2.7 ${VIRTUALENV}
     ${VIRTUALENV}/bin/pip install 'pip>=1.5,<1.6' --upgrade
     ${VIRTUALENV}/bin/pip --version
