@@ -224,7 +224,7 @@ dropdb() {
         mysql -v -uroot -e "create database test_yabi default charset=UTF8 default collate utf8_bin;" || true
         ;;
     test_postgresql)
-        psql -aeE -U postgres -c "SELECT pg_terminate_backend(pg_stat_activity.procpid) FROM pg_stat_activity where pg_stat_activity.datname = 'test_yabi'" && psql -aeE -U postgres -c "alter user yabiapp createdb;" template1 && psql -aeE -U postgres -c "alter database test_yabi owner to yabiapp" template1 && psql -aeE -U yabiapp -c "drop database test_yabi" template1 && psql -aeE -U yabiapp -c "create database test_yabi;" template1
+        psql -aeE -U postgres -c "alter user yabiapp createdb;" template1 && psql -aeE -U postgres -c "alter database test_yabi owner to yabiapp" template1 && psql -aeE -U yabiapp -c "drop database test_yabi" template1 && psql -aeE -U yabiapp -c "create database test_yabi;" template1
         ;;
     dev_mysql)
 	echo "Drop the dev database manually:"
@@ -233,7 +233,7 @@ dropdb() {
         ;;
     dev_postgresql)
 	echo "Drop the dev database manually:"
-        echo "psql -aeE -U postgres -c \"SELECT pg_terminate_backend(pg_stat_activity.procpid) FROM pg_stat_activity where pg_stat_activity.datname = 'dev_yabi'\" && psql -aeE -U postgres -c \"alter user yabiapp createdb;\" template1 && psql -aeE -U yabiapp -c \"drop database dev_yabi\" template1 && psql -aeE -U yabiapp -c \"create database dev_yabi;\" template1"
+        echo "psql -aeE -U postgres -c \"alter user yabiapp createdb;\" template1 && psql -aeE -U yabiapp -c \"drop database dev_yabi\" template1 && psql -aeE -U yabiapp -c \"create database dev_yabi;\" template1"
         exit 1
         ;;
     *)
