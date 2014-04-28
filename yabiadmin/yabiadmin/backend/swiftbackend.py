@@ -28,6 +28,7 @@ class SwiftBackend(FSBackend):
     """
 
     backend_scheme = "swift"
+    backend_desc = "OpenStack Swift object storage"
 
     def __init__(self, *args, **kwargs):
         FSBackend.__init__(self, *args, **kwargs)

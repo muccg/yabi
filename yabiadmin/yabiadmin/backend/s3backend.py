@@ -49,6 +49,7 @@ class S3Backend(FSBackend):
     """
 
     backend_scheme = "s3"
+    backend_desc = "Amazon S3 object storage"
 
     def __init__(self, *args, **kwargs):
         FSBackend.__init__(self, *args, **kwargs)

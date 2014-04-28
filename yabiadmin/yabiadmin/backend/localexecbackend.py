@@ -46,6 +46,7 @@ DEFAULT_TEMP_DIRECTORY = '/tmp'
 class LocalExecBackend(ExecBackend):
 
     backend_scheme = "localex"
+    backend_desc = "Local execution"
 
     def __init__(self, *args, **kwargs):
         ExecBackend.__init__(self, *args, **kwargs)

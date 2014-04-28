@@ -75,7 +75,7 @@ class BaseBackend(object):
 
     @classmethod
     def get_scheme_choices(cls):
-        return [(k, "%s - %s" % (k, backendcls.__name__))
+        return [(k, "%s - %s" % (k, getattr(backendcls, "backend_desc", backendcls.__name__)))
                 for k, backendcls in cls._backends]
 
     @classmethod

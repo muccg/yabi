@@ -60,6 +60,7 @@ kill {1} -- -$( ps opgid= {0} | tr -d ' ')
 """
 
     backend_scheme = "ssh"
+    backend_desc = "SSH remote execution"
 
     def __init__(self, *args, **kwargs):
         super(SSHBackend, self).__init__(*args, **kwargs)
