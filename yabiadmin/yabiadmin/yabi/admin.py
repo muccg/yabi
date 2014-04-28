@@ -160,6 +160,11 @@ class CredentialAdmin(AdminBase):
 class BackendAdmin(AdminBase):
     form = BackendForm
     list_display = ['name', 'description', 'scheme', 'hostname', 'port', 'path', 'uri', 'backend_summary_link']
+    def backend_summary_link(self, obj):
+        return '<a href="%s">View</a>' % obj.get_absolute_url()
+
+    backend_summary_link.short_description = 'Summary'
+    backend_summary_link.allow_tags = True
 
 class UserAdmin(AdminBase):
     list_display = ['user', 'user_option_access','credential_access', 'toolsets_str', 'tools_link', 'backends_link']

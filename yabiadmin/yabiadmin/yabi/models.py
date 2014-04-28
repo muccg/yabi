@@ -625,13 +625,6 @@ class Backend(Base):
     def get_absolute_url(self):
         return ('backend_view', (), {'backend_id': str(self.id)})
 
-    def backend_summary_link(self):
-        return '<a href="%s">View</a>' % self.get_absolute_url()
-
-    backend_summary_link.short_description = 'Summary'
-    backend_summary_link.allow_tags = True
-
-
 class HostKey(Base):
     hostname = models.CharField(max_length=512)
     key_type = models.CharField(max_length=32, blank=False, null=False)
