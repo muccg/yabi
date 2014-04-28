@@ -42,6 +42,7 @@ LS_TIME_STYLE = r"+%b %d  %Y"
 class FileBackend(FSBackend):
     backend_scheme = ("file", "localfs")
     backend_desc = "File system"
+    backend_auth = { }
 
     def upload_file(self, uri, src):
         scheme, parts = uriparse(uri)

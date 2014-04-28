@@ -28,6 +28,7 @@
 # -*- coding: utf-8 -*-
 import traceback
 from django.db import models
+from django.db.models import Count
 from django.contrib.auth.models import User as DjangoUser
 from django.contrib.auth import authenticate
 from django.utils import simplejson as json
@@ -513,7 +514,11 @@ class Credential(Base):
     user = models.ForeignKey(User)
     backends = models.ManyToManyField('Backend', through='BackendCredential', null=True, blank=True)
     expires_on = models.DateTimeField(null=True)   # null mean never expire this
+
     username.help_text = "The username on the backend this credential is for."
+    password.help_text = "Password for backend auth. Doesn't apply to all backends."
+    cert.help_text = "Certificate for backend auth, if required."
+    key.help_text = "Key for backend auth, if required."
     user.help_text = "Yabi username."
 
     def __unicode__(self):
@@ -582,6 +587,15 @@ class Credential(Base):
         if self.security_state == Credential.PROTECTED:
             access.cache_protected_creds(self.password, self.cert, self.key)
         return access
+
+    def guess_backend_scheme(self):
+        """
+        Return a probable backend scheme based on the backends associated
+        with this credential.
+        """
+        backends = self.backends.annotate(scount=Count("scheme"))
+        backends = backends.order_by("-scount", "created_on")[:1]
+        return backends[0].scheme if backends else ""
 
 class Backend(Base):
     def __init__(self, *args, **kwargs):

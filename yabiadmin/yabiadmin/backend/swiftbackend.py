@@ -29,6 +29,10 @@ class SwiftBackend(FSBackend):
 
     backend_scheme = "swift"
     backend_desc = "OpenStack Swift object storage"
+    backend_auth = {
+        "username": "Keystone user name",
+        "password": "Keystone password",
+    }
 
     def __init__(self, *args, **kwargs):
         FSBackend.__init__(self, *args, **kwargs)

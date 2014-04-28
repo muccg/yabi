@@ -50,6 +50,10 @@ class S3Backend(FSBackend):
 
     backend_scheme = "s3"
     backend_desc = "Amazon S3 object storage"
+    backend_auth = {
+        "cert": "AWS Access Key ID",
+        "key": "AWS Secret Access Key",
+    }
 
     def __init__(self, *args, **kwargs):
         FSBackend.__init__(self, *args, **kwargs)

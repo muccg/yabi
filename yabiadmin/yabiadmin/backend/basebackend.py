@@ -113,4 +113,6 @@ class BaseBackend(object):
             k = caps.setdefault(scheme, {})
             k["fs"] = k.get("fs", False) or issubclass(be, FSBackend)
             k["exec"] = k.get("exec", False) or issubclass(be, ExecBackend)
+            if hasattr(be, "backend_auth"):
+                k.setdefault("auth", {}).update(be.backend_auth)
         return caps

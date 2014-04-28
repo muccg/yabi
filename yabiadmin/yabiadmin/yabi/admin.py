@@ -131,6 +131,19 @@ class CredentialAdmin(AdminBase):
     actions = ['duplicate_credential','cache_credential','decache_credential']
     search_fields = ['description', 'username', 'user__user__username']
     readonly_fields = ['security_state']
+    fields = (("scheme", "description"),
+              ("username", "password"), "cert", "key",
+              "user", "expires_on", "security_state", "caps")
+
+    class Media:
+        js = ("javascript/yabiadminfixer.js",)
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(CredentialAdmin, self).get_form(request, obj, **kwargs)
+        from ..backend import BaseBackend
+        form.base_fields['scheme'].choices = [("", "Any")] + BaseBackend.get_scheme_choices()
+        form.base_fields['scheme'].initial = obj.guess_backend_scheme() if obj else ""
+        return form
 
     def duplicate_credential(self, request, queryset):
         selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)

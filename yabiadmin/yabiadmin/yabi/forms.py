@@ -77,6 +77,9 @@ class BackendForm(forms.ModelForm):
         return path
 
 class CredentialForm(forms.ModelForm):
+    scheme = forms.ChoiceField(required=False)
+    caps = CapsField()
+
     class Meta:
         model = Credential
 
