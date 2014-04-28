@@ -26,16 +26,24 @@
 ### END COPYRIGHT ###
 from django import forms
 from django.conf import settings
-from yabiadmin.yabi.models import *
-from yabiadmin import constants
-from yabiadmin.crypto_utils import looks_like_annotated_block, any_unencrypted, any_annotated_block
 from django.contrib import admin
+from django.utils import simplejson as json
+from yabiadmin.yabi.models import *
+from yabiadmin.crypto_utils import looks_like_annotated_block, any_unencrypted, any_annotated_block
 
 SCHEMES_WITHOUT_LCOPY = ('s3', 'swift')
 SCHEMES_WITHOUT_LINKING = ('s3', 'swift')
 
+class CapsField(forms.CharField):
+    def __init__(self):
+        from ..backend import BaseBackend
+        super(CapsField, self).__init__(required=False,
+                                        widget=forms.HiddenInput,
+                                        initial=json.dumps(BaseBackend.get_caps()))
 
 class BackendForm(forms.ModelForm):
+    caps = CapsField()
+
     class Meta:
         model = Backend
 

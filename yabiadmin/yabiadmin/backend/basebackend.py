@@ -99,3 +99,18 @@ class BaseBackend(object):
         """
         BackendCls = cls.get_backend_cls_for_scheme(scheme, basecls)
         return BackendCls(*args, **kwargs) if BackendCls else None
+
+    @classmethod
+    def get_caps(cls):
+        """
+        Returns a dict mapping backend schemes to their "capabilities" --
+        i.e. whether they are for filesystem or execution backends, or
+        both.
+        """
+        caps = {}
+        from . import FSBackend, ExecBackend
+        for scheme, be in cls._backends:
+            k = caps.setdefault(scheme, {})
+            k["fs"] = k.get("fs", False) or issubclass(be, FSBackend)
+            k["exec"] = k.get("exec", False) or issubclass(be, ExecBackend)
+        return caps

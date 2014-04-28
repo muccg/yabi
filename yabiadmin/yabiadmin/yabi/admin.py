@@ -159,7 +159,26 @@ class CredentialAdmin(AdminBase):
 
 class BackendAdmin(AdminBase):
     form = BackendForm
-    list_display = ['name', 'description', 'scheme', 'hostname', 'port', 'path', 'uri', 'backend_summary_link']
+    list_display = ['name', 'description', 'scheme', 'hostname',
+                    'port', 'path', 'uri', 'backend_summary_link']
+    fieldsets = (
+        (None, {
+            'fields': ('name', 'description', 'scheme',
+                       'hostname', 'port', 'path', 'caps')
+        }),
+        ('Filesystem Backends', {
+            'classes': ('fsbackend-only',),
+            'fields': ('lcopy_supported', 'link_supported')
+        }),
+        ('Execution Backends', {
+            'classes': ('execbackend-only',),
+            'fields': ('submission', 'temporary_directory')
+        }),
+    )
+
+    class Media:
+        js = ("javascript/yabiadminfixer.js",)
+
     def backend_summary_link(self, obj):
         return '<a href="%s">View</a>' % obj.get_absolute_url()
 
