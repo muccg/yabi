@@ -115,4 +115,6 @@ class BaseBackend(object):
             k["exec"] = k.get("exec", False) or issubclass(be, ExecBackend)
             if hasattr(be, "backend_auth"):
                 k.setdefault("auth", {}).update(be.backend_auth)
+            for attr in "lcopy_supported", "link_supported":
+                k[attr] = k.get(attr, False) or getattr(be, attr, False)
         return caps

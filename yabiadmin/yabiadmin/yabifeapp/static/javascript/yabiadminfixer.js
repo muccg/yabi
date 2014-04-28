@@ -25,6 +25,13 @@ django.jQuery(document).ready(function($) {
 
             admin.find(".fsbackend-only").toggle(caps && caps[val] && caps[val].fs);
             admin.find(".execbackend-only").toggle(caps && caps[val] && caps[val].exec);
+
+            // unset lcopy and link if the backend doesn't support them
+            $.each(["lcopy_supported", "link_supported"], function(i, attr) {
+                if (caps && caps[val] && !caps[val][attr]) {
+                    admin.find("#id_" + attr).attr("checked", false);
+                }
+            });
         }).change();
     }());
 

@@ -11,7 +11,7 @@ import swiftclient.client
 import swiftclient.exceptions
 from django.conf import settings
 from .fsbackend import FSBackend
-from .exceptions import NotSupportedError, RetryException
+from .exceptions import RetryException
 from .utils import get_credential_data, partition
 from ..yabiengine.urihelper import uriparse
 
@@ -33,6 +33,8 @@ class SwiftBackend(FSBackend):
         "username": "Keystone user name",
         "password": "Keystone password",
     }
+    lcopy_supported = False
+    link_supported = False
 
     def __init__(self, *args, **kwargs):
         FSBackend.__init__(self, *args, **kwargs)
@@ -384,9 +386,3 @@ class SwiftBackend(FSBackend):
             upload_manifest(swift.bucket, swift.prefix)
 
         return True
-
-    def local_copy(self, source, destination):
-        raise NotSupportedError()
-
-    def symbolic_link(self, source, destination):
-        raise NotSupportedError()

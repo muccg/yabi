@@ -26,7 +26,7 @@
 ### END COPYRIGHT ###
 import os
 from django.utils import simplejson as json
-from yabiadmin.backend.exceptions import RetryException, FileNotFoundError
+from yabiadmin.backend.exceptions import RetryException, FileNotFoundError, NotSupportedError
 from yabiadmin.backend.utils import create_fifo
 from yabiadmin.backend.backend import fs_credential
 from yabiadmin.backend.basebackend import BaseBackend
@@ -61,6 +61,9 @@ def stream_watcher(identifier, stream):
 
 
 class FSBackend(BaseBackend):
+    lcopy_supported = True
+    link_supported = True
+
     @staticmethod
     def factory(task):
         assert(task)
@@ -421,13 +424,13 @@ class FSBackend(BaseBackend):
         raise NotImplementedError("")
 
     def local_copy(self, source, destination):
-        raise NotImplementedError("")
+        raise NotSupportedError()
 
     def local_copy_recursive(self, source, destination):
-        raise NotImplementedError("")
+        raise NotSupportedError()
 
     def symbolic_link(self, source, destination):
-        raise NotImplementedError("")
+        raise NotSupportedError()
 
     @staticmethod
     def format_iso8601_date(iso8601_date):
