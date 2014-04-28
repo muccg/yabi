@@ -592,11 +592,9 @@ class Backend(Base):
     hostname = models.CharField(max_length=512)
     port = models.IntegerField(null=True, blank=True)
     path = models.CharField(max_length=512)
-    max_connections = models.IntegerField(null=True, blank=True)
     lcopy_supported = models.BooleanField(default=True)
     link_supported = models.BooleanField(default=True)
     submission = models.TextField(blank=True)
-    tasks_per_user = models.IntegerField(null=True, blank=True)
     temporary_directory = models.CharField(max_length=512, blank=True)
     scheme.help_text = "Must be one of %s." % ", ".join(VALID_SCHEMES)
     hostname.help_text = "Hostname must not end with a /."
@@ -604,11 +602,9 @@ class Backend(Base):
     For filesystem backends, Yabi will take the value in path and combine it with any path snippet in Backend Credential to form a URI. <br/>
     i.e. http://myserver.mydomain/home/ would be entered here and then on the Backend Credential for UserX you would enter <br/>
     their home directory in the User Directory field i.e. UserX/. This would then combine to form a valid URI: http://myserver.mydomain/home/UserX/"""
-    max_connections.help_text = "Backend connection limit. Does not affect front end immediate mode requests. Blank means no limit on the number of connections. '0' means no connections allowed (frozen)."
     lcopy_supported.help_text = "Backend supports 'cp' localised copies."
     link_supported.help_text = "Backend supports 'ln' localised symlinking."
     submission.help_text = "Mako script to be used to generate the submission script. (Variables: walltime, memory, cpus, working, modules, command, etc.)"
-    tasks_per_user.help_text = "The number of simultaneous tasks the backends should execute for each remote backend user. 0 means do not execute jobs for this backend. Blank means no limits."
     temporary_directory.help_text = 'Only to be set on execution backends. Temporary directory used for temporary execution scripts. Blank means "/tmp".'
 
     @property
