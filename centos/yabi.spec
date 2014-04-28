@@ -204,7 +204,10 @@ if [ "$1" = "0" ]; then
 fi
 
 %postun admin
-/usr/sbin/userdel celery
+if [ "$1" = "0" ]; then
+    # clean up celery user, unless the uninstall is due to an upgrade
+    /usr/sbin/userdel celery
+fi
 
 %files admin
 %defattr(-,apache,apache,-)
