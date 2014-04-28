@@ -27,7 +27,6 @@ class SwiftBackend(FSBackend):
     fixme: why is set_cred() only done on mkdir and ls?
     """
 
-    backend_scheme = "swift"
     backend_desc = "OpenStack Swift object storage"
     backend_auth = {
         "username": "Keystone user name",

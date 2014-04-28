@@ -7,8 +7,6 @@ class SSHPBSProExecBackend(QBaseExecBackend):
     QSTAT_TEMPLATE = "\n".join(["#!/bin/sh",
                                 "<QSTAT_COMMAND> -x {0}"])
 
-    backend_scheme = "ssh+pbspro"
-
     def __init__(self, *args, **kwargs):
         super(SSHPBSProExecBackend, self).__init__(*args, **kwargs)
         self.parser = PBSProParser()

@@ -48,7 +48,6 @@ class S3Backend(FSBackend):
     service through the boto package.
     """
 
-    backend_scheme = "s3"
     backend_desc = "Amazon S3 object storage"
     backend_auth = {
         "cert": "AWS Access Key ID",

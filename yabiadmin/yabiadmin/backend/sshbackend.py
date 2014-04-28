@@ -59,7 +59,6 @@ ps -o pid= -p {0}
 kill {1} -- -$( ps opgid= {0} | tr -d ' ')
 """
 
-    backend_scheme = "ssh"
     backend_desc = "SSH remote execution"
     backend_auth = {
         "username": "Login name for remote host",

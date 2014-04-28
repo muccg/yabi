@@ -47,7 +47,6 @@ logger = logging.getLogger(__name__)
 pool_manager = get_ssh_pool_manager()
 
 class SFTPBackend(FSBackend):
-    backend_scheme = ("sftp", "scp")
     backend_desc = "SFTP remote file system"
     backend_auth = {
         "username": "Login name for remote host",

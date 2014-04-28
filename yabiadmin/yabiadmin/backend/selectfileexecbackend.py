@@ -30,7 +30,6 @@ logger = logging.getLogger(__name__)
 
 
 class SelectFileExecBackend(ExecBackend):
-    backend_scheme = ("selectfile", "null")
     backend_desc = "Select file (\"null\" execution backend)"
 
     def submit_task(self):

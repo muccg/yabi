@@ -30,19 +30,7 @@ import os
 import shutil
 logger = logging.getLogger(__name__)
 
-class register_backend_schemes(type):
-    def __new__(mcs, name, bases, dict):
-        cls = type.__new__(mcs, name, bases, dict)
-        schemes = dict.get("backend_scheme", ())
-        if not isinstance(schemes, (list, tuple)):
-            schemes = (schemes,)
-        for scheme in schemes:
-            BaseBackend._backends.append((scheme, cls))
-        return cls
-
 class BaseBackend(object):
-    __metaclass__ = register_backend_schemes
-
     task = None
     cred = None
     yabiusername = None
@@ -72,6 +60,12 @@ class BaseBackend(object):
         os.makedirs(local_remnants_dir)
 
     _backends = []
+
+    @classmethod
+    def register(cls, *schemes):
+        for scheme in schemes:
+            BaseBackend._backends.append((scheme, cls))
+        return cls
 
     @classmethod
     def get_scheme_choices(cls):

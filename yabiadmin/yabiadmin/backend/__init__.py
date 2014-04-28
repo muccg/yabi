@@ -1,4 +1,4 @@
-# Import all backend class in this module so they get registered
+# Re-import all backend classes and register their schemes
 
 from .basebackend import BaseBackend
 
@@ -18,3 +18,16 @@ from .sshbackend import SSHBackend
 from .sshsgeexecbackend import SSHSGEExecBackend
 from .sshtorquebackend import SSHTorqueExecBackend
 from .sshpbsprobackend import SSHPBSProExecBackend
+
+# Register backend schemes
+SelectFileExecBackend.register("selectfile", "null")
+LocalExecBackend.register("localex")
+SSHBackend.register("ssh")
+SSHSGEExecBackend.register("ssh+sge")
+SSHTorqueExecBackend.register("ssh+torque")
+SSHPBSProExecBackend.register("ssh+pbspro")
+SelectFileBackend.register("selectfile", "null")
+FileBackend.register("file", "localfs")
+SFTPBackend.register("sftp", "scp")
+S3Backend.register("s3")
+SwiftBackend.register("swift")

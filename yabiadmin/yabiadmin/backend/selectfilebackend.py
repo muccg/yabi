@@ -31,7 +31,6 @@ logger = logging.getLogger(__name__)
 
 
 class SelectFileBackend(FSBackend):
-    backend_scheme = ("selectfile", "null")
     backend_desc = "Select file (\"null\" backend)"
     backend_auth = { }
 

@@ -44,8 +44,6 @@ EXEC_SCRIPT_PREFIX = 'yabi_lexec_'
 DEFAULT_TEMP_DIRECTORY = '/tmp'
 
 class LocalExecBackend(ExecBackend):
-
-    backend_scheme = "localex"
     backend_desc = "Local execution"
     backend_auth = {}
 
